@@ -36,7 +36,7 @@ export const TermsPage: React.FC = () => {
         ]}
       />
       <div className="bg-white p-6 sm:p-10 rounded-2xl border border-border-base shadow-xs space-y-6 text-xs sm:text-sm text-stone-700 leading-relaxed">
-        <h1 className="text-2xl sm:text-3xl font-black text-stone-900">
+        <h1 className="text-2xl sm:text-3xl font-bold text-stone-900">
           {t("legal.legalPages.conditionsGeneralesDUtilisationCgu")}
         </h1>
         <p className="text-stone-500">
@@ -83,7 +83,7 @@ export const PrivacyPage: React.FC = () => {
         ]}
       />
       <div className="bg-white p-6 sm:p-10 rounded-2xl border border-border-base shadow-xs space-y-6 text-xs sm:text-sm text-stone-700 leading-relaxed">
-        <h1 className="text-2xl sm:text-3xl font-black text-stone-900">
+        <h1 className="text-2xl sm:text-3xl font-bold text-stone-900">
           {t("legal.legalPages.politiqueDeConfidentialiteRgpd")}
         </h1>
         <p>{t("legal.legalPages.shongreAttacheLaPlusGrande")}</p>
@@ -112,7 +112,7 @@ export const LegalNoticesPage: React.FC = () => {
         items={[{ label: "Accueil", href: "/" }, { label: "Mentions Légales" }]}
       />
       <div className="bg-white p-6 sm:p-10 rounded-2xl border border-border-base shadow-xs space-y-4 text-xs sm:text-sm text-stone-700 leading-relaxed">
-        <h1 className="text-2xl sm:text-3xl font-black text-stone-900">
+        <h1 className="text-2xl sm:text-3xl font-bold text-stone-900">
           {t("legal.legalPages.mentionsLegales")}
         </h1>
         <p>
@@ -154,7 +154,7 @@ export const AccessibilityPage: React.FC = () => {
         ]}
       />
       <div className="bg-white p-6 sm:p-10 rounded-2xl border border-border-base shadow-xs space-y-4 text-xs sm:text-sm text-stone-700 leading-relaxed">
-        <h1 className="text-2xl sm:text-3xl font-black text-stone-900">
+        <h1 className="text-2xl sm:text-3xl font-bold text-stone-900">
           {t("legal.legalPages.declarationDAccessibiliteWcag2")}
         </h1>
         <p>{t("legal.legalPages.shongreSEngageARendre")}</p>
@@ -188,7 +188,7 @@ export const HelpSafetyPage: React.FC = () => {
         ]}
       />
       <div className="bg-white p-6 sm:p-10 rounded-2xl border border-border-base shadow-xs space-y-6 text-xs sm:text-sm text-stone-700 leading-relaxed">
-        <h1 className="text-2xl sm:text-3xl font-black text-stone-900">
+        <h1 className="text-2xl sm:text-3xl font-bold text-stone-900">
           {t("legal.legalPages.conseilsDeSecuriteAntiFraude")}
         </h1>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
@@ -275,7 +275,7 @@ export const DealsPage: React.FC = () => {
           <Tag className="w-icon-sm h-icon-sm text-warning" />
           {t("legal.legalPages.offresVerifieesAPrixReduits")}
         </div>
-        <h1 className="text-2xl sm:text-3xl font-black text-stone-900">
+        <h1 className="text-2xl sm:text-3xl font-bold text-stone-900">
           Les meilleures réductions du moment ({deals.length})
         </h1>
         <p className="text-xs sm:text-sm text-stone-500 mt-1">

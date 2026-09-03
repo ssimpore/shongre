@@ -95,10 +95,10 @@ export const ReservationCheckoutModal: React.FC<
               className="h-16 w-16 shrink-0 rounded-xl object-cover"
             />
             <div className="min-w-0">
-              <h3 className="truncate text-sm font-black text-stone-900">
+              <h3 className="truncate text-sm font-bold text-stone-900">
                 {listing.title}
               </h3>
-              <p className="mt-1 text-base font-black text-primary">
+              <p className="mt-1 text-base font-bold text-primary">
                 {formatPrice(listing.price, {
                   sourceCurrency: listing.currency,
                 })}

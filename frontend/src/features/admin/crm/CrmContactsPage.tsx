@@ -159,7 +159,7 @@ export const CrmContactsPage: React.FC = () => {
         </Link>
         <div className="mt-3 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h1 className="text-2xl font-black tracking-tight sm:text-3xl">
+            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
               Contacts
             </h1>
             <p className="mt-1 text-sm text-text-disabled">
@@ -205,7 +205,7 @@ export const CrmContactsPage: React.FC = () => {
         ) : filtered.length === 0 ? (
           <div className="p-10 text-center">
             <UserRound className="mx-auto h-8 w-8 text-text-disabled" />
-            <h2 className="mt-3 text-sm font-black text-stone-800">
+            <h2 className="mt-3 text-sm font-bold text-stone-800">
               {t("admin.crmContactsPage.aucunContactTrouve")}
             </h2>
             <p className="mt-1 text-xs text-stone-500">
@@ -243,14 +243,14 @@ export const CrmContactsPage: React.FC = () => {
                     >
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-3">
-                          <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-pill bg-stone-950 text-micro font-black text-text-inverse">
+                          <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-pill bg-stone-950 text-micro font-bold text-text-inverse">
                             {contact.firstName[0]}
                             {contact.lastName[0]}
                           </span>
                           <div className="min-w-0">
                             <Link
                               to={crmPaths.contact(contact.id)}
-                              className="block truncate font-black text-stone-950 hover:text-primary"
+                              className="block truncate font-bold text-stone-950 hover:text-primary"
                             >
                               {contact.fullName}
                             </Link>

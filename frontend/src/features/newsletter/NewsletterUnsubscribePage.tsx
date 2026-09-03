@@ -44,7 +44,7 @@ export const NewsletterUnsubscribePage: React.FC = () => {
           <Mail className="h-7 w-7" aria-hidden="true" />
         </div>
         <div className="space-y-2">
-          <h1 className="text-2xl font-black text-stone-900">
+          <h1 className="text-2xl font-bold text-stone-900">
             Désabonnement newsletter
           </h1>
           <p className="text-xs text-stone-500 sm:text-sm">

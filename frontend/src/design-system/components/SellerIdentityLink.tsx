@@ -74,7 +74,7 @@ export const SellerIdentityLink: React.FC<SellerIdentityLinkProps> = ({
 
       <div className="min-w-0 flex-1">
         <div className="flex min-w-0 items-center gap-2">
-          <span className="truncate text-sm font-black text-text-main transition-colors group-hover:text-primary sm:text-base">
+          <span className="truncate text-sm font-semibold text-text-main transition-colors group-hover:text-primary sm:text-base">
             {name}
           </span>
           {isProfessional ? (

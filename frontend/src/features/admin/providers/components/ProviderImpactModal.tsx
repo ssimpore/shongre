@@ -145,7 +145,7 @@ export const ProviderImpactModal: React.FC<ProviderImpactModalProps> = ({
             size="sm"
             isLoading={isProcessing}
             onClick={handleConfirm}
-            className="font-bold"
+            className="font-semibold"
           >
             {t("admin.providerImpactModal.confirmerLaModification")}
           </Button>

@@ -78,7 +78,7 @@ export const CrmConfigurationPage: React.FC = () => {
             <p className="text-micro font-bold uppercase tracking-wider text-violet-300">
               CRM · Administration
             </p>
-            <h1 className="text-2xl font-black tracking-tight sm:text-3xl">
+            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
               Configuration
             </h1>
           </div>
@@ -99,7 +99,7 @@ export const CrmConfigurationPage: React.FC = () => {
             <span className="inline-flex h-9 w-9 items-center justify-center rounded-control bg-primary-light text-primary">
               <Icon className="h-4 w-4" />
             </span>
-            <h2 className="mt-4 text-sm font-black">{title}</h2>
+            <h2 className="mt-4 text-sm font-bold">{title}</h2>
             <p className="mt-1 flex-1 text-xs leading-relaxed text-stone-500">
               {description}
             </p>

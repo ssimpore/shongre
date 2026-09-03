@@ -180,7 +180,7 @@ export const AccountOverviewPage: React.FC = () => {
         <div className="grid items-center gap-3 lg:grid-cols-content-action">
           <div className="min-w-0 space-y-1.5">
             <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-              <h1 className="min-w-0 text-lg font-extrabold tracking-tight text-text-main sm:text-xl">
+              <h1 className="min-w-0 text-lg font-bold tracking-tight text-text-main sm:text-xl">
                 <span className="font-medium text-text-secondary">
                   Bonjour,{" "}
                 </span>
@@ -250,7 +250,7 @@ export const AccountOverviewPage: React.FC = () => {
         <div className="mb-5 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <Shield className="w-icon-lg h-icon-lg text-success" />
-            <h2 className="font-extrabold text-sm sm:text-base text-stone-900">
+            <h2 className="font-bold text-sm sm:text-base text-stone-900">
               {t(
                 "sellerworkspace.accountOverviewPage.niveauxDeSecuriteVerificationsDu",
               )}
@@ -336,7 +336,7 @@ export const AccountOverviewPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowPhoneModal(true)}
-                className="text-xs font-bold text-primary hover:underline inline-flex items-center gap-1 min-h-6 cursor-pointer"
+                className="text-xs font-semibold text-primary hover:underline inline-flex items-center gap-1 min-h-6 cursor-pointer"
               >
                 {hasVerifiedPhone
                   ? "Modifier / Re-vérifier"
@@ -375,7 +375,7 @@ export const AccountOverviewPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => navigate("/compte/securite-compte")}
-                className="text-xs font-bold text-primary hover:underline inline-flex items-center gap-1 min-h-6 cursor-pointer"
+                className="text-xs font-semibold text-primary hover:underline inline-flex items-center gap-1 min-h-6 cursor-pointer"
               >
                 {currentUser?.mfaEnabled
                   ? "Gérer les codes de secours"
@@ -395,7 +395,7 @@ export const AccountOverviewPage: React.FC = () => {
           <div className="w-8 h-8 rounded-lg bg-primary-light text-primary flex items-center justify-center mb-2">
             <List className="w-icon-md h-icon-md" />
           </div>
-          <div className="text-2xl font-black text-stone-900">
+          <div className="text-2xl font-bold text-stone-900">
             {activeListings.length}
           </div>
           <div className="text-xs font-semibold text-stone-500 mt-0.5">
@@ -410,7 +410,7 @@ export const AccountOverviewPage: React.FC = () => {
           <div className="w-8 h-8 rounded-lg bg-info-surface text-info flex items-center justify-center mb-2">
             <MessageSquare className="w-icon-md h-icon-md" />
           </div>
-          <div className="text-2xl font-black text-stone-900">
+          <div className="text-2xl font-bold text-stone-900">
             {unreadMsgCount}
           </div>
           <div className="text-xs font-semibold text-stone-500 mt-0.5">
@@ -425,7 +425,7 @@ export const AccountOverviewPage: React.FC = () => {
           <div className="w-8 h-8 rounded-lg bg-pink-50 text-pink-600 flex items-center justify-center mb-2">
             <Heart className="w-icon-md h-icon-md" />
           </div>
-          <div className="text-2xl font-black text-stone-900">{favCount}</div>
+          <div className="text-2xl font-bold text-stone-900">{favCount}</div>
           <div className="text-xs font-semibold text-stone-500 mt-0.5">
             {t("sellerworkspace.accountOverviewPage.annoncesSauvegardees")}
           </div>
@@ -473,7 +473,7 @@ export const AccountOverviewPage: React.FC = () => {
           <button
             type="button"
             onClick={() => setIsEditingProfile(!isEditingProfile)}
-            className="inline-flex items-center gap-1.5 min-h-6 text-xs font-bold text-primary hover:underline cursor-pointer"
+            className="inline-flex items-center gap-1.5 min-h-6 text-xs font-semibold text-primary hover:underline cursor-pointer"
           >
             <Edit3 className="w-icon-sm h-icon-sm" />
             {isEditingProfile ? "Fermer" : "Modifier mes informations"}
@@ -487,7 +487,7 @@ export const AccountOverviewPage: React.FC = () => {
           >
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-stone-800 mb-1">
+                <label className="block text-xs font-semibold text-stone-800 mb-1">
                   {t(
                     "sellerworkspace.accountOverviewPage.nomEtPrenomPseudonyme",
                   )}
@@ -502,7 +502,7 @@ export const AccountOverviewPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-stone-800 mb-1">
+                <label className="block text-xs font-semibold text-stone-800 mb-1">
                   {t("sellerworkspace.accountOverviewPage.numeroDeTelephone2")}
                 </label>
                 <input
@@ -517,7 +517,7 @@ export const AccountOverviewPage: React.FC = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-stone-800 mb-1">
+                <label className="block text-xs font-semibold text-stone-800 mb-1">
                   Ville
                 </label>
                 <input
@@ -530,7 +530,7 @@ export const AccountOverviewPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-stone-800 mb-1">
+                <label className="block text-xs font-semibold text-stone-800 mb-1">
                   Code Postal
                 </label>
                 <input
@@ -544,7 +544,7 @@ export const AccountOverviewPage: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-stone-800 mb-1">
+              <label className="block text-xs font-semibold text-stone-800 mb-1">
                 {t(
                   "sellerworkspace.accountOverviewPage.biographiePresentation",
                 )}
@@ -705,7 +705,7 @@ export const AccountOverviewPage: React.FC = () => {
                 "sellerworkspace.accountOverviewPage.passezALaVitesseSuperieure",
               )}
             </div>
-            <h2 className="font-black text-stone-900 text-sm sm:text-base">
+            <h2 className="font-bold text-stone-900 text-sm sm:text-base">
               {t(
                 "sellerworkspace.accountOverviewPage.vousVendezRegulierementEnTant",
               )}

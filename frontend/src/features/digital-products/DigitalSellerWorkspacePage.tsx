@@ -187,7 +187,7 @@ export const DigitalSellerWorkspacePage: React.FC = () => {
             {t("digital.common.title")}
           </span>
         </div>
-        <h1 className="mt-1 text-2xl font-black text-text-main">
+        <h1 className="mt-1 text-2xl font-bold text-text-main">
           {t("digital.seller.title")}
         </h1>
         <p className="mt-1 max-w-3xl text-sm text-text-secondary">
@@ -232,7 +232,7 @@ export const DigitalSellerWorkspacePage: React.FC = () => {
           >
             <h2
               id="seller-digital-modes"
-              className="text-lg font-black text-text-main"
+              className="text-lg font-bold text-text-main"
             >
               {t("digital.fulfillment.heading")}
             </h2>
@@ -277,7 +277,7 @@ export const DigitalSellerWorkspacePage: React.FC = () => {
               />
               <h2
                 id="seller-digital-requirements"
-                className="text-lg font-black text-text-main"
+                className="text-lg font-bold text-text-main"
               >
                 {t("digital.seller.requirements")}
               </h2>
@@ -345,7 +345,7 @@ export const DigitalSellerWorkspacePage: React.FC = () => {
           >
             <h2
               id="seller-digital-tasks"
-              className="text-lg font-black text-text-main"
+              className="text-lg font-bold text-text-main"
             >
               {t("digital.seller.tasks")}
             </h2>

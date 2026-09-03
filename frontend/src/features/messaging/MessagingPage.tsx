@@ -527,7 +527,7 @@ export const MessagingPage: React.FC = () => {
             <MessageSquare className="w-7 h-7" />
           </div>
           <div className="space-y-1.5">
-            <h2 className="text-base font-black text-stone-800">
+            <h2 className="text-base font-bold text-stone-800">
               {t("messaging.messagingPage.aucunMessagePourLeMoment")}
             </h2>
             <p className="text-xs text-stone-500 max-w-sm leading-relaxed">
@@ -627,7 +627,7 @@ export const MessagingPage: React.FC = () => {
                   <Sparkles className="w-7 h-7 text-primary" />
                 </div>
                 <div>
-                  <p className="text-base font-black text-stone-800">
+                  <p className="text-base font-bold text-stone-800">
                     {t("messaging.messagingPage.selectionnezUneConversation")}
                   </p>
                   <p className="text-xs text-stone-500 mt-1 max-w-sm">

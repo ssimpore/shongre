@@ -67,7 +67,7 @@ export const FilterChip: React.FC<FilterChipProps> = ({
       <span className="truncate">{children}</span>
       {count !== undefined && count > 0 ? (
         <span
-          className={`inline-flex min-w-5 items-center justify-center rounded-pill px-1.5 py-0.5 text-micro font-extrabold ${
+          className={`inline-flex min-w-5 items-center justify-center rounded-pill px-1.5 py-0.5 text-micro font-bold ${
             selected ? "bg-primary text-white" : "bg-primary/15 text-primary"
           }`}
         >

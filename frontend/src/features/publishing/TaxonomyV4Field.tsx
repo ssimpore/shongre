@@ -72,7 +72,7 @@ export function TaxonomyV4Field({
         {onRetry ? (
           <button
             type="button"
-            className="mt-2 font-bold underline"
+            className="mt-2 font-semibold underline"
             onClick={onRetry}
           >
             {t("common.retry")}

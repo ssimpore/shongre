@@ -25,7 +25,7 @@ export const TaxonomyAuditTab: React.FC = () => {
       {/* Header & Search */}
       <div className="bg-bg-surface p-5 rounded-2xl border border-border-base shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h3 className="text-base font-black text-text-main flex items-center gap-2">
+          <h3 className="text-base font-bold text-text-main flex items-center gap-2">
             <History className="w-icon-lg h-icon-lg text-primary" />
             <span>
               {t("admin.taxonomyAuditTab.journalDAuditTracabiliteDes")}

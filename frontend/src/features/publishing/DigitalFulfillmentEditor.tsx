@@ -358,7 +358,7 @@ export const DigitalFulfillmentEditor: React.FC<
       <div>
         <h3
           id="digital-fulfillment-heading"
-          className="text-lg font-black text-stone-900"
+          className="text-lg font-bold text-stone-900"
         >
           {t("digital.fulfillment.heading")}
         </h3>
@@ -465,7 +465,7 @@ export const DigitalFulfillmentEditor: React.FC<
           {value.fulfillmentTypes.includes("FILE_DOWNLOAD") ? (
             <div className="space-y-3">
               <label
-                className="block text-sm font-bold"
+                className="block text-sm font-semibold"
                 htmlFor="digital-private-file"
               >
                 {t("digital.fulfillment.privateFile")}

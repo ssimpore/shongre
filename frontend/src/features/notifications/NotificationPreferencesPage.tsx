@@ -193,7 +193,7 @@ export const NotificationPreferencesPage: React.FC = () => {
               )}
             </span>
           </Link>
-          <h1 className="text-xl sm:text-2xl font-black text-stone-900">
+          <h1 className="text-xl sm:text-2xl font-bold text-stone-900">
             {t(
               "notifications.notificationPreferencesPage.preferencesDeNotifications",
             )}
@@ -219,7 +219,7 @@ export const NotificationPreferencesPage: React.FC = () => {
 
       {/* Matrix Header */}
       <div className="bg-white rounded-3xl border border-border-base p-6 shadow-xs space-y-6">
-        <div className="hidden sm:grid grid-cols-12 gap-4 pb-3 border-b border-border-base text-xs font-black text-stone-500 uppercase tracking-wider">
+        <div className="hidden sm:grid grid-cols-12 gap-4 pb-3 border-b border-border-base text-xs font-bold text-stone-500 uppercase tracking-wider">
           <div className="col-span-6">
             {t("notifications.notificationPreferencesPage.categorieDAlerte")}
           </div>

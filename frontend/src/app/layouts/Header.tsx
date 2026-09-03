@@ -535,12 +535,12 @@ export const Header: React.FC = () => {
               className="flex items-center gap-2 select-none group min-w-0"
             >
               <div
-                className={`w-9 h-9 rounded-control bg-primary text-white flex items-center justify-center font-black text-xl shadow-xs group-hover:scale-105 ${CONTROL_MOTION_CLASS} shrink-0`}
+                className={`w-9 h-9 rounded-control bg-primary text-white flex items-center justify-center font-bold text-xl shadow-xs group-hover:scale-105 ${CONTROL_MOTION_CLASS} shrink-0`}
               >
                 S
               </div>
               <div className="flex flex-col min-w-0">
-                <span className="text-xl font-extrabold tracking-tight uppercase text-stone-900 leading-none truncate">
+                <span className="text-xl font-bold tracking-tight uppercase text-stone-900 leading-none truncate">
                   Shongre<span className="text-primary">.</span>
                 </span>
                 {/* The market name repeats the market selector in the actions
@@ -897,13 +897,13 @@ export const Header: React.FC = () => {
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="flex items-center gap-2.5 select-none"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-stone-900 text-white flex items-center justify-center font-black text-lg shadow-sm">
+                  <div className="w-8 h-8 rounded-lg bg-stone-900 text-white flex items-center justify-center font-bold text-lg shadow-sm">
                     S
                   </div>
                   <div className="flex flex-col">
                     <span
                       id={drawerTitleId}
-                      className="text-lg font-black text-stone-900 tracking-tight leading-none"
+                      className="text-lg font-bold text-stone-900 tracking-tight leading-none"
                     >
                       Shongre<span className="text-primary">.</span>
                     </span>
@@ -1079,7 +1079,7 @@ export const Header: React.FC = () => {
                         onClick={() =>
                           setIsMobileCategoriesOpen(!isMobileCategoriesOpen)
                         }
-                        className="w-full touch-row justify-between p-2.5 rounded-xl text-xs font-bold text-stone-900 hover:bg-bg-subtle transition-colors cursor-pointer"
+                        className="w-full touch-row justify-between p-2.5 rounded-xl text-xs font-semibold text-stone-900 hover:bg-bg-subtle transition-colors cursor-pointer"
                       >
                         <span className="flex items-center gap-2.5">
                           <Layers className="w-icon-md h-icon-md text-primary" />

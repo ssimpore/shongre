@@ -105,7 +105,7 @@ export const HomeCollectionExplorer: React.FC<HomeCollectionExplorerProps> = ({
 
               <span className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-4 text-white">
                 <span className="min-w-0">
-                  <span className="block text-base font-black leading-tight">
+                  <span className="block text-base font-bold leading-tight">
                     {collection.shortTitle}
                   </span>
                   <span className="mt-1 flex items-center gap-1.5 text-xs font-semibold text-white/85">

@@ -88,7 +88,7 @@ export const SupportRequestDetailPage: React.FC = () => {
   if (!request) {
     return (
       <div className="bg-white border border-border-base rounded-3xl p-10 text-center space-y-4 shadow-xs">
-        <h3 className="text-base font-black text-stone-900">
+        <h3 className="text-base font-bold text-stone-900">
           Dossier d'assistance introuvable
         </h3>
         <Button
@@ -113,7 +113,7 @@ export const SupportRequestDetailPage: React.FC = () => {
         <button
           type="button"
           onClick={() => navigate("/compte/support")}
-          className="inline-flex items-center gap-1.5 text-xs font-bold text-stone-600 hover:text-stone-950 transition-colors cursor-pointer"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-stone-600 hover:text-stone-950 transition-colors cursor-pointer"
         >
           <ArrowLeft className="w-icon-md h-icon-md" />
           <span>
@@ -126,7 +126,7 @@ export const SupportRequestDetailPage: React.FC = () => {
       <div className="bg-white border border-border-base rounded-3xl p-6 shadow-xs space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border-subtle">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs font-black font-mono text-stone-700 bg-stone-100 px-2.5 py-1 rounded-lg">
+            <span className="text-xs font-bold font-mono text-stone-700 bg-stone-100 px-2.5 py-1 rounded-lg">
               {request.reference}
             </span>
             <Badge variant={statusInfo.variant} size="md">
@@ -140,7 +140,7 @@ export const SupportRequestDetailPage: React.FC = () => {
         </div>
 
         <div>
-          <h1 className="text-lg sm:text-xl font-black text-stone-900">
+          <h1 className="text-lg sm:text-xl font-bold text-stone-900">
             {request.subject}
           </h1>
           <p className="text-xs text-stone-500 mt-0.5">
@@ -155,7 +155,7 @@ export const SupportRequestDetailPage: React.FC = () => {
 
       {/* 3. Messages Timeline */}
       <div className="space-y-4">
-        <h2 className="text-xs font-black uppercase tracking-wider text-stone-700 px-1">
+        <h2 className="text-xs font-bold uppercase tracking-wider text-stone-700 px-1">
           Historique des échanges ({notes.length})
         </h2>
 
@@ -188,7 +188,7 @@ export const SupportRequestDetailPage: React.FC = () => {
                       )}
                     </div>
                     <div>
-                      <span className="text-xs font-black text-stone-900 block leading-tight">
+                      <span className="text-xs font-bold text-stone-900 block leading-tight">
                         {isAgent
                           ? "Équipe Support Shongre"
                           : currentUser?.name || "Vous"}
@@ -223,7 +223,7 @@ export const SupportRequestDetailPage: React.FC = () => {
           <button
             type="button"
             onClick={() => navigate("/contact")}
-            className="text-primary font-bold hover:underline"
+            className="text-primary font-semibold hover:underline"
           >
             {t("support.supportRequestDetailPage.ouvrirUneNouvelleDemande")}
           </button>
@@ -235,7 +235,7 @@ export const SupportRequestDetailPage: React.FC = () => {
           className="bg-white border border-border-base rounded-3xl p-5 shadow-xs space-y-4"
         >
           <div className="flex items-center justify-between">
-            <h3 className="text-xs font-black uppercase tracking-wider text-stone-700">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-stone-700">
               {t("support.supportRequestDetailPage.repondreANotreEquipe")}
             </h3>
           </div>
@@ -255,7 +255,7 @@ export const SupportRequestDetailPage: React.FC = () => {
               variant="primary"
               size="md"
               disabled={isSubmitting || !replyText.trim()}
-              className="font-bold flex items-center gap-2"
+              className="font-semibold flex items-center gap-2"
             >
               <Send className="w-icon-md h-icon-md" />
               <span>{isSubmitting ? "Envoi..." : "Envoyer ma réponse"}</span>

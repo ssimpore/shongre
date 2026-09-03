@@ -97,7 +97,7 @@ export const VerifyEmailPage: React.FC = () => {
             <CheckCircle2 className="w-8 h-8" />
           </div>
 
-          <h2 className="text-lg font-black text-stone-900">
+          <h2 className="text-lg font-bold text-stone-900">
             {t("auth.verifyEmailPage.emailValideAvecSucces")}
           </h2>
           <p className="text-xs text-stone-600 max-w-sm mx-auto leading-relaxed">
@@ -163,7 +163,7 @@ export const VerifyEmailPage: React.FC = () => {
             className="space-y-3 pt-2"
           >
             <div>
-              <label className="block text-xs font-bold text-stone-800 mb-1.5">
+              <label className="block text-xs font-semibold text-stone-800 mb-1.5">
                 {t("auth.verifyEmailPage.jetonDeValidationOuCode")}
               </label>
               <input

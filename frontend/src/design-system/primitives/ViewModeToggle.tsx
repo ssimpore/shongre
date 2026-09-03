@@ -94,7 +94,7 @@ const ViewModeButton: React.FC<ViewModeButtonProps> = ({
     aria-pressed={active}
     onClick={onClick}
     className={cn(
-      "h-full flex items-center gap-1.5 font-bold cursor-pointer",
+      "h-full flex items-center gap-1.5 font-semibold cursor-pointer",
       "px-1.5 sm:px-2 text-micro sm:text-xs",
       CONTROL_MOTION_CLASS,
       CONTROL_FOCUS_CLASS,

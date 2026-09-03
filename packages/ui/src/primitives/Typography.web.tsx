@@ -12,15 +12,14 @@ export interface HeadingProps extends React.HTMLAttributes<HTMLHeadingElement> {
     | "heading-md"
     | "heading-sm"
     | "heading-xs";
-  family?: "sans" | "display";
   tone?: "main" | "secondary" | "inverse" | "primary";
 }
 
 const headingSizes = {
   "display-lg": "text-display-lg font-extrabold tracking-tighter",
-  "display-md": "text-display-md font-extrabold tracking-tighter",
+  "display-md": "text-display-md font-bold tracking-tighter",
   "display-sm": "text-display-sm font-bold tracking-tight",
-  "heading-xl": "text-heading-xl font-extrabold tracking-tight",
+  "heading-xl": "text-heading-xl font-bold tracking-tight",
   "heading-lg": "text-heading-lg font-bold tracking-tight",
   "heading-md": "text-heading-md font-bold tracking-tight",
   "heading-sm": "text-heading-sm font-bold",
@@ -39,7 +38,6 @@ export const Heading = React.forwardRef<HTMLHeadingElement, HeadingProps>(
     {
       as: Component = "h2",
       size = "heading-md",
-      family = "sans",
       tone = "main",
       className,
       ...props
@@ -48,12 +46,7 @@ export const Heading = React.forwardRef<HTMLHeadingElement, HeadingProps>(
   ) => (
     <Component
       ref={ref}
-      className={cn(
-        headingSizes[size],
-        family === "display" ? "font-display" : "font-sans",
-        tones[tone],
-        className,
-      )}
+      className={cn(headingSizes[size], tones[tone], className)}
       {...props}
     />
   ),

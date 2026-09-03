@@ -81,7 +81,7 @@ export const CourseTutorCard: React.FC<CourseTutorCardProps> = ({
         <div className="min-w-0 space-y-3">
           <div>
             <div className="flex flex-wrap items-center gap-2">
-              <h2 className="text-base font-black text-text-main sm:text-lg">
+              <h2 className="text-base font-bold text-text-main sm:text-lg">
                 <Link
                   to={`/education/professeur/${tutor.slug}`}
                   className="hover:text-primary"
@@ -167,7 +167,7 @@ export const CourseTutorCard: React.FC<CourseTutorCardProps> = ({
         </div>
 
         <div className="flex min-w-0 flex-col border-t border-border-subtle pt-4 sm:border-l sm:border-t-0 sm:pl-4 sm:pt-0">
-          <p className="text-xl font-black text-text-main">
+          <p className="text-xl font-bold text-text-main">
             {formatMoney(item.fromPrice)}
             <span className="ml-1 text-xs font-medium text-text-muted">
               / h

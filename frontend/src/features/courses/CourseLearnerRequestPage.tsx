@@ -231,7 +231,7 @@ export const CourseLearnerRequestPage: React.FC = () => {
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-pill bg-success-surface text-success">
             <CheckCircle2 className="h-7 w-7" aria-hidden="true" />
           </div>
-          <h1 className="mt-5 text-xl font-black text-text-main">
+          <h1 className="mt-5 text-xl font-bold text-text-main">
             Votre demande est enregistrée
           </h1>
           <p className="mx-auto mt-2 max-w-lg text-sm leading-relaxed text-text-secondary">
@@ -261,7 +261,7 @@ export const CourseLearnerRequestPage: React.FC = () => {
             <BookOpen className="h-icon-sm w-icon-sm" aria-hidden="true" />
             {t("verticals.education.brand")}
           </p>
-          <h1 className="mt-1 text-xl font-black text-text-main sm:text-2xl">
+          <h1 className="mt-1 text-xl font-bold text-text-main sm:text-2xl">
             Décrire mon besoin
           </h1>
           <p className="mt-1 text-xs text-text-secondary sm:text-sm">
@@ -291,7 +291,7 @@ export const CourseLearnerRequestPage: React.FC = () => {
               <div>
                 <h2
                   id="request-step-need"
-                  className="text-base font-black text-text-main"
+                  className="text-base font-bold text-text-main"
                 >
                   Quel accompagnement recherchez-vous ?
                 </h2>
@@ -300,7 +300,7 @@ export const CourseLearnerRequestPage: React.FC = () => {
                   pertinence.
                 </p>
               </div>
-              <label className="block text-xs font-bold text-text-main">
+              <label className="block text-xs font-semibold text-text-main">
                 Matière
                 <Select
                   className="mt-2 w-full"
@@ -316,7 +316,7 @@ export const CourseLearnerRequestPage: React.FC = () => {
                   ))}
                 </Select>
               </label>
-              <label className="block text-xs font-bold text-text-main">
+              <label className="block text-xs font-semibold text-text-main">
                 Niveau de l’élève
                 <Select
                   className="mt-2 w-full"
@@ -332,7 +332,7 @@ export const CourseLearnerRequestPage: React.FC = () => {
                   ))}
                 </Select>
               </label>
-              <label className="block text-xs font-bold text-text-main">
+              <label className="block text-xs font-semibold text-text-main">
                 Objectif principal
                 <textarea
                   value={form.objective}
@@ -359,7 +359,7 @@ export const CourseLearnerRequestPage: React.FC = () => {
               <div>
                 <h2
                   id="request-step-format"
-                  className="text-base font-black text-text-main"
+                  className="text-base font-bold text-text-main"
                 >
                   Où et quand souhaitez-vous apprendre ?
                 </h2>
@@ -414,7 +414,7 @@ export const CourseLearnerRequestPage: React.FC = () => {
               </fieldset>
               {form.deliveryModes.includes("in_person") && (
                 <div className="grid gap-3 sm:grid-cols-content-compact-aside">
-                  <label className="block text-xs font-bold text-text-main">
+                  <label className="block text-xs font-semibold text-text-main">
                     Ville
                     <div className="relative mt-2">
                       <MapPin
@@ -429,7 +429,7 @@ export const CourseLearnerRequestPage: React.FC = () => {
                       />
                     </div>
                   </label>
-                  <label className="block text-xs font-bold text-text-main">
+                  <label className="block text-xs font-semibold text-text-main">
                     Rayon
                     <Select
                       className="mt-2 w-full"
@@ -489,7 +489,7 @@ export const CourseLearnerRequestPage: React.FC = () => {
               <div>
                 <h2
                   id="request-step-budget"
-                  className="text-base font-black text-text-main"
+                  className="text-base font-bold text-text-main"
                 >
                   Budget et date de début
                 </h2>
@@ -499,7 +499,7 @@ export const CourseLearnerRequestPage: React.FC = () => {
                 </p>
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
-                <label className="block text-xs font-bold text-text-main">
+                <label className="block text-xs font-semibold text-text-main">
                   Budget minimum par heure
                   <div className="relative mt-2">
                     <input
@@ -517,7 +517,7 @@ export const CourseLearnerRequestPage: React.FC = () => {
                     </span>
                   </div>
                 </label>
-                <label className="block text-xs font-bold text-text-main">
+                <label className="block text-xs font-semibold text-text-main">
                   Budget maximum par heure
                   <div className="relative mt-2">
                     <input
@@ -536,7 +536,7 @@ export const CourseLearnerRequestPage: React.FC = () => {
                   </div>
                 </label>
               </div>
-              <label className="block text-xs font-bold text-text-main">
+              <label className="block text-xs font-semibold text-text-main">
                 Date de début souhaitée
                 <div className="relative mt-2">
                   <CalendarDays
@@ -553,7 +553,7 @@ export const CourseLearnerRequestPage: React.FC = () => {
                   />
                 </div>
               </label>
-              <label className="block text-xs font-bold text-text-main">
+              <label className="block text-xs font-semibold text-text-main">
                 Contexte utile (facultatif)
                 <textarea
                   value={form.context}
@@ -575,7 +575,7 @@ export const CourseLearnerRequestPage: React.FC = () => {
               <div>
                 <h2
                   id="request-step-safety"
-                  className="text-base font-black text-text-main"
+                  className="text-base font-bold text-text-main"
                 >
                   Élève, responsable et sécurité
                 </h2>
@@ -584,7 +584,7 @@ export const CourseLearnerRequestPage: React.FC = () => {
                   demande.
                 </p>
               </div>
-              <label className="block text-xs font-bold text-text-main">
+              <label className="block text-xs font-semibold text-text-main">
                 Tranche d’âge de l’élève
                 <Select
                   className="mt-2 w-full"
@@ -611,7 +611,7 @@ export const CourseLearnerRequestPage: React.FC = () => {
                       aria-hidden="true"
                     />
                     <div>
-                      <h3 className="text-xs font-black text-text-main">
+                      <h3 className="text-xs font-bold text-text-main">
                         Responsable légal requis
                       </h3>
                       <p className="mt-1 text-micro leading-relaxed text-text-secondary">
@@ -621,7 +621,7 @@ export const CourseLearnerRequestPage: React.FC = () => {
                     </div>
                   </div>
                   <div className="grid gap-3 sm:grid-cols-2">
-                    <label className="block text-xs font-bold text-text-main">
+                    <label className="block text-xs font-semibold text-text-main">
                       Nom du responsable
                       <input
                         value={form.guardianName}
@@ -631,7 +631,7 @@ export const CourseLearnerRequestPage: React.FC = () => {
                         className="mt-2 h-control-touch w-full rounded-control border border-border-base bg-bg-surface px-3 text-sm font-normal"
                       />
                     </label>
-                    <label className="block text-xs font-bold text-text-main">
+                    <label className="block text-xs font-semibold text-text-main">
                       Lien avec l’élève
                       <input
                         value={form.guardianRelationship}
@@ -659,7 +659,7 @@ export const CourseLearnerRequestPage: React.FC = () => {
                 </div>
               )}
               <div className="rounded-card border border-success-border bg-success-surface p-4">
-                <h3 className="flex items-center gap-2 text-xs font-black text-text-main">
+                <h3 className="flex items-center gap-2 text-xs font-bold text-text-main">
                   <ShieldCheck
                     className="h-icon-sm w-icon-sm text-success"
                     aria-hidden="true"

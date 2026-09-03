@@ -38,7 +38,7 @@ import { join, relative } from "path";
  * one in a feature reaches a single page. Keep this list in step with the
  * `@source` directives.
  */
-const ROOTS = ["src", "../packages/ui/src", "../packages/features/src"];
+const ROOTS = ["app", "src", "../packages/ui/src", "../packages/features/src"];
 const THEME_SOURCE = "../packages/design-tokens/dist/tokens.css";
 
 /** Utility+shade combinations that have an exact semantic token equivalent. */
@@ -89,7 +89,11 @@ const BANNED = [
   },
   {
     re: /\b(?:[a-z-]+:)*font-\[[^\]]+\]/,
-    hint: "font-{normal|medium|semibold|bold|extrabold|black} or a named font token",
+    hint: "font-{normal|medium|semibold|bold|extrabold} or a named font token",
+  },
+  {
+    re: /\b(?:[a-z-]+:)*font-black\b/,
+    hint: "font-bold (700) or exceptional font-extrabold (800); weight 900 is not part of the Shongre hierarchy",
   },
   {
     re: /\b(?:[a-z0-9-]+:)*(?:bg|text|border|ring|outline|fill|stroke)-\[#[0-9a-f]{3,8}\]/i,
@@ -420,7 +424,7 @@ function walk(dir, out = []) {
   for (const e of readdirSync(dir, { withFileTypes: true })) {
     const p = join(dir, e.name);
     if (e.isDirectory()) walk(p, out);
-    else if (/\.tsx?$/.test(p)) out.push(p);
+    else if (/\.(?:css|tsx?)$/.test(p)) out.push(p);
   }
   return out;
 }
@@ -428,6 +432,99 @@ function walk(dir, out = []) {
 const violations = [];
 const undeclared = [];
 const ALL_FILES = ROOTS.flatMap((root) => walk(root));
+
+/* ---------------------------------------------------------------------------
+   Guard 3: one Web font architecture.
+
+   `next/font` belongs at the Next.js root, the design-token package owns the
+   family stack, and application surfaces inherit it. Standalone HTML returned
+   by the edge 404 path or exported as a demo invoice cannot inherit the root
+   class, so those two documents may consume the canonical token string
+   directly. Native files retain their platform font-family mapping.
+   --------------------------------------------------------------------------- */
+const ALLOWED_WEB_FONT_DECLARATION_FILES = new Set([
+  "src/index.css",
+  "src/api/adapters/demo/demo-business-rules.service.ts",
+  "src/platform/seo/not-found-presentation.ts",
+]);
+const fontArchitectureViolations = [];
+const nextFontImportFiles = [];
+
+for (const file of ALL_FILES) {
+  const relativeFile = relative(".", file);
+  const source = readFileSync(file, "utf8");
+  const isTest = /\.(?:test|spec)\.[cm]?[jt]sx?$/.test(file);
+  const isNative = /\.native\.tsx?$/.test(file);
+
+  if (/from\s+["']next\/font\/(?:google|local)["']/.test(source)) {
+    nextFontImportFiles.push(relativeFile);
+  }
+  if (
+    !isTest &&
+    !isNative &&
+    !ALLOWED_WEB_FONT_DECLARATION_FILES.has(relativeFile) &&
+    /(?:font-family\s*:|\bfontFamily\s*:)/.test(source)
+  ) {
+    fontArchitectureViolations.push({
+      file: relativeFile,
+      reason:
+        "declares a component or page font family instead of inheriting the application token",
+    });
+  }
+  if (
+    !isTest &&
+    /(?:--font-inter\b|Inter Variable|@fontsource-variable\/inter|\bfont-display\b)/.test(
+      source,
+    )
+  ) {
+    fontArchitectureViolations.push({
+      file: relativeFile,
+      reason: "contains a removed Inter or display-family implementation",
+    });
+  }
+}
+
+if (
+  nextFontImportFiles.length !== 1 ||
+  nextFontImportFiles[0] !== "app/layout.tsx"
+) {
+  fontArchitectureViolations.push({
+    file: nextFontImportFiles.join(", ") || "(none)",
+    reason: "next/font must be configured exactly once in app/layout.tsx",
+  });
+}
+
+const rootLayoutSource = readFileSync("app/layout.tsx", "utf8");
+if (
+  !/import\s*\{\s*Nunito_Sans\s*\}\s*from\s*["']next\/font\/google["']/.test(
+    rootLayoutSource,
+  ) ||
+  (rootLayoutSource.match(/Nunito_Sans\s*\(/g) || []).length !== 1 ||
+  !/variable:\s*["']--font-nunito-sans["']/.test(rootLayoutSource)
+) {
+  fontArchitectureViolations.push({
+    file: "app/layout.tsx",
+    reason: "must own the single Nunito_Sans variable loader",
+  });
+}
+
+if (
+  !themeCss.includes("--font-sans: var(--font-family-sans);") ||
+  !themeCss.includes("--font-family-sans:")
+) {
+  fontArchitectureViolations.push({
+    file: THEME_SOURCE,
+    reason: "must expose --font-family-sans and map Tailwind font-sans to it",
+  });
+}
+
+const frontendPackage = readFileSync("package.json", "utf8");
+if (/@fontsource|font-(?:inter|roboto)|typeface-/.test(frontendPackage)) {
+  fontArchitectureViolations.push({
+    file: "package.json",
+    reason: "contains a legacy or duplicate font dependency",
+  });
+}
 for (const file of ALL_FILES) {
   const lines = readFileSync(file, "utf8").split("\n");
   lines.forEach((line, i) => {
@@ -444,7 +541,7 @@ for (const file of ALL_FILES) {
     for (const token of findUndeclaredTokens(line)) {
       undeclared.push({ file: relative(".", file), line: i + 1, token });
     }
-    if (!/\.test\.tsx?$/.test(file))
+    if (!/\.test\.tsx?$/.test(file) && !file.endsWith(".css"))
       checkNamespaces(line, relative(".", file), i + 1);
   });
 }
@@ -550,6 +647,22 @@ if (contrastFailures.length > 0) {
   console.error("");
 }
 
+if (fontArchitectureViolations.length > 0) {
+  console.error(
+    `\n✘ design tokens: ${fontArchitectureViolations.length} font architecture violation(s).\n`,
+  );
+  console.error(
+    "  Web typography must come from the single Nunito Sans loader in app/layout.tsx,",
+  );
+  console.error(
+    "  flow through --font-family-sans, and inherit through application surfaces.\n",
+  );
+  for (const violation of fontArchitectureViolations) {
+    console.error(`  ${violation.file}\n      ${violation.reason}`);
+  }
+  console.error("");
+}
+
 if (inlineTypography.length > 0) {
   console.error(
     `\n✘ design tokens: ${inlineTypography.length} inline typography style(s).\n`,
@@ -610,6 +723,7 @@ if (
   undeclared.length === 0 &&
   namespaceMisses.length === 0 &&
   inlineTypography.length === 0 &&
+  fontArchitectureViolations.length === 0 &&
   contrastFailures.length === 0
 ) {
   console.log(
@@ -621,6 +735,7 @@ if (
 if (
   violations.length === 0 &&
   (inlineTypography.length > 0 ||
+    fontArchitectureViolations.length > 0 ||
     namespaceMisses.length > 0 ||
     contrastFailures.length > 0)
 )

@@ -378,7 +378,7 @@ export function AdminSolutionsPage() {
     <div className="space-y-4">
       <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-2xl font-black tracking-tight text-text-main">
+          <h1 className="text-2xl font-bold tracking-tight text-text-main">
             {t("admin.adminSolutionsPage.catalogueDesSolutions")}
           </h1>
           <p className="mt-1 max-w-2xl text-xs leading-relaxed text-text-secondary">
@@ -435,7 +435,7 @@ export function AdminSolutionsPage() {
             <div>
               <h2
                 id="solutions-order-title"
-                className="text-sm font-black text-text-main"
+                className="text-sm font-bold text-text-main"
               >
                 {t("admin.solutions.order.title")}
               </h2>
@@ -455,7 +455,7 @@ export function AdminSolutionsPage() {
                   key={solution.id}
                   className="flex min-h-control-touch min-w-0 items-center gap-3 rounded-control border border-border-subtle bg-bg-subtle px-3 py-2"
                 >
-                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-pill bg-bg-surface text-xs font-black text-primary shadow-xs">
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-pill bg-bg-surface text-xs font-bold text-primary shadow-xs">
                     {index + 1}
                   </span>
                   <span className="min-w-0 flex-1">
@@ -544,7 +544,7 @@ export function AdminSolutionsPage() {
             <div className="border-b border-border-base p-4">
               <h2
                 id="solutions-list-title"
-                className="text-base font-black text-text-main"
+                className="text-base font-bold text-text-main"
               >
                 {t("admin.adminSolutionsPage.toutesLesSolutions")}
               </h2>
@@ -654,7 +654,7 @@ export function AdminSolutionsPage() {
                 className="space-y-4 rounded-control border border-border-base bg-bg-surface p-4 shadow-xs sm:p-5"
               >
                 <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border-subtle pb-4">
-                  <h2 className="text-lg font-black text-text-main">
+                  <h2 className="text-lg font-bold text-text-main">
                     {creating ? "Nouvelle solution" : selected?.name}
                   </h2>
                   {!creating && selected ? (
@@ -948,7 +948,7 @@ export function AdminSolutionsPage() {
                   )}
                 </div>
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  <label className="inline-flex min-h-control-touch items-center gap-2 text-xs font-bold">
+                  <label className="inline-flex min-h-control-touch items-center gap-2 text-xs font-semibold">
                     <input
                       type="checkbox"
                       checked={draft.featured}
@@ -959,7 +959,7 @@ export function AdminSolutionsPage() {
                     />{" "}
                     Mise en avant
                   </label>
-                  <label className="inline-flex min-h-control-touch items-center gap-2 text-xs font-bold">
+                  <label className="inline-flex min-h-control-touch items-center gap-2 text-xs font-semibold">
                     <input
                       type="checkbox"
                       checked={draft.requiresAuthentication}
@@ -973,7 +973,7 @@ export function AdminSolutionsPage() {
                     />{" "}
                     Connexion requise
                   </label>
-                  <label className="inline-flex min-h-control-touch items-center gap-2 text-xs font-bold">
+                  <label className="inline-flex min-h-control-touch items-center gap-2 text-xs font-semibold">
                     <input
                       type="checkbox"
                       checked={draft.requiresEntitlement}
@@ -1103,7 +1103,7 @@ export function AdminSolutionsPage() {
                 >
                   <h2
                     id="transition-title"
-                    className="text-sm font-black text-text-main"
+                    className="text-sm font-bold text-text-main"
                   >
                     {t("admin.adminSolutionsPage.faireEvoluerLeCycleDeVie")}
                   </h2>

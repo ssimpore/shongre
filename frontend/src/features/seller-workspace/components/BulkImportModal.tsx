@@ -224,7 +224,7 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({
                   </div>
 
                   <div className="flex items-center gap-3 shrink-0">
-                    <span className="font-black text-stone-900">
+                    <span className="font-bold text-stone-900">
                       {formatMoney(item.price)}
                     </span>
                     {item.isValid ? (

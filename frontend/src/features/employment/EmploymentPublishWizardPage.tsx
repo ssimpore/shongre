@@ -525,7 +525,7 @@ export const EmploymentPublishWizardPage: React.FC = () => {
     return (
       <div className="mx-auto max-w-2xl px-4 py-12 text-center">
         <CheckCircle2 className="mx-auto h-14 w-14 text-success" />
-        <h1 className="mt-4 text-2xl font-black">Offre transmise</h1>
+        <h1 className="mt-4 text-2xl font-bold">Offre transmise</h1>
         <p className="mt-2 text-sm text-text-secondary">
           Référence {completeId}. Suivez la vérification et les candidatures
           depuis l’espace recruteur.
@@ -578,13 +578,13 @@ export const EmploymentPublishWizardPage: React.FC = () => {
       <div className="mx-auto max-w-6xl px-4 py-5 sm:px-6 sm:py-8">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p className="text-xs font-black uppercase tracking-wide text-primary">
+            <p className="text-xs font-bold uppercase tracking-wide text-primary">
               Shongre Emploi
             </p>
             <h1
               ref={wizardHeadingRef}
               tabIndex={-1}
-              className="text-2xl font-black text-text-main outline-none"
+              className="text-2xl font-bold text-text-main outline-none"
             >
               Publier une offre
             </h1>
@@ -620,7 +620,7 @@ export const EmploymentPublishWizardPage: React.FC = () => {
         <section className="mt-4 rounded-card border border-border-base bg-bg-surface p-5 shadow-sm sm:p-7">
           {step === PUBLISH_STEP.employer && (
             <div className="space-y-5">
-              <h2 className="text-xl font-black">Qui recrute ?</h2>
+              <h2 className="text-xl font-bold">Qui recrute ?</h2>
               {(
                 [
                   [false, "Une entreprise ou organisation"],
@@ -712,7 +712,7 @@ export const EmploymentPublishWizardPage: React.FC = () => {
           )}
           {step === PUBLISH_STEP.profession && (
             <div className="grid gap-5 sm:grid-cols-2">
-              <h2 className="sm:col-span-2 text-xl font-black">
+              <h2 className="sm:col-span-2 text-xl font-bold">
                 Métier et secteur
               </h2>
               {selectField("Métier", "professionId", "profession")}
@@ -726,7 +726,7 @@ export const EmploymentPublishWizardPage: React.FC = () => {
           )}
           {step === PUBLISH_STEP.contract && (
             <div className="grid gap-5 sm:grid-cols-2">
-              <h2 className="sm:col-span-2 text-xl font-black">
+              <h2 className="sm:col-span-2 text-xl font-bold">
                 Contrat et organisation
               </h2>
               {selectField(
@@ -755,7 +755,7 @@ export const EmploymentPublishWizardPage: React.FC = () => {
           )}
           {step === PUBLISH_STEP.responsibilities && (
             <div className="space-y-5">
-              <h2 className="text-xl font-black">Intitulé et missions</h2>
+              <h2 className="text-xl font-bold">Intitulé et missions</h2>
               {field("Intitulé du poste", "title", {
                 placeholder: "Ex. Développeur·se front-end React",
               })}
@@ -773,7 +773,7 @@ export const EmploymentPublishWizardPage: React.FC = () => {
               </FormField>
               {flags.length > 0 && (
                 <div className="rounded-control border border-warning-border bg-warning-surface p-4">
-                  <p className="flex items-center gap-2 text-sm font-black">
+                  <p className="flex items-center gap-2 text-sm font-bold">
                     <ShieldAlert className="h-icon-sm w-icon-sm text-warning" />
                     Formulation à vérifier
                   </p>
@@ -797,7 +797,7 @@ export const EmploymentPublishWizardPage: React.FC = () => {
           )}
           {step === PUBLISH_STEP.skills && (
             <div className="grid gap-5 sm:grid-cols-2">
-              <h2 className="sm:col-span-2 text-xl font-black">
+              <h2 className="sm:col-span-2 text-xl font-bold">
                 Compétences et qualifications
               </h2>
               {field("Compétences requises", "requiredSkills", {
@@ -837,7 +837,7 @@ export const EmploymentPublishWizardPage: React.FC = () => {
           )}
           {step === PUBLISH_STEP.location && (
             <div className="grid gap-5 sm:grid-cols-2">
-              <h2 className="sm:col-span-2 text-xl font-black">
+              <h2 className="sm:col-span-2 text-xl font-bold">
                 Lieu principal
               </h2>
               {field("Ville", "city", { placeholder: "Lyon" })}
@@ -871,7 +871,7 @@ export const EmploymentPublishWizardPage: React.FC = () => {
           )}
           {step === PUBLISH_STEP.salary && (
             <div className="space-y-5">
-              <h2 className="text-xl font-black">Rémunération et conditions</h2>
+              <h2 className="text-xl font-bold">Rémunération et conditions</h2>
               <Checkbox
                 checked={data.publishSalary}
                 onChange={(event) =>
@@ -929,7 +929,7 @@ export const EmploymentPublishWizardPage: React.FC = () => {
           )}
           {step === PUBLISH_STEP.application && (
             <div className="space-y-5">
-              <h2 className="text-xl font-black">Réception des candidatures</h2>
+              <h2 className="text-xl font-bold">Réception des candidatures</h2>
               {(["shongre", "external", "contact_recruiter"] as const).map(
                 (method) => (
                   <label
@@ -964,7 +964,7 @@ export const EmploymentPublishWizardPage: React.FC = () => {
           )}
           {step === PUBLISH_STEP.screening && (
             <div className="space-y-5">
-              <h2 className="text-xl font-black">Question de présélection</h2>
+              <h2 className="text-xl font-bold">Question de présélection</h2>
               {field("Question facultative", "screeningQuestion", {
                 placeholder:
                   "Ex. Pouvez-vous travailler deux jours par semaine sur site ?",
@@ -984,13 +984,13 @@ export const EmploymentPublishWizardPage: React.FC = () => {
           )}
           {step === PUBLISH_STEP.preview && (
             <div className="space-y-5">
-              <h2 className="text-xl font-black">Aperçu avant publication</h2>
+              <h2 className="text-xl font-bold">Aperçu avant publication</h2>
               <div className="rounded-card border border-border-base p-5">
                 <div className="flex flex-wrap gap-2">
                   <Badge>{labelFor(data.contractTypeId)}</Badge>
                   <Badge>{labelFor(data.workingArrangementId)}</Badge>
                 </div>
-                <h3 className="mt-3 text-xl font-black">
+                <h3 className="mt-3 text-xl font-bold">
                   {data.title || "Intitulé du poste"}
                 </h3>
                 <p className="mt-1 text-sm text-text-secondary">
@@ -1005,7 +1005,7 @@ export const EmploymentPublishWizardPage: React.FC = () => {
                   ))}
                 </ul>
                 {data.publishSalary && data.salaryMinimum && (
-                  <p className="mt-4 font-black">
+                  <p className="mt-4 font-bold">
                     {formatEmploymentMoney(
                       Math.round(
                         Number(data.salaryMinimum.replace(",", ".")) * 100,
@@ -1030,7 +1030,7 @@ export const EmploymentPublishWizardPage: React.FC = () => {
           )}
           {step === PUBLISH_STEP.visibility && (
             <div className="space-y-5">
-              <h2 className="text-xl font-black">Choisir la visibilité</h2>
+              <h2 className="text-xl font-bold">Choisir la visibilité</h2>
               <div className="grid gap-4 md:grid-cols-3">
                 {catalog.offers
                   .filter((offer) =>
@@ -1056,11 +1056,11 @@ export const EmploymentPublishWizardPage: React.FC = () => {
                             update("checkoutId", "");
                           }}
                         />
-                        <span className="ml-2 font-black">{offer.name}</span>
+                        <span className="ml-2 font-bold">{offer.name}</span>
                         <p className="mt-2 text-xs leading-relaxed text-text-secondary">
                           {offer.description}
                         </p>
-                        <p className="mt-3 text-sm font-black text-primary">
+                        <p className="mt-3 text-sm font-bold text-primary">
                           {price?.amountMinor
                             ? formatEmploymentMoney(
                                 price.amountMinor,
@@ -1076,7 +1076,7 @@ export const EmploymentPublishWizardPage: React.FC = () => {
               </div>
               {!privateEmployer && (
                 <fieldset>
-                  <legend className="text-sm font-black">
+                  <legend className="text-sm font-bold">
                     Options facultatives, jamais présélectionnées
                   </legend>
                   <div className="mt-3 grid gap-3 sm:grid-cols-2">
@@ -1107,10 +1107,10 @@ export const EmploymentPublishWizardPage: React.FC = () => {
           )}
           {step === PUBLISH_STEP.checkout && (
             <div className="space-y-5">
-              <h2 className="text-xl font-black">Confirmation commerciale</h2>
+              <h2 className="text-xl font-bold">Confirmation commerciale</h2>
               <div className="flex items-center justify-between gap-4 rounded-card border border-border-base p-5">
                 <div>
-                  <p className="font-black">
+                  <p className="font-bold">
                     {
                       catalog.offers.find((item) => item.id === selectedOfferId)
                         ?.name
@@ -1120,7 +1120,7 @@ export const EmploymentPublishWizardPage: React.FC = () => {
                     {selectedAddOnIds.length} option(s) facultative(s)
                   </p>
                 </div>
-                <p className="text-xl font-black text-primary">
+                <p className="text-xl font-bold text-primary">
                   {selectedTotal.amountMinor
                     ? formatEmploymentMoney(
                         selectedTotal.amountMinor,
@@ -1150,11 +1150,11 @@ export const EmploymentPublishWizardPage: React.FC = () => {
           )}
           {step === PUBLISH_STEP.submit && (
             <div className="space-y-5">
-              <h2 className="text-xl font-black">
+              <h2 className="text-xl font-bold">
                 Envoyer l’offre en vérification
               </h2>
               <div className="rounded-card border border-success-border bg-success-surface p-5">
-                <p className="font-black">Votre brouillon est complet</p>
+                <p className="font-bold">Votre brouillon est complet</p>
                 <p className="mt-2 text-sm text-text-secondary">
                   L’offre sera soumise aux règles du marché. Les drapeaux de
                   formulation font l’objet d’une revue humaine.

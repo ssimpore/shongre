@@ -257,7 +257,7 @@ export const DirectPurchaseCheckoutModal: React.FC<
                 {getListingCategoryLabel(listing)} ›{" "}
                 {getListingSubCategoryLabel(listing)}
               </span>
-              <h4 className="text-sm font-black text-stone-900 truncate mb-1">
+              <h4 className="text-sm font-bold text-stone-900 truncate mb-1">
                 {listing.title}
               </h4>
               <div className="text-xs font-medium text-stone-500 flex items-center gap-2">
@@ -277,7 +277,7 @@ export const DirectPurchaseCheckoutModal: React.FC<
         {step === "delivery" && (
           <div className="space-y-5">
             <div>
-              <h3 className="text-sm font-black text-stone-900 uppercase tracking-wider mb-2 flex items-center gap-2">
+              <h3 className="text-sm font-bold text-stone-900 uppercase tracking-wider mb-2 flex items-center gap-2">
                 <Truck className="w-icon-md h-icon-md text-primary" />
                 <span>
                   {t(
@@ -328,7 +328,7 @@ export const DirectPurchaseCheckoutModal: React.FC<
                       </div>
                     </div>
 
-                    <div className="text-right font-black text-sm text-stone-900">
+                    <div className="text-right font-bold text-sm text-stone-900">
                       {quote.price === 0
                         ? "Gratuit"
                         : formatPrice(quote.price, {
@@ -344,7 +344,7 @@ export const DirectPurchaseCheckoutModal: React.FC<
             {requiresPhysicalDelivery &&
               selectedQuote?.deliveryType !== "hand_delivery" && (
                 <div className="pt-5 mt-2 border-t border-stone-100 space-y-4">
-                  <h4 className="text-sm font-black text-stone-900 uppercase tracking-wider flex items-center gap-2">
+                  <h4 className="text-sm font-bold text-stone-900 uppercase tracking-wider flex items-center gap-2">
                     <MapPin className="w-icon-md h-icon-md text-primary" />
                     <span>
                       {t(
@@ -469,7 +469,7 @@ export const DirectPurchaseCheckoutModal: React.FC<
                   </span>
                 </div>
               )}
-              <div className="pt-3 border-t border-stone-200 flex justify-between text-base font-black text-stone-900">
+              <div className="pt-3 border-t border-stone-200 flex justify-between text-base font-bold text-stone-900">
                 <span>
                   {t("transactions.directPurchaseCheckoutModal.totalARegler")}
                 </span>
@@ -515,7 +515,7 @@ export const DirectPurchaseCheckoutModal: React.FC<
         {step === "payment" && (
           <div className="space-y-5">
             <div>
-              <h3 className="text-sm font-black text-stone-900 uppercase tracking-wider mb-2 flex items-center gap-2">
+              <h3 className="text-sm font-bold text-stone-900 uppercase tracking-wider mb-2 flex items-center gap-2">
                 <CreditCard className="w-icon-md h-icon-md text-primary" />
                 <span>
                   {t(
@@ -592,7 +592,7 @@ export const DirectPurchaseCheckoutModal: React.FC<
             </div>
 
             <div>
-              <h3 className="text-2xl font-black text-stone-900">
+              <h3 className="text-2xl font-bold text-stone-900">
                 Commande enregistrée
               </h3>
               <p className="text-sm font-medium text-stone-500 mt-2">

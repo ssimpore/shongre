@@ -106,7 +106,7 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-xs font-bold text-stone-800 mb-1.5">
+          <label className="block text-xs font-semibold text-stone-800 mb-1.5">
             Raison sociale / Nom commercial{" "}
             <span className="text-primary">*</span>
           </label>
@@ -122,7 +122,7 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-bold text-stone-800 mb-1.5">
+            <label className="block text-xs font-semibold text-stone-800 mb-1.5">
               {currentMarket.businessIdentifierLabel}{" "}
               <span className="text-primary">*</span>
             </label>
@@ -139,7 +139,7 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
           <div>
             <label
               htmlFor="upgrade-pro-legal-form"
-              className="block text-xs font-bold text-stone-800 mb-1.5"
+              className="block text-xs font-semibold text-stone-800 mb-1.5"
             >
               Statut / Forme juridique <span className="text-primary">*</span>
             </label>
@@ -160,7 +160,7 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-bold text-stone-800 mb-1.5">
+            <label className="block text-xs font-semibold text-stone-800 mb-1.5">
               {t("auth.upgradeToProModal.numeroDeTvaIntracommunautaire")}
             </label>
             <input
@@ -173,7 +173,7 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-stone-800 mb-1.5">
+            <label className="block text-xs font-semibold text-stone-800 mb-1.5">
               {t("auth.upgradeToProModal.telephoneProfessionnel")}
             </label>
             <input
@@ -187,7 +187,7 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
         </div>
 
         <div>
-          <label className="block text-xs font-bold text-stone-800 mb-1.5">
+          <label className="block text-xs font-semibold text-stone-800 mb-1.5">
             {t("auth.upgradeToProModal.adresseDuSiegeSocialBoutique")}
             <span className="text-primary">*</span>
           </label>

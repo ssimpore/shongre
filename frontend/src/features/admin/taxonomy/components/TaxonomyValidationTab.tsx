@@ -47,7 +47,7 @@ export const TaxonomyValidationTab: React.FC<TaxonomyValidationTabProps> = ({
       {/* Header & Quality Gate Summary */}
       <div className="bg-bg-surface p-5 rounded-2xl border border-border-base shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h3 className="text-base font-black text-text-main flex items-center gap-2">
+          <h3 className="text-base font-bold text-text-main flex items-center gap-2">
             <ShieldCheck className="w-icon-lg h-icon-lg text-primary" />
             <span>
               {t("admin.taxonomyValidationTab.moteurDAuditValidationD")}
@@ -83,7 +83,7 @@ export const TaxonomyValidationTab: React.FC<TaxonomyValidationTabProps> = ({
             )}
           </div>
           <p
-            className={`text-xl font-black ${errors.length === 0 ? "text-success" : "text-danger"}`}
+            className={`text-xl font-bold ${errors.length === 0 ? "text-success" : "text-danger"}`}
           >
             {errors.length === 0 ? "Conforme" : `${errors.length} Bloquants`}
           </p>
@@ -94,7 +94,7 @@ export const TaxonomyValidationTab: React.FC<TaxonomyValidationTabProps> = ({
             <span>Erreurs bloquantes</span>
             <AlertOctagon className="w-icon-md h-icon-md text-danger" />
           </div>
-          <p className="text-xl font-black text-danger">{errors.length}</p>
+          <p className="text-xl font-bold text-danger">{errors.length}</p>
         </div>
 
         <div className="bg-bg-surface p-4 rounded-2xl border border-border-base shadow-xs space-y-1">
@@ -102,7 +102,7 @@ export const TaxonomyValidationTab: React.FC<TaxonomyValidationTabProps> = ({
             <span>Avertissements</span>
             <AlertTriangle className="w-icon-md h-icon-md text-warning" />
           </div>
-          <p className="text-xl font-black text-warning">{warnings.length}</p>
+          <p className="text-xl font-bold text-warning">{warnings.length}</p>
         </div>
 
         <div className="bg-bg-surface p-4 rounded-2xl border border-border-base shadow-xs space-y-1">
@@ -110,7 +110,7 @@ export const TaxonomyValidationTab: React.FC<TaxonomyValidationTabProps> = ({
             <span>Recommandations</span>
             <Info className="w-icon-md h-icon-md text-info" />
           </div>
-          <p className="text-xl font-black text-info">{infos.length}</p>
+          <p className="text-xl font-bold text-info">{infos.length}</p>
         </div>
       </div>
 

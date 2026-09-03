@@ -510,7 +510,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
             <h1
               ref={wizardHeadingRef}
               tabIndex={-1}
-              className="text-lg font-black text-text-main outline-none"
+              className="text-lg font-bold text-text-main outline-none"
             >
               Publier un bien
             </h1>
@@ -536,7 +536,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
                       number <= Math.max(step, ...completedSteps, FIRST_STEP) &&
                       setStep(number)
                     }
-                    className={`flex w-full items-center gap-3 rounded-control px-3 py-2 text-left text-xs font-bold ${active ? "bg-primary text-white" : "text-text-secondary hover:bg-bg-subtle"}`}
+                    className={`flex w-full items-center gap-3 rounded-control px-3 py-2 text-left text-xs font-semibold ${active ? "bg-primary text-white" : "text-text-secondary hover:bg-bg-subtle"}`}
                   >
                     <span
                       className={`grid h-7 w-7 shrink-0 place-items-center rounded-full ${active ? "bg-white/15" : complete ? "bg-success-surface text-success" : "bg-bg-subtle"}`}
@@ -576,7 +576,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
               max={TOTAL_STEPS}
               label={`Étape ${step} sur ${TOTAL_STEPS}`}
             />
-            <h2 className="mt-4 text-xl font-black text-text-main">
+            <h2 className="mt-4 text-xl font-bold text-text-main">
               {STEPS[step - FIRST_STEP][0]}
             </h2>
           </div>
@@ -584,7 +584,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
           {step === PUBLISH_STEP.project ? (
             <div className="space-y-5">
               <div className="grid gap-3 sm:grid-cols-2">
-                <label className="text-xs font-bold">
+                <label className="text-xs font-semibold">
                   Votre projet
                   <Select
                     className="mt-2 w-full"
@@ -602,7 +602,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
                     <option value="shared_accommodation">Colocation</option>
                   </Select>
                 </label>
-                <label className="text-xs font-bold">
+                <label className="text-xs font-semibold">
                   Type de bien
                   <Select
                     className="mt-2 w-full"
@@ -668,7 +668,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
                   }
                 />
               </FormField>
-              <label className="block text-xs font-bold">
+              <label className="block text-xs font-semibold">
                 Précision affichée sur la carte
                 <Select
                   className="mt-2 w-full"
@@ -779,7 +779,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
                     }
                   />
                 </FormField>
-                <label className="text-xs font-bold">
+                <label className="text-xs font-semibold">
                   État
                   <Select
                     className="mt-2 w-full"
@@ -871,7 +871,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
                 </FormField>
               </div>
               <div className="grid gap-3 sm:grid-cols-2">
-                <label className="text-xs font-bold">
+                <label className="text-xs font-semibold">
                   Période
                   <Select
                     className="mt-2 w-full"
@@ -885,7 +885,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
                     <option value="night">Par nuit</option>
                   </Select>
                 </label>
-                <label className="text-xs font-bold">
+                <label className="text-xs font-semibold">
                   Honoraires à la charge
                   <Select
                     className="mt-2 w-full"
@@ -909,7 +909,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
           {step === PUBLISH_STEP.legal ? (
             <div className="space-y-4">
               <div className="grid gap-3 sm:grid-cols-2">
-                <label className="text-xs font-bold">
+                <label className="text-xs font-semibold">
                   Classe DPE
                   <Select
                     className="mt-2 w-full"
@@ -923,7 +923,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
                     ))}
                   </Select>
                 </label>
-                <label className="text-xs font-bold">
+                <label className="text-xs font-semibold">
                   Classe GES
                   <Select
                     className="mt-2 w-full"
@@ -1004,12 +1004,12 @@ export const ImmoPublishWizardPage: React.FC = () => {
             <div className="space-y-5">
               <div className="rounded-card border border-dashed border-primary-border bg-primary-light p-5 text-center">
                 <Camera className="mx-auto h-7 w-7 text-primary" />
-                <p className="mt-2 text-sm font-black">Photos publiques</p>
+                <p className="mt-2 text-sm font-bold">Photos publiques</p>
                 <p className="mt-1 text-xs text-text-muted">
                   JPG, PNG ou WebP · maximum{" "}
                   {REAL_ESTATE_CONSTRAINTS.media.maxFileSizeMegabytes} Mo.
                 </p>
-                <label className="mt-3 inline-flex cursor-pointer rounded-control bg-primary px-4 py-2 text-xs font-bold text-white">
+                <label className="mt-3 inline-flex cursor-pointer rounded-control bg-primary px-4 py-2 text-xs font-semibold text-white">
                   <input
                     type="file"
                     accept="image/*"
@@ -1026,12 +1026,12 @@ export const ImmoPublishWizardPage: React.FC = () => {
               </div>
               <div className="rounded-card border border-border-base bg-bg-subtle p-5">
                 <ShieldCheck className="h-icon-xl w-icon-xl text-primary" />
-                <p className="mt-2 text-sm font-black">Documents privés</p>
+                <p className="mt-2 text-sm font-bold">Documents privés</p>
                 <p className="mt-1 text-xs text-text-muted">
                   Diagnostics, justificatif de propriété, règlement de
                   copropriété. Ils ne sont jamais exposés dans l’annonce.
                 </p>
-                <label className="mt-3 inline-flex cursor-pointer rounded-control border border-primary px-4 py-2 text-xs font-bold text-primary">
+                <label className="mt-3 inline-flex cursor-pointer rounded-control border border-primary px-4 py-2 text-xs font-semibold text-primary">
                   <input
                     type="file"
                     accept="application/pdf,image/*"
@@ -1050,7 +1050,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
 
           {step === PUBLISH_STEP.legal ? (
             <div className="space-y-4">
-              <label className="text-xs font-bold">
+              <label className="text-xs font-semibold">
                 Vous publiez comme
                 <Select
                   className="mt-2 w-full"
@@ -1073,7 +1073,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
                 />
               </FormField>
               <div className="rounded-control bg-info-surface p-4 text-xs text-text-secondary">
-                <p className="font-black text-text-main">
+                <p className="font-bold text-text-main">
                   Vérification progressive
                 </p>
                 <p className="mt-1">
@@ -1110,13 +1110,13 @@ export const ImmoPublishWizardPage: React.FC = () => {
                       )?.label
                     }
                   </p>
-                  <h3 className="mt-1 text-lg font-black">
+                  <h3 className="mt-1 text-lg font-bold">
                     {data.title || "Titre de l’annonce"}
                   </h3>
                   <p className="mt-1 text-xs text-text-muted">
                     {data.publicLabel} · localisation approximative
                   </p>
-                  <p className="mt-4 text-xl font-black text-primary">
+                  <p className="mt-4 text-xl font-bold text-primary">
                     {formatImmoMoney(
                       {
                         amountMinor: data.priceMinor,
@@ -1145,7 +1145,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
               {publishedId ? (
                 <div className="rounded-card bg-success-surface p-6 text-center">
                   <CheckCircle2 className="mx-auto h-10 w-10 text-success" />
-                  <h3 className="mt-3 text-lg font-black text-success">
+                  <h3 className="mt-3 text-lg font-bold text-success">
                     Annonce envoyée en validation
                   </h3>
                   <p className="mt-2 text-xs text-text-secondary">
@@ -1185,7 +1185,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
                             className={`rounded-card border p-4 text-left ${data.offerId === item.id ? "border-primary bg-primary-light" : "border-border-base"}`}
                           >
                             <div className="flex items-start justify-between gap-2">
-                              <p className="text-sm font-black">{item.name}</p>
+                              <p className="text-sm font-bold">{item.name}</p>
                               {item.isRecommended ? (
                                 <Badge variant="primary">Recommandée</Badge>
                               ) : null}
@@ -1193,7 +1193,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
                             <p className="mt-2 text-xs text-text-secondary">
                               {item.description}
                             </p>
-                            <p className="mt-3 text-base font-black text-primary">
+                            <p className="mt-3 text-base font-bold text-primary">
                               {price
                                 ? formatImmoMoney(
                                     price,
@@ -1208,7 +1208,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
                       })}
                   </div>
                   <div>
-                    <h3 className="text-sm font-black">Options facultatives</h3>
+                    <h3 className="text-sm font-bold">Options facultatives</h3>
                     <div className="mt-3 grid gap-2 sm:grid-cols-2">
                       {catalog.addOns.map((item) => (
                         <Checkbox
@@ -1250,7 +1250,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
           {step === PUBLISH_STEP.payment ? (
             <div className="space-y-5">
               <div className="rounded-card border border-border-base bg-bg-subtle p-5">
-                <h3 className="text-sm font-black text-text-main">
+                <h3 className="text-sm font-bold text-text-main">
                   Récapitulatif sécurisé
                 </h3>
                 <div className="mt-4 flex items-center justify-between text-xs">
@@ -1319,7 +1319,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
               {publishedId ? (
                 <div className="rounded-card bg-success-surface p-6 text-center">
                   <CheckCircle2 className="mx-auto h-10 w-10 text-success" />
-                  <h3 className="mt-3 text-lg font-black text-success">
+                  <h3 className="mt-3 text-lg font-bold text-success">
                     Annonce envoyée en validation
                   </h3>
                   <p className="mt-2 text-xs text-text-secondary">
@@ -1336,7 +1336,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
               ) : (
                 <div className="rounded-card border border-border-base p-5">
                   <ShieldCheck className="h-7 w-7 text-primary" />
-                  <h3 className="mt-3 text-base font-black">
+                  <h3 className="mt-3 text-base font-bold">
                     Dernière vérification avant modération
                   </h3>
                   <p className="mt-2 text-xs leading-relaxed text-text-secondary">

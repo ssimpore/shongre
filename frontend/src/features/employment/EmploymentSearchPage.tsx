@@ -157,7 +157,7 @@ const EmploymentFilters: React.FC<{
       </div>
       <div>
         <label
-          className="mb-2 block text-xs font-bold text-text-main"
+          className="mb-2 block text-xs font-semibold text-text-main"
           htmlFor="employment-salary"
         >
           Rémunération minimale annuelle
@@ -479,7 +479,7 @@ export const EmploymentSearchPage: React.FC = () => {
               />
               {t("employment.search.eyebrow")}
             </p>
-            <h1 className="text-2xl font-black sm:text-3xl lg:text-4xl">
+            <h1 className="text-2xl font-bold sm:text-3xl lg:text-4xl">
               {t("employment.search.title")}
             </h1>
             <p className="mt-2 hidden max-w-2xl text-sm text-white/75 sm:block sm:text-base">
@@ -537,7 +537,7 @@ export const EmploymentSearchPage: React.FC = () => {
           <section className="mb-7" aria-labelledby="employment-recent-title">
             <h2
               id="employment-recent-title"
-              className="text-lg font-black text-text-main"
+              className="text-lg font-bold text-text-main"
             >
               {recentlyViewedLabel}
             </h2>
@@ -550,7 +550,7 @@ export const EmploymentSearchPage: React.FC = () => {
         )}
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="text-sm font-black text-text-main">
+            <p className="text-sm font-bold text-text-main">
               {loading ? "Recherche…" : `${total} offres`}
             </p>
             <p className="mt-1 flex items-center gap-1.5 text-micro text-text-secondary">

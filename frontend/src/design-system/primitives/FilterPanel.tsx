@@ -42,7 +42,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
       type="button"
       onClick={onReset}
       className={cn(
-        "min-h-6 rounded-control text-xs font-bold text-primary hover:underline",
+        "min-h-6 rounded-control text-xs font-semibold text-primary hover:underline",
         CONTROL_MOTION_CLASS,
         CONTROL_FOCUS_CLASS,
       )}

@@ -149,7 +149,7 @@ export const EmploymentApplyPage: React.FC = () => {
               className="mx-auto h-12 w-12 text-success"
               aria-hidden="true"
             />
-            <h1 className="mt-4 text-2xl font-black text-text-main">
+            <h1 className="mt-4 text-2xl font-bold text-text-main">
               Candidature envoyée
             </h1>
             <p className="mx-auto mt-2 max-w-xl text-sm text-text-secondary">
@@ -185,10 +185,10 @@ export const EmploymentApplyPage: React.FC = () => {
             onSubmit={submit}
             className="min-w-0 max-w-full overflow-hidden rounded-card border border-border-base bg-bg-surface p-5 shadow-sm sm:p-7"
           >
-            <p className="text-xs font-black uppercase tracking-wide text-primary">
+            <p className="text-xs font-bold uppercase tracking-wide text-primary">
               Candidature directe
             </p>
-            <h1 className="mt-1 break-words text-2xl font-black text-text-main">
+            <h1 className="mt-1 break-words text-2xl font-bold text-text-main">
               {job.title}
             </h1>
             <p className="mt-1 text-sm text-text-secondary">
@@ -210,7 +210,7 @@ export const EmploymentApplyPage: React.FC = () => {
             ) : (
               <>
                 <fieldset className="mt-7">
-                  <legend className="text-sm font-black text-text-main">
+                  <legend className="text-sm font-bold text-text-main">
                     Choisir un CV
                   </legend>
                   <div className="mt-3 space-y-2">
@@ -250,7 +250,7 @@ export const EmploymentApplyPage: React.FC = () => {
                 </fieldset>
 
                 <label
-                  className="mt-6 block text-sm font-black text-text-main"
+                  className="mt-6 block text-sm font-semibold text-text-main"
                   htmlFor="employment-cover-message"
                 >
                   Message au recruteur{" "}
@@ -274,7 +274,7 @@ export const EmploymentApplyPage: React.FC = () => {
 
                 {job.screeningQuestions.length ? (
                   <fieldset className="mt-6 space-y-4">
-                    <legend className="text-sm font-black text-text-main">
+                    <legend className="text-sm font-bold text-text-main">
                       Questions de candidature
                     </legend>
                     <p className="text-xs text-text-secondary">
@@ -351,7 +351,7 @@ export const EmploymentApplyPage: React.FC = () => {
                 </div>
 
                 <div className="mt-6 rounded-control border border-border-base p-4 text-xs text-text-secondary">
-                  <p className="font-black text-text-main">Avant l’envoi</p>
+                  <p className="font-bold text-text-main">Avant l’envoi</p>
                   <p className="mt-1">
                     CV :{" "}
                     {workspace.cvs.find((cv) => cv.id === cvId)?.label ||
@@ -378,7 +378,7 @@ export const EmploymentApplyPage: React.FC = () => {
 
           <aside className="min-w-0 space-y-4 lg:sticky lg:top-24">
             <div className="min-w-0 rounded-card border border-border-base bg-bg-surface p-4">
-              <h2 className="flex min-w-0 items-center gap-2 break-words text-sm font-black text-text-main">
+              <h2 className="flex min-w-0 items-center gap-2 break-words text-sm font-bold text-text-main">
                 <ShieldCheck className="h-icon-sm w-icon-sm shrink-0 text-success" />
                 Candidature sécurisée
               </h2>

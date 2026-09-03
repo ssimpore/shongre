@@ -119,7 +119,7 @@ export function FacturationProductPage() {
         <Container>
           <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-12">
             <div className="max-w-xl">
-              <h1 className="text-3xl font-black leading-none tracking-tight text-text-main sm:text-5xl">
+              <h1 className="text-3xl font-bold leading-none tracking-tight text-text-main sm:text-5xl">
                 {t("invoicing.product.title")}
               </h1>
               <p className="mt-5 max-w-lg text-base leading-relaxed text-text-secondary sm:text-lg">
@@ -189,7 +189,7 @@ export function FacturationProductPage() {
         <Container>
           <h2
             id="facturation-workflow"
-            className="text-2xl font-black tracking-tight text-text-main sm:text-3xl"
+            className="text-2xl font-bold tracking-tight text-text-main sm:text-3xl"
           >
             {t("invoicing.product.workflowTitle")}
           </h2>
@@ -206,7 +206,7 @@ export function FacturationProductPage() {
                 key={number}
                 className="relative flex gap-4 pb-8 md:block md:pb-0"
               >
-                <span className="z-raised relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-micro font-black text-white shadow-sm">
+                <span className="z-raised relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-micro font-bold text-white shadow-sm">
                   {number}
                 </span>
                 <div className="md:mt-6">
@@ -214,7 +214,7 @@ export function FacturationProductPage() {
                     className="hidden h-6 w-6 text-primary md:block"
                     aria-hidden="true"
                   />
-                  <h3 className="text-sm font-black text-text-main md:mt-3">
+                  <h3 className="text-sm font-bold text-text-main md:mt-3">
                     {title}
                   </h3>
                   <p className="mt-1 max-w-xs text-xs leading-relaxed text-text-muted">
@@ -242,7 +242,7 @@ export function FacturationProductPage() {
             <div>
               <h2
                 id="facturation-finalization-title"
-                className="text-3xl font-black tracking-tight text-text-main sm:text-4xl"
+                className="text-3xl font-bold tracking-tight text-text-main sm:text-4xl"
               >
                 {t("invoicing.product.finalizationTitle")}
               </h2>
@@ -280,7 +280,7 @@ export function FacturationProductPage() {
             <div>
               <h2
                 id="facturation-markets-title"
-                className="text-3xl font-black tracking-tight text-text-main sm:text-4xl"
+                className="text-3xl font-bold tracking-tight text-text-main sm:text-4xl"
               >
                 {t("invoicing.product.marketsTitle")}
               </h2>
@@ -322,7 +322,7 @@ export function FacturationProductPage() {
           <div className="mx-auto max-w-3xl text-center">
             <h2
               id="facturation-guardrails"
-              className="text-2xl font-black tracking-tight sm:text-3xl"
+              className="text-2xl font-bold tracking-tight sm:text-3xl"
             >
               {t("invoicing.product.guardrailsTitle")}
             </h2>
@@ -355,7 +355,7 @@ export function FacturationProductPage() {
 
       <section className="bg-bg-surface py-12 text-center sm:py-16">
         <Container>
-          <h2 className="mx-auto max-w-2xl text-2xl font-black tracking-tight text-text-main sm:text-3xl">
+          <h2 className="mx-auto max-w-2xl text-2xl font-bold tracking-tight text-text-main sm:text-3xl">
             {t("invoicing.product.finalCtaTitle")}
           </h2>
           <p className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed text-text-secondary">

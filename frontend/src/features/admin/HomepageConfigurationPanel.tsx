@@ -226,7 +226,7 @@ export const HomepageConfigurationPanel: React.FC<
           </div>
           <h1
             id="homepage-config-title"
-            className="text-2xl font-black tracking-tight text-text-main"
+            className="text-2xl font-bold tracking-tight text-text-main"
           >
             {t("admin.homepageConfigurationPanel.configurationCentralisee")}
           </h1>
@@ -280,10 +280,10 @@ export const HomepageConfigurationPanel: React.FC<
               data-testid={`homepage-admin-section-${section.key}`}
             >
               <div className="mb-4 flex flex-wrap items-center gap-3">
-                <span className="inline-flex h-7 w-7 items-center justify-center rounded-pill bg-primary-light text-xs font-black text-primary">
+                <span className="inline-flex h-7 w-7 items-center justify-center rounded-pill bg-primary-light text-xs font-bold text-primary">
                   {index + 1}
                 </span>
-                <h2 className="min-w-0 flex-1 text-sm font-black text-text-main">
+                <h2 className="min-w-0 flex-1 text-sm font-bold text-text-main">
                   {SECTION_LABELS[section.type]}
                 </h2>
                 <Button
@@ -425,7 +425,7 @@ export const HomepageConfigurationPanel: React.FC<
                 </div>
                 {section.type === "deals" ? (
                   <div className="space-y-3 rounded-control border border-primary-border bg-primary-light p-4 sm:col-span-2">
-                    <h3 className="text-xs font-black uppercase tracking-wide text-primary">
+                    <h3 className="text-xs font-bold uppercase tracking-wide text-primary">
                       {t(
                         "admin.homepageConfigurationPanel.reglesDEligibiliteDesOffres",
                       )}
@@ -738,7 +738,7 @@ export const HomepageConfigurationPanel: React.FC<
 
         <aside className="min-w-0 space-y-4 2xl:sticky 2xl:top-4 2xl:self-start">
           <div className="rounded-control border border-stone-200 bg-bg-surface p-5 shadow-xs">
-            <h2 className="text-sm font-black text-text-main">
+            <h2 className="text-sm font-bold text-text-main">
               {t("admin.homepageConfigurationPanel.apercuDeLaPageComplete")}
             </h2>
             <p className="mt-1 text-xs leading-relaxed text-stone-500">
@@ -783,7 +783,7 @@ export const HomepageConfigurationPanel: React.FC<
                       className="rounded-control border border-stone-200 bg-stone-50 p-3"
                     >
                       <div className="flex items-start gap-2">
-                        <span className="text-xs font-black text-text-disabled">
+                        <span className="text-xs font-bold text-text-disabled">
                           {position + 1}
                         </span>
                         <div className="min-w-0 flex-1">

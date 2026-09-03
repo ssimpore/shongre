@@ -133,7 +133,7 @@ export const ProviderRoutingManager: React.FC = () => {
                     )}
                   </div>
 
-                  <span className="text-stone-300 font-black">→</span>
+                  <span className="text-stone-300 font-bold">→</span>
 
                   {/* Fallback Provider Box */}
                   <div

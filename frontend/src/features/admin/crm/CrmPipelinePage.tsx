@@ -316,7 +316,7 @@ export const CrmPipelinePage: React.FC = () => {
               <ArrowLeft className="h-icon-sm w-icon-sm" aria-hidden="true" />{" "}
               Vue d’ensemble
             </Link>
-            <h1 className="text-2xl font-black tracking-tight sm:text-3xl">
+            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
               {t("admin.crmOverviewPage.pipelineCommercial")}
             </h1>
             <p className="mt-1 text-sm text-text-disabled">
@@ -423,7 +423,7 @@ export const CrmPipelinePage: React.FC = () => {
                     />
                     <h2
                       id={`stage-${stage.id}`}
-                      className="truncate text-xs font-black text-text-main"
+                      className="truncate text-xs font-bold text-text-main"
                     >
                       {stage.name}
                     </h2>
@@ -431,7 +431,7 @@ export const CrmPipelinePage: React.FC = () => {
                       {stageItems.length}
                     </span>
                   </div>
-                  <strong className="text-micro font-black tabular-nums text-stone-700">
+                  <strong className="text-micro font-bold tabular-nums text-stone-700">
                     {money(stageAmount, activeMarket.currency, currentLocale)}
                   </strong>
                 </div>
@@ -455,7 +455,7 @@ export const CrmPipelinePage: React.FC = () => {
                     >
                       <Link
                         to={crmPaths.opportunity(opportunity.id)}
-                        className="block text-xs font-black leading-snug text-stone-950 hover:text-primary"
+                        className="block text-xs font-bold leading-snug text-stone-950 hover:text-primary"
                       >
                         {opportunity.name}
                       </Link>
@@ -470,7 +470,7 @@ export const CrmPipelinePage: React.FC = () => {
                       </div>
                       <div className="mt-3 flex items-end justify-between gap-2 border-t border-stone-100 pt-2.5">
                         <div>
-                          <strong className="block text-sm font-black tabular-nums text-stone-950">
+                          <strong className="block text-sm font-bold tabular-nums text-stone-950">
                             {money(
                               opportunity.amount.amountMinor,
                               opportunity.amount.currency,
@@ -655,7 +655,7 @@ export const CrmPipelinePage: React.FC = () => {
                 />
               )}
               <div>
-                <strong className="font-black text-text-main">
+                <strong className="font-bold text-text-main">
                   {closing.stage.isWon
                     ? "Confirmer le contrat"
                     : "Capitaliser sur la perte"}
@@ -670,7 +670,7 @@ export const CrmPipelinePage: React.FC = () => {
             {closing.stage.isWon ? (
               <>
                 <FormField label="Valeur contractuelle">
-                  <div className="flex h-10 items-center gap-2 rounded-lg border border-stone-200 bg-stone-50 px-3 font-black text-text-main">
+                  <div className="flex h-10 items-center gap-2 rounded-lg border border-stone-200 bg-stone-50 px-3 font-bold text-text-main">
                     <CircleDollarSign
                       className="h-icon-md w-icon-md text-success"
                       aria-hidden="true"

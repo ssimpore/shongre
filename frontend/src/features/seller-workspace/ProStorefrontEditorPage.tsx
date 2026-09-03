@@ -69,7 +69,7 @@ export const ProStorefrontEditorPage: React.FC = () => {
       className="bg-white rounded-2xl border border-border-base p-6 sm:p-8 space-y-6 shadow-xs"
     >
       <div>
-        <h1 className="text-xl sm:text-2xl font-black text-stone-900">
+        <h1 className="text-xl sm:text-2xl font-bold text-stone-900">
           Personnaliser ma vitrine professionnelle
         </h1>
         <p className="text-xs sm:text-sm text-stone-500 mt-0.5">
@@ -81,7 +81,7 @@ export const ProStorefrontEditorPage: React.FC = () => {
 
       {/* Banner & Logo simulation */}
       <div className="space-y-3">
-        <label className="text-xs font-bold text-stone-700 uppercase tracking-wider block">
+        <label className="text-xs font-semibold text-stone-700 uppercase tracking-wider block">
           {t(
             "sellerworkspace.proStorefrontEditorPage.banniereLogoDeLaBoutique",
           )}

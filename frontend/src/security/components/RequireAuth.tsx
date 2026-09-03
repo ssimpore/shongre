@@ -35,7 +35,7 @@ export const RequireAuth: React.FC<RequireAuthProps> = ({ children }) => {
         <div className="w-16 h-16 rounded-2xl bg-warning-surface border border-warning-border text-warning flex items-center justify-center mx-auto mb-4">
           <Lock className="w-8 h-8" />
         </div>
-        <h1 className="text-2xl font-black text-stone-900 mb-2">
+        <h1 className="text-2xl font-bold text-stone-900 mb-2">
           Authentification requise
         </h1>
         <p className="text-sm text-stone-600 max-w-md mx-auto mb-6 leading-relaxed">

@@ -7,14 +7,14 @@ export default async function NotFound() {
   const presentation = resolveNotFoundPresentation(undefined, pathname);
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-bg-page px-4 py-16">
+    <main className="flex min-h-screen items-center justify-center bg-bg-base px-4 py-16">
       <title>{presentation.title} | Shongre</title>
       <meta name="robots" content="noindex, nofollow" />
       <section className="w-full max-w-xl rounded-card border border-border-base bg-bg-surface p-8 text-center shadow-sm sm:p-12">
-        <p className="text-sm font-black uppercase tracking-wide text-primary">
+        <p className="text-sm font-bold uppercase tracking-wide text-primary">
           Erreur 404
         </p>
-        <h1 className="mt-3 text-3xl font-black text-text-main">
+        <h1 className="mt-3 text-3xl font-bold text-text-main">
           {presentation.title}
         </h1>
         <p className="mx-auto mt-4 max-w-md text-base leading-relaxed text-text-secondary">

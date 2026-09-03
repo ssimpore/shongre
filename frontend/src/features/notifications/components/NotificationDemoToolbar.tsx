@@ -115,7 +115,7 @@ export const NotificationDemoToolbar: React.FC = () => {
       <button
         type="button"
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between text-xs font-bold hover:text-primary-on-dark transition-colors cursor-pointer"
+        className="w-full flex items-center justify-between text-xs font-semibold hover:text-primary-on-dark transition-colors cursor-pointer"
       >
         <div className="flex items-center gap-2">
           <Sparkles className="w-icon-md h-icon-md text-amber-400" />

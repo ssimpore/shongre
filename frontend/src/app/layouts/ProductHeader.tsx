@@ -110,11 +110,11 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({
                 : "Accéder à la plateforme Shongre"
             }
           >
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-control bg-primary text-lg font-black text-white transition-colors group-hover:bg-primary-hover">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-control bg-primary text-lg font-bold text-white transition-colors group-hover:bg-primary-hover">
               S
             </span>
             <span className="hidden leading-none sm:block">
-              <span className="block text-base font-black tracking-tight text-text-main transition-colors group-hover:text-primary">
+              <span className="block text-base font-bold tracking-tight text-text-main transition-colors group-hover:text-primary">
                 SHONGRE<span className="text-primary">.</span>
               </span>
               <span className="mt-1 block text-micro font-bold tracking-wider text-text-muted">
@@ -125,7 +125,7 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({
           <span className="h-8 w-px bg-border-base" aria-hidden="true" />
           <a
             href={productDestination}
-            className="truncate rounded-control text-sm font-black text-text-main transition-colors hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:text-base"
+            className="truncate rounded-control text-sm font-bold text-text-main transition-colors hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:text-base"
             aria-label={`${productName}, ${
               isProductOnly ? "ouvrir l’application" : "accueil du produit"
             }`}

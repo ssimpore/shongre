@@ -260,7 +260,7 @@ export const EmploymentJobDetailPage: React.FC = () => {
                       <Badge>Placement sponsorisé</Badge>
                     ) : null}
                   </div>
-                  <h1 className="text-2xl font-black text-text-main sm:text-3xl">
+                  <h1 className="text-2xl font-bold text-text-main sm:text-3xl">
                     {job.title}
                   </h1>
                   <p className="mt-3 flex flex-wrap items-center gap-2 text-sm font-bold text-text-secondary">
@@ -346,7 +346,7 @@ export const EmploymentJobDetailPage: React.FC = () => {
                 })}
               </dl>
 
-              <p className="mt-5 text-lg font-black text-primary">
+              <p className="mt-5 text-lg font-bold text-primary">
                 {formatSalary(job.salary, catalog, currentLocale, convertMoney)}
               </p>
               <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-xs text-text-secondary">
@@ -367,7 +367,7 @@ export const EmploymentJobDetailPage: React.FC = () => {
             </section>
 
             <section className="rounded-card border border-border-base bg-bg-surface p-5 sm:p-7">
-              <h2 className="text-lg font-black text-text-main">Le poste</h2>
+              <h2 className="text-lg font-bold text-text-main">Le poste</h2>
               <ul className="mt-4 space-y-3">
                 {job.responsibilities.map((item) => (
                   <li
@@ -386,7 +386,7 @@ export const EmploymentJobDetailPage: React.FC = () => {
 
             <section className="grid gap-5 md:grid-cols-2">
               <div className="rounded-card border border-border-base bg-bg-surface p-5">
-                <h2 className="flex items-center gap-2 text-base font-black">
+                <h2 className="flex items-center gap-2 text-base font-bold">
                   <Sparkles className="h-icon-sm w-icon-sm text-primary" />
                   Compétences
                 </h2>
@@ -402,7 +402,7 @@ export const EmploymentJobDetailPage: React.FC = () => {
                 </div>
               </div>
               <div className="rounded-card border border-border-base bg-bg-surface p-5">
-                <h2 className="flex items-center gap-2 text-base font-black">
+                <h2 className="flex items-center gap-2 text-base font-bold">
                   <GraduationCap className="h-icon-sm w-icon-sm text-primary" />
                   Expérience & formation
                 </h2>
@@ -421,7 +421,7 @@ export const EmploymentJobDetailPage: React.FC = () => {
 
             {job.benefits.length || job.accessibilityInformation ? (
               <section className="rounded-card border border-border-base bg-bg-surface p-5 sm:p-7">
-                <h2 className="text-lg font-black">Conditions & avantages</h2>
+                <h2 className="text-lg font-bold">Conditions & avantages</h2>
                 {job.benefits.length ? (
                   <ul className="mt-4 grid gap-2 sm:grid-cols-2">
                     {job.benefits.map((benefit) => (
@@ -440,7 +440,7 @@ export const EmploymentJobDetailPage: React.FC = () => {
             ) : null}
 
             <section className="rounded-card border border-border-base bg-bg-surface p-5 sm:p-7">
-              <h2 className="text-lg font-black">
+              <h2 className="text-lg font-bold">
                 À propos de{" "}
                 <Link
                   to={employerPublicUrl}
@@ -452,13 +452,13 @@ export const EmploymentJobDetailPage: React.FC = () => {
               <p className="mt-3 text-sm leading-relaxed text-text-secondary">
                 {job.employerDescription || job.employer.description}
               </p>
-              <h3 className="mt-5 text-sm font-black">
+              <h3 className="mt-5 text-sm font-bold">
                 Processus de recrutement
               </h3>
               <ol className="mt-3 space-y-2">
                 {job.recruitmentProcess.map((step, index) => (
                   <li key={step} className="text-sm text-text-secondary">
-                    <span className="mr-2 font-black text-primary">
+                    <span className="mr-2 font-bold text-primary">
                       {index + 1}.
                     </span>
                     {step}
@@ -470,7 +470,7 @@ export const EmploymentJobDetailPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setReportOpen(true)}
-              className="inline-flex min-h-control-md items-center gap-2 text-xs font-bold text-text-secondary hover:text-primary"
+              className="inline-flex min-h-control-md items-center gap-2 text-xs font-semibold text-text-secondary hover:text-primary"
             >
               <Flag className="h-icon-sm w-icon-sm" /> Signaler cette offre
             </button>
@@ -490,7 +490,7 @@ export const EmploymentJobDetailPage: React.FC = () => {
               </p>
             </div>
             <div className="rounded-card border border-warning-border bg-warning-surface p-4">
-              <h2 className="flex items-center gap-2 text-sm font-black text-text-main">
+              <h2 className="flex items-center gap-2 text-sm font-bold text-text-main">
                 <ShieldAlert className="h-icon-sm w-icon-sm text-warning" />
                 Conseils de sécurité
               </h2>
@@ -508,7 +508,7 @@ export const EmploymentJobDetailPage: React.FC = () => {
 
         {similar.length ? (
           <section className="mt-10">
-            <h2 className="text-xl font-black text-text-main">
+            <h2 className="text-xl font-bold text-text-main">
               Offres similaires
             </h2>
             <div className="mt-4 grid gap-4 lg:grid-cols-3">

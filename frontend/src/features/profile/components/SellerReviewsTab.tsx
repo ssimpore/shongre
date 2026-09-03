@@ -88,7 +88,7 @@ export const SellerReviewsTab: React.FC<SellerReviewsTabProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
           {/* Main Average Score */}
           <div className="md:col-span-4 text-center md:text-left md:border-r md:border-border-subtle md:pr-6">
-            <div className="text-4xl sm:text-5xl font-black text-stone-900 leading-none mb-2">
+            <div className="text-4xl sm:text-5xl font-bold text-stone-900 leading-none mb-2">
               {stats.average.toFixed(1)}
               <span className="text-xl sm:text-2xl font-bold text-stone-500">
                 /5
@@ -129,7 +129,7 @@ export const SellerReviewsTab: React.FC<SellerReviewsTabProps> = ({
                 }
                 className={`w-full flex items-center gap-3 text-xs py-1 px-2 rounded-lg transition-colors cursor-pointer text-left ${
                   selectedRatingFilter === item.star
-                    ? "bg-warning-surface font-bold"
+                    ? "bg-warning-surface font-semibold"
                     : "hover:bg-bg-base"
                 }`}
               >
@@ -165,7 +165,7 @@ export const SellerReviewsTab: React.FC<SellerReviewsTabProps> = ({
           <button
             type="button"
             onClick={() => setSelectedRatingFilter(null)}
-            className="font-bold underline text-warning hover:text-warning"
+            className="font-semibold underline text-warning hover:text-warning"
           >
             {t("profile.sellerReviewsTab.afficherTousLesAvis")}
           </button>

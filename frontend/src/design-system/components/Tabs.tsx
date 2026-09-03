@@ -102,7 +102,7 @@ export const Tabs: React.FC<TabsProps> = ({
                 : cn(
                     "relative px-2 pb-3 text-xs sm:px-3 sm:text-sm",
                     isActive
-                      ? "font-bold text-primary"
+                      ? "font-semibold text-primary"
                       : "text-stone-600 hover:text-stone-950",
                   ),
             )}

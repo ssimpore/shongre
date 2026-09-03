@@ -33,12 +33,7 @@ export const HomeHeroSection: React.FC<{ section: HomepageSectionView }> = ({
                   />
                   <span>{t("home.homePage.trustedMarketplace")}</span>
                 </div>
-                <Heading
-                  as="h1"
-                  size="display-md"
-                  family="display"
-                  className="text-hero"
-                >
+                <Heading as="h1" size="display-md" className="text-hero">
                   {section.title}
                 </Heading>
                 {section.subtitle ? (

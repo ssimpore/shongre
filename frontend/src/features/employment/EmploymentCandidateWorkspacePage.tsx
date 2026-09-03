@@ -339,10 +339,10 @@ export const EmploymentCandidateWorkspacePage: React.FC = () => {
       <header className="rounded-card border border-border-base bg-bg-surface p-5 shadow-sm sm:p-6">
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
-            <p className="text-xs font-black uppercase tracking-wide text-primary">
+            <p className="text-xs font-bold uppercase tracking-wide text-primary">
               Shongre Emploi
             </p>
-            <h1 className="mt-1 text-2xl font-black text-text-main">
+            <h1 className="mt-1 text-2xl font-bold text-text-main">
               Mon espace candidat
             </h1>
             <p className="mt-1 text-sm text-text-secondary">
@@ -374,7 +374,7 @@ export const EmploymentCandidateWorkspacePage: React.FC = () => {
             key={id}
             type="button"
             onClick={() => setTab(id)}
-            className={`flex min-h-control-md min-w-max items-center gap-2 rounded-control px-3 text-xs font-bold ${tab === id ? "bg-primary text-white" : "text-text-secondary hover:bg-bg-subtle"}`}
+            className={`flex min-h-control-md min-w-max items-center gap-2 rounded-control px-3 text-xs font-semibold ${tab === id ? "bg-primary text-white" : "text-text-secondary hover:bg-bg-subtle"}`}
           >
             {icon}
             {label}
@@ -391,7 +391,7 @@ export const EmploymentCandidateWorkspacePage: React.FC = () => {
 
       {tab === "applications" && (
         <section className="space-y-3">
-          <h2 className="text-lg font-black">Mes candidatures</h2>
+          <h2 className="text-lg font-bold">Mes candidatures</h2>
           {workspace.applications.length === 0 ? (
             <StatePanel
               variant="notFound"
@@ -421,7 +421,7 @@ export const EmploymentCandidateWorkspacePage: React.FC = () => {
                           )}
                         </span>
                       </div>
-                      <h3 className="mt-2 text-base font-black text-text-main">
+                      <h3 className="mt-2 text-base font-bold text-text-main">
                         {job?.title || "Offre d’emploi"}
                       </h3>
                       <p className="mt-1 text-xs text-text-secondary">
@@ -463,7 +463,7 @@ export const EmploymentCandidateWorkspacePage: React.FC = () => {
         <section className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h2 className="text-lg font-black">Profil professionnel</h2>
+              <h2 className="text-lg font-bold">Profil professionnel</h2>
               <p className="text-xs text-text-muted">
                 Distinct de votre profil public de petites annonces.
               </p>
@@ -500,7 +500,7 @@ export const EmploymentCandidateWorkspacePage: React.FC = () => {
               />
             </FormField>
             <div>
-              <h3 className="text-sm font-black">Compétences</h3>
+              <h3 className="text-sm font-bold">Compétences</h3>
               <p className="mt-1 text-xs text-text-muted">
                 Choisissez uniquement des compétences professionnelles utiles
                 aux postes recherchés.
@@ -618,7 +618,7 @@ export const EmploymentCandidateWorkspacePage: React.FC = () => {
             </div>
             <div className="grid gap-5 lg:grid-cols-2">
               <div>
-                <h3 className="text-sm font-black">Métiers recherchés</h3>
+                <h3 className="text-sm font-bold">Métiers recherchés</h3>
                 <div className="mt-3 grid gap-2 sm:grid-cols-2">
                   {catalog?.dictionaries
                     .filter(
@@ -643,7 +643,7 @@ export const EmploymentCandidateWorkspacePage: React.FC = () => {
                 </div>
               </div>
               <div>
-                <h3 className="text-sm font-black">Contrats recherchés</h3>
+                <h3 className="text-sm font-bold">Contrats recherchés</h3>
                 <div className="mt-3 grid gap-2 sm:grid-cols-2">
                   {catalog?.dictionaries
                     .filter(
@@ -757,7 +757,7 @@ export const EmploymentCandidateWorkspacePage: React.FC = () => {
             </FormField>
           </div>
           <div className="mt-6 border-t border-border-subtle pt-5">
-            <h3 className="text-sm font-black">Mes CV</h3>
+            <h3 className="text-sm font-bold">Mes CV</h3>
             <div className="mt-3 grid gap-3 sm:grid-cols-2">
               {workspace.cvs.map((cv) => (
                 <div
@@ -781,7 +781,7 @@ export const EmploymentCandidateWorkspacePage: React.FC = () => {
 
       {tab === "saved" && (
         <section>
-          <h2 className="text-lg font-black">Offres sauvegardées</h2>
+          <h2 className="text-lg font-bold">Offres sauvegardées</h2>
           <div className="mt-3 grid gap-4 xl:grid-cols-2">
             {workspace.savedJobs.map((job) => (
               <JobCard key={job.id} job={job} compact />
@@ -792,7 +792,7 @@ export const EmploymentCandidateWorkspacePage: React.FC = () => {
 
       {tab === "interviews" && (
         <section className="space-y-3">
-          <h2 className="text-lg font-black">Entretiens</h2>
+          <h2 className="text-lg font-bold">Entretiens</h2>
           {workspace.interviews.length === 0 ? (
             <StatePanel
               variant="notFound"
@@ -811,7 +811,7 @@ export const EmploymentCandidateWorkspacePage: React.FC = () => {
                     <CalendarClock className="mt-0.5 h-icon-md w-icon-md text-primary" />
                     <div>
                       <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="font-black">
+                        <h3 className="font-bold">
                           Entretien {labelIdentifier(interview.modeId)}
                         </h3>
                         <Badge
@@ -888,7 +888,7 @@ export const EmploymentCandidateWorkspacePage: React.FC = () => {
 
       {tab === "messages" && (
         <section className="rounded-card border border-border-base bg-bg-surface p-5">
-          <h2 className="flex items-center gap-2 text-lg font-black">
+          <h2 className="flex items-center gap-2 text-lg font-bold">
             <MessageSquare className="h-icon-md w-icon-md text-primary" />
             Messages recruteurs
           </h2>
@@ -908,7 +908,7 @@ export const EmploymentCandidateWorkspacePage: React.FC = () => {
       {tab === "privacy" && (
         <section className="space-y-4">
           <div className="rounded-card border border-border-base bg-bg-surface p-5">
-            <h2 className="flex items-center gap-2 text-lg font-black">
+            <h2 className="flex items-center gap-2 text-lg font-bold">
               <ShieldCheck className="h-icon-md w-icon-md text-success" />
               Confidentialité et consentements
             </h2>
@@ -932,7 +932,7 @@ export const EmploymentCandidateWorkspacePage: React.FC = () => {
             </Button>
           </div>
           <div className="rounded-card border border-border-base bg-bg-surface p-5">
-            <h3 className="text-sm font-black">Historique</h3>
+            <h3 className="text-sm font-bold">Historique</h3>
             <ul className="mt-3 space-y-2">
               {workspace.consentHistory.map((consentRecord) => (
                 <li
@@ -952,7 +952,7 @@ export const EmploymentCandidateWorkspacePage: React.FC = () => {
             </ul>
           </div>
           <div className="rounded-card border border-border-base bg-bg-surface p-5">
-            <h3 className="flex items-center gap-2 text-sm font-black">
+            <h3 className="flex items-center gap-2 text-sm font-bold">
               <BellRing className="h-icon-sm w-icon-sm" />
               Alertes emploi
             </h3>
@@ -987,7 +987,7 @@ export const EmploymentCandidateWorkspacePage: React.FC = () => {
             )}
           </div>
           <div className="rounded-card border border-border-base bg-bg-surface p-5">
-            <h3 className="text-sm font-black">Vos données Emploi</h3>
+            <h3 className="text-sm font-bold">Vos données Emploi</h3>
             <p className="mt-2 text-sm text-text-secondary">
               Téléchargez une copie structurée de vos données ou demandez la
               suppression de l’espace candidat. Une demande de suppression est

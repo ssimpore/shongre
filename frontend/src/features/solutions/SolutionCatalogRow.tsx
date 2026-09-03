@@ -40,7 +40,7 @@ export function SolutionCatalogRow({
         </span>
         <div className="min-w-0 pt-1">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-            <h2 className="text-xl font-black tracking-tight text-text-main sm:text-2xl">
+            <h2 className="text-xl font-bold tracking-tight text-text-main sm:text-2xl">
               <a
                 href={detailHref}
                 className="rounded-control hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"

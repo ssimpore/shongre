@@ -55,15 +55,15 @@ function ListingMeta({ city, published }: { city: string; published: string }) {
   return (
     <span
       data-listing-card-meta="true"
-      className="flex min-w-0 items-center gap-2"
+      className="flex min-w-0 items-start gap-2"
     >
-      <span className="inline-flex min-w-0 flex-1 items-center gap-1 overflow-hidden">
+      <span className="inline-flex min-w-0 flex-1 items-start gap-1">
         <SemanticIcon
           name="map-pin"
           size="xs"
           className="shrink-0 text-primary"
         />
-        <span className="min-w-0 truncate" title={city}>
+        <span className="min-w-0 break-words" title={city}>
           {city}
         </span>
       </span>
@@ -141,7 +141,7 @@ export function ListingCard({
               className="h-full w-full object-cover motion-surface group-hover:scale-105"
             />
           ) : (
-            <div className="flex h-full items-center justify-center font-black text-primary">
+            <div className="flex h-full items-center justify-center font-bold text-primary">
               Shongre
             </div>
           ))}
@@ -212,7 +212,7 @@ export function ListingCard({
         ) : null}
         <h3
           title={listing.title}
-          className={`line-clamp-2 text-card-title font-bold text-text-main group-hover:text-primary ${horizontal ? "" : "min-h-control-md"}`}
+          className={`line-clamp-2 text-card-title font-semibold text-text-main group-hover:text-primary ${horizontal ? "" : "min-h-control-md"}`}
         >
           {listing.title}
         </h3>
@@ -280,7 +280,7 @@ export function ListingCard({
                 <span className="inline-flex min-w-0 flex-1 items-center gap-1">
                   <span
                     title={sellerName}
-                    className="min-w-0 truncate font-semibold text-text-secondary"
+                    className="min-w-0 break-words font-semibold text-text-secondary"
                   >
                     {sellerName}
                   </span>

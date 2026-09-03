@@ -215,7 +215,7 @@ export const TaxonomyHeaderNavigationTab: React.FC = () => {
           <div>
             <div className="flex items-center gap-2">
               <ListOrdered className="h-icon-lg w-icon-lg text-primary" />
-              <h2 className="text-base font-black text-text-main">
+              <h2 className="text-base font-bold text-text-main">
                 {t("admin.taxonomyHeader.title")}
               </h2>
               <span className="rounded-pill bg-bg-subtle px-2 py-1 text-micro font-bold text-text-secondary">
@@ -305,7 +305,7 @@ export const TaxonomyHeaderNavigationTab: React.FC = () => {
       >
         <h3
           id="taxonomy-header-category-list"
-          className="text-sm font-black text-text-main"
+          className="text-sm font-bold text-text-main"
         >
           {t("admin.taxonomyHeader.selectedTitle", {
             count: configuration.items.length,
@@ -329,7 +329,7 @@ export const TaxonomyHeaderNavigationTab: React.FC = () => {
                   key={item.categoryId}
                   className="flex flex-col gap-3 rounded-control border border-border-base p-3 sm:flex-row sm:items-center"
                 >
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-pill bg-primary-light text-xs font-black text-primary">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-pill bg-primary-light text-xs font-bold text-primary">
                     {index + 1}
                   </span>
                   <span className="min-w-0 flex-1">

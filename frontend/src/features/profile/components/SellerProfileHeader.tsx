@@ -198,7 +198,7 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
 
             <div className="min-w-0 flex-1 pb-1">
               <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-stone-900 leading-tight">
+                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-stone-900 leading-tight">
                   {displayName}
                 </h1>
                 {isPro ? (
@@ -223,7 +223,7 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
                 <button
                   type="button"
                   onClick={() => onTabChange("reviews")}
-                  className="flex shrink-0 items-center gap-1.5 font-bold text-stone-900 hover:text-primary transition-colors cursor-pointer group"
+                  className="flex shrink-0 items-center gap-1.5 font-semibold text-stone-900 hover:text-primary transition-colors cursor-pointer group"
                   aria-label={`Note moyenne : ${seller.rating.toFixed(1)} sur 5 basée sur ${seller.reviewCount} avis`}
                 >
                   <Star className="w-icon-md h-icon-md fill-amber-400 text-amber-400 group-hover:scale-110 transition-transform duration-normal" />
@@ -353,7 +353,7 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
                       <button
                         type="button"
                         onClick={handleFollowToggle}
-                        className="w-full sm:hidden flex items-center gap-3 px-4 py-3 text-sm font-bold text-stone-700 hover:bg-stone-50 text-left"
+                        className="w-full sm:hidden flex items-center gap-3 px-4 py-3 text-sm font-semibold text-stone-700 hover:bg-stone-50 text-left"
                       >
                         <Heart
                           className={`w-icon-md h-icon-md ${isFollowing ? "fill-primary text-primary" : ""}`}
@@ -363,7 +363,7 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
                       <button
                         type="button"
                         onClick={handleShare}
-                        className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-stone-700 hover:bg-stone-50 text-left"
+                        className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-stone-700 hover:bg-stone-50 text-left"
                       >
                         <Share2 className="w-icon-md h-icon-md text-stone-400" />
                         {t("profile.sellerProfileHeader.partagerCeProfil2")}
@@ -375,7 +375,7 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
                           setIsMenuOpen(false);
                           onOpenReportModal();
                         }}
-                        className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-warning hover:bg-warning-surface text-left"
+                        className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-warning hover:bg-warning-surface text-left"
                       >
                         <Flag className="w-icon-md h-icon-md text-warning" />
                         {t("profile.sellerProfileHeader.signalerCeProfil")}
@@ -383,7 +383,7 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
                       <button
                         type="button"
                         onClick={handleBlockToggle}
-                        className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-danger hover:bg-danger-surface text-left"
+                        className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-danger hover:bg-danger-surface text-left"
                       >
                         <Ban className="w-icon-md h-icon-md text-danger" />
                         {isBlocked
@@ -412,7 +412,7 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
           className={`border-t border-stone-100 grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm text-stone-500 ${!seller.bio ? "mt-4 pt-5" : "pt-5"}`}
         >
           <div className="bg-stone-50 p-4 rounded-2xl border border-stone-200/60 shadow-2xs">
-            <span className="font-black block text-stone-900 text-lg mb-0.5">
+            <span className="font-bold block text-stone-900 text-lg mb-0.5">
               {activeListingsCount}
             </span>
             <span className="text-xs">
@@ -421,7 +421,7 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
           </div>
 
           <div className="bg-stone-50 p-4 rounded-2xl border border-stone-200/60 shadow-2xs">
-            <span className="font-black block text-stone-900 text-lg mb-0.5">
+            <span className="font-bold block text-stone-900 text-lg mb-0.5">
               {seller.responseRatePercent}%
             </span>
             <span className="text-xs">
@@ -430,7 +430,7 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
           </div>
 
           <div className="bg-stone-50 p-4 rounded-2xl border border-stone-200/60 shadow-2xs">
-            <span className="font-black block text-stone-900 text-lg truncate mb-0.5">
+            <span className="font-bold block text-stone-900 text-lg truncate mb-0.5">
               {seller.responseTimeText || "Rapide"}
             </span>
             <span className="text-xs">
@@ -439,7 +439,7 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
           </div>
 
           <div className="bg-stone-50 p-4 rounded-2xl border border-stone-200/60 shadow-2xs">
-            <span className="font-black block text-stone-900 text-lg mb-0.5">
+            <span className="font-bold block text-stone-900 text-lg mb-0.5">
               {seller.rating.toFixed(1)} / 5
             </span>
             <span className="text-xs">{seller.reviewCount} avis clients</span>

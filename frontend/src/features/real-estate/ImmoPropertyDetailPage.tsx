@@ -295,7 +295,7 @@ export const ImmoPropertyDetailPage: React.FC = () => {
                       {transactionLabels[property.transactionType]} ·{" "}
                       {propertyTypeLabels[property.propertyType]}
                     </p>
-                    <h1 className="mt-1 text-xl font-black text-text-main sm:text-2xl">
+                    <h1 className="mt-1 text-xl font-bold text-text-main sm:text-2xl">
                       {property.title}
                     </h1>
                     <p className="mt-2 flex items-center gap-1.5 text-xs text-text-secondary">
@@ -303,7 +303,7 @@ export const ImmoPropertyDetailPage: React.FC = () => {
                       {property.address.publicLabel} · position approximative
                     </p>
                   </div>
-                  <p className="shrink-0 text-xl font-black text-primary">
+                  <p className="shrink-0 text-xl font-bold text-primary">
                     {formatImmoMoney(
                       property.financials.price,
                       currentLocale,
@@ -315,21 +315,21 @@ export const ImmoPropertyDetailPage: React.FC = () => {
                 <div className="mt-5 grid grid-cols-3 gap-2 border-y border-border-subtle py-4 text-center">
                   <div>
                     <Maximize2 className="mx-auto h-icon-lg w-icon-lg text-primary" />
-                    <p className="mt-1 text-sm font-black">
+                    <p className="mt-1 text-sm font-bold">
                       {property.characteristics.livingAreaSquareMeters} m²
                     </p>
                     <p className="text-micro text-text-muted">Surface</p>
                   </div>
                   <div>
                     <KeyRound className="mx-auto h-icon-lg w-icon-lg text-primary" />
-                    <p className="mt-1 text-sm font-black">
+                    <p className="mt-1 text-sm font-bold">
                       {property.characteristics.rooms}
                     </p>
                     <p className="text-micro text-text-muted">Pièces</p>
                   </div>
                   <div>
                     <BedDouble className="mx-auto h-icon-lg w-icon-lg text-primary" />
-                    <p className="mt-1 text-sm font-black">
+                    <p className="mt-1 text-sm font-bold">
                       {property.characteristics.bedrooms}
                     </p>
                     <p className="text-micro text-text-muted">Chambres</p>
@@ -339,7 +339,7 @@ export const ImmoPropertyDetailPage: React.FC = () => {
             </section>
 
             <section className="rounded-card border border-border-base bg-bg-surface p-5 sm:p-6">
-              <h2 className="text-base font-black text-text-main">
+              <h2 className="text-base font-bold text-text-main">
                 À propos de ce bien
               </h2>
               <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-text-secondary">
@@ -354,26 +354,26 @@ export const ImmoPropertyDetailPage: React.FC = () => {
 
             <section className="grid gap-4 sm:grid-cols-2">
               <div className="rounded-card border border-border-base bg-bg-surface p-5">
-                <h2 className="flex items-center gap-2 text-sm font-black">
+                <h2 className="flex items-center gap-2 text-sm font-bold">
                   <ShieldCheck className="h-icon-lg w-icon-lg text-primary" />
                   Performance & réglementation
                 </h2>
                 <dl className="mt-4 space-y-3 text-xs">
                   <div className="flex justify-between">
                     <dt className="text-text-muted">DPE</dt>
-                    <dd className="font-black">
+                    <dd className="font-bold">
                       {property.energy.dpeClass || "En attente"}
                     </dd>
                   </div>
                   <div className="flex justify-between">
                     <dt className="text-text-muted">GES</dt>
-                    <dd className="font-black">
+                    <dd className="font-bold">
                       {property.energy.gesClass || "En attente"}
                     </dd>
                   </div>
                   <div className="flex justify-between">
                     <dt className="text-text-muted">Copropriété</dt>
-                    <dd className="font-black">
+                    <dd className="font-bold">
                       {property.regulatory.coOwnershipApplicable
                         ? `${property.regulatory.coOwnershipLots || "—"} lots`
                         : "Non"}
@@ -387,7 +387,7 @@ export const ImmoPropertyDetailPage: React.FC = () => {
                 ) : null}
               </div>
               <div className="rounded-card border border-border-base bg-bg-surface p-5">
-                <h2 className="flex items-center gap-2 text-sm font-black">
+                <h2 className="flex items-center gap-2 text-sm font-bold">
                   <BadgeCheck className="h-icon-lg w-icon-lg text-primary" />
                   Annonceur
                 </h2>
@@ -395,7 +395,7 @@ export const ImmoPropertyDetailPage: React.FC = () => {
                   to={sellerPublicUrl}
                   className="group mt-4 block w-fit rounded-control focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
                 >
-                  <span className="block font-black text-text-main transition-colors group-hover:text-primary">
+                  <span className="block font-bold text-text-main transition-colors group-hover:text-primary">
                     {property.seller.displayName}
                   </span>
                   <span className="block text-xs text-text-secondary">
@@ -435,14 +435,14 @@ export const ImmoPropertyDetailPage: React.FC = () => {
                 className="space-y-3"
               >
                 <div>
-                  <p className="text-sm font-black text-text-main">
+                  <p className="text-sm font-bold text-text-main">
                     Contacter l’annonceur
                   </p>
                   <p className="mt-1 text-micro text-text-muted">
                     Demande structurée, sans accès à l’adresse exacte.
                   </p>
                 </div>
-                <label className="block text-xs font-bold">
+                <label className="block text-xs font-semibold">
                   Votre demande
                   <Select
                     className="mt-1 w-full"
@@ -543,7 +543,7 @@ export const ImmoPropertyDetailPage: React.FC = () => {
               <div className="space-y-4">
                 <div className="rounded-control bg-success-surface p-4">
                   <CheckCircle2 className="h-icon-xl w-icon-xl text-success" />
-                  <p className="mt-2 text-sm font-black text-success">
+                  <p className="mt-2 text-sm font-bold text-success">
                     Demande envoyée
                   </p>
                   <p className="mt-1 text-xs text-text-secondary">
@@ -574,7 +574,7 @@ export const ImmoPropertyDetailPage: React.FC = () => {
 
         {comparables.length ? (
           <section className="mt-8">
-            <h2 className="text-lg font-black text-text-main">
+            <h2 className="text-lg font-bold text-text-main">
               Biens comparables
             </h2>
             <p className="mt-1 text-xs text-text-muted">

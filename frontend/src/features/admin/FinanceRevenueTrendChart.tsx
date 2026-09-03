@@ -213,7 +213,10 @@ export function FinanceRevenueTrendChart({
                   dataKey="date"
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fill: "var(--color-text-muted)", fontSize: 11 }}
+                  tick={{
+                    fill: "var(--color-text-muted)",
+                    fontSize: "var(--text-micro)",
+                  }}
                   tickFormatter={formatAxisDate}
                   minTickGap={28}
                   interval="preserveStartEnd"
@@ -222,7 +225,10 @@ export function FinanceRevenueTrendChart({
                 <YAxis
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fill: "var(--color-text-muted)", fontSize: 11 }}
+                  tick={{
+                    fill: "var(--color-text-muted)",
+                    fontSize: "var(--text-micro)",
+                  }}
                   tickFormatter={formatAxisMoney}
                   width={58}
                   domain={[0, "auto"]}

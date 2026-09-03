@@ -129,7 +129,7 @@ export const LoginPage: React.FC = () => {
       {requiresMfa ? (
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-bold text-stone-800 mb-1.5">
+            <label className="block text-xs font-semibold text-stone-800 mb-1.5">
               {t("auth.loginPage.codeDeSecurite2faOu")}
             </label>
             <input
@@ -139,7 +139,7 @@ export const LoginPage: React.FC = () => {
               placeholder={t("auth.loginPage.ex123456Ou84921049")}
               autoFocus
               required
-              className="w-full px-4 py-3 text-center tracking-widest text-lg font-black bg-stone-50 border border-stone-300 rounded-control text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-white h-control-touch"
+              className="w-full px-4 py-3 text-center tracking-widest text-lg font-bold bg-stone-50 border border-stone-300 rounded-control text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-white h-control-touch"
             />
           </div>
 
@@ -172,7 +172,7 @@ export const LoginPage: React.FC = () => {
           <div>
             <label
               htmlFor="login-email"
-              className="block text-xs font-bold text-stone-800 mb-1.5"
+              className="block text-xs font-semibold text-stone-800 mb-1.5"
             >
               Adresse email <span className="text-primary">*</span>
             </label>
@@ -195,7 +195,7 @@ export const LoginPage: React.FC = () => {
             <div className="flex items-center justify-between mb-1.5">
               <label
                 htmlFor="login-password"
-                className="block text-xs font-bold text-stone-800"
+                className="block text-xs font-semibold text-stone-800"
               >
                 {t("auth.loginPage.motDePasse")}
                 <span className="text-primary">*</span>

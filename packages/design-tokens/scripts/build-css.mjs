@@ -40,7 +40,7 @@ for (const [name, value] of Object.entries(themeText)) {
   add(`text-${name}--line-height`, themeTextLineHeights[name]);
 }
 for (const [name, value] of Object.entries(themeFontFamilies))
-  add(`font-${name}`, value);
+  add(`font-${name}`, name === "sans" ? "var(--font-family-sans)" : value);
 for (const [name, value] of Object.entries(themeFontWeights))
   add(`font-weight-${name}`, value);
 for (const [name, value] of Object.entries(themeLineHeights))
@@ -70,7 +70,8 @@ for (const [name, value] of Object.entries(themeAspect))
   add(`aspect-${name}`, value);
 
 const root = [
-  "  --design-system-contract-version: 4;",
+  "  --design-system-contract-version: 5;",
+  `  --font-family-sans: ${themeFontFamilies.sans};`,
   ...Object.entries(themeZIndex).map(
     ([name, value]) => `  --z-${name}: ${value};`,
   ),

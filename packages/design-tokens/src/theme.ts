@@ -186,9 +186,7 @@ export const themeTextLineHeights = {
 } as const;
 
 export const themeFontFamilies = {
-  display:
-    "ui-serif, 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, 'Times New Roman', serif",
-  sans: "var(--font-inter), 'Inter Variable', Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+  sans: "var(--font-nunito-sans, 'Nunito Sans'), Helvetica, Arial, sans-serif",
   mono: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
 } as const;
 
@@ -198,7 +196,6 @@ export const themeFontWeights = {
   semibold: "600",
   bold: "700",
   extrabold: "800",
-  black: "900",
 } as const;
 
 export const themeLineHeights = {

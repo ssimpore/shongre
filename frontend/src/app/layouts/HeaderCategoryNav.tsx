@@ -162,7 +162,7 @@ const CategoryGroup: React.FC<CategoryGroupProps> = ({
       <h3
         id={headingId}
         role="presentation"
-        className="text-sm font-extrabold text-stone-950"
+        className="text-sm font-bold text-stone-950"
       >
         <Link
           role="menuitem"
@@ -225,14 +225,14 @@ const CategoryMegaMenuSidebar: React.FC<CategoryMegaMenuSidebarProps> = ({
       aria-label={label}
       className="min-w-0 border-l-4 border-primary bg-bg-subtle p-5 xl:p-6"
     >
-      <p className="text-micro font-extrabold uppercase tracking-wider text-stone-700">
+      <p className="text-micro font-bold uppercase tracking-wider text-stone-700">
         {t("nav.category.active")}
       </p>
       <div className="mt-3 flex items-center gap-3">
         <CategoryIcon category={root} size="md" withBackground />
         <h2
           role="presentation"
-          className="min-w-0 text-base font-extrabold text-stone-950"
+          className="min-w-0 text-base font-bold text-stone-950"
         >
           {label}
         </h2>
@@ -340,12 +340,12 @@ const CategoryOverviewMenu: React.FC<CategoryOverviewMenuProps> = ({
           aria-label={label}
           className="min-w-0 border-l-4 border-primary bg-bg-subtle p-5 xl:p-6"
         >
-          <p className="text-micro font-extrabold uppercase tracking-wider text-stone-700">
+          <p className="text-micro font-bold uppercase tracking-wider text-stone-700">
             {t("nav.category.autres")}
           </p>
           <h2
             role="presentation"
-            className="mt-3 text-base font-extrabold text-stone-950"
+            className="mt-3 text-base font-bold text-stone-950"
           >
             {label}
           </h2>

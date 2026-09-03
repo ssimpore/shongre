@@ -182,7 +182,7 @@ export const AdminProvidersPage: React.FC = () => {
               Control plane v3
             </span>
           </div>
-          <h1 className="text-xl sm:text-2xl font-black text-text-main tracking-tight flex items-center gap-2.5">
+          <h1 className="text-xl sm:text-2xl font-bold text-text-main tracking-tight flex items-center gap-2.5">
             <Cpu className="w-icon-xl h-icon-xl text-primary" />
             {t("admin.adminProvidersPage.fournisseursIntegrationsExternes")}
           </h1>
@@ -221,7 +221,7 @@ export const AdminProvidersPage: React.FC = () => {
         <button
           type="button"
           onClick={() => setActiveTab("overview")}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all ${
             activeTab === "overview"
               ? "bg-primary text-text-inverse shadow-xs"
               : "text-text-secondary hover:text-text-main hover:bg-stone-100"
@@ -234,7 +234,7 @@ export const AdminProvidersPage: React.FC = () => {
         <button
           type="button"
           onClick={() => setActiveTab("catalog")}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all ${
             activeTab === "catalog"
               ? "bg-primary text-text-inverse shadow-xs"
               : "text-text-secondary hover:text-text-main hover:bg-stone-100"
@@ -250,7 +250,7 @@ export const AdminProvidersPage: React.FC = () => {
         <button
           type="button"
           onClick={() => setActiveTab("matrix")}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all ${
             activeTab === "matrix"
               ? "bg-primary text-text-inverse shadow-xs"
               : "text-text-secondary hover:text-text-main hover:bg-stone-100"
@@ -263,7 +263,7 @@ export const AdminProvidersPage: React.FC = () => {
         <button
           type="button"
           onClick={() => setActiveTab("routing")}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all ${
             activeTab === "routing"
               ? "bg-primary text-text-inverse shadow-xs"
               : "text-text-secondary hover:text-text-main hover:bg-stone-100"
@@ -276,7 +276,7 @@ export const AdminProvidersPage: React.FC = () => {
         <button
           type="button"
           onClick={() => setActiveTab("audit")}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all ${
             activeTab === "audit"
               ? "bg-primary text-text-inverse shadow-xs"
               : "text-text-secondary hover:text-text-main hover:bg-stone-100"
@@ -383,7 +383,7 @@ export const AdminProvidersPage: React.FC = () => {
                 size="sm"
                 isLoading={isTesting}
                 onClick={handleExecuteQuickTest}
-                className="font-bold"
+                className="font-semibold"
               >
                 {t("admin.adminProvidersPage.lancerLeTest")}
               </Button>

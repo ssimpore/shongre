@@ -224,7 +224,7 @@ export const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
               placeholder="123456"
               autoFocus
               required
-              className="text-center font-black tracking-code"
+              className="text-center font-bold tracking-code"
             />
           </FormField>
 

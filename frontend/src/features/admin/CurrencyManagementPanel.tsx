@@ -238,7 +238,7 @@ export const CurrencyManagementPanel: React.FC = () => {
       <div className="rounded-2xl border border-primary-border bg-primary-light/40 p-4">
         <div className="flex items-center gap-2">
           <Coins className="h-icon-lg w-icon-lg text-primary" />
-          <h2 className="text-base font-black text-text-main">
+          <h2 className="text-base font-bold text-text-main">
             {t("admin.currencies.title")}
           </h2>
         </div>
@@ -261,7 +261,7 @@ export const CurrencyManagementPanel: React.FC = () => {
                 key={currency.code}
                 type="button"
                 onClick={() => selectCurrency(currency.code)}
-                className="rounded-control border border-border-base px-3 py-2 text-xs font-bold hover:border-primary"
+                className="rounded-control border border-border-base px-3 py-2 text-xs font-semibold hover:border-primary"
               >
                 {currency.code} · {currency.symbol}{" "}
                 <Badge variant={currency.enabled ? "success" : "neutral"}>

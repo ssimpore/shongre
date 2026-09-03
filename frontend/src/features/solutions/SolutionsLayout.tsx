@@ -103,11 +103,11 @@ function SolutionsHeader() {
           className="flex items-center gap-3 rounded-control focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           aria-label={t("solutions.header.homeLabel")}
         >
-          <span className="flex h-9 w-9 items-center justify-center rounded-control bg-primary text-lg font-black text-white">
+          <span className="flex h-9 w-9 items-center justify-center rounded-control bg-primary text-lg font-bold text-white">
             S
           </span>
           <span className="leading-none">
-            <span className="block text-base font-black tracking-tight text-text-main">
+            <span className="block text-base font-bold tracking-tight text-text-main">
               shongre
             </span>
             <span className="mt-1 block text-micro font-semibold text-text-muted sm:hidden">
@@ -313,7 +313,7 @@ function SolutionsFooter() {
   return (
     <footer className="border-t border-border-base bg-white py-7">
       <Container className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-        <a href={rootHref} className="text-sm font-black text-text-main">
+        <a href={rootHref} className="text-sm font-bold text-text-main">
           SHONGRE<span className="text-primary">.</span>{" "}
           <span className="font-semibold text-text-muted">Solutions</span>
         </a>

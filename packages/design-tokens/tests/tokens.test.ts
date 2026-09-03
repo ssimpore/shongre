@@ -5,6 +5,8 @@ import {
   nativeRadius,
   nativeSpacing,
   radius,
+  themeFontFamilies,
+  themeFontWeights,
   themeColors,
   themeSpacing,
 } from "../src/index";
@@ -49,5 +51,19 @@ describe("canonical design tokens", () => {
   it("keeps listing cards compact through semantic shared tokens", () => {
     expect(themeSpacing["listing-card"]).toBe("13rem");
     expect(radius["listing-card"]).toBe("0.875rem");
+  });
+
+  it("owns one Web application font family and caps the weight hierarchy", () => {
+    expect(themeFontFamilies.sans).toBe(
+      "var(--font-nunito-sans, 'Nunito Sans'), Helvetica, Arial, sans-serif",
+    );
+    expect(themeFontFamilies).not.toHaveProperty("display");
+    expect(themeFontWeights).toEqual({
+      normal: "400",
+      medium: "500",
+      semibold: "600",
+      bold: "700",
+      extrabold: "800",
+    });
   });
 });

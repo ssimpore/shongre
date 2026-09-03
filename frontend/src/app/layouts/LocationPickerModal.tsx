@@ -170,7 +170,7 @@ export const LocationPickerModal: React.FC = () => {
           onClick={() => applyLocation(wholeCountryLocation)}
           className={`w-full min-h-control-touch px-3 rounded-control border flex items-center justify-between motion-interactive cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
             isWholeCountry
-              ? "border-primary bg-primary-light text-primary font-bold"
+              ? "border-primary bg-primary-light text-primary font-semibold"
               : "border-border-base hover:border-stone-400 bg-white text-stone-800"
           }`}
         >
@@ -187,7 +187,7 @@ export const LocationPickerModal: React.FC = () => {
         <div className="space-y-1.5">
           <label
             htmlFor="location-city-input"
-            className="text-xs font-bold text-stone-700 uppercase tracking-wider"
+            className="text-xs font-semibold text-stone-700 uppercase tracking-wider"
           >
             Ville ou Code Postal ({activeMarket.name})
           </label>
@@ -258,7 +258,7 @@ export const LocationPickerModal: React.FC = () => {
         {/* Radius selector */}
         {cityInput.trim() && (
           <div className="space-y-2">
-            <label className="text-xs font-bold text-stone-700 uppercase tracking-wider flex justify-between">
+            <label className="text-xs font-semibold text-stone-700 uppercase tracking-wider flex justify-between">
               <span>{t("shell.locationPickerModal.rayonDeRecherche")}</span>
               <span className="text-primary font-semibold">
                 {radius === 0 ? "Ville exacte" : `+ ${radius} km`}

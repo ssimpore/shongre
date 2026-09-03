@@ -355,7 +355,7 @@ export const CrmOpportunityDetailPage: React.FC = () => {
           className="mx-auto h-8 w-8 text-danger"
           aria-hidden="true"
         />
-        <h1 className="mt-3 text-lg font-black text-text-main">
+        <h1 className="mt-3 text-lg font-bold text-text-main">
           {t("admin.crmOpportunityDetailPage.opportuniteIntrouvable")}
         </h1>
         <p className="mt-1 text-sm text-stone-500">{error}</p>
@@ -413,7 +413,7 @@ export const CrmOpportunityDetailPage: React.FC = () => {
                   {forecastLabel}
                 </span>
               </div>
-              <h1 className="mt-2 max-w-3xl text-2xl font-black leading-tight tracking-tight sm:text-3xl">
+              <h1 className="mt-2 max-w-3xl text-2xl font-bold leading-tight tracking-tight sm:text-3xl">
                 {opportunity.name}
               </h1>
               <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-text-disabled">
@@ -441,7 +441,7 @@ export const CrmOpportunityDetailPage: React.FC = () => {
               </div>
             </div>
             <div className="xl:text-right">
-              <strong className="block text-3xl font-black tabular-nums">
+              <strong className="block text-3xl font-bold tabular-nums">
                 {money(
                   opportunity.amount.amountMinor,
                   opportunity.amount.currency,
@@ -524,7 +524,7 @@ export const CrmOpportunityDetailPage: React.FC = () => {
                     />
                   )}
                   <span
-                    className={`relative z-raised inline-flex h-6 w-6 items-center justify-center rounded-pill border-2 text-micro font-black ${current ? "border-primary bg-primary text-text-inverse ring-4 ring-primary/15" : complete ? "border-primary bg-primary text-text-inverse" : "border-stone-600 bg-stone-900 text-text-disabled"}`}
+                    className={`relative z-raised inline-flex h-6 w-6 items-center justify-center rounded-pill border-2 text-micro font-bold ${current ? "border-primary bg-primary text-text-inverse ring-4 ring-primary/15" : complete ? "border-primary bg-primary text-text-inverse" : "border-stone-600 bg-stone-900 text-text-disabled"}`}
                   >
                     {complete ? (
                       <Check
@@ -552,7 +552,7 @@ export const CrmOpportunityDetailPage: React.FC = () => {
           <section className="rounded-2xl border border-border-base bg-bg-surface shadow-xs">
             <div className="flex items-center justify-between border-b border-border-subtle px-5 py-3.5">
               <div>
-                <h2 className="text-sm font-black text-stone-950">
+                <h2 className="text-sm font-bold text-stone-950">
                   Historique commercial
                 </h2>
                 <p className="text-micro text-stone-500">
@@ -602,7 +602,7 @@ export const CrmOpportunityDetailPage: React.FC = () => {
                         </span>
                         <div className="min-w-0 flex-1 pt-0.5">
                           <div className="flex flex-wrap items-center justify-between gap-2">
-                            <strong className="text-xs font-black text-text-main">
+                            <strong className="text-xs font-bold text-text-main">
                               {activity.title}
                             </strong>
                             <time className="text-micro text-stone-500">
@@ -632,7 +632,7 @@ export const CrmOpportunityDetailPage: React.FC = () => {
           <section className="rounded-2xl border border-border-base bg-bg-surface shadow-xs">
             <div className="flex items-center justify-between border-b border-border-subtle px-5 py-3.5">
               <div>
-                <h2 className="text-sm font-black text-stone-950">
+                <h2 className="text-sm font-bold text-stone-950">
                   {t("admin.crmOpportunityDetailPage.tachesLiees")}
                 </h2>
                 <p className="text-micro text-stone-500">
@@ -693,7 +693,7 @@ export const CrmOpportunityDetailPage: React.FC = () => {
           <section className="rounded-2xl border border-border-base bg-bg-surface shadow-xs">
             <div className="flex items-center justify-between border-b border-border-subtle px-5 py-3.5">
               <div>
-                <h2 className="text-sm font-black text-stone-950">Devis</h2>
+                <h2 className="text-sm font-bold text-stone-950">Devis</h2>
                 <p className="text-micro text-stone-500">
                   {t(
                     "admin.crmOpportunityDetailPage.propositionsChiffreesLieesALOpportunite",
@@ -752,7 +752,7 @@ export const CrmOpportunityDetailPage: React.FC = () => {
 
         <aside className="min-w-0 space-y-4">
           <section className="rounded-2xl border border-border-base bg-bg-surface p-4 shadow-xs">
-            <h2 className="text-sm font-black text-stone-950">Informations</h2>
+            <h2 className="text-sm font-bold text-stone-950">Informations</h2>
             <dl className="mt-3 divide-y divide-border-subtle text-xs">
               {[
                 ["Pipeline", opportunity.pipelineName],
@@ -788,7 +788,7 @@ export const CrmOpportunityDetailPage: React.FC = () => {
           <section className="rounded-2xl border border-stone-800 bg-stone-950 p-4 text-text-inverse shadow-xs">
             <div className="flex items-center gap-2">
               <Sparkles className="h-icon-md w-icon-md text-primary" />
-              <h2 className="text-sm font-black">Assistant commercial</h2>
+              <h2 className="text-sm font-bold">Assistant commercial</h2>
             </div>
             <p className="mt-2 text-xs leading-relaxed text-text-disabled">
               {t(
@@ -815,7 +815,7 @@ export const CrmOpportunityDetailPage: React.FC = () => {
           <section className="rounded-2xl border border-border-base bg-bg-surface p-4 shadow-xs">
             <div className="flex items-center gap-2">
               <Mail className="h-icon-md w-icon-md text-primary" />
-              <h2 className="text-sm font-black text-stone-950">
+              <h2 className="text-sm font-bold text-stone-950">
                 Communication
               </h2>
             </div>
@@ -984,7 +984,7 @@ export const CrmOpportunityDetailPage: React.FC = () => {
         <form onSubmit={closeOpportunity} className="space-y-4 text-xs">
           {closeMode === "won" ? (
             <div className="rounded-control border border-success-border bg-success-surface p-4">
-              <div className="flex items-center gap-2 font-black text-success">
+              <div className="flex items-center gap-2 font-bold text-success">
                 <CheckCircle2 className="h-icon-lg w-icon-lg" />{" "}
                 {t("admin.crmOpportunityDetailPage.contratDe")}{" "}
                 {money(

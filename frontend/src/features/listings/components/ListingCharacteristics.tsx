@@ -44,7 +44,7 @@ export const ListingCharacteristics: React.FC<ListingCharacteristicsProps> = ({
             {GROUP_ICONS[group.groupKey] || (
               <Sparkles className="w-icon-lg h-icon-lg text-primary" />
             )}
-            <h2 className="text-base font-black text-text-main">
+            <h2 className="text-base font-bold text-text-main">
               {group.groupTitle}
             </h2>
           </div>
@@ -68,7 +68,7 @@ export const ListingCharacteristics: React.FC<ListingCharacteristicsProps> = ({
                   {isDpeOrGes && DPE_COLORS[dpeVal] ? (
                     <div className="flex items-center gap-2">
                       <span
-                        className={`w-8 h-8 rounded-xl flex items-center justify-center text-sm font-black shadow-xs ${DPE_COLORS[dpeVal]}`}
+                        className={`w-8 h-8 rounded-xl flex items-center justify-center text-sm font-bold shadow-xs ${DPE_COLORS[dpeVal]}`}
                       >
                         {dpeVal}
                       </span>
@@ -77,7 +77,7 @@ export const ListingCharacteristics: React.FC<ListingCharacteristicsProps> = ({
                       </span>
                     </div>
                   ) : (
-                    <span className="text-sm font-black text-text-main break-words">
+                    <span className="text-sm font-bold text-text-main break-words">
                       {item.value}
                     </span>
                   )}

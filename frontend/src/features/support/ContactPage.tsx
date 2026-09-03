@@ -221,7 +221,7 @@ export const ContactPage: React.FC = () => {
           </div>
 
           <div className="space-y-2">
-            <h1 className="text-2xl font-black text-stone-900">
+            <h1 className="text-2xl font-bold text-stone-900">
               Demande d'assistance transmise
             </h1>
             <p className="text-xs sm:text-sm text-stone-600">
@@ -233,7 +233,7 @@ export const ContactPage: React.FC = () => {
             <span className="text-micro font-bold uppercase tracking-wider text-stone-500 block mb-0.5">
               {t("support.contactPage.numeroDeDossier")}
             </span>
-            <span className="text-xl font-black text-stone-900 font-mono tracking-wider">
+            <span className="text-xl font-bold text-stone-900 font-mono tracking-wider">
               {submittedReference}
             </span>
           </div>
@@ -249,7 +249,7 @@ export const ContactPage: React.FC = () => {
             <Button
               variant="primary"
               onClick={() => navigate("/compte/support")}
-              className="font-bold"
+              className="font-semibold"
             >
               Suivre mes demandes
             </Button>
@@ -274,7 +274,7 @@ export const ContactPage: React.FC = () => {
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8">
       {/* 1. Page Header */}
       <div className="text-center max-w-xl mx-auto space-y-2">
-        <h1 className="text-2xl sm:text-3xl font-black text-stone-900 tracking-tight">
+        <h1 className="text-2xl sm:text-3xl font-bold text-stone-900 tracking-tight">
           {t("support.contactPage.contacterLeSupportShongre")}
         </h1>
         <p className="text-xs sm:text-sm text-stone-500">
@@ -284,7 +284,7 @@ export const ContactPage: React.FC = () => {
 
       {/* 2. Step 1: Category Selector */}
       <div className="space-y-3">
-        <label className="block text-xs font-black uppercase tracking-wider text-stone-700">
+        <label className="block text-xs font-semibold uppercase tracking-wider text-stone-700">
           {t("support.contactPage.1QuelEstLeSujet")}
           <span className="text-danger">*</span>
         </label>
@@ -339,7 +339,7 @@ export const ContactPage: React.FC = () => {
       {/* 3. Step 2: Reason Selector & Handoffs */}
       {currentCategoryDef && (
         <div className="space-y-4 pt-2 animate-fadeIn">
-          <label className="block text-xs font-black uppercase tracking-wider text-stone-700">
+          <label className="block text-xs font-semibold uppercase tracking-wider text-stone-700">
             {t("support.contactPage.2PrecisezVotreSituation")}
             <span className="text-danger">*</span>
           </label>
@@ -355,7 +355,7 @@ export const ContactPage: React.FC = () => {
                   onClick={() => setSelectedReasonId(r.id)}
                   className={`p-3.5 rounded-2xl border text-left transition-all flex items-center justify-between gap-3 cursor-pointer ${
                     isSelected
-                      ? "border-primary bg-primary/5 text-stone-900 font-bold ring-1 ring-primary/30"
+                      ? "border-primary bg-primary/5 text-stone-900 font-semibold ring-1 ring-primary/30"
                       : "border-border-base bg-white text-stone-700 hover:bg-stone-50"
                   }`}
                 >
@@ -394,7 +394,7 @@ export const ContactPage: React.FC = () => {
                   to="/compte/achats"
                   variant="primary"
                   size="sm"
-                  className="font-bold mt-1"
+                  className="font-semibold mt-1"
                 >
                   {t("support.contactPage.accederAMesAchatsPour")}
                 </Button>
@@ -416,7 +416,7 @@ export const ContactPage: React.FC = () => {
                   to="/compte/messages"
                   variant="outline"
                   size="sm"
-                  className="font-bold mt-1"
+                  className="font-semibold mt-1"
                 >
                   {t("support.contactPage.ouvrirLaMessagerie")}
                 </Button>
@@ -443,7 +443,7 @@ export const ContactPage: React.FC = () => {
           onSubmit={handleSubmit}
           className="bg-white border border-border-base rounded-3xl p-6 sm:p-8 shadow-xs space-y-6 animate-fadeIn"
         >
-          <h2 className="text-base font-black text-stone-900">
+          <h2 className="text-base font-bold text-stone-900">
             {t("support.contactPage.3RedigezVotreMessage")}
           </h2>
 
@@ -519,7 +519,7 @@ export const ContactPage: React.FC = () => {
               variant="primary"
               size="lg"
               disabled={isSubmitting}
-              className="font-black"
+              className="font-semibold"
             >
               {isSubmitting ? "Envoi en cours..." : "Envoyer ma demande"}
             </Button>

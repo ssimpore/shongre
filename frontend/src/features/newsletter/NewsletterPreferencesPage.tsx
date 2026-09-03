@@ -155,7 +155,7 @@ export const NewsletterPreferencesPage: React.FC = () => {
     <div className="space-y-6">
       {/* 1. Header */}
       <div>
-        <h1 className="text-xl sm:text-2xl font-black text-stone-900">
+        <h1 className="text-xl sm:text-2xl font-bold text-stone-900">
           {t(
             "newsletter.newsletterPreferencesPage.newsletterPreferencesMarketing",
           )}
@@ -185,7 +185,7 @@ export const NewsletterPreferencesPage: React.FC = () => {
               it pushed the page 56px wider than a 320px screen. */}
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-              <span className="min-w-0 max-w-full truncate text-sm font-black text-stone-900">
+              <span className="min-w-0 max-w-full truncate text-sm font-bold text-stone-900">
                 {currentUser?.email}
               </span>
               <Badge variant={statusInfo.variant} size="sm">
@@ -204,7 +204,7 @@ export const NewsletterPreferencesPage: React.FC = () => {
             size="sm"
             onClick={handleUnsubscribe}
             disabled={isSaving}
-            className="text-stone-600 hover:text-stone-900 shrink-0 font-bold"
+            className="text-stone-600 hover:text-stone-900 shrink-0 font-semibold"
           >
             {t("newsletter.newsletterPreferencesPage.seDesabonner")}
           </Button>
@@ -214,7 +214,7 @@ export const NewsletterPreferencesPage: React.FC = () => {
             size="sm"
             onClick={handleResubscribe}
             disabled={isSaving}
-            className="shrink-0 font-bold"
+            className="shrink-0 font-semibold"
           >
             {t("newsletter.newsletterPreferencesPage.seReabonner")}
           </Button>
@@ -224,7 +224,7 @@ export const NewsletterPreferencesPage: React.FC = () => {
       {/* 3. Topics Customization */}
       <div className="bg-white border border-border-base rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
         <div>
-          <h2 className="text-base font-black text-stone-900">
+          <h2 className="text-base font-bold text-stone-900">
             {t("newsletter.newsletterPreferencesPage.vosThematiquesFavorites")}
           </h2>
           <p className="text-xs text-stone-500 mt-0.5">
@@ -247,7 +247,7 @@ export const NewsletterPreferencesPage: React.FC = () => {
             size="md"
             onClick={handleSave}
             disabled={isSaving || !isSubscribed}
-            className="font-bold flex items-center gap-2"
+            className="font-semibold flex items-center gap-2"
           >
             <Save className="w-icon-md h-icon-md" />
             <span>

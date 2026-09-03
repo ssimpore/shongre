@@ -163,7 +163,7 @@ export const AdminFeatureFlagsPage: React.FC = () => {
             Gouvernance produit
           </span>
         </div>
-        <h1 className="mt-1 text-2xl font-black text-text-main">
+        <h1 className="mt-1 text-2xl font-bold text-text-main">
           {t(
             "admin.adminFeatureFlagsPage.fonctionnalitesEtDeploiementsProgressifs",
           )}
@@ -232,7 +232,7 @@ export const AdminFeatureFlagsPage: React.FC = () => {
               >
                 <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border-subtle pb-4">
                   <div>
-                    <p className="font-mono text-sm font-black text-text-main">
+                    <p className="font-mono text-sm font-bold text-text-main">
                       {selected.definition.key}
                     </p>
                     <p className="mt-1 text-micro text-stone-500">
@@ -368,7 +368,7 @@ export const AdminFeatureFlagsPage: React.FC = () => {
               >
                 <h2
                   id="flag-rules-title"
-                  className="text-base font-black text-text-main"
+                  className="text-base font-bold text-text-main"
                 >
                   {t("admin.adminFeatureFlagsPage.reglesCiblees")}
                 </h2>
@@ -411,7 +411,7 @@ export const AdminFeatureFlagsPage: React.FC = () => {
                   onSubmit={addRule}
                   className="mt-5 space-y-3 border-t border-border-subtle pt-4"
                 >
-                  <h3 className="flex items-center gap-2 text-sm font-black text-text-main">
+                  <h3 className="flex items-center gap-2 text-sm font-bold text-text-main">
                     <Plus className="h-icon-md w-icon-md" />{" "}
                     {t("admin.adminFeatureFlagsPage.nouvelleRegle")}
                   </h3>

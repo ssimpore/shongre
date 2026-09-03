@@ -183,14 +183,14 @@ export const AdminAutoPage: React.FC = () => {
               className="rounded-card border border-border-base bg-bg-surface p-4 shadow-xs"
             >
               <Icon className="h-icon-md w-icon-md text-primary" />
-              <p className="mt-3 text-2xl font-black">{formatNumber(value)}</p>
+              <p className="mt-3 text-2xl font-bold">{formatNumber(value)}</p>
               <p className="text-xs text-text-secondary">{label}</p>
             </div>
           ))}
         </div>
         <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
           <section className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs">
-            <h2 className="text-base font-black">
+            <h2 className="text-base font-bold">
               Configuration du marché {activeMarket.code}
             </h2>
             <dl className="mt-4 divide-y divide-border-subtle text-xs">
@@ -214,7 +214,7 @@ export const AdminAutoPage: React.FC = () => {
             </dl>
           </section>
           <section className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs">
-            <h2 className="text-base font-black">Garde-fous actifs</h2>
+            <h2 className="text-base font-bold">Garde-fous actifs</h2>
             <ul className="mt-4 space-y-3 text-xs text-text-secondary">
               <li className="flex gap-2">
                 <ShieldCheck className="h-icon-sm w-icon-sm text-success" /> VIN
@@ -240,7 +240,7 @@ export const AdminAutoPage: React.FC = () => {
       <div className="grid gap-4 xl:grid-cols-content-aside-lg">
         <section className="rounded-card border border-border-base bg-bg-surface shadow-xs">
           <div className="border-b border-border-subtle p-4">
-            <h2 className="text-base font-black">Types de véhicules</h2>
+            <h2 className="text-base font-bold">Types de véhicules</h2>
             <p className="mt-1 text-xs text-text-secondary">
               Version de schéma, champs requis et filtres sont configurables par
               type.
@@ -277,7 +277,7 @@ export const AdminAutoPage: React.FC = () => {
           </div>
         </section>
         <section className="rounded-card border border-border-base bg-bg-surface p-4 shadow-xs">
-          <h2 className="text-sm font-black">Registre d’attributs</h2>
+          <h2 className="text-sm font-bold">Registre d’attributs</h2>
           <div className="mt-3 space-y-2">
             {overview.catalog.attributes.map((attribute) => (
               <div
@@ -307,7 +307,7 @@ export const AdminAutoPage: React.FC = () => {
     ) : tab === "Formules" ? (
       <section className="rounded-card border border-border-base bg-bg-surface shadow-xs">
         <div className="border-b border-border-subtle p-4">
-          <h2 className="text-base font-black">Formules et droits</h2>
+          <h2 className="text-base font-bold">Formules et droits</h2>
           <p className="mt-1 text-xs text-text-secondary">
             Les montants sont en unités mineures et les composants ne
             contiennent aucun prix commercial.
@@ -380,7 +380,7 @@ export const AdminAutoPage: React.FC = () => {
           </table>
         </ScrollableRegion>
         <div className="border-t border-border-subtle p-4">
-          <h3 className="text-sm font-black">Options et parrainages</h3>
+          <h3 className="text-sm font-bold">Options et parrainages</h3>
           <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
             {overview.catalog.addOns.map((addOn) => (
               <div
@@ -415,7 +415,7 @@ export const AdminAutoPage: React.FC = () => {
       </section>
     ) : tab === "Imports" ? (
       <section className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs">
-        <h2 className="text-base font-black">Derniers imports</h2>
+        <h2 className="text-base font-bold">Derniers imports</h2>
         <div className="mt-4 divide-y divide-border-subtle">
           {overview.recentImports.map((item) => (
             <div
@@ -441,7 +441,7 @@ export const AdminAutoPage: React.FC = () => {
       </section>
     ) : tab === "Partenaires" ? (
       <section className="rounded-card border border-warning-border bg-warning-surface p-5">
-        <h2 className="text-base font-black">
+        <h2 className="text-base font-bold">
           Parrainages partenaires — inactifs
         </h2>
         <p className="mt-2 max-w-3xl text-xs leading-relaxed text-text-secondary">
@@ -482,7 +482,7 @@ export const AdminAutoPage: React.FC = () => {
             )}
           </span>
           <div>
-            <h2 className="text-base font-black">{tab}</h2>
+            <h2 className="text-base font-bold">{tab}</h2>
             <p className="mt-1 text-xs text-text-secondary">
               Vue opérationnelle spécialisée Auto, filtrée par marché et
               protégée par la permission sensible <code>auto.admin.manage</code>
@@ -500,7 +500,7 @@ export const AdminAutoPage: React.FC = () => {
           <p className="flex items-center gap-2 text-xs font-bold text-primary">
             <Settings2 className="h-icon-sm w-icon-sm" /> Verticale spécialisée
           </p>
-          <h1 className="mt-1 text-2xl font-black">
+          <h1 className="mt-1 text-2xl font-bold">
             Administration Shongre Auto
           </h1>
           <p className="mt-1 text-xs text-text-secondary">
@@ -526,7 +526,7 @@ export const AdminAutoPage: React.FC = () => {
               key={item}
               type="button"
               onClick={() => setTab(item)}
-              className={`border-b-2 px-1 py-3 text-xs font-bold ${tab === item ? "border-primary text-primary" : "border-transparent text-text-secondary"}`}
+              className={`border-b-2 px-1 py-3 text-xs font-semibold ${tab === item ? "border-primary text-primary" : "border-transparent text-text-secondary"}`}
             >
               {item}
             </button>

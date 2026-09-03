@@ -37,7 +37,7 @@ const ErrorFallback: React.FC<{
         </div>
 
         <div className="space-y-2">
-          <h1 className="text-xl sm:text-2xl font-black text-text-main">
+          <h1 className="text-xl sm:text-2xl font-bold text-text-main">
             {t("shell.errorBoundary.uneErreurInattendueEstSurvenue")}
           </h1>
           <p className="text-sm text-text-secondary">

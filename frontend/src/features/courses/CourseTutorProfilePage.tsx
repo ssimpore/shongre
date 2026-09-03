@@ -149,7 +149,7 @@ export const CourseTutorProfilePage: React.FC = () => {
               </div>
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h1 className="text-xl font-black tracking-tight text-text-main sm:text-2xl">
+                  <h1 className="text-xl font-bold tracking-tight text-text-main sm:text-2xl">
                     {tutor.displayName}
                   </h1>
                   {tutor.verifications.identity === "verified" && (
@@ -217,7 +217,7 @@ export const CourseTutorProfilePage: React.FC = () => {
           </section>
 
           <section className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs sm:p-6">
-            <h2 className="text-base font-black text-text-main">À propos</h2>
+            <h2 className="text-base font-bold text-text-main">À propos</h2>
             <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-text-secondary">
               {tutor.biography}
             </p>
@@ -231,7 +231,7 @@ export const CourseTutorProfilePage: React.FC = () => {
 
           <section className="rounded-card border border-border-base bg-bg-surface shadow-xs">
             <div className="flex items-center justify-between border-b border-border-subtle px-5 py-4">
-              <h2 className="flex items-center gap-2 text-base font-black text-text-main">
+              <h2 className="flex items-center gap-2 text-base font-bold text-text-main">
                 <BookOpen
                   className="h-icon-md w-icon-md text-primary"
                   aria-hidden="true"
@@ -289,7 +289,7 @@ export const CourseTutorProfilePage: React.FC = () => {
                     </div>
                     {price && (
                       <div className="text-left sm:text-right">
-                        <p className="text-lg font-black text-text-main">
+                        <p className="text-lg font-bold text-text-main">
                           {formatMoney(price.price)}
                           <span className="text-xs font-medium text-text-muted">
                             {" "}
@@ -311,7 +311,7 @@ export const CourseTutorProfilePage: React.FC = () => {
 
           <section className="grid gap-5 md:grid-cols-2">
             <div className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs">
-              <h2 className="flex items-center gap-2 text-sm font-black text-text-main">
+              <h2 className="flex items-center gap-2 text-sm font-bold text-text-main">
                 <Award
                   className="h-icon-sm w-icon-sm text-primary"
                   aria-hidden="true"
@@ -350,7 +350,7 @@ export const CourseTutorProfilePage: React.FC = () => {
             </div>
 
             <div className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs">
-              <h2 className="flex items-center gap-2 text-sm font-black text-text-main">
+              <h2 className="flex items-center gap-2 text-sm font-bold text-text-main">
                 <ShieldCheck
                   className="h-icon-sm w-icon-sm text-success"
                   aria-hidden="true"
@@ -391,7 +391,7 @@ export const CourseTutorProfilePage: React.FC = () => {
         <aside className="self-start lg:sticky lg:top-24">
           <div className="rounded-card border border-border-base bg-bg-surface p-5 shadow-sm">
             {hourlyPrice && (
-              <p className="text-2xl font-black text-text-main">
+              <p className="text-2xl font-bold text-text-main">
                 {formatMoney(hourlyPrice.price)}
                 <span className="ml-1 text-xs font-medium text-text-muted">
                   / h
@@ -417,7 +417,7 @@ export const CourseTutorProfilePage: React.FC = () => {
           </div>
 
           <div className="mt-4 rounded-card border border-border-base bg-bg-subtle p-4">
-            <h2 className="text-xs font-black text-text-main">
+            <h2 className="text-xs font-bold text-text-main">
               Premier cours en sécurité
             </h2>
             <ul className="mt-2 space-y-2 text-xs leading-relaxed text-text-secondary">

@@ -141,7 +141,7 @@ export function SolutionDetailPage() {
               />
             </span>
             <div className="min-w-0 pt-2">
-              <h1 className="text-3xl font-black tracking-tight text-text-main sm:text-4xl">
+              <h1 className="text-3xl font-bold tracking-tight text-text-main sm:text-4xl">
                 {solution.name}
               </h1>
               <p
@@ -191,7 +191,7 @@ export function SolutionDetailPage() {
 
         <section className="grid gap-8 border-b border-border-base py-8 lg:grid-cols-2 lg:divide-x lg:divide-border-base">
           <div>
-            <h2 className="text-lg font-black text-text-main">
+            <h2 className="text-lg font-bold text-text-main">
               {t("solutions.detail.capabilitiesTitle")}
             </h2>
             <ul className="mt-4 divide-y divide-border-base">
@@ -210,7 +210,7 @@ export function SolutionDetailPage() {
             </ul>
           </div>
           <div className="lg:pl-8">
-            <h2 className="text-lg font-black text-text-main">
+            <h2 className="text-lg font-bold text-text-main">
               {t("solutions.detail.accessTitle")}
             </h2>
             <dl className="mt-4 divide-y divide-border-base text-sm">
@@ -248,7 +248,7 @@ export function SolutionDetailPage() {
               aria-hidden="true"
             />
             <div>
-              <h2 className="text-sm font-black text-primary">
+              <h2 className="text-sm font-bold text-primary">
                 {solution.lifecycle === "BETA"
                   ? t("solutions.detail.betaTitle")
                   : lifecycleLabel}

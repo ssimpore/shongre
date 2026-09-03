@@ -218,7 +218,7 @@ export const ROLE_DEFINITIONS: Record<PlatformRole, RoleMetadata> = {
     shortLabel: "Propriétaire",
     accountType: "individual",
     hierarchyLevel: 100,
-    badgeColor: "bg-purple-100 text-purple-950 border-purple-400 font-black",
+    badgeColor: "bg-purple-100 text-purple-950 border-purple-400 font-bold",
     description:
       "Gouvernance critique et permissions, avec droits explicites et auditables.",
     defaultPermissions: permissionsFor("super_admin"),

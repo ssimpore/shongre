@@ -92,7 +92,7 @@ export const NewsletterPublicPreferencesPage: React.FC = () => {
         <p className="text-xs font-bold uppercase tracking-wide text-primary">
           Newsletter Shongre
         </p>
-        <h1 className="mt-1 text-2xl font-black text-stone-900">
+        <h1 className="mt-1 text-2xl font-bold text-stone-900">
           Vos préférences
         </h1>
         <p className="mt-2 text-sm text-stone-600">

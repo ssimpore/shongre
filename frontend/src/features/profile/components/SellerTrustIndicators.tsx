@@ -48,7 +48,7 @@ export const SellerTrustIndicators: React.FC<SellerTrustIndicatorsProps> = ({
           className="h-icon-lg w-icon-lg text-success"
           aria-hidden="true"
         />
-        <h2 className="text-sm font-black uppercase tracking-wider text-stone-900">
+        <h2 className="text-sm font-bold uppercase tracking-wider text-stone-900">
           Informations et signaux vérifiés
         </h2>
       </div>

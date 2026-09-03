@@ -439,7 +439,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
               <span className="text-micro bg-stone-200 text-stone-800 px-2 py-0.5 rounded font-mono uppercase font-bold">
                 {node.level}
               </span>
-              <h2 className="text-lg font-black text-text-main">{node.name}</h2>
+              <h2 className="text-lg font-bold text-text-main">{node.name}</h2>
               {node.shortLabel && (
                 <span className="text-xs bg-warning-surface text-warning border border-warning-border px-2 py-0.5 rounded-pill font-bold">
                   Alias : {node.shortLabel}
@@ -592,7 +592,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
               onClick={() => setActiveTab(tab.id as EditorTab)}
               className={`flex items-center gap-1.5 py-3 px-3 border-b-2 whitespace-nowrap transition-colors cursor-pointer ${
                 isActive
-                  ? "border-primary text-primary font-bold"
+                  ? "border-primary text-primary font-semibold"
                   : "border-transparent text-stone-500 hover:text-text-main hover:border-stone-300"
               }`}
             >
@@ -1448,7 +1448,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                     key={code}
                     type="button"
                     onClick={() => setSelectedMarketCode(code)}
-                    className={`px-3 py-1.5 rounded-control text-xs font-bold transition-all flex items-center gap-1.5 ${
+                    className={`px-3 py-1.5 rounded-control text-xs font-semibold transition-all flex items-center gap-1.5 ${
                       isSelected
                         ? "bg-stone-900 text-text-inverse shadow-xs"
                         : "bg-bg-base text-text-secondary hover:bg-bg-subtle border border-border-base"
@@ -1656,7 +1656,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                     key={attr.id}
                     className="p-3 bg-bg-surface border border-border-base rounded-control space-y-1"
                   >
-                    <label className="text-xs font-bold text-stone-800 flex items-center justify-between">
+                    <label className="text-xs font-semibold text-stone-800 flex items-center justify-between">
                       <span>
                         {attr.label}
                         {attr.required && (
@@ -1693,7 +1693,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                   <span className="text-stone-500">
                     {t("admin.taxonomyNodeEditor.annoncesActivesAssociees")}
                   </span>
-                  <p className="text-lg font-black text-text-main">
+                  <p className="text-lg font-bold text-text-main">
                     {impact.activeListingsCount}
                   </p>
                 </div>
@@ -1701,13 +1701,13 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                   <span className="text-stone-500">
                     {t("admin.taxonomyNodeEditor.sousCategoriesDependantes")}
                   </span>
-                  <p className="text-lg font-black text-text-main">
+                  <p className="text-lg font-bold text-text-main">
                     {impact.descendantsCount}
                   </p>
                 </div>
                 <div className="p-3 bg-bg-surface rounded-lg border border-border-base">
                   <span className="text-stone-500">Feuilles publiables :</span>
-                  <p className="text-lg font-black text-text-main">
+                  <p className="text-lg font-bold text-text-main">
                     {impact.publishableLeavesCount}
                   </p>
                 </div>
@@ -1715,7 +1715,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
                   <span className="text-stone-500">
                     {t("admin.taxonomyNodeEditor.surchargesMarchesActives")}
                   </span>
-                  <p className="text-lg font-black text-text-main">
+                  <p className="text-lg font-bold text-text-main">
                     {impact.marketOverridesCount}
                   </p>
                 </div>

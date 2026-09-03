@@ -881,7 +881,7 @@ export const ListingDetailPage: React.FC = () => {
                 </div>
 
                 {/* Main H1 Title */}
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-stone-900 leading-tight tracking-tight">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-stone-900 leading-tight tracking-tight">
                   {listing.title}
                 </h1>
               </div>
@@ -947,7 +947,7 @@ export const ListingDetailPage: React.FC = () => {
 
           {/* 4. DESCRIPTION */}
           <div className="bg-white rounded-3xl border border-stone-200/60 p-6 sm:p-8 space-y-4 shadow-sm">
-            <h2 className="text-base font-black text-stone-900 pb-3 border-b border-stone-100 flex items-center gap-2">
+            <h2 className="text-base font-bold text-stone-900 pb-3 border-b border-stone-100 flex items-center gap-2">
               Description
             </h2>
             <div
@@ -967,7 +967,7 @@ export const ListingDetailPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
-                className="inline-flex min-h-6 cursor-pointer items-center pt-2 text-sm font-bold text-primary transition-colors hover:text-primary-hover hover:underline"
+                className="inline-flex min-h-6 cursor-pointer items-center pt-2 text-sm font-semibold text-primary transition-colors hover:text-primary-hover hover:underline"
               >
                 {isDescriptionExpanded ? "Afficher moins" : "Afficher la suite"}
               </button>
@@ -1295,7 +1295,7 @@ export const ListingDetailPage: React.FC = () => {
         <div className="pt-8 border-t border-border-subtle space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg sm:text-xl font-black text-stone-900">
+              <h2 className="text-lg sm:text-xl font-bold text-stone-900">
                 Annonces similaires dans {displayCategoryLabel}
               </h2>
               <p className="text-xs text-stone-500">
@@ -1535,7 +1535,7 @@ export const ListingDetailPage: React.FC = () => {
             <div className="text-sm text-stone-500 font-bold uppercase tracking-wider shrink-0 sm:mb-0.5">
               {t("listings.pricing.itemPrice")}
             </div>
-            <div className="text-2xl font-black text-stone-900 truncate tabular-nums leading-none">
+            <div className="text-2xl font-bold text-stone-900 truncate tabular-nums leading-none">
               {listing.isFreeDonation
                 ? "Don gratuit"
                 : formatPrice(listing.price, {

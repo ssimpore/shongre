@@ -251,7 +251,7 @@ export const CrmTasksPage: React.FC = () => {
             <p className="text-micro font-bold uppercase tracking-wider text-violet-300">
               {t("admin.crmTasksPage.crmExecution")}
             </p>
-            <h1 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">
+            <h1 className="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">
               {t("admin.crmTasksPage.tachesRelances")}
             </h1>
             <p className="mt-1 text-xs text-text-disabled">
@@ -270,13 +270,13 @@ export const CrmTasksPage: React.FC = () => {
             <span className="text-micro text-text-disabled">
               {t("admin.crmTasksPage.aFaire")}
             </span>
-            <strong className="block text-xl font-black">
+            <strong className="block text-xl font-bold">
               {counts.pending}
             </strong>
           </div>
           <div className="rounded-control bg-stone-900 p-3">
             <span className="text-micro text-text-disabled">En retard</span>
-            <strong className="block text-xl font-black text-red-300">
+            <strong className="block text-xl font-bold text-red-300">
               {counts.overdue}
             </strong>
           </div>
@@ -284,7 +284,7 @@ export const CrmTasksPage: React.FC = () => {
             <span className="text-micro text-text-disabled">
               {t("admin.crmTasksPage.terminees")}
             </span>
-            <strong className="block text-xl font-black text-emerald-300">
+            <strong className="block text-xl font-bold text-emerald-300">
               {counts.completed}
             </strong>
           </div>
@@ -307,7 +307,7 @@ export const CrmTasksPage: React.FC = () => {
                 role="tab"
                 aria-selected={filter === value}
                 onClick={() => setFilter(value)}
-                className={`rounded-md px-3 py-1.5 text-micro font-black ${filter === value ? "bg-bg-surface text-stone-950 shadow-xs" : "text-stone-500"}`}
+                className={`rounded-md px-3 py-1.5 text-micro font-semibold ${filter === value ? "bg-bg-surface text-stone-950 shadow-xs" : "text-stone-500"}`}
               >
                 {value === "pending"
                   ? `À faire (${counts.pending})`

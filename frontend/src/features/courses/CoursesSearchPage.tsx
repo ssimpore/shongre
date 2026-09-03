@@ -474,7 +474,7 @@ export const CoursesSearchPage: React.FC = () => {
               />
               {t("verticals.education.brand")}
             </p>
-            <h1 className="mt-1 text-xl font-black tracking-tight text-text-main sm:text-2xl">
+            <h1 className="mt-1 text-xl font-bold tracking-tight text-text-main sm:text-2xl">
               Trouver un professeur
             </h1>
             <p className="mt-1 text-xs text-text-secondary sm:text-sm">
@@ -625,7 +625,7 @@ export const CoursesSearchPage: React.FC = () => {
               ))}
               <section className="flex flex-col items-start justify-between gap-4 rounded-card border border-primary-border bg-primary-light p-5 sm:flex-row sm:items-center">
                 <div>
-                  <h2 className="text-sm font-black text-text-main">
+                  <h2 className="text-sm font-bold text-text-main">
                     Vous ne trouvez pas le professeur idéal ?
                   </h2>
                   <p className="mt-1 max-w-2xl text-xs leading-relaxed text-text-secondary">
@@ -645,7 +645,7 @@ export const CoursesSearchPage: React.FC = () => {
         {compared.length > 0 && (
           <aside className="hidden self-start rounded-card border border-border-base bg-bg-surface shadow-xs xl:block xl:sticky xl:top-24">
             <div className="flex items-center justify-between border-b border-border-subtle p-4">
-              <h2 className="flex items-center gap-2 text-sm font-black text-text-main">
+              <h2 className="flex items-center gap-2 text-sm font-bold text-text-main">
                 <GitCompareArrows
                   className="h-icon-sm w-icon-sm"
                   aria-hidden="true"
@@ -745,7 +745,7 @@ export const CoursesSearchPage: React.FC = () => {
         <div className="fixed inset-x-3 bottom-mobile-nav-clearance-gutter z-sticky rounded-card border border-border-base bg-bg-surface p-3 shadow-overlay xl:hidden md:bottom-4 md:left-auto md:right-4 md:w-80">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
-              <p className="text-xs font-black text-text-main">
+              <p className="text-xs font-bold text-text-main">
                 {compared.length} professeur{compared.length > 1 ? "s" : ""} à
                 comparer
               </p>

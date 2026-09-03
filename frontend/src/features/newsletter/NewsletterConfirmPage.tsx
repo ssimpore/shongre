@@ -69,7 +69,7 @@ export const NewsletterConfirmPage: React.FC = () => {
         </div>
 
         <div className="space-y-2">
-          <h1 className="text-2xl font-black text-stone-900">
+          <h1 className="text-2xl font-bold text-stone-900">
             {state === "confirmed"
               ? t("newsletter.newsletterConfirmPage.abonnementConfirme")
               : "Lien invalide ou expiré"}
@@ -105,7 +105,7 @@ export const NewsletterConfirmPage: React.FC = () => {
             variant="primary"
             fullWidth
             onClick={() => navigate("/")}
-            className="font-bold"
+            className="font-semibold"
           >
             {t("newsletter.newsletterConfirmPage.explorerLesAnnonces")}
           </Button>

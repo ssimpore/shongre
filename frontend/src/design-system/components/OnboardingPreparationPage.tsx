@@ -57,7 +57,7 @@ export const OnboardingPreparationPage: React.FC<
             </span>
             <h1
               id={headingId}
-              className="mt-2 max-w-xl text-3xl font-black tracking-tight text-stone-900 sm:text-4xl"
+              className="mt-2 max-w-xl text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl"
             >
               {title}
             </h1>
@@ -111,7 +111,7 @@ export const OnboardingPreparationPage: React.FC<
           </div>
 
           <div className="min-w-0 border-t border-border-base bg-bg-subtle p-5 sm:p-8 lg:border-l lg:border-t-0 lg:p-10">
-            <h2 className="text-sm font-black text-stone-900">
+            <h2 className="text-sm font-bold text-stone-900">
               {checklistTitle}
             </h2>
             <ul className="mt-4 divide-y divide-border-base">

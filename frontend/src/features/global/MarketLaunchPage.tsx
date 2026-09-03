@@ -10,12 +10,12 @@ export function MarketLaunchPage({
   gatewayHref: string;
 }) {
   return (
-    <div className="flex min-h-screen flex-col bg-white font-sans text-stone-950">
+    <div className="flex min-h-screen flex-col bg-white text-stone-950">
       <header className="border-b border-border-base">
         <div className="mx-auto flex h-16 w-full max-w-page items-center justify-between px-4 sm:px-6 lg:px-8">
           <a
             href={gatewayHref}
-            className="text-xl font-extrabold uppercase tracking-tight"
+            className="text-xl font-bold uppercase tracking-tight"
           >
             Shongre<span className="text-primary">.</span>
           </a>
@@ -27,7 +27,7 @@ export function MarketLaunchPage({
       <main id="main-content" className="flex flex-1 items-center">
         <section className="mx-auto w-full max-w-3xl px-4 py-16 text-center sm:px-6 lg:px-8">
           <Clock3 className="mx-auto h-9 w-9 text-primary" aria-hidden="true" />
-          <h1 className="mt-6 text-3xl font-black tracking-tight sm:text-5xl">
+          <h1 className="mt-6 text-3xl font-bold tracking-tight sm:text-5xl">
             {country.launchContent.title}
           </h1>
           <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-stone-600">

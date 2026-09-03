@@ -308,7 +308,7 @@ export const AdminLayout: React.FC = () => {
   }, [activeNavItem?.to]);
 
   return (
-    <div className="flex min-h-screen flex-col bg-bg-base font-sans text-text-main">
+    <div className="flex min-h-screen flex-col bg-bg-base text-text-main">
       <SkipLink />
       <AppScrollRestoration />
       {/* Top Internal Staff Bar */}
@@ -319,11 +319,11 @@ export const AdminLayout: React.FC = () => {
         >
           <div className="flex items-center gap-3 min-w-0">
             <Link to="/admin" className="flex items-center gap-2 group min-w-0">
-              <div className="w-8 h-8 rounded-lg bg-primary text-text-inverse flex items-center justify-center font-black text-sm shadow-xs shrink-0">
+              <div className="w-8 h-8 rounded-lg bg-primary text-text-inverse flex items-center justify-center font-bold text-sm shadow-xs shrink-0">
                 S
               </div>
               <div className="flex flex-col min-w-0">
-                <span className="text-sm font-black tracking-tight flex items-center gap-1.5 min-w-0">
+                <span className="text-sm font-bold tracking-tight flex items-center gap-1.5 min-w-0">
                   <span className="truncate">Shongre Console</span>
                   <span className="hidden sm:inline text-micro bg-stone-800 text-stone-300 font-mono px-2 py-1 rounded-sm border border-stone-700 shrink-0">
                     v2.4

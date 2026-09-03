@@ -108,8 +108,10 @@ export function renderNotFoundDocument(
   const description = escapeHtml(presentation.description);
   const returnHref = escapeHtml(presentation.returnHref);
   const returnLabel = escapeHtml(presentation.returnLabel);
+  // This response is emitted by the edge proxy before the App Router layout,
+  // so it cannot inherit next/font's generated class. It still consumes the
+  // canonical stack and its system fallback instead of loading a second font.
   const styles = `
-    :root { --font-inter: "Inter Variable"; }
     * { box-sizing: border-box; }
     body {
       min-height: 100vh;
@@ -139,7 +141,7 @@ export function renderNotFoundDocument(
       margin: 0;
       color: ${colors.action.primary};
       font-size: ${typography.fontSizes.sm};
-      font-weight: ${typography.fontWeights.black};
+      font-weight: ${typography.fontWeights.bold};
       letter-spacing: ${typography.letterSpacing.wide};
       text-transform: uppercase;
     }
@@ -147,7 +149,7 @@ export function renderNotFoundDocument(
       margin: ${spacing.md} 0 0;
       font-size: ${typography.fontSizes["3xl"]};
       line-height: ${typography.textLineHeights["3xl"]};
-      font-weight: ${typography.fontWeights.black};
+      font-weight: ${typography.fontWeights.bold};
     }
     .description {
       max-width: ${sizing.containers.task};

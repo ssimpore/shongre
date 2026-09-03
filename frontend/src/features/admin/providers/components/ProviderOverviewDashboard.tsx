@@ -147,7 +147,7 @@ export const ProviderOverviewDashboard: React.FC<
             </span>
           </div>
           <div className="mt-3">
-            <span className="text-2xl font-black text-text-main">
+            <span className="text-2xl font-bold text-text-main">
               {metrics.total}
             </span>
             <span className="ml-2 text-xs font-medium text-stone-500">
@@ -175,7 +175,7 @@ export const ProviderOverviewDashboard: React.FC<
             </span>
           </div>
           <div className="mt-3">
-            <span className="text-2xl font-black text-text-main">
+            <span className="text-2xl font-bold text-text-main">
               {metrics.healthScore === null ? "—" : `${metrics.healthScore}%`}
             </span>
             <span
@@ -204,7 +204,7 @@ export const ProviderOverviewDashboard: React.FC<
             </span>
           </div>
           <div className="mt-3">
-            <span className="text-2xl font-black text-text-main">
+            <span className="text-2xl font-bold text-text-main">
               {metrics.productionReady}
             </span>
             <span className="ml-2 text-xs font-medium text-stone-500">
@@ -229,7 +229,7 @@ export const ProviderOverviewDashboard: React.FC<
             </span>
           </div>
           <div className="mt-3">
-            <span className="text-2xl font-black text-text-main">
+            <span className="text-2xl font-bold text-text-main">
               {metrics.requiresAction}
             </span>
             <span

@@ -172,7 +172,7 @@ export const CrmProviderSettingsPage: React.FC = () => {
               <p className="text-micro font-bold uppercase tracking-wider text-violet-300">
                 CRM · Provider Platform
               </p>
-              <h1 className="text-2xl font-black tracking-tight sm:text-3xl">
+              <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
                 {aiOnly ? "IA & modèles" : "Communications"}
               </h1>
             </div>
@@ -211,7 +211,7 @@ export const CrmProviderSettingsPage: React.FC = () => {
               <span className="text-micro font-bold uppercase text-stone-500">
                 {t("admin.crmProviderSettingsPage.references")}
               </span>
-              <strong className="mt-1 block text-2xl font-black">
+              <strong className="mt-1 block text-2xl font-bold">
                 {providers.length}
               </strong>
             </article>
@@ -219,7 +219,7 @@ export const CrmProviderSettingsPage: React.FC = () => {
               <span className="text-micro font-bold uppercase text-stone-500">
                 {t("admin.crmProviderSettingsPage.implementes")}
               </span>
-              <strong className="mt-1 block text-2xl font-black">
+              <strong className="mt-1 block text-2xl font-bold">
                 {
                   providers.filter(
                     ({ definition }) =>
@@ -232,7 +232,7 @@ export const CrmProviderSettingsPage: React.FC = () => {
               <span className="text-micro font-bold uppercase text-stone-500">
                 {t("admin.crmProviderSettingsPage.operationnels")}
               </span>
-              <strong className="mt-1 block text-2xl font-black text-success">
+              <strong className="mt-1 block text-2xl font-bold text-success">
                 {
                   providers.filter(
                     ({ runtime }) => runtime.health === "HEALTHY",
@@ -244,14 +244,14 @@ export const CrmProviderSettingsPage: React.FC = () => {
               <span className="text-micro font-bold uppercase text-stone-500">
                 Environnement
               </span>
-              <strong className="mt-1 block text-2xl font-black">
+              <strong className="mt-1 block text-2xl font-bold">
                 {snapshot.environment}
               </strong>
             </article>
           </section>
           <section className="overflow-hidden rounded-2xl border border-border-base bg-bg-surface shadow-xs">
             <div className="border-b border-border-subtle px-5 py-4">
-              <h2 className="text-sm font-black">Connexions visibles</h2>
+              <h2 className="text-sm font-bold">Connexions visibles</h2>
               <p className="text-micro text-stone-500">
                 {t(
                   "admin.crmProviderSettingsPage.connexionsDuTenantEtConnexionsPersonnellesDuCompteCourantUniquement",
@@ -271,7 +271,7 @@ export const CrmProviderSettingsPage: React.FC = () => {
                     className="grid gap-3 px-5 py-4 sm:grid-cols-4 sm:items-center"
                   >
                     <div>
-                      <strong className="text-xs font-black">
+                      <strong className="text-xs font-bold">
                         {connection.displayName}
                       </strong>
                       <p className="mt-0.5 text-micro text-stone-500">
@@ -313,7 +313,7 @@ export const CrmProviderSettingsPage: React.FC = () => {
           </section>
           <section className="overflow-hidden rounded-2xl border border-border-base bg-bg-surface shadow-xs">
             <div className="border-b border-border-subtle px-5 py-4">
-              <h2 className="text-sm font-black">
+              <h2 className="text-sm font-bold">
                 {t("admin.crmProviderSettingsPage.registrePartage")}
               </h2>
               <p className="text-micro text-stone-500">
@@ -337,7 +337,7 @@ export const CrmProviderSettingsPage: React.FC = () => {
                       )}
                     </span>
                     <div>
-                      <strong className="text-xs font-black">
+                      <strong className="text-xs font-bold">
                         {definition.displayName}
                       </strong>
                       <p className="mt-0.5 text-micro text-stone-500">

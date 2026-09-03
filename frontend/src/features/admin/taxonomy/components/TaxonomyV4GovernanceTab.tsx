@@ -46,7 +46,7 @@ export function TaxonomyV4GovernanceTab() {
   return (
     <div className="space-y-5">
       <section className="rounded-2xl border border-border-base bg-bg-surface p-5 shadow-xs">
-        <h2 className="text-base font-black text-text-main">
+        <h2 className="text-base font-bold text-text-main">
           {t("admin.taxonomyV4GovernanceTab.gouvernanceDuSchemaV4Genere")}
         </h2>
         <p className="mt-1 text-xs text-text-muted">
@@ -68,9 +68,7 @@ export function TaxonomyV4GovernanceTab() {
               <dt className="text-micro font-bold uppercase text-text-muted">
                 {label}
               </dt>
-              <dd className="mt-1 text-lg font-black text-text-main">
-                {value}
-              </dd>
+              <dd className="mt-1 text-lg font-bold text-text-main">{value}</dd>
             </div>
           ))}
         </dl>
@@ -87,7 +85,7 @@ export function TaxonomyV4GovernanceTab() {
             type="button"
             role="tab"
             aria-selected={section === item.id}
-            className={`rounded-control border px-3 py-2 text-xs font-bold ${
+            className={`rounded-control border px-3 py-2 text-xs font-semibold ${
               section === item.id
                 ? "border-primary bg-primary-light text-primary"
                 : "border-border-base bg-bg-surface text-text-muted"
@@ -102,7 +100,7 @@ export function TaxonomyV4GovernanceTab() {
       <section className="rounded-2xl border border-border-base bg-bg-surface p-5 shadow-xs">
         {section === "listing_types" ? (
           <div className="space-y-4">
-            <label className="block text-xs font-bold text-text-main">
+            <label className="block text-xs font-semibold text-text-main">
               {t("admin.taxonomyV4GovernanceTab.rechercherUnTypeDAnnonce")}
               <input
                 type="search"
@@ -190,7 +188,7 @@ export function TaxonomyV4GovernanceTab() {
 
         {section === "bindings" ? (
           <div className="space-y-3">
-            <h3 className="font-black text-text-main">
+            <h3 className="font-bold text-text-main">
               {t("admin.taxonomyV4GovernanceTab.matriceResolue")}
             </h3>
             <p className="text-xs text-text-muted">
@@ -284,7 +282,7 @@ function ResourceList({
 }) {
   return (
     <div>
-      <h3 className="text-sm font-black text-text-main">{title}</h3>
+      <h3 className="text-sm font-bold text-text-main">{title}</h3>
       <ul className="mt-2 max-h-80 space-y-1 overflow-y-auto" tabIndex={0}>
         {rows.map((row) => (
           <li key={row.id} className="rounded-control bg-bg-base p-2 text-xs">

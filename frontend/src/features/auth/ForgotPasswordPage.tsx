@@ -156,7 +156,7 @@ export const ForgotPasswordPage: React.FC = () => {
           <div>
             <label
               htmlFor="reset-email"
-              className="block text-xs font-bold text-stone-800 mb-1.5"
+              className="block text-xs font-semibold text-stone-800 mb-1.5"
             >
               {t("auth.forgotPasswordPage.adresseEmailDeVotreCompte")}
               <span className="text-primary">*</span>
@@ -190,7 +190,7 @@ export const ForgotPasswordPage: React.FC = () => {
       ) : (
         <form onSubmit={handleResetPassword} className="space-y-4">
           <div>
-            <label className="block text-xs font-bold text-stone-800 mb-1.5">
+            <label className="block text-xs font-semibold text-stone-800 mb-1.5">
               {t("auth.forgotPasswordPage.jetonDeValidationToken")}
               <span className="text-primary">*</span>
             </label>
@@ -220,7 +220,7 @@ export const ForgotPasswordPage: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-stone-800 mb-1.5">
+            <label className="block text-xs font-semibold text-stone-800 mb-1.5">
               {t("auth.forgotPasswordPage.confirmerLeNouveauMotDe")}
               <span className="text-primary">*</span>
             </label>

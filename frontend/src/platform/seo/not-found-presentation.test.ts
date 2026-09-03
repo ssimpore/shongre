@@ -33,7 +33,9 @@ describe("not-found presentation", () => {
     expect(html).toContain("<title>Collection introuvable | Shongre</title>");
     expect(html).toContain('name="robots" content="noindex, nofollow"');
     expect(html).toContain('href="/collections"');
-    expect(html).toContain("font-family: var(--font-inter), 'Inter Variable'");
+    expect(html).toContain(
+      "font-family: var(--font-nunito-sans, 'Nunito Sans'), Helvetica, Arial, sans-serif",
+    );
     expect(html).not.toMatch(/<[a-z]+[^>]*\sstyle=/i);
   });
 });

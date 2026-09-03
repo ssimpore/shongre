@@ -37,7 +37,7 @@ export const ProductFooter: React.FC<ProductFooterProps> = ({
           <div>
             <a
               href={applicationHref(productId, productPath)}
-              className="inline-flex items-center gap-2 text-base font-black tracking-tight text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-on-dark"
+              className="inline-flex items-center gap-2 text-base font-bold tracking-tight text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-on-dark"
             >
               SHONGRE<span className="text-primary-on-dark">.</span>
               <span className="font-semibold text-stone-400">

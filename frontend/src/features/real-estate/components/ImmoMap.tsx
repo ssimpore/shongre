@@ -75,7 +75,7 @@ export const ImmoMap: React.FC<{
       const selected = property.id === selectedId;
       const icon = L.divIcon({
         className: "shongre-immo-marker",
-        html: `<button type="button" aria-label="Afficher le bien ${index + 1}" class="grid h-9 w-9 place-items-center rounded-full border-2 border-white bg-primary text-xs font-black text-white shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${selected ? "ring-4 ring-primary-border scale-110" : ""}">${index + 1}</button>`,
+        html: `<button type="button" aria-label="Afficher le bien ${index + 1}" class="grid h-9 w-9 place-items-center rounded-full border-2 border-white bg-primary font-sans text-xs font-bold text-white shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${selected ? "ring-4 ring-primary-border scale-110" : ""}">${index + 1}</button>`,
         iconSize: [36, 36],
         iconAnchor: [18, 18],
       });

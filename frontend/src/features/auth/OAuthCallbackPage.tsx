@@ -171,7 +171,7 @@ export function OAuthCallbackPage() {
           <form onSubmit={completeProfile} className="space-y-3 text-left">
             <label
               htmlFor="oauth-email"
-              className="block text-xs font-bold text-stone-800"
+              className="block text-xs font-semibold text-stone-800"
             >
               {t("auth.callback.emailLabel")}
             </label>

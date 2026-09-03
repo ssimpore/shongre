@@ -1016,7 +1016,7 @@ export const SearchPage: React.FC = () => {
               <div>
                 <label
                   htmlFor="desktop-category-select"
-                  className="text-xs font-bold text-stone-900 uppercase tracking-wider block mb-2"
+                  className="text-xs font-semibold text-stone-900 uppercase tracking-wider block mb-2"
                 >
                   {t("search.searchPage.categories2")}
                 </label>
@@ -1320,7 +1320,7 @@ export const SearchPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowDesktopFilters(!showDesktopFilters)}
-                className={`hidden lg:inline-flex items-center gap-1.5 rounded-control px-2 py-1 text-xs font-bold uppercase tracking-wider ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer ${
+                className={`hidden lg:inline-flex items-center gap-1.5 rounded-control px-2 py-1 text-xs font-semibold uppercase tracking-wider ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer ${
                   showDesktopFilters
                     ? "bg-bg-base border-border-base text-stone-700 hover:bg-bg-subtle"
                     : "text-stone-900 hover:text-primary"
@@ -1361,7 +1361,7 @@ export const SearchPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsFilterDrawerOpen(true)}
-                className={`lg:hidden flex items-center gap-1.5 h-control-sm px-2.5 sm:px-3 rounded-control text-xs font-bold ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer shrink-0 ${
+                className={`lg:hidden flex items-center gap-1.5 h-control-sm px-2.5 sm:px-3 rounded-control text-xs font-semibold ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer shrink-0 ${
                   activeFilterCount > 0
                     ? "bg-primary text-white shadow-xs"
                     : "bg-bg-base text-stone-800 border border-border-base hover:bg-bg-subtle"
@@ -1373,7 +1373,7 @@ export const SearchPage: React.FC = () => {
                 />
                 <span className="hidden sm:inline">Filtres</span>
                 {activeFilterCount > 0 && (
-                  <span className="min-w-4 h-4 px-1 rounded-full bg-white text-primary text-micro font-black flex items-center justify-center">
+                  <span className="min-w-4 h-4 px-1 rounded-full bg-white text-primary text-micro font-bold flex items-center justify-center">
                     {activeFilterCount}
                   </span>
                 )}
@@ -1552,7 +1552,7 @@ export const SearchPage: React.FC = () => {
                       onClick={() => updatePage(pageNumber)}
                       aria-current={pageNumber === page ? "page" : undefined}
                       aria-label={`Page ${pageNumber}`}
-                      className={`h-control-sm min-w-8 rounded-control px-2 text-xs font-bold ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} ${
+                      className={`h-control-sm min-w-8 rounded-control px-2 text-xs font-semibold ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} ${
                         pageNumber === page
                           ? "bg-primary text-white"
                           : "border border-border-base bg-white text-stone-700 hover:bg-bg-subtle"
@@ -1599,7 +1599,7 @@ export const SearchPage: React.FC = () => {
         >
           {/* Category */}
           <div>
-            <label className="text-xs font-bold text-stone-700 uppercase tracking-wider block mb-2">
+            <label className="text-xs font-semibold text-stone-700 uppercase tracking-wider block mb-2">
               {t("search.searchPage.categorie")}
             </label>
             <DropdownMenu
@@ -1649,7 +1649,7 @@ export const SearchPage: React.FC = () => {
 
           {/* Seller type */}
           <div>
-            <label className="text-xs font-bold text-stone-700 uppercase tracking-wider block mb-2">
+            <label className="text-xs font-semibold text-stone-700 uppercase tracking-wider block mb-2">
               {t("search.searchPage.typeDeVendeur")}
             </label>
             <div className="grid grid-cols-3 gap-1.5">
@@ -1662,7 +1662,7 @@ export const SearchPage: React.FC = () => {
                   key={s.value}
                   type="button"
                   onClick={() => updateFilter("sellerType", s.value)}
-                  className={`h-control-md px-2 text-xs font-bold rounded-control border text-center ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer ${
+                  className={`h-control-md px-2 text-xs font-semibold rounded-control border text-center ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer ${
                     sellerType === s.value
                       ? "bg-primary text-white border-primary shadow-xs"
                       : "bg-white text-stone-700 border-border-base hover:bg-stone-50"

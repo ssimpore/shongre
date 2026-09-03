@@ -67,7 +67,7 @@ describe("Button display utilities", () => {
 
   it("keeps inline-flex when the caller sets unrelated classes", () => {
     const classes = classesOf(
-      <Button className="flex-1 min-w-0 font-bold">Label</Button>,
+      <Button className="flex-1 min-w-0 font-semibold">Label</Button>,
     );
     expect(classes.split(/\s+/)).toContain("inline-flex");
   });

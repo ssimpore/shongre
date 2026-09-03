@@ -155,7 +155,7 @@ export const AdminAuditLogsPage: React.FC = () => {
               {t("admin.adminAuditLogsPage.conformiteRgpdSecuritePlateforme")}
             </span>
           </div>
-          <h1 className="text-2xl font-black text-text-main tracking-tight">
+          <h1 className="text-2xl font-bold text-text-main tracking-tight">
             {t("admin.adminAuditLogsPage.registreDAuditSecurite")}
           </h1>
           <p className="text-xs text-text-secondary mt-1">

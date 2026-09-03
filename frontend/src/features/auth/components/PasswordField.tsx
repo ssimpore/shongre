@@ -81,7 +81,7 @@ export const PasswordField: React.FC<PasswordFieldProps> = ({
       {label && (
         <label
           htmlFor={id}
-          className="block text-xs font-bold text-stone-800 mb-1.5"
+          className="block text-xs font-semibold text-stone-800 mb-1.5"
         >
           {label} {required && <span className="text-primary">*</span>}
         </label>

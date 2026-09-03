@@ -91,7 +91,7 @@ export function AccountTypeOnboardingPage() {
         <h1
           ref={onboardingHeadingRef}
           tabIndex={-1}
-          className="text-xl font-black text-stone-950 focus:outline-none sm:text-2xl"
+          className="text-xl font-bold text-stone-950 focus:outline-none sm:text-2xl"
         >
           {t("auth.onboarding.title")}
         </h1>

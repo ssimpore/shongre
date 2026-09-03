@@ -115,12 +115,12 @@ export function AdminPlanDraftModal({
         >
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <div className="text-micro font-black uppercase tracking-wide text-primary">
+              <div className="text-micro font-bold uppercase tracking-wide text-primary">
                 {t("admin.adminPlanDraftModal.apercuAvantPublication")}
               </div>
               <h3
                 id="plan-preview-heading"
-                className="mt-1 text-base font-black"
+                className="mt-1 text-base font-bold"
               >
                 {draft.name}
               </h3>
@@ -132,7 +132,7 @@ export function AdminPlanDraftModal({
               {draft.prices.map((price) => (
                 <div
                   key={price.id}
-                  className="text-xs font-black text-text-main"
+                  className="text-xs font-bold text-text-main"
                 >
                   {formatMoneyMinor(
                     price.amount.amountMinor,
@@ -179,7 +179,7 @@ export function AdminPlanDraftModal({
         </section>
 
         <section className="space-y-3" aria-labelledby="plan-identity-heading">
-          <h3 id="plan-identity-heading" className="text-sm font-black">
+          <h3 id="plan-identity-heading" className="text-sm font-bold">
             {t("admin.adminPlanDraftModal.presentationEtDisponibilite")}
           </h3>
           <div className="grid gap-3 sm:grid-cols-2">
@@ -270,7 +270,7 @@ export function AdminPlanDraftModal({
                 }
               />
             </FormField>
-            <label className="flex min-h-control-touch items-center gap-2 rounded-control border border-border-base px-3 text-xs font-bold">
+            <label className="flex min-h-control-touch items-center gap-2 rounded-control border border-border-base px-3 text-xs font-semibold">
               <input
                 type="checkbox"
                 checked={draft.recommended}
@@ -304,7 +304,7 @@ export function AdminPlanDraftModal({
         </section>
 
         <section className="space-y-3" aria-labelledby="plan-prices-heading">
-          <h3 id="plan-prices-heading" className="text-sm font-black">
+          <h3 id="plan-prices-heading" className="text-sm font-bold">
             Prix
           </h3>
           <div className="space-y-3">
@@ -380,7 +380,7 @@ export function AdminPlanDraftModal({
                     }
                   />
                 </FormField>
-                <label className="flex items-center gap-2 text-xs font-bold">
+                <label className="flex items-center gap-2 text-xs font-semibold">
                   <input
                     type="checkbox"
                     checked={price.priceIncludesTax}
@@ -403,7 +403,7 @@ export function AdminPlanDraftModal({
           aria-labelledby="plan-entitlements-heading"
         >
           <div>
-            <h3 id="plan-entitlements-heading" className="text-sm font-black">
+            <h3 id="plan-entitlements-heading" className="text-sm font-bold">
               {t("admin.adminPlanDraftModal.quotasEtFonctionnalites")}
             </h3>
             <p className="mt-1 text-micro text-text-muted">
@@ -579,11 +579,11 @@ export function AdminPlanDraftModal({
 
         {draft.kind === "subscription" ? (
           <section className="space-y-3" aria-labelledby="plan-trial-heading">
-            <h3 id="plan-trial-heading" className="text-sm font-black">
+            <h3 id="plan-trial-heading" className="text-sm font-bold">
               {t("admin.adminPlanDraftModal.essaiEtTransitions")}
             </h3>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              <label className="flex min-h-control-touch items-center gap-2 rounded-control border border-border-base px-3 text-xs font-bold">
+              <label className="flex min-h-control-touch items-center gap-2 rounded-control border border-border-base px-3 text-xs font-semibold">
                 <input
                   type="checkbox"
                   checked={draft.commercialProfile.trialPolicy.enabled}
@@ -633,7 +633,7 @@ export function AdminPlanDraftModal({
                   }
                 />
               </FormField>
-              <label className="flex min-h-control-touch items-center gap-2 rounded-control border border-border-base px-3 text-xs font-bold">
+              <label className="flex min-h-control-touch items-center gap-2 rounded-control border border-border-base px-3 text-xs font-semibold">
                 <input
                   type="checkbox"
                   checked={
@@ -654,7 +654,7 @@ export function AdminPlanDraftModal({
                 />
                 {t("admin.adminPlanDraftModal.moyenDePaiementRequis")}
               </label>
-              <label className="flex min-h-control-touch items-center gap-2 rounded-control border border-border-base px-3 text-xs font-bold">
+              <label className="flex min-h-control-touch items-center gap-2 rounded-control border border-border-base px-3 text-xs font-semibold">
                 <input
                   type="checkbox"
                   checked={draft.commercialProfile.trialPolicy.autoConverts}
@@ -673,7 +673,7 @@ export function AdminPlanDraftModal({
                 />
                 Conversion automatique
               </label>
-              <label className="flex min-h-control-touch items-center gap-2 rounded-control border border-border-base px-3 text-xs font-bold">
+              <label className="flex min-h-control-touch items-center gap-2 rounded-control border border-border-base px-3 text-xs font-semibold">
                 <input
                   type="checkbox"
                   checked={

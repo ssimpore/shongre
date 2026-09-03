@@ -280,7 +280,7 @@ export const CourseTutorOnboardingPage: React.FC = () => {
         <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-pill bg-success-surface text-success">
           <CheckCircle2 className="h-8 w-8" aria-hidden="true" />
         </span>
-        <h1 className="mt-5 text-xl font-black text-text-main">
+        <h1 className="mt-5 text-xl font-bold text-text-main">
           Votre profil est en cours d’examen
         </h1>
         <p className="mt-3 text-sm leading-relaxed text-text-secondary">
@@ -307,7 +307,7 @@ export const CourseTutorOnboardingPage: React.FC = () => {
           <h1
             ref={wizardHeadingRef}
             tabIndex={-1}
-            className="mt-2 text-xl font-black text-text-main outline-none sm:text-2xl"
+            className="mt-2 text-xl font-bold text-text-main outline-none sm:text-2xl"
           >
             Créez votre activité de cours
           </h1>
@@ -330,7 +330,7 @@ export const CourseTutorOnboardingPage: React.FC = () => {
                   type="button"
                   onClick={() => index <= step && setStep(index)}
                   disabled={index > step}
-                  className={`flex min-h-control-touch w-full items-center gap-2 rounded-control px-2.5 text-left text-xs font-bold ${
+                  className={`flex min-h-control-touch w-full items-center gap-2 rounded-control px-2.5 text-left text-xs font-semibold ${
                     index === step
                       ? "bg-primary-light text-primary"
                       : index < step
@@ -353,7 +353,7 @@ export const CourseTutorOnboardingPage: React.FC = () => {
         <section className="rounded-card border border-border-base bg-bg-surface p-5 shadow-sm sm:p-7">
           {step === ONBOARDING_STEP.profile && (
             <section>
-              <h2 className="text-lg font-black text-text-main">
+              <h2 className="text-lg font-bold text-text-main">
                 Qui propose les cours ?
               </h2>
               <p className="mt-1 text-xs text-text-secondary">
@@ -394,7 +394,7 @@ export const CourseTutorOnboardingPage: React.FC = () => {
                         className="h-6 w-6 text-primary"
                         aria-hidden="true"
                       />
-                      <p className="mt-3 text-sm font-black text-text-main">
+                      <p className="mt-3 text-sm font-bold text-text-main">
                         {String(title)}
                       </p>
                       <p className="mt-1 text-xs leading-relaxed text-text-secondary">
@@ -429,7 +429,7 @@ export const CourseTutorOnboardingPage: React.FC = () => {
 
           {step === ONBOARDING_STEP.expertise && (
             <section>
-              <h2 className="text-lg font-black text-text-main">
+              <h2 className="text-lg font-bold text-text-main">
                 Matières et niveaux enseignés
               </h2>
               <p className="mt-1 text-xs text-text-secondary">
@@ -480,7 +480,7 @@ export const CourseTutorOnboardingPage: React.FC = () => {
 
           {step === ONBOARDING_STEP.formats && (
             <section>
-              <h2 className="text-lg font-black text-text-main">
+              <h2 className="text-lg font-bold text-text-main">
                 Où et comment enseignez-vous ?
               </h2>
               <div className="mt-5 grid gap-3 sm:grid-cols-3">
@@ -510,7 +510,7 @@ export const CourseTutorOnboardingPage: React.FC = () => {
                         className="mx-auto h-6 w-6 text-primary"
                         aria-hidden="true"
                       />
-                      <p className="mt-2 text-xs font-black text-text-main">
+                      <p className="mt-2 text-xs font-bold text-text-main">
                         {String(label)}
                       </p>
                     </SelectableCard>
@@ -545,7 +545,7 @@ export const CourseTutorOnboardingPage: React.FC = () => {
 
           {step === ONBOARDING_STEP.presentation && (
             <section>
-              <h2 className="text-lg font-black text-text-main">
+              <h2 className="text-lg font-bold text-text-main">
                 Présentez votre pédagogie
               </h2>
               <div className="mt-5 space-y-4">
@@ -594,7 +594,7 @@ export const CourseTutorOnboardingPage: React.FC = () => {
 
           {step === ONBOARDING_STEP.availability && (
             <section>
-              <h2 className="text-lg font-black text-text-main">
+              <h2 className="text-lg font-bold text-text-main">
                 Tarif et disponibilités
               </h2>
               <div className="mt-5 max-w-sm">
@@ -659,7 +659,7 @@ export const CourseTutorOnboardingPage: React.FC = () => {
 
           {step === ONBOARDING_STEP.plan && (
             <section>
-              <h2 className="text-lg font-black text-text-main">
+              <h2 className="text-lg font-bold text-text-main">
                 Choisissez votre formule
               </h2>
               <p className="mt-1 text-xs text-text-secondary">
@@ -687,13 +687,13 @@ export const CourseTutorOnboardingPage: React.FC = () => {
                           Recommandé
                         </Badge>
                       )}
-                      <h3 className="text-sm font-black text-text-main">
+                      <h3 className="text-sm font-bold text-text-main">
                         {plan.name}
                       </h3>
                       <p className="mt-1 text-xs text-text-secondary">
                         {plan.description}
                       </p>
-                      <p className="mt-4 text-lg font-black text-text-main">
+                      <p className="mt-4 text-lg font-bold text-text-main">
                         {plan.monthlyPrice
                           ? formatMoney(plan.monthlyPrice)
                           : "Gratuit"}
@@ -725,11 +725,11 @@ export const CourseTutorOnboardingPage: React.FC = () => {
 
           {step === ONBOARDING_STEP.verification && (
             <section>
-              <h2 className="text-lg font-black text-text-main">
+              <h2 className="text-lg font-bold text-text-main">
                 Vérifications et publication
               </h2>
               <div className="mt-5 rounded-card border border-info-border bg-info-surface p-4">
-                <h3 className="flex items-center gap-2 text-sm font-black text-text-main">
+                <h3 className="flex items-center gap-2 text-sm font-bold text-text-main">
                   <ShieldCheck className="h-icon-md w-icon-md text-info" />
                   Ce qui sera affiché
                 </h3>

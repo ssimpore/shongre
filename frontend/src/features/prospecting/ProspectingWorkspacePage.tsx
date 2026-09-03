@@ -224,7 +224,7 @@ function BriefContent({
             <Badge variant="warning">Doublon à confirmer</Badge>
           )}
         </div>
-        <h3 className="text-lg font-black tracking-tight text-text-main">
+        <h3 className="text-lg font-bold tracking-tight text-text-main">
           {candidate.company.canonicalName}
         </h3>
         <p className="text-xs leading-relaxed text-text-secondary">
@@ -245,7 +245,7 @@ function BriefContent({
       ) : brief ? (
         <>
           <section aria-labelledby="brief-known-facts" className="space-y-2">
-            <h4 className="text-xs font-black uppercase tracking-wider text-text-muted">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-text-muted">
               Synthèse proposée
             </h4>
             <p className="text-xs leading-relaxed text-text-secondary">
@@ -253,7 +253,7 @@ function BriefContent({
             </p>
             <h4
               id="brief-known-facts"
-              className="text-xs font-black uppercase tracking-wider text-text-muted"
+              className="text-xs font-bold uppercase tracking-wider text-text-muted"
             >
               Faits connus
             </h4>
@@ -275,7 +275,7 @@ function BriefContent({
           <section aria-labelledby="brief-score-factors" className="space-y-2">
             <h4
               id="brief-score-factors"
-              className="text-xs font-black uppercase tracking-wider text-text-muted"
+              className="text-xs font-bold uppercase tracking-wider text-text-muted"
             >
               Pourquoi ce score
             </h4>
@@ -317,7 +317,7 @@ function BriefContent({
       <section aria-labelledby="brief-evidence" className="space-y-2">
         <h4
           id="brief-evidence"
-          className="text-xs font-black uppercase tracking-wider text-text-muted"
+          className="text-xs font-bold uppercase tracking-wider text-text-muted"
         >
           Preuves et provenance
         </h4>
@@ -387,10 +387,7 @@ function UsagePanel({ usage }: { usage: ProspectingUsage | null }) {
       >
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h2
-              id="usage-title"
-              className="text-base font-black text-text-main"
-            >
+            <h2 id="usage-title" className="text-base font-bold text-text-main">
               Usage d’août 2026
             </h2>
             <p className="mt-1 text-xs text-text-muted">
@@ -428,7 +425,7 @@ function UsagePanel({ usage }: { usage: ProspectingUsage | null }) {
         <p className="text-micro font-bold uppercase tracking-wider text-text-muted">
           Offre active
         </p>
-        <h2 className="mt-1 text-lg font-black text-text-main">
+        <h2 className="mt-1 text-lg font-bold text-text-main">
           {usage.planName}
         </h2>
         <p className="mt-2 text-xs leading-relaxed text-text-muted">
@@ -706,7 +703,7 @@ export const ProspectingWorkspacePage: React.FC<
               <div className="flex h-9 w-9 items-center justify-center rounded-control bg-primary text-white">
                 <Target className="h-5 w-5" aria-hidden="true" />
               </div>
-              <h1 className="text-xl font-black tracking-tight text-text-main sm:text-2xl">
+              <h1 className="text-xl font-bold tracking-tight text-text-main sm:text-2xl">
                 Shongre Prospects
               </h1>
             </div>
@@ -775,7 +772,7 @@ export const ProspectingWorkspacePage: React.FC<
               <label
                 id="discover-heading"
                 htmlFor="prospecting-query"
-                className="block text-xl font-black tracking-tight text-text-main sm:text-2xl"
+                className="block text-xl font-semibold tracking-tight text-text-main sm:text-2xl"
               >
                 Décrivez les entreprises recherchées
               </label>
@@ -964,7 +961,7 @@ export const ProspectingWorkspacePage: React.FC<
                   <div>
                     <h2
                       id="prospect-results-heading"
-                      className="text-sm font-black text-text-main"
+                      className="text-sm font-bold text-text-main"
                     >
                       Entreprises découvertes
                     </h2>
@@ -1097,7 +1094,7 @@ export const ProspectingWorkspacePage: React.FC<
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <h2 className="text-sm font-black text-text-main">
+                      <h2 className="text-sm font-bold text-text-main">
                         {source.name}
                       </h2>
                       <p className="mt-1 text-xs leading-relaxed text-text-muted">
@@ -1191,7 +1188,7 @@ export const ProspectingWorkspacePage: React.FC<
                   />
                 </span>
                 <div>
-                  <h2 className="text-base font-black text-text-main">
+                  <h2 className="text-base font-bold text-text-main">
                     Paramètres et conformité
                   </h2>
                   <p className="mt-1 text-xs leading-relaxed text-text-muted">
@@ -1204,7 +1201,7 @@ export const ProspectingWorkspacePage: React.FC<
             </header>
             <div className="grid gap-4 lg:grid-cols-2">
               <section className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs">
-                <h3 className="text-sm font-black text-text-main">
+                <h3 className="text-sm font-bold text-text-main">
                   Contrôles avant prise de contact
                 </h3>
                 <ul className="mt-4 space-y-3 text-xs text-text-secondary">
@@ -1227,7 +1224,7 @@ export const ProspectingWorkspacePage: React.FC<
                 </ul>
               </section>
               <section className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs">
-                <h3 className="text-sm font-black text-text-main">
+                <h3 className="text-sm font-bold text-text-main">
                   État des intégrations
                 </h3>
                 <dl className="mt-4 divide-y divide-border-subtle text-xs">

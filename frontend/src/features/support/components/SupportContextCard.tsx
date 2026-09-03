@@ -38,7 +38,7 @@ export const SupportContextCard: React.FC<SupportContextCardProps> = ({
             <span className="text-micro font-bold uppercase tracking-wider text-primary block">
               {t("support.supportContextCard.annonceLiee")}
             </span>
-            <span className="text-xs font-black text-stone-900 truncate block">
+            <span className="text-xs font-bold text-stone-900 truncate block">
               {context.listingTitle || `Annonce #${context.listingId}`}
             </span>
             {context.price !== undefined && (
@@ -87,7 +87,7 @@ export const SupportContextCard: React.FC<SupportContextCardProps> = ({
             <span className="text-micro font-bold uppercase tracking-wider text-success block">
               {t("support.supportContextCard.commandeSequestreLie")}
             </span>
-            <span className="text-xs font-black text-stone-900 truncate block">
+            <span className="text-xs font-bold text-stone-900 truncate block">
               {context.listingTitle || `Transaction #${context.transactionId}`}
             </span>
             {context.amount !== undefined && (

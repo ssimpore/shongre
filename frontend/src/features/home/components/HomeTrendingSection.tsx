@@ -45,7 +45,7 @@ const TrendingTopicRail: React.FC<TrendingTopicRailProps> = ({
         <div className="min-w-0">
           <h3
             id={`home-trending-${topic.id}`}
-            className="text-lg font-black tracking-tight text-text-primary sm:text-xl"
+            className="text-lg font-bold tracking-tight text-text-primary sm:text-xl"
           >
             {topic.title}
           </h3>

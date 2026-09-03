@@ -77,7 +77,7 @@ export const ConversationContextBar: React.FC<ConversationContextBarProps> = ({
                 </Badge>
               )}
             </div>
-            <div className="text-xs font-black text-primary">
+            <div className="text-xs font-bold text-primary">
               {formatPrice(listingContext.listingPrice)}
             </div>
           </div>

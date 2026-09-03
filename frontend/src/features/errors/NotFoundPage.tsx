@@ -52,7 +52,7 @@ export const NotFoundPage: React.FC = () => {
           <AlertCircle className="w-8 h-8" aria-hidden="true" />
         </div>
         <div>
-          <h1 className="text-3xl font-black text-stone-900">
+          <h1 className="text-3xl font-bold text-stone-900">
             Page introuvable
           </h1>
           <p className="text-xs sm:text-sm text-stone-500 mt-2 leading-relaxed max-w-md mx-auto">

@@ -99,7 +99,7 @@ export const NotificationsPage: React.FC = () => {
       {/* 1. Header & Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-black text-stone-900 flex items-center gap-2.5">
+          <h1 className="text-xl sm:text-2xl font-bold text-stone-900 flex items-center gap-2.5">
             <Bell className="w-icon-xl h-icon-xl text-primary" />
             <span>
               {t("notifications.notificationsPage.centreDeNotifications")}
@@ -147,7 +147,7 @@ export const NotificationsPage: React.FC = () => {
               key={tab.id}
               type="button"
               onClick={() => setSelectedFilter(tab.id)}
-              className={`px-3.5 py-2 rounded-xl text-xs font-bold shrink-0 transition-all cursor-pointer flex items-center gap-2 ${
+              className={`px-3.5 py-2 rounded-xl text-xs font-semibold shrink-0 transition-all cursor-pointer flex items-center gap-2 ${
                 isActive
                   ? "bg-stone-900 text-white shadow-xs"
                   : "bg-stone-100 text-stone-600 hover:bg-stone-200 hover:text-stone-900"
@@ -156,7 +156,7 @@ export const NotificationsPage: React.FC = () => {
               <span>{tab.label}</span>
               {tab.count !== undefined && tab.count > 0 && (
                 <span
-                  className={`px-1.5 py-0.5 rounded-full text-micro font-extrabold ${
+                  className={`px-1.5 py-0.5 rounded-full text-micro font-bold ${
                     isActive
                       ? "bg-primary text-white"
                       : "bg-primary/20 text-primary"
@@ -207,7 +207,7 @@ export const NotificationsPage: React.FC = () => {
             <div key={gIdx} className="space-y-3">
               {/* Date Group Heading */}
               <div className="flex items-center gap-2">
-                <span className="text-xs font-black uppercase tracking-wider text-stone-500">
+                <span className="text-xs font-bold uppercase tracking-wider text-stone-500">
                   {group.dateLabel}
                 </span>
                 <div className="flex-1 h-px bg-border-subtle" />

@@ -651,7 +651,7 @@ export const AutoSearchPage: React.FC = () => {
             <CarFront className="h-icon-sm w-icon-sm" aria-hidden="true" />{" "}
             Shongre Auto
           </p>
-          <h1 className="text-2xl font-black tracking-tight text-text-main sm:text-3xl">
+          <h1 className="text-2xl font-bold tracking-tight text-text-main sm:text-3xl">
             Voitures d’occasion
           </h1>
           <p className="mt-1 text-sm text-text-secondary">
@@ -701,7 +701,7 @@ export const AutoSearchPage: React.FC = () => {
         <button
           type="button"
           onClick={() => setFilterOpen(true)}
-          className="inline-flex min-h-control-target items-center gap-2 rounded-control border border-border-base px-3 text-xs font-bold lg:hidden"
+          className="inline-flex min-h-control-target items-center gap-2 rounded-control border border-border-base px-3 text-xs font-semibold lg:hidden"
         >
           <Filter className="h-icon-sm w-icon-sm" aria-hidden="true" /> Filtres
         </button>
@@ -784,7 +784,7 @@ export const AutoSearchPage: React.FC = () => {
         {compared.length > 0 && (
           <aside className="hidden self-start rounded-card border border-border-base bg-bg-surface shadow-xs xl:block">
             <div className="flex items-center justify-between border-b border-border-subtle p-4">
-              <h2 className="text-sm font-black">
+              <h2 className="text-sm font-bold">
                 Comparer {compared.length} véhicule
                 {compared.length > 1 ? "s" : ""}
               </h2>
@@ -809,7 +809,7 @@ export const AutoSearchPage: React.FC = () => {
                     <p className="line-clamp-2 text-xs font-bold">
                       {vehicle.title}
                     </p>
-                    <p className="mt-1 text-xs font-black text-primary">
+                    <p className="mt-1 text-xs font-bold text-primary">
                       {formatAutoMoney(
                         vehicle.price,
                         currentLocale,
@@ -868,7 +868,7 @@ export const AutoSearchPage: React.FC = () => {
         <div className="fixed inset-x-3 bottom-mobile-nav-clearance-gutter z-sticky rounded-card border border-border-base bg-bg-surface p-3 shadow-overlay xl:hidden md:bottom-4 md:left-auto md:right-4 md:w-80">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-black">
+              <p className="text-xs font-bold">
                 {compared.length} véhicule{compared.length > 1 ? "s" : ""}{" "}
                 sélectionné{compared.length > 1 ? "s" : ""}
               </p>

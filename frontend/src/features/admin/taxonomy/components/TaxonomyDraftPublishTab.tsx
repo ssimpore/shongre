@@ -90,7 +90,7 @@ export const TaxonomyDraftPublishTab: React.FC<
           <div>
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-pill bg-amber-400 animate-pulse" />
-              <h3 className="text-base font-black text-text-main">
+              <h3 className="text-base font-bold text-text-main">
                 {t(
                   "admin.taxonomyDraftPublishTab.brouillonsEnAttenteDePublication",
                 )}
@@ -190,7 +190,7 @@ export const TaxonomyDraftPublishTab: React.FC<
       {/* Version History Table */}
       <div className="bg-bg-surface p-6 rounded-2xl border border-border-base shadow-xs space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-base font-black text-text-main flex items-center gap-2">
+          <h3 className="text-base font-bold text-text-main flex items-center gap-2">
             <History className="w-icon-lg h-icon-lg text-primary" />
             <span>
               {t("admin.taxonomyDraftPublishTab.historiqueDesVersionsPubliees")}

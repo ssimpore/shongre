@@ -61,7 +61,7 @@ function CandidateList() {
             }`}
           >
             <span
-              className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-control text-xs font-black ${
+              className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-control text-xs font-bold ${
                 candidate.selected
                   ? "bg-stone-900 text-white"
                   : "bg-bg-muted text-text-secondary"
@@ -77,7 +77,7 @@ function CandidateList() {
                 {candidate.location}
               </span>
             </span>
-            <span className="text-xs font-black tabular-nums text-success">
+            <span className="text-xs font-bold tabular-nums text-success">
               {candidate.score}/100
             </span>
           </div>
@@ -97,11 +97,11 @@ function CandidateList() {
 function CompanyHeader() {
   return (
     <div className="flex items-start gap-3 border-b border-border-base p-4 sm:p-5">
-      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-control bg-stone-900 text-xs font-black text-white">
+      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-control bg-stone-900 text-xs font-bold text-white">
         HM
       </span>
       <div className="min-w-0 flex-1">
-        <h3 className="truncate text-sm font-black text-text-main sm:text-base">
+        <h3 className="truncate text-sm font-bold text-text-main sm:text-base">
           Atelier Horizon Mobilité
         </h3>
         <p className="mt-0.5 flex items-center gap-1 text-xs text-text-muted">
@@ -110,7 +110,7 @@ function CompanyHeader() {
         </p>
       </div>
       <div className="text-right">
-        <p className="text-xl font-black tabular-nums text-success sm:text-2xl">
+        <p className="text-xl font-bold tabular-nums text-success sm:text-2xl">
           88<span className="text-xs text-text-secondary">/100</span>
         </p>
         <p className="text-micro font-semibold text-success">Confiance 91%</p>
@@ -128,7 +128,7 @@ function EvidenceTimeline({ compact = false }: { compact?: boolean }) {
             <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
           </span>
           <div>
-            <p className="text-xs font-black text-text-main">
+            <p className="text-xs font-bold text-text-main">
               Pourquoi ce prospect
             </p>
             <p className="mt-1 text-xs leading-relaxed text-text-secondary">
@@ -144,7 +144,7 @@ function EvidenceTimeline({ compact = false }: { compact?: boolean }) {
           <Check className="h-3.5 w-3.5" aria-hidden="true" />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-xs font-black text-text-main">Faits connus</p>
+          <p className="text-xs font-bold text-text-main">Faits connus</p>
           <ul className="mt-2 space-y-1.5 text-xs text-text-secondary">
             <li className="flex gap-2">
               <Check
@@ -169,7 +169,7 @@ function EvidenceTimeline({ compact = false }: { compact?: boolean }) {
           <FileText className="h-3.5 w-3.5" aria-hidden="true" />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-xs font-black text-text-main">Preuve actuelle</p>
+          <p className="text-xs font-bold text-text-main">Preuve actuelle</p>
           <p className="mt-1 text-xs leading-relaxed text-text-secondary">
             Registre professionnel de démonstration
           </p>
@@ -234,7 +234,7 @@ function DossierPreview({
         ].map(([label, value]) => (
           <div key={label} className="bg-bg-surface px-4 py-3 sm:px-5">
             <p className="text-micro font-semibold text-text-muted">{label}</p>
-            <p className="mt-1 text-sm font-black tabular-nums text-text-main">
+            <p className="mt-1 text-sm font-bold tabular-nums text-text-main">
               {value}
             </p>
           </div>
@@ -244,7 +244,7 @@ function DossierPreview({
       <div className="grid gap-3 border-t border-border-base bg-bg-base p-4 sm:grid-cols-content-action sm:items-center sm:p-5">
         <div className="space-y-3">
           <div>
-            <p className="text-xs font-black text-text-main">
+            <p className="text-xs font-bold text-text-main">
               Information manquante
             </p>
             <p className="mt-0.5 text-xs text-text-secondary">
@@ -252,9 +252,7 @@ function DossierPreview({
             </p>
           </div>
           <div>
-            <p className="text-xs font-black text-text-main">
-              Prochaine action
-            </p>
+            <p className="text-xs font-bold text-text-main">Prochaine action</p>
             <p className="mt-0.5 max-w-md text-xs leading-relaxed text-text-secondary">
               Valider les preuves puis ajouter l’entreprise à une liste ciblée.
             </p>

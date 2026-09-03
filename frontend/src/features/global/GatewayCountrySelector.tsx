@@ -66,7 +66,7 @@ export function GatewayCountrySelector({
               aria-hidden="true"
             />
             <div>
-              <h2 className="text-sm font-black">
+              <h2 className="text-sm font-bold">
                 {t("shell.marketDetection.gatewaySuggestedCountry", {
                   country: recommendedEntry.country.name,
                 })}
@@ -99,7 +99,7 @@ export function GatewayCountrySelector({
         </aside>
       ) : null}
 
-      <h2 id="country-list-title" className="mb-4 text-lg font-black">
+      <h2 id="country-list-title" className="mb-4 text-lg font-bold">
         {t("shell.marketDetection.gatewayChooseCountry")}
       </h2>
       <ul className="divide-y divide-border-subtle border-y border-border-base">
@@ -125,7 +125,7 @@ export function GatewayCountrySelector({
                   {country.flag}
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block text-base font-black text-stone-950">
+                  <span className="block text-base font-bold text-stone-950">
                     {country.name}
                   </span>
                   <span className="block truncate text-xs text-stone-600">

@@ -81,7 +81,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, priority }) => {
         <div>
           <Link
             to={`/categorie/${category.slug}`}
-            className="inline-flex rounded-sm text-lg font-black leading-tight text-stone-950 transition-colors hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            className="inline-flex rounded-sm text-lg font-bold leading-tight text-stone-950 transition-colors hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           >
             {categoryLabel}
           </Link>
@@ -194,7 +194,7 @@ export const CategoriesPage: React.FC = () => {
         <Container>
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-2xl space-y-2.5">
-              <Heading as="h1" size="display-sm" family="display">
+              <Heading as="h1" size="display-sm">
                 {t("categories.categoriesPage.toutesNosCategories")}
               </Heading>
               <p className="max-w-xl text-sm leading-relaxed text-stone-600 sm:text-base">

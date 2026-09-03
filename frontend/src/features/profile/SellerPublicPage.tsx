@@ -217,7 +217,7 @@ export const SellerPublicPage: React.FC = () => {
             this state. Rendered as an H2 it left the route with no H1 at
             all, so the document outline started at level 2 and a screen
             reader jumping by heading found nothing to land on. */}
-        <h1 className="text-2xl font-black text-stone-900 mb-2">
+        <h1 className="text-2xl font-bold text-stone-900 mb-2">
           Profil introuvable
         </h1>
         <p className="text-sm text-stone-500 max-w-md mx-auto mb-6">
@@ -252,7 +252,7 @@ export const SellerPublicPage: React.FC = () => {
         <div className="w-16 h-16 rounded-2xl bg-danger-surface border border-danger-border text-danger flex items-center justify-center mx-auto mb-4">
           <ShieldAlert className="w-8 h-8" />
         </div>
-        <h1 className="text-2xl font-black text-stone-900 mb-2">
+        <h1 className="text-2xl font-bold text-stone-900 mb-2">
           Profil temporairement indisponible
         </h1>
         <p className="text-sm text-stone-600 max-w-md mx-auto mb-6 leading-relaxed">

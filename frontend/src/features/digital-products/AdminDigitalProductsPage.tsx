@@ -193,7 +193,7 @@ export const AdminDigitalProductsPage: React.FC = () => {
             {activeMarket.code}
           </span>
         </div>
-        <h1 className="mt-1 text-2xl font-black text-text-main">
+        <h1 className="mt-1 text-2xl font-bold text-text-main">
           {t("digital.admin.title")}
         </h1>
         <p className="mt-1 max-w-3xl text-sm text-text-secondary">
@@ -258,7 +258,7 @@ export const AdminDigitalProductsPage: React.FC = () => {
                     className="h-icon-md w-icon-md text-primary"
                     aria-hidden="true"
                   />
-                  <div className="mt-3 text-2xl font-black text-text-main">
+                  <div className="mt-3 text-2xl font-bold text-text-main">
                     {String(value)}
                   </div>
                   <div className="text-xs font-bold text-text-secondary">
@@ -275,7 +275,7 @@ export const AdminDigitalProductsPage: React.FC = () => {
           >
             <h2
               id="digital-assets-title"
-              className="text-lg font-black text-text-main"
+              className="text-lg font-bold text-text-main"
             >
               {t("digital.admin.assets")}
             </h2>
@@ -347,7 +347,7 @@ export const AdminDigitalProductsPage: React.FC = () => {
                 <div>
                   <h2
                     id="digital-policy-title"
-                    className="text-lg font-black text-text-main"
+                    className="text-lg font-bold text-text-main"
                   >
                     {t("digital.admin.policy")}
                   </h2>
@@ -490,7 +490,7 @@ export const AdminDigitalProductsPage: React.FC = () => {
                   ).map((type) => (
                     <label
                       key={type}
-                      className="flex items-center gap-3 rounded-xl border border-border-base p-3 text-sm font-bold text-text-main"
+                      className="flex items-center gap-3 rounded-xl border border-border-base p-3 text-sm font-semibold text-text-main"
                     >
                       <Checkbox
                         checked={policy.allowedFulfillmentTypes.includes(type)}
@@ -514,7 +514,7 @@ export const AdminDigitalProductsPage: React.FC = () => {
                   ).map((capability) => (
                     <label
                       key={capability}
-                      className="flex items-center gap-3 rounded-xl border border-border-base p-3 text-sm font-bold text-text-main"
+                      className="flex items-center gap-3 rounded-xl border border-border-base p-3 text-sm font-semibold text-text-main"
                     >
                       <Checkbox
                         checked={policy.capabilities[capability]}

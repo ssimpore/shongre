@@ -86,9 +86,7 @@ export const NotificationItemCard: React.FC<NotificationItemCardProps> = ({
         <div className="flex items-center justify-between gap-2 mb-0.5">
           <h2
             className={`text-xs truncate ${
-              isUnread
-                ? "font-black text-stone-950"
-                : "font-bold text-stone-800"
+              isUnread ? "font-bold text-stone-950" : "font-bold text-stone-800"
             }`}
           >
             {notification.title}

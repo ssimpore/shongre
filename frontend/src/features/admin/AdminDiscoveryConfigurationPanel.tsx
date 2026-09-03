@@ -153,7 +153,7 @@ export const AdminDiscoveryConfigurationPanel: React.FC = () => {
         <div>
           <div className="flex items-center gap-2">
             <ShieldCheck className="w-icon-md h-icon-md text-primary" />
-            <h2 className="text-sm font-black text-text-main">
+            <h2 className="text-sm font-bold text-text-main">
               {t("admin.discovery.title")}
             </h2>
             <Badge variant="success">{configuration.version}</Badge>
@@ -205,7 +205,7 @@ export const AdminDiscoveryConfigurationPanel: React.FC = () => {
         <section aria-labelledby="discovery-metrics-heading">
           <h3
             id="discovery-metrics-heading"
-            className="text-xs font-black text-text-main"
+            className="text-xs font-bold text-text-main"
           >
             {t("admin.discovery.metricsTitle")}
           </h3>
@@ -216,7 +216,7 @@ export const AdminDiscoveryConfigurationPanel: React.FC = () => {
                 className="rounded-control border border-border-base bg-bg-subtle p-3"
               >
                 <div className="text-micro text-text-muted">{t(label)}</div>
-                <div className="mt-0.5 text-base font-black text-text-main">
+                <div className="mt-0.5 text-base font-bold text-text-main">
                   {new Intl.NumberFormat(locale, {
                     maximumFractionDigits: 2,
                   }).format(metrics[key] as number)}
@@ -231,7 +231,7 @@ export const AdminDiscoveryConfigurationPanel: React.FC = () => {
         <div className="flex items-center justify-between gap-3">
           <h3
             id="organic-weights-heading"
-            className="text-xs font-black text-text-main"
+            className="text-xs font-bold text-text-main"
           >
             {t("admin.discovery.weightsTitle")}
           </h3>
@@ -281,7 +281,7 @@ export const AdminDiscoveryConfigurationPanel: React.FC = () => {
       <section aria-labelledby="sponsored-policy-heading">
         <h3
           id="sponsored-policy-heading"
-          className="text-xs font-black text-text-main"
+          className="text-xs font-bold text-text-main"
         >
           {t("admin.discovery.sponsoredTitle")}
         </h3>

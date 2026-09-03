@@ -403,14 +403,14 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
             </p>
             <h3
               title={item.title}
-              className="line-clamp-2 font-display text-base font-bold leading-snug sm:text-lg"
+              className="line-clamp-2 text-base font-semibold leading-snug sm:text-lg"
             >
               {item.title}
             </h3>
 
             <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1">
               <div className="flex items-baseline gap-1.5">
-                <span className="text-base font-extrabold sm:text-lg">
+                <span className="text-base font-bold sm:text-lg">
                   {formatPrice(item.price)}
                 </span>
                 {item.originalPrice && item.originalPrice > item.price && (

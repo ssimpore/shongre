@@ -136,7 +136,7 @@ export const CrmCustomFieldsPage: React.FC = () => {
             <p className="text-micro font-bold uppercase tracking-wider text-violet-300">
               CRM · Configuration
             </p>
-            <h1 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">
+            <h1 className="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">
               {t("admin.crmCustomFieldsPage.champsPersonnalises")}
             </h1>
             <p className="mt-1 text-xs text-text-disabled">
@@ -169,7 +169,7 @@ export const CrmCustomFieldsPage: React.FC = () => {
                 onClick={() =>
                   setEntityType(value as CrmCustomField["entityType"])
                 }
-                className={`rounded-md px-3 py-1.5 text-micro font-black ${entityType === value ? "bg-bg-surface text-stone-950 shadow-xs" : "text-stone-500"}`}
+                className={`rounded-md px-3 py-1.5 text-micro font-semibold ${entityType === value ? "bg-bg-surface text-stone-950 shadow-xs" : "text-stone-500"}`}
               >
                 {label}
               </button>
@@ -202,7 +202,7 @@ export const CrmCustomFieldsPage: React.FC = () => {
               >
                 <div>
                   <div className="flex items-center gap-2">
-                    <strong className="text-xs font-black">{field.name}</strong>
+                    <strong className="text-xs font-bold">{field.name}</strong>
                     {field.required && (
                       <span className="rounded-pill bg-danger-surface px-2 py-0.5 text-micro font-bold text-danger">
                         Obligatoire
@@ -287,7 +287,7 @@ export const CrmCustomFieldsPage: React.FC = () => {
               />
             </FormField>
           )}
-          <label className="flex items-center gap-2 rounded-control bg-stone-50 p-3 font-bold">
+          <label className="flex items-center gap-2 rounded-control bg-stone-50 p-3 font-semibold">
             <input
               type="checkbox"
               checked={required}

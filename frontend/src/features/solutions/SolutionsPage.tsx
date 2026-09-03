@@ -75,7 +75,7 @@ export function SolutionsPage() {
       <section className="border-b border-border-base py-10">
         <Container>
           <div className="max-w-3xl">
-            <h1 className="text-4xl font-black leading-none tracking-tight text-text-main sm:text-5xl lg:text-6xl">
+            <h1 className="text-4xl font-bold leading-none tracking-tight text-text-main sm:text-5xl lg:text-6xl">
               {t("solutions.catalog.heroTitle")}
             </h1>
             <p className="mt-5 max-w-2xl text-base leading-relaxed text-text-secondary sm:text-lg">
@@ -164,7 +164,7 @@ export function SolutionsPage() {
         <Container className="grid gap-8 lg:grid-cols-3 lg:items-start">
           <h2
             id="ecosystem-title"
-            className="text-3xl font-black leading-tight tracking-tight text-text-main"
+            className="text-3xl font-bold leading-tight tracking-tight text-text-main"
           >
             {t("solutions.catalog.ecosystemTitle")}
           </h2>
@@ -180,7 +180,7 @@ export function SolutionsPage() {
                   aria-hidden="true"
                 />
                 <div>
-                  <h3 className="text-sm font-black text-text-main">
+                  <h3 className="text-sm font-bold text-text-main">
                     {t(titleKey)}
                   </h3>
                   <p className="mt-1 text-xs leading-relaxed text-text-secondary">

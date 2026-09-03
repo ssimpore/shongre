@@ -173,7 +173,7 @@ export const AdminCoursesPage: React.FC = () => {
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-xl font-black text-text-main sm:text-2xl">
+            <h1 className="text-xl font-bold text-text-main sm:text-2xl">
               {t("verticals.education.brand")}
             </h1>
             <Badge variant={config.isEnabled ? "success" : "neutral"}>
@@ -211,7 +211,7 @@ export const AdminCoursesPage: React.FC = () => {
               key={String(value)}
               type="button"
               onClick={() => setTab(value as Tab)}
-              className={`flex min-h-control-touch shrink-0 items-center gap-2 rounded-control px-4 text-xs font-bold ${tab === value ? "bg-primary text-white" : "text-text-secondary hover:bg-bg-subtle"}`}
+              className={`flex min-h-control-touch shrink-0 items-center gap-2 rounded-control px-4 text-xs font-semibold ${tab === value ? "bg-primary text-white" : "text-text-secondary hover:bg-bg-subtle"}`}
             >
               <TabIcon className="h-icon-sm w-icon-sm" aria-hidden="true" />
               {String(label)}
@@ -254,7 +254,7 @@ export const AdminCoursesPage: React.FC = () => {
                   <p className="mt-3 text-micro font-bold uppercase tracking-wide text-text-muted">
                     {String(label)}
                   </p>
-                  <p className="mt-1 text-xl font-black text-text-main">
+                  <p className="mt-1 text-xl font-bold text-text-main">
                     {String(value)}
                   </p>
                   <p className="mt-1 text-micro text-text-secondary">
@@ -267,7 +267,7 @@ export const AdminCoursesPage: React.FC = () => {
 
           <div className="grid gap-5 xl:grid-cols-2">
             <section className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs">
-              <h2 className="text-sm font-black text-text-main">
+              <h2 className="text-sm font-bold text-text-main">
                 Qualité des demandes
               </h2>
               <div className="mt-4 space-y-4">
@@ -298,7 +298,7 @@ export const AdminCoursesPage: React.FC = () => {
             <section
               className={`rounded-card border p-5 shadow-xs ${phase2Enabled ? "border-danger-border bg-danger-surface" : "border-warning-border bg-warning-surface"}`}
             >
-              <h2 className="flex items-center gap-2 text-sm font-black text-text-main">
+              <h2 className="flex items-center gap-2 text-sm font-bold text-text-main">
                 {phase2Enabled ? (
                   <ShieldAlert className="h-icon-md w-icon-md text-danger" />
                 ) : (
@@ -306,7 +306,7 @@ export const AdminCoursesPage: React.FC = () => {
                 )}
                 État de la Phase 2
               </h2>
-              <p className="mt-3 text-sm font-black text-text-main">
+              <p className="mt-3 text-sm font-bold text-text-main">
                 {phase2Enabled
                   ? "Activation partielle détectée"
                   : "Réservations et paiements désactivés"}
@@ -333,7 +333,7 @@ export const AdminCoursesPage: React.FC = () => {
       {tab === "taxonomy" && (
         <section className="overflow-hidden rounded-card border border-border-base bg-bg-surface shadow-xs">
           <div className="border-b border-border-subtle p-5">
-            <h2 className="text-sm font-black text-text-main">
+            <h2 className="text-sm font-bold text-text-main">
               Matières actives en {activeMarket.name}
             </h2>
             <p className="mt-1 text-xs text-text-secondary">
@@ -348,7 +348,7 @@ export const AdminCoursesPage: React.FC = () => {
                 className="flex items-start justify-between gap-3 bg-bg-surface p-4"
               >
                 <div>
-                  <p className="text-xs font-black text-text-main">
+                  <p className="text-xs font-bold text-text-main">
                     {subject.label}
                   </p>
                   <p className="mt-1 text-micro text-text-muted">
@@ -377,7 +377,7 @@ export const AdminCoursesPage: React.FC = () => {
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
-                      <h2 className="text-sm font-black text-text-main">
+                      <h2 className="text-sm font-bold text-text-main">
                         {plan.name}
                       </h2>
                       {plan.isRecommended && (
@@ -396,7 +396,7 @@ export const AdminCoursesPage: React.FC = () => {
                     }
                   />
                 </div>
-                <p className="mt-4 text-lg font-black text-text-main">
+                <p className="mt-4 text-lg font-bold text-text-main">
                   {plan.monthlyPrice
                     ? formatMoneyMinor(
                         plan.monthlyPrice.amountMinor,
@@ -413,19 +413,19 @@ export const AdminCoursesPage: React.FC = () => {
                 <dl className="mt-4 grid grid-cols-3 gap-3 border-t border-border-subtle pt-4 text-xs">
                   <div>
                     <dt className="text-text-muted">Cours</dt>
-                    <dd className="mt-1 font-black">
+                    <dd className="mt-1 font-bold">
                       {plan.entitlements.maxActiveOffers}
                     </dd>
                   </div>
                   <div>
                     <dt className="text-text-muted">Leads / mois</dt>
-                    <dd className="mt-1 font-black">
+                    <dd className="mt-1 font-bold">
                       {plan.entitlements.maxMonthlyLeads}
                     </dd>
                   </div>
                   <div>
                     <dt className="text-text-muted">Équipe</dt>
-                    <dd className="mt-1 font-black">
+                    <dd className="mt-1 font-bold">
                       {plan.entitlements.teamMembers}
                     </dd>
                   </div>
@@ -468,7 +468,7 @@ export const AdminCoursesPage: React.FC = () => {
             ))}
           </section>
           <section className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs">
-            <h2 className="text-sm font-black text-text-main">
+            <h2 className="text-sm font-bold text-text-main">
               Options à la carte
             </h2>
             <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
@@ -480,7 +480,7 @@ export const AdminCoursesPage: React.FC = () => {
                   <p className="text-xs font-bold text-text-main">
                     {addOn.name}
                   </p>
-                  <p className="mt-1 text-sm font-black text-primary">
+                  <p className="mt-1 text-sm font-bold text-primary">
                     {formatMoneyMinor(
                       addOn.price.amountMinor,
                       addOn.price.currency,
@@ -503,7 +503,7 @@ export const AdminCoursesPage: React.FC = () => {
       {tab === "settings" && (
         <div className="grid gap-5 xl:grid-cols-content-aside-lg">
           <section className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs">
-            <h2 className="text-sm font-black text-text-main">
+            <h2 className="text-sm font-bold text-text-main">
               Fonctionnalités du marché {activeMarket.name}
             </h2>
             <div className="mt-4 divide-y divide-border-subtle">
@@ -550,7 +550,7 @@ export const AdminCoursesPage: React.FC = () => {
               })}
             </div>
             <div className="mt-5 grid gap-4 border-t border-border-subtle pt-5 sm:grid-cols-2">
-              <label className="text-xs font-bold text-text-main">
+              <label className="text-xs font-semibold text-text-main">
                 Validité demande (jours)
                 <Input
                   className="mt-2"
@@ -565,7 +565,7 @@ export const AdminCoursesPage: React.FC = () => {
                   }
                 />
               </label>
-              <label className="text-xs font-bold text-text-main">
+              <label className="text-xs font-semibold text-text-main">
                 Validité lead (heures)
                 <Input
                   className="mt-2"
@@ -584,7 +584,7 @@ export const AdminCoursesPage: React.FC = () => {
           </section>
           <aside className="space-y-4">
             <section className="rounded-card border border-warning-border bg-warning-surface p-4">
-              <h2 className="flex items-center gap-2 text-sm font-black text-text-main">
+              <h2 className="flex items-center gap-2 text-sm font-bold text-text-main">
                 <ShieldAlert className="h-icon-md w-icon-md text-warning" />
                 Garde-fous Phase 2
               </h2>
@@ -599,7 +599,7 @@ export const AdminCoursesPage: React.FC = () => {
               </ul>
             </section>
             <section className="rounded-card border border-border-base bg-bg-surface p-4 shadow-xs">
-              <h2 className="text-sm font-black text-text-main">
+              <h2 className="text-sm font-bold text-text-main">
                 Sécurité & mineurs
               </h2>
               <ul className="mt-3 space-y-2 text-xs leading-relaxed text-text-secondary">

@@ -165,7 +165,7 @@ export const HelpCenterPage: React.FC = () => {
           <Headphones className="w-icon-sm h-icon-sm" />
           <span>Centre d'aide Shongre</span>
         </div>
-        <h1 className="text-2xl sm:text-4xl font-black text-stone-900 tracking-tight">
+        <h1 className="text-2xl sm:text-4xl font-bold text-stone-900 tracking-tight">
           {t("support.helpCenterPage.commentPouvonsNousVousAider")}
         </h1>
         <p className="text-xs sm:text-sm text-stone-500">
@@ -197,7 +197,7 @@ export const HelpCenterPage: React.FC = () => {
               key={cat.id}
               type="button"
               onClick={() => setSelectedCategory(cat.id)}
-              className={`px-4 py-2.5 rounded-2xl text-xs font-bold shrink-0 transition-all flex items-center gap-2 cursor-pointer ${
+              className={`px-4 py-2.5 rounded-2xl text-xs font-semibold shrink-0 transition-all flex items-center gap-2 cursor-pointer ${
                 isActive
                   ? "bg-stone-900 text-white shadow-xs"
                   : "bg-white border border-border-base text-stone-700 hover:bg-stone-50 hover:text-stone-950"
@@ -212,7 +212,7 @@ export const HelpCenterPage: React.FC = () => {
 
       {/* 3. FAQ Accordion Section */}
       <div className="bg-white rounded-3xl border border-border-base p-6 sm:p-8 shadow-xs space-y-4">
-        <h2 className="text-base font-black text-stone-900 mb-2">
+        <h2 className="text-base font-bold text-stone-900 mb-2">
           {t("support.helpCenterPage.questionsFrequentes")}
         </h2>
 
@@ -230,7 +230,7 @@ export const HelpCenterPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setOpenFaqId(isOpen ? null : art.id)}
-                    className="w-full flex items-center justify-between gap-4 min-h-6 text-left font-bold text-xs sm:text-sm text-stone-900 hover:text-primary transition-colors cursor-pointer"
+                    className="w-full flex items-center justify-between gap-4 min-h-6 text-left font-semibold text-xs sm:text-sm text-stone-900 hover:text-primary transition-colors cursor-pointer"
                   >
                     <span>{art.question}</span>
                     <ChevronDown
@@ -264,7 +264,7 @@ export const HelpCenterPage: React.FC = () => {
       {/* 4. Bottom Contact Support Callout */}
       <div className="bg-stone-900 text-white rounded-3xl p-6 sm:p-10 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-md">
         <div className="space-y-1 text-center sm:text-left">
-          <h3 className="text-lg sm:text-xl font-black">
+          <h3 className="text-lg sm:text-xl font-bold">
             {t("support.helpCenterPage.vousNAvezPasTrouve")}
           </h3>
           {/* Dark panel: secondary text needs the lighter stone step to stay readable. */}
@@ -277,7 +277,7 @@ export const HelpCenterPage: React.FC = () => {
           to="/contact"
           variant="primary"
           size="lg"
-          className="shrink-0 font-black"
+          className="shrink-0 font-semibold"
         >
           Contacter l'assistance Shongre
         </Button>

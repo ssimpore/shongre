@@ -59,7 +59,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
       {/* Header & Search */}
       <div className="p-4 border-b border-border-base space-y-3">
         <div className="flex items-center justify-between">
-          <h1 className="text-xl font-black text-stone-900 flex items-center gap-2">
+          <h1 className="text-xl font-bold text-stone-900 flex items-center gap-2">
             <MessageSquare className="w-icon-lg h-icon-lg text-primary" />
             <span>Messagerie</span>
           </h1>
@@ -194,7 +194,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-1 mb-0.5">
                     <span
-                      className={`text-xs truncate ${hasUnread ? "font-black text-stone-950" : "font-bold text-stone-800"}`}
+                      className={`text-xs truncate ${hasUnread ? "font-bold text-stone-950" : "font-bold text-stone-800"}`}
                     >
                       {conv.counterpart.name}
                     </span>
@@ -220,7 +220,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
                     </p>
 
                     {hasUnread && (
-                      <span className="shrink-0 px-1.5 py-0.5 rounded-full text-micro font-extrabold bg-primary text-white">
+                      <span className="shrink-0 px-1.5 py-0.5 rounded-full text-micro font-bold bg-primary text-white">
                         {conv.unreadCount}
                       </span>
                     )}

@@ -181,7 +181,7 @@ export const SavedSearchesPage: React.FC = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl sm:text-2xl font-black text-stone-900">
+        <h1 className="text-xl sm:text-2xl font-bold text-stone-900">
           Mes recherches sauvegardées ({searches.length})
         </h1>
         <p className="text-xs sm:text-sm text-stone-500 mt-0.5">

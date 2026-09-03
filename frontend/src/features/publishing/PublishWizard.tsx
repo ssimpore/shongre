@@ -1169,7 +1169,7 @@ export const PublishWizard: React.FC = () => {
           <h1
             ref={wizardHeadingRef}
             tabIndex={-1}
-            className="text-2xl sm:text-3xl font-black text-stone-900 tracking-tight focus:outline-none"
+            className="text-2xl sm:text-3xl font-bold text-stone-900 tracking-tight focus:outline-none"
           >
             {t("publishing.publishWizard.deposerUneAnnonceSurShongre")}
           </h1>
@@ -1221,7 +1221,7 @@ export const PublishWizard: React.FC = () => {
                   onClick={() => goToPhase(p.id)}
                   aria-current={isCurrent ? "step" : undefined}
                   aria-disabled={isLocked || undefined}
-                  className={`w-full text-left flex items-start gap-2 px-2.5 py-2 rounded-xl font-bold transition-colors cursor-pointer ${
+                  className={`w-full text-left flex items-start gap-2 px-2.5 py-2 rounded-xl font-semibold transition-colors cursor-pointer ${
                     isCurrent
                       ? "bg-primary-light text-primary ring-1 ring-primary"
                       : isDone
@@ -1232,7 +1232,7 @@ export const PublishWizard: React.FC = () => {
                   }`}
                 >
                   <span
-                    className={`w-5 h-5 rounded-full flex items-center justify-center text-micro font-black shrink-0 mt-px ${
+                    className={`w-5 h-5 rounded-full flex items-center justify-center text-micro font-bold shrink-0 mt-px ${
                       isCurrent
                         ? "bg-primary text-white"
                         : isDone
@@ -1264,7 +1264,7 @@ export const PublishWizard: React.FC = () => {
             <h2
               ref={phaseOneHeadingRef}
               tabIndex={-1}
-              className="text-xl sm:text-2xl font-black text-stone-900 focus:outline-none"
+              className="text-xl sm:text-2xl font-bold text-stone-900 focus:outline-none"
             >
               {phaseOneStage === "intent"
                 ? t("publishing.publishWizard.queSouhaitezVousPublier")
@@ -1301,7 +1301,7 @@ export const PublishWizard: React.FC = () => {
                       key={intent}
                       className={`relative flex min-h-control-md cursor-pointer items-center gap-2.5 rounded-control border p-3 text-left ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} ${
                         draft.listingIntent === intent
-                          ? "border-primary bg-primary-light text-primary font-bold"
+                          ? "border-primary bg-primary-light text-primary font-semibold"
                           : "border-border-base bg-bg-surface text-text-main hover:bg-bg-subtle"
                       }`}
                     >
@@ -1340,7 +1340,7 @@ export const PublishWizard: React.FC = () => {
           {/* Taxonomy Search */}
           {phaseOneStage === "category" && (
             <div className="space-y-3">
-              <label className="text-xs font-bold text-stone-700 uppercase tracking-wider block">
+              <label className="text-xs font-semibold text-stone-700 uppercase tracking-wider block">
                 {t("publishing.publishWizard.rechercherUneCategorieOuUn")}
               </label>
               <div className="relative">
@@ -1433,7 +1433,7 @@ export const PublishWizard: React.FC = () => {
                             }}
                             className={`flex min-h-control-md items-center justify-between gap-3 rounded-control border p-3 text-left ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} ${
                               isSelected
-                                ? "border-primary bg-primary-light font-bold text-primary"
+                                ? "border-primary bg-primary-light font-semibold text-primary"
                                 : "border-border-base bg-bg-surface text-text-main hover:bg-bg-subtle"
                             }`}
                           >
@@ -1503,7 +1503,7 @@ export const PublishWizard: React.FC = () => {
             <h2
               ref={detailsHeadingRef}
               tabIndex={-1}
-              className="text-xl sm:text-2xl font-black text-stone-900 focus:outline-none"
+              className="text-xl sm:text-2xl font-bold text-stone-900 focus:outline-none"
             >
               Caractéristiques techniques
               {schema?.node
@@ -1530,7 +1530,7 @@ export const PublishWizard: React.FC = () => {
               ),
             ) && (
               <div>
-                <label className="text-xs font-bold text-stone-700 uppercase tracking-wider block mb-2">
+                <label className="text-xs font-semibold text-stone-700 uppercase tracking-wider block mb-2">
                   {schema?.listingFamily === "job"
                     ? "Disponibilité du poste"
                     : schema?.listingFamily === "service"
@@ -1545,7 +1545,7 @@ export const PublishWizard: React.FC = () => {
                       onClick={() => updateDraft({ condition: c.value })}
                       className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
                         draft.condition === c.value
-                          ? "border-primary bg-primary-light text-primary font-bold ring-1 ring-primary"
+                          ? "border-primary bg-primary-light text-primary font-semibold ring-1 ring-primary"
                           : "border-border-base bg-white hover:bg-stone-50 text-stone-800"
                       }`}
                     >
@@ -1579,7 +1579,7 @@ export const PublishWizard: React.FC = () => {
               </p>
               <button
                 type="button"
-                className="mt-2 font-bold underline"
+                className="mt-2 font-semibold underline"
                 onClick={() => setV4RetryKey((value) => value + 1)}
               >
                 {t("common.retry")}
@@ -1686,7 +1686,7 @@ export const PublishWizard: React.FC = () => {
       {showsPanel(3) && phaseOneStage === "details" && (
         <div className="bg-white rounded-2xl border border-border-base p-6 sm:p-8 space-y-6 shadow-xs">
           <div>
-            <h2 className="text-xl sm:text-2xl font-black text-stone-900">
+            <h2 className="text-xl sm:text-2xl font-bold text-stone-900">
               {t("publishing.publishWizard.photosDeVotreAnnonce")}
             </h2>
             <p className="text-xs sm:text-sm text-stone-500 mt-1">
@@ -1736,7 +1736,7 @@ export const PublishWizard: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => handleSetCoverPhoto(photo.id)}
-                        className="w-full min-h-6 py-1.5 bg-white/95 text-stone-900 text-micro font-bold rounded shadow-xs hover:bg-white active:bg-bg-subtle transition-colors duration-fast cursor-pointer"
+                        className="w-full min-h-6 py-1.5 bg-white/95 text-stone-900 text-micro font-semibold rounded shadow-xs hover:bg-white active:bg-bg-subtle transition-colors duration-fast cursor-pointer"
                       >
                         Mettre en couverture
                       </button>
@@ -1783,7 +1783,7 @@ export const PublishWizard: React.FC = () => {
       {showsPanel(4) && (
         <div className="bg-white rounded-2xl border border-border-base p-6 sm:p-8 space-y-6 shadow-xs">
           <div>
-            <h2 className="text-xl sm:text-2xl font-black text-stone-900">
+            <h2 className="text-xl sm:text-2xl font-bold text-stone-900">
               {t("publishing.publishWizard.titreDescriptionDetaillee")}
             </h2>
             <p className="text-xs sm:text-sm text-stone-500 mt-1">
@@ -1799,7 +1799,7 @@ export const PublishWizard: React.FC = () => {
                   <Sparkles className="w-icon-md h-icon-md" />
                 </div>
                 <div>
-                  <h3 className="text-xs font-black text-stone-900 uppercase tracking-wider">
+                  <h3 className="text-xs font-bold text-stone-900 uppercase tracking-wider">
                     {t("publishing.publishWizard.assistantIaRedactionGemini")}
                   </h3>
                   <p className="text-micro text-stone-500">
@@ -1859,7 +1859,7 @@ export const PublishWizard: React.FC = () => {
       {showsPanel(5) && (
         <div className="bg-white rounded-2xl border border-border-base p-6 sm:p-8 space-y-6 shadow-xs">
           <div>
-            <h2 className="text-xl sm:text-2xl font-black text-stone-900">
+            <h2 className="text-xl sm:text-2xl font-bold text-stone-900">
               {schema?.listingFamily === "job"
                 ? "Rémunération"
                 : schema?.listingFamily === "service"
@@ -2017,7 +2017,7 @@ export const PublishWizard: React.FC = () => {
       {showsPanel(6) && (
         <div className="bg-white rounded-2xl border border-border-base p-6 sm:p-8 space-y-6 shadow-xs">
           <div>
-            <h2 className="text-xl sm:text-2xl font-black text-stone-900">
+            <h2 className="text-xl sm:text-2xl font-bold text-stone-900">
               {t("publishing.publishWizard.commentSouhaitezVousVendre")}
             </h2>
             <p className="text-xs sm:text-sm text-stone-500 mt-1">
@@ -2262,7 +2262,7 @@ export const PublishWizard: React.FC = () => {
 
                   {draft.fulfillment.allowParcelShipping && (
                     <div className="pt-3 border-t border-border-subtle">
-                      <label className="text-xs font-bold text-stone-700 block mb-1.5">
+                      <label className="text-xs font-semibold text-stone-700 block mb-1.5">
                         {t(
                           "publishing.publishWizard.gabaritDuColisPoidsEstime",
                         )}
@@ -2306,7 +2306,7 @@ export const PublishWizard: React.FC = () => {
                             className={`p-2.5 rounded-lg border text-left cursor-pointer transition-colors ${
                               draft.fulfillment.packageSpecs?.sizeTier ===
                               pkg.id
-                                ? "bg-stone-900 text-white font-bold"
+                                ? "bg-stone-900 text-white font-semibold"
                                 : "bg-white text-stone-800 border-border-base hover:bg-stone-50"
                             }`}
                           >
@@ -2366,7 +2366,7 @@ export const PublishWizard: React.FC = () => {
       {showsPanel(8) && !draft.digitalFulfillment && (
         <div className="bg-white rounded-2xl border border-border-base p-6 sm:p-8 space-y-6 shadow-xs">
           <div>
-            <h2 className="text-xl sm:text-2xl font-black text-stone-900">
+            <h2 className="text-xl sm:text-2xl font-bold text-stone-900">
               {t("publishing.publishWizard.localisationDuBien")}
             </h2>
             <p className="text-xs sm:text-sm text-stone-500 mt-1">
@@ -2419,7 +2419,7 @@ export const PublishWizard: React.FC = () => {
             <span className="flex items-center gap-2.5 min-w-0">
               <Globe className="w-icon-lg h-icon-lg text-primary shrink-0" />
               <span className="min-w-0">
-                <span className="block font-black text-stone-900">
+                <span className="block font-bold text-stone-900">
                   {t("publishing.publishWizard.optionsAvancees")}
                 </span>
                 <span className="block text-xs text-stone-500 mt-0.5">
@@ -2448,7 +2448,7 @@ export const PublishWizard: React.FC = () => {
               <div>
                 <div className="flex items-center gap-2">
                   <Globe className="w-icon-lg h-icon-lg text-primary" />
-                  <h2 className="text-xl sm:text-2xl font-black text-stone-900">
+                  <h2 className="text-xl sm:text-2xl font-bold text-stone-900">
                     {t("publishing.publishWizard.marchesEtPaysDeDiffusion")}
                   </h2>
                 </div>
@@ -2485,7 +2485,7 @@ export const PublishWizard: React.FC = () => {
                       "Tous les marchés éligibles ont été sélectionnés.",
                     );
                   }}
-                  className="text-xs px-3 py-1.5 rounded-xl border border-primary/30 text-primary hover:bg-primary-light/50 font-bold transition-colors cursor-pointer"
+                  className="text-xs px-3 py-1.5 rounded-xl border border-primary/30 text-primary hover:bg-primary-light/50 font-semibold transition-colors cursor-pointer"
                 >
                   {t("publishing.publishWizard.tousLesMarches")}
                 </button>
@@ -2497,7 +2497,7 @@ export const PublishWizard: React.FC = () => {
                       `Diffusion restreinte au marché ${defaultMarket.name}.`,
                     );
                   }}
-                  className="text-xs px-3 py-1.5 rounded-xl border border-border-base text-stone-600 hover:bg-stone-50 font-bold transition-colors cursor-pointer"
+                  className="text-xs px-3 py-1.5 rounded-xl border border-border-base text-stone-600 hover:bg-stone-50 font-semibold transition-colors cursor-pointer"
                 >
                   {defaultMarket.name} uniquement
                 </button>
@@ -2573,7 +2573,7 @@ export const PublishWizard: React.FC = () => {
                         <div className="flex items-center gap-2">
                           <span className="text-2xl">{m.flag}</span>
                           <div>
-                            <div className="text-xs font-black text-stone-900 flex items-center gap-1.5">
+                            <div className="text-xs font-bold text-stone-900 flex items-center gap-1.5">
                               {m.name}
                               <span className="text-micro text-stone-500 font-semibold">
                                 ({m.code})
@@ -2665,7 +2665,7 @@ export const PublishWizard: React.FC = () => {
           {/* VISIBILITY BOOST OPTIONS */}
           <div className="bg-white rounded-2xl border border-border-base p-6 sm:p-8 space-y-6 shadow-xs">
             <div>
-              <h2 className="text-xl sm:text-2xl font-black text-stone-900">
+              <h2 className="text-xl sm:text-2xl font-bold text-stone-900">
                 {t(
                   "publishing.publishWizard.optionsDeVisibiliteBoostFacultatif",
                 )}
@@ -2713,14 +2713,14 @@ export const PublishWizard: React.FC = () => {
                   }`}
                 >
                   <div>
-                    <div className="text-xs font-black text-stone-900">
+                    <div className="text-xs font-bold text-stone-900">
                       {pack.name}
                     </div>
                     <div className="text-micro text-stone-500 mt-1">
                       {pack.description}
                     </div>
                   </div>
-                  <div className="text-sm font-black text-primary mt-3">
+                  <div className="text-sm font-bold text-primary mt-3">
                     {pack.id === "standard"
                       ? t("publishing.publishWizard.free")
                       : "price" in pack
@@ -2747,7 +2747,7 @@ export const PublishWizard: React.FC = () => {
       {showsPanel(REVIEW_PANEL) && (
         <div className="bg-white rounded-2xl border border-primary-border ring-1 ring-primary-border p-6 sm:p-8 space-y-6 shadow-xs">
           <div>
-            <h2 className="text-xl sm:text-2xl font-black text-stone-900">
+            <h2 className="text-xl sm:text-2xl font-bold text-stone-900">
               {t("publishing.publishWizard.recapitulatifDeVotreAnnonce")}
             </h2>
             <p className="text-xs sm:text-sm text-stone-500 mt-1">
@@ -2777,7 +2777,7 @@ export const PublishWizard: React.FC = () => {
                 </div>
                 <div className="flex justify-between items-center pb-2 border-b border-border-subtle">
                   <span className="text-stone-500">Prix</span>
-                  <span className="font-black text-primary text-sm">
+                  <span className="font-bold text-primary text-sm">
                     {draft.pricing.isFreeDonation
                       ? "Don gratuit"
                       : formatPrice(draft.pricing.amount)}

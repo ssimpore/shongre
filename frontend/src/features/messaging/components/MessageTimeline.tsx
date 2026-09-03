@@ -111,7 +111,7 @@ export const MessageTimeline: React.FC<MessageTimelineProps> = ({
           <div key={groupIdx} className="space-y-4">
             {/* Date Separator Pill */}
             <div className="flex items-center justify-center">
-              <span className="px-3 py-1 bg-stone-200/80 text-stone-600 text-micro font-extrabold uppercase tracking-wider rounded-full shadow-2xs">
+              <span className="px-3 py-1 bg-stone-200/80 text-stone-600 text-micro font-bold uppercase tracking-wider rounded-full shadow-2xs">
                 {group.dateLabel}
               </span>
             </div>
@@ -124,7 +124,7 @@ export const MessageTimeline: React.FC<MessageTimelineProps> = ({
                   return (
                     <div key={sys.id} className="my-3 flex justify-center">
                       <div className="max-w-md w-full bg-white border border-border-base rounded-2xl p-3.5 shadow-2xs text-center space-y-1">
-                        <div className="flex items-center justify-center gap-1.5 text-xs font-black text-stone-900">
+                        <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-stone-900">
                           <ShieldCheck className="w-icon-md h-icon-md text-primary" />
                           <span>{sys.title}</span>
                         </div>
@@ -206,7 +206,7 @@ export const MessageTimeline: React.FC<MessageTimelineProps> = ({
                       {/* Offer Card */}
                       {isOffer && (
                         <div className="p-2.5 rounded-xl bg-warning-surface border border-warning-border text-warning mb-2 space-y-2">
-                          <div className="flex items-center gap-1.5 font-extrabold text-xs">
+                          <div className="flex items-center gap-1.5 font-bold text-xs">
                             <DollarSign className="w-icon-md h-icon-md text-warning" />
                             <span>Offre proposée : {offerLabel}</span>
                           </div>

@@ -223,7 +223,7 @@ export const DigitalPurchasesPage: React.FC = () => {
             {t("digital.common.title")}
           </span>
         </div>
-        <h1 className="mt-1 text-2xl font-black text-text-main">
+        <h1 className="mt-1 text-2xl font-bold text-text-main">
           {t("digital.purchases.title")}
         </h1>
         <p className="mt-1 max-w-3xl text-sm text-text-secondary">
@@ -279,7 +279,7 @@ export const DigitalPurchasesPage: React.FC = () => {
               >
                 <div className="flex min-w-0 flex-col items-start gap-3 sm:flex-row sm:justify-between">
                   <div className="min-w-0">
-                    <h2 className="break-words font-black text-text-main">
+                    <h2 className="break-words font-bold text-text-main">
                       {item.title}
                     </h2>
                     <p className="mt-1 text-xs text-text-secondary">
@@ -489,7 +489,7 @@ export const DigitalPurchasesPage: React.FC = () => {
             <ExternalLink className="h-6 w-6 text-primary" aria-hidden="true" />
             <h2
               id="digital-leaving-title"
-              className="mt-3 text-xl font-black text-text-main"
+              className="mt-3 text-xl font-bold text-text-main"
             >
               {t("digital.purchases.leaveTitle")}
             </h2>

@@ -154,7 +154,7 @@ export const CourseOrganizationWorkspacePage: React.FC = () => {
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-xl font-black text-text-main sm:text-2xl">
+            <h1 className="text-xl font-bold text-text-main sm:text-2xl">
               {organization.publicName}
             </h1>
             <Badge variant="pro">Organisme</Badge>
@@ -210,7 +210,7 @@ export const CourseOrganizationWorkspacePage: React.FC = () => {
                 <MetricIcon className="h-icon-xs w-icon-xs" />
                 {String(label)}
               </p>
-              <p className="mt-1 text-lg font-black text-text-main">
+              <p className="mt-1 text-lg font-bold text-text-main">
                 {String(value)}
               </p>
               <p className="text-micro text-text-muted">30 derniers jours</p>
@@ -224,7 +224,7 @@ export const CourseOrganizationWorkspacePage: React.FC = () => {
           <section className="overflow-hidden rounded-card border border-border-base bg-bg-surface shadow-xs">
             <div className="flex items-center justify-between gap-3 border-b border-border-subtle p-4">
               <div>
-                <h2 className="text-sm font-black text-text-main">
+                <h2 className="text-sm font-bold text-text-main">
                   Équipe et permissions
                 </h2>
                 <p className="mt-0.5 text-micro text-text-muted">
@@ -288,7 +288,7 @@ export const CourseOrganizationWorkspacePage: React.FC = () => {
 
           <section className="rounded-card border border-border-base bg-bg-surface p-4 shadow-xs">
             <div className="flex items-center justify-between gap-3">
-              <h2 className="text-sm font-black text-text-main">
+              <h2 className="text-sm font-bold text-text-main">
                 Lieux d’enseignement
               </h2>
               <Button
@@ -310,7 +310,7 @@ export const CourseOrganizationWorkspacePage: React.FC = () => {
                   className="rounded-card border border-border-subtle p-4"
                 >
                   <MapPin className="h-icon-md w-icon-md text-primary" />
-                  <p className="mt-2 text-xs font-black text-text-main">
+                  <p className="mt-2 text-xs font-bold text-text-main">
                     {location.label}
                   </p>
                   <p className="mt-1 text-micro text-text-muted">
@@ -324,7 +324,7 @@ export const CourseOrganizationWorkspacePage: React.FC = () => {
           <section className="rounded-card border border-border-base bg-bg-surface p-4 shadow-xs">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <h2 className="text-sm font-black text-text-main">
+                <h2 className="text-sm font-bold text-text-main">
                   Boîte de réception centralisée
                 </h2>
                 <p className="mt-0.5 text-micro text-text-muted">
@@ -355,13 +355,11 @@ export const CourseOrganizationWorkspacePage: React.FC = () => {
 
         <aside className="space-y-4">
           <section className="rounded-card border border-border-base bg-bg-surface p-4 shadow-xs">
-            <h2 className="flex items-center gap-2 text-sm font-black text-text-main">
+            <h2 className="flex items-center gap-2 text-sm font-bold text-text-main">
               <Building2 className="h-icon-sm w-icon-sm text-primary" />
               Formule
             </h2>
-            <p className="mt-3 text-lg font-black text-text-main">
-              {plan.name}
-            </p>
+            <p className="mt-3 text-lg font-bold text-text-main">{plan.name}</p>
             <dl className="mt-3 space-y-2 text-xs">
               <div className="flex justify-between">
                 <dt className="text-text-muted">Membres</dt>
@@ -397,7 +395,7 @@ export const CourseOrganizationWorkspacePage: React.FC = () => {
             </Button>
           </section>
           <section className="rounded-card border border-success-border bg-success-surface p-4">
-            <h2 className="flex items-center gap-2 text-sm font-black text-text-main">
+            <h2 className="flex items-center gap-2 text-sm font-bold text-text-main">
               <ShieldCheck className="h-icon-sm w-icon-sm text-success" />
               Organisme vérifié
             </h2>
@@ -407,7 +405,7 @@ export const CourseOrganizationWorkspacePage: React.FC = () => {
             </p>
           </section>
           <section className="rounded-card border border-warning-border bg-warning-surface p-4">
-            <h2 className="flex items-center gap-2 text-sm font-black text-text-main">
+            <h2 className="flex items-center gap-2 text-sm font-bold text-text-main">
               <Lock className="h-icon-sm w-icon-sm text-warning" />
               Paiements désactivés
             </h2>

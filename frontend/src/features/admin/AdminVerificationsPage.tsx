@@ -104,10 +104,10 @@ export const AdminVerificationsPage: React.FC = () => {
             <ShieldCheck className="h-icon-lg w-icon-lg" aria-hidden="true" />
           </div>
           <div>
-            <p className="text-xs font-black uppercase tracking-wider text-success">
+            <p className="text-xs font-bold uppercase tracking-wider text-success">
               {t("admin.adminVerificationsPage.accesConformiteRestreint")}
             </p>
-            <h1 className="mt-1 text-2xl font-black text-stone-950">
+            <h1 className="mt-1 text-2xl font-bold text-stone-950">
               {t(
                 "admin.adminVerificationsPage.verificationsReglesEtRevueHumaine",
               )}

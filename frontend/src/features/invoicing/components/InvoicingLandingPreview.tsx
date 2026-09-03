@@ -42,7 +42,7 @@ export function InvoicingLandingPreview({
         <div className="rounded-card border border-border-base bg-bg-base p-4 sm:p-6">
           <div className="flex items-start justify-between gap-4 border-b border-border-base pb-5">
             <div>
-              <p className="text-lg font-black tracking-tight text-text-main">
+              <p className="text-lg font-bold tracking-tight text-text-main">
                 SHONGRE<span className="text-primary">.</span>
               </p>
               <p className="mt-1 text-micro font-bold uppercase tracking-wider text-text-muted">
@@ -59,7 +59,7 @@ export function InvoicingLandingPreview({
               <p className="text-micro font-bold uppercase tracking-wide text-text-muted">
                 {labels.customer}
               </p>
-              <p className="mt-1 text-sm font-black text-text-main">
+              <p className="mt-1 text-sm font-bold text-text-main">
                 Studio Mercure
               </p>
             </div>
@@ -67,7 +67,7 @@ export function InvoicingLandingPreview({
               <p className="text-micro font-bold uppercase tracking-wide text-text-muted">
                 {labels.invoiceNumber}
               </p>
-              <p className="mt-1 text-sm font-black text-text-main">
+              <p className="mt-1 text-sm font-bold text-text-main">
                 DEMO-FAC-2026-000001
               </p>
             </div>
@@ -82,7 +82,7 @@ export function InvoicingLandingPreview({
               <span>{labels.taxLabel}</span>
               <strong className="text-text-main">300,00 €</strong>
             </div>
-            <div className="flex items-center justify-between gap-4 text-base font-black text-text-main">
+            <div className="flex items-center justify-between gap-4 text-base font-bold text-text-main">
               <span>Total</span>
               <span>1 800,00 €</span>
             </div>
@@ -110,10 +110,10 @@ export function InvoicingLandingPreview({
     >
       <div className="flex min-h-control-lg items-center justify-between gap-3 border-b border-border-base bg-bg-subtle px-4">
         <div className="flex items-center gap-2">
-          <span className="flex h-7 w-7 items-center justify-center rounded-control bg-primary text-xs font-black text-white">
+          <span className="flex h-7 w-7 items-center justify-center rounded-control bg-primary text-xs font-bold text-white">
             S
           </span>
-          <span className="text-xs font-black text-text-main">
+          <span className="text-xs font-bold text-text-main">
             {labels.title}
           </span>
         </div>
@@ -141,7 +141,7 @@ export function InvoicingLandingPreview({
               <p className="text-micro font-bold uppercase tracking-wider text-text-muted">
                 {labels.organization}
               </p>
-              <h2 className="mt-1 text-lg font-black text-text-main">
+              <h2 className="mt-1 text-lg font-bold text-text-main">
                 Atelier Horizon
               </h2>
             </div>
@@ -153,13 +153,13 @@ export function InvoicingLandingPreview({
           <div className="mt-5 grid grid-cols-2 gap-2">
             <div className="rounded-control border border-border-base p-3">
               <p className="text-micro text-text-muted">{labels.amount}</p>
-              <p className="mt-1 text-base font-black text-text-main">
+              <p className="mt-1 text-base font-bold text-text-main">
                 1 800,00 €
               </p>
             </div>
             <div className="rounded-control border border-border-base p-3">
               <p className="text-micro text-text-muted">{labels.marketLabel}</p>
-              <p className="mt-1 text-base font-black text-text-main">FR</p>
+              <p className="mt-1 text-base font-bold text-text-main">FR</p>
             </div>
           </div>
 

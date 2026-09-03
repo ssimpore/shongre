@@ -88,7 +88,7 @@ export const DisputeModal: React.FC<DisputeModalProps> = ({
         <div>
           <label
             htmlFor="dispute-reason"
-            className="block font-bold text-stone-700 mb-2"
+            className="block font-semibold text-stone-700 mb-2"
           >
             {t("transactions.disputeModal.motifPrincipalDuLitige")}
             <span className="text-danger">*</span>
@@ -109,7 +109,7 @@ export const DisputeModal: React.FC<DisputeModalProps> = ({
         </div>
 
         <div>
-          <label className="block font-bold text-stone-700 mb-2">
+          <label className="block font-semibold text-stone-700 mb-2">
             {t("transactions.disputeModal.descriptionDetailleeDesFaits")}
             <span className="text-danger">*</span>
           </label>

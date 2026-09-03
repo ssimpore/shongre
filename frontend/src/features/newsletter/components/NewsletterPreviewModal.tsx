@@ -40,7 +40,7 @@ export const NewsletterPreviewModal: React.FC<NewsletterPreviewModalProps> = ({
                   type="button"
                   onClick={() => setViewMode(mode)}
                   aria-pressed={viewMode === mode}
-                  className={`flex min-h-control-sm items-center gap-1.5 rounded-control px-3 font-bold transition-colors ${
+                  className={`flex min-h-control-sm items-center gap-1.5 rounded-control px-3 font-semibold transition-colors ${
                     viewMode === mode
                       ? "bg-white text-stone-900 shadow-xs"
                       : "text-stone-600 hover:text-stone-900"
@@ -78,10 +78,10 @@ export const NewsletterPreviewModal: React.FC<NewsletterPreviewModalProps> = ({
           >
             <header className="flex items-center justify-between bg-stone-950 px-6 py-5 text-white">
               <div className="flex items-center gap-2">
-                <span className="grid h-7 w-7 place-items-center rounded-lg bg-primary text-base font-black">
+                <span className="grid h-7 w-7 place-items-center rounded-lg bg-primary text-base font-bold">
                   S
                 </span>
-                <span className="text-base font-extrabold">Shongre</span>
+                <span className="text-base font-bold">Shongre</span>
               </div>
               <span className="text-micro font-bold uppercase tracking-wider text-stone-400">
                 Marketing
@@ -93,7 +93,7 @@ export const NewsletterPreviewModal: React.FC<NewsletterPreviewModalProps> = ({
                   return (
                     <h2
                       key={block.id}
-                      className="text-xl font-black leading-tight text-stone-950"
+                      className="text-xl font-bold leading-tight text-stone-950"
                     >
                       {block.text}
                     </h2>

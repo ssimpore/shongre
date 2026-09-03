@@ -19,8 +19,8 @@ const priceClasses = createVariants({
     size: {
       sm: "text-sm font-bold",
       md: "text-base font-bold",
-      lg: "text-xl font-extrabold",
-      xl: "text-2xl sm:text-3xl font-extrabold tracking-tight",
+      lg: "text-xl font-bold",
+      xl: "text-2xl sm:text-3xl font-bold tracking-tight",
     },
   },
   defaultVariants: { size: "md" },

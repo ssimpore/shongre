@@ -142,7 +142,7 @@ export const HomeDiscoveryTabsSection: React.FC<{
               aria-controls="home-discovery-panel"
               tabIndex={selected ? 0 : -1}
               onClick={() => setSelectedType(tab.type)}
-              className={`min-h-control-md shrink-0 rounded-control px-3 text-sm font-bold motion-interactive focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus ${
+              className={`min-h-control-md shrink-0 rounded-control px-3 text-sm font-semibold motion-interactive focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus ${
                 selected
                   ? "bg-bg-surface text-primary shadow-sm"
                   : "text-text-secondary hover:bg-bg-surface hover:text-text-primary"

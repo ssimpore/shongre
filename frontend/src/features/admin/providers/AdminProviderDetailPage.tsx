@@ -129,13 +129,13 @@ export const AdminProviderDetailPage: React.FC = () => {
       <div className="bg-bg-surface p-6 rounded-control border border-stone-200 shadow-xs space-y-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex min-w-0 items-start gap-4">
-            <div className="w-12 h-12 rounded-control bg-stone-100 border border-stone-200 flex items-center justify-center font-black text-lg text-stone-800 shrink-0">
+            <div className="w-12 h-12 rounded-control bg-stone-100 border border-stone-200 flex items-center justify-center font-bold text-lg text-stone-800 shrink-0">
               {provider.name.charAt(0)}
             </div>
 
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2 mb-1">
-                <h1 className="text-xl font-black text-text-main">
+                <h1 className="text-xl font-bold text-text-main">
                   {provider.name}
                 </h1>
                 <span className="max-w-full break-all rounded border border-stone-200 bg-stone-100 px-2 py-0.5 font-mono text-xs font-bold text-text-secondary">
@@ -250,7 +250,7 @@ export const AdminProviderDetailPage: React.FC = () => {
         <button
           type="button"
           onClick={() => setActiveTab("configuration")}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all ${
             activeTab === "configuration"
               ? "bg-primary text-text-inverse shadow-xs"
               : "text-text-secondary hover:text-text-main hover:bg-stone-100"
@@ -263,7 +263,7 @@ export const AdminProviderDetailPage: React.FC = () => {
         <button
           type="button"
           onClick={() => setActiveTab("markets")}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all ${
             activeTab === "markets"
               ? "bg-primary text-text-inverse shadow-xs"
               : "text-text-secondary hover:text-text-main hover:bg-stone-100"
@@ -276,7 +276,7 @@ export const AdminProviderDetailPage: React.FC = () => {
         <button
           type="button"
           onClick={() => setActiveTab("health")}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all ${
             activeTab === "health"
               ? "bg-primary text-text-inverse shadow-xs"
               : "text-text-secondary hover:text-text-main hover:bg-stone-100"
@@ -289,7 +289,7 @@ export const AdminProviderDetailPage: React.FC = () => {
         <button
           type="button"
           onClick={() => setActiveTab("dependencies")}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all ${
             activeTab === "dependencies"
               ? "bg-primary text-text-inverse shadow-xs"
               : "text-text-secondary hover:text-text-main hover:bg-stone-100"
@@ -304,7 +304,7 @@ export const AdminProviderDetailPage: React.FC = () => {
         <button
           type="button"
           onClick={() => setActiveTab("audit")}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
+          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all ${
             activeTab === "audit"
               ? "bg-primary text-text-inverse shadow-xs"
               : "text-text-secondary hover:text-text-main hover:bg-stone-100"

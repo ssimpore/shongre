@@ -54,7 +54,7 @@ export const CrmReportsPage: React.FC = () => {
         <p className="text-micro font-bold uppercase tracking-wider text-violet-300">
           CRM · Analytique
         </p>
-        <h1 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">
+        <h1 className="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">
           Rapports commerciaux
         </h1>
         <p className="mt-1 text-xs text-text-disabled">
@@ -89,7 +89,7 @@ export const CrmReportsPage: React.FC = () => {
                 <span className="mt-2 block text-micro text-text-disabled">
                   {label as string}
                 </span>
-                <strong className="block text-xl font-black">
+                <strong className="block text-xl font-bold">
                   {value as string}
                 </strong>
               </article>
@@ -101,7 +101,7 @@ export const CrmReportsPage: React.FC = () => {
         <section className="rounded-2xl border border-border-base bg-bg-surface p-5 shadow-xs">
           <div className="flex items-center gap-2">
             <BarChart3 className="h-icon-md w-icon-md text-primary" />
-            <h2 className="text-sm font-black">
+            <h2 className="text-sm font-bold">
               {t("admin.crmReportsPage.entonnoirParEtape")}
             </h2>
           </div>
@@ -135,7 +135,7 @@ export const CrmReportsPage: React.FC = () => {
         </section>
         <aside className="min-w-0 space-y-4">
           <section className="rounded-2xl border border-border-base bg-bg-surface p-5 shadow-xs">
-            <h2 className="text-sm font-black">
+            <h2 className="text-sm font-bold">
               {t("admin.crmReportsPage.execution")}
             </h2>
             <dl className="mt-3 divide-y divide-border-subtle text-xs">
@@ -150,25 +150,25 @@ export const CrmReportsPage: React.FC = () => {
                   className="flex justify-between py-3"
                 >
                   <dt className="text-stone-500">{label as string}</dt>
-                  <dd className="font-black">{value as number}</dd>
+                  <dd className="font-bold">{value as number}</dd>
                 </div>
               ))}
             </dl>
           </section>
           <section className="rounded-2xl border border-border-base bg-bg-surface p-5 shadow-xs">
-            <h2 className="text-sm font-black">
+            <h2 className="text-sm font-bold">
               {t("admin.crmReportsPage.resultats")}
             </h2>
             <p className="mt-3 text-micro font-bold uppercase tracking-wider text-stone-500">
               {t("admin.crmOverviewPage.revenuGagne")}
             </p>
-            <strong className="mt-1 block text-2xl font-black text-success">
+            <strong className="mt-1 block text-2xl font-bold text-success">
               {format(dashboard.wonRevenueMinor)}
             </strong>
             <p className="mt-3 text-micro font-bold uppercase tracking-wider text-stone-500">
               Valeur perdue
             </p>
-            <strong className="mt-1 block text-2xl font-black text-danger">
+            <strong className="mt-1 block text-2xl font-bold text-danger">
               {format(dashboard.lostValueMinor)}
             </strong>
           </section>

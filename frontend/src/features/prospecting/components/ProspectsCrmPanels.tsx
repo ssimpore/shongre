@@ -122,13 +122,13 @@ function OpportunityCard({
   return (
     <article className="rounded-control border border-border-base bg-bg-surface p-3 shadow-xs">
       <div className="min-w-0">
-        <h4 className="truncate text-xs font-black text-text-main">
+        <h4 className="truncate text-xs font-bold text-text-main">
           {opportunity.accountName ?? opportunity.name}
         </h4>
         <p className="mt-0.5 truncate text-micro text-text-muted">
           {opportunity.name}
         </p>
-        <p className="mt-2 text-micro font-black tabular-nums text-text-main">
+        <p className="mt-2 text-micro font-bold tabular-nums text-text-main">
           {opportunityValue(opportunity, locale)}
         </p>
       </div>
@@ -142,7 +142,7 @@ function OpportunityCard({
             onClick={onMove}
             disabled={pending}
             aria-label={`Passer ${opportunity.name} à l’étape ${nextStage.name}`}
-            className="inline-flex h-7 shrink-0 items-center gap-1 rounded-control px-2 text-micro font-bold text-primary hover:bg-primary-light focus-visible:outline-2 focus-visible:outline-primary disabled:opacity-50"
+            className="inline-flex h-7 shrink-0 items-center gap-1 rounded-control px-2 text-micro font-semibold text-primary hover:bg-primary-light focus-visible:outline-2 focus-visible:outline-primary disabled:opacity-50"
           >
             {pending ? (
               <Spinner size="sm" />
@@ -215,7 +215,7 @@ export function PipelineBoard({
                 role="tab"
                 aria-selected={selectedStage.id === stage.id}
                 onClick={() => setSelectedStageId(stage.id)}
-                className={`inline-flex h-control-sm shrink-0 items-center gap-1.5 rounded-control border px-3 text-micro font-black ${
+                className={`inline-flex h-control-sm shrink-0 items-center gap-1.5 rounded-control border px-3 text-micro font-semibold ${
                   selectedStage.id === stage.id
                     ? "border-primary bg-primary-light text-primary"
                     : "border-transparent text-text-secondary hover:bg-bg-muted"
@@ -272,7 +272,7 @@ export function PipelineBoard({
                 className="min-w-40 flex-1 bg-bg-subtle/40 p-2.5"
               >
                 <div className="mb-2.5 flex items-center justify-between gap-2 px-1">
-                  <h3 className="truncate text-xs font-black text-text-main">
+                  <h3 className="truncate text-xs font-bold text-text-main">
                     {stage.name}
                     <span className="ml-1.5 rounded-full bg-bg-muted px-1.5 py-0.5 text-micro tabular-nums text-text-muted">
                       {stageOpportunities.length}
@@ -383,7 +383,7 @@ export function TaskQueue({
               )}
             </button>
             <div className="min-w-0 flex-1">
-              <h4 className="text-xs font-black leading-snug text-text-main">
+              <h4 className="text-xs font-bold leading-snug text-text-main">
                 {task.title}
               </h4>
               <p className="mt-0.5 truncate text-micro text-text-muted">
@@ -440,7 +440,7 @@ export function ActivityTimeline({
               <Icon className="h-icon-sm w-icon-sm" aria-hidden="true" />
             </span>
             <div className="min-w-0 flex-1">
-              <h4 className="text-xs font-black text-text-main">
+              <h4 className="text-xs font-bold text-text-main">
                 {activity.title}
               </h4>
               <p className="mt-0.5 truncate text-micro text-text-muted">
@@ -481,7 +481,7 @@ function CampaignCard({
         </span>
         <div className="min-w-0 flex-1">
           <div className="flex min-w-0 flex-wrap items-center gap-2">
-            <h3 className="min-w-0 truncate text-sm font-black text-text-main">
+            <h3 className="min-w-0 truncate text-sm font-bold text-text-main">
               {campaign.name}
             </h3>
             <Badge
@@ -503,7 +503,7 @@ function CampaignCard({
           </span>
           {preflight ? (
             <span
-              className={`inline-flex items-center gap-1 text-micro font-black ${canSend ? "text-success" : "text-warning"}`}
+              className={`inline-flex items-center gap-1 text-micro font-bold ${canSend ? "text-success" : "text-warning"}`}
             >
               {canSend ? (
                 <CheckCircle2 className="h-icon-sm w-icon-sm" />
@@ -644,7 +644,7 @@ export function UnifiedOverviewPanel(props: SharedPanelProps) {
                 <p className="text-micro font-bold text-text-secondary">
                   {label}
                 </p>
-                <strong className="mt-0.5 block truncate text-xl font-black tabular-nums text-text-main sm:text-2xl">
+                <strong className="mt-0.5 block truncate text-xl font-bold tabular-nums text-text-main sm:text-2xl">
                   {typeof value === "number"
                     ? value.toLocaleString(locale)
                     : value}
@@ -654,7 +654,7 @@ export function UnifiedOverviewPanel(props: SharedPanelProps) {
             <button
               type="button"
               onClick={() => onNavigate(view)}
-              className="mt-3 inline-flex items-center gap-1 text-micro font-black text-primary hover:underline focus-visible:outline-2 focus-visible:outline-primary"
+              className="mt-3 inline-flex items-center gap-1 text-micro font-semibold text-primary hover:underline focus-visible:outline-2 focus-visible:outline-primary"
             >
               {detail} <ArrowRight className="h-icon-xs w-icon-xs" />
             </button>
@@ -666,7 +666,7 @@ export function UnifiedOverviewPanel(props: SharedPanelProps) {
         <section className="order-2 min-w-0 overflow-hidden rounded-card border border-border-base bg-bg-surface shadow-xs xl:order-1">
           <div className="flex items-center justify-between gap-3 border-b border-border-subtle px-4 py-3.5">
             <div>
-              <h2 className="text-sm font-black text-text-main">
+              <h2 className="text-sm font-bold text-text-main">
                 Pipeline commercial
               </h2>
               <p className="mt-0.5 text-micro text-text-muted">
@@ -693,7 +693,7 @@ export function UnifiedOverviewPanel(props: SharedPanelProps) {
         <section className="order-1 min-w-0 overflow-hidden rounded-card border border-border-base bg-bg-surface shadow-xs xl:order-2">
           <div className="flex items-center justify-between gap-3 border-b border-border-subtle px-4 py-3.5">
             <div>
-              <h2 className="text-sm font-black text-text-main">
+              <h2 className="text-sm font-bold text-text-main">
                 Priorités du jour
               </h2>
               <p className="mt-0.5 text-micro text-text-muted">
@@ -703,7 +703,7 @@ export function UnifiedOverviewPanel(props: SharedPanelProps) {
             <button
               type="button"
               onClick={() => onNavigate("tasks")}
-              className="text-micro font-black text-primary hover:underline"
+              className="text-micro font-semibold text-primary hover:underline"
             >
               Voir tout
             </button>
@@ -724,7 +724,7 @@ export function UnifiedOverviewPanel(props: SharedPanelProps) {
         <section className="min-w-0 overflow-hidden rounded-card border border-border-base bg-bg-surface shadow-xs">
           <div className="flex items-center justify-between gap-3 border-b border-border-subtle px-4 py-3.5">
             <div>
-              <h2 className="text-sm font-black text-text-main">
+              <h2 className="text-sm font-bold text-text-main">
                 Activité récente
               </h2>
               <p className="mt-0.5 text-micro text-text-muted">
@@ -738,14 +738,14 @@ export function UnifiedOverviewPanel(props: SharedPanelProps) {
           <div className="mb-2 flex items-center justify-between gap-3 px-1">
             <h2
               id="overview-campaigns-title"
-              className="text-sm font-black text-text-main"
+              className="text-sm font-bold text-text-main"
             >
               Campagnes
             </h2>
             <button
               type="button"
               onClick={() => onNavigate("campaigns")}
-              className="text-micro font-black text-primary hover:underline"
+              className="text-micro font-semibold text-primary hover:underline"
             >
               Voir toutes
             </button>
@@ -800,7 +800,7 @@ export function CompaniesPanel({
     <section className="overflow-hidden rounded-card border border-border-base bg-bg-surface shadow-xs">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border-subtle px-4 py-4 sm:px-5">
         <div>
-          <h2 className="text-base font-black text-text-main">Entreprises</h2>
+          <h2 className="text-base font-bold text-text-main">Entreprises</h2>
           <p className="mt-0.5 text-micro text-text-muted">
             {accounts.length} fiche(s) CRM · comptes, prospects et clients
           </p>
@@ -821,7 +821,7 @@ export function CompaniesPanel({
             >
               <div className="min-w-0 sm:col-span-2">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="truncate text-sm font-black text-text-main">
+                  <h3 className="truncate text-sm font-bold text-text-main">
                     {account.name}
                   </h3>
                   <Badge
@@ -854,7 +854,7 @@ export function CompaniesPanel({
               <button
                 type="button"
                 onClick={() => onNavigate("pipeline")}
-                className="inline-flex h-control-sm items-center justify-center gap-1 rounded-control border border-border-base px-3 text-micro font-black text-text-secondary hover:border-primary hover:text-primary"
+                className="inline-flex h-control-sm items-center justify-center gap-1 rounded-control border border-border-base px-3 text-micro font-semibold text-text-secondary hover:border-primary hover:text-primary"
               >
                 {accountOpportunities.length} opportunité(s)
               </button>
@@ -873,7 +873,7 @@ export function FullPipelinePanel(props: SharedPanelProps) {
     <section className="overflow-hidden rounded-card border border-border-base bg-bg-surface shadow-xs">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border-subtle px-4 py-4 sm:px-5">
         <div>
-          <h2 className="text-base font-black text-text-main">
+          <h2 className="text-base font-bold text-text-main">
             Pipeline commercial
           </h2>
           <p className="mt-0.5 text-micro text-text-muted">
@@ -932,7 +932,7 @@ export function FullTasksPanel(props: SharedPanelProps) {
               className="h-icon-md w-icon-md text-primary"
               aria-hidden="true"
             />
-            <strong className="mt-2 block text-xl font-black tabular-nums text-text-main">
+            <strong className="mt-2 block text-xl font-bold tabular-nums text-text-main">
               {String(value)}
             </strong>
             <span className="text-micro text-text-muted">{String(label)}</span>
@@ -941,7 +941,7 @@ export function FullTasksPanel(props: SharedPanelProps) {
       </section>
       <section className="overflow-hidden rounded-card border border-border-base bg-bg-surface shadow-xs">
         <div className="border-b border-border-subtle px-4 py-4 sm:px-5">
-          <h2 className="text-base font-black text-text-main">
+          <h2 className="text-base font-bold text-text-main">
             Tâches & relances
           </h2>
           <p className="mt-0.5 text-micro text-text-muted">
@@ -979,7 +979,7 @@ export function CampaignsPanel(
       <section className="rounded-card border border-border-base bg-bg-surface p-4 shadow-xs sm:p-5">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-base font-black text-text-main">
+            <h2 className="text-base font-bold text-text-main">
               Campagnes avec approbation
             </h2>
             <p className="mt-1 max-w-2xl text-xs leading-relaxed text-text-muted">

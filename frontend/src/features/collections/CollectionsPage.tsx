@@ -363,12 +363,7 @@ export const CollectionsPage: React.FC = () => {
                   </span>
                 </div>
 
-                <Heading
-                  as="h1"
-                  size="display-md"
-                  family="display"
-                  tone="inverse"
-                >
+                <Heading as="h1" size="display-md" tone="inverse">
                   {selectedCollection.title}
                 </Heading>
 
@@ -408,7 +403,7 @@ export const CollectionsPage: React.FC = () => {
           <Container>
             <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
               <div className="max-w-3xl space-y-3">
-                <Heading as="h1" size="display-md" family="display">
+                <Heading as="h1" size="display-md">
                   {t("collections.collectionsPage.toutesNosCollections")}
                 </Heading>
 

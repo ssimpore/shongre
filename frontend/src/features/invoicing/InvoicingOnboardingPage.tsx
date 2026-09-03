@@ -173,7 +173,7 @@ export function InvoicingOnboardingPage() {
         <h1
           ref={onboardingHeadingRef}
           tabIndex={-1}
-          className="mt-4 text-2xl font-black tracking-tight text-text-main focus:outline-none sm:text-4xl"
+          className="mt-4 text-2xl font-bold tracking-tight text-text-main focus:outline-none sm:text-4xl"
         >
           Votre espace, prêt sans la marketplace
         </h1>
@@ -214,9 +214,7 @@ export function InvoicingOnboardingPage() {
                   )}
                 </span>
               </div>
-              <h2 className="mt-4 text-sm font-black text-text-main">
-                {title}
-              </h2>
+              <h2 className="mt-4 text-sm font-bold text-text-main">{title}</h2>
               <p className="mt-2 text-xs leading-relaxed text-text-secondary">
                 {body}
               </p>
@@ -227,7 +225,7 @@ export function InvoicingOnboardingPage() {
         {organization && !hasEntity ? (
           <section className="mt-6 rounded-card border border-primary/20 bg-primary-light p-5 sm:flex sm:items-center sm:justify-between sm:gap-5">
             <div>
-              <h2 className="text-sm font-black text-text-main">
+              <h2 className="text-sm font-bold text-text-main">
                 {t("invoicing.onboarding.bootstrapTitle")}
               </h2>
               <p className="mt-1 max-w-xl text-xs leading-relaxed text-text-secondary">
@@ -254,7 +252,7 @@ export function InvoicingOnboardingPage() {
 
         <div className="mt-7 rounded-card border border-border-base bg-bg-surface p-5 sm:flex sm:items-center sm:justify-between">
           <div>
-            <p className="text-sm font-black text-text-main">
+            <p className="text-sm font-bold text-text-main">
               Vous pouvez commencer
             </p>
             <p className="mt-1 text-xs text-text-secondary">

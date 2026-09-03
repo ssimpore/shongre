@@ -67,7 +67,7 @@ export const FavoritesPage: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-xl sm:text-2xl font-black text-stone-900">
+          <h1 className="text-xl sm:text-2xl font-bold text-stone-900">
             Mes annonces favorites ({favoriteListings.length})
           </h1>
           <p className="text-xs sm:text-sm text-stone-500 mt-0.5">

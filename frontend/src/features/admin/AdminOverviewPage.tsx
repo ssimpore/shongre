@@ -128,7 +128,7 @@ export const AdminOverviewPage: React.FC = () => {
               Shongre Security Core
             </span>
           </div>
-          <h1 className="text-2xl font-black text-text-main tracking-tight">
+          <h1 className="text-2xl font-bold text-text-main tracking-tight">
             Bonjour, {currentUser?.name || "Collaborateur"}
           </h1>
           <p className="text-xs text-text-secondary mt-0.5">
@@ -185,7 +185,7 @@ export const AdminOverviewPage: React.FC = () => {
             <div>
               <h2
                 id="admin-action-queue"
-                className="flex items-center gap-2 text-base font-black text-text-main"
+                className="flex items-center gap-2 text-base font-bold text-text-main"
               >
                 <ListTodo className="h-icon-md w-icon-md text-primary" />
                 {t("admin.adminOverviewPage.actionQueueTitle")}
@@ -194,7 +194,7 @@ export const AdminOverviewPage: React.FC = () => {
                 {t("admin.adminOverviewPage.actionQueueDescription")}
               </p>
             </div>
-            <span className="rounded-pill border border-primary-border bg-bg-surface px-3 py-1 text-xs font-black text-primary shadow-2xs">
+            <span className="rounded-pill border border-primary-border bg-bg-surface px-3 py-1 text-xs font-bold text-primary shadow-2xs">
               {loadState === "success"
                 ? pendingVerifications.length + (reportsCount ?? 0)
                 : "…"}
@@ -254,7 +254,7 @@ export const AdminOverviewPage: React.FC = () => {
                   </span>
                   <Users className="w-icon-md h-icon-md text-text-disabled" />
                 </div>
-                <div className="text-2xl font-black text-text-main">
+                <div className="text-2xl font-bold text-text-main">
                   {stats?.totalUsers ?? "…"}
                 </div>
                 <div className="text-xs text-stone-500 mt-1 flex items-center gap-1">
@@ -272,7 +272,7 @@ export const AdminOverviewPage: React.FC = () => {
                   </span>
                   <Clock className="w-icon-md h-icon-md text-amber-500" />
                 </div>
-                <div className="text-2xl font-black text-warning">
+                <div className="text-2xl font-bold text-warning">
                   {loadState === "success" ? pendingVerifications.length : "…"}
                 </div>
                 <div className="text-xs text-stone-500 mt-1">
@@ -293,7 +293,7 @@ export const AdminOverviewPage: React.FC = () => {
                   </span>
                   <ShieldAlert className="w-icon-md h-icon-md text-primary" />
                 </div>
-                <div className="text-2xl font-black text-primary">
+                <div className="text-2xl font-bold text-primary">
                   {loadState === "success" ? (reportsCount ?? 0) : "…"}
                 </div>
                 <div className="text-xs text-stone-500 mt-1">
@@ -310,7 +310,7 @@ export const AdminOverviewPage: React.FC = () => {
                   </span>
                   <TrendingUp className="w-icon-md h-icon-md text-success" />
                 </div>
-                <div className="text-2xl font-black text-text-main">
+                <div className="text-2xl font-bold text-text-main">
                   {stats?.totalListings ?? "…"}
                 </div>
                 <div className="text-xs text-stone-500 mt-1">

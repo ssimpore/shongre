@@ -194,7 +194,7 @@ export const AdminImmoPage: React.FC = () => {
           <p className="text-xs font-bold uppercase tracking-wide text-primary">
             Verticale spécialisée
           </p>
-          <h1 className="mt-1 text-xl font-black">
+          <h1 className="mt-1 text-xl font-bold">
             Shongre Immo · {activeMarket.name}
           </h1>
           <p className="mt-1 text-xs text-text-muted">
@@ -223,7 +223,7 @@ export const AdminImmoPage: React.FC = () => {
               <p className="text-xs font-bold text-text-muted">{label}</p>
               <Icon className="h-5 w-5 text-primary" />
             </div>
-            <p className="mt-3 text-2xl font-black">{String(value)}</p>
+            <p className="mt-3 text-2xl font-bold">{String(value)}</p>
           </article>
         ))}
       </section>
@@ -232,7 +232,7 @@ export const AdminImmoPage: React.FC = () => {
         <div className="rounded-card border border-border-base bg-bg-surface p-5">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-sm font-black">Offres et quotas</h2>
+              <h2 className="text-sm font-bold">Offres et quotas</h2>
               <p className="text-micro text-text-muted">
                 Catalogue générique, spécialisé par verticale et marché.
               </p>
@@ -260,7 +260,7 @@ export const AdminImmoPage: React.FC = () => {
                 {overview.catalog.offers.map((offer) => (
                   <tr key={offer.id}>
                     <td className="p-3">
-                      <p className="font-black">{offer.name}</p>
+                      <p className="font-bold">{offer.name}</p>
                       <p className="text-micro text-text-muted">
                         {labelIdentifier(offer.kind)}
                       </p>
@@ -468,7 +468,7 @@ export const AdminImmoPage: React.FC = () => {
         </div>
         <div className="rounded-card border border-border-base bg-bg-surface p-5">
           <Settings2 className="h-icon-xl w-icon-xl text-primary" />
-          <h2 className="mt-3 text-sm font-black">
+          <h2 className="mt-3 text-sm font-bold">
             Fonctionnalités {activeMarket.name}
           </h2>
           <div className="mt-4 space-y-3">
@@ -505,7 +505,7 @@ export const AdminImmoPage: React.FC = () => {
       <section className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         <div className="overflow-hidden rounded-card border border-border-base bg-bg-surface">
           <div className="border-b border-border-base p-5">
-            <h2 className="text-sm font-black">Options de visibilité</h2>
+            <h2 className="text-sm font-bold">Options de visibilité</h2>
             <p className="mt-1 text-micro text-text-muted">
               Prix, durée et activation par marché.
             </p>
@@ -533,7 +533,7 @@ export const AdminImmoPage: React.FC = () => {
               <tbody className="divide-y divide-border-subtle">
                 {overview.catalog.addOns.map((addOn) => (
                   <tr key={addOn.id}>
-                    <td className="p-3 font-black">{addOn.name}</td>
+                    <td className="p-3 font-bold">{addOn.name}</td>
                     <td className="p-3">
                       <input
                         aria-label={`Prix de ${addOn.name} en ${addOn.price.currency}`}
@@ -597,7 +597,7 @@ export const AdminImmoPage: React.FC = () => {
         </div>
         <div className="overflow-hidden rounded-card border border-border-base bg-bg-surface">
           <div className="border-b border-border-base p-5">
-            <h2 className="text-sm font-black">Types de biens</h2>
+            <h2 className="text-sm font-bold">Types de biens</h2>
             <p className="mt-1 text-micro text-text-muted">
               Activation et transactions permises pour {activeMarket.name}.
             </p>
@@ -609,7 +609,7 @@ export const AdminImmoPage: React.FC = () => {
                 className="flex items-center justify-between gap-3 p-3 text-xs"
               >
                 <div>
-                  <p className="font-black">{type.label}</p>
+                  <p className="font-bold">{type.label}</p>
                   <p className="text-micro text-text-muted">
                     {type.transactionTypes.length} transaction(s) · schéma v
                     {type.schemaVersion}
@@ -644,7 +644,7 @@ export const AdminImmoPage: React.FC = () => {
 
       <section className="overflow-hidden rounded-card border border-border-base bg-bg-surface">
         <div className="border-b border-border-base p-5">
-          <h2 className="text-sm font-black">Champs requis par marché</h2>
+          <h2 className="text-sm font-bold">Champs requis par marché</h2>
           <p className="mt-1 text-micro text-text-muted">
             Ces règles versionnées pilotent la validation de publication sans
             condition propre à {activeMarket.name} dans l’interface.
@@ -664,7 +664,7 @@ export const AdminImmoPage: React.FC = () => {
             <tbody className="divide-y divide-border-subtle">
               {overview.catalog.fieldRules.map((rule) => (
                 <tr key={rule.id}>
-                  <td className="p-3 font-black">
+                  <td className="p-3 font-bold">
                     {overview.catalog.attributes.find(
                       (attribute) => attribute.id === rule.fieldId,
                     )?.label || rule.fieldId}
@@ -710,7 +710,7 @@ export const AdminImmoPage: React.FC = () => {
         <div className="rounded-card border border-border-base bg-bg-surface p-5">
           <div className="flex items-center gap-2">
             <AlertTriangle className="h-icon-lg w-icon-lg text-warning" />
-            <h2 className="text-sm font-black">File de modération</h2>
+            <h2 className="text-sm font-bold">File de modération</h2>
           </div>
           <div className="mt-4 space-y-3">
             {overview.moderationQueue.map((item) => (
@@ -724,7 +724,7 @@ export const AdminImmoPage: React.FC = () => {
                         is set in mono and allowed to break. Left as ordinary
                         bold copy it was one unbreakable 190px token that pushed
                         the admin console past a 320px viewport. */}
-                    <p className="text-xs font-black">
+                    <p className="text-xs font-bold">
                       Bien{" "}
                       <span className="break-all font-mono font-bold">
                         {item.propertyId}
@@ -749,33 +749,33 @@ export const AdminImmoPage: React.FC = () => {
           </div>
         </div>
         <div className="rounded-card border border-border-base bg-bg-surface p-5">
-          <h2 className="text-sm font-black">Économie du canal</h2>
+          <h2 className="text-sm font-bold">Économie du canal</h2>
           <dl className="mt-4 space-y-4 text-xs">
             <div className="flex justify-between">
               <dt className="text-text-muted">Leads par annonce active</dt>
-              <dd className="font-black">{overview.metrics.leadsPerListing}</dd>
+              <dd className="font-bold">{overview.metrics.leadsPerListing}</dd>
             </div>
             <div className="flex justify-between">
               <dt className="text-text-muted">Réponse médiane</dt>
-              <dd className="font-black">
+              <dd className="font-bold">
                 {overview.metrics.medianResponseMinutes} min
               </dd>
             </div>
             <div className="flex justify-between">
               <dt className="text-text-muted">Recherche → contact</dt>
-              <dd className="font-black">
+              <dd className="font-bold">
                 {overview.metrics.searchToContactRatePercent} %
               </dd>
             </div>
             <div className="flex justify-between">
               <dt className="text-text-muted">Rétention agences (30 j)</dt>
-              <dd className="font-black">
+              <dd className="font-bold">
                 {overview.metrics.agencyRetentionPercent} %
               </dd>
             </div>
             <div className="flex justify-between">
               <dt className="text-text-muted">Revenu mensuel récurrent</dt>
-              <dd className="font-black">
+              <dd className="font-bold">
                 {formatImmoMoney(
                   overview.metrics.subscriptionMrr,
                   currentLocale,
@@ -785,7 +785,7 @@ export const AdminImmoPage: React.FC = () => {
             </div>
             <div className="flex justify-between">
               <dt className="text-text-muted">Revenu options</dt>
-              <dd className="font-black">
+              <dd className="font-bold">
                 {formatImmoMoney(
                   overview.metrics.addOnRevenue,
                   currentLocale,
@@ -795,7 +795,7 @@ export const AdminImmoPage: React.FC = () => {
             </div>
             <div className="flex justify-between">
               <dt className="text-text-muted">Coût par lead</dt>
-              <dd className="font-black">
+              <dd className="font-bold">
                 {formatImmoMoney(
                   overview.metrics.costPerLead,
                   currentLocale,
@@ -805,7 +805,7 @@ export const AdminImmoPage: React.FC = () => {
             </div>
             <div className="flex justify-between">
               <dt className="text-text-muted">Revenu par lead</dt>
-              <dd className="font-black">
+              <dd className="font-bold">
                 {formatImmoMoney(
                   overview.metrics.revenuePerLead,
                   currentLocale,
@@ -823,7 +823,7 @@ export const AdminImmoPage: React.FC = () => {
 
       {overview.syncErrors.length ? (
         <section className="rounded-card border border-danger-border bg-danger-surface p-5">
-          <h2 className="text-sm font-black text-danger">
+          <h2 className="text-sm font-bold text-danger">
             Erreurs de synchronisation
           </h2>
         </section>

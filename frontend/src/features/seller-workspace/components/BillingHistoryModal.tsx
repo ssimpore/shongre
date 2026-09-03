@@ -126,7 +126,7 @@ export const BillingHistoryModal: React.FC<BillingHistoryModalProps> = ({
               type="button"
               onClick={() => setFilter(option.id)}
               aria-pressed={filter === option.id}
-              className={`rounded-control px-3 py-1.5 text-xs font-bold transition-colors focus-visible:outline-2 focus-visible:outline-primary ${
+              className={`rounded-control px-3 py-1.5 text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-primary ${
                 filter === option.id
                   ? "bg-primary text-white"
                   : "bg-bg-subtle text-text-secondary hover:text-text-main"
@@ -170,7 +170,7 @@ export const BillingHistoryModal: React.FC<BillingHistoryModalProps> = ({
                     </span>
                     <div className="min-w-0">
                       <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="font-mono text-sm font-black text-text-main">
+                        <h3 className="font-mono text-sm font-bold text-text-main">
                           {invoice.number}
                         </h3>
                         <Badge

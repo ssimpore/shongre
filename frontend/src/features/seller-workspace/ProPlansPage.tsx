@@ -102,7 +102,7 @@ function PriceDisplay({
   return (
     <div className="min-h-20">
       <div className="flex items-end gap-1.5">
-        <span className="text-3xl sm:text-4xl font-black tracking-tight text-text-main">
+        <span className="text-3xl sm:text-4xl font-bold tracking-tight text-text-main">
           {formatMoneyMinor(price.amount.amountMinor, price.amount.currency)}
         </span>
         <span className="pb-1 text-xs font-semibold text-text-muted">
@@ -533,7 +533,7 @@ export const ProPlansPage: React.FC = () => {
             <Sparkles className="w-icon-sm h-icon-sm" aria-hidden="true" />
             Solutions Shongre Pro
           </div>
-          <h1 className="mx-auto mt-4 max-w-4xl text-3xl sm:text-4xl font-black tracking-tight text-text-main">
+          <h1 className="mx-auto mt-4 max-w-4xl text-3xl sm:text-4xl font-bold tracking-tight text-text-main">
             Développez votre activité avec Shongre Pro
           </h1>
           <p className="mx-auto mt-3 max-w-2xl text-sm sm:text-base leading-relaxed text-text-secondary">
@@ -552,7 +552,7 @@ export const ProPlansPage: React.FC = () => {
                 role="tab"
                 aria-selected={selectedVertical === vertical.id}
                 onClick={() => setSelectedVertical(vertical.id)}
-                className={`rounded-full border px-4 py-2 text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
+                className={`rounded-full border px-4 py-2 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
                   selectedVertical === vertical.id
                     ? "border-primary bg-primary text-white"
                     : "border-border-base bg-bg-surface text-text-secondary hover:border-primary-border hover:text-text-main"
@@ -571,7 +571,7 @@ export const ProPlansPage: React.FC = () => {
               type="button"
               onClick={() => setInterval("month")}
               aria-pressed={interval === "month"}
-              className={`rounded-control px-4 py-2 text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
+              className={`rounded-control px-4 py-2 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
                 interval === "month"
                   ? "bg-bg-surface text-text-main shadow-xs"
                   : "text-text-secondary hover:text-text-main"
@@ -583,7 +583,7 @@ export const ProPlansPage: React.FC = () => {
               type="button"
               onClick={() => setInterval("year")}
               aria-pressed={interval === "year"}
-              className={`rounded-control px-4 py-2 text-sm font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
+              className={`rounded-control px-4 py-2 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
                 interval === "year"
                   ? "bg-primary text-white shadow-xs"
                   : "text-text-secondary hover:text-text-main"
@@ -639,7 +639,7 @@ export const ProPlansPage: React.FC = () => {
                     </Badge>
                     <h2
                       id="catalog-preview-title"
-                      className="mt-2 text-lg font-black text-text-main"
+                      className="mt-2 text-lg font-bold text-text-main"
                     >
                       {t("pro.plans.preview.title")}
                     </h2>
@@ -664,7 +664,7 @@ export const ProPlansPage: React.FC = () => {
                 <div>
                   <h2
                     id="plans-title"
-                    className="text-xl sm:text-2xl font-black text-text-main"
+                    className="text-xl sm:text-2xl font-bold text-text-main"
                   >
                     Un forfait pour chaque étape
                   </h2>
@@ -749,18 +749,18 @@ export const ProPlansPage: React.FC = () => {
                       }`}
                     >
                       {plan.recommended && (
-                        <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-3 py-1 text-micro font-black uppercase tracking-wide text-white shadow-xs">
+                        <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-3 py-1 text-micro font-bold uppercase tracking-wide text-white shadow-xs">
                           Recommandé
                         </span>
                       )}
                       {trialDays && !isCurrent && (
-                        <span className="mb-3 inline-flex w-fit rounded-full bg-success-surface px-2.5 py-1 text-micro font-black uppercase tracking-wide text-success">
+                        <span className="mb-3 inline-flex w-fit rounded-full bg-success-surface px-2.5 py-1 text-micro font-bold uppercase tracking-wide text-success">
                           {trialDays} jours d’essai
                         </span>
                       )}
                       <div className="flex min-h-14 items-start justify-between gap-3">
                         <div>
-                          <h3 className="text-lg font-black text-text-main">
+                          <h3 className="text-lg font-bold text-text-main">
                             {plan.name}
                           </h3>
                           <p className="mt-1 text-xs leading-relaxed text-text-muted">
@@ -883,7 +883,7 @@ export const ProPlansPage: React.FC = () => {
                 <div>
                   <h2
                     id="comparison-title"
-                    className="text-xl font-black text-text-main"
+                    className="text-xl font-bold text-text-main"
                   >
                     Comparez les fonctionnalités
                   </h2>
@@ -903,14 +903,14 @@ export const ProPlansPage: React.FC = () => {
                 <table className="w-full min-w-190 border-collapse text-xs">
                   <thead>
                     <tr className="bg-bg-subtle text-left text-text-main">
-                      <th scope="col" className="px-4 py-3 font-black">
+                      <th scope="col" className="px-4 py-3 font-bold">
                         Fonctionnalité
                       </th>
                       {plans.map((plan) => (
                         <th
                           key={plan.id}
                           scope="col"
-                          className="px-4 py-3 text-center font-black"
+                          className="px-4 py-3 text-center font-bold"
                         >
                           {plan.name}
                         </th>
@@ -955,7 +955,7 @@ export const ProPlansPage: React.FC = () => {
               <div className="mb-5">
                 <h2
                   id="boosts-title"
-                  className="text-xl sm:text-2xl font-black text-text-main"
+                  className="text-xl sm:text-2xl font-bold text-text-main"
                 >
                   Options de visibilité, à la carte
                 </h2>
@@ -981,7 +981,7 @@ export const ProPlansPage: React.FC = () => {
                             />
                           </span>
                           <div className="min-w-0">
-                            <h3 className="font-black text-text-main">
+                            <h3 className="font-bold text-text-main">
                               {boost.name}
                             </h3>
                             <p className="mt-0.5 text-xs text-text-muted">
@@ -1054,7 +1054,7 @@ export const ProPlansPage: React.FC = () => {
                   <div>
                     <h2
                       id="billing-title"
-                      className="text-xl font-black text-text-main"
+                      className="text-xl font-bold text-text-main"
                     >
                       Votre abonnement et votre usage
                     </h2>
@@ -1117,10 +1117,10 @@ export const ProPlansPage: React.FC = () => {
                             }
                             className="rounded-card border border-border-base bg-bg-subtle p-3 text-left focus-visible:outline-2 focus-visible:outline-primary"
                           >
-                            <span className="text-micro font-black uppercase tracking-wide text-primary-hover">
+                            <span className="text-micro font-bold uppercase tracking-wide text-primary-hover">
                               {vertical?.name || "Général"}
                             </span>
-                            <span className="mt-1 block text-sm font-black text-text-main">
+                            <span className="mt-1 block text-sm font-bold text-text-main">
                               {product?.name || subscription.productId}
                             </span>
                             <span className="mt-1 block text-xs text-text-secondary">
@@ -1138,7 +1138,7 @@ export const ProPlansPage: React.FC = () => {
                     <p className="text-xs font-bold uppercase tracking-wide text-text-muted">
                       Forfait actuel
                     </p>
-                    <p className="mt-2 text-lg font-black text-text-main">
+                    <p className="mt-2 text-lg font-bold text-text-main">
                       {currentProduct?.name || "Aucun forfait actif"}
                     </p>
                     <p className="mt-1 text-xs leading-relaxed text-text-secondary">
@@ -1254,10 +1254,7 @@ export const ProPlansPage: React.FC = () => {
                   className="h-icon-lg w-icon-lg text-primary"
                   aria-hidden="true"
                 />
-                <h2
-                  id="faq-title"
-                  className="text-xl font-black text-text-main"
-                >
+                <h2 id="faq-title" className="text-xl font-bold text-text-main">
                   Questions fréquentes
                 </h2>
               </div>
@@ -1372,7 +1369,7 @@ export const ProPlansPage: React.FC = () => {
             <div className="rounded-card border border-border-base bg-bg-subtle p-4">
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="font-black text-text-main">
+                  <p className="font-bold text-text-main">
                     {selectedProduct?.name}
                   </p>
                   <p className="mt-1 text-xs text-text-secondary">
@@ -1458,10 +1455,8 @@ export const ProPlansPage: React.FC = () => {
                     </dd>
                   </div>
                   <div className="flex justify-between gap-4 border-t border-border-base pt-3 text-base">
-                    <dt className="font-black text-text-main">
-                      Dû aujourd’hui
-                    </dt>
-                    <dd className="font-black text-text-main">
+                    <dt className="font-bold text-text-main">Dû aujourd’hui</dt>
+                    <dd className="font-bold text-text-main">
                       {formatMoney(quote.amountDueTodayMinor, quote.currency)}
                     </dd>
                   </div>
@@ -1508,10 +1503,10 @@ export const ProPlansPage: React.FC = () => {
                   </dd>
                 </div>
                 <div className="flex justify-between gap-4 border-t border-border-base pt-3">
-                  <dt className="font-black text-text-main">
+                  <dt className="font-bold text-text-main">
                     Total dû maintenant
                   </dt>
-                  <dd className="font-black text-text-main">
+                  <dd className="font-bold text-text-main">
                     {formatMoney(
                       changePreview.totalDueNow.amountMinor,
                       changePreview.totalDueNow.currency,

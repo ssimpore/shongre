@@ -256,7 +256,7 @@ export const CapabilityOverridesModal: React.FC<
                   >
                     <h3
                       id={`capability-group-${groupIndex}`}
-                      className="mb-2 text-xs font-black uppercase tracking-wide text-stone-700"
+                      className="mb-2 text-xs font-bold uppercase tracking-wide text-stone-700"
                     >
                       {category}
                     </h3>

@@ -11,7 +11,7 @@ export const PageSuspense: React.FC = () => {
       {/* Brand Icon Spinner */}
       <div className="relative flex items-center justify-center mb-6">
         <div className="w-14 h-14 rounded-2xl bg-primary-light border border-primary/20 flex items-center justify-center animate-pulse">
-          <div className="w-8 h-8 rounded-xl bg-primary text-white flex items-center justify-center font-black text-lg shadow-sm">
+          <div className="w-8 h-8 rounded-xl bg-primary text-white flex items-center justify-center font-bold text-lg shadow-sm">
             S
           </div>
         </div>

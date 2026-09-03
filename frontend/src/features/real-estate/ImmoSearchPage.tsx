@@ -631,7 +631,7 @@ export const ImmoSearchPage: React.FC = () => {
               <p className="text-xs font-bold uppercase tracking-wide text-primary">
                 Shongre Immo
               </p>
-              <h1 className="mt-1 text-xl font-black text-text-main sm:text-2xl">
+              <h1 className="mt-1 text-xl font-bold text-text-main sm:text-2xl">
                 Trouvez le bien qui vous ressemble
               </h1>
               <p className="mt-1 hidden text-xs text-text-secondary sm:block">
@@ -674,7 +674,7 @@ export const ImmoSearchPage: React.FC = () => {
       <Container className="py-5">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="text-sm font-black text-text-main">
+            <p className="text-sm font-bold text-text-main">
               {loading ? "Recherche…" : `${total} biens`}
             </p>
             <p className="text-micro text-text-secondary">

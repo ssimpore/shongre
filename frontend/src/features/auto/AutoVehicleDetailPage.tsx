@@ -293,7 +293,7 @@ export const AutoVehicleDetailPage: React.FC = () => {
                         </Badge>
                       ))}
                     </div>
-                    <h1 className="text-xl font-black tracking-tight text-text-main sm:text-2xl">
+                    <h1 className="text-xl font-bold tracking-tight text-text-main sm:text-2xl">
                       {vehicle.title}
                     </h1>
                     <p className="mt-2 flex items-center gap-1.5 text-xs text-text-secondary">
@@ -305,7 +305,7 @@ export const AutoVehicleDetailPage: React.FC = () => {
                     </p>
                   </div>
                   <div className="sm:text-right">
-                    <p className="text-2xl font-black text-primary">
+                    <p className="text-2xl font-bold text-primary">
                       {formatAutoMoney(
                         vehicle.price,
                         currentLocale,
@@ -337,7 +337,7 @@ export const AutoVehicleDetailPage: React.FC = () => {
                       aria-hidden="true"
                     />
                     <div>
-                      <p className="text-xs font-black text-success">
+                      <p className="text-xs font-bold text-success">
                         Prix estimé dans la moyenne
                       </p>
                       <p className="mt-1 text-micro leading-relaxed text-text-secondary">
@@ -365,7 +365,7 @@ export const AutoVehicleDetailPage: React.FC = () => {
             </section>
 
             <section className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs sm:p-6">
-              <h2 className="text-base font-black text-text-main">
+              <h2 className="text-base font-bold text-text-main">
                 Caractéristiques principales
               </h2>
               <dl className="mt-4 grid grid-cols-2 gap-px overflow-hidden rounded-card border border-border-subtle bg-border-subtle sm:grid-cols-4">
@@ -387,7 +387,7 @@ export const AutoVehicleDetailPage: React.FC = () => {
             </section>
 
             <section className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs sm:p-6">
-              <h2 className="text-base font-black text-text-main">
+              <h2 className="text-base font-bold text-text-main">
                 État, historique et équipements
               </h2>
               <div className="mt-4 grid gap-5 sm:grid-cols-2">
@@ -431,7 +431,7 @@ export const AutoVehicleDetailPage: React.FC = () => {
             </section>
 
             <section className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs sm:p-6">
-              <h2 className="flex items-center gap-2 text-base font-black">
+              <h2 className="flex items-center gap-2 text-base font-bold">
                 <FileCheck2 className="h-icon-md w-icon-md text-primary" />{" "}
                 Documents et confiance
               </h2>
@@ -466,7 +466,7 @@ export const AutoVehicleDetailPage: React.FC = () => {
             {similar.length > 0 && (
               <section>
                 <div className="mb-3 flex items-center justify-between">
-                  <h2 className="text-base font-black">Véhicules similaires</h2>
+                  <h2 className="text-base font-bold">Véhicules similaires</h2>
                   <Link
                     to={`/auto?make=${vehicle.makeId || ""}`}
                     className="text-xs font-bold text-primary"
@@ -537,7 +537,7 @@ export const AutoVehicleDetailPage: React.FC = () => {
               </Button>
             </section>
             <section className="rounded-card border border-warning-border bg-warning-surface p-4">
-              <h2 className="flex items-center gap-2 text-xs font-black text-text-main">
+              <h2 className="flex items-center gap-2 text-xs font-bold text-text-main">
                 <TriangleAlert className="h-icon-sm w-icon-sm text-warning" />{" "}
                 Conseils de sécurité
               </h2>
@@ -554,7 +554,7 @@ export const AutoVehicleDetailPage: React.FC = () => {
               </ul>
             </section>
             <section className="rounded-card border border-border-base bg-bg-surface p-4">
-              <p className="text-xs font-black">Services partenaires</p>
+              <p className="text-xs font-bold">Services partenaires</p>
               <p className="mt-2 text-micro leading-relaxed text-text-muted">
                 Financement, assurance, inspection, garantie, livraison et
                 reprise ne sont pas activés sur ce marché. Aucune approbation

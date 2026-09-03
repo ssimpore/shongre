@@ -61,7 +61,7 @@ export const SupportRequestsPage: React.FC = () => {
       {/* 1. Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-black text-stone-900">
+          <h1 className="text-xl sm:text-2xl font-bold text-stone-900">
             Aide & Assistance
           </h1>
           <p className="text-xs sm:text-sm text-stone-500 mt-1">
@@ -73,7 +73,7 @@ export const SupportRequestsPage: React.FC = () => {
           to="/contact"
           variant="primary"
           size="sm"
-          className="font-bold flex items-center gap-2"
+          className="font-semibold flex items-center gap-2"
         >
           <PlusCircle className="w-icon-md h-icon-md" />
           <span>Nouvelle demande</span>
@@ -89,7 +89,7 @@ export const SupportRequestsPage: React.FC = () => {
               key={tab.id}
               type="button"
               onClick={() => setFilterStatus(tab.id)}
-              className={`px-4 py-2.5 text-xs font-bold whitespace-nowrap transition-colors border-b-2 -mb-px cursor-pointer ${
+              className={`px-4 py-2.5 text-xs font-semibold whitespace-nowrap transition-colors border-b-2 -mb-px cursor-pointer ${
                 isActive
                   ? "border-primary text-primary"
                   : "border-transparent text-stone-500 hover:text-stone-900"
@@ -114,7 +114,7 @@ export const SupportRequestsPage: React.FC = () => {
             <Headphones className="w-icon-xl h-icon-xl" />
           </div>
           <div className="space-y-1">
-            <h2 className="text-base font-black text-stone-900">
+            <h2 className="text-base font-bold text-stone-900">
               Aucune demande en cours
             </h2>
             <p className="text-xs text-stone-500 max-w-sm mx-auto">
@@ -125,7 +125,7 @@ export const SupportRequestsPage: React.FC = () => {
             to="/contact"
             variant="outline"
             size="sm"
-            className="font-bold"
+            className="font-semibold"
           >
             {t("support.supportRequestsPage.contacterLeSupport")}
           </Button>
@@ -163,7 +163,7 @@ export const SupportRequestsPage: React.FC = () => {
                     </span>
                   </div>
 
-                  <h3 className="text-sm font-black text-stone-900 group-hover:text-primary transition-colors truncate">
+                  <h3 className="text-sm font-bold text-stone-900 group-hover:text-primary transition-colors truncate">
                     {req.subject}
                   </h3>
 

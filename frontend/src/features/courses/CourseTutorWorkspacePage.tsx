@@ -146,7 +146,7 @@ export const CourseTutorWorkspacePage: React.FC = () => {
       <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-xl font-black text-text-main sm:text-2xl">
+            <h1 className="text-xl font-bold text-text-main sm:text-2xl">
               {t("verticals.education.workspace")}
             </h1>
             {tutor.organizationId && (
@@ -185,7 +185,7 @@ export const CourseTutorWorkspacePage: React.FC = () => {
               sizes="80px"
             />
             <div className="min-w-0">
-              <h2 className="text-base font-black text-text-main">
+              <h2 className="text-base font-bold text-text-main">
                 {tutor.displayName}
               </h2>
               <p className="mt-0.5 text-xs font-semibold leading-relaxed text-text-secondary">
@@ -200,7 +200,7 @@ export const CourseTutorWorkspacePage: React.FC = () => {
                 Profil complété
               </p>
               <div className="mt-2 flex items-center gap-3">
-                <span className="flex h-12 w-12 items-center justify-center rounded-pill border-4 border-primary text-xs font-black text-text-main">
+                <span className="flex h-12 w-12 items-center justify-center rounded-pill border-4 border-primary text-xs font-bold text-text-main">
                   {tutor.profileCompletionPercent}%
                 </span>
                 <Button to="/deposer/education?mode=profile" size="sm">
@@ -268,7 +268,7 @@ export const CourseTutorWorkspacePage: React.FC = () => {
                     />{" "}
                     {String(label)}
                   </p>
-                  <p className="mt-1 text-lg font-black text-text-main">
+                  <p className="mt-1 text-lg font-bold text-text-main">
                     {String(value)}
                   </p>
                   <p className="text-micro text-text-muted">
@@ -282,7 +282,7 @@ export const CourseTutorWorkspacePage: React.FC = () => {
           <section className="overflow-hidden rounded-card border border-border-base bg-bg-surface shadow-xs">
             <div className="flex items-center justify-between gap-3 border-b border-border-subtle px-4 py-3">
               <div>
-                <h2 className="text-sm font-black text-text-main">Mes cours</h2>
+                <h2 className="text-sm font-bold text-text-main">Mes cours</h2>
                 <p className="text-micro text-text-muted">
                   {workspace.offers.length} offre
                   {workspace.offers.length > 1 ? "s" : ""}
@@ -391,7 +391,7 @@ export const CourseTutorWorkspacePage: React.FC = () => {
           <section className="overflow-hidden rounded-card border border-border-base bg-bg-surface shadow-xs">
             <div className="flex items-center justify-between border-b border-border-subtle px-4 py-3">
               <div>
-                <h2 className="text-sm font-black text-text-main">
+                <h2 className="text-sm font-bold text-text-main">
                   Disponibilités
                 </h2>
                 <p className="text-micro text-text-muted">
@@ -472,7 +472,7 @@ export const CourseTutorWorkspacePage: React.FC = () => {
           <section className="overflow-hidden rounded-card border border-border-base bg-bg-surface shadow-xs">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border-subtle px-4 py-3">
               <div>
-                <h2 className="text-sm font-black text-text-main">
+                <h2 className="text-sm font-bold text-text-main">
                   Demandes d’élèves
                 </h2>
                 <p className="text-micro text-text-muted">
@@ -492,7 +492,7 @@ export const CourseTutorWorkspacePage: React.FC = () => {
                   key={value}
                   type="button"
                   onClick={() => setActiveLeadTab(value as "new" | "history")}
-                  className={`min-h-control-touch border-b-2 text-xs font-bold ${activeLeadTab === value ? "border-primary text-primary" : "border-transparent text-text-muted"}`}
+                  className={`min-h-control-touch border-b-2 text-xs font-semibold ${activeLeadTab === value ? "border-primary text-primary" : "border-transparent text-text-muted"}`}
                 >
                   {label}
                 </button>
@@ -522,7 +522,7 @@ export const CourseTutorWorkspacePage: React.FC = () => {
                     >
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
-                          <h3 className="text-xs font-black text-text-main">
+                          <h3 className="text-xs font-bold text-text-main">
                             {request?.objective ||
                               "Demande de cours de mathématiques"}
                           </h3>
@@ -600,7 +600,7 @@ export const CourseTutorWorkspacePage: React.FC = () => {
 
         <aside className="min-w-0 space-y-4">
           <section className="rounded-card border border-border-base bg-bg-surface p-4 shadow-xs">
-            <h2 className="flex items-center gap-2 text-sm font-black text-text-main">
+            <h2 className="flex items-center gap-2 text-sm font-bold text-text-main">
               <CreditCard className="h-icon-sm w-icon-sm" aria-hidden="true" />
               Abonnement et visibilité
             </h2>
@@ -627,7 +627,7 @@ export const CourseTutorWorkspacePage: React.FC = () => {
                 />
                 Crédits de visibilité
               </p>
-              <p className="mt-2 text-lg font-black text-text-main">
+              <p className="mt-2 text-lg font-bold text-text-main">
                 {workspace.creditsRemaining}
                 <span className="ml-1 text-xs font-medium text-text-muted">
                   restants
@@ -645,7 +645,7 @@ export const CourseTutorWorkspacePage: React.FC = () => {
           </section>
 
           <section className="rounded-card border border-border-base bg-bg-surface p-4 shadow-xs">
-            <h2 className="flex items-center gap-2 text-sm font-black text-text-main">
+            <h2 className="flex items-center gap-2 text-sm font-bold text-text-main">
               <ShieldCheck
                 className="h-icon-sm w-icon-sm text-success"
                 aria-hidden="true"
@@ -687,7 +687,7 @@ export const CourseTutorWorkspacePage: React.FC = () => {
           </section>
 
           <section className="rounded-card border border-border-base bg-bg-surface p-4 shadow-xs">
-            <h2 className="flex items-center gap-2 text-sm font-black text-text-main">
+            <h2 className="flex items-center gap-2 text-sm font-bold text-text-main">
               <FileCheck2 className="h-icon-sm w-icon-sm" aria-hidden="true" />
               Qualifications
             </h2>
@@ -724,7 +724,7 @@ export const CourseTutorWorkspacePage: React.FC = () => {
 
           {tutor.organizationId && (
             <section className="rounded-card border border-border-base bg-bg-surface p-4 shadow-xs">
-              <h2 className="flex items-center gap-2 text-sm font-black text-text-main">
+              <h2 className="flex items-center gap-2 text-sm font-bold text-text-main">
                 <Building2
                   className="h-icon-sm w-icon-sm text-primary"
                   aria-hidden="true"
@@ -734,11 +734,11 @@ export const CourseTutorWorkspacePage: React.FC = () => {
               <dl className="mt-3 grid grid-cols-2 gap-3 text-xs">
                 <div>
                   <dt className="text-text-muted">Professeurs</dt>
-                  <dd className="mt-1 font-black text-text-main">8</dd>
+                  <dd className="mt-1 font-bold text-text-main">8</dd>
                 </div>
                 <div>
                   <dt className="text-text-muted">Lieux</dt>
-                  <dd className="mt-1 font-black text-text-main">2</dd>
+                  <dd className="mt-1 font-bold text-text-main">2</dd>
                 </div>
               </dl>
               <Button
@@ -753,7 +753,7 @@ export const CourseTutorWorkspacePage: React.FC = () => {
           )}
 
           <section className="rounded-card border border-warning-border bg-warning-surface p-4">
-            <h2 className="flex items-center gap-2 text-sm font-black text-text-main">
+            <h2 className="flex items-center gap-2 text-sm font-bold text-text-main">
               <Lock
                 className="h-icon-sm w-icon-sm text-warning"
                 aria-hidden="true"

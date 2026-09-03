@@ -198,7 +198,7 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
         <div className="w-16 h-16 rounded-2xl bg-bg-base border border-border-base text-stone-400 flex items-center justify-center mx-auto mb-4">
           <PackageOpen className="w-8 h-8" />
         </div>
-        <h3 className="text-lg font-black text-stone-900 mb-1">
+        <h3 className="text-lg font-bold text-stone-900 mb-1">
           {isPro
             ? "Aucune annonce disponible en vitrine"
             : "Aucune annonce en ligne"}
@@ -260,7 +260,7 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
             <button
               type="button"
               onClick={() => setIsFilterDrawerOpen(!isFilterDrawerOpen)}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border transition-colors cursor-pointer ${
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold border transition-colors cursor-pointer ${
                 isFilterDrawerOpen || minPrice || maxPrice
                   ? "bg-bg-base text-primary border-primary"
                   : "bg-bg-base text-stone-700 border-border-base hover:bg-bg-subtle"
@@ -359,7 +359,7 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
                 setSelectedCategory("all");
                 setSelectedSubCategory("all");
               }}
-              className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-colors cursor-pointer shrink-0 ${
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer shrink-0 ${
                 selectedCategory === "all"
                   ? "bg-stone-900 text-white"
                   : "bg-bg-base text-stone-600 hover:bg-bg-subtle border border-border-base"
@@ -375,7 +375,7 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
                   setSelectedCategory(cat.slug);
                   setSelectedSubCategory("all");
                 }}
-                className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-colors cursor-pointer shrink-0 ${
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer shrink-0 ${
                   selectedCategory === cat.slug
                     ? "bg-stone-900 text-white"
                     : "bg-bg-base text-stone-600 hover:bg-bg-subtle border border-border-base"
@@ -398,7 +398,7 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
               onClick={() => setSelectedSubCategory("all")}
               className={`px-2.5 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer shrink-0 ${
                 selectedSubCategory === "all"
-                  ? "bg-primary text-white font-bold"
+                  ? "bg-primary text-white font-semibold"
                   : "bg-white text-stone-600 hover:bg-stone-100 border border-stone-200"
               }`}
             >
@@ -411,7 +411,7 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
                 onClick={() => setSelectedSubCategory(sub.slug)}
                 className={`px-2.5 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer shrink-0 ${
                   selectedSubCategory === sub.slug
-                    ? "bg-primary text-white font-bold"
+                    ? "bg-primary text-white font-semibold"
                     : "bg-white text-stone-600 hover:bg-stone-100 border border-stone-200"
                 }`}
               >
@@ -438,7 +438,7 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
           <button
             type="button"
             onClick={handleResetFilters}
-            className="flex items-center gap-1 text-primary font-bold hover:underline"
+            className="flex items-center gap-1 text-primary font-semibold hover:underline"
           >
             <X className="w-icon-sm h-icon-sm" />
             {t("profile.sellerCatalog.reinitialiserLesFiltres2")}

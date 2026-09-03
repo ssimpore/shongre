@@ -12,7 +12,7 @@ export const HomeSectionHeading: React.FC<HomeSectionHeadingProps> = ({
 }) => (
   <h2
     id={id}
-    className="text-xl font-black tracking-tight text-stone-900 sm:text-3xl"
+    className="text-xl font-bold tracking-tight text-stone-900 sm:text-3xl"
   >
     {children}
   </h2>

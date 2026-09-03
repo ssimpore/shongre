@@ -278,10 +278,10 @@ export const VerificationCenterPage: React.FC = () => {
             <ShieldCheck className="h-icon-xl w-icon-xl" aria-hidden="true" />
           </div>
           <div>
-            <p className="text-xs font-black uppercase tracking-wider text-success">
+            <p className="text-xs font-bold uppercase tracking-wider text-success">
               Vérifications et confiance
             </p>
-            <h1 className="mt-1 text-2xl font-black tracking-tight text-stone-950 sm:text-3xl">
+            <h1 className="mt-1 text-2xl font-bold tracking-tight text-stone-950 sm:text-3xl">
               Juste ce qu’il faut, au bon moment
             </h1>
             <p className="mt-2 max-w-2xl text-sm leading-relaxed text-stone-600 sm:text-base">
@@ -305,7 +305,7 @@ export const VerificationCenterPage: React.FC = () => {
               </p>
               <h2
                 id="requested-action-title"
-                className="mt-1 text-xl font-black text-stone-950"
+                className="mt-1 text-xl font-bold text-stone-950"
               >
                 {ACTION_LABELS[requestedAction]}
               </h2>
@@ -394,7 +394,7 @@ export const VerificationCenterPage: React.FC = () => {
         <div>
           <h2
             id="account-checks-title"
-            className="text-lg font-black text-stone-950"
+            className="text-lg font-bold text-stone-950"
           >
             État de votre compte
           </h2>

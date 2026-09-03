@@ -130,7 +130,7 @@ function MetricCard({
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-xs font-semibold text-text-secondary">{label}</p>
-          <p className="mt-1 text-xl font-black tracking-tight text-text-main sm:text-2xl">
+          <p className="mt-1 text-xl font-bold tracking-tight text-text-main sm:text-2xl">
             {formatMoney(metric.amount)}
           </p>
         </div>
@@ -264,9 +264,7 @@ function CommissionAnalytics({
             <dt className="text-micro font-semibold uppercase tracking-wide text-text-secondary">
               {label}
             </dt>
-            <dd className="mt-1 text-base font-black text-text-main">
-              {value}
-            </dd>
+            <dd className="mt-1 text-base font-bold text-text-main">{value}</dd>
           </div>
         ))}
       </dl>
@@ -371,7 +369,7 @@ function OverviewTab({
             <p className="text-micro font-semibold uppercase tracking-wide text-text-muted">
               {label as string}
             </p>
-            <p className="mt-1 text-base font-black text-text-main">
+            <p className="mt-1 text-base font-bold text-text-main">
               {formatMoney((value as FinanceMetric).amount)}
             </p>
           </div>
@@ -396,25 +394,25 @@ function OverviewTab({
           <dl className="mt-4 grid grid-cols-2 gap-3">
             <div>
               <dt className="text-micro text-text-muted">Comptes payants</dt>
-              <dd className="text-lg font-black">
+              <dd className="text-lg font-bold">
                 {dashboard.subscriptionHealth.paidAccounts}
               </dd>
             </div>
             <div>
               <dt className="text-micro text-text-muted">Nouveaux</dt>
-              <dd className="text-lg font-black text-success">
+              <dd className="text-lg font-bold text-success">
                 +{dashboard.subscriptionHealth.newSubscriptions}
               </dd>
             </div>
             <div>
               <dt className="text-micro text-text-muted">Attrition</dt>
-              <dd className="text-lg font-black">
+              <dd className="text-lg font-bold">
                 {formatPercentFromBps(dashboard.subscriptionHealth.churnBps, 1)}
               </dd>
             </div>
             <div>
               <dt className="text-micro text-text-muted">ARPPU</dt>
-              <dd className="text-lg font-black">
+              <dd className="text-lg font-bold">
                 {formatMoney(dashboard.subscriptionHealth.arppu)}
               </dd>
             </div>
@@ -508,7 +506,7 @@ function TransactionDetail({
     >
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h2 className="font-black text-text-main">{transaction.reference}</h2>
+          <h2 className="font-bold text-text-main">{transaction.reference}</h2>
           <p className="mt-1 text-micro text-text-muted">
             {transaction.description}
           </p>
@@ -566,7 +564,7 @@ function TransactionDetail({
                 </td>
               </tr>
             ))}
-            <tr className="font-black">
+            <tr className="font-bold">
               <td className="px-2 py-2">Total</td>
               <td className="px-2 py-2 text-right">
                 {formatMoney({
@@ -629,7 +627,7 @@ function TransactionsTab({
     <div className="grid gap-4 xl:grid-cols-finance-content-aside">
       <section className="overflow-hidden rounded-card border border-border-base bg-bg-surface shadow-xs">
         <div className="flex items-center justify-between border-b border-border-base px-4 py-3">
-          <h2 className="text-sm font-black">1 248 transactions</h2>
+          <h2 className="text-sm font-bold">1 248 transactions</h2>
           <span className="text-micro text-text-muted">
             1–{transactions.length} affichées
           </span>
@@ -666,7 +664,7 @@ function TransactionsTab({
                   </td>
                   <td className="px-3 py-3">
                     <button
-                      className="font-mono text-micro font-bold text-text-main hover:text-primary"
+                      className="font-mono text-micro font-semibold text-text-main hover:text-primary"
                       onClick={() => onSelect(transaction)}
                     >
                       {transaction.reference}
@@ -707,7 +705,7 @@ function TransactionsTab({
                 </span>
               </span>
               <span className="shrink-0 text-right">
-                <span className="block text-xs font-black">
+                <span className="block text-xs font-bold">
                   {formatMoney(transaction.netAmount)}
                 </span>
                 <span className="mt-1 block">
@@ -744,7 +742,7 @@ function ReconciliationTab({
       <section className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs lg:col-span-2">
         <div className="flex items-center gap-2">
           <TriangleAlert className="h-icon-lg w-icon-lg text-warning" />
-          <h2 className="text-sm font-black">Écarts ouverts</h2>
+          <h2 className="text-sm font-bold">Écarts ouverts</h2>
         </div>
         <div className="mt-4 space-y-3">
           {cases.map((item) => {
@@ -782,7 +780,7 @@ function ReconciliationTab({
       </section>
       <section className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs">
         <Landmark className="h-icon-lg w-icon-lg text-success" />
-        <h2 className="mt-3 text-sm font-black">Contrôle fournisseur</h2>
+        <h2 className="mt-3 text-sm font-bold">Contrôle fournisseur</h2>
         <p className="mt-2 text-xs leading-relaxed text-text-secondary">
           Chaque événement fournisseur est rapproché de son paiement, de sa
           facture et de l’écriture comptable attendue.
@@ -790,13 +788,13 @@ function ReconciliationTab({
         <dl className="mt-4 space-y-3 text-xs">
           <div className="flex justify-between">
             <dt>Écarts ouverts</dt>
-            <dd className="font-black">
+            <dd className="font-bold">
               {cases.filter((item) => item.status === "open").length}
             </dd>
           </div>
           <div className="flex justify-between">
             <dt>Impact net</dt>
-            <dd className="font-black">
+            <dd className="font-bold">
               {formatMoney({
                 amountMinor: cases.reduce(
                   (sum, item) => sum + item.difference.amountMinor,
@@ -845,8 +843,8 @@ function SubscriptionsTab({
         />
         <section className="rounded-card border border-border-base bg-bg-surface p-4 shadow-xs">
           <ReceiptText className="h-icon-lg w-icon-lg text-primary" />
-          <h2 className="mt-3 text-sm font-black">Portefeuille actif</h2>
-          <p className="mt-1 text-2xl font-black">
+          <h2 className="mt-3 text-sm font-bold">Portefeuille actif</h2>
+          <p className="mt-1 text-2xl font-bold">
             {dashboard.subscriptionHealth.paidAccounts}
           </p>
           <p className="mt-2 text-xs text-text-secondary">
@@ -857,7 +855,7 @@ function SubscriptionsTab({
       </div>
       <section className="overflow-hidden rounded-card border border-border-base bg-bg-surface shadow-xs">
         <div className="border-b border-border-subtle px-4 py-3">
-          <h2 className="text-sm font-black text-text-main">
+          <h2 className="text-sm font-bold text-text-main">
             Performance par verticale
           </h2>
           <p className="mt-1 text-micro text-text-muted">
@@ -1068,7 +1066,7 @@ export const AdminFinancePage: React.FC = () => {
           <p className="text-xs font-bold uppercase tracking-wider text-primary">
             Finance & revenus
           </p>
-          <h1 className="mt-1 text-2xl font-black tracking-tight text-text-main">
+          <h1 className="mt-1 text-2xl font-bold tracking-tight text-text-main">
             {t("admin.adminFinancePage.financeDeLaPlateforme")}
           </h1>
           <p className="mt-1 text-xs text-text-secondary">
@@ -1105,7 +1103,7 @@ export const AdminFinancePage: React.FC = () => {
         </div>
       </header>
       <div className="grid gap-2 rounded-card border border-border-base bg-bg-surface p-3 shadow-xs sm:grid-cols-3">
-        <label className="text-micro font-bold text-text-muted">
+        <label className="text-micro font-semibold text-text-muted">
           <span className="sr-only">
             {t("admin.adminAnalyticsPage.periode")}
           </span>
@@ -1182,7 +1180,7 @@ export const AdminFinancePage: React.FC = () => {
             <button
               key={item.id}
               onClick={() => setTab(item.id)}
-              className={`border-b-2 px-1 pb-3 text-xs font-bold ${tab === item.id ? "border-primary text-primary" : "border-transparent text-text-secondary hover:text-text-main"}`}
+              className={`border-b-2 px-1 pb-3 text-xs font-semibold ${tab === item.id ? "border-primary text-primary" : "border-transparent text-text-secondary hover:text-text-main"}`}
             >
               {item.label}
             </button>

@@ -343,7 +343,7 @@ export const EmploymentRecruiterWorkspacePage: React.FC = () => {
       <header className="rounded-card border border-border-base bg-bg-surface p-5 shadow-sm sm:p-6">
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-card bg-text-main font-black text-white">
+            <div className="flex h-12 w-12 items-center justify-center rounded-card bg-text-main font-bold text-white">
               {workspace.employer.name
                 .split(" ")
                 .map((part) => part[0])
@@ -352,7 +352,7 @@ export const EmploymentRecruiterWorkspacePage: React.FC = () => {
             </div>
             <div>
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-2xl font-black">
+                <h1 className="text-2xl font-bold">
                   {workspace.employer.name}
                 </h1>
                 {workspace.employer.isPubliclyVerified && (
@@ -393,7 +393,7 @@ export const EmploymentRecruiterWorkspacePage: React.FC = () => {
             key={id}
             type="button"
             onClick={() => setTab(id)}
-            className={`flex min-h-control-md min-w-max items-center gap-2 rounded-control px-3 text-xs font-bold ${tab === id ? "bg-primary text-white" : "text-text-secondary hover:bg-bg-subtle"}`}
+            className={`flex min-h-control-md min-w-max items-center gap-2 rounded-control px-3 text-xs font-semibold ${tab === id ? "bg-primary text-white" : "text-text-secondary hover:bg-bg-subtle"}`}
           >
             {icon}
             {label}
@@ -421,7 +421,7 @@ export const EmploymentRecruiterWorkspacePage: React.FC = () => {
                 className="min-w-0 rounded-card border border-border-base bg-bg-surface p-5"
               >
                 <p className="text-xs font-bold text-text-muted">{label}</p>
-                <p className="mt-1 text-3xl font-black text-text-main">
+                <p className="mt-1 text-3xl font-bold text-text-main">
                   {value}
                 </p>
               </div>
@@ -429,7 +429,7 @@ export const EmploymentRecruiterWorkspacePage: React.FC = () => {
           </div>
           <div className="mt-5 grid min-w-0 gap-5 xl:grid-cols-2">
             <div className="min-w-0 rounded-card border border-border-base bg-bg-surface p-5">
-              <h2 className="text-lg font-black">Candidatures récentes</h2>
+              <h2 className="text-lg font-bold">Candidatures récentes</h2>
               <div className="mt-3 space-y-3">
                 {workspace.applications.slice(0, 4).map((application) => (
                   <button
@@ -454,7 +454,7 @@ export const EmploymentRecruiterWorkspacePage: React.FC = () => {
               </div>
             </div>
             <div className="min-w-0 rounded-card border border-border-base bg-bg-surface p-5">
-              <h2 className="break-words text-lg font-black">
+              <h2 className="break-words text-lg font-bold">
                 Capacités de votre offre
               </h2>
               <dl className="mt-3 grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2">
@@ -468,7 +468,7 @@ export const EmploymentRecruiterWorkspacePage: React.FC = () => {
                       <dt className="break-all text-xs font-medium text-text-secondary">
                         {labelIdentifier(key)}
                       </dt>
-                      <dd className="mt-1 text-sm font-black">
+                      <dd className="mt-1 text-sm font-bold">
                         {typeof value === "boolean"
                           ? value
                             ? "Inclus"
@@ -486,7 +486,7 @@ export const EmploymentRecruiterWorkspacePage: React.FC = () => {
       {tab === "jobs" && (
         <section className="space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-black">Offres d’emploi</h2>
+            <h2 className="text-lg font-bold">Offres d’emploi</h2>
             <Button size="sm" to="/deposer/emploi">
               Nouvelle offre
             </Button>
@@ -504,7 +504,7 @@ export const EmploymentRecruiterWorkspacePage: React.FC = () => {
                     )}
                     {job.isSponsored && <Badge>Placement sponsorisé</Badge>}
                   </div>
-                  <h3 className="mt-2 font-black">{job.title}</h3>
+                  <h3 className="mt-2 font-bold">{job.title}</h3>
                   <p className="mt-1 text-xs text-text-secondary">
                     {job.primaryLocation.label} · expire le{" "}
                     {formatEmploymentDate(job.expiresAt, currentLocale)}
@@ -537,7 +537,7 @@ export const EmploymentRecruiterWorkspacePage: React.FC = () => {
         <section>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h2 className="text-lg font-black">Pipeline de recrutement</h2>
+              <h2 className="text-lg font-bold">Pipeline de recrutement</h2>
               <p className="text-xs text-text-muted">
                 Les changements sont audités. Aucun classement automatique fondé
                 sur des attributs sensibles.
@@ -559,7 +559,7 @@ export const EmploymentRecruiterWorkspacePage: React.FC = () => {
                 className="w-72 min-w-72 rounded-card border border-border-base bg-bg-subtle p-3"
               >
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-black">{stage.label}</h3>
+                  <h3 className="text-sm font-bold">{stage.label}</h3>
                   <Badge>{applicationByStage[stage.id]?.length || 0}</Badge>
                 </div>
                 <div className="mt-3 space-y-3">
@@ -568,7 +568,7 @@ export const EmploymentRecruiterWorkspacePage: React.FC = () => {
                       key={application.id}
                       className="rounded-control border border-border-base bg-bg-surface p-3 shadow-xs"
                     >
-                      <p className="text-sm font-black">
+                      <p className="text-sm font-bold">
                         {application.candidateId}
                       </p>
                       <p className="mt-1 line-clamp-2 text-xs text-text-muted">
@@ -625,7 +625,7 @@ export const EmploymentRecruiterWorkspacePage: React.FC = () => {
       {tab === "interviews" && (
         <section className="grid gap-5 xl:grid-cols-aside-content-lg">
           <div className="rounded-card border border-border-base bg-bg-surface p-5">
-            <h2 className="text-lg font-black">Proposer un entretien</h2>
+            <h2 className="text-lg font-bold">Proposer un entretien</h2>
             <div className="mt-4 space-y-4">
               <FormField label="Candidature">
                 <Select
@@ -675,7 +675,7 @@ export const EmploymentRecruiterWorkspacePage: React.FC = () => {
             </div>
           </div>
           <div className="space-y-3">
-            <h2 className="text-lg font-black">Entretiens planifiés</h2>
+            <h2 className="text-lg font-bold">Entretiens planifiés</h2>
             {workspace.interviews.map((interview) => (
               <article
                 key={interview.id}
@@ -683,7 +683,7 @@ export const EmploymentRecruiterWorkspacePage: React.FC = () => {
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="font-black">
+                    <p className="font-bold">
                       {jobLabel(
                         workspace.applications.find(
                           (item) => item.id === interview.applicationId,
@@ -718,7 +718,7 @@ export const EmploymentRecruiterWorkspacePage: React.FC = () => {
       {tab === "imports" && (
         <section className="space-y-4">
           <div className="rounded-card border border-border-base bg-bg-surface p-5">
-            <h2 className="text-lg font-black">Importer et synchroniser</h2>
+            <h2 className="text-lg font-bold">Importer et synchroniser</h2>
             <p className="mt-1 text-sm text-text-secondary">
               Chaque exécution utilise une clé d’idempotence pour éviter les
               doublons et produire un rapport détaillé.
@@ -757,7 +757,7 @@ export const EmploymentRecruiterWorkspacePage: React.FC = () => {
               <div className="mt-4 rounded-control border border-primary-border bg-primary-light p-4">
                 <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
                   <div>
-                    <p className="text-sm font-black">
+                    <p className="text-sm font-bold">
                       Prévisualisation · {importPreview.sourceIdentifier}
                     </p>
                     <p className="mt-1 text-xs text-text-secondary">
@@ -829,7 +829,7 @@ export const EmploymentRecruiterWorkspacePage: React.FC = () => {
 
       {tab === "team" && (
         <section className="rounded-card border border-border-base bg-bg-surface p-5">
-          <h2 className="flex items-center gap-2 text-lg font-black">
+          <h2 className="flex items-center gap-2 text-lg font-bold">
             <UsersRound className="h-icon-md w-icon-md text-primary" />
             Équipe et permissions
           </h2>
@@ -845,7 +845,7 @@ export const EmploymentRecruiterWorkspacePage: React.FC = () => {
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="truncate font-black">
+                    <p className="truncate font-bold">
                       {member.displayName || member.userId}
                     </p>
                     <p className="mt-1 text-xs text-text-muted">
@@ -880,7 +880,7 @@ export const EmploymentRecruiterWorkspacePage: React.FC = () => {
         <section className="grid gap-5 lg:grid-cols-2">
           <div className="rounded-card border border-primary-border bg-primary-light p-5">
             <Badge variant="primary">Offre active</Badge>
-            <h2 className="mt-3 text-xl font-black">
+            <h2 className="mt-3 text-xl font-bold">
               {workspace.activeOfferId}
             </h2>
             <p className="mt-2 text-sm text-text-secondary">
@@ -892,7 +892,7 @@ export const EmploymentRecruiterWorkspacePage: React.FC = () => {
             </Button>
           </div>
           <div className="rounded-card border border-border-base bg-bg-surface p-5">
-            <h2 className="flex items-center gap-2 text-lg font-black">
+            <h2 className="flex items-center gap-2 text-lg font-bold">
               <CheckCircle2 className="h-icon-md w-icon-md text-success" />
               Transparence
             </h2>

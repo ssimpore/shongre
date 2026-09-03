@@ -718,7 +718,7 @@ export const AdminMonetizationPage: React.FC = () => {
   if (!overview) {
     return (
       <div className="rounded-control border border-danger-border bg-danger-surface p-6">
-        <h1 className="text-lg font-black text-text-main">
+        <h1 className="text-lg font-bold text-text-main">
           Catalogue indisponible
         </h1>
         <p className="mt-1 text-sm text-stone-700">{error}</p>
@@ -740,14 +740,14 @@ export const AdminMonetizationPage: React.FC = () => {
       <section className="rounded-control border border-border-base bg-bg-surface shadow-xs overflow-hidden">
         <div className="p-4 sm:p-5 flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
           <div className="min-w-0">
-            <div className="flex flex-wrap items-center gap-2 text-micro font-black uppercase tracking-wider text-primary">
+            <div className="flex flex-wrap items-center gap-2 text-micro font-bold uppercase tracking-wider text-primary">
               <BadgeEuro className="w-icon-md h-icon-md" /> Pilotage commercial
               <span className="text-stone-300">•</span>
               <span className="text-stone-500">
                 {activeMarket.name} · {activeMarket.currency}
               </span>
             </div>
-            <h1 className="mt-1 text-xl sm:text-2xl font-black tracking-tight text-stone-950">
+            <h1 className="mt-1 text-xl sm:text-2xl font-bold tracking-tight text-stone-950">
               {t("admin.adminMonetizationPage.businessMonetisation")}
             </h1>
             <p className="mt-1 text-xs sm:text-sm text-text-secondary max-w-3xl">
@@ -761,7 +761,7 @@ export const AdminMonetizationPage: React.FC = () => {
               <div className="text-micro font-bold uppercase tracking-wide text-success">
                 {t("admin.adminMonetizationPage.versionPubliee")}
               </div>
-              <div className="text-xs font-black text-text-main">
+              <div className="text-xs font-bold text-text-main">
                 v{overview.publishedVersion.versionNumber} ·{" "}
                 {overview.publishedVersion.productCount} produits
               </div>
@@ -812,7 +812,7 @@ export const AdminMonetizationPage: React.FC = () => {
                 <div className="text-micro text-stone-500 truncate">
                   {label}
                 </div>
-                <div className={`text-xs font-black ${tone}`}>{value}</div>
+                <div className={`text-xs font-bold ${tone}`}>{value}</div>
               </div>
             </div>
           ))}
@@ -846,7 +846,7 @@ export const AdminMonetizationPage: React.FC = () => {
                 key={item.id}
                 type="button"
                 onClick={() => setTab(item.id)}
-                className={`h-control-touch px-3 text-xs font-bold border-b-2 focus-visible:outline-2 focus-visible:outline-primary ${tab === item.id ? "border-primary text-primary" : "border-transparent text-text-secondary hover:text-stone-950"}`}
+                className={`h-control-touch px-3 text-xs font-semibold border-b-2 focus-visible:outline-2 focus-visible:outline-primary ${tab === item.id ? "border-primary text-primary" : "border-transparent text-text-secondary hover:text-stone-950"}`}
                 id={`monetization-tab-${item.id}`}
                 role="tab"
                 aria-selected={tab === item.id}
@@ -944,7 +944,7 @@ export const AdminMonetizationPage: React.FC = () => {
           >
             {(tab === "catalog" || tab === "plans") && (
               <div className="divide-y divide-border-subtle">
-                <div className="hidden md:grid grid-cols-admin-monetization gap-3 px-4 py-2 bg-bg-subtle text-micro font-black uppercase tracking-wide text-stone-500">
+                <div className="hidden md:grid grid-cols-admin-monetization gap-3 px-4 py-2 bg-bg-subtle text-micro font-bold uppercase tracking-wide text-stone-500">
                   <span>Produit</span>
                   <span>
                     {tab === "plans" ? "Verticale · niveau" : "Audience"}
@@ -965,7 +965,7 @@ export const AdminMonetizationPage: React.FC = () => {
                       className={`w-full text-left p-4 md:grid md:grid-cols-admin-monetization md:items-center gap-3 hover:bg-bg-subtle focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary ${selected ? "bg-primary-light" : "bg-bg-surface"}`}
                     >
                       <span className="min-w-0">
-                        <span className="block text-xs font-black text-stone-950 truncate">
+                        <span className="block text-xs font-bold text-stone-950 truncate">
                           {product.name}
                         </span>
                         <span className="block text-micro text-stone-500 truncate">
@@ -986,7 +986,7 @@ export const AdminMonetizationPage: React.FC = () => {
                             ? "Toutes"
                             : product.audience}
                       </span>
-                      <span className="ml-3 md:ml-0 text-xs font-black text-stone-950">
+                      <span className="ml-3 md:ml-0 text-xs font-bold text-stone-950">
                         {formatMinor(
                           price.amount.amountMinor,
                           price.amount.currency,
@@ -1028,7 +1028,7 @@ export const AdminMonetizationPage: React.FC = () => {
               <div className="p-4">
                 <div className="mb-4 flex items-start justify-between gap-3">
                   <div>
-                    <h2 className="text-sm font-black text-stone-950">
+                    <h2 className="text-sm font-bold text-stone-950">
                       Verticales commerciales
                     </h2>
                     <p className="mt-1 text-micro text-stone-500">
@@ -1060,7 +1060,7 @@ export const AdminMonetizationPage: React.FC = () => {
                           <div className="flex items-start justify-between gap-3">
                             <div>
                               <div className="flex flex-wrap items-center gap-2">
-                                <h3 className="text-sm font-black text-stone-950">
+                                <h3 className="text-sm font-bold text-stone-950">
                                   {vertical.name}
                                 </h3>
                                 <Badge
@@ -1122,7 +1122,7 @@ export const AdminMonetizationPage: React.FC = () => {
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
-                        <h2 className="text-xs font-black text-stone-950">
+                        <h2 className="text-xs font-bold text-stone-950">
                           {rule.name}
                         </h2>
                         <Badge
@@ -1163,7 +1163,7 @@ export const AdminMonetizationPage: React.FC = () => {
               <div className="p-4">
                 <div className="mb-4 flex items-center justify-between gap-3">
                   <div>
-                    <h2 className="text-sm font-black text-stone-950">
+                    <h2 className="text-sm font-bold text-stone-950">
                       {t("admin.adminMonetizationPage.campagnesEtCoupons")}
                     </h2>
                     <p className="mt-1 text-micro text-stone-500">
@@ -1183,7 +1183,7 @@ export const AdminMonetizationPage: React.FC = () => {
                       className="rounded-lg border border-border-base p-4"
                     >
                       <div className="flex items-center justify-between gap-2">
-                        <h2 className="text-sm font-black text-stone-950">
+                        <h2 className="text-sm font-bold text-stone-950">
                           {promotion.name}
                         </h2>
                         <Badge>{statusLabel(promotion.status)}</Badge>
@@ -1252,7 +1252,7 @@ export const AdminMonetizationPage: React.FC = () => {
             {tab === "governance" && (
               <div className="space-y-5 p-4">
                 <div>
-                  <h2 className="text-sm font-black text-stone-950">
+                  <h2 className="text-sm font-bold text-stone-950">
                     {t("admin.monetization.governanceTitle")}
                   </h2>
                   <p className="mt-1 max-w-3xl text-xs text-text-secondary">
@@ -1300,7 +1300,7 @@ export const AdminMonetizationPage: React.FC = () => {
                       <div className="text-micro font-bold uppercase tracking-wide text-stone-500">
                         {metric.label}
                       </div>
-                      <div className="mt-1 text-xl font-black text-stone-950">
+                      <div className="mt-1 text-xl font-bold text-stone-950">
                         {metric.value}
                       </div>
                       <div
@@ -1319,7 +1319,7 @@ export const AdminMonetizationPage: React.FC = () => {
                 <section aria-labelledby="migration-governance-title">
                   <h3
                     id="migration-governance-title"
-                    className="text-xs font-black text-stone-950"
+                    className="text-xs font-bold text-stone-950"
                   >
                     {t("admin.monetization.migrationMappings")}
                   </h3>
@@ -1376,7 +1376,7 @@ export const AdminMonetizationPage: React.FC = () => {
 
                 <div className="grid gap-4 lg:grid-cols-2">
                   <section className="rounded-lg border border-border-base p-4">
-                    <h3 className="text-xs font-black text-stone-950">
+                    <h3 className="text-xs font-bold text-stone-950">
                       {t("admin.monetization.campaignsAndPriceLocks")}
                     </h3>
                     <div className="mt-3 space-y-3">
@@ -1399,7 +1399,7 @@ export const AdminMonetizationPage: React.FC = () => {
                   </section>
 
                   <section className="rounded-lg border border-border-base p-4">
-                    <h3 className="text-xs font-black text-stone-950">
+                    <h3 className="text-xs font-bold text-stone-950">
                       {t("admin.monetization.providerReadiness")}
                     </h3>
                     <div className="mt-3 space-y-2">
@@ -1439,7 +1439,7 @@ export const AdminMonetizationPage: React.FC = () => {
                       className="p-4 flex items-center justify-between gap-4"
                     >
                       <div>
-                        <h2 className="text-xs font-black text-stone-950">
+                        <h2 className="text-xs font-bold text-stone-950">
                           {rule.name}
                         </h2>
                         <p className="mt-1 text-micro text-stone-500">
@@ -1482,7 +1482,7 @@ export const AdminMonetizationPage: React.FC = () => {
                       <Gift className="w-icon-md h-icon-md" />
                     </div>
                     <div>
-                      <h2 className="text-sm font-black text-stone-950">
+                      <h2 className="text-sm font-bold text-stone-950">
                         {t("admin.adminMonetizationPage.demanderUnAccesOffert")}
                       </h2>
                       <p className="mt-1 text-micro text-stone-500">
@@ -1492,7 +1492,7 @@ export const AdminMonetizationPage: React.FC = () => {
                       </p>
                     </div>
                   </div>
-                  <label className="block text-micro font-bold text-text-secondary">
+                  <label className="block text-micro font-semibold text-text-secondary">
                     {t("admin.adminMonetizationPage.compteBeneficiaire")}
                     <Input
                       required
@@ -1508,7 +1508,7 @@ export const AdminMonetizationPage: React.FC = () => {
                       )}
                     />
                   </label>
-                  <label className="block text-micro font-bold text-text-secondary">
+                  <label className="block text-micro font-semibold text-text-secondary">
                     Forfait
                     <Select
                       className="mt-1 w-full"
@@ -1542,7 +1542,7 @@ export const AdminMonetizationPage: React.FC = () => {
                     </Select>
                   </label>
                   <div className="grid grid-cols-2 gap-2">
-                    <label className="text-micro font-bold text-text-secondary">
+                    <label className="text-micro font-semibold text-text-secondary">
                       {t("admin.adminMonetizationPage.debut")}
                       <Input
                         required
@@ -1556,7 +1556,7 @@ export const AdminMonetizationPage: React.FC = () => {
                         }
                       />
                     </label>
-                    <label className="text-micro font-bold text-text-secondary">
+                    <label className="text-micro font-semibold text-text-secondary">
                       Fin
                       <Input
                         required
@@ -1571,7 +1571,7 @@ export const AdminMonetizationPage: React.FC = () => {
                       />
                     </label>
                   </div>
-                  <label className="block text-micro font-bold text-text-secondary">
+                  <label className="block text-micro font-semibold text-text-secondary">
                     {t("admin.adminMonetizationPage.campagneOuReference")}
                     <Input
                       value={complimentaryGrant.campaignId}
@@ -1584,7 +1584,7 @@ export const AdminMonetizationPage: React.FC = () => {
                       placeholder="Ex. partenaire-lancement-2026"
                     />
                   </label>
-                  <label className="block text-micro font-bold text-text-secondary">
+                  <label className="block text-micro font-semibold text-text-secondary">
                     Motif auditable
                     <Textarea
                       required
@@ -1618,7 +1618,7 @@ export const AdminMonetizationPage: React.FC = () => {
                   onSubmit={(event) => void decideComplimentaryGrant(event)}
                 >
                   <div>
-                    <h2 className="text-sm font-black text-stone-950">
+                    <h2 className="text-sm font-bold text-stone-950">
                       {t("admin.adminMonetizationPage.decisionFinale")}
                     </h2>
                     <p className="mt-1 text-micro text-stone-500">
@@ -1627,7 +1627,7 @@ export const AdminMonetizationPage: React.FC = () => {
                       )}
                     </p>
                   </div>
-                  <label className="block text-micro font-bold text-text-secondary">
+                  <label className="block text-micro font-semibold text-text-secondary">
                     {t("admin.adminMonetizationPage.identifiantDeDemande")}
                     <Input
                       required
@@ -1640,7 +1640,7 @@ export const AdminMonetizationPage: React.FC = () => {
                       }
                     />
                   </label>
-                  <label className="block text-micro font-bold text-text-secondary">
+                  <label className="block text-micro font-semibold text-text-secondary">
                     {t("admin.adminMonetizationPage.decision")}
                     <Select
                       className="mt-1 w-full"
@@ -1658,7 +1658,7 @@ export const AdminMonetizationPage: React.FC = () => {
                       <option value="rejected">Rejeter</option>
                     </Select>
                   </label>
-                  <label className="block text-micro font-bold text-text-secondary">
+                  <label className="block text-micro font-semibold text-text-secondary">
                     {t("admin.adminMonetizationPage.motifDeDecision")}
                     <Textarea
                       required
@@ -1695,7 +1695,7 @@ export const AdminMonetizationPage: React.FC = () => {
                     <div className="text-micro text-stone-500">
                       Devis aujourd’hui
                     </div>
-                    <div className="mt-1 text-lg font-black text-stone-950">
+                    <div className="mt-1 text-lg font-bold text-stone-950">
                       {overview.quoteCountToday}
                     </div>
                   </div>
@@ -1703,7 +1703,7 @@ export const AdminMonetizationPage: React.FC = () => {
                     <div className="text-micro text-stone-500">
                       Abonnements actifs
                     </div>
-                    <div className="mt-1 text-lg font-black text-stone-950">
+                    <div className="mt-1 text-lg font-bold text-stone-950">
                       {overview.activeSubscriptionCount}
                     </div>
                   </div>
@@ -1711,7 +1711,7 @@ export const AdminMonetizationPage: React.FC = () => {
                     <div className="text-micro text-stone-500">
                       {t("admin.adminMonetizationPage.droitsMaterialises")}
                     </div>
-                    <div className="mt-1 text-lg font-black text-stone-950">
+                    <div className="mt-1 text-lg font-bold text-stone-950">
                       {overview.entitlements.length}
                     </div>
                   </div>
@@ -1719,7 +1719,7 @@ export const AdminMonetizationPage: React.FC = () => {
                     <div className="text-micro text-stone-500">
                       {t("admin.adminMonetizationPage.paiementsReussis")}
                     </div>
-                    <div className="mt-1 text-lg font-black text-stone-950">
+                    <div className="mt-1 text-lg font-bold text-stone-950">
                       {
                         overview.payments.filter(
                           (payment) => payment.status === "succeeded",
@@ -1729,7 +1729,7 @@ export const AdminMonetizationPage: React.FC = () => {
                   </div>
                   <div className="rounded-lg border border-border-base p-3">
                     <div className="text-micro text-stone-500">Factures</div>
-                    <div className="mt-1 text-lg font-black text-stone-950">
+                    <div className="mt-1 text-lg font-bold text-stone-950">
                       {overview.invoices.length}
                     </div>
                   </div>
@@ -1737,13 +1737,13 @@ export const AdminMonetizationPage: React.FC = () => {
                     <div className="text-micro text-stone-500">
                       Remboursements
                     </div>
-                    <div className="mt-1 text-lg font-black text-stone-950">
+                    <div className="mt-1 text-lg font-bold text-stone-950">
                       {overview.refunds.length}
                     </div>
                   </div>
                 </div>
                 <div>
-                  <h2 className="text-xs font-black text-stone-950">
+                  <h2 className="text-xs font-bold text-stone-950">
                     {t("admin.adminMonetizationPage.abonnementsParCompte")}
                   </h2>
                   <ScrollableRegion
@@ -1839,7 +1839,7 @@ export const AdminMonetizationPage: React.FC = () => {
                   </ScrollableRegion>
                 </div>
                 <div>
-                  <h2 className="text-xs font-black text-stone-950">
+                  <h2 className="text-xs font-bold text-stone-950">
                     Registre financier
                   </h2>
                   <ScrollableRegion
@@ -1878,7 +1878,7 @@ export const AdminMonetizationPage: React.FC = () => {
                             <td className="px-3 py-2 text-text-secondary">
                               {labelIdentifier(invoice.status)}
                             </td>
-                            <td className="px-3 py-2 text-right font-black text-stone-950">
+                            <td className="px-3 py-2 text-right font-bold text-stone-950">
                               {formatMinor(
                                 invoice.total.amountMinor,
                                 invoice.total.currency,
@@ -1897,7 +1897,7 @@ export const AdminMonetizationPage: React.FC = () => {
                             <td className="px-3 py-2 text-text-secondary">
                               {labelIdentifier(refund.status)}
                             </td>
-                            <td className="px-3 py-2 text-right font-black text-stone-950">
+                            <td className="px-3 py-2 text-right font-bold text-stone-950">
                               −{" "}
                               {formatMinor(
                                 refund.amount.amountMinor,
@@ -1924,7 +1924,7 @@ export const AdminMonetizationPage: React.FC = () => {
                   </ScrollableRegion>
                 </div>
                 <div>
-                  <h2 className="text-xs font-black text-stone-950">
+                  <h2 className="text-xs font-bold text-stone-950">
                     {t("admin.adminMonetizationPage.commandesRecentes")}
                   </h2>
                   <div className="mt-2 divide-y divide-border-subtle rounded-lg border border-border-base">
@@ -1942,7 +1942,7 @@ export const AdminMonetizationPage: React.FC = () => {
                             {labelIdentifier(order.status)}
                           </div>
                         </div>
-                        <div className="font-black text-stone-950">
+                        <div className="font-bold text-stone-950">
                           {formatMinor(
                             order.total.amountMinor,
                             order.total.currency,
@@ -1960,7 +1960,7 @@ export const AdminMonetizationPage: React.FC = () => {
                   </div>
                 </div>
                 <div>
-                  <h2 className="text-xs font-black text-stone-950">
+                  <h2 className="text-xs font-bold text-stone-950">
                     {t("admin.adminMonetizationPage.auditRecent")}
                   </h2>
                   <div className="mt-2 divide-y divide-border-subtle rounded-lg border border-border-base">
@@ -1997,7 +1997,7 @@ export const AdminMonetizationPage: React.FC = () => {
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
-                        <h2 className="text-xs font-black text-stone-950">
+                        <h2 className="text-xs font-bold text-stone-950">
                           Version {version.versionNumber}
                         </h2>
                         <Badge
@@ -2071,7 +2071,7 @@ export const AdminMonetizationPage: React.FC = () => {
               <div>
                 <div className="flex items-center gap-2">
                   <Sparkles className="w-icon-md h-icon-md text-primary" />
-                  <h2 className="text-sm font-black text-stone-950">
+                  <h2 className="text-sm font-bold text-stone-950">
                     {t("admin.adminMonetizationPage.pourquoiCeResultat")}
                   </h2>
                 </div>
@@ -2082,7 +2082,7 @@ export const AdminMonetizationPage: React.FC = () => {
                 </p>
               </div>
               <div className="grid grid-cols-2 gap-2">
-                <label className="text-micro font-bold text-text-secondary">
+                <label className="text-micro font-semibold text-text-secondary">
                   {t("nav.account")}
                   <Select
                     className="mt-1 w-full"
@@ -2100,7 +2100,7 @@ export const AdminMonetizationPage: React.FC = () => {
                     <option value="organization">Organisation</option>
                   </Select>
                 </label>
-                <label className="text-micro font-bold text-text-secondary">
+                <label className="text-micro font-semibold text-text-secondary">
                   {t("publishing.publishWizard.categorie")}
                   <Select
                     className="mt-1 w-full"
@@ -2127,7 +2127,7 @@ export const AdminMonetizationPage: React.FC = () => {
                     </option>
                   </Select>
                 </label>
-                <label className="col-span-2 text-micro font-bold text-text-secondary">
+                <label className="col-span-2 text-micro font-semibold text-text-secondary">
                   Utilisation actuelle
                   <input
                     type="number"
@@ -2162,7 +2162,7 @@ export const AdminMonetizationPage: React.FC = () => {
               {evaluation ? (
                 <div className="rounded-lg border border-border-base bg-bg-surface p-3">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-micro font-black uppercase tracking-wide text-stone-500">
+                    <span className="text-micro font-bold uppercase tracking-wide text-stone-500">
                       {t("admin.adminMonetizationPage.decision")}
                     </span>
                     <Badge
@@ -2174,13 +2174,13 @@ export const AdminMonetizationPage: React.FC = () => {
                   <div className="mt-3 grid grid-cols-2 gap-2">
                     <div>
                       <div className="text-micro text-stone-500">Quota</div>
-                      <div className="text-sm font-black text-stone-950">
+                      <div className="text-sm font-bold text-stone-950">
                         {evaluation.quotaLimit ?? "—"}
                       </div>
                     </div>
                     <div>
                       <div className="text-micro text-stone-500">Restant</div>
-                      <div className="text-sm font-black text-stone-950">
+                      <div className="text-sm font-bold text-stone-950">
                         {evaluation.quotaRemaining ?? "—"}
                       </div>
                     </div>
@@ -2188,7 +2188,7 @@ export const AdminMonetizationPage: React.FC = () => {
                   <div className="mt-3 border-t border-border-subtle pt-3 space-y-2">
                     {matchedRules.slice(0, 4).map((entry, index) => (
                       <div key={entry.ruleId} className="flex gap-2 text-micro">
-                        <span className="w-5 h-5 rounded-pill bg-primary-light text-primary flex items-center justify-center font-black shrink-0">
+                        <span className="w-5 h-5 rounded-pill bg-primary-light text-primary flex items-center justify-center font-bold shrink-0">
                           {index + 1}
                         </span>
                         <div>
@@ -2207,10 +2207,10 @@ export const AdminMonetizationPage: React.FC = () => {
                 </div>
               ) : selectedProduct ? (
                 <div className="rounded-lg border border-border-base bg-bg-surface p-3">
-                  <div className="text-micro font-black uppercase tracking-wide text-stone-500">
+                  <div className="text-micro font-bold uppercase tracking-wide text-stone-500">
                     {t("admin.adminMonetizationPage.selection")}
                   </div>
-                  <div className="mt-1 text-xs font-black text-stone-950">
+                  <div className="mt-1 text-xs font-bold text-stone-950">
                     {selectedProduct.name}
                   </div>
                   <p className="mt-1 text-micro leading-relaxed text-stone-500">
@@ -2269,7 +2269,7 @@ export const AdminMonetizationPage: React.FC = () => {
                   </dl>
                   {selectedProduct.kind === "subscription" && (
                     <div className="mt-3 border-t border-border-subtle pt-3 text-micro">
-                      <div className="font-black uppercase tracking-wide text-stone-500">
+                      <div className="font-bold uppercase tracking-wide text-stone-500">
                         {t(
                           "admin.adminMonetizationPage.transitionsConfigurees",
                         )}
@@ -2289,7 +2289,7 @@ export const AdminMonetizationPage: React.FC = () => {
                     </div>
                   )}
                   <div className="mt-3 border-t border-border-subtle pt-3">
-                    <div className="text-micro font-black uppercase tracking-wide text-stone-500">
+                    <div className="text-micro font-bold uppercase tracking-wide text-stone-500">
                       {t("admin.adminMonetizationPage.consommateursAffectes")}
                     </div>
                     <div className="mt-2 flex flex-wrap gap-1">
@@ -2316,7 +2316,7 @@ export const AdminMonetizationPage: React.FC = () => {
                 </div>
               ) : null}
               <div className="rounded-lg border border-border-base bg-bg-surface p-3">
-                <div className="flex items-center gap-2 text-xs font-black text-text-main">
+                <div className="flex items-center gap-2 text-xs font-bold text-text-main">
                   <History className="w-icon-md h-icon-md text-stone-500" />{" "}
                   {t("admin.adminMonetizationPage.tracabilite")}
                 </div>

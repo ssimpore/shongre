@@ -207,7 +207,7 @@ export const EmploymentAdminPage: React.FC = () => {
               {config.regulatoryContentVersion}
             </span>
           </div>
-          <h1 className="mt-2 text-2xl font-black text-text-main">
+          <h1 className="mt-2 text-2xl font-bold text-text-main">
             Shongre Emploi
           </h1>
           <p className="mt-1 text-sm text-text-secondary">
@@ -233,7 +233,7 @@ export const EmploymentAdminPage: React.FC = () => {
               <p className="text-xs font-bold text-text-muted">{label}</p>
               <Icon className="h-icon-md w-icon-md text-primary" />
             </div>
-            <p className="mt-2 text-3xl font-black">
+            <p className="mt-2 text-3xl font-bold">
               {new Intl.NumberFormat(config.locale).format(value)}
             </p>
           </div>
@@ -242,7 +242,7 @@ export const EmploymentAdminPage: React.FC = () => {
 
       <div className="grid gap-6 xl:grid-cols-moderation-content-aside">
         <section className="rounded-card border border-border-base bg-bg-surface p-5">
-          <h2 className="flex items-center gap-2 text-lg font-black">
+          <h2 className="flex items-center gap-2 text-lg font-bold">
             <Globe2 className="h-icon-md w-icon-md text-primary" />
             {t("admin.employmentAdminPage.configurationDuMarche")}
           </h2>
@@ -337,7 +337,7 @@ export const EmploymentAdminPage: React.FC = () => {
             </FormField>
           </div>
           <div className="mt-6 border-t border-border-subtle pt-5">
-            <h3 className="text-sm font-black">
+            <h3 className="text-sm font-bold">
               {t("invoicing.product.nav.features")}
             </h3>
             <div className="mt-3 grid gap-3 sm:grid-cols-2">
@@ -374,31 +374,31 @@ export const EmploymentAdminPage: React.FC = () => {
 
         <aside className="space-y-4">
           <div className="rounded-card border border-warning-border bg-warning-surface p-5">
-            <h2 className="flex items-center gap-2 text-sm font-black">
+            <h2 className="flex items-center gap-2 text-sm font-bold">
               <AlertTriangle className="h-icon-sm w-icon-sm text-warning" />
               Actions requises
             </h2>
             <dl className="mt-4 space-y-3 text-sm">
               <div className="flex justify-between gap-3">
                 <dt>{t("admin.employmentAdminPage.langageARevoir")}</dt>
-                <dd className="font-black">
+                <dd className="font-bold">
                   {overview.prohibitedLanguageReviewCount}
                 </dd>
               </div>
               <div className="flex justify-between gap-3">
                 <dt>Erreurs d’import</dt>
-                <dd className="font-black">{overview.importErrorCount}</dd>
+                <dd className="font-bold">{overview.importErrorCount}</dd>
               </div>
               <div className="flex justify-between gap-3">
                 <dt>Employeurs suspendus</dt>
-                <dd className="font-black">
+                <dd className="font-bold">
                   {overview.employerCounts.suspended || 0}
                 </dd>
               </div>
             </dl>
           </div>
           <div className="rounded-card border border-border-base bg-bg-surface p-5">
-            <h2 className="flex items-center gap-2 text-sm font-black">
+            <h2 className="flex items-center gap-2 text-sm font-bold">
               <Settings2 className="h-icon-sm w-icon-sm text-primary" />
               {t("admin.employmentAdminPage.principesDeConformite")}
             </h2>
@@ -434,7 +434,7 @@ export const EmploymentAdminPage: React.FC = () => {
       </div>
 
       <section className="rounded-card border border-border-base bg-bg-surface p-5">
-        <h2 className="text-lg font-black">
+        <h2 className="text-lg font-bold">
           {t("admin.employmentAdminPage.catalogueDesOffresEmployeur")}
         </h2>
         <ScrollableRegion
@@ -462,7 +462,7 @@ export const EmploymentAdminPage: React.FC = () => {
                 return (
                   <tr key={offer.id} className="border-t border-border-subtle">
                     <td className="p-3">
-                      <p className="font-black">{offer.name}</p>
+                      <p className="font-bold">{offer.name}</p>
                       <p className="mt-1 max-w-md text-micro text-text-muted">
                         {offer.description}
                       </p>
@@ -504,7 +504,7 @@ export const EmploymentAdminPage: React.FC = () => {
       </section>
 
       <section className="rounded-card border border-border-base bg-bg-surface p-5">
-        <h2 className="text-lg font-black">Dictionnaires administrables</h2>
+        <h2 className="text-lg font-bold">Dictionnaires administrables</h2>
         <p className="mt-1 text-sm text-text-secondary">
           {overview.catalog.dictionaries.length}{" "}
           {t(

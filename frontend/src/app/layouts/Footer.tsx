@@ -194,7 +194,7 @@ const FooterColumn: React.FC<{
         <button
           type="button"
           onClick={() => onToggle(id)}
-          className="group flex min-h-6 w-full cursor-pointer items-center justify-between gap-2 py-1 text-left text-xs font-bold uppercase tracking-wider text-white transition-colors hover:text-primary-on-dark md:pointer-events-none md:mb-5 md:min-h-0 md:cursor-default md:py-0 md:hover:text-white"
+          className="group flex min-h-6 w-full cursor-pointer items-center justify-between gap-2 py-1 text-left text-xs font-semibold uppercase tracking-wider text-white transition-colors hover:text-primary-on-dark md:pointer-events-none md:mb-5 md:min-h-0 md:cursor-default md:py-0 md:hover:text-white"
           aria-expanded={isOpen}
           aria-controls={panelId}
         >

@@ -44,7 +44,7 @@ export const ProDirectoryPage: React.FC = () => {
 
       <div className="bg-gradient-to-r from-stone-900 to-stone-800 rounded-2xl p-6 sm:p-10 text-white flex flex-col md:flex-row items-center justify-between gap-6">
         <div className="space-y-2 max-w-xl">
-          <h1 className="text-2xl sm:text-3xl font-black text-white">
+          <h1 className="text-2xl sm:text-3xl font-bold text-white">
             {t("pro.proDirectoryPage.trouvezDesCommercantsEtArtisans")}
           </h1>
           <p className="text-xs sm:text-sm text-stone-300">
@@ -56,7 +56,7 @@ export const ProDirectoryPage: React.FC = () => {
           to="/inscription/professionnel"
           variant="primary"
           size="lg"
-          className="shrink-0 font-bold"
+          className="shrink-0 font-semibold"
         >
           Ouvrir ma boutique Pro
         </Button>

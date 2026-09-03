@@ -108,7 +108,7 @@ export const BusinessVerificationModal: React.FC<
         <div>
           <label
             htmlFor="business-registration-id"
-            className="mb-1.5 block text-sm font-bold text-stone-800"
+            className="mb-1.5 block text-sm font-semibold text-stone-800"
           >
             SIRET ou SIREN
           </label>

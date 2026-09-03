@@ -46,7 +46,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
             </div>
           )}
 
-          <h1 className="text-2xl sm:text-3xl font-black text-stone-900 tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-bold text-stone-900 tracking-tight">
             {title}
           </h1>
 

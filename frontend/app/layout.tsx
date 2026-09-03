@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import localFont from "next/font/local";
+import { Nunito_Sans } from "next/font/google";
 import { headers } from "next/headers";
 import { colors } from "@shongre/design-tokens";
 import "../src/index.css";
@@ -14,11 +14,12 @@ import {
   serializePublicRuntimeConfig,
 } from "../src/platform/runtime-config/public-runtime-config.server";
 
-const inter = localFont({
-  src: "../../node_modules/@fontsource-variable/inter/files/inter-latin-wght-normal.woff2",
+const nunitoSans = Nunito_Sans({
+  subsets: ["latin"],
   display: "swap",
-  variable: "--font-inter",
-  weight: "100 900",
+  variable: "--font-nunito-sans",
+  weight: "variable",
+  style: "normal",
 });
 
 export function generateMetadata(): Metadata {
@@ -51,7 +52,7 @@ export default async function RootLayout({
     createPublicRuntimeConfig(),
   );
   return (
-    <html lang={requestLocale} className={inter.variable}>
+    <html lang={requestLocale} className={nunitoSans.variable}>
       <body>
         <script
           id="shongre-runtime-config"

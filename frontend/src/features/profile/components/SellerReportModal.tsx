@@ -78,7 +78,7 @@ export const SellerReportModal: React.FC<SellerReportModalProps> = ({
         </div>
 
         <div>
-          <label className="block text-xs font-bold text-stone-900 mb-2">
+          <label className="block text-xs font-semibold text-stone-900 mb-2">
             {t("profile.sellerReportModal.motifPrincipalDuSignalement")}
           </label>
           <div className="space-y-1.5">
@@ -87,7 +87,7 @@ export const SellerReportModal: React.FC<SellerReportModalProps> = ({
                 key={r.id}
                 className={`flex items-center gap-3 p-2.5 rounded-xl border text-xs font-medium cursor-pointer transition-colors ${
                   selectedReason === r.id
-                    ? "border-primary bg-bg-base text-stone-950 font-bold"
+                    ? "border-primary bg-bg-base text-stone-950 font-semibold"
                     : "border-border-base hover:bg-bg-base text-stone-700"
                 }`}
               >
@@ -106,7 +106,7 @@ export const SellerReportModal: React.FC<SellerReportModalProps> = ({
         </div>
 
         <div>
-          <label className="block text-xs font-bold text-stone-900 mb-1">
+          <label className="block text-xs font-semibold text-stone-900 mb-1">
             {t(
               "profile.sellerReportModal.detailsComplementairesFacultatifMaisRecommande",
             )}

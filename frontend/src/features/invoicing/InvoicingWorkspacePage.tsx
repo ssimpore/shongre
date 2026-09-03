@@ -423,7 +423,7 @@ export function InvoicingWorkspacePage() {
           <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-2xl font-black tracking-tight text-text-main sm:text-3xl">
+                <h1 className="text-2xl font-bold tracking-tight text-text-main sm:text-3xl">
                   {t("invoicing.workspace.title")}
                 </h1>
                 <Badge variant="primary" className="lg:hidden">
@@ -505,7 +505,7 @@ export function InvoicingWorkspacePage() {
                   <Icon className="h-icon-md w-icon-md" aria-hidden="true" />
                 </span>
                 <div className="min-w-0">
-                  <p className="truncate text-base font-black text-text-main">
+                  <p className="truncate text-base font-bold text-text-main">
                     {value}
                   </p>
                   <p className="text-micro text-text-muted">{label}</p>
@@ -520,7 +520,7 @@ export function InvoicingWorkspacePage() {
               className="min-w-0 overflow-hidden rounded-card border border-border-base bg-bg-surface shadow-xs xl:col-span-2"
             >
               <div className="border-b border-border-base px-4 py-3">
-                <h2 className="text-sm font-black text-text-main">
+                <h2 className="text-sm font-bold text-text-main">
                   {t("invoicing.workspace.recent")}
                 </h2>
               </div>
@@ -567,7 +567,7 @@ export function InvoicingWorkspacePage() {
                             <button
                               type="button"
                               aria-pressed={selectedInvoice?.id === invoice.id}
-                              className="rounded-control text-left font-bold text-primary underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                              className="rounded-control text-left font-semibold text-primary underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                               onClick={() => {
                                 setSelectedInvoice(invoice);
                                 setSelectedDocument(null);
@@ -645,7 +645,7 @@ export function InvoicingWorkspacePage() {
               id="settings"
               className="rounded-card border border-border-base bg-bg-surface p-4 shadow-xs"
             >
-              <h2 className="text-sm font-black text-text-main">
+              <h2 className="text-sm font-bold text-text-main">
                 {t("invoicing.workspace.readiness")}
               </h2>
               <ul className="mt-3 space-y-2.5">
@@ -676,7 +676,7 @@ export function InvoicingWorkspacePage() {
               className="rounded-card border border-border-base bg-bg-surface p-4 shadow-xs xl:col-span-2"
             >
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <h2 className="text-sm font-black text-text-main">
+                <h2 className="text-sm font-bold text-text-main">
                   {t("invoicing.workspace.draftPanel")}
                 </h2>
                 {selectedInvoice && (
@@ -688,7 +688,7 @@ export function InvoicingWorkspacePage() {
               <div className="mt-4">
                 <label
                   htmlFor="invoice-recipient"
-                  className="mb-1.5 block text-micro font-bold text-text-secondary"
+                  className="mb-1.5 block text-micro font-semibold text-text-secondary"
                 >
                   {t("invoicing.workspace.recipient")}
                 </label>
@@ -706,7 +706,7 @@ export function InvoicingWorkspacePage() {
                 </select>
               </div>
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                <label className="text-micro font-bold text-text-secondary">
+                <label className="text-micro font-semibold text-text-secondary">
                   Date d’émission
                   <input
                     type="date"
@@ -716,7 +716,7 @@ export function InvoicingWorkspacePage() {
                     className="mt-1.5 h-control-md w-full rounded-control border border-border-base px-3 text-xs font-normal"
                   />
                 </label>
-                <label className="text-micro font-bold text-text-secondary">
+                <label className="text-micro font-semibold text-text-secondary">
                   Échéance
                   <input
                     type="date"
@@ -728,7 +728,7 @@ export function InvoicingWorkspacePage() {
                 </label>
               </div>
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                <label className="text-micro font-bold text-text-secondary sm:col-span-2">
+                <label className="text-micro font-semibold text-text-secondary sm:col-span-2">
                   {t("invoicing.workspace.descriptionField")}
                   <input
                     required
@@ -738,7 +738,7 @@ export function InvoicingWorkspacePage() {
                     className="mt-1.5 h-control-md w-full rounded-control border border-border-base px-3 text-xs font-normal text-text-main focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15"
                   />
                 </label>
-                <label className="text-micro font-bold text-text-secondary">
+                <label className="text-micro font-semibold text-text-secondary">
                   {t("invoicing.workspace.quantity")}
                   <input
                     required
@@ -749,7 +749,7 @@ export function InvoicingWorkspacePage() {
                     className="mt-1.5 h-control-md w-full rounded-control border border-border-base px-3 text-xs font-normal text-text-main focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15"
                   />
                 </label>
-                <label className="text-micro font-bold text-text-secondary">
+                <label className="text-micro font-semibold text-text-secondary">
                   {t("invoicing.workspace.unitPrice")}
                   <input
                     required
@@ -760,7 +760,7 @@ export function InvoicingWorkspacePage() {
                     className="mt-1.5 h-control-md w-full rounded-control border border-border-base px-3 text-xs font-normal text-text-main focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15"
                   />
                 </label>
-                <label className="text-micro font-bold text-text-secondary">
+                <label className="text-micro font-semibold text-text-secondary">
                   {t("invoicing.workspace.taxRate")}
                   <select
                     value={taxRateBps}
@@ -823,7 +823,7 @@ export function InvoicingWorkspacePage() {
               id="entities"
               className="rounded-card border border-border-base bg-bg-surface p-4 shadow-xs"
             >
-              <h2 className="text-sm font-black text-text-main">
+              <h2 className="text-sm font-bold text-text-main">
                 {t("invoicing.workspace.total")}
               </h2>
               <dl className="mt-4 space-y-2 text-xs">
@@ -854,7 +854,7 @@ export function InvoicingWorkspacePage() {
                       : "—"}
                   </dd>
                 </div>
-                <div className="mt-3 flex justify-between gap-4 border-t border-border-base pt-3 text-sm font-black text-text-main">
+                <div className="mt-3 flex justify-between gap-4 border-t border-border-base pt-3 text-sm font-bold text-text-main">
                   <dt>{t("invoicing.workspace.totalIncludingTax")}</dt>
                   <dd>
                     {selectedInvoice
@@ -920,14 +920,14 @@ export function InvoicingWorkspacePage() {
               id="customers"
               className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs"
             >
-              <h2 className="text-sm font-black text-text-main">
+              <h2 className="text-sm font-bold text-text-main">
                 Ajouter un client
               </h2>
               <p className="mt-1 text-xs text-text-secondary">
                 Les clients appartiennent à cette organisation Facturation.
               </p>
               <div className="mt-4 space-y-3">
-                <label className="block text-micro font-bold text-text-secondary">
+                <label className="block text-micro font-semibold text-text-secondary">
                   Raison sociale
                   <input
                     value={newCustomerName}
@@ -935,7 +935,7 @@ export function InvoicingWorkspacePage() {
                     className="mt-1.5 h-control-md w-full rounded-control border border-border-base px-3 text-xs font-normal"
                   />
                 </label>
-                <label className="block text-micro font-bold text-text-secondary">
+                <label className="block text-micro font-semibold text-text-secondary">
                   Email de facturation
                   <input
                     type="email"
@@ -962,7 +962,7 @@ export function InvoicingWorkspacePage() {
               id="team"
               className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs"
             >
-              <h2 className="text-sm font-black text-text-main">
+              <h2 className="text-sm font-bold text-text-main">
                 Équipe et permissions
               </h2>
               <p className="mt-1 text-xs text-text-secondary">
@@ -999,7 +999,7 @@ export function InvoicingWorkspacePage() {
               id="subscription"
               className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs"
             >
-              <h2 className="text-sm font-black text-text-main">
+              <h2 className="text-sm font-bold text-text-main">
                 Abonnement Facturation
               </h2>
               <p className="mt-1 text-xs text-text-secondary">

@@ -103,7 +103,7 @@ export const ModerationAppealsPage: React.FC = () => {
   return (
     <div className="space-y-6 max-w-4xl">
       <div className="space-y-1">
-        <h1 className="text-xl sm:text-2xl font-black text-stone-900 flex items-center gap-2.5">
+        <h1 className="text-xl sm:text-2xl font-bold text-stone-900 flex items-center gap-2.5">
           <Scale
             className="w-icon-xl h-icon-xl text-primary"
             aria-hidden="true"
@@ -137,7 +137,7 @@ export const ModerationAppealsPage: React.FC = () => {
         <section aria-labelledby="moderation-cases-title" className="space-y-3">
           <h2
             id="moderation-cases-title"
-            className="text-base font-black text-stone-900"
+            className="text-base font-bold text-stone-900"
           >
             Vos dossiers
           </h2>
@@ -152,7 +152,7 @@ export const ModerationAppealsPage: React.FC = () => {
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <p className="text-sm font-black text-stone-900">
+                    <p className="text-sm font-bold text-stone-900">
                       {item.targetType === "listing"
                         ? "Décision concernant une annonce"
                         : "Décision concernant votre compte"}

@@ -86,7 +86,7 @@ export const RegisterChoicePage: React.FC = () => {
             <span>Inscription gratuite</span>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-black text-stone-900 tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-bold text-stone-900 tracking-tight">
             {t("auth.registerPages.creerVotreCompteShongre")}
           </h1>
           <p className="mt-2 text-xs sm:text-sm text-stone-600 max-w-md mx-auto">
@@ -96,7 +96,7 @@ export const RegisterChoicePage: React.FC = () => {
 
         <div className="bg-white rounded-2xl border border-stone-200/90 shadow-xl shadow-stone-200/40 p-6 sm:p-8 space-y-6">
           <div>
-            <label className="block text-xs font-extrabold text-stone-900 uppercase tracking-wider mb-3">
+            <label className="block text-xs font-semibold text-stone-900 uppercase tracking-wider mb-3">
               {t("auth.registerPages.1SelectionnezVotreProfilD")}
             </label>
             <AccountTypeSelector
@@ -245,7 +245,7 @@ export const RegisterIndividualPage: React.FC = () => {
         <div>
           <label
             htmlFor="reg-name"
-            className="block text-xs font-bold text-stone-800 mb-1.5"
+            className="block text-xs font-semibold text-stone-800 mb-1.5"
           >
             {t("auth.registerPages.nomEtPrenomOuPseudonyme")}
             <span className="text-primary">*</span>
@@ -268,7 +268,7 @@ export const RegisterIndividualPage: React.FC = () => {
         <div>
           <label
             htmlFor="reg-email"
-            className="block text-xs font-bold text-stone-800 mb-1.5"
+            className="block text-xs font-semibold text-stone-800 mb-1.5"
           >
             Adresse email <span className="text-primary">*</span>
           </label>
@@ -291,7 +291,7 @@ export const RegisterIndividualPage: React.FC = () => {
           <div>
             <label
               htmlFor="reg-country"
-              className="block text-xs font-bold text-stone-800 mb-1.5"
+              className="block text-xs font-semibold text-stone-800 mb-1.5"
             >
               Pays <span className="text-primary">*</span>
             </label>
@@ -312,7 +312,7 @@ export const RegisterIndividualPage: React.FC = () => {
           <div>
             <label
               htmlFor="reg-code-postal"
-              className="block text-xs font-bold text-stone-800 mb-1.5"
+              className="block text-xs font-semibold text-stone-800 mb-1.5"
             >
               Code Postal <span className="text-primary">*</span>
             </label>
@@ -330,7 +330,7 @@ export const RegisterIndividualPage: React.FC = () => {
           <div>
             <label
               htmlFor="reg-ville"
-              className="block text-xs font-bold text-stone-800 mb-1.5"
+              className="block text-xs font-semibold text-stone-800 mb-1.5"
             >
               Ville <span className="text-primary">*</span>
             </label>
@@ -569,7 +569,7 @@ export const RegisterProPage: React.FC = () => {
             </span>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-black text-stone-900 tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-bold text-stone-900 tracking-tight">
             {isFacturationRegistration
               ? "Créez votre espace Facturation"
               : t("auth.registerPages.ouvrirUnCompteProfessionnel")}
@@ -595,7 +595,7 @@ export const RegisterProPage: React.FC = () => {
           </div>
           <ChevronRight className="w-icon-md h-icon-md text-stone-300" />
           <div
-            className={`flex items-center gap-1.5 ${step === 2 ? "text-stone-950 font-black" : "text-stone-500"}`}
+            className={`flex items-center gap-1.5 ${step === 2 ? "text-stone-950 font-bold" : "text-stone-500"}`}
           >
             <span
               className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${step === 2 ? "bg-stone-900 text-white" : "bg-stone-200 text-stone-600"}`}
@@ -620,7 +620,7 @@ export const RegisterProPage: React.FC = () => {
                 <div>
                   <label
                     htmlFor="reg-pro-name"
-                    className="block text-xs font-bold text-stone-800 mb-1.5"
+                    className="block text-xs font-semibold text-stone-800 mb-1.5"
                   >
                     {t("auth.registerPages.nomEtPrenomDuResponsable")}
                     <span className="text-primary">*</span>
@@ -642,7 +642,7 @@ export const RegisterProPage: React.FC = () => {
                 <div>
                   <label
                     htmlFor="reg-email-professionnel"
-                    className="block text-xs font-bold text-stone-800 mb-1.5"
+                    className="block text-xs font-semibold text-stone-800 mb-1.5"
                   >
                     Email professionnel <span className="text-primary">*</span>
                   </label>
@@ -663,7 +663,7 @@ export const RegisterProPage: React.FC = () => {
                 <div>
                   <label
                     htmlFor="reg-telephonecommercial"
-                    className="block text-xs font-bold text-stone-800 mb-1.5"
+                    className="block text-xs font-semibold text-stone-800 mb-1.5"
                   >
                     {t("auth.registerPages.telephoneCommercial")}
                   </label>
@@ -717,7 +717,7 @@ export const RegisterProPage: React.FC = () => {
               <div>
                 <label
                   htmlFor="reg-activite-professionnelle"
-                  className="block text-xs font-bold text-stone-800 mb-1.5"
+                  className="block text-xs font-semibold text-stone-800 mb-1.5"
                 >
                   Activité professionnelle{" "}
                   <span className="text-primary">*</span>
@@ -752,7 +752,7 @@ export const RegisterProPage: React.FC = () => {
                 <div>
                   <label
                     htmlFor="reg-pays-d-immatriculation"
-                    className="block text-xs font-bold text-stone-800 mb-1.5"
+                    className="block text-xs font-semibold text-stone-800 mb-1.5"
                   >
                     Pays d'immatriculation{" "}
                     <span className="text-primary">*</span>
@@ -774,7 +774,7 @@ export const RegisterProPage: React.FC = () => {
                 <div>
                   <label
                     htmlFor="reg-forme-juridique"
-                    className="block text-xs font-bold text-stone-800 mb-1.5"
+                    className="block text-xs font-semibold text-stone-800 mb-1.5"
                   >
                     Forme juridique <span className="text-primary">*</span>
                   </label>
@@ -796,7 +796,7 @@ export const RegisterProPage: React.FC = () => {
               <div>
                 <label
                   htmlFor="reg-raison-sociale-enseigne-commerciale"
-                  className="block text-xs font-bold text-stone-800 mb-1.5"
+                  className="block text-xs font-semibold text-stone-800 mb-1.5"
                 >
                   Raison sociale / Enseigne commerciale{" "}
                   <span className="text-primary">*</span>
@@ -819,7 +819,7 @@ export const RegisterProPage: React.FC = () => {
                 <div>
                   <label
                     htmlFor="reg-currentmarket-businessidentifierlabel"
-                    className="block text-xs font-bold text-stone-800 mb-1.5"
+                    className="block text-xs font-semibold text-stone-800 mb-1.5"
                   >
                     {currentMarket.businessIdentifierLabel}{" "}
                     <span className="text-primary">*</span>
@@ -840,7 +840,7 @@ export const RegisterProPage: React.FC = () => {
                 <div>
                   <label
                     htmlFor="reg-tva-intracommunautaire"
-                    className="block text-xs font-bold text-stone-800 mb-1.5"
+                    className="block text-xs font-semibold text-stone-800 mb-1.5"
                   >
                     TVA Intracommunautaire
                   </label>
@@ -858,7 +858,7 @@ export const RegisterProPage: React.FC = () => {
               <div>
                 <label
                   htmlFor="reg-adressedusiegesocialmagasin"
-                  className="block text-xs font-bold text-stone-800 mb-1.5"
+                  className="block text-xs font-semibold text-stone-800 mb-1.5"
                 >
                   {t("auth.registerPages.adresseDuSiegeSocialMagasin")}
                   <span className="text-primary">*</span>
@@ -881,7 +881,7 @@ export const RegisterProPage: React.FC = () => {
                 <div>
                   <label
                     htmlFor="reg-code-postal-2"
-                    className="block text-xs font-bold text-stone-800 mb-1.5"
+                    className="block text-xs font-semibold text-stone-800 mb-1.5"
                   >
                     Code Postal <span className="text-primary">*</span>
                   </label>
@@ -899,7 +899,7 @@ export const RegisterProPage: React.FC = () => {
                 <div>
                   <label
                     htmlFor="reg-ville-2"
-                    className="block text-xs font-bold text-stone-800 mb-1.5"
+                    className="block text-xs font-semibold text-stone-800 mb-1.5"
                   >
                     Ville <span className="text-primary">*</span>
                   </label>

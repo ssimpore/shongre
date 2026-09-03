@@ -173,7 +173,7 @@ export const AdminTaxonomyPage: React.FC = () => {
             <div className="p-2 rounded-control bg-primary-light text-primary">
               <Layers className="w-icon-lg h-icon-lg" />
             </div>
-            <h1 className="text-xl font-black text-text-main tracking-tight">
+            <h1 className="text-xl font-bold text-text-main tracking-tight">
               {t("admin.adminTaxonomyPage.gestionAdministrationDeLaTaxonomie")}
             </h1>
           </div>
@@ -188,7 +188,7 @@ export const AdminTaxonomyPage: React.FC = () => {
             <button
               type="button"
               onClick={() => handleSelectTab("validation")}
-              className="px-3 py-1.5 rounded-control bg-danger-surface text-danger border border-danger-border text-xs font-bold flex items-center gap-1.5 hover:bg-danger-surface transition-colors cursor-pointer"
+              className="px-3 py-1.5 rounded-control bg-danger-surface text-danger border border-danger-border text-xs font-semibold flex items-center gap-1.5 hover:bg-danger-surface transition-colors cursor-pointer"
             >
               <AlertOctagon className="w-icon-md h-icon-md" />
               <span>{blockingErrors.length} bloquant(s)</span>
@@ -285,7 +285,7 @@ export const AdminTaxonomyPage: React.FC = () => {
                 onClick={() => handleSelectTab(tab.id)}
                 className={`flex items-center gap-2 py-3 px-4 border-b-2 whitespace-nowrap transition-all cursor-pointer ${
                   isActive
-                    ? "border-primary text-primary font-bold bg-bg-surface"
+                    ? "border-primary text-primary font-semibold bg-bg-surface"
                     : "border-transparent text-stone-500 hover:text-text-main hover:border-stone-300"
                 }`}
               >

@@ -327,7 +327,7 @@ export const MyListingsPage: React.FC = () => {
           <button
             type="button"
             onClick={() => openBoostModal(listing)}
-            className="inline-flex min-h-control-sm items-center gap-1 rounded-control border border-warning-border bg-warning-surface px-2 text-xs font-bold text-warning motion-interactive hover:bg-warning-surface"
+            className="inline-flex min-h-control-sm items-center gap-1 rounded-control border border-warning-border bg-warning-surface px-2 text-xs font-semibold text-warning motion-interactive hover:bg-warning-surface"
             title={t("sellerworkspace.myListingsPage.boosterLAnnonce")}
             aria-label={t("sellerworkspace.myListingsPage.boosterLAnnonce")}
           >
@@ -396,7 +396,7 @@ export const MyListingsPage: React.FC = () => {
           <dt className="text-micro font-semibold uppercase tracking-wide text-text-muted">
             Prix
           </dt>
-          <dd className="truncate text-sm font-extrabold text-stone-900">
+          <dd className="truncate text-sm font-bold text-stone-900">
             {formatPrice(listing.price, {
               sourceCurrency: listing.currency,
             })}
@@ -436,7 +436,7 @@ export const MyListingsPage: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-xl sm:text-2xl font-black text-stone-900">
+          <h1 className="text-xl sm:text-2xl font-bold text-stone-900">
             {t("sellerworkspace.myListingsPage.gestionDeMesAnnonces")}
           </h1>
           <p className="text-xs sm:text-sm text-stone-500 mt-0.5">
@@ -574,7 +574,7 @@ export const MyListingsPage: React.FC = () => {
                   id: "Prix",
                   header: "Prix",
                   cell: (listing) => (
-                    <span className="font-extrabold text-sm text-stone-900">
+                    <span className="font-bold text-sm text-stone-900">
                       {formatPrice(listing.price, {
                         sourceCurrency: listing.currency,
                       })}
@@ -659,11 +659,11 @@ export const MyListingsPage: React.FC = () => {
                   >
                     <div className="flex items-center justify-between gap-2">
                       <span
-                        className={`px-2 py-0.5 rounded-full font-black text-micro uppercase tracking-wider ${style.swatchClass}`}
+                        className={`px-2 py-0.5 rounded-full font-bold text-micro uppercase tracking-wider ${style.swatchClass}`}
                       >
                         {offer.badgeLabel}
                       </span>
-                      <span className="font-black text-sm text-stone-900 shrink-0">
+                      <span className="font-bold text-sm text-stone-900 shrink-0">
                         {formatMoney(offer.price)}
                       </span>
                     </div>

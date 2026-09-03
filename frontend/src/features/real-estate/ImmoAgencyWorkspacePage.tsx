@@ -228,7 +228,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
       <header className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-xl font-black text-text-main">
+            <h1 className="text-xl font-bold text-text-main">
               {workspace.organization.name}
             </h1>
             <Badge variant="success">
@@ -256,7 +256,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
             key={id}
             type="button"
             onClick={() => setTab(id)}
-            className={`flex min-w-max items-center gap-2 rounded-control px-3 py-2 text-xs font-bold ${tab === id ? "bg-primary text-white" : "text-text-secondary hover:bg-bg-subtle"}`}
+            className={`flex min-w-max items-center gap-2 rounded-control px-3 py-2 text-xs font-semibold ${tab === id ? "bg-primary text-white" : "text-text-secondary hover:bg-bg-subtle"}`}
           >
             <Icon className="h-4 w-4" />
             {label}
@@ -276,7 +276,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
                   <p className="text-xs font-bold text-text-muted">{label}</p>
                   <Icon className="h-5 w-5 text-primary" />
                 </div>
-                <p className="mt-3 text-2xl font-black text-text-main">
+                <p className="mt-3 text-2xl font-bold text-text-main">
                   {String(value)}
                 </p>
               </article>
@@ -286,7 +286,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
             <div className="rounded-card border border-border-base bg-bg-surface p-5">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-sm font-black">Leads récents</h2>
+                  <h2 className="text-sm font-bold">Leads récents</h2>
                   <p className="text-micro text-text-muted">
                     Coordonnées protégées jusqu’à l’ouverture autorisée du lead.
                   </p>
@@ -306,7 +306,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
                     className="flex items-center justify-between gap-3 py-3"
                   >
                     <div>
-                      <p className="text-xs font-black">
+                      <p className="text-xs font-bold">
                         {lead.requesterName} ·{" "}
                         {lead.type === "visit" ? "Visite" : "Information"}
                       </p>
@@ -326,23 +326,23 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
               </div>
             </div>
             <div className="rounded-card border border-border-base bg-bg-surface p-5">
-              <h2 className="text-sm font-black">Performance</h2>
+              <h2 className="text-sm font-bold">Performance</h2>
               <dl className="mt-4 space-y-4 text-xs">
                 <div className="flex justify-between">
                   <dt className="text-text-muted">Vues</dt>
-                  <dd className="font-black">
+                  <dd className="font-bold">
                     {formatNumber(workspace.metrics.views)}
                   </dd>
                 </div>
                 <div className="flex justify-between">
                   <dt className="text-text-muted">Recherche → contact</dt>
-                  <dd className="font-black">
+                  <dd className="font-bold">
                     {workspace.metrics.searchToContactRatePercent} %
                   </dd>
                 </div>
                 <div className="flex justify-between">
                   <dt className="text-text-muted">Réponse médiane</dt>
-                  <dd className="font-black">
+                  <dd className="font-bold">
                     {workspace.metrics.medianResponseMinutes} min
                   </dd>
                 </div>
@@ -361,7 +361,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
           <section className="overflow-hidden rounded-card border border-border-base bg-bg-surface">
             <div className="flex items-center justify-between border-b border-border-base p-4">
               <div>
-                <h2 className="text-sm font-black">Portefeuille immobilier</h2>
+                <h2 className="text-sm font-bold">Portefeuille immobilier</h2>
                 <p className="text-micro text-text-muted">
                   Publication, visibilité et disponibilité.
                 </p>
@@ -385,7 +385,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
                   {workspace.properties.map((property) => (
                     <tr key={property.id}>
                       <td className="p-3">
-                        <p className="font-black">{property.title}</p>
+                        <p className="font-bold">{property.title}</p>
                         <p className="text-micro text-text-muted">
                           {property.address.publicLabel}
                         </p>
@@ -425,7 +425,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
             </ScrollableRegion>
           </section>
           <section className="rounded-card border border-border-base bg-bg-surface p-4">
-            <h2 className="text-sm font-black">Brouillons de l’agence</h2>
+            <h2 className="text-sm font-bold">Brouillons de l’agence</h2>
             <p className="mt-1 text-micro text-text-muted">
               Reprenez une publication au dernier écran enregistré.
             </p>
@@ -437,7 +437,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
                     className="flex flex-col justify-between gap-2 py-3 sm:flex-row sm:items-center"
                   >
                     <div>
-                      <p className="text-xs font-black">
+                      <p className="text-xs font-bold">
                         {(draft.data.title as string) || "Bien sans titre"}
                       </p>
                       <p className="text-micro text-text-muted">
@@ -464,7 +464,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
         <section className="rounded-card border border-border-base bg-bg-surface p-4">
           <div className="mb-4 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
             <div>
-              <h2 className="text-sm font-black">
+              <h2 className="text-sm font-bold">
                 Boîte de réception des leads
               </h2>
               <p className="text-micro text-text-muted">
@@ -488,7 +488,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
               >
                 <div>
                   <div className="flex items-center gap-2">
-                    <p className="text-sm font-black">{lead.requesterName}</p>
+                    <p className="text-sm font-bold">{lead.requesterName}</p>
                     <Badge
                       variant={lead.status === "new" ? "warning" : "neutral"}
                     >
@@ -504,7 +504,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
                       : "Coordonnées masquées — accès soumis aux règles du plan et du lead"}
                   </p>
                 </div>
-                <label className="text-micro font-bold">
+                <label className="text-micro font-semibold">
                   Statut
                   <Select
                     size="compact"
@@ -525,7 +525,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
                     ))}
                   </Select>
                 </label>
-                <label className="text-micro font-bold">
+                <label className="text-micro font-semibold">
                   Assigné à
                   <Select
                     size="compact"
@@ -555,7 +555,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
                   </Select>
                 </label>
                 <div className="grid gap-3 border-t border-border-subtle pt-3 md:col-span-3 md:grid-cols-media-content-md">
-                  <label className="text-micro font-bold">
+                  <label className="text-micro font-semibold">
                     Prochain rappel
                     <input
                       type="datetime-local"
@@ -583,7 +583,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
                   </label>
                   <div>
                     <label
-                      className="text-micro font-bold"
+                      className="text-micro font-semibold"
                       htmlFor={`note-${lead.id}`}
                     >
                       Note privée
@@ -633,7 +633,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
 
       {tab === "visits" ? (
         <section className="rounded-card border border-border-base bg-bg-surface p-4">
-          <h2 className="text-sm font-black">Visites et rendez-vous</h2>
+          <h2 className="text-sm font-bold">Visites et rendez-vous</h2>
           <div className="mt-4 space-y-3">
             {workspace.appointments.map((visit) => (
               <article
@@ -641,7 +641,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
                 className="flex flex-col justify-between gap-3 rounded-control border border-border-base p-4 sm:flex-row sm:items-center"
               >
                 <div>
-                  <p className="text-sm font-black">
+                  <p className="text-sm font-bold">
                     {formatDate(visit.startsAt, {
                       dateStyle: "full",
                       timeStyle: "short",
@@ -665,7 +665,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
       {tab === "imports" ? (
         <section className="grid gap-4 lg:grid-cols-sidebar-wide">
           <div className="rounded-card border border-border-base bg-bg-surface p-5">
-            <h2 className="text-sm font-black">Importer un portefeuille</h2>
+            <h2 className="text-sm font-bold">Importer un portefeuille</h2>
             <p className="mt-2 text-xs text-text-muted">
               Les quotas, formats et droits proviennent de votre offre.
             </p>
@@ -707,7 +707,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
             </dl>
           </div>
           <div className="rounded-card border border-border-base bg-bg-surface p-5">
-            <h2 className="text-sm font-black">Historique</h2>
+            <h2 className="text-sm font-bold">Historique</h2>
             <div className="mt-4 divide-y divide-border-subtle">
               {workspace.imports.map((job) => (
                 <div
@@ -715,7 +715,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
                   className="flex items-center justify-between gap-3 py-3"
                 >
                   <div>
-                    <p className="text-xs font-black">
+                    <p className="text-xs font-bold">
                       {job.fileName ||
                         `${labelIdentifier(job.type)} automatique`}
                     </p>
@@ -744,7 +744,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
       {tab === "team" ? (
         <section className="grid gap-4 lg:grid-cols-2">
           <div className="rounded-card border border-border-base bg-bg-surface p-5">
-            <h2 className="text-sm font-black">Membres</h2>
+            <h2 className="text-sm font-bold">Membres</h2>
             <div className="mt-4 divide-y divide-border-subtle">
               {workspace.members.map((member) => (
                 <div
@@ -752,7 +752,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
                   className="flex items-center justify-between py-3"
                 >
                   <div>
-                    <p className="text-xs font-black">{member.name}</p>
+                    <p className="text-xs font-bold">{member.name}</p>
                     <p className="text-micro text-text-muted">
                       {member.branchIds.length} agence(s)
                     </p>
@@ -763,7 +763,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
             </div>
           </div>
           <div className="rounded-card border border-border-base bg-bg-surface p-5">
-            <h2 className="text-sm font-black">Agences</h2>
+            <h2 className="text-sm font-bold">Agences</h2>
             <div className="mt-4 divide-y divide-border-subtle">
               {workspace.branches.map((branch) => (
                 <div
@@ -771,7 +771,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
                   className="flex items-center justify-between py-3"
                 >
                   <div>
-                    <p className="text-xs font-black">{branch.name}</p>
+                    <p className="text-xs font-bold">{branch.name}</p>
                     <p className="text-micro text-text-muted">{branch.city}</p>
                   </div>
                   <span className="text-xs font-bold">
@@ -788,7 +788,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
         <section className="grid gap-4 lg:grid-cols-agency-content-aside-secondary">
           <div className="rounded-card border border-border-base bg-bg-surface p-5">
             <Globe2 className="h-icon-xl w-icon-xl text-primary" />
-            <h2 className="mt-3 text-sm font-black">
+            <h2 className="mt-3 text-sm font-bold">
               Profil public de l’agence
             </h2>
             <p className="mt-3 text-xs leading-relaxed text-text-secondary">
@@ -820,7 +820,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
           </div>
           <div className="rounded-card border border-border-base bg-bg-surface p-5">
             <PlugZap className="h-icon-xl w-icon-xl text-primary" />
-            <h2 className="mt-3 text-sm font-black">Import & API</h2>
+            <h2 className="mt-3 text-sm font-bold">Import & API</h2>
             <p className="mt-2 text-xs text-text-secondary">
               Les capacités sont résolues depuis l’offre active, sans test sur
               le nom du plan.
@@ -841,7 +841,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
         <section className="grid gap-4 lg:grid-cols-2">
           <div className="rounded-card border border-border-base bg-bg-surface p-5">
             <Settings2 className="h-icon-xl w-icon-xl text-primary" />
-            <h2 className="mt-3 text-sm font-black">
+            <h2 className="mt-3 text-sm font-bold">
               {workspace.subscription.offerName}
             </h2>
             <p className="mt-2 text-xs text-text-secondary">
@@ -860,8 +860,8 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
           </div>
           <div className="rounded-card border border-border-base bg-bg-surface p-5">
             <CircleDollarSign className="h-icon-xl w-icon-xl text-primary" />
-            <h2 className="mt-3 text-sm font-black">Crédits visibilité</h2>
-            <p className="mt-2 text-3xl font-black">
+            <h2 className="mt-3 text-sm font-bold">Crédits visibilité</h2>
+            <p className="mt-2 text-3xl font-bold">
               {formatNumber(workspace.visibilityCredits.available)}
             </p>
             <p className="text-xs text-text-muted">
@@ -872,7 +872,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
           <div className="rounded-card border border-border-base bg-bg-surface p-5 lg:col-span-2">
             <div className="flex items-center gap-2">
               <ReceiptText className="h-icon-lg w-icon-lg text-primary" />
-              <h2 className="text-sm font-black">Factures</h2>
+              <h2 className="text-sm font-bold">Factures</h2>
             </div>
             {workspace.invoices.length ? (
               <div className="mt-4 divide-y divide-border-subtle">
@@ -882,13 +882,13 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
                     className="flex items-center justify-between gap-3 py-3 text-xs"
                   >
                     <div>
-                      <p className="font-black">{invoice.invoiceId}</p>
+                      <p className="font-bold">{invoice.invoiceId}</p>
                       <p className="text-micro text-text-muted">
                         {formatDate(invoice.issuedAt)}
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="font-black">{formatMoney(invoice.total)}</p>
+                      <p className="font-bold">{formatMoney(invoice.total)}</p>
                       <Badge
                         variant={
                           invoice.status === "paid" ? "success" : "neutral"

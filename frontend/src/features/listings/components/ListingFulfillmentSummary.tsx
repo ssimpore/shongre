@@ -47,7 +47,7 @@ export const ListingFulfillmentSummary: React.FC<
             <FileKey2 className="h-icon-md w-icon-md" aria-hidden="true" />
           </div>
           <div>
-            <h2 className="text-base font-black text-text-main">
+            <h2 className="text-base font-bold text-text-main">
               {t("digital.common.title")}
             </h2>
             <p className="mt-1 text-sm font-bold text-primary">
@@ -122,7 +122,7 @@ export const ListingFulfillmentSummary: React.FC<
       className={`bg-white rounded-3xl border border-stone-200/60 p-6 sm:p-8 space-y-5 shadow-sm ${className}`}
     >
       <div className="flex items-center justify-between pb-3 border-b border-stone-100">
-        <h2 className="text-base font-black text-stone-900">
+        <h2 className="text-base font-bold text-stone-900">
           {t("listings.listingFulfillmentSummary.remiseExpedition")}
         </h2>
         <span className="text-xs text-stone-500 font-medium bg-stone-50 px-2 py-1 rounded-md">

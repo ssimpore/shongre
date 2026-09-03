@@ -144,7 +144,7 @@ export const WatchSubscriptionsPage = () => {
   return (
     <div className="space-y-6" data-watch-subscriptions-page>
       <header>
-        <h1 className="text-xl font-black text-stone-900 sm:text-2xl">
+        <h1 className="text-xl font-bold text-stone-900 sm:text-2xl">
           {t("watch.title")}
         </h1>
         <p className="mt-1 text-sm text-stone-500">
@@ -205,7 +205,7 @@ export const WatchSubscriptionsPage = () => {
                       <p className="text-xs font-bold text-primary">
                         {t(presentation.labelKey)}
                       </p>
-                      <h2 className="truncate text-sm font-black text-stone-900">
+                      <h2 className="truncate text-sm font-bold text-stone-900">
                         {item.title}
                       </h2>
                       <p className="mt-1 text-xs text-stone-500">

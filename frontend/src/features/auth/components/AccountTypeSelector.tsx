@@ -56,7 +56,7 @@ export const AccountTypeSelector: React.FC<AccountTypeSelectorProps> = ({
           </div>
         </div>
 
-        <span className="font-extrabold text-base text-stone-950 mb-1">
+        <span className="font-bold text-base text-stone-950 mb-1">
           Particulier
         </span>
         <p className="text-xs text-stone-600 leading-relaxed mb-3">
@@ -105,7 +105,7 @@ export const AccountTypeSelector: React.FC<AccountTypeSelectorProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="px-2 py-0.5 rounded-md bg-stone-900 text-white font-black text-micro tracking-wider uppercase">
+            <span className="px-2 py-0.5 rounded-md bg-stone-900 text-white font-bold text-micro tracking-wider uppercase">
               SIRET PRO
             </span>
             <div
@@ -122,7 +122,7 @@ export const AccountTypeSelector: React.FC<AccountTypeSelectorProps> = ({
           </div>
         </div>
 
-        <span className="font-extrabold text-base text-stone-950 mb-1 flex items-center gap-1.5">
+        <span className="font-bold text-base text-stone-950 mb-1 flex items-center gap-1.5">
           Professionnel
         </span>
         <p className="text-xs text-stone-600 leading-relaxed mb-3">

@@ -202,7 +202,7 @@ export const AdminSupportPage: React.FC = () => {
         <p className="text-xs font-bold uppercase tracking-wider text-primary">
           {t("admin.adminSupportPage.operationsSupport")}
         </p>
-        <h1 className="mt-1 text-2xl font-black text-text-main">
+        <h1 className="mt-1 text-2xl font-bold text-text-main">
           File d’assistance client
         </h1>
         <p className="mt-1 text-xs text-text-secondary">
@@ -242,7 +242,7 @@ export const AdminSupportPage: React.FC = () => {
           <div className="flex items-center justify-between gap-3 border-b border-border-subtle p-4">
             <h2
               id="support-queue-title"
-              className="text-sm font-black text-text-main"
+              className="text-sm font-bold text-text-main"
             >
               Dossiers
             </h2>
@@ -306,7 +306,7 @@ export const AdminSupportPage: React.FC = () => {
                           {meta.label}
                         </Badge>
                       </div>
-                      <p className="mt-2 line-clamp-1 text-sm font-black text-text-main">
+                      <p className="mt-2 line-clamp-1 text-sm font-bold text-text-main">
                         {item.subject}
                       </p>
                       <div className="mt-1 flex items-center justify-between gap-2 text-micro text-stone-500">
@@ -341,7 +341,7 @@ export const AdminSupportPage: React.FC = () => {
                     </span>
                     <h2
                       id="support-case-title"
-                      className="mt-1 text-xl font-black text-text-main"
+                      className="mt-1 text-xl font-bold text-text-main"
                     >
                       {selectedCase.subject}
                     </h2>
@@ -414,7 +414,7 @@ export const AdminSupportPage: React.FC = () => {
               </div>
 
               <div>
-                <h3 className="flex items-center gap-2 text-sm font-black text-text-main">
+                <h3 className="flex items-center gap-2 text-sm font-bold text-text-main">
                   <MessageSquare
                     className="h-icon-md w-icon-md"
                     aria-hidden="true"

@@ -106,7 +106,7 @@ export function ProspectsProductPage() {
         <Container>
           <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-12">
             <div className="max-w-xl">
-              <h1 className="text-3xl font-black leading-none tracking-tight text-text-main sm:text-5xl">
+              <h1 className="text-3xl font-bold leading-none tracking-tight text-text-main sm:text-5xl">
                 Trouvez les bonnes entreprises. Comprenez pourquoi.
               </h1>
               <p className="mt-5 max-w-lg text-base leading-relaxed text-text-secondary sm:text-lg">
@@ -178,7 +178,7 @@ export function ProspectsProductPage() {
         <Container>
           <h2
             id="prospects-workflow"
-            className="text-2xl font-black tracking-tight text-text-main sm:text-3xl"
+            className="text-2xl font-bold tracking-tight text-text-main sm:text-3xl"
           >
             De votre cible à une action vérifiable.
           </h2>
@@ -192,7 +192,7 @@ export function ProspectsProductPage() {
                 key={number}
                 className="relative flex gap-4 pb-8 md:block md:pb-0"
               >
-                <span className="z-raised relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-micro font-black text-white shadow-sm">
+                <span className="z-raised relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-micro font-bold text-white shadow-sm">
                   {number}
                 </span>
                 <div className="md:mt-6">
@@ -200,7 +200,7 @@ export function ProspectsProductPage() {
                     className="hidden h-6 w-6 text-primary md:block"
                     aria-hidden="true"
                   />
-                  <h3 className="text-sm font-black text-text-main md:mt-3">
+                  <h3 className="text-sm font-bold text-text-main md:mt-3">
                     {title}
                   </h3>
                   <p className="mt-1 max-w-xs text-xs leading-relaxed text-text-muted">
@@ -226,7 +226,7 @@ export function ProspectsProductPage() {
             <div>
               <h2
                 id="prospects-proof"
-                className="text-3xl font-black tracking-tight text-text-main sm:text-4xl"
+                className="text-3xl font-bold tracking-tight text-text-main sm:text-4xl"
               >
                 Chaque score vient avec son dossier.
               </h2>
@@ -266,7 +266,7 @@ export function ProspectsProductPage() {
         <Container>
           <h2
             id="prospects-activation"
-            className="mx-auto max-w-3xl text-center text-2xl font-black tracking-tight text-text-main sm:text-3xl"
+            className="mx-auto max-w-3xl text-center text-2xl font-bold tracking-tight text-text-main sm:text-3xl"
           >
             Continuez dans les outils que votre équipe utilise déjà.
           </h2>
@@ -305,14 +305,14 @@ export function ProspectsProductPage() {
         <Container>
           <h2
             id="prospects-packaging"
-            className="text-center text-2xl font-black tracking-tight text-text-main sm:text-3xl"
+            className="text-center text-2xl font-bold tracking-tight text-text-main sm:text-3xl"
           >
             Une même base, deux portes d’entrée.
           </h2>
           <div className="mx-auto mt-9 max-w-4xl divide-y divide-border-base md:grid md:grid-cols-2 md:divide-x md:divide-y-0">
             <article className="py-7 md:py-2 md:pr-12">
               <Target className="h-7 w-7 text-primary" aria-hidden="true" />
-              <h3 className="mt-4 text-xl font-black text-text-main">
+              <h3 className="mt-4 text-xl font-bold text-text-main">
                 Shongre Prospects
               </h3>
               <p className="mt-2 text-sm leading-relaxed text-text-secondary">
@@ -342,7 +342,7 @@ export function ProspectsProductPage() {
             </article>
             <article className="py-7 md:py-2 md:pl-12">
               <Building2 className="h-7 w-7 text-primary" aria-hidden="true" />
-              <h3 className="mt-4 text-xl font-black text-text-main">
+              <h3 className="mt-4 text-xl font-bold text-text-main">
                 Inclus dans Shongre Pro
               </h3>
               <p className="mt-2 text-sm leading-relaxed text-text-secondary">
@@ -383,7 +383,7 @@ export function ProspectsProductPage() {
           <div className="mx-auto max-w-3xl text-center">
             <h2
               id="prospects-compliance"
-              className="text-2xl font-black tracking-tight sm:text-3xl"
+              className="text-2xl font-bold tracking-tight sm:text-3xl"
             >
               L’automatisation reste sous contrôle.
             </h2>
@@ -420,7 +420,7 @@ export function ProspectsProductPage() {
 
       <section className="bg-bg-surface py-12 text-center sm:py-16">
         <Container>
-          <h2 className="mx-auto max-w-2xl text-2xl font-black tracking-tight text-text-main sm:text-3xl">
+          <h2 className="mx-auto max-w-2xl text-2xl font-bold tracking-tight text-text-main sm:text-3xl">
             Commencez par un cas réel, sans connecter vos outils.
           </h2>
           <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">

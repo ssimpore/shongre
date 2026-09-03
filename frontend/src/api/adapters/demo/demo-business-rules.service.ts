@@ -34,7 +34,7 @@ import {
 import { BASELINE_MONETIZATION_CATALOG } from "@shongre/contracts/monetization-catalog";
 import { PROPOSED_MONETIZATION_DRAFT_CATALOG } from "@shongre/contracts/monetization-proposed-catalog";
 import { isSameBusinessVertical } from "@shongre/contracts/business-verticals";
-import { colors, palette } from "@shongre/design-tokens";
+import { colors, palette, typography } from "@shongre/design-tokens";
 import {
   getBillingUsagePresentation,
   resolveAllEffectiveEntitlements,
@@ -1394,10 +1394,15 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
         .replaceAll(">", "&gt;")
         .replaceAll('"', "&quot;");
     const legalName = escape(user?.companyName || user?.name || accountId);
+    // Downloaded demo invoices are standalone documents, so they cannot inherit
+    // the Next.js root class. Reuse the canonical stack and tokens here; Nunito
+    // Sans resolves locally when available and otherwise follows the approved
+    // system fallbacks without a second font loader or runtime font request.
+    const documentStyles = `body{font-family:${typography.fontFamilies.sans};color:${colors.text.primary};max-width:760px;margin:48px auto;padding:0 24px}header,section{display:flex;justify-content:space-between;gap:32px;margin-bottom:40px}h1{font-size:${typography.fontSizes["3xl"]};line-height:${typography.textLineHeights["3xl"]};font-weight:${typography.fontWeights.bold};margin:0}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:12px;border-bottom:1px solid ${palette["stone-200"]}}.number{text-align:right}.total{font-weight:${typography.fontWeights.bold};font-size:${typography.fontSizes.lg};line-height:${typography.textLineHeights.lg}}small{color:${colors.text.muted}}`;
     return {
       fileName: `${invoice.number}.html`,
       mimeType: "text/html;charset=utf-8",
-      content: `<!doctype html><html lang="fr"><meta charset="utf-8"><title>${escape(invoice.number)}</title><style>body{font-family:Arial,sans-serif;color:${colors.text.primary};max-width:760px;margin:48px auto;padding:0 24px}header,section{display:flex;justify-content:space-between;gap:32px;margin-bottom:40px}h1{font-size:28px;margin:0}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:12px;border-bottom:1px solid ${palette["stone-200"]}}.number{text-align:right}.total{font-weight:700;font-size:18px}small{color:${colors.text.muted}}</style><body><header><div><h1>SHONGRE.</h1><small>Facture commerciale de démonstration</small></div><div><strong>${escape(invoice.number)}</strong><br>${new Date(invoice.issuedAt).toLocaleDateString("fr-FR")}</div></header><section><div><strong>Facturé à</strong><br>${legalName}<br>${escape(user?.businessAddress || "Adresse de facturation du compte")}<br>${escape(`${user?.postalCode || ""} ${user?.city || ""}`.trim())}</div><div><strong>Émetteur</strong><br>Shongre SAS<br>France</div></section><table><thead><tr><th>Description</th><th class="number">Montant</th></tr></thead><tbody><tr><td>Services Shongre — commande ${escape(invoice.orderId || "—")}</td><td class="number">${format(invoice.subtotal.amountMinor)}</td></tr><tr><td>Remise</td><td class="number">− ${format(invoice.discount.amountMinor)}</td></tr><tr><td>TVA</td><td class="number">${format(invoice.tax.amountMinor)}</td></tr><tr class="total"><td>Total TTC</td><td class="number">${format(invoice.total.amountMinor)}</td></tr></tbody></table><p><small>Statut : ${escape(invoice.status)}. Document produit par le service de démonstration Shongre ; aucun paiement réel n’a été débité.</small></p></body></html>`,
+      content: `<!doctype html><html lang="fr"><meta charset="utf-8"><title>${escape(invoice.number)}</title><style>${documentStyles}</style><body><header><div><h1>SHONGRE.</h1><small>Facture commerciale de démonstration</small></div><div><strong>${escape(invoice.number)}</strong><br>${new Date(invoice.issuedAt).toLocaleDateString("fr-FR")}</div></header><section><div><strong>Facturé à</strong><br>${legalName}<br>${escape(user?.businessAddress || "Adresse de facturation du compte")}<br>${escape(`${user?.postalCode || ""} ${user?.city || ""}`.trim())}</div><div><strong>Émetteur</strong><br>Shongre SAS<br>France</div></section><table><thead><tr><th>Description</th><th class="number">Montant</th></tr></thead><tbody><tr><td>Services Shongre — commande ${escape(invoice.orderId || "—")}</td><td class="number">${format(invoice.subtotal.amountMinor)}</td></tr><tr><td>Remise</td><td class="number">− ${format(invoice.discount.amountMinor)}</td></tr><tr><td>TVA</td><td class="number">${format(invoice.tax.amountMinor)}</td></tr><tr class="total"><td>Total TTC</td><td class="number">${format(invoice.total.amountMinor)}</td></tr></tbody></table><p><small>Statut : ${escape(invoice.status)}. Document produit par le service de démonstration Shongre ; aucun paiement réel n’a été débité.</small></p></body></html>`,
     };
   }
 

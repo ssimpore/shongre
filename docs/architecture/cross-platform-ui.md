@@ -60,8 +60,12 @@ are no separate business UI trees or platform forks.
 
 ## Next.js rendering boundary
 
-The App Router owns the server document shell, local Inter font, route metadata,
-canonical URLs, robots, sitemap, manifest, loading, and error states. The
+The App Router owns the server document shell, the single optimized Nunito Sans
+Variable loader, route metadata, canonical URLs, robots, sitemap, manifest,
+loading, and error states. `frontend/app/layout.tsx` exposes the `next/font`
+result as `--font-nunito-sans`; the generated design-token adapter owns
+`--font-family-sans` and maps Tailwind's `font-sans` to it. Components inherit
+the family and never load or declare an application font independently. The
 existing mature marketplace router is mounted behind one client boundary during
 the incremental migration. This preserves all routes and allows route metadata
 to be server-rendered now without rewriting the product. New SEO-critical route

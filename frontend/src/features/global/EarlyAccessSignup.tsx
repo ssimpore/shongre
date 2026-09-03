@@ -60,7 +60,7 @@ export function EarlyAccessSignup({
           aria-hidden="true"
         />
         <div>
-          <p className="text-sm font-black text-success">Demande enregistrée</p>
+          <p className="text-sm font-bold text-success">Demande enregistrée</p>
           <p className="mt-1 text-xs leading-relaxed text-success">
             Consultez votre messagerie pour confirmer votre inscription.
           </p>
@@ -74,7 +74,7 @@ export function EarlyAccessSignup({
       onSubmit={submit}
       className="mx-auto mt-8 max-w-xl border-y border-border-base py-6 text-left"
     >
-      <h2 className="text-base font-black">Être informé du lancement</h2>
+      <h2 className="text-base font-bold">Être informé du lancement</h2>
       <p className="mt-1 text-xs leading-relaxed text-stone-600">
         Recevez uniquement les informations liées à l’ouverture de ce marché.
       </p>

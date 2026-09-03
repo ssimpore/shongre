@@ -91,7 +91,7 @@ export const ProviderMarketOverridesTab: React.FC<
     <div className="space-y-6">
       {/* 1. Country Selection Bar */}
       <div className="bg-bg-surface p-4 rounded-control border border-stone-200 shadow-xs">
-        <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-2">
+        <label className="block text-xs font-semibold text-stone-700 uppercase tracking-wider mb-2">
           {t("admin.providerMarketOverridesTab.selectionnezLeMarcheAInspecter")}
         </label>
         <div className="flex flex-wrap gap-2">
@@ -106,7 +106,7 @@ export const ProviderMarketOverridesTab: React.FC<
                 type="button"
                 key={m.code}
                 onClick={() => handleSelectMarket(m.code)}
-                className={`px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-2 border transition-all ${
+                className={`px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 border transition-all ${
                   isSelected
                     ? "bg-primary text-text-inverse border-primary shadow-xs"
                     : "bg-stone-50 hover:bg-stone-100 text-stone-700 border-stone-200"
@@ -136,7 +136,7 @@ export const ProviderMarketOverridesTab: React.FC<
         {/* Default-market comparison card */}
         <div className="bg-stone-50/80 p-5 rounded-control border border-stone-200 space-y-3">
           <div className="flex items-center justify-between border-b border-stone-200 pb-2">
-            <span className="text-xs font-black text-stone-800 flex items-center gap-1.5">
+            <span className="text-xs font-bold text-stone-800 flex items-center gap-1.5">
               <span>{defaultMarket.flag}</span> {defaultMarket.name}{" "}
               {t("admin.providerMarketOverridesTab.marcheParDefaut")}
             </span>
@@ -183,7 +183,7 @@ export const ProviderMarketOverridesTab: React.FC<
           }`}
         >
           <div className="flex items-center justify-between border-b border-stone-200 pb-2">
-            <span className="text-xs font-black text-text-main flex items-center gap-1.5">
+            <span className="text-xs font-bold text-text-main flex items-center gap-1.5">
               <span>
                 {nonDefaultMarkets.find((m) => m.code === selectedMarket)?.flag}
               </span>
@@ -289,7 +289,7 @@ export const ProviderMarketOverridesTab: React.FC<
               variant="primary"
               size="sm"
               onClick={handleSaveOverride}
-              className="text-xs font-bold"
+              className="text-xs font-semibold"
             >
               {t("admin.providerMarketOverridesTab.appliquerLaSurcharge")}
             </Button>

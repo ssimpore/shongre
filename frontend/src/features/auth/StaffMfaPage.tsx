@@ -96,7 +96,7 @@ export const StaffMfaPage: React.FC = () => {
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
             <ShieldCheck className="h-icon-xl w-icon-xl" aria-hidden="true" />
           </div>
-          <h1 className="mt-4 text-2xl font-black text-stone-950">
+          <h1 className="mt-4 text-2xl font-bold text-stone-950">
             Sécurité de l’espace interne
           </h1>
           <p className="mx-auto mt-2 max-w-lg text-sm leading-relaxed text-stone-600">
@@ -161,7 +161,7 @@ export const StaffMfaPage: React.FC = () => {
         ) : (
           <div className="mt-6 space-y-5">
             <section className="rounded-2xl border border-border-base bg-stone-50 p-4">
-              <h2 className="text-sm font-black text-stone-900">
+              <h2 className="text-sm font-bold text-stone-900">
                 1. Ajoutez Shongre à votre application
               </h2>
               <p className="mt-1 text-xs text-stone-600">
@@ -193,7 +193,7 @@ export const StaffMfaPage: React.FC = () => {
             </section>
 
             <section className="rounded-2xl border border-warning-border bg-warning-surface p-4">
-              <h2 className="text-sm font-black text-stone-900">
+              <h2 className="text-sm font-bold text-stone-900">
                 2. Conservez vos codes de secours
               </h2>
               <p className="mt-1 text-xs text-stone-600">

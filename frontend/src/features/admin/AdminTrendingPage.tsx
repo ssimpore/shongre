@@ -188,7 +188,7 @@ export const AdminTrendingPage: React.FC = () => {
             <Flame className="h-icon-md w-icon-md" />{" "}
             {t("admin.adminTrendingPage.decouverteEditoriale")}
           </div>
-          <h2 className="text-2xl font-black tracking-tight text-text-main">
+          <h2 className="text-2xl font-bold tracking-tight text-text-main">
             {t("admin.adminTrendingPage.enCeMomentSurShongre")}
           </h2>
           <p className="mt-1 max-w-2xl text-sm leading-relaxed text-stone-500">
@@ -420,7 +420,7 @@ export const AdminTrendingPage: React.FC = () => {
                   className="rounded-control border border-stone-200 bg-stone-50 p-3"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="w-5 text-center text-xs font-black text-text-disabled">
+                    <span className="w-5 text-center text-xs font-bold text-text-disabled">
                       {position + 1}
                     </span>
                     <div className="min-w-0 flex-1">

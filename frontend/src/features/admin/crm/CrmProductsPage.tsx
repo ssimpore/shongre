@@ -149,7 +149,7 @@ export const CrmProductsPage: React.FC = () => {
             <p className="text-micro font-bold uppercase tracking-wider text-violet-300">
               CRM · Catalogue
             </p>
-            <h1 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">
+            <h1 className="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">
               Produits & tarifs
             </h1>
             <p className="mt-1 text-xs text-text-disabled">
@@ -165,13 +165,13 @@ export const CrmProductsPage: React.FC = () => {
         <div className="mt-5 grid grid-cols-3 gap-2">
           <div className="rounded-control bg-stone-900 p-3">
             <span className="text-micro text-text-disabled">Produits</span>
-            <strong className="block text-xl font-black">
+            <strong className="block text-xl font-bold">
               {products.length}
             </strong>
           </div>
           <div className="rounded-control bg-stone-900 p-3">
             <span className="text-micro text-text-disabled">Actifs</span>
-            <strong className="block text-xl font-black text-emerald-300">
+            <strong className="block text-xl font-bold text-emerald-300">
               {products.filter((item) => item.isActive).length}
             </strong>
           </div>
@@ -179,7 +179,7 @@ export const CrmProductsPage: React.FC = () => {
             <span className="text-micro text-text-disabled">
               {t("invoicing.product.previewMarket")}
             </span>
-            <strong className="block text-xl font-black">
+            <strong className="block text-xl font-bold">
               {activeMarket.code}
             </strong>
           </div>
@@ -245,7 +245,7 @@ export const CrmProductsPage: React.FC = () => {
                     </span>
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
-                        <strong className="truncate text-xs font-black">
+                        <strong className="truncate text-xs font-bold">
                           {product.name}
                         </strong>
                         <span
@@ -263,7 +263,7 @@ export const CrmProductsPage: React.FC = () => {
                     <span className="block text-micro text-stone-500">
                       Tarif {price?.marketCode ?? "général"}
                     </span>
-                    <strong className="text-sm font-black">
+                    <strong className="text-sm font-bold">
                       {price
                         ? new Intl.NumberFormat(currentLocale, {
                             style: "currency",
@@ -283,7 +283,7 @@ export const CrmProductsPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => void toggleActive(product)}
-                    className="inline-flex min-h-control-md items-center justify-center gap-1 rounded-control border border-stone-200 px-3 text-micro font-bold hover:bg-stone-50"
+                    className="inline-flex min-h-control-md items-center justify-center gap-1 rounded-control border border-stone-200 px-3 text-micro font-semibold hover:bg-stone-50"
                   >
                     {product.isActive ? (
                       <XCircle className="h-icon-sm w-icon-sm" />

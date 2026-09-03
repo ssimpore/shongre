@@ -89,7 +89,7 @@ function MetricCard({ metric }: { metric: AnalyticsMetric }) {
           aria-hidden="true"
         />
       </div>
-      <p className="mt-2 text-2xl font-black tracking-tight text-text-main">
+      <p className="mt-2 text-2xl font-bold tracking-tight text-text-main">
         {formatted}
       </p>
       {metric.previousValue !== undefined && (
@@ -145,11 +145,17 @@ function TrendChart({
             />
             <XAxis
               dataKey="date"
-              tick={{ fill: "var(--color-text-muted)", fontSize: 11 }}
+              tick={{
+                fill: "var(--color-text-muted)",
+                fontSize: "var(--text-micro)",
+              }}
               stroke="var(--color-text-muted)"
             />
             <YAxis
-              tick={{ fill: "var(--color-text-muted)", fontSize: 11 }}
+              tick={{
+                fill: "var(--color-text-muted)",
+                fontSize: "var(--text-micro)",
+              }}
               stroke="var(--color-text-muted)"
             />
             <Tooltip />
@@ -294,7 +300,7 @@ export const AdminAnalyticsPage: React.FC = () => {
             <BarChart3 className="h-icon-sm w-icon-sm" aria-hidden="true" />{" "}
             Intelligence Shongre
           </div>
-          <h1 className="text-2xl font-black tracking-tight text-text-main">
+          <h1 className="text-2xl font-bold tracking-tight text-text-main">
             {t("admin.adminAnalyticsPage.analyticsSeoObservabilite")}
           </h1>
           <p className="mt-1 max-w-3xl text-xs text-text-secondary">
@@ -428,7 +434,7 @@ export const AdminAnalyticsPage: React.FC = () => {
               type="button"
               role="tab"
               aria-selected={activeTab === tab.id}
-              className={`rounded-lg px-3 py-2 text-xs font-bold transition-colors ${activeTab === tab.id ? "bg-stone-900 text-text-inverse" : "text-text-secondary hover:bg-stone-100"}`}
+              className={`rounded-lg px-3 py-2 text-xs font-semibold transition-colors ${activeTab === tab.id ? "bg-stone-900 text-text-inverse" : "text-text-secondary hover:bg-stone-100"}`}
               onClick={() => updateFilter("tab", tab.id)}
             >
               {tab.label}
@@ -488,7 +494,7 @@ export const AdminAnalyticsPage: React.FC = () => {
                   {data.funnel.map((step) => (
                     <div key={step.step} className="rounded-lg bg-stone-50 p-3">
                       <div className="text-xs text-stone-500">{step.label}</div>
-                      <div className="text-xl font-black">
+                      <div className="text-xl font-bold">
                         {step.count.toLocaleString("fr-FR")}
                       </div>
                       <div className="text-micro text-stone-500">

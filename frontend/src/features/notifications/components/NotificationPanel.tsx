@@ -70,9 +70,9 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
       {/* Header */}
       <div className="p-3.5 border-b border-border-base flex items-center justify-between gap-2 bg-stone-50/50">
         <div className="flex items-center gap-2">
-          <h3 className="text-sm font-black text-stone-900">Notifications</h3>
+          <h3 className="text-sm font-bold text-stone-900">Notifications</h3>
           {unreadCount > 0 && (
-            <span className="px-2 py-0.5 rounded-full text-micro font-extrabold bg-primary text-white">
+            <span className="px-2 py-0.5 rounded-full text-micro font-bold bg-primary text-white">
               {unreadCount}
             </span>
           )}
@@ -83,7 +83,7 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
             <button
               type="button"
               onClick={onMarkAllAsRead}
-              className="text-micro font-bold text-stone-600 hover:text-stone-900 p-1 hover:bg-stone-100 rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
+              className="text-micro font-semibold text-stone-600 hover:text-stone-900 p-1 hover:bg-stone-100 rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
             >
               <Check className="w-icon-sm h-icon-sm text-primary" />
               <span>{t("notifications.notificationPanel.toutLire")}</span>

@@ -435,7 +435,7 @@ export const AutoPublishWizardPage: React.FC = () => {
         <div className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-success-surface text-success">
           <CheckCircle2 className="h-icon-xl w-icon-xl" />
         </div>
-        <h1 className="mt-5 text-2xl font-black">
+        <h1 className="mt-5 text-2xl font-bold">
           Véhicule envoyé en validation
         </h1>
         <p className="mt-2 text-sm text-text-secondary">
@@ -462,7 +462,7 @@ export const AutoPublishWizardPage: React.FC = () => {
     if (step === PUBLISH_STEP.type)
       return (
         <>
-          <h2 className="text-lg font-black">Quel véhicule vendez-vous ?</h2>
+          <h2 className="text-lg font-bold">Quel véhicule vendez-vous ?</h2>
           <p className="mt-1 text-sm text-text-secondary">
             Les champs suivants s’adaptent au type sélectionné.
           </p>
@@ -475,7 +475,7 @@ export const AutoPublishWizardPage: React.FC = () => {
                 className={`rounded-card border p-4 ${data.vehicleType === type.type ? "border-primary bg-primary-light" : "border-border-base bg-bg-surface"}`}
               >
                 <CarFront className="h-icon-lg w-icon-lg text-primary" />
-                <p className="mt-3 text-sm font-black">{type.label}</p>
+                <p className="mt-3 text-sm font-bold">{type.label}</p>
                 <p className="mt-1 text-xs leading-relaxed text-text-secondary">
                   {type.description}
                 </p>
@@ -487,7 +487,7 @@ export const AutoPublishWizardPage: React.FC = () => {
     if (step === PUBLISH_STEP.identification)
       return (
         <>
-          <h2 className="text-lg font-black">Identifier le véhicule</h2>
+          <h2 className="text-lg font-bold">Identifier le véhicule</h2>
           <p className="mt-1 text-sm text-text-secondary">
             Ces informations doivent correspondre aux documents officiels.
           </p>
@@ -618,7 +618,7 @@ export const AutoPublishWizardPage: React.FC = () => {
     if (step === PUBLISH_STEP.technical)
       return (
         <>
-          <h2 className="text-lg font-black">Caractéristiques techniques</h2>
+          <h2 className="text-lg font-bold">Caractéristiques techniques</h2>
           <p className="mt-1 text-sm text-text-secondary">
             Les champs électriques apparaissent uniquement lorsque l’énergie le
             justifie.
@@ -740,7 +740,7 @@ export const AutoPublishWizardPage: React.FC = () => {
     if (step === PUBLISH_STEP.history)
       return (
         <>
-          <h2 className="text-lg font-black">État et historique</h2>
+          <h2 className="text-lg font-bold">État et historique</h2>
           <p className="mt-1 text-sm text-text-secondary">
             Déclarez l’état honnêtement ; les incohérences peuvent déclencher
             une revue.
@@ -853,7 +853,7 @@ export const AutoPublishWizardPage: React.FC = () => {
     if (step === PUBLISH_STEP.documents)
       return (
         <>
-          <h2 className="text-lg font-black">Documents</h2>
+          <h2 className="text-lg font-bold">Documents</h2>
           <p className="mt-1 text-sm text-text-secondary">
             Pour {activeMarket.name}, préparez les pièces utiles. Les fichiers
             restent privés et ne sont jamais affichés sur l’annonce.
@@ -895,7 +895,7 @@ export const AutoPublishWizardPage: React.FC = () => {
     if (step === PUBLISH_STEP.pricing)
       return (
         <>
-          <h2 className="text-lg font-black">Prix et localisation</h2>
+          <h2 className="text-lg font-bold">Prix et localisation</h2>
           <p className="mt-1 text-sm text-text-secondary">
             Le prix est stocké en centimes et formaté selon le marché.
           </p>
@@ -935,7 +935,7 @@ export const AutoPublishWizardPage: React.FC = () => {
             </FormField>
           </div>
           <div className="mt-5 rounded-card border border-border-base bg-bg-subtle p-4">
-            <p className="text-xs font-black">Estimation honnête</p>
+            <p className="text-xs font-bold">Estimation honnête</p>
             <p className="mt-1 text-xs text-text-secondary">
               Une fourchette ne sera affichée que si le service dispose d’un
               échantillon suffisant de véhicules comparables. Elle restera une
@@ -947,7 +947,7 @@ export const AutoPublishWizardPage: React.FC = () => {
     if (step === PUBLISH_STEP.media)
       return (
         <>
-          <h2 className="text-lg font-black">Photos et médias</h2>
+          <h2 className="text-lg font-bold">Photos et médias</h2>
           <p className="mt-1 text-sm text-text-secondary">
             Au moins une photo est requise. Évitez les plaques lisibles et les
             personnes reconnaissables.
@@ -1005,7 +1005,7 @@ export const AutoPublishWizardPage: React.FC = () => {
                 </div>
               </div>
             ))}
-            <label className="grid aspect-4/3 cursor-pointer place-items-center rounded-card border border-dashed border-border-strong bg-bg-subtle text-xs font-bold text-text-secondary">
+            <label className="grid aspect-4/3 cursor-pointer place-items-center rounded-card border border-dashed border-border-strong bg-bg-subtle text-xs font-semibold text-text-secondary">
               <input
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
@@ -1028,7 +1028,7 @@ export const AutoPublishWizardPage: React.FC = () => {
     if (step === PUBLISH_STEP.preview)
       return (
         <>
-          <h2 className="text-lg font-black">Aperçu de l’annonce</h2>
+          <h2 className="text-lg font-bold">Aperçu de l’annonce</h2>
           <p className="mt-1 text-sm text-text-secondary">
             Relisez le titre et la description avant de choisir une offre.
           </p>
@@ -1055,7 +1055,7 @@ export const AutoPublishWizardPage: React.FC = () => {
                   }
                 />
               </FormField>
-              <p className="mt-3 text-lg font-black text-primary">
+              <p className="mt-3 text-lg font-bold text-primary">
                 {formatAutoMoney(
                   {
                     amountMinor: Number(data.priceMinor),
@@ -1072,7 +1072,7 @@ export const AutoPublishWizardPage: React.FC = () => {
     if (step === PUBLISH_STEP.offer)
       return (
         <>
-          <h2 className="text-lg font-black">Choisir une offre</h2>
+          <h2 className="text-lg font-bold">Choisir une offre</h2>
           <p className="mt-1 text-sm text-text-secondary">
             Les prix et droits viennent du catalogue du marché, jamais du
             composant.
@@ -1111,7 +1111,7 @@ export const AutoPublishWizardPage: React.FC = () => {
                           : "Gratuit"}
                       </Badge>
                     </div>
-                    <p className="mt-3 text-sm font-black">{plan.name}</p>
+                    <p className="mt-3 text-sm font-bold">{plan.name}</p>
                     <p className="mt-1 text-xs leading-relaxed text-text-secondary">
                       {plan.description}
                       {paidUnavailable ? " — bientôt disponible" : ""}
@@ -1130,9 +1130,9 @@ export const AutoPublishWizardPage: React.FC = () => {
     if (step === PUBLISH_STEP.payment)
       return (
         <>
-          <h2 className="text-lg font-black">Paiement</h2>
+          <h2 className="text-lg font-bold">Paiement</h2>
           <div className="mt-5 rounded-card border border-success-border bg-success-surface p-5">
-            <p className="flex items-center gap-2 text-sm font-black">
+            <p className="flex items-center gap-2 text-sm font-bold">
               <CheckCircle2 className="h-icon-md w-icon-md text-success" />{" "}
               Aucun paiement requis
             </p>
@@ -1142,7 +1142,7 @@ export const AutoPublishWizardPage: React.FC = () => {
             </p>
           </div>
           <div className="mt-4 rounded-card border border-border-base p-4">
-            <p className="text-xs font-black">
+            <p className="text-xs font-bold">
               Architecture prête pour la suite
             </p>
             <p className="mt-1 text-micro leading-relaxed text-text-muted">
@@ -1156,7 +1156,7 @@ export const AutoPublishWizardPage: React.FC = () => {
       );
     return (
       <>
-        <h2 className="text-lg font-black">Envoyer en validation</h2>
+        <h2 className="text-lg font-bold">Envoyer en validation</h2>
         <p className="mt-1 text-sm text-text-secondary">
           Votre annonce sera contrôlée avant publication. Une correspondance
           possible de VIN reste visible uniquement pour l’équipe de modération.
@@ -1208,7 +1208,7 @@ export const AutoPublishWizardPage: React.FC = () => {
         <h1
           ref={wizardHeadingRef}
           tabIndex={-1}
-          className="text-2xl font-black tracking-tight outline-none"
+          className="text-2xl font-bold tracking-tight outline-none"
         >
           Publier un véhicule
         </h1>
@@ -1229,7 +1229,7 @@ export const AutoPublishWizardPage: React.FC = () => {
                     className="group w-full"
                   >
                     <span
-                      className={`mx-auto grid h-8 w-8 place-items-center rounded-full border text-xs font-black ${active ? "border-primary bg-primary text-white" : done ? "border-success bg-success-surface text-success" : "border-border-base bg-bg-surface text-text-muted"}`}
+                      className={`mx-auto grid h-8 w-8 place-items-center rounded-full border text-xs font-bold ${active ? "border-primary bg-primary text-white" : done ? "border-success bg-success-surface text-success" : "border-border-base bg-bg-surface text-text-muted"}`}
                     >
                       {done ? (
                         <Check className="h-icon-xs w-icon-xs" />
@@ -1272,7 +1272,7 @@ export const AutoPublishWizardPage: React.FC = () => {
           </section>
           <aside className="self-start space-y-3 lg:sticky lg:top-4">
             <div className="rounded-card border border-border-base bg-bg-surface p-4 shadow-xs">
-              <p className="text-xs font-black">Votre avancement</p>
+              <p className="text-xs font-bold">Votre avancement</p>
               <div className="mt-3 flex items-center gap-3">
                 <div className="min-w-0 flex-1">
                   <p className="text-xs font-bold">
@@ -1298,7 +1298,7 @@ export const AutoPublishWizardPage: React.FC = () => {
               </div>
             </div>
             <div className="rounded-card border border-border-base bg-bg-surface p-4 shadow-xs">
-              <p className="text-xs font-black">Véhicule</p>
+              <p className="text-xs font-bold">Véhicule</p>
               <p className="mt-2 text-sm font-bold">
                 {data.makeLabel} {data.modelLabel}
               </p>
@@ -1307,7 +1307,7 @@ export const AutoPublishWizardPage: React.FC = () => {
               </p>
             </div>
             <div className="rounded-card border border-border-base bg-bg-surface p-4 shadow-xs">
-              <p className="flex items-center gap-2 text-xs font-black">
+              <p className="flex items-center gap-2 text-xs font-bold">
                 <Cloud className="h-icon-sm w-icon-sm text-success" />{" "}
                 {saving ? "Enregistrement…" : "Progression sauvegardée"}
               </p>

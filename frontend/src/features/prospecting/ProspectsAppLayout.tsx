@@ -172,7 +172,7 @@ export function ProspectsAppLayout() {
               <NavLink
                 to={prospectsPaths.overview}
                 end
-                className="text-lg font-black tracking-tight text-text-main focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                className="text-lg font-bold tracking-tight text-text-main focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               >
                 Shongre Prospects
               </NavLink>
@@ -184,7 +184,7 @@ export function ProspectsAppLayout() {
               <p className="text-micro font-semibold uppercase tracking-wider text-text-secondary">
                 Organisation active
               </p>
-              <p className="truncate text-xs font-black text-text-main">
+              <p className="truncate text-xs font-bold text-text-main">
                 {currentUser?.companyName ?? currentUser?.name}
               </p>
             </div>
@@ -193,7 +193,7 @@ export function ProspectsAppLayout() {
           <div className="lg:hidden">
             <label
               htmlFor="prospects-section-navigation"
-              className="mb-1.5 block text-micro font-bold text-text-secondary"
+              className="mb-1.5 block text-micro font-semibold text-text-secondary"
             >
               Section de l’espace
             </label>

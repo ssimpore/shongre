@@ -116,7 +116,7 @@ export const AutoComparePage: React.FC = () => {
       </nav>
       <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-black text-text-main">
+          <h1 className="text-2xl font-bold text-text-main">
             Comparer les véhicules
           </h1>
           <p className="mt-1 text-sm text-text-secondary">
@@ -164,7 +164,7 @@ export const AutoComparePage: React.FC = () => {
                   </div>
                   <Link
                     to={`/auto/vehicule/${vehicle.slug}`}
-                    className="line-clamp-2 font-black text-text-main hover:text-primary"
+                    className="line-clamp-2 font-bold text-text-main hover:text-primary"
                   >
                     {vehicle.title}
                   </Link>

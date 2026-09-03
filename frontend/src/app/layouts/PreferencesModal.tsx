@@ -80,7 +80,7 @@ export const PreferencesModal: React.FC = () => {
                   onClick={() => handleMarketChange(m.code)}
                   className={`flex min-h-control-touch items-center justify-between gap-2 rounded-control border px-2.5 py-2 text-left motion-interactive cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
                     isSelected
-                      ? "border-primary bg-primary-light text-primary font-bold ring-1 ring-primary"
+                      ? "border-primary bg-primary-light text-primary font-semibold ring-1 ring-primary"
                       : "border-border-base bg-bg-surface hover:bg-bg-subtle text-stone-800 font-medium"
                   }`}
                 >
@@ -140,7 +140,7 @@ export const PreferencesModal: React.FC = () => {
                   onClick={() => setCurrency(c.code)}
                   className={`flex min-h-control-touch items-center justify-between gap-2 rounded-control border px-2.5 py-2 text-left motion-interactive cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
                     isSelected
-                      ? "border-primary bg-primary-light text-primary font-bold ring-1 ring-primary"
+                      ? "border-primary bg-primary-light text-primary font-semibold ring-1 ring-primary"
                       : "border-border-base bg-bg-surface hover:bg-bg-subtle text-stone-800 font-medium"
                   }`}
                 >
@@ -202,7 +202,7 @@ export const PreferencesModal: React.FC = () => {
                     !lang.isAvailable
                       ? "border-border-subtle bg-bg-subtle text-stone-400 cursor-not-allowed"
                       : isSelected
-                        ? "border-primary bg-primary-light text-primary font-bold ring-1 ring-primary cursor-pointer"
+                        ? "border-primary bg-primary-light text-primary font-semibold ring-1 ring-primary cursor-pointer"
                         : "border-border-base bg-bg-surface hover:bg-bg-subtle text-stone-800 font-medium cursor-pointer"
                   }`}
                 >

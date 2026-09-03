@@ -258,7 +258,7 @@ export const CrmPipelineSettingsPage: React.FC = () => {
               <p className="text-micro font-bold uppercase tracking-wider text-violet-300">
                 CRM · Configuration
               </p>
-              <h1 className="text-2xl font-black tracking-tight sm:text-3xl">
+              <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
                 {t("admin.crmPipelineSettingsPage.pipelinesEtapes")}
               </h1>
             </div>
@@ -286,7 +286,7 @@ export const CrmPipelineSettingsPage: React.FC = () => {
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border-subtle p-5">
               <div>
                 <div className="flex items-center gap-2">
-                  <h2 className="text-base font-black">{pipeline.name}</h2>
+                  <h2 className="text-base font-bold">{pipeline.name}</h2>
                   {pipeline.isDefault && (
                     <span className="rounded-pill bg-primary-light px-2 py-1 text-micro font-bold text-primary">
                       {t("admin.crmPipelineSettingsPage.parDefaut")}
@@ -317,12 +317,12 @@ export const CrmPipelineSettingsPage: React.FC = () => {
                   key={stage.id}
                   className="grid gap-3 px-5 py-4 sm:grid-cols-4 sm:items-center"
                 >
-                  <span className="inline-flex h-8 w-8 items-center justify-center rounded-pill bg-stone-950 text-micro font-black text-text-inverse">
+                  <span className="inline-flex h-8 w-8 items-center justify-center rounded-pill bg-stone-950 text-micro font-bold text-text-inverse">
                     {index + 1}
                   </span>
                   <div>
                     <div className="flex items-center gap-2">
-                      <strong className="text-xs font-black">
+                      <strong className="text-xs font-bold">
                         {stage.name}
                       </strong>
                       {stage.isWon && (
@@ -393,7 +393,7 @@ export const CrmPipelineSettingsPage: React.FC = () => {
                 required
               />
             </FormField>
-            <label className="flex items-center gap-2 self-end rounded-control bg-stone-50 px-3 py-2.5 font-bold">
+            <label className="flex items-center gap-2 self-end rounded-control bg-stone-50 px-3 py-2.5 font-semibold">
               <input
                 type="checkbox"
                 checked={draft.isDefault}
@@ -422,7 +422,7 @@ export const CrmPipelineSettingsPage: React.FC = () => {
 
           <fieldset className="space-y-2">
             <div className="flex items-center justify-between gap-3">
-              <legend className="font-black">
+              <legend className="font-bold">
                 {t("admin.crmPipelineSettingsPage.etapesOrdonnees")}
               </legend>
               <Button
@@ -440,7 +440,7 @@ export const CrmPipelineSettingsPage: React.FC = () => {
                 key={stage.id ?? `new-${index}`}
                 className="grid gap-2 rounded-control border border-border-subtle p-3 sm:grid-cols-5 sm:items-end"
               >
-                <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-stone-950 text-micro font-black text-text-inverse">
+                <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-stone-950 text-micro font-bold text-text-inverse">
                   {index + 1}
                 </span>
                 <FormField label={`Nom de l’étape ${index + 1}`} required>

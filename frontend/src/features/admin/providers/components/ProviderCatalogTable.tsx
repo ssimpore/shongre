@@ -475,7 +475,7 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
                             rightIcon={
                               <ChevronRight className="w-icon-sm h-icon-sm" />
                             }
-                            className="h-control-sm text-xs px-2.5 font-bold"
+                            className="h-control-sm text-xs px-2.5 font-semibold"
                           >
                             {t("admin.providerCatalogTable.gerer")}
                           </Button>

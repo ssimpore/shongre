@@ -13,12 +13,12 @@ export function GlobalGatewayPage({
   defaultMarketOrigin: string;
 }) {
   return (
-    <div className="min-h-screen bg-white font-sans text-stone-950">
+    <div className="min-h-screen bg-white text-stone-950">
       <header className="border-b border-border-base bg-white">
         <div className="mx-auto flex h-16 w-full max-w-page items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link
             href="/"
-            className="text-xl font-extrabold uppercase tracking-tight text-stone-950 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
+            className="text-xl font-bold uppercase tracking-tight text-stone-950 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
             aria-label="Accueil international Shongre"
           >
             Shongre<span className="text-primary">.</span>
@@ -35,7 +35,7 @@ export function GlobalGatewayPage({
       <main id="main-content">
         <section className="mx-auto grid w-full max-w-page gap-10 px-4 py-14 sm:px-6 sm:py-20 lg:grid-cols-2 lg:items-center lg:gap-16 lg:px-8 lg:py-24">
           <div className="max-w-2xl">
-            <h1 className="text-4xl font-black leading-tight tracking-tight text-stone-950 sm:text-5xl lg:text-6xl">
+            <h1 className="text-4xl font-bold leading-tight tracking-tight text-stone-950 sm:text-5xl lg:text-6xl">
               Shongre, le marché local à l’échelle du monde
             </h1>
             <p className="mt-6 max-w-xl text-base leading-relaxed text-stone-600 sm:text-lg">
@@ -77,7 +77,7 @@ export function GlobalGatewayPage({
                   <Icon className="h-5 w-5" aria-hidden="true" />
                 </span>
                 <div>
-                  <h2 className="text-sm font-black">{title}</h2>
+                  <h2 className="text-sm font-bold">{title}</h2>
                   <p className="mt-2 text-xs leading-relaxed text-stone-600">
                     {description}
                   </p>

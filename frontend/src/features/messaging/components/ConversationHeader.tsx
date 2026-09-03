@@ -93,12 +93,12 @@ export const ConversationHeader: React.FC<ConversationHeaderProps> = ({
             {publicProfileUrl ? (
               <Link
                 to={publicProfileUrl}
-                className="truncate rounded-control text-sm font-black text-stone-900 transition-colors hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                className="truncate rounded-control text-sm font-bold text-stone-900 transition-colors hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               >
                 {counterpart.name}
               </Link>
             ) : (
-              <span className="truncate text-sm font-black text-stone-900">
+              <span className="truncate text-sm font-bold text-stone-900">
                 {counterpart.name}
               </span>
             )}

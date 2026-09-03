@@ -573,6 +573,10 @@ France-only happy path is insufficient for market-sensitive work.
 - Reuse `@shongre/design-tokens`, `@shongre/ui`, `@shongre/features`, and the
   existing design-system compatibility entrypoints before creating a new
   primitive, token, or variant. Add variants only for recurring semantic use.
+- Web application typography uses the single Nunito Sans Variable loader in
+  `frontend/app/layout.tsx`. Tailwind `font-sans` resolves through the generated
+  `--font-family-sans` design token; Web components inherit it and must not load
+  or declare competing application font families.
 - Shared Web/native APIs must preserve behavior and accessibility while allowing
   narrow platform adapters. Do not use a WebView as a code-sharing shortcut or
   widen a Next.js client boundary merely to share presentation.

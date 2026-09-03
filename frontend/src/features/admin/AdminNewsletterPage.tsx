@@ -383,7 +383,7 @@ export const AdminNewsletterPage: React.FC = () => {
                 {t("admin.adminNewsletterPage.providerPlatformPartagee")}
               </span>
             </div>
-            <h1 className="mt-2 text-2xl font-black tracking-tight sm:text-3xl">
+            <h1 className="mt-2 text-2xl font-bold tracking-tight sm:text-3xl">
               Marketing & Newsletter
             </h1>
             <p className="mt-2 text-xs leading-relaxed text-text-disabled sm:text-sm">
@@ -427,7 +427,7 @@ export const AdminNewsletterPage: React.FC = () => {
               type="button"
               onClick={() => setActiveTab(tab.id)}
               aria-current={activeTab === tab.id ? "page" : undefined}
-              className={`flex min-h-control-sm shrink-0 items-center gap-2 rounded-control px-3 text-xs font-bold transition-colors ${
+              className={`flex min-h-control-sm shrink-0 items-center gap-2 rounded-control px-3 text-xs font-semibold transition-colors ${
                 activeTab === tab.id
                   ? "bg-stone-950 text-text-inverse"
                   : "text-text-secondary hover:bg-stone-100 hover:text-stone-950"
@@ -563,7 +563,7 @@ export const AdminNewsletterPage: React.FC = () => {
               if (!values.length) return null;
               return (
                 <section key={label as string}>
-                  <h3 className="mb-2 font-black">{label as string}</h3>
+                  <h3 className="mb-2 font-bold">{label as string}</h3>
                   <ul className="space-y-1.5">
                     {values.map((issue) => (
                       <li
@@ -708,7 +708,7 @@ const MetricCard: React.FC<{
         <p className="text-micro font-bold uppercase tracking-wider text-stone-500">
           {label}
         </p>
-        <p className="mt-2 text-2xl font-black tabular-nums text-stone-950">
+        <p className="mt-2 text-2xl font-bold tabular-nums text-stone-950">
           {value}
         </p>
         <p className="mt-1 text-xs text-stone-500">{detail}</p>
@@ -766,7 +766,7 @@ const Overview: React.FC<{
       <section className="min-w-0 rounded-2xl border border-border-base bg-bg-surface p-5 shadow-xs">
         <div className="flex items-center gap-2">
           <ShieldCheck className="h-icon-md w-icon-md text-success" />
-          <h2 className="text-sm font-black">Garde-fous actifs</h2>
+          <h2 className="text-sm font-bold">Garde-fous actifs</h2>
         </div>
         <ul className="mt-4 space-y-3 text-xs text-text-secondary">
           {[
@@ -805,7 +805,7 @@ const Campaigns: React.FC<{
   <section className="min-w-0 rounded-2xl border border-border-base bg-bg-surface p-5 shadow-xs">
     <div className="mb-4 flex items-center justify-between gap-3">
       <div>
-        <h2 className="text-sm font-black text-stone-950">
+        <h2 className="text-sm font-bold text-stone-950">
           {compact ? "Campagnes récentes" : "Campagnes"}
         </h2>
         <p className="mt-1 text-xs text-stone-500">
@@ -832,7 +832,7 @@ const Campaigns: React.FC<{
           >
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
-                <h3 className="truncate text-sm font-black text-stone-950">
+                <h3 className="truncate text-sm font-bold text-stone-950">
                   {campaign.name}
                 </h3>
                 <Badge variant={statusVariant(campaign.status)} size="sm">
@@ -905,7 +905,7 @@ const Audiences: React.FC<{
     <section className="rounded-2xl border border-border-base bg-bg-surface p-5 shadow-xs">
       <div className="flex items-center gap-2">
         <Users className="h-icon-md w-icon-md text-primary" />
-        <h2 className="text-sm font-black">Listes statiques</h2>
+        <h2 className="text-sm font-bold">Listes statiques</h2>
       </div>
       <div className="mt-4 space-y-2">
         {lists.map((list) => (
@@ -915,7 +915,7 @@ const Audiences: React.FC<{
           >
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h3 className="text-xs font-black">{list.name}</h3>
+                <h3 className="text-xs font-bold">{list.name}</h3>
                 <p className="mt-1 text-xs leading-relaxed text-stone-500">
                   {list.description}
                 </p>
@@ -931,7 +931,7 @@ const Audiences: React.FC<{
     <section className="rounded-2xl border border-border-base bg-bg-surface p-5 shadow-xs">
       <div className="flex items-center gap-2">
         <ListFilter className="h-icon-md w-icon-md text-violet-700" />
-        <h2 className="text-sm font-black">Segments dynamiques</h2>
+        <h2 className="text-sm font-bold">Segments dynamiques</h2>
       </div>
       <div className="mt-4 space-y-2">
         {segments.map((segment) => (
@@ -941,7 +941,7 @@ const Audiences: React.FC<{
           >
             <div className="flex items-start justify-between gap-3">
               <div>
-                <h3 className="text-xs font-black">{segment.name}</h3>
+                <h3 className="text-xs font-bold">{segment.name}</h3>
                 <p className="mt-1 text-xs leading-relaxed text-stone-500">
                   {segment.description}
                 </p>
@@ -961,7 +961,7 @@ const Audiences: React.FC<{
     <section className="rounded-2xl border border-border-base bg-bg-surface p-5 shadow-xs xl:col-span-2">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-sm font-black">Profils récents</h2>
+          <h2 className="text-sm font-bold">Profils récents</h2>
           <p className="mt-1 text-xs text-stone-500">
             Profils marketing-only et profils liés aux contacts CRM.
           </p>
@@ -1035,7 +1035,7 @@ const Templates: React.FC<{ templates: MarketingTemplate[] }> = ({
     <div className="flex items-center gap-2">
       <LayoutTemplate className="h-icon-md w-icon-md text-primary" />
       <div>
-        <h2 className="text-sm font-black">Modèles versionnés</h2>
+        <h2 className="text-sm font-bold">Modèles versionnés</h2>
         <p className="mt-1 text-xs text-stone-500">
           Une modification future ne change jamais une campagne déjà envoyée.
         </p>
@@ -1055,7 +1055,7 @@ const Templates: React.FC<{ templates: MarketingTemplate[] }> = ({
               v{template.currentVersion}
             </Badge>
           </div>
-          <h3 className="mt-4 text-sm font-black">{template.name}</h3>
+          <h3 className="mt-4 text-sm font-bold">{template.name}</h3>
           <p className="mt-1 text-xs text-stone-500">{template.subject}</p>
           <p className="mt-3 text-micro font-bold uppercase tracking-wider text-text-secondary">
             {template.category} · {template.locale} ·{" "}
@@ -1075,7 +1075,7 @@ const Automation: React.FC<{
     <section className="rounded-2xl border border-border-base bg-bg-surface p-5 shadow-xs xl:col-span-2">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h2 className="text-sm font-black">Parcours marketing</h2>
+          <h2 className="text-sm font-bold">Parcours marketing</h2>
           <p className="mt-1 text-xs text-stone-500">
             Runtime partagé, versions immuables, attentes persistées et reprise
             idempotente.
@@ -1096,7 +1096,7 @@ const Automation: React.FC<{
           >
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <h3 className="text-sm font-black text-stone-950">
+                <h3 className="text-sm font-bold text-stone-950">
                   {journey.name}
                 </h3>
                 <p className="mt-1 text-xs text-stone-500">
@@ -1120,7 +1120,7 @@ const Automation: React.FC<{
       </div>
     </section>
     <section className="rounded-2xl border border-border-base bg-bg-surface p-5 shadow-xs">
-      <h2 className="text-sm font-black">Sécurité d’exécution</h2>
+      <h2 className="text-sm font-bold">Sécurité d’exécution</h2>
       <ul className="mt-4 space-y-3 text-xs text-text-secondary">
         {[
           "Boucles rejetées à l’activation",
@@ -1170,7 +1170,7 @@ const Analytics: React.FC<{
       />
     </section>
     <section className="rounded-2xl border border-border-base bg-bg-surface p-5 shadow-xs">
-      <h2 className="text-sm font-black">Qualité et délivrabilité</h2>
+      <h2 className="text-sm font-bold">Qualité et délivrabilité</h2>
       <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4 text-xs">
         <div className="rounded-control bg-stone-100 p-3">
           <strong className="block text-lg">{analytics.softBounces}</strong>
@@ -1204,7 +1204,7 @@ const Compliance: React.FC<{ suppressions: MarketingSuppression[] }> = ({
       <div className="flex items-center gap-2">
         <Ban className="h-icon-md w-icon-md text-danger" />
         <div>
-          <h2 className="text-sm font-black">Suppressions actives</h2>
+          <h2 className="text-sm font-bold">Suppressions actives</h2>
           <p className="mt-1 text-xs text-stone-500">
             Elles gagnent toujours sur listes, segments, imports,
             automatisations et suggestions IA.
@@ -1242,7 +1242,7 @@ const Compliance: React.FC<{ suppressions: MarketingSuppression[] }> = ({
     <section className="rounded-2xl border border-border-base bg-bg-surface p-5 shadow-xs">
       <div className="flex items-center gap-2">
         <Clock3 className="h-icon-md w-icon-md text-violet-700" />
-        <h2 className="text-sm font-black">Finalités séparées</h2>
+        <h2 className="text-sm font-bold">Finalités séparées</h2>
       </div>
       <div className="mt-4 space-y-3 text-xs">
         <div className="rounded-control bg-violet-50 p-3 text-violet-950">

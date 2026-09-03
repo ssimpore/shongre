@@ -233,7 +233,7 @@ export const CrmContactDetailPage: React.FC = () => {
     return (
       <section className="rounded-2xl border border-border-base bg-bg-surface p-10 text-center">
         <UserRound className="mx-auto h-8 w-8 text-text-disabled" />
-        <h1 className="mt-3 text-lg font-black">Contact introuvable</h1>
+        <h1 className="mt-3 text-lg font-bold">Contact introuvable</h1>
         <Button
           className="mt-4"
           size="sm"
@@ -262,12 +262,12 @@ export const CrmContactDetailPage: React.FC = () => {
         </Link>
         <div className="mt-3 flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
           <div className="flex min-w-0 items-start gap-4">
-            <span className="inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-pill border border-stone-700 bg-stone-900 text-lg font-black">
+            <span className="inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-pill border border-stone-700 bg-stone-900 text-lg font-bold">
               {initials}
             </span>
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-2xl font-black tracking-tight sm:text-3xl">
+                <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
                   {contact.fullName}
                 </h1>
                 {contact.doNotContact && (
@@ -333,7 +333,7 @@ export const CrmContactDetailPage: React.FC = () => {
           <span className="text-micro font-bold uppercase tracking-wider text-stone-500">
             Entreprises
           </span>
-          <strong className="mt-1 block text-2xl font-black">
+          <strong className="mt-1 block text-2xl font-bold">
             {accounts.length}
           </strong>
         </article>
@@ -341,7 +341,7 @@ export const CrmContactDetailPage: React.FC = () => {
           <span className="text-micro font-bold uppercase tracking-wider text-stone-500">
             {t("admin.crmOverviewPage.opportunites")}
           </span>
-          <strong className="mt-1 block text-2xl font-black">
+          <strong className="mt-1 block text-2xl font-bold">
             {opportunities.length}
           </strong>
         </article>
@@ -349,7 +349,7 @@ export const CrmContactDetailPage: React.FC = () => {
           <span className="text-micro font-bold uppercase tracking-wider text-stone-500">
             {t("admin.crmContactDetailPage.pipelineOuvert")}
           </span>
-          <strong className="mt-1 block text-2xl font-black text-primary">
+          <strong className="mt-1 block text-2xl font-bold text-primary">
             {new Intl.NumberFormat(currentLocale, {
               style: "currency",
               currency: opportunities[0]?.amount.currency ?? "EUR",
@@ -361,7 +361,7 @@ export const CrmContactDetailPage: React.FC = () => {
           <span className="text-micro font-bold uppercase tracking-wider text-stone-500">
             {t("admin.crmContactDetailPage.tachesOuvertes")}
           </span>
-          <strong className="mt-1 block text-2xl font-black">
+          <strong className="mt-1 block text-2xl font-bold">
             {tasks.filter((item) => item.status !== "completed").length}
           </strong>
         </article>
@@ -372,7 +372,7 @@ export const CrmContactDetailPage: React.FC = () => {
           <section className="rounded-2xl border border-border-base bg-bg-surface shadow-xs">
             <div className="flex items-center justify-between border-b border-border-subtle px-5 py-3.5">
               <div>
-                <h2 className="text-sm font-black">Historique</h2>
+                <h2 className="text-sm font-bold">Historique</h2>
                 <p className="text-micro text-stone-500">
                   {t(
                     "admin.crmContactDetailPage.interactionsImmuablesDuContact",
@@ -400,7 +400,7 @@ export const CrmContactDetailPage: React.FC = () => {
                     </span>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-2">
-                        <strong className="text-xs font-black">
+                        <strong className="text-xs font-bold">
                           {activity.title}
                         </strong>
                         <time className="text-micro text-stone-500">
@@ -426,7 +426,7 @@ export const CrmContactDetailPage: React.FC = () => {
           <section className="rounded-2xl border border-border-base bg-bg-surface shadow-xs">
             <div className="flex items-center justify-between border-b border-border-subtle px-5 py-3.5">
               <div>
-                <h2 className="text-sm font-black">
+                <h2 className="text-sm font-bold">
                   {t("admin.crmContactDetailPage.opportunitesLiees")}
                 </h2>
                 <p className="text-micro text-stone-500">
@@ -474,7 +474,7 @@ export const CrmContactDetailPage: React.FC = () => {
           <section className="rounded-2xl border border-border-base bg-bg-surface shadow-xs">
             <div className="flex items-center justify-between border-b border-border-subtle px-4 py-3.5">
               <div>
-                <h2 className="text-sm font-black">
+                <h2 className="text-sm font-bold">
                   {t("admin.crmContactDetailPage.tachesAssociees")}
                 </h2>
                 <p className="text-micro text-stone-500">Prochaines actions</p>
@@ -527,7 +527,7 @@ export const CrmContactDetailPage: React.FC = () => {
             </div>
           </section>
           <section className="rounded-2xl border border-border-base bg-bg-surface p-4 shadow-xs">
-            <h2 className="text-sm font-black">
+            <h2 className="text-sm font-bold">
               {t("admin.crmContactDetailPage.donneesDuContact")}
             </h2>
             <dl className="mt-3 divide-y divide-border-subtle text-xs">

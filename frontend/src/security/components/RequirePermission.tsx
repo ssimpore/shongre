@@ -140,7 +140,7 @@ const GuardShell: React.FC<{
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center">
           <Link
             to={routes.home()}
-            className="flex items-center gap-2.5 font-black text-stone-900"
+            className="flex items-center gap-2.5 font-bold text-stone-900"
           >
             <span className="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center text-sm">
               S
@@ -177,7 +177,7 @@ export const RequirePermission: React.FC<RequirePermissionProps> = ({
           <div className="w-16 h-16 rounded-2xl bg-warning-surface border border-warning-border text-warning flex items-center justify-center mx-auto mb-4">
             <Lock className="w-8 h-8" />
           </div>
-          <h1 className="text-2xl font-black text-stone-900 mb-2">
+          <h1 className="text-2xl font-bold text-stone-900 mb-2">
             Authentification requise
           </h1>
           <p className="text-sm text-stone-600 max-w-md mx-auto mb-6">
@@ -211,7 +211,7 @@ export const RequirePermission: React.FC<RequirePermissionProps> = ({
           <div className="w-16 h-16 rounded-2xl bg-danger-surface border border-danger-border text-danger flex items-center justify-center mx-auto mb-4">
             <ShieldAlert className="w-8 h-8" />
           </div>
-          <h1 className="text-2xl font-black text-stone-900 mb-2">
+          <h1 className="text-2xl font-bold text-stone-900 mb-2">
             {t("security.requirePermission.compteSuspendu")}
           </h1>
           <p className="text-sm text-stone-600 max-w-md mx-auto mb-6 leading-relaxed">
@@ -240,7 +240,7 @@ export const RequirePermission: React.FC<RequirePermissionProps> = ({
             <div className="w-16 h-16 rounded-2xl bg-primary-light border border-primary-border text-primary flex items-center justify-center mx-auto mb-4">
               <Briefcase className="w-8 h-8" />
             </div>
-            <h1 className="text-2xl font-black text-stone-900 mb-2">
+            <h1 className="text-2xl font-bold text-stone-900 mb-2">
               {customTitle || "Espace réservé aux Vendeurs Professionnels"}
             </h1>
             <p className="text-sm text-stone-600 max-w-md mx-auto mb-6 leading-relaxed">
@@ -278,7 +278,7 @@ export const RequirePermission: React.FC<RequirePermissionProps> = ({
           <div className="w-16 h-16 rounded-2xl bg-warning-surface border border-warning-border text-warning flex items-center justify-center mx-auto mb-4">
             <AlertTriangle className="w-8 h-8" />
           </div>
-          <h1 className="text-2xl font-black text-stone-900 mb-2">
+          <h1 className="text-2xl font-bold text-stone-900 mb-2">
             {customTitle || copy.title}
           </h1>
           <p className="text-sm text-stone-600 max-w-md mx-auto mb-6 leading-relaxed">

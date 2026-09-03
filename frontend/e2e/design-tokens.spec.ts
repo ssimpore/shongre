@@ -72,7 +72,7 @@ test.describe("design-token runtime contracts @serial", () => {
       };
     });
 
-    expect(contract.version).toBe("4");
+    expect(contract.version).toBe("5");
     expect(contract.tokenWidth).toBe("13rem");
     expect(contract.firstTrackCardCount).toBeGreaterThan(0);
     expect(contract.fullyVisibleCards).toBe(
@@ -559,7 +559,7 @@ test.describe("design-token runtime contracts @serial", () => {
     });
 
     expect(styles).toMatchObject({
-      backgroundColor: "rgb(196, 67, 31)",
+      backgroundColor: "rgb(204, 64, 24)",
       color: "rgb(255, 255, 255)",
       fontSize: "30px",
       height: "40px",
@@ -599,22 +599,55 @@ test.describe("design-token runtime contracts @serial", () => {
     ]);
   });
 
-  test("loads the bundled UI font with a stable fallback contract", async ({
+  test("loads the single optimized Nunito Sans UI font with a stable fallback contract", async ({
     page,
   }) => {
     const font = await page.evaluate(async () => {
       await document.fonts.ready;
+      const root = getComputedStyle(document.documentElement);
       const body = getComputedStyle(document.body);
       return {
         family: body.fontFamily,
+        familyToken: root.getPropertyValue("--font-family-sans").trim(),
+        tailwindToken: root.getPropertyValue("--font-sans").trim(),
         synthesis: body.fontSynthesis,
-        loaded: document.fonts.check('16px "Inter Variable"'),
+        loadedFaces: [...document.fonts]
+          .filter((face) => face.status === "loaded")
+          .map((face) => face.family),
       };
     });
 
-    expect(font.family).toContain("Inter Variable");
+    expect(font.family).toContain("Nunito Sans");
+    expect(font.familyToken).toContain("Nunito Sans");
+    expect(font.familyToken).toContain("Helvetica");
+    expect(font.familyToken).toContain("Arial");
+    expect(font.tailwindToken).toBe(font.familyToken);
     expect(font.synthesis).toBe("none");
-    expect(font.loaded).toBe(true);
+    expect(
+      font.loadedFaces.some((family) => family.includes("Nunito Sans")),
+    ).toBe(true);
+  });
+
+  test("keeps the canonical marketplace weight hierarchy", async ({ page }) => {
+    const hierarchy = await page.evaluate(() => {
+      const card = document.querySelector<HTMLElement>(
+        "article.listing-card-standard",
+      );
+      const title = card?.querySelector<HTMLElement>("h3");
+      const price = card?.querySelector<HTMLElement>(
+        '[data-listing-card-price="true"] > span:first-child',
+      );
+      const seller = card?.querySelector<HTMLElement>(
+        '[data-listing-card-seller="true"] [title]',
+      );
+      return {
+        title: title ? getComputedStyle(title).fontWeight : null,
+        price: price ? getComputedStyle(price).fontWeight : null,
+        seller: seller ? getComputedStyle(seller).fontWeight : null,
+      };
+    });
+
+    expect(hierarchy).toEqual({ title: "600", price: "700", seller: "600" });
   });
 
   for (const [chunkIndex, routes] of ROUTE_TYPOGRAPHY_AUDIT_CHUNKS.entries()) {
@@ -660,10 +693,37 @@ test.describe("design-token runtime contracts @serial", () => {
               )
               .map((element) => element.outerHTML.slice(0, 180));
             const body = getComputedStyle(document.body);
+            const unexpectedFontFamilies = [
+              ...document.querySelectorAll<HTMLElement>(
+                "main, header, nav, footer, button, input, textarea, select, h1, h2, h3, h4, h5, h6, p, span, a, label, li, td, th",
+              ),
+            ]
+              .map((element) => ({
+                element: element.outerHTML.slice(0, 140),
+                family: getComputedStyle(element).fontFamily,
+              }))
+              .filter(
+                ({ family }) =>
+                  family !== body.fontFamily &&
+                  !/(?:ui-monospace|SFMono-Regular|Menlo|Monaco|Consolas|monospace)/i.test(
+                    family,
+                  ),
+              )
+              .slice(0, 10);
+            const weightNineHundred = [
+              ...document.querySelectorAll<HTMLElement>("body *"),
+            ]
+              .filter(
+                (element) => getComputedStyle(element).fontWeight === "900",
+              )
+              .map((element) => element.outerHTML.slice(0, 140))
+              .slice(0, 10);
             return {
               arbitraryTypography,
               inlineTypography,
               bodyFontFamily: body.fontFamily,
+              unexpectedFontFamilies,
+              weightNineHundred,
               overflow:
                 document.documentElement.scrollWidth >
                 document.documentElement.clientWidth,
@@ -681,7 +741,15 @@ test.describe("design-token runtime contracts @serial", () => {
           expect(
             audit.bodyFontFamily,
             `${route.name} lost the bundled UI font`,
-          ).toContain("Inter Variable");
+          ).toContain("Nunito Sans");
+          expect(
+            audit.unexpectedFontFamilies,
+            `${route.name} contains a competing application font family`,
+          ).toEqual([]);
+          expect(
+            audit.weightNineHundred,
+            `${route.name} renders unsupported weight 900`,
+          ).toEqual([]);
           expect(audit.overflow, `${route.name} overflows horizontally`).toBe(
             false,
           );

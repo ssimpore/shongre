@@ -64,7 +64,7 @@ export const AccountDeletionPage: React.FC = () => {
             <Trash2 className="h-icon-md w-icon-md" aria-hidden="true" />
           </span>
           <div>
-            <h1 className="text-2xl font-black tracking-tight text-text-main sm:text-3xl">
+            <h1 className="text-2xl font-bold tracking-tight text-text-main sm:text-3xl">
               Supprimer votre compte Shongre
             </h1>
             <p className="mt-2 text-sm leading-relaxed text-text-secondary">
@@ -92,7 +92,7 @@ export const AccountDeletionPage: React.FC = () => {
 
         {!isAuthenticated || !currentUser ? (
           <div className="space-y-4">
-            <h2 className="text-lg font-extrabold text-text-main">
+            <h2 className="text-lg font-bold text-text-main">
               Vérifiez d’abord votre identité
             </h2>
             <p className="text-sm leading-relaxed text-text-secondary">
@@ -116,7 +116,7 @@ export const AccountDeletionPage: React.FC = () => {
         ) : (
           <form className="space-y-5" onSubmit={handleDelete}>
             <div>
-              <h2 className="text-lg font-extrabold text-text-main">
+              <h2 className="text-lg font-bold text-text-main">
                 Confirmer la suppression de {currentUser.email}
               </h2>
               <p className="mt-1 text-sm text-text-secondary">

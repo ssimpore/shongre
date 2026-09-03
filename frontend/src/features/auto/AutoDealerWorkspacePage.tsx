@@ -89,7 +89,7 @@ const Metric = ({
         <Icon className="h-icon-md w-icon-md" />
       </span>
       <div>
-        <p className="text-xl font-black text-text-main">{value}</p>
+        <p className="text-xl font-bold text-text-main">{value}</p>
         <p className="text-xs font-semibold text-text-secondary">{label}</p>
         <p className="mt-1 text-micro text-text-muted">{hint}</p>
       </div>
@@ -267,7 +267,7 @@ export const AutoDealerWorkspacePage: React.FC = () => {
   const inventory = (
     <section className="overflow-hidden rounded-card border border-border-base bg-bg-surface shadow-xs">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border-subtle px-4 py-3">
-        <h2 className="text-sm font-black">
+        <h2 className="text-sm font-bold">
           Stock actif ({visibleVehicles.length}
           {visibleVehicles.length !== workspace.vehicles.length
             ? ` sur ${workspace.vehicles.length}`
@@ -294,7 +294,7 @@ export const AutoDealerWorkspacePage: React.FC = () => {
           id="auto-inventory-filters"
           className="border-b border-border-subtle bg-bg-subtle px-4 py-3"
         >
-          <label className="block max-w-sm text-xs font-bold text-text-main">
+          <label className="block max-w-sm text-xs font-semibold text-text-main">
             Rechercher dans le stock
             <Input
               value={inventoryQuery}
@@ -399,7 +399,7 @@ export const AutoDealerWorkspacePage: React.FC = () => {
           <ArrowRightLeft className="h-icon-md w-icon-md" />
         </span>
         <div>
-          <h2 className="text-base font-black">Transferts de stock</h2>
+          <h2 className="text-base font-bold">Transferts de stock</h2>
           <p className="mt-1 text-xs text-text-secondary">
             Déplacement auditable d’un véhicule entre deux sites de la même
             organisation.
@@ -438,13 +438,13 @@ export const AutoDealerWorkspacePage: React.FC = () => {
   const leads = (
     <section className="overflow-hidden rounded-card border border-border-base bg-bg-surface shadow-xs">
       <div className="flex items-center justify-between border-b border-border-subtle px-4 py-3">
-        <h2 className="text-sm font-black">
+        <h2 className="text-sm font-bold">
           Demandes qualifiées à traiter ({workspace.leads.length})
         </h2>
         <button
           type="button"
           onClick={() => setTab("Leads")}
-          className="text-xs font-bold text-primary"
+          className="text-xs font-semibold text-primary"
         >
           Voir toutes
         </button>
@@ -550,7 +550,7 @@ export const AutoDealerWorkspacePage: React.FC = () => {
     <section className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs">
       <div className="flex flex-wrap justify-between gap-3">
         <div>
-          <h2 className="text-base font-black">Imports & synchronisation</h2>
+          <h2 className="text-base font-bold">Imports & synchronisation</h2>
           <p
             id="auto-import-availability"
             className="mt-1 text-xs text-text-secondary"
@@ -623,7 +623,7 @@ export const AutoDealerWorkspacePage: React.FC = () => {
         ))}
       </div>
       <div className="mt-4 rounded-card border border-warning-border bg-warning-surface p-4 text-xs">
-        <p className="flex items-center gap-2 font-black">
+        <p className="flex items-center gap-2 font-bold">
           <ShieldAlert className="h-icon-sm w-icon-sm text-warning" /> Doublons
           et erreurs isolés
         </p>
@@ -639,7 +639,7 @@ export const AutoDealerWorkspacePage: React.FC = () => {
     <section className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-base font-black">Équipe</h2>
+          <h2 className="text-base font-bold">Équipe</h2>
           <p className="mt-1 text-xs text-text-secondary">
             Les rôles limitent stock, leads, facturation, sites et statistiques.
           </p>
@@ -686,7 +686,7 @@ export const AutoDealerWorkspacePage: React.FC = () => {
     <section className="grid gap-4 lg:grid-cols-2">
       <div className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs">
         <p className="text-xs font-bold text-primary">Formule actuelle</p>
-        <h2 className="mt-1 text-xl font-black">{plan.name}</h2>
+        <h2 className="mt-1 text-xl font-bold">{plan.name}</h2>
         <p className="mt-2 text-xs text-text-secondary">
           {workspace.usage.activeVehicles} /{" "}
           {plan.entitlements.maxActiveVehicles} véhicules ·{" "}
@@ -709,7 +709,7 @@ export const AutoDealerWorkspacePage: React.FC = () => {
         </Button>
       </div>
       <div className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs">
-        <h2 className="text-base font-black">Facturation</h2>
+        <h2 className="text-base font-bold">Facturation</h2>
         <p className="mt-2 text-xs text-text-secondary">
           Les prix sont configurés par marché. Aucun paiement réel n’est émis en
           mode démo.
@@ -739,7 +739,7 @@ export const AutoDealerWorkspacePage: React.FC = () => {
           <KeyRound className="h-icon-md w-icon-md" />
         </span>
         <div>
-          <h2 className="text-base font-black">API d’inventaire</h2>
+          <h2 className="text-base font-bold">API d’inventaire</h2>
           <p className="mt-1 text-xs text-text-secondary">
             {plan?.entitlements.inventoryApiSync
               ? "Incluse dans votre formule, mais désactivée par le drapeau marché actuel."
@@ -797,7 +797,7 @@ export const AutoDealerWorkspacePage: React.FC = () => {
         />
       </div>
       <div className="mt-4 rounded-card border border-border-base bg-bg-surface p-5 shadow-xs">
-        <h2 className="text-base font-black">Entonnoir Auto</h2>
+        <h2 className="text-base font-bold">Entonnoir Auto</h2>
         <div className="mt-4 grid grid-cols-4 gap-2 text-center text-xs">
           <div className="rounded-card bg-bg-subtle p-4">
             <strong className="block text-lg">12 840</strong>Vues
@@ -818,7 +818,7 @@ export const AutoDealerWorkspacePage: React.FC = () => {
 
   const generic = (
     <section className="rounded-card border border-border-base bg-bg-surface p-6 shadow-xs">
-      <h2 className="text-lg font-black">{tab}</h2>
+      <h2 className="text-lg font-bold">{tab}</h2>
       <p className="mt-2 text-sm text-text-secondary">
         Cette zone utilise les mêmes droits d’organisation, le même catalogue
         marché et les mêmes journaux d’audit que le reste de l’espace Auto.
@@ -906,7 +906,7 @@ export const AutoDealerWorkspacePage: React.FC = () => {
       <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
         <div>
           <p className="text-xs font-bold text-primary">Shongre Auto Pro</p>
-          <h1 className="mt-1 text-2xl font-black">Espace Auto</h1>
+          <h1 className="mt-1 text-2xl font-bold">Espace Auto</h1>
           <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
             <strong>{workspace.organization.name}</strong>
             <Badge variant="verified">Entreprise vérifiée</Badge>
@@ -948,7 +948,7 @@ export const AutoDealerWorkspacePage: React.FC = () => {
               key={item}
               type="button"
               onClick={() => setTab(item)}
-              className={`border-b-2 px-1 py-3 text-xs font-bold ${tab === item ? "border-primary text-primary" : "border-transparent text-text-secondary hover:text-text-main"}`}
+              className={`border-b-2 px-1 py-3 text-xs font-semibold ${tab === item ? "border-primary text-primary" : "border-transparent text-text-secondary hover:text-text-main"}`}
             >
               {item}
             </button>
@@ -960,11 +960,11 @@ export const AutoDealerWorkspacePage: React.FC = () => {
         <aside className="self-start space-y-4 xl:sticky xl:top-24">
           <section className="rounded-card border border-border-base bg-bg-surface p-4 shadow-xs">
             <div className="flex items-center justify-between">
-              <p className="text-xs font-black">Plan {plan.name}</p>
+              <p className="text-xs font-bold">Plan {plan.name}</p>
               <button
                 type="button"
                 onClick={() => setTab("Abonnement")}
-                className="text-micro font-bold text-primary"
+                className="text-micro font-semibold text-primary"
               >
                 Gérer
               </button>
@@ -992,7 +992,7 @@ export const AutoDealerWorkspacePage: React.FC = () => {
           </section>
           <section className="rounded-card border border-border-base bg-bg-surface p-4 shadow-xs">
             <div className="flex items-center justify-between">
-              <p className="text-xs font-black">Import & synchronisation</p>
+              <p className="text-xs font-bold">Import & synchronisation</p>
               <Badge
                 variant={
                   plan.entitlements.inventoryCsvImport ||
@@ -1024,7 +1024,7 @@ export const AutoDealerWorkspacePage: React.FC = () => {
             </Button>
           </section>
           <section className="rounded-card border border-border-base bg-bg-surface p-4 shadow-xs">
-            <p className="text-xs font-black">Parrainages partenaires</p>
+            <p className="text-xs font-bold">Parrainages partenaires</p>
             <Badge className="mt-2" variant="neutral">
               Phase 2 · inactif
             </Badge>

@@ -134,7 +134,7 @@ export const CrmOverviewPage: React.FC = () => {
           className="mx-auto h-8 w-8 text-danger"
           aria-hidden="true"
         />
-        <h1 className="mt-3 text-lg font-black text-text-main">
+        <h1 className="mt-3 text-lg font-bold text-text-main">
           {t("admin.crmOverviewPage.tableauDeBordIndisponible")}
         </h1>
         <p className="mx-auto mt-1 max-w-lg text-sm text-text-secondary">
@@ -214,7 +214,7 @@ export const CrmOverviewPage: React.FC = () => {
                 {t("admin.crmOverviewPage.donneesSynchronisees")}
               </span>
             </div>
-            <h1 className="text-2xl font-black tracking-tight sm:text-3xl">
+            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
               Pilotez chaque relation commerciale
             </h1>
             <p className="mt-1 max-w-2xl text-sm leading-relaxed text-text-disabled">
@@ -289,7 +289,7 @@ export const CrmOverviewPage: React.FC = () => {
                 <Icon className="h-3.5 w-3.5" aria-hidden="true" />
               </span>
             </div>
-            <strong className="mt-2 block truncate text-xl font-black tabular-nums text-stone-950 sm:text-2xl">
+            <strong className="mt-2 block truncate text-xl font-bold tabular-nums text-stone-950 sm:text-2xl">
               {value}
             </strong>
             <span className="mt-1 block truncate text-micro text-stone-500">
@@ -303,7 +303,7 @@ export const CrmOverviewPage: React.FC = () => {
         <section className="overflow-hidden rounded-2xl border border-border-base bg-bg-surface shadow-xs">
           <div className="flex items-center justify-between gap-3 border-b border-border-subtle px-4 py-3.5 sm:px-5">
             <div>
-              <h2 className="text-sm font-black text-stone-950">
+              <h2 className="text-sm font-bold text-stone-950">
                 {t("admin.crmOverviewPage.pipelineCommercial")}
               </h2>
               <p className="text-micro text-stone-500">
@@ -339,7 +339,7 @@ export const CrmOverviewPage: React.FC = () => {
                     className="min-w-0 flex-1"
                   />
                   <div className="min-w-24 text-right">
-                    <strong className="block font-black tabular-nums text-text-main">
+                    <strong className="block font-bold tabular-nums text-text-main">
                       {money(
                         stage.amountMinor,
                         dashboard.currency,
@@ -359,7 +359,7 @@ export const CrmOverviewPage: React.FC = () => {
               <span className="text-micro font-bold uppercase tracking-wider text-stone-500">
                 {t("admin.crmOverviewPage.previsionCommit")}
               </span>
-              <strong className="mt-1 block text-lg font-black tabular-nums text-stone-950">
+              <strong className="mt-1 block text-lg font-bold tabular-nums text-stone-950">
                 {money(
                   dashboard.forecastMinor,
                   dashboard.currency,
@@ -371,7 +371,7 @@ export const CrmOverviewPage: React.FC = () => {
               <span className="text-micro font-bold uppercase tracking-wider text-stone-500">
                 {t("admin.crmOverviewPage.revenuGagne")}
               </span>
-              <strong className="mt-1 block text-lg font-black tabular-nums text-success">
+              <strong className="mt-1 block text-lg font-bold tabular-nums text-success">
                 {money(
                   dashboard.wonRevenueMinor,
                   dashboard.currency,
@@ -385,7 +385,7 @@ export const CrmOverviewPage: React.FC = () => {
         <section className="rounded-2xl border border-border-base bg-bg-surface shadow-xs">
           <div className="flex items-center justify-between border-b border-border-subtle px-4 py-3.5">
             <div>
-              <h2 className="text-sm font-black text-stone-950">
+              <h2 className="text-sm font-bold text-stone-950">
                 {t("admin.crmOverviewPage.priorites")}
               </h2>
               <p className="text-micro text-stone-500">
@@ -436,7 +436,7 @@ export const CrmOverviewPage: React.FC = () => {
       <section className="overflow-hidden rounded-2xl border border-border-base bg-bg-surface shadow-xs">
         <div className="flex flex-col gap-3 border-b border-border-subtle px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between sm:px-5">
           <div>
-            <h2 className="text-sm font-black text-stone-950">
+            <h2 className="text-sm font-bold text-stone-950">
               {t("admin.crmOverviewPage.opportunitesASuivre")}
             </h2>
             <p className="text-micro text-stone-500">
@@ -507,7 +507,7 @@ export const CrmOverviewPage: React.FC = () => {
                   <td className="px-4 py-3 text-text-secondary">
                     {shortDate(opportunity.expectedCloseDate, currentLocale)}
                   </td>
-                  <td className="px-4 py-3 text-right font-black tabular-nums text-stone-950">
+                  <td className="px-4 py-3 text-right font-bold tabular-nums text-stone-950">
                     {money(
                       opportunity.amount.amountMinor,
                       opportunity.amount.currency,

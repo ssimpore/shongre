@@ -84,7 +84,7 @@ export const MakeOfferModal: React.FC<MakeOfferModalProps> = ({
                 key={discount}
                 type="button"
                 onClick={() => setOfferAmount(calculated.toString())}
-                className="flex-1 py-1.5 px-2 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg font-bold text-micro transition-colors"
+                className="flex-1 py-1.5 px-2 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg font-semibold text-micro transition-colors"
               >
                 -{discount}% ({formatPrice(calculated)})
               </button>

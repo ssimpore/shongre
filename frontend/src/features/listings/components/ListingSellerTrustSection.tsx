@@ -34,7 +34,7 @@ export const ListingSellerTrustSection: React.FC<
     >
       {/* Header */}
       <div className="flex items-center justify-between pb-3 border-b border-stone-100">
-        <h2 className="text-base font-black text-stone-900">
+        <h2 className="text-base font-bold text-stone-900">
           {t("listings.listingSellerTrustSection.aProposDuVendeur")}
         </h2>
         <Link

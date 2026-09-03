@@ -57,7 +57,7 @@ export function SolutionPreview({
         <div className={`min-w-0 flex-1 ${detail ? "p-6" : "p-3"}`}>
           <div className="flex items-center justify-between gap-2">
             <span
-              className={`${detail ? "text-base" : "text-micro"} font-black text-text-main`}
+              className={`${detail ? "text-base" : "text-micro"} font-bold text-text-main`}
             >
               {previewTitles[icon]}
             </span>
@@ -79,7 +79,7 @@ export function SolutionPreview({
                   >
                     <p className="text-micro text-text-muted">{label}</p>
                     <p
-                      className={`${detail ? "mt-6 text-base" : "mt-2 text-micro"} font-black text-text-muted`}
+                      className={`${detail ? "mt-6 text-base" : "mt-2 text-micro"} font-bold text-text-muted`}
                     >
                       — —
                     </p>

@@ -144,7 +144,7 @@ export const ProviderConfigurationForm: React.FC<
                 labels wired by `htmlFor`. */}
             <label
               htmlFor="provider-environment"
-              className="text-xs font-bold text-text-main"
+              className="text-xs font-semibold text-text-main"
             >
               Environnement
             </label>
@@ -173,7 +173,7 @@ export const ProviderConfigurationForm: React.FC<
           <div className="p-3 rounded-lg border border-stone-200 bg-stone-50/60 flex flex-col justify-between">
             <label
               htmlFor="provider-priority"
-              className="text-xs font-bold text-text-main"
+              className="text-xs font-semibold text-text-main"
             >
               {t("admin.providerConfigurationForm.prioriteDeRoutage")}
             </label>
@@ -236,7 +236,7 @@ export const ProviderConfigurationForm: React.FC<
                   <div className="flex items-center justify-between">
                     <label
                       htmlFor={`provider-field-${field.key}`}
-                      className="text-xs font-bold text-stone-800 flex items-center gap-1.5"
+                      className="text-xs font-semibold text-stone-800 flex items-center gap-1.5"
                     >
                       {field.label}
                       {field.required && <span className="text-danger">*</span>}
@@ -334,7 +334,7 @@ export const ProviderConfigurationForm: React.FC<
           size="md"
           isLoading={isSaving}
           leftIcon={<Save className="w-icon-md h-icon-md" />}
-          className="text-xs font-bold"
+          className="text-xs font-semibold"
         >
           {t("admin.providerConfigurationForm.enregistrerLaConfiguration")}
         </Button>

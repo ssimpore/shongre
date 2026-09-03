@@ -108,9 +108,9 @@ const buttonClasses = createVariants({
   variants: {
     size: {
       sm: `text-xs px-3 gap-1.5 ${controlHeightClasses.sm} font-semibold ${CONTROL_RADIUS_CLASS}`,
-      compact: `text-xs px-4 gap-2 ${controlHeightClasses.compact} font-bold ${CONTROL_RADIUS_CLASS}`,
-      md: `text-sm px-5 gap-2 ${controlHeightClasses.md} font-bold ${CONTROL_RADIUS_CLASS}`,
-      lg: `text-base px-6 gap-2.5 ${controlHeightClasses.lg} font-bold ${CONTROL_RADIUS_CLASS}`,
+      compact: `text-xs px-4 gap-2 ${controlHeightClasses.compact} font-semibold ${CONTROL_RADIUS_CLASS}`,
+      md: `text-sm px-5 gap-2 ${controlHeightClasses.md} font-semibold ${CONTROL_RADIUS_CLASS}`,
+      lg: `text-base px-6 gap-2.5 ${controlHeightClasses.lg} font-semibold ${CONTROL_RADIUS_CLASS}`,
     },
     variant: {
       primary:

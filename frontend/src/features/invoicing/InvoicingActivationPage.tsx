@@ -51,7 +51,7 @@ export function InvoicingActivationPage() {
           <span className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-primary-light text-primary">
             <ReceiptText className="h-icon-lg w-icon-lg" aria-hidden="true" />
           </span>
-          <h1 className="mt-5 text-2xl font-black tracking-tight text-text-main sm:text-3xl">
+          <h1 className="mt-5 text-2xl font-bold tracking-tight text-text-main sm:text-3xl">
             Ajoutez Facturation à votre organisation
           </h1>
           <p className="mt-3 max-w-2xl text-sm leading-relaxed text-text-secondary">

@@ -302,7 +302,7 @@ export function AccountSecurityPage() {
       <header>
         <div className="flex items-center gap-2 text-primary">
           <ShieldCheck className="h-icon-lg w-icon-lg" aria-hidden="true" />
-          <h1 className="text-xl font-black text-stone-950 sm:text-2xl">
+          <h1 className="text-xl font-bold text-stone-950 sm:text-2xl">
             {t("auth.security.title")}
           </h1>
         </div>
@@ -325,7 +325,7 @@ export function AccountSecurityPage() {
           className="rounded-card border border-warning-border bg-warning-surface p-4 sm:p-5"
           aria-labelledby="reauth-title"
         >
-          <h2 id="reauth-title" className="text-sm font-black text-stone-950">
+          <h2 id="reauth-title" className="text-sm font-bold text-stone-950">
             {t("auth.security.confirmIdentity")}
           </h2>
           <p className="mt-1 text-xs text-stone-700">
@@ -370,7 +370,7 @@ export function AccountSecurityPage() {
               >
                 <h2
                   id="social-reauth-title"
-                  className="text-sm font-black text-stone-950"
+                  className="text-sm font-bold text-stone-950"
                 >
                   {t("auth.security.confirmIdentity")}
                 </h2>
@@ -398,7 +398,7 @@ export function AccountSecurityPage() {
         className="rounded-card border border-border-base bg-white p-4 shadow-xs sm:p-5"
         aria-labelledby="methods-title"
       >
-        <h2 id="methods-title" className="text-base font-black text-stone-950">
+        <h2 id="methods-title" className="text-base font-bold text-stone-950">
           {t("auth.security.methods")}
         </h2>
         <div className="mt-4 divide-y divide-border-subtle">
@@ -493,7 +493,7 @@ export function AccountSecurityPage() {
       >
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h2 id="mfa-title" className="text-base font-black text-stone-950">
+            <h2 id="mfa-title" className="text-base font-bold text-stone-950">
               Double authentification
             </h2>
             <p className="mt-1 text-xs text-stone-500">
@@ -605,7 +605,7 @@ export function AccountSecurityPage() {
         className="rounded-card border border-border-base bg-white p-4 shadow-xs sm:p-5"
         aria-labelledby="password-title"
       >
-        <h2 id="password-title" className="text-base font-black text-stone-950">
+        <h2 id="password-title" className="text-base font-bold text-stone-950">
           {passwordMethod?.connected
             ? t("auth.security.changePassword")
             : t("auth.security.addPassword")}
@@ -653,7 +653,7 @@ export function AccountSecurityPage() {
           <div>
             <h2
               id="sessions-title"
-              className="text-base font-black text-stone-950"
+              className="text-base font-bold text-stone-950"
             >
               {t("auth.security.devices")}
             </h2>

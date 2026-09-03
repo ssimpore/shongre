@@ -103,7 +103,7 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
         <div className="w-10 h-10 rounded-full bg-success-surface text-success flex items-center justify-center mx-auto">
           <CheckCircle2 className="w-icon-lg h-icon-lg" />
         </div>
-        <h4 className="text-sm font-black text-success">
+        <h4 className="text-sm font-bold text-success">
           Vérifiez votre messagerie
         </h4>
         <p className="text-xs text-success max-w-sm mx-auto">
@@ -171,7 +171,7 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
             <span>{t("newsletter.newsletterSignup.laSelectionShongre")}</span>
           </div>
 
-          <h2 className="text-xl sm:text-2xl font-black tracking-tight">
+          <h2 className="text-xl sm:text-2xl font-bold tracking-tight">
             {t("newsletter.newsletterSignup.recevezNosMeilleuresPepitesBons")}
           </h2>
 
@@ -212,7 +212,7 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
                 variant="primary"
                 size="lg"
                 disabled={isSubmitting}
-                className="font-black shrink-0 flex items-center justify-center gap-2"
+                className="font-semibold shrink-0 flex items-center justify-center gap-2"
               >
                 <span>{isSubmitting ? "Inscription..." : "S'inscrire"}</span>
                 <ArrowRight className="w-icon-md h-icon-md" />

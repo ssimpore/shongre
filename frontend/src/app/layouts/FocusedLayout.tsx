@@ -52,10 +52,10 @@ export const FocusedLayout: React.FC = () => {
             className="flex items-center gap-2 select-none min-w-0"
             aria-label="Shongre, accueil"
           >
-            <span className="w-7 h-7 rounded-control bg-primary text-white flex items-center justify-center font-black text-base shrink-0">
+            <span className="w-7 h-7 rounded-control bg-primary text-white flex items-center justify-center font-bold text-base shrink-0">
               S
             </span>
-            <span className="text-base font-extrabold tracking-tight uppercase text-stone-900 leading-none truncate">
+            <span className="text-base font-bold tracking-tight uppercase text-stone-900 leading-none truncate">
               Shongre<span className="text-primary">.</span>
             </span>
           </Link>

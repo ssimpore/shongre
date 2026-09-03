@@ -28,7 +28,7 @@ export const ProBusinessInfo: React.FC<ProBusinessInfoProps> = ({ seller }) => {
       <div className="bg-white rounded-2xl border border-border-base p-5 sm:p-7 shadow-xs">
         <div className="flex items-center gap-2.5 mb-4 pb-3 border-b border-border-subtle">
           <Building2 className="w-icon-lg h-icon-lg text-primary" />
-          <h3 className="text-base font-black text-stone-900">
+          <h3 className="text-base font-bold text-stone-900">
             {t("profile.proBusinessInfo.mentionsLegalesInformationsEntreprise")}
           </h3>
         </div>
@@ -109,7 +109,7 @@ export const ProBusinessInfo: React.FC<ProBusinessInfoProps> = ({ seller }) => {
         <div className="bg-white rounded-2xl border border-border-base p-5 sm:p-6 shadow-xs">
           <div className="flex items-center gap-2 mb-4 pb-3 border-b border-border-subtle">
             <Clock className="w-icon-md h-icon-md text-stone-700" />
-            <h4 className="text-sm font-black text-stone-900">
+            <h4 className="text-sm font-bold text-stone-900">
               Horaires & Accueil en boutique
             </h4>
           </div>
@@ -158,7 +158,7 @@ export const ProBusinessInfo: React.FC<ProBusinessInfoProps> = ({ seller }) => {
         <div className="bg-white rounded-2xl border border-border-base p-5 sm:p-6 shadow-xs">
           <div className="flex items-center gap-2 mb-4 pb-3 border-b border-border-subtle">
             <ShieldCheck className="w-icon-md h-icon-md text-success" />
-            <h4 className="text-sm font-black text-stone-900">
+            <h4 className="text-sm font-bold text-stone-900">
               Engagements & Services professionnels
             </h4>
           </div>

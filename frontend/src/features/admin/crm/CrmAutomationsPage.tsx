@@ -20,7 +20,7 @@ export const CrmAutomationsPage: React.FC = () => {
             <p className="text-micro font-bold uppercase tracking-wider text-violet-300">
               CRM · Orchestration
             </p>
-            <h1 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">
+            <h1 className="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">
               Automatisations
             </h1>
             <p className="mt-1 text-xs text-text-disabled">
@@ -44,7 +44,7 @@ export const CrmAutomationsPage: React.FC = () => {
         <div className="flex items-start gap-3">
           <CirclePause className="mt-0.5 h-icon-lg w-icon-lg shrink-0 text-warning" />
           <div>
-            <h2 className="text-sm font-black text-warning">
+            <h2 className="text-sm font-bold text-warning">
               {t(
                 "admin.crmAutomationsPage.moteurNonActiveDansCetEnvironnement",
               )}
@@ -82,7 +82,7 @@ export const CrmAutomationsPage: React.FC = () => {
               className="rounded-2xl border border-border-base bg-bg-surface p-5 shadow-xs"
             >
               <CardIcon className="h-5 w-5 text-primary" />
-              <h2 className="mt-3 text-sm font-black">{title as string}</h2>
+              <h2 className="mt-3 text-sm font-bold">{title as string}</h2>
               <p className="mt-1 text-xs leading-relaxed text-stone-500">
                 {description as string}
               </p>
@@ -91,7 +91,7 @@ export const CrmAutomationsPage: React.FC = () => {
         })}
       </section>
       <section className="rounded-2xl border border-border-base bg-bg-surface p-5 shadow-xs">
-        <h2 className="text-sm font-black">
+        <h2 className="text-sm font-bold">
           {t("admin.crmAutomationsPage.reglesDActivation")}
         </h2>
         <ol className="mt-3 grid gap-2 text-xs text-text-secondary sm:grid-cols-2">

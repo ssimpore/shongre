@@ -38,7 +38,7 @@ function AccountMetric({
         <Icon className="h-4 w-4" aria-hidden="true" />
       </span>
       <p className="mt-3 text-xs font-semibold text-text-secondary">{label}</p>
-      <p className="mt-1 text-xl font-black tracking-tight text-text-main">
+      <p className="mt-1 text-xl font-bold tracking-tight text-text-main">
         {formatMoney(value)}
       </p>
       <p className="mt-2 text-micro leading-relaxed text-text-muted">
@@ -121,7 +121,7 @@ export const AccountFinancePage: React.FC<{
           <p className="text-xs font-bold uppercase tracking-wider text-primary">
             Paiements & facturation
           </p>
-          <h1 className="mt-1 text-2xl font-black tracking-tight text-text-main">
+          <h1 className="mt-1 text-2xl font-bold tracking-tight text-text-main">
             {dashboard.accountKind === "professional"
               ? "Finances de l’organisation"
               : "Mes finances"}
@@ -174,7 +174,7 @@ export const AccountFinancePage: React.FC<{
             <p className="text-micro font-bold uppercase tracking-wide text-text-secondary">
               Abonnement actuel
             </p>
-            <h2 className="mt-1 text-sm font-black text-text-main">
+            <h2 className="mt-1 text-sm font-bold text-text-main">
               Formule professionnelle ·{" "}
               {billing.currentSubscription.billingPeriod === "year"
                 ? "annuelle"
@@ -219,7 +219,7 @@ export const AccountFinancePage: React.FC<{
       <section className="overflow-hidden rounded-card border border-border-base bg-bg-surface shadow-xs">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border-base px-4 py-3">
           <div>
-            <h2 className="text-sm font-black text-text-main">
+            <h2 className="text-sm font-bold text-text-main">
               Historique financier
             </h2>
             <p className="text-micro text-text-muted">
@@ -260,7 +260,7 @@ export const AccountFinancePage: React.FC<{
                     {transaction.description}
                   </td>
                   <td className="px-3 py-3">{transaction.marketCode}</td>
-                  <td className="px-3 py-3 text-right font-black">
+                  <td className="px-3 py-3 text-right font-bold">
                     {formatMoney(transaction.grossAmount)}
                   </td>
                   <td className="px-3 py-3">

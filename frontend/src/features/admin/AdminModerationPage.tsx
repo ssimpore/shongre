@@ -258,7 +258,7 @@ export const AdminModerationPage: React.FC = () => {
             {t("admin.adminModerationPage.controleDesContenusEtProfils")}
           </span>
         </div>
-        <h1 className="text-2xl font-black text-text-main tracking-tight">
+        <h1 className="text-2xl font-bold text-text-main tracking-tight">
           {t("admin.adminModerationPage.fileDeModerationSignalements")}
         </h1>
         <p className="text-xs text-text-secondary mt-1">
@@ -423,7 +423,7 @@ export const AdminModerationPage: React.FC = () => {
             <div className="border-b border-border-subtle p-4">
               <h2
                 id="moderation-cases-title"
-                className="text-sm font-black text-text-main"
+                className="text-sm font-bold text-text-main"
               >
                 {t("admin.adminModerationPage.dossiersDeModeration")}
               </h2>
@@ -471,7 +471,7 @@ export const AdminModerationPage: React.FC = () => {
             <div className="border-b border-border-subtle p-4">
               <h2
                 id="moderation-appeals-title"
-                className="text-sm font-black text-text-main"
+                className="text-sm font-bold text-text-main"
               >
                 {t("admin.adminModerationPage.recoursAExaminer")}
               </h2>
@@ -776,7 +776,7 @@ export const AdminModerationPage: React.FC = () => {
                     <div className="text-xs uppercase font-bold tracking-wider">
                       {t("admin.adminModerationPage.scoreDeRisqueDetecte")}
                     </div>
-                    <div className="text-2xl font-black">
+                    <div className="text-2xl font-bold">
                       {aiAnalysis.riskScore}/100
                     </div>
                   </div>

@@ -383,7 +383,7 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
                           {item.city} ({item.postalCode})
                         </div>
                         <div className="flex items-center justify-between mt-1">
-                          <span className="text-xs font-black text-primary">
+                          <span className="text-xs font-bold text-primary">
                             {formatPrice(item.price)}
                           </span>
                           <span className="text-micro text-stone-500 font-medium">
@@ -456,7 +456,7 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
                 </div>
 
                 <div className="flex items-baseline justify-between mt-2 pt-1 border-t border-border-subtle">
-                  <span className="text-base font-black text-primary">
+                  <span className="text-base font-bold text-primary">
                     {formatPrice(activeListing.price)}
                   </span>
 
@@ -465,7 +465,7 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
                     onClick={() =>
                       navigate(routes.listing.detail(activeListing.id))
                     }
-                    className="text-xs font-bold text-primary hover:underline flex items-center gap-1 cursor-pointer"
+                    className="text-xs font-semibold text-primary hover:underline flex items-center gap-1 cursor-pointer"
                   >
                     {t("search.exploreMapView.voirLAnnonce")}
                     <ExternalLink className="w-icon-xs h-icon-xs" />

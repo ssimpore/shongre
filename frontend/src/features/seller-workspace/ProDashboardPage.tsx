@@ -98,7 +98,7 @@ export const ProDashboardPage: React.FC = () => {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-xl sm:text-2xl font-black text-stone-900">
+            <h1 className="text-xl sm:text-2xl font-bold text-stone-900">
               {t("sellerworkspace.proDashboardPage.tableauDeBordVendeurPro")}
             </h1>
             <Badge variant="pro" size="sm">
@@ -176,7 +176,7 @@ export const ProDashboardPage: React.FC = () => {
               <div>
                 <h2
                   id="pro-action-queue"
-                  className="flex items-center gap-2 text-base font-black text-stone-900"
+                  className="flex items-center gap-2 text-base font-bold text-stone-900"
                 >
                   <CircleAlert className="h-icon-md w-icon-md text-primary" />
                   {t("sellerworkspace.proDashboardPage.actionQueueTitle")}
@@ -242,7 +242,7 @@ export const ProDashboardPage: React.FC = () => {
                 <span>Vues totales catalogue</span>
                 <Eye className="w-icon-md h-icon-md text-primary" />
               </div>
-              <div className="text-2xl font-black text-stone-900">
+              <div className="text-2xl font-bold text-stone-900">
                 {(analytics?.monthlyViews || 0).toLocaleString(locale)}
               </div>
               {hasCatalogue ? (
@@ -266,7 +266,7 @@ export const ProDashboardPage: React.FC = () => {
                 <span>Demandes & Contacts</span>
                 <MessageSquare className="w-icon-md h-icon-md text-info" />
               </div>
-              <div className="text-2xl font-black text-stone-900">
+              <div className="text-2xl font-bold text-stone-900">
                 {analytics?.contactsCount.toLocaleString(locale) || "0"}
               </div>
               {hasCatalogue ? (
@@ -295,7 +295,7 @@ export const ProDashboardPage: React.FC = () => {
                 </span>
                 <BarChart2 className="w-icon-md h-icon-md text-amber-500" />
               </div>
-              <div className="text-2xl font-black text-stone-900">
+              <div className="text-2xl font-bold text-stone-900">
                 {hasCatalogue ? `${analytics?.conversionRate}%` : "—"}
               </div>
               <div className="text-xs text-stone-500 mt-1">
@@ -312,7 +312,7 @@ export const ProDashboardPage: React.FC = () => {
                 </span>
                 <DollarSign className="w-icon-md h-icon-md text-success" />
               </div>
-              <div className="text-2xl font-black text-stone-900">
+              <div className="text-2xl font-bold text-stone-900">
                 {analytics ? formatMoney(analytics.monthlyRevenue) : "—"}
               </div>
               <div className="text-xs text-stone-500 mt-1">

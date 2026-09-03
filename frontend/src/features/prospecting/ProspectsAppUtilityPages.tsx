@@ -70,7 +70,7 @@ export function ProspectsActivitiesPage() {
           <History className="h-icon-md w-icon-md" aria-hidden="true" />
         </span>
         <div>
-          <h1 className="text-lg font-black text-text-main">
+          <h1 className="text-lg font-bold text-text-main">
             Activités commerciales
           </h1>
           <p className="mt-1 text-xs text-text-muted">
@@ -117,7 +117,7 @@ export function ProspectsTeamPage() {
             <UsersRound className="h-icon-md w-icon-md" aria-hidden="true" />
           </span>
           <div>
-            <h1 className="text-lg font-black text-text-main">Équipe</h1>
+            <h1 className="text-lg font-bold text-text-main">Équipe</h1>
             <p className="mt-1 text-xs text-text-muted">
               Membres et permissions de l’organisation active.
             </p>
@@ -125,7 +125,7 @@ export function ProspectsTeamPage() {
         </div>
         <article className="mt-5 flex min-w-0 flex-col items-start gap-3 rounded-control border border-border-base p-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
           <div className="min-w-0">
-            <p className="truncate text-sm font-black text-text-main">
+            <p className="truncate text-sm font-bold text-text-main">
               {currentUser?.name ?? "Membre connecté"}
             </p>
             <p className="truncate text-xs text-text-muted">
@@ -136,8 +136,8 @@ export function ProspectsTeamPage() {
         </article>
       </section>
       <aside className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs">
-        <h2 className="text-sm font-black text-text-main">Capacité du plan</h2>
-        <p className="mt-2 text-2xl font-black text-primary">
+        <h2 className="text-sm font-bold text-text-main">Capacité du plan</h2>
+        <p className="mt-2 text-2xl font-bold text-primary">
           {usage.entitlements.seats} sièges
         </p>
         <p className="mt-2 text-xs leading-relaxed text-text-muted">
@@ -199,9 +199,7 @@ export function ProspectsBillingPage() {
             <CreditCard className="h-icon-md w-icon-md" aria-hidden="true" />
           </span>
           <div>
-            <h1 className="text-lg font-black text-text-main">
-              Offre et usage
-            </h1>
+            <h1 className="text-lg font-bold text-text-main">Offre et usage</h1>
             <p className="mt-1 text-xs text-text-muted">
               Droits effectifs calculés par le système d’entitlements Shongre.
             </p>
@@ -230,7 +228,7 @@ export function ProspectsBillingPage() {
         <Badge variant={usage.status === "AVAILABLE" ? "success" : "warning"}>
           {usage.status === "AVAILABLE" ? "Actif" : "Attention requise"}
         </Badge>
-        <h2 className="mt-3 text-base font-black text-text-main">
+        <h2 className="mt-3 text-base font-bold text-text-main">
           {usage.planName}
         </h2>
         <dl className="mt-4 divide-y divide-border-subtle text-xs">

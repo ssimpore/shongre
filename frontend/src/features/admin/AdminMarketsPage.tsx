@@ -446,7 +446,7 @@ export const AdminMarketsPage: React.FC = () => {
         {/* Value and Actions */}
         <div className="flex items-center gap-3 shrink-0 self-end md:self-center">
           <div className="text-right">
-            <div className="text-xs font-extrabold text-text-main font-mono">
+            <div className="text-xs font-bold text-text-main font-mono">
               {displayValue}
             </div>
             {!isBaseline && isOverridden && (
@@ -501,7 +501,7 @@ export const AdminMarketsPage: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border-base pb-5">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-xl sm:text-2xl font-black tracking-tight text-text-main">
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-text-main">
               {t("admin.adminMarketsPage.gestionMultiMarchesTerritoires")}
             </h1>
             <span className="text-xs bg-primary-light text-primary font-bold px-2 py-0.5 rounded-pill">
@@ -535,7 +535,7 @@ export const AdminMarketsPage: React.FC = () => {
         <button
           type="button"
           onClick={() => setActiveTab("overview")}
-          className={`pb-3 px-4 text-xs font-bold border-b-2 transition-all cursor-pointer ${
+          className={`pb-3 px-4 text-xs font-semibold border-b-2 transition-all cursor-pointer ${
             activeTab === "overview"
               ? "border-primary text-primary"
               : "border-transparent text-stone-500 hover:text-text-main"
@@ -546,7 +546,7 @@ export const AdminMarketsPage: React.FC = () => {
         <button
           type="button"
           onClick={() => setActiveTab("editor")}
-          className={`pb-3 px-4 text-xs font-bold border-b-2 transition-all cursor-pointer ${
+          className={`pb-3 px-4 text-xs font-semibold border-b-2 transition-all cursor-pointer ${
             activeTab === "editor"
               ? "border-primary text-primary"
               : "border-transparent text-stone-500 hover:text-text-main"
@@ -563,7 +563,7 @@ export const AdminMarketsPage: React.FC = () => {
         <button
           type="button"
           onClick={() => setActiveTab("matrix")}
-          className={`pb-3 px-4 text-xs font-bold border-b-2 transition-all cursor-pointer ${
+          className={`pb-3 px-4 text-xs font-semibold border-b-2 transition-all cursor-pointer ${
             activeTab === "matrix"
               ? "border-primary text-primary"
               : "border-transparent text-stone-500 hover:text-text-main"
@@ -578,7 +578,7 @@ export const AdminMarketsPage: React.FC = () => {
         <button
           type="button"
           onClick={() => setActiveTab("currencies")}
-          className={`pb-3 px-4 text-xs font-bold border-b-2 transition-all cursor-pointer ${
+          className={`pb-3 px-4 text-xs font-semibold border-b-2 transition-all cursor-pointer ${
             activeTab === "currencies"
               ? "border-primary text-primary"
               : "border-transparent text-stone-500 hover:text-text-main"
@@ -870,7 +870,7 @@ export const AdminMarketsPage: React.FC = () => {
                 type="button"
                 onClick={() => setActiveDomainTab(tab.id as DomainTab)}
                 aria-current={activeDomainTab === tab.id ? "true" : undefined}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-control text-xs font-bold transition-colors whitespace-nowrap cursor-pointer ${
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-control text-xs font-semibold transition-colors whitespace-nowrap cursor-pointer ${
                   activeDomainTab === tab.id
                     ? "bg-stone-900 text-text-inverse"
                     : "bg-stone-100 text-text-secondary hover:bg-stone-200"
@@ -911,7 +911,7 @@ export const AdminMarketsPage: React.FC = () => {
                       <p className="text-micro font-bold uppercase tracking-wide text-stone-500">
                         {label}
                       </p>
-                      <p className="mt-1 break-words font-mono text-xs font-extrabold text-text-main">
+                      <p className="mt-1 break-words font-mono text-xs font-bold text-text-main">
                         {value}
                       </p>
                     </div>
@@ -1107,7 +1107,7 @@ export const AdminMarketsPage: React.FC = () => {
                                     `Catégorie [${getTaxonomyLabel(rootCat, "compact")}] ${!isRootEnabled ? "ouverte" : "désactivée"} sur ${selectedMarket.name}.`,
                                   );
                                 }}
-                                className={`text-xs px-2.5 py-1 rounded-lg font-bold border transition-colors cursor-pointer ${
+                                className={`text-xs px-2.5 py-1 rounded-lg font-semibold border transition-colors cursor-pointer ${
                                   isRootEnabled
                                     ? "border-danger-border text-danger hover:bg-danger-surface"
                                     : "border-success-border text-success hover:bg-success-surface"
@@ -1162,7 +1162,7 @@ export const AdminMarketsPage: React.FC = () => {
                                             `Sous-catégorie [${getTaxonomyLabel(sub, "compact")}] ${!isSubEnabled ? "ouverte" : "désactivée"} sur ${selectedMarket.name}.`,
                                           );
                                         }}
-                                        className="text-micro font-bold text-primary hover:underline ml-1"
+                                        className="text-micro font-semibold text-primary hover:underline ml-1"
                                       >
                                         {isSubEnabled ? "Fermer" : "Ouvrir"}
                                       </button>
@@ -1743,7 +1743,7 @@ export const AdminMarketsPage: React.FC = () => {
       >
         <div className="space-y-4">
           <div className="grid gap-3 sm:grid-cols-2">
-            <label className="space-y-1 text-xs font-bold text-stone-700">
+            <label className="space-y-1 text-xs font-semibold text-stone-700">
               {t("admin.adminMarketsPage.modeDeDomaineCanonique")}
               <Select
                 size="compact"
@@ -1760,7 +1760,7 @@ export const AdminMarketsPage: React.FC = () => {
                 <option value="international">International</option>
               </Select>
             </label>
-            <label className="space-y-1 text-xs font-bold text-stone-700">
+            <label className="space-y-1 text-xs font-semibold text-stone-700">
               {t("admin.adminMarketsPage.prefixePublic")}
               <input
                 value={routingBasePath}
@@ -1770,7 +1770,7 @@ export const AdminMarketsPage: React.FC = () => {
               />
             </label>
           </div>
-          <label className="flex items-center justify-between rounded-control border border-border-subtle p-3 text-xs font-bold text-stone-700">
+          <label className="flex items-center justify-between rounded-control border border-border-subtle p-3 text-xs font-semibold text-stone-700">
             {t("admin.adminMarketsPage.visibleSurLePortailInternational")}
             <input
               type="checkbox"
@@ -1781,7 +1781,7 @@ export const AdminMarketsPage: React.FC = () => {
               className="h-4 w-4 accent-primary"
             />
           </label>
-          <label className="flex items-center justify-between rounded-control border border-border-subtle p-3 text-xs font-bold text-stone-700">
+          <label className="flex items-center justify-between rounded-control border border-border-subtle p-3 text-xs font-semibold text-stone-700">
             Autoriser l’indexation SEO
             <input
               type="checkbox"
@@ -1790,7 +1790,7 @@ export const AdminMarketsPage: React.FC = () => {
               className="h-4 w-4 accent-primary"
             />
           </label>
-          <label className="block space-y-1 text-xs font-bold text-stone-700">
+          <label className="block space-y-1 text-xs font-semibold text-stone-700">
             {t("admin.taxonomyHeader.reasonLabel")}
             <textarea
               value={routingChangeReason}
@@ -1840,7 +1840,7 @@ export const AdminMarketsPage: React.FC = () => {
         <form onSubmit={handleCreateMarket} className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-xs font-bold text-stone-700 uppercase">
+              <label className="text-xs font-semibold text-stone-700 uppercase">
                 Code ISO Pays (2 lettres)
               </label>
               <input
@@ -1855,7 +1855,7 @@ export const AdminMarketsPage: React.FC = () => {
               />
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-bold text-stone-700 uppercase">
+              <label className="text-xs font-semibold text-stone-700 uppercase">
                 Drapeau (Emoji)
               </label>
               <input
@@ -1870,7 +1870,7 @@ export const AdminMarketsPage: React.FC = () => {
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-bold text-stone-700 uppercase">
+            <label className="text-xs font-semibold text-stone-700 uppercase">
               Fuseau horaire IANA
             </label>
             <input
@@ -1884,7 +1884,7 @@ export const AdminMarketsPage: React.FC = () => {
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-bold text-stone-700 uppercase">
+            <label className="text-xs font-semibold text-stone-700 uppercase">
               {t("admin.adminMarketsPage.nomDuMarche")}
             </label>
             <input
@@ -1899,7 +1899,7 @@ export const AdminMarketsPage: React.FC = () => {
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-xs font-bold text-stone-700 uppercase">
+              <label className="text-xs font-semibold text-stone-700 uppercase">
                 {t("admin.adminMarketsPage.localeParDefaut")}
               </label>
               <input
@@ -1912,7 +1912,7 @@ export const AdminMarketsPage: React.FC = () => {
               />
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-bold text-stone-700 uppercase">
+              <label className="text-xs font-semibold text-stone-700 uppercase">
                 Devise
               </label>
               <input
@@ -1931,7 +1931,7 @@ export const AdminMarketsPage: React.FC = () => {
           <div className="space-y-1">
             <label
               htmlFor="admin-new-market-status"
-              className="text-xs font-bold text-stone-700 uppercase"
+              className="text-xs font-semibold text-stone-700 uppercase"
             >
               Statut Initial
             </label>
@@ -1992,7 +1992,7 @@ export const AdminMarketsPage: React.FC = () => {
           <div className="space-y-1">
             <label
               htmlFor="admin-edit-override-value"
-              className="text-xs font-bold text-stone-700 uppercase"
+              className="text-xs font-semibold text-stone-700 uppercase"
             >
               {t("admin.adminMarketsPage.nouvelleValeurPour")}{" "}
               {selectedMarket.name}

@@ -181,7 +181,7 @@ export const CategoryFilterRail: React.FC<CategoryFilterRailProps> = ({
               title={t(
                 "ui.categoryFilterRail.afficherToutesLesAnnoncesActives",
               )}
-              className={`shrink-0 inline-flex items-center gap-1.5 h-control-md px-3 rounded-pill text-xs font-bold ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer select-none border active:scale-95 ${
+              className={`shrink-0 inline-flex items-center gap-1.5 h-control-md px-3 rounded-pill text-xs font-semibold ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer select-none border active:scale-95 ${
                 !selectedCategorySlug
                   ? "bg-stone-900 text-white border-stone-900 shadow-xs"
                   : "bg-bg-surface text-stone-700 border-border-base hover:border-border-hover hover:bg-bg-subtle shadow-2xs"
@@ -215,7 +215,7 @@ export const CategoryFilterRail: React.FC<CategoryFilterRailProps> = ({
                 title={compactLabel}
                 className={`shrink-0 inline-flex items-center gap-1.5 h-control-md px-3 rounded-pill text-xs ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer select-none border active:scale-95 ${
                   isSelected
-                    ? "bg-stone-900 text-white border-stone-900 font-bold shadow-xs"
+                    ? "bg-stone-900 text-white border-stone-900 font-semibold shadow-xs"
                     : "bg-bg-surface text-stone-700 border-border-base hover:border-border-hover hover:bg-bg-subtle font-medium shadow-2xs"
                 }`}
               >
@@ -273,7 +273,7 @@ export const CategoryFilterRail: React.FC<CategoryFilterRailProps> = ({
               }
               className={`shrink-0 h-control-sm px-2.5 rounded-control text-xs font-semibold ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer border ${
                 !selectedSubCategorySlug
-                  ? "bg-primary-light text-primary border-primary-border font-bold"
+                  ? "bg-primary-light text-primary border-primary-border font-semibold"
                   : "bg-stone-100 text-text-secondary border-transparent hover:bg-stone-200"
               }`}
             >
@@ -300,7 +300,7 @@ export const CategoryFilterRail: React.FC<CategoryFilterRailProps> = ({
                   }}
                   className={`shrink-0 h-control-sm px-2.5 rounded-control text-xs font-semibold ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer border ${
                     isSubSelected
-                      ? "bg-primary text-white border-primary shadow-2xs font-bold"
+                      ? "bg-primary text-white border-primary shadow-2xs font-semibold"
                       : "bg-stone-100 text-stone-700 border-transparent hover:bg-stone-200"
                   }`}
                   title={subLabel}

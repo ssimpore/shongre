@@ -167,7 +167,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
             <p className="text-xs font-bold uppercase tracking-wide text-stone-500">
               État serveur
             </p>
-            <p className="mt-1 text-sm font-black text-stone-900">
+            <p className="mt-1 text-sm font-bold text-stone-900">
               {statusLabel[tx.status] || "Commande en cours"}
             </p>
           </div>
@@ -180,7 +180,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
               className="h-20 w-20 rounded-xl border border-stone-200 object-cover"
             />
             <div className="min-w-0 flex-1">
-              <h3 className="truncate font-black text-stone-900">
+              <h3 className="truncate font-bold text-stone-900">
                 {tx.listingTitle}
               </h3>
               <p className="mt-1 text-sm text-stone-500">
@@ -188,7 +188,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
                   ? `Vendeur : ${tx.sellerName}`
                   : `Acheteur : ${tx.buyerName}`}
               </p>
-              <p className="mt-2 text-lg font-black text-primary">
+              <p className="mt-2 text-lg font-bold text-primary">
                 {formatPrice(isSeller ? tx.amount : tx.totalAmount, {
                   sourceCurrency: tx.currency,
                 })}
@@ -208,7 +208,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
                 </h4>
                 {handoverCode ? (
                   <div className="mt-3">
-                    <p className="rounded-xl bg-white p-3 text-center font-mono text-2xl font-black tracking-code">
+                    <p className="rounded-xl bg-white p-3 text-center font-mono text-2xl font-bold tracking-code">
                       {handoverCode.code}
                     </p>
                     <p className="mt-2 text-xs text-stone-600">
