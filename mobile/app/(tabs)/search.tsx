@@ -17,6 +17,9 @@ import { ListingCard } from "@/components/ListingCard";
 import { StatePanel } from "@/components/StatePanel";
 import {
   mobileColors as colors,
+  nativeBorders,
+  nativeRadius,
+  nativeSizing,
   nativeSpacing as spacing,
   nativeTypography,
 } from "@shongre/design-tokens/native";
@@ -289,11 +292,11 @@ const styles = StyleSheet.create({
   },
   scopes: { gap: spacing.sm, paddingVertical: spacing.md },
   scope: {
-    minHeight: 44,
+    minHeight: nativeSizing.controlTouch,
     justifyContent: "center",
     paddingHorizontal: spacing.lg,
-    borderRadius: 999,
-    borderWidth: 1,
+    borderRadius: nativeRadius.pill,
+    borderWidth: nativeBorders.hairline,
     borderColor: colors.border,
     backgroundColor: colors.surface,
   },

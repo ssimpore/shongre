@@ -22,7 +22,7 @@ export const Skeleton: React.FC<SkeletonProps> = ({
   <div
     aria-hidden={ariaHidden}
     className={cn(
-      "animate-pulse bg-stone-200/80",
+      "skeleton-shimmer bg-bg-muted",
       shape && shapeClasses[shape],
       className,
     )}

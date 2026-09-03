@@ -175,13 +175,15 @@ export const AccountOverviewPage: React.FC = () => {
       {/* Welcome Banner */}
       <div
         data-account-hero
-        className="rounded-card border border-white/10 bg-stone-900 p-4 text-white shadow-sm"
+        className="rounded-card border border-primary-border bg-gradient-to-r from-bg-surface via-bg-surface to-primary-light/60 p-4 text-text-main shadow-sm"
       >
         <div className="grid items-center gap-3 lg:grid-cols-content-action">
           <div className="min-w-0 space-y-1.5">
             <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-              <h1 className="min-w-0 text-lg font-extrabold tracking-tight text-white sm:text-xl">
-                <span className="font-medium text-stone-300">Bonjour, </span>
+              <h1 className="min-w-0 text-lg font-extrabold tracking-tight text-text-main sm:text-xl">
+                <span className="font-medium text-text-secondary">
+                  Bonjour,{" "}
+                </span>
                 {accountName}
               </h1>
               {activeStaffRole && (
@@ -194,7 +196,7 @@ export const AccountOverviewPage: React.FC = () => {
               )}
             </div>
 
-            <p className="max-w-2xl text-xs leading-relaxed text-stone-300 sm:text-sm">
+            <p className="max-w-2xl text-xs leading-relaxed text-text-secondary sm:text-sm">
               {t(
                 "sellerworkspace.accountOverviewPage.gerezVosAnnoncesVosVentes",
               )}
@@ -220,7 +222,7 @@ export const AccountOverviewPage: React.FC = () => {
                   />
                 )
               }
-              className="w-full border-white/30 bg-white/5 text-white hover:border-white/60 hover:bg-white/10 focus-visible:outline-white sm:w-auto"
+              className="w-full sm:w-auto"
             >
               {isProSeller(currentUser) ? "Ma boutique" : "Mon profil"}
             </Button>

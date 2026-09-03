@@ -117,7 +117,7 @@ export const AdminOverviewPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Welcome Banner */}
-      <div className="bg-bg-surface rounded-control border border-stone-200 p-6 shadow-xs flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="flex flex-col items-start justify-between gap-4 rounded-card border border-border-base bg-bg-surface p-6 shadow-sm sm:flex-row sm:items-center">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="text-xs font-bold uppercase tracking-wider text-primary">
@@ -179,7 +179,7 @@ export const AdminOverviewPage: React.FC = () => {
       {loadState !== "error" && (canReviewVerification || canReviewReports) && (
         <section
           aria-labelledby="admin-action-queue"
-          className="rounded-control border border-primary/20 bg-primary-light p-5 shadow-xs"
+          className="rounded-card border border-primary-border bg-primary-light p-5 shadow-sm"
         >
           <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
             <div>
@@ -194,7 +194,7 @@ export const AdminOverviewPage: React.FC = () => {
                 {t("admin.adminOverviewPage.actionQueueDescription")}
               </p>
             </div>
-            <span className="rounded-pill bg-white px-3 py-1 text-xs font-black text-primary">
+            <span className="rounded-pill border border-primary-border bg-bg-surface px-3 py-1 text-xs font-black text-primary shadow-2xs">
               {loadState === "success"
                 ? pendingVerifications.length + (reportsCount ?? 0)
                 : "…"}
@@ -204,7 +204,7 @@ export const AdminOverviewPage: React.FC = () => {
             {canReviewReports && (
               <Link
                 to="/admin/moderation"
-                className="rounded-xl border border-border-base bg-white p-4 hover:border-primary motion-interactive"
+                className="surface-interactive rounded-control border border-border-base bg-bg-surface p-4"
               >
                 <div className="flex items-center justify-between gap-3">
                   <span className="text-sm font-bold text-text-main">
@@ -221,7 +221,7 @@ export const AdminOverviewPage: React.FC = () => {
             {canReviewVerification && (
               <Link
                 to="/admin/utilisateurs"
-                className="rounded-xl border border-border-base bg-white p-4 hover:border-primary motion-interactive"
+                className="surface-interactive rounded-control border border-border-base bg-bg-surface p-4"
               >
                 <div className="flex items-center justify-between gap-3">
                   <span className="text-sm font-bold text-text-main">
@@ -247,7 +247,7 @@ export const AdminOverviewPage: React.FC = () => {
             className={`grid grid-cols-1 gap-4 sm:grid-cols-2 ${metricGridColumns}`}
           >
             {canReadPlatformStats && (
-              <div className="bg-bg-surface p-5 rounded-control border border-stone-200 shadow-xs">
+              <div className="motion-surface rounded-control border border-border-base bg-bg-surface p-5 shadow-xs hover:shadow-sm">
                 <div className="flex items-center justify-between text-stone-500 mb-2">
                   <span className="text-xs font-semibold">
                     {t("admin.adminOverviewPage.utilisateursEnregistres")}
@@ -265,7 +265,7 @@ export const AdminOverviewPage: React.FC = () => {
             )}
 
             {canReviewVerification && (
-              <div className="bg-bg-surface p-5 rounded-control border border-stone-200 shadow-xs">
+              <div className="motion-surface rounded-control border border-border-base bg-bg-surface p-5 shadow-xs hover:shadow-sm">
                 <div className="flex items-center justify-between text-stone-500 mb-2">
                   <span className="text-xs font-semibold">
                     {t("admin.adminOverviewPage.verificationsProEnAttente")}
@@ -286,7 +286,7 @@ export const AdminOverviewPage: React.FC = () => {
             )}
 
             {canReviewReports && (
-              <div className="bg-bg-surface p-5 rounded-control border border-stone-200 shadow-xs">
+              <div className="motion-surface rounded-control border border-border-base bg-bg-surface p-5 shadow-xs hover:shadow-sm">
                 <div className="flex items-center justify-between text-stone-500 mb-2">
                   <span className="text-xs font-semibold">
                     Signalements ouverts
@@ -303,7 +303,7 @@ export const AdminOverviewPage: React.FC = () => {
             )}
 
             {canReadPlatformStats && (
-              <div className="bg-bg-surface p-5 rounded-control border border-stone-200 shadow-xs">
+              <div className="motion-surface rounded-control border border-border-base bg-bg-surface p-5 shadow-xs hover:shadow-sm">
                 <div className="flex items-center justify-between text-stone-500 mb-2">
                   <span className="text-xs font-semibold">
                     {t("admin.adminOverviewPage.catalogueDAnnonces")}
@@ -331,7 +331,7 @@ export const AdminOverviewPage: React.FC = () => {
         >
           {/* Pending Pro Verifications */}
           {canReviewVerification && (
-            <div className="bg-bg-surface rounded-control border border-stone-200 shadow-xs p-5 flex flex-col">
+            <div className="flex flex-col rounded-card border border-border-base bg-bg-surface p-5 shadow-sm">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-icon-md h-icon-md text-stone-700" />
@@ -359,7 +359,7 @@ export const AdminOverviewPage: React.FC = () => {
                   {[1, 2, 3].map((item) => (
                     <div
                       key={item}
-                      className="h-16 animate-pulse rounded-lg bg-bg-muted motion-reduce:animate-none"
+                      className="skeleton-shimmer h-16 rounded-lg bg-bg-muted"
                     />
                   ))}
                 </div>
@@ -419,7 +419,7 @@ export const AdminOverviewPage: React.FC = () => {
 
           {/* Live Security Audit Trail */}
           {canReadAudit && (
-            <div className="bg-bg-surface rounded-control border border-stone-200 shadow-xs p-5 flex flex-col">
+            <div className="flex flex-col rounded-card border border-border-base bg-bg-surface p-5 shadow-sm">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                   <FileSpreadsheet className="w-icon-md h-icon-md text-stone-700" />
@@ -450,7 +450,7 @@ export const AdminOverviewPage: React.FC = () => {
                     {[1, 2, 3, 4].map((item) => (
                       <div
                         key={item}
-                        className="h-16 animate-pulse rounded-lg bg-bg-muted motion-reduce:animate-none"
+                        className="skeleton-shimmer h-16 rounded-lg bg-bg-muted"
                       />
                     ))}
                   </div>

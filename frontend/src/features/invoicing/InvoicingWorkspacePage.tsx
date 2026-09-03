@@ -354,8 +354,8 @@ export function InvoicingWorkspacePage() {
   if (loadState === "loading" && !workspace) {
     return (
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6" role="status">
-        <div className="h-7 w-56 animate-pulse rounded bg-bg-muted" />
-        <div className="mt-6 h-32 animate-pulse rounded-card bg-bg-muted" />
+        <div className="skeleton-shimmer h-7 w-56 rounded bg-bg-muted" />
+        <div className="skeleton-shimmer mt-6 h-32 rounded-card bg-bg-muted" />
         <span className="sr-only">{t("invoicing.workspace.loading")}</span>
       </div>
     );

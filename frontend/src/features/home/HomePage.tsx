@@ -50,7 +50,10 @@ const DeferredHomeContent: React.FC<React.PropsWithChildren> = ({
         setIsVisible(true);
         observer.disconnect();
       },
-      { rootMargin: "400px 0px" },
+      // Start the below-fold chunk before a phone reaches the end of the hero.
+      // The previous 400px margin left a narrow blank loading shelf at 320–390px
+      // once the hero gained its full touch-target spacing.
+      { rootMargin: "600px 0px" },
     );
     observer.observe(anchor);
     return () => observer.disconnect();

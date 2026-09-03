@@ -55,7 +55,7 @@ export const RequireRoutePolicy: React.FC<{
         className="mx-auto w-full max-w-page px-4 py-8"
       >
         <span className="sr-only">Vérification de votre session…</span>
-        <div className="h-80 animate-pulse rounded-card bg-bg-muted motion-reduce:animate-none" />
+        <div className="skeleton-shimmer h-80 rounded-card bg-bg-muted" />
       </div>
     );
   }

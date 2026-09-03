@@ -155,7 +155,7 @@ const fieldStateClasses = (error?: boolean) =>
 const WIDTH_SET_BY_CALLER =
   /(?:^|\s)(?:[a-z0-9-]+:)*w-(?:auto|fit|min|max|screen|px|\d|\[)/;
 
-const FIELD_BASE_CLASSES = `bg-bg-surface text-text-main border ${CONTROL_MOTION_CLASS} placeholder:text-text-muted focus:bg-bg-surface focus:outline-none disabled:bg-bg-muted disabled:text-text-disabled disabled:cursor-not-allowed`;
+const FIELD_BASE_CLASSES = `bg-bg-surface text-text-main border shadow-2xs ${CONTROL_MOTION_CLASS} placeholder:text-text-muted hover:bg-bg-base focus:bg-bg-surface focus:shadow-xs focus:outline-none disabled:bg-bg-muted disabled:text-text-disabled disabled:cursor-not-allowed disabled:shadow-none`;
 
 /** The default width, applied unless the caller already picked one. */
 const fieldWidth = (className: string) =>

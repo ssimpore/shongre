@@ -16,16 +16,16 @@ export const HomeHeroSection: React.FC<{ section: HomepageSectionView }> = ({
   return (
     <section
       data-home-hero="true"
-      className="relative overflow-hidden bg-bg-base py-3 sm:py-4"
+      className="relative overflow-hidden bg-bg-base py-3 sm:py-5"
     >
       <Container className="relative z-raised">
-        <div className="rounded-3xl border border-border-subtle bg-gradient-to-br from-bg-surface via-bg-surface to-primary-light/40 px-5 py-7 shadow-xs sm:p-8 lg:p-10">
+        <div className="rounded-overlay border border-border-base bg-bg-surface px-5 py-7 shadow-sm sm:p-8 lg:p-10">
           <div className="grid w-full grid-cols-1 items-stretch gap-8 md:grid-cols-2 md:gap-10 xl:gap-12">
             <div className="flex min-w-0 w-full flex-col justify-between text-left">
               <div className="flex flex-col items-start gap-5">
                 <div
                   data-home-hero-eyebrow="true"
-                  className="inline-flex w-fit items-center gap-2 rounded-pill border border-primary-border bg-bg-surface/90 px-3 py-2 text-sm font-medium text-primary shadow-2xs"
+                  className="inline-flex w-fit items-center gap-2 rounded-pill border border-primary-border bg-primary-light px-3 py-2 text-sm font-semibold text-primary shadow-2xs"
                 >
                   <Sparkles
                     className="h-icon-md w-icon-md shrink-0"
@@ -76,7 +76,7 @@ export const HomeHeroSection: React.FC<{ section: HomepageSectionView }> = ({
           <Link
             to="/securite"
             data-home-hero-trust="true"
-            className="group mt-6 flex min-h-control-touch min-w-0 items-center gap-3 rounded-control border border-border-base bg-bg-surface/80 px-3 py-2 text-xs font-medium text-text-secondary shadow-2xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus sm:px-4 sm:text-sm"
+            className="group mt-6 flex min-h-control-touch min-w-0 items-center gap-3 rounded-control border border-border-base bg-bg-base px-3 py-2 text-xs font-medium text-text-secondary shadow-2xs motion-interactive hover:border-primary-border hover:bg-primary-light/40 hover:shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus sm:px-4 sm:text-sm"
             aria-label={`${t("home.homePage.trustSummary")}. ${t("home.heroBoostedScroll.enSavoirPlus")}`}
           >
             <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-pill bg-success-surface text-success">

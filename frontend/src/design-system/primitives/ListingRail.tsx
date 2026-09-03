@@ -39,7 +39,7 @@ export const ListingRail: React.FC<ListingRailProps> = ({
     snap
     label={label}
     controlClassName="listing-rail-control top-1/2"
-    className={`-mx-4 px-4 sm:mx-0 sm:px-0 py-1.5 ${className}`}
+    className={`-mx-4 max-w-viewport-full px-4 py-1.5 sm:mx-0 sm:max-w-full sm:px-0 ${className}`}
   >
     <div className="listing-rail-track flex flex-nowrap items-stretch gap-3 sm:gap-4">
       {React.Children.map(children, (child) =>

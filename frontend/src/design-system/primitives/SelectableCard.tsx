@@ -57,8 +57,10 @@ export const SelectableCard: React.FC<SelectableCardProps> = ({
       tabIndex={disabled ? -1 : 0}
       onClick={disabled ? undefined : onSelect}
       onKeyDown={handleKeyDown}
-      className={`focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
-        disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+      className={`surface-interactive focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
+        disabled
+          ? "opacity-50 cursor-not-allowed"
+          : "cursor-pointer active:scale-press-surface"
       } ${className}`}
       {...rest}
     >

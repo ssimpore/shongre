@@ -308,7 +308,7 @@ export const AdminLayout: React.FC = () => {
   }, [activeNavItem?.to]);
 
   return (
-    <div className="min-h-screen bg-stone-100 flex flex-col font-sans text-text-main">
+    <div className="flex min-h-screen flex-col bg-bg-base font-sans text-text-main">
       <SkipLink />
       <AppScrollRestoration />
       {/* Top Internal Staff Bar */}
@@ -430,7 +430,7 @@ export const AdminLayout: React.FC = () => {
             onClick={() => setIsSectionMenuOpen((open) => !open)}
             aria-expanded={isSectionMenuOpen}
             aria-controls="admin-section-menu"
-            className="w-full flex items-center justify-between gap-3 bg-bg-surface rounded-control border border-stone-200 shadow-xs px-3 h-control-touch cursor-pointer hover:bg-bg-base transition-colors"
+            className="motion-interactive flex h-control-touch w-full cursor-pointer items-center justify-between gap-3 rounded-control border border-border-base bg-bg-surface px-3 shadow-sm hover:border-border-hover hover:bg-bg-subtle"
           >
             <span className="flex items-center gap-2.5 min-w-0">
               {activeNavItem ? (
@@ -458,7 +458,7 @@ export const AdminLayout: React.FC = () => {
             <nav
               id="admin-section-menu"
               aria-label={t("admin.adminLayout.sectionsDeLaConsole")}
-              className="absolute top-full left-0 right-0 mt-1.5 z-dropdown bg-bg-surface rounded-control border border-stone-200 shadow-xl py-1.5 max-h-admin-menu-max overflow-y-auto animate-in fade-in slide-in-from-top"
+              className="absolute top-full left-0 right-0 mt-1.5 z-dropdown max-h-admin-menu-max overflow-y-auto rounded-card border border-border-base bg-bg-surface py-1.5 shadow-dropdown animate-in fade-in slide-in-from-top"
             >
               <div className="sticky top-0 z-raised bg-bg-surface px-2 pb-2">
                 <label className="relative block">
@@ -520,7 +520,7 @@ export const AdminLayout: React.FC = () => {
             column, which is narrower than the phone layout they were designed
             to fall back to. */}
         <aside className="hidden lg:block w-64 shrink-0">
-          <div className="sticky top-20 max-h-admin-sidebar-max overflow-y-auto rounded-control border border-stone-200 bg-bg-surface p-3 shadow-xs">
+          <div className="sticky top-20 max-h-admin-sidebar-max overflow-y-auto rounded-card border border-border-base bg-bg-surface p-3 shadow-sm">
             <label className="relative mb-3 block">
               <span className="sr-only">Rechercher une section</span>
               <Search className="absolute left-3 top-1/2 h-icon-sm w-icon-sm -translate-y-1/2 text-text-muted" />
@@ -546,7 +546,7 @@ export const AdminLayout: React.FC = () => {
                         key={`recent-${item.to}`}
                         to={item.to}
                         end={item.end}
-                        className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-medium text-stone-700 transition-colors hover:bg-stone-100"
+                        className="motion-interactive flex items-center gap-2.5 rounded-control px-3 py-2 text-xs font-medium text-stone-700 hover:bg-bg-subtle hover:text-text-main"
                       >
                         <Icon className="h-4 w-4 shrink-0" />
                         <span className="truncate">{item.label}</span>
@@ -573,7 +573,7 @@ export const AdminLayout: React.FC = () => {
                           to={item.to}
                           end={item.end}
                           className={({ isActive }) =>
-                            `flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-xs font-medium transition-colors ${
+                            `motion-interactive flex items-center gap-2.5 rounded-control px-3 py-2.5 text-xs font-medium ${
                               isActive
                                 ? "bg-primary text-text-inverse font-bold shadow-xs"
                                 : "text-stone-700 hover:bg-stone-100 hover:text-text-main"

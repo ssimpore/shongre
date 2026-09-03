@@ -8,6 +8,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const failures = [];
 const officialSvgPaletteFiles = new Set([
   "frontend/src/app/layouts/Footer.tsx",
+  "frontend/src/design-system/primitives/CountryFlag.tsx",
   "frontend/src/features/auth/components/SocialLoginButtons.tsx",
 ]);
 
@@ -43,8 +44,9 @@ const sourceFiles = (
 for (const file of sourceFiles) {
   const relative = path.relative(root, file);
   const contents = await readFile(file, "utf8");
-  // Third-party marks must retain their official palette. Keep this allowlist
-  // narrow so feature UI cannot bypass the shared design-token boundary.
+  // Third-party and national marks must retain their official palette. Keep
+  // this allowlist narrow so feature UI cannot bypass the shared design-token
+  // boundary.
   const allowsOfficialSvgPalette = officialSvgPaletteFiles.has(relative);
   if (!allowsOfficialSvgPalette && /#[\da-f]{3,8}\b/i.test(contents)) {
     failures.push(

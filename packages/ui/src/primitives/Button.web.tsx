@@ -69,7 +69,7 @@ export type ButtonProps = (
 // `whitespace-nowrap` is load-bearing: the size variants below pin an exact
 // height, so a label allowed to wrap spills out through the bottom edge.
 /** Everything except the display utility, which is applied conditionally below. */
-const baseStyles = `items-center justify-center font-medium whitespace-nowrap ${CONTROL_MOTION_CLASS} cursor-pointer select-none disabled:cursor-not-allowed disabled:bg-bg-muted disabled:text-text-muted disabled:border-border-base disabled:shadow-none disabled:hover:bg-bg-muted disabled:hover:shadow-none aria-disabled:cursor-not-allowed aria-disabled:bg-bg-muted aria-disabled:text-text-muted aria-disabled:border-border-base aria-disabled:shadow-none aria-disabled:hover:bg-bg-muted aria-disabled:hover:shadow-none active:scale-95 ${CONTROL_FOCUS_CLASS}`;
+const baseStyles = `items-center justify-center font-medium whitespace-nowrap ${CONTROL_MOTION_CLASS} cursor-pointer select-none disabled:cursor-not-allowed disabled:bg-bg-muted disabled:text-text-muted disabled:border-border-base disabled:shadow-none disabled:hover:bg-bg-muted disabled:hover:shadow-none disabled:hover:translate-y-0 aria-disabled:cursor-not-allowed aria-disabled:bg-bg-muted aria-disabled:text-text-muted aria-disabled:border-border-base aria-disabled:shadow-none aria-disabled:hover:bg-bg-muted aria-disabled:hover:shadow-none aria-disabled:hover:translate-y-0 active:translate-y-0 active:scale-press-control ${CONTROL_FOCUS_CLASS}`;
 
 /**
  * A display utility supplied by the caller, which must win over the default.
@@ -114,7 +114,7 @@ const buttonClasses = createVariants({
     },
     variant: {
       primary:
-        "bg-primary text-white hover:bg-primary-hover active:bg-primary-active shadow-sm hover:shadow-md hover:shadow-primary/20",
+        "bg-primary text-white hover:bg-primary-hover active:bg-primary-active shadow-sm hover:-translate-y-0.5 hover:shadow-md hover:shadow-primary/20",
       /* The only filled variant that had no edge. On a white card that left it with
      no boundary at all — the "Message" action on a listing read as flat text
      rather than a control, sitting next to two bordered neighbours. A 1px border
@@ -127,8 +127,8 @@ const buttonClasses = createVariants({
       ghost:
         "bg-transparent text-text-secondary hover:text-text-main hover:bg-bg-subtle active:bg-bg-muted",
       danger:
-        "bg-danger text-white hover:bg-danger-hover active:bg-danger-active shadow-sm",
-      pro: "bg-stone-900 text-white hover:bg-stone-800 active:bg-stone-950 shadow-sm hover:shadow-md hover:shadow-stone-900/10",
+        "bg-danger text-white hover:bg-danger-hover active:bg-danger-active shadow-sm hover:-translate-y-0.5 hover:shadow-md",
+      pro: "bg-stone-900 text-white hover:bg-stone-800 active:bg-stone-950 shadow-sm hover:-translate-y-0.5 hover:shadow-md hover:shadow-stone-900/10",
     },
     width: { auto: "", full: "w-full" },
   },

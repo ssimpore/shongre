@@ -429,7 +429,7 @@ export const AccountLayout: React.FC = () => {
 
         {/* Desktop Navigation Sidebar (>= lg) */}
         <aside className="hidden lg:block lg:col-span-1">
-          <div className="bg-bg-surface rounded-card border border-border-base p-5 sticky top-20 shadow-xs">
+          <div className="sticky top-20 rounded-card border border-border-base bg-bg-surface p-5 shadow-sm">
             {/* User Header */}
             <div className="flex items-center gap-3 pb-4 border-b border-border-subtle">
               <Avatar
@@ -486,7 +486,7 @@ export const AccountLayout: React.FC = () => {
                   className={({ isActive }) =>
                     `flex min-h-control-sm items-center justify-between px-3 text-xs font-semibold rounded-control motion-interactive ${
                       isActive
-                        ? "bg-primary-light text-primary"
+                        ? "border-l-2 border-primary bg-primary-light text-primary shadow-2xs"
                         : "text-stone-700 hover:bg-bg-subtle hover:text-stone-900"
                     }`
                   }
@@ -533,7 +533,7 @@ export const AccountLayout: React.FC = () => {
                         className={({ isActive }) =>
                           `flex min-h-control-sm items-center gap-2.5 rounded-control px-3 text-xs font-semibold motion-interactive ${
                             isActive
-                              ? "bg-primary-light text-primary"
+                              ? "border-l-2 border-primary bg-primary-light text-primary shadow-2xs"
                               : "text-stone-700 hover:bg-bg-subtle"
                           }`
                         }
@@ -559,7 +559,7 @@ export const AccountLayout: React.FC = () => {
                       className={({ isActive }) =>
                         `flex min-h-control-sm items-center justify-between px-3 text-xs font-semibold rounded-control motion-interactive ${
                           isActive
-                            ? "bg-primary-light text-primary"
+                            ? "border-l-2 border-primary bg-primary-light text-primary shadow-2xs"
                             : "text-stone-700 hover:bg-bg-subtle hover:text-stone-900"
                         }`
                       }

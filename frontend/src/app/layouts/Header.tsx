@@ -522,7 +522,7 @@ export const Header: React.FC = () => {
   );
 
   return (
-    <header className="sticky top-0 z-header bg-white/95 backdrop-blur-md border-b border-border-base">
+    <header className="sticky top-0 z-header border-b border-border-base bg-bg-surface/95 shadow-xs backdrop-blur-md">
       <Container>
         <div className="flex items-center justify-between h-16 gap-3 sm:gap-6">
           {/* Logo & Category trigger.
@@ -672,8 +672,8 @@ export const Header: React.FC = () => {
                   aria-busy="true"
                   className="flex h-control-md w-24 items-center gap-2 rounded-control border border-border-base bg-bg-surface px-2.5 lg:w-32"
                 >
-                  <span className="h-7 w-7 shrink-0 animate-pulse rounded-full bg-bg-muted motion-reduce:animate-none" />
-                  <span className="hidden h-2.5 flex-1 animate-pulse rounded-full bg-bg-muted motion-reduce:animate-none lg:block" />
+                  <span className="skeleton-shimmer h-7 w-7 shrink-0 rounded-full bg-bg-muted" />
+                  <span className="skeleton-shimmer hidden h-2.5 flex-1 rounded-full bg-bg-muted lg:block" />
                 </div>
               ) : isAuthenticated && currentUser ? (
                 <button
@@ -935,10 +935,10 @@ export const Header: React.FC = () => {
                       aria-busy="true"
                       className="flex items-center gap-3"
                     >
-                      <span className="h-10 w-10 shrink-0 animate-pulse rounded-full bg-bg-muted motion-reduce:animate-none" />
+                      <span className="skeleton-shimmer h-10 w-10 shrink-0 rounded-full bg-bg-muted" />
                       <span className="min-w-0 flex-1 space-y-2">
-                        <span className="block h-3 w-28 animate-pulse rounded-full bg-bg-muted motion-reduce:animate-none" />
-                        <span className="block h-2.5 w-40 max-w-full animate-pulse rounded-full bg-bg-muted motion-reduce:animate-none" />
+                        <span className="skeleton-shimmer block h-3 w-28 rounded-full bg-bg-muted" />
+                        <span className="skeleton-shimmer block h-2.5 w-40 max-w-full rounded-full bg-bg-muted" />
                       </span>
                     </div>
                   ) : isAuthenticated && currentUser ? (

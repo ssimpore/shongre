@@ -39,7 +39,7 @@ const DISPLAY_SET_BY_CALLER =
   /(?:^|\s)(?:hidden|block|inline|inline-block|flex|inline-flex|grid|inline-grid|contents)(?:\s|$)/;
 
 const iconButtonClasses = createVariants({
-  base: `${CONTROL_MOTION_CLASS} items-center justify-center ${CONTROL_RADIUS_CLASS} cursor-pointer select-none disabled:opacity-40 disabled:cursor-not-allowed ${CONTROL_FOCUS_CLASS} active:scale-95`,
+  base: `${CONTROL_MOTION_CLASS} items-center justify-center ${CONTROL_RADIUS_CLASS} cursor-pointer select-none disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:translate-y-0 ${CONTROL_FOCUS_CLASS} active:translate-y-0 active:scale-press-icon`,
   variants: {
     size: {
       sm: "w-control-sm h-control-sm p-1.5 text-xs",
@@ -48,7 +48,7 @@ const iconButtonClasses = createVariants({
     },
     variant: {
       primary:
-        "bg-primary text-white hover:bg-primary-hover active:bg-primary-active shadow-xs",
+        "bg-primary text-white hover:-translate-y-0.5 hover:bg-primary-hover active:bg-primary-active shadow-xs hover:shadow-sm",
       secondary:
         "bg-bg-subtle text-text-main hover:bg-bg-muted active:bg-stone-300",
       outline:

@@ -132,12 +132,19 @@ test.describe("open dropdowns stay on screen", () => {
       await trigger.scrollIntoViewIfNeeded();
       await trigger.click();
 
-      const box = await page.evaluate(() => {
-        const dialog = document.querySelector('[role="dialog"]');
-        if (!dialog) return null;
-        const r = dialog.getBoundingClientRect();
-        return { left: r.left, right: r.right, viewport: window.innerWidth };
+      const dialog = page.getByRole("dialog", {
+        name: /préférences régionales/i,
       });
+      await expect(dialog).toBeVisible();
+      const bounds = await dialog.boundingBox();
+      const viewportWidth = await page.evaluate(() => window.innerWidth);
+      const box = bounds
+        ? {
+            left: bounds.x,
+            right: bounds.x + bounds.width,
+            viewport: viewportWidth,
+          }
+        : null;
 
       expect(box, "regional preferences should be open").not.toBeNull();
       expect(box!.left, "dialog runs off the left edge").toBeGreaterThanOrEqual(
@@ -353,51 +360,40 @@ test.describe("list view cards", () => {
  */
 test.describe("listing rail", () => {
   test("an arrow advances one card and leaves it flush", async ({ page }) => {
-    await page.setViewportSize({ width: 375, height: 812 });
+    await page.setViewportSize({ width: 768, height: 812 });
     await usePersona(page, "guest");
     await page.goto("/", { waitUntil: "domcontentloaded" });
     await waitForStableLayout(page);
 
-    const heading = page.getByRole("heading", {
-      name: /annonces récentes/i,
-    });
-    await heading.scrollIntoViewIfNeeded();
-    const section = page.locator("section").filter({ has: heading });
+    const selectedTab = page.getByRole("tab", { selected: true });
+    const activeName = await selectedTab.innerText();
+    const panel = page.getByRole("tabpanel", { name: activeName });
+    await panel.scrollIntoViewIfNeeded();
+    const track = panel.locator("div.overflow-x-auto").last();
 
-    await section.getByRole("button", { name: /défiler|droite/i }).click();
+    await panel.getByRole("button", { name: /défiler|droite/i }).click();
     await page.waitForTimeout(1200);
 
-    const state = await page.evaluate(() => {
-      const h = [...document.querySelectorAll("h2")].find((x) =>
-        /annonces récentes/i.test((x as HTMLElement).innerText),
-      );
-      const track = [
-        ...h!.closest("section")!.querySelectorAll("div.overflow-x-auto"),
-      ].pop()!;
-      const trackLeft = track.getBoundingClientRect().left;
+    const state = await track.evaluate((element) => {
+      const trackLeft = element.getBoundingClientRect().left;
       return {
-        scrollLeft: Math.round(track.scrollLeft),
-        offsets: [...track.querySelectorAll("a")]
+        scrollLeft: Math.round(element.scrollLeft),
+        offsets: [...element.querySelectorAll("a")]
           .map((c) => Math.round(c.getBoundingClientRect().left - trackLeft))
           .slice(0, 4),
-        // The fades were removed; nothing should paint over the rail's edges.
-        fades: h!
-          .closest("section")!
-          .querySelectorAll(
-            '[class*="bg-gradient-to-r"],[class*="bg-gradient-to-l"]',
-          ).length,
       };
     });
+    const fades = await panel
+      .locator('[class*="bg-gradient-to-r"],[class*="bg-gradient-to-l"]')
+      .count();
 
     expect(state.scrollLeft, "the arrow must scroll the rail").toBeGreaterThan(
       0,
     );
     expect(
-      state.offsets.some((o) => Math.abs(o - 16) <= 3),
+      state.offsets.some((o) => Math.abs(o) <= 3),
       `a card should land flush with the scroll padding: ${JSON.stringify(state.offsets)}`,
     ).toBe(true);
-    expect(state.fades, "no gradient fade should sit over the rail edges").toBe(
-      0,
-    );
+    expect(fades, "no gradient fade should sit over the rail edges").toBe(0);
   });
 });

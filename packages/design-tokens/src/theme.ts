@@ -8,21 +8,24 @@
 
 /** Brand, surface, border, text and semantic status colors. */
 export const themeColors = {
-  primary: "#C4431F",
-  "primary-hover": "#AB3919",
-  "primary-active": "#932F13",
-  "primary-light": "#FFF3EF",
-  "primary-border": "#FED7CC",
-  "primary-on-dark": "#F0785A",
+  primary: "#CC4018",
+  "primary-hover": "#B53612",
+  "primary-active": "#982B0D",
+  "primary-light": "#FFF1EB",
+  "primary-border": "#F8C9BA",
+  "primary-on-dark": "#FF896B",
 
-  "bg-base": "#FAF8F5",
+  /* A warm-white canvas keeps Shongre's character without putting a beige
+     veil over every route. Surface, subtle and muted remain visibly stepped so
+     cards, workspaces and dense staff screens retain clear grouping. */
+  "bg-base": "#FFFEFC",
   "bg-surface": "#FFFFFF",
-  "bg-subtle": "#F4F1EA",
-  "bg-muted": "#EAE6DD",
+  "bg-subtle": "#F8F6F2",
+  "bg-muted": "#EFECE6",
 
-  "border-base": "#E8E4DC",
-  "border-subtle": "#F0ECE4",
-  "border-hover": "#D6D0C5",
+  "border-base": "#E6E1D9",
+  "border-subtle": "#F1EDE7",
+  "border-hover": "#CEC7BC",
 
   "text-main": "#1C1917",
   "text-secondary": "#57534E",
@@ -37,7 +40,7 @@ export const themeColors = {
   "text-muted": "#6A635E",
   "text-disabled": "#A8A29E",
   "text-inverse": "#FFFFFF",
-  focus: "#C4431F",
+  focus: "#CC4018",
   overlay: "rgb(28 25 23 / 0.6)",
   /* The scrim behind small white text sitting directly on a photo — media
      counters, carousel controls, gallery pills. Denser than `overlay` (the
@@ -80,7 +83,7 @@ export const themeColors = {
   "info-surface": "#F0F9FF",
   "info-border": "#BAE6FD",
 
-  "category-vehicles": "#C4431F",
+  "category-vehicles": "#CC4018",
   "category-real-estate": "#0284C7",
   "category-jobs": "#059669",
   "category-multimedia": "#6366F1",
@@ -219,6 +222,7 @@ export const themeLetterSpacing = {
 /** Owned 4px spacing base plus semantic component dimensions. */
 export const themeSpacing = {
   base: "0.25rem",
+  "surface-lift": "0.125rem",
   "control-sm": "2rem",
   "control-md": "2.5rem",
   "control-lg": "3rem",
@@ -291,6 +295,7 @@ export const themeSpacing = {
   "mobile-nav-height": "3.75rem",
   "mobile-nav-fab-rise": "1.25rem",
   "viewport-popover-max": "calc(100vw - 1.5rem)",
+  "viewport-full": "100vw",
   "search-submit-height": "calc(100% + 2px)",
   "message-bubble": "85%",
   "message-bubble-wide": "70%",
@@ -422,11 +427,11 @@ export const themeBreakpoints = {
 } as const;
 
 export const themeShadows = {
-  "2xs": "0 1px rgb(28 25 23 / 0.04)",
-  xs: "0 1px 2px rgb(28 25 23 / 0.05)",
-  sm: "0 1px 3px rgb(28 25 23 / 0.08), 0 1px 2px -1px rgb(28 25 23 / 0.05)",
-  md: "0 6px 14px -5px rgb(28 25 23 / 0.12), 0 2px 5px -2px rgb(28 25 23 / 0.06)",
-  lg: "0 12px 28px -8px rgb(28 25 23 / 0.16), 0 4px 8px -4px rgb(28 25 23 / 0.08)",
+  "2xs": "0 1px 2px rgb(28 25 23 / 0.04)",
+  xs: "0 2px 5px -2px rgb(28 25 23 / 0.09), 0 1px 2px rgb(28 25 23 / 0.04)",
+  sm: "0 5px 14px -5px rgb(28 25 23 / 0.13), 0 2px 5px -2px rgb(28 25 23 / 0.06)",
+  md: "0 10px 24px -8px rgb(28 25 23 / 0.16), 0 3px 8px -3px rgb(28 25 23 / 0.08)",
+  lg: "0 18px 38px -12px rgb(28 25 23 / 0.18), 0 6px 14px -6px rgb(28 25 23 / 0.09)",
   dropdown:
     "0 14px 32px -8px rgb(28 25 23 / 0.18), 0 6px 12px -6px rgb(28 25 23 / 0.1)",
   overlay: "0 28px 56px -16px rgb(28 25 23 / 0.3)",
@@ -454,6 +459,7 @@ export const themeMotion = {
   "duration-fast": "150ms",
   "duration-normal": "250ms",
   "duration-slow": "350ms",
+  "duration-skeleton": "1400ms",
   /** Time a transient copied/saved acknowledgement remains readable. */
   "duration-feedback": "2000ms",
   "duration-reduced": "0.01ms",
@@ -463,6 +469,9 @@ export const themeMotion = {
   "duration-marquee-slow": "38s",
   "motion-enter-shift": "0.5rem",
   "motion-enter-scale": "0.95",
+  "motion-press-surface-scale": "0.995",
+  "motion-press-control-scale": "0.98",
+  "motion-press-icon-scale": "0.96",
   "motion-marquee-travel": "-50%",
   "motion-iteration-once": "1",
 } as const;

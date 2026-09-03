@@ -156,7 +156,7 @@ export const HomeTrendingSection: React.FC<HomeTrendingSectionProps> = ({
         <div className="space-y-8" aria-label={t("common.loading")}>
           {Array.from({ length: section.maxItems }).map((_, topicIndex) => (
             <div key={topicIndex}>
-              <div className="mb-4 h-6 w-40 animate-pulse rounded-control bg-bg-muted motion-reduce:animate-none" />
+              <div className="skeleton-shimmer mb-4 h-6 w-40 rounded-control bg-bg-muted" />
               <ListingRail label={t("common.loading")}>
                 {Array.from({ length: 6 }).map((__, listingIndex) => (
                   <ListingCardSkeleton

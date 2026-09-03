@@ -11,7 +11,7 @@ export const HomeProCtaSection: React.FC<{ section: HomepageSectionView }> = ({
   const { t } = useTranslation();
   return (
     <Container as="section" aria-labelledby="home-pro-title">
-      <div className="flex flex-col items-center justify-between gap-6 rounded-2xl border border-border-base bg-bg-base p-6 sm:p-10 md:flex-row">
+      <div className="flex flex-col items-center justify-between gap-6 rounded-card border border-border-base bg-bg-surface p-6 shadow-sm sm:p-10 md:flex-row">
         <div className="max-w-xl space-y-2">
           <HomeSectionHeading id="home-pro-title">
             {section.title}

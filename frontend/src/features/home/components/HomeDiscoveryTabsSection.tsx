@@ -101,7 +101,7 @@ export const HomeDiscoveryTabsSection: React.FC<{
       <div
         role="tablist"
         aria-label={t("home.discovery.tabsLabel")}
-        className="mb-5 flex gap-1 overflow-x-auto rounded-control bg-bg-subtle p-1"
+        className="mb-5 flex gap-1 overflow-x-auto rounded-control border border-border-subtle bg-bg-subtle p-1 shadow-2xs"
         onKeyDown={(event) => {
           if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) {
             return;
@@ -144,7 +144,7 @@ export const HomeDiscoveryTabsSection: React.FC<{
               onClick={() => setSelectedType(tab.type)}
               className={`min-h-control-md shrink-0 rounded-control px-3 text-sm font-bold motion-interactive focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus ${
                 selected
-                  ? "bg-bg-surface text-primary shadow-xs"
+                  ? "bg-bg-surface text-primary shadow-sm"
                   : "text-text-secondary hover:bg-bg-surface hover:text-text-primary"
               }`}
             >

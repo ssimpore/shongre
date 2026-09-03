@@ -445,7 +445,7 @@ export const AdminAnalyticsPage: React.FC = () => {
           {[0, 1, 2, 3].map((item) => (
             <div
               key={item}
-              className="h-28 animate-pulse rounded-control bg-stone-200"
+              className="skeleton-shimmer h-28 rounded-control bg-bg-muted"
             />
           ))}
         </div>

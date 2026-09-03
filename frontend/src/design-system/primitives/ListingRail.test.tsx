@@ -13,6 +13,7 @@ describe("listing layout primitives", () => {
 
     expect(html).toContain("listing-rail-cell w-listing-card");
     expect(html).toContain("listing-rail-track");
+    expect(html).toContain("max-w-viewport-full");
   });
 
   it("uses the shared listing-card width token for desktop grid columns", () => {

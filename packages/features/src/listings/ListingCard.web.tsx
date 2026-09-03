@@ -310,7 +310,7 @@ export function ListingCard({
       elevation="xs"
       data-listing-card="true"
       data-listing-card-variant={variant}
-      className={`group listing-card-shell relative overflow-hidden ${horizontal ? "listing-card-list flex" : `${showcase ? "listing-card-showcase" : "listing-card-standard"} flex h-full flex-col`} ${className ?? ""}`}
+      className={`group listing-card-shell surface-interactive relative overflow-hidden ${horizontal ? "listing-card-list flex" : `${showcase ? "listing-card-showcase" : "listing-card-standard"} flex h-full flex-col`} ${className ?? ""}`}
     >
       {renderLink ? (
         renderLink({

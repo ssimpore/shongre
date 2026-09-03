@@ -162,7 +162,7 @@ export const WatchSubscriptionsPage = () => {
           {[0, 1].map((item) => (
             <div
               key={item}
-              className="h-44 animate-pulse rounded-card border border-border-base bg-bg-subtle"
+              className="skeleton-shimmer h-44 rounded-card border border-border-base bg-bg-subtle"
             />
           ))}
         </div>

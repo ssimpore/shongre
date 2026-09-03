@@ -129,7 +129,7 @@ export const ProDashboardPage: React.FC = () => {
                 storeSlug: currentUser.storeSlug,
                 isProfessional: true,
               })}
-              className="bg-stone-900 hover:bg-stone-800 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition-colors flex items-center gap-2 shadow-xs"
+              className="motion-interactive flex items-center gap-2 rounded-control bg-stone-900 px-4 py-2.5 text-xs font-bold text-white shadow-sm hover:-translate-y-0.5 hover:bg-stone-800 hover:shadow-md"
             >
               <span>Voir ma vitrine en ligne</span>
               <ArrowUpRight className="w-icon-md h-icon-md" />
@@ -147,7 +147,7 @@ export const ProDashboardPage: React.FC = () => {
           {[1, 2, 3, 4].map((item) => (
             <div
               key={item}
-              className="h-28 animate-pulse rounded-xl border border-border-base bg-bg-muted motion-reduce:animate-none"
+              className="skeleton-shimmer h-28 rounded-control border border-border-base bg-bg-muted"
             />
           ))}
         </div>
@@ -193,7 +193,7 @@ export const ProDashboardPage: React.FC = () => {
               {unreadContactCount > 0 && (
                 <Link
                   to={routes.workspace.messages()}
-                  className="rounded-xl border border-border-base bg-white p-4 hover:border-primary motion-interactive"
+                  className="surface-interactive rounded-control border border-border-base bg-bg-surface p-4"
                 >
                   <div className="flex items-center justify-between gap-3">
                     <span className="text-sm font-bold text-stone-900">
@@ -210,7 +210,7 @@ export const ProDashboardPage: React.FC = () => {
               {!hasCatalogue && (
                 <Link
                   to={routes.listing.publish()}
-                  className="rounded-xl border border-border-base bg-white p-4 hover:border-primary motion-interactive"
+                  className="surface-interactive rounded-control border border-border-base bg-bg-surface p-4"
                 >
                   <div className="flex items-center justify-between gap-3">
                     <span className="text-sm font-bold text-stone-900">
@@ -228,7 +228,7 @@ export const ProDashboardPage: React.FC = () => {
                 </Link>
               )}
               {unreadContactCount === 0 && hasCatalogue && (
-                <p className="sm:col-span-2 rounded-xl border border-success-border bg-white p-4 text-sm font-semibold text-success">
+                <p className="rounded-control border border-success-border bg-bg-surface p-4 text-sm font-semibold text-success sm:col-span-2">
                   {t("sellerworkspace.proDashboardPage.actionQueueEmpty")}
                 </p>
               )}
@@ -237,7 +237,7 @@ export const ProDashboardPage: React.FC = () => {
 
           {/* KPI Cards */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="bg-white p-4 rounded-xl border border-border-base shadow-xs">
+            <div className="motion-surface rounded-control border border-border-base bg-bg-surface p-4 shadow-xs hover:shadow-sm">
               <div className="flex items-center justify-between text-stone-500 text-xs font-semibold mb-1">
                 <span>Vues totales catalogue</span>
                 <Eye className="w-icon-md h-icon-md text-primary" />
@@ -261,7 +261,7 @@ export const ProDashboardPage: React.FC = () => {
               )}
             </div>
 
-            <div className="bg-white p-4 rounded-xl border border-border-base shadow-xs">
+            <div className="motion-surface rounded-control border border-border-base bg-bg-surface p-4 shadow-xs hover:shadow-sm">
               <div className="flex items-center justify-between text-stone-500 text-xs font-semibold mb-1">
                 <span>Demandes & Contacts</span>
                 <MessageSquare className="w-icon-md h-icon-md text-info" />
@@ -288,7 +288,7 @@ export const ProDashboardPage: React.FC = () => {
               )}
             </div>
 
-            <div className="bg-white p-4 rounded-xl border border-border-base shadow-xs">
+            <div className="motion-surface rounded-control border border-border-base bg-bg-surface p-4 shadow-xs hover:shadow-sm">
               <div className="flex items-center justify-between text-stone-500 text-xs font-semibold mb-1">
                 <span>
                   {t("sellerworkspace.proDashboardPage.tauxDeConversion")}
@@ -305,7 +305,7 @@ export const ProDashboardPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="bg-white p-4 rounded-xl border border-border-base shadow-xs">
+            <div className="motion-surface rounded-control border border-border-base bg-bg-surface p-4 shadow-xs hover:shadow-sm">
               <div className="flex items-center justify-between text-stone-500 text-xs font-semibold mb-1">
                 <span>
                   {t("sellerworkspace.proDashboardPage.volumeDeVentesEstime")}
@@ -324,7 +324,7 @@ export const ProDashboardPage: React.FC = () => {
           </div>
 
           {/* Analytics Chart Bar Visualizer */}
-          <div className="bg-white rounded-2xl border border-border-base p-6 shadow-xs space-y-4">
+          <div className="space-y-4 rounded-card border border-border-base bg-bg-surface p-6 shadow-sm">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h2 className="text-sm sm:text-base font-bold text-stone-900">
                 {t("sellerworkspace.proDashboardPage.evolutionDeLAudience7")}
@@ -361,7 +361,7 @@ export const ProDashboardPage: React.FC = () => {
           </div>
 
           {/* Top performing articles */}
-          <div className="bg-white rounded-2xl border border-border-base p-6 shadow-xs space-y-4">
+          <div className="space-y-4 rounded-card border border-border-base bg-bg-surface p-6 shadow-sm">
             <h2 className="text-sm sm:text-base font-bold text-stone-900">
               {t(
                 "sellerworkspace.proDashboardPage.articlesPharesDeVotreBoutique",

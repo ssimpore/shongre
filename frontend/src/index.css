@@ -42,6 +42,11 @@
     overflow-x: hidden;
   }
 
+  ::selection {
+    background: var(--color-primary-light);
+    color: var(--color-text-main);
+  }
+
   /* --- Flex/grid shrink floor for intrinsically-sized controls -------------
      A `<select>` reports its widest `<option>` as its min-content width, and a
      flex item's default `min-width: auto` refuses to shrink below that. One
@@ -183,7 +188,7 @@
 
   /* Focus visible accessibility outline */
   *:focus-visible {
-    outline: var(--border-strong) solid var(--color-primary);
+    outline: var(--border-strong) solid var(--color-focus);
     outline-offset: var(--spacing-focus-ring-offset);
   }
 
@@ -353,6 +358,48 @@
     transition-timing-function: var(--ease-out-soft);
   }
 
+  /* Apply this only to surfaces whose whole card is actionable. Pointer-aware
+     lift keeps mouse feedback crisp without leaving sticky hover transforms on
+     touch screens. */
+  .surface-interactive {
+    transition-property: border-color, box-shadow, transform;
+    transition-duration: var(--duration-normal);
+    transition-timing-function: var(--ease-out-soft);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .surface-interactive:hover {
+      border-color: var(--color-border-hover);
+      box-shadow: var(--shadow-md);
+      transform: translateY(calc(-1 * var(--spacing-surface-lift)));
+    }
+  }
+
+  .surface-interactive:active {
+    transform: translateY(0);
+  }
+
+  @keyframes shongre-skeleton-shimmer {
+    from {
+      background-position: 200% 0;
+    }
+    to {
+      background-position: -200% 0;
+    }
+  }
+
+  .skeleton-shimmer {
+    background-image: linear-gradient(
+      100deg,
+      var(--color-bg-muted) 20%,
+      var(--color-bg-surface) 50%,
+      var(--color-bg-muted) 80%
+    );
+    background-size: 200% 100%;
+    animation: shongre-skeleton-shimmer var(--duration-skeleton)
+      var(--ease-standard) infinite;
+  }
+
   .motion-layout {
     transition-property: max-width, max-height, opacity, margin, transform;
     transition-duration: var(--duration-normal);
@@ -409,6 +456,15 @@
 }
 @utility z-tooltip {
   z-index: var(--z-tooltip);
+}
+@utility scale-press-surface {
+  scale: var(--motion-press-surface-scale);
+}
+@utility scale-press-control {
+  scale: var(--motion-press-control-scale);
+}
+@utility scale-press-icon {
+  scale: var(--motion-press-icon-scale);
 }
 
 /* Native progress owns dynamic sizing without leaking inline visual styles
