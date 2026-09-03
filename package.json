@@ -48,19 +48,19 @@
     "preview": "npm run start --workspace=frontend"
   },
   "overrides": {
-    "react": "19.2.3",
+    "react": "19.2.8",
     "react-dom": "19.2.3",
     "xcode": {
       "uuid": "^11.1.1"
     }
   },
   "devDependencies": {
-    "@redocly/cli": "^2.47.0",
+    "@redocly/cli": "^2.49.0",
     "openapi-typescript": "^7.13.0",
     "prettier": "^3.6.2",
-    "react": "19.2.3",
+    "react": "19.2.8",
     "react-dom": "19.2.3",
     "read-excel-file": "9.3.10",
-    "tsx": "^4.23.12"
+    "tsx": "^4.23.13"
   }
 }
