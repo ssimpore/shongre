@@ -14,12 +14,13 @@ import {
   CONTROL_FOCUS_CLASS,
   CONTROL_MOTION_CLASS,
 } from "../utils/controlMetrics";
+import { CountryFlag } from "./CountryFlag";
 
 export interface LanguageOption {
   code: string;
   name: string;
   nativeName: string;
-  flag: string;
+  countryCode: string;
   /**
    * Whether the interface is actually available in this language.
    *
@@ -61,12 +62,42 @@ export const LOCALE_READY_THRESHOLD = 1;
 export { SHIPPED_LOCALES } from "../../i18n/locale";
 
 const LANGUAGES: Omit<LanguageOption, "isAvailable">[] = [
-  { code: "fr-FR", name: "Français", nativeName: "Français", flag: "🇫🇷" },
-  { code: "en-US", name: "English", nativeName: "English", flag: "🇬🇧" },
-  { code: "de-DE", name: "Deutsch", nativeName: "Deutsch", flag: "🇩🇪" },
-  { code: "es-ES", name: "Español", nativeName: "Español", flag: "🇪🇸" },
-  { code: "nl-NL", name: "Nederlands", nativeName: "Nederlands", flag: "🇳🇱" },
-  { code: "it-IT", name: "Italiano", nativeName: "Italiano", flag: "🇮🇹" },
+  {
+    code: "fr-FR",
+    name: "Français",
+    nativeName: "Français",
+    countryCode: "FR",
+  },
+  {
+    code: "en-US",
+    name: "English",
+    nativeName: "English",
+    countryCode: "GB",
+  },
+  {
+    code: "de-DE",
+    name: "Deutsch",
+    nativeName: "Deutsch",
+    countryCode: "DE",
+  },
+  {
+    code: "es-ES",
+    name: "Español",
+    nativeName: "Español",
+    countryCode: "ES",
+  },
+  {
+    code: "nl-NL",
+    name: "Nederlands",
+    nativeName: "Nederlands",
+    countryCode: "NL",
+  },
+  {
+    code: "it-IT",
+    name: "Italiano",
+    nativeName: "Italiano",
+    countryCode: "IT",
+  },
 ];
 
 export const SUPPORTED_LANGUAGES: LanguageOption[] = LANGUAGES.map(
@@ -105,7 +136,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
   variant = "header",
   idPrefix = "lang-selector",
 }) => {
-  const { currentLocale, setLocale, openPreferencesModal } =
+  const { activeMarket, currentLocale, setLocale, openPreferencesModal } =
     useMarketLocation();
   const [isOpen, setIsOpen] = useState(false);
   const [alignRight, setAlignRight] = useState(false);
@@ -222,9 +253,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
         }
         className={buttonClasses}
       >
-        <span className="text-base shrink-0 leading-none">
-          {activeLanguage.flag}
-        </span>
+        <CountryFlag countryCode={activeMarket.code} />
         <span
           className={`font-bold uppercase tracking-wide ${variant === "footer" ? "text-stone-200" : "text-stone-800"}`}
         >
@@ -285,7 +314,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <span className="text-base leading-none">{lang.flag}</span>
+                    <CountryFlag countryCode={lang.countryCode} />
                     <div className="flex flex-col">
                       <span className="leading-tight">{lang.nativeName}</span>
                       <span className="text-micro text-text-muted font-normal">

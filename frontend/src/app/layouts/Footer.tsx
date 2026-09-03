@@ -12,6 +12,7 @@ import type { TaxonomyHeaderCategoryItem } from "@shongre/contracts";
 import { getTaxonomyLabel } from "../../domains/taxonomy/taxonomy.labels";
 import { services } from "../../api/client/service-registry";
 import { LanguageSelector } from "../../design-system/primitives/LanguageSelector";
+import { CountryFlag } from "../../design-system/primitives/CountryFlag";
 import { NewsletterSignup } from "../../features/newsletter/components/NewsletterSignup";
 import { useConsent } from "../providers/ConsentProvider";
 import { useMarketLocation } from "../providers/MarketLocationProvider";
@@ -436,7 +437,7 @@ export const Footer: React.FC = () => {
               {t("footer.copyright", { year: new Date().getFullYear() })}
             </span>
             <span className="inline-flex items-center gap-1.5">
-              <span aria-hidden="true">{activeMarket.flag}</span>
+              <CountryFlag countryCode={activeMarket.code} size="sm" />
               {t("footer.marketLabel", { market: activeMarket.name })}
             </span>
             <LanguageSelector variant="footer" idPrefix="footer-lang" />

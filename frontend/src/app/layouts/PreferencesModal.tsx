@@ -9,6 +9,7 @@ import {
   formatCurrencySymbol,
   getCurrencyDisplayName,
 } from "../../utilities/formatters";
+import { CountryFlag } from "../../design-system/primitives/CountryFlag";
 
 export const PreferencesModal: React.FC = () => {
   const { t } = useTranslation();
@@ -84,9 +85,7 @@ export const PreferencesModal: React.FC = () => {
                   }`}
                 >
                   <span className="flex min-w-0 flex-1 items-center gap-1.5 whitespace-nowrap">
-                    <span className="shrink-0 text-lg leading-none">
-                      {m.flag}
-                    </span>
+                    <CountryFlag countryCode={m.code} size="lg" />
                     <span className="truncate text-xs">{m.name}</span>
                     <span className="shrink-0 text-micro font-normal text-stone-500">
                       {m.code}
@@ -208,11 +207,10 @@ export const PreferencesModal: React.FC = () => {
                   }`}
                 >
                   <span className="flex min-w-0 flex-1 items-center gap-1.5 whitespace-nowrap">
-                    <span
-                      className={`shrink-0 text-base leading-none ${lang.isAvailable ? "" : "grayscale opacity-60"}`}
-                    >
-                      {lang.flag}
-                    </span>
+                    <CountryFlag
+                      countryCode={lang.countryCode}
+                      className={lang.isAvailable ? "" : "grayscale opacity-60"}
+                    />
                     <span className="truncate text-xs">{lang.nativeName}</span>
                     <span className="shrink-0 text-micro font-normal uppercase text-stone-500">
                       {lang.isAvailable

@@ -47,6 +47,7 @@ export * from "./components/Tabs";
 // while the public API classifies them above the primitive layer.
 export * from "./primitives/CategoryFilterRail";
 export * from "./primitives/CategoryIcon";
+export * from "./primitives/CountryFlag";
 export * from "./primitives/FavoriteButton";
 export * from "./primitives/GlobalSearchBar";
 export * from "./primitives/LanguageSelector";

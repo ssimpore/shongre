@@ -18,24 +18,24 @@ describe("LanguageSelector Primitive", () => {
     expect(element.props.variant).toBe("header");
   });
 
-  it("provides comprehensive list of European languages with flags", () => {
+  it("maps every language to a deterministic country flag", () => {
     expect(SUPPORTED_LANGUAGES.length).toBeGreaterThanOrEqual(4);
 
     const french = SUPPORTED_LANGUAGES.find((l) => l.code === "fr-FR");
     expect(french).toBeDefined();
-    expect(french?.flag).toBe("🇫🇷");
+    expect(french?.countryCode).toBe("FR");
 
     const english = SUPPORTED_LANGUAGES.find((l) => l.code === "en-US");
     expect(english).toBeDefined();
-    expect(english?.flag).toBe("🇬🇧");
+    expect(english?.countryCode).toBe("GB");
 
     const german = SUPPORTED_LANGUAGES.find((l) => l.code === "de-DE");
     expect(german).toBeDefined();
-    expect(german?.flag).toBe("🇩🇪");
+    expect(german?.countryCode).toBe("DE");
 
     const spanish = SUPPORTED_LANGUAGES.find((l) => l.code === "es-ES");
     expect(spanish).toBeDefined();
-    expect(spanish?.flag).toBe("🇪🇸");
+    expect(spanish?.countryCode).toBe("ES");
   });
 });
 
