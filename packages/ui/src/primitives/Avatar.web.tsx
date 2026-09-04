@@ -1,5 +1,6 @@
 import type { HTMLAttributes } from "react";
 import { cn } from "../utils/variants";
+import { VerifiedIcon } from "../identity/VerifiedIcon.web";
 
 export interface AvatarProps extends HTMLAttributes<HTMLDivElement> {
   src?: string;
@@ -19,6 +20,14 @@ const sizes = {
   "2xl": "w-24 h-24 sm:w-avatar-2xl sm:h-avatar-2xl text-2xl",
 } as const;
 
+const verificationSizes = {
+  sm: "xs",
+  md: "xs",
+  lg: "sm",
+  xl: "md",
+  "2xl": "md",
+} as const;
+
 const initials = (name: string) =>
   name
     .trim()
@@ -35,7 +44,7 @@ export function Avatar({
   name,
   size = "md",
   isVerified,
-  verifiedLabel = "Profil vérifié",
+  verifiedLabel,
   className,
   ...props
 }: AvatarProps) {
@@ -69,12 +78,8 @@ export function Avatar({
         )}
       </div>
       {isVerified ? (
-        <span
-          className="absolute -bottom-0.5 -right-0.5 bg-white rounded-full px-1 shadow-sm text-success text-micro font-bold"
-          title={verifiedLabel}
-          aria-label={verifiedLabel}
-        >
-          ✓
+        <span className="absolute -bottom-0.5 -right-0.5 inline-flex rounded-pill bg-bg-surface shadow-sm">
+          <VerifiedIcon size={verificationSizes[size]} label={verifiedLabel} />
         </span>
       ) : null}
     </div>

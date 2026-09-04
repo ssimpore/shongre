@@ -242,7 +242,8 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
   if (scrollSequence.length === 0) {
     return isLoading ? (
       <div
-        className="skeleton-shimmer aspect-video w-full rounded-overlay bg-bg-muted"
+        data-home-boosted-surface="true"
+        className="skeleton-shimmer aspect-video w-full rounded-card bg-bg-muted"
         aria-hidden="true"
       />
     ) : null;
@@ -262,7 +263,10 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
           nothing in between. Hidden visually — the rail is self-evident. */}
       <h2 className="sr-only">{t("home.heroBoostedScroll.carouselLabel")}</h2>
 
-      <div className="relative overflow-hidden rounded-overlay border border-border-base shadow-md">
+      <div
+        data-home-boosted-surface="true"
+        className="relative overflow-hidden rounded-card border border-border-base shadow-md"
+      >
         <div
           id="hero-boosted-track"
           ref={railRef}

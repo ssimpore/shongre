@@ -573,10 +573,27 @@ France-only happy path is insufficient for market-sensitive work.
 - Reuse `@shongre/design-tokens`, `@shongre/ui`, `@shongre/features`, and the
   existing design-system compatibility entrypoints before creating a new
   primitive, token, or variant. Add variants only for recurring semantic use.
+- Verified identity marks, verification facts, and professional-account markers
+  use only `VerifiedIcon`, `VerificationBadge`, and `ProBadge` from
+  `@shongre/ui`. Their typed size and accessibility props are the supported
+  variation points; applications must not recreate them with generic badge
+  variants, direct `BadgeCheck` icons, copied SVGs, local wrappers, or CSS
+  overrides.
+- Compact listing characteristics carry typed semantic icon roles on
+  `ListingCardView`. Category and taxonomy presentation code assigns those
+  roles, and the shared Web/native listing card renders them through
+  `SemanticIcon`; pages must not infer icons from localized labels or inject
+  per-surface characteristic markup.
 - Web application typography uses the single Nunito Sans Variable loader in
   `frontend/app/layout.tsx`. Tailwind `font-sans` resolves through the generated
   `--font-family-sans` design token; Web components inherit it and must not load
   or declare competing application font families.
+- Web shells use `EnvironmentHeaderStack` to keep the environment toolbar and
+  their application header in one sticky chrome stack. The Next.js development
+  launcher uses only its supported `devIndicators` corner configuration; the
+  application toolbar keeps its compact token-backed height in every
+  environment. Never manipulate the launcher's shadow DOM or let development
+  tooling determine production chrome geometry.
 - Shared Web/native APIs must preserve behavior and accessibility while allowing
   narrow platform adapters. Do not use a WebView as a code-sharing shortcut or
   widen a Next.js client boundary merely to share presentation.

@@ -3,6 +3,7 @@ import {
   showsVerifiedBadge,
 } from "../../../domains/user/user.domain";
 import React, { useState } from "react";
+import { ProBadge, VerificationBadge } from "@shongre/ui/web";
 
 import {
   MapPin,
@@ -19,7 +20,7 @@ import {
   List,
 } from "lucide-react";
 import { UserProfile } from "../../../types";
-import { Avatar, Badge } from "../../../design-system/primitives/Badge";
+import { Avatar } from "../../../design-system/primitives/Badge";
 import { Button } from "../../../design-system/primitives/Button";
 import { IconButton } from "../../../design-system/primitives/IconButton";
 import { useAuth } from "../../../app/providers/AuthProvider";
@@ -155,9 +156,11 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/10" />
 
           <div className="absolute top-4 right-4 flex items-center gap-2 flex-wrap">
-            <Badge variant="pro" size="md">
-              Boutique Professionnelle
-            </Badge>
+            <ProBadge
+              size="md"
+              label={t("ui.identityStatus.pro.short")}
+              accessibilityLabel={t("ui.identityStatus.pro.store")}
+            />
           </div>
         </div>
       ) : (
@@ -202,18 +205,23 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
                   {displayName}
                 </h1>
                 {isPro ? (
-                  <Badge variant="pro" size="sm">
-                    Pro
-                  </Badge>
+                  <ProBadge
+                    size="xs"
+                    label={t("ui.identityStatus.pro.short")}
+                    accessibilityLabel={t("ui.identityStatus.pro.account")}
+                  />
                 ) : (
                   <span className="text-xs font-semibold text-stone-500 bg-stone-100 px-2 py-1 rounded-full">
                     Particulier
                   </span>
                 )}
                 {showsVerifiedBadge(seller) && (
-                  <Badge variant="verified" size="sm" icon>
-                    {t("profile.sellerProfileHeader.verifie")}
-                  </Badge>
+                  <VerificationBadge
+                    label={t("ui.identityStatus.verification.generic")}
+                    accessibilityLabel={t(
+                      "ui.identityStatus.verification.profile",
+                    )}
+                  />
                 )}
               </div>
 

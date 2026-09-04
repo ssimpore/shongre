@@ -642,7 +642,7 @@ function vehicle(
       vinOnFile: true,
       documents: [],
       historyReportStatus: "uploaded_private",
-      publicBadges: ["Professionnel vérifié", "Garantie 12 mois"],
+      publicBadges: ["Garantie 12 mois"],
     },
     priceEstimate: {
       band: "within_market",

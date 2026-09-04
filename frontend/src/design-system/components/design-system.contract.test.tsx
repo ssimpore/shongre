@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import { VerificationBadge } from "@shongre/ui/web";
 import { Button } from "../primitives/Button";
-import { Badge } from "../primitives/Badge";
 import { Input, Switch } from "../primitives/FormField";
 import { FilterPanel } from "../primitives/FilterPanel";
 import { Surface } from "../primitives/Layout";
@@ -19,7 +19,7 @@ describe("design-system representative states", () => {
         <Button variant="danger" isLoading>
           Supprimer
         </Button>
-        <Badge variant="verified">Vérifié</Badge>
+        <VerificationBadge label="Vérifié" />
         <Input aria-label="Recherche" error />
         <Switch checked onChange={() => undefined} label="Notifications" />
       </>,

@@ -55,7 +55,7 @@ export const PreferencesModal: React.FC = () => {
       description={t(
         "shell.preferencesModal.personnalisezVotrePaysDeNavigation",
       )}
-      maxWidth="2xl"
+      maxWidth="lg"
     >
       <div className="space-y-4">
         {/* Country / Market Selection */}
@@ -65,7 +65,7 @@ export const PreferencesModal: React.FC = () => {
             <span>{t("shell.preferencesModal.marchePays")}</span>
           </div>
           <div
-            className="grid grid-cols-1 gap-2 sm:grid-cols-3"
+            className="grid grid-cols-1 gap-2"
             role="radiogroup"
             aria-label={t("shell.preferencesModal.marchePays")}
           >
@@ -78,22 +78,24 @@ export const PreferencesModal: React.FC = () => {
                   role="radio"
                   aria-checked={isSelected}
                   onClick={() => handleMarketChange(m.code)}
-                  className={`flex min-h-control-touch items-center justify-between gap-2 rounded-control border px-2.5 py-2 text-left motion-interactive cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
+                  className={`flex min-h-control-touch items-center justify-between gap-3 rounded-control border px-3 py-2 text-left motion-interactive cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
                     isSelected
                       ? "border-primary bg-primary-light text-primary font-semibold ring-1 ring-primary"
                       : "border-border-base bg-bg-surface hover:bg-bg-subtle text-stone-800 font-medium"
                   }`}
                 >
-                  <span className="flex min-w-0 flex-1 items-center gap-1.5 whitespace-nowrap">
+                  <span className="flex min-w-0 flex-1 items-center gap-2 whitespace-nowrap">
                     <CountryFlag countryCode={m.code} size="lg" />
-                    <span className="truncate text-xs">{m.name}</span>
+                    <span className="truncate text-sm">{m.name}</span>
+                  </span>
+                  <span className="flex shrink-0 items-center gap-2">
                     <span className="shrink-0 text-micro font-normal text-stone-500">
                       {m.code}
                     </span>
+                    {isSelected ? (
+                      <Check className="h-icon-md w-icon-md shrink-0 text-primary" />
+                    ) : null}
                   </span>
-                  {isSelected ? (
-                    <Check className="w-icon-md h-icon-md text-primary shrink-0" />
-                  ) : null}
                 </button>
               );
             })}
@@ -125,7 +127,7 @@ export const PreferencesModal: React.FC = () => {
             <span>{t("shell.preferencesModal.deviseAffichage")}</span>
           </div>
           <div
-            className="grid grid-cols-1 gap-2 sm:grid-cols-3"
+            className="grid grid-cols-1 gap-2"
             role="radiogroup"
             aria-label={t("shell.preferencesModal.deviseAffichage")}
           >
@@ -138,17 +140,17 @@ export const PreferencesModal: React.FC = () => {
                   role="radio"
                   aria-checked={isSelected}
                   onClick={() => setCurrency(c.code)}
-                  className={`flex min-h-control-touch items-center justify-between gap-2 rounded-control border px-2.5 py-2 text-left motion-interactive cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
+                  className={`flex min-h-control-touch items-center justify-between gap-3 rounded-control border px-3 py-2 text-left motion-interactive cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
                     isSelected
                       ? "border-primary bg-primary-light text-primary font-semibold ring-1 ring-primary"
                       : "border-border-base bg-bg-surface hover:bg-bg-subtle text-stone-800 font-medium"
                   }`}
                 >
-                  <span className="flex min-w-0 flex-1 items-baseline gap-1.5 whitespace-nowrap">
-                    <span className="shrink-0 text-xs font-bold">
+                  <span className="flex min-w-0 flex-1 items-baseline gap-2 whitespace-nowrap">
+                    <span className="shrink-0 text-sm font-bold">
                       {c.symbol === c.code ? c.code : c.symbol + " " + c.code}
                     </span>
-                    <span className="truncate text-micro font-normal text-stone-500">
+                    <span className="truncate text-xs font-normal text-stone-500">
                       {c.label}
                     </span>
                   </span>
@@ -181,7 +183,7 @@ export const PreferencesModal: React.FC = () => {
             <span>{t("shell.preferencesModal.langueDeLInterface")}</span>
           </div>
           <div
-            className="grid grid-cols-1 gap-2 sm:grid-cols-3"
+            className="grid grid-cols-1 gap-2"
             role="radiogroup"
             aria-label={t("shell.preferencesModal.langueDeLInterface")}
           >
@@ -198,7 +200,7 @@ export const PreferencesModal: React.FC = () => {
                   disabled={!lang.isAvailable}
                   aria-disabled={!lang.isAvailable}
                   onClick={() => lang.isAvailable && setLocale(lang.code)}
-                  className={`flex min-h-control-touch items-center justify-between gap-2 rounded-control border px-2.5 py-2 text-left motion-interactive focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
+                  className={`flex min-h-control-touch items-center justify-between gap-3 rounded-control border px-3 py-2 text-left motion-interactive focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
                     !lang.isAvailable
                       ? "border-border-subtle bg-bg-subtle text-stone-400 cursor-not-allowed"
                       : isSelected
@@ -206,21 +208,23 @@ export const PreferencesModal: React.FC = () => {
                         : "border-border-base bg-bg-surface hover:bg-bg-subtle text-stone-800 font-medium cursor-pointer"
                   }`}
                 >
-                  <span className="flex min-w-0 flex-1 items-center gap-1.5 whitespace-nowrap">
+                  <span className="flex min-w-0 flex-1 items-center gap-2 whitespace-nowrap">
                     <CountryFlag
                       countryCode={lang.countryCode}
                       className={lang.isAvailable ? "" : "grayscale opacity-60"}
                     />
-                    <span className="truncate text-xs">{lang.nativeName}</span>
+                    <span className="truncate text-sm">{lang.nativeName}</span>
+                  </span>
+                  <span className="flex shrink-0 items-center gap-2">
                     <span className="shrink-0 text-micro font-normal uppercase text-stone-500">
                       {lang.isAvailable
                         ? lang.code.slice(0, 2)
                         : t("shell.preferencesModal.bientot")}
                     </span>
+                    {isSelected && lang.isAvailable ? (
+                      <Check className="h-icon-md w-icon-md shrink-0 text-primary" />
+                    ) : null}
                   </span>
-                  {isSelected && lang.isAvailable ? (
-                    <Check className="w-icon-md h-icon-md text-primary shrink-0" />
-                  ) : null}
                 </button>
               );
             })}

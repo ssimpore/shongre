@@ -228,7 +228,7 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({
                       {formatMoney(item.price)}
                     </span>
                     {item.isValid ? (
-                      <Badge variant="verified" size="sm">
+                      <Badge variant="success" size="sm">
                         {t("sellerworkspace.bulkImportModal.valid")}
                       </Badge>
                     ) : (

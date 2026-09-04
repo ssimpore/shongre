@@ -14,14 +14,13 @@ import { Image } from "./Image";
 import { IMAGE_SIZES } from "./responsiveImage";
 import { getListingCategoryLabel } from "../../domains/taxonomy/taxonomy.display";
 import {
-  getGenericListingCardCharacteristics,
+  getGenericListingCardCharacteristicPresentation,
   getGenericListingConditionLabel,
 } from "../../domains/listing/listing-card.generic-presentation";
 import {
   DEFAULT_MARKET_CODE,
   DEFAULT_MARKET_CURRENCY,
 } from "../../configuration/market-baseline";
-import { CategoryIcon } from "./CategoryIcon";
 import { formatListingPricePresentation } from "../../domains/listing/listing-price.presentation";
 import { Badge } from "./Badge";
 
@@ -50,10 +49,6 @@ export interface ListingCardViewCardProps {
   favoriteLabel?: string;
   onFavoriteToggle?: () => void;
   quickAction?: ReactNode;
-  renderCharacteristicIcon?: (
-    characteristic: string,
-    index: number,
-  ) => ReactNode;
 }
 
 function toListingCardView(
@@ -63,6 +58,8 @@ function toListingCardView(
   convertMoney?: ReturnType<typeof useMarketLocation>["convertMoney"],
 ): ListingCardView {
   const currency = listing.currency ?? DEFAULT_MARKET_CURRENCY;
+  const characteristicPresentation =
+    getGenericListingCardCharacteristicPresentation(listing, locale);
   return {
     id: listing.id,
     title: listing.title,
@@ -90,7 +87,12 @@ function toListingCardView(
     marketCode: listing.marketCode ?? DEFAULT_MARKET_CODE,
     categoryLabel: getListingCategoryLabel(listing),
     conditionLabel: getGenericListingConditionLabel(listing.condition, locale),
-    characteristics: getGenericListingCardCharacteristics(listing, locale),
+    characteristics: characteristicPresentation.map(
+      (characteristic) => characteristic.label,
+    ),
+    characteristicIcons: characteristicPresentation.map(
+      (characteristic) => characteristic.icon,
+    ),
     publishedAt: listing.createdAt,
     photoCount: listing.photos.length,
     deliveryAvailable: listing.deliveryOptions.some(
@@ -152,8 +154,8 @@ export function ListingCardViewCard({
   favoriteLabel,
   onFavoriteToggle,
   quickAction,
-  renderCharacteristicIcon,
 }: ListingCardViewCardProps) {
+  const { t } = useTranslation();
   const { currentLocale, convertMoney } = useMarketLocation();
   const priceProjection = convertMoney(listing.price);
   const originalPriceProjection = listing.originalPrice
@@ -199,9 +201,13 @@ export function ListingCardViewCard({
       }
       isFavorite={isFavorite}
       favoriteLabel={favoriteLabel}
+      identityLabels={{
+        pro: t("ui.identityStatus.pro.short"),
+        proAccessibility: t("ui.identityStatus.pro.seller"),
+        verified: t("ui.identityStatus.verification.profile"),
+      }}
       onFavoriteToggle={onFavoriteToggle}
       quickAction={quickAction}
-      renderCharacteristicIcon={renderCharacteristicIcon}
       renderLink={({
         href: to,
         className: linkClassName,
@@ -261,18 +267,6 @@ export function ListingCard({
         isDigital ? (
           <Badge variant="primary">{t("digital.common.title")}</Badge>
         ) : undefined
-      }
-      renderCharacteristicIcon={
-        variant === "showcase"
-          ? (_characteristic, index) =>
-              index === 0 ? (
-                <CategoryIcon
-                  category={listing.subCategorySlug || listing.categorySlug}
-                  size="sm"
-                  className="text-text-secondary"
-                />
-              ) : null
-          : undefined
       }
     />
   );

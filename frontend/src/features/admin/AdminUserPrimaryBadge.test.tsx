@@ -35,12 +35,13 @@ describe("AdminUserPrimaryBadge", () => {
         />,
       ),
     ).toContain("Particulier");
-    expect(
-      renderToStaticMarkup(
-        <AdminUserPrimaryBadge
-          user={user({ accountType: "professional", sellerType: "pro" })}
-        />,
-      ),
-    ).toContain("Professionnel");
+    const professional = renderToStaticMarkup(
+      <AdminUserPrimaryBadge
+        user={user({ accountType: "professional", sellerType: "pro" })}
+      />,
+    );
+    expect(professional).toContain('data-ui-pro-badge="true"');
+    expect(professional).toContain('aria-label="Compte professionnel"');
+    expect(professional).toContain(">Pro<");
   });
 });

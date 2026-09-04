@@ -171,12 +171,16 @@ export const employerVerificationLevelSchema = z.enum([
 
 export const employerSummarySchema = z.object({
   id: z.string().min(1),
+  publisherUserId: z.string().min(1).optional(),
   organizationId: z.string().optional(),
   branchId: z.string().optional(),
   name: z.string().min(1),
   slug: z.string().min(1),
   employerTypeId: z.string().min(1),
   logoUrl: z.string().url().optional(),
+  rating: z.number().min(0).max(5).optional(),
+  reviewCount: z.number().int().nonnegative().optional(),
+  locationLabel: z.string().min(1).optional(),
   description: z.string().optional(),
   verificationLevel: employerVerificationLevelSchema,
   verificationExpiresAt: z.string().optional(),

@@ -8,11 +8,14 @@ import {
   nativeRadius,
   nativeSizing,
   nativeSpacing,
+  nativeTypography,
   radius,
   themeFontFamilies,
   themeFontWeights,
   themeColors,
+  themeLetterSpacing,
   themeSpacing,
+  themeText,
 } from "../src/index";
 
 const luminance = (hex: string): number => {
@@ -55,10 +58,18 @@ describe("canonical design tokens", () => {
     expect(nativeSizing.avatar2xl).toBe(128);
     expect(nativeAspect.media).toBe(4 / 3);
     expect(iconStrokeWidths.regular).toBe(2);
+    expect(nativeTypography.size.overline).toBe(
+      Number.parseFloat(themeText.overline) * 16,
+    );
+    expect(nativeTypography.size.xs).toBe(Number.parseFloat(themeText.xs) * 16);
+    expect(nativeTypography.letterSpacing.wide).toBe(
+      Number.parseFloat(themeLetterSpacing.wide) * nativeTypography.size.micro,
+    );
   });
 
   it("keeps listing cards compact through semantic shared tokens", () => {
     expect(themeSpacing["listing-card"]).toBe("13rem");
+    expect(themeSpacing["environment-toolbar-height"]).toBe("3.5rem");
     expect(radius["listing-card"]).toBe("0.875rem");
   });
 

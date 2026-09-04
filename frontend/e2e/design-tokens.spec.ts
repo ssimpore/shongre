@@ -457,7 +457,7 @@ test.describe("design-token runtime contracts @serial", () => {
     await expectNoHorizontalOverflow(page, "listing list cards");
   });
 
-  test("keeps listing metadata readable without horizontal truncation", async ({
+  test("keeps listing metadata contained and limits ellipsis to named fields", async ({
     page,
   }) => {
     await page.goto("/recherche", { waitUntil: "domcontentloaded" });
@@ -474,7 +474,15 @@ test.describe("design-token runtime contracts @serial", () => {
           overflow: row.scrollWidth > row.clientWidth,
           overflowingDescendants: [...row.querySelectorAll("span")]
             .filter((span) => span.scrollWidth > span.clientWidth)
-            .map((span) => span.textContent?.trim() ?? ""),
+            .map((span) => ({
+              text: span.textContent?.trim() ?? "",
+              isNamedTruncationField: span.matches(
+                '[data-listing-card-seller-name="true"], [data-listing-card-location="true"]',
+              ),
+              overflow: getComputedStyle(span).overflow,
+              textOverflow: getComputedStyle(span).textOverflow,
+              whiteSpace: getComputedStyle(span).whiteSpace,
+            })),
         })),
       );
 
@@ -484,8 +492,20 @@ test.describe("design-token runtime contracts @serial", () => {
     ).toBeGreaterThan(0);
     expect(
       metadata.every(
-        (row) => !row.overflow && row.overflowingDescendants.length === 0,
+        (row) =>
+          !row.overflow &&
+          row.overflowingDescendants.every(
+            (field) =>
+              field.isNamedTruncationField &&
+              field.overflow === "hidden" &&
+              field.textOverflow === "ellipsis" &&
+              field.whiteSpace === "nowrap",
+          ),
       ),
+    ).toBe(true);
+    expect(
+      metadata.some((row) => row.overflowingDescendants.length > 0),
+      "expected at least one long seller or location label to use ellipsis",
     ).toBe(true);
     expect(
       await page.locator("article.min-w-0 .border-t .lucide-calendar").count(),
@@ -980,6 +1000,62 @@ test.describe("design-token runtime contracts @serial", () => {
     });
   });
 
+  test("keeps pointer hover separate from keyboard focus on the header publish action", async ({
+    page,
+  }) => {
+    const publish = page.locator("[data-header-publish-cta] a");
+    await expect(publish).toBeVisible();
+
+    await publish.hover();
+    await expect
+      .poll(() =>
+        publish.evaluate((element) => ({
+          focused: element.matches(":focus"),
+          focusVisible: element.matches(":focus-visible"),
+          outlineStyle: getComputedStyle(element).outlineStyle,
+        })),
+      )
+      .toEqual({
+        focused: false,
+        focusVisible: false,
+        outlineStyle: "none",
+      });
+
+    await page.mouse.move(20, 300);
+    await page.keyboard.press("Tab");
+    await publish.focus();
+    await expect
+      .poll(() =>
+        publish.evaluate((element) => {
+          const style = getComputedStyle(element);
+          return {
+            focused: element.matches(":focus"),
+            focusVisible: element.matches(":focus-visible"),
+            outlineStyle: style.outlineStyle,
+            outlineWidth: style.outlineWidth,
+          };
+        }),
+      )
+      .toMatchObject({
+        focused: true,
+        focusVisible: true,
+        outlineStyle: "solid",
+        outlineWidth: "2px",
+      });
+    const colors = await publish.evaluate((element) => {
+      const tokenProbe = document.createElement("span");
+      tokenProbe.style.color = "var(--color-focus)";
+      document.body.append(tokenProbe);
+      const token = getComputedStyle(tokenProbe).color;
+      tokenProbe.remove();
+      return {
+        outline: getComputedStyle(element).outlineColor,
+        token,
+      };
+    });
+    expect(colors.outline).toBe(colors.token);
+  });
+
   test("aligns footer newsletter controls with the Pro discovery control", async ({
     page,
   }) => {
@@ -1001,6 +1077,14 @@ test.describe("design-token runtime contracts @serial", () => {
     const newsletter = page.getByRole("complementary", {
       name: "Newsletter Shongre",
     });
+    const newsletterHeading = newsletter.getByRole("heading", {
+      name: "Newsletter Shongre",
+    });
+    const newsletterHeadingIcon = newsletterHeading.locator("svg");
+    const categoriesHeadingIcon = page
+      .getByRole("button", { name: /Catégories phares/i })
+      .locator("svg")
+      .first();
     const email = newsletter.getByRole("textbox", { name: /adresse email/i });
     const submit = newsletter.getByRole("button", {
       name: "S'inscrire",
@@ -1009,6 +1093,21 @@ test.describe("design-token runtime contracts @serial", () => {
 
     await expect(email).toBeVisible();
     await expect(submit).toBeVisible();
+    await expect(newsletterHeadingIcon).toHaveCount(1);
+    const headingIconMetrics = await Promise.all(
+      [newsletterHeadingIcon, categoriesHeadingIcon].map((icon) =>
+        icon.evaluate((element) => {
+          const rect = element.getBoundingClientRect();
+          return {
+            width: Math.round(rect.width),
+            height: Math.round(rect.height),
+            color: getComputedStyle(element).color,
+          };
+        }),
+      ),
+    );
+    expect(headingIconMetrics[0]).toEqual(headingIconMetrics[1]);
+    expect(headingIconMetrics[0]).toMatchObject({ width: 16, height: 16 });
     expect(await readMetric(proDiscovery)).toEqual({
       height: 44,
       radius: "10px",
@@ -1083,38 +1182,222 @@ test.describe("design-token runtime contracts @serial", () => {
     }
   });
 
-  test("keeps scrolled content underneath the sticky header", async ({
+  test("keeps scrolled content underneath the sticky environment header stack", async ({
     page,
   }) => {
     const recentCard = page.getByRole("link", { name: /Antiquités/i });
     await expect(recentCard).toBeVisible();
 
     const result = await page.evaluate(() => {
-      const header = document.querySelector<HTMLElement>("body > div header");
+      const stack = document.querySelector<HTMLElement>(
+        '[data-environment-header-stack="true"]',
+      );
+      const toolbar = stack?.querySelector<HTMLElement>(
+        '[data-environment-toolbar="demo"]',
+      );
+      const toolbarContent = toolbar?.firstElementChild as HTMLElement | null;
+      const header = stack?.querySelector<HTMLElement>("header");
       const cardLink = [
         ...document.querySelectorAll<HTMLAnchorElement>("a"),
       ].find((link) => /Antiquités/i.test(link.textContent || ""));
-      if (!header || !cardLink) return null;
+      if (!stack || !toolbar || !toolbarContent || !header || !cardLink) {
+        return null;
+      }
 
       const initial = cardLink.getBoundingClientRect();
-      const headerHeight = header.getBoundingClientRect().height;
-      window.scrollTo(0, window.scrollY + initial.top - headerHeight / 2);
+      const stackHeight = stack.getBoundingClientRect().height;
+      window.scrollTo(0, window.scrollY + initial.top - stackHeight / 2);
 
+      const root = getComputedStyle(document.documentElement);
+      const stackRect = stack.getBoundingClientRect();
+      const toolbarRect = toolbar.getBoundingClientRect();
+      const toolbarContentRect = toolbarContent.getBoundingClientRect();
       const headerRect = header.getBoundingClientRect();
       const x = Math.min(window.innerWidth - 1, Math.max(1, initial.left + 12));
-      const y = Math.max(1, headerRect.bottom - 12);
+      const y = Math.max(1, stackRect.bottom - 12);
       const topmost = document.elementFromPoint(x, y);
 
       return {
-        headerPosition: getComputedStyle(header).position,
-        headerZIndex: getComputedStyle(header).zIndex,
-        topmostIsHeader: Boolean(topmost && header.contains(topmost)),
+        toolbarHeightToken: root
+          .getPropertyValue("--spacing-environment-toolbar-height")
+          .trim(),
+        toolbarHeight: toolbarRect.height,
+        toolbarContentHorizontalCenterDelta: Math.abs(
+          toolbarContentRect.left +
+            toolbarContentRect.width / 2 -
+            window.innerWidth / 2,
+        ),
+        toolbarContentVerticalCenterDelta: Math.abs(
+          toolbarContentRect.top +
+            toolbarContentRect.height / 2 -
+            (toolbarRect.top + toolbarRect.height / 2),
+        ),
+        stackPosition: getComputedStyle(stack).position,
+        stackTop: stackRect.top,
+        stackZIndex: getComputedStyle(stack).zIndex,
+        headerStartsBelowToolbar: headerRect.top === toolbarRect.bottom,
+        topmostIsStack: Boolean(topmost && stack.contains(topmost)),
       };
     });
 
     expect(result).not.toBeNull();
-    expect(result!.headerPosition).toBe("sticky");
-    expect(Number(result!.headerZIndex)).toBe(40);
-    expect(result!.topmostIsHeader).toBe(true);
+    expect(result!.toolbarHeightToken).toBe("3.5rem");
+    expect(result!.toolbarHeight).toBe(56);
+    expect(result!.toolbarContentHorizontalCenterDelta).toBeLessThanOrEqual(
+      0.5,
+    );
+    expect(result!.toolbarContentVerticalCenterDelta).toBeLessThanOrEqual(0.5);
+    expect(result!.stackPosition).toBe("sticky");
+    expect(result!.stackTop).toBe(0);
+    expect(Number(result!.stackZIndex)).toBe(40);
+    expect(result!.headerStartsBelowToolbar).toBe(true);
+    expect(result!.topmostIsStack).toBe(true);
+  });
+
+  test("keeps every demo toolbar control on one horizontal axis", async ({
+    page,
+  }) => {
+    await usePersona(page, "support");
+
+    for (const width of [1408, 1024, 888, 768, 390]) {
+      await page.setViewportSize({ width, height: 844 });
+      await page.goto("/recherche", { waitUntil: "domcontentloaded" });
+      await waitForStableLayout(page);
+      await expect(
+        page.getByRole("button", { name: /11\. Support Shongre/ }),
+      ).toBeVisible();
+
+      const alignment = await page.evaluate(() => {
+        const toolbar = document.querySelector<HTMLElement>(
+          '[data-environment-toolbar="demo"]',
+        );
+        const content = toolbar?.firstElementChild as HTMLElement | null;
+        if (!toolbar || !content) return null;
+
+        const toolbarRect = toolbar.getBoundingClientRect();
+        const contentRect = content.getBoundingClientRect();
+        const toolbarStyle = getComputedStyle(toolbar);
+        const bottomBorder = Number.parseFloat(toolbarStyle.borderBottomWidth);
+        const centerY = contentRect.top + contentRect.height / 2;
+        const visibleRect = (element: Element) => {
+          const rect = element.getBoundingClientRect();
+          return rect.width > 0 && rect.height > 0 ? rect : null;
+        };
+        const groupRects = [...content.children]
+          .map(visibleRect)
+          .filter((rect): rect is DOMRect => Boolean(rect));
+        const controlRects = [...toolbar.querySelectorAll("button, summary, a")]
+          .map(visibleRect)
+          .filter((rect): rect is DOMRect => Boolean(rect));
+        const developmentIndicatorRect = Array.from(
+          document.querySelectorAll<HTMLElement>("nextjs-portal"),
+        )
+          .map((portal) =>
+            portal.shadowRoot
+              ?.querySelector("[data-next-badge-root]")
+              ?.getBoundingClientRect(),
+          )
+          .find((rect): rect is DOMRect => Boolean(rect));
+        return {
+          toolbarHeight: toolbarRect.height,
+          verticalPaddingDelta: Math.abs(
+            contentRect.top -
+              toolbarRect.top -
+              (toolbarRect.bottom - bottomBorder - contentRect.bottom),
+          ),
+          groupCenterDeltas: groupRects.map((rect) =>
+            Math.abs(rect.top + rect.height / 2 - centerY),
+          ),
+          controlCenterDeltas: controlRects.map((rect) =>
+            Math.abs(rect.top + rect.height / 2 - centerY),
+          ),
+          controlHeights: controlRects.map((rect) => rect.height),
+          developmentIndicatorCenterDelta: developmentIndicatorRect
+            ? Math.abs(
+                developmentIndicatorRect.top +
+                  developmentIndicatorRect.height / 2 -
+                  centerY,
+              )
+            : null,
+          horizontalOverflow:
+            document.documentElement.scrollWidth -
+            document.documentElement.clientWidth,
+        };
+      });
+
+      expect(alignment).not.toBeNull();
+      expect(alignment!.toolbarHeight).toBe(56);
+      expect(alignment!.verticalPaddingDelta).toBeLessThanOrEqual(0.5);
+      expect(alignment!.groupCenterDeltas.every((delta) => delta <= 0.5)).toBe(
+        true,
+      );
+      expect(
+        alignment!.controlCenterDeltas.every((delta) => delta <= 0.5),
+      ).toBe(true);
+      expect(alignment!.controlHeights.every((height) => height === 28)).toBe(
+        true,
+      );
+      if (alignment!.developmentIndicatorCenterDelta !== null) {
+        expect(alignment!.developmentIndicatorCenterDelta).toBeLessThanOrEqual(
+          0.5,
+        );
+      }
+      expect(alignment!.horizontalOverflow).toBe(0);
+    }
+  });
+
+  test("collapses and restores the environment toolbar with one accessible toggle", async ({
+    page,
+  }) => {
+    await usePersona(page, "individual_buyer");
+
+    for (const width of [1408, 390]) {
+      await page.setViewportSize({ width, height: 844 });
+      await page.goto("/compte/annonces", { waitUntil: "domcontentloaded" });
+      await waitForStableLayout(page);
+
+      const toolbar = page.locator('[data-environment-toolbar="demo"]');
+      const collapse = page.getByRole("button", {
+        name: "Réduire la barre d’environnement",
+      });
+      const persona = page.getByRole("button", {
+        name: /2\. Acheteur Particulier/,
+      });
+
+      await expect(toolbar).toHaveAttribute("data-collapsed", "false");
+      await expect(collapse).toHaveAttribute("aria-expanded", "true");
+      await expect(persona).toBeVisible();
+      await expect
+        .poll(() =>
+          toolbar.evaluate((element) => element.getBoundingClientRect().height),
+        )
+        .toBe(56);
+
+      await collapse.click();
+      const expand = page.getByRole("button", {
+        name: "Développer la barre d’environnement",
+      });
+      await expect(toolbar).toHaveAttribute("data-collapsed", "true");
+      await expect(expand).toHaveAttribute("aria-expanded", "false");
+      await expect(expand).toBeFocused();
+      await expect(persona).toBeHidden();
+      await expect
+        .poll(() =>
+          toolbar.evaluate((element) => element.getBoundingClientRect().height),
+        )
+        .toBe(32);
+      await expectNoHorizontalOverflow(page, `collapsed toolbar at ${width}px`);
+
+      await expand.click();
+      await expect(toolbar).toHaveAttribute("data-collapsed", "false");
+      await expect(collapse).toHaveAttribute("aria-expanded", "true");
+      await expect(collapse).toBeFocused();
+      await expect(persona).toBeVisible();
+      await expect
+        .poll(() =>
+          toolbar.evaluate((element) => element.getBoundingClientRect().height),
+        )
+        .toBe(56);
+    }
   });
 });

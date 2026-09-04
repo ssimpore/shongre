@@ -14,7 +14,27 @@ describe("getListingCardCharacteristics", () => {
           "Bon état",
           "Appartement",
         ],
+        characteristicIcons: [
+          "tag",
+          "home",
+          "ruler",
+          "layout-grid",
+          "tag",
+          "home",
+        ],
       }),
-    ).toEqual(["Appartement", "68 m²"]);
+    ).toEqual([
+      { icon: "home", label: "Appartement" },
+      { icon: "ruler", label: "68 m²" },
+    ]);
+  });
+
+  it("uses the shared fallback icon for legacy characteristic strings", () => {
+    expect(
+      getListingCardCharacteristics({
+        conditionLabel: "",
+        characteristics: ["Artisanal"],
+      }),
+    ).toEqual([{ icon: "tag", label: "Artisanal" }]);
   });
 });

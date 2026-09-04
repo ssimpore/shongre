@@ -39,6 +39,11 @@ describe("canonical vertical discovery projection", () => {
       listings.find((listing) => listing.title.includes("front-end React")),
     ).toMatchObject({
       categorySlug: "emploi",
+      sellerId: "user_employment_clara",
+      sellerName: "TechNova",
+      sellerRating: 4.8,
+      sellerReviewCount: 37,
+      publisherUserId: "user_employment_clara",
       attributes: {
         canonicalPath: `/emploi/offre/${EMPLOYMENT_DEMO_JOBS[0].slug}`,
         contract_type: "permanent",

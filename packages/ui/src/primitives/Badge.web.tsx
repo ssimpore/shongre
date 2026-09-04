@@ -4,13 +4,14 @@ import { createVariants } from "../utils/variants";
 export type BadgeVariant =
   | "neutral"
   | "primary"
-  | "pro"
-  | "verified"
+  | "inverse"
   | "urgent"
   | "deal"
   | "warning"
   | "success"
   | "featured";
+
+export type BadgeSize = "xs" | "sm" | "md";
 
 export interface BadgeProps extends Omit<
   HTMLAttributes<HTMLSpanElement>,
@@ -18,7 +19,7 @@ export interface BadgeProps extends Omit<
 > {
   children: ReactNode;
   variant?: BadgeVariant;
-  size?: "sm" | "md";
+  size?: BadgeSize;
   icon?: ReactNode;
 }
 
@@ -26,6 +27,7 @@ const badgeClasses = createVariants({
   base: "inline-flex items-center rounded-md whitespace-nowrap leading-none",
   variants: {
     size: {
+      xs: "text-overline px-1 py-0.5 gap-0.5 font-bold",
       sm: "text-micro px-2 py-0.5 gap-1 font-semibold",
       md: "text-xs font-bold px-2.5 py-1 gap-1.5",
     },
@@ -33,9 +35,7 @@ const badgeClasses = createVariants({
       neutral: "bg-stone-100 text-stone-700 border border-stone-200",
       primary:
         "bg-primary-light text-primary border border-primary-border font-bold",
-      pro: "bg-stone-900 text-white font-bold tracking-wide uppercase text-micro",
-      verified:
-        "bg-success-surface text-success border border-success-border font-semibold",
+      inverse: "border border-stone-900 bg-stone-900 text-white",
       urgent:
         "bg-danger-surface text-danger border border-danger-border font-bold",
       deal: "bg-warning-surface text-warning border border-warning-border font-bold",

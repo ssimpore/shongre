@@ -48,6 +48,7 @@ describe("structured category listing-card presentation", () => {
     expect(card.priceLabel).toContain("/ mois");
     expect(card.conditionLabel).toBe("Bon état");
     expect(card.characteristics).toEqual(["Appartement", "68 m²", "3 pièces"]);
+    expect(card.characteristicIcons).toEqual(["home", "ruler", "layout-grid"]);
     expect(card.seller?.sellerType).toBe("pro");
   });
 
@@ -166,6 +167,7 @@ describe("structured category listing-card presentation", () => {
     expect(card.characteristics[0]).toBe("2022");
     expect(card.characteristics[1]?.replace(/\s/gu, " ")).toBe("42 000 km");
     expect(card.characteristics[2]).toBe("Hybride");
+    expect(card.characteristicIcons).toEqual(["calendar", "gauge", "fuel"]);
     expect(card.conditionLabel).toBe("Excellent état");
     expect(card.isUrgent).toBe(true);
   });
@@ -212,6 +214,11 @@ describe("structured category listing-card presentation", () => {
       "CDI",
       "Hybride",
       "Développement Web",
+    ]);
+    expect(card.characteristicIcons).toEqual([
+      "briefcase",
+      "laptop",
+      "briefcase",
     ]);
     expect(card.conditionLabel).toBe("");
   });

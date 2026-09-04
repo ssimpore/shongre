@@ -4,10 +4,10 @@ import {
 } from "../../domains/user/user.domain";
 import React from "react";
 import { ShieldCheck, Star, MapPin, Clock } from "lucide-react";
+import { ProBadge, VerificationBadge } from "@shongre/ui/web";
 import { Link } from "react-router-dom";
 import { UserProfile } from "../../types";
 import { Avatar } from "./Badge";
-import { Badge } from "./Badge";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { routes } from "../../configuration/routes";
 import {
@@ -60,14 +60,16 @@ export const SellerCard: React.FC<SellerCardProps> = ({
               {user.companyName || user.name}
             </Link>
             {isPro && (
-              <Badge variant="pro" size="sm">
-                {t("ui.sellerCard.pro")}
-              </Badge>
+              <ProBadge
+                label={t("ui.identityStatus.pro.short")}
+                accessibilityLabel={t("ui.identityStatus.pro.account")}
+              />
             )}
             {showsVerifiedBadge(user) && (
-              <Badge variant="verified" size="sm" icon>
-                {t("ui.sellerCard.verifie")}
-              </Badge>
+              <VerificationBadge
+                label={t("ui.identityStatus.verification.generic")}
+                accessibilityLabel={t("ui.identityStatus.verification.profile")}
+              />
             )}
           </div>
 

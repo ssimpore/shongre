@@ -412,7 +412,8 @@
   }
 
   .motion-layout {
-    transition-property: max-width, max-height, opacity, margin, transform;
+    transition-property:
+      min-height, max-width, max-height, padding, opacity, margin, transform;
     transition-duration: var(--duration-normal);
     transition-timing-function: var(--ease-out-soft);
   }

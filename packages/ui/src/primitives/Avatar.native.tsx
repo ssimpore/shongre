@@ -13,6 +13,7 @@ import {
   nativeSpacing,
 } from "@shongre/design-tokens/native";
 import { Text } from "./Typography.native";
+import { VerifiedIcon } from "../identity/VerifiedIcon.native";
 
 export interface AvatarProps {
   src?: string;
@@ -29,6 +30,13 @@ const dimensions = {
   xl: nativeSizing.avatarXl,
   "2xl": nativeSizing.avatar2xl,
 } as const;
+const verificationSizes = {
+  sm: "xs",
+  md: "xs",
+  lg: "sm",
+  xl: "md",
+  "2xl": "md",
+} as const;
 const initials = (name: string) =>
   name
     .trim()
@@ -42,14 +50,14 @@ export function Avatar({
   name,
   size = "md",
   isVerified,
-  verifiedLabel = "Profil vérifié",
+  verifiedLabel,
   style,
 }: AvatarProps) {
   const dimension = dimensions[size];
   return (
     <View
       style={[styles.wrapper, { width: dimension, height: dimension }, style]}
-      accessibilityLabel={`${name}${isVerified ? `, ${verifiedLabel}` : ""}`}
+      accessibilityLabel={`${name}${isVerified && verifiedLabel ? `, ${verifiedLabel}` : ""}`}
     >
       {src ? (
         <Image
@@ -66,9 +74,7 @@ export function Avatar({
       )}
       {isVerified ? (
         <View style={styles.verified}>
-          <Text size="overline" weight="bold" tone="success">
-            ✓
-          </Text>
+          <VerifiedIcon size={verificationSizes[size]} />
         </View>
       ) : null}
     </View>

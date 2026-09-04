@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { VerificationBadge } from "@shongre/ui/web";
 import {
   TrendingUp,
   Eye,
@@ -101,9 +102,9 @@ export const ProDashboardPage: React.FC = () => {
             <h1 className="text-xl sm:text-2xl font-bold text-stone-900">
               {t("sellerworkspace.proDashboardPage.tableauDeBordVendeurPro")}
             </h1>
-            <Badge variant="pro" size="sm">
-              {t("sellerworkspace.proDashboardPage.siretVerifie")}
-            </Badge>
+            <VerificationBadge
+              label={t("ui.identityStatus.verification.siret")}
+            />
           </div>
           <p className="text-xs sm:text-sm text-stone-500 mt-0.5">
             {t("sellerworkspace.proDashboardPage.suiviDesPerformancesDeVotre")}

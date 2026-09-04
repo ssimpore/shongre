@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
-  BadgeCheck,
   BriefcaseBusiness,
   Building2,
   CalendarDays,
@@ -25,6 +24,7 @@ import type {
   JobPostingDetail,
 } from "@shongre/contracts/employment";
 import { EMPLOYMENT_TEXT_LIMITS } from "@shongre/contracts/employment";
+import { VerificationBadge } from "@shongre/ui/web";
 import { services } from "../../api/client/service-registry";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
@@ -36,6 +36,7 @@ import {
   Container,
   FormField,
   Modal,
+  SellerIdentityLink,
   Select,
   Skeleton,
   StatePanel,
@@ -52,8 +53,10 @@ import {
   resolveSeoPolicy,
   structuredDataForPolicy,
 } from "../../platform/seo/seo-policy";
+import { useTranslation } from "../../i18n/I18nProvider";
 
 export const EmploymentJobDetailPage: React.FC = () => {
+  const { t } = useTranslation();
   const { slug = "" } = useParams<{ slug: string }>();
   const { currentUser } = useAuth();
   const { currentLocale, marketContext, activeMarket, convertMoney } =
@@ -275,13 +278,9 @@ export const EmploymentJobDetailPage: React.FC = () => {
                       {job.employer.name}
                     </Link>
                     {job.employer.isPubliclyVerified ? (
-                      <span className="inline-flex items-center gap-1 text-success">
-                        <BadgeCheck
-                          className="h-icon-sm w-icon-sm"
-                          aria-hidden="true"
-                        />
-                        Employeur vérifié
-                      </span>
+                      <VerificationBadge
+                        label={t("ui.identityStatus.verification.employer")}
+                      />
                     ) : (
                       <span className="font-normal text-text-muted">
                         Identité déclarée
@@ -478,6 +477,17 @@ export const EmploymentJobDetailPage: React.FC = () => {
 
           <aside className="space-y-4 lg:sticky lg:top-24">
             <div className="rounded-card border border-border-base bg-bg-surface p-5 shadow-sm">
+              <SellerIdentityLink
+                to={employerPublicUrl}
+                name={job.employer.name}
+                avatarUrl={job.employer.logoUrl}
+                isVerified={job.employer.isPubliclyVerified}
+                isProfessional={Boolean(job.employer.organizationId)}
+                rating={job.employer.rating}
+                reviewCount={job.employer.reviewCount}
+                locationLabel={job.employer.locationLabel}
+                className="mb-4 border-b border-border-subtle pb-4"
+              />
               <Button variant="primary" className="w-full" onClick={apply}>
                 {job.applicationMethod === "shongre"
                   ? "Postuler gratuitement"

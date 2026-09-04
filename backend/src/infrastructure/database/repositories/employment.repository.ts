@@ -953,6 +953,10 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
       const employer = Array.isArray(row.employer)
         ? row.employer[0]
         : row.employer;
+      const employerOwner = Array.isArray(employer?.owner)
+        ? employer.owner[0]
+        : employer?.owner;
+      const employerReviewCount = Number(employerOwner?.review_count || 0);
       const locations = [...(row.locations || [])].sort(
         (a: any, b: any) => Number(b.is_primary) - Number(a.is_primary),
       );
@@ -990,6 +994,13 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
           employerTypeId: employer.employer_type_id,
           description: employer.description || undefined,
           logoUrl: employer.logo_url || undefined,
+          rating:
+            employerReviewCount > 0 && employerOwner?.rating != null
+              ? Number(employerOwner.rating)
+              : undefined,
+          reviewCount:
+            employerReviewCount > 0 ? employerReviewCount : undefined,
+          locationLabel: employerOwner?.city || undefined,
           websiteUrl: employer.website_url || undefined,
           verificationLevel: employer.verification_level,
           isPubliclyVerified: verified,
@@ -1124,7 +1135,7 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
   }
 
   private jobSelect() {
-    return "*, employer:employment_employer_profiles!employment_jobs_employer_id_fkey(*), locations:employment_job_locations(*), skills:employment_job_skills(*), languages:employment_job_languages(*), questions:employment_screening_questions(*)";
+    return "*, employer:employment_employer_profiles!employment_jobs_employer_id_fkey(*, owner:profiles!employment_employer_profiles_owner_user_id_fkey(rating,review_count,city)), locations:employment_job_locations(*), skills:employment_job_skills(*), languages:employment_job_languages(*), questions:employment_screening_questions(*)";
   }
 
   override async getJob(idOrSlug: string) {

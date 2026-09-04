@@ -18,6 +18,7 @@ import type {
   EmployerSummary,
   RecruiterWorkspace,
 } from "@shongre/contracts/employment";
+import { VerificationBadge } from "@shongre/ui/web";
 import { useNavigate } from "react-router-dom";
 import { services } from "../../api/client/service-registry";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
@@ -356,7 +357,9 @@ export const EmploymentRecruiterWorkspacePage: React.FC = () => {
                   {workspace.employer.name}
                 </h1>
                 {workspace.employer.isPubliclyVerified && (
-                  <Badge variant="verified">Employeur vérifié</Badge>
+                  <VerificationBadge
+                    label={t("ui.identityStatus.verification.employer")}
+                  />
                 )}
               </div>
               <p className="text-sm text-text-secondary">

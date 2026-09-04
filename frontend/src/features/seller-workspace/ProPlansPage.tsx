@@ -768,7 +768,7 @@ export const ProPlansPage: React.FC = () => {
                           </p>
                         </div>
                         {isCurrent && (
-                          <Badge variant="verified" size="sm">
+                          <Badge variant="success" size="sm">
                             Actuel
                           </Badge>
                         )}
@@ -1068,7 +1068,7 @@ export const ProPlansPage: React.FC = () => {
                       variant={
                         currentSubscription.status === "past_due"
                           ? "urgent"
-                          : "verified"
+                          : "success"
                       }
                     >
                       {STATUS_LABELS[currentSubscription.status] ||

@@ -19,7 +19,10 @@ export const HomeHeroSection: React.FC<{ section: HomepageSectionView }> = ({
       className="relative overflow-hidden bg-bg-base py-3 sm:py-5"
     >
       <Container className="relative z-raised">
-        <div className="rounded-overlay border border-border-base bg-bg-surface px-5 py-7 shadow-sm sm:p-8 lg:p-10">
+        <div
+          data-home-hero-surface="true"
+          className="rounded-card border border-border-base bg-bg-surface px-5 py-7 shadow-sm sm:p-8 lg:p-10"
+        >
           <div className="grid w-full grid-cols-1 items-stretch gap-8 md:grid-cols-2 md:gap-10 xl:gap-12">
             <div className="flex min-w-0 w-full flex-col justify-between text-left">
               <div className="flex flex-col items-start gap-5">

@@ -1,8 +1,9 @@
 import React from "react";
 import { ChevronRight, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
+import { ProBadge } from "@shongre/ui/web";
 import { useTranslation } from "../../i18n/I18nProvider";
-import { Avatar, Badge } from "../primitives/Badge";
+import { Avatar } from "../primitives/Badge";
 import { cn } from "../utils/variants";
 import { RatingDisplay } from "./Price";
 
@@ -78,9 +79,11 @@ export const SellerIdentityLink: React.FC<SellerIdentityLinkProps> = ({
             {name}
           </span>
           {isProfessional ? (
-            <Badge variant="pro" size="sm" className="shrink-0">
-              {t("ui.sellerCard.pro")}
-            </Badge>
+            <ProBadge
+              label={t("ui.identityStatus.pro.short")}
+              accessibilityLabel={t("ui.identityStatus.pro.account")}
+              size="xs"
+            />
           ) : null}
         </div>
 

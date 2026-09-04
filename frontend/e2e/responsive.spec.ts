@@ -136,6 +136,17 @@ test.describe("open dropdowns stay on screen", () => {
         name: /préférences régionales/i,
       });
       await expect(dialog).toBeVisible();
+      const optionGroupColumns = await dialog
+        .getByRole("radiogroup")
+        .evaluateAll((groups) =>
+          groups.map(
+            (group) =>
+              getComputedStyle(group)
+                .gridTemplateColumns.split(/\s+/)
+                .filter(Boolean).length,
+          ),
+        );
+      expect(optionGroupColumns).toEqual([1, 1, 1]);
       const bounds = await dialog.boundingBox();
       const viewportWidth = await page.evaluate(() => window.innerWidth);
       const box = bounds

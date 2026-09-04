@@ -14,6 +14,7 @@ const baseListing: ListingCardView = {
   categoryLabel: "Immobilier",
   conditionLabel: "Bon état",
   characteristics: ["Appartement", "68 m²", "3 pièces", "Balcon", "Bon état"],
+  characteristicIcons: ["home", "ruler", "layout-grid", "tag", "tag"],
   publishedAt: "2026-08-24T12:00:00.000Z",
   photoCount: 4,
   deliveryAvailable: true,
@@ -29,6 +30,12 @@ const baseListing: ListingCardView = {
   isFeatured: true,
 };
 
+const identityLabels = {
+  pro: "Pro",
+  proAccessibility: "Vendeur professionnel",
+  verified: "Profil vérifié",
+};
+
 describe("canonical web listing card", () => {
   it("keeps long essential content in one accessible shared anatomy", () => {
     const html = renderToStaticMarkup(
@@ -39,6 +46,7 @@ describe("canonical web listing card", () => {
         isFavorite
         favoriteLabel="Retirer des favoris"
         onFavoriteToggle={vi.fn()}
+        identityLabels={identityLabels}
       />,
     );
 
@@ -51,6 +59,10 @@ describe("canonical web listing card", () => {
     expect(html).not.toContain("À la une");
     expect(html).toContain("Appartement");
     expect(html).toContain("68 m²");
+    expect(html).toContain('data-listing-card-characteristic-icon="home"');
+    expect(html).toContain('data-listing-card-characteristic-icon="ruler"');
+    expect(html).toContain("lucide-house");
+    expect(html).toContain("lucide-ruler");
     expect(html).not.toContain("3 pièces");
     expect(html).not.toContain(">Bon état<");
     expect(html).not.toContain("Balcon");
@@ -65,7 +77,8 @@ describe("canonical web listing card", () => {
     expect(html).toContain('data-listing-card-seller="true"');
     expect(html).toContain('data-listing-card-seller-avatar="true"');
     expect(html).toContain('data-listing-card-meta="true"');
-    expect(html).not.toContain('data-listing-card-seller-verified="true"');
+    expect(html).not.toContain('data-ui-verified-icon="true"');
+    expect(html).toContain('data-ui-pro-badge="true"');
     expect(html).toContain(">Pro<");
     expect(html).toContain('data-listing-card-top-overlay="true"');
     expect(html).toContain('data-listing-card-promotion="true"');
@@ -82,11 +95,18 @@ describe("canonical web listing card", () => {
       html.indexOf('data-listing-card-delivery-overlay="true"'),
     ).toBeLessThan(html.indexOf('data-listing-card-footer="true"'));
     expect(html).toContain("listing-card-seller-grid");
+    expect(html).toContain('data-listing-card-seller-name="true"');
+    expect(html).toContain('data-listing-card-location="true"');
+    expect(html).toContain("inline-flex min-w-0 max-w-full items-center gap-1");
+    expect(html).toContain(
+      "min-w-0 truncate font-semibold text-text-secondary",
+    );
+    expect(html).toContain("min-w-0 flex-1 truncate");
     expect(html).not.toContain("absolute left-0 top-2 hidden sm:block");
     expect(html).toContain("min-w-0 break-words");
   });
 
-  it("uses the verification shield only for verified individual sellers", () => {
+  it("uses the canonical verification icon only for verified individual sellers", () => {
     const html = renderToStaticMarkup(
       <ListingCard
         listing={{
@@ -98,12 +118,14 @@ describe("canonical web listing card", () => {
           },
         }}
         href="/annonce/listing-card-test"
+        identityLabels={identityLabels}
       />,
     );
 
-    expect(html).toContain('data-listing-card-seller-verified="true"');
-    expect(html).toContain("lucide-shield-check");
-    expect(html).toContain("fill-success text-white");
+    expect(html).toContain('data-ui-verified-icon="true"');
+    expect(html).toContain("lucide-badge-check");
+    expect(html).toContain("text-white h-icon-sm w-icon-sm");
+    expect(html).toContain("h-full w-full fill-success");
     expect(html).not.toContain(">Pro<");
   });
 
@@ -122,6 +144,7 @@ describe("canonical web listing card", () => {
         }}
         href="/annonce/listing-card-test"
         locale="fr-FR"
+        identityLabels={identityLabels}
       />,
     );
 
@@ -143,6 +166,7 @@ describe("canonical web listing card", () => {
         }}
         href="/annonce/listing-card-test"
         locale="fr-FR"
+        identityLabels={identityLabels}
       />,
     );
     dateNow.mockRestore();
@@ -157,6 +181,7 @@ describe("canonical web listing card", () => {
         listing={{ ...baseListing, isFeatured: false }}
         href="/annonce/listing-card-test"
         variant="list"
+        identityLabels={identityLabels}
       />,
     );
 

@@ -111,7 +111,9 @@ export const nativeAspect = {
 export const iconStrokeWidths = themeIconStrokeWidths;
 
 const nativeFontSizes = {
+  overline: remToPx(themeText.overline),
   micro: remToPx(themeText.micro),
+  xs: remToPx(themeText.xs),
   caption: remToPx(themeText.caption),
   bodySm: remToPx(themeText["body-sm"]),
   body: remToPx(themeText["body-md"]),
@@ -155,6 +157,7 @@ export const nativeTypography = {
     headingXs: 22,
   },
   letterSpacing: {
+    wide: emToPx(themeLetterSpacing.wide, nativeFontSizes.micro),
     overline: emToPx(themeLetterSpacing.wider, nativeFontSizes.micro),
   },
 } as const;

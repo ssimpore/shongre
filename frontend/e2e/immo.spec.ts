@@ -146,7 +146,16 @@ test.describe("Shongre Immo", () => {
     ).toBeVisible();
     await expect(agencyLink).toContainText("AC");
     await expect(agencyLink).toContainText("Agence Canopée");
-    await expect(agencyLink.getByText("Pro", { exact: true })).toBeVisible();
+    const professionalBadge = agencyLink.getByRole("img", {
+      name: "Compte professionnel",
+    });
+    await expect(professionalBadge).toBeVisible();
+    await expect(professionalBadge).toHaveAttribute(
+      "data-ui-pro-badge",
+      "true",
+    );
+    await expect(professionalBadge).toHaveClass(/\btext-overline\b/);
+    await expect(professionalBadge).toHaveClass(/\bpx-1\b/);
     await expect(
       agencyLink.getByRole("img", { name: "Note 4,9 sur 5, 86 avis" }),
     ).toBeVisible();

@@ -130,10 +130,16 @@ test.describe("canonical listing cards", () => {
         '[title="Thomas Laurent"]',
       );
       const sellerVerified = sellerRow?.querySelector<HTMLElement>(
-        '[data-listing-card-seller-verified="true"]',
+        '[data-ui-verified-icon="true"]',
       );
       const sellerRect = sellerRow?.getBoundingClientRect();
-      const sellerNameRect = sellerName?.getBoundingClientRect();
+      const sellerNameTextRect = (() => {
+        const textNode = sellerName?.firstChild;
+        if (!textNode) return undefined;
+        const range = document.createRange();
+        range.selectNodeContents(textNode);
+        return range.getBoundingClientRect();
+      })();
       const sellerVerifiedRect = sellerVerified?.getBoundingClientRect();
       const sellerAvatar = Array.from(
         element.querySelectorAll<HTMLElement>(
@@ -159,10 +165,10 @@ test.describe("canonical listing cards", () => {
         ),
         sellerAvatarHasPhoto: Boolean(sellerAvatarImage?.getAttribute("src")),
         verifiedFollowsName: Boolean(
-          sellerNameRect &&
+          sellerNameTextRect &&
           sellerVerifiedRect &&
-          sellerVerifiedRect.left >= sellerNameRect.right &&
-          sellerVerifiedRect.left - sellerNameRect.right <= 8,
+          sellerVerifiedRect.left >= sellerNameTextRect.right &&
+          sellerVerifiedRect.left - sellerNameTextRect.right <= 8,
         ),
         footerContained: Boolean(
           footerRect && footerRect.bottom <= cardRect.bottom + 1,
@@ -180,26 +186,76 @@ test.describe("canonical listing cards", () => {
     expect(geometry.verifiedFollowsName).toBe(true);
     expect(geometry.footerContained).toBe(true);
 
-    const verificationShield = card
+    const verificationIcon = card
       .locator('[data-listing-card-seller="true"]')
-      .locator('[data-listing-card-seller-verified="true"]');
-    await expect(verificationShield.locator("svg")).toHaveClass(
-      /lucide-shield-check/,
+      .locator('[data-ui-verified-icon="true"]');
+    await expect(verificationIcon.locator("svg")).toHaveClass(
+      /lucide-badge-check/,
     );
 
     const professionalCard = page
       .locator('[data-listing-card="true"]', { hasText: "Atelier Nordique" })
       .first();
     await professionalCard.scrollIntoViewIfNeeded();
+    const proBadge = professionalCard.locator('[data-ui-pro-badge="true"]');
+    await expect(proBadge).toBeVisible();
+    await expect(proBadge).toHaveText("Pro");
+    await expect(proBadge).toHaveAttribute(
+      "aria-label",
+      "Vendeur professionnel",
+    );
     await expect(
-      professionalCard
-        .locator("span:visible")
-        .filter({ hasText: /^Pro$/ })
-        .first(),
-    ).toBeVisible();
-    await expect(
-      professionalCard.locator('[data-listing-card-seller-verified="true"]'),
+      professionalCard.locator('[data-ui-verified-icon="true"]'),
     ).toHaveCount(0);
+  });
+
+  test("keeps long seller and location labels on one ellipsized line", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1408, height: 701 });
+    await usePersona(page, "individual_buyer");
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await waitForStableLayout(page);
+
+    const sellerName = page
+      .locator('[data-listing-card-seller-name="true"]', {
+        hasText: "Atelier Nordique SAS",
+      })
+      .first();
+    const location = page
+      .locator('[data-listing-card-location="true"]', {
+        hasText: "Lyon 3e · Montchat",
+      })
+      .first();
+    await sellerName.scrollIntoViewIfNeeded();
+    await expect(sellerName).toBeVisible();
+    await expect(location).toBeVisible();
+
+    const readTruncation = (target: Locator) =>
+      target.evaluate((element) => {
+        const rect = element.getBoundingClientRect();
+        const style = getComputedStyle(element);
+        return {
+          oneLine: rect.height <= Number.parseFloat(style.lineHeight) + 1,
+          overflow: style.overflow,
+          textOverflow: style.textOverflow,
+          whiteSpace: style.whiteSpace,
+          isTruncated: element.scrollWidth > element.clientWidth,
+        };
+      });
+
+    for (const target of [sellerName, location]) {
+      expect(await readTruncation(target)).toEqual({
+        oneLine: true,
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        whiteSpace: "nowrap",
+        isTruncated: true,
+      });
+    }
+    await expect(sellerName).toHaveAttribute("title", "Atelier Nordique SAS");
+    await expect(location).toHaveAttribute("title", "Lyon 3e · Montchat");
+    await expectNoHorizontalOverflow(page, "single-line listing metadata");
   });
 
   test("keeps promoted-card overlays, rail controls and content zones visibly separated", async ({
@@ -313,9 +369,7 @@ test.describe("canonical listing cards", () => {
     );
     await rightControl.click();
     await expect
-      .poll(() =>
-        track.evaluate((element) => Math.round(element.scrollLeft)),
-      )
+      .poll(() => track.evaluate((element) => Math.round(element.scrollLeft)))
       .toBeGreaterThan(initialScrollLeft);
     await expect(
       railShell.getByRole("button", { name: /vers la gauche$/ }),
@@ -476,6 +530,62 @@ test.describe("canonical listing cards", () => {
     await expect(
       page.getByText("Chambres", { exact: true }).locator(".."),
     ).toContainText("3");
+  });
+
+  test("renders shared semantic icons across category and homepage cards", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1408, height: 701 });
+    await usePersona(page, "individual_buyer");
+    await page.goto("/auto", { waitUntil: "domcontentloaded" });
+    await waitForStableLayout(page);
+
+    const vehicleCard = page
+      .locator('[data-listing-card="true"]', {
+        hasText: "Peugeot 3008 BlueHDi 130 S&S BVM6 Allure",
+      })
+      .first();
+    await vehicleCard.scrollIntoViewIfNeeded();
+    await expect(vehicleCard).toBeVisible();
+
+    const year = vehicleCard.locator(
+      '[data-listing-card-characteristic-icon="calendar"]',
+      { hasText: "2019" },
+    );
+    const mileage = vehicleCard.locator(
+      '[data-listing-card-characteristic-icon="gauge"]',
+      { hasText: /84[\s\u202f]500 km/u },
+    );
+    await expect(year).toBeVisible();
+    await expect(year.locator("svg")).toHaveClass(/lucide-calendar/);
+    await expect(mileage).toBeVisible();
+    await expect(mileage.locator("svg")).toHaveClass(/lucide-gauge/);
+
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await waitForStableLayout(page);
+    await page.getByTestId("home-deferred-content").scrollIntoViewIfNeeded();
+    const discovery = page.getByTestId("home-discovery");
+    await expect(discovery).toBeVisible();
+
+    const tabs = discovery.locator(
+      '[role="tab"][aria-controls="home-discovery-panel"]',
+    );
+    const tabCount = await tabs.count();
+    for (let index = 0; index < tabCount; index += 1) {
+      const tab = tabs.nth(index);
+      await tab.click();
+      await expect(tab).toHaveAttribute("aria-selected", "true");
+      const visibleCharacteristics = discovery.locator(
+        "#home-discovery-panel [data-listing-card-characteristic-icon]:visible",
+      );
+      const characteristicCount = await visibleCharacteristics.count();
+      expect(characteristicCount).toBeGreaterThan(0);
+      for (let item = 0; item < characteristicCount; item += 1) {
+        await expect(
+          visibleCharacteristics.nth(item).locator("svg"),
+        ).toHaveCount(1);
+      }
+    }
   });
 
   test("homepage discovery fits five complete compact cards in a desktop row", async ({

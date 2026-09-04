@@ -175,7 +175,7 @@ export const BillingHistoryModal: React.FC<BillingHistoryModalProps> = ({
                         </h3>
                         <Badge
                           variant={
-                            invoice.status === "paid" ? "verified" : "neutral"
+                            invoice.status === "paid" ? "success" : "neutral"
                           }
                           size="sm"
                         >

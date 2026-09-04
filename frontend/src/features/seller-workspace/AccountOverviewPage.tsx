@@ -1,5 +1,6 @@
 import { isProSeller } from "../../domains/user/user.domain";
 import React, { useState, useEffect } from "react";
+import { VerificationBadge } from "@shongre/ui/web";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   List,
@@ -36,7 +37,7 @@ import { Listing } from "../../types";
 import { usePublishCta } from "../../security/usePublishCta";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { usePageMeta } from "../../hooks/usePageMeta";
-import { StaffBadge } from "../../design-system/components/IdentityBadges";
+import { StaffBadge } from "../../design-system/components/StaffBadge";
 import { STAFF_ROLE_PRESENTATION } from "../../security/roles.config";
 
 function getPhotoUrl(photo: any): string {
@@ -275,9 +276,10 @@ export const AccountOverviewPage: React.FC = () => {
                   <Mail className="w-icon-md h-icon-md" />
                 </div>
                 {isEmailVerified ? (
-                  <span className="inline-flex items-center gap-1 text-micro font-bold text-success bg-success-surface px-2 py-0.5 rounded-md border border-success-border">
-                    <CheckCircle2 className="w-icon-xs h-icon-xs" /> Vérifié
-                  </span>
+                  <VerificationBadge
+                    size="xs"
+                    label={t("ui.identityStatus.verification.email")}
+                  />
                 ) : (
                   <span className="inline-flex items-center gap-1 text-micro font-bold text-warning bg-warning-surface px-2 py-0.5 rounded-md border border-warning-border">
                     <AlertCircle className="w-icon-xs h-icon-xs" /> En attente
@@ -316,9 +318,10 @@ export const AccountOverviewPage: React.FC = () => {
                   <Smartphone className="w-icon-md h-icon-md" />
                 </div>
                 {hasVerifiedPhone ? (
-                  <span className="inline-flex items-center gap-1 text-micro font-bold text-success bg-success-surface px-2 py-0.5 rounded-md border border-success-border">
-                    <CheckCircle2 className="w-icon-xs h-icon-xs" /> Vérifié SMS
-                  </span>
+                  <VerificationBadge
+                    size="xs"
+                    label={t("ui.identityStatus.verification.sms")}
+                  />
                 ) : (
                   <span className="inline-flex items-center gap-1 text-micro font-bold text-stone-500 bg-stone-100 px-2 py-0.5 rounded-md">
                     {t("sellerworkspace.accountOverviewPage.nonVerifie")}

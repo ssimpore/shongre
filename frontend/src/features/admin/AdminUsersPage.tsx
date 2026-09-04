@@ -1,6 +1,7 @@
 import { isProSeller } from "../../domains/user/user.domain";
 import { FormField, Modal, Select, Textarea } from "../../design-system";
 import React, { useState, useEffect } from "react";
+import { VerificationBadge } from "@shongre/ui/web";
 import {
   Search,
   AlertTriangle,
@@ -30,10 +31,7 @@ import {
   STAFF_ROLES,
   staffRoleFromLegacyRole,
 } from "@shongre/contracts/access-control";
-import {
-  StaffBadge,
-  VerificationBadge,
-} from "../../design-system/components/IdentityBadges";
+import { StaffBadge } from "../../design-system/components/StaffBadge";
 import { CapabilityOverridesModal } from "./CapabilityOverridesModal";
 import { adminPrimaryIdentity } from "./admin-user-identity";
 import { AdminUserPrimaryBadge } from "./AdminUserPrimaryBadge";
@@ -360,15 +358,19 @@ export const AdminUsersPage: React.FC = () => {
                           sizes="36px"
                           className="w-9 h-9 rounded-pill object-cover border border-border-base"
                         />
-                        <div>
+                        <div className="flex flex-col items-start gap-1">
                           <div className="font-bold text-text-main flex items-center gap-1.5">
                             <span>{u.name}</span>
                           </div>
-                          <VerificationBadge
-                            verified={u.isVerified}
-                            accountType={u.accountType || "individual"}
-                            className="mt-1"
-                          />
+                          {u.isVerified ? (
+                            <VerificationBadge
+                              label={t(
+                                u.accountType === "professional"
+                                  ? "ui.identityStatus.verification.professional"
+                                  : "ui.identityStatus.verification.identity",
+                              )}
+                            />
+                          ) : null}
                           <div className="text-xs text-stone-500">
                             {u.companyName ? `${u.companyName} • ` : ""}
                             {u.email}

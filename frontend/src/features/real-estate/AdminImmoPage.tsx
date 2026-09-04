@@ -6,13 +6,13 @@ import {
   CircleDollarSign,
   Flag,
   Settings2,
-  ShieldCheck,
 } from "lucide-react";
 import type {
   PropertyFieldRule,
   RealEstateAdminOverview,
 } from "@shongre/contracts/real-estate";
 import type { VerticalAddOn, VerticalOffer } from "@shongre/contracts/vertical";
+import { VerifiedIcon } from "@shongre/ui/web";
 import { services } from "../../api/client/service-registry";
 import { useToast } from "../../app/providers/ToastProvider";
 import {
@@ -178,14 +178,26 @@ export const AdminImmoPage: React.FC = () => {
 
   if (!overview) return <Skeleton className="h-168 rounded-card" />;
   const metrics = [
-    ["Biens actifs", overview.metrics.activeProperties, Building2],
-    ["À modérer", overview.metrics.pendingModeration, Flag],
-    ["Pros vérifiés", overview.metrics.verifiedProfessionals, ShieldCheck],
-    [
-      "Conversion gratuit → payant",
-      `${overview.metrics.freeToPaidConversionPercent} %`,
-      CheckCircle2,
-    ],
+    {
+      label: "Biens actifs",
+      value: overview.metrics.activeProperties,
+      icon: <Building2 className="h-5 w-5 text-primary" />,
+    },
+    {
+      label: "À modérer",
+      value: overview.metrics.pendingModeration,
+      icon: <Flag className="h-5 w-5 text-primary" />,
+    },
+    {
+      label: "Pros vérifiés",
+      value: overview.metrics.verifiedProfessionals,
+      icon: <VerifiedIcon size="md" />,
+    },
+    {
+      label: "Conversion gratuit → payant",
+      value: `${overview.metrics.freeToPaidConversionPercent} %`,
+      icon: <CheckCircle2 className="h-5 w-5 text-primary" />,
+    },
   ] as const;
   return (
     <div className="space-y-5">
@@ -214,14 +226,14 @@ export const AdminImmoPage: React.FC = () => {
       </header>
 
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        {metrics.map(([label, value, Icon]) => (
+        {metrics.map(({ label, value, icon }) => (
           <article
             key={label}
             className="rounded-card border border-border-base bg-bg-surface p-4"
           >
             <div className="flex items-center justify-between">
               <p className="text-xs font-bold text-text-muted">{label}</p>
-              <Icon className="h-5 w-5 text-primary" />
+              {icon}
             </div>
             <p className="mt-3 text-2xl font-bold">{String(value)}</p>
           </article>

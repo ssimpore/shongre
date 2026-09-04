@@ -1,11 +1,6 @@
 import React, { useState, useMemo } from "react";
-import {
-  Star,
-  CheckCircle2,
-  MessageSquare,
-  ShoppingBag,
-  Calendar,
-} from "lucide-react";
+import { Star, MessageSquare, ShoppingBag, Calendar } from "lucide-react";
+import { VerificationBadge } from "@shongre/ui/web";
 import { ReviewItem, UserProfile } from "../../../types";
 import { Avatar } from "../../../design-system/primitives/Badge";
 import { ProgressBar } from "../../../design-system/primitives/ProgressBar";
@@ -193,10 +188,10 @@ export const SellerReviewsTab: React.FC<SellerReviewsTabProps> = ({
                       <span className="text-xs sm:text-sm font-bold text-stone-900">
                         {rev.authorName}
                       </span>
-                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-success bg-success-surface px-2 py-1 rounded-full border border-success-border">
-                        <CheckCircle2 className="w-icon-xs h-icon-xs" />
-                        {t("profile.sellerReviewsTab.achatVerifie")}
-                      </span>
+                      <VerificationBadge
+                        size="xs"
+                        label={t("profile.sellerReviewsTab.achatVerifie")}
+                      />
                     </div>
 
                     <div className="flex items-center gap-2 mt-0.5 text-xs text-stone-500">

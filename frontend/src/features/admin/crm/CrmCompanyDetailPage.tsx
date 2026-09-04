@@ -3,7 +3,6 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   ArrowLeft,
   Building2,
-  BadgeCheck,
   Boxes,
   CreditCard,
   ExternalLink,
@@ -25,6 +24,7 @@ import type {
   CrmOpportunity,
   CrmShongreIntelligence,
 } from "@shongre/contracts/crm";
+import { VerificationBadge } from "@shongre/ui/web";
 import { services } from "../../../api/client/service-registry";
 import { Button } from "../../../design-system/primitives/Button";
 import { Modal } from "../../../design-system/primitives/Modal";
@@ -396,10 +396,9 @@ export const CrmCompanyDetailPage: React.FC = () => {
               </span>
               <h2 className="text-sm font-bold">Intelligence Shongre</h2>
               {shongre?.organization?.verified && (
-                <span className="inline-flex items-center gap-1 rounded-pill bg-success-surface px-2 py-1 text-micro font-bold text-success">
-                  <BadgeCheck className="h-icon-xs w-icon-xs" />{" "}
-                  {t("identityBadge.verification.professional")}
-                </span>
+                <VerificationBadge
+                  label={t("ui.identityStatus.verification.professional")}
+                />
               )}
             </div>
             <p className="mt-1 text-micro text-stone-500">

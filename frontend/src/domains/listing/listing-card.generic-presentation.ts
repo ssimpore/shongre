@@ -1,3 +1,4 @@
+import type { ListingCharacteristicIcon } from "@shongre/contracts";
 import type { Listing, ListingCondition } from "../../types";
 
 const CONDITION_LABELS: Record<ListingCondition, { fr: string; en: string }> = {
@@ -74,6 +75,63 @@ const INTERNAL_ATTRIBUTE_KEYS = new Set([
   "verticalSchemaVersion",
   "verticalType",
 ]);
+
+const ATTRIBUTE_ICON_BY_KEY: Readonly<
+  Record<string, ListingCharacteristicIcon>
+> = {
+  brand: "tag",
+  clothing_category: "shirt",
+  contract_type: "briefcase",
+  contractType: "briefcase",
+  fuel: "fuel",
+  fuel_type: "fuel",
+  furniture_type: "home",
+  gearbox: "layers",
+  land_area: "ruler",
+  living_area: "ruler",
+  livingAreaSquareMeters: "ruler",
+  material: "layers",
+  mileage: "gauge",
+  model: "tag",
+  model_year: "calendar",
+  profession: "briefcase",
+  professionLabel: "briefcase",
+  property_type: "home",
+  propertyType: "home",
+  remote_work: "laptop",
+  rooms: "layout-grid",
+  size: "ruler",
+  storage: "database",
+  storage_capacity_gb: "database",
+  transmission: "layers",
+  working_arrangement: "laptop",
+  year: "calendar",
+};
+
+function characteristicIconForKey(key: string): ListingCharacteristicIcon {
+  const known = ATTRIBUTE_ICON_BY_KEY[key];
+  if (known) return known;
+
+  const normalized = key.replace(/([a-z])([A-Z])/g, "$1_$2").toLowerCase();
+  if (/(?:year|date|age)/u.test(normalized)) return "calendar";
+  if (/(?:mileage|distance|odometer|speed)/u.test(normalized)) return "gauge";
+  if (/(?:fuel|energy|motor)/u.test(normalized)) return "fuel";
+  if (/(?:area|dimension|height|length|size|width)/u.test(normalized))
+    return "ruler";
+  if (/(?:room|bedroom)/u.test(normalized)) return "layout-grid";
+  if (/(?:contract|job|profession|trade)/u.test(normalized)) return "briefcase";
+  if (/(?:digital|online|remote|software)/u.test(normalized)) return "laptop";
+  if (/(?:capacity|memory|storage)/u.test(normalized)) return "database";
+  if (/(?:clothing|garment|shirt)/u.test(normalized)) return "shirt";
+  if (/(?:material|composition|type|category)/u.test(normalized))
+    return "layers";
+  return "tag";
+}
+
+export interface GenericListingCardCharacteristic {
+  icon: ListingCharacteristicIcon;
+  label: string;
+}
 
 function humanize(value: string, language: "fr" | "en"): string {
   const normalized = value.trim().toLocaleLowerCase("fr-FR");
@@ -156,6 +214,15 @@ export function getGenericListingCardCharacteristics(
   listing: Pick<Listing, "attributes" | "categorySlug" | "subCategorySlug">,
   locale: string,
 ): string[] {
+  return getGenericListingCardCharacteristicPresentation(listing, locale).map(
+    (characteristic) => characteristic.label,
+  );
+}
+
+export function getGenericListingCardCharacteristicPresentation(
+  listing: Pick<Listing, "attributes" | "categorySlug" | "subCategorySlug">,
+  locale: string,
+): GenericListingCardCharacteristic[] {
   const attributes = listing.attributes || {};
   const groups =
     CARD_ATTRIBUTE_GROUPS[listing.categorySlug] ||
@@ -171,8 +238,16 @@ export function getGenericListingCardCharacteristics(
     );
     if (!key) return [];
     const formatted = formatAttribute(key, attributes[key], attributes, locale);
-    return formatted ? [formatted] : [];
+    return formatted
+      ? [{ icon: characteristicIconForKey(key), label: formatted }]
+      : [];
   });
 
-  return [...new Set(values)].slice(0, 3);
+  return values
+    .filter(
+      (value, index) =>
+        values.findIndex((candidate) => candidate.label === value.label) ===
+        index,
+    )
+    .slice(0, 3);
 }

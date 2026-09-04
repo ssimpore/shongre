@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import L from "leaflet";
+import { VerificationBadge } from "@shongre/ui/web";
 import "leaflet/dist/leaflet.css";
 import { routes } from "../../configuration/routes";
 import {
@@ -18,7 +19,6 @@ import {
   getListingCoordinates,
   getMarketMapConfiguration,
 } from "../../configuration/geoCoordinates";
-import { Badge } from "../../design-system/primitives/Badge";
 import { Image } from "../../design-system/primitives/Image";
 import { showsVerifiedBadge } from "../../domains/user/user.domain";
 import { useTranslation } from "../../i18n/I18nProvider";
@@ -399,83 +399,95 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
           </div>
         )}
 
-        {/* Leaflet Container */}
-        <div ref={mapContainerRef} className="w-full h-full z-raised" />
-      </div>
+        {/* Keep the selected listing inside the actual map stage rather than
+            growing the page below it. The wrapper also prevents the preview
+            from covering the optional desktop results sidebar. */}
+        <div className="relative min-w-0 flex-1" data-testid="search-map-stage">
+          <div ref={mapContainerRef} className="h-full w-full z-raised" />
 
-      {/* Selected listing details sit below the map so they never cover the
-          map or compete with a marker at the bottom edge of the viewport. */}
-      {activeListing && (
-        <div
-          className="border-t border-border-base bg-bg-surface p-3.5 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-3 motion-safe:duration-normal sm:p-4"
-          aria-live="polite"
-          data-testid="map-active-listing"
-        >
-          <div className="mx-auto flex max-w-3xl items-start gap-3 rounded-card border border-border-base bg-white p-3 shadow-xs sm:gap-4 sm:p-4">
-            <button
-              type="button"
-              onClick={() => setActiveListing(null)}
-              className="order-3 shrink-0 rounded-full p-1 text-stone-500 transition-colors hover:bg-stone-100 hover:text-stone-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
-              aria-label={t("search.exploreMapView.fermerLaPrevisualisation")}
+          {activeListing && (
+            <div
+              className="pointer-events-none absolute inset-x-3 bottom-3 z-sticky motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-3 motion-safe:duration-normal sm:inset-x-4 sm:bottom-4"
+              aria-live="polite"
+              data-testid="map-active-listing"
             >
-              <X className="w-icon-md h-icon-md" />
-            </button>
-
-            <div className="flex min-w-0 flex-1 gap-3">
-              <Image
-                src={
-                  activeListing.coverImageUrl || activeListing.photos[0]?.url
-                }
-                alt={activeListing.title}
-                sizes="96px"
-                className="w-24 h-24 rounded-xl object-cover border border-border-base shrink-0"
-                referrerPolicy="no-referrer"
-              />
-
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-1.5 mb-1">
-                  <span className="text-xs font-semibold text-stone-500 truncate">
-                    {getListingCategoryLabel(activeListing)}
-                  </span>
-                  {showsVerifiedBadge(activeListing) && (
-                    <Badge variant="verified" size="sm" icon>
-                      {t("search.exploreMapView.verifie")}
-                    </Badge>
+              <div className="pointer-events-auto mx-auto flex max-w-3xl items-start gap-3 rounded-card border border-border-base bg-bg-surface/95 p-3 shadow-lg backdrop-blur-sm sm:gap-4 sm:p-4">
+                <button
+                  type="button"
+                  onClick={() => setActiveListing(null)}
+                  className="order-3 shrink-0 rounded-full p-1 text-stone-500 transition-colors hover:bg-stone-100 hover:text-stone-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                  aria-label={t(
+                    "search.exploreMapView.fermerLaPrevisualisation",
                   )}
-                </div>
+                >
+                  <X className="w-icon-md h-icon-md" />
+                </button>
 
-                <h4 className="text-sm font-bold text-stone-900 line-clamp-1 leading-snug">
-                  {activeListing.title}
-                </h4>
-
-                <div className="flex items-center gap-2 mt-1 text-xs text-stone-500">
-                  <span className="flex items-center gap-0.5 font-medium text-stone-700">
-                    <MapPin className="w-icon-xs h-icon-xs text-primary" />
-                    {activeListing.city} ({activeListing.postalCode})
-                  </span>
-                </div>
-
-                <div className="flex items-baseline justify-between mt-2 pt-1 border-t border-border-subtle">
-                  <span className="text-base font-bold text-primary">
-                    {formatPrice(activeListing.price)}
-                  </span>
-
-                  <button
-                    type="button"
-                    onClick={() =>
-                      navigate(routes.listing.detail(activeListing.id))
+                <div className="flex min-w-0 flex-1 gap-3">
+                  <Image
+                    src={
+                      activeListing.coverImageUrl ||
+                      activeListing.photos[0]?.url
                     }
-                    className="text-xs font-semibold text-primary hover:underline flex items-center gap-1 cursor-pointer"
-                  >
-                    {t("search.exploreMapView.voirLAnnonce")}
-                    <ExternalLink className="w-icon-xs h-icon-xs" />
-                  </button>
+                    alt={activeListing.title}
+                    sizes="(min-width: 640px) 96px, 80px"
+                    className="h-20 w-20 shrink-0 rounded-control border border-border-base object-cover sm:h-24 sm:w-24"
+                    referrerPolicy="no-referrer"
+                  />
+
+                  <div className="min-w-0 flex-1">
+                    <div className="mb-1 flex min-w-0 items-center gap-1.5">
+                      <span className="truncate text-xs font-semibold text-stone-500">
+                        {getListingCategoryLabel(activeListing)}
+                      </span>
+                      {showsVerifiedBadge(activeListing) && (
+                        <VerificationBadge
+                          label={t("ui.identityStatus.verification.generic")}
+                          accessibilityLabel={t(
+                            "ui.identityStatus.verification.profile",
+                          )}
+                        />
+                      )}
+                    </div>
+
+                    <h4 className="line-clamp-1 text-sm font-bold leading-snug text-stone-900">
+                      {activeListing.title}
+                    </h4>
+
+                    <div className="mt-1 flex items-center gap-2 text-xs text-stone-500">
+                      <span className="flex min-w-0 items-center gap-0.5 font-medium text-stone-700">
+                        <MapPin className="h-icon-xs w-icon-xs shrink-0 text-primary" />
+                        <span className="truncate">
+                          {activeListing.city} ({activeListing.postalCode})
+                        </span>
+                      </span>
+                    </div>
+
+                    <div className="mt-2 flex items-baseline justify-between gap-2 border-t border-border-subtle pt-1">
+                      <span className="shrink-0 text-base font-bold text-primary">
+                        {formatPrice(activeListing.price)}
+                      </span>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          navigate(routes.listing.detail(activeListing.id))
+                        }
+                        className="flex min-w-0 items-center gap-1 truncate text-xs font-semibold text-primary hover:underline cursor-pointer"
+                      >
+                        <span className="truncate">
+                          {t("search.exploreMapView.voirLAnnonce")}
+                        </span>
+                        <ExternalLink className="h-icon-xs w-icon-xs shrink-0" />
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
-      )}
+      </div>
 
       {/* Floating status count. Anchored right: the listing panel now occupies
           the left edge, and this badge belongs over the map. */}

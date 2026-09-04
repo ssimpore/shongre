@@ -1,7 +1,15 @@
 import type { MouseEvent, ReactNode } from "react";
 import type { ListingCardView } from "@shongre/contracts";
 import { formatMoney, formatRelativeTime } from "@shongre/shared";
-import { Avatar, Badge, Card, SemanticIcon, Text } from "@shongre/ui/web";
+import {
+  Avatar,
+  Badge,
+  Card,
+  ProBadge,
+  SemanticIcon,
+  Text,
+  VerifiedIcon,
+} from "@shongre/ui/web";
 import {
   getListingCardCharacteristics,
   getListingPromotionBadges,
@@ -16,39 +24,21 @@ export interface ListingCardProps {
   image?: ReactNode;
   isFavorite?: boolean;
   favoriteLabel?: string;
+  identityLabels: {
+    pro: string;
+    proAccessibility: string;
+    verified: string;
+  };
   onFavoriteToggle?: () => void;
   /** Optional non-favorite quick action rendered beside the favorite control. */
   quickAction?: ReactNode;
   className?: string;
-  renderCharacteristicIcon?: (
-    characteristic: string,
-    index: number,
-  ) => ReactNode;
   renderLink?: (props: {
     href: string;
     className: string;
     ariaLabel: string;
     children: ReactNode;
   }) => ReactNode;
-}
-
-function SellerVerificationShield({ visible }: { visible: boolean }) {
-  if (!visible) return null;
-
-  return (
-    <span
-      data-listing-card-seller-verified="true"
-      title="Profil vérifié"
-      className="inline-flex shrink-0"
-    >
-      <SemanticIcon
-        name="shield"
-        size="sm"
-        label="Profil vérifié"
-        className="fill-success text-white drop-shadow-sm"
-      />
-    </span>
-  );
 }
 
 function ListingMeta({ city, published }: { city: string; published: string }) {
@@ -63,7 +53,11 @@ function ListingMeta({ city, published }: { city: string; published: string }) {
           size="xs"
           className="shrink-0 text-primary"
         />
-        <span className="min-w-0 break-words" title={city}>
+        <span
+          data-listing-card-location="true"
+          className="min-w-0 flex-1 truncate"
+          title={city}
+        >
           {city}
         </span>
       </span>
@@ -87,10 +81,10 @@ export function ListingCard({
   image,
   isFavorite,
   favoriteLabel = "Ajouter aux favoris",
+  identityLabels,
   onFavoriteToggle,
   quickAction,
   className,
-  renderCharacteristicIcon,
   renderLink,
 }: ListingCardProps) {
   const price = listing.isFreeDonation
@@ -116,7 +110,7 @@ export function ListingCard({
   const isSellerVerified = Boolean(
     listing.seller?.isIdentityVerified || listing.seller?.isBusinessVerified,
   );
-  const showSellerVerificationShield = Boolean(
+  const showSellerVerifiedIcon = Boolean(
     isSellerVerified && listing.seller?.sellerType !== "pro",
   );
   const hasSellerRating = (listing.seller?.rating ?? 0) > 0;
@@ -249,13 +243,18 @@ export function ListingCard({
             className={`mt-2 flex min-w-0 gap-1.5 overflow-hidden ${horizontal ? "flex-nowrap" : "flex-wrap"}`}
             aria-label="Caractéristiques principales"
           >
-            {characteristics.map((characteristic, index) => (
+            {characteristics.map((characteristic) => (
               <li
-                key={characteristic}
-                className="inline-flex min-w-0 max-w-full items-center gap-1.5 truncate rounded-control bg-bg-muted px-2 py-1 text-micro font-medium text-text-secondary"
+                key={`${characteristic.icon}:${characteristic.label}`}
+                data-listing-card-characteristic-icon={characteristic.icon}
+                className="inline-flex min-w-0 max-w-full items-center gap-1.5 overflow-hidden rounded-control bg-bg-muted px-2 py-1 text-micro font-medium text-text-secondary"
               >
-                {renderCharacteristicIcon?.(characteristic, index)}
-                {characteristic}
+                <SemanticIcon
+                  name={characteristic.icon}
+                  size="xs"
+                  className="text-text-muted"
+                />
+                <span className="min-w-0 truncate">{characteristic.label}</span>
               </li>
             ))}
           </ul>
@@ -277,21 +276,24 @@ export function ListingCard({
                 data-listing-card-seller="true"
                 className="flex min-w-0 items-center gap-1.5"
               >
-                <span className="inline-flex min-w-0 flex-1 items-center gap-1">
+                <span className="inline-flex min-w-0 max-w-full items-center gap-1">
                   <span
+                    data-listing-card-seller-name="true"
                     title={sellerName}
-                    className="min-w-0 break-words font-semibold text-text-secondary"
+                    className="min-w-0 truncate font-semibold text-text-secondary"
                   >
                     {sellerName}
                   </span>
-                  <SellerVerificationShield
-                    visible={showSellerVerificationShield}
-                  />
+                  {showSellerVerifiedIcon ? (
+                    <VerifiedIcon size="sm" label={identityLabels.verified} />
+                  ) : null}
                 </span>
                 {listing.seller?.sellerType === "pro" ? (
-                  <span className="shrink-0">
-                    <Badge variant="pro">Pro</Badge>
-                  </span>
+                  <ProBadge
+                    label={identityLabels.pro}
+                    accessibilityLabel={identityLabels.proAccessibility}
+                    size="xs"
+                  />
                 ) : null}
               </span>
               <ListingMeta city={listing.city} published={published} />

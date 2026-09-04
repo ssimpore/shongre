@@ -1,15 +1,18 @@
 import React from "react";
-import { StaffBadge } from "../../design-system/components/IdentityBadges";
+import { ProBadge } from "@shongre/ui/web";
+import { StaffBadge } from "../../design-system/components/StaffBadge";
 import {
   ROLE_DEFINITIONS,
   STAFF_ROLE_PRESENTATION,
 } from "../../security/roles.config";
 import type { UserProfile } from "../../types";
 import { adminPrimaryIdentity } from "./admin-user-identity";
+import { useTranslation } from "../../i18n/I18nProvider";
 
 export const AdminUserPrimaryBadge: React.FC<{ user: UserProfile }> = ({
   user,
 }) => {
+  const { t } = useTranslation();
   const identity = adminPrimaryIdentity(user);
   if (identity === "staff" && user.staffRole) {
     return (
@@ -20,10 +23,16 @@ export const AdminUserPrimaryBadge: React.FC<{ user: UserProfile }> = ({
     );
   }
 
-  const role =
-    identity === "professional"
-      ? ROLE_DEFINITIONS.pro_seller
-      : ROLE_DEFINITIONS.buyer;
+  if (identity === "professional") {
+    return (
+      <ProBadge
+        label={t("ui.identityStatus.pro.short")}
+        accessibilityLabel={t("ui.identityStatus.pro.account")}
+      />
+    );
+  }
+
+  const role = ROLE_DEFINITIONS.buyer;
   return (
     <span
       data-identity-badge={identity}

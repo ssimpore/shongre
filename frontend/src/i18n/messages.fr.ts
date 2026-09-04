@@ -460,7 +460,6 @@ export const messagesFr = {
   // --- shell.accountLayout ---
   "shell.accountLayout.navigationDuCompte": "Navigation du compte",
   "shell.accountLayout.comptePro": "Compte Pro",
-  "shell.accountLayout.proBadge": "Pro",
   "shell.accountLayout.roleAdministrateur": "Administrateur",
   "shell.accountLayout.roleSuperAdministrateur": "Super administrateur",
   "shell.accountLayout.seDeconnecter": "Se déconnecter",
@@ -471,7 +470,6 @@ export const messagesFr = {
   // --- shell.header ---
   "shell.header.fermerLeMenu": "Fermer le menu",
   "shell.header.fermerLeMenuMobile": "Fermer le menu mobile",
-  "shell.header.compteProfessionnel": "Compte Professionnel",
   "shell.header.verifie": "Vérifié",
 
   // --- shell.locationPickerModal ---
@@ -557,7 +555,27 @@ export const messagesFr = {
   "shell.errorBoundary.actualiserLaPage": "Actualiser la page",
 
   // --- ui.badge ---
-  "ui.badge.profilVerifie": "Profil vérifié",
+
+  // --- ui.identityStatus ---
+  "ui.identityStatus.pro.short": "Pro",
+  "ui.identityStatus.pro.account": "Compte professionnel",
+  "ui.identityStatus.pro.seller": "Vendeur professionnel",
+  "ui.identityStatus.pro.store": "Boutique professionnelle",
+  "ui.identityStatus.pro.organization": "Organisme",
+  "ui.identityStatus.pro.siret": "SIRET pro",
+  "ui.identityStatus.verification.generic": "Vérifié",
+  "ui.identityStatus.verification.genericFeminine": "Vérifiée",
+  "ui.identityStatus.verification.profile": "Profil vérifié",
+  "ui.identityStatus.verification.identity": "Identité vérifiée",
+  "ui.identityStatus.verification.professional": "Professionnel vérifié",
+  "ui.identityStatus.verification.company": "Entreprise vérifiée",
+  "ui.identityStatus.verification.organization": "Organisme vérifié",
+  "ui.identityStatus.verification.employer": "Employeur vérifié",
+  "ui.identityStatus.verification.agency": "Agence vérifiée",
+  "ui.identityStatus.verification.siret": "SIRET vérifié",
+  "ui.identityStatus.verification.email": "Email vérifié",
+  "ui.identityStatus.verification.sms": "SMS vérifié",
+  "ui.identityStatus.verification.byShongre": "Vérifié par Shongre",
 
   // --- ui.categoryFilterRail ---
   "ui.categoryFilterRail.faireDefilerLesCategoriesVers":
@@ -623,8 +641,6 @@ export const messagesFr = {
     "Recherches les plus populaires",
 
   // --- ui.sellerCard ---
-  "ui.sellerCard.pro": "Pro",
-  "ui.sellerCard.verifie": "Vérifié",
   "ui.sellerCard.visiterLaBoutiqueOfficielleCatalogue":
     "Visiter la boutique officielle & catalogue",
   "ui.sellerCard.visiterLaBoutique": "Visiter la boutique",
@@ -958,8 +974,6 @@ export const messagesFr = {
   "listings.listingDetailPage.valeurIndicative": "Valeur indicative",
 
   // --- listings.listingSellerTrustSection ---
-  "listings.listingSellerTrustSection.vendeurPro": "Vendeur Pro",
-  "listings.listingSellerTrustSection.verifie": "Vérifié",
 
   // --- messaging.messagingPage ---
   "messaging.messagingPage.cetUtilisateurNePourraPlus":
@@ -980,7 +994,6 @@ export const messagesFr = {
   // --- messaging.conversationHeader ---
   "messaging.conversationHeader.retourAuxConversations":
     "Retour aux conversations",
-  "messaging.conversationHeader.identiteVerifiee": "Identité vérifiée",
   "messaging.conversationHeader.optionsDeLaConversation":
     "Options de la conversation",
   "messaging.conversationHeader.utilisateurBloque": "Utilisateur bloqué",
@@ -1279,7 +1292,6 @@ export const messagesFr = {
   "sellerworkspace.myListingsPage.supprimerLAnnonce": "Supprimer l'annonce",
 
   // --- sellerworkspace.proDashboardPage ---
-  "sellerworkspace.proDashboardPage.siretVerifie": "SIRET Vérifié",
   "sellerworkspace.proDashboardPage.tauxDeConversion": "Taux de conversion",
   "sellerworkspace.proDashboardPage.surLesFichesArticles":
     "Sur les fiches articles",
@@ -1566,7 +1578,6 @@ export const messagesFr = {
     "Numéro de téléphone vérifié par SMS",
   "verification.trustBadge.compteBancaireSepaValidePour":
     "Compte bancaire SEPA validé pour les virements",
-  "verification.trustBadge.identiteVerifiee": "Identité vérifiée",
   "verification.trustBadge.proCertifieRcs": "Pro Certifié RCS",
   "verification.trustBadge.telephoneCertifie": "Téléphone certifié",
   "verification.trustBadge.ibanVerifie": "IBAN vérifié",
@@ -2405,6 +2416,8 @@ export const messagesFr = {
     "🚫 Profil Suspendu (Sécurité)",
 
   // --- shell.dataMode ---
+  "shell.dataMode.collapseToolbar": "Réduire la barre d’environnement",
+  "shell.dataMode.expandToolbar": "Développer la barre d’environnement",
   "shell.dataMode.modeLive": "Mode Live",
   "shell.dataMode.liveSummary": "Données fournies par l’API Shongre",
   "shell.dataMode.openSettings": "Configurer le mode des données",
@@ -3373,7 +3386,6 @@ export const messagesFr = {
   "profile.sellerCatalog.catalogueDuVendeur": "Catalogue du vendeur",
 
   // --- profile.sellerProfileHeader ---
-  "profile.sellerProfileHeader.verifie": "Vérifié",
   "profile.sellerProfileHeader.gererMesAnnonces": "Gérer mes annonces",
   "profile.sellerProfileHeader.partagerCeProfil2": "Partager ce profil",
   "profile.sellerProfileHeader.signalerCeProfil": "Signaler ce profil",
@@ -3680,7 +3692,6 @@ export const messagesFr = {
 
   // --- search.exploreMapView ---
   "search.exploreMapView.touteLaFrance": "Toute la France",
-  "search.exploreMapView.verifie": "Vérifié",
   "search.exploreMapView.voirLAnnonce": "Voir l'annonce",
 
   // --- search.searchPage ---
@@ -4289,8 +4300,6 @@ export const messagesFr = {
     "Membre actif de l’équipe Shongre — {role}",
   "identityBadge.staff.suspended": "Staff suspendu",
   "identityBadge.staff.revoked": "Staff révoqué",
-  "identityBadge.verification.individual": "Identité vérifiée",
-  "identityBadge.verification.professional": "Professionnel vérifié",
   "admin.capabilities.modalTitle": "Gérer les permissions de {name}",
   "admin.capabilities.description":
     "Consultez les permissions héritées et définissez uniquement les surcharges directes. Les permissions Staff restent inactives sans adhésion Staff active.",
@@ -4358,7 +4367,6 @@ export const messagesFr = {
   "employment.action.apply": "Postuler gratuitement",
   "employment.trust.noCandidateFee":
     "Aucun paiement n’est requis pour postuler.",
-  "employment.trust.verifiedEmployer": "Employeur vérifié",
   "employment.trust.sponsoredTransparency":
     "Les placements payants sont identifiés et n’empêchent jamais l’accès aux offres gratuites.",
   "employment.search.filters": "Affiner les offres",

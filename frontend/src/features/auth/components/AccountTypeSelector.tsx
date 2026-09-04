@@ -1,4 +1,5 @@
 import React from "react";
+import { ProBadge } from "@shongre/ui/web";
 import {
   User,
   Briefcase,
@@ -105,9 +106,10 @@ export const AccountTypeSelector: React.FC<AccountTypeSelectorProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="px-2 py-0.5 rounded-md bg-stone-900 text-white font-bold text-micro tracking-wider uppercase">
-              SIRET PRO
-            </span>
+            <ProBadge
+              label={t("ui.identityStatus.pro.short")}
+              accessibilityLabel={t("ui.identityStatus.pro.siret")}
+            />
             <div
               className={`w-5 h-5 rounded-full border flex items-center justify-center transition-colors ${
                 selectedType === "professional"

@@ -1,6 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { StaffBadge, VerificationBadge } from "./IdentityBadges";
+import { VerificationBadge } from "@shongre/ui/web";
+import { StaffBadge } from "./StaffBadge";
 
 describe("internal and customer identity badges", () => {
   it("renders unmistakably distinct active Staff and verification facts", () => {
@@ -8,7 +9,7 @@ describe("internal and customer identity badges", () => {
       <StaffBadge status="active" roleLabel="Support" />,
     );
     const verification = renderToStaticMarkup(
-      <VerificationBadge verified accountType="individual" />,
+      <VerificationBadge label="Identité vérifiée" />,
     );
 
     expect(staff).toContain("staff-active");
@@ -17,7 +18,7 @@ describe("internal and customer identity badges", () => {
     expect(staff).toContain("lucide-building-2");
     expect(staff).toContain("violet");
 
-    expect(verification).toContain("verification");
+    expect(verification).toContain("data-ui-verification-badge");
     expect(verification).toContain("Identité vérifiée");
     expect(verification).toContain("lucide-badge-check");
     expect(verification).toContain("success");
@@ -39,7 +40,7 @@ describe("internal and customer identity badges", () => {
 
   it("uses professional verification wording independently of Staff", () => {
     const verification = renderToStaticMarkup(
-      <VerificationBadge verified accountType="professional" />,
+      <VerificationBadge label="Professionnel vérifié" />,
     );
     expect(verification).toContain("Professionnel vérifié");
     expect(verification).not.toContain("staff-active");

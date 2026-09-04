@@ -1,8 +1,9 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { ProBadge, VerificationBadge } from "@shongre/ui/web";
 import { ShieldCheck, Star, Clock, MapPin, ChevronRight } from "lucide-react";
 import { UserProfile, ReviewItem } from "../../../types";
-import { Avatar, Badge } from "../../../design-system/primitives/Badge";
+import { Avatar } from "../../../design-system/primitives/Badge";
 import {
   isProSeller,
   showsVerifiedBadge,
@@ -67,14 +68,16 @@ export const ListingSellerTrustSection: React.FC<
               {seller.companyName || seller.name}
             </Link>
             {isPro && (
-              <Badge variant="pro" size="sm">
-                {t("listings.listingSellerTrustSection.vendeurPro")}
-              </Badge>
+              <ProBadge
+                label={t("ui.identityStatus.pro.short")}
+                accessibilityLabel={t("ui.identityStatus.pro.seller")}
+              />
             )}
             {showsVerifiedBadge(seller) && (
-              <Badge variant="verified" size="sm" icon>
-                {t("listings.listingSellerTrustSection.verifie")}
-              </Badge>
+              <VerificationBadge
+                label={t("ui.identityStatus.verification.generic")}
+                accessibilityLabel={t("ui.identityStatus.verification.profile")}
+              />
             )}
           </div>
 

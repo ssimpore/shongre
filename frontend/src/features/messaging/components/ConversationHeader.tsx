@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import {
   ArrowLeft,
   MoreVertical,
-  ShieldCheck,
   Star,
   UserX,
   UserCheck,
@@ -11,11 +10,12 @@ import {
   ExternalLink,
   Sparkles,
 } from "lucide-react";
+import { ProBadge, VerifiedIcon } from "@shongre/ui/web";
 import {
   ConversationParticipant,
   ConversationCapabilities,
 } from "../../../domains/messaging/messaging.types";
-import { Avatar, Badge } from "../../../design-system/primitives/Badge";
+import { Avatar } from "../../../design-system/primitives/Badge";
 import { Button } from "../../../design-system/primitives/Button";
 import { useTranslation } from "../../../i18n/I18nProvider";
 import { routes } from "../../../configuration/routes";
@@ -103,14 +103,16 @@ export const ConversationHeader: React.FC<ConversationHeaderProps> = ({
               </span>
             )}
             {counterpart.isVerified && (
-              <span title={t("messaging.conversationHeader.identiteVerifiee")}>
-                <ShieldCheck className="w-icon-md h-icon-md text-success shrink-0" />
-              </span>
+              <VerifiedIcon
+                size="md"
+                label={t("ui.identityStatus.verification.identity")}
+              />
             )}
             {counterpart.accountType === "pro" && (
-              <Badge variant="neutral" size="sm">
-                PRO
-              </Badge>
+              <ProBadge
+                label={t("ui.identityStatus.pro.short")}
+                accessibilityLabel={t("ui.identityStatus.pro.account")}
+              />
             )}
           </div>
 

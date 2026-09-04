@@ -3,7 +3,7 @@ import { Outlet, useLocation } from "react-router-dom";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
 import { MobileBottomNav } from "./MobileBottomNav";
-import { DemoRoleSwitcher } from "./DemoRoleSwitcher";
+import { EnvironmentHeaderStack } from "./EnvironmentHeaderStack";
 import { LazyLocationPickerModal } from "./LazyLocationPickerModal";
 import { LazyPreferencesModal } from "./LazyPreferencesModal";
 import { CookieConsent } from "./CookieConsent";
@@ -26,8 +26,9 @@ export const MainLayout: React.FC = () => {
     <div className="min-h-screen flex flex-col bg-bg-base text-stone-900 pb-page-bottom-inset">
       <SkipLink />
       <AppScrollRestoration />
-      <DemoRoleSwitcher utility={<AnalyticsRuntime />} />
-      <Header />
+      <EnvironmentHeaderStack utility={<AnalyticsRuntime />}>
+        <Header />
+      </EnvironmentHeaderStack>
       <MarketRecommendationBanner />
       {/* Clearance for the fixed tab bar comes from the same token the bar
           is built from, so it tracks the bar (and the iOS home indicator,

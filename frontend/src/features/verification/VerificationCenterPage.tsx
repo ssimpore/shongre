@@ -9,7 +9,6 @@ import {
   FileKey2,
   LockKeyhole,
   Mail,
-  ShieldCheck,
   Smartphone,
 } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -18,6 +17,7 @@ import type {
   ComplianceRequirementDecision,
   VerificationDimension,
 } from "@shongre/contracts/compliance";
+import { VerificationBadge, VerifiedIcon } from "@shongre/ui/web";
 import { Button } from "../../design-system/primitives/Button";
 import { services } from "../../api/client/service-registry";
 import { useVerification } from "../../domains/verification/useVerification";
@@ -32,6 +32,7 @@ import { PhoneVerificationModal } from "../auth/components/PhoneVerificationModa
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useToast } from "../../app/providers/ToastProvider";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
+import { useTranslation } from "../../i18n/I18nProvider";
 
 const ACTION_LABELS: Record<ComplianceAction, string> = {
   browse: "Parcourir Shongre",
@@ -91,12 +92,6 @@ function dimensionIcon(id: VerificationDimensionId) {
 }
 
 function statePresentation(state: VerificationRequirement["state"]) {
-  if (state === "verified")
-    return {
-      label: "Vérifié",
-      className: "bg-success-surface text-success border-success-border",
-      icon: <CheckCircle2 className="h-icon-md w-icon-md" aria-hidden="true" />,
-    };
   if (state === "pending")
     return {
       label: "En cours",
@@ -117,6 +112,7 @@ function statePresentation(state: VerificationRequirement["state"]) {
 }
 
 export const VerificationCenterPage: React.FC = () => {
+  const { t } = useTranslation();
   usePageMeta({
     title: "Vérifications et confiance | Shongre",
     description: "Gérez uniquement les vérifications utiles à vos actions.",
@@ -275,7 +271,7 @@ export const VerificationCenterPage: React.FC = () => {
       <section className="rounded-2xl border border-stone-200 bg-white p-5 shadow-xs sm:p-7">
         <div className="flex items-start gap-4">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-success-surface text-success">
-            <ShieldCheck className="h-icon-xl w-icon-xl" aria-hidden="true" />
+            <VerifiedIcon size="lg" />
           </div>
           <div>
             <p className="text-xs font-bold uppercase tracking-wider text-success">
@@ -421,12 +417,20 @@ export const VerificationCenterPage: React.FC = () => {
                     <h3 className="font-bold text-stone-950">
                       {requirement.shortLabel}
                     </h3>
-                    <span
-                      className={`mt-2 inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-bold ${presentation.className}`}
-                    >
-                      {presentation.icon}
-                      {presentation.label}
-                    </span>
+                    <div className="mt-2">
+                      {requirement.state === "verified" ? (
+                        <VerificationBadge
+                          label={t("ui.identityStatus.verification.generic")}
+                        />
+                      ) : (
+                        <span
+                          className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-bold ${presentation.className}`}
+                        >
+                          {presentation.icon}
+                          {presentation.label}
+                        </span>
+                      )}
+                    </div>
                     {requirement.rejectionReason ? (
                       <p className="mt-2 text-xs text-danger">
                         {requirement.rejectionReason}

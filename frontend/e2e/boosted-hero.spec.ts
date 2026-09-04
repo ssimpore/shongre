@@ -3,6 +3,54 @@ import { usePersona } from "./personas";
 import { expectNoHorizontalOverflow, waitForStableLayout } from "./overflow";
 
 test.describe("boosted listings hero rail", () => {
+  test("uses the shared card radius for both persistent hero surfaces", async ({
+    page,
+  }) => {
+    await usePersona(page, "guest");
+
+    for (const viewport of [
+      { width: 1408, height: 701 },
+      { width: 390, height: 844 },
+    ]) {
+      await page.setViewportSize(viewport);
+      await page.goto("/", { waitUntil: "domcontentloaded" });
+      await waitForStableLayout(page);
+
+      const heroSurface = page.locator('[data-home-hero-surface="true"]');
+      const boostedSurface = page.locator('[data-home-boosted-surface="true"]');
+      await expect(heroSurface).toHaveClass(/rounded-card/);
+      await expect(boostedSurface).toHaveClass(/rounded-card/);
+
+      const radii = await page.evaluate(() => {
+        const hero = document.querySelector<HTMLElement>(
+          '[data-home-hero-surface="true"]',
+        );
+        const boosted = document.querySelector<HTMLElement>(
+          '[data-home-boosted-surface="true"]',
+        );
+        const tokenProbe = document.createElement("div");
+        tokenProbe.style.borderRadius = "var(--radius-card)";
+        document.body.appendChild(tokenProbe);
+        const cardToken = getComputedStyle(tokenProbe).borderRadius;
+        tokenProbe.remove();
+
+        return {
+          cardToken,
+          hero: hero ? getComputedStyle(hero).borderRadius : null,
+          boosted: boosted ? getComputedStyle(boosted).borderRadius : null,
+        };
+      });
+
+      expect(radii.cardToken).not.toBe("");
+      expect(radii.hero).toBe(radii.cardToken);
+      expect(radii.boosted).toBe(radii.cardToken);
+      await expectNoHorizontalOverflow(
+        page,
+        `tokenized hero surfaces at ${viewport.width}px`,
+      );
+    }
+  });
+
   test("keeps pause and favorite controls visible, separate, and independently clickable", async ({
     page,
   }) => {
@@ -47,8 +95,10 @@ test.describe("boosted listings hero rail", () => {
           box.left + box.width / 2,
           box.top + box.height / 2,
         );
-        return target?.closest('[data-marketplace-action="favorite.manage"]') ===
-          button;
+        return (
+          target?.closest('[data-marketplace-action="favorite.manage"]') ===
+          button
+        );
       });
       expect(favoriteIsTopTarget).toBe(true);
 
@@ -93,9 +143,10 @@ test.describe("boosted listings hero rail", () => {
     await page
       .getByRole("button", { name: "Mettre le carrousel en pause" })
       .click();
-    await page.getByRole("button", { name: "Annonce suivante" }).click();
+    await rail.focus();
+    await rail.press("ArrowRight");
     await page.waitForTimeout(800);
-    await page.getByRole("button", { name: "Annonce suivante" }).click();
+    await rail.press("ArrowRight");
     const targetListing = rail.locator('article[aria-hidden="false"]');
     await expect(
       targetListing.locator(".sr-only", { hasText: "Annonce à la une" }),
@@ -113,9 +164,9 @@ test.describe("boosted listings hero rail", () => {
 
     const main = page.getByRole("main");
     const hero = main.locator('[data-home-hero="true"]');
-    await expect(
-      hero.locator('[data-home-hero-eyebrow="true"]'),
-    ).toHaveText("Plateforme de confiance");
+    await expect(hero.locator('[data-home-hero-eyebrow="true"]')).toHaveText(
+      "Plateforme de confiance",
+    );
     const trustLine = main.getByRole("link", { name: /Paiement suivi/ });
     await expect(
       page.getByRole("list", { name: "Garanties Shongre" }),

@@ -12,6 +12,7 @@ import {
   useNavigate,
   useSearchParams,
 } from "react-router-dom";
+import { ProBadge } from "@shongre/ui/web";
 import {
   Share2,
   Flag,
@@ -850,9 +851,11 @@ export const ListingDetailPage: React.FC = () => {
                     {displayCategoryLabel}
                   </Badge>
                   {isProSeller(listing) && (
-                    <Badge variant="pro" size="md">
-                      {t("listings.listingDetailPage.vendeurPro")}
-                    </Badge>
+                    <ProBadge
+                      size="md"
+                      label={t("ui.identityStatus.pro.short")}
+                      accessibilityLabel={t("ui.identityStatus.pro.seller")}
+                    />
                   )}
                   {(listing.promotionState === "active" ||
                     listing.isBoosted) && (
@@ -1049,7 +1052,11 @@ export const ListingDetailPage: React.FC = () => {
                   storeSlug: seller.storeSlug,
                   isProfessional: isProSeller(seller),
                 })}
-                name={seller.name}
+                name={
+                  isProSeller(seller)
+                    ? seller.companyName || seller.name
+                    : seller.name
+                }
                 avatarUrl={seller.avatarUrl}
                 isVerified={seller.isVerified}
                 isProfessional={isProSeller(seller)}

@@ -8,11 +8,11 @@ import {
   Lock,
   MapPin,
   Plus,
-  ShieldCheck,
   UserPlus,
   Users,
 } from "lucide-react";
 import type { CourseOrganizationWorkspace } from "@shongre/contracts/courses";
+import { ProBadge, VerificationBadge, VerifiedIcon } from "@shongre/ui/web";
 import { BASELINE_MONETIZATION_CATALOG } from "@shongre/contracts/monetization-catalog";
 import { isCoursePlanFeatureOperational } from "@shongre/contracts/vertical-monetization-adapters";
 import { services } from "../../api/client/service-registry";
@@ -157,11 +157,14 @@ export const CourseOrganizationWorkspacePage: React.FC = () => {
             <h1 className="text-xl font-bold text-text-main sm:text-2xl">
               {organization.publicName}
             </h1>
-            <Badge variant="pro">Organisme</Badge>
+            <ProBadge
+              label={t("ui.identityStatus.pro.short")}
+              accessibilityLabel={t("ui.identityStatus.pro.organization")}
+            />
             {organization.verificationStatus === "verified" && (
-              <Badge variant="success" icon>
-                Vérifié
-              </Badge>
+              <VerificationBadge
+                label={t("ui.identityStatus.verification.generic")}
+              />
             )}
           </div>
           <p className="mt-1 max-w-2xl text-xs text-text-secondary">
@@ -396,8 +399,8 @@ export const CourseOrganizationWorkspacePage: React.FC = () => {
           </section>
           <section className="rounded-card border border-success-border bg-success-surface p-4">
             <h2 className="flex items-center gap-2 text-sm font-bold text-text-main">
-              <ShieldCheck className="h-icon-sm w-icon-sm text-success" />
-              Organisme vérifié
+              <VerifiedIcon size="sm" />
+              {t("ui.identityStatus.verification.organization")}
             </h2>
             <p className="mt-2 text-xs leading-relaxed text-text-secondary">
               Le statut public ne révèle ni document, ni identifiant

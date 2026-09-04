@@ -1,5 +1,6 @@
 import type {
   ListingCardView,
+  ListingCharacteristicIcon,
   MarketCode,
   Money,
   MoneyConversionProjection,
@@ -19,7 +20,13 @@ import {
 interface CategoryCardPresentation<T> {
   categoryLabel: string;
   conditionLabel: (value: T) => string;
-  characteristics: (value: T, locale: string) => Array<string | undefined>;
+  characteristics: (
+    value: T,
+    locale: string,
+  ) => Array<{
+    icon: ListingCharacteristicIcon;
+    label: string | undefined;
+  }>;
 }
 
 const PROPERTY_TYPE_LABELS: Record<PropertyPublic["propertyType"], string> = {
@@ -82,21 +89,29 @@ export const STRUCTURED_LISTING_CARD_PRESENTATIONS = {
     conditionLabel: (property: PropertyPublic) =>
       PROPERTY_CONDITION_LABELS[property.characteristics.condition],
     characteristics: (property: PropertyPublic, locale: string) => [
-      PROPERTY_TYPE_LABELS[property.propertyType],
-      property.characteristics.livingAreaSquareMeters > 0
-        ? `${new Intl.NumberFormat(locale).format(
-            property.characteristics.livingAreaSquareMeters,
-          )} m²`
-        : undefined,
-      property.characteristics.rooms > 0
-        ? `${property.characteristics.rooms} pièce${
-            property.characteristics.rooms > 1 ? "s" : ""
-          }`
-        : property.characteristics.landAreaSquareMeters
-          ? `${new Intl.NumberFormat(locale).format(
-              property.characteristics.landAreaSquareMeters,
-            )} m² de terrain`
-          : undefined,
+      { icon: "home", label: PROPERTY_TYPE_LABELS[property.propertyType] },
+      {
+        icon: "ruler",
+        label:
+          property.characteristics.livingAreaSquareMeters > 0
+            ? `${new Intl.NumberFormat(locale).format(
+                property.characteristics.livingAreaSquareMeters,
+              )} m²`
+            : undefined,
+      },
+      {
+        icon: property.characteristics.rooms > 0 ? "layout-grid" : "ruler",
+        label:
+          property.characteristics.rooms > 0
+            ? `${property.characteristics.rooms} pièce${
+                property.characteristics.rooms > 1 ? "s" : ""
+              }`
+            : property.characteristics.landAreaSquareMeters
+              ? `${new Intl.NumberFormat(locale).format(
+                  property.characteristics.landAreaSquareMeters,
+                )} m² de terrain`
+              : undefined,
+      },
     ],
   },
   vehicle: {
@@ -104,20 +119,23 @@ export const STRUCTURED_LISTING_CARD_PRESENTATIONS = {
     conditionLabel: (vehicle: VehiclePublic) =>
       VEHICLE_CONDITION_LABELS[vehicle.history.condition],
     characteristics: (vehicle: VehiclePublic, locale: string) => [
-      String(vehicle.technical.modelYear),
-      `${new Intl.NumberFormat(locale).format(vehicle.technical.mileage)} ${
-        vehicle.technical.mileageUnit
-      }`,
-      FUEL_LABELS[vehicle.technical.fuelType],
+      { icon: "calendar", label: String(vehicle.technical.modelYear) },
+      {
+        icon: "gauge",
+        label: `${new Intl.NumberFormat(locale).format(
+          vehicle.technical.mileage,
+        )} ${vehicle.technical.mileageUnit}`,
+      },
+      { icon: "fuel", label: FUEL_LABELS[vehicle.technical.fuelType] },
     ],
   },
   employment: {
     categoryLabel: "Emploi",
     conditionLabel: (_job: JobPostingCard) => "",
     characteristics: (job: JobPostingCard) => [
-      job.contractTypeLabel,
-      job.workingArrangementLabel,
-      job.professionLabel,
+      { icon: "briefcase", label: job.contractTypeLabel },
+      { icon: "laptop", label: job.workingArrangementLabel },
+      { icon: "briefcase", label: job.professionLabel },
     ],
   },
 } satisfies {
@@ -130,10 +148,13 @@ function compactCharacteristics<T>(
   presentation: CategoryCardPresentation<T>,
   value: T,
   locale: string,
-): string[] {
+): Array<{ icon: ListingCharacteristicIcon; label: string }> {
   return presentation
     .characteristics(value, locale)
-    .filter((item): item is string => Boolean(item?.trim()))
+    .filter(
+      (item): item is { icon: ListingCharacteristicIcon; label: string } =>
+        Boolean(item.label?.trim()),
+    )
     .slice(0, 3);
 }
 
@@ -193,6 +214,11 @@ export function presentPropertyListingCard(
 
   const priceProjection = convertMoney?.(property.financials.price);
   const displayPrice = priceProjection?.display || property.financials.price;
+  const characteristics = compactCharacteristics(
+    presentation,
+    property,
+    locale,
+  );
   return {
     id: property.id,
     title: property.title,
@@ -207,7 +233,8 @@ export function presentPropertyListingCard(
     marketCode: property.address.countryCode,
     categoryLabel: presentation.categoryLabel,
     conditionLabel: presentation.conditionLabel(property),
-    characteristics: compactCharacteristics(presentation, property, locale),
+    characteristics: characteristics.map((item) => item.label),
+    characteristicIcons: characteristics.map((item) => item.icon),
     publishedAt: property.publishedAt || property.sortDate,
     photoCount: property.media.photos.length,
     isNegotiable: property.financials.isNegotiable,
@@ -232,6 +259,7 @@ export function presentVehicleListingCard(
 ): ListingCardView {
   const presentation = STRUCTURED_LISTING_CARD_PRESENTATIONS.vehicle;
   const priceProjection = convertMoney?.(vehicle.price);
+  const characteristics = compactCharacteristics(presentation, vehicle, locale);
   return {
     id: vehicle.id,
     title: vehicle.title,
@@ -244,7 +272,8 @@ export function presentVehicleListingCard(
     marketCode: vehicle.marketCodes[0]!,
     categoryLabel: presentation.categoryLabel,
     conditionLabel: presentation.conditionLabel(vehicle),
-    characteristics: compactCharacteristics(presentation, vehicle, locale),
+    characteristics: characteristics.map((item) => item.label),
+    characteristicIcons: characteristics.map((item) => item.icon),
     publishedAt: vehicle.publishedAt,
     photoCount: vehicle.mediaUrls.length,
     isNegotiable: vehicle.priceNegotiable,
@@ -278,6 +307,7 @@ export function presentEmploymentListingCard(
     fallbackCurrency,
   );
   const priceProjection = convertMoney?.(representativePrice);
+  const characteristics = compactCharacteristics(presentation, job, locale);
   return {
     id: job.id,
     title: job.title,
@@ -288,7 +318,8 @@ export function presentEmploymentListingCard(
     marketCode,
     categoryLabel: presentation.categoryLabel,
     conditionLabel: presentation.conditionLabel(job),
-    characteristics: compactCharacteristics(presentation, job, locale),
+    characteristics: characteristics.map((item) => item.label),
+    characteristicIcons: characteristics.map((item) => item.icon),
     publishedAt: job.publishedAt,
     seller: {
       id: job.employer.id,

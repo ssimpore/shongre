@@ -4,13 +4,11 @@ import {
   Award,
   BookOpen,
   CalendarDays,
-  CheckCircle2,
   Clock3,
   Languages,
   Laptop,
   MapPin,
   MessageSquare,
-  ShieldCheck,
   Star,
   Users,
 } from "lucide-react";
@@ -18,6 +16,7 @@ import type {
   CoursePublicOffer,
   TutorPublicProfile,
 } from "@shongre/contracts/courses";
+import { ProBadge, VerificationBadge, VerifiedIcon } from "@shongre/ui/web";
 import { services } from "../../api/client/service-registry";
 import {
   Badge,
@@ -32,19 +31,24 @@ import { useRegionalFormatters } from "../../hooks/useRegionalFormatters";
 import { useTranslation } from "../../i18n/I18nProvider";
 
 function VerificationRow({ label, status }: { label: string; status: string }) {
+  const { t } = useTranslation();
   const verified = status === "verified";
   const pending = status === "pending";
   return (
     <li className="flex items-center justify-between gap-3 py-2 text-xs">
       <span className="text-text-secondary">{label}</span>
-      <span
-        className={`inline-flex items-center gap-1.5 font-semibold ${verified ? "text-success" : pending ? "text-warning" : "text-text-muted"}`}
-      >
-        {verified && (
-          <CheckCircle2 className="h-icon-xs w-icon-xs" aria-hidden="true" />
-        )}
-        {verified ? "Vérifié" : pending ? "En cours" : "Non vérifié"}
-      </span>
+      {verified ? (
+        <VerificationBadge
+          size="xs"
+          label={t("ui.identityStatus.verification.generic")}
+        />
+      ) : (
+        <span
+          className={`font-semibold ${pending ? "text-warning" : "text-text-muted"}`}
+        >
+          {pending ? "En cours" : "Non vérifié"}
+        </span>
+      )}
     </li>
   );
 }
@@ -153,12 +157,17 @@ export const CourseTutorProfilePage: React.FC = () => {
                     {tutor.displayName}
                   </h1>
                   {tutor.verifications.identity === "verified" && (
-                    <Badge variant="verified" icon>
-                      Identité vérifiée
-                    </Badge>
+                    <VerificationBadge
+                      label={t("ui.identityStatus.verification.identity")}
+                    />
                   )}
                   {tutor.organizationId && (
-                    <Badge variant="pro">Organisme</Badge>
+                    <ProBadge
+                      label={t("ui.identityStatus.pro.short")}
+                      accessibilityLabel={t(
+                        "ui.identityStatus.pro.organization",
+                      )}
+                    />
                   )}
                 </div>
                 <p className="mt-1 text-sm font-semibold text-text-main">
@@ -330,20 +339,19 @@ export const CourseTutorProfilePage: React.FC = () => {
                     <p className="mt-1 text-micro text-text-muted">
                       {qualification.publicLabel}
                     </p>
-                    <Badge
-                      className="mt-2"
-                      variant={
-                        qualification.verificationStatus === "verified"
-                          ? "verified"
-                          : "neutral"
-                      }
-                    >
-                      {qualification.evidenceStatus === "self_declared"
-                        ? "Déclaré par le professeur"
-                        : qualification.verificationStatus === "verified"
-                          ? "Vérifié par Shongre"
-                          : "Preuve privée transmise"}
-                    </Badge>
+                    <div className="mt-2">
+                      {qualification.verificationStatus === "verified" ? (
+                        <VerificationBadge
+                          label={t("ui.identityStatus.verification.byShongre")}
+                        />
+                      ) : (
+                        <Badge variant="neutral">
+                          {qualification.evidenceStatus === "self_declared"
+                            ? "Déclaré par le professeur"
+                            : "Preuve privée transmise"}
+                        </Badge>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -351,10 +359,7 @@ export const CourseTutorProfilePage: React.FC = () => {
 
             <div className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs">
               <h2 className="flex items-center gap-2 text-sm font-bold text-text-main">
-                <ShieldCheck
-                  className="h-icon-sm w-icon-sm text-success"
-                  aria-hidden="true"
-                />
+                <VerifiedIcon size="sm" />
                 Vérifications
               </h2>
               <ul className="mt-2 divide-y divide-border-subtle">

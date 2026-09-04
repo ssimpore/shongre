@@ -16,11 +16,15 @@ export const EMPLOYMENT_DEMO_RECRUITER_USER_ID = "user_employment_clara";
 const employers: Record<string, EmployerSummary> = {
   technova: {
     id: "employer-technova",
+    publisherUserId: EMPLOYMENT_DEMO_RECRUITER_USER_ID,
     organizationId: "organization-technova",
     branchId: "branch-technova-lyon",
     name: "TechNova",
     slug: "technova",
     employerTypeId: "employment.fr.employer_type.company",
+    rating: 4.8,
+    reviewCount: 37,
+    locationLabel: "Lyon",
     description:
       "Éditeur logiciel lyonnais développant des services numériques accessibles.",
     verificationLevel: "domain_verified",
@@ -28,10 +32,14 @@ const employers: Record<string, EmployerSummary> = {
   },
   atelier: {
     id: "employer-atelier-vert",
+    publisherUserId: "employer-atelier-vert",
     organizationId: "organization-atelier-vert",
     name: "Atelier Vert",
     slug: "atelier-vert",
     employerTypeId: "employment.fr.employer_type.small_business",
+    rating: 4.7,
+    reviewCount: 18,
+    locationLabel: "Nantes",
     description:
       "Petite entreprise spécialisée dans la distribution responsable.",
     verificationLevel: "manually_verified",
@@ -39,10 +47,14 @@ const employers: Record<string, EmployerSummary> = {
   },
   horizon: {
     id: "employer-horizon-talents",
+    publisherUserId: "employer-horizon-talents",
     organizationId: "organization-horizon-talents",
     name: "Horizon Talents",
     slug: "horizon-talents",
     employerTypeId: "employment.fr.employer_type.agency",
+    rating: 4.8,
+    reviewCount: 42,
+    locationLabel: "Paris",
     description:
       "Agence de recrutement généraliste avec mandats employeurs identifiés.",
     verificationLevel: "provider_verified",
@@ -50,9 +62,13 @@ const employers: Record<string, EmployerSummary> = {
   },
   private: {
     id: "employer-private-martin",
+    publisherUserId: "employer-private-martin",
     name: "Famille Martin",
     slug: "famille-martin-lyon",
     employerTypeId: "employment.fr.employer_type.private",
+    rating: 0,
+    reviewCount: 0,
+    locationLabel: "Lyon",
     description:
       "Employeur particulier recrutant une aide à domicile déclarée.",
     verificationLevel: "self_declared",

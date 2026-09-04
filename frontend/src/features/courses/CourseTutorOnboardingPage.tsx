@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import type { CourseCatalog, DeliveryMode } from "@shongre/contracts/courses";
 import { COURSE_CONSTRAINTS } from "@shongre/contracts/courses";
+import { VerificationBadge } from "@shongre/ui/web";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { services } from "../../api/client/service-registry";
 import type { TutorOnboardingDraft } from "../../api/contracts/courses.contract";
@@ -742,32 +743,60 @@ export const CourseTutorOnboardingPage: React.FC = () => {
               </div>
               <dl className="mt-5 divide-y divide-border-subtle rounded-card border border-border-base px-4 text-xs">
                 {[
-                  [
-                    "E-mail",
-                    currentUser?.isEmailVerified ? "Vérifié" : "À vérifier",
-                  ],
-                  [
-                    "Téléphone",
-                    currentUser?.isPhoneVerified ? "Vérifié" : "À vérifier",
-                  ],
-                  [
-                    "Identité",
-                    currentUser?.isIdentityVerified
-                      ? "Vérifiée"
-                      : "Facultatif à ce stade",
-                  ],
-                  [
-                    "Diplômes et certifications",
-                    "Déclarés — preuve privée possible",
-                  ],
-                  [
-                    "Éligibilité services à la personne",
-                    "Non vérifiée / conditionnelle",
-                  ],
-                ].map(([label, status]) => (
-                  <div key={label} className="flex justify-between gap-4 py-3">
-                    <dt className="font-bold text-text-main">{label}</dt>
-                    <dd className="text-right text-text-secondary">{status}</dd>
+                  {
+                    label: "E-mail",
+                    verified: currentUser?.isEmailVerified,
+                    verifiedLabel: t("ui.identityStatus.verification.generic"),
+                    accessibilityLabel: t(
+                      "ui.identityStatus.verification.email",
+                    ),
+                    fallback: "À vérifier",
+                  },
+                  {
+                    label: "Téléphone",
+                    verified: currentUser?.isPhoneVerified,
+                    verifiedLabel: t("ui.identityStatus.verification.generic"),
+                    accessibilityLabel: t("ui.identityStatus.verification.sms"),
+                    fallback: "À vérifier",
+                  },
+                  {
+                    label: "Identité",
+                    verified: currentUser?.isIdentityVerified,
+                    verifiedLabel: t(
+                      "ui.identityStatus.verification.genericFeminine",
+                    ),
+                    accessibilityLabel: t(
+                      "ui.identityStatus.verification.identity",
+                    ),
+                    fallback: "Facultatif à ce stade",
+                  },
+                  {
+                    label: "Diplômes et certifications",
+                    verified: false,
+                    fallback: "Déclarés — preuve privée possible",
+                  },
+                  {
+                    label: "Éligibilité services à la personne",
+                    verified: false,
+                    fallback: "Non vérifiée / conditionnelle",
+                  },
+                ].map((item) => (
+                  <div
+                    key={item.label}
+                    className="flex justify-between gap-4 py-3"
+                  >
+                    <dt className="font-bold text-text-main">{item.label}</dt>
+                    <dd className="text-right text-text-secondary">
+                      {item.verified && item.verifiedLabel ? (
+                        <VerificationBadge
+                          size="xs"
+                          label={item.verifiedLabel}
+                          accessibilityLabel={item.accessibilityLabel}
+                        />
+                      ) : (
+                        item.fallback
+                      )}
+                    </dd>
                   </div>
                 ))}
               </dl>

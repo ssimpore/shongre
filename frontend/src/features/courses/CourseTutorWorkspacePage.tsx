@@ -14,13 +14,13 @@ import {
   MoreHorizontal,
   Pencil,
   Plus,
-  ShieldCheck,
 } from "lucide-react";
 import type {
   CourseLead,
   LearnerRequest,
   TutorWorkspace,
 } from "@shongre/contracts/courses";
+import { ProBadge, VerificationBadge, VerifiedIcon } from "@shongre/ui/web";
 import { services } from "../../api/client/service-registry";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
@@ -150,9 +150,10 @@ export const CourseTutorWorkspacePage: React.FC = () => {
               {t("verticals.education.workspace")}
             </h1>
             {tutor.organizationId && (
-              <Badge variant="pro" icon>
-                Collège Lumière
-              </Badge>
+              <ProBadge
+                label={t("ui.identityStatus.pro.short")}
+                accessibilityLabel={t("ui.identityStatus.pro.organization")}
+              />
             )}
           </div>
           <p className="mt-1 text-xs text-text-secondary">
@@ -646,10 +647,7 @@ export const CourseTutorWorkspacePage: React.FC = () => {
 
           <section className="rounded-card border border-border-base bg-bg-surface p-4 shadow-xs">
             <h2 className="flex items-center gap-2 text-sm font-bold text-text-main">
-              <ShieldCheck
-                className="h-icon-sm w-icon-sm text-success"
-                aria-hidden="true"
-              />
+              <VerifiedIcon size="sm" />
               Vérifications
             </h2>
             <ul className="mt-3 divide-y divide-border-subtle text-xs">
@@ -664,15 +662,16 @@ export const CourseTutorWorkspacePage: React.FC = () => {
                   className="flex items-center justify-between gap-3 py-2"
                 >
                   <span className="text-text-secondary">{label}</span>
-                  <span
-                    className={
-                      status === "verified"
-                        ? "font-bold text-success"
-                        : "font-semibold text-warning"
-                    }
-                  >
-                    {status === "verified" ? "Vérifié" : "À compléter"}
-                  </span>
+                  {status === "verified" ? (
+                    <VerificationBadge
+                      size="xs"
+                      label={t("ui.identityStatus.verification.generic")}
+                    />
+                  ) : (
+                    <span className="font-semibold text-warning">
+                      À compléter
+                    </span>
+                  )}
                 </li>
               ))}
             </ul>
@@ -700,15 +699,20 @@ export const CourseTutorWorkspacePage: React.FC = () => {
                   <p className="mt-0.5 text-micro text-text-muted">
                     {qualification.publicLabel}
                   </p>
-                  <p
-                    className={`mt-1 text-micro font-semibold ${qualification.verificationStatus === "verified" ? "text-success" : "text-info"}`}
-                  >
-                    {qualification.evidenceStatus === "self_declared"
-                      ? "Déclaré par vous"
-                      : qualification.verificationStatus === "verified"
-                        ? "Vérifié par Shongre"
-                        : "Preuve privée téléversée"}
-                  </p>
+                  <div className="mt-1">
+                    {qualification.verificationStatus === "verified" ? (
+                      <VerificationBadge
+                        size="xs"
+                        label={t("ui.identityStatus.verification.byShongre")}
+                      />
+                    ) : (
+                      <p className="text-micro font-semibold text-info">
+                        {qualification.evidenceStatus === "self_declared"
+                          ? "Déclaré par vous"
+                          : "Preuve privée téléversée"}
+                      </p>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>

@@ -5,6 +5,7 @@ import {
   ChevronDown,
   ChevronRight,
   LayoutGrid,
+  Mail,
   ShieldCheck,
 } from "lucide-react";
 import type { ComponentType, SVGProps } from "react";
@@ -200,7 +201,7 @@ const FooterColumn: React.FC<{
         >
           <span className="flex min-w-0 flex-1 items-center gap-2">
             <Icon
-              className="h-4 w-4 shrink-0 text-primary-on-dark"
+              className="h-icon-md w-icon-md shrink-0 text-primary-on-dark"
               aria-hidden="true"
             />
             <span className="min-w-0 break-words">{title}</span>
@@ -341,8 +342,12 @@ export const Footer: React.FC = () => {
               aria-label={t("footer.newsletterHeading")}
               className="min-w-0 pt-6 md:pt-0 lg:border-l lg:border-stone-800/60 lg:pl-6"
             >
-              <h2 className="text-sm font-bold text-white">
-                {t("footer.newsletterHeading")}
+              <h2 className="flex items-center gap-2 text-sm font-bold text-white">
+                <Mail
+                  className="h-icon-md w-icon-md shrink-0 text-primary-on-dark"
+                  aria-hidden="true"
+                />
+                <span>{t("footer.newsletterHeading")}</span>
               </h2>
               <p className="mb-4 mt-2 max-w-sm leading-relaxed text-stone-400">
                 {t("footer.newsletterPitch")}

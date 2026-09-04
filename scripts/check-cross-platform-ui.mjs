@@ -11,6 +11,23 @@ const officialSvgPaletteFiles = new Set([
   "frontend/src/design-system/primitives/CountryFlag.tsx",
   "frontend/src/features/auth/components/SocialLoginButtons.tsx",
 ]);
+const canonicalVerifiedIconFiles = new Set([
+  "packages/ui/src/identity/VerifiedIcon.web.tsx",
+  "packages/ui/src/identity/VerifiedIcon.native.tsx",
+]);
+const canonicalIdentityMarkerFiles = new Set([
+  ...canonicalVerifiedIconFiles,
+  "packages/ui/src/identity/VerificationBadge.web.tsx",
+  "packages/ui/src/identity/ProBadge.web.tsx",
+]);
+const canonicalIdentityComponentPattern =
+  /<(?:VerifiedIcon|VerificationBadge|ProBadge)\b[^>]*(?:className|style)\s*=/s;
+const genericIdentityBadgePattern =
+  /<Badge\b(?:(?!<\/Badge>)[\s\S]){0,500}(?:ui\.identityStatus\.|(?:Vérifi(?:é|ée)|Verified|Professionnel vérifié|Verified professional))(?:(?!<\/Badge>)[\s\S]){0,500}<\/Badge>/i;
+const inlineProBadgePattern =
+  /<(?:span|div|Badge)\b[^>]*(?:badge|rounded)[^>]*>\s*(?:PRO|Pro)\s*<\/(?:span|div|Badge)>/s;
+const inlineIdentitySvgPattern =
+  /<svg\b(?:(?!<\/svg>)[\s\S]){0,1200}(?:ui\.identityStatus\.|(?:profil|identit[ée]|professionnel|seller|profile)[ -](?:vérifi[ée]|verified))(?:(?!<\/svg>)[\s\S]){0,1200}<\/svg>/i;
 
 async function filesUnder(directory) {
   const entries = await readdir(directory, { withFileTypes: true });
@@ -76,6 +93,114 @@ for (const file of sourceFiles) {
     /from\s+['"][^'"]*backend\//.test(contents)
   ) {
     failures.push(`${relative}: application imports backend implementation`);
+  }
+
+  if (
+    /<Badge\b[^>]*\bvariant\s*=\s*(?:\{\s*)?["'](?:pro|verified)["']/s.test(
+      contents,
+    ) ||
+    /<Badge\b[^>]*\bvariant\s*=\s*\{[^}]*["'](?:pro|verified)["']/s.test(
+      contents,
+    )
+  ) {
+    failures.push(
+      `${relative}: identity status rendered through generic Badge; use ProBadge or VerificationBadge`,
+    );
+  }
+  if (
+    !canonicalVerifiedIconFiles.has(relative) &&
+    /\bBadgeCheck\b/.test(contents)
+  ) {
+    failures.push(
+      `${relative}: direct BadgeCheck usage; use the canonical VerifiedIcon or a semantically different icon`,
+    );
+  }
+  if (
+    !canonicalIdentityMarkerFiles.has(relative) &&
+    /data-ui-(?:verified-icon|verification-badge|pro-badge)/.test(contents)
+  ) {
+    failures.push(
+      `${relative}: copied canonical identity-status marker; render the @shongre/ui component`,
+    );
+  }
+  if (
+    /\b(?:listing-card-pro-badge|data-listing-card-seller-verified|data-account-verified-icon)\b/.test(
+      contents,
+    )
+  ) {
+    failures.push(
+      `${relative}: obsolete local identity-status selector; use the canonical shared component marker`,
+    );
+  }
+  if (
+    !relative.startsWith("packages/ui/src/identity/") &&
+    /(?:function|const)\s+(?:Verified|Verification|Pro)\w*(?:Icon|Badge)\b/.test(
+      contents,
+    )
+  ) {
+    failures.push(
+      `${relative}: local identity-status component; use @shongre/ui`,
+    );
+  }
+  if (canonicalIdentityComponentPattern.test(contents)) {
+    failures.push(
+      `${relative}: local style override on a canonical identity-status component`,
+    );
+  }
+  if (
+    !relative.startsWith("packages/ui/src/identity/") &&
+    genericIdentityBadgePattern.test(contents)
+  ) {
+    failures.push(
+      `${relative}: identity-status label rendered through generic Badge`,
+    );
+  }
+  if (
+    !relative.startsWith("packages/ui/src/identity/") &&
+    inlineProBadgePattern.test(contents)
+  ) {
+    failures.push(
+      `${relative}: inline professional-account badge; use the canonical ProBadge`,
+    );
+  }
+  if (
+    !canonicalVerifiedIconFiles.has(relative) &&
+    inlineIdentitySvgPattern.test(contents)
+  ) {
+    failures.push(
+      `${relative}: inline verification SVG; use the canonical VerifiedIcon`,
+    );
+  }
+  if (/\brenderCharacteristicIcon\b/.test(contents)) {
+    failures.push(
+      `${relative}: local listing-characteristic icon renderer; put the semantic role on ListingCardView`,
+    );
+  }
+}
+
+const styleFiles = (
+  await Promise.all([
+    filesUnder(path.join(root, "frontend/app")),
+    filesUnder(path.join(root, "frontend/src")),
+    filesUnder(path.join(root, "mobile/app")),
+    filesUnder(path.join(root, "mobile/src")),
+    filesUnder(path.join(root, "packages/ui/src")),
+    filesUnder(path.join(root, "packages/features/src")),
+  ])
+)
+  .flat()
+  .filter((file) => /\.(?:css|scss|sass|less)$/.test(file));
+for (const file of styleFiles) {
+  const relative = path.relative(root, file);
+  const contents = await readFile(file, "utf8");
+  if (
+    /\[data-ui-(?:verified-icon|verification-badge|pro-badge)(?:=|\])/i.test(
+      contents,
+    )
+  ) {
+    failures.push(
+      `${relative}: CSS targets a canonical identity-status component; use its typed props`,
+    );
   }
 }
 

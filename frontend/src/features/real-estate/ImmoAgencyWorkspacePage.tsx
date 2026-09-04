@@ -3,7 +3,6 @@ import {
   BarChart3,
   Building2,
   CalendarDays,
-  CheckCircle2,
   CircleDollarSign,
   Download,
   FileSpreadsheet,
@@ -20,6 +19,7 @@ import type {
   AgencyWorkspace,
   PropertyLead,
 } from "@shongre/contracts/real-estate";
+import { VerificationBadge } from "@shongre/ui/web";
 import { REAL_ESTATE_CONSTRAINTS } from "@shongre/contracts/real-estate";
 import { services } from "../../api/client/service-registry";
 import { useToast } from "../../app/providers/ToastProvider";
@@ -34,6 +34,7 @@ import {
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useRegionalFormatters } from "../../hooks/useRegionalFormatters";
 import { labelIdentifier } from "../../utilities/identifier-label";
+import { useTranslation } from "../../i18n/I18nProvider";
 
 type Tab =
   | "overview"
@@ -56,6 +57,7 @@ const statusLabels: Record<PropertyLead["status"], string> = {
 };
 
 export const ImmoAgencyWorkspacePage: React.FC = () => {
+  const { t } = useTranslation();
   const { formatDate, formatDateTime, formatMoney, formatNumber } =
     useRegionalFormatters();
   const toast = useToast();
@@ -231,10 +233,9 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
             <h1 className="text-xl font-bold text-text-main">
               {workspace.organization.name}
             </h1>
-            <Badge variant="success">
-              <CheckCircle2 className="mr-1 h-icon-xs w-icon-xs" />
-              Agence vérifiée
-            </Badge>
+            <VerificationBadge
+              label={t("ui.identityStatus.verification.agency")}
+            />
           </div>
           <p className="mt-1 text-xs text-text-muted">
             Plan {workspace.organization.planId.replace("immo_agency_", "")} ·{" "}

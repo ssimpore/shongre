@@ -24,6 +24,7 @@ import type {
   DealerWorkspace,
   InventoryImport,
 } from "@shongre/contracts/auto";
+import { VerificationBadge } from "@shongre/ui/web";
 import { services } from "../../api/client/service-registry";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useToast } from "../../app/providers/ToastProvider";
@@ -43,6 +44,7 @@ import { usePageMeta } from "../../hooks/usePageMeta";
 import { useRegionalFormatters } from "../../hooks/useRegionalFormatters";
 import { formatAutoMileage, formatAutoMoney } from "./auto-format";
 import { labelIdentifier } from "../../utilities/identifier-label";
+import { useTranslation } from "../../i18n/I18nProvider";
 
 const TABS = [
   "Vue d’ensemble",
@@ -98,6 +100,7 @@ const Metric = ({
 );
 
 export const AutoDealerWorkspacePage: React.FC = () => {
+  const { t } = useTranslation();
   const { activeMarket, currentLocale, convertMoney } = useMarketLocation();
   const { formatDateTime, formatNumber } = useRegionalFormatters();
   const toast = useToast();
@@ -909,7 +912,9 @@ export const AutoDealerWorkspacePage: React.FC = () => {
           <h1 className="mt-1 text-2xl font-bold">Espace Auto</h1>
           <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
             <strong>{workspace.organization.name}</strong>
-            <Badge variant="verified">Entreprise vérifiée</Badge>
+            <VerificationBadge
+              label={t("ui.identityStatus.verification.company")}
+            />
             <span className="text-text-muted">· Lyon Centre</span>
           </div>
         </div>

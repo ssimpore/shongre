@@ -17,6 +17,7 @@ import {
   useSearchParams,
 } from "react-router-dom";
 import type { TaxonomyHeaderCategoryItem } from "@shongre/contracts";
+import { ProBadge, VerifiedIcon } from "@shongre/ui/web";
 import {
   PlusCircle,
   Heart,
@@ -29,7 +30,6 @@ import {
   ShoppingBag,
   List,
   Menu,
-  BadgeCheck,
   X,
   Map as MapIcon,
   ChevronRight,
@@ -86,33 +86,6 @@ const HEADER_SCROLL_BEHAVIOR = {
   revealAtTop: 12,
   transitionSettleMs: 300,
 } as const;
-
-interface VerifiedAccountNameProps {
-  name: string;
-  isVerified?: boolean;
-  verifiedLabel: string;
-}
-
-function VerifiedAccountName({
-  name,
-  isVerified,
-  verifiedLabel,
-}: VerifiedAccountNameProps) {
-  return (
-    <div className="flex min-w-0 items-center gap-1.5 text-sm font-bold text-stone-900">
-      <span className="truncate">{name}</span>
-      {isVerified ? (
-        <span
-          className="inline-flex shrink-0 text-success"
-          title={verifiedLabel}
-          aria-label={verifiedLabel}
-        >
-          <BadgeCheck className="h-icon-md w-icon-md" aria-hidden="true" />
-        </span>
-      ) : null}
-    </div>
-  );
-}
 
 function AccountMenuItemIcon({
   id,
@@ -522,7 +495,7 @@ export const Header: React.FC = () => {
   );
 
   return (
-    <header className="sticky top-0 z-header border-b border-border-base bg-bg-surface/95 shadow-xs backdrop-blur-md">
+    <header className="border-b border-border-base bg-bg-surface/95 shadow-xs backdrop-blur-md">
       <Container>
         <div className="flex items-center justify-between h-16 gap-3 sm:gap-6">
           {/* Logo & Category trigger.
@@ -720,13 +693,15 @@ export const Header: React.FC = () => {
                   className={`absolute right-0 mt-2 w-64 ${DROPDOWN_PANEL_CLASSES}`}
                 >
                   <div className="px-4 py-2.5 border-b border-border-subtle">
-                    <VerifiedAccountName
-                      name={currentUser.name}
-                      isVerified={
-                        isStaffIdentity ? false : currentUser.isVerified
-                      }
-                      verifiedLabel={t("ui.badge.profilVerifie")}
-                    />
+                    <div className="flex min-w-0 items-center gap-1.5 text-sm font-bold text-stone-900">
+                      <span className="truncate">{currentUser.name}</span>
+                      {!isStaffIdentity && currentUser.isVerified ? (
+                        <VerifiedIcon
+                          size="md"
+                          label={t("ui.identityStatus.verification.profile")}
+                        />
+                      ) : null}
+                    </div>
                     <div className="text-xs text-stone-500 truncate">
                       {currentUser.email}
                     </div>
@@ -736,9 +711,12 @@ export const Header: React.FC = () => {
                           {staffStatusLabel}
                         </Badge>
                       ) : isProSeller(currentUser) ? (
-                        <Badge variant="pro" size="sm">
-                          {t("shell.header.compteProfessionnel")}
-                        </Badge>
+                        <ProBadge
+                          label={t("ui.identityStatus.pro.short")}
+                          accessibilityLabel={t(
+                            "ui.identityStatus.pro.account",
+                          )}
+                        />
                       ) : (
                         <Badge variant="neutral" size="sm">
                           Particulier
@@ -949,13 +927,17 @@ export const Header: React.FC = () => {
                         size="md"
                       />
                       <div className="flex-1 min-w-0">
-                        <VerifiedAccountName
-                          name={currentUser.name}
-                          isVerified={
-                            isStaffIdentity ? false : currentUser.isVerified
-                          }
-                          verifiedLabel={t("ui.badge.profilVerifie")}
-                        />
+                        <div className="flex min-w-0 items-center gap-1.5 text-sm font-bold text-stone-900">
+                          <span className="truncate">{currentUser.name}</span>
+                          {!isStaffIdentity && currentUser.isVerified ? (
+                            <VerifiedIcon
+                              size="md"
+                              label={t(
+                                "ui.identityStatus.verification.profile",
+                              )}
+                            />
+                          ) : null}
+                        </div>
                         <div className="text-xs text-stone-500 truncate">
                           {currentUser.email}
                         </div>
@@ -965,9 +947,12 @@ export const Header: React.FC = () => {
                               {staffStatusLabel}
                             </Badge>
                           ) : isProSeller(currentUser) ? (
-                            <Badge variant="pro" size="sm">
-                              Pro
-                            </Badge>
+                            <ProBadge
+                              label={t("ui.identityStatus.pro.short")}
+                              accessibilityLabel={t(
+                                "ui.identityStatus.pro.account",
+                              )}
+                            />
                           ) : (
                             <Badge variant="neutral" size="sm">
                               Particulier

@@ -94,7 +94,7 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({
   const accountLabel = isAuthenticated ? "Mon compte" : "Se connecter";
 
   return (
-    <header className="sticky top-0 z-header border-b border-border-base bg-bg-surface">
+    <header className="border-b border-border-base bg-bg-surface">
       <Container className="flex h-16 items-center justify-between gap-4">
         <div className="flex min-w-0 items-center gap-3">
           <a

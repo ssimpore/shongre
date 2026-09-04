@@ -3,6 +3,7 @@ import {
   StyleSheet,
   Text,
   View,
+  type AccessibilityRole,
   type StyleProp,
   type ViewStyle,
 } from "react-native";
@@ -15,13 +16,17 @@ import {
   nativeTypography,
 } from "@shongre/design-tokens/native";
 import type { BadgeVariant } from "./Badge.web";
+import type { BadgeSize } from "./Badge.web";
 
 export interface BadgeProps {
   children: ReactNode;
   variant?: BadgeVariant;
-  size?: "sm" | "md";
+  size?: BadgeSize;
   icon?: ReactNode;
   style?: StyleProp<ViewStyle>;
+  accessibilityLabel?: string;
+  accessibilityRole?: AccessibilityRole;
+  testID?: string;
 }
 export function Badge({
   children,
@@ -29,12 +34,23 @@ export function Badge({
   size = "sm",
   icon,
   style,
+  accessibilityLabel,
+  accessibilityRole,
+  testID,
 }: BadgeProps) {
   return (
-    <View style={[styles.base, sizes[size], variants[variant], style]}>
+    <View
+      style={[styles.base, sizes[size], variants[variant], style]}
+      accessible={Boolean(accessibilityLabel)}
+      accessibilityLabel={accessibilityLabel}
+      accessibilityRole={accessibilityRole}
+      testID={testID}
+    >
       {icon}
       {typeof children === "string" ? (
-        <Text style={[styles.label, labels[variant]]}>{children}</Text>
+        <Text style={[styles.label, sizeLabels[size], labels[variant]]}>
+          {children}
+        </Text>
       ) : (
         children
       )}
@@ -52,17 +68,37 @@ const styles = StyleSheet.create({
   },
   label: {
     fontFamily: nativeTypography.fontFamily.semibold,
-    fontSize: nativeTypography.size.micro,
   },
 });
 const sizes = StyleSheet.create({
+  xs: {
+    paddingHorizontal: nativeSpacing.xs,
+    paddingVertical: nativeSpacing.xs / 2,
+    gap: nativeSpacing.xs / 2,
+  },
   sm: {
     paddingHorizontal: nativeSpacing.sm,
-    paddingVertical: nativeSpacing.xs,
+    paddingVertical: nativeSpacing.xs / 2,
   },
   md: {
-    paddingHorizontal: nativeSpacing.md,
+    paddingHorizontal: nativeSpacing.sm + nativeSpacing.xs / 2,
     paddingVertical: nativeSpacing.xs,
+    gap: nativeSpacing.sm - nativeSpacing.xs / 2,
+  },
+});
+const sizeLabels = StyleSheet.create({
+  xs: {
+    fontFamily: nativeTypography.fontFamily.bold,
+    fontSize: nativeTypography.size.overline,
+    lineHeight: nativeTypography.size.overline,
+  },
+  sm: {
+    fontSize: nativeTypography.size.micro,
+    lineHeight: nativeTypography.size.micro,
+  },
+  md: {
+    fontSize: nativeTypography.size.xs,
+    lineHeight: nativeTypography.size.xs,
   },
 });
 const variants = StyleSheet.create({
@@ -74,13 +110,9 @@ const variants = StyleSheet.create({
     backgroundColor: nativeColors.action.primarySubtle,
     borderColor: nativeColors.action.primaryBorder,
   },
-  pro: {
+  inverse: {
     backgroundColor: nativePalette["stone-900"],
     borderColor: nativePalette["stone-900"],
-  },
-  verified: {
-    backgroundColor: nativeColors.status.successSurface,
-    borderColor: nativeColors.status.successBorder,
   },
   urgent: {
     backgroundColor: nativeColors.status.errorSurface,
@@ -106,8 +138,7 @@ const variants = StyleSheet.create({
 const labels = StyleSheet.create({
   neutral: { color: nativePalette["stone-700"] },
   primary: { color: nativeColors.action.primary },
-  pro: { color: nativeColors.text.inverse },
-  verified: { color: nativeColors.status.success },
+  inverse: { color: nativeColors.text.inverse },
   urgent: { color: nativeColors.status.error },
   deal: { color: nativeColors.status.warning },
   warning: { color: nativeColors.status.warning },

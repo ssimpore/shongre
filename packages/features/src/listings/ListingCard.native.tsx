@@ -10,7 +10,15 @@ import {
   nativeSpacing,
 } from "@shongre/design-tokens/native";
 import { formatMoney, formatRelativeTime } from "@shongre/shared";
-import { Badge, Card, Heading, SemanticIcon, Text } from "@shongre/ui/native";
+import {
+  Badge,
+  Card,
+  Heading,
+  ProBadge,
+  SemanticIcon,
+  Text,
+  VerifiedIcon,
+} from "@shongre/ui/native";
 import {
   getListingCardCharacteristics,
   getListingPromotionBadges,
@@ -22,12 +30,18 @@ export interface ListingCardProps {
   onPress: () => void;
   locale?: string;
   variant?: "grid" | "list" | "compact";
+  identityLabels: {
+    pro: string;
+    proAccessibility: string;
+    verified: string;
+  };
 }
 export function ListingCard({
   listing,
   onPress,
   locale,
   variant = "grid",
+  identityLabels,
 }: ListingCardProps) {
   const price = listing.isFreeDonation
     ? "Gratuit"
@@ -95,21 +109,33 @@ export function ListingCard({
           ) : null}
           {listing.categoryLabel || listing.seller ? (
             <View style={styles.meta}>
-              <Text
-                size="caption"
-                tone="muted"
-                numberOfLines={1}
-                style={styles.flex}
-              >
-                {[
-                  listing.categoryLabel,
-                  listing.seller?.sellerType === "pro"
-                    ? "Pro"
-                    : listing.seller?.name,
-                ]
-                  .filter(Boolean)
-                  .join(" · ")}
-              </Text>
+              <View style={[styles.identity, styles.flex]}>
+                <Text
+                  size="caption"
+                  tone="muted"
+                  numberOfLines={1}
+                  style={styles.flex}
+                >
+                  {[
+                    listing.categoryLabel,
+                    listing.seller?.sellerType === "pro"
+                      ? undefined
+                      : listing.seller?.name,
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </Text>
+                {listing.seller?.sellerType === "pro" ? (
+                  <ProBadge
+                    label={identityLabels.pro}
+                    accessibilityLabel={identityLabels.proAccessibility}
+                    size="xs"
+                  />
+                ) : listing.seller?.isIdentityVerified ||
+                  listing.seller?.isBusinessVerified ? (
+                  <VerifiedIcon size="xs" label={identityLabels.verified} />
+                ) : null}
+              </View>
               {(listing.seller?.rating ?? 0) > 0 ? (
                 <View
                   style={styles.rating}
@@ -148,12 +174,22 @@ export function ListingCard({
           {characteristics.length ? (
             <View
               style={styles.characteristics}
-              accessibilityLabel={`Caractéristiques principales : ${characteristics.join(", ")}`}
+              accessibilityLabel={`Caractéristiques principales : ${characteristics
+                .map((characteristic) => characteristic.label)
+                .join(", ")}`}
             >
               {characteristics.map((characteristic) => (
-                <View key={characteristic} style={styles.characteristic}>
+                <View
+                  key={`${characteristic.icon}:${characteristic.label}`}
+                  style={styles.characteristic}
+                >
+                  <SemanticIcon
+                    name={characteristic.icon}
+                    size="xs"
+                    color={nativeColors.text.muted}
+                  />
                   <Text size="caption" tone="secondary" numberOfLines={1}>
-                    {characteristic}
+                    {characteristic.label}
                   </Text>
                 </View>
               ))}
@@ -228,6 +264,11 @@ const styles = StyleSheet.create({
   body: { flex: 1, padding: nativeSpacing.md, gap: nativeSpacing.xs },
   badges: { flexDirection: "row", flexWrap: "wrap", gap: nativeSpacing.xs },
   meta: { flexDirection: "row", alignItems: "center", gap: nativeSpacing.sm },
+  identity: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: nativeSpacing.xs,
+  },
   rating: {
     flexDirection: "row",
     alignItems: "center",
@@ -252,6 +293,9 @@ const styles = StyleSheet.create({
   },
   characteristic: {
     maxWidth: nativeSizing.full,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: nativeSpacing.xs,
     borderRadius: nativeRadius.control,
     paddingHorizontal: nativeSpacing.sm,
     paddingVertical: nativeSpacing.xs,

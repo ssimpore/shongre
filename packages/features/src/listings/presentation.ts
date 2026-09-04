@@ -1,4 +1,7 @@
-import type { ListingCardView } from "@shongre/contracts";
+import type {
+  ListingCardView,
+  ListingCharacteristicIcon,
+} from "@shongre/contracts";
 
 export interface ListingPromotionBadge {
   label: string;
@@ -84,14 +87,21 @@ function normalizeCharacteristic(value: string): string {
  * separately, while Web reserves the complete value for details.
  */
 export function getListingCardCharacteristics(
-  listing: Pick<ListingCardView, "characteristics" | "conditionLabel">,
-): string[] {
+  listing: Pick<
+    ListingCardView,
+    "characteristics" | "characteristicIcons" | "conditionLabel"
+  >,
+): Array<{ icon: ListingCharacteristicIcon; label: string }> {
   const condition = normalizeCharacteristic(listing.conditionLabel);
   const seen = new Set<string>();
 
   return listing.characteristics
+    .map((label, index) => ({
+      icon: listing.characteristicIcons?.[index] ?? ("tag" as const),
+      label,
+    }))
     .filter((characteristic) => {
-      const normalized = normalizeCharacteristic(characteristic);
+      const normalized = normalizeCharacteristic(characteristic.label);
       if (
         !normalized ||
         normalized === condition ||

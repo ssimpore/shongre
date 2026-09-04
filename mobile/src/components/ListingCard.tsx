@@ -8,6 +8,7 @@ import {
   nativeSpacing as spacing,
   nativeTypography,
 } from "@shongre/design-tokens/native";
+import { messagesFr } from "../i18n/messages.fr";
 
 export function ListingCard({ listing }: { listing: ListingCardView }) {
   const router = useRouter();
@@ -21,6 +22,11 @@ export function ListingCard({ listing }: { listing: ListingCardView }) {
       <SharedListingCard
         listing={listing}
         onPress={() => router.push(`/listing/${listing.id}`)}
+        identityLabels={{
+          pro: messagesFr["ui.identityStatus.pro.short"],
+          proAccessibility: messagesFr["ui.identityStatus.pro.seller"],
+          verified: messagesFr["ui.identityStatus.verification.profile"],
+        }}
       />
     </View>
   );

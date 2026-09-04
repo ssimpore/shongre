@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Alert, Image, StyleSheet, Text, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { ListingCardView } from "@shongre/contracts";
+import { ProBadge, VerificationBadge } from "@shongre/ui/native";
 import { Button } from "@/components/Button";
 import { Screen } from "@/components/Screen";
 import { StatePanel } from "@/components/StatePanel";
@@ -22,6 +23,7 @@ import { favoritesService } from "@/features/favorites/favorites.service";
 import { watchSubscriptionsService } from "@/features/watch-subscriptions/watch-subscriptions.service";
 import { formatMoney } from "@/utils/format";
 import { useMarket } from "@/features/market/MarketProvider";
+import { messagesFr } from "@/i18n/messages.fr";
 
 export default function ListingDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -317,12 +319,25 @@ export default function ListingDetailScreen() {
       {listing.seller ? (
         <View style={styles.seller}>
           <Text style={styles.sellerName}>{listing.seller.name}</Text>
-          <Text style={styles.muted}>
-            {listing.seller.sellerType === "pro"
-              ? "Professionnel"
-              : "Particulier"}
-            {listing.seller.isIdentityVerified ? " · Identité vérifiée" : ""}
-          </Text>
+          <View style={styles.sellerIdentityStatus}>
+            <Text style={styles.muted}>
+              {listing.seller.sellerType === "pro"
+                ? "Professionnel"
+                : "Particulier"}
+            </Text>
+            {listing.seller.sellerType === "pro" ? (
+              <ProBadge
+                size="xs"
+                label={messagesFr["ui.identityStatus.pro.short"]}
+                accessibilityLabel={messagesFr["ui.identityStatus.pro.account"]}
+              />
+            ) : listing.seller.isIdentityVerified ? (
+              <VerificationBadge
+                size="xs"
+                label={messagesFr["ui.identityStatus.verification.identity"]}
+              />
+            ) : null}
+          </View>
         </View>
       ) : null}
       <Button
@@ -432,6 +447,11 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontSize: nativeTypography.size.bodyLg,
     fontFamily: nativeTypography.fontFamily.bold,
+  },
+  sellerIdentityStatus: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.xs,
   },
   safety: {
     gap: spacing.xs,

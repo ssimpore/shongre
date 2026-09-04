@@ -4,13 +4,13 @@ import { useSearchParams } from "react-router-dom";
 import {
   ArrowUpDown,
   BookOpen,
-  Check,
   Filter,
   GitCompareArrows,
   GraduationCap,
   Search,
   X,
 } from "lucide-react";
+import { VerificationBadge } from "@shongre/ui/web";
 import type {
   CourseCatalog,
   DeliveryMode,
@@ -695,15 +695,19 @@ export const CoursesSearchPage: React.FC = () => {
                     </dd>
                     <dt>Identité</dt>
                     <dd className="flex items-center justify-end gap-1 text-right">
-                      {item.tutor.verifications.identity === "verified" && (
-                        <Check
-                          className="h-icon-xs w-icon-xs text-success"
-                          aria-hidden="true"
+                      {item.tutor.verifications.identity === "verified" ? (
+                        <VerificationBadge
+                          size="xs"
+                          label={t(
+                            "ui.identityStatus.verification.genericFeminine",
+                          )}
+                          accessibilityLabel={t(
+                            "ui.identityStatus.verification.identity",
+                          )}
                         />
+                      ) : (
+                        "Non vérifiée"
                       )}
-                      {item.tutor.verifications.identity === "verified"
-                        ? "Vérifiée"
-                        : "Non vérifiée"}
                     </dd>
                   </dl>
                 </div>

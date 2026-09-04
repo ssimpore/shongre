@@ -6,13 +6,14 @@ import {
   Heart,
   Laptop,
   MapPin,
-  ShieldCheck,
   Star,
   Users,
 } from "lucide-react";
+import { ProBadge, VerifiedIcon } from "@shongre/ui/web";
 import type { TutorSearchItem } from "@shongre/contracts/courses";
-import { Badge, Button, Image } from "../../../design-system";
+import { Button, Image } from "../../../design-system";
 import { useRegionalFormatters } from "../../../hooks/useRegionalFormatters";
+import { useTranslation } from "../../../i18n/I18nProvider";
 
 interface CourseTutorCardProps {
   item: TutorSearchItem;
@@ -36,6 +37,7 @@ export const CourseTutorCard: React.FC<CourseTutorCardProps> = ({
   onToggleCompare,
   onToggleSaved,
 }) => {
+  const { t } = useTranslation();
   const { currentLocale, formatMoney } = useRegionalFormatters();
   const { tutor, offer } = item;
   const isIdentityVerified = tutor.verifications.identity === "verified";
@@ -90,21 +92,16 @@ export const CourseTutorCard: React.FC<CourseTutorCardProps> = ({
                 </Link>
               </h2>
               {isIdentityVerified && (
-                <span
-                  className="inline-flex text-success"
-                  title="Identité vérifiée par Shongre"
-                >
-                  <ShieldCheck
-                    className="h-icon-sm w-icon-sm"
-                    aria-hidden="true"
-                  />
-                  <span className="sr-only">Identité vérifiée</span>
-                </span>
+                <VerifiedIcon
+                  size="sm"
+                  label={t("ui.identityStatus.verification.identity")}
+                />
               )}
               {tutor.organizationId && (
-                <Badge variant="pro" size="sm">
-                  Organisme
-                </Badge>
+                <ProBadge
+                  label={t("ui.identityStatus.pro.short")}
+                  accessibilityLabel={t("ui.identityStatus.pro.organization")}
+                />
               )}
             </div>
             <p className="mt-0.5 text-sm font-semibold text-text-main">

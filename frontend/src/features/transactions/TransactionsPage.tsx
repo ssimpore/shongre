@@ -178,7 +178,7 @@ export const TransactionsPage: React.FC = () => {
         );
       case "completed":
         return (
-          <Badge variant="verified">
+          <Badge variant="success">
             {t("transactions.transactionsPage.finaliseePayee")}
           </Badge>
         );

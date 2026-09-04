@@ -56,6 +56,9 @@ describe("shared feature presentation", () => {
           "Camel",
         ],
       }),
-    ).toEqual(["Sézane", "Laine"]);
+    ).toEqual([
+      { icon: "tag", label: "Sézane" },
+      { icon: "tag", label: "Laine" },
+    ]);
   });
 });

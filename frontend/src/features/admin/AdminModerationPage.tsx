@@ -786,7 +786,7 @@ export const AdminModerationPage: React.FC = () => {
                         ? "urgent"
                         : aiAnalysis.riskScore > 20
                           ? "warning"
-                          : "verified"
+                          : "success"
                     }
                   >
                     {labelIdentifier(aiAnalysis.verdict)}

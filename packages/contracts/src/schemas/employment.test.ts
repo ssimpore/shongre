@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_EMPLOYMENT_CATALOG } from "../fixtures/employment-catalog";
+import { EMPLOYMENT_DEMO_JOBS } from "../fixtures/employment-demo";
 import {
   employmentCatalogSchema,
   jobPostingDetailSchema,
@@ -62,5 +63,30 @@ describe("employment contracts", () => {
       candidateFeeRequired: true,
     });
     expect(result.success).toBe(false);
+  });
+
+  it("projects the public employer identity needed by every job detail", () => {
+    const seasonalJob = EMPLOYMENT_DEMO_JOBS.find(
+      (job) => job.id === "job-seasonal-nice",
+    );
+
+    expect(seasonalJob).toBeDefined();
+    expect(jobPostingDetailSchema.parse(seasonalJob).employer).toMatchObject({
+      publisherUserId: "employer-atelier-vert",
+      name: "Atelier Vert",
+      rating: 4.7,
+      reviewCount: 18,
+      locationLabel: "Nantes",
+      isPubliclyVerified: true,
+    });
+
+    const reactJob = EMPLOYMENT_DEMO_JOBS.find(
+      (job) => job.id === "job-react-lyon",
+    );
+    expect(jobPostingDetailSchema.parse(reactJob).employer).toMatchObject({
+      id: "employer-technova",
+      publisherUserId: "user_employment_clara",
+      organizationId: "organization-technova",
+    });
   });
 });

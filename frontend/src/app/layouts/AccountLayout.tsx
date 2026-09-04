@@ -4,6 +4,7 @@ import {
   showsVerifiedBadge,
 } from "../../domains/user/user.domain";
 import React from "react";
+import { ProBadge, VerifiedIcon } from "@shongre/ui/web";
 import { Outlet, NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   User,
@@ -14,7 +15,6 @@ import {
   Bell,
   ShoppingBag,
   Shield,
-  ShieldCheck,
   Settings,
   Briefcase,
   BarChart3,
@@ -39,20 +39,6 @@ import { storageService } from "../../services/storage.service";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { useAuthorization } from "../../security/useAuthorization";
 import { useMarketLocation } from "../providers/MarketLocationProvider";
-
-function VerifiedAccountIcon({ label }: { label: string }): React.ReactElement {
-  return (
-    <span
-      role="img"
-      aria-label={label}
-      title={label}
-      data-account-verified-icon
-      className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-control border border-success-border bg-success-surface text-success"
-    >
-      <ShieldCheck className="h-icon-xs w-icon-xs" aria-hidden="true" />
-    </span>
-  );
-}
 
 export const AccountLayout: React.FC = () => {
   const { t } = useTranslation();
@@ -327,7 +313,10 @@ export const AccountLayout: React.FC = () => {
                     {accountName}
                   </span>
                   {isVerified && (
-                    <VerifiedAccountIcon label={t("ui.badge.profilVerifie")} />
+                    <VerifiedIcon
+                      size="sm"
+                      label={t("ui.identityStatus.verification.profile")}
+                    />
                   )}
                 </div>
                 <div
@@ -340,9 +329,10 @@ export const AccountLayout: React.FC = () => {
             </div>
             <div>
               {isPro ? (
-                <Badge variant="pro" size="sm" icon>
-                  {t("shell.accountLayout.proBadge")}
-                </Badge>
+                <ProBadge
+                  label={t("ui.identityStatus.pro.short")}
+                  accessibilityLabel={t("ui.identityStatus.pro.account")}
+                />
               ) : (
                 <Badge variant="neutral" size="sm">
                   Particulier
@@ -450,7 +440,10 @@ export const AccountLayout: React.FC = () => {
                     {accountName}
                   </span>
                   {isVerified && (
-                    <VerifiedAccountIcon label={t("ui.badge.profilVerifie")} />
+                    <VerifiedIcon
+                      size="sm"
+                      label={t("ui.identityStatus.verification.profile")}
+                    />
                   )}
                 </div>
                 <div
@@ -461,9 +454,10 @@ export const AccountLayout: React.FC = () => {
                 </div>
                 <div className="mt-1.5">
                   {isPro ? (
-                    <Badge variant="pro" size="sm" icon>
-                      {t("shell.accountLayout.proBadge")}
-                    </Badge>
+                    <ProBadge
+                      label={t("ui.identityStatus.pro.short")}
+                      accessibilityLabel={t("ui.identityStatus.pro.account")}
+                    />
                   ) : (
                     <Badge variant="neutral" size="sm">
                       Particulier

@@ -2,7 +2,6 @@ import { PAGE_SIZES } from "../../configuration/pagination.config";
 import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
-  BadgeCheck,
   BatteryCharging,
   CalendarDays,
   CarFront,
@@ -19,6 +18,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import type { AutoLead, VehiclePublic } from "@shongre/contracts/auto";
+import { VerificationBadge } from "@shongre/ui/web";
 import { services } from "../../api/client/service-registry";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
@@ -49,6 +49,7 @@ import {
   fuelLabels,
   transmissionLabels,
 } from "./auto-format";
+import { useTranslation } from "../../i18n/I18nProvider";
 
 type LeadFormState = {
   contactName: string;
@@ -60,6 +61,7 @@ type LeadFormState = {
 };
 
 export const AutoVehicleDetailPage: React.FC = () => {
+  const { t } = useTranslation();
   const { slug = "" } = useParams<{ slug: string }>();
   const { currentUser } = useAuth();
   const { activeMarket, currentLocale, convertMoney } = useMarketLocation();
@@ -288,7 +290,7 @@ export const AutoVehicleDetailPage: React.FC = () => {
                         <Badge>Sponsorisé</Badge>
                       )}
                       {vehicle.trust.publicBadges.map((badge) => (
-                        <Badge key={badge} variant="verified">
+                        <Badge key={badge} variant="success">
                           {badge}
                         </Badge>
                       ))}
@@ -446,18 +448,17 @@ export const AutoVehicleDetailPage: React.FC = () => {
                     className="flex items-center justify-between py-3 text-xs"
                   >
                     <span>{label}</span>
-                    <span
-                      className={`inline-flex items-center gap-1.5 font-bold ${status === "verified" ? "text-success" : "text-text-muted"}`}
-                    >
-                      {status === "verified" ? (
-                        <CheckCircle2 className="h-icon-xs w-icon-xs" />
-                      ) : (
+                    {status === "verified" ? (
+                      <VerificationBadge
+                        size="xs"
+                        label={t("ui.identityStatus.verification.generic")}
+                      />
+                    ) : (
+                      <span className="inline-flex items-center gap-1.5 font-bold text-text-muted">
                         <Clock3 className="h-icon-xs w-icon-xs" />
-                      )}
-                      {status === "verified"
-                        ? "Vérifié"
-                        : "Disponible en privé / à contrôler"}
-                    </span>
+                        Disponible en privé / à contrôler
+                      </span>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -496,10 +497,11 @@ export const AutoVehicleDetailPage: React.FC = () => {
                 locationLabel={vehicle.seller.locationLabel}
               />
               <div className="mt-4 space-y-2 text-xs text-text-secondary">
-                <p className="flex items-center gap-2">
-                  <BadgeCheck className="h-icon-sm w-icon-sm text-success" />{" "}
-                  Entreprise vérifiée
-                </p>
+                {vehicle.seller.verifiedBusiness ? (
+                  <VerificationBadge
+                    label={t("ui.identityStatus.verification.company")}
+                  />
+                ) : null}
                 <p className="flex items-center gap-2">
                   <Clock3 className="h-icon-sm w-icon-sm" /> Répond en moyenne
                   en {vehicle.seller.responseTimeMinutes} min

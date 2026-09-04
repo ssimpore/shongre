@@ -4,7 +4,7 @@ import { SkipLink } from "../../design-system";
 import { AnalyticsRuntime } from "../../analytics/AnalyticsRuntime";
 import { AppScrollRestoration } from "../router/AppScrollRestoration";
 import { CookieConsent } from "./CookieConsent";
-import { DemoRoleSwitcher } from "./DemoRoleSwitcher";
+import { EnvironmentHeaderStack } from "./EnvironmentHeaderStack";
 import { LazyPreferencesModal } from "./LazyPreferencesModal";
 import { ProductFooter } from "./ProductFooter";
 import { ProductHeader, type ProductNavigationItem } from "./ProductHeader";
@@ -36,15 +36,16 @@ export const ProductLayout: React.FC<ProductLayoutProps> = ({
     <div className="flex min-h-screen flex-col bg-bg-surface text-stone-900">
       <SkipLink />
       <AppScrollRestoration />
-      <DemoRoleSwitcher utility={<AnalyticsRuntime />} />
-      <ProductHeader
-        productId={productId}
-        productName={productName}
-        productPath={productPath}
-        workspacePath={workspacePath}
-        navigation={navigation}
-        workspacePolicyId={workspacePolicyId}
-      />
+      <EnvironmentHeaderStack utility={<AnalyticsRuntime />}>
+        <ProductHeader
+          productId={productId}
+          productName={productName}
+          productPath={productPath}
+          workspacePath={workspacePath}
+          navigation={navigation}
+          workspacePolicyId={workspacePolicyId}
+        />
+      </EnvironmentHeaderStack>
       <MarketRecommendationBanner />
       <main id="main-content" tabIndex={-1} className="flex-1">
         <Outlet />

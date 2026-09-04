@@ -162,6 +162,81 @@ test.describe("Shongre Emploi journeys", () => {
     ).toHaveCount(0);
   });
 
+  test("job details reuse the shared seller identity card", async ({
+    page,
+  }) => {
+    await usePersona(page, "guest");
+    await seedConsent(page);
+    await page.setViewportSize({ width: 1408, height: 749 });
+    await page.goto(
+      "/emploi/offre/equipier-ere-polyvalent-e-saisonnier-job-seasonal-nice",
+      { waitUntil: "domcontentloaded" },
+    );
+    await waitForStableLayout(page);
+
+    const employerIdentity = page.locator('[data-seller-identity="true"]');
+    await expect(employerIdentity).toBeVisible();
+    await expect(employerIdentity).toHaveAttribute(
+      "aria-label",
+      "Visiter la boutique de Atelier Vert",
+    );
+    await expect(employerIdentity).toHaveAttribute(
+      "href",
+      "/boutique/atelier-vert",
+    );
+    await expect(
+      employerIdentity.getByRole("img", { name: "Avatar de Atelier Vert" }),
+    ).toBeVisible();
+    await expect(
+      employerIdentity.getByRole("img", {
+        name: "Note 4,7 sur 5, 18 avis",
+      }),
+    ).toBeVisible();
+    await expect(
+      employerIdentity.locator('[data-ui-verified-icon="true"]'),
+    ).toBeVisible();
+    await expect(
+      employerIdentity.locator('[data-ui-pro-badge="true"]'),
+    ).toBeVisible();
+
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await waitForStableLayout(page);
+    await page.evaluate(() => {
+      window.history.pushState(
+        {},
+        "",
+        "/annonce/listing_employment_job-react-lyon",
+      );
+      window.dispatchEvent(new PopStateEvent("popstate"));
+    });
+    await expect(page).toHaveURL("/annonce/listing_employment_job-react-lyon");
+    await waitForStableLayout(page);
+
+    const projectedEmployerIdentity = page.locator(
+      '[data-seller-identity="true"]',
+    );
+    await expect(projectedEmployerIdentity).toBeVisible();
+    await expect(projectedEmployerIdentity).toHaveAttribute(
+      "aria-label",
+      "Visiter la boutique de TechNova",
+    );
+    await expect(projectedEmployerIdentity).toHaveAttribute(
+      "href",
+      "/boutique/technova",
+    );
+    await expect(
+      projectedEmployerIdentity.getByRole("img", {
+        name: "Note 4,8 sur 5, 37 avis",
+      }),
+    ).toBeVisible();
+    await expect(
+      projectedEmployerIdentity.locator('[data-ui-verified-icon="true"]'),
+    ).toBeVisible();
+    await expect(
+      projectedEmployerIdentity.locator('[data-ui-pro-badge="true"]'),
+    ).toBeVisible();
+  });
+
   test("the recruiter workspace follows the selected demo persona", async ({
     page,
   }) => {

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
-  BadgeCheck,
+  Building2,
   BedDouble,
   CalendarDays,
   CheckCircle2,
@@ -16,6 +16,7 @@ import type {
   PropertyLead,
   PropertyPublic,
 } from "@shongre/contracts/real-estate";
+import { VerificationBadge } from "@shongre/ui/web";
 import { services } from "../../api/client/service-registry";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { useFavorites } from "../../app/providers/FavoritesProvider";
@@ -388,7 +389,7 @@ export const ImmoPropertyDetailPage: React.FC = () => {
               </div>
               <div className="rounded-card border border-border-base bg-bg-surface p-5">
                 <h2 className="flex items-center gap-2 text-sm font-bold">
-                  <BadgeCheck className="h-icon-lg w-icon-lg text-primary" />
+                  <Building2 className="h-icon-lg w-icon-lg text-primary" />
                   Annonceur
                 </h2>
                 <Link
@@ -404,9 +405,7 @@ export const ImmoPropertyDetailPage: React.FC = () => {
                 </Link>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {property.seller.verificationLabels.map((label) => (
-                    <Badge key={label} variant="success">
-                      {label}
-                    </Badge>
+                    <VerificationBadge key={label} label={label} />
                   ))}
                 </div>
                 <p className="mt-3 text-xs text-text-muted">

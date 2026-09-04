@@ -78,6 +78,32 @@ describe("shared public contracts", () => {
     ).toBe(true);
   });
 
+  it("accepts only shared semantic icons for listing characteristics", () => {
+    const listing = {
+      id: "listing-vehicle",
+      title: "Peugeot 3008",
+      price: { amountMinor: 2_490_000, currency: "EUR" },
+      city: "Lyon",
+      marketCode: "FR",
+      conditionLabel: "Occasion",
+      characteristics: ["2019", "84 500 km"],
+      publishedAt: "2026-08-21T10:00:00Z",
+    };
+
+    expect(
+      listingCardSchema.safeParse({
+        ...listing,
+        characteristicIcons: ["calendar", "gauge"],
+      }).success,
+    ).toBe(true);
+    expect(
+      listingCardSchema.safeParse({
+        ...listing,
+        characteristicIcons: ["calendar", "one-off-speedometer"],
+      }).success,
+    ).toBe(false);
+  });
+
   it("validates taxonomy attributes and nodes at the shared boundary", () => {
     expect(
       taxonomyAttributeSchema.safeParse({

@@ -30,6 +30,7 @@ import { useDataMode } from "../providers/DataModeProvider";
 import { useStaffMarketplaceAccess } from "../../security/useStaffMarketplaceAccess";
 import { applicationHref } from "../../platform/applications/use-application-href";
 import type { ShongreApplicationId } from "../../platform/applications/application-registry";
+import { DevelopmentIndicatorAlignment } from "./DevelopmentIndicatorAlignment";
 
 interface DemoPersona {
   userKey: string;
@@ -268,7 +269,7 @@ const StaffMarketplaceModeIndicator: React.FC = () => {
       data-mode={canUseDemoMarketplace ? "demo" : "read-only"}
       aria-label={accessibleLabel}
       title={`${modeTitle} ${modeDescription}`}
-      className={`inline-flex h-control-sm w-control-sm shrink-0 items-center justify-center rounded-control border transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
+      className={`inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-control border transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
         canUseDemoMarketplace
           ? "border-warning/60 bg-warning/15 text-warning hover:bg-warning/25"
           : "border-info/60 bg-info/15 text-info hover:bg-info/25"
@@ -279,8 +280,58 @@ const StaffMarketplaceModeIndicator: React.FC = () => {
   );
 };
 
-const DemoRoleSwitcherContent: React.FC<{ utility?: ReactNode }> = ({
+interface EnvironmentToolbarContentProps {
+  utility?: ReactNode;
+  isCollapsed: boolean;
+  onToggleCollapsed: () => void;
+}
+
+interface EnvironmentToolbarToggleProps {
+  controls: string;
+  isCollapsed: boolean;
+  onToggle: () => void;
+  tone: "demo" | "live";
+}
+
+const EnvironmentToolbarToggle: React.FC<EnvironmentToolbarToggleProps> = ({
+  controls,
+  isCollapsed,
+  onToggle,
+  tone,
+}) => {
+  const { t } = useTranslation();
+  const label = isCollapsed
+    ? t("shell.dataMode.expandToolbar")
+    : t("shell.dataMode.collapseToolbar");
+
+  return (
+    <button
+      type="button"
+      data-environment-toolbar-toggle="true"
+      aria-controls={controls}
+      aria-expanded={!isCollapsed}
+      aria-label={label}
+      title={label}
+      onClick={onToggle}
+      className={`inline-flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-control motion-interactive focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
+        tone === "demo"
+          ? "text-stone-400 hover:bg-stone-800 hover:text-white"
+          : "text-emerald-200 hover:bg-emerald-900 hover:text-white"
+      }`}
+    >
+      <span
+        className={`inline-flex transition-transform duration-fast ${isCollapsed ? "" : "rotate-180"}`}
+      >
+        <ChevronDown className="h-icon-sm w-icon-sm" aria-hidden="true" />
+      </span>
+    </button>
+  );
+};
+
+const DemoRoleSwitcherContent: React.FC<EnvironmentToolbarContentProps> = ({
   utility,
+  isCollapsed,
+  onToggleCollapsed,
 }) => {
   const { t } = useTranslation();
   const { platformRole, currentUser, isRestoring, switchDemoUser } = useAuth();
@@ -427,200 +478,257 @@ const DemoRoleSwitcherContent: React.FC<{ utility?: ReactNode }> = ({
        the menu competed with the header as a `z-header` sibling and lost on DOM
        order, since the header comes later. The role list rendered underneath
        the header and its first entry was unreadable. */
-    <div className="bg-stone-900 text-stone-200 text-xs py-1.5 px-4 border-b border-stone-800 relative z-drawer">
-      <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <span className="bg-primary text-white text-micro font-bold px-2 py-1 rounded tracking-wider uppercase">
+    <div
+      data-environment-toolbar="demo"
+      data-collapsed={isCollapsed}
+      className={`relative z-drawer flex items-center border-b border-stone-800 bg-stone-900 pl-semantic-lg pr-semantic-4xl text-xs text-stone-200 motion-layout motion-reduce:transition-none lg:pl-semantic-4xl ${
+        isCollapsed
+          ? "min-h-control-sm py-0"
+          : "min-h-environment-toolbar-height py-1.5"
+      }`}
+    >
+      <div className="mx-auto flex w-full max-w-7xl flex-nowrap items-center justify-between gap-3">
+        <div className="flex min-w-0 shrink-0 items-center gap-2">
+          <span className="inline-flex h-7 shrink-0 items-center rounded bg-primary px-2 py-1 text-micro font-bold uppercase tracking-wider text-white">
             {t("shell.demoRoleSwitcher.modeDemo")}
           </span>
-          <span className="hidden sm:inline text-stone-400">
-            {t("shell.demoRoleSwitcher.testerLesProfilsEtParcours", {
-              count: DEMO_PERSONAS.length,
-            })}
-          </span>
-          <DataModeSettingsControl />
+          <div
+            id="demo-environment-toolbar-context"
+            className={`${isCollapsed ? "hidden" : "flex"} min-w-0 items-center gap-2 animate-in fade-in duration-fast`}
+          >
+            <span className="hidden h-7 items-center whitespace-nowrap text-stone-400 lg:inline-flex">
+              {t("shell.demoRoleSwitcher.testerLesProfilsEtParcours", {
+                count: DEMO_PERSONAS.length,
+              })}
+            </span>
+            <DataModeSettingsControl />
+          </div>
         </div>
 
-        <div className="flex min-w-0 basis-32 flex-1 items-center justify-end gap-2">
-          {utility}
-          <StaffMarketplaceModeIndicator />
-          <div ref={containerRef} className="relative min-w-0">
-            <button
-              ref={triggerRef}
-              type="button"
-              disabled={isRestoring}
-              onClick={() => setIsOpen(!isOpen)}
-              aria-haspopup="menu"
-              aria-expanded={isOpen}
-              aria-controls="demo-persona-menu"
-              aria-busy={Boolean(switchingUserKey)}
-              data-auth-restoring={isRestoring || undefined}
-              className="flex min-w-0 max-w-full items-center gap-2 rounded-md border border-stone-700 bg-stone-800 px-2.5 py-1 text-white transition-colors hover:bg-stone-700 cursor-pointer"
-            >
-              <currentRoleObj.Icon
-                className={`w-4 h-4 shrink-0 ${currentRoleObj.iconClassName}`}
-                aria-hidden="true"
-              />
-              <span className="truncate font-semibold">
-                {currentRoleObj.label.split("(")[0]}
-              </span>
-              {currentUser && (
-                <span className="text-stone-400 hidden md:inline">
-                  ({currentUser.name})
-                </span>
-              )}
-              <ChevronDown className="w-icon-sm h-icon-sm text-stone-400" />
-            </button>
-
-            {isOpen && (
-              <div
-                ref={menuRef}
-                id="demo-persona-menu"
-                role="menu"
-                aria-label={t("shell.demoRoleSwitcher.changerDeRolePourTester")}
-                onKeyDown={handleMenuKeyDown}
-                className="absolute right-0 mt-1 w-viewport-popover-max max-w-xs overflow-y-auto overscroll-contain rounded-card border border-border-base bg-bg-surface py-1.5 text-stone-900 shadow-dropdown sm:w-80 z-popover max-h-menu-max animate-in fade-in zoom-in-95 duration-fast"
+        <div className="flex min-w-0 basis-32 flex-1 flex-nowrap items-center justify-end gap-2">
+          <div
+            id="demo-environment-toolbar-actions"
+            className={`${isCollapsed ? "hidden" : "flex"} min-w-0 items-center justify-end gap-2 animate-in fade-in duration-fast`}
+          >
+            {utility}
+            <StaffMarketplaceModeIndicator />
+            <div ref={containerRef} className="relative min-w-0">
+              <button
+                ref={triggerRef}
+                type="button"
+                disabled={isRestoring}
+                onClick={() => setIsOpen(!isOpen)}
+                aria-haspopup="menu"
+                aria-expanded={isOpen}
+                aria-controls="demo-persona-menu"
+                aria-busy={Boolean(switchingUserKey)}
+                data-auth-restoring={isRestoring || undefined}
+                className="flex h-7 min-w-0 max-w-full items-center gap-2 overflow-hidden whitespace-nowrap rounded-md border border-stone-700 bg-stone-800 px-2.5 py-1 text-white transition-colors hover:bg-stone-700 cursor-pointer"
               >
-                <div className="sticky top-0 z-raised border-b border-border-subtle bg-bg-surface px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-text-muted">
-                  {t("shell.demoRoleSwitcher.changerDeRolePourTester")}
-                </div>
-                {DEMO_PERSONAS.map((persona, index) => {
-                  const isActive = persona.userId
-                    ? persona.userId === currentUser?.id
-                    : !currentUser;
-                  const isSwitching = switchingUserKey === persona.userKey;
-                  return (
-                    <React.Fragment key={persona.userKey}>
-                      {(index === 0 ||
-                        DEMO_PERSONAS[index - 1].group !== persona.group) && (
-                        <div
-                          role="presentation"
-                          className="border-b border-border-subtle bg-bg-subtle px-3 py-1 text-micro font-bold uppercase tracking-wider text-text-muted"
-                        >
-                          {PERSONA_GROUP_LABELS[persona.group]}
-                        </div>
-                      )}
-                      <button
-                        type="button"
-                        role="menuitemradio"
-                        aria-checked={isActive}
-                        aria-busy={isSwitching}
-                        disabled={Boolean(switchingUserKey)}
-                        onClick={() => void handlePersonaSwitch(persona)}
-                        className={`touch-row w-full items-start gap-2.5 px-3 py-2 text-left transition-colors hover:bg-stone-50 cursor-pointer ${
-                          isActive
-                            ? "bg-primary-light text-primary"
-                            : "text-stone-800"
-                        } disabled:cursor-wait disabled:opacity-70`}
-                      >
-                        <persona.Icon
-                          className={`mt-0.5 h-icon-md w-icon-md shrink-0 ${persona.iconClassName}`}
-                          aria-hidden="true"
-                        />
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-start justify-between gap-2 text-xs font-bold">
-                            <span>{personaLabel(persona)}</span>
-                            {isSwitching ? (
-                              <LoaderCircle
-                                className="h-icon-sm w-icon-sm shrink-0 animate-spin text-primary"
-                                aria-hidden="true"
-                              />
-                            ) : isActive ? (
-                              <Check className="h-icon-sm w-icon-sm shrink-0 text-primary" />
-                            ) : null}
-                          </div>
-                          <div className="mt-0.5 text-xs font-normal leading-tight text-stone-400">
-                            {personaDescription(persona)}
-                          </div>
-                        </div>
-                      </button>
-                    </React.Fragment>
-                  );
-                })}
+                <currentRoleObj.Icon
+                  className={`w-4 h-4 shrink-0 ${currentRoleObj.iconClassName}`}
+                  aria-hidden="true"
+                />
+                <span className="min-w-0 truncate font-semibold">
+                  {currentRoleObj.label.split("(")[0]}
+                </span>
+                {currentUser && (
+                  <span className="hidden min-w-0 truncate text-stone-400 md:inline">
+                    ({currentUser.name})
+                  </span>
+                )}
+                <ChevronDown className="w-icon-sm h-icon-sm text-stone-400" />
+              </button>
 
-                <div className="border-t border-stone-100 my-1 pt-1">
-                  <div className="px-3 py-1 text-micro font-bold text-stone-400 uppercase tracking-wider">
-                    {t("shell.demoRoleSwitcher.accesDirectAuxProfilsPublics")}
+              {isOpen && (
+                <div
+                  ref={menuRef}
+                  id="demo-persona-menu"
+                  role="menu"
+                  aria-label={t(
+                    "shell.demoRoleSwitcher.changerDeRolePourTester",
+                  )}
+                  onKeyDown={handleMenuKeyDown}
+                  className="absolute right-0 mt-1 w-viewport-popover-max max-w-xs overflow-y-auto overscroll-contain rounded-card border border-border-base bg-bg-surface py-1.5 text-stone-900 shadow-dropdown sm:w-80 z-popover max-h-menu-max animate-in fade-in zoom-in-95 duration-fast"
+                >
+                  <div className="sticky top-0 z-raised border-b border-border-subtle bg-bg-surface px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-text-muted">
+                    {t("shell.demoRoleSwitcher.changerDeRolePourTester")}
                   </div>
-                  <div className="grid grid-cols-2 gap-1 px-2 pb-1 text-xs">
-                    <Link
-                      to={routes.seller.profile("camille-martin")}
-                      onClick={() => setIsOpen(false)}
-                      className="p-1 rounded hover:bg-stone-100 font-semibold text-stone-700 truncate"
-                    >
-                      👤 Camille (Particulier)
-                    </Link>
-                    <Link
-                      to={routes.seller.storefront("atelier-nordique")}
-                      onClick={() => setIsOpen(false)}
-                      className="p-1 rounded hover:bg-stone-100 font-semibold text-primary truncate"
-                    >
-                      🏬 Atelier Nordique (Pro)
-                    </Link>
-                    <Link
-                      to={routes.seller.profile("marion-dupuis")}
-                      onClick={() => setIsOpen(false)}
-                      className="p-1 rounded hover:bg-stone-100 text-stone-600 truncate"
-                    >
-                      {t("shell.demoRoleSwitcher.0AnnonceParticulier")}
-                    </Link>
-                    <Link
-                      to={routes.seller.storefront("optique-des-arts")}
-                      onClick={() => setIsOpen(false)}
-                      className="p-1 rounded hover:bg-stone-100 text-stone-600 truncate"
-                    >
-                      {t("shell.demoRoleSwitcher.0AnnoncePro")}
-                    </Link>
-                    <Link
-                      to={routes.seller.profile("lucas-bernard")}
-                      onClick={() => setIsOpen(false)}
-                      className="p-1 rounded hover:bg-stone-100 text-stone-600 truncate"
-                    >
-                      ⭐ 0 avis (Nouveau)
-                    </Link>
-                    <Link
-                      to={routes.seller.profile("vendeur-suspendu")}
-                      onClick={() => setIsOpen(false)}
-                      className="p-1 rounded hover:bg-danger-surface text-danger truncate"
-                    >
-                      {t("shell.demoRoleSwitcher.profilSuspenduSecurite")}
-                    </Link>
+                  {DEMO_PERSONAS.map((persona, index) => {
+                    const isActive = persona.userId
+                      ? persona.userId === currentUser?.id
+                      : !currentUser;
+                    const isSwitching = switchingUserKey === persona.userKey;
+                    return (
+                      <React.Fragment key={persona.userKey}>
+                        {(index === 0 ||
+                          DEMO_PERSONAS[index - 1].group !== persona.group) && (
+                          <div
+                            role="presentation"
+                            className="border-b border-border-subtle bg-bg-subtle px-3 py-1 text-micro font-bold uppercase tracking-wider text-text-muted"
+                          >
+                            {PERSONA_GROUP_LABELS[persona.group]}
+                          </div>
+                        )}
+                        <button
+                          type="button"
+                          role="menuitemradio"
+                          aria-checked={isActive}
+                          aria-busy={isSwitching}
+                          disabled={Boolean(switchingUserKey)}
+                          onClick={() => void handlePersonaSwitch(persona)}
+                          className={`touch-row w-full items-start gap-2.5 px-3 py-2 text-left transition-colors hover:bg-stone-50 cursor-pointer ${
+                            isActive
+                              ? "bg-primary-light text-primary"
+                              : "text-stone-800"
+                          } disabled:cursor-wait disabled:opacity-70`}
+                        >
+                          <persona.Icon
+                            className={`mt-0.5 h-icon-md w-icon-md shrink-0 ${persona.iconClassName}`}
+                            aria-hidden="true"
+                          />
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-start justify-between gap-2 text-xs font-bold">
+                              <span>{personaLabel(persona)}</span>
+                              {isSwitching ? (
+                                <LoaderCircle
+                                  className="h-icon-sm w-icon-sm shrink-0 animate-spin text-primary"
+                                  aria-hidden="true"
+                                />
+                              ) : isActive ? (
+                                <Check className="h-icon-sm w-icon-sm shrink-0 text-primary" />
+                              ) : null}
+                            </div>
+                            <div className="mt-0.5 text-xs font-normal leading-tight text-stone-400">
+                              {personaDescription(persona)}
+                            </div>
+                          </div>
+                        </button>
+                      </React.Fragment>
+                    );
+                  })}
+
+                  <div className="border-t border-stone-100 my-1 pt-1">
+                    <div className="px-3 py-1 text-micro font-bold text-stone-400 uppercase tracking-wider">
+                      {t("shell.demoRoleSwitcher.accesDirectAuxProfilsPublics")}
+                    </div>
+                    <div className="grid grid-cols-2 gap-1 px-2 pb-1 text-xs">
+                      <Link
+                        to={routes.seller.profile("camille-martin")}
+                        onClick={() => setIsOpen(false)}
+                        className="p-1 rounded hover:bg-stone-100 font-semibold text-stone-700 truncate"
+                      >
+                        👤 Camille (Particulier)
+                      </Link>
+                      <Link
+                        to={routes.seller.storefront("atelier-nordique")}
+                        onClick={() => setIsOpen(false)}
+                        className="p-1 rounded hover:bg-stone-100 font-semibold text-primary truncate"
+                      >
+                        🏬 Atelier Nordique (Pro)
+                      </Link>
+                      <Link
+                        to={routes.seller.profile("marion-dupuis")}
+                        onClick={() => setIsOpen(false)}
+                        className="p-1 rounded hover:bg-stone-100 text-stone-600 truncate"
+                      >
+                        {t("shell.demoRoleSwitcher.0AnnonceParticulier")}
+                      </Link>
+                      <Link
+                        to={routes.seller.storefront("optique-des-arts")}
+                        onClick={() => setIsOpen(false)}
+                        className="p-1 rounded hover:bg-stone-100 text-stone-600 truncate"
+                      >
+                        {t("shell.demoRoleSwitcher.0AnnoncePro")}
+                      </Link>
+                      <Link
+                        to={routes.seller.profile("lucas-bernard")}
+                        onClick={() => setIsOpen(false)}
+                        className="p-1 rounded hover:bg-stone-100 text-stone-600 truncate"
+                      >
+                        ⭐ 0 avis (Nouveau)
+                      </Link>
+                      <Link
+                        to={routes.seller.profile("vendeur-suspendu")}
+                        onClick={() => setIsOpen(false)}
+                        className="p-1 rounded hover:bg-danger-surface text-danger truncate"
+                      >
+                        {t("shell.demoRoleSwitcher.profilSuspenduSecurite")}
+                      </Link>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
+          <EnvironmentToolbarToggle
+            controls="demo-environment-toolbar-context demo-environment-toolbar-actions"
+            isCollapsed={isCollapsed}
+            onToggle={() => {
+              setIsOpen(false);
+              onToggleCollapsed();
+            }}
+            tone="demo"
+          />
         </div>
       </div>
     </div>
   );
 };
 
-const LiveModeToolbar: React.FC<{ utility?: ReactNode }> = ({ utility }) => {
+const LiveModeToolbar: React.FC<EnvironmentToolbarContentProps> = ({
+  utility,
+  isCollapsed,
+  onToggleCollapsed,
+}) => {
   const { t } = useTranslation();
   const { currentUser } = useAuth();
 
   return (
-    <div className="relative z-drawer border-b border-emerald-950 bg-emerald-950 px-4 py-1.5 text-xs text-emerald-50">
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 rounded bg-success px-2 py-1 text-micro font-bold uppercase tracking-wider text-white">
+    <div
+      data-environment-toolbar="live"
+      data-collapsed={isCollapsed}
+      className={`relative z-drawer flex items-center border-b border-emerald-950 bg-emerald-950 pl-semantic-lg pr-semantic-4xl text-xs text-emerald-50 motion-layout motion-reduce:transition-none lg:pl-semantic-4xl ${
+        isCollapsed
+          ? "min-h-control-sm py-0"
+          : "min-h-environment-toolbar-height py-1.5"
+      }`}
+    >
+      <div className="mx-auto flex w-full max-w-7xl flex-nowrap items-center justify-between gap-3">
+        <div className="flex min-w-0 shrink-0 items-center gap-2">
+          <span className="inline-flex h-7 shrink-0 items-center gap-1.5 rounded bg-success px-2 py-1 text-micro font-bold uppercase tracking-wider text-white">
             <Database className="h-icon-xs w-icon-xs" aria-hidden="true" />
             {t("shell.dataMode.modeLive")}
           </span>
-          <span className="hidden truncate text-emerald-200 sm:inline">
-            {t("shell.dataMode.liveSummary")}
-          </span>
-          <DataModeSettingsControl />
-        </div>
-        <div className="flex min-w-0 items-center justify-end gap-2">
-          {utility}
-          <StaffMarketplaceModeIndicator />
-          {currentUser ? (
-            <span className="truncate font-semibold text-white">
-              {currentUser.name}
+          <div
+            id="live-environment-toolbar-context"
+            className={`${isCollapsed ? "hidden" : "flex"} min-w-0 items-center gap-2 animate-in fade-in duration-fast`}
+          >
+            <span className="hidden h-7 items-center truncate text-emerald-200 lg:inline-flex">
+              {t("shell.dataMode.liveSummary")}
             </span>
-          ) : null}
+            <DataModeSettingsControl />
+          </div>
+        </div>
+        <div className="flex min-w-0 flex-1 flex-nowrap items-center justify-end gap-2">
+          <div
+            id="live-environment-toolbar-actions"
+            className={`${isCollapsed ? "hidden" : "flex"} min-w-0 items-center justify-end gap-2 animate-in fade-in duration-fast`}
+          >
+            {utility}
+            <StaffMarketplaceModeIndicator />
+            {currentUser ? (
+              <span className="inline-flex h-7 min-w-0 items-center truncate font-semibold text-white">
+                {currentUser.name}
+              </span>
+            ) : null}
+          </div>
+          <EnvironmentToolbarToggle
+            controls="live-environment-toolbar-context live-environment-toolbar-actions"
+            isCollapsed={isCollapsed}
+            onToggle={onToggleCollapsed}
+            tone="live"
+          />
         </div>
       </div>
     </div>
@@ -634,9 +742,21 @@ export const DemoRoleSwitcher: React.FC<{ utility?: ReactNode }> = ({
   utility,
 }) => {
   const { mode } = useDataMode();
-  return mode === "demo" ? (
-    <DemoRoleSwitcherContent utility={utility} />
-  ) : (
-    <LiveModeToolbar utility={utility} />
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const toolbarProps = {
+    utility,
+    isCollapsed,
+    onToggleCollapsed: () => setIsCollapsed((collapsed) => !collapsed),
+  };
+
+  return (
+    <>
+      {mode === "demo" ? (
+        <DemoRoleSwitcherContent {...toolbarProps} />
+      ) : (
+        <LiveModeToolbar {...toolbarProps} />
+      )}
+      <DevelopmentIndicatorAlignment />
+    </>
   );
 };

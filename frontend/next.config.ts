@@ -19,6 +19,7 @@ const developmentAssetHeaders = [
 const nextConfig: NextConfig = {
   agentRules: false,
   allowedDevOrigins,
+  devIndicators: { position: "top-right" },
   output: "standalone",
   poweredByHeader: false,
   productionBrowserSourceMaps: true,

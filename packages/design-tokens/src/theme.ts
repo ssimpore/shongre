@@ -227,6 +227,8 @@ export const themeSpacing = {
   "control-touch": "2.75rem",
   "control-indicator": "1.125rem",
   "control-target": "1.5rem",
+  /* Compact persistent environment chrome shared by every application shell. */
+  "environment-toolbar-height": "3.5rem",
   "select-chevron-size": "0.25rem",
   "select-chevron-offset": "0.75rem",
   /* Shared compact width for listing cards in rails and desktop grids. Five

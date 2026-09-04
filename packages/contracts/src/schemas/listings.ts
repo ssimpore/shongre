@@ -7,6 +7,31 @@ import {
 } from "./discovery";
 import { fulfillmentTypeSchema } from "./digital-products";
 
+/**
+ * Semantic icon roles for compact listing decision fields. The role travels
+ * with the UI projection so Web and native render the same meaning without
+ * inferring it from localized display text.
+ */
+export const listingCharacteristicIconSchema = z.enum([
+  "briefcase",
+  "calendar",
+  "database",
+  "file",
+  "fuel",
+  "gauge",
+  "home",
+  "laptop",
+  "layers",
+  "layout-grid",
+  "book-open",
+  "ruler",
+  "shirt",
+  "tag",
+]);
+export type ListingCharacteristicIcon = z.infer<
+  typeof listingCharacteristicIconSchema
+>;
+
 export const listingCardSchema = z.object({
   id: z.string().min(1),
   title: z.string().min(1),
@@ -25,6 +50,11 @@ export const listingCardSchema = z.object({
   conditionLabel: z.string(),
   /** Taxonomy-configured decision fields, already formatted for display. */
   characteristics: z.array(z.string().min(1)).max(5).default([]),
+  /** Icons aligned by index with `characteristics`; legacy data falls back safely. */
+  characteristicIcons: z
+    .array(listingCharacteristicIconSchema)
+    .max(5)
+    .optional(),
   publishedAt: z.string(),
   photoCount: z.number().int().nonnegative().optional(),
   deliveryAvailable: z.boolean().optional(),

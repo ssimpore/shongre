@@ -1,5 +1,6 @@
 import React from "react";
-import { CheckCircle2, Clock, Info, ShieldCheck, Truck } from "lucide-react";
+import { CheckCircle2, Clock, Info, Truck } from "lucide-react";
+import { VerifiedIcon } from "@shongre/ui/web";
 import { isProSeller } from "../../../domains/user/user.domain";
 import type { UserProfile } from "../../../types";
 import { useTranslation } from "../../../i18n/I18nProvider";
@@ -17,6 +18,7 @@ export const SellerTrustIndicators: React.FC<SellerTrustIndicatorsProps> = ({
   const isIdentityVerified = seller.identityVerification?.status === "verified";
   const isBusinessVerified =
     seller.professionalVerification?.status === "verified";
+  const hasVerifiedIdentity = isIdentityVerified || isBusinessVerified;
   const hasConfirmedContact = seller.isEmailVerified || seller.isPhoneVerified;
   const primarySignal =
     isPro && isBusinessVerified
@@ -44,10 +46,7 @@ export const SellerTrustIndicators: React.FC<SellerTrustIndicatorsProps> = ({
   return (
     <section className="rounded-3xl border border-stone-200/60 bg-stone-50 p-5 shadow-sm sm:p-6">
       <div className="mb-5 flex items-center gap-2">
-        <ShieldCheck
-          className="h-icon-lg w-icon-lg text-success"
-          aria-hidden="true"
-        />
+        <VerifiedIcon size="lg" />
         <h2 className="text-sm font-bold uppercase tracking-wider text-stone-900">
           Informations et signaux vérifiés
         </h2>
@@ -56,7 +55,14 @@ export const SellerTrustIndicators: React.FC<SellerTrustIndicatorsProps> = ({
       <div className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-3">
         <article className="flex items-start gap-3 rounded-2xl border border-stone-200/60 bg-white p-4 shadow-2xs">
           <div className="shrink-0 rounded-xl bg-success-surface p-2 text-success">
-            <CheckCircle2 className="h-icon-lg w-icon-lg" aria-hidden="true" />
+            {hasVerifiedIdentity ? (
+              <VerifiedIcon size="lg" />
+            ) : (
+              <CheckCircle2
+                className="h-icon-lg w-icon-lg"
+                aria-hidden="true"
+              />
+            )}
           </div>
           <div>
             <h3 className="mb-0.5 font-bold text-stone-900">
