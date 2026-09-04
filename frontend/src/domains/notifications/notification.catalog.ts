@@ -686,7 +686,7 @@ export const NOTIFICATION_TEMPLATES: Record<
   },
 };
 
-export class NotificationCatalogService {
+class NotificationCatalogService {
   /**
    * Constructs a canonical Notification object from a domain event.
    */

@@ -22,7 +22,7 @@ import { getCapabilityMetadata } from "./provider-capabilities";
 import { isDemoMode } from "../../api/client/data-mode.service";
 import { DEFAULT_MARKET_CODE } from "../../configuration/market-baseline";
 
-export class ProviderResolver {
+class ProviderResolver {
   /**
    * A provider must be assigned explicitly outside the default market.
    */

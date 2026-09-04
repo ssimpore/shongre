@@ -13,13 +13,13 @@ import {
 } from "./provider.types";
 import { getProviderById } from "./provider.registry";
 
-export interface ValidationResult {
+interface ValidationResult {
   isValid: boolean;
   errors: string[];
   warnings: string[];
 }
 
-export class ProviderValidator {
+class ProviderValidator {
   /**
    * Validate operational configuration against provider static definition & schema
    */

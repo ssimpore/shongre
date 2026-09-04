@@ -17,7 +17,7 @@ export interface TimelineDateGroup {
   items: TimelineItem[];
 }
 
-export class MessagingService {
+class MessagingService {
   /**
    * Formats an ISO date into a localized timeline date separator label.
    */

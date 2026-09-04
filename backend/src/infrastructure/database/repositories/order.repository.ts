@@ -44,7 +44,7 @@ export interface IOrderRepository {
   recordHandoverPinFailure(id: string): Promise<OrderRecord>;
 }
 
-export const CANONICAL_DEMO_ORDERS: Record<string, OrderRecord> = {
+const CANONICAL_DEMO_ORDERS: Record<string, OrderRecord> = {
   ord_sample_1: {
     id: "ord_sample_1",
     orderNumber: "CMD-849201",

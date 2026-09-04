@@ -74,15 +74,18 @@ test.describe("navigation integrity", () => {
   }) => {
     await usePersona(page, "guest");
     await page.goto("/categories");
+    await waitForStableLayout(page);
 
     const category = page.locator('a[href^="/categorie/"]').first();
     await expect(category).toBeVisible();
     await category.click();
     await expect(page).toHaveURL(/\/categorie\//);
+    await waitForStableLayout(page);
 
     const listing = page.locator('a[href^="/annonce/"]').first();
     await expect(listing).toBeVisible();
     await listing.click();
+    await waitForStableLayout(page);
     const seller = page
       .locator('a[href^="/profil/"], a[href^="/boutique/"]')
       .first();

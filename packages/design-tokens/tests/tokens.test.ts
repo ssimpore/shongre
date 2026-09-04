@@ -44,6 +44,9 @@ describe("canonical design tokens", () => {
     expect(
       contrast(themeColors.white, themeColors.primary),
     ).toBeGreaterThanOrEqual(4.5);
+    expect(
+      contrast(themeColors.primary, themeColors["primary-light"]),
+    ).toBeGreaterThanOrEqual(4.5);
   });
 
   it("keeps native scale adapters aligned with canonical geometry", () => {

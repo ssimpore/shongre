@@ -20,7 +20,7 @@ export type NotificationPreferenceCategory =
   | "promotions"
   | "security"
   | "marketing";
-export interface NotificationChannelPreference {
+interface NotificationChannelPreference {
   inApp: boolean;
   email: boolean;
   push: boolean;

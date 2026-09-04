@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { ImageOff } from "lucide-react";
-import { buildSrcSet } from "./responsiveImage";
+import { buildResponsiveFallbackUrl, buildSrcSet } from "@shongre/shared";
 
 export interface ImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   /** Required: pass `''` only for images that are purely decorative. */
@@ -94,10 +94,14 @@ export const Image: React.FC<ImageProps> = ({
     sizes && typeof resolvedSrc === "string"
       ? buildSrcSet(resolvedSrc)
       : undefined;
+  const responsiveFallbackSrc =
+    sizes && typeof resolvedSrc === "string"
+      ? buildResponsiveFallbackUrl(resolvedSrc, sizes)
+      : undefined;
 
   return (
     <img
-      src={resolvedSrc}
+      src={responsiveFallbackSrc ?? resolvedSrc}
       srcSet={srcSet}
       sizes={srcSet ? sizes : undefined}
       alt={alt}

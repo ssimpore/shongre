@@ -1,10 +1,12 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import {
+  buildResponsiveFallbackUrl,
+  buildSizedImageUrl,
   buildSrcSet,
-  isResizableSource,
   DEFAULT_WIDTH_LADDER,
   IMAGE_SIZES,
-} from "./responsiveImage";
+  isResizableSource,
+} from "./responsive-image";
 
 const UNSPLASH =
   "https://images.unsplash.com/photo-1549399542?auto=format&fit=crop&w=800&q=80";
@@ -27,27 +29,25 @@ describe("isResizableSource", () => {
 });
 
 describe("buildSrcSet", () => {
-  it("returns undefined for sources it cannot rewrite, so no attribute is emitted", () => {
+  it("returns undefined for sources it cannot safely rewrite", () => {
     expect(buildSrcSet(undefined)).toBeUndefined();
     expect(buildSrcSet("/local/cover.jpg")).toBeUndefined();
     expect(buildSrcSet("https://atelier-nordique.fr/logo.png")).toBeUndefined();
   });
 
-  it("emits a w-descriptor entry per ladder step", () => {
-    const set = buildSrcSet(UNSPLASH)!;
-    const entries = set.split(", ");
-    // 800 is the intrinsic width, so the 1080/1440 steps are dropped.
+  it("emits a width entry per eligible ladder step", () => {
+    const entries = buildSrcSet(UNSPLASH)!.split(", ");
     expect(entries).toHaveLength(
-      DEFAULT_WIDTH_LADDER.filter((w) => w <= 800).length,
+      DEFAULT_WIDTH_LADDER.filter((width) => width <= 800).length,
     );
-    entries.forEach((entry, i) => {
-      const width = DEFAULT_WIDTH_LADDER[i];
+    entries.forEach((entry, index) => {
+      const width = DEFAULT_WIDTH_LADDER[index];
       expect(entry).toContain(`w=${width}`);
       expect(entry.endsWith(` ${width}w`)).toBe(true);
     });
   });
 
-  it("preserves the other CDN parameters while rewriting only w", () => {
+  it("preserves other CDN parameters while rewriting only the width", () => {
     const first = buildSrcSet(UNSPLASH)!.split(", ")[0];
     expect(first).toContain("auto=format");
     expect(first).toContain("fit=crop");
@@ -56,18 +56,19 @@ describe("buildSrcSet", () => {
   });
 
   it("never offers a source wider than the original", () => {
-    const set = buildSrcSet("https://images.unsplash.com/photo-x?w=320")!;
-    const widths = set.split(", ").map((e) => Number(e.match(/ (\d+)w$/)![1]));
+    const widths = buildSrcSet("https://images.unsplash.com/photo-x?w=320")!
+      .split(", ")
+      .map((entry) => Number(entry.match(/ (\d+)w$/)![1]));
     expect(Math.max(...widths)).toBeLessThanOrEqual(320);
   });
 
-  it("still emits a ladder when the source is narrower than every step", () => {
+  it("still emits a ladder for a source narrower than every step", () => {
     const set = buildSrcSet("https://images.unsplash.com/photo-x?w=64")!;
     expect(set.split(", ")).toHaveLength(1);
     expect(set).toContain(`${DEFAULT_WIDTH_LADDER[0]}w`);
   });
 
-  it("falls back to the full ladder when the source declares no width", () => {
+  it("uses the full ladder when the source declares no width", () => {
     const set = buildSrcSet("https://images.unsplash.com/photo-x?auto=format")!;
     expect(set.split(", ")).toHaveLength(DEFAULT_WIDTH_LADDER.length);
   });
@@ -80,8 +81,38 @@ describe("buildSrcSet", () => {
   });
 });
 
+describe("buildSizedImageUrl", () => {
+  it("builds a bounded fallback for a known provider", () => {
+    expect(buildSizedImageUrl(UNSPLASH, 64)).toContain("w=64");
+    expect(
+      buildSizedImageUrl("https://images.unsplash.com/photo-x?w=40", 64),
+    ).toContain("w=40");
+  });
+
+  it("leaves unknown providers to their original source", () => {
+    expect(
+      buildSizedImageUrl("https://atelier-nordique.fr/logo.png", 64),
+    ).toBeUndefined();
+  });
+});
+
+describe("buildResponsiveFallbackUrl", () => {
+  it("uses bounded fallbacks for canonical media slots", () => {
+    expect(buildResponsiveFallbackUrl(UNSPLASH, IMAGE_SIZES.card)).toContain(
+      "w=320",
+    );
+    expect(buildResponsiveFallbackUrl(UNSPLASH, IMAGE_SIZES.gallery)).toContain(
+      "w=640",
+    );
+  });
+
+  it("derives a two-density fallback for fixed custom slots", () => {
+    expect(buildResponsiveFallbackUrl(UNSPLASH, "48px")).toContain("w=96");
+  });
+});
+
 describe("IMAGE_SIZES", () => {
-  it("every slot declares a usable sizes hint", () => {
+  it("declares a usable hint for every slot", () => {
     Object.values(IMAGE_SIZES).forEach((value) => {
       expect(value.trim().length).toBeGreaterThan(0);
       expect(value).toMatch(/px|vw/);

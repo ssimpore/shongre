@@ -12,7 +12,7 @@ import type { CrmTaskPriority } from "../../../domains/crm/crm.labels";
  * Tones live here rather than in `domains/` because they are presentation; the
  * copy lives in the message catalogue via `taskPriorityMessageKey`.
  */
-export const TASK_PRIORITY_TONE_CLASS: Record<CrmTaskPriority, string> = {
+const TASK_PRIORITY_TONE_CLASS: Record<CrmTaskPriority, string> = {
   low: "bg-stone-100 text-text-secondary",
   medium: "bg-info-surface text-info",
   high: "bg-warning-surface text-warning",

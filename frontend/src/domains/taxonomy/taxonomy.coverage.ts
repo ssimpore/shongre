@@ -5,7 +5,7 @@ import { getTaxonomyV4PublicBundle } from "@shongre/contracts/taxonomy-v4-public
 import { INITIAL_LISTINGS } from "../../mocks/initialDemoData";
 import { TaxonomyMigration } from "./taxonomy.migration";
 
-export interface TaxonomyCoverageRow {
+interface TaxonomyCoverageRow {
   nodeId: string;
   category: string;
   subcategory: string;
@@ -27,7 +27,7 @@ export interface TaxonomyCoverageRow {
   missing: string[];
 }
 
-export interface TaxonomyDuplicateGroup {
+interface TaxonomyDuplicateGroup {
   normalizedConcept: string;
   nodeIds: string[];
   labels: string[];

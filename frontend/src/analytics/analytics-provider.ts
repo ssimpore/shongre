@@ -2,8 +2,7 @@ import type { AnalyticsEventEnvelope } from "@shongre/contracts/analytics";
 import type { PublicRuntimeConfig } from "../platform/runtime-config/public-runtime-config";
 import type { ConsentCategory } from "../domains/consent/consent.types";
 
-export type AnalyticsProviderId =
-  "memory" | "internal" | "posthog" | "ga4" | "matomo";
+type AnalyticsProviderId = "memory" | "internal" | "posthog" | "ga4" | "matomo";
 
 export interface AnalyticsProvider {
   readonly id: AnalyticsProviderId;

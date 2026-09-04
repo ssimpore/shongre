@@ -4,7 +4,7 @@ import type {
 } from "@shongre/contracts/taxonomy";
 import { getTaxonomyV4PublicBundle } from "@shongre/contracts/taxonomy-v4-public";
 
-export type TaxonomySeoProjection =
+type TaxonomySeoProjection =
   TaxonomyV4PublicBundle["projections"]["seo"][number];
 
 export interface TaxonomySeoRecord {

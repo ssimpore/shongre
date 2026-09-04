@@ -18,10 +18,7 @@ const isOverrideActive = (override: HomepageOfferOverride, now: Date) =>
     new Date(override.startsAt).getTime() <= now.getTime()) &&
   (!override.endsAt || new Date(override.endsAt).getTime() > now.getTime());
 
-export function listingBelongsToMarket(
-  listing: Listing,
-  marketCode: string,
-): boolean {
+function listingBelongsToMarket(listing: Listing, marketCode: string): boolean {
   const normalized = marketCode.toUpperCase();
   const publication = listing.marketPublications?.find(
     (candidate) => candidate.marketCode.toUpperCase() === normalized,

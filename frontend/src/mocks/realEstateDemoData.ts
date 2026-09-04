@@ -16,7 +16,7 @@ export const IMMO_DEMO_NOW = "2026-08-22T10:00:00.000Z";
 
 const immoAssetUrl = (fileName: string) => `/images/immo/${fileName}`;
 
-export const IMMO_DEMO_MEDIA = {
+const IMMO_DEMO_MEDIA = {
   apartment: immoAssetUrl("appartement-lyon.webp"),
   house: immoAssetUrl("maison-ecully.webp"),
   rental: immoAssetUrl("location-lyon.webp"),

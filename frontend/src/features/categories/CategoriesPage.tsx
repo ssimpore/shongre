@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { IMAGE_SIZES } from "../../design-system/primitives/responsiveImage";
+import { IMAGE_SIZES } from "@shongre/shared";
 import { Link } from "react-router-dom";
 import { ChevronRight, Search } from "lucide-react";
 import { TAXONOMY } from "../../domains/taxonomy/taxonomy.data";

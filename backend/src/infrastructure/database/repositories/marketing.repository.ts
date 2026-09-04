@@ -35,7 +35,7 @@ export interface MarketingTenantContext {
   defaultProviderConnectionId?: string;
 }
 
-export interface MarketingPage<T> {
+interface MarketingPage<T> {
   items: T[];
   nextCursor?: string;
 }

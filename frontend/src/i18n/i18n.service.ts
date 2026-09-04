@@ -16,7 +16,7 @@ export type TranslationValues = Record<string, string | number | undefined>;
  * draft catalogues are validated by tooling and tests without entering the
  * initial client bundle.
  */
-export const CATALOGUES: Record<string, MessageCatalogue> = {
+const CATALOGUES: Record<string, MessageCatalogue> = {
   "fr-FR": messagesFr,
 };
 
@@ -29,7 +29,7 @@ export const CATALOGUES: Record<string, MessageCatalogue> = {
  * — which is precisely how the selector would offer German and then render
  * every string in French.
  */
-export function findCatalogue(
+function findCatalogue(
   locale: string | undefined,
 ): MessageCatalogue | undefined {
   if (!locale) return undefined;
@@ -83,7 +83,7 @@ export function interpolate(
  * Falls back through the CLDR category chain to `_other`, which every language
  * defines — so a catalogue that only declares `_other` still renders.
  */
-export function selectPluralKey(
+function selectPluralKey(
   key: MessageKey,
   count: number,
   locale: string,

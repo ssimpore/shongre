@@ -1,5 +1,5 @@
 import { PAGE_SIZES } from "../../configuration/pagination.config";
-import { IMAGE_SIZES } from "../../design-system/primitives/responsiveImage";
+import { IMAGE_SIZES } from "@shongre/shared";
 import React, { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import {

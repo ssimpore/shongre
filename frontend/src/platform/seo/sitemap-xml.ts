@@ -1,5 +1,5 @@
-export const SITEMAP_MAX_URLS = 50_000;
-export const SITEMAP_MAX_BYTES = 50 * 1024 * 1024;
+const SITEMAP_MAX_URLS = 50_000;
+const SITEMAP_MAX_BYTES = 50 * 1024 * 1024;
 const SITEMAP_TARGET_BYTES = 45 * 1024 * 1024;
 
 export interface SitemapEntry {
@@ -16,7 +16,7 @@ export interface SitemapShard extends SitemapGroup {
   page: number;
 }
 
-export function escapeXml(value: string): string {
+function escapeXml(value: string): string {
   return value
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
@@ -31,7 +31,7 @@ function normalizedLastModified(value?: string): string | undefined {
   return Number.isFinite(parsed.getTime()) ? parsed.toISOString() : undefined;
 }
 
-export function serializeSitemapUrl(entry: SitemapEntry): string {
+function serializeSitemapUrl(entry: SitemapEntry): string {
   const lastModified = normalizedLastModified(entry.lastModified);
   return `<url><loc>${escapeXml(entry.url)}</loc>${lastModified ? `<lastmod>${escapeXml(lastModified)}</lastmod>` : ""}</url>`;
 }

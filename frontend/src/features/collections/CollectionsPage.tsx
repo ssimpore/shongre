@@ -1,4 +1,5 @@
 import { PAGE_SIZES } from "../../configuration/pagination.config";
+import { IMAGE_SIZES } from "@shongre/shared";
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import {
@@ -37,7 +38,6 @@ import {
   StatePanel,
 } from "../../design-system";
 import { Image } from "../../design-system/primitives/Image";
-import { IMAGE_SIZES } from "../../design-system/primitives/responsiveImage";
 import { ScrollRail } from "../../design-system/primitives/ScrollRail";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useTranslation } from "../../i18n/I18nProvider";

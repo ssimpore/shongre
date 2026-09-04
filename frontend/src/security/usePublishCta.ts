@@ -4,15 +4,6 @@ import { MessageKey } from "../i18n/messages.fr";
 import { routes } from "../configuration/routes";
 import { isStaffSeparatedSubject } from "@shongre/contracts/access-control";
 
-export interface PublishCta {
-  /** Where the button should actually take this user. */
-  to: string;
-  /** Label matched to the destination, so the button never over-promises. */
-  label: string;
-  /** Short label for tight spots (mobile tab bar). */
-  shortLabel: string;
-}
-
 /**
  * Message keys rather than literals.
  *

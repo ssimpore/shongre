@@ -11,7 +11,10 @@ export const themeColors = {
   primary: "#CC4018",
   "primary-hover": "#B53612",
   "primary-active": "#982B0D",
-  "primary-light": "#FFF1EB",
+  /* Primary text and icons are frequently paired with this subtle surface.
+     Keep enough separation for normal-size copy as well as decorative icons;
+     the former value (#FFF1EB) produced only 4.41:1 against `primary`. */
+  "primary-light": "#FFF7F3",
   "primary-border": "#F8C9BA",
   "primary-on-dark": "#FF896B",
 

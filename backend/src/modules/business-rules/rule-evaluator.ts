@@ -28,7 +28,7 @@ function asArray(
  * Deliberately small and allowlisted. Commercial rules are data, never code:
  * no eval, regular expressions, SQL fragments, property paths, or functions.
  */
-export function conditionMatches(
+function conditionMatches(
   condition: CommercialCondition,
   context: RuleEvaluationContext,
 ): boolean {
@@ -81,7 +81,7 @@ function scopeDimensionMatches(values: string[], actual?: string): boolean {
   );
 }
 
-export function ruleScopeMatches(
+function ruleScopeMatches(
   rule: CommercialRule,
   context: RuleEvaluationContext,
 ): boolean {
@@ -100,7 +100,7 @@ export function ruleScopeMatches(
   );
 }
 
-export function ruleSpecificity(rule: CommercialRule): number {
+function ruleSpecificity(rule: CommercialRule): number {
   const scopedDimensions = Object.values(rule.scope).filter(
     (value) => Array.isArray(value) && value.length > 0,
   ).length;

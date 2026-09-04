@@ -25,7 +25,7 @@ export interface ServerApplicationContext {
   canonicalOrigin: string;
 }
 
-export function applicationRegistryFromEnvironment() {
+function applicationRegistryFromEnvironment() {
   const environment = webEnvironmentFromEnvironment();
   return createApplicationRegistry({
     environment: environment.environment,

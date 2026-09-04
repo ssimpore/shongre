@@ -58,11 +58,13 @@ test.describe("mobile tab bar clearance", () => {
       });
       await expect
         .poll(() =>
-          page.evaluate(
-            () =>
+          page.evaluate(() => {
+            window.scrollTo(0, document.documentElement.scrollHeight);
+            return (
               window.scrollY + window.innerHeight >=
-              document.documentElement.scrollHeight - 1,
-          ),
+              document.documentElement.scrollHeight - 1
+            );
+          }),
         )
         .toBe(true);
 
@@ -121,18 +123,21 @@ test.describe("mobile tab bar clearance", () => {
     });
     await waitForStableLayout(page);
 
-    const ceiling = await obstructionTop(page);
-    const barBottom = await page.evaluate(() => {
-      const bar = [...document.querySelectorAll("div")].find((d) => {
-        const cs = getComputedStyle(d);
-        return (
-          cs.position === "fixed" &&
-          d.className.includes("lg:hidden") &&
-          d.className.includes("inset-x-0")
-        );
-      });
-      return bar ? bar.getBoundingClientRect().bottom : null;
+    const inlineAction = page.getByTestId("listing-inline-mobile-action");
+    await inlineAction.scrollIntoViewIfNeeded();
+    await expect(inlineAction).toBeVisible();
+    await page.waitForTimeout(100);
+    await inlineAction.evaluate((element) => {
+      const box = element.getBoundingClientRect();
+      window.scrollTo(0, window.scrollY + box.bottom + 48);
     });
+
+    const ceiling = await obstructionTop(page);
+    const actions = page.getByTestId("listing-mobile-actions");
+    await expect(actions).toBeVisible();
+    const barBottom = await actions.evaluate(
+      (element) => element.parentElement?.getBoundingClientRect().bottom ?? null,
+    );
 
     expect(
       barBottom,

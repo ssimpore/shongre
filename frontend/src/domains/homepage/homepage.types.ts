@@ -33,7 +33,7 @@ export interface HomepageDealItem {
   offer: HomepageOfferPresentation;
 }
 
-export type HomepageSectionLoadStatus = "loading" | "ready" | "empty" | "error";
+type HomepageSectionLoadStatus = "loading" | "ready" | "empty" | "error";
 
 export interface HomepageSectionView extends ResolvedHomepageSection {
   status: HomepageSectionLoadStatus;

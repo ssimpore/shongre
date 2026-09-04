@@ -14,9 +14,9 @@ export type MarketStatus =
   | "unsupported"
   | "archived";
 
-export type SettingSource = "LOCAL" | "PLATFORM_DEFAULT";
+type SettingSource = "LOCAL" | "PLATFORM_DEFAULT";
 
-export type DeepPartial<T> = {
+type DeepPartial<T> = {
   [P in keyof T]?: T[P] extends (infer U)[]
     ? T[P]
     : T[P] extends readonly (infer U)[]
@@ -34,7 +34,7 @@ export interface MarketCity {
   isPopular?: boolean;
 }
 
-export interface MarketRegion {
+interface MarketRegion {
   name: string;
   code: string;
   cities: MarketCity[];
@@ -47,7 +47,7 @@ export interface MarketGeography {
   priorityLaunchZones?: string[];
 }
 
-export interface GeneralMarketConfig {
+interface GeneralMarketConfig {
   name: string;
   tagline: string;
   supportEmail: string;
@@ -55,7 +55,7 @@ export interface GeneralMarketConfig {
   launchState: "full" | "selected_cities";
 }
 
-export interface LocalizationMarketConfig {
+interface LocalizationMarketConfig {
   defaultLocale: string;
   supportedLocales: string[];
   defaultCurrency: string;
@@ -70,7 +70,7 @@ export interface LocalizationMarketConfig {
   postalCodeRegex: string;
 }
 
-export interface ListingsMarketConfig {
+interface ListingsMarketConfig {
   maxActiveListingsIndividual: number;
   maxActiveListingsProFree: number;
   maxPhotosIndividual: number;
@@ -81,12 +81,12 @@ export interface ListingsMarketConfig {
   allowInstantBuy: boolean;
 }
 
-export interface SearchMarketConfig {
+interface SearchMarketConfig {
   /** Ordered major-unit price stops used by the public range filter. */
   priceFilterStopsMajor: number[];
 }
 
-export interface PaymentsMarketConfig {
+interface PaymentsMarketConfig {
   enabled: boolean;
   provider: "mangopay_escrow" | "stripe_connect" | "none";
   supportedMethods: {
@@ -101,7 +101,7 @@ export interface PaymentsMarketConfig {
   maxTransactionAmount: number;
 }
 
-export interface ReservationMarketConfig {
+interface ReservationMarketConfig {
   enabled: boolean;
   sellerConfirmationTimeoutHours: number;
   buyerInspectionTimeoutHours: number;
@@ -109,14 +109,14 @@ export interface ReservationMarketConfig {
   requirePinForHandDelivery: boolean;
 }
 
-export interface CarrierConfig {
+interface CarrierConfig {
   enabled: boolean;
   label: string;
   defaultFee: number;
   trackingSupported: boolean;
 }
 
-export interface DeliveryMarketConfig {
+interface DeliveryMarketConfig {
   enabled: boolean;
   handDeliveryEnabled: boolean;
   carriers: {
@@ -127,7 +127,7 @@ export interface DeliveryMarketConfig {
   };
 }
 
-export interface BoostPricingConfig {
+interface BoostPricingConfig {
   urgent: number;
   highlight: number;
   top_of_list: number;
@@ -135,7 +135,7 @@ export interface BoostPricingConfig {
   spotlight: number;
 }
 
-export interface ProPlanTierConfig {
+interface ProPlanTierConfig {
   priceMonthly: number;
   maxActiveListings: number;
   photosPerListing: number;
@@ -145,7 +145,7 @@ export interface ProPlanTierConfig {
   automaticRelisting: boolean;
 }
 
-export interface MonetizationMarketConfig {
+interface MonetizationMarketConfig {
   payoutInstantFeePercent: number; // e.g. 0.01
   payoutInstantFixedFee: number; // e.g. 0.50
   boostPricing: BoostPricingConfig;
@@ -157,13 +157,13 @@ export interface MonetizationMarketConfig {
   };
 }
 
-export interface RequiredVerificationDocument {
+interface RequiredVerificationDocument {
   id: string;
   label: string;
   description: string;
 }
 
-export interface ProMarketConfig {
+interface ProMarketConfig {
   businessIdentifierLabel: string; // e.g. "Numéro SIRET (ou SIREN)"
   businessIdentifierHelper: string;
   businessIdentifierRegex: string;
@@ -176,13 +176,13 @@ export interface ProMarketConfig {
   requireKbis: boolean;
 }
 
-export interface TaxesMarketConfig {
+interface TaxesMarketConfig {
   taxEnabled: boolean;
   vatRateStandard: number; // e.g. 0.20 for FR, 0.21 for BE, 0.081 for CH
   pricesTaxInclusive: boolean;
 }
 
-export interface LegalMarketConfig {
+interface LegalMarketConfig {
   termsUrl: string;
   privacyUrl: string;
   cookiePolicyUrl: string;
@@ -191,7 +191,7 @@ export interface LegalMarketConfig {
   requiresLocalReview: boolean;
 }
 
-export interface FeaturesMarketConfig {
+interface FeaturesMarketConfig {
   reviewsEnabled: boolean;
   aiAssistantEnabled: boolean;
   aiSafetyAuditEnabled: boolean;
@@ -202,7 +202,7 @@ export interface FeaturesMarketConfig {
   disputeEscalationEnabled: boolean;
 }
 
-export interface TaxonomyMarketConfig {
+interface TaxonomyMarketConfig {
   disabledCategorySlugs: string[];
   disabledSubCategorySlugs: string[];
 }

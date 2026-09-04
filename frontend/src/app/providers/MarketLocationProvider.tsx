@@ -115,7 +115,7 @@ const getRuntimeMarketConfig = (code?: string): MarketConfiguration => {
   };
 };
 
-export interface LocationModalOptions {
+interface LocationModalOptions {
   initialLocation?: LocationSelection;
   onApply?: (location: LocationSelection) => void;
 }
@@ -1036,13 +1036,4 @@ export function useMarketLocation(): MarketContextType {
       "useMarketLocation must be used within MarketLocationProvider",
     );
   return ctx;
-}
-
-export function useMarket(): MarketContextType {
-  return useMarketLocation();
-}
-
-export function useMarketConfig(): MarketConfiguration {
-  const { effectiveConfig } = useMarketLocation();
-  return effectiveConfig;
 }

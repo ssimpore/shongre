@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { usePersona } from "./personas";
+import { waitForStableLayout } from "./overflow";
 
 async function recordRecentSearch(
   page: import("@playwright/test").Page,
@@ -86,6 +87,7 @@ test("lets an admin change the recent-search display limit for the homepage @ser
   test.setTimeout(90_000);
   await usePersona(page, "admin");
   await page.goto("/admin/marches", { waitUntil: "domcontentloaded" });
+  await waitForStableLayout(page);
 
   // The France card is the canonical configuration source. Editing it keeps
   // the setting inherited by markets that do not define a local override.
@@ -105,11 +107,26 @@ test("lets an admin change the recent-search display limit for the homepage @ser
   await page
     .getByRole("button", { name: "Enregistrer la valeur locale" })
     .click();
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const raw = window.localStorage.getItem("shongre_markets_v2");
+        if (!raw) return null;
+        const markets = JSON.parse(raw) as Array<{
+          code?: string;
+          configuration?: { features?: { recentSearchesLimit?: number } };
+        }>;
+        return markets.find((market) => market.code === "FR")?.configuration
+          ?.features?.recentSearchesLimit;
+      }),
+    )
+    .toBe(2);
 
   for (let index = 0; index < 5; index += 1) {
     await recordRecentSearch(page, `Admin limite ${index}`);
   }
   await page.goto("/", { waitUntil: "domcontentloaded" });
+  await waitForStableLayout(page);
 
   const recentSection = page.locator(
     'section[aria-labelledby="home-recent-searches-title"]',

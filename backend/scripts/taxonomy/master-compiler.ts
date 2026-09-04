@@ -2235,7 +2235,7 @@ function normalizeWorkbook(
   };
 }
 
-export type NormalizedSource = ReturnType<typeof normalizeWorkbook>;
+type NormalizedSource = ReturnType<typeof normalizeWorkbook>;
 
 function buildSeoProjections(categories: NormalizedSource["categories"]) {
   return categories.map((category) => {

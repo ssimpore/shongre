@@ -8,7 +8,7 @@ export interface ModerationService {
   unblockUser(targetUserId: string): Promise<void>;
 }
 
-export class DemoModerationService implements ModerationService {
+class DemoModerationService implements ModerationService {
   private blockedUsers = new Set<string>();
   async report(input: ReportInput): Promise<void> {
     reportInputSchema.parse(input);
@@ -22,7 +22,7 @@ export class DemoModerationService implements ModerationService {
   }
 }
 
-export class HttpModerationService implements ModerationService {
+class HttpModerationService implements ModerationService {
   async report(input: ReportInput): Promise<void> {
     await apiRequest("/reports", {
       method: "POST",

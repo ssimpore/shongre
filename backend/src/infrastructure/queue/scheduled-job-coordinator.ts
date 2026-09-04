@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { config } from "../../app/config/index.js";
 import { getSupabaseAdminClient } from "../supabase/supabase-client.js";
 
-export class ScheduledJobCoordinator {
+class ScheduledJobCoordinator {
   readonly ownerId = randomUUID();
 
   async claim(

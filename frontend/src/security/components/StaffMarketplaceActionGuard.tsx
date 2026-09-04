@@ -3,8 +3,7 @@ import { useToast } from "../../app/providers/ToastProvider";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { useStaffMarketplaceAccess } from "../useStaffMarketplaceAccess";
 
-export const STAFF_MARKETPLACE_ACTION_ATTRIBUTE =
-  "data-marketplace-action" as const;
+const STAFF_MARKETPLACE_ACTION_ATTRIBUTE = "data-marketplace-action" as const;
 
 function findMarketplaceActionTarget(event: Event): Element | null {
   const target = event.target;

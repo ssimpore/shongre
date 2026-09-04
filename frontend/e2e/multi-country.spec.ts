@@ -110,6 +110,7 @@ test.describe("multi-country public routing", () => {
     await useEstablishedConsent(page);
     await usePersona(page, "guest");
     await page.goto("/", { waitUntil: "domcontentloaded" });
+    await waitForStableLayout(page);
 
     await page
       .getByRole("button", { name: /préférences régionales : Français/i })
@@ -121,9 +122,12 @@ test.describe("multi-country public routing", () => {
     await preferences
       .getByRole("radio", { name: new RegExp(alternative.name) })
       .click();
-    await expect(page).toHaveURL(new RegExp(`${alternative.basePath}(?:\\?|$)`));
+    await expect(page).toHaveURL(
+      new RegExp(`${alternative.basePath}(?:\\?|$)`),
+    );
 
     await page.goto("/", { waitUntil: "domcontentloaded" });
+    await waitForStableLayout(page);
     await expect(page).toHaveURL(/\/$/);
     await expect(
       page.getByRole("heading", { name: /Vous semblez être en/i }),
@@ -137,6 +141,7 @@ test.describe("multi-country public routing", () => {
       .getByRole("button", { name: "Réactiver la suggestion automatique" })
       .click();
     await page.goto("/", { waitUntil: "domcontentloaded" });
+    await waitForStableLayout(page);
     await expect(page).toHaveURL(/\/$/);
   });
 
@@ -169,8 +174,9 @@ test.describe("multi-country public routing", () => {
   }) => {
     const defaultCountry = getDefaultCountryConfig();
     const france = await request.get(
-      `/${defaultCountry.slug}/recherche?query=velo&page=2&token=secret&utm_source=test`, {
-      maxRedirects: 0,
+      `/${defaultCountry.slug}/recherche?query=velo&page=2&token=secret&utm_source=test`,
+      {
+        maxRedirects: 0,
       },
     );
     expect(france.status()).toBe(308);

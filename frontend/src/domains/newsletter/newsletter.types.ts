@@ -25,7 +25,7 @@ export type NewsletterSubscriptionSource =
   | "newsletter_page"
   | "direct_link";
 
-export interface NewsletterConsent {
+interface NewsletterConsent {
   consented: boolean;
   consentedAt: string;
   version: string;
@@ -58,60 +58,4 @@ export interface SubscribeNewsletterInput {
   accountType?: "individual" | "pro";
   source?: NewsletterSubscriptionSource;
   consentGiven?: boolean;
-}
-
-export interface UpdateNewsletterPreferencesInput {
-  subscriptionId?: string;
-  email?: string;
-  subscriberId?: string;
-  topics: NewsletterTopic[];
-  marketCode?: string;
-  locale?: string;
-}
-
-export type NewsletterCampaignStatus =
-  "draft" | "ready" | "scheduled" | "sending" | "sent" | "cancelled" | "failed";
-
-export interface NewsletterAudienceDefinition {
-  accountTypes?: ("individual" | "pro")[];
-  topicIds?: NewsletterTopic[];
-  taxonomyNodeIds?: string[];
-  marketCode: string;
-  locale?: string;
-}
-
-export interface NewsletterCampaignContent {
-  heroTitle?: string;
-  heroSubtitle?: string;
-  introText?: string;
-  featuredListingIds?: string[];
-  featuredCategorySlugs?: string[];
-  ctaText?: string;
-  ctaUrl?: string;
-  footerNotes?: string;
-}
-
-export interface NewsletterCampaignStats {
-  recipientsCount: number;
-  openedCount?: number;
-  clickedCount?: number;
-  unsubscribedCount?: number;
-}
-
-export interface NewsletterCampaign {
-  id: string;
-  name: string;
-  marketCode: string;
-  locale: string;
-  audience: NewsletterAudienceDefinition;
-  topic?: NewsletterTopic;
-  status: NewsletterCampaignStatus;
-  subject: string;
-  previewText?: string;
-  content: NewsletterCampaignContent;
-  scheduledAt?: string;
-  sentAt?: string;
-  createdAt: string;
-  updatedAt: string;
-  stats?: NewsletterCampaignStats;
 }

@@ -7,7 +7,7 @@ import type { Collection } from "../../domains/collection/collection.types";
 import type { Listing, ReviewItem, UserProfile } from "../../types";
 import { DEFAULT_MARKET_CODE } from "../../configuration/market-baseline";
 
-export interface ListingPublicRouteData {
+interface ListingPublicRouteData {
   kind: "listing";
   listing: Listing;
   seller: UserProfile | null;
@@ -21,14 +21,14 @@ export interface SellerPublicRouteData {
   reviews: ReviewItem[];
 }
 
-export interface JobPublicRouteData {
+interface JobPublicRouteData {
   kind: "job";
   job: JobPostingDetail;
   catalog: EmploymentCatalog;
   similarJobs: JobPostingCard[];
 }
 
-export interface EmploymentSearchPublicRouteData {
+interface EmploymentSearchPublicRouteData {
   kind: "employment_search";
   catalog: EmploymentCatalog;
   items: JobPostingCard[];
@@ -37,7 +37,7 @@ export interface EmploymentSearchPublicRouteData {
   availableCountryCodes: string[];
 }
 
-export interface ListingSearchPublicRouteData {
+interface ListingSearchPublicRouteData {
   kind: "listing_search";
   pathname: string;
   items: Listing[];
@@ -47,14 +47,14 @@ export interface ListingSearchPublicRouteData {
   availableCountryCodes: string[];
 }
 
-export interface CollectionPublicRouteData {
+interface CollectionPublicRouteData {
   kind: "collection";
   collection: Collection;
   listings: Listing[];
   availableCountryCodes: string[];
 }
 
-export interface ValidatedVerticalPublicRouteData {
+interface ValidatedVerticalPublicRouteData {
   kind: "vertical_resource";
   vertical: "automotive" | "real_estate" | "education";
   canonicalPath: string;

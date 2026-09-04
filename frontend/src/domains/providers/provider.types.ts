@@ -101,16 +101,13 @@ export type ProviderCapability =
 
 export type ProviderEnvironment = "demo" | "sandbox" | "production";
 
-export type CredentialStatus =
+type CredentialStatus =
   "not_required" | "not_configured" | "configured" | "invalid" | "expired";
 
 export type ProviderHealthStatus =
   "unknown" | "healthy" | "degraded" | "unavailable";
 
-export type ProviderStatus =
-  "draft" | "active" | "disabled" | "requires_configuration";
-
-export type IntegrationReadiness =
+type IntegrationReadiness =
   | "not_implemented"
   | "demo_only"
   | "implemented_unverified"
@@ -119,13 +116,13 @@ export type IntegrationReadiness =
   | "backend_pending"
   | "production_ready";
 
-export interface ConfigurationFieldOption {
+interface ConfigurationFieldOption {
   value: string;
   label: string;
   description?: string;
 }
 
-export interface ProviderConfigurationField {
+interface ProviderConfigurationField {
   key: string;
   label: string;
   type:
@@ -148,11 +145,11 @@ export interface ProviderConfigurationField {
   };
 }
 
-export interface ProviderConfigurationSchema {
+interface ProviderConfigurationSchema {
   fields: ProviderConfigurationField[];
 }
 
-export interface ProviderMetadata {
+interface ProviderMetadata {
   website?: string;
   documentationUrl?: string;
   documentationLabel?: string;

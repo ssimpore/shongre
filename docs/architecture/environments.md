@@ -181,8 +181,8 @@ Provider implementations are shared. Configuration selects provider and mode:
   configuration;
 - preview receives no production secrets, queues, cron, campaigns, webhooks, or
   customer data;
-- webhook URLs come from `buildWebhookUrl`, OAuth callbacks from
-  `buildOAuthCallback`, and provider URLs from validated backend configuration;
+- webhook and OAuth callback endpoints stay under the validated canonical API
+  origin, and provider URLs come from validated backend configuration;
 - OAuth return origins are exact configured origins. Suffix matching and
   wildcard redirects are rejected.
 

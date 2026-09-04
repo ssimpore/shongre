@@ -3,8 +3,6 @@ import type {
   ProfessionalVerification,
   IdentityVerification,
   BankPayoutVerification,
-  EmailVerification,
-  PhoneVerification,
   UserSession,
   AuthSecurityEvent,
   MFASettings,
@@ -20,19 +18,7 @@ import type {
   StaffStatus,
 } from "@shongre/contracts/access-control";
 
-export type {
-  AccountStatus,
-  ProfessionalVerification,
-  IdentityVerification,
-  BankPayoutVerification,
-  EmailVerification,
-  PhoneVerification,
-  UserSession,
-  AuthSecurityEvent,
-  MFASettings,
-  LegalConsent,
-  AuthErrorCode,
-};
+export type { AccountStatus, UserSession, AuthSecurityEvent };
 
 export * from "../domains/market/market.types";
 export * from "../domains/verification/verification.types";
@@ -57,7 +43,7 @@ export type UserRole =
 
 export type SellerType = "individual" | "pro";
 
-export interface MarketScope {
+interface MarketScope {
   countries: string[]; // e.g. ['FR'], ['BE'], ['*'] for global
   regions?: string[];
 }
@@ -108,44 +94,43 @@ export type SecurityAuditAction =
  * `auditActionLabel` so a missing entry degrades to something legible rather
  * than to a snake_case identifier.
  */
-export const SECURITY_AUDIT_ACTION_LABELS: Record<SecurityAuditAction, string> =
-  {
-    MARKET_CONFIG_UPDATE: "Configuration du marché modifiée",
-    AUTO_FLAG_SUSPICIOUS_PRICE: "Prix suspect signalé automatiquement",
-    HOMEPAGE_CONFIGURATION_DRAFT_UPDATED:
-      "Brouillon de la page d’accueil modifié",
-    HOMEPAGE_CONFIGURATION_PUBLISHED:
-      "Configuration de la page d’accueil publiée",
-    role_assigned: "Rôle attribué",
-    role_removed: "Rôle retiré",
-    user_suspended: "Compte suspendu",
-    user_reactivated: "Compte réactivé",
-    verification_approved: "Vérification approuvée",
-    verification_rejected: "Vérification refusée",
-    listing_moderated: "Annonce modérée",
-    market_scope_updated: "Périmètre de marché modifié",
-    plan_modified: "Forfait modifié",
-    permission_overridden: "Permission surchargée",
-    capability_overrides_updated: "Surcharges de permissions modifiées",
-    staff_marketplace_demo_action: "Action marketplace Staff simulée",
-    listing_hidden: "Annonce masquée",
-    listing_restored: "Annonce restaurée",
-    password_reset_completed: "Mot de passe réinitialisé",
-    mfa_enabled: "Double authentification activée",
-    mfa_disabled: "Double authentification désactivée",
-    account_type_upgraded_to_pro: "Compte passé en Pro",
-    account_deleted: "Compte supprimé",
-    email_verified: "Email vérifié",
-    phone_verified: "Téléphone vérifié",
-    provider_configured: "Fournisseur configuré",
-    provider_enabled: "Fournisseur activé",
-    provider_disabled: "Fournisseur désactivé",
-    provider_market_override_set: "Surcharge marché appliquée",
-    provider_market_override_reset: "Surcharge marché réinitialisée",
-    provider_priority_changed: "Priorité fournisseur modifiée",
-    provider_fallback_changed: "Repli fournisseur modifié",
-    provider_credential_status_updated: "Identifiants fournisseur mis à jour",
-  };
+const SECURITY_AUDIT_ACTION_LABELS: Record<SecurityAuditAction, string> = {
+  MARKET_CONFIG_UPDATE: "Configuration du marché modifiée",
+  AUTO_FLAG_SUSPICIOUS_PRICE: "Prix suspect signalé automatiquement",
+  HOMEPAGE_CONFIGURATION_DRAFT_UPDATED:
+    "Brouillon de la page d’accueil modifié",
+  HOMEPAGE_CONFIGURATION_PUBLISHED:
+    "Configuration de la page d’accueil publiée",
+  role_assigned: "Rôle attribué",
+  role_removed: "Rôle retiré",
+  user_suspended: "Compte suspendu",
+  user_reactivated: "Compte réactivé",
+  verification_approved: "Vérification approuvée",
+  verification_rejected: "Vérification refusée",
+  listing_moderated: "Annonce modérée",
+  market_scope_updated: "Périmètre de marché modifié",
+  plan_modified: "Forfait modifié",
+  permission_overridden: "Permission surchargée",
+  capability_overrides_updated: "Surcharges de permissions modifiées",
+  staff_marketplace_demo_action: "Action marketplace Staff simulée",
+  listing_hidden: "Annonce masquée",
+  listing_restored: "Annonce restaurée",
+  password_reset_completed: "Mot de passe réinitialisé",
+  mfa_enabled: "Double authentification activée",
+  mfa_disabled: "Double authentification désactivée",
+  account_type_upgraded_to_pro: "Compte passé en Pro",
+  account_deleted: "Compte supprimé",
+  email_verified: "Email vérifié",
+  phone_verified: "Téléphone vérifié",
+  provider_configured: "Fournisseur configuré",
+  provider_enabled: "Fournisseur activé",
+  provider_disabled: "Fournisseur désactivé",
+  provider_market_override_set: "Surcharge marché appliquée",
+  provider_market_override_reset: "Surcharge marché réinitialisée",
+  provider_priority_changed: "Priorité fournisseur modifiée",
+  provider_fallback_changed: "Repli fournisseur modifié",
+  provider_credential_status_updated: "Identifiants fournisseur mis à jour",
+};
 
 /** Falls back to a de-slugified label so an unmapped action never renders raw. */
 export function auditActionLabel(action: SecurityAuditAction | string): string {
@@ -289,13 +274,6 @@ export type ListingStatus =
   | "expired"
   | "archived";
 
-export interface ListingDraft extends Partial<Listing> {
-  step?: number;
-  acceptsOnlinePayment?: boolean;
-  boostPackage?: string;
-  photos?: any[];
-}
-
 export type DeliveryType =
   | "hand_delivery"
   | "relay_point"
@@ -310,12 +288,6 @@ export interface DeliveryOption {
   available: boolean;
   price?: number; // In EUR, 0 for free
   courierName?: string; // e.g. "Mondial Relay", "Colissimo", "Chronopost"
-}
-
-export interface ListingAttributeValue {
-  key: string;
-  label: string;
-  value: string | number | boolean | string[];
 }
 
 export interface ListingPhoto {
@@ -664,7 +636,7 @@ export type TransactionStatus =
   | "disputed"
   | "refunded";
 
-export interface TransactionStatusHistoryEntry {
+interface TransactionStatusHistoryEntry {
   status: TransactionStatus;
   timestamp: string;
   actorId: string;
@@ -672,7 +644,7 @@ export interface TransactionStatusHistoryEntry {
   note?: string;
 }
 
-export interface TransactionPaymentDetails {
+interface TransactionPaymentDetails {
   intentId: string;
   provider: "mangopay_escrow" | "stripe_connect";
   paymentMethod: "card" | "apple_pay" | "google_pay" | "sepa";
@@ -686,7 +658,7 @@ export interface TransactionPaymentDetails {
   refundedAt?: string;
 }
 
-export interface TransactionPickupDetails {
+interface TransactionPickupDetails {
   scheduledDate?: string;
   meetingPlace?: string;
   meetingAddress?: string;

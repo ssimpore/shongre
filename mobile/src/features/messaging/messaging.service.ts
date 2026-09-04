@@ -319,7 +319,7 @@ export class DemoMessagingService implements MessagingService {
   }
 }
 
-export class HttpMessagingService implements MessagingService {
+class HttpMessagingService implements MessagingService {
   async list(
     userId: string,
     marketCode: string,

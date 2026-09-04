@@ -7,7 +7,7 @@ import {
   CONTROL_RADIUS_CLASS,
 } from "../utils/controlMetrics";
 
-export type ListingViewMode = "grid" | "list" | "map";
+type ListingViewMode = "grid" | "list" | "map";
 
 export interface ViewModeToggleProps {
   viewMode: ListingViewMode;

@@ -7,7 +7,7 @@ export interface IReviewRepository {
   save(review: ReviewItem): Promise<ReviewItem>;
 }
 
-export const CANONICAL_DEMO_REVIEWS: ReviewItem[] = [
+const CANONICAL_DEMO_REVIEWS: ReviewItem[] = [
   {
     id: "rev_1",
     targetUserId: "user_camille",

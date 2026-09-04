@@ -19,15 +19,18 @@ test.describe("Homepage administration", () => {
     const trending = page.getByTestId("homepage-admin-section-trending");
     const deals = page.getByTestId("homepage-admin-section-deals");
     await expect(trending).toBeVisible();
-    await expect(deals.getByText("Règles d’éligibilité des offres")).toBeVisible();
     await expect(
-      deals.getByLabel("Nombre maximal d’éléments"),
-    ).toHaveValue("6");
+      deals.getByText("Règles d’éligibilité des offres"),
+    ).toBeVisible();
+    await expect(deals.getByLabel("Nombre maximal d’éléments")).toHaveValue(
+      "6",
+    );
 
     await trending.getByRole("button", { name: /Descendre/ }).click();
     await page.getByRole("button", { name: "Aperçu", exact: true }).click();
-    await expect(page.getByText("Aperçu recalculé avec les données du marché."))
-      .toBeVisible();
+    await expect(
+      page.getByText("Aperçu recalculé avec les données du marché."),
+    ).toBeVisible();
 
     await page
       .getByLabel("Motif de modification / publication")
@@ -38,20 +41,25 @@ test.describe("Homepage administration", () => {
     ).toBeVisible();
 
     await page.goto("/", { waitUntil: "domcontentloaded" });
-    const dealsSection = page.getByTestId("home-deals");
-    const trendingSection = page.getByTestId("home-trending");
-    await expect(dealsSection).toBeVisible();
-    await expect(trendingSection).toBeVisible();
+    const discoverySection = page.getByTestId("home-discovery");
+    const dealsTab = discoverySection.getByRole("tab", {
+      name: "Meilleures offres",
+    });
+    const trendingTab = discoverySection.getByRole("tab", {
+      name: "En ce moment sur Shongre",
+    });
+    await expect(dealsTab).toBeVisible();
+    await expect(trendingTab).toBeVisible();
     await expect
       .poll(async () =>
-        dealsSection.evaluate(
+        dealsTab.evaluate(
           (deals, trends) =>
             Boolean(
               trends &&
-                deals.compareDocumentPosition(trends) &
-                  Node.DOCUMENT_POSITION_FOLLOWING,
+              deals.compareDocumentPosition(trends) &
+                Node.DOCUMENT_POSITION_FOLLOWING,
             ),
-          await trendingSection.elementHandle(),
+          await trendingTab.elementHandle(),
         ),
       )
       .toBe(true);

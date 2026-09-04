@@ -25,14 +25,14 @@ import {
   getDemoTransactionCommercials,
 } from "../monetization/demo-commercial-catalog";
 
-export interface ResolveFulfillmentCapabilitiesParams {
+interface ResolveFulfillmentCapabilitiesParams {
   taxonomyNodeId: string;
   marketCode?: string;
   sellerType?: "individual" | "pro";
   price?: number;
 }
 
-export interface ResolveDeliveryQuotesParams {
+interface ResolveDeliveryQuotesParams {
   listing: Listing;
   taxonomyNodeId?: string;
   marketCode?: string;
@@ -41,14 +41,14 @@ export interface ResolveDeliveryQuotesParams {
   packageSpecs?: PackageSpecs;
 }
 
-export interface CalculateOrderPricingParams {
+interface CalculateOrderPricingParams {
   listing: Listing;
   quantity?: number;
   selectedQuote?: DeliveryQuote;
   marketCode?: string;
 }
 
-export class FulfillmentResolver {
+class FulfillmentResolver {
   /**
    * Evaluates what fulfillment capabilities a seller is permitted to enable during publication.
    */

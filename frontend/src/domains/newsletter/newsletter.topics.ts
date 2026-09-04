@@ -16,7 +16,7 @@ export interface NewsletterTopicDefinition {
   defaultEnabled?: boolean;
 }
 
-export const NEWSLETTER_TOPICS: NewsletterTopicDefinition[] = [
+const NEWSLETTER_TOPICS: NewsletterTopicDefinition[] = [
   {
     id: "deals",
     label: "Bons plans & Réductions exclusives",
@@ -67,7 +67,7 @@ export const NEWSLETTER_TOPICS: NewsletterTopicDefinition[] = [
   },
 ];
 
-export class NewsletterTopicsService {
+class NewsletterTopicsService {
   getAllTopics(): NewsletterTopicDefinition[] {
     return NEWSLETTER_TOPICS;
   }

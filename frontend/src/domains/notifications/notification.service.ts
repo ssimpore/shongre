@@ -16,7 +16,7 @@ export interface NotificationDateGroup {
   items: Notification[];
 }
 
-export class NotificationService {
+class NotificationService {
   /**
    * Localized relative date grouping label.
    */

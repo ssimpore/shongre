@@ -9,7 +9,7 @@ import { usePageMeta } from "../../hooks/usePageMeta";
 import { ACCOUNT_CONSTRAINTS } from "@shongre/contracts/account";
 import { FormField, Input, Textarea } from "../../design-system";
 
-export const AccountDeletionPage: React.FC = () => {
+const AccountDeletionPage: React.FC = () => {
   usePageMeta({
     title: "Supprimer un compte Shongre",
     description:

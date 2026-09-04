@@ -9,15 +9,8 @@ export type VerificationState =
   | "rejected"
   | "expired";
 
-export type KycDocumentType =
+type KycDocumentType =
   "national_id" | "passport" | "residence_permit" | "driving_license";
-
-export type KybDocumentType =
-  | "kbis"
-  | "insee_notice"
-  | "articles_of_association"
-  | "bank_rib"
-  | "ubo_declaration";
 
 export interface VerificationRequirement {
   id: VerificationDimensionId;

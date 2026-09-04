@@ -103,7 +103,7 @@ export const DEFAULT_AUTO_CONFIG: AutoMarketConfig = {
   updatedAt: NOW,
 };
 
-export const DEFAULT_AUTO_PLANS: AutoPlan[] = [
+const DEFAULT_AUTO_PLANS: AutoPlan[] = [
   {
     id: "auto_private_free",
     marketCode: "FR",
@@ -312,7 +312,7 @@ const TYPE_ROWS: Array<
   ],
 ];
 
-export const DEFAULT_AUTO_TYPES: VehicleTypeConfig[] = TYPE_ROWS.map(
+const DEFAULT_AUTO_TYPES: VehicleTypeConfig[] = TYPE_ROWS.map(
   ([type, slug, label, description, isActive], index) => ({
     type,
     slug,
@@ -551,7 +551,7 @@ export const DEMO_AUTO_VEHICLES: VehiclePrivate[] = [
   }),
 ];
 
-export const DEFAULT_AUTO_CATALOG: AutoCatalog = {
+const DEFAULT_AUTO_CATALOG: AutoCatalog = {
   config: DEFAULT_AUTO_CONFIG,
   vehicleTypes: DEFAULT_AUTO_TYPES,
   attributes: [

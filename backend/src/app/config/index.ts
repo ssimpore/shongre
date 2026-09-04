@@ -23,11 +23,11 @@ dotenv.config({ path: resolve(process.cwd(), "../.env.local") });
 dotenv.config({ path: resolve(process.cwd(), "../.env") });
 
 export type BackendDataMode = "demo" | "database";
-export type PaymentProviderMode = "demo" | "stripe";
-export type KYCProviderMode = "demo" | "stripe" | "live";
-export type BusinessRegistryProviderMode = "demo" | "siret";
-export type AIProviderMode = "demo" | "gemini";
-export type MalwareScannerMode = "disabled" | "http";
+type PaymentProviderMode = "demo" | "stripe";
+type KYCProviderMode = "demo" | "stripe" | "live";
+type BusinessRegistryProviderMode = "demo" | "siret";
+type AIProviderMode = "demo" | "gemini";
+type MalwareScannerMode = "disabled" | "http";
 
 export interface AppConfig {
   environment: EnvironmentConfig;
@@ -115,20 +115,20 @@ export interface AppConfig {
   malwareScannerTimeoutMs: number;
 }
 
-export interface OAuthProviderConfig {
+interface OAuthProviderConfig {
   enabled: boolean;
   clientId: string;
   clientSecret: string;
   callbackUrl: string;
 }
 
-export interface AppleOAuthProviderConfig extends OAuthProviderConfig {
+interface AppleOAuthProviderConfig extends OAuthProviderConfig {
   teamId: string;
   keyId: string;
   privateKey: string;
 }
 
-export interface FacebookOAuthProviderConfig extends OAuthProviderConfig {
+interface FacebookOAuthProviderConfig extends OAuthProviderConfig {
   authorizationUrl: string;
   graphApiBaseUrl: string;
 }
@@ -831,19 +831,4 @@ export function buildApiUrl(path = "/"): URL {
   );
 }
 
-export function buildOAuthCallback(
-  provider: "google" | "apple" | "facebook",
-): URL {
-  return buildApiUrl(`${config.apiPrefix}/auth/oauth/${provider}/callback`);
-}
-
-export function buildWebhookUrl(provider: string): URL {
-  if (!/^[a-z0-9-]+$/.test(provider)) {
-    throw new Error("Webhook provider must use a lowercase slug.");
-  }
-  return buildApiUrl(`${config.apiPrefix}/webhooks/${provider}`);
-}
-
 export const isBackendDemoMode = (): boolean => config.dataMode === "demo";
-export const isBackendDatabaseMode = (): boolean =>
-  config.dataMode === "database";

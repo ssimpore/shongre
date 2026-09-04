@@ -36,7 +36,7 @@ export class TokenError extends Error {
   }
 }
 
-export const DEFAULT_TOKEN_TTL_SECONDS = 60 * 60 * 12; // 12 hours
+const DEFAULT_TOKEN_TTL_SECONDS = 60 * 60 * 12; // 12 hours
 
 function base64UrlEncode(input: Buffer | string): string {
   return Buffer.from(input)

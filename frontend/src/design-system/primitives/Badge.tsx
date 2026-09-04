@@ -1,8 +1,13 @@
 import React from "react";
 import { Sparkles, Zap, Tag } from "lucide-react";
 import { Avatar as SharedAvatar, Badge as SharedBadge } from "@shongre/ui/web";
+import {
+  AVATAR_SIZES,
+  buildSizedImageUrl,
+  buildSrcSet,
+  DEFAULT_WIDTH_LADDER,
+} from "@shongre/shared";
 import { useTranslation } from "../../i18n/I18nProvider";
-import { AVATAR_SIZES, buildSrcSet } from "./responsiveImage";
 
 export interface BadgeProps {
   children: React.ReactNode;
@@ -73,7 +78,7 @@ export const Avatar: React.FC<AvatarProps> = ({
   const { t } = useTranslation();
   return (
     <SharedAvatar
-      src={src}
+      src={buildSizedImageUrl(src, DEFAULT_WIDTH_LADDER[0]) ?? src}
       srcSet={buildSrcSet(src)}
       sizes={AVATAR_SIZES[size]}
       name={name}

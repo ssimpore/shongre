@@ -15,7 +15,7 @@ import { DEFAULT_MARKET_CODE } from "../../configuration/market-baseline";
 
 const VERIFICATION_AUDIT_KEY = "shongre_verification_audit_logs";
 
-export interface CompanyRegistryResult {
+interface CompanyRegistryResult {
   siren: string;
   siret: string;
   companyName: string;
@@ -34,7 +34,7 @@ export interface CompanyRegistryResult {
   rcsNumber?: string;
 }
 
-export class VerificationService {
+class VerificationService {
   // -------------------------------------------------------------
   // Audit Logs Persistence
   // -------------------------------------------------------------

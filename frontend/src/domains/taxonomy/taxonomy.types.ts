@@ -5,7 +5,7 @@
 
 export type TaxonomyLevel = "category" | "subcategory" | "type" | "subtype";
 
-export type TaxonomyNodeStatus =
+type TaxonomyNodeStatus =
   "active" | "draft" | "disabled" | "deprecated" | "archived";
 
 export type ConditionSchemeId =
@@ -56,11 +56,10 @@ export type AttributeDataType =
  * can be highlighted in publication without blocking a seller, while a
  * computed/system field is never rendered as an input.
  */
-export type TaxonomyAttributeFieldRole =
+type TaxonomyAttributeFieldRole =
   "required" | "recommended" | "optional" | "computed" | "system";
 
-export type TaxonomyAttributeVisibility =
-  "public" | "seller_only" | "moderator_only";
+type TaxonomyAttributeVisibility = "public" | "seller_only" | "moderator_only";
 
 export interface AttributeOption {
   value: string;
@@ -68,13 +67,13 @@ export interface AttributeOption {
   labels?: Record<string, string>;
 }
 
-export interface AttributeDependency {
+interface AttributeDependency {
   attributeId: string;
   operator: "equals" | "in" | "not_equals";
   value: unknown;
 }
 
-export interface AttributeValidation {
+interface AttributeValidation {
   min?: number;
   max?: number;
   pattern?: string;
@@ -139,14 +138,14 @@ export interface SellerEligibilityRules {
   proKbisRequired?: boolean;
 }
 
-export interface TaxonomySeoMeta {
+interface TaxonomySeoMeta {
   metaTitleTemplate?: string;
   metaDescriptionTemplate?: string;
   canonicalPath?: string;
   indexable?: boolean;
 }
 
-export interface TaxonomyPresentationRules {
+interface TaxonomyPresentationRules {
   /** Attributes shown first on cards, in priority order. */
   cardAttributeIds?: string[];
   /** Detail-page group order, using the attribute publication groups. */
@@ -161,7 +160,7 @@ export interface TaxonomyPresentationRules {
   >;
 }
 
-export interface TaxonomyMediaGuidance {
+interface TaxonomyMediaGuidance {
   minimumPhotoCount?: number;
   recommendedViews?: string[];
   maxPhotoCount?: number;
@@ -194,7 +193,7 @@ export type TaxonomyPrimaryCta =
   | "check_availability"
   | "propose_exchange";
 
-export type TaxonomyPublicationStep =
+type TaxonomyPublicationStep =
   | "intent"
   | "taxonomy"
   | "essential"
@@ -207,7 +206,7 @@ export type TaxonomyPublicationStep =
   | "standard_or_upgrades"
   | "confirmation";
 
-export interface TaxonomyStandardPublicationPolicy {
+interface TaxonomyStandardPublicationPolicy {
   enabled: boolean;
   label: "Publication standard gratuite";
   eligibleSellerTypes: Array<"individual" | "professional">;
@@ -219,13 +218,13 @@ export interface TaxonomyStandardPublicationPolicy {
   paidUpgradesOptional: true;
 }
 
-export interface TaxonomyPublicationConfiguration {
+interface TaxonomyPublicationConfiguration {
   steps: TaxonomyPublicationStep[];
   primaryCta: TaxonomyPrimaryCta;
   standardPolicy: TaxonomyStandardPublicationPolicy;
 }
 
-export interface TaxonomyModerationPolicy {
+interface TaxonomyModerationPolicy {
   policyId: string;
   reviewMode: "standard" | "enhanced" | "manual";
   prohibitedItemRuleIds: string[];
@@ -233,7 +232,7 @@ export interface TaxonomyModerationPolicy {
   sensitiveAttributeIds: string[];
 }
 
-export interface TaxonomyNodeBase {
+interface TaxonomyNodeBase {
   id: string;
   slug: string;
   /**
@@ -330,7 +329,7 @@ export interface SearchFacetDefinition {
 // ADMIN & GOVERNANCE MODELS
 // =========================================================================
 
-export type TaxonomyChangeType =
+type TaxonomyChangeType =
   | "created"
   | "updated"
   | "moved"
@@ -367,7 +366,7 @@ export interface TaxonomyVersion {
   createdAt: string;
 }
 
-export type ValidationSeverity = "error" | "warning" | "info";
+type ValidationSeverity = "error" | "warning" | "info";
 
 export interface TaxonomyValidationIssue {
   id: string;

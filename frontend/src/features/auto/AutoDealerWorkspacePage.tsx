@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { IMAGE_SIZES } from "../../design-system/primitives/responsiveImage";
+import { IMAGE_SIZES } from "@shongre/shared";
 import {
   BarChart3,
   ArrowRightLeft,

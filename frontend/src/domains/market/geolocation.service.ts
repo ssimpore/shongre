@@ -42,10 +42,7 @@ const normalizeCity = (value: string) =>
 
 const radians = (degrees: number) => (degrees * Math.PI) / 180;
 
-export const distanceBetweenKm = (
-  from: GeoCoordinates,
-  to: CityPoint,
-): number => {
+const distanceBetweenKm = (from: GeoCoordinates, to: CityPoint): number => {
   const latitudeDelta = radians(to.latitude - from.latitude);
   const longitudeDelta = radians(to.longitude - from.longitude);
   const a =

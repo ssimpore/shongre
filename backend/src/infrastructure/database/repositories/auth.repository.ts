@@ -127,7 +127,7 @@ export interface AuthActionTokenRecord {
   expiresAt: string;
 }
 
-export interface OAuthProfileProvisionInput {
+interface OAuthProfileProvisionInput {
   userId: string;
   slug: string;
   email: string;
@@ -796,7 +796,7 @@ export class DemoAuthRepository implements IAuthRepository {
   }
 }
 
-export class PostgresAuthRepository implements IAuthRepository {
+class PostgresAuthRepository implements IAuthRepository {
   private client(): any {
     return getSupabaseAdminClient() as any;
   }

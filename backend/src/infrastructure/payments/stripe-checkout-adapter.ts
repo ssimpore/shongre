@@ -5,7 +5,7 @@ import { buildPublicUrl } from "@shongre/contracts";
 
 const STRIPE_API_VERSION = "2026-02-25.clover";
 
-export interface StripeCheckoutLine {
+interface StripeCheckoutLine {
   name: string;
   description: string;
   amountMinor: number;

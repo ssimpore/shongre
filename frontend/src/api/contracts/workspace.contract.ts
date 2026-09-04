@@ -12,13 +12,13 @@ export interface UserWorkspaceSummary {
   recentPurchases: Transaction[];
 }
 
-export interface ProAnalyticsDay {
+interface ProAnalyticsDay {
   date: string;
   views: number;
   leads: number;
 }
 
-export interface ProListingPerformance {
+interface ProListingPerformance {
   listing: Listing;
   conversionRate: number;
 }

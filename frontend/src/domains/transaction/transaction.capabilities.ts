@@ -17,7 +17,7 @@ import {
   ListingIntent,
 } from "../publication/publication.types";
 
-export interface ResolveTransactionParams {
+interface ResolveTransactionParams {
   taxonomyNodeId: string;
   marketCode?: string;
   sellerType?: "individual" | "pro";
@@ -27,7 +27,7 @@ export interface ResolveTransactionParams {
   stock?: number;
 }
 
-export class TransactionCapabilitiesService {
+class TransactionCapabilitiesService {
   /**
    * Authoritative evaluation of valid transaction modes for a listing.
    */

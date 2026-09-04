@@ -15,13 +15,12 @@ export const OFFER_INPUT_CONSTRAINTS = {
   percentageScale: 100,
 } as const;
 
-export type ConversationType =
-  "listing" | "transaction" | "support" | "general";
+type ConversationType = "listing" | "transaction" | "support" | "general";
 
-export type MessageDeliveryStatus =
+type MessageDeliveryStatus =
   "sending" | "sent" | "delivered" | "read" | "failed";
 
-export type MessageContentType =
+type MessageContentType =
   | "text"
   | "image"
   | "file"
@@ -31,7 +30,7 @@ export type MessageContentType =
   | "reservation"
   | "system";
 
-export interface MessageAttachment {
+interface MessageAttachment {
   id: string;
   type: "image" | "file";
   url: string;
@@ -81,19 +80,19 @@ export interface TransactionConversationContext {
   };
 }
 
-export interface SupportConversationContext {
+interface SupportConversationContext {
   type: "support";
   ticketId: string;
   category: string;
   priority: "low" | "normal" | "urgent";
 }
 
-export type ConversationContext =
+type ConversationContext =
   | ListingConversationContext
   | TransactionConversationContext
   | SupportConversationContext;
 
-export interface BaseTimelineItem {
+interface BaseTimelineItem {
   id: string;
   conversationId: string;
   createdAt: string;

@@ -11,7 +11,7 @@ import { calculateExplainableProspectScore } from "./prospecting.rules.js";
 
 const SNAPSHOT_AT = "2026-08-15T10:00:00.000Z";
 
-export const demoAuthorizedSourceDefinition: LeadSourceDefinition = {
+const demoAuthorizedSourceDefinition: LeadSourceDefinition = {
   id: "demo_authorized_registry",
   providerId: "demo_local",
   name: "Registre professionnel de démonstration",

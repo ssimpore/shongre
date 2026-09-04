@@ -1,12 +1,12 @@
 import { Page, expect } from "@playwright/test";
 
-export interface OverflowOffender {
+interface OverflowOffender {
   selector: string;
   left: number;
   right: number;
 }
 
-export interface OverflowReport {
+interface OverflowReport {
   viewportWidth: number;
   documentWidth: number;
   overflow: number;
@@ -24,7 +24,7 @@ export interface OverflowReport {
  * a tab strip, a wide table) is intentional, so the walk up the ancestor chain
  * discounts anything a scroll container already clips.
  */
-export async function measureOverflow(page: Page): Promise<OverflowReport> {
+async function measureOverflow(page: Page): Promise<OverflowReport> {
   return page.evaluate(() => {
     const describe = (el: Element): string => {
       const parts: string[] = [];
@@ -140,31 +140,22 @@ export async function waitForStableLayout(
     .getByRole("status", { name: /Chargement (?:de Shongre|de la page)/i })
     .waitFor({ state: "detached", timeout: timeoutMs });
 
-  await page.evaluate(async (budget) => {
-    const readWidth = () =>
-      Math.max(document.documentElement.scrollWidth, document.body.scrollWidth);
-    const started = Date.now();
-    let previous = -1;
-    let steadyFrames = 0;
-    while (Date.now() - started < budget) {
-      // WebKit and Chromium may throttle a background worker page while the
-      // exhaustive route matrix runs in parallel. A bare animation-frame wait
-      // can then consume the test's entire timeout even though the document is
-      // already stable. Keep frames as the preferred signal, but guarantee
-      // forward progress when the browser suspends them.
-      await new Promise<void>((resolve) => {
-        const fallback = window.setTimeout(resolve, 100);
-        requestAnimationFrame(() => {
-          window.clearTimeout(fallback);
-          resolve();
-        });
-      });
-      const current = readWidth();
-      steadyFrames = current === previous ? steadyFrames + 1 : 0;
-      previous = current;
-      if (steadyFrames >= 6) return;
-    }
-  }, timeoutMs);
+  // Drive the sampling interval from Playwright rather than the document.
+  // Browsers throttle both animation frames and window timers in a background
+  // worker page, which previously let a correctly rendered route consume the
+  // entire test timeout during the exhaustive parallel matrix.
+  const started = Date.now();
+  let previous = -1;
+  let steadySamples = 0;
+  while (Date.now() - started < timeoutMs) {
+    await new Promise<void>((resolve) => setTimeout(resolve, 50));
+    const current = await page.evaluate(() =>
+      Math.max(document.documentElement.scrollWidth, document.body.scrollWidth),
+    );
+    steadySamples = current === previous ? steadySamples + 1 : 0;
+    previous = current;
+    if (steadySamples >= 6) break;
+  }
 
   // Geometry may already be stable while an asynchronously enabled control is
   // still crossing its token-backed opacity transition. Axe would then measure

@@ -9,12 +9,12 @@ import type {
   AuthRequestMetadata,
 } from "../../modules/auth/session.service.js";
 
-export const ACCESS_COOKIE = "shongre_access";
-export const REFRESH_COOKIE = "shongre_refresh";
-export const CSRF_COOKIE = "shongre_csrf";
-export const OAUTH_COMPLETION_COOKIE = "shongre_oauth_completion";
+const ACCESS_COOKIE = "shongre_access";
+const REFRESH_COOKIE = "shongre_refresh";
+const CSRF_COOKIE = "shongre_csrf";
+const OAUTH_COMPLETION_COOKIE = "shongre_oauth_completion";
 
-export function parseCookies(req: IncomingMessage): Record<string, string> {
+function parseCookies(req: IncomingMessage): Record<string, string> {
   const result: Record<string, string> = {};
   for (const entry of (req.headers.cookie || "").split(";")) {
     const separator = entry.indexOf("=");
@@ -48,7 +48,7 @@ function cookie(
   return parts.join("; ");
 }
 
-export function appendCookie(res: ServerResponse, value: string): void {
+function appendCookie(res: ServerResponse, value: string): void {
   const current = res.getHeader("Set-Cookie");
   const values = Array.isArray(current)
     ? current.map(String)

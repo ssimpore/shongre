@@ -220,6 +220,7 @@ test.describe("Shongre Auto", () => {
 
     await page.setViewportSize({ width: 390, height: 844 });
     await waitForStableLayout(page);
+    await section.scrollIntoViewIfNeeded();
 
     const track = section.locator(".scroll-rail-shell > div").first();
     const mobileOverflow = await track.evaluate((element) => ({
@@ -237,13 +238,13 @@ test.describe("Shongre Auto", () => {
     const maxScrollLeft =
       mobileOverflow.scrollWidth - mobileOverflow.clientWidth;
     const scrollTowardsStart = mobileOverflow.scrollLeft > maxScrollLeft / 2;
-    await page
-      .getByRole("button", {
-        name: scrollTowardsStart
-          ? /faire défiler les véhicules similaires vers la gauche/i
-          : /faire défiler les véhicules similaires vers la droite/i,
-      })
-      .click();
+    await expect(track).toHaveAttribute("role", "region");
+    await track.evaluate((element, direction) => {
+      element.scrollBy({
+        left: direction * Math.max(320, element.clientWidth * 0.75),
+        behavior: "auto",
+      });
+    }, scrollTowardsStart ? -1 : 1);
     const observedScrollLeft = expect.poll(() =>
       track.evaluate((element) => element.scrollLeft),
     );

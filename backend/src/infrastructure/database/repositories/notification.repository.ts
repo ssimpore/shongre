@@ -101,7 +101,7 @@ export interface INotificationRepository {
   }): Promise<string>;
 }
 
-export const CANONICAL_DEMO_NOTIFICATIONS: NotificationItem[] = [
+const CANONICAL_DEMO_NOTIFICATIONS: NotificationItem[] = [
   {
     id: "notif_1",
     userId: "user_camille",

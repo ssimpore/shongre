@@ -16,7 +16,7 @@ export interface CollectionPillar {
   description: string;
 }
 
-export interface CollectionFilterCriteria {
+interface CollectionFilterCriteria {
   priceMax?: number;
   priceMin?: number;
   isFreeDonation?: boolean;

@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 
 /** Search param carrying the catalogue market. */
-export const SOLUTIONS_MARKET_PARAM = "marche";
+const SOLUTIONS_MARKET_PARAM = "marche";
 
 /**
  * The single source of truth for which market the Solutions surface is showing.

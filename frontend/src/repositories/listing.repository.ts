@@ -109,7 +109,7 @@ function taxonomyIdentityAndDescendantIds(value: string): Set<string> {
   );
 }
 
-export class MockListingRepository implements IListingRepository {
+class MockListingRepository implements IListingRepository {
   private getCanonicalInventory(): Listing[] {
     const listingsById = new Map(
       storageService.getListings().map((listing) => [listing.id, listing]),

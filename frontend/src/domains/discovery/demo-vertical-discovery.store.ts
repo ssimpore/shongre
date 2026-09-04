@@ -37,7 +37,7 @@ function projectionKey(
  * snapshots (draft, suspended, archived) makes transitions deterministic while
  * the listing repository's normal active-status filter controls visibility.
  */
-export class DemoVerticalDiscoveryStore {
+class DemoVerticalDiscoveryStore {
   private listings = new Map<string, Listing>();
   private listingIdsByEntity = new Map<string, string>();
 

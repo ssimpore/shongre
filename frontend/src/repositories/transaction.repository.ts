@@ -44,7 +44,7 @@ export interface ITransactionRepository {
   ): Promise<SellerPayoutRequest>;
 }
 
-export class MockTransactionRepository implements ITransactionRepository {
+class MockTransactionRepository implements ITransactionRepository {
   async getTransactions(userId: string): Promise<Transaction[]> {
     const all = storageService.getTransactions();
     return all.filter((t) => t.buyerId === userId || t.sellerId === userId);

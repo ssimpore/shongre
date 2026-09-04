@@ -37,7 +37,7 @@ const pathSegment = (value: string | number) => {
  * double-encoded and silently ignored parameters. Empty values are omitted;
  * false and zero are retained because both can be meaningful filter state.
  */
-export const withQuery = (
+const withQuery = (
   pathname: string,
   values: Record<string, QueryValue>,
 ): string => {

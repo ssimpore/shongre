@@ -18,7 +18,7 @@ import {
 import { ListingIntent, PriceModel } from "./publication.types";
 import { marketService } from "../market/market.service";
 
-export interface ResolvedPublicationField {
+interface ResolvedPublicationField {
   attribute: TaxonomyAttribute;
   isVisiblyMet: boolean;
   isRequired: boolean;
@@ -26,7 +26,7 @@ export interface ResolvedPublicationField {
   fieldRole: NonNullable<TaxonomyAttribute["fieldRole"]>;
 }
 
-export interface ResolvedPublicationEngineSchema {
+interface ResolvedPublicationEngineSchema {
   node: TaxonomyNode;
   ancestors: TaxonomyNode[];
   isPublishable: boolean;
@@ -53,7 +53,7 @@ export interface ResolvedPublicationEngineSchema {
   moderation: NonNullable<TaxonomyNode["moderation"]>;
 }
 
-export interface ResolvePublicationParams {
+interface ResolvePublicationParams {
   taxonomyNodeId: string;
   marketCode?: string;
   sellerRole?: string;
@@ -61,7 +61,7 @@ export interface ResolvePublicationParams {
   currentValues?: Record<string, unknown>;
 }
 
-export class PublicationResolver {
+class PublicationResolver {
   /**
    * Resolves the full publication schema for a given taxonomy node and market context.
    */

@@ -5,7 +5,7 @@ import {
   type ShongreApplicationRegistry,
 } from "../applications/application-registry";
 
-export type PublicDataMode = "demo" | "api";
+type PublicDataMode = "demo" | "api";
 
 export interface PublicRuntimeConfig {
   appEnvironment: AppEnvironment;

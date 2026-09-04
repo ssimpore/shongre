@@ -1,6 +1,6 @@
 import { TaxonomyAttribute, TaxonomyService } from "./taxonomy.service.js";
 
-export interface TaxonomyValidationIssue {
+interface TaxonomyValidationIssue {
   field: string;
   code: string;
   message: string;

@@ -28,7 +28,7 @@ export type SupportRequestStatus =
 
 export type SupportPriority = "low" | "normal" | "high" | "urgent";
 
-export interface SupportAttachment {
+interface SupportAttachment {
   id: string;
   type: "image" | "document";
   fileName: string;
@@ -36,7 +36,7 @@ export interface SupportAttachment {
   url: string;
 }
 
-export interface ListingSupportContext {
+interface ListingSupportContext {
   type: "listing";
   listingId: string;
   listingTitle?: string;
@@ -47,7 +47,7 @@ export interface ListingSupportContext {
   sellerName?: string;
 }
 
-export interface TransactionSupportContext {
+interface TransactionSupportContext {
   type: "transaction";
   transactionId: string;
   orderNumber?: string;
@@ -60,20 +60,20 @@ export interface TransactionSupportContext {
   counterpartName?: string;
 }
 
-export interface ConversationSupportContext {
+interface ConversationSupportContext {
   type: "conversation";
   conversationId: string;
   counterpartId?: string;
   counterpartName?: string;
 }
 
-export interface SubscriptionSupportContext {
+interface SubscriptionSupportContext {
   type: "subscription";
   planId: string;
   planName: string;
 }
 
-export interface AccountSupportContext {
+interface AccountSupportContext {
   type: "account";
   userId?: string;
   email?: string;
@@ -85,37 +85,6 @@ export type SupportContext =
   | ConversationSupportContext
   | SubscriptionSupportContext
   | AccountSupportContext;
-
-export interface SupportTimelineMessage {
-  id: string;
-  authorType: "user" | "agent" | "system";
-  authorName: string;
-  content: string;
-  createdAt: string;
-  attachments?: SupportAttachment[];
-}
-
-export interface SupportRequest {
-  id: string;
-  reference: string;
-  requesterId?: string;
-  requesterName: string;
-  requesterEmail: string;
-  marketCode: string;
-  category: SupportCategory;
-  reason: string;
-  subject: string;
-  description: string;
-  context?: SupportContext;
-  attachments?: SupportAttachment[];
-  status: SupportRequestStatus;
-  priority: SupportPriority;
-  messages: SupportTimelineMessage[];
-  createdAt: string;
-  updatedAt: string;
-  lastActivityAt: string;
-  resolvedAt?: string;
-}
 
 export interface CreateSupportRequestInput {
   requesterId?: string;
@@ -129,12 +98,4 @@ export interface CreateSupportRequestInput {
   context?: SupportContext;
   attachments?: SupportAttachment[];
   priority?: SupportPriority;
-}
-
-export interface SupportRequestQuery {
-  requesterId?: string;
-  status?: SupportRequestStatus | "all";
-  category?: SupportCategory;
-  limit?: number;
-  offset?: number;
 }

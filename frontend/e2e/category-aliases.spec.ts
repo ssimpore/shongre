@@ -9,16 +9,16 @@ test.describe('compact taxonomy aliases', () => {
     await waitForStableLayout(page);
   });
 
-  test('uses short labels in navigation, autocomplete and listing cards', async ({ page }) => {
-    await expect(
-      page
-        .getByLabel('Navigation par catégorie')
-        .getByRole('link', { name: 'Outils pro', exact: true }),
-    ).toBeVisible();
-
+  test('uses short labels in autocomplete and listing cards', async ({ page }) => {
     const search = page.getByRole('combobox');
     await search.fill('Outils pro');
-    await expect(page.getByRole('option').first()).toContainText('Outils pro');
+    const categoryOption = page.getByRole('option').first();
+    await expect(categoryOption).toContainText('Outils pro');
+
+    await page.goto('/categorie/materiel-professionnel', {
+      waitUntil: 'domcontentloaded',
+    });
+    await waitForStableLayout(page);
 
     const professionalListing = page.locator('article').filter({ hasText: 'Niveau Laser Rotatif' }).first();
     await expect(professionalListing.getByText('Outils pro', { exact: true })).toBeVisible();

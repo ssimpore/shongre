@@ -7,7 +7,7 @@ import { Page } from "@playwright/test";
  * localStorage before the first paint is equivalent to picking the persona in
  * the demo switcher — without driving the UI for it in every test.
  */
-export const PERSONAS = {
+const PERSONAS = {
   guest: { key: "guest", role: "guest" },
   individual_buyer: { key: "buyer_thomas", role: "individual_buyer" },
   individual_seller: { key: "seller_camille", role: "individual_seller" },

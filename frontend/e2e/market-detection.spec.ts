@@ -79,7 +79,7 @@ test.describe("probable-country recommendation", () => {
     await expect(page).toHaveURL(/\/$/);
   });
 
-  test("keeps public browsing and the selector usable when no country is known", async ({
+  test("keeps a direct market request and its selector usable when no country is known", async ({
     page,
   }) => {
     await useEstablishedConsent(page);
@@ -90,9 +90,12 @@ test.describe("probable-country recommendation", () => {
       page.getByRole("heading", {
         name: "Nous n’avons pas pu estimer votre pays",
       }),
-    ).toBeVisible();
+    ).toHaveCount(0);
     await expect(page.getByRole("heading", { level: 1 }).first()).toBeVisible();
-    await page.getByRole("button", { name: "Choisir mon pays" }).click();
+    await page
+      .getByRole("button", { name: /préférences régionales : Français/i })
+      .first()
+      .click();
     const selector = page.getByRole("dialog", {
       name: "Préférences régionales",
     });

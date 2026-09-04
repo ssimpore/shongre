@@ -452,16 +452,3 @@ export function formatPhoneNumber(phone: string): string {
   }
   return phone;
 }
-
-/**
- * Calculate buyer protection fee
- */
-export function calculateBuyerFee(
-  price: number,
-  feePercent: number,
-  fixedFee: number,
-): number {
-  if (price <= 0) return 0;
-  const variable = price * feePercent;
-  return Math.round((variable + fixedFee) * 100) / 100;
-}

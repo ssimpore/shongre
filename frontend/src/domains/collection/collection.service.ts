@@ -7,7 +7,7 @@ import {
 import { Listing } from "../../types";
 import { isProSeller } from "../user/user.domain";
 
-export class CollectionService {
+class CollectionService {
   /**
    * Returns all available collection pillars.
    */

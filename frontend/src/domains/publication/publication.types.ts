@@ -6,10 +6,10 @@
 
 import { ListingFamily, FulfillmentMode } from "../taxonomy/taxonomy.types";
 
-export type ListingMarketStatus =
+type ListingMarketStatus =
   "active" | "pending" | "suspended" | "rejected" | "draft" | "paused";
 
-export interface ListingMarketPublication {
+interface ListingMarketPublication {
   marketCode: string; // e.g. 'FR', 'BE', 'CH', 'ES'
   status: ListingMarketStatus;
   isPrimary?: boolean;
@@ -112,14 +112,14 @@ export interface PackageSpecs {
   heightCm?: number;
 }
 
-export interface SellerTransactionChoice {
+interface SellerTransactionChoice {
   allowContact: boolean;
   allowDirectPurchase: boolean;
   allowReservation: boolean;
   reservationType?: "instant" | "request";
 }
 
-export interface SellerFulfillmentChoice {
+interface SellerFulfillmentChoice {
   allowHandDelivery: boolean;
   allowParcelShipping: boolean;
   allowBulkyDelivery: boolean;
@@ -132,7 +132,7 @@ export interface SellerFulfillmentChoice {
   storePickupAddress?: string;
 }
 
-export interface PublicationPriceConfig {
+interface PublicationPriceConfig {
   priceModel: PriceModel;
   amount: number;
   currency: string;
@@ -143,7 +143,7 @@ export interface PublicationPriceConfig {
   unitTime?: "hour" | "day" | "month" | "year";
 }
 
-export interface ProInventoryData {
+interface ProInventoryData {
   sku?: string;
   internalReference?: string;
   stock: number;

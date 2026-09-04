@@ -6,7 +6,7 @@ import {
   ShongreProductId,
 } from "../../types";
 
-export type AuthProviderId = "password" | "google" | "apple" | "facebook";
+type AuthProviderId = "password" | "google" | "apple" | "facebook";
 export type SocialAuthProvider = Exclude<AuthProviderId, "password">;
 
 export interface LoginCredentials {
@@ -46,17 +46,6 @@ export interface RegisterProfessionalInput {
   requestedProduct?: ShongreProductId;
 }
 
-export interface RegisterInput {
-  email: string;
-  name: string;
-  role: UserRole;
-  /** Required by the API backend, which stores a scrypt hash of it. */
-  password?: string;
-  companyName?: string;
-  siret?: string;
-  phone?: string;
-}
-
 export interface ConnectedAccountView {
   provider: AuthProviderId;
   connected: boolean;
@@ -67,7 +56,7 @@ export interface ConnectedAccountView {
   isPrivateRelay: boolean;
 }
 
-export interface AuthSessionView {
+interface AuthSessionView {
   id: string;
   provider: AuthProviderId;
   deviceLabel: string;

@@ -10,13 +10,13 @@ import {
 import type { SupportCaseStatus } from "@shongre/contracts/support";
 import { deterministicCode } from "../../utilities/deterministic-id";
 
-export interface SupportStatusInfo {
+interface SupportStatusInfo {
   label: string;
   variant: "neutral" | "primary" | "warning" | "success" | "urgent";
   description: string;
 }
 
-export class SupportService {
+class SupportService {
   /**
    * Generates a unique, friendly support ticket reference (e.g. SHG-849201).
    */

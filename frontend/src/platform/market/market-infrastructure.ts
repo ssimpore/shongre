@@ -34,7 +34,7 @@ export function webEnvironmentFromEnvironment(): EnvironmentConfig {
   });
 }
 
-export function webEnvironmentFromPublicEnvironment(): EnvironmentConfig {
+function webEnvironmentFromPublicEnvironment(): EnvironmentConfig {
   const runtime = getPublicRuntimeConfig();
   // Demo mode deliberately has no API deployment. This structural environment
   // config still requires an origin, so use the already-validated web origin;

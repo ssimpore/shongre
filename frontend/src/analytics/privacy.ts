@@ -70,11 +70,3 @@ export function sanitizeAnalyticsProperties(
   }
   return output;
 }
-
-export function sanitizeErrorPayload(value: unknown): unknown {
-  if (value instanceof Error) {
-    return { name: value.name, message: "Application error" };
-  }
-  if (typeof value === "string") return "Application error";
-  return undefined;
-}

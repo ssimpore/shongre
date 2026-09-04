@@ -1,12 +1,12 @@
 import React from "react";
 import type { MarketCode } from "@shongre/contracts";
+import { IMAGE_SIZES } from "@shongre/shared";
 import type {
   EmploymentCatalog,
   JobPostingCard,
 } from "@shongre/contracts/employment";
 import { ListingCardViewCard } from "../../../design-system/primitives/ListingCard";
 import { Image } from "../../../design-system/primitives/Image";
-import { IMAGE_SIZES } from "../../../design-system/primitives/responsiveImage";
 import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
 import { presentEmploymentListingCard } from "../../../domains/listing/listing-card.presentation";
 

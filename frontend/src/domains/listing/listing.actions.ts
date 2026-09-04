@@ -8,17 +8,17 @@ import { Listing, UserProfile } from "../../types";
 import { TransactionCapabilitiesResult } from "../publication/publication.types";
 import type { TaxonomyPrimaryCta } from "../taxonomy/taxonomy.types";
 
-export interface ListingStatusNotice {
+interface ListingStatusNotice {
   type: "reserved" | "sold" | "expired" | "paused" | "moderated";
   title: string;
   message: string;
   isBuyerReserver?: boolean;
 }
 
-export type PrimaryBuyerAction =
+type PrimaryBuyerAction =
   "direct_purchase" | "reservation" | "contact" | "none";
 
-export interface ResolvedListingActions {
+interface ResolvedListingActions {
   isOwner: boolean;
   ownerActions: Array<"edit" | "manage" | "boost" | "stats">;
   primaryAction: PrimaryBuyerAction;
@@ -29,7 +29,7 @@ export interface ResolvedListingActions {
   statusNotice: ListingStatusNotice | null;
 }
 
-export interface ResolveListingActionsParams {
+interface ResolveListingActionsParams {
   listing: Listing;
   viewer?: UserProfile | null;
   seller?: UserProfile | null;
@@ -37,7 +37,7 @@ export interface ResolveListingActionsParams {
   taxonomyPrimaryCta?: TaxonomyPrimaryCta;
 }
 
-export class ListingActionsResolver {
+class ListingActionsResolver {
   resolve(params: ResolveListingActionsParams): ResolvedListingActions {
     const { listing, viewer, transactionCapabilities, taxonomyPrimaryCta } =
       params;

@@ -113,31 +113,6 @@ export function setNestedValue(
 }
 
 /**
- * Deletes a nested key by dot-path
- */
-export function deleteNestedValue(
-  obj: Record<string, any>,
-  path: string,
-): boolean {
-  if (!obj || typeof obj !== "object" || !path) return false;
-  const parts = path.split(".");
-  let current = obj;
-  for (let i = 0; i < parts.length - 1; i++) {
-    const part = parts[i];
-    if (!current[part] || typeof current[part] !== "object") {
-      return false;
-    }
-    current = current[part];
-  }
-  const lastKey = parts[parts.length - 1];
-  if (lastKey in current) {
-    delete current[lastKey];
-    return true;
-  }
-  return false;
-}
-
-/**
  * Explicit market policy resolver.
  */
 export class MarketResolver {

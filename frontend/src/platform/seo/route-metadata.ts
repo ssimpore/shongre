@@ -46,7 +46,7 @@ function languageAlternates(
   return languages;
 }
 
-export function metadataForPolicy(
+function metadataForPolicy(
   policy: SeoRoutePolicy,
   marketContext: MarketContext,
 ): Metadata {

@@ -1,6 +1,6 @@
 import { AppError } from "../../shared/errors/app-error.js";
 
-export type CircuitState = "CLOSED" | "OPEN" | "HALF_OPEN";
+type CircuitState = "CLOSED" | "OPEN" | "HALF_OPEN";
 
 export interface ProviderExecutionKey {
   providerId: string;

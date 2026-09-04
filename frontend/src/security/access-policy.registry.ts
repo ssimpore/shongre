@@ -9,7 +9,7 @@ import type { UserProfile } from "../types";
 import type { ShongreProductId } from "../types";
 import { hasProductAccess } from "../domains/user/user.domain";
 
-export type RouteAccessClass =
+type RouteAccessClass =
   "authenticated" | "customer" | "professional" | "staff_capability";
 
 export interface RoutePolicy {
@@ -229,14 +229,6 @@ export const ROUTE_POLICIES = {
 } as const satisfies Record<string, RoutePolicy>;
 
 export type RoutePolicyId = keyof typeof ROUTE_POLICIES;
-
-export function requiredRouteCapability(id: RoutePolicyId): Capability {
-  const capability = ROUTE_POLICIES[id].capability;
-  if (!capability) {
-    throw new Error(`Route policy ${id} has no capability requirement.`);
-  }
-  return capability;
-}
 
 export function canAccessRoutePolicy(
   user: UserProfile | null,

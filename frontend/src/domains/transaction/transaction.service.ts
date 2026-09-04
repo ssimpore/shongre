@@ -23,7 +23,7 @@ import {
   getDemoTransactionCommercials,
 } from "../monetization/demo-commercial-catalog";
 
-export interface CreateReservationInput {
+interface CreateReservationInput {
   listingId: string;
   buyer: UserProfile;
   deliveryMethod: DeliveryType;
@@ -47,7 +47,7 @@ export interface CreateReservationInput {
   };
 }
 
-export interface AmountBreakdown {
+interface AmountBreakdown {
   itemPrice: number;
   itemPriceCents: number;
   protectionFee: number;

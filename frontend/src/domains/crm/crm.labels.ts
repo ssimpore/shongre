@@ -13,7 +13,7 @@ import type { MessageKey } from "../../i18n/messages.fr";
  * Keeping the mapping here, keyed off the catalogue, means a new enum member is
  * a compile error at this file rather than a raw token on three screens.
  */
-export type CrmForecastCategory =
+type CrmForecastCategory =
   "pipeline" | "best_case" | "commit" | "closed" | "omitted";
 
 const FORECAST_CATEGORY_KEYS: Record<CrmForecastCategory, MessageKey> = {
@@ -36,7 +36,7 @@ export function forecastCategoryMessageKey(
   return FORECAST_CATEGORY_KEYS[category as CrmForecastCategory] ?? null;
 }
 
-export type CrmSource =
+type CrmSource =
   | "manual"
   | "import"
   | "inbound"

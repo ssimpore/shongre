@@ -3,7 +3,7 @@ import type { LucideIcon } from "lucide-react";
 import { ArrowRight, Clock3, ShieldCheck } from "lucide-react";
 import { Button } from "../primitives/Button";
 
-export interface OnboardingPreparationItem {
+interface OnboardingPreparationItem {
   title: string;
   description: string;
   icon: LucideIcon;

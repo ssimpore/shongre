@@ -119,23 +119,26 @@ class AuditService {
   }
 
   private bounded(logs: SecurityAuditLog[]): SecurityAuditLog[] {
-    const bounded = logs
-      .slice(0, AUDIT_LOG_LIMITS.entries)
-      .map((log) => this.compactLog(log));
-    while (
-      bounded.length > 1 &&
-      this.serializedBytes(bounded) > AUDIT_LOG_LIMITS.bytes
-    ) {
-      bounded.pop();
+    const bounded: SecurityAuditLog[] = [];
+    let byteLength = 2; // JSON array brackets.
+    for (const log of logs.slice(0, AUDIT_LOG_LIMITS.entries)) {
+      const compact = this.compactLog(log);
+      const nextByteLength =
+        byteLength + this.serializedBytes(compact) + (bounded.length ? 1 : 0);
+      if (nextByteLength > AUDIT_LOG_LIMITS.bytes) break;
+      bounded.push(compact);
+      byteLength = nextByteLength;
     }
     return bounded;
   }
 
-  private getLogsFromStorage(): SecurityAuditLog[] {
+  private readLogsFromStorage(): SecurityAuditLog[] {
     const stored = storageService.get(AUDIT_STORAGE_KEY, this.inMemoryLogs);
-    const logs = this.bounded(
-      Array.isArray(stored) ? stored : this.inMemoryLogs,
-    );
+    return Array.isArray(stored) ? stored : this.inMemoryLogs;
+  }
+
+  private getLogsFromStorage(): SecurityAuditLog[] {
+    const logs = this.bounded(this.readLogsFromStorage());
     this.inMemoryLogs = logs;
     // This also repairs an old unbounded buffer on first read. A full or
     // unavailable store is deliberately silent: failing to prune diagnostics
@@ -239,7 +242,9 @@ class AuditService {
       timestamp,
     };
 
-    const logs = this.getLogsFromStorage();
+    // The subsequent save is the single repair/write boundary for this event.
+    // Public reads still repair legacy oversized buffers immediately.
+    const logs = this.readLogsFromStorage();
     const repeatedIndex = logs.findIndex(
       (log) =>
         log.actorId === newLog.actorId &&

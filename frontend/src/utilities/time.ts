@@ -9,7 +9,7 @@ export const secondsToMilliseconds = (seconds: number): number =>
 export const minutesToMilliseconds = (minutes: number): number =>
   secondsToMilliseconds(minutes * SECONDS_PER_MINUTE);
 
-export const hoursToMilliseconds = (hours: number): number =>
+const hoursToMilliseconds = (hours: number): number =>
   minutesToMilliseconds(hours * MINUTES_PER_HOUR);
 
 export const daysToMilliseconds = (days: number): number =>

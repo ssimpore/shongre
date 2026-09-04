@@ -102,29 +102,3 @@ export function useAuthorization() {
     isVerified: Boolean(currentUser?.isVerified),
   };
 }
-
-export function useCan(
-  permission: Permission,
-  resource?: ResourceOwnershipContext,
-  options?: AuthorizationContextOptions,
-): boolean {
-  const { can } = useAuthorization();
-  return useMemo(
-    () => can(permission, resource, options),
-    [can, permission, resource, options],
-  );
-}
-
-export function useEntitlement(
-  entitlement:
-    | "storefrontCustomization"
-    | "prioritySupport"
-    | "bulkImportExport"
-    | "automaticRelisting",
-): boolean {
-  const { hasEntitlement } = useAuthorization();
-  return useMemo(
-    () => hasEntitlement(entitlement),
-    [hasEntitlement, entitlement],
-  );
-}

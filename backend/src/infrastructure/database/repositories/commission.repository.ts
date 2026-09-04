@@ -27,7 +27,7 @@ export interface CommissionRepository {
   ): Promise<CommissionAnalyticsRow[]>;
 }
 
-export interface CommissionReversalTotals {
+interface CommissionReversalTotals {
   baseMinor: number;
   commissionMinor: number;
   taxMinor: number;

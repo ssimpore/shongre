@@ -7,7 +7,7 @@ import {
   type MoneyDisplayConverter,
 } from "../../utilities/formatters";
 
-export function dictionaryLabel(
+function dictionaryLabel(
   catalog: EmploymentCatalog | null | undefined,
   id: string | undefined,
   fallback = "",
@@ -64,17 +64,4 @@ export function formatEmploymentDate(value: string, locale: string) {
     month: "short",
     year: "numeric",
   }).format(new Date(value));
-}
-
-export function relativeEmploymentDate(value: string, locale: string) {
-  const days = Math.max(
-    0,
-    Math.round((Date.now() - Date.parse(value)) / 86_400_000),
-  );
-  if (days === 0) return "Aujourd’hui";
-  if (days === 1) return "Hier";
-  return new Intl.RelativeTimeFormat(locale, { numeric: "always" }).format(
-    -days,
-    "day",
-  );
 }

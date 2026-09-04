@@ -1,6 +1,6 @@
 import type { TrendingAdminConfig, TrendWeights } from "./trending.types.js";
 
-export const DEFAULT_TREND_WEIGHTS: TrendWeights = {
+const DEFAULT_TREND_WEIGHTS: TrendWeights = {
   searchGrowth: 0.18,
   viewGrowth: 0.12,
   favorites: 0.12,

@@ -13,7 +13,7 @@ export interface StoredSession {
   user: unknown;
 }
 
-export class MobileApiError extends Error {
+class MobileApiError extends Error {
   constructor(
     message: string,
     public readonly status: number,

@@ -1,5 +1,6 @@
 import { expect, test, type BrowserContext } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
+import { waitForStableLayout } from "./overflow";
 import { usePersona } from "./personas";
 
 const PARIS = { latitude: 48.8566, longitude: 2.3522 };
@@ -18,6 +19,7 @@ test.describe("current location picker", () => {
     await page.setViewportSize({ width: 1408, height: 900 });
     await usePersona(page, "individual_buyer");
     await page.goto("/");
+    await waitForStableLayout(page);
 
     await page.locator("#header-desktop-header-location-button").click();
     const dialog = page.getByRole("dialog", { name: "Zone géographique" });
@@ -72,6 +74,7 @@ test.describe("current location picker", () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await usePersona(page, "guest");
     await page.goto("/");
+    await waitForStableLayout(page);
 
     await page.getByRole("button", { name: "Ouvrir le menu" }).click();
     await page.locator("#header-mobile-minimal-location-button").click();
@@ -95,6 +98,7 @@ test.describe("current location picker", () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await usePersona(page, "guest");
     await page.goto("/");
+    await waitForStableLayout(page);
 
     await page.getByRole("button", { name: "Ouvrir le menu" }).click();
     await page.locator("#header-mobile-minimal-location-button").click();
@@ -117,6 +121,7 @@ test.describe("current location picker", () => {
     await page.setViewportSize({ width: 1408, height: 900 });
     await usePersona(page, "guest");
     await page.goto("/recherche?city=Paris&radius=30");
+    await waitForStableLayout(page);
 
     const selector = page.locator("#search-page-page-location-button");
     await expect(selector).toHaveAttribute(

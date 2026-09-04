@@ -43,7 +43,7 @@ export interface IMessagingRealtimeClient {
   ): void;
 }
 
-export class DemoMessagingRealtimeClient implements IMessagingRealtimeClient {
+class DemoMessagingRealtimeClient implements IMessagingRealtimeClient {
   private status: RealtimeConnectionStatus = "connected";
   private statusListeners = new Set<
     (status: RealtimeConnectionStatus) => void

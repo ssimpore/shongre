@@ -161,7 +161,8 @@ test.describe("SEO response and hydration contract", () => {
       "BreadcrumbList",
     ]);
 
-    await page.goto(pathname);
+    await page.goto(pathname, { waitUntil: "domcontentloaded" });
+    await waitForStableLayout(page);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(
       "Maison & Jardin",
     );

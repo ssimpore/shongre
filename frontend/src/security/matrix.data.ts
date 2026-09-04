@@ -2,7 +2,7 @@ import { PlatformRole } from "../types";
 import { ALL_PERMISSIONS, PermissionDefinition } from "./permissions";
 import { ROLE_DEFINITIONS } from "./roles.config";
 
-export interface MatrixRow {
+interface MatrixRow {
   permission: PermissionDefinition;
   roleGrants: Record<PlatformRole, boolean>;
 }

@@ -27,7 +27,7 @@ export interface INotificationRepository {
   deleteNotification(id: string): Promise<void>;
 }
 
-export class MockNotificationRepository implements INotificationRepository {
+class MockNotificationRepository implements INotificationRepository {
   async getNotifications(
     query?: NotificationQuery,
   ): Promise<NotificationPageResult> {

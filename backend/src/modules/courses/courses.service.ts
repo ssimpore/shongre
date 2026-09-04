@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { config } from "../../app/config/index.js";
 import type {
   CourseBooking,
   CourseCatalog,
@@ -41,6 +42,8 @@ import {
   BusinessRulesService,
 } from "../business-rules/business-rules.service.js";
 import { requireMarketCode } from "../../shared/market/market-code.js";
+
+const COURSES_DEMO_TIME = "2026-08-22T10:00:00.000Z";
 
 type TutorProfileInput = Omit<
   TutorProfile,
@@ -123,6 +126,8 @@ export class CoursesService {
     private readonly courseRepo: ICoursesRepository = repositories.courses,
     private readonly commercialRules: BusinessRulesService = businessRulesService,
     private readonly users: IUserRepository = repositories.users,
+    private readonly now: () => Date = () =>
+      config.dataMode === "demo" ? new Date(COURSES_DEMO_TIME) : new Date(),
   ) {}
 
   private async resolveCatalog(
@@ -270,7 +275,7 @@ export class CoursesService {
     const biography = textValue(draft.biography);
     const teachingApproach = textValue(draft.teachingApproach);
     const city = textValue(draft.city);
-    const now = new Date().toISOString();
+    const now = this.now().toISOString();
     const profile = await this.saveOwnTutorProfile(userId, {
       organizationId,
       profileType:
@@ -417,7 +422,7 @@ export class CoursesService {
     userId: string,
     input: TutorProfileInput,
   ): Promise<TutorProfile> {
-    const now = new Date().toISOString();
+    const now = this.now().toISOString();
     const existing = input.id
       ? await this.courseRepo.getTutorProfile(input.id)
       : null;
@@ -470,7 +475,7 @@ export class CoursesService {
         },
       });
     }
-    const now = new Date().toISOString();
+    const now = this.now().toISOString();
     const offer = courseOfferSchema.parse({
       ...input,
       id: input.id || randomUUID(),
@@ -503,7 +508,7 @@ export class CoursesService {
         details: { field: "guardianContact" },
       });
     }
-    const now = new Date();
+    const now = this.now();
     const request = learnerRequestSchema.parse({
       ...input,
       id: randomUUID(),
@@ -697,7 +702,7 @@ export class CoursesService {
         message: "Cette demande a déjà été traitée.",
       });
     }
-    if (new Date(lead.expiresAt).getTime() <= Date.now()) {
+    if (new Date(lead.expiresAt).getTime() <= this.now().getTime()) {
       return this.courseRepo.saveLead({
         ...lead,
         state: "expired",
@@ -720,7 +725,7 @@ export class CoursesService {
             : "declined",
       contactReleaseStatus: decision === "accept" ? "released" : "withheld",
       declineReason: decision === "accept" ? undefined : declineReason,
-      respondedAt: new Date().toISOString(),
+      respondedAt: this.now().toISOString(),
     };
     return this.courseRepo.saveLead(updated);
   }
@@ -867,9 +872,9 @@ export class CoursesService {
         contactReleaseStatus: "withheld",
         creditCost: config.defaultLeadCreditCost,
         expiresAt: new Date(
-          Date.now() + config.leadValidityHours * 3_600_000,
+          this.now().getTime() + config.leadValidityHours * 3_600_000,
         ).toISOString(),
-        createdAt: new Date().toISOString(),
+        createdAt: this.now().toISOString(),
       };
       await this.courseRepo.saveLead(lead);
     }

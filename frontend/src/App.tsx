@@ -4,7 +4,7 @@ import type { MarketContext } from "@shongre/contracts";
 import type { ShongreApplicationId } from "./platform/applications/application-registry";
 import type { PublicRouteData } from "./platform/seo/public-route-data";
 
-export function App({
+function App({
   initialPath = "/",
   routingBasePath = "/",
   marketContext,

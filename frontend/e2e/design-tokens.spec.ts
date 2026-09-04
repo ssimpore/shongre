@@ -1234,7 +1234,7 @@ test.describe("design-token runtime contracts @serial", () => {
         toolbarContentHorizontalCenterDelta: Math.abs(
           toolbarContentRect.left +
             toolbarContentRect.width / 2 -
-            window.innerWidth / 2,
+            (toolbarRect.left + toolbarRect.width / 2),
         ),
         toolbarContentVerticalCenterDelta: Math.abs(
           toolbarContentRect.top +
@@ -1387,7 +1387,9 @@ test.describe("design-token runtime contracts @serial", () => {
         )
         .toBe(56);
 
-      await collapse.click();
+      await collapse.focus();
+      await expect(collapse).toBeFocused();
+      await collapse.press("Enter");
       const expand = page.getByRole("button", {
         name: "Développer la barre d’environnement",
       });
@@ -1440,7 +1442,9 @@ test.describe("design-token runtime contracts @serial", () => {
       }
       await expectNoHorizontalOverflow(page, `collapsed toolbar at ${width}px`);
 
-      await expand.click();
+      await expand.focus();
+      await expect(expand).toBeFocused();
+      await expand.press("Enter");
       await expect(toolbar).toHaveAttribute("data-collapsed", "false");
       await expect(collapse).toHaveAttribute("aria-expanded", "true");
       await expect(collapse).toBeFocused();

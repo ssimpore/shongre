@@ -18,9 +18,7 @@ export type NotificationCategory =
 
 export type NotificationPriority = "low" | "normal" | "high" | "critical";
 
-export type NotificationStatus = "unread" | "read" | "archived";
-
-export type NotificationChannel = "in_app" | "email" | "push";
+type NotificationStatus = "unread" | "read" | "archived";
 
 export type NotificationType =
   // Messaging
@@ -82,7 +80,7 @@ export type NotificationType =
   | "moderation.listing_flagged"
   | "moderation.action_required";
 
-export interface ListingNotificationContext {
+interface ListingNotificationContext {
   type: "listing";
   listingId: string;
   listingTitle?: string;
@@ -91,13 +89,13 @@ export interface ListingNotificationContext {
   currency?: string;
 }
 
-export interface SavedSearchNotificationContext {
+interface SavedSearchNotificationContext {
   type: "saved_search";
   searchTitle?: string;
   queryUrl?: string;
 }
 
-export interface ConversationNotificationContext {
+interface ConversationNotificationContext {
   type: "conversation";
   conversationId: string;
   senderId?: string;
@@ -108,7 +106,7 @@ export interface ConversationNotificationContext {
   previewText?: string;
 }
 
-export interface TransactionNotificationContext {
+interface TransactionNotificationContext {
   type: "transaction";
   transactionId: string;
   orderNumber?: string;
@@ -120,7 +118,7 @@ export interface TransactionNotificationContext {
   flowType?: "direct_purchase" | "reservation";
 }
 
-export interface SubscriptionNotificationContext {
+interface SubscriptionNotificationContext {
   type: "subscription";
   planId: string;
   planName: string;
@@ -128,13 +126,13 @@ export interface SubscriptionNotificationContext {
   renewalDate?: string;
 }
 
-export interface AccountNotificationContext {
+interface AccountNotificationContext {
   type: "account";
   userId: string;
   reason?: string;
 }
 
-export interface ModerationNotificationContext {
+interface ModerationNotificationContext {
   type: "moderation";
   reportId?: string;
   targetType?: string;
@@ -175,7 +173,7 @@ export interface Notification {
   expiresAt?: string;
 }
 
-export interface CategoryChannelPreference {
+interface CategoryChannelPreference {
   inApp: boolean;
   email: boolean;
   push: boolean;

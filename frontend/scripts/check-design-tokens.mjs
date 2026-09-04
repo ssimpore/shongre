@@ -621,6 +621,12 @@ for (const file of ALL_FILES) {
 const AA_NORMAL_TEXT = 4.5;
 const TEXT_TOKENS_ON_LIGHT = ["text-main", "text-secondary", "text-muted"];
 const LIGHT_SURFACES = ["bg-surface", "bg-base", "bg-subtle", "bg-muted"];
+const SEMANTIC_TEXT_SURFACE_PAIRS = [
+  ...TEXT_TOKENS_ON_LIGHT.flatMap((textToken) =>
+    LIGHT_SURFACES.map((surfaceToken) => [textToken, surfaceToken]),
+  ),
+  ["primary", "primary-light"],
+];
 
 function readToken(name) {
   const match = themeCss.match(
@@ -653,16 +659,14 @@ function contrast(a, b) {
 }
 
 const contrastFailures = [];
-for (const textToken of TEXT_TOKENS_ON_LIGHT) {
+for (const [textToken, surfaceToken] of SEMANTIC_TEXT_SURFACE_PAIRS) {
   const fg = readToken(textToken);
   if (!fg) continue;
-  for (const surfaceToken of LIGHT_SURFACES) {
-    const bg = readToken(surfaceToken);
-    if (!bg) continue;
-    const ratio = contrast(fg, bg);
-    if (ratio < AA_NORMAL_TEXT) {
-      contrastFailures.push({ textToken, surfaceToken, fg, bg, ratio });
-    }
+  const bg = readToken(surfaceToken);
+  if (!bg) continue;
+  const ratio = contrast(fg, bg);
+  if (ratio < AA_NORMAL_TEXT) {
+    contrastFailures.push({ textToken, surfaceToken, fg, bg, ratio });
   }
 }
 

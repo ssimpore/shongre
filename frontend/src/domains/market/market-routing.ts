@@ -24,7 +24,7 @@ export function currentBrowserMarketCode(): string | null {
 
 export { sanitizeMarketSwitchQuery } from "@shongre/contracts";
 
-export function isDevelopmentMarketHost(hostname: string): boolean {
+function isDevelopmentMarketHost(hostname: string): boolean {
   const normalized = hostname.toLowerCase();
   return (
     normalized === "localhost" ||

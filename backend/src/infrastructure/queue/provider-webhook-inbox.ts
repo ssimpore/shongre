@@ -2,7 +2,7 @@ import { createHash, randomUUID } from "node:crypto";
 import { getSupabaseAdminClient } from "../supabase/supabase-client.js";
 import { databaseFailure } from "../database/repositories/repository-error.js";
 
-export interface ProviderWebhookReceipt {
+interface ProviderWebhookReceipt {
   provider: string;
   providerEventId: string;
   eventType: string;
@@ -11,7 +11,7 @@ export interface ProviderWebhookReceipt {
   attemptCount: number;
 }
 
-export class ProviderWebhookInbox {
+class ProviderWebhookInbox {
   readonly ownerId = `provider-webhook-${process.pid}-${randomUUID()}`;
 
   async enqueue(input: {

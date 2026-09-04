@@ -51,7 +51,7 @@ const FR_PRO_COMMERCIALS = getDemoTransactionCommercials("FR", "pro");
  * Initial policy for the configured default market. France owns these values;
  * they are not an implicit fallback for an unknown market code.
  */
-export const DEFAULT_MARKET_POLICY_CONFIG: MarketConfiguration = {
+const DEFAULT_MARKET_POLICY_CONFIG: MarketConfiguration = {
   general: {
     name: "France Métropolitaine",
     tagline: "La référence des annonces sécurisées et de la seconde main",

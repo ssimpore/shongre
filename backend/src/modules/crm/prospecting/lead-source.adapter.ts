@@ -4,7 +4,6 @@ import type {
   ProspectDiscoveryFilters,
   ProspectingContext,
 } from "@shongre/contracts/prospecting";
-import { AppError } from "../../../shared/errors/app-error.js";
 
 export interface LeadSourceSearchContext {
   tenantId: string;
@@ -21,23 +20,6 @@ export interface LeadSourceAdapter {
     context: LeadSourceSearchContext,
     filters: ProspectDiscoveryFilters,
   ): Promise<ProspectCandidate[]>;
-}
-
-export class InactiveLeadSourceAdapter implements LeadSourceAdapter {
-  constructor(readonly definition: LeadSourceDefinition) {}
-
-  async search(): Promise<ProspectCandidate[]> {
-    throw new AppError({
-      code: "FORBIDDEN",
-      statusCode: 503,
-      message:
-        "Cette source nécessite encore une validation juridique, commerciale et opérationnelle.",
-      details: {
-        sourceId: this.definition.id,
-        reason: "source_inactive_review_required",
-      },
-    });
-  }
 }
 
 export class LeadSourceRegistry {

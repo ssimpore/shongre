@@ -164,5 +164,3 @@ export const dataModeService = new DataModeService();
 
 export const isDemoMode = (): boolean =>
   dataModeService.getActiveMode() === "demo";
-export const isApiMode = (): boolean =>
-  dataModeService.getActiveMode() === "api";

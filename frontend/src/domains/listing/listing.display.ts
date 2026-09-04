@@ -105,7 +105,7 @@ const LEGACY_CARD_ATTRIBUTE_PRIORITIES: Record<string, string[]> = {
   autres: ["brand", "model", "material"],
 };
 
-export interface FormattedCharacteristicItem {
+interface FormattedCharacteristicItem {
   code: string;
   label: string;
   value: string;
@@ -120,14 +120,14 @@ export interface GroupedCharacteristics {
   items: FormattedCharacteristicItem[];
 }
 
-export interface ListingSeoMetadata {
+interface ListingSeoMetadata {
   title: string;
   description: string;
   canonicalUrl: string;
   jsonLd: Record<string, any>;
 }
 
-export class ListingDisplayResolver {
+class ListingDisplayResolver {
   /**
    * Resolves the 3-5 most critical decision-making summary attributes
    * displayed prominently directly below the title and price.

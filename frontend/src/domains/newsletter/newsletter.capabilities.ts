@@ -11,7 +11,7 @@ import {
 } from "./newsletter.topics";
 import { authorizationService } from "../../security/authorization.service";
 
-export interface NewsletterCapabilities {
+interface NewsletterCapabilities {
   canSubscribe: boolean;
   canManagePreferences: boolean;
   canAdminCampaigns: boolean;
@@ -19,7 +19,7 @@ export interface NewsletterCapabilities {
   availableTopics: NewsletterTopicDefinition[];
 }
 
-export class NewsletterCapabilitiesService {
+class NewsletterCapabilitiesService {
   resolve(params: {
     viewer: UserProfile | null;
     marketCode?: string;

@@ -8,7 +8,7 @@ import { getTaxonomyLabel } from "./taxonomy.labels";
 import { TaxonomyNode } from "./taxonomy.types";
 import { getTaxonomyV4PublicBundle } from "@shongre/contracts/taxonomy-v4-public";
 
-export const LEGACY_CATEGORY_SLUG_MAP: Record<string, string> = {
+const LEGACY_CATEGORY_SLUG_MAP: Record<string, string> = {
   ...Object.fromEntries(
     getTaxonomyV4PublicBundle().aliases.map((alias) => [
       alias.alias,

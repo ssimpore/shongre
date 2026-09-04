@@ -259,7 +259,7 @@ export class DemoListingsService implements ListingsService {
   }
 }
 
-export class HttpListingsService implements ListingsService {
+class HttpListingsService implements ListingsService {
   async list(
     marketCode: string,
     query = "",

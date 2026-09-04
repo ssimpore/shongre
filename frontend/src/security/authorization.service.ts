@@ -32,13 +32,13 @@ export interface AuthorizationContextOptions {
   skipOwnershipCheck?: boolean;
 }
 
-export type CommercialEntitlement =
+type CommercialEntitlement =
   | "storefrontCustomization"
   | "prioritySupport"
   | "bulkImportExport"
   | "automaticRelisting";
 
-export type FeatureAvailabilityState =
+type FeatureAvailabilityState =
   | "available"
   | "unavailable"
   | "restricted"
@@ -56,12 +56,12 @@ export interface FeatureRequirement {
   country?: string;
 }
 
-export interface FeatureAvailability {
+interface FeatureAvailability {
   state: FeatureAvailabilityState;
   capability: Permission;
 }
 
-export class AuthorizationError extends Error {
+class AuthorizationError extends Error {
   public readonly code: string;
   public readonly statusCode: number;
 
@@ -77,7 +77,7 @@ export class AuthorizationError extends Error {
   }
 }
 
-export class UnauthorizedError extends AuthorizationError {
+class UnauthorizedError extends AuthorizationError {
   constructor(
     message: string = "Connexion requise pour effectuer cette action.",
   ) {
@@ -93,7 +93,7 @@ export class ForbiddenError extends AuthorizationError {
   }
 }
 
-export class AccountSuspendedError extends AuthorizationError {
+class AccountSuspendedError extends AuthorizationError {
   constructor(
     message: string = "Votre compte est actuellement suspendu par nos équipes de modération.",
   ) {
@@ -101,7 +101,7 @@ export class AccountSuspendedError extends AuthorizationError {
   }
 }
 
-export class MarketScopeForbiddenError extends AuthorizationError {
+class MarketScopeForbiddenError extends AuthorizationError {
   constructor(country: string) {
     super(
       `Accès refusé : votre compte n'est pas habilité à administrer le marché ${country}.`,
@@ -111,7 +111,7 @@ export class MarketScopeForbiddenError extends AuthorizationError {
   }
 }
 
-export class ResourceOwnershipError extends AuthorizationError {
+class ResourceOwnershipError extends AuthorizationError {
   constructor(
     message: string = "Vous n'êtes pas propriétaire de cette ressource.",
   ) {
@@ -156,7 +156,7 @@ function resourceBelongsToUser(
   return true;
 }
 
-export class AuthorizationService {
+class AuthorizationService {
   getEffectivePermissions(user: UserProfile | null): Permission[] {
     return resolveEffectiveCapabilities(user);
   }

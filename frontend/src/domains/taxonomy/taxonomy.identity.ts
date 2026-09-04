@@ -5,7 +5,7 @@ import {
   type CanonicalTaxonomyIdentity,
 } from "@shongre/contracts/taxonomy-catalog";
 
-export function normalizeTaxonomyIdentityLookup(value: string): string {
+function normalizeTaxonomyIdentityLookup(value: string): string {
   let decoded = value;
   try {
     decoded = decodeURIComponent(value);

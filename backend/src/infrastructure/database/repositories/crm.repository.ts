@@ -39,7 +39,7 @@ export interface CrmListOptions {
   query?: string;
 }
 
-export interface CrmPage<T> {
+interface CrmPage<T> {
   items: T[];
   nextCursor?: string;
 }

@@ -27,7 +27,7 @@ export const TRENDING_SCORE_POLICY = {
   },
 } as const;
 
-export type TrendingTopicType =
+type TrendingTopicType =
   | "category"
   | "subcategory"
   | "collection"
@@ -114,7 +114,7 @@ export interface TrendingAdminConfig {
   updatedAt: string;
 }
 
-export interface TrendingPersonalizationContext {
+interface TrendingPersonalizationContext {
   favoriteListingIds?: string[];
   recentCategorySlugs?: string[];
   recentSearchTerms?: string[];

@@ -7,7 +7,7 @@ import { useTranslation } from "../../../../../i18n/I18nProvider";
 
 // The picker previews the same registry used by every category surface. This
 // prevents admin-authored choices from diverging from storefront rendering.
-export const AVAILABLE_ICONS = ICON_NAME_MAP;
+const AVAILABLE_ICONS = ICON_NAME_MAP;
 
 export interface IconPickerModalProps {
   isOpen: boolean;

@@ -57,7 +57,7 @@ export interface IUserRepository {
   }): Promise<void>;
 }
 
-export class MockUserRepository implements IUserRepository {
+class MockUserRepository implements IUserRepository {
   async getCurrentUser(): Promise<UserProfile | null> {
     return storageService.getCurrentUser();
   }

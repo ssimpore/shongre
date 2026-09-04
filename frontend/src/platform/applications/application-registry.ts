@@ -4,9 +4,9 @@ import {
   type ShongreApplicationId,
 } from "@shongre/contracts/applications";
 
-export { SHONGRE_APPLICATION_IDS, type ShongreApplicationId };
+export { type ShongreApplicationId };
 
-export interface ShongreApplicationRuntime {
+interface ShongreApplicationRuntime {
   applicationId: ShongreApplicationId;
   origin: string;
   fallbackPath: string;

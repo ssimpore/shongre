@@ -95,6 +95,35 @@ test.describe("accessible names at phone width", () => {
       await waitForStableLayout(page);
 
       const unnamed = await page.evaluate(() => {
+        const visibleTextOf = (root: Element): string => {
+          const parts: string[] = [];
+          const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+
+          for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+            const value = node.textContent?.trim();
+            if (!value) continue;
+
+            let element = node.parentElement;
+            let hidden = false;
+            while (element && root.contains(element)) {
+              const style = getComputedStyle(element);
+              if (
+                style.display === "none" ||
+                style.visibility === "hidden" ||
+                element.getAttribute("aria-hidden") === "true"
+              ) {
+                hidden = true;
+                break;
+              }
+              if (element === root) break;
+              element = element.parentElement;
+            }
+            if (!hidden) parts.push(value);
+          }
+
+          return parts.join(" ").trim();
+        };
+
         const nameOf = (el: Element): string => {
           const aria = el.getAttribute("aria-label");
           if (aria?.trim()) return aria.trim();
@@ -118,9 +147,10 @@ test.describe("accessible names at phone width", () => {
             if (text) return text;
           }
 
-          // `innerText` is what a sighted user reads: it excludes display:none.
-          // `sr-only` text stays visible to it, which is the distinction we want.
-          const own = (el as HTMLElement).innerText?.trim();
+          // WebKit reports an empty `innerText` for offscreen content deferred
+          // with `content-visibility`. Walk rendered text instead so those
+          // controls remain distinguishable from labels hidden below `sm`.
+          const own = visibleTextOf(el);
           if (own) return own;
 
           const title = el.getAttribute("title")?.trim();
@@ -133,6 +163,11 @@ test.describe("accessible names at phone width", () => {
         document
           .querySelectorAll('a[href], button, [role="button"]')
           .forEach((el) => {
+            // Inactive carousel slides remain mounted for smooth swiping but
+            // are deliberately removed from the accessibility and interaction
+            // trees. WebKit also suppresses their `innerText`, so auditing
+            // those inert descendants would report controls users cannot reach.
+            if (el.closest('[aria-hidden="true"], [inert]')) return;
             const rect = el.getBoundingClientRect();
             if (rect.width === 0 && rect.height === 0) return;
             if (getComputedStyle(el).visibility === "hidden") return;

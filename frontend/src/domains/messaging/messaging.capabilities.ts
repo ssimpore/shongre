@@ -6,7 +6,7 @@
 import { UserProfile } from "../../types";
 import { ConversationCapabilities } from "./messaging.types";
 
-export interface ResolveCapabilitiesParams {
+interface ResolveCapabilitiesParams {
   viewer: UserProfile | null;
   counterpartId: string;
   isBlockedByViewer?: boolean;
@@ -16,7 +16,7 @@ export interface ResolveCapabilitiesParams {
   isListingAvailable?: boolean;
 }
 
-export class MessagingCapabilitiesService {
+class MessagingCapabilitiesService {
   /**
    * Resolves viewer capabilities within a specific conversation context.
    */

@@ -217,7 +217,10 @@ export function SolutionDetailPage() {
     solution.markets,
     (code) => availableMarkets.find((market) => market.code === code)?.name,
   );
-  const languageNames = solutionLanguageNames(solution.languages, currentLocale);
+  const languageNames = solutionLanguageNames(
+    solution.languages,
+    currentLocale,
+  );
 
   const launchAction = (label: string) =>
     launch.allowed && launch.href ? (
@@ -225,7 +228,8 @@ export function SolutionDetailPage() {
         href={launch.href}
         className="inline-flex min-h-control-touch items-center justify-center gap-2 rounded-control bg-primary px-5 text-sm font-bold text-white shadow-sm hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
       >
-        {label} <ArrowRight className="h-icon-sm w-icon-sm" aria-hidden="true" />
+        {label}{" "}
+        <ArrowRight className="h-icon-sm w-icon-sm" aria-hidden="true" />
       </a>
     ) : (
       <span
@@ -273,10 +277,7 @@ export function SolutionDetailPage() {
                 {solution.name}
               </h1>
               <div className="mt-3">
-                <SolutionStatusBadge
-                  lifecycle={solution.lifecycle}
-                  size="md"
-                />
+                <SolutionStatusBadge lifecycle={solution.lifecycle} size="md" />
               </div>
               <p className="mt-5 max-w-xl text-base leading-relaxed text-text-secondary">
                 {solution.description}
@@ -342,7 +343,10 @@ export function SolutionDetailPage() {
               status: lifecycleLabel,
             })}
           >
-            <Info className="h-6 w-6 shrink-0 text-primary" aria-hidden="true" />
+            <Info
+              className="h-6 w-6 shrink-0 text-primary"
+              aria-hidden="true"
+            />
             <div>
               <h2 className="text-sm font-bold text-primary">
                 {solution.lifecycle === "BETA"
@@ -359,7 +363,10 @@ export function SolutionDetailPage() {
         {latestNote ? (
           <div className="flex flex-col gap-3 py-6 text-xs text-text-secondary sm:flex-row sm:items-center sm:justify-between">
             <span className="inline-flex items-center gap-2">
-              <CalendarDays className="h-icon-sm w-icon-sm" aria-hidden="true" />{" "}
+              <CalendarDays
+                className="h-icon-sm w-icon-sm"
+                aria-hidden="true"
+              />{" "}
               {t("solutions.detail.latestUpdate", {
                 date: new Intl.DateTimeFormat(currentLocale, {
                   dateStyle: "long",
@@ -374,7 +381,10 @@ export function SolutionDetailPage() {
                 className="inline-flex min-h-8 items-center gap-2 rounded-control font-bold text-primary hover:text-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               >
                 {t("solutions.detail.releaseNotes")}{" "}
-                <ExternalLink className="h-icon-sm w-icon-sm" aria-hidden="true" />
+                <ExternalLink
+                  className="h-icon-sm w-icon-sm"
+                  aria-hidden="true"
+                />
               </a>
             ) : (
               // Not a link, so it no longer dresses as one. This branch kept
@@ -432,10 +442,7 @@ export function SolutionDetailPage() {
                       <div className="min-w-0">
                         <p className="truncate text-sm font-bold text-text-main">
                           <a
-                            href={applicationHref(
-                              "solutions",
-                              `/${item.slug}`,
-                            )}
+                            href={applicationHref("solutions", `/${item.slug}`)}
                             className="rounded-control stretched-link group-hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                           >
                             {item.name}

@@ -30,7 +30,7 @@ import { UserProfile } from "../../types";
 /**
  * Market Service - High Level Business Engine for Market Management & Resolution
  */
-export class MarketService {
+class MarketService {
   /**
    * Retrieves all registered markets with persistence from storage
    */

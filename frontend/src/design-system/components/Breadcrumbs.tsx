@@ -3,7 +3,7 @@ import { ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "../utils/variants";
 
-export interface BreadcrumbItem {
+interface BreadcrumbItem {
   label: string;
   href?: string;
 }

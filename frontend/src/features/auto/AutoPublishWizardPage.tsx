@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { IMAGE_SIZES } from "../../design-system/primitives/responsiveImage";
+import { IMAGE_SIZES } from "@shongre/shared";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { useNavigate } from "react-router-dom";
 import {

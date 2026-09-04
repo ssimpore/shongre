@@ -43,7 +43,7 @@ export interface LanguageOption {
  * Full coverage: a language that switches the navigation but leaves the footer
  * in French reads as a bug, not as a partial translation.
  */
-export const LOCALE_READY_THRESHOLD = 1;
+const LOCALE_READY_THRESHOLD = 1;
 
 /**
  * Locales the interface is actually finished in.
@@ -118,7 +118,7 @@ export const SUPPORTED_LANGUAGES: LanguageOption[] = LANGUAGES.map(
  * turned a one-item picker into a scrolling panel. A language appears when it
  * works, and not before — the roadmap does not belong in a control.
  */
-export const AVAILABLE_LANGUAGES = SUPPORTED_LANGUAGES.filter(
+const AVAILABLE_LANGUAGES = SUPPORTED_LANGUAGES.filter(
   (lang) => lang.isAvailable,
 );
 

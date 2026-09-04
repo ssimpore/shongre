@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { waitForStableLayout } from "./overflow";
 import { useEstablishedConsent, usePersona } from "./personas";
 
 test.describe("Staff marketplace navigation", () => {
@@ -16,6 +17,7 @@ test.describe("Staff marketplace navigation", () => {
       .getByRole("link", { name: "Retour à la place de marché" })
       .click();
     await expect(page).toHaveURL((url) => url.pathname === "/");
+    await waitForStableLayout(page);
     await expect(page.getByTestId("staff-marketplace-mode")).toHaveAttribute(
       "data-mode",
       "read-only",
@@ -55,8 +57,12 @@ test.describe("Staff marketplace navigation", () => {
 
     await page.getByRole("link", { name: "Ouvrir l’administration" }).click();
     await expect(page).toHaveURL((url) => url.pathname === "/admin");
+    await waitForStableLayout(page);
     await expect(
-      page.getByText("Hugo Vasseur", { exact: false }),
+      page.getByRole("heading", {
+        level: 1,
+        name: /Bonjour, Hugo Vasseur \(Support Client\)/,
+      }),
     ).toBeVisible();
   });
 
@@ -162,6 +168,7 @@ test.describe("Staff marketplace navigation", () => {
   }) => {
     await usePersona(page, "operations");
     await page.goto("/", { waitUntil: "domcontentloaded" });
+    await waitForStableLayout(page);
 
     await expect(page.getByTestId("staff-marketplace-mode")).toHaveAttribute(
       "data-mode",
@@ -175,6 +182,7 @@ test.describe("Staff marketplace navigation", () => {
     await expect(page.locator("[data-header-publish-cta]")).toBeVisible();
     await page.locator("[data-header-publish-cta] a").click();
     await expect(page).toHaveURL((url) => url.pathname === "/deposer");
+    await waitForStableLayout(page);
     await expect(page.getByTestId("staff-marketplace-mode")).toHaveAttribute(
       "data-mode",
       "demo",

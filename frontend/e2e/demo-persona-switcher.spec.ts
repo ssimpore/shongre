@@ -244,9 +244,12 @@ test("switches all 19 demo personas as real account sessions @serial", async ({
     PERSONA_STORAGE.superAdmin,
   ]) {
     await selectPersona(page, persona);
-    await page
-      .getByRole("link", { name: "Retour à la place de marché" })
-      .click();
+    const marketplaceLink = page.getByRole("link", {
+      name: "Retour à la place de marché",
+    });
+    await marketplaceLink.focus();
+    await expect(marketplaceLink).toBeFocused();
+    await marketplaceLink.press("Enter");
     await expect(page).toHaveURL((url) => url.pathname === "/");
     await expect(
       page.locator('button[aria-label^="Menu du compte"]'),

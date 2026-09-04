@@ -22,7 +22,7 @@ export interface AdminStatsSummary {
   flaggedReports: number;
 }
 
-export interface AdminReportSummary {
+interface AdminReportSummary {
   id: string;
   listingId: string;
   reason: string;

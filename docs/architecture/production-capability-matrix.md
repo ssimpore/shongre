@@ -65,7 +65,7 @@ evidence.
 
 Current generated repository inventory: 496 OpenAPI operations across 438
 paths, including 491 runtime routes, and 95 ordered migrations through
-`00095_watch_subscriptions.sql`. There are 348 non-E2E test source files.
+`00095_watch_subscriptions.sql`. There are 350 non-E2E test source files.
 <!-- capability-inventory:end -->
 
 Statuses in this ledger are intentionally stricter than feature-development

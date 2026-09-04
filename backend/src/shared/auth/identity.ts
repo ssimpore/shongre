@@ -18,7 +18,7 @@ import { AppError } from "../errors/app-error.js";
 
 export type AuthProvider = "password" | "google" | "apple" | "facebook";
 
-export const SOCIAL_PROVIDERS: readonly AuthProvider[] = [
+const SOCIAL_PROVIDERS: readonly AuthProvider[] = [
   "google",
   "apple",
   "facebook",
@@ -94,7 +94,7 @@ export type IdentityResolution =
   /** The matched account cannot sign in at all. */
   | { outcome: "blocked"; userId: string; status: AccountSnapshot["status"] };
 
-export type LinkChallengeReason =
+type LinkChallengeReason =
   | "verified_email_matches_existing_account"
   | "account_has_password_login"
   | "account_has_other_providers";
@@ -261,7 +261,7 @@ export type LinkDecision =
   | { decision: "already_linked_to_caller" }
   | { decision: "rejected"; reason: LinkRejectionReason };
 
-export type LinkRejectionReason =
+type LinkRejectionReason =
   | "identity_belongs_to_another_account"
   | "provider_already_linked"
   | "recent_authentication_required";
@@ -310,7 +310,7 @@ export type UnlinkDecision =
   | { decision: "unlink" }
   | { decision: "rejected"; reason: UnlinkRejectionReason };
 
-export type UnlinkRejectionReason =
+type UnlinkRejectionReason =
   | "not_linked"
   | "would_remove_last_login_method"
   | "recent_authentication_required";

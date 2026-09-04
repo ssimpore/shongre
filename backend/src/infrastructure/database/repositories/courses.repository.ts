@@ -90,7 +90,7 @@ const DEFAULT_ENTITLEMENTS = {
   centralLeadInbox: false,
 };
 
-export const DEFAULT_COURSE_PLANS: CoursePlan[] = [
+const DEFAULT_COURSE_PLANS: CoursePlan[] = [
   {
     id: "tutor_free",
     marketCode: "FR",
@@ -321,7 +321,7 @@ const makeProfile = (
   ...input,
 });
 
-export const DEMO_TUTOR_PROFILES: TutorProfile[] = [
+const DEMO_TUTOR_PROFILES: TutorProfile[] = [
   makeProfile({
     id: "tutor_thomas",
     userId: "user_tutor_thomas",
@@ -516,9 +516,9 @@ const makeOffer = (tutor: TutorProfile, index: number): CourseOffer => ({
   publishedAt: "2026-05-12T08:00:00.000Z",
 });
 
-export const DEMO_COURSE_OFFERS = DEMO_TUTOR_PROFILES.map(makeOffer);
+const DEMO_COURSE_OFFERS = DEMO_TUTOR_PROFILES.map(makeOffer);
 
-export const DEMO_LEARNER_REQUESTS: LearnerRequest[] = [
+const DEMO_LEARNER_REQUESTS: LearnerRequest[] = [
   {
     id: "learner_request_julie",
     requesterUserId: "learner_julie",
@@ -575,7 +575,7 @@ export const DEMO_LEARNER_REQUESTS: LearnerRequest[] = [
   },
 ];
 
-export const DEMO_COURSE_LEADS: CourseLead[] = DEMO_LEARNER_REQUESTS.map(
+const DEMO_COURSE_LEADS: CourseLead[] = DEMO_LEARNER_REQUESTS.map(
   (request, index) => ({
     id: `lead_${request.id}`,
     learnerRequestId: request.id,
@@ -596,7 +596,7 @@ export const DEMO_COURSE_LEADS: CourseLead[] = DEMO_LEARNER_REQUESTS.map(
   }),
 );
 
-export const DEMO_COURSE_ORGANIZATIONS: CourseOrganization[] = [
+const DEMO_COURSE_ORGANIZATIONS: CourseOrganization[] = [
   {
     id: "org_college_lumiere",
     marketCode: "FR",
@@ -650,7 +650,7 @@ const DEMO_COURSE_ORGANIZATION_MEMBERS: CourseOrganizationMember[] = [
   },
 ];
 
-export const DEFAULT_COURSE_CATALOG: CourseCatalog = {
+const DEFAULT_COURSE_CATALOG: CourseCatalog = {
   config: DEFAULT_COURSE_MARKET_CONFIG,
   subjects: SUBJECTS,
   levels: LEVELS,

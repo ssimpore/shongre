@@ -8,12 +8,12 @@ import type {
 
 export type ListingOnboardingSellerType = "individual" | "professional";
 
-export interface ListingOnboardingIntentOption {
+interface ListingOnboardingIntentOption {
   intent: TaxonomyV4ListingIntent;
   labels: TaxonomyV4ListingType["intentLabel"];
 }
 
-export interface ListingOnboardingCategoryLevel {
+interface ListingOnboardingCategoryLevel {
   depth: number;
   parentId?: string;
   items: TaxonomyV4Node[];

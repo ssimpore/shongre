@@ -24,7 +24,7 @@ export interface INotificationRealtimeClient {
   ): void;
 }
 
-export class DemoNotificationRealtimeClient implements INotificationRealtimeClient {
+class DemoNotificationRealtimeClient implements INotificationRealtimeClient {
   private status: "connecting" | "connected" | "reconnecting" | "offline" =
     "connected";
   private userListeners = new Map<string, Set<NotificationRealtimeHandler>>();

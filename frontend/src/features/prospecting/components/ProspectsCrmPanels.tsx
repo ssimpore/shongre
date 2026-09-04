@@ -157,7 +157,7 @@ function OpportunityCard({
   );
 }
 
-export function PipelineBoard({
+function PipelineBoard({
   pipeline,
   opportunities,
   locale,
@@ -325,7 +325,7 @@ interface TaskQueueProps {
   limit?: number;
 }
 
-export function TaskQueue({
+function TaskQueue({
   tasks,
   accounts,
   opportunities,

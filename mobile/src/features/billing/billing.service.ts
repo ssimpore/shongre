@@ -167,7 +167,7 @@ export class DemoMobileBillingService implements MobileBillingService {
   }
 }
 
-export class HttpMobileBillingService implements MobileBillingService {
+class HttpMobileBillingService implements MobileBillingService {
   getCatalog(marketCode: string) {
     return apiRequest<MonetizationCatalog>(
       `/business-rules/catalog?marketCode=${encodeURIComponent(marketCode)}`,

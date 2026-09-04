@@ -26,7 +26,8 @@ require_process() {
 
 require_http() {
   local label="$1" url="$2"
-  if curl --silent --show-error --fail --max-time 5 "$url" >/dev/null 2>&1; then
+  shift 2
+  if curl --silent --show-error --fail --max-time 5 "$@" "$url" >/dev/null 2>&1; then
     shongre_pass "$label $url"
   else
     shongre_fail "$label is not healthy at $url"
@@ -91,7 +92,11 @@ case "$mode" in
     require_backend
     require_worker
     require_frontend
-    require_http "Anonymous listings" "http://${BACKEND_HOST}:${BACKEND_PORT}${API_PREFIX}/listings"
+    require_http \
+      "Anonymous listings" \
+      "http://${BACKEND_HOST}:${BACKEND_PORT}${API_PREFIX}/listings" \
+      --header "X-Shongre-Market: FR" \
+      --referer "${PUBLIC_FR_URL}/"
     require_infrastructure_when_configured
     ;;
   *)

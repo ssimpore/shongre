@@ -90,7 +90,7 @@ export class DemoWatchSubscriptionsService implements WatchSubscriptionsService 
   }
 }
 
-export class HttpWatchSubscriptionsService implements WatchSubscriptionsService {
+class HttpWatchSubscriptionsService implements WatchSubscriptionsService {
   async list(
     _userId: string,
     marketCode: string,

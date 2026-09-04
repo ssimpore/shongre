@@ -12,7 +12,7 @@ const retryAt = (attemptCount: number) =>
     Date.now() + Math.min(6 * 60 * 60 * 1_000, 30_000 * 2 ** attemptCount),
   ).toISOString();
 
-export class WatchSubscriptionsWorker {
+class WatchSubscriptionsWorker {
   private readonly workerId: string;
 
   constructor(

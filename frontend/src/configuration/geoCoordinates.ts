@@ -48,7 +48,7 @@ export const FRENCH_MAJOR_CITIES: Record<string, CityCoordinates> = {
   larochelle: { lat: 46.1603, lng: -1.1511, name: "La Rochelle", zoom: 12 },
 };
 
-export const FRANCE_CENTER = {
+const FRANCE_CENTER = {
   lat: 46.603354,
   lng: 1.888334,
   zoom: 6,

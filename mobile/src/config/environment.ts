@@ -3,7 +3,7 @@ import {
   type CountryConfig,
 } from "@shongre/contracts";
 
-export type MobileDataMode = "demo" | "api";
+type MobileDataMode = "demo" | "api";
 
 function required(name: string, value: string | undefined): string {
   if (!value) throw new Error(`[Mobile Config] ${name} is required.`);

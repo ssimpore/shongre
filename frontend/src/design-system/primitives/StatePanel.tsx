@@ -1,11 +1,9 @@
 import {
   StatePanel as SharedStatePanel,
   type StatePanelProps as SharedStatePanelProps,
-  type StatePanelVariant,
 } from "@shongre/ui/web";
 import { useTranslation } from "../../i18n/I18nProvider";
 
-export type { StatePanelVariant };
 export type StatePanelProps = Omit<
   SharedStatePanelProps,
   "technicalDetailLabel"

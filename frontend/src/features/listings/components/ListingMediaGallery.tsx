@@ -1,9 +1,6 @@
 import React, { useState, useCallback } from "react";
+import { buildSrcSet, IMAGE_SIZES } from "@shongre/shared";
 import { Image } from "../../../design-system/primitives/Image";
-import {
-  IMAGE_SIZES,
-  buildSrcSet,
-} from "../../../design-system/primitives/responsiveImage";
 import {
   Camera,
   ChevronLeft,

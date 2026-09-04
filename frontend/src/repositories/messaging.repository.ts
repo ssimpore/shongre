@@ -3,7 +3,7 @@ import { storageService } from "../services/storage.service";
 import { OFFER_INPUT_CONSTRAINTS } from "../domains/messaging/messaging.types";
 import { deterministicRuntimeId } from "../utilities/deterministic-id";
 
-export interface CreateOrGetConversationParams {
+interface CreateOrGetConversationParams {
   listingId: string;
   buyerId: string;
   sellerId: string;
@@ -12,7 +12,7 @@ export interface CreateOrGetConversationParams {
   initialMessage?: string;
 }
 
-export interface SendOfferParams {
+interface SendOfferParams {
   conversationId: string;
   senderId: string;
   senderName: string;
@@ -80,7 +80,7 @@ export interface IMessagingRepository {
   markAsRead(conversationId: string, userId?: string): Promise<void>;
 }
 
-export class MockMessagingRepository implements IMessagingRepository {
+class MockMessagingRepository implements IMessagingRepository {
   async getConversations(userId: string): Promise<Conversation[]> {
     const list = storageService.getConversations();
     const result = list.filter(

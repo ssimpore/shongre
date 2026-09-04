@@ -22,7 +22,7 @@ test.describe("Shongre Immo", () => {
   test("search is URL-driven, privacy-safe, and creates an existing saved-search alert", async ({
     page,
   }) => {
-    await usePersona(page, "guest");
+    await usePersona(page, "individual_buyer");
     await page.goto("/immo", { waitUntil: "domcontentloaded" });
     await waitForStableLayout(page);
     await expect(
@@ -48,10 +48,13 @@ test.describe("Shongre Immo", () => {
     await expect(page).toHaveURL(/city=%C3%89cully/);
     await expect(page.getByRole("article")).toHaveCount(1);
     await page.getByRole("button", { name: "Créer une alerte" }).click();
-    const stored = await page.evaluate(() =>
-      localStorage.getItem("shongre_saved_searches_v1"),
-    );
-    expect(stored).toContain("real_estate");
+    await expect
+      .poll(() =>
+        page.evaluate(() =>
+          localStorage.getItem("shongre_saved_searches_v2"),
+        ),
+      )
+      .toContain("real_estate");
     expect(await page.locator("body").innerText()).not.toContain(
       "Adresse privée",
     );

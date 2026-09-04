@@ -39,7 +39,7 @@ const clone = <T>(value: T): T => structuredClone(value);
 const hash = (value: string) =>
   createHash("sha256").update(value.trim().toLowerCase()).digest("hex");
 
-export type RealEstateAnalyticsEventName =
+type RealEstateAnalyticsEventName =
   | "listing_created"
   | "publication_step_completed"
   | "publication_completed"
@@ -136,7 +136,7 @@ const makeOffer = (
   sortOrder,
 });
 
-export const DEFAULT_REAL_ESTATE_CATALOG: RealEstateCatalog = {
+const DEFAULT_REAL_ESTATE_CATALOG: RealEstateCatalog = {
   activation: {
     marketCode: "FR",
     verticalType: "real_estate",

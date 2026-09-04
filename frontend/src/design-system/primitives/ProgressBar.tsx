@@ -1,6 +1,6 @@
 import React from "react";
 
-export const PROGRESS_BAR_SCALE = {
+const PROGRESS_BAR_SCALE = {
   min: 0,
   max: 100,
 } as const;

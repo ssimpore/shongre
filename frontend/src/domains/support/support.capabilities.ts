@@ -9,7 +9,7 @@ import {
   SupportCategoryDefinition,
 } from "./support.categories";
 
-export interface SupportCapabilities {
+interface SupportCapabilities {
   canSubmit: boolean;
   canViewHistory: boolean;
   isPro: boolean;
@@ -17,7 +17,7 @@ export interface SupportCapabilities {
   availableCategories: SupportCategoryDefinition[];
 }
 
-export class SupportCapabilitiesService {
+class SupportCapabilitiesService {
   resolve(params: {
     viewer: UserProfile | null;
     marketCode?: string;

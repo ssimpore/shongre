@@ -8,7 +8,6 @@ export type {
   SolutionIconId,
   SolutionLifecycle,
   SolutionLifecycleHistoryEntry,
-  SolutionReleaseNote,
   UpdateSolutionInput,
 } from "@shongre/contracts/solutions";
 
@@ -23,7 +22,7 @@ export interface SolutionListOptions {
   language?: string;
 }
 
-export type SolutionLaunchReason =
+type SolutionLaunchReason =
   | "READY"
   | "AUTHENTICATION_REQUIRED"
   | "MARKET_UNAVAILABLE"

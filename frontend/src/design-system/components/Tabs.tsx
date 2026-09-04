@@ -1,7 +1,7 @@
 import React from "react";
 import { cn } from "../utils/variants";
 
-export interface TabItem {
+interface TabItem {
   id: string;
   label: React.ReactNode;
   count?: number;
@@ -18,9 +18,8 @@ export interface TabsProps {
   className?: string;
 }
 
-export const tabId = (idPrefix: string, id: string) => `${idPrefix}-tab-${id}`;
-export const tabPanelId = (idPrefix: string, id: string) =>
-  `${idPrefix}-panel-${id}`;
+const tabId = (idPrefix: string, id: string) => `${idPrefix}-tab-${id}`;
+const tabPanelId = (idPrefix: string, id: string) => `${idPrefix}-panel-${id}`;
 
 /** One APG-compliant, horizontally resilient tab implementation. */
 export const Tabs: React.FC<TabsProps> = ({

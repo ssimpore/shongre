@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { ListingCard as SharedListingCard } from "@shongre/features/listings/web";
 import type { ListingCardView, Money } from "@shongre/contracts";
 import {
+  IMAGE_SIZES,
   formatMoney as formatSharedMoney,
   majorToMinorAmount,
 } from "@shongre/shared";
@@ -11,7 +12,6 @@ import { useFavorites } from "../../app/providers/FavoritesProvider";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { Image } from "./Image";
-import { IMAGE_SIZES } from "./responsiveImage";
 import { getListingCategoryLabel } from "../../domains/taxonomy/taxonomy.display";
 import {
   getGenericListingCardCharacteristicPresentation,
@@ -31,7 +31,7 @@ export interface ListingCardProps {
   pricing?: { currentPrice: Money; originalPrice?: Money };
 }
 
-export type ListingCardVariant = "grid" | "list" | "compact" | "showcase";
+type ListingCardVariant = "grid" | "list" | "compact" | "showcase";
 
 /**
  * Web adapter for category services that already return a `ListingCardView`.

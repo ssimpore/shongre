@@ -52,7 +52,9 @@ export function SolutionsPage() {
    * array, so one payload answers the question for all of them — no extra
    * request, and no guessing before the reader commits to a choice.
    */
-  const [coverageSample, setCoverageSample] = useState<SolutionDefinition[]>([]);
+  const [coverageSample, setCoverageSample] = useState<SolutionDefinition[]>(
+    [],
+  );
 
   usePageMeta({
     title: t("solutions.catalog.metaTitle"),
@@ -131,7 +133,8 @@ export function SolutionsPage() {
   const [reservedHeight, setReservedHeight] = useState(0);
   useEffect(() => {
     const measured = catalogRef.current?.getBoundingClientRect().height ?? 0;
-    if (measured > 0) setReservedHeight((current) => Math.max(current, measured));
+    if (measured > 0)
+      setReservedHeight((current) => Math.max(current, measured));
   }, [loading, solutions]);
 
   const skeletonRows = Math.max(

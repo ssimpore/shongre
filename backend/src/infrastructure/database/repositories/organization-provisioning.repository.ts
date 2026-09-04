@@ -3,7 +3,7 @@ import type { ProfessionalVertical } from "@shongre/contracts/access-control";
 import { getSupabaseAdminClient } from "../../supabase/supabase-client.js";
 import { databaseFailure } from "./repository-error.js";
 
-export interface InitialOrganizationInput {
+interface InitialOrganizationInput {
   ownerId: string;
   legalName: string;
   tradingName?: string;
@@ -17,7 +17,7 @@ export interface InitialOrganizationInput {
   professionalVertical: ProfessionalVertical;
 }
 
-export interface ProvisionedOrganization {
+interface ProvisionedOrganization {
   id: string;
   ownerId: string;
   legalName: string;
@@ -35,7 +35,7 @@ export interface OrganizationProvisioningRepository {
   ): Promise<ProvisionedOrganization>;
 }
 
-export class DemoOrganizationProvisioningRepository implements OrganizationProvisioningRepository {
+class DemoOrganizationProvisioningRepository implements OrganizationProvisioningRepository {
   private readonly organizations = new Map<string, ProvisionedOrganization>();
 
   async ensureOwnedOrganization(
@@ -54,7 +54,7 @@ export class DemoOrganizationProvisioningRepository implements OrganizationProvi
   }
 }
 
-export class PostgresOrganizationProvisioningRepository implements OrganizationProvisioningRepository {
+class PostgresOrganizationProvisioningRepository implements OrganizationProvisioningRepository {
   async ensureOwnedOrganization(
     input: InitialOrganizationInput,
   ): Promise<ProvisionedOrganization> {

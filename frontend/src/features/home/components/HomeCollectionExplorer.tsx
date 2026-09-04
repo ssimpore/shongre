@@ -1,4 +1,5 @@
 import React from "react";
+import { IMAGE_SIZES } from "@shongre/shared";
 import { Link } from "react-router-dom";
 import { ArrowRight, Layers3 } from "lucide-react";
 import { routes } from "../../../configuration/routes";
@@ -7,7 +8,6 @@ import type { Collection } from "../../../domains/collection/collection.types";
 import { Image } from "../../../design-system/primitives/Image";
 import { Container } from "../../../design-system/primitives/Layout";
 import { ScrollRail } from "../../../design-system/primitives/ScrollRail";
-import { IMAGE_SIZES } from "../../../design-system/primitives/responsiveImage";
 import { useTranslation } from "../../../i18n/I18nProvider";
 import { HomeSectionHeading } from "./HomeSectionHeading";
 import { HomeSectionAction } from "./HomeSectionAction";

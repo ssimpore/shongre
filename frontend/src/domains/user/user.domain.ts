@@ -88,23 +88,13 @@ export function isPubliclyListableProSeller(
   return !isAccountSuspended(user) && !isAccountDeactivated(user);
 }
 
-export function isIndividualSeller(
-  user: UserClassification | null | undefined,
-): boolean {
-  if (!user) return false;
-  return (
-    !isProSeller(user) &&
-    (user.sellerType === "individual" || user.accountType === "individual")
-  );
-}
-
 export function isAccountSuspended(
   user: UserClassification | null | undefined,
 ): boolean {
   return Boolean(user && (user.isSuspended || user.status === "suspended"));
 }
 
-export function isAccountDeactivated(
+function isAccountDeactivated(
   user: UserClassification | null | undefined,
 ): boolean {
   return Boolean(

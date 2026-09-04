@@ -27,7 +27,7 @@ import { INITIAL_LISTINGS } from "../mocks/initialDemoData";
 
 const TAXONOMY_V4_PUBLIC_BUNDLE = getTaxonomyV4PublicBundle();
 
-export type TaxonomyV4GovernanceSnapshot = Readonly<{
+type TaxonomyV4GovernanceSnapshot = Readonly<{
   metadata: typeof TAXONOMY_V4_PUBLIC_BUNDLE.metadata;
   listingTypes: typeof TAXONOMY_V4_PUBLIC_BUNDLE.listingTypes;
   attributeGroups: typeof TAXONOMY_V4_PUBLIC_BUNDLE.attributeGroups;
@@ -50,7 +50,7 @@ const STORAGE_KEYS = {
   AUDIT_LOGS: "shongre_taxonomy_audit_logs_v4",
 };
 
-export interface ITaxonomyAdminRepository {
+interface ITaxonomyAdminRepository {
   getTree(): TaxonomyNode[];
   getAllNodes(): TaxonomyNode[];
   getNode(id: string): TaxonomyNode | undefined;

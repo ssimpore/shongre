@@ -2,7 +2,7 @@ import type { AccountStatus as SharedAccountStatus } from "@shongre/contracts/ac
 
 export type AccountStatus = SharedAccountStatus;
 
-export type VerificationState =
+type VerificationState =
   "none" | "pending" | "verified" | "rejected" | "requires_action" | "expired";
 
 export interface ProfessionalVerification {
@@ -44,18 +44,6 @@ export interface BankPayoutVerification {
   providerReference?: string;
   accountLast4?: string;
   verificationMethod?: string;
-}
-
-export interface EmailVerification {
-  isVerified: boolean;
-  verifiedAt?: string;
-  token?: string;
-}
-
-export interface PhoneVerification {
-  isVerified: boolean;
-  phone?: string;
-  verifiedAt?: string;
 }
 
 export interface UserSession {

@@ -28,7 +28,7 @@ import {
   getCapabilityMetadata,
 } from "./provider-capabilities";
 
-export interface MarketCoverageRow {
+interface MarketCoverageRow {
   capability: ProviderCapability;
   category: ProviderCategory;
   markets: Record<
@@ -44,7 +44,7 @@ export interface MarketCoverageRow {
   >;
 }
 
-export class ProviderService {
+class ProviderService {
   constructor(private repo: IProviderRepository = providerRepository) {}
 
   public getProviders(): Provider[] {

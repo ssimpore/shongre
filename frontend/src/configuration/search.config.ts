@@ -23,7 +23,7 @@ export interface PopularSearchKeyword {
   isTrending?: boolean;
 }
 
-export const POPULAR_SEARCH_KEYWORDS: PopularSearchKeyword[] = [
+const POPULAR_SEARCH_KEYWORDS: PopularSearchKeyword[] = [
   // Véhicules & Mobilité
   {
     keyword: "Vélo gravel",

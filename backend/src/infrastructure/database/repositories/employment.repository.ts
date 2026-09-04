@@ -71,7 +71,7 @@ const parseEntitlementValue = (value: unknown) => {
   return value;
 };
 
-export type EmploymentAnalyticsEventName =
+type EmploymentAnalyticsEventName =
   | "search_performed"
   | "job_viewed"
   | "job_draft_saved"

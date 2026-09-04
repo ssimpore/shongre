@@ -79,7 +79,8 @@ export function solutionAccessLabel(
     "requiresEntitlement" | "requiresAuthentication"
   >,
 ): string {
-  if (solution.requiresEntitlement) return t("solutions.detail.accessOnRequest");
+  if (solution.requiresEntitlement)
+    return t("solutions.detail.accessOnRequest");
   if (solution.requiresAuthentication)
     return t("solutions.detail.accessSignedIn");
   return t("solutions.detail.publicAccess");

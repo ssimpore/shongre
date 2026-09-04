@@ -4,7 +4,7 @@ import { businessRulesService } from "../../modules/business-rules/business-rule
 import { ordersService } from "../../modules/orders/orders.service.js";
 import { complianceService } from "../../modules/compliance/compliance.service.js";
 
-export class StripeWebhookDispatcher {
+class StripeWebhookDispatcher {
   async dispatch(event: any, rawBody: string) {
     const auto = await autoService.handleProviderWebhook(
       "stripe",

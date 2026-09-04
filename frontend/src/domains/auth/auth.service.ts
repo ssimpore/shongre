@@ -28,7 +28,7 @@ const RESET_TOKENS_KEY = "shongre_auth_reset_tokens_v1";
 const PHONE_CODES_KEY = "shongre_auth_phone_codes_v1";
 const RATE_LIMITS_KEY = "shongre_auth_rate_limits_v1";
 
-export interface EmailVerificationToken {
+interface EmailVerificationToken {
   token: string;
   email: string;
   userId: string;
@@ -37,7 +37,7 @@ export interface EmailVerificationToken {
   isUsed: boolean;
 }
 
-export interface PasswordResetToken {
+interface PasswordResetToken {
   token: string;
   email: string;
   userId: string;
@@ -46,7 +46,7 @@ export interface PasswordResetToken {
   isUsed: boolean;
 }
 
-export interface PhoneVerificationCode {
+interface PhoneVerificationCode {
   phone: string;
   code: string;
   userId: string;
@@ -55,7 +55,7 @@ export interface PhoneVerificationCode {
   attempts: number;
 }
 
-export interface RateLimitEntry {
+interface RateLimitEntry {
   attempts: number;
   lastAttemptAt: string;
   lockedUntil?: string;
@@ -88,7 +88,7 @@ export function verifyPasswordHash(password: string, hash?: string): boolean {
 }
 
 // Browser/OS detection helper
-export function detectClientEnvironment(): {
+function detectClientEnvironment(): {
   browser: string;
   os: string;
   deviceType: "desktop" | "mobile" | "tablet";

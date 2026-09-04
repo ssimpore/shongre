@@ -5,8 +5,8 @@ import {
   CONTROL_MOTION_CLASS,
 } from "../utils/controlMetrics";
 
-export type FavoriteButtonSize = "sm" | "md" | "lg";
-export type FavoriteButtonVariant = "bare" | "floating";
+type FavoriteButtonSize = "sm" | "md" | "lg";
+type FavoriteButtonVariant = "bare" | "floating";
 
 export interface FavoriteButtonProps {
   isFavorite: boolean;

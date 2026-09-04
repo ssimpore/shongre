@@ -5,12 +5,12 @@ import type {
   NotificationDeliveryChannel,
 } from "../../infrastructure/database/repositories/notification.repository.js";
 
-export interface NotificationDeliveryInput {
+interface NotificationDeliveryInput {
   delivery: ClaimedNotificationDelivery;
   destinations: string[];
 }
 
-export interface NotificationDeliveryResult {
+interface NotificationDeliveryResult {
   providerId: string;
   providerMessageId: string;
   receipt: Record<string, unknown>;
@@ -87,7 +87,7 @@ export type NotificationDeliveryProviders = Record<
   NotificationDeliveryProvider
 >;
 
-export function createNotificationDeliveryProviders(): NotificationDeliveryProviders {
+function createNotificationDeliveryProviders(): NotificationDeliveryProviders {
   const create = (channel: NotificationDeliveryChannel) =>
     config.dataMode === "demo"
       ? new DemoNotificationDeliveryProvider(channel)

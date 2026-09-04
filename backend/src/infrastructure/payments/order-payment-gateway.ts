@@ -52,7 +52,7 @@ export interface OrderPaymentGateway {
   }): Promise<{ transferId: string; status: "completed" | "processing" }>;
 }
 
-export class DemoOrderPaymentGateway implements OrderPaymentGateway {
+class DemoOrderPaymentGateway implements OrderPaymentGateway {
   async createCheckout(input: OrderCheckoutInput) {
     const id = `cs_demo_${createHash("sha256")
       .update(input.idempotencyKey)

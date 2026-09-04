@@ -211,7 +211,7 @@ export const PUBLIC_ROUTES: RouteUnderTest[] = [
   { path: "/privacy", name: "legal-privacy-en-alias", persona: "guest" },
 ];
 
-export const BUYER_ROUTES: RouteUnderTest[] = [
+const BUYER_ROUTES: RouteUnderTest[] = [
   {
     path: "/compte/achats-numeriques",
     name: "digital-purchases",
@@ -305,7 +305,7 @@ export const BUYER_ROUTES: RouteUnderTest[] = [
   },
 ];
 
-export const SELLER_ROUTES: RouteUnderTest[] = [
+const SELLER_ROUTES: RouteUnderTest[] = [
   { path: "/deposer", name: "publish-wizard", persona: "individual_seller" },
   {
     path: "/compte/produits-numeriques",
@@ -359,7 +359,7 @@ export const SELLER_ROUTES: RouteUnderTest[] = [
   },
 ];
 
-export const PRO_ROUTES: RouteUnderTest[] = [
+const PRO_ROUTES: RouteUnderTest[] = [
   {
     path: "/facturation/activation",
     name: "facturation-activation",
@@ -508,7 +508,7 @@ export const PRO_ROUTES: RouteUnderTest[] = [
   },
 ];
 
-export const ADMIN_ROUTES: RouteUnderTest[] = [
+const ADMIN_ROUTES: RouteUnderTest[] = [
   { path: "/admin/finance", name: "platform-finance", persona: "finance" },
   { path: "/admin", name: "admin-overview", persona: "admin" },
   {

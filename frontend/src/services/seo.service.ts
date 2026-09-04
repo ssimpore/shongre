@@ -20,9 +20,9 @@
  * Playwright instead.
  */
 import {
+  DEFAULT_MARKET_CODE,
   DEFAULT_MARKET_LANGUAGE,
   DEFAULT_MARKET_LOCALE,
-  DEFAULT_MARKET_REGION,
 } from "../configuration/market-baseline";
 import {
   buildPublicUrl,
@@ -93,7 +93,7 @@ export function resolveOpenGraphLocale(locale?: string): string {
   const region =
     rawRegion?.toUpperCase() ||
     DEFAULT_REGION_BY_LANGUAGE[language] ||
-    DEFAULT_MARKET_REGION;
+    DEFAULT_MARKET_CODE;
   return `${language}_${region}`;
 }
 

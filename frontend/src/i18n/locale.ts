@@ -15,7 +15,7 @@
 export const DEFAULT_LOCALE = "fr-FR";
 
 /** Locales the product has data or messages for. */
-export const KNOWN_LOCALES = ["fr-FR", "en-US"] as const;
+const KNOWN_LOCALES = ["fr-FR", "en-US"] as const;
 
 /**
  * Locales whose complete interface is ready to be exposed to users.

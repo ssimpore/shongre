@@ -18,7 +18,7 @@ export function getCompactTaxonomyLabel(
   return getTaxonomyLabel(node, "compact") || fallback;
 }
 
-export function resolveTaxonomyNode(
+function resolveTaxonomyNode(
   slugOrId?: string,
 ): CanonicalTaxonomyIdentity | undefined {
   return resolveCanonicalTaxonomyIdentity(slugOrId);

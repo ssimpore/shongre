@@ -1,4 +1,5 @@
 import { PAGE_SIZES } from "../../../configuration/pagination.config";
+import { IMAGE_SIZES } from "@shongre/shared";
 import { isProSeller } from "../../../domains/user/user.domain";
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { Link } from "react-router-dom";
@@ -16,7 +17,6 @@ import { IconButton } from "../../../design-system/primitives/IconButton";
 import { Badge } from "../../../design-system/primitives/Badge";
 import { services } from "../../../api/client/service-registry";
 import { Image } from "../../../design-system/primitives/Image";
-import { IMAGE_SIZES } from "../../../design-system/primitives/responsiveImage";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
 import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
 import { useTranslation } from "../../../i18n/I18nProvider";
@@ -265,12 +265,12 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
 
       <div
         data-home-boosted-surface="true"
-        className="relative overflow-hidden rounded-card border border-border-base shadow-md"
+        className="relative isolate overflow-hidden rounded-card border border-border-base shadow-md"
       >
         <div
           id="hero-boosted-track"
           ref={railRef}
-          className="flex aspect-video w-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain scrollbar-none"
+          className="relative z-base flex aspect-video w-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain scrollbar-none"
           aria-label={t("home.heroBoostedScroll.carouselLabel")}
           tabIndex={0}
           onScroll={handleScroll}
@@ -314,7 +314,7 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
                  vertically centred arrow lands on top of the title overlay —
                  measured overlapping at 375px and on an iPhone 13 — and the
                  rail already swipes. */
-              className="absolute left-2 top-1/2 z-raised hidden -translate-y-1/2 rounded-full bg-stone-950/60 text-white shadow-sm backdrop-blur-xs hover:bg-stone-950/80 hover:text-white sm:left-3 sm:inline-flex"
+              className="absolute inset-y-0 left-2 z-raised my-auto hidden rounded-full bg-stone-950/60 text-white shadow-sm backdrop-blur-xs hover:bg-stone-950/80 hover:text-white sm:left-3 sm:inline-flex"
             >
               <ChevronLeft className="h-icon-lg w-icon-lg" />
             </IconButton>
@@ -324,7 +324,7 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
               ariaLabel={t("home.heroBoostedScroll.next")}
               aria-controls="hero-boosted-track"
               onClick={() => scrollToIndex(activeIndex + 1)}
-              className="absolute right-2 top-1/2 z-raised hidden -translate-y-1/2 rounded-full bg-stone-950/60 text-white shadow-sm backdrop-blur-xs hover:bg-stone-950/80 hover:text-white sm:right-3 sm:inline-flex"
+              className="absolute inset-y-0 right-2 z-raised my-auto hidden rounded-full bg-stone-950/60 text-white shadow-sm backdrop-blur-xs hover:bg-stone-950/80 hover:text-white sm:right-3 sm:inline-flex"
             >
               <ChevronRight className="h-icon-lg w-icon-lg" />
             </IconButton>
@@ -403,7 +403,7 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
             priority={index === 0}
             className="h-full w-full object-cover transition-transform duration-slow group-hover:scale-105"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-stone-950/90 via-stone-950/20 to-transparent" />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-stone-950/90 via-stone-950/20 to-transparent" />
 
           <div className="absolute inset-x-0 bottom-0 p-4 pb-5 text-white sm:p-5 sm:pb-5 sm:pr-32">
             <p className="mb-1.5 truncate text-micro font-bold uppercase tracking-wider text-orange-200 sm:text-xs">

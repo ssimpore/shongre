@@ -1,17 +1,6 @@
 import { marketService } from "../domains/market/market.service";
 import { Market } from "../domains/market/market.types";
-import {
-  getDemoTaxRateBps,
-  getDemoTransactionCommercials,
-} from "../domains/monetization/demo-commercial-catalog";
-import {
-  DEFAULT_MARKET_CODE,
-  DEFAULT_MARKET_CURRENCY,
-  DEFAULT_MARKET_CURRENCY_SYMBOL,
-  DEFAULT_MARKET_LOCALE,
-  DEFAULT_MARKET_TIMEZONE,
-} from "./market-baseline";
-import { MONETIZATION_ADMIN_CONSTRAINTS } from "@shongre/contracts/monetization";
+import { DEFAULT_MARKET_CODE } from "./market-baseline";
 
 export interface CountryMarketDefinition {
   code: string;
@@ -47,9 +36,7 @@ export interface CountryMarketDefinition {
 /**
  * Builds a CountryMarketDefinition from a Market domain entity and its effective configuration
  */
-export function buildCountryMarketDefinition(
-  market: Market,
-): CountryMarketDefinition {
+function buildCountryMarketDefinition(market: Market): CountryMarketDefinition {
   const config = marketService.getEffectiveConfig(market.code);
   return {
     code: market.code,
@@ -114,106 +101,6 @@ export const SUPPORTED_MARKETS: Record<string, CountryMarketDefinition> =
       },
     },
   );
-
-export const MARKET_CONFIG = {
-  defaultMarket: DEFAULT_MARKET_CODE,
-  defaultLocale: DEFAULT_MARKET_LOCALE,
-  defaultCurrency: DEFAULT_MARKET_CURRENCY,
-  defaultCurrencySymbol: DEFAULT_MARKET_CURRENCY_SYMBOL,
-  timezone: DEFAULT_MARKET_TIMEZONE,
-  dateFormat: "dd/MM/yyyy",
-  dateTimeFormat: "dd/MM/yyyy HH:mm",
-  postalCodeRegex: /^[0-9]{5}$/,
-  phonePrefix: "+33",
-  vatRateStandard:
-    getDemoTaxRateBps(DEFAULT_MARKET_CODE) /
-    MONETIZATION_ADMIN_CONSTRAINTS.basisPoints.max,
-  buyerProtectionFeePercent:
-    getDemoTransactionCommercials(DEFAULT_MARKET_CODE, "individual")
-      .protectionRateBps / MONETIZATION_ADMIN_CONSTRAINTS.basisPoints.max,
-  buyerProtectionFixedFee:
-    getDemoTransactionCommercials(DEFAULT_MARKET_CODE, "individual")
-      .protectionFixedMinor / MONETIZATION_ADMIN_CONSTRAINTS.moneyMajorToMinor,
-  maxPhotosPerListing: {
-    individual: 8,
-    pro: 20,
-  },
-  supportedLocales: [
-    { code: "fr-FR", label: "Français (France)", flag: "🇫🇷" },
-    { code: "fr-BE", label: "Français (Belgique)", flag: "🇧🇪" },
-    { code: "fr-CH", label: "Français (Suisse)", flag: "🇨🇭" },
-    { code: "es-ES", label: "Español", flag: "🇪🇸" },
-    { code: "en-US", label: "English (EU)", flag: "🇪🇺" },
-  ],
-  popularCities: [
-    {
-      name: "Paris",
-      postalCode: "75000",
-      department: "75 - Paris",
-      region: "Île-de-France",
-    },
-    {
-      name: "Lyon",
-      postalCode: "69000",
-      department: "69 - Rhône",
-      region: "Auvergne-Rhône-Alpes",
-    },
-    {
-      name: "Marseille",
-      postalCode: "13000",
-      department: "13 - Bouches-du-Rhône",
-      region: "Provence-Alpes-Côte d'Azur",
-    },
-    {
-      name: "Toulouse",
-      postalCode: "31000",
-      department: "31 - Haute-Garonne",
-      region: "Occitanie",
-    },
-    {
-      name: "Bordeaux",
-      postalCode: "33000",
-      department: "33 - Gironde",
-      region: "Nouvelle-Aquitaine",
-    },
-    {
-      name: "Nantes",
-      postalCode: "44000",
-      department: "44 - Loire-Atlantique",
-      region: "Pays de la Loire",
-    },
-    {
-      name: "Lille",
-      postalCode: "59000",
-      department: "59 - Nord",
-      region: "Hauts-de-France",
-    },
-    {
-      name: "Strasbourg",
-      postalCode: "67000",
-      department: "67 - Bas-Rhin",
-      region: "Grand Est",
-    },
-    {
-      name: "Rennes",
-      postalCode: "35000",
-      department: "35 - Ille-et-Vilaine",
-      region: "Bretagne",
-    },
-    {
-      name: "Nice",
-      postalCode: "06000",
-      department: "06 - Alpes-Maritimes",
-      region: "Provence-Alpes-Côte d'Azur",
-    },
-    {
-      name: "Montpellier",
-      postalCode: "34000",
-      department: "34 - Hérault",
-      region: "Occitanie",
-    },
-  ],
-};
 
 export const CONDITION_OPTIONS = [
   { value: "new_with_tag", label: "Neuf avec étiquette" },

@@ -35,6 +35,9 @@ wait_http() {
 }
 
 cleanup() {
+  if (( ${#started[@]} == 0 )); then
+    return
+  fi
   for service_name in "${started[@]}"; do
     service_port="$(shongre_service_port "$service_name")"
     "$SHONGRE_ROOT/scripts/service.sh" stop "$service_name" "$service_port" || true

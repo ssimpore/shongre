@@ -9,7 +9,7 @@ import React, {
 import { CheckCircle2, AlertCircle, Info, X } from "lucide-react";
 import { useTranslation } from "../../i18n/I18nProvider";
 
-export interface Toast {
+interface Toast {
   id: string;
   type: "success" | "error" | "info" | "warning";
   title?: string;

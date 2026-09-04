@@ -51,7 +51,7 @@ export interface IAdminRepository {
   saveAuditLog(log: AdminAuditLogInput): Promise<void>;
 }
 
-export const CANONICAL_DEMO_REPORTS = [
+const CANONICAL_DEMO_REPORTS = [
   {
     id: "rep_1",
     listingId: "list_suspect",
@@ -61,7 +61,7 @@ export const CANONICAL_DEMO_REPORTS = [
   },
 ];
 
-export const CANONICAL_DEMO_AUDIT_LOGS = [
+const CANONICAL_DEMO_AUDIT_LOGS = [
   {
     id: "audit_1",
     timestamp: new Date().toISOString(),

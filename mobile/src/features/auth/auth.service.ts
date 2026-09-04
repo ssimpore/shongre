@@ -12,8 +12,6 @@ import { apiRequest, sessionStorage } from "@/api/http-client";
 import { mobileEnvironment } from "@/config/environment";
 import { requireMobileCustomer, StaffMobileAccessError } from "./staff-access";
 
-export { requireMobileCustomer, StaffMobileAccessError } from "./staff-access";
-
 export interface AuthService {
   restore(): Promise<AuthUser | null>;
   login(input: LoginRequest): Promise<AuthUser>;
@@ -41,7 +39,7 @@ const demoSession: AuthSession = {
   },
 };
 
-export class DemoAuthService implements AuthService {
+class DemoAuthService implements AuthService {
   async restore(): Promise<AuthUser | null> {
     const stored = await sessionStorage.read();
     if (!stored) return null;
@@ -114,7 +112,7 @@ export class DemoAuthService implements AuthService {
   }
 }
 
-export class HttpAuthService implements AuthService {
+class HttpAuthService implements AuthService {
   async restore(): Promise<AuthUser | null> {
     const session = await sessionStorage.read();
     if (!session) return null;

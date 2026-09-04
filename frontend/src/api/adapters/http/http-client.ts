@@ -5,14 +5,14 @@ import { deterministicRuntimeId } from "../../../utilities/deterministic-id";
 import { currentBrowserMarketCode } from "../../../domains/market/market-routing";
 import { telemetryService } from "../../../services/telemetry.service";
 
-export interface HttpRequestOptions extends RequestInit {
+interface HttpRequestOptions extends RequestInit {
   params?: Record<string, string | number | boolean | undefined>;
   timeoutMs?: number;
   /** Internal guard against recursive refresh retries. */
   _retried?: boolean;
 }
 
-export class HttpClient {
+class HttpClient {
   private baseUrl: string;
   private refreshPromise: Promise<boolean> | null = null;
 

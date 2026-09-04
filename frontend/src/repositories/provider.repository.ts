@@ -83,52 +83,51 @@ export interface IProviderRepository {
  * Demo configuration keeps deterministic journeys available without
  * impersonating server credentials or live provider health.
  */
-export const INITIAL_PROVIDER_CONFIGURATIONS: Record<
-  string,
-  ProviderConfiguration
-> = Object.fromEntries(
-  CANONICAL_PROVIDER_REGISTRY.map((provider, index) => {
-    const isNotNeeded = provider.operational.lifecycle === "NOT_NEEDED";
-    return [
-      provider.id,
-      {
-        providerId: provider.id,
-        enabled: !isNotNeeded,
-        environment: "demo" as const,
-        priority: index + PROVIDER_CONFIGURATION_CONSTRAINTS.priority.min,
-        credentialStatus: "not_required" as const,
-        health: "unknown" as const,
-        healthMessage:
-          provider.operational.adapterStatus === "IMPLEMENTED"
-            ? "Adapter détecté dans le code ; aucune santé live n'est vérifiée en mode démo."
-            : provider.operational.adapterStatus === "DEMO_ONLY"
-              ? "Simulation déterministe uniquement — aucun statut de production."
-              : "Aucun adaptateur de production n'est implémenté.",
-        settings: {},
-        marketOverrides: Object.fromEntries(
-          COUNTRY_REGISTRY.filter(
-            (country) =>
-              country.launchStatus === "active" &&
-              !country.isDefault &&
-              (provider.supportedMarkets.includes("*") ||
-                provider.supportedMarkets.includes(country.marketCode)),
-          ).map((country) => [
-            country.marketCode,
-            {
-              enabled: !isNotNeeded,
-              priority: index + PROVIDER_CONFIGURATION_CONSTRAINTS.priority.min,
-              customNotes: "Affectation explicite du scénario démo.",
-            },
-          ]),
-        ),
-        updatedAt: "2026-08-24T00:00:00.000Z",
-        version: 2,
-      },
-    ];
-  }),
-);
+const INITIAL_PROVIDER_CONFIGURATIONS: Record<string, ProviderConfiguration> =
+  Object.fromEntries(
+    CANONICAL_PROVIDER_REGISTRY.map((provider, index) => {
+      const isNotNeeded = provider.operational.lifecycle === "NOT_NEEDED";
+      return [
+        provider.id,
+        {
+          providerId: provider.id,
+          enabled: !isNotNeeded,
+          environment: "demo" as const,
+          priority: index + PROVIDER_CONFIGURATION_CONSTRAINTS.priority.min,
+          credentialStatus: "not_required" as const,
+          health: "unknown" as const,
+          healthMessage:
+            provider.operational.adapterStatus === "IMPLEMENTED"
+              ? "Adapter détecté dans le code ; aucune santé live n'est vérifiée en mode démo."
+              : provider.operational.adapterStatus === "DEMO_ONLY"
+                ? "Simulation déterministe uniquement — aucun statut de production."
+                : "Aucun adaptateur de production n'est implémenté.",
+          settings: {},
+          marketOverrides: Object.fromEntries(
+            COUNTRY_REGISTRY.filter(
+              (country) =>
+                country.launchStatus === "active" &&
+                !country.isDefault &&
+                (provider.supportedMarkets.includes("*") ||
+                  provider.supportedMarkets.includes(country.marketCode)),
+            ).map((country) => [
+              country.marketCode,
+              {
+                enabled: !isNotNeeded,
+                priority:
+                  index + PROVIDER_CONFIGURATION_CONSTRAINTS.priority.min,
+                customNotes: "Affectation explicite du scénario démo.",
+              },
+            ]),
+          ),
+          updatedAt: "2026-08-24T00:00:00.000Z",
+          version: 2,
+        },
+      ];
+    }),
+  );
 
-export class DemoProviderRepository implements IProviderRepository {
+class DemoProviderRepository implements IProviderRepository {
   private auditEvents: ProviderAuditEvent[] = [];
 
   constructor() {

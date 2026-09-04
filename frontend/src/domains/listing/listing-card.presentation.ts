@@ -83,7 +83,7 @@ const FUEL_LABELS: Record<VehiclePublic["technical"]["fuelType"], string> = {
  * `presentation.cardAttributeIds`; structured verticals use this equivalent
  * projection until their transport converges on the generic listing contract.
  */
-export const STRUCTURED_LISTING_CARD_PRESENTATIONS = {
+const STRUCTURED_LISTING_CARD_PRESENTATIONS = {
   property: {
     categoryLabel: "Immobilier",
     conditionLabel: (property: PropertyPublic) =>

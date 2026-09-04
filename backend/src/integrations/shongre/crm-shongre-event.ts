@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const crmShongreEventTypeSchema = z.enum([
+const crmShongreEventTypeSchema = z.enum([
   "professional.created",
   "professional.verified",
   "organization.updated",

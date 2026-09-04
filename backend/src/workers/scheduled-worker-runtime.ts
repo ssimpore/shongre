@@ -179,7 +179,7 @@ const jobs: ScheduledJob[] = [
   },
 ];
 
-export class ScheduledWorkerRuntime {
+class ScheduledWorkerRuntime {
   private stopped = false;
   private readonly timers = new Set<NodeJS.Timeout>();
   private readonly inFlight = new Set<Promise<void>>();

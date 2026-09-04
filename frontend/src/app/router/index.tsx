@@ -714,7 +714,7 @@ const LegacyPathRedirect: React.FC<{ to: string }> = ({ to }) => {
   return <Navigate to={`${to}${location.search}${location.hash}`} replace />;
 };
 
-export const APP_ROUTES: RouteObject[] = [
+const APP_ROUTES: RouteObject[] = [
   {
     path: "/solutions",
     element: <SolutionsLayout />,

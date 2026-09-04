@@ -122,7 +122,7 @@ export interface IMessagingRepository {
   isBlockedBetween(firstUserId: string, secondUserId: string): Promise<boolean>;
 }
 
-export const CANONICAL_DEMO_CONVERSATIONS: Conversation[] = [
+const CANONICAL_DEMO_CONVERSATIONS: Conversation[] = [
   {
     id: "conv_1",
     listingId: "list_1",

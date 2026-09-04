@@ -23,13 +23,13 @@ import type {
 } from "./public-route-data";
 import { listingMarketCodes } from "./public-route-data";
 
-export const PROGRAMMATIC_SEO_THRESHOLDS = Object.freeze({
+const PROGRAMMATIC_SEO_THRESHOLDS = Object.freeze({
   categoryInventory: 1,
   collectionInventory: 2,
   sellerInventory: 1,
 });
 
-export type SeoResourceType =
+type SeoResourceType =
   | "home"
   | "static_content"
   | "category_directory"
@@ -45,7 +45,7 @@ export type SeoResourceType =
   | "private_flow"
   | "unknown";
 
-export type SeoLifecycleResult =
+type SeoLifecycleResult =
   | "available"
   | "inactive"
   | "expired"
@@ -53,7 +53,7 @@ export type SeoLifecycleResult =
   | "restricted"
   | "not_applicable";
 
-export type SeoExclusionReason =
+type SeoExclusionReason =
   | "MARKET_NOT_INDEXABLE"
   | "PRIVATE_OR_TRANSACTIONAL"
   | "ARBITRARY_SEARCH_OR_FACET"
@@ -338,7 +338,7 @@ export function isSeoMarketEnabled(context: MarketContext): boolean {
   );
 }
 
-export function listSeoMarketCountryCodes(): string[] {
+function listSeoMarketCountryCodes(): string[] {
   return COUNTRY_REGISTRY.filter(
     (country) =>
       country.enabled &&

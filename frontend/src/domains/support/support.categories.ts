@@ -6,7 +6,7 @@
 
 import { SupportCategory, SupportPriority } from "./support.types";
 
-export interface SupportReasonDefinition {
+interface SupportReasonDefinition {
   id: string;
   label: string;
   helpTip?: string;
@@ -328,7 +328,7 @@ export const SUPPORT_CATEGORIES: SupportCategoryDefinition[] = [
   },
 ];
 
-export class SupportCategoriesService {
+class SupportCategoriesService {
   getCategory(
     categoryId: SupportCategory,
   ): SupportCategoryDefinition | undefined {

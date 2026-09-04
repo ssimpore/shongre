@@ -41,7 +41,7 @@ export class DemoFavoritesService implements FavoritesService {
   }
 }
 
-export class HttpFavoritesService implements FavoritesService {
+class HttpFavoritesService implements FavoritesService {
   async list(_userId: string, marketCode: string): Promise<string[]> {
     const result = await apiRequest<{ listingIds: string[] }>(
       "/favorites",

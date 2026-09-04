@@ -4,7 +4,6 @@ import type {
   DigitalAccessGrant,
   DigitalAssetProjection,
   DigitalEntitlementProjection,
-  DigitalFulfillmentVersionInput,
   DigitalPolicyProjection,
   DigitalProvisioningTask,
   DigitalSellerProfile,
@@ -864,5 +863,3 @@ export const mobileDigitalProductsService: MobileDigitalProductsService =
   mobileEnvironment.dataMode === "demo"
     ? new DemoMobileDigitalProductsService()
     : new HttpMobileDigitalProductsService();
-
-export type { DigitalFulfillmentVersionInput };

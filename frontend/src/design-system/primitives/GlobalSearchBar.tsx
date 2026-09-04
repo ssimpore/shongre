@@ -32,7 +32,7 @@ import {
 } from "../utils/controlMetrics";
 import { LocationSelector } from "../components/LocationSelector";
 
-export interface GlobalSearchCriteria {
+interface GlobalSearchCriteria {
   query: string;
   categorySlug?: string;
   subCategorySlug?: string;

@@ -7,13 +7,13 @@ import { NewsletterSubscriptionStatus } from "./newsletter.types";
 
 export const CURRENT_NEWSLETTER_CONSENT_VERSION = "v1.0";
 
-export interface NewsletterStatusInfo {
+interface NewsletterStatusInfo {
   label: string;
   variant: "neutral" | "primary" | "success" | "warning";
   description: string;
 }
 
-export class NewsletterService {
+class NewsletterService {
   normalizeEmail(email: string): string {
     return email.trim().toLowerCase();
   }

@@ -24,6 +24,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 interface PaintedImage {
+  asset: string;
   slot: number;
   /** Device pixels the slot actually paints: CSS width x devicePixelRatio. */
   painted: number;
@@ -45,16 +46,20 @@ async function paintedImages(
           r.width > 0 && /images\.unsplash\.com/.test(img.currentSrc || img.src)
         );
       })
-      .map((img) => ({
-        slot: Math.round(img.getBoundingClientRect().width),
-        painted: Math.round(
-          img.getBoundingClientRect().width * (window.devicePixelRatio || 1),
-        ),
-        chosen: Number((img.currentSrc.match(/[?&]w=(\d+)/) || [])[1] || 0),
-        hasSrcSet: img.hasAttribute("srcset"),
-        hasSizes: img.hasAttribute("sizes"),
-        src: img.currentSrc.slice(0, 90),
-      })),
+      .map((img) => {
+        const source = img.currentSrc || img.src;
+        return {
+          asset: new URL(source).pathname,
+          slot: Math.round(img.getBoundingClientRect().width),
+          painted: Math.round(
+            img.getBoundingClientRect().width * (window.devicePixelRatio || 1),
+          ),
+          chosen: Number((source.match(/[?&]w=(\d+)/) || [])[1] || 0),
+          hasSrcSet: img.hasAttribute("srcset"),
+          hasSizes: img.hasAttribute("sizes"),
+          src: source.slice(0, 90),
+        };
+      }),
   );
 }
 
@@ -100,9 +105,19 @@ for (const viewport of [
         // a 192px source and the ladder's next rung up is the right choice —
         // measuring in CSS pixels failed webkit for behaving correctly. The
         // multiplier absorbs the step granularity of the ladder itself.
-        const oversized = images.filter(
-          (i) => i.chosen > i.painted * OVERSHOOT_BUDGET,
-        );
+        const oversized = images.filter((image) => {
+          if (image.chosen <= image.painted * OVERSHOOT_BUDGET) return false;
+          // Browsers may reuse an already-cached larger candidate when the
+          // same asset is visible in both the hero and a compact card. That
+          // adds no download, so judge it against the largest painted slot
+          // which legitimately selected that candidate.
+          return !images.some(
+            (candidate) =>
+              candidate.asset === image.asset &&
+              candidate.painted > image.painted &&
+              image.chosen <= candidate.painted * OVERSHOOT_BUDGET,
+          );
+        });
         expect(
           oversized,
           `sources overshooting their slot by more than ${OVERSHOOT_BUDGET}x on ${route.name}:\n` +

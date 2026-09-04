@@ -1,7 +1,7 @@
 import type { Listing } from "../../shared/types/index.js";
 import type { HomepageSelectionMode } from "@shongre/contracts/homepage";
 
-export type TrendingTopicType =
+type TrendingTopicType =
   | "category"
   | "subcategory"
   | "collection"
@@ -106,7 +106,7 @@ export interface TrendingActivitySignals {
   transactions: number;
 }
 
-export interface TrendCandidateSignals {
+interface TrendCandidateSignals {
   activeListings: number;
   newlyPublished: number;
   views: number;

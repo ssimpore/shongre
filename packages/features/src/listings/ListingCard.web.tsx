@@ -1,6 +1,13 @@
 import type { MouseEvent, ReactNode } from "react";
 import type { ListingCardView } from "@shongre/contracts";
-import { formatMoney, formatRelativeTime } from "@shongre/shared";
+import {
+  AVATAR_SIZES,
+  buildSizedImageUrl,
+  buildSrcSet,
+  DEFAULT_WIDTH_LADDER,
+  formatMoney,
+  formatRelativeTime,
+} from "@shongre/shared";
 import {
   Avatar,
   Badge,
@@ -107,6 +114,9 @@ export function ListingCard({
     listing.seller?.organizationName || listing.seller?.name || "";
   const sellerImageUrl =
     listing.seller?.organizationLogoUrl || listing.seller?.avatarUrl;
+  const sellerImageFallbackUrl =
+    buildSizedImageUrl(sellerImageUrl, DEFAULT_WIDTH_LADDER[0]) ??
+    sellerImageUrl;
   const isSellerVerified = Boolean(
     listing.seller?.isIdentityVerified || listing.seller?.isBusinessVerified,
   );
@@ -270,7 +280,13 @@ export function ListingCard({
                 data-listing-card-seller-avatar="true"
                 className="row-span-2 self-center"
               >
-                <Avatar src={sellerImageUrl} name={sellerName} size="sm" />
+                <Avatar
+                  src={sellerImageFallbackUrl}
+                  srcSet={buildSrcSet(sellerImageUrl)}
+                  sizes={AVATAR_SIZES.sm}
+                  name={sellerName}
+                  size="sm"
+                />
               </span>
               <span
                 data-listing-card-seller="true"
