@@ -21,6 +21,11 @@
  *     inverted panels where a single token cannot hold contrast.
  *   - indigo / purple: categorical role and state identity, not status.
  *
+ * Every allowed palette-shaped utility still has to name an exact colour
+ * declared by @shongre/design-tokens. Tailwind's defaults are not an implicit
+ * escape hatch: Guard 2c below rejects any shade the canonical package does
+ * not own.
+ *
  * Run: node scripts/check-design-tokens.mjs
  */
 import { readdirSync, readFileSync } from "fs";
@@ -247,7 +252,7 @@ const customUtilities = new Set(
   Array.from(appCss.matchAll(/@utility\s+([a-z0-9-]+)/gi), (m) => m[1]),
 );
 
-/** Tailwind ships these palettes itself; they need no project declaration. */
+/** Palette names which Tailwind would otherwise resolve from its own defaults. */
 const TAILWIND_PALETTE =
   /^(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)(?:-\d{2,3})?$/;
 const COLOR_KEYWORDS = new Set([
@@ -255,8 +260,6 @@ const COLOR_KEYWORDS = new Set([
   "current",
   "inherit",
   "auto",
-  "white",
-  "black",
   "initial",
   "unset",
   "none",
@@ -328,8 +331,19 @@ const radiusTokens = declaredIn(bothCss, "radius");
 const colorTokens = declaredIn(bothCss, "color");
 const containerTokens = declaredIn(bothCss, "container");
 
-const isColorValue = (v) =>
-  colorTokens.has(v) || TAILWIND_PALETTE.test(v) || COLOR_KEYWORDS.has(v);
+const isColorValue = (v) => colorTokens.has(v) || COLOR_KEYWORDS.has(v);
+
+const RAW_TAILWIND_COLOR_CLASS = new RegExp(
+  `(?:^|[\\s"'\\x60{])(?:[a-z0-9-]+:)*(?:${COLOR_UTILITIES})(?:-[trblxyse])?-((?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-\\d{2,3})(?:/[^\\s"'\\x60]+)?(?=$|[\\s"'\\x60}])`,
+  "g",
+);
+
+function findUnownedTailwindColors(line) {
+  return Array.from(
+    line.matchAll(RAW_TAILWIND_COLOR_CLASS),
+    (match) => match[1],
+  ).filter((token) => TAILWIND_PALETTE.test(token) && !colorTokens.has(token));
+}
 
 /**
  * `bg-*` is shared with gradients, sizing, clipping and repetition, none of
@@ -558,6 +572,9 @@ for (const file of ALL_FILES) {
         });
     }
     for (const token of findUndeclaredTokens(line)) {
+      undeclared.push({ file: relative(".", file), line: i + 1, token });
+    }
+    for (const token of findUnownedTailwindColors(line)) {
       undeclared.push({ file: relative(".", file), line: i + 1, token });
     }
     if (!/\.test\.tsx?$/.test(file) && !file.endsWith(".css"))

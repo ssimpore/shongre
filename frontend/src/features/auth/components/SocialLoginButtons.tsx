@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { officialProviderColors } from "@shongre/design-tokens";
 import { services } from "../../../api/client/service-registry";
 import type {
   SocialAuthProvider,
@@ -12,19 +13,19 @@ function GoogleMark() {
   return (
     <svg aria-hidden="true" viewBox="0 0 24 24" className="h-icon-md w-icon-md">
       <path
-        fill="#4285F4"
+        fill={officialProviderColors.google.blue}
         d="M21.6 12.2c0-.7-.1-1.4-.2-2H12v3.9h5.4a4.6 4.6 0 0 1-2 3v2.6h3.3c1.9-1.8 2.9-4.4 2.9-7.5Z"
       />
       <path
-        fill="#34A853"
+        fill={officialProviderColors.google.green}
         d="M12 22c2.7 0 5-.9 6.7-2.3l-3.3-2.6c-.9.6-2.1 1-3.4 1a5.9 5.9 0 0 1-5.5-4.1H3.1v2.7A10 10 0 0 0 12 22Z"
       />
       <path
-        fill="#FBBC05"
+        fill={officialProviderColors.google.yellow}
         d="M6.5 14a6 6 0 0 1 0-3.9V7.4H3.1a10 10 0 0 0 0 9.3L6.5 14Z"
       />
       <path
-        fill="#EA4335"
+        fill={officialProviderColors.google.red}
         d="M12 6a5.4 5.4 0 0 1 3.8 1.5l2.9-2.8A9.7 9.7 0 0 0 12 2a10 10 0 0 0-8.9 5.4l3.4 2.7A5.9 5.9 0 0 1 12 6Z"
       />
     </svg>
@@ -47,11 +48,11 @@ function FacebookMark() {
   return (
     <svg aria-hidden="true" viewBox="0 0 24 24" className="h-icon-md w-icon-md">
       <path
-        fill="#1877F2"
+        fill={officialProviderColors.facebook.blue}
         d="M22 12a10 10 0 1 0-11.6 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.3.2 2.3.2v2.5h-1.3c-1.3 0-1.7.8-1.7 1.6V12h2.8l-.4 2.9h-2.4v7A10 10 0 0 0 22 12Z"
       />
       <path
-        fill="#fff"
+        fill={officialProviderColors.facebook.white}
         d="m15.9 14.9.4-2.9h-2.8v-1.8c0-.8.4-1.6 1.7-1.6h1.3V6.1s-1.2-.2-2.3-.2c-2.3 0-3.8 1.4-3.8 3.9V12H7.9v2.9h2.5v7a10.4 10.4 0 0 0 3.1 0v-7h2.4Z"
       />
     </svg>

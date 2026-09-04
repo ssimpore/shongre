@@ -7,7 +7,8 @@ const DEV_INDICATOR_STYLE_ATTRIBUTE =
 /**
  * Next.js only exposes a corner setting for its development indicator and
  * otherwise fixes the top offset at 20px. Align that development-only surface
- * with the token-sized environment toolbar without duplicating either height.
+ * with the toolbar's persistent toggle so expanded and collapsed states share
+ * the same horizontal centerline without duplicating either control.
  */
 export function DevelopmentIndicatorAlignment() {
   useEffect(() => {
@@ -17,6 +18,9 @@ export function DevelopmentIndicatorAlignment() {
       "[data-environment-toolbar]",
     );
     if (!toolbar) return;
+    const toolbarToggle = toolbar.querySelector<HTMLElement>(
+      "[data-environment-toolbar-toggle]",
+    );
 
     let portal: HTMLElement | null = null;
     let documentObserver: MutationObserver | null = null;
@@ -54,13 +58,19 @@ export function DevelopmentIndicatorAlignment() {
         resizeObserver?.disconnect();
         resizeObserver = new ResizeObserver(updateAlignment);
         resizeObserver.observe(toolbar);
+        if (toolbarToggle) resizeObserver.observe(toolbarToggle);
         resizeObserver.observe(badge);
         currentBadge = badge;
       }
 
-      const toolbarHeight = toolbar.getBoundingClientRect().height;
+      const toolbarRect = toolbar.getBoundingClientRect();
+      const alignmentRect =
+        toolbarToggle?.getBoundingClientRect() ?? toolbarRect;
       const indicatorHeight = badge.getBoundingClientRect().height;
-      const top = Math.max((toolbarHeight - indicatorHeight) / 2, 0);
+      const top = Math.max(
+        alignmentRect.top + alignmentRect.height / 2 - indicatorHeight / 2,
+        0,
+      );
       portal.style.setProperty(DEV_INDICATOR_TOP_PROPERTY, `${top}px`);
     };
 

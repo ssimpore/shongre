@@ -6,11 +6,10 @@ import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const failures = [];
-const officialSvgPaletteFiles = new Set([
-  "frontend/src/app/layouts/Footer.tsx",
-  "frontend/src/design-system/primitives/CountryFlag.tsx",
-  "frontend/src/features/auth/components/SocialLoginButtons.tsx",
-]);
+const rawColorPattern = /#[\da-f]{3,8}\b|\b(?:rgba?|hsla?|oklch)\s*\(/i;
+const rawNamedColorPattern = /(["'])(?:transparent|white|black)\1/i;
+const rawCssColorKeywordPattern =
+  /(?:^|[;{]\s*)(?:color|background(?:-color|-image)?|border(?:-color)?|outline(?:-color)?|text-decoration-color|fill|stroke|scrollbar-color)\s*:[^;}]*?(?<![-\w])(?:transparent|white|black)(?![-\w])/im;
 const canonicalVerifiedIconFiles = new Set([
   "packages/ui/src/identity/VerifiedIcon.web.tsx",
   "packages/ui/src/identity/VerifiedIcon.native.tsx",
@@ -52,24 +51,23 @@ const sourceFiles = (
     filesUnder(path.join(root, "mobile/src")),
     filesUnder(path.join(root, "packages/ui/src")),
     filesUnder(path.join(root, "packages/features/src")),
+    filesUnder(path.join(root, "packages/brand/src")),
+    filesUnder(path.join(root, "packages/brand/scripts")),
+    filesUnder(path.join(root, "backend/src")),
+    [path.join(root, "mobile/app.config.ts")],
   ])
 )
   .flat()
   .filter(
-    (file) => /\.(?:ts|tsx)$/.test(file) && !/\.(?:test|spec)\./.test(file),
+    (file) =>
+      /\.(?:[cm]?[jt]sx?)$/.test(file) && !/\.(?:test|spec)\./.test(file),
   );
 
 for (const file of sourceFiles) {
   const relative = path.relative(root, file);
   const contents = await readFile(file, "utf8");
-  // Third-party and national marks must retain their official palette. Keep
-  // this allowlist narrow so feature UI cannot bypass the shared design-token
-  // boundary.
-  const allowsOfficialSvgPalette = officialSvgPaletteFiles.has(relative);
-  if (!allowsOfficialSvgPalette && /#[\da-f]{3,8}\b/i.test(contents)) {
-    failures.push(
-      `${relative}: raw hexadecimal colour; use @shongre/design-tokens`,
-    );
+  if (rawColorPattern.test(contents) || rawNamedColorPattern.test(contents)) {
+    failures.push(`${relative}: raw colour value; use @shongre/design-tokens`);
   }
   const isNative =
     relative.startsWith("mobile/") || /\.native\.tsx$/.test(relative);
@@ -193,6 +191,14 @@ const styleFiles = (
 for (const file of styleFiles) {
   const relative = path.relative(root, file);
   const contents = await readFile(file, "utf8");
+  if (
+    rawColorPattern.test(contents) ||
+    rawCssColorKeywordPattern.test(contents)
+  ) {
+    failures.push(
+      `${relative}: raw colour value; use a generated --color-* token`,
+    );
+  }
   if (
     /\[data-ui-(?:verified-icon|verification-badge|pro-badge)(?:=|\])/i.test(
       contents,

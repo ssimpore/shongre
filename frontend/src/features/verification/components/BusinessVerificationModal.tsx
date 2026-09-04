@@ -159,7 +159,7 @@ export const BusinessVerificationModal: React.FC<
           </div>
         ) : null}
 
-        <div className="flex gap-3 rounded-xl border border-stone-200 bg-stone-50 p-4 text-sm text-stone-650">
+        <div className="flex gap-3 rounded-xl border border-stone-200 bg-stone-50 p-4 text-sm text-text-secondary">
           <ShieldCheck
             className="mt-0.5 h-icon-lg w-icon-lg shrink-0 text-success"
             aria-hidden="true"

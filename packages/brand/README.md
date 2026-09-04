@@ -1,4 +1,5 @@
 # @shongre/brand
 
-Canonical brand name, mark source, and shared asset metadata. Platform icons and
-favicons are generated adapters; they are not independent brand sources.
+Canonical brand name, mark template, and shared asset metadata. The mark source,
+platform icons, and favicons are generated from `@shongre/design-tokens` by
+`scripts/generate-assets.mjs`; they are not independent colour sources.

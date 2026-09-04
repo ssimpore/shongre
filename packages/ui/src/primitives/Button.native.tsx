@@ -159,7 +159,10 @@ const variantStyles = StyleSheet.create({
     borderColor: nativeColors.border.default,
     borderWidth: nativeBorders.strong,
   },
-  ghost: { backgroundColor: "transparent", borderColor: "transparent" },
+  ghost: {
+    backgroundColor: nativePalette.transparent,
+    borderColor: nativePalette.transparent,
+  },
   danger: {
     backgroundColor: nativeColors.status.error,
     borderColor: nativeColors.status.error,

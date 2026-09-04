@@ -488,26 +488,28 @@ const DemoRoleSwitcherContent: React.FC<EnvironmentToolbarContentProps> = ({
       }`}
     >
       <div className="mx-auto flex w-full max-w-7xl flex-nowrap items-center justify-between gap-3">
-        <div className="flex min-w-0 shrink-0 items-center gap-2">
+        <div
+          id="demo-environment-toolbar-context"
+          data-environment-toolbar-content="context"
+          aria-hidden={isCollapsed}
+          className={`${isCollapsed ? "hidden" : "flex"} min-w-0 shrink-0 items-center gap-2 animate-in fade-in duration-fast`}
+        >
           <span className="inline-flex h-7 shrink-0 items-center rounded bg-primary px-2 py-1 text-micro font-bold uppercase tracking-wider text-white">
             {t("shell.demoRoleSwitcher.modeDemo")}
           </span>
-          <div
-            id="demo-environment-toolbar-context"
-            className={`${isCollapsed ? "hidden" : "flex"} min-w-0 items-center gap-2 animate-in fade-in duration-fast`}
-          >
-            <span className="hidden h-7 items-center whitespace-nowrap text-stone-400 lg:inline-flex">
-              {t("shell.demoRoleSwitcher.testerLesProfilsEtParcours", {
-                count: DEMO_PERSONAS.length,
-              })}
-            </span>
-            <DataModeSettingsControl />
-          </div>
+          <span className="hidden h-7 items-center whitespace-nowrap text-stone-400 lg:inline-flex">
+            {t("shell.demoRoleSwitcher.testerLesProfilsEtParcours", {
+              count: DEMO_PERSONAS.length,
+            })}
+          </span>
+          <DataModeSettingsControl />
         </div>
 
         <div className="flex min-w-0 basis-32 flex-1 flex-nowrap items-center justify-end gap-2">
           <div
             id="demo-environment-toolbar-actions"
+            data-environment-toolbar-content="actions"
+            aria-hidden={isCollapsed}
             className={`${isCollapsed ? "hidden" : "flex"} min-w-0 items-center justify-end gap-2 animate-in fade-in duration-fast`}
           >
             {utility}
@@ -695,24 +697,26 @@ const LiveModeToolbar: React.FC<EnvironmentToolbarContentProps> = ({
       }`}
     >
       <div className="mx-auto flex w-full max-w-7xl flex-nowrap items-center justify-between gap-3">
-        <div className="flex min-w-0 shrink-0 items-center gap-2">
+        <div
+          id="live-environment-toolbar-context"
+          data-environment-toolbar-content="context"
+          aria-hidden={isCollapsed}
+          className={`${isCollapsed ? "hidden" : "flex"} min-w-0 shrink-0 items-center gap-2 animate-in fade-in duration-fast`}
+        >
           <span className="inline-flex h-7 shrink-0 items-center gap-1.5 rounded bg-success px-2 py-1 text-micro font-bold uppercase tracking-wider text-white">
             <Database className="h-icon-xs w-icon-xs" aria-hidden="true" />
             {t("shell.dataMode.modeLive")}
           </span>
-          <div
-            id="live-environment-toolbar-context"
-            className={`${isCollapsed ? "hidden" : "flex"} min-w-0 items-center gap-2 animate-in fade-in duration-fast`}
-          >
-            <span className="hidden h-7 items-center truncate text-emerald-200 lg:inline-flex">
-              {t("shell.dataMode.liveSummary")}
-            </span>
-            <DataModeSettingsControl />
-          </div>
+          <span className="hidden h-7 items-center truncate text-emerald-200 lg:inline-flex">
+            {t("shell.dataMode.liveSummary")}
+          </span>
+          <DataModeSettingsControl />
         </div>
         <div className="flex min-w-0 flex-1 flex-nowrap items-center justify-end gap-2">
           <div
             id="live-environment-toolbar-actions"
+            data-environment-toolbar-content="actions"
+            aria-hidden={isCollapsed}
             className={`${isCollapsed ? "hidden" : "flex"} min-w-0 items-center justify-end gap-2 animate-in fade-in duration-fast`}
           >
             {utility}

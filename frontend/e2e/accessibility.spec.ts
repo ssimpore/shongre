@@ -186,11 +186,10 @@ test.describe("keyboard and focus", () => {
 
         /* Both of the loose checks here used to pass a control that painted
            nothing at all:
-           - `boxShadow !== 'none'` counted Tailwind's ring *placeholder*,
-             which computes to `rgba(0, 0, 0, 0) 0px 0px 0px 0px` — a fully
-             transparent shadow — as a visible ring;
-           - `borderColor !== 'rgb(0, 0, 0)'` passed every element that simply
-             has a normal grey border, focused or not.
+           - Comparing `boxShadow` with `none` counted Tailwind's fully
+             transparent ring placeholder as a visible ring;
+           - Comparing `borderColor` with one browser-default literal passed
+             every normal grey border, focused or not.
            The ring now has to be opaque enough and wide enough to see. */
         const paintsFocus = (node: Element) => {
           const style = getComputedStyle(node);

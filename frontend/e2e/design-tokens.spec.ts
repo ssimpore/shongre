@@ -563,10 +563,18 @@ test.describe("design-token runtime contracts @serial", () => {
       probe.textContent = "Design token probe";
       document.body.appendChild(probe);
 
+      const colorTokenProbe = document.createElement("div");
+      colorTokenProbe.style.backgroundColor = "var(--color-primary)";
+      colorTokenProbe.style.color = "var(--color-white)";
+      document.body.appendChild(colorTokenProbe);
+
       const computed = getComputedStyle(probe);
+      const colorTokens = getComputedStyle(colorTokenProbe);
       const result = {
         backgroundColor: computed.backgroundColor,
         color: computed.color,
+        tokenBackgroundColor: colorTokens.backgroundColor,
+        tokenColor: colorTokens.color,
         fontSize: computed.fontSize,
         height: computed.height,
         maxWidth: computed.maxWidth,
@@ -575,12 +583,13 @@ test.describe("design-token runtime contracts @serial", () => {
         transitionDuration: computed.transitionDuration,
       };
       probe.remove();
+      colorTokenProbe.remove();
       return result;
     });
 
+    expect(styles.backgroundColor).toBe(styles.tokenBackgroundColor);
+    expect(styles.color).toBe(styles.tokenColor);
     expect(styles).toMatchObject({
-      backgroundColor: "rgb(204, 64, 24)",
-      color: "rgb(255, 255, 255)",
       fontSize: "30px",
       height: "40px",
       maxWidth: "1280px",
@@ -1363,10 +1372,15 @@ test.describe("design-token runtime contracts @serial", () => {
       const persona = page.getByRole("button", {
         name: /2\. Acheteur Particulier/,
       });
+      const modeBadge = toolbar.getByText("Mode Démo", { exact: true });
+      const toolbarContent = toolbar.locator(
+        "[data-environment-toolbar-content]",
+      );
 
       await expect(toolbar).toHaveAttribute("data-collapsed", "false");
       await expect(collapse).toHaveAttribute("aria-expanded", "true");
       await expect(persona).toBeVisible();
+      await expect(modeBadge).toBeVisible();
       await expect
         .poll(() =>
           toolbar.evaluate((element) => element.getBoundingClientRect().height),
@@ -1381,11 +1395,49 @@ test.describe("design-token runtime contracts @serial", () => {
       await expect(expand).toHaveAttribute("aria-expanded", "false");
       await expect(expand).toBeFocused();
       await expect(persona).toBeHidden();
+      await expect(modeBadge).toBeHidden();
+      await expect(toolbarContent).toHaveCount(2);
+      for (let index = 0; index < (await toolbarContent.count()); index += 1) {
+        await expect(toolbarContent.nth(index)).toBeHidden();
+        await expect(toolbarContent.nth(index)).toHaveAttribute(
+          "aria-hidden",
+          "true",
+        );
+      }
+      await expect(
+        toolbar.locator(
+          "button:visible, a:visible, input:visible, select:visible, summary:visible",
+        ),
+      ).toHaveCount(1);
       await expect
         .poll(() =>
           toolbar.evaluate((element) => element.getBoundingClientRect().height),
         )
         .toBe(32);
+      const collapsedCenterDelta = await page.evaluate(() => {
+        const toggle = document.querySelector<HTMLElement>(
+          "[data-environment-toolbar-toggle]",
+        );
+        const indicator = Array.from(
+          document.querySelectorAll<HTMLElement>("nextjs-portal"),
+        )
+          .map((portal) =>
+            portal.shadowRoot
+              ?.querySelector("[data-next-badge-root]")
+              ?.getBoundingClientRect(),
+          )
+          .find((rect): rect is DOMRect => Boolean(rect));
+        if (!toggle || !indicator) return null;
+        const toggleRect = toggle.getBoundingClientRect();
+        return Math.abs(
+          indicator.top +
+            indicator.height / 2 -
+            (toggleRect.top + toggleRect.height / 2),
+        );
+      });
+      if (collapsedCenterDelta !== null) {
+        expect(collapsedCenterDelta).toBeLessThanOrEqual(0.5);
+      }
       await expectNoHorizontalOverflow(page, `collapsed toolbar at ${width}px`);
 
       await expand.click();
@@ -1393,6 +1445,13 @@ test.describe("design-token runtime contracts @serial", () => {
       await expect(collapse).toHaveAttribute("aria-expanded", "true");
       await expect(collapse).toBeFocused();
       await expect(persona).toBeVisible();
+      await expect(modeBadge).toBeVisible();
+      for (let index = 0; index < (await toolbarContent.count()); index += 1) {
+        await expect(toolbarContent.nth(index)).toHaveAttribute(
+          "aria-hidden",
+          "false",
+        );
+      }
       await expect
         .poll(() =>
           toolbar.evaluate((element) => element.getBoundingClientRect().height),

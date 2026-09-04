@@ -3,6 +3,7 @@ import { constants } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import sharp from "sharp";
+import { themeColors } from "../../design-tokens/src/theme.ts";
 
 const packageRoot = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -10,8 +11,18 @@ const packageRoot = path.resolve(
 );
 const repositoryRoot = path.resolve(packageRoot, "../..");
 const sourcePath = path.join(packageRoot, "src/logos/mark.svg");
-const source = await readFile(sourcePath);
 const checkOnly = process.argv.includes("--check");
+
+const source = Buffer.from(
+  [
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">',
+    `  <rect width="1024" height="1024" rx="224" fill="${themeColors.primary}"/>`,
+    `  <path d="M640 336c0-82-66-132-180-132-130 0-196 66-196 148 0 148 354 82 354 246 0 98-80 148-194 148-130 0-196-82-196-164h130c0 41 33 74 74 74 49 0 82-25 82-58 0-131-344-82-344-262 0-132 114-214 290-214 180 0 278 82 278 214z" fill="${themeColors.white}"/>`,
+    `  <circle cx="782" cy="734" r="72" fill="${themeColors.white}"/>`,
+    "</svg>",
+    "",
+  ].join("\n"),
+);
 
 const transparentSplash = await sharp(source)
   .resize(320, 320)
@@ -20,12 +31,13 @@ const transparentSplash = await sharp(source)
     bottom: 96,
     left: 96,
     right: 96,
-    background: { r: 0, g: 0, b: 0, alpha: 0 },
+    background: themeColors.transparent,
   })
   .png()
   .toBuffer();
 
 const outputs = new Map([
+  [sourcePath, source],
   [path.join(repositoryRoot, "frontend/public/favicon.svg"), source],
   [path.join(repositoryRoot, "mobile/assets/icon.svg"), source],
   [

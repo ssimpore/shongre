@@ -1,5 +1,6 @@
 import { createServer, IncomingMessage, ServerResponse } from "http";
 import { randomUUID } from "crypto";
+import { themeColors } from "@shongre/design-tokens";
 import { buildApiUrl, config } from "../config/index.js";
 import { bootstrapApp } from "../bootstrap/index.js";
 import { apiV1Router } from "../../api/v1/router.js";
@@ -18,15 +19,20 @@ function renderBackendHomePage(
   <title>Shongre Backend API</title>
   <style>
     :root {
-      --bg: #090d16;
-      --card: #111827;
-      --card-hover: #1f2937;
-      --border: #1f2937;
-      --text: #f9fafb;
-      --muted: #9ca3af;
-      --primary: #38bdf8;
-      --success: #34d399;
-      --success-glow: rgba(52, 211, 153, 0.15);
+      --bg: ${themeColors["stone-950"]};
+      --card: ${themeColors["stone-900"]};
+      --card-hover: ${themeColors["stone-800"]};
+      --border: ${themeColors["stone-800"]};
+      --text: ${themeColors["stone-50"]};
+      --muted: ${themeColors["stone-400"]};
+      --primary: ${themeColors["sky-400"]};
+      --primary-hover: ${themeColors.info};
+      --secondary: ${themeColors["category-multimedia"]};
+      --success: ${themeColors["emerald-400"]};
+      --transparent: ${themeColors.transparent};
+      --success-glow: color-mix(in srgb, var(--success) 15%, var(--transparent));
+      --success-border: color-mix(in srgb, var(--success) 30%, var(--transparent));
+      --card-tint: color-mix(in srgb, var(--text) 2%, var(--transparent));
     }
     * { box-sizing: border-box; }
     body {
@@ -59,13 +65,13 @@ function renderBackendHomePage(
     .brand-icon {
       width: 36px;
       height: 36px;
-      background: linear-gradient(135deg, #38bdf8, #818cf8);
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
       border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: 800;
-      color: #090d16;
+      color: var(--bg);
       font-size: 1.25rem;
     }
     h1 {
@@ -82,7 +88,7 @@ function renderBackendHomePage(
     .badge {
       background: var(--success-glow);
       color: var(--success);
-      border: 1px solid rgba(52, 211, 153, 0.3);
+      border: 1px solid var(--success-border);
       padding: 0.35rem 0.85rem;
       border-radius: 9999px;
       font-size: 0.8125rem;
@@ -119,7 +125,7 @@ function renderBackendHomePage(
       gap: 0.75rem;
     }
     .link-item {
-      background: rgba(255, 255, 255, 0.02);
+      background: var(--card-tint);
       border: 1px solid var(--border);
       border-radius: 8px;
       padding: 0.875rem 1rem;
@@ -149,8 +155,8 @@ function renderBackendHomePage(
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
-      background: #0284c7;
-      color: white;
+      background: var(--primary);
+      color: var(--bg);
       text-decoration: none;
       padding: 0.6rem 1.2rem;
       border-radius: 8px;
@@ -159,7 +165,7 @@ function renderBackendHomePage(
       transition: background 0.15s;
     }
     .cta-btn:hover {
-      background: #0369a1;
+      background: var(--primary-hover);
     }
   </style>
 </head>
