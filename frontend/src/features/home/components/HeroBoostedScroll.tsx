@@ -306,7 +306,11 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
               ariaLabel={t("home.heroBoostedScroll.previous")}
               aria-controls="hero-boosted-track"
               onClick={() => scrollToIndex(activeIndex - 1)}
-              className="absolute left-2 top-1/2 z-raised -translate-y-1/2 rounded-full bg-stone-950/60 text-white shadow-sm backdrop-blur-xs hover:bg-stone-950/80 hover:text-white sm:left-3"
+              /* Hidden on phones: the card is short enough there that a
+                 vertically centred arrow lands on top of the title overlay —
+                 measured overlapping at 375px and on an iPhone 13 — and the
+                 rail already swipes. */
+              className="absolute left-2 top-1/2 z-raised hidden -translate-y-1/2 rounded-full bg-stone-950/60 text-white shadow-sm backdrop-blur-xs hover:bg-stone-950/80 hover:text-white sm:left-3 sm:inline-flex"
             >
               <ChevronLeft className="h-icon-lg w-icon-lg" />
             </IconButton>
@@ -316,7 +320,7 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
               ariaLabel={t("home.heroBoostedScroll.next")}
               aria-controls="hero-boosted-track"
               onClick={() => scrollToIndex(activeIndex + 1)}
-              className="absolute right-2 top-1/2 z-raised -translate-y-1/2 rounded-full bg-stone-950/60 text-white shadow-sm backdrop-blur-xs hover:bg-stone-950/80 hover:text-white sm:right-3"
+              className="absolute right-2 top-1/2 z-raised hidden -translate-y-1/2 rounded-full bg-stone-950/60 text-white shadow-sm backdrop-blur-xs hover:bg-stone-950/80 hover:text-white sm:right-3 sm:inline-flex"
             >
               <ChevronRight className="h-icon-lg w-icon-lg" />
             </IconButton>

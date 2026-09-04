@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Grid2X2, Globe2, Puzzle, ShieldCheck, Users } from "lucide-react";
 import { Button, Container, Skeleton, StatePanel } from "../../design-system";
 import { services } from "../../api/client/service-registry";
@@ -10,6 +10,7 @@ import { useTranslation } from "../../i18n/I18nProvider";
 import type { MessageKey } from "../../i18n/messages.fr";
 import { applicationHref } from "../../platform/applications/use-application-href";
 import { SolutionCatalogRow } from "./SolutionCatalogRow";
+import { useSolutionsMarket } from "./useSolutionsMarket";
 
 const ecosystem = [
   {
@@ -33,31 +34,62 @@ const ecosystem = [
   bodyKey: MessageKey;
 }[];
 
+/** Matches the rendered row height closely enough that the swap does not jump. */
+const ROW_SKELETON_HEIGHT = "h-52 lg:h-56";
+const DEFAULT_SKELETON_ROWS = 4;
+
 export function SolutionsPage() {
   const { t } = useTranslation();
   const { currentUser } = useAuth();
   const { activeMarket, availableMarkets, currentLocale } = useMarketLocation();
-  const [marketCode, setMarketCode] = useState(activeMarket.code);
+  const { marketCode, setMarketCode } = useSolutionsMarket();
   const [solutions, setSolutions] = useState<SolutionDefinition[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  /**
+   * The first catalogue that came back, kept so the market selector can say how
+   * many solutions each market holds. Every solution carries its own `markets`
+   * array, so one payload answers the question for all of them — no extra
+   * request, and no guessing before the reader commits to a choice.
+   */
+  const [coverageSample, setCoverageSample] = useState<SolutionDefinition[]>([]);
 
   usePageMeta({
     title: t("solutions.catalog.metaTitle"),
     description: t("solutions.catalog.metaDescription"),
     canonicalUrl: applicationHref("solutions"),
     alternateCountries: [],
+    structuredData: solutions.length
+      ? [
+          {
+            "@context": "https://schema.org",
+            "@type": "ItemList",
+            name: t("solutions.catalog.title"),
+            itemListElement: solutions.map((solution, index) => ({
+              "@type": "ListItem",
+              position: index + 1,
+              name: solution.name,
+              description: solution.shortDescription,
+              url: applicationHref("solutions", `/${solution.slug}`),
+            })),
+          },
+        ]
+      : [],
   });
 
   const load = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
-      setSolutions(
-        await services.solutions.listPublicSolutions({
-          marketCode,
-          language: currentLocale,
-        }),
+      const values = await services.solutions.listPublicSolutions({
+        marketCode,
+        language: currentLocale,
+      });
+      setSolutions(values);
+      // Only the first non-empty answer seeds the coverage map; a later empty
+      // market must not erase what we already know about the others.
+      setCoverageSample((current) =>
+        current.length === 0 && values.length > 0 ? values : current,
       );
     } catch {
       setError(t("solutions.catalog.errorDescription"));
@@ -70,6 +102,43 @@ export function SolutionsPage() {
     void load();
   }, [load]);
 
+  const solutionsPerMarket = useMemo(() => {
+    if (coverageSample.length === 0) return null;
+    const counts: Record<string, number> = {};
+    for (const market of availableMarkets) {
+      counts[market.code] = coverageSample.filter((solution) =>
+        solution.markets.includes(market.code),
+      ).length;
+    }
+    return counts;
+  }, [availableMarkets, coverageSample]);
+
+  const coveredMarketNames = useMemo(
+    () =>
+      availableMarkets
+        .filter((market) => (solutionsPerMarket?.[market.code] ?? 0) > 0)
+        .map((market) => market.name),
+    [availableMarkets, solutionsPerMarket],
+  );
+
+  /**
+   * Keeps the catalogue from collapsing between the skeleton and the rows. The
+   * skeleton block unmounted a frame before the rows mounted, so the section
+   * dropped from 544px to zero and back to 821px — a visible flash on top of a
+   * shift. Holding the tallest height it has reached absorbs the swap.
+   */
+  const catalogRef = useRef<HTMLDivElement>(null);
+  const [reservedHeight, setReservedHeight] = useState(0);
+  useEffect(() => {
+    const measured = catalogRef.current?.getBoundingClientRect().height ?? 0;
+    if (measured > 0) setReservedHeight((current) => Math.max(current, measured));
+  }, [loading, solutions]);
+
+  const skeletonRows = Math.max(
+    solutions.length || coverageSample.length,
+    DEFAULT_SKELETON_ROWS,
+  );
+
   return (
     <div className="overflow-hidden bg-white">
       <section className="border-b border-border-base py-10">
@@ -78,16 +147,18 @@ export function SolutionsPage() {
             <h1 className="text-4xl font-bold leading-none tracking-tight text-text-main sm:text-5xl lg:text-6xl">
               {t("solutions.catalog.heroTitle")}
             </h1>
-            <p className="mt-5 max-w-2xl text-base leading-relaxed text-text-secondary sm:text-lg">
+            <p className="mt-5 max-w-2xl text-base leading-relaxed text-text-secondary">
               {t("solutions.catalog.heroDescription")}
             </p>
           </div>
           <div className="mt-7 inline-grid min-h-control-touch grid-cols-2 divide-x divide-border-base overflow-hidden rounded-control border border-border-base bg-white text-sm font-semibold text-text-main">
             <span className="flex items-center gap-2 px-4">
               <Grid2X2 className="h-icon-sm w-icon-sm" aria-hidden="true" />
-              {t("solutions.catalog.count", {
-                count: solutions.length,
-              })}
+              {/* An unresolved catalogue is unknown, not empty. Counting `[]`
+                  told every visitor "0 solution" for the whole load. */}
+              {loading
+                ? t("solutions.catalog.countPending")
+                : t("solutions.catalog.count", { count: solutions.length })}
             </span>
             <label className="flex items-center gap-2 px-4">
               <Globe2 className="h-icon-sm w-icon-sm" aria-hidden="true" />
@@ -101,7 +172,11 @@ export function SolutionsPage() {
               >
                 {availableMarkets.map((market) => (
                   <option key={market.code} value={market.code}>
-                    {market.name}
+                    {/* Half the markets hold nothing. Saying so in the option
+                        turns a dead end into a choice made with information. */}
+                    {solutionsPerMarket
+                      ? `${market.name} (${solutionsPerMarket[market.code] ?? 0})`
+                      : market.name}
                   </option>
                 ))}
               </select>
@@ -119,40 +194,70 @@ export function SolutionsPage() {
           <h2 id="catalogue-title" className="sr-only">
             {t("solutions.catalog.title")}
           </h2>
-          {loading ? (
-            <div
-              className="space-y-4 py-6"
-              aria-label={t("solutions.catalog.loading")}
-            >
-              {[0, 1, 2].map((item) => (
-                <Skeleton key={item} className="h-36 rounded-xl" />
-              ))}
-            </div>
-          ) : error ? (
-            <StatePanel
-              variant="error"
-              title={t("solutions.catalog.errorTitle")}
-              description={error}
-              action={
-                <Button onClick={() => void load()}>{t("common.retry")}</Button>
-              }
-            />
-          ) : solutions.length === 0 ? (
-            <StatePanel
-              variant="notFound"
-              title={t("solutions.catalog.emptyTitle")}
-              description={t("solutions.catalog.emptyDescription")}
-            />
-          ) : (
-            solutions.map((solution) => (
-              <SolutionCatalogRow
-                key={solution.id}
-                solution={solution}
-                marketCode={marketCode}
-                user={currentUser}
+          <div
+            ref={catalogRef}
+            style={
+              reservedHeight ? { minHeight: `${reservedHeight}px` } : undefined
+            }
+          >
+            {loading ? (
+              <div
+                className="space-y-4 py-6"
+                aria-busy="true"
+                aria-label={t("solutions.catalog.loading")}
+              >
+                {Array.from({ length: skeletonRows }, (_, index) => (
+                  <Skeleton
+                    key={index}
+                    className={`${ROW_SKELETON_HEIGHT} rounded-xl`}
+                  />
+                ))}
+              </div>
+            ) : error ? (
+              <StatePanel
+                variant="error"
+                title={t("solutions.catalog.errorTitle")}
+                description={error}
+                action={
+                  <Button onClick={() => void load()}>
+                    {t("common.retry")}
+                  </Button>
+                }
               />
-            ))
-          )}
+            ) : solutions.length === 0 ? (
+              <StatePanel
+                variant="notFound"
+                title={t("solutions.catalog.emptyTitle")}
+                description={
+                  coveredMarketNames.length
+                    ? t("solutions.catalog.emptyAvailableIn", {
+                        markets: coveredMarketNames.join(", "),
+                      })
+                    : t("solutions.catalog.emptyDescription")
+                }
+                action={
+                  // An empty market used to be a dead end: a title, a sentence
+                  // and no way back except finding the selector again.
+                  marketCode === activeMarket.code ? undefined : (
+                    <Button onClick={() => setMarketCode(activeMarket.code)}>
+                      {t("solutions.catalog.emptyReset", {
+                        market: activeMarket.name,
+                      })}
+                    </Button>
+                  )
+                }
+              />
+            ) : (
+              solutions.map((solution) => (
+                <SolutionCatalogRow
+                  key={solution.id}
+                  solution={solution}
+                  marketCode={marketCode}
+                  user={currentUser}
+                />
+              ))
+            )}
+          </div>
         </Container>
       </section>
 

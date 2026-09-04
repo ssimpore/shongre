@@ -45,7 +45,19 @@ export * from "./components/Tabs";
 
 // Marketplace components and patterns. These retain their stable filenames
 // while the public API classifies them above the primitive layer.
-export * from "./primitives/CategoryFilterRail";
+/* `CategoryFilterRail` is deliberately NOT re-exported here.
+ *
+ * It statically imports `domains/taxonomy/taxonomy.data`, whose module scope
+ * eagerly builds the taxonomy projection from a ~616 KiB gzip generated bundle.
+ * Because that evaluation is a module side effect the bundler cannot drop it,
+ * so re-exporting the rail from this barrel pulled the whole taxonomy into the
+ * initial client bundle of every route that touches the design system —
+ * including pages with no categories at all, like /connexion.
+ *
+ * No feature imports the rail; its test imports the file directly. Anything
+ * that needs it should import it by path so the cost lands on that route only:
+ *   import { CategoryFilterRail } from "@/design-system/primitives/CategoryFilterRail";
+ */
 export * from "./primitives/CategoryIcon";
 export * from "./primitives/CountryFlag";
 export * from "./primitives/FavoriteButton";

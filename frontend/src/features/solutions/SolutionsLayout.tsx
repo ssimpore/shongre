@@ -4,7 +4,6 @@ import { Outlet, useLocation } from "react-router-dom";
 import { AnalyticsRuntime } from "../../analytics/AnalyticsRuntime";
 import { services } from "../../api/client/service-registry";
 import { Container, SkipLink } from "../../design-system";
-import { solutionLifecycleLabel } from "../../domains/solutions/solutions.presentation";
 import type { SolutionDefinition } from "../../domains/solutions/solutions.types";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { applicationHref } from "../../platform/applications/use-application-href";
@@ -15,7 +14,10 @@ import { LazyPreferencesModal } from "../../app/layouts/LazyPreferencesModal";
 import { useConsent } from "../../app/providers/ConsentProvider";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
+import { useMediaQuery } from "../../hooks/useMediaQuery";
 import { SolutionIcon } from "./SolutionIcon";
+import { SolutionStatusBadge } from "./SolutionStatusBadge";
+import { useSolutionsMarket } from "./useSolutionsMarket";
 import "./solutions.css";
 
 const navClass =
@@ -25,9 +27,46 @@ function SolutionsHeader() {
   const location = useLocation();
   const { t } = useTranslation();
   const { isAuthenticated } = useAuth();
-  const { activeMarket, currentLocale } = useMarketLocation();
+  const { currentLocale } = useMarketLocation();
+  // Reads the same cell the catalogue writes. The shell used to query with
+  // `activeMarket.code` while the page held its own state, so switching market
+  // left this menu listing solutions the catalogue below said did not exist.
+  const { marketCode } = useSolutionsMarket();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [solutionMenuOpen, setSolutionMenuOpen] = useState(false);
+  /**
+   * Whether the panel is open because the pointer is resting on the trigger,
+   * as opposed to being held open by a deliberate click.
+   *
+   * Without the distinction a toggling trigger misbehaves on a mouse: hover
+   * opens the panel, so the click that follows — from someone who is opening
+   * the menu, not dismissing it — arrives while it is already open and closes
+   * it again. A click always pins; only an unpinned panel closes on mouse-out.
+   */
+  const hoverOpenedRef = useRef(false);
+  /**
+   * Mirrors `solutionMenuOpen` for event handlers.
+   *
+   * Touch browsers synthesise `mouseenter` *before* `click`, in the same batch,
+   * so a click handler reading the state variable sees the value from before
+   * the hover opened the panel and toggles the pending `true` straight back to
+   * `false` — the panel refused to open on the first tap. The ref is written
+   * during the handler, so it is never a render behind.
+   */
+  const menuOpenRef = useRef(false);
+  /**
+   * Hover-to-open is a mouse affordance. Running it on a coarse pointer means
+   * reacting to synthesised mouse events that a finger never intended, so the
+   * handlers are simply not attached there and a tap drives the panel alone.
+   */
+  const hoverCapable = useMediaQuery("(hover: hover) and (pointer: fine)");
+
+  /** The one place the panel's open state is written, so the ref never drifts. */
+  const setMenuOpen = (open: boolean) => {
+    menuOpenRef.current = open;
+    if (!open) hoverOpenedRef.current = false;
+    setSolutionMenuOpen(open);
+  };
   const [solutions, setSolutions] = useState<SolutionDefinition[]>([]);
   const solutionMenuRef = useRef<HTMLDivElement>(null);
   const solutionTriggerRef = useRef<HTMLButtonElement>(null);
@@ -40,14 +79,16 @@ function SolutionsHeader() {
 
   useEffect(() => {
     setMobileMenuOpen(false);
-    setSolutionMenuOpen(false);
+    setMenuOpen(false);
+    // `setMenuOpen` is a stable inline writer over refs and a setter.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname]);
 
   useEffect(() => {
     let cancelled = false;
     void services.solutions
       .listPublicSolutions({
-        marketCode: activeMarket.code,
+        marketCode,
         language: currentLocale,
       })
       .then((values) => {
@@ -59,14 +100,14 @@ function SolutionsHeader() {
     return () => {
       cancelled = true;
     };
-  }, [activeMarket.code, currentLocale]);
+  }, [currentLocale, marketCode]);
 
   useEffect(() => {
     if (!mobileMenuOpen && !solutionMenuOpen) return;
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key !== "Escape") return;
       setMobileMenuOpen(false);
-      setSolutionMenuOpen(false);
+      setMenuOpen(false);
       if (solutionMenuOpen) {
         requestAnimationFrame(() => solutionTriggerRef.current?.focus());
       }
@@ -76,7 +117,7 @@ function SolutionsHeader() {
         solutionMenuRef.current &&
         !solutionMenuRef.current.contains(event.target as Node)
       ) {
-        setSolutionMenuOpen(false);
+        setMenuOpen(false);
       }
     };
     window.addEventListener("keydown", closeOnEscape);
@@ -122,15 +163,30 @@ function SolutionsHeader() {
           <div
             ref={solutionMenuRef}
             className="relative"
-            onMouseEnter={() => setSolutionMenuOpen(true)}
-            onMouseLeave={() => {
-              if (!solutionMenuRef.current?.contains(document.activeElement)) {
-                setSolutionMenuOpen(false);
-              }
-            }}
+            onMouseEnter={
+              hoverCapable
+                ? () => {
+                    if (menuOpenRef.current) return;
+                    hoverOpenedRef.current = true;
+                    setMenuOpen(true);
+                  }
+                : undefined
+            }
+            onMouseLeave={
+              hoverCapable
+                ? () => {
+                    if (!hoverOpenedRef.current) return;
+                    if (
+                      !solutionMenuRef.current?.contains(document.activeElement)
+                    ) {
+                      setMenuOpen(false);
+                    }
+                  }
+                : undefined
+            }
             onBlur={(event) => {
               if (!event.currentTarget.contains(event.relatedTarget)) {
-                setSolutionMenuOpen(false);
+                setMenuOpen(false);
               }
             }}
           >
@@ -140,11 +196,22 @@ function SolutionsHeader() {
               className={`${navClass} gap-1`}
               aria-expanded={solutionMenuOpen}
               aria-controls="solutions-product-menu"
-              onClick={() => setSolutionMenuOpen(true)}
+              // Toggling, not opening. On a pointer device hover-out closed
+              // the panel; on touch there is no hover, so a tap opened it and
+              // the same target refused to put it back.
+              onClick={() => {
+                // A click on a panel the pointer merely opened pins it rather
+                // than dismissing it — that click means "open", not "close".
+                if (menuOpenRef.current && hoverOpenedRef.current) {
+                  hoverOpenedRef.current = false;
+                  return;
+                }
+                setMenuOpen(!menuOpenRef.current);
+              }}
               onKeyDown={(event) => {
                 if (event.key === "ArrowDown") {
                   event.preventDefault();
-                  setSolutionMenuOpen(true);
+                  setMenuOpen(true);
                   focusFirstSolution();
                 }
               }}
@@ -160,6 +227,7 @@ function SolutionsHeader() {
               <div className="absolute left-1/2 top-full w-80 -translate-x-1/2 pt-2">
                 <div
                   id="solutions-product-menu"
+                  role="group"
                   aria-label={t("solutions.header.chooseSolution")}
                   className="rounded-card border border-border-base bg-bg-surface p-2 shadow-dropdown"
                 >
@@ -185,9 +253,9 @@ function SolutionsHeader() {
                               <span className="truncate text-sm font-bold text-text-main">
                                 {solution.name.replace(/^Shongre\s+/, "")}
                               </span>
-                              <span className="shrink-0 text-micro font-semibold text-text-muted">
-                                {solutionLifecycleLabel(t, solution.lifecycle)}
-                              </span>
+                              <SolutionStatusBadge
+                                lifecycle={solution.lifecycle}
+                              />
                             </span>
                             <span className="mt-0.5 block truncate text-xs text-text-secondary">
                               {solution.shortDescription}
@@ -231,7 +299,10 @@ function SolutionsHeader() {
           </a>
         </div>
         <div className="flex items-center gap-2 md:hidden">
-          <a href={accountHref} className="text-xs font-bold text-primary">
+          <a
+            href={accountHref}
+            className="touch-row rounded-control px-2 text-xs font-bold text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          >
             {t(
               isAuthenticated
                 ? "solutions.header.accountShort"
@@ -313,7 +384,10 @@ function SolutionsFooter() {
   return (
     <footer className="border-t border-border-base bg-white py-7">
       <Container className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-        <a href={rootHref} className="text-sm font-bold text-text-main">
+        <a
+          href={rootHref}
+          className="touch-row self-start rounded-control text-sm font-bold text-text-main focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+        >
           SHONGRE<span className="text-primary">.</span>{" "}
           <span className="font-semibold text-text-muted">Solutions</span>
         </a>

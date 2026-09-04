@@ -436,6 +436,19 @@
   }
 }
 
+/* Turns an anchor into the click target for its whole positioned ancestor, so
+   a card's copy and artwork stop being dead space without nesting a second
+   link. The ancestor needs `relative`; siblings that must stay clickable raise
+   themselves with `relative z-raised`. Text selection inside the card is
+   preserved because the overlay carries no background. */
+@utility stretched-link {
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+  }
+}
+
 /* Tailwind v4 custom utilities participate in hover/focus/responsive variants,
    unlike plain global classes. Keep stacking meaning at the call site. */
 @utility z-base {

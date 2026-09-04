@@ -64,6 +64,60 @@ export function solutionLifecycleLabel(
   return t(SOLUTION_LIFECYCLE_PRESENTATION[lifecycle].labelKey);
 }
 
+/**
+ * How a visitor obtains the solution, in words.
+ *
+ * The access row used to fall back to `entitlementKey` when it was set, which
+ * printed backend identifiers like `solution.prospects.access` on a public
+ * marketing page. The key is an implementation detail; what a reader needs is
+ * the access model, which the same record already states in booleans.
+ */
+export function solutionAccessLabel(
+  t: Translate,
+  solution: Pick<
+    SolutionDefinition,
+    "requiresEntitlement" | "requiresAuthentication"
+  >,
+): string {
+  if (solution.requiresEntitlement) return t("solutions.detail.accessOnRequest");
+  if (solution.requiresAuthentication)
+    return t("solutions.detail.accessSignedIn");
+  return t("solutions.detail.publicAccess");
+}
+
+/** Market codes as the names a reader recognises, in catalogue order. */
+export function solutionMarketNames(
+  markets: readonly string[],
+  resolve: (code: string) => string | undefined,
+): string[] {
+  return markets.map((code) => resolve(code) || code);
+}
+
+/**
+ * BCP 47 tags as language names. `Intl.DisplayNames` is given the region-less
+ * tag so `fr-FR`, `fr-BE` and `fr-CH` collapse to one entry rather than
+ * repeating "French" three times, which is what the raw tags did.
+ */
+export function solutionLanguageNames(
+  languages: readonly string[],
+  locale: string,
+): string[] {
+  let display: Intl.DisplayNames | null = null;
+  try {
+    display = new Intl.DisplayNames([locale], { type: "language" });
+  } catch {
+    display = null;
+  }
+  const names: string[] = [];
+  for (const tag of languages) {
+    const base = tag.split("-")[0];
+    const name = display?.of(base) || base;
+    const label = name.charAt(0).toLocaleUpperCase(locale) + name.slice(1);
+    if (!names.includes(label)) names.push(label);
+  }
+  return names;
+}
+
 const LAUNCH_ACTION_KEYS = {
   RETIRED: "solutions.launch.retired",
   ACCESS_RESTRICTED: "solutions.launch.restricted",

@@ -434,6 +434,23 @@ const undeclared = [];
 const ALL_FILES = ROOTS.flatMap((root) => walk(root));
 
 /* ---------------------------------------------------------------------------
+   Open Graph image routes are not a web surface.
+
+   `next/og` renders through satori, which supports neither class names nor CSS
+   custom properties — an inline style object is the only styling channel it
+   has. These routes therefore cannot express type through `@theme` classes the
+   way every rendered page must, so the three guards below skip them. They are
+   held to the tokens by review instead: the hex values at the top of such a
+   file must be copied from the canonical palette.
+
+   This is the same category as the standalone documents already listed in
+   `ALLOWED_WEB_FONT_DECLARATION_FILES` — output that cannot inherit the root
+   class because it is not rendered inside the application shell.
+   --------------------------------------------------------------------------- */
+const isImageGenerationRoute = (file) =>
+  /(?:^|\/)app\/og\/.+\/route\.tsx$/.test(relative(".", file));
+
+/* ---------------------------------------------------------------------------
    Guard 3: one Web font architecture.
 
    `next/font` belongs at the Next.js root, the design-token package owns the
@@ -462,6 +479,7 @@ for (const file of ALL_FILES) {
   if (
     !isTest &&
     !isNative &&
+    !isImageGenerationRoute(file) &&
     !ALLOWED_WEB_FONT_DECLARATION_FILES.has(relativeFile) &&
     /(?:font-family\s*:|\bfontFamily\s*:)/.test(source)
   ) {
@@ -526,6 +544,7 @@ if (/@fontsource|font-(?:inter|roboto)|typeface-/.test(frontendPackage)) {
   });
 }
 for (const file of ALL_FILES) {
+  if (isImageGenerationRoute(file)) continue;
   const lines = readFileSync(file, "utf8").split("\n");
   lines.forEach((line, i) => {
     for (const { re, hint } of BANNED) {
@@ -554,6 +573,7 @@ const inlineTypography = [];
 for (const file of ALL_FILES) {
   if (!file.endsWith(".tsx")) continue;
   if (file.includes("/design-system/tokens/")) continue;
+  if (isImageGenerationRoute(file)) continue;
   const source = readFileSync(file, "utf8");
   const pattern =
     /style\s*=\s*\{\{[^}]*\b(fontFamily|fontSize|fontWeight|lineHeight|letterSpacing)\b[^}]*\}\}/g;

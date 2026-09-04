@@ -91,6 +91,58 @@ test.describe("homepage hero rail", () => {
       "the arrows stopped working after a resize",
     ).toBe(0);
   });
+
+  /* This one has regressed once already: the arrows are vertically centred, and
+     on a phone the card is short enough that the centre line falls inside the
+     bottom title overlay. Geometry, not appearance — a screenshot review passes
+     it, because both elements look fine on their own. */
+  for (const width of [320, 375, 390]) {
+    test(`hero arrows never sit on top of the title at ${width}px`, async ({
+      page,
+    }) => {
+      await usePersona(page, "guest");
+      await useEstablishedConsent(page);
+      await page.setViewportSize({ width, height: 812 });
+      await page.goto("/", { waitUntil: "domcontentloaded" });
+      await waitForStableLayout(page);
+
+      const collision = await page.evaluate(() => {
+        const rail = document.getElementById("hero-boosted-track");
+        const title = rail?.querySelector("h3");
+        if (!title) return null;
+
+        const overlapping: string[] = [];
+        for (const label of [/précédente/i, /suivante/i]) {
+          const arrow = [...document.querySelectorAll("button")].find((b) =>
+            label.test(b.getAttribute("aria-label") ?? ""),
+          );
+          if (!arrow) continue;
+          if (getComputedStyle(arrow).display === "none") continue;
+
+          const a = arrow.getBoundingClientRect();
+          const t = title.getBoundingClientRect();
+          const hit = !(
+            a.right <= t.left ||
+            a.left >= t.right ||
+            a.bottom <= t.top ||
+            a.top >= t.bottom
+          );
+          if (hit) {
+            overlapping.push(
+              `${arrow.getAttribute("aria-label")} at ${Math.round(a.x)},${Math.round(a.y)} over title at ${Math.round(t.x)},${Math.round(t.y)}`,
+            );
+          }
+        }
+        return overlapping;
+      });
+
+      test.skip(collision === null, "hero rail not rendered");
+      expect(
+        collision,
+        `carousel arrows are drawn over the listing title:\n  ${collision?.join("\n  ")}`,
+      ).toEqual([]);
+    });
+  }
 });
 
 test.describe("search matching", () => {

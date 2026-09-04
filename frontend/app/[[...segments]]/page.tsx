@@ -63,6 +63,7 @@ export async function generateMetadata({
     let description = "Les applications professionnelles Shongre.";
     let canonical = rootCanonical;
     let noIndex = pathname !== "/";
+    let shareImage: string | undefined;
 
     if (applicationId === "solutions") {
       const slug = applicationPath.split("/").filter(Boolean)[0];
@@ -84,6 +85,13 @@ export async function generateMetadata({
         : solution?.description ||
           "Activez les solutions utiles à votre organisation et retrouvez chaque espace de travail avec un seul compte Shongre.";
       canonical = new URL(pathname, rootCanonical).toString();
+      // Solutions carry no photography, so every share of a solution rendered
+      // as a bare text card. The image is generated per solution by the
+      // `/og/solutions/[slug]` route on this same origin.
+      shareImage = new URL(
+        solution ? `/og/solutions/${solution.slug}` : "/og/solutions/index",
+        rootCanonical,
+      ).toString();
       noIndex =
         unknownSolution ||
         Boolean(
@@ -114,7 +122,11 @@ export async function generateMetadata({
         locale: "fr_FR",
         siteName: "Shongre",
         url: canonical,
+        ...(shareImage ? { images: [shareImage] } : {}),
       },
+      ...(shareImage
+        ? { twitter: { card: "summary_large_image", images: [shareImage] } }
+        : {}),
     };
   }
   const context = await resolveServerMarketContext(pathname);

@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  ArrowLeft,
   ArrowRight,
   CalendarDays,
   CheckCircle2,
+  ChevronRight,
   ExternalLink,
   Info,
 } from "lucide-react";
@@ -14,7 +14,10 @@ import { useAuth } from "../../app/providers/AuthProvider";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import {
   presentSolutionLaunch,
+  solutionAccessLabel,
+  solutionLanguageNames,
   solutionLifecycleLabel,
+  solutionMarketNames,
 } from "../../domains/solutions/solutions.presentation";
 import { resolveSolutionLaunch } from "../../domains/solutions/solutions.launch";
 import type { SolutionDefinition } from "../../domains/solutions/solutions.types";
@@ -24,17 +27,39 @@ import { applicationHref } from "../../platform/applications/use-application-hre
 import { getPublicRuntimeConfig } from "../../platform/runtime-config/public-runtime-config";
 import { SolutionIcon } from "./SolutionIcon";
 import { SolutionPreview } from "./SolutionPreview";
+import { SolutionStatusBadge } from "./SolutionStatusBadge";
+import { useSolutionsMarket } from "./useSolutionsMarket";
 
 export function SolutionDetailPage() {
   const { t } = useTranslation();
   const { solutionSlug = "" } = useParams();
   const { currentUser } = useAuth();
-  const { activeMarket, availableMarkets, currentLocale } = useMarketLocation();
+  const { availableMarkets, currentLocale } = useMarketLocation();
+  const { marketCode } = useSolutionsMarket();
   const [solution, setSolution] = useState<SolutionDefinition | null>(null);
+  const [siblings, setSiblings] = useState<SolutionDefinition[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const catalogHref = applicationHref("solutions");
   const canonicalUrl = applicationHref("solutions", `/${solutionSlug}`);
+  /**
+   * The share image lives on the Solutions origin at a fixed server route, so
+   * it is built from that origin rather than through `applicationHref` — which
+   * prefixes the SPA mount path (`/solutions/...`) whenever the application
+   * shares the marketplace origin, and would emit a relative `og:image` that
+   * no crawler can resolve. The server renders the same absolute URL in
+   * `generateMetadata`; this keeps the client pass from overwriting it.
+   */
+  const solutionsOrigin = /^https?:\/\//.test(catalogHref)
+    ? new URL(catalogHref).origin
+    : typeof window !== "undefined"
+      ? window.location.origin
+      : "";
+  const shareImage = solutionsOrigin
+    ? `${solutionsOrigin}/og/solutions/${solutionSlug}`
+    : undefined;
+
   usePageMeta({
     title: solution
       ? t("solutions.detail.metaTitle", { name: solution.name })
@@ -42,10 +67,58 @@ export function SolutionDetailPage() {
     description:
       solution?.description || t("solutions.detail.metaMissingDescription"),
     canonicalUrl,
+    image: solution && shareImage ? shareImage : undefined,
+    type: "product",
     alternateCountries: [],
     noIndex:
       solution?.lifecycle === "MAINTENANCE" ||
       solution?.lifecycle === "DEPRECATED",
+    // A product page that renders as a bare text card in every share, and as an
+    // unlabelled result in search, was leaving the catalogue's whole reason for
+    // existing on the table.
+    structuredData: solution
+      ? [
+          {
+            "@context": "https://schema.org",
+            "@type": "SoftwareApplication",
+            name: solution.name,
+            description: solution.description,
+            url: canonicalUrl,
+            applicationCategory: "BusinessApplication",
+            operatingSystem: "Web",
+            ...(shareImage ? { image: shareImage } : {}),
+            inLanguage: solution.languages,
+            featureList: solution.capabilities,
+            audience: solution.audiences.map((audience) => ({
+              "@type": "Audience",
+              audienceType: audience,
+            })),
+            areaServed: solution.markets.map((code) => ({
+              "@type": "Country",
+              identifier: code,
+            })),
+            provider: { "@type": "Organization", name: "Shongre" },
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              {
+                "@type": "ListItem",
+                position: 1,
+                name: t("solutions.header.solutions"),
+                item: catalogHref,
+              },
+              {
+                "@type": "ListItem",
+                position: 2,
+                name: solution.name,
+                item: canonicalUrl,
+              },
+            ],
+          },
+        ]
+      : [],
   });
 
   const load = useCallback(async () => {
@@ -54,7 +127,7 @@ export function SolutionDetailPage() {
     try {
       setSolution(
         await services.solutions.getSolutionBySlug(solutionSlug, {
-          marketCode: activeMarket.code,
+          marketCode,
           language: currentLocale,
         }),
       );
@@ -63,11 +136,31 @@ export function SolutionDetailPage() {
     } finally {
       setLoading(false);
     }
-  }, [activeMarket.code, currentLocale, solutionSlug, t]);
+  }, [currentLocale, marketCode, solutionSlug, t]);
 
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(() => {
+    let cancelled = false;
+    void services.solutions
+      .listPublicSolutions({ marketCode, language: currentLocale })
+      .then((values) => {
+        if (!cancelled) setSiblings(values);
+      })
+      .catch(() => {
+        if (!cancelled) setSiblings([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [currentLocale, marketCode]);
+
+  const related = useMemo(
+    () => siblings.filter((value) => value.slug !== solutionSlug).slice(0, 3),
+    [siblings, solutionSlug],
+  );
 
   if (loading) {
     return (
@@ -100,7 +193,7 @@ export function SolutionDetailPage() {
           description={t("solutions.detail.notFoundDescription")}
           action={
             <a
-              href={applicationHref("solutions")}
+              href={catalogHref}
               className="inline-flex min-h-control-touch items-center rounded-control bg-primary px-4 text-sm font-bold text-white"
             >
               {t("solutions.header.seeAll")}
@@ -113,24 +206,59 @@ export function SolutionDetailPage() {
 
   const launch = resolveSolutionLaunch({
     solution,
-    marketCode: activeMarket.code,
+    marketCode,
     user: currentUser,
     applications: getPublicRuntimeConfig().applications,
   });
   const lifecycleLabel = solutionLifecycleLabel(t, solution.lifecycle);
   const launchCopy = presentSolutionLaunch(t, solution, launch);
   const latestNote = solution.releaseNotes[0];
+  const marketNames = solutionMarketNames(
+    solution.markets,
+    (code) => availableMarkets.find((market) => market.code === code)?.name,
+  );
+  const languageNames = solutionLanguageNames(solution.languages, currentLocale);
+
+  const launchAction = (label: string) =>
+    launch.allowed && launch.href ? (
+      <a
+        href={launch.href}
+        className="inline-flex min-h-control-touch items-center justify-center gap-2 rounded-control bg-primary px-5 text-sm font-bold text-white shadow-sm hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+      >
+        {label} <ArrowRight className="h-icon-sm w-icon-sm" aria-hidden="true" />
+      </a>
+    ) : (
+      <span
+        aria-disabled="true"
+        className="inline-flex min-h-control-touch items-center rounded-control border border-border-base bg-bg-subtle px-5 text-sm font-bold text-text-muted"
+      >
+        {label}
+      </span>
+    );
 
   return (
     <div className="bg-white">
       <Container className="py-8 sm:py-10">
-        <a
-          href={applicationHref("solutions")}
-          className="inline-flex min-h-8 items-center gap-2 rounded-control text-xs font-bold text-primary hover:text-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-        >
-          <ArrowLeft className="h-icon-sm w-icon-sm" aria-hidden="true" />{" "}
-          {t("solutions.detail.backToAll")}
-        </a>
+        {/* A real trail, not a lone back arrow: it names where "here" sits and
+            matches the BreadcrumbList crawlers are now given. */}
+        <nav aria-label={t("solutions.detail.breadcrumbLabel")}>
+          <ol className="flex flex-wrap items-center gap-1.5 text-xs text-text-muted">
+            <li>
+              <a
+                href={catalogHref}
+                className="inline-flex min-h-8 items-center rounded-control font-bold text-primary hover:text-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+              >
+                {t("solutions.header.solutions")}
+              </a>
+            </li>
+            <li aria-hidden="true">
+              <ChevronRight className="h-icon-xs w-icon-xs" />
+            </li>
+            <li aria-current="page" className="font-semibold text-text-main">
+              {solution.name}
+            </li>
+          </ol>
+        </nav>
 
         <section className="mt-7 grid items-center gap-9 border-b border-border-base pb-10 lg:grid-cols-2">
           <div className="flex items-start gap-5 sm:gap-8">
@@ -144,46 +272,16 @@ export function SolutionDetailPage() {
               <h1 className="text-3xl font-bold tracking-tight text-text-main sm:text-4xl">
                 {solution.name}
               </h1>
-              <p
-                className={`mt-3 text-sm font-bold ${solution.lifecycle === "AVAILABLE" ? "text-success" : "text-primary"}`}
-              >
-                {lifecycleLabel}
-              </p>
+              <div className="mt-3">
+                <SolutionStatusBadge
+                  lifecycle={solution.lifecycle}
+                  size="md"
+                />
+              </div>
               <p className="mt-5 max-w-xl text-base leading-relaxed text-text-secondary">
                 {solution.description}
               </p>
-              <div className="mt-7">
-                {launch.allowed && launch.href ? (
-                  <a
-                    href={launch.href}
-                    className="inline-flex min-h-control-touch items-center justify-center gap-2 rounded-control bg-primary px-5 text-sm font-bold text-white shadow-sm hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-                  >
-                    {launchCopy.actionLabel}{" "}
-                    <ArrowRight
-                      className="h-icon-sm w-icon-sm"
-                      aria-hidden="true"
-                    />
-                  </a>
-                ) : (
-                  <span
-                    aria-disabled="true"
-                    className="inline-flex min-h-control-touch items-center rounded-control border border-border-base bg-bg-subtle px-5 text-sm font-bold text-text-muted"
-                  >
-                    {launchCopy.actionLabel}
-                  </span>
-                )}
-              </div>
-              <p className="mt-4 text-xs text-text-secondary">
-                {t("solutions.detail.availableIn", {
-                  markets: solution.markets
-                    .map(
-                      (code) =>
-                        availableMarkets.find((market) => market.code === code)
-                          ?.name || code,
-                    )
-                    .join(", "),
-                })}
-              </p>
+              <div className="mt-7">{launchAction(launchCopy.actionLabel)}</div>
             </div>
           </div>
           <SolutionPreview icon={solution.icon} variant="detail" />
@@ -213,15 +311,16 @@ export function SolutionDetailPage() {
             <h2 className="text-lg font-bold text-text-main">
               {t("solutions.detail.accessTitle")}
             </h2>
+            {/* Every value here is now the form a reader recognises. The table
+                used to print `FR, BE, CH` a few centimetres under "Disponible
+                en France, Belgique, Suisse", `fr-FR, fr-BE, fr-CH` for one
+                language, and the raw `entitlementKey` under "Accès". */}
             <dl className="mt-4 divide-y divide-border-base text-sm">
               {[
                 ["solutions.detail.audience", solution.audiences.join(", ")],
-                ["solutions.detail.markets", solution.markets.join(", ")],
-                ["solutions.detail.languages", solution.languages.join(", ")],
-                [
-                  "solutions.detail.access",
-                  solution.entitlementKey || t("solutions.detail.publicAccess"),
-                ],
+                ["solutions.detail.markets", marketNames.join(", ")],
+                ["solutions.detail.languages", languageNames.join(", ")],
+                ["solutions.detail.access", solutionAccessLabel(t, solution)],
               ].map(([term, value]) => (
                 <div key={term} className="grid min-w-0 grid-cols-2 gap-4 py-3">
                   <dt className="font-medium text-text-secondary">
@@ -243,10 +342,7 @@ export function SolutionDetailPage() {
               status: lifecycleLabel,
             })}
           >
-            <Info
-              className="h-6 w-6 shrink-0 text-primary"
-              aria-hidden="true"
-            />
+            <Info className="h-6 w-6 shrink-0 text-primary" aria-hidden="true" />
             <div>
               <h2 className="text-sm font-bold text-primary">
                 {solution.lifecycle === "BETA"
@@ -263,10 +359,7 @@ export function SolutionDetailPage() {
         {latestNote ? (
           <div className="flex flex-col gap-3 py-6 text-xs text-text-secondary sm:flex-row sm:items-center sm:justify-between">
             <span className="inline-flex items-center gap-2">
-              <CalendarDays
-                className="h-icon-sm w-icon-sm"
-                aria-hidden="true"
-              />{" "}
+              <CalendarDays className="h-icon-sm w-icon-sm" aria-hidden="true" />{" "}
               {t("solutions.detail.latestUpdate", {
                 date: new Intl.DateTimeFormat(currentLocale, {
                   dateStyle: "long",
@@ -278,22 +371,92 @@ export function SolutionDetailPage() {
                 href={solution.documentationUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 font-bold text-primary"
+                className="inline-flex min-h-8 items-center gap-2 rounded-control font-bold text-primary hover:text-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               >
                 {t("solutions.detail.releaseNotes")}{" "}
-                <ExternalLink
-                  className="h-icon-sm w-icon-sm"
-                  aria-hidden="true"
-                />
+                <ExternalLink className="h-icon-sm w-icon-sm" aria-hidden="true" />
               </a>
             ) : (
-              <span className="inline-flex items-center gap-2 font-bold text-primary">
-                {latestNote.title}
-              </span>
+              // Not a link, so it no longer dresses as one. This branch kept
+              // `font-bold text-primary` and sat in the anchor's slot, which
+              // made the note title look clickable on every solution that ships
+              // without a documentation URL — which is all of them.
+              <span className="text-text-secondary">{latestNote.title}</span>
             )}
           </div>
         ) : null}
       </Container>
+
+      {/* The page used to stop on the date line: no second action, no way on.
+          A reader who got this far had nowhere to go but the back button. */}
+      <section
+        aria-labelledby="solution-next-title"
+        className="border-t border-border-base bg-bg-subtle py-10"
+      >
+        <Container>
+          <div className="flex flex-col gap-5 border-b border-border-base pb-8 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2
+                id="solution-next-title"
+                className="text-xl font-bold tracking-tight text-text-main"
+              >
+                {t("solutions.detail.nextTitle", { name: solution.name })}
+              </h2>
+              <p className="mt-2 max-w-xl text-sm leading-relaxed text-text-secondary">
+                {t("solutions.detail.availableIn", {
+                  markets: marketNames.join(", "),
+                })}
+              </p>
+            </div>
+            {launchAction(launchCopy.actionLabel)}
+          </div>
+
+          {related.length ? (
+            <div className="pt-7">
+              <h3 className="text-sm font-bold text-text-main">
+                {t("solutions.detail.relatedTitle")}
+              </h3>
+              <ul className="mt-4 grid gap-0 sm:grid-cols-3 sm:divide-x sm:divide-border-base">
+                {related.map((item) => (
+                  <li
+                    key={item.id}
+                    className="group relative border-t border-border-base py-4 first:border-t-0 sm:border-t-0 sm:px-5 sm:py-0 sm:first:pl-0 sm:last:pr-0"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control bg-primary-light text-primary">
+                        <SolutionIcon
+                          icon={item.icon}
+                          className="h-icon-md w-icon-md"
+                        />
+                      </span>
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-bold text-text-main">
+                          <a
+                            href={applicationHref(
+                              "solutions",
+                              `/${item.slug}`,
+                            )}
+                            className="rounded-control stretched-link group-hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                          >
+                            {item.name}
+                          </a>
+                        </p>
+                        <SolutionStatusBadge
+                          lifecycle={item.lifecycle}
+                          className="mt-1"
+                        />
+                      </div>
+                    </div>
+                    <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-text-secondary">
+                      {item.shortDescription}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+        </Container>
+      </section>
     </div>
   );
 }
