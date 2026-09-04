@@ -1,8 +1,10 @@
 import { StyleSheet, View, type StyleProp, type ViewStyle } from "react-native";
 import {
+  nativeAspect,
   nativeColors,
   nativeRadius,
   nativeSizing,
+  nativeSpacing,
 } from "@shongre/design-tokens/native";
 export interface SkeletonProps {
   shape?: "line" | "control" | "media" | "circle" | "panel";
@@ -21,16 +23,23 @@ const styles = StyleSheet.create({
   base: { backgroundColor: nativeColors.surface.muted },
 });
 const shapes = StyleSheet.create({
-  line: { height: 16, borderRadius: nativeRadius.lg },
+  line: { height: nativeSpacing.lg, borderRadius: nativeRadius.lg },
   control: {
     height: nativeSizing.controlTouch,
     borderRadius: nativeRadius.control,
   },
   media: {
-    width: "100%",
-    aspectRatio: 4 / 3,
+    width: nativeSizing.full,
+    aspectRatio: nativeAspect.media,
     borderRadius: nativeRadius.control,
   },
-  circle: { width: 40, height: 40, borderRadius: nativeRadius.pill },
-  panel: { minHeight: 128, borderRadius: nativeRadius.card },
+  circle: {
+    width: nativeSizing.avatarMd,
+    height: nativeSizing.avatarMd,
+    borderRadius: nativeRadius.pill,
+  },
+  panel: {
+    minHeight: nativeSizing.skeletonPanelMin,
+    borderRadius: nativeRadius.card,
+  },
 });

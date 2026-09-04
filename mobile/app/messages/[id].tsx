@@ -26,6 +26,8 @@ import { formatMoney } from "@/utils/format";
 import {
   mobileColors as colors,
   mobileRadius as radius,
+  nativeBorders,
+  nativeSizing,
   nativeSpacing as spacing,
   nativeTypography,
 } from "@shongre/design-tokens/native";
@@ -228,7 +230,7 @@ const styles = StyleSheet.create({
   },
   muted: { color: colors.textMuted, fontSize: nativeTypography.size.bodySm },
   bubble: {
-    maxWidth: "84%",
+    maxWidth: nativeSizing.messageBubbleMax,
     padding: spacing.md,
     borderRadius: radius.lg,
     gap: spacing.xs,
@@ -237,7 +239,7 @@ const styles = StyleSheet.create({
   theirs: {
     alignSelf: "flex-start",
     backgroundColor: colors.surface,
-    borderWidth: 1,
+    borderWidth: nativeBorders.hairline,
     borderColor: colors.border,
   },
   mineText: {
@@ -258,7 +260,7 @@ const styles = StyleSheet.create({
   },
   composer: {
     padding: spacing.lg,
-    borderTopWidth: 1,
+    borderTopWidth: nativeBorders.hairline,
     borderTopColor: colors.border,
     backgroundColor: colors.surface,
     gap: spacing.sm,

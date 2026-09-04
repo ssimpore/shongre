@@ -1,5 +1,6 @@
 import { StyleSheet, TextInput, View, type TextInputProps } from "react-native";
 import {
+  nativeBorders,
   nativeColors,
   nativeRadius,
   nativeSizing,
@@ -58,7 +59,7 @@ const styles = StyleSheet.create({
   group: { gap: nativeSpacing.xs },
   input: {
     minHeight: nativeSizing.controlTouch,
-    borderWidth: 1,
+    borderWidth: nativeBorders.hairline,
     borderColor: nativeColors.border.default,
     borderRadius: nativeRadius.control,
     backgroundColor: nativeColors.surface.raised,
@@ -68,7 +69,7 @@ const styles = StyleSheet.create({
     fontSize: nativeTypography.size.body,
   },
   multiline: {
-    minHeight: 112,
+    minHeight: nativeSizing.fieldMultilineMin,
     paddingTop: nativeSpacing.md,
     textAlignVertical: "top",
   },

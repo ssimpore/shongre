@@ -147,6 +147,11 @@ single page.
 
 Token parity and contrast are covered by unit tests.
 
+`make tokens-check` also scans every non-test Web and native source file. Native
+`StyleSheet` geometry, opacity, aspect ratios, icon sizes and stroke widths must
+consume `@shongre/design-tokens/native`; raw visual literals are rejected even
+when their current value happens to match a token.
+
 `npm run check:control-metrics` additionally parses JSX controls and rejects
 numeric control geometry (`h-8`, `h-10`, `h-11`, `h-12`, fixed 42px composer
 controls, and local field radii). `npm run fix:control-metrics` performs the

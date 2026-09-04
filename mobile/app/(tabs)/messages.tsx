@@ -19,6 +19,8 @@ import {
 import {
   mobileColors as colors,
   mobileRadius as radius,
+  nativeBorders,
+  nativeOpacity,
   nativeSizing,
   nativeSpacing as spacing,
   nativeTypography,
@@ -169,10 +171,10 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     borderRadius: radius.lg,
     backgroundColor: colors.surface,
-    borderWidth: 1,
+    borderWidth: nativeBorders.hairline,
     borderColor: colors.border,
   },
-  pressed: { opacity: 0.72 },
+  pressed: { opacity: nativeOpacity.pressed },
   avatar: {
     width: nativeSizing.controlLg,
     height: nativeSizing.controlLg,
@@ -194,7 +196,7 @@ const styles = StyleSheet.create({
     fontFamily: nativeTypography.fontFamily.bold,
   },
   badge: {
-    minWidth: 22,
+    minWidth: nativeSizing.iconNav,
     textAlign: "center",
     color: colors.onPrimary,
     backgroundColor: colors.primary,

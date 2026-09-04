@@ -1,5 +1,6 @@
 import React from "react";
 import { LucideIcon } from "lucide-react";
+import { iconStrokeWidths } from "@shongre/design-tokens";
 import { cn } from "../utils/variants";
 
 export interface IconProps {
@@ -19,8 +20,6 @@ const sizes = {
   xl: "h-icon-xl w-icon-xl",
 } as const;
 
-const strokeWidths = { light: 1.5, regular: 2, strong: 2.5 } as const;
-
 /** Consistent optical sizing and accessibility for the product's Lucide set. */
 export const Icon: React.FC<IconProps> = ({
   icon: Glyph,
@@ -31,7 +30,7 @@ export const Icon: React.FC<IconProps> = ({
 }) => (
   <Glyph
     className={cn("shrink-0", sizes[size], className)}
-    strokeWidth={strokeWidths[weight]}
+    strokeWidth={iconStrokeWidths[weight]}
     aria-hidden={label ? undefined : true}
     aria-label={label}
     role={label ? "img" : undefined}

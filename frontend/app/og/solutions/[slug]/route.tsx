@@ -1,13 +1,14 @@
 import { ImageResponse } from "next/og";
+import { themeColors } from "@shongre/design-tokens";
 
 export const dynamic = "force-dynamic";
 
-/** Shongre brand tokens, inlined: `ImageResponse` has no access to the stylesheet. */
-const BRAND = "#CC4018";
-const INK = "#1C1917";
-const GROUND = "#F8F6F2";
-const RULE = "#E6E1D9";
-const MUTED = "#57534E";
+/** `ImageResponse` cannot read CSS variables, so it consumes token values in JS. */
+const BRAND = themeColors.primary;
+const INK = themeColors["text-main"];
+const GROUND = themeColors["bg-subtle"];
+const RULE = themeColors["border-base"];
+const MUTED = themeColors["text-secondary"];
 
 /**
  * Slugs are the only input, so they are validated rather than trusted: this
@@ -40,82 +41,80 @@ export async function GET(
   const named = SLUG.test(slug);
 
   return new ImageResponse(
-    (
-      <div
-        style={{
-          width: "100%",
-          height: "100%",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "space-between",
-          background: GROUND,
-          padding: "72px 80px",
-          fontFamily: "sans-serif",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-          <div
-            style={{
-              width: 64,
-              height: 64,
-              borderRadius: 16,
-              background: BRAND,
-              color: "#FFFFFF",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 40,
-              fontWeight: 700,
-            }}
-          >
-            S
-          </div>
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            <span style={{ fontSize: 30, fontWeight: 700, color: INK }}>
-              shongre
-            </span>
-            <span style={{ fontSize: 20, color: MUTED, marginTop: 2 }}>
-              Solutions
-            </span>
-          </div>
-        </div>
-
-        <div style={{ display: "flex", flexDirection: "column" }}>
-          <span
-            style={{
-              fontSize: named ? 88 : 68,
-              fontWeight: 700,
-              color: INK,
-              letterSpacing: "-0.03em",
-              lineHeight: 1.05,
-            }}
-          >
-            {named ? `Shongre ${displayName(slug)}` : "Shongre Solutions"}
-          </span>
-          <div
-            style={{
-              width: 120,
-              height: 8,
-              background: BRAND,
-              marginTop: 36,
-              borderRadius: 4,
-            }}
-          />
-        </div>
-
+    <div
+      style={{
+        width: "100%",
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
+        background: GROUND,
+        padding: "72px 80px",
+        fontFamily: "sans-serif",
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
         <div
           style={{
+            width: 64,
+            height: 64,
+            borderRadius: 16,
+            background: BRAND,
+            color: themeColors.white,
             display: "flex",
-            borderTop: `2px solid ${RULE}`,
-            paddingTop: 26,
-            fontSize: 26,
-            color: MUTED,
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: 40,
+            fontWeight: 700,
           }}
         >
-          Un compte. Une organisation. Plusieurs solutions.
+          S
+        </div>
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          <span style={{ fontSize: 30, fontWeight: 700, color: INK }}>
+            shongre
+          </span>
+          <span style={{ fontSize: 20, color: MUTED, marginTop: 2 }}>
+            Solutions
+          </span>
         </div>
       </div>
-    ),
+
+      <div style={{ display: "flex", flexDirection: "column" }}>
+        <span
+          style={{
+            fontSize: named ? 88 : 68,
+            fontWeight: 700,
+            color: INK,
+            letterSpacing: "-0.03em",
+            lineHeight: 1.05,
+          }}
+        >
+          {named ? `Shongre ${displayName(slug)}` : "Shongre Solutions"}
+        </span>
+        <div
+          style={{
+            width: 120,
+            height: 8,
+            background: BRAND,
+            marginTop: 36,
+            borderRadius: 4,
+          }}
+        />
+      </div>
+
+      <div
+        style={{
+          display: "flex",
+          borderTop: `2px solid ${RULE}`,
+          paddingTop: 26,
+          fontSize: 26,
+          color: MUTED,
+        }}
+      >
+        Un compte. Une organisation. Plusieurs solutions.
+      </div>
+    </div>,
     {
       width: 1200,
       height: 630,

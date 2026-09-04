@@ -8,5 +8,8 @@ This package is Shongre's only authoritative visual-token source. Change
   token and maps Tailwind `font-sans` to it; the Next.js root supplies its
   `--font-nunito-sans` value.
 - Expo consumes the numeric adapter at `@shongre/design-tokens/native`.
+- Native borders, icon strokes, aspect ratios, component bounds, percentages,
+  and typography metrics must also come through that adapter; `StyleSheet`
+  literals are rejected by the cross-platform UI check.
 - Platform applications must not declare competing color, typography, spacing,
   radius, elevation, motion, opacity, breakpoint, or stacking scales.

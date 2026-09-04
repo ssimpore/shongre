@@ -29,6 +29,7 @@ async function filesUnder(directory) {
 
 const sourceFiles = (
   await Promise.all([
+    filesUnder(path.join(root, "frontend/app")),
     filesUnder(path.join(root, "frontend/src")),
     filesUnder(path.join(root, "mobile/app")),
     filesUnder(path.join(root, "mobile/src")),
@@ -53,14 +54,21 @@ for (const file of sourceFiles) {
       `${relative}: raw hexadecimal colour; use @shongre/design-tokens`,
     );
   }
-  if (
-    (relative.startsWith("mobile/") || /\.native\.tsx$/.test(relative)) &&
-    /(?:fontSize|lineHeight|padding(?:Horizontal|Vertical)?|margin(?:Horizontal|Vertical)?|gap|borderRadius):\s*(?!0\b)\d+/g.test(
-      contents,
-    )
-  ) {
+  const isNative =
+    relative.startsWith("mobile/") || /\.native\.tsx$/.test(relative);
+  const rawNativeMetric =
+    /\b(?:fontSize|lineHeight|letterSpacing|padding|paddingHorizontal|paddingVertical|paddingTop|paddingRight|paddingBottom|paddingLeft|margin|marginHorizontal|marginVertical|marginTop|marginRight|marginBottom|marginLeft|gap|rowGap|columnGap|borderRadius|borderTopLeftRadius|borderTopRightRadius|borderBottomLeftRadius|borderBottomRightRadius|borderWidth|borderTopWidth|borderRightWidth|borderBottomWidth|borderLeftWidth|width|height|minWidth|minHeight|maxWidth|maxHeight|top|right|bottom|left|shadowRadius|elevation|opacity|aspectRatio)\s*:\s*(?:-?\d+(?:\.\d+)?(?:\s*\/\s*\d+(?:\.\d+)?)?|["']-?\d+(?:\.\d+)?%["'])/g;
+  const rawNativeVisualProp =
+    /\b(?:size|strokeWidth)\s*=\s*\{\s*-?\d+(?:\.\d+)?\s*\}/g;
+  const rawNativeMatches = isNative
+    ? [
+        ...contents.matchAll(rawNativeMetric),
+        ...contents.matchAll(rawNativeVisualProp),
+      ].map((match) => match[0])
+    : [];
+  if (rawNativeMatches.length > 0) {
     failures.push(
-      `${relative}: raw native visual metric; use the native token adapter`,
+      `${relative}: raw native visual metric (${rawNativeMatches.slice(0, 3).join(", ")}); use the native token adapter`,
     );
   }
   if (

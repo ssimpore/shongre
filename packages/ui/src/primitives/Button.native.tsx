@@ -8,6 +8,7 @@ import {
   type ViewStyle,
 } from "react-native";
 import {
+  nativeBorders,
   nativeColors,
   nativeOpacity,
   nativePalette,
@@ -118,9 +119,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     flexDirection: "row",
     gap: nativeSpacing.sm,
-    borderWidth: 1,
+    borderWidth: nativeBorders.hairline,
   },
-  fullWidth: { width: "100%" },
+  fullWidth: { width: nativeSizing.full },
   pressed: { opacity: nativeOpacity.pressed },
   disabled: { opacity: nativeOpacity.disabled },
   label: { fontFamily: nativeTypography.fontFamily.bold },
@@ -156,7 +157,7 @@ const variantStyles = StyleSheet.create({
   outline: {
     backgroundColor: nativeColors.surface.raised,
     borderColor: nativeColors.border.default,
-    borderWidth: 2,
+    borderWidth: nativeBorders.strong,
   },
   ghost: { backgroundColor: "transparent", borderColor: "transparent" },
   danger: {

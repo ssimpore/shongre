@@ -21,7 +21,7 @@ import {
 } from "lucide-react-native";
 import type { ComponentType } from "react";
 import { Platform, type ColorValue } from "react-native";
-import { nativeSizing } from "@shongre/design-tokens/native";
+import { iconStrokeWidths, nativeSizing } from "@shongre/design-tokens/native";
 import type { IconName } from "./Icon.web";
 export type { IconName } from "./Icon.web";
 
@@ -62,11 +62,11 @@ const icons: Record<
   x: X,
 };
 const sizes = {
-  xs: 12,
+  xs: nativeSizing.iconXs,
   sm: nativeSizing.iconSm,
   md: nativeSizing.iconMd,
   lg: nativeSizing.iconLg,
-  nav: 22,
+  nav: nativeSizing.iconNav,
   xl: nativeSizing.iconXl,
 } as const;
 export function SemanticIcon({
@@ -84,7 +84,7 @@ export function SemanticIcon({
     <Glyph
       size={sizes[size]}
       color={color}
-      strokeWidth={2}
+      strokeWidth={iconStrokeWidths.regular}
       {...accessibilityProps}
     />
   );

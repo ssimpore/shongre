@@ -24,6 +24,7 @@ import { Screen } from "@/components/Screen";
 import {
   mobileColors as colors,
   mobileRadius as radius,
+  nativeAspect,
   nativeSizing,
   nativeSpacing as spacing,
   nativeTypography,
@@ -1284,8 +1285,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
   },
   preview: {
-    width: "100%",
-    aspectRatio: 16 / 9,
+    width: nativeSizing.full,
+    aspectRatio: nativeAspect.video,
     borderRadius: radius.lg,
     backgroundColor: colors.surfaceMuted,
   },

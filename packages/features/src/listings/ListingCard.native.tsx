@@ -1,10 +1,12 @@
 import { Image, Pressable, StyleSheet, View } from "react-native";
 import type { ListingCardView } from "@shongre/contracts";
 import {
+  nativeAspect,
   nativeBorders,
   nativeColors,
   nativeOpacity,
   nativeRadius,
+  nativeSizing,
   nativeSpacing,
 } from "@shongre/design-tokens/native";
 import { formatMoney, formatRelativeTime } from "@shongre/shared";
@@ -199,13 +201,16 @@ const styles = StyleSheet.create({
   card: { borderRadius: nativeRadius.listingCard },
   horizontal: { flexDirection: "row" },
   media: {
-    width: "100%",
-    aspectRatio: 16 / 10,
+    width: nativeSizing.full,
+    aspectRatio: nativeAspect.media,
     backgroundColor: nativeColors.surface.muted,
     position: "relative",
   },
-  horizontalMedia: { width: 144, aspectRatio: 1 },
-  image: { width: "100%", height: "100%" },
+  horizontalMedia: {
+    width: nativeSizing.listingCardListImageSm,
+    aspectRatio: nativeAspect.square,
+  },
+  image: { width: nativeSizing.full, height: nativeSizing.full },
   fallback: { alignItems: "center", justifyContent: "center" },
   photoCount: {
     position: "absolute",
@@ -246,7 +251,7 @@ const styles = StyleSheet.create({
     gap: nativeSpacing.xs,
   },
   characteristic: {
-    maxWidth: "100%",
+    maxWidth: nativeSizing.full,
     borderRadius: nativeRadius.control,
     paddingHorizontal: nativeSpacing.sm,
     paddingVertical: nativeSpacing.xs,

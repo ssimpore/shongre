@@ -21,6 +21,7 @@ import { watchSubscriptionsService } from "@/features/watch-subscriptions/watch-
 import {
   mobileColors as colors,
   mobileRadius as radius,
+  nativeBorders,
   nativeSpacing as spacing,
   nativeTypography,
 } from "@shongre/design-tokens/native";
@@ -250,7 +251,7 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
-    borderWidth: 1,
+    borderWidth: nativeBorders.hairline,
     borderColor: colors.border,
   },
   type: {

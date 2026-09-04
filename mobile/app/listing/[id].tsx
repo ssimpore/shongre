@@ -8,6 +8,9 @@ import { StatePanel } from "@/components/StatePanel";
 import {
   mobileColors as colors,
   mobileRadius as radius,
+  nativeAspect,
+  nativeBorders,
+  nativeSizing,
   nativeSpacing as spacing,
   nativeTypography,
 } from "@shongre/design-tokens/native";
@@ -382,8 +385,8 @@ export default function ListingDetailScreen() {
 
 const styles = StyleSheet.create({
   image: {
-    width: "100%",
-    aspectRatio: 4 / 3,
+    width: nativeSizing.full,
+    aspectRatio: nativeAspect.media,
     borderRadius: radius.lg,
     backgroundColor: colors.surfaceMuted,
   },
@@ -422,7 +425,7 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
-    borderWidth: 1,
+    borderWidth: nativeBorders.hairline,
     borderColor: colors.border,
   },
   sellerName: {

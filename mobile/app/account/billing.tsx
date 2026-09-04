@@ -7,6 +7,7 @@ import type {
 import {
   mobileColors as colors,
   mobileRadius as radius,
+  nativeBorders,
   nativeSpacing as spacing,
   nativeTypography,
 } from "@shongre/design-tokens/native";
@@ -211,7 +212,7 @@ const styles = StyleSheet.create({
     padding: spacing.xl,
     borderRadius: radius.lg,
     backgroundColor: colors.surface,
-    borderWidth: 1,
+    borderWidth: nativeBorders.hairline,
     borderColor: colors.border,
   },
   policyCard: {
@@ -219,7 +220,7 @@ const styles = StyleSheet.create({
     padding: spacing.xl,
     borderRadius: radius.lg,
     backgroundColor: colors.surfaceMuted,
-    borderWidth: 1,
+    borderWidth: nativeBorders.hairline,
     borderColor: colors.border,
   },
   eyebrow: {

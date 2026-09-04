@@ -7,6 +7,7 @@ import {
   type ViewStyle,
 } from "react-native";
 import {
+  nativeBorders,
   nativeColors,
   nativePalette,
   nativeRadius,
@@ -46,7 +47,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     borderRadius: nativeRadius.md,
-    borderWidth: 1,
+    borderWidth: nativeBorders.hairline,
     gap: nativeSpacing.xs,
   },
   label: {

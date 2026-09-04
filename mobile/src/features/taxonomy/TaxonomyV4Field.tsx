@@ -12,6 +12,7 @@ import { resolveTaxonomyControl } from "@shongre/features";
 import {
   mobileColors as colors,
   mobileRadius as radius,
+  nativeBorders,
   nativeSizing,
   nativeSpacing as spacing,
   nativeTypography,
@@ -220,14 +221,17 @@ const styles = StyleSheet.create({
   },
   input: {
     minHeight: nativeSizing.controlTouch,
-    borderWidth: 1,
+    borderWidth: nativeBorders.hairline,
     borderColor: colors.border,
     borderRadius: radius.md,
     color: colors.text,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
   },
-  multiline: { minHeight: 112, textAlignVertical: "top" },
+  multiline: {
+    minHeight: nativeSizing.fieldMultilineMin,
+    textAlignVertical: "top",
+  },
   statusRow: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
   errorBox: {
     gap: spacing.sm,
@@ -257,7 +261,7 @@ const styles = StyleSheet.create({
   choice: {
     minHeight: nativeSizing.controlTouch,
     justifyContent: "center",
-    borderWidth: 1,
+    borderWidth: nativeBorders.hairline,
     borderColor: colors.border,
     borderRadius: radius.md,
     paddingHorizontal: spacing.md,

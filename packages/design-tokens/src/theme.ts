@@ -246,6 +246,7 @@ export const themeSpacing = {
      available viewport so list mode remains useful on desktop without
      squeezing the copy column on phones. */
   "listing-card-list-height": "12.5rem",
+  "listing-card-list-image-sm": "9rem",
   "listing-card-list-image-md": "11rem",
   "listing-card-list-image-lg": "13rem",
   "collection-card": "9.6875rem",
@@ -278,6 +279,7 @@ export const themeSpacing = {
      drawer's footer actions ended up under Safari's toolbar. */
   "dialog-modal-max-height": "calc(100dvh - 2rem)",
   "dialog-drawer-max-height": "90dvh",
+  "dialog-native-max-height": "90%",
   "media-preview-max-height": "80vh",
   "side-sheet-height": "100dvh",
   "safe-area-bottom": "env(safe-area-inset-bottom)",
@@ -296,6 +298,8 @@ export const themeSpacing = {
   "search-submit-height": "calc(100% + 2px)",
   "message-bubble": "85%",
   "message-bubble-wide": "70%",
+  "field-multiline-min": "7rem",
+  "skeleton-panel-min": "8rem",
   "side-sheet-width": "85vw",
   "admin-menu-max": "60vh",
   /* Desktop admin navigation sits below the sticky global chrome and keeps a
@@ -385,6 +389,8 @@ export const themeGridTemplates = {
  */
 export const themeAspect = {
   media: "4 / 3",
+  square: "1 / 1",
+  video: "16 / 9",
 } as const;
 
 export const themeSpaceScale = {
@@ -488,6 +494,13 @@ export const themeBorders = {
   strong: "2px",
 } as const;
 
+/** Lucide stroke weights shared by the Web and native icon primitives. */
+export const themeIconStrokeWidths = {
+  light: 1.5,
+  regular: 2,
+  strong: 2.5,
+} as const;
+
 export const themeInteraction = {
   focusRingWidth: "2px",
   focusRingOffset: "2px",
@@ -522,6 +535,7 @@ export const theme = {
   zIndex: themeZIndex,
   opacity: themeOpacity,
   borders: themeBorders,
+  iconStrokeWidths: themeIconStrokeWidths,
   interaction: themeInteraction,
 } as const;
 

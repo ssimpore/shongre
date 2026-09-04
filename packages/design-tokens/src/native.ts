@@ -1,9 +1,31 @@
 import { colors } from "./colors";
-import { themeColors, themeOpacity, themeText, themeZIndex } from "./theme";
+import {
+  themeAspect,
+  themeBorders,
+  themeColors,
+  themeIconStrokeWidths,
+  themeLetterSpacing,
+  themeOpacity,
+  themeRadii,
+  themeSpaceScale,
+  themeSpacing,
+  themeText,
+  themeZIndex,
+} from "./theme";
 
 const remToPx = (value: string): number => {
   const parsed = Number.parseFloat(value);
   return value.endsWith("rem") ? parsed * 16 : parsed;
+};
+
+const aspectToNumber = (value: string): number => {
+  const [width, height] = value.split("/").map(Number);
+  return width / height;
+};
+
+const emToPx = (value: string, fontSize: number): number => {
+  const parsed = Number.parseFloat(value);
+  return value.endsWith("em") ? parsed * fontSize : remToPx(value);
 };
 
 export const nativeColors = colors;
@@ -25,25 +47,25 @@ export const mobileColors = {
   focus: colors.interaction.focus,
 } as const;
 export const nativeSpacing = {
-  none: 0,
-  xs: 4,
-  sm: 8,
-  md: 12,
-  lg: 16,
-  xl: 24,
-  xxl: 32,
-  xxxl: 48,
+  none: remToPx(themeSpaceScale.none),
+  xs: remToPx(themeSpaceScale.xs),
+  sm: remToPx(themeSpaceScale.sm),
+  md: remToPx(themeSpaceScale.md),
+  lg: remToPx(themeSpaceScale.lg),
+  xl: remToPx(themeSpaceScale.xl),
+  xxl: remToPx(themeSpaceScale["2xl"]),
+  xxxl: remToPx(themeSpaceScale["3xl"]),
 } as const;
 export const nativeRadius = {
-  xs: 2,
-  sm: 4,
-  md: 6,
-  lg: 8,
-  control: 10,
-  listingCard: 14,
-  card: 20,
-  overlay: 28,
-  pill: 9999,
+  xs: remToPx(themeRadii.xs),
+  sm: remToPx(themeRadii.sm),
+  md: remToPx(themeRadii.md),
+  lg: remToPx(themeRadii.lg),
+  control: remToPx(themeRadii.control),
+  listingCard: remToPx(themeRadii["listing-card"]),
+  card: remToPx(themeRadii.card),
+  overlay: remToPx(themeRadii.overlay),
+  pill: Number.parseFloat(themeRadii.pill),
 } as const;
 export const mobileRadius = {
   sm: nativeRadius.lg,
@@ -52,19 +74,61 @@ export const mobileRadius = {
   pill: nativeRadius.pill,
 } as const;
 export const nativeSizing = {
-  controlSm: 32,
-  controlMd: 40,
-  controlTouch: 44,
-  controlLg: 48,
-  controlFab: 52,
-  iconSm: 14,
-  iconMd: 16,
-  iconLg: 20,
-  iconXl: 24,
-  mobileNavHeight: 60,
-  mobileNavFabRise: 20,
+  full: "100%",
+  controlSm: remToPx(themeSpacing["control-sm"]),
+  controlMd: remToPx(themeSpacing["control-md"]),
+  controlTouch: remToPx(themeSpacing["control-touch"]),
+  controlLg: remToPx(themeSpacing["control-lg"]),
+  controlFab: remToPx(themeSpacing["control-fab"]),
+  iconXs: remToPx(themeSpacing["icon-xs"]),
+  iconSm: remToPx(themeSpacing["icon-sm"]),
+  iconMd: remToPx(themeSpacing["icon-md"]),
+  iconLg: remToPx(themeSpacing["icon-lg"]),
+  iconNav: remToPx(themeSpacing["icon-nav"]),
+  iconXl: remToPx(themeSpacing["icon-xl"]),
+  avatarSm: remToPx(themeSpacing["avatar-sm"]),
+  avatarMd: remToPx(themeSpacing["avatar-md"]),
+  avatarLg: remToPx(themeSpacing["avatar-lg"]),
+  avatarXl: remToPx(themeSpacing["avatar-xl"]),
+  avatar2xl: remToPx(themeSpacing["avatar-2xl"]),
+  listingCardListImageSm: remToPx(themeSpacing["listing-card-list-image-sm"]),
+  fieldMultilineMin: remToPx(themeSpacing["field-multiline-min"]),
+  skeletonPanelMin: remToPx(themeSpacing["skeleton-panel-min"]),
+  dialogMaxHeight: themeSpacing["dialog-native-max-height"],
+  messageBubbleMax: themeSpacing["message-bubble"],
+  mobileNavHeight: remToPx(themeSpacing["mobile-nav-height"]),
+  mobileNavFabRise: remToPx(themeSpacing["mobile-nav-fab-rise"]),
 } as const;
-export const nativeBorders = { hairline: 1, strong: 2 } as const;
+export const nativeBorders = {
+  hairline: remToPx(themeBorders.hairline),
+  strong: remToPx(themeBorders.strong),
+} as const;
+export const nativeAspect = {
+  media: aspectToNumber(themeAspect.media),
+  square: aspectToNumber(themeAspect.square),
+  video: aspectToNumber(themeAspect.video),
+} as const;
+export const iconStrokeWidths = themeIconStrokeWidths;
+
+const nativeFontSizes = {
+  micro: remToPx(themeText.micro),
+  caption: remToPx(themeText.caption),
+  bodySm: remToPx(themeText["body-sm"]),
+  body: remToPx(themeText["body-md"]),
+  bodyLg: remToPx(themeText["body-lg"]),
+  title: remToPx(themeText["heading-sm"]),
+  heading: remToPx(themeText["heading-md"]),
+  display: remToPx(themeText["heading-xl"]),
+  displayLg: 56,
+  displayMd: 44,
+  displaySm: 36,
+  headingXl: remToPx(themeText["heading-xl"]),
+  headingLg: remToPx(themeText["heading-lg"]),
+  headingMd: remToPx(themeText["heading-md"]),
+  headingSm: remToPx(themeText["heading-sm"]),
+  headingXs: remToPx(themeText["heading-xs"]),
+} as const;
+
 export const nativeTypography = {
   fontFamily: {
     regular: "Inter_400Regular",
@@ -72,24 +136,7 @@ export const nativeTypography = {
     semibold: "Inter_600SemiBold",
     bold: "Inter_700Bold",
   },
-  size: {
-    micro: remToPx(themeText.micro),
-    caption: remToPx(themeText.caption),
-    bodySm: remToPx(themeText["body-sm"]),
-    body: remToPx(themeText["body-md"]),
-    bodyLg: remToPx(themeText["body-lg"]),
-    title: remToPx(themeText["heading-sm"]),
-    heading: remToPx(themeText["heading-md"]),
-    display: remToPx(themeText["heading-xl"]),
-    displayLg: 56,
-    displayMd: 44,
-    displaySm: 36,
-    headingXl: remToPx(themeText["heading-xl"]),
-    headingLg: remToPx(themeText["heading-lg"]),
-    headingMd: remToPx(themeText["heading-md"]),
-    headingSm: remToPx(themeText["heading-sm"]),
-    headingXs: remToPx(themeText["heading-xs"]),
-  },
+  size: nativeFontSizes,
   lineHeight: {
     caption: 17,
     bodySm: 21,
@@ -106,6 +153,9 @@ export const nativeTypography = {
     headingMd: 30,
     headingSm: 26,
     headingXs: 22,
+  },
+  letterSpacing: {
+    overline: emToPx(themeLetterSpacing.wider, nativeFontSizes.micro),
   },
 } as const;
 export const nativeOpacity = themeOpacity;

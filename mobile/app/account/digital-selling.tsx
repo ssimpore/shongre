@@ -15,6 +15,8 @@ import { mobileDigitalProductsService } from "@/features/digital-products/digita
 import {
   mobileColors as colors,
   mobileRadius as radius,
+  nativeBorders,
+  nativeSizing,
   nativeSpacing as spacing,
   nativeTypography,
 } from "@shongre/design-tokens/native";
@@ -365,8 +367,8 @@ const styles = StyleSheet.create({
   },
   requirement: { gap: spacing.xs, paddingTop: spacing.sm },
   input: {
-    minHeight: 48,
-    borderWidth: 1,
+    minHeight: nativeSizing.controlLg,
+    borderWidth: nativeBorders.hairline,
     borderColor: colors.border,
     borderRadius: radius.md,
     paddingHorizontal: spacing.md,

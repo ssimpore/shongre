@@ -1,8 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
   colors,
+  iconStrokeWidths,
+  nativeAspect,
+  nativeBorders,
   nativeColors,
   nativeRadius,
+  nativeSizing,
   nativeSpacing,
   radius,
   themeFontFamilies,
@@ -46,6 +50,11 @@ describe("canonical design tokens", () => {
       Number.parseFloat(radius["listing-card"]) * 16,
     );
     expect(nativeRadius.card).toBe(Number.parseFloat(radius.card) * 16);
+    expect(nativeBorders.hairline).toBe(1);
+    expect(nativeSizing.fieldMultilineMin).toBe(112);
+    expect(nativeSizing.avatar2xl).toBe(128);
+    expect(nativeAspect.media).toBe(4 / 3);
+    expect(iconStrokeWidths.regular).toBe(2);
   });
 
   it("keeps listing cards compact through semantic shared tokens", () => {

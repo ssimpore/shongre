@@ -116,7 +116,7 @@ const textSizes = StyleSheet.create({
     fontSize: nativeTypography.size.micro,
     lineHeight: nativeTypography.lineHeight.caption,
     textTransform: "uppercase",
-    letterSpacing: 0.8,
+    letterSpacing: nativeTypography.letterSpacing.overline,
   },
 });
 const headingSizes = StyleSheet.create({

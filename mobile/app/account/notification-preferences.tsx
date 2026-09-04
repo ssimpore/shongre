@@ -19,6 +19,7 @@ import {
 import {
   mobileColors as colors,
   mobileRadius as radius,
+  nativeBorders,
   nativeSpacing as spacing,
   nativeTypography,
 } from "@shongre/design-tokens/native";
@@ -192,7 +193,7 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     gap: spacing.md,
     borderRadius: radius.lg,
-    borderWidth: 1,
+    borderWidth: nativeBorders.hairline,
     borderColor: colors.border,
     backgroundColor: colors.surface,
   },

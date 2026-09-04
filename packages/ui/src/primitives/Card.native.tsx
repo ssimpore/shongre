@@ -7,6 +7,7 @@ import {
   type ViewStyle,
 } from "react-native";
 import {
+  nativeBorders,
   nativeColors,
   nativePalette,
   nativeRadius,
@@ -36,7 +37,11 @@ export function Card({
   );
 }
 const styles = StyleSheet.create({
-  base: { borderWidth: 1, borderRadius: nativeRadius.card, overflow: "hidden" },
+  base: {
+    borderWidth: nativeBorders.hairline,
+    borderRadius: nativeRadius.card,
+    overflow: "hidden",
+  },
 });
 const tones = StyleSheet.create({
   default: {
@@ -53,7 +58,7 @@ const tones = StyleSheet.create({
   },
 });
 const paddings = StyleSheet.create({
-  none: { padding: 0 },
+  none: { padding: nativeSpacing.none },
   sm: { padding: nativeSpacing.md },
   md: { padding: nativeSpacing.lg },
   lg: { padding: nativeSpacing.xl },

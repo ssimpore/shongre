@@ -1,8 +1,10 @@
 import type { ReactNode } from "react";
 import { Modal as RNModal, SafeAreaView, StyleSheet, View } from "react-native";
 import {
+  nativeBorders,
   nativeColors,
   nativeRadius,
+  nativeSizing,
   nativeSpacing,
 } from "@shongre/design-tokens/native";
 import { Button } from "../primitives/Button.native";
@@ -71,11 +73,11 @@ const styles = StyleSheet.create({
     backgroundColor: nativeColors.interaction.overlay,
   },
   panel: {
-    maxHeight: "90%",
+    maxHeight: nativeSizing.dialogMaxHeight,
     backgroundColor: nativeColors.surface.raised,
     borderTopLeftRadius: nativeRadius.overlay,
     borderTopRightRadius: nativeRadius.overlay,
-    borderWidth: 1,
+    borderWidth: nativeBorders.hairline,
     borderColor: nativeColors.border.default,
   },
   header: {
@@ -84,7 +86,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     gap: nativeSpacing.md,
     padding: nativeSpacing.lg,
-    borderBottomWidth: 1,
+    borderBottomWidth: nativeBorders.hairline,
     borderBottomColor: nativeColors.border.subtle,
   },
   title: { flex: 1, gap: nativeSpacing.xs },

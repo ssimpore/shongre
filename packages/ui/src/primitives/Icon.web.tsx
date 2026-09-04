@@ -20,6 +20,7 @@ import {
   X,
 } from "lucide-react";
 import type { ComponentType } from "react";
+import { iconStrokeWidths } from "@shongre/design-tokens";
 import { cn } from "../utils/variants";
 
 export type IconName =
@@ -96,7 +97,7 @@ export function SemanticIcon({
   return (
     <Glyph
       className={cn("shrink-0", iconSizes[size], className)}
-      strokeWidth={2}
+      strokeWidth={iconStrokeWidths.regular}
       aria-hidden={label ? undefined : true}
       aria-label={label}
       role={label ? "img" : undefined}

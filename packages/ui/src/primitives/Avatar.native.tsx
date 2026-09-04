@@ -6,8 +6,10 @@ import {
   type ViewStyle,
 } from "react-native";
 import {
+  nativeBorders,
   nativeColors,
   nativeRadius,
+  nativeSizing,
   nativeSpacing,
 } from "@shongre/design-tokens/native";
 import { Text } from "./Typography.native";
@@ -20,7 +22,13 @@ export interface AvatarProps {
   verifiedLabel?: string;
   style?: StyleProp<ViewStyle>;
 }
-const dimensions = { sm: 28, md: 40, lg: 48, xl: 64, "2xl": 96 } as const;
+const dimensions = {
+  sm: nativeSizing.avatarSm,
+  md: nativeSizing.avatarMd,
+  lg: nativeSizing.avatarLg,
+  xl: nativeSizing.avatarXl,
+  "2xl": nativeSizing.avatar2xl,
+} as const;
 const initials = (name: string) =>
   name
     .trim()
@@ -74,7 +82,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: nativeColors.surface.subtle,
-    borderWidth: 1,
+    borderWidth: nativeBorders.hairline,
     borderColor: nativeColors.border.default,
   },
   verified: {
