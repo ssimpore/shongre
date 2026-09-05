@@ -128,6 +128,7 @@ function isDirectHtmlNavigation(request: NextRequest): boolean {
     pathname === "/sitemap.xml" ||
     pathname === "/manifest.webmanifest" ||
     pathname === "/sw.js" ||
+    pathname.startsWith("/og/") ||
     pathname.includes("/sitemap") ||
     /\.[a-z0-9]+$/i.test(pathname)
   ) {

@@ -40,6 +40,18 @@ describe("canonical design tokens", () => {
     expect(nativeColors.status.error).toBe(colors.status.error);
   });
 
+  it("preserves the official SHONGRE. v1.0.0 palette", () => {
+    expect(colors.brand).toEqual({
+      primary: "#FF6500",
+      ink: "#172033",
+      background: "#FFFFFF",
+      surfaceSubtle: "#F7F8FA",
+    });
+    expect(colors.text.primary).toBe(colors.brand.ink);
+    expect(colors.surface.default).toBe(colors.brand.background);
+    expect(colors.surface.subtle).toBe(colors.brand.surfaceSubtle);
+  });
+
   it("keeps primary controls WCAG AA readable", () => {
     expect(
       contrast(themeColors.white, themeColors.primary),
@@ -59,6 +71,8 @@ describe("canonical design tokens", () => {
     expect(nativeBorders.hairline).toBe(1);
     expect(nativeSizing.fieldMultilineMin).toBe(112);
     expect(nativeSizing.avatar2xl).toBe(128);
+    expect(nativeSizing.brandLogoCompact).toBe(120);
+    expect(nativeSizing.brandLogoStandard).toBe(160);
     expect(nativeAspect.media).toBe(4 / 3);
     expect(iconStrokeWidths.regular).toBe(2);
     expect(nativeTypography.size.overline).toBe(

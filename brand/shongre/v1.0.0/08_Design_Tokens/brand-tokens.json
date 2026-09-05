@@ -1,0 +1,34 @@
+{
+  "$schema": "https://design-tokens.github.io/community-group/format/",
+  "brand": {
+    "name": "Shongre",
+    "signature": "SHONGRE.",
+    "version": "1.0.0"
+  },
+  "color": {
+    "orange": {"value": "#FF6500", "type": "color"},
+    "ink": {"value": "#172033", "type": "color"},
+    "white": {"value": "#FFFFFF", "type": "color"},
+    "mist": {"value": "#F7F8FA", "type": "color"},
+    "border": {"value": "#D8DDE5", "type": "color"},
+    "muted": {"value": "#5B6474", "type": "color"}
+  },
+  "typography": {
+    "displayFamily": {"value": "Manrope, Inter, Arial, sans-serif", "type": "fontFamily"},
+    "uiFamily": {"value": "Inter, Arial, sans-serif", "type": "fontFamily"},
+    "wordmarkTracking": {"value": "0.08em", "type": "dimension"},
+    "displayWeight": {"value": 800, "type": "fontWeight"},
+    "uiWeightRegular": {"value": 400, "type": "fontWeight"},
+    "uiWeightSemibold": {"value": 600, "type": "fontWeight"}
+  },
+  "logo": {
+    "clearSpace": {"value": "0.25x", "type": "dimension"},
+    "minimumHorizontalDigitalWidth": {"value": "120px", "type": "dimension"},
+    "minimumIconDigitalSize": {"value": "24px", "type": "dimension"},
+    "minimumHorizontalPrintWidth": {"value": "30mm", "type": "dimension"}
+  },
+  "shape": {
+    "iconCornerRadius": {"value": "18%", "type": "dimension"}
+  }
+}
+

@@ -1,6 +1,7 @@
 import { createHash, randomUUID } from "node:crypto";
 import { getCountryConfig, type MarketContext } from "@shongre/contracts";
 import { themeColors } from "@shongre/design-tokens";
+import { brandDocumentLogoDataUri } from "@shongre/brand";
 import type {
   CommercialAuditEvent,
   CommercialConfigurationVersion,
@@ -1754,7 +1755,7 @@ export class BusinessRulesService {
     return {
       fileName: `${invoice.number}.html`,
       mimeType: "text/html;charset=utf-8",
-      content: `<!doctype html><html lang="fr"><meta charset="utf-8"><title>${escape(invoice.number)}</title><style>body{font-family:Arial,sans-serif;color:${themeColors["text-main"]};max-width:760px;margin:48px auto;padding:0 24px}header,section{display:flex;justify-content:space-between;gap:32px;margin-bottom:40px}h1{font-size:28px;margin:0}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:12px;border-bottom:1px solid ${themeColors["border-base"]}}.number{text-align:right}.total{font-weight:700;font-size:18px}small{color:${themeColors["text-muted"]}}</style><body><header><div><h1>SHONGRE.</h1><small>Facture</small></div><div><strong>${escape(invoice.number)}</strong><br>${new Date(invoice.issuedAt).toLocaleDateString("fr-FR")}</div></header><section><div><strong>Facturé à</strong><br>${customerName}</div><div><strong>Émetteur</strong><br>Shongre SAS<br>France</div></section><table><tbody><tr><td>Services Shongre</td><td class="number">${format(invoice.subtotal.amountMinor)}</td></tr><tr><td>Remise</td><td class="number">− ${format(invoice.discount.amountMinor)}</td></tr><tr><td>TVA</td><td class="number">${format(invoice.tax.amountMinor)}</td></tr><tr class="total"><td>Total TTC</td><td class="number">${format(invoice.total.amountMinor)}</td></tr></tbody></table><p><small>Statut : ${escape(invoice.status)}.</small></p></body></html>`,
+      content: `<!doctype html><html lang="fr"><meta charset="utf-8"><title>${escape(invoice.number)}</title><style>body{font-family:Arial,sans-serif;color:${themeColors["text-main"]};max-width:760px;margin:48px auto;padding:0 24px}header,section{display:flex;justify-content:space-between;gap:32px;margin-bottom:40px}.brand-logo{display:block;width:180px;height:auto;margin:0 0 8px}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:12px;border-bottom:1px solid ${themeColors["border-base"]}}.number{text-align:right}.total{font-weight:700;font-size:18px}small{color:${themeColors["text-muted"]}}</style><body><header><div><img class="brand-logo" src="${brandDocumentLogoDataUri}" width="240" height="61" alt="SHONGRE."><small>Facture</small></div><div><strong>${escape(invoice.number)}</strong><br>${new Date(invoice.issuedAt).toLocaleDateString("fr-FR")}</div></header><section><div><strong>Facturé à</strong><br>${customerName}</div><div><strong>Émetteur</strong><br>Shongre SAS<br>France</div></section><table><tbody><tr><td>Services Shongre</td><td class="number">${format(invoice.subtotal.amountMinor)}</td></tr><tr><td>Remise</td><td class="number">− ${format(invoice.discount.amountMinor)}</td></tr><tr><td>TVA</td><td class="number">${format(invoice.tax.amountMinor)}</td></tr><tr class="total"><td>Total TTC</td><td class="number">${format(invoice.total.amountMinor)}</td></tr></tbody></table><p><small>Statut : ${escape(invoice.status)}.</small></p></body></html>`,
     };
   }
 

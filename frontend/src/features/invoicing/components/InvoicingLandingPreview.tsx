@@ -5,6 +5,7 @@ import {
   ReceiptText,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { BrandLogo } from "../../../design-system";
 
 interface InvoicingLandingPreviewProps {
   workspaceDestination: string;
@@ -42,9 +43,7 @@ export function InvoicingLandingPreview({
         <div className="rounded-card border border-border-base bg-bg-base p-4 sm:p-6">
           <div className="flex items-start justify-between gap-4 border-b border-border-base pb-5">
             <div>
-              <p className="text-lg font-bold tracking-tight text-text-main">
-                SHONGRE<span className="text-primary">.</span>
-              </p>
+              <BrandLogo size="compact" />
               <p className="mt-1 text-micro font-bold uppercase tracking-wider text-text-muted">
                 {labels.documentLabel}
               </p>

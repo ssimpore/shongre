@@ -1,12 +1,13 @@
 import { ImageResponse } from "next/og";
 import { themeColors } from "@shongre/design-tokens";
+import { resolveServerApplicationContext } from "../../../../src/platform/applications/server-application-context";
 
 export const dynamic = "force-dynamic";
 
 /** `ImageResponse` cannot read CSS variables, so it consumes token values in JS. */
-const BRAND = themeColors.primary;
-const INK = themeColors["text-main"];
-const GROUND = themeColors["bg-subtle"];
+const BRAND = themeColors["brand-primary"];
+const INK = themeColors["brand-ink"];
+const GROUND = themeColors["brand-surface-subtle"];
 const RULE = themeColors["border-base"];
 const MUTED = themeColors["text-secondary"];
 
@@ -39,6 +40,17 @@ export async function GET(
 ): Promise<Response> {
   const { slug } = await context.params;
   const named = SLUG.test(slug);
+  const applicationContext =
+    await resolveServerApplicationContext("/solutions");
+  if (!applicationContext) {
+    return new Response("Solutions application origin is unavailable.", {
+      status: 503,
+    });
+  }
+  const brandLogoUrl = new URL(
+    "/brand/shongre/logo/header-primary-480.png",
+    applicationContext.canonicalOrigin,
+  ).href;
 
   return new ImageResponse(
     <div
@@ -53,27 +65,15 @@ export async function GET(
         fontFamily: "sans-serif",
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-        <div
-          style={{
-            width: 64,
-            height: 64,
-            borderRadius: 16,
-            background: BRAND,
-            color: themeColors.white,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: 40,
-            fontWeight: 700,
-          }}
-        >
-          S
-        </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
+        <img
+          src={brandLogoUrl}
+          alt="SHONGRE."
+          width="240"
+          height="61"
+          style={{ width: 240, height: 61, objectFit: "contain" }}
+        />
         <div style={{ display: "flex", flexDirection: "column" }}>
-          <span style={{ fontSize: 30, fontWeight: 700, color: INK }}>
-            shongre
-          </span>
           <span style={{ fontSize: 20, color: MUTED, marginTop: 2 }}>
             Solutions
           </span>
@@ -90,7 +90,7 @@ export async function GET(
             lineHeight: 1.05,
           }}
         >
-          {named ? `Shongre ${displayName(slug)}` : "Shongre Solutions"}
+          {named ? `SHONGRE. ${displayName(slug)}` : "SHONGRE. Solutions"}
         </span>
         <div
           style={{

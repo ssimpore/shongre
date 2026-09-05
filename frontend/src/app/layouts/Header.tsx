@@ -57,6 +57,7 @@ import { useTranslation } from "../../i18n/I18nProvider";
 import { PublishCtaButton } from "../../design-system/primitives/PublishCtaButton";
 import { Container } from "../../design-system";
 import { Button } from "../../design-system/primitives/Button";
+import { BrandHeaderSignature } from "../../design-system/primitives/BrandLogo";
 import {
   CONTROL_FOCUS_CLASS,
   CONTROL_MOTION_CLASS,
@@ -505,23 +506,16 @@ export const Header: React.FC = () => {
           <div className="flex min-w-0 flex-1 items-center gap-3 lg:flex-none lg:shrink-0 lg:gap-4">
             <Link
               to={routes.home()}
-              className="flex items-center gap-2 select-none group min-w-0"
+              className="group flex min-w-0 items-center select-none"
+              aria-label="SHONGRE., accueil"
             >
-              <div
-                className={`w-9 h-9 rounded-control bg-primary text-white flex items-center justify-center font-bold text-xl shadow-xs group-hover:scale-105 ${CONTROL_MOTION_CLASS} shrink-0`}
-              >
-                S
-              </div>
-              <div className="flex flex-col min-w-0">
-                <span className="text-xl font-bold tracking-tight uppercase text-stone-900 leading-none truncate">
-                  Shongre<span className="text-primary">.</span>
-                </span>
-                {/* The market name repeats the market selector in the actions
-                    row, so tablet drops it rather than the search field. */}
-                <span className="hidden lg:block text-micro font-bold text-stone-600 tracking-wider uppercase mt-0.5 truncate">
-                  {activeMarket.name}
-                </span>
-              </div>
+              {/* The market name repeats the market selector in the actions
+                  row, so tablet drops it rather than the search field. */}
+              <BrandHeaderSignature
+                priority
+                marketLabel={activeMarket.name}
+                marketLabelVisibility="desktop"
+              />
             </Link>
 
             {/* Language selector.
@@ -873,22 +867,12 @@ export const Header: React.FC = () => {
                 <Link
                   to={routes.home()}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex items-center gap-2.5 select-none"
+                  className="flex items-center select-none"
+                  aria-label="SHONGRE., accueil"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-stone-900 text-white flex items-center justify-center font-bold text-lg shadow-sm">
-                    S
-                  </div>
-                  <div className="flex flex-col">
-                    <span
-                      id={drawerTitleId}
-                      className="text-lg font-bold text-stone-900 tracking-tight leading-none"
-                    >
-                      Shongre<span className="text-primary">.</span>
-                    </span>
-                    <span className="text-micro font-bold text-stone-500 tracking-wider uppercase mt-0.5">
-                      {activeMarket.name}
-                    </span>
-                  </div>
+                  <span id={drawerTitleId} className="leading-none">
+                    <BrandHeaderSignature marketLabel={activeMarket.name} />
+                  </span>
                 </Link>
 
                 <button

@@ -24,6 +24,7 @@ Mobile users ───▶ mobile/ ─────┘
 
 Shared product system: packages/design-tokens/, packages/ui/, packages/features/,
 packages/shared/, packages/brand/, and packages/contracts/
+Versioned visual-identity source: brand/shongre/v1.0.0/
 Runtime/deployment tooling:  infrastructure/ + scripts/ + Makefile
 ```
 
@@ -70,6 +71,8 @@ The complete everyday workflow is intentionally small:
 ```bash
 make help       # discover generated command documentation
 make doctor     # diagnose the machine and configured modes
+make brand-sync # regenerate the curated Web/mobile/document brand subset
+make brand-check # validate checksums, mappings, dimensions, and references
 make check      # deterministic pre-commit/pre-PR gate
 ```
 
@@ -300,7 +303,8 @@ packages/design-tokens/   canonical visual values and generated platform adapter
 packages/ui/              shared Web/native primitive APIs
 packages/features/        shared feature presentation and interaction rules
 packages/shared/          framework-free formatting and validation
-packages/brand/           canonical brand mark and generated app assets
+brand/                    immutable, versioned visual-identity source kits
+packages/brand/           generated runtime brand metadata/document adapter
 packages/contracts/       generated OpenAPI types plus stable domain schemas
 infrastructure/           cross-cutting operations and association-file templates
 compose.yaml               private hosted Web/API/worker/cloudflared topology

@@ -71,6 +71,11 @@ for (const [name, value] of Object.entries(themeAspect))
 
 const root = [
   "  --design-system-contract-version: 5;",
+  "  --brand-primary: var(--color-brand-primary);",
+  "  --brand-primary-hover: var(--color-primary-hover);",
+  "  --brand-ink: var(--color-brand-ink);",
+  "  --brand-background: var(--color-brand-background);",
+  "  --brand-surface-subtle: var(--color-brand-surface-subtle);",
   `  --font-family-sans: ${themeFontFamilies.sans};`,
   ...Object.entries(themeZIndex).map(
     ([name, value]) => `  --z-${name}: ${value};`,

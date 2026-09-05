@@ -3,6 +3,12 @@ import { themeColors } from "./theme";
 export const palette = themeColors;
 
 export const colors = {
+  brand: {
+    primary: themeColors["brand-primary"],
+    ink: themeColors["brand-ink"],
+    background: themeColors["brand-background"],
+    surfaceSubtle: themeColors["brand-surface-subtle"],
+  },
   surface: {
     default: themeColors["bg-base"],
     raised: themeColors["bg-surface"],

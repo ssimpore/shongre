@@ -16,13 +16,14 @@ describe("resolveTitle", () => {
   });
 
   // Listing detail builds its own branded title, and a blind append produced
-  // "… | Shongre | Shongre" in the tab and in every shared link.
+  // "… | Shongre | Shongre" in the tab and in every shared link. Legacy
+  // spellings are normalized to the official signature at the same time.
   it.each([
     "Peugeot 208 - 15400 € | Shongre",
     "Atelier Nordique — Shongre",
     "Boutique - shongre",
-  ])("leaves an already-branded title alone: %s", (title) => {
-    expect(resolveTitle(title)).toBe(title);
+  ])("normalizes an already-branded title: %s", (title) => {
+    expect(resolveTitle(title)).toMatch(/SHONGRE\.$/);
   });
 
   it("falls back to the site title when a page has none", () => {

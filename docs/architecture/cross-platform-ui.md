@@ -28,8 +28,10 @@ Shared packages never import application folders; backend may consume
   radius, sizing, border, opacity, motion, breakpoint, shadow, and z-index
   values. Its build creates the Web CSS adapter; `src/native.ts` creates numeric
   React Native adapters.
-- `packages/brand/src/logos/mark.svg` owns the mark. `npm run assets -w
-@shongre/brand` generates Web and Expo icon adapters.
+- `brand/shongre/v1.0.0/` owns the approved, checksummed identity masters.
+  `make brand-sync` publishes only the curated Web, Expo, and document-runtime
+  subset; `packages/brand` exposes identity metadata and generated document
+  artwork without becoming a second asset source.
 - `packages/ui` owns reusable primitives. `.web.tsx` and `.native.tsx` files
   preserve a common public concept while using semantic HTML or React Native
   primitives as appropriate.

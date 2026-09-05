@@ -9,6 +9,10 @@ import type { RoutePolicyId } from "../../security/access-policy.registry";
 import { useAuthorization } from "../../security/useAuthorization";
 import type { ShongreProductId } from "../../types";
 import { applicationHref } from "../../platform/applications/use-application-href";
+import {
+  BrandHeaderSignature,
+  BrandIcon,
+} from "../../design-system/primitives/BrandLogo";
 
 export interface ProductNavigationItem {
   label: string;
@@ -103,23 +107,18 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({
                 ? productDestination
                 : applicationHref("marketplace", routes.home())
             }
-            className="group flex shrink-0 items-center gap-3 rounded-control focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            className="group flex shrink-0 items-center rounded-control focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             aria-label={
               isProductOnly
                 ? `Accéder à ${productName}`
                 : "Accéder à la plateforme Shongre"
             }
           >
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-control bg-primary text-lg font-bold text-white transition-colors group-hover:bg-primary-hover">
-              S
-            </span>
             <span className="hidden leading-none sm:block">
-              <span className="block text-base font-bold tracking-tight text-text-main transition-colors group-hover:text-primary">
-                SHONGRE<span className="text-primary">.</span>
-              </span>
-              <span className="mt-1 block text-micro font-bold tracking-wider text-text-muted">
-                FRANCE
-              </span>
+              <BrandHeaderSignature priority marketLabel="FRANCE" />
+            </span>
+            <span className="sm:hidden">
+              <BrandIcon size="standard" decorative />
             </span>
           </a>
           <span className="h-8 w-px bg-border-base" aria-hidden="true" />

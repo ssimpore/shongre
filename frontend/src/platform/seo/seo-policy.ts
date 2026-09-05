@@ -11,6 +11,7 @@ import {
 import { isProSeller } from "../../domains/user/user.domain";
 import {
   DEFAULT_DESCRIPTION,
+  DEFAULT_SHARE_IMAGE_PATH,
   DEFAULT_TITLE,
   HOMEPAGE_DESCRIPTION,
   resolveTitle,
@@ -459,7 +460,7 @@ export function resolveSeoPolicy({
       indexable: false,
       follow: true,
       canonicalPath: legacyTarget,
-      title: STATIC_PAGES[legacyTarget]?.title || "Shongre",
+      title: STATIC_PAGES[legacyTarget]?.title || "SHONGRE.",
       description:
         STATIC_PAGES[legacyTarget]?.description || DEFAULT_DESCRIPTION,
       resourceType: "static_content",
@@ -939,14 +940,14 @@ export function structuredDataForPolicy(
       {
         "@context": "https://schema.org",
         "@type": "Organization",
-        name: "Shongre",
+        name: "SHONGRE.",
         url: origin,
-        logo: new URL("/favicon.svg", origin).toString(),
+        logo: new URL("/brand/shongre/icon/primary.svg", origin).toString(),
       },
       {
         "@context": "https://schema.org",
         "@type": "WebSite",
-        name: "Shongre",
+        name: "SHONGRE.",
         url: policy.canonicalUrl,
         inLanguage: context.locale || undefined,
       },
@@ -1168,7 +1169,9 @@ export function pageMetaForPolicy(
     title: policy.title,
     description: policy.description,
     canonicalPath: policy.canonicalPath,
-    image: policy.image,
+    image:
+      policy.image ??
+      new URL(DEFAULT_SHARE_IMAGE_PATH, policy.canonicalUrl).toString(),
     type: policy.openGraphType,
     noIndex: !policy.indexable,
     follow: policy.follow,

@@ -24,9 +24,9 @@ const nativeAdapter = await readFile(
 );
 
 const failures = [];
-if (!css.includes(`--color-primary: ${configColors.brand};`))
+if (!css.includes(`--color-brand-primary: ${configColors.brand};`))
   failures.push(
-    "generated Web CSS does not contain the canonical primary token",
+    "generated Web CSS does not contain the canonical brand-primary token",
   );
 if (!nativeAdapter.includes("primary: colors.action.primary"))
   failures.push(

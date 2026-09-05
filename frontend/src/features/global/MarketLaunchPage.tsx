@@ -1,6 +1,7 @@
 import { ArrowLeft, Clock3 } from "lucide-react";
 import type { CountryConfig } from "@shongre/contracts";
 import { EarlyAccessSignup } from "./EarlyAccessSignup";
+import { BrandHeaderSignature } from "../../design-system/primitives/BrandLogo";
 
 export function MarketLaunchPage({
   country,
@@ -15,9 +16,10 @@ export function MarketLaunchPage({
         <div className="mx-auto flex h-16 w-full max-w-page items-center justify-between px-4 sm:px-6 lg:px-8">
           <a
             href={gatewayHref}
-            className="text-xl font-bold uppercase tracking-tight"
+            className="focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
+            aria-label="SHONGRE., choix du pays"
           >
-            Shongre<span className="text-primary">.</span>
+            <BrandHeaderSignature priority />
           </a>
           <span className="text-2xl" aria-hidden="true">
             {country.flag}

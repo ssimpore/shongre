@@ -57,23 +57,6 @@ function renderBackendHomePage(
       padding-bottom: 1.5rem;
       margin-bottom: 2rem;
     }
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
-    .brand-icon {
-      width: 36px;
-      height: 36px;
-      background: linear-gradient(135deg, var(--primary), var(--secondary));
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 800;
-      color: var(--bg);
-      font-size: 1.25rem;
-    }
     h1 {
       margin: 0;
       font-size: 1.5rem;
@@ -172,12 +155,9 @@ function renderBackendHomePage(
 <body>
   <div class="container">
     <div class="header">
-      <div class="brand">
-        <div class="brand-icon">S</div>
-        <div>
-          <h1>Shongre Backend API</h1>
-          <p class="subtitle">Multi-country classifieds and marketplace payment platform</p>
-        </div>
+      <div>
+        <h1>Backend API</h1>
+        <p class="subtitle">SHONGRE. multi-country marketplace runtime</p>
       </div>
       <div class="badge">
         <span class="dot"></span> Online (Port ${port})

@@ -7,5 +7,5 @@ import { themeColors } from "./theme.ts";
  */
 export const configColors = {
   surface: themeColors["bg-surface"],
-  brand: themeColors.primary,
+  brand: themeColors["brand-primary"],
 } as const;

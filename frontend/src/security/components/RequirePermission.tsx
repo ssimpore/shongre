@@ -16,6 +16,7 @@ import {
   AuthorizationContextOptions,
 } from "../authorization.service";
 import { useTranslation } from "../../i18n/I18nProvider";
+import { BrandLogo } from "../../design-system/primitives/BrandLogo";
 
 export interface RequirePermissionProps {
   permission: Permission;
@@ -140,12 +141,10 @@ const GuardShell: React.FC<{
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center">
           <Link
             to={routes.home()}
-            className="flex items-center gap-2.5 font-bold text-stone-900"
+            className="flex items-center font-bold text-stone-900"
+            aria-label="SHONGRE., accueil"
           >
-            <span className="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center text-sm">
-              S
-            </span>
-            <span className="tracking-tight">SHONGRE.</span>
+            <BrandLogo size="compact" priority />
           </Link>
         </div>
       </div>

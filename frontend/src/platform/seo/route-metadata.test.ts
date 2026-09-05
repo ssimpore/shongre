@@ -31,6 +31,20 @@ describe("country-aware route metadata", () => {
         ? metadata.openGraph.locale
         : undefined,
     ).toBe("fr_FR");
+    expect(metadata.openGraph).toMatchObject({
+      siteName: "SHONGRE.",
+      images: [
+        {
+          url: "https://shongre.fr/brand/shongre/social/open-graph-light.png",
+          width: 1200,
+          height: 630,
+        },
+      ],
+    });
+    expect(metadata.twitter).toMatchObject({
+      card: "summary_large_image",
+      images: ["https://shongre.fr/brand/shongre/social/open-graph-light.png"],
+    });
   });
 
   it("keeps Belgium and Switzerland under their .com country paths", () => {

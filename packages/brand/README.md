@@ -1,5 +1,8 @@
 # @shongre/brand
 
-Canonical brand name, mark template, and shared asset metadata. The mark source,
-platform icons, and favicons are generated from `@shongre/design-tokens` by
-`scripts/generate-assets.mjs`; they are not independent colour sources.
+Shared TypeScript identity metadata for the official `SHONGRE.` brand.
+
+The complete, immutable source kit is `brand/shongre/v1.0.0/`. Runtime Web and
+Expo assets and the design-token adapter are synchronized from that source by
+`npm run brand:sync` at the repository root. This package does not own or redraw
+the logo artwork.

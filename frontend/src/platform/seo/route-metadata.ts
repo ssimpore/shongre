@@ -4,7 +4,10 @@ import {
   COUNTRY_REGISTRY,
   type MarketContext,
 } from "@shongre/contracts";
-import { resolveOpenGraphLocale } from "../../services/seo.service";
+import {
+  DEFAULT_SHARE_IMAGE_PATH,
+  resolveOpenGraphLocale,
+} from "../../services/seo.service";
 import type { PublicRouteDataResolution } from "./public-route-data";
 import {
   resolveSeoPolicy,
@@ -50,6 +53,9 @@ function metadataForPolicy(
   policy: SeoRoutePolicy,
   marketContext: MarketContext,
 ): Metadata {
+  const socialImage =
+    policy.image ??
+    new URL(DEFAULT_SHARE_IMAGE_PATH, policy.canonicalUrl).toString();
   const alternateLocales = policy.alternateCountryCodes
     .filter((code) => code !== marketContext.countryCode)
     .map((code) => COUNTRY_REGISTRY.find((country) => country.code === code))
@@ -79,15 +85,15 @@ function metadataForPolicy(
             : "website",
       locale: resolveOpenGraphLocale(marketContext.locale || undefined),
       alternateLocale: alternateLocales,
-      siteName: "Shongre",
+      siteName: "SHONGRE.",
       url: policy.canonicalUrl,
-      ...(policy.image ? { images: [{ url: policy.image }] } : {}),
+      images: [{ url: socialImage, width: 1200, height: 630 }],
     },
     twitter: {
-      card: policy.image ? "summary_large_image" : "summary",
+      card: "summary_large_image",
       title: policy.title,
       description: policy.description,
-      ...(policy.image ? { images: [policy.image] } : {}),
+      images: [socialImage],
     },
   };
 }

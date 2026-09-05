@@ -10,6 +10,7 @@ import {
 import type { ListingCardView } from "@shongre/contracts";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ListingCard } from "@/components/ListingCard";
+import { BrandLogo } from "@/components/BrandLogo";
 import { StatePanel } from "@/components/StatePanel";
 import {
   mobileColors as colors,
@@ -86,8 +87,9 @@ export default function HomeScreen() {
         }
         ListHeaderComponent={
           <View style={styles.header}>
+            <BrandLogo />
             <Text style={styles.eyebrow}>
-              Shongre · {activeMarket.flag} {activeMarket.name}
+              {activeMarket.flag} {activeMarket.name}
             </Text>
             <Text accessibilityRole="header" style={styles.heading}>
               Trouvez ce qui mérite une seconde vie.

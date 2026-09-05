@@ -7,6 +7,7 @@ import { isProductOnlyAccount } from "../../domains/user/user.domain";
 import { useAuth } from "../providers/AuthProvider";
 import type { ShongreProductId } from "../../types";
 import { applicationHref } from "../../platform/applications/use-application-href";
+import { BrandLogo } from "../../design-system/primitives/BrandLogo";
 
 interface ProductFooterProps {
   productId: ShongreProductId;
@@ -38,8 +39,9 @@ export const ProductFooter: React.FC<ProductFooterProps> = ({
             <a
               href={applicationHref(productId, productPath)}
               className="inline-flex items-center gap-2 text-base font-bold tracking-tight text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-on-dark"
+              aria-label={`SHONGRE. ${productName}`}
             >
-              SHONGRE<span className="text-primary-on-dark">.</span>
+              <BrandLogo variant="reverse" size="compact" />
               <span className="font-semibold text-stone-400">
                 {productName}
               </span>

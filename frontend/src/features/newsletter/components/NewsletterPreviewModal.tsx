@@ -4,6 +4,7 @@ import type { MarketingCampaign } from "@shongre/contracts";
 import { Monitor, Smartphone } from "lucide-react";
 import { Modal } from "../../../design-system/primitives/Modal";
 import { Button } from "../../../design-system/primitives/Button";
+import { BrandLogo } from "../../../design-system/primitives/BrandLogo";
 
 interface NewsletterPreviewModalProps {
   isOpen: boolean;
@@ -77,12 +78,7 @@ export const NewsletterPreviewModal: React.FC<NewsletterPreviewModalProps> = ({
             }`}
           >
             <header className="flex items-center justify-between bg-stone-950 px-6 py-5 text-white">
-              <div className="flex items-center gap-2">
-                <span className="grid h-7 w-7 place-items-center rounded-lg bg-primary text-base font-bold">
-                  S
-                </span>
-                <span className="text-base font-bold">Shongre</span>
-              </div>
+              <BrandLogo variant="reverse" size="compact" />
               <span className="text-micro font-bold uppercase tracking-wider text-stone-400">
                 Marketing
               </span>

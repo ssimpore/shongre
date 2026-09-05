@@ -35,6 +35,8 @@
     "check:backend": "npm run lint --workspace=backend && npm run test --workspace=backend && npm run build --workspace=backend && npm run benchmark --workspace=backend && npm run check:boundary",
     "check": "make check",
     "tokens:check": "make tokens-check",
+    "brand:sync": "tsx scripts/sync-brand-assets.ts",
+    "brand:check": "tsx scripts/check-brand-assets.ts",
     "ui:check": "make ui-check",
     "cross-platform:check": "make cross-platform-check",
     "openapi:lint": "redocly lint backend/openapi/openapi.json --format=stylish --max-problems=1000",

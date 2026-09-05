@@ -97,7 +97,7 @@ export function SolutionDetailPage() {
               "@type": "Country",
               identifier: code,
             })),
-            provider: { "@type": "Organization", name: "Shongre" },
+            provider: { "@type": "Organization", name: "SHONGRE." },
           },
           {
             "@context": "https://schema.org",

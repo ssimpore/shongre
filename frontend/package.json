@@ -41,6 +41,7 @@
   },
   "dependencies": {
     "@sentry/browser": "^10.71.0",
+    "@shongre/brand": "1.0.0",
     "@shongre/contracts": "1.0.0",
     "@shongre/design-tokens": "1.0.0",
     "@shongre/features": "1.0.0",

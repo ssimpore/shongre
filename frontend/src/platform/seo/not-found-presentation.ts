@@ -137,6 +137,12 @@ export function renderNotFoundDocument(
       border-radius: ${radius.card};
       box-shadow: ${shadows.sm};
     }
+    .brand-logo {
+      display: block;
+      width: ${sizing.components["brand-logo-compact"]};
+      height: auto;
+      margin: 0 auto ${spacing.lg};
+    }
     .status {
       margin: 0;
       color: ${colors.action.primary};
@@ -184,8 +190,9 @@ export function renderNotFoundDocument(
     '<!doctype html><html lang="fr"><head><meta charset="utf-8">' +
     '<meta name="viewport" content="width=device-width, initial-scale=1">' +
     '<meta name="robots" content="noindex, nofollow">' +
-    `<title>${title} | Shongre</title><style>${styles}</style></head>` +
-    `<body><main><section><p class="status">Erreur 404</p><h1>${title}</h1>` +
+    `<title>${title} | SHONGRE.</title><style>${styles}</style></head>` +
+    '<body><main><section><img class="brand-logo" src="/brand/shongre/logo/header-primary-240.png" width="240" height="61" alt="SHONGRE.">' +
+    `<p class="status">Erreur 404</p><h1>${title}</h1>` +
     `<p class="description">${description}</p><a href="${returnHref}">${returnLabel}</a>` +
     "</section></main></body></html>"
   );

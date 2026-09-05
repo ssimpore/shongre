@@ -3,6 +3,7 @@ import { StyleSheet, Text } from "react-native";
 import { useRouter } from "expo-router";
 import { loginRequestSchema } from "@shongre/contracts";
 import { Button } from "@/components/Button";
+import { BrandLogo } from "@/components/BrandLogo";
 import { FormField } from "@/components/FormField";
 import { Screen } from "@/components/Screen";
 import {
@@ -86,6 +87,7 @@ export default function LoginScreen() {
 
   return (
     <Screen>
+      <BrandLogo size="standard" />
       <Text accessibilityRole="header" style={styles.heading}>
         Ravi de vous revoir
       </Text>

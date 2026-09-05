@@ -9,6 +9,7 @@ import {
   structuredDataForPolicy,
 } from "./seo-policy";
 import { collectionService } from "../../domains/collection/collection.service";
+import { resolveTitle } from "../../services/seo.service";
 
 const infrastructure = {
   globalDomain: "shongre.com",
@@ -296,7 +297,9 @@ describe("central SEO policy", () => {
       expect(policy.canonicalUrl, node.id).toBe(
         `https://shongre.fr${projection.urlPattern}`,
       );
-      expect(policy.title, node.id).toBe(projection.titleTemplate["fr-FR"]);
+      expect(policy.title, node.id).toBe(
+        resolveTitle(projection.titleTemplate["fr-FR"]),
+      );
       expect(policy.description, node.id).toBe(
         projection.descriptionTemplate["fr-FR"],
       );
@@ -313,11 +316,11 @@ describe("central SEO policy", () => {
       routeData: categoryRouteData(pathname),
     });
     expect(policy).toMatchObject({
-      title: "Maison & Jardin | Shongre",
+      title: "Maison & Jardin | SHONGRE.",
       taxonomyHeading: "Maison & Jardin",
       canonicalUrl: "https://shongre.fr/categorie/maison-jardin",
     });
-    expect(policy.title).not.toBe("Maison | Shongre");
+    expect(policy.title).not.toBe("Maison | SHONGRE.");
   });
 
   it.each([
@@ -345,7 +348,7 @@ describe("central SEO policy", () => {
       });
       expect(policy).toMatchObject({
         indexable: true,
-        title: "Maison & Jardin | Shongre",
+        title: "Maison & Jardin | SHONGRE.",
         canonicalUrl: `${expectedOrigin}${pathname}`,
       });
     },

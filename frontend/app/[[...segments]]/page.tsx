@@ -23,6 +23,7 @@ import { WebApplication } from "../WebApplication";
 import { resolveServerApplicationContext } from "../../src/platform/applications/server-application-context";
 import { DEMO_SOLUTIONS } from "../../src/api/adapters/demo/demo-solutions.data";
 import { PUBLIC_SOLUTION_LIFECYCLES } from "../../src/domains/solutions/solutions.presentation";
+import { DEFAULT_SHARE_IMAGE_PATH } from "../../src/services/seo.service";
 
 interface PageProps {
   params: Promise<{ segments?: string[] }>;
@@ -59,8 +60,8 @@ export async function generateMetadata({
     const { applicationId, applicationPath, canonicalOrigin } =
       applicationContext;
     const rootCanonical = `${canonicalOrigin}/`;
-    let title = "Shongre";
-    let description = "Les applications professionnelles Shongre.";
+    let title = "SHONGRE.";
+    let description = "Les applications professionnelles SHONGRE.";
     let canonical = rootCanonical;
     let noIndex = pathname !== "/";
     let shareImage: string | undefined;
@@ -76,14 +77,14 @@ export async function generateMetadata({
           : null;
       const unknownSolution = Boolean(slug && !solution);
       title = unknownSolution
-        ? "Solution introuvable — Shongre Solutions"
+        ? "Solution introuvable — SHONGRE. Solutions"
         : solution
-          ? `${solution.name} — Shongre Solutions`
-          : "Shongre Solutions — Toutes vos applications professionnelles";
+          ? `${solution.name} — SHONGRE. Solutions`
+          : "SHONGRE. Solutions — Toutes vos applications professionnelles";
       description = unknownSolution
-        ? "Cette adresse ne correspond à aucune solution publique du catalogue Shongre."
+        ? "Cette adresse ne correspond à aucune solution publique du catalogue SHONGRE."
         : solution?.description ||
-          "Activez les solutions utiles à votre organisation et retrouvez chaque espace de travail avec un seul compte Shongre.";
+          "Activez les solutions utiles à votre organisation et retrouvez chaque espace de travail avec un seul compte SHONGRE.";
       canonical = new URL(pathname, rootCanonical).toString();
       // Solutions carry no photography, so every share of a solution rendered
       // as a bare text card. The image is generated per solution by the
@@ -99,14 +100,17 @@ export async function generateMetadata({
           ["MAINTENANCE", "DEPRECATED"].includes(solution.lifecycle),
         );
     } else if (applicationId === "prospects") {
-      title = "Shongre Prospects — Trouvez et qualifiez vos prospects B2B";
+      title = "SHONGRE. Prospects — Trouvez et qualifiez vos prospects B2B";
       description =
         "Transformez un profil cible en entreprises qualifiées avec score explicable, preuves sourcées et validation humaine.";
     } else {
-      title = "Shongre Facturation — Facturez avec confiance";
+      title = "SHONGRE. Facturation — Facturez avec confiance";
       description =
-        "Créez, finalisez et suivez vos factures au sein de votre organisation Shongre.";
+        "Créez, finalisez et suivez vos factures au sein de votre organisation SHONGRE.";
     }
+
+    const resolvedShareImage =
+      shareImage ?? new URL(DEFAULT_SHARE_IMAGE_PATH, rootCanonical).toString();
 
     return {
       title,
@@ -120,30 +124,33 @@ export async function generateMetadata({
         description,
         type: "website",
         locale: "fr_FR",
-        siteName: "Shongre",
+        siteName: "SHONGRE.",
         url: canonical,
-        ...(shareImage ? { images: [shareImage] } : {}),
+        images: [resolvedShareImage],
       },
-      ...(shareImage
-        ? { twitter: { card: "summary_large_image", images: [shareImage] } }
-        : {}),
+      twitter: { card: "summary_large_image", images: [resolvedShareImage] },
     };
   }
   const context = await resolveServerMarketContext(pathname);
   if (context.kind === "global_gateway") {
     return {
-      title: "Shongre — Choisissez votre pays",
+      title: "SHONGRE. — Choisissez votre pays",
       description:
-        "Accédez au marché local Shongre de votre pays depuis la porte d’entrée internationale.",
+        "Accédez au marché local SHONGRE. de votre pays depuis la porte d’entrée internationale.",
       alternates: { canonical: context.canonicalUrl },
       openGraph: {
-        title: "Shongre — Choisissez votre pays",
+        title: "SHONGRE. — Choisissez votre pays",
         description:
-          "Annonces, services et professionnels Shongre dans votre pays.",
+          "Annonces, services et professionnels SHONGRE. dans votre pays.",
         type: "website",
         locale: "fr_FR",
-        siteName: "Shongre",
+        siteName: "SHONGRE.",
         url: context.canonicalUrl,
+        images: [new URL(DEFAULT_SHARE_IMAGE_PATH, context.canonicalUrl)],
+      },
+      twitter: {
+        card: "summary_large_image",
+        images: [new URL(DEFAULT_SHARE_IMAGE_PATH, context.canonicalUrl)],
       },
     };
   }
@@ -160,8 +167,13 @@ export async function generateMetadata({
         description: context.country.launchContent.description,
         type: "website",
         locale: context.country.seo.hreflang.replace("-", "_"),
-        siteName: "Shongre",
+        siteName: "SHONGRE.",
         url: context.canonicalUrl,
+        images: [new URL(DEFAULT_SHARE_IMAGE_PATH, context.canonicalUrl)],
+      },
+      twitter: {
+        card: "summary_large_image",
+        images: [new URL(DEFAULT_SHARE_IMAGE_PATH, context.canonicalUrl)],
       },
     };
   }
@@ -234,7 +246,7 @@ export default async function Page({ params, searchParams }: PageProps) {
     const structuredData = JSON.stringify({
       "@context": "https://schema.org",
       "@type": "WebSite",
-      name: "Shongre",
+      name: "SHONGRE.",
       url: context.canonicalUrl,
       potentialAction: indexableCountries.map(({ country, href }) => ({
         "@type": "ChooseAction",

@@ -3,13 +3,38 @@ import { colors } from "@shongre/design-tokens";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Shongre",
-    short_name: "Shongre",
+    name: "SHONGRE.",
+    short_name: "SHONGRE.",
     description: "Petites annonces pour particuliers et professionnels.",
     start_url: "/",
     display: "standalone",
-    background_color: colors.surface.default,
-    theme_color: colors.action.primary,
-    icons: [{ src: "/favicon.svg", sizes: "any", type: "image/svg+xml" }],
+    background_color: colors.brand.background,
+    theme_color: colors.brand.primary,
+    icons: [
+      {
+        src: "/brand/shongre/pwa/icon-192.png",
+        sizes: "192x192",
+        type: "image/png",
+        purpose: "any",
+      },
+      {
+        src: "/brand/shongre/pwa/icon-512.png",
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "any",
+      },
+      {
+        src: "/brand/shongre/pwa/icon-maskable-192.png",
+        sizes: "192x192",
+        type: "image/png",
+        purpose: "maskable",
+      },
+      {
+        src: "/brand/shongre/pwa/icon-maskable-512.png",
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "maskable",
+      },
+    ],
   };
 }

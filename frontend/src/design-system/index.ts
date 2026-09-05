@@ -12,6 +12,7 @@ export * from "@shongre/design-tokens";
 // Foundational primitives
 export * from "./primitives/Badge";
 export * from "./primitives/BrandIcons";
+export * from "./primitives/BrandLogo";
 export * from "./primitives/Button";
 export * from "./primitives/DataTable";
 export * from "./primitives/DropdownMenu";

@@ -30,7 +30,7 @@ import {
   type MarketContext,
 } from "@shongre/contracts";
 
-export const SITE_NAME = "Shongre";
+export const SITE_NAME = "SHONGRE.";
 
 /** Must stay in step with the fallback description in `index.html`. */
 export const DEFAULT_DESCRIPTION =
@@ -38,7 +38,9 @@ export const DEFAULT_DESCRIPTION =
   "avec réservation, paiement en ligne via prestataire, remise en main " +
   "propre et livraison intégrée.";
 
-export const DEFAULT_TITLE = "Shongre - Petites Annonces Particuliers & Pros";
+export const DEFAULT_TITLE = "SHONGRE. — Petites annonces particuliers & pros";
+export const DEFAULT_SHARE_IMAGE_PATH =
+  "/brand/shongre/social/open-graph-light.png";
 
 export const HOMEPAGE_DESCRIPTION =
   "Achetez et vendez près de chez vous sur Shongre : véhicules, immobilier, mode, maison et high-tech, avec paiement sécurisé, livraison intégrée et vendeurs vérifiés.";
@@ -106,13 +108,14 @@ export function resolveOpenGraphLocale(locale?: string): string {
 export function resolveTitle(title?: string): string {
   const trimmed = (title ?? "").trim();
   if (!trimmed) return DEFAULT_TITLE;
-  // Any of the separators a title might use before the brand: pipe, hyphen,
-  // en dash, em dash.
-  if (new RegExp(`[|\\-–—]\\s*${SITE_NAME}\\s*$`, "i").test(trimmed))
-    return trimmed;
-  // The homepage title already opens with the brand, so appending it produced
-  // "Shongre - Petites Annonces… | Shongre" on the one page that matters most.
-  if (new RegExp(`^${SITE_NAME}\\b`, "i").test(trimmed)) return trimmed;
+  // Normalize existing legacy casing/punctuation while preventing a duplicate
+  // signature. Any of the separators a title uses before the brand is kept.
+  if (/[|\-–—]\s*shongre\.?\s*$/i.test(trimmed)) {
+    return trimmed.replace(/shongre\.?\s*$/i, SITE_NAME);
+  }
+  if (/^shongre\.?(?=\s|[|\-–—]|$)/i.test(trimmed)) {
+    return trimmed.replace(/^shongre\.?/i, SITE_NAME);
+  }
   return `${trimmed} | ${SITE_NAME}`;
 }
 

@@ -86,6 +86,17 @@ before application code. They are not compiled into the Docker image, so the
 same digest is promoted through DEV, STAGING, and PRODUCTION. See
 [`docs/architecture/environments.md`](../docs/architecture/environments.md).
 
+## Brand assets
+
+The Web app consumes only the generated runtime subset under
+`public/brand/shongre/` plus the root favicon and Apple touch icon. Approved
+artwork comes from `brand/shongre/v1.0.0`; do not add hand-copied logos to
+`public/` or recreate the signature as text. Use `BrandLogo`, `BrandIcon`, or
+the separately sized `BrandHeaderSignature` lockup, run `make brand-sync` after
+an approved source update, and verify with `make brand-check`. The complete
+source kit remains private to the repository; see
+[`docs/architecture/brand-assets.md`](../docs/architecture/brand-assets.md).
+
 ```env
 # Central Data Mode: "demo" (default) | "api"
 NEXT_PUBLIC_DATA_MODE=demo

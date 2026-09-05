@@ -69,9 +69,10 @@ The canonical monorepo layout is:
 frontend/              Next.js Web application
 mobile/                one Expo/React Native application for iOS and Android
 backend/               TypeScript modular monolith and privileged integrations
+brand/                 immutable, versioned source brand kits
 packages/contracts/    stable public schemas and generated OpenAPI types
 packages/design-tokens/ canonical visual tokens
-packages/brand/        canonical brand assets
+packages/brand/        generated/runtime brand metadata and document assets
 packages/shared/       framework-independent shared utilities
 packages/ui/           shared Web/native primitives
 packages/features/     shared feature presentation
@@ -109,6 +110,10 @@ scripts/ + Makefile    repository-level tooling
 
 - `packages/design-tokens/` is the only token source. A Web/mobile compatibility
   file may be a thin adapter, not a competing token or component system.
+- `brand/shongre/v<version>/` is the only source for approved SHONGRE. artwork.
+  Run `make brand-sync` to generate the curated Web, mobile, document, and token
+  subset and `make brand-check` to verify checksums and mappings. Never expose
+  the full kit publicly or edit generated runtime copies by hand.
 - Prefer a modular monolith and narrow platform adapters. Do not introduce
   microservices, micro-frontends, parallel native business UIs, overlapping
   state libraries, or generic abstraction frameworks without measured need and
@@ -866,6 +871,7 @@ sources rather than being copied into this file:
 | OpenAPI workflow and generated inventory                   | `docs/architecture/openapi.md`, `backend/docs/api.md`, `backend/docs/generated/endpoint-inventory.md`                                                        |
 | Multi-country modeling and launch behavior                 | `docs/architecture/multi-country.md`                                                                                                                         |
 | Shared UI and platform boundaries                          | `docs/architecture/cross-platform-ui.md`                                                                                                                     |
+| Brand source, runtime mappings, and upgrade workflow       | `docs/architecture/brand-assets.md`                                                                                                                          |
 | Mobile architecture and threat model                       | `docs/architecture/mobile.md`, `docs/security/mobile-threat-model.md`                                                                                        |
 | Current mobile/store policies and evidence                 | `docs/compliance/store-requirements.md`, `mobile/store/`                                                                                                     |
 | Analytics, consent, SEO ingestion, and observability       | `docs/architecture/analytics.md`, `frontend/docs/analytics.md`, `backend/docs/analytics.md`                                                                  |

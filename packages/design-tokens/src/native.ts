@@ -75,6 +75,8 @@ export const mobileRadius = {
 } as const;
 export const nativeSizing = {
   full: "100%",
+  brandLogoCompact: remToPx(themeSpacing["brand-logo-compact"]),
+  brandLogoStandard: remToPx(themeSpacing["brand-logo-standard"]),
   controlSm: remToPx(themeSpacing["control-sm"]),
   controlMd: remToPx(themeSpacing["control-md"]),
   controlTouch: remToPx(themeSpacing["control-touch"]),
@@ -104,6 +106,7 @@ export const nativeBorders = {
   strong: remToPx(themeBorders.strong),
 } as const;
 export const nativeAspect = {
+  brandLogo: aspectToNumber(themeAspect.brandLogo),
   media: aspectToNumber(themeAspect.media),
   square: aspectToNumber(themeAspect.square),
   video: aspectToNumber(themeAspect.video),

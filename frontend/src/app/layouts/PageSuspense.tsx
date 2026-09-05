@@ -1,5 +1,6 @@
 import React from "react";
 import { Skeleton } from "../../design-system";
+import { BrandIcon } from "../../design-system/primitives/BrandLogo";
 
 export const PageSuspense: React.FC = () => {
   return (
@@ -11,9 +12,7 @@ export const PageSuspense: React.FC = () => {
       {/* Brand Icon Spinner */}
       <div className="relative flex items-center justify-center mb-6">
         <div className="w-14 h-14 rounded-2xl bg-primary-light border border-primary/20 flex items-center justify-center animate-pulse">
-          <div className="w-8 h-8 rounded-xl bg-primary text-white flex items-center justify-center font-bold text-lg shadow-sm">
-            S
-          </div>
+          <BrandIcon size="standard" decorative />
         </div>
         <div className="absolute -inset-1 rounded-3xl border-2 border-primary/30 border-t-transparent animate-spin" />
       </div>

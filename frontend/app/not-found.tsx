@@ -1,5 +1,6 @@
 import { headers } from "next/headers";
 import { resolveNotFoundPresentation } from "../src/platform/seo/not-found-presentation";
+import { BrandLogo } from "../src/design-system/primitives/BrandLogo";
 
 export default async function NotFound() {
   const requestHeaders = await headers();
@@ -8,9 +9,12 @@ export default async function NotFound() {
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-bg-base px-4 py-16">
-      <title>{presentation.title} | Shongre</title>
+      <title>{presentation.title} | SHONGRE.</title>
       <meta name="robots" content="noindex, nofollow" />
       <section className="w-full max-w-xl rounded-card border border-border-base bg-bg-surface p-8 text-center shadow-sm sm:p-12">
+        <div className="mb-6 flex justify-center">
+          <BrandLogo size="compact" priority />
+        </div>
         <p className="text-sm font-bold uppercase tracking-wide text-primary">
           Erreur 404
         </p>

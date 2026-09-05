@@ -1,5 +1,7 @@
 "use client";
 
+import { BrandIcon } from "../src/design-system/primitives/BrandLogo";
+
 export default function ErrorPage({
   reset,
 }: {
@@ -8,6 +10,7 @@ export default function ErrorPage({
 }) {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center gap-4 bg-bg-base p-6 text-center">
+      <BrandIcon size="prominent" decorative />
       <h1 className="text-heading-md font-bold text-text-main">
         Une erreur est survenue
       </h1>

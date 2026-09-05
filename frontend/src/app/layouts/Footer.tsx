@@ -18,7 +18,7 @@ import { NewsletterSignup } from "../../features/newsletter/components/Newslette
 import { useConsent } from "../providers/ConsentProvider";
 import { useMarketLocation } from "../providers/MarketLocationProvider";
 import { useTranslation } from "../../i18n/I18nProvider";
-import { Container } from "../../design-system";
+import { BrandHeaderSignature, Container } from "../../design-system";
 import { routes } from "../../configuration/routes";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
 import {
@@ -438,6 +438,13 @@ export const Footer: React.FC = () => {
 
         <div className="flex flex-col gap-4 pt-1 text-xs text-stone-400 md:flex-row md:items-center md:justify-between">
           <div className="flex flex-wrap items-center gap-4">
+            <Link
+              to={routes.home()}
+              aria-label="SHONGRE., accueil"
+              className="rounded-control focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-on-dark"
+            >
+              <BrandHeaderSignature variant="reverse" decorative />
+            </Link>
             <span>
               {t("footer.copyright", { year: new Date().getFullYear() })}
             </span>

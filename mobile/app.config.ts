@@ -38,13 +38,13 @@ export default ({ config }: ConfigContext): ExpoConfig => {
 
   return {
     ...config,
-    name: "Shongre",
+    name: "SHONGRE.",
     slug: "shongre",
     scheme: "shongre",
     version,
     orientation: "default",
     userInterfaceStyle: "automatic",
-    icon: "./assets/icon.png",
+    icon: "./assets/brand/app-icon.png",
     experiments: { typedRoutes: true },
     plugins: [
       "expo-router",
@@ -54,7 +54,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       [
         "expo-splash-screen",
         {
-          image: "./assets/splash.png",
+          image: "./assets/brand/splash-logo.png",
           imageWidth: 200,
           resizeMode: "contain",
           backgroundColor: configColors.surface,
@@ -85,8 +85,10 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         },
       ],
       "./plugins/with-ios-scene-lifecycle",
+      "./plugins/with-brand-assets",
     ],
     ios: {
+      icon: "./assets/brand/app-icon.png",
       bundleIdentifier,
       buildNumber: required("IOS_BUILD_NUMBER"),
       supportsTablet: true,
@@ -144,10 +146,13 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       },
     },
     android: {
+      icon: "./assets/brand/android/play-store-icon.png",
       package: androidPackage,
       versionCode: integer("ANDROID_VERSION_CODE"),
       adaptiveIcon: {
-        foregroundImage: "./assets/adaptive-icon.png",
+        foregroundImage: "./assets/brand/adaptive-icon-foreground.png",
+        backgroundImage: "./assets/brand/adaptive-icon-background.png",
+        monochromeImage: "./assets/brand/adaptive-icon-monochrome.png",
         backgroundColor: configColors.brand,
       },
       allowBackup: false,
@@ -177,7 +182,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     web: {
       bundler: "metro",
       output: "single",
-      favicon: "./assets/favicon.png",
+      favicon: "./assets/brand/favicon.png",
     },
     extra: {
       environment: environment.environment,

@@ -6,6 +6,7 @@ import { AppScrollRestoration } from "../router/AppScrollRestoration";
 import { EnvironmentHeaderStack } from "./EnvironmentHeaderStack";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { Container, SkipLink } from "../../design-system";
+import { BrandHeaderSignature } from "../../design-system/primitives/BrandLogo";
 import { useSafeBack } from "../router/useSafeBack";
 
 /**
@@ -48,15 +49,10 @@ export const FocusedLayout: React.FC = () => {
 
             <Link
               to={routes.home()}
-              className="flex items-center gap-2 select-none min-w-0"
-              aria-label="Shongre, accueil"
+              className="flex items-center select-none min-w-0"
+              aria-label="SHONGRE., accueil"
             >
-              <span className="w-7 h-7 rounded-control bg-primary text-white flex items-center justify-center font-bold text-base shrink-0">
-                S
-              </span>
-              <span className="text-base font-bold tracking-tight uppercase text-stone-900 leading-none truncate">
-                Shongre<span className="text-primary">.</span>
-              </span>
+              <BrandHeaderSignature priority />
             </Link>
 
             {/* A deliberate exit, so leaving a long form is a decision rather than

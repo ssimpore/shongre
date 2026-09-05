@@ -3,7 +3,12 @@ import { ChevronDown, Menu, Store, X } from "lucide-react";
 import { Outlet, useLocation } from "react-router-dom";
 import { AnalyticsRuntime } from "../../analytics/AnalyticsRuntime";
 import { services } from "../../api/client/service-registry";
-import { Container, SkipLink } from "../../design-system";
+import {
+  BrandHeaderSignature,
+  BrandLogo,
+  Container,
+  SkipLink,
+} from "../../design-system";
 import type { SolutionDefinition } from "../../domains/solutions/solutions.types";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { applicationHref } from "../../platform/applications/use-application-href";
@@ -144,16 +149,9 @@ function SolutionsHeader() {
           className="flex items-center gap-3 rounded-control focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           aria-label={t("solutions.header.homeLabel")}
         >
-          <span className="flex h-9 w-9 items-center justify-center rounded-control bg-primary text-lg font-bold text-white">
-            S
-          </span>
-          <span className="leading-none">
-            <span className="block text-base font-bold tracking-tight text-text-main">
-              shongre
-            </span>
-            <span className="mt-1 block text-micro font-semibold text-text-muted sm:hidden">
-              {t("solutions.header.solutions")}
-            </span>
+          <BrandHeaderSignature priority />
+          <span className="hidden text-micro font-semibold text-text-muted sm:inline">
+            {t("solutions.header.solutions")}
           </span>
         </a>
         <nav
@@ -386,9 +384,10 @@ function SolutionsFooter() {
       <Container className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
         <a
           href={rootHref}
-          className="touch-row self-start rounded-control text-sm font-bold text-text-main focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          className="touch-row flex items-center self-start rounded-control focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          aria-label={t("solutions.header.homeLabel")}
         >
-          SHONGRE<span className="text-primary">.</span>{" "}
+          <BrandLogo size="compact" />
           <span className="font-semibold text-text-muted">Solutions</span>
         </a>
         <nav

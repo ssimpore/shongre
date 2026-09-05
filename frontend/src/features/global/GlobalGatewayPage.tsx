@@ -1,6 +1,10 @@
 import { Search, ShieldCheck, Users } from "lucide-react";
 import Link from "next/link";
 import {
+  BrandHeaderSignature,
+  BrandLogo,
+} from "../../design-system/primitives/BrandLogo";
+import {
   GatewayCountrySelector,
   type GatewayCountryLink,
 } from "./GatewayCountrySelector";
@@ -18,10 +22,10 @@ export function GlobalGatewayPage({
         <div className="mx-auto flex h-16 w-full max-w-page items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link
             href="/"
-            className="text-xl font-bold uppercase tracking-tight text-stone-950 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
-            aria-label="Accueil international Shongre"
+            className="focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
+            aria-label="Accueil international SHONGRE."
           >
-            Shongre<span className="text-primary">.</span>
+            <BrandHeaderSignature priority />
           </Link>
           <a
             href={`${defaultMarketOrigin}/connexion`}
@@ -90,9 +94,7 @@ export function GlobalGatewayPage({
 
       <footer className="bg-white">
         <div className="mx-auto flex w-full max-w-page flex-col gap-5 px-4 py-8 text-xs text-stone-600 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
-          <p className="font-bold text-stone-950">
-            Shongre<span className="text-primary">.</span>
-          </p>
+          <BrandLogo layout="wordmark" size="compact" />
           <nav
             aria-label="Liens légaux"
             className="flex flex-wrap gap-x-5 gap-y-2"

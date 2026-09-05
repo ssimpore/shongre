@@ -1,3 +1,5 @@
+import { brandPalette } from "./brand.generated.js";
+
 /**
  * Canonical Shongre design-token values.
  *
@@ -8,6 +10,14 @@
 
 /** Brand, surface, border, text and semantic status colors. */
 export const themeColors = {
+  "brand-primary": brandPalette.orange,
+  "brand-ink": brandPalette.ink,
+  "brand-background": brandPalette.white,
+  "brand-surface-subtle": brandPalette.mist,
+
+  /* The official orange is a brand swatch, not a safe background for white
+     normal-size text (2.95:1). Interactive surfaces therefore retain a
+     centrally derived, darker orange with WCAG AA white contrast. */
   primary: "#CC4018",
   "primary-hover": "#B53612",
   "primary-active": "#982B0D",
@@ -16,22 +26,19 @@ export const themeColors = {
      the former value (#FFF1EB) produced only 4.41:1 against `primary`. */
   "primary-light": "#FFF7F3",
   "primary-border": "#F8C9BA",
-  "primary-on-dark": "#FF896B",
+  "primary-on-dark": brandPalette.orange,
 
-  /* A warm-white canvas keeps Shongre's character without putting a beige
-     veil over every route. Surface, subtle and muted remain visibly stepped so
-     cards, workspaces and dense staff screens retain clear grouping. */
-  "bg-base": "#FFFEFC",
-  "bg-surface": "#FFFFFF",
-  "bg-subtle": "#F8F6F2",
-  "bg-muted": "#EFECE6",
+  "bg-base": brandPalette.white,
+  "bg-surface": brandPalette.white,
+  "bg-subtle": brandPalette.mist,
+  "bg-muted": "#EEF1F5",
 
-  "border-base": "#E6E1D9",
-  "border-subtle": "#F1EDE7",
-  "border-hover": "#CEC7BC",
+  "border-base": brandPalette.border,
+  "border-subtle": "#E8EBF0",
+  "border-hover": "#B9C0CC",
 
-  "text-main": "#1C1917",
-  "text-secondary": "#57534E",
+  "text-main": brandPalette.ink,
+  "text-secondary": "#3E485A",
   /* Muted body copy has to clear WCAG AA (4.5:1) on every surface token it can
      sit on, not just `bg-surface`. The previous #78716C reached 4.79:1 on white
      but only 4.25:1 on `bg-subtle` and 4.10:1 on `bg-muted`, so every muted
@@ -40,9 +47,9 @@ export const themeColors = {
      admin market and CRM prospecting surfaces. This value clears 4.5:1 against
      `bg-surface`, `bg-base`, `bg-subtle` and `bg-muted` alike; the contrast
      assertion in `check-design-tokens.mjs` keeps it that way. */
-  "text-muted": "#6A635E",
-  "text-disabled": "#A8A29E",
-  "text-inverse": "#FFFFFF",
+  "text-muted": brandPalette.muted,
+  "text-disabled": "#8A93A3",
+  "text-inverse": brandPalette.white,
   focus: "#CC4018",
   overlay: "rgb(28 25 23 / 0.6)",
   /* The scrim behind small white text sitting directly on a photo — media
@@ -64,9 +71,9 @@ export const themeColors = {
   "stone-600": "#57534E",
   "stone-700": "#44403C",
   "stone-800": "#292524",
-  "stone-900": "#1C1917",
+  "stone-900": brandPalette.ink,
   "stone-950": "#0C0A09",
-  white: "#FFFFFF",
+  white: brandPalette.white,
   black: "#000000",
   transparent: "transparent",
 
@@ -332,6 +339,10 @@ export const themeSpacing = {
   "control-touch": "2.75rem",
   "control-indicator": "1.125rem",
   "control-target": "1.5rem",
+  /* Approved horizontal signature sizes. Keep the source aspect ratio in
+     `themeAspect.brandLogo`; clients must not size the mark independently. */
+  "brand-logo-compact": "7.5rem",
+  "brand-logo-standard": "10rem",
   /* Compact persistent environment chrome shared by every application shell. */
   "environment-toolbar-height": "3.5rem",
   "select-chevron-size": "0.25rem",
@@ -495,6 +506,7 @@ export const themeGridTemplates = {
  * real card were two independent literals that had to be kept equal by hand.
  */
 export const themeAspect = {
+  brandLogo: "240 / 61",
   media: "4 / 3",
   square: "1 / 1",
   video: "16 / 9",

@@ -30,7 +30,8 @@ describe("not-found presentation", () => {
       resolveNotFoundPresentation(undefined, "/collections/inconnue"),
     );
 
-    expect(html).toContain("<title>Collection introuvable | Shongre</title>");
+    expect(html).toContain("<title>Collection introuvable | SHONGRE.</title>");
+    expect(html).toContain('src="/brand/shongre/logo/header-primary-240.png"');
     expect(html).toContain('name="robots" content="noindex, nofollow"');
     expect(html).toContain('href="/collections"');
     expect(html).toContain(

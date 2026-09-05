@@ -1,9 +1,12 @@
 import { colors } from "@shongre/design-tokens";
 
+export { brandDocumentLogoDataUri } from "./document.generated";
+
 export const brand = {
-  name: "Shongre",
-  wordmark: "Shongre.",
-  markLetter: "S",
-  primaryColor: colors.action.primary,
-  onPrimaryColor: colors.action.onPrimary,
+  name: "SHONGRE.",
+  signature: "SHONGRE.",
+  version: "1.0.0",
+  primaryColor: colors.brand.primary,
+  inkColor: colors.brand.ink,
+  backgroundColor: colors.brand.background,
 } as const;

@@ -6,7 +6,7 @@ SHELL := /bin/bash
 	web frontend web-dev frontend-dev frontend-start frontend-build frontend-lint frontend-typecheck frontend-test frontend-test-e2e frontend-check frontend-clean frontend-logs seo-audit \
 	backend backend-dev backend-start worker worker-dev worker-start backend-build backend-lint backend-typecheck backend-test backend-check backend-health backend-logs worker-logs \
 	contracts-lint contracts-typecheck contracts-test contracts-check openapi-lint openapi-generate openapi-check openapi-docs openapi-breaking-check \
-	tokens-check tokens-build ui-check ui-test ui-lint ui-typecheck ui-build shared-check cross-platform-check \
+	brand-sync brand-check tokens-check tokens-build ui-check ui-test ui-lint ui-typecheck ui-build shared-check cross-platform-check \
 	mobile mobile-dev mobile-start mobile-stop mobile-status mobile-health mobile-web expo expo-start expo-clear expo-doctor ios ios-run ios-open ios-clean android android-run android-open android-clean mobile-prebuild mobile-prebuild-clean mobile-lint mobile-typecheck mobile-test mobile-check \
 	infra infra-start infra-stop infra-restart infra-status infra-health infra-logs infra-config infra-check infra-validate \
 	db-start db-stop db-status db-health db-migrate db-diff migrations-check db-seed monetization-draft-import taxonomy-db-dry-run taxonomy-db-import db-reset db-types db-shell supabase-start supabase-stop supabase-status supabase-reset supabase-migrate supabase-seed supabase-types supabase-link supabase-pull supabase-push \
@@ -34,7 +34,7 @@ PRETTIER_FILES := \
 	'mobile/app.config.ts' 'mobile/eas.json' 'mobile/eslint.config.js' \
 	'mobile/metro.config.js' 'mobile/package.json' 'mobile/tsconfig.json' 'mobile/vitest.config.ts' \
 	'packages/**/*.{ts,tsx,js,mjs,json,md}' \
-	'scripts/**/*.{js,mjs,md}' \
+	'scripts/**/*.{js,mjs,ts,json,md}' \
 	'docs/**/*.md' '.github/**/*.{yml,yaml,md}' \
 	'package.json' 'README.md'
 
@@ -167,7 +167,7 @@ worker-logs:
 	@scripts/service.sh logs worker none
 
 ##@ Application quality
-frontend-build: ## Build the production Web artifact
+frontend-build: brand-check ## Build the production Web artifact
 	@source scripts/env.sh && NODE_ENV=production npm run build --workspace=frontend
 frontend-lint:
 	@npm run lint --workspace=frontend
@@ -232,6 +232,12 @@ capability-inventory-update: ## Refresh generated OpenAPI, migration, and test-f
 	@node scripts/update-capability-inventory.mjs
 
 ##@ Shared product system
+brand-sync: ## Synchronize approved runtime assets from the canonical SHONGRE. kit
+	@npm run brand:sync
+
+brand-check: ## Validate the canonical kit, runtime mappings, and public boundary
+	@npm run brand:check
+
 tokens-build:
 	@npm run build --workspace=@shongre/design-tokens
 tokens-check: tokens-build
@@ -463,8 +469,8 @@ marketing-check: ## Run focused Marketing consent, audience, campaign, RLS, prov
 	@SHONGRE_ENV=test bash -c 'source scripts/env.sh && npm run test:marketing --workspace=frontend'
 	@npm run openapi:check
 contracts: contracts-check ## Validate stable public client/backend contracts
-generate: tokens-build taxonomy-compile db-types openapi-generate ## Regenerate deterministic taxonomy, tokens, database types, and API clients
-check: env env-check env-matrix-check migrations-check release-manifest-check deployment-config-check operations-tooling-check format-check tokens-check lint typecheck test frontend-build backend-build infra-check secret-scan hostname-check ## Run the deterministic pre-commit and pre-PR gate
+generate: brand-sync tokens-build taxonomy-compile db-types openapi-generate ## Regenerate deterministic brand assets, taxonomy, tokens, database types, and API clients
+check: env env-check env-matrix-check migrations-check release-manifest-check deployment-config-check operations-tooling-check format-check brand-check tokens-check lint typecheck test frontend-build backend-build infra-check secret-scan hostname-check ## Run the deterministic pre-commit and pre-PR gate
 	@npm run check:boundary
 check-all: check test-critical cross-platform-check test-e2e ## Run exhaustive local validation including browsers and critical subsets
 	@npm audit --audit-level=high
