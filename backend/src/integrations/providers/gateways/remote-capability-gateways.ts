@@ -12,6 +12,7 @@ import type {
 import { getSupabaseAdminClient } from "../../../infrastructure/supabase/supabase-client.js";
 import { AppError } from "../../../shared/errors/app-error.js";
 import { assertSafeProviderUrl } from "../safe-provider-url.js";
+import { config } from "../../../app/config/index.js";
 
 interface RuntimeConnection {
   providerId: string;
@@ -76,7 +77,9 @@ async function runtimeConnection(
 async function fetchJson(url: string, init: RequestInit) {
   const response = await fetch(url, {
     ...init,
-    signal: AbortSignal.timeout(15_000),
+    signal: AbortSignal.timeout(
+      config.performance.providerGatewayRequestTimeoutMs,
+    ),
   });
   const text = await response.text();
   let body: any = null;

@@ -103,3 +103,30 @@ test("save search shares the results toolbar row with filters", async ({
 
   expect(alignment).toEqual({ sameRow: true, saveStartsAfterFilter: true });
 });
+
+test("empty-search save action fits and preserves the guest return path", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1408, height: 795 });
+  await usePersona(page, "guest");
+  await page.goto("/recherche?query=aucun-resultat-shongre-xyz", {
+    waitUntil: "domcontentloaded",
+  });
+  await waitForStableLayout(page);
+
+  const saveButton = page.locator("#search-no-results-save-search-btn");
+  await expect(saveButton).toBeVisible();
+  expect(
+    await saveButton.evaluate(
+      (button) => button.scrollWidth <= button.clientWidth,
+    ),
+  ).toBe(true);
+
+  await saveButton.click();
+
+  await expect(page).toHaveURL(/\/connexion\?/);
+  const loginUrl = new URL(page.url());
+  expect(loginUrl.searchParams.get("redirect")).toBe(
+    "/recherche?query=aucun-resultat-shongre-xyz",
+  );
+});

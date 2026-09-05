@@ -1,6 +1,7 @@
 import { createHash, randomUUID } from "node:crypto";
 import { getSupabaseAdminClient } from "../supabase/supabase-client.js";
 import { databaseFailure } from "../database/repositories/repository-error.js";
+import { config } from "../../app/config/index.js";
 
 interface ProviderWebhookReceipt {
   provider: string;
@@ -39,10 +40,16 @@ class ProviderWebhookInbox {
     return String(data || "received");
   }
 
-  async claim(limit = 25): Promise<ProviderWebhookReceipt[]> {
+  async claim(
+    limit = config.performance.providerWebhookClaimBatchSize,
+  ): Promise<ProviderWebhookReceipt[]> {
     const { data, error } = await (getSupabaseAdminClient() as any).rpc(
       "claim_provider_webhooks",
-      { p_owner: this.ownerId, p_limit: limit, p_lease_seconds: 120 },
+      {
+        p_owner: this.ownerId,
+        p_limit: limit,
+        p_lease_seconds: config.performance.providerWebhookLeaseSeconds,
+      },
     );
     if (error) databaseFailure("providerWebhookInbox.claim", error);
     return ((data || []) as any[]).map((row) => ({
@@ -60,8 +67,13 @@ class ProviderWebhookInbox {
     error?: unknown,
   ): Promise<void> {
     const retrySeconds = Math.min(
-      3_600,
-      15 * 2 ** Math.min(receipt.attemptCount, 7),
+      config.performance.providerWebhookRetryMaximumSeconds,
+      config.performance.providerWebhookRetryBaseSeconds *
+        2 **
+          Math.min(
+            receipt.attemptCount,
+            config.performance.providerWebhookRetryExponentCap,
+          ),
     );
     const { data, error: databaseError } = await (
       getSupabaseAdminClient() as any
@@ -78,13 +90,18 @@ class ProviderWebhookInbox {
       databaseFailure("providerWebhookInbox.complete", databaseError);
   }
 
-  async purgeProcessed(retentionDays = 30): Promise<number> {
+  async purgeProcessed(
+    retentionDays = config.performance.providerWebhookProcessedRetentionDays,
+  ): Promise<number> {
     const before = new Date(
       Date.now() - retentionDays * 86_400_000,
     ).toISOString();
     const { data, error } = await (getSupabaseAdminClient() as any).rpc(
       "purge_processed_provider_webhooks",
-      { p_before: before, p_limit: 1_000 },
+      {
+        p_before: before,
+        p_limit: config.performance.providerWebhookPurgeBatchSize,
+      },
     );
     if (error) databaseFailure("providerWebhookInbox.purge", error);
     return Number(data || 0);

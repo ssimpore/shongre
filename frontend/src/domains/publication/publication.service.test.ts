@@ -4,7 +4,7 @@
  * transaction modes independence, fulfillment quotes, and backend validation.
  */
 
-import { describe, it, expect, beforeEach } from "vitest";
+import { afterEach, describe, it, expect, beforeEach, vi } from "vitest";
 import { taxonomyService } from "../taxonomy/taxonomy.service";
 import { publicationResolver } from "./publication.resolver";
 import { transactionCapabilitiesService } from "../transaction/transaction.capabilities";
@@ -12,6 +12,8 @@ import { fulfillmentResolver } from "../fulfillment/fulfillment.resolver";
 import { publicationService } from "./publication.service";
 import { ATTRIBUTE_REGISTRY } from "../taxonomy/attribute.registry";
 import { PublicationDraftState } from "./publication.types";
+import { storageService } from "../../services/storage.service";
+import type { UserProfile } from "../../types";
 
 describe("Publication System & Schema Resolvers", () => {
   beforeEach(() => {
@@ -22,6 +24,8 @@ describe("Publication System & Schema Resolvers", () => {
       localStorage.clear();
     }
   });
+
+  afterEach(() => vi.restoreAllMocks());
 
   // =========================================================================
   // 1. EXHAUSTIVE TAXONOMY LEAF COVERAGE TEST
@@ -56,6 +60,36 @@ describe("Publication System & Schema Resolvers", () => {
         ).toBeDefined();
       });
     });
+  });
+
+  it("does not let a Staff role bypass listing ownership", async () => {
+    vi.spyOn(storageService, "getListings").mockReturnValue([
+      { id: "foreign-listing", sellerId: "seller-owner" } as never,
+    ]);
+    const staff = {
+      id: "staff-admin",
+      email: "staff-admin@example.test",
+      name: "Staff Admin",
+      accountType: "individual",
+      status: "active",
+      staffStatus: "active",
+      staffRole: "admin",
+      role: "individual_buyer",
+      primaryRole: "buyer",
+      sellerType: "individual",
+      isVerified: true,
+      city: "Paris",
+      postalCode: "75001",
+      createdAt: "2026-01-01T00:00:00.000Z",
+      rating: 0,
+      reviewCount: 0,
+      responseRatePercent: 0,
+      responseTimeText: "Non applicable",
+    } satisfies UserProfile;
+
+    await expect(
+      publicationService.updateListing("foreign-listing", {}, staff),
+    ).rejects.toThrow();
   });
 
   // =========================================================================

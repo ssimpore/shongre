@@ -8,9 +8,16 @@ import {
 import {
   discoveryConfigurationSchema,
   discoveryChangeReasonSchema,
+  getCountryConfig,
   type DiscoveryConfiguration,
   type PublisherVerificationStatus,
 } from "@shongre/contracts";
+import {
+  DELIVERY_FEATURE_FLAG_KEY,
+  DELIVERY_TAXONOMY_CATEGORY_ID,
+  deliveryMarketActivationIssues,
+  type DeliveryPublicRequest,
+} from "@shongre/contracts/delivery";
 import type {
   Listing,
   SearchFilters,
@@ -21,9 +28,16 @@ import {
   IDiscoveryConfigurationRepository,
   repositories,
 } from "../../infrastructure/database/repositories/index.js";
+import type { DeliveryRepository } from "../../infrastructure/database/repositories/delivery.repository.js";
 import { logger } from "../../infrastructure/logging/logger.js";
+import { config } from "../../app/config/index.js";
 import { AppError } from "../../shared/errors/app-error.js";
 import { requireMarketCode } from "../../shared/market/market-code.js";
+import {
+  featureFlagService,
+  type FeatureFlagService,
+} from "../feature-flags/feature-flag.service.js";
+import { GUEST_PRINCIPAL } from "../../shared/auth/principal.js";
 
 export interface DiscoverySearchResult {
   items: Listing[];
@@ -36,6 +50,75 @@ export interface DiscoverySearchResult {
   };
   requestId: string;
   rankingVersion: string;
+}
+
+export function deliveryRequestToDiscoveryListing(
+  request: DeliveryPublicRequest,
+): Listing {
+  const publishedAt = request.publishedAt || request.expiresAt;
+  const currency =
+    request.budget?.currency || getCountryConfig(request.marketCode)?.currency;
+  if (!currency) {
+    throw new AppError({
+      code: "VALIDATION_ERROR",
+      message: "Le marché de cette demande de livraison est invalide.",
+    });
+  }
+  return {
+    id: `delivery_${request.id}`,
+    sellerId: `delivery-requester:${request.id}`,
+    publisherType: "private",
+    publisherVerificationStatus: request.requester.verified
+      ? "identity_verified"
+      : "unverified",
+    publisherStatus: "active",
+    categoryId: DELIVERY_TAXONOMY_CATEGORY_ID,
+    listingTypeId: `${DELIVERY_TAXONOMY_CATEGORY_ID}.request`,
+    listingIntent: "SERVICE_REQUEST",
+    title: request.title,
+    description: request.description,
+    price: (request.budget?.amountMinor || 0) / 100,
+    currency,
+    status: "published",
+    condition: "not_applicable",
+    marketCode: request.marketCode,
+    marketCodes: [request.marketCode],
+    city: request.pickupLocality.city,
+    postalCode: request.pickupLocality.postalCode,
+    department: "",
+    region: "",
+    country: request.marketCode,
+    allowedDelivery: [],
+    images: [],
+    attributes: {
+      verticalType: "delivery",
+      verticalEntityId: request.id,
+      canonicalPath: `/livraison/demande/${request.id}`,
+      categoryPath: [
+        "services",
+        "services.local_services",
+        DELIVERY_TAXONOMY_CATEGORY_ID,
+      ],
+      originType: request.origin,
+      pickupCity: request.pickupLocality.city,
+      pickupPostalCode: request.pickupLocality.postalCode,
+      dropoffCity: request.dropoffLocality.city,
+      dropoffPostalCode: request.dropoffLocality.postalCode,
+      packageType: request.package.type,
+      approximateWeightGrams: request.package.approximateWeightGrams,
+      handlingRequirements: request.package.handlingRequirements,
+      requiredVehicleType: request.package.requiredVehicleType,
+      applicationCount: request.applicationCount,
+      taxonomyValid: true,
+    },
+    publishedAt,
+    organicFreshnessAt: publishedAt,
+    createdAt: publishedAt,
+    updatedAt: publishedAt,
+    expiresAt: request.expiresAt,
+    viewCount: 0,
+    favoriteCount: 0,
+  };
 }
 
 function verificationStatus(listing: Listing): PublisherVerificationStatus {
@@ -203,7 +286,40 @@ export class UnifiedDiscoveryService {
     private readonly listingRepository: IListingRepository = repositories.listings,
     private readonly configurationRepository: IDiscoveryConfigurationRepository = repositories.discoveryConfiguration,
     private readonly fallbackConfiguration: DiscoveryConfiguration = DEFAULT_DISCOVERY_CONFIGURATION,
+    private readonly deliveryRepository: DeliveryRepository = repositories.delivery,
+    private readonly flags: FeatureFlagService = featureFlagService,
   ) {}
+
+  private async getDeliveryCandidates(
+    filters: SearchFilters,
+  ): Promise<Listing[]> {
+    const marketCode = requireMarketCode(filters.marketCode);
+    const country = getCountryConfig(marketCode);
+    if (deliveryMarketActivationIssues(country).length) return [];
+    const flag = await this.flags.evaluatePublic(
+      GUEST_PRINCIPAL,
+      DELIVERY_FEATURE_FLAG_KEY,
+      { marketCode },
+    );
+    if (!flag.enabled) return [];
+    const page = await this.deliveryRepository.searchPublic({
+      marketCode,
+      pickupPostalCode: filters.postalCode,
+      limit: 50,
+    });
+    return page.items
+      .filter((request) => {
+        const price = (request.budget?.amountMinor || 0) / 100;
+        if (filters.minPrice !== undefined && price < filters.minPrice)
+          return false;
+        if (filters.maxPrice !== undefined && price > filters.maxPrice)
+          return false;
+        if (filters.condition && filters.condition !== "not_applicable")
+          return false;
+        return true;
+      })
+      .map(deliveryRequestToDiscoveryListing);
+  }
 
   async getEffectiveConfiguration(
     marketCode: string,
@@ -291,13 +407,16 @@ export class UnifiedDiscoveryService {
     const pageSize = Math.max(1, Math.min(50, Number(filters.limit || 20)));
     // Bounded retrieval avoids loading the catalog while keeping ranking and
     // diversification stable across the first discovery pages.
-    const candidates = await this.listingRepository.search({
-      ...filters,
-      sellerType: undefined,
-      sortBy: "recent",
-      page: 1,
-      limit: 500,
-    });
+    const [candidates, deliveryCandidates] = await Promise.all([
+      this.listingRepository.search({
+        ...filters,
+        sellerType: undefined,
+        sortBy: "recent",
+        page: 1,
+        limit: config.performance.discoveryCandidateLimit,
+      }),
+      this.getDeliveryCandidates(filters),
+    ]);
     const request: DiscoveryRequest = {
       requestId,
       marketCode: requireMarketCode(filters.marketCode),
@@ -315,12 +434,15 @@ export class UnifiedDiscoveryService {
       "search",
     );
     const ranked = runUnifiedDiscovery(
-      candidates.items.map(toDiscoveryDocument),
+      [...candidates.items, ...deliveryCandidates].map(toDiscoveryDocument),
       request,
       configuration,
     );
     const listingsById = new Map(
-      candidates.items.map((listing) => [listing.id, listing]),
+      [...candidates.items, ...deliveryCandidates].map((listing) => [
+        listing.id,
+        listing,
+      ]),
     );
     const items = ranked.items.flatMap((item) => {
       const listing = listingsById.get(item.document.id);

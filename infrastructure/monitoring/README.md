@@ -5,6 +5,10 @@ path, status, duration, and a caller-supplied or generated `traceId`; the same
 identifier is returned in `X-Request-Id`. Log collectors must redact
 authorization/cookie headers and must never ingest passwords, action links,
 payment payloads, private messages, identity documents, or provider secrets.
+HTTP completion events also expose the bounded cache policy, cache-tag count,
+content encoding, and response bytes. Hot listing-query events include only
+operation, duration, row/count, market, page, limit, and sort dimensions. They
+must never include search text, full URLs, cookies, tokens, or customer data.
 
 ## Health checks
 
@@ -26,6 +30,12 @@ production data:
 - API successful-request availability: 99.9% monthly, excluding deliberate
   client 4xx responses.
 - API latency: p95 below 750 ms and p99 below 2 s for non-upload endpoints.
+- Interactive database queries: p95 below 100 ms; investigate every query over
+  250 ms and monitor Supavisor/PostgreSQL connection saturation from 80%.
+- Core Web Vitals: LCP at most 2.5 s, INP at most 200 ms, CLS at most 0.1, and
+  TTFB at most 800 ms at the 75th percentile by market/device class.
+- Anonymous CDN cache hit ratio: at least 40% discovery, 70% catalogue, and 80%
+  reference projections; tag invalidation p95 below five seconds.
 - Payment webhooks: 99.9% accepted within 30 s; no unprocessed event older than
   five minutes.
 - Scheduled jobs: no required job more than two expected intervals overdue.
@@ -44,6 +54,8 @@ Page the on-call engineer for:
   jobs for two consecutive executions;
 - database saturation, exhausted connections, replica lag, or storage quota
   above 80%;
+- sustained interactive-query p95 above 100 ms, API p95 above 750 ms, cache hit
+  ratio below its objective, or cache invalidation p95 above five seconds;
 - authentication email failure rate above 2%, provider outage, or bounce-rate
   anomaly;
 - backup/PITR not current, restore drill overdue, or object-storage replication
@@ -68,3 +80,9 @@ stale, mismatched, or incomplete evidence.
 This confirmation is deliberately not inferred from a configured vendor name.
 A dashboard that exists but receives no release traffic is not operational
 evidence.
+
+The operational definitions, commands, scaling triggers, synthetic query-plan
+method, and cache safety rules are maintained in
+`docs/architecture/performance-scalability.md`. Dashboard thresholds must
+consume the same values from `@shongre/contracts/performance`; changing a
+dashboard is not authorization to weaken the repository gate.

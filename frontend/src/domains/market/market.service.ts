@@ -26,6 +26,7 @@ import {
   ValidationError,
 } from "../publication/publication.types";
 import { UserProfile } from "../../types";
+import { isProSeller as classifyProSeller } from "../user/user.domain";
 
 /**
  * Market Service - High Level Business Engine for Market Management & Resolution
@@ -627,10 +628,7 @@ class MarketService {
       }
 
       // 3. Pro Requirements & Legal verification
-      const isProSeller =
-        params.isPro ||
-        params.seller?.role === "pro_seller" ||
-        params.seller?.accountType === "professional";
+      const isProSeller = params.isPro || classifyProSeller(params.seller);
       if (
         isEligible &&
         isProSeller &&
@@ -708,7 +706,7 @@ class MarketService {
     const eligibilities = this.getEligibleMarketsForListing({
       seller,
       categoryId: draft.taxonomyNodeId,
-      isPro: seller?.role === "pro_seller",
+      isPro: classifyProSeller(seller),
     });
 
     const eligMap = new Map(

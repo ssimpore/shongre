@@ -12,6 +12,7 @@ import type {
 } from "./homepage.types";
 import type { TrendingSectionResponse } from "../trending/trending.types";
 import { majorToMinorAmount } from "@shongre/shared";
+import { DEFAULT_MARKET_CURRENCY } from "../../configuration/market-baseline";
 
 const isOverrideActive = (override: HomepageOfferOverride, now: Date) =>
   (!override.startsAt ||
@@ -73,7 +74,7 @@ export function selectHomepageDeals(
       ) {
         return [];
       }
-      const currency = listing.currency ?? "EUR";
+      const currency = listing.currency ?? DEFAULT_MARKET_CURRENCY;
       const currentMinor = majorToMinorAmount(listing.price, currency);
       const originalMinor = majorToMinorAmount(listing.originalPrice, currency);
       if (currentMinor < 0 || originalMinor <= currentMinor) return [];

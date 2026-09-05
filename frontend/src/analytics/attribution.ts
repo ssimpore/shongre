@@ -1,3 +1,5 @@
+import { classifyAnswerEngineReferrer } from "../platform/seo/discovery-referrers";
+
 export interface AnalyticsAttribution {
   source?: string;
   medium?: string;
@@ -34,9 +36,18 @@ export function parseAttribution(search: string): AnalyticsAttribution {
   };
 }
 
+export function parseAnswerEngineAttribution(
+  referrer: string | undefined,
+): AnalyticsAttribution {
+  return classifyAnswerEngineReferrer(referrer) ?? {};
+}
+
 export function captureAttribution(): AnalyticsAttribution {
   if (typeof window === "undefined") return {};
-  const current = parseAttribution(window.location.search);
+  const queryAttribution = parseAttribution(window.location.search);
+  const current = Object.values(queryAttribution).some(Boolean)
+    ? queryAttribution
+    : parseAnswerEngineAttribution(document.referrer);
   const first = read(FIRST_TOUCH_KEY);
   if (!Object.values(current).some(Boolean)) {
     const last = read(LAST_TOUCH_KEY);

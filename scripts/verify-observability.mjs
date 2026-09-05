@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import { writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { resolve } from "node:path";
+import { SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS } from "@shongre/contracts/performance";
 
 function confirmed(value) {
   return value === true || value === "true";
@@ -89,7 +90,10 @@ export async function verifyObservability(overrides = {}) {
     const startedAt = performance.now();
     const response = await fetch(new URL(path, api), {
       headers: { "X-Request-Id": traceId, "X-Shongre-Market": "FR" },
-      signal: AbortSignal.timeout(15_000),
+      signal: AbortSignal.timeout(
+        SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS.operations
+          .evidenceRequestTimeoutMs,
+      ),
     });
     const payload = await response.json();
     if (

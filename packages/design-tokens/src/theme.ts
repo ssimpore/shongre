@@ -513,10 +513,14 @@ export const themeSpacing = {
   "control-touch": "2.75rem",
   "control-indicator": "1.125rem",
   "control-target": "1.5rem",
-  /* Approved horizontal signature sizes. Keep the source aspect ratio in
-     `themeAspect.brandLogo`; clients must not size the mark independently. */
+  /* Approved signature sizes. Icon and wordmark remain separate artwork, but
+     their paired display sizes are governed together for every shell. */
   "brand-logo-compact": "7.5rem",
   "brand-logo-standard": "10rem",
+  "brand-signature-icon-compact": "2.25rem",
+  "brand-signature-wordmark-compact": "6rem",
+  "brand-signature-icon-standard": "2.75rem",
+  "brand-signature-wordmark-standard": "7.5rem",
   /* Compact persistent environment chrome shared by every application shell. */
   "environment-toolbar-height": "3.5rem",
   "select-chevron-size": "0.25rem",

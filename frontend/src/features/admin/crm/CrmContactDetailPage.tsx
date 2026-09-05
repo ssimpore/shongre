@@ -23,6 +23,7 @@ import type {
 import { services } from "../../../api/client/service-registry";
 import { Button } from "../../../design-system/primitives/Button";
 import { Modal } from "../../../design-system/primitives/Modal";
+import { DEFAULT_MARKET_CURRENCY } from "../../../configuration/market-baseline";
 import {
   FormField,
   Input,
@@ -352,7 +353,8 @@ export const CrmContactDetailPage: React.FC = () => {
           <strong className="mt-1 block text-2xl font-bold text-primary">
             {new Intl.NumberFormat(currentLocale, {
               style: "currency",
-              currency: opportunities[0]?.amount.currency ?? "EUR",
+              currency:
+                opportunities[0]?.amount.currency ?? DEFAULT_MARKET_CURRENCY,
               maximumFractionDigits: 0,
             }).format(openPipeline / 100)}
           </strong>

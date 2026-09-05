@@ -57,6 +57,10 @@ case "$EXPO_PUBLIC_DATA_MODE" in
   demo|api) ;;
   *) shongre_fail "EXPO_PUBLIC_DATA_MODE must be demo or api"; failed=1 ;;
 esac
+case "${SEO_GPTBOT_TRAINING_POLICY:-deny}" in
+  allow|deny) ;;
+  *) shongre_fail "SEO_GPTBOT_TRAINING_POLICY must be allow or deny"; failed=1 ;;
+esac
 
 case "$SHONGRE_ENV:$APP_ENV" in
   local:local|test:test|preview:preview|development:development|staging:staging|production:production) ;;

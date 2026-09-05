@@ -17,6 +17,8 @@ import {
 } from "../authorization.service";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { BrandLogo } from "../../design-system/primitives/BrandLogo";
+import type { AuthorizationDenialReason } from "@shongre/contracts/access-control";
+import type { MessageKey } from "../../i18n/messages.fr";
 
 export interface RequirePermissionProps {
   permission: Permission;
@@ -129,6 +131,60 @@ const FALLBACK_DENIAL: DenialCopy = {
   action: { label: "Contacter le support", to: "/contact" },
 };
 
+const contextualDenialCopy = (
+  reason: AuthorizationDenialReason | null,
+  t: (key: MessageKey) => string,
+): DenialCopy | undefined => {
+  switch (reason) {
+    case "verification_required":
+      return {
+        title: t("security.requirePermission.verificationRequiredTitle"),
+        message: t("security.requirePermission.verificationRequiredMessage"),
+        action: {
+          label: t("security.requirePermission.continueVerification"),
+          to: routes.workspace.verification(),
+        },
+      };
+    case "entitlement_required":
+    case "account_type":
+    case "professional_vertical":
+      return {
+        title: t("security.requirePermission.professionalFeatureTitle"),
+        message: t("security.requirePermission.professionalFeatureMessage"),
+        action: {
+          label: t("security.requirePermission.decouvrirLesOffresPro"),
+          to:
+            reason === "entitlement_required"
+              ? routes.workspace.pro.subscriptions()
+              : routes.solutions.home(),
+        },
+      };
+    case "market_scope":
+    case "market_unavailable":
+      return {
+        title: t("security.requirePermission.marketUnavailableTitle"),
+        message: t("security.requirePermission.marketUnavailableMessage"),
+        action: {
+          label: t("security.requirePermission.retourALAccueil"),
+          to: routes.home(),
+        },
+      };
+    case "staff_separation":
+    case "inactive_staff":
+      return {
+        title: t("security.requirePermission.staffSeparationTitle"),
+        message: t("security.requirePermission.staffSeparationMessage"),
+      };
+    case "feature_disabled":
+      return {
+        title: t("security.requirePermission.featureUnavailableTitle"),
+        message: t("security.requirePermission.featureUnavailableMessage"),
+      };
+    default:
+      return undefined;
+  }
+};
+
 /** Keeps a route home when the denial renders outside the site shell. */
 const GuardShell: React.FC<{
   standalone?: boolean;
@@ -163,7 +219,7 @@ export const RequirePermission: React.FC<RequirePermissionProps> = ({
   children,
 }) => {
   const { t } = useTranslation();
-  const { currentUser, can, isSuspended } = useAuthorization();
+  const { currentUser, decision, isSuspended } = useAuthorization();
   const location = useLocation();
 
   if (!currentUser) {
@@ -199,7 +255,8 @@ export const RequirePermission: React.FC<RequirePermissionProps> = ({
     );
   }
 
-  const hasAccess = can(permission, resource, options);
+  const accessDecision = decision(permission, resource, options);
+  const hasAccess = accessDecision.allowed;
 
   // Suspended accounts retain only the safe capabilities defined by the
   // canonical lifecycle policy (for example reading orders or filing a report).
@@ -227,11 +284,13 @@ export const RequirePermission: React.FC<RequirePermissionProps> = ({
   }
 
   if (!hasAccess) {
+    const contextCopy = contextualDenialCopy(accessDecision.denialReason, t);
     // Specific UX if Pro permission required
     if (
-      permission.startsWith("store.") ||
-      permission === "listing.bulk_import" ||
-      permission === "subscription.manage.own"
+      !contextCopy &&
+      (permission.startsWith("store.") ||
+        permission === "listing.bulk_import" ||
+        permission === "subscription.manage.own")
     ) {
       return (
         <GuardShell standalone={standalone}>
@@ -265,7 +324,7 @@ export const RequirePermission: React.FC<RequirePermissionProps> = ({
     }
 
     // Default 403 Forbidden Guard Card
-    const copy = DENIAL_COPY[permission] ?? FALLBACK_DENIAL;
+    const copy = contextCopy ?? DENIAL_COPY[permission] ?? FALLBACK_DENIAL;
     const forward = copy.action ?? {
       label: "Accéder à mon espace",
       to: "/compte",

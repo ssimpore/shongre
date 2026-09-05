@@ -12,6 +12,10 @@ import {
   type PaymentEnvironmentMode,
 } from "@shongre/contracts/environment";
 import type { MarketInfrastructureConfig } from "@shongre/contracts";
+import {
+  SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS,
+  type PublicCacheProfileName,
+} from "@shongre/contracts/performance";
 
 // Explicit shell values win. Direct package commands follow the same local
 // precedence as root tooling without ever loading .env.example.
@@ -44,6 +48,45 @@ export interface AppConfig {
   maxRequestBodyBytes: number;
   requestTimeoutMs: number;
   shutdownGraceMs: number;
+  performance: {
+    headersTimeoutMs: number;
+    keepAliveTimeoutMs: number;
+    maxRequestsPerSocket: number;
+    compressionMinimumBytes: number;
+    publicCache: {
+      cacheKeyVersion: string;
+      profiles: Record<
+        PublicCacheProfileName,
+        {
+          browserMaxAgeSeconds: number;
+          sharedMaxAgeSeconds: number;
+          staleWhileRevalidateSeconds: number;
+          staleIfErrorSeconds: number;
+        }
+      >;
+    };
+    commercialCatalogFreshTtlMs: number;
+    commercialCatalogStaleIfErrorMs: number;
+    commercialCatalogTtlJitterRatio: number;
+    discoveryCandidateLimit: number;
+    databaseRequestTimeoutMs: number;
+    databaseHealthCheckTimeoutMs: number;
+    providerRequestTimeoutMs: number;
+    aiRequestTimeoutMs: number;
+    providerGatewayRequestTimeoutMs: number;
+    providerHealthCheckTimeoutMs: number;
+    providerRetryBaseDelayMs: number;
+    providerCircuitFailureThreshold: number;
+    providerCircuitCooldownMs: number;
+    providerDefaultMaxAttempts: number;
+    providerWebhookClaimBatchSize: number;
+    providerWebhookLeaseSeconds: number;
+    providerWebhookRetryBaseSeconds: number;
+    providerWebhookRetryMaximumSeconds: number;
+    providerWebhookRetryExponentCap: number;
+    providerWebhookProcessedRetentionDays: number;
+    providerWebhookPurgeBatchSize: number;
+  };
   publicApiRateLimit: number;
   authenticatedApiRateLimit: number;
   apiRateLimitWindowSeconds: number;
@@ -262,6 +305,43 @@ function positiveInteger(name: string, fallback: number): number {
   return value;
 }
 
+function nonNegativeInteger(name: string, fallback: number): number {
+  const raw = process.env[name];
+  if (raw === undefined || raw === "") return fallback;
+  const value = Number(raw);
+  if (!Number.isSafeInteger(value) || value < 0) {
+    throw new Error(`[Config Error] ${name} must be a non-negative integer.`);
+  }
+  return value;
+}
+
+function integerInRange(
+  name: string,
+  fallback: number,
+  minimum: number,
+  maximum: number,
+): number {
+  const value = positiveInteger(name, fallback);
+  if (value < minimum || value > maximum) {
+    throw new Error(
+      `[Config Error] ${name} must be an integer from ${minimum} through ${maximum}.`,
+    );
+  }
+  return value;
+}
+
+function boundedRatio(name: string, fallback: number, maximum: number): number {
+  const raw = process.env[name];
+  if (raw === undefined || raw === "") return fallback;
+  const value = Number(raw);
+  if (!Number.isFinite(value) || value < 0 || value > maximum) {
+    throw new Error(
+      `[Config Error] ${name} must be a number from 0 through ${maximum}.`,
+    );
+  }
+  return value;
+}
+
 function optionalHeaderName(name: string): string | null {
   const value = String(process.env[name] || "")
     .trim()
@@ -269,6 +349,18 @@ function optionalHeaderName(name: string): string | null {
   if (!value) return null;
   if (!/^[a-z0-9-]+$/.test(value)) {
     throw new Error(`[Config Error] ${name} must be a valid HTTP header name.`);
+  }
+  return value;
+}
+
+function cacheKeyVersion(): string {
+  const value =
+    process.env.PUBLIC_CACHE_KEY_VERSION ||
+    SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS.publicCache.cacheKeyVersion;
+  if (!/^[a-z0-9][a-z0-9._-]{0,31}$/i.test(value)) {
+    throw new Error(
+      "[Config Error] PUBLIC_CACHE_KEY_VERSION must contain only letters, numbers, dots, underscores, or hyphens.",
+    );
   }
   return value;
 }
@@ -577,19 +669,175 @@ const candidateConfig: AppConfig = {
   frontendUrl: environment.urls.franceApp.origin,
   publicApiUrl: environment.urls.api.origin,
   apiPrefix: SHONGRE_API_PREFIX,
-  maxRequestBodyBytes: positiveInteger("MAX_REQUEST_BODY_BYTES", 1_048_576),
-  requestTimeoutMs: positiveInteger("REQUEST_TIMEOUT_MS", 30_000),
-  shutdownGraceMs: positiveInteger("SHUTDOWN_GRACE_MS", 15_000),
-  publicApiRateLimit: positiveInteger("API_PUBLIC_RATE_LIMIT", 180),
+  maxRequestBodyBytes: positiveInteger(
+    "MAX_REQUEST_BODY_BYTES",
+    SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS.http.maxRequestBodyBytes,
+  ),
+  requestTimeoutMs: positiveInteger(
+    "REQUEST_TIMEOUT_MS",
+    SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS.http.requestTimeoutMs,
+  ),
+  shutdownGraceMs: positiveInteger(
+    "SHUTDOWN_GRACE_MS",
+    SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS.http.shutdownGraceMs,
+  ),
+  performance: {
+    headersTimeoutMs: positiveInteger(
+      "HTTP_HEADERS_TIMEOUT_MS",
+      SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS.http.headersTimeoutMs,
+    ),
+    keepAliveTimeoutMs: positiveInteger(
+      "HTTP_KEEP_ALIVE_TIMEOUT_MS",
+      SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS.http.keepAliveTimeoutMs,
+    ),
+    maxRequestsPerSocket: positiveInteger(
+      "HTTP_MAX_REQUESTS_PER_SOCKET",
+      SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS.http.maxRequestsPerSocket,
+    ),
+    compressionMinimumBytes: positiveInteger(
+      "HTTP_COMPRESSION_MINIMUM_BYTES",
+      SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS.http.compressionMinimumBytes,
+    ),
+    publicCache: {
+      cacheKeyVersion: cacheKeyVersion(),
+      profiles: Object.fromEntries(
+        (["discovery", "catalog", "reference"] as const).map((profile) => {
+          const envPrefix = `PUBLIC_CACHE_${profile.toUpperCase()}`;
+          const defaults =
+            SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS.publicCache[profile];
+          return [
+            profile,
+            {
+              browserMaxAgeSeconds: nonNegativeInteger(
+                `${envPrefix}_BROWSER_MAX_AGE_SECONDS`,
+                defaults.browserMaxAgeSeconds,
+              ),
+              sharedMaxAgeSeconds: positiveInteger(
+                `${envPrefix}_S_MAXAGE_SECONDS`,
+                defaults.sharedMaxAgeSeconds,
+              ),
+              staleWhileRevalidateSeconds: positiveInteger(
+                `${envPrefix}_SWR_SECONDS`,
+                defaults.staleWhileRevalidateSeconds,
+              ),
+              staleIfErrorSeconds: positiveInteger(
+                `${envPrefix}_STALE_IF_ERROR_SECONDS`,
+                defaults.staleIfErrorSeconds,
+              ),
+            },
+          ];
+        }),
+      ) as AppConfig["performance"]["publicCache"]["profiles"],
+    },
+    commercialCatalogFreshTtlMs: positiveInteger(
+      "COMMERCIAL_CATALOG_FRESH_TTL_MS",
+      SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS.commercialCatalog.freshTtlMs,
+    ),
+    commercialCatalogStaleIfErrorMs: positiveInteger(
+      "COMMERCIAL_CATALOG_STALE_IF_ERROR_MS",
+      SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS.commercialCatalog.staleIfErrorMs,
+    ),
+    commercialCatalogTtlJitterRatio: boundedRatio(
+      "COMMERCIAL_CATALOG_TTL_JITTER_RATIO",
+      SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS.commercialCatalog.ttlJitterRatio,
+      0.5,
+    ),
+    discoveryCandidateLimit: integerInRange(
+      "DISCOVERY_CANDIDATE_LIMIT",
+      SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS.database.discoveryCandidateLimit,
+      50,
+      500,
+    ),
+    databaseRequestTimeoutMs: positiveInteger(
+      "DATABASE_REQUEST_TIMEOUT_MS",
+      SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS.database.requestTimeoutMs,
+    ),
+    databaseHealthCheckTimeoutMs: positiveInteger(
+      "DATABASE_HEALTH_CHECK_TIMEOUT_MS",
+      SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS.database.healthCheckTimeoutMs,
+    ),
+    providerRequestTimeoutMs: positiveInteger(
+      "PROVIDER_REQUEST_TIMEOUT_MS",
+      SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS.providers.requestTimeoutMs,
+    ),
+    aiRequestTimeoutMs: positiveInteger(
+      "AI_REQUEST_TIMEOUT_MS",
+      SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS.providers.aiRequestTimeoutMs,
+    ),
+    providerGatewayRequestTimeoutMs: positiveInteger(
+      "PROVIDER_GATEWAY_REQUEST_TIMEOUT_MS",
+      SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS.providers.gatewayRequestTimeoutMs,
+    ),
+    providerHealthCheckTimeoutMs: positiveInteger(
+      "PROVIDER_HEALTH_CHECK_TIMEOUT_MS",
+      SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS.providers.healthCheckTimeoutMs,
+    ),
+    providerRetryBaseDelayMs: positiveInteger(
+      "PROVIDER_RETRY_BASE_DELAY_MS",
+      SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS.providers.retryBaseDelayMs,
+    ),
+    providerCircuitFailureThreshold: positiveInteger(
+      "PROVIDER_CIRCUIT_FAILURE_THRESHOLD",
+      SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS.providers.circuitFailureThreshold,
+    ),
+    providerCircuitCooldownMs: positiveInteger(
+      "PROVIDER_CIRCUIT_COOLDOWN_MS",
+      SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS.providers.circuitCooldownMs,
+    ),
+    providerDefaultMaxAttempts: positiveInteger(
+      "PROVIDER_DEFAULT_MAX_ATTEMPTS",
+      SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS.providers.defaultMaxAttempts,
+    ),
+    providerWebhookClaimBatchSize: positiveInteger(
+      "PROVIDER_WEBHOOK_CLAIM_BATCH_SIZE",
+      SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS.providerWebhookQueue.claimBatchSize,
+    ),
+    providerWebhookLeaseSeconds: positiveInteger(
+      "PROVIDER_WEBHOOK_LEASE_SECONDS",
+      SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS.providerWebhookQueue.leaseSeconds,
+    ),
+    providerWebhookRetryBaseSeconds: positiveInteger(
+      "PROVIDER_WEBHOOK_RETRY_BASE_SECONDS",
+      SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS.providerWebhookQueue
+        .retryBaseSeconds,
+    ),
+    providerWebhookRetryMaximumSeconds: positiveInteger(
+      "PROVIDER_WEBHOOK_RETRY_MAXIMUM_SECONDS",
+      SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS.providerWebhookQueue
+        .retryMaximumSeconds,
+    ),
+    providerWebhookRetryExponentCap: positiveInteger(
+      "PROVIDER_WEBHOOK_RETRY_EXPONENT_CAP",
+      SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS.providerWebhookQueue
+        .retryExponentCap,
+    ),
+    providerWebhookProcessedRetentionDays: positiveInteger(
+      "PROVIDER_WEBHOOK_PROCESSED_RETENTION_DAYS",
+      SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS.providerWebhookQueue
+        .processedRetentionDays,
+    ),
+    providerWebhookPurgeBatchSize: positiveInteger(
+      "PROVIDER_WEBHOOK_PURGE_BATCH_SIZE",
+      SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS.providerWebhookQueue.purgeBatchSize,
+    ),
+  },
+  publicApiRateLimit: positiveInteger(
+    "API_PUBLIC_RATE_LIMIT",
+    SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS.rateLimits.publicRequestsPerWindow,
+  ),
   authenticatedApiRateLimit: positiveInteger(
     "API_AUTHENTICATED_RATE_LIMIT",
-    600,
+    SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS.rateLimits
+      .authenticatedRequestsPerWindow,
   ),
   apiRateLimitWindowSeconds: positiveInteger(
     "API_RATE_LIMIT_WINDOW_SECONDS",
-    60,
+    SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS.rateLimits.windowSeconds,
   ),
-  apiRateLimitLockSeconds: positiveInteger("API_RATE_LIMIT_LOCK_SECONDS", 60),
+  apiRateLimitLockSeconds: positiveInteger(
+    "API_RATE_LIMIT_LOCK_SECONDS",
+    SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS.rateLimits.lockSeconds,
+  ),
   trustedIpCountryHeader: envFlag("SHONGRE_TRUST_IP_COUNTRY_HEADER")
     ? optionalHeaderName("SHONGRE_IP_COUNTRY_HEADER")
     : null,

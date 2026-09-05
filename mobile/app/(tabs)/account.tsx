@@ -49,6 +49,11 @@ export default function AccountScreen() {
             variant="secondary"
           />
           <Button
+            label="Livraison & coursier"
+            onPress={() => router.push("/account/delivery" as never)}
+            variant="secondary"
+          />
+          <Button
             label="Préférences de notification"
             onPress={() =>
               router.push("/account/notification-preferences" as never)

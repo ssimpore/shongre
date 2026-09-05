@@ -29,6 +29,7 @@ const categoryLabels: Record<NotificationPreferenceCategory, string> = {
   transactions: "Transactions et paiements",
   listings: "Annonces et alertes",
   delivery: "Livraison",
+  delivery_opportunities: "Opportunités de livraison",
   reviews: "Avis",
   promotions: "Mises en avant",
   security: "Sécurité",

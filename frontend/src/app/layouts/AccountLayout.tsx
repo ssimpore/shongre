@@ -31,6 +31,7 @@ import {
   Scale,
   Target,
   FileKey2,
+  Truck,
 } from "lucide-react";
 import { useAuth } from "../providers/AuthProvider";
 import { useNotifications } from "../providers/NotificationProvider";
@@ -90,6 +91,18 @@ export const AccountLayout: React.FC = () => {
       label: t("verticals.education.workspace"),
       icon: <GraduationCap className="w-icon-md h-icon-md text-primary" />,
       visible: canAccessRoute("accountCourse"),
+    },
+    {
+      to: routes.delivery.workspace(),
+      label: t("delivery.nav"),
+      icon: <Truck className="w-icon-md h-icon-md text-primary" />,
+      visible: canAccessRoute("accountDelivery"),
+    },
+    {
+      to: routes.delivery.courierWorkspace(),
+      label: t("delivery.courierWorkspace"),
+      icon: <Truck className="w-icon-md h-icon-md text-primary" />,
+      visible: canAccessRoute("accountDeliveryCourier"),
     },
     {
       to: "/compte/emploi",

@@ -4,6 +4,10 @@ import { createHash } from "node:crypto";
 import { writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { resolve } from "node:path";
+import { SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS } from "@shongre/contracts/performance";
+
+const EVIDENCE_REQUEST_TIMEOUT_MS =
+  SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS.operations.evidenceRequestTimeoutMs;
 
 function digest(value) {
   return createHash("sha256").update(value).digest("hex");
@@ -62,7 +66,9 @@ export async function verifyStorageRestore(overrides = {}) {
 
   const startedAt = performance.now();
   const sourceResponse = await requireResponse(
-    await fetch(source, { signal: AbortSignal.timeout(30_000) }),
+    await fetch(source, {
+      signal: AbortSignal.timeout(EVIDENCE_REQUEST_TIMEOUT_MS),
+    }),
     "storage backup download",
   );
   const sourceBytes = Buffer.from(await sourceResponse.arrayBuffer());
@@ -78,12 +84,14 @@ export async function verifyStorageRestore(overrides = {}) {
           "application/octet-stream",
       },
       body: sourceBytes,
-      signal: AbortSignal.timeout(30_000),
+      signal: AbortSignal.timeout(EVIDENCE_REQUEST_TIMEOUT_MS),
     }),
     "storage restore upload",
   );
   const restoredResponse = await requireResponse(
-    await fetch(restored, { signal: AbortSignal.timeout(30_000) }),
+    await fetch(restored, {
+      signal: AbortSignal.timeout(EVIDENCE_REQUEST_TIMEOUT_MS),
+    }),
     "restored storage download",
   );
   const restoredBytes = Buffer.from(await restoredResponse.arrayBuffer());
@@ -98,7 +106,7 @@ export async function verifyStorageRestore(overrides = {}) {
     await requireResponse(
       await fetch(deleteUrl, {
         method: "DELETE",
-        signal: AbortSignal.timeout(30_000),
+        signal: AbortSignal.timeout(EVIDENCE_REQUEST_TIMEOUT_MS),
       }),
       "restore fixture cleanup",
     );

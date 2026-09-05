@@ -8,6 +8,7 @@ import {
   SUPPORT_CATEGORIES,
   SupportCategoryDefinition,
 } from "./support.categories";
+import { isProSeller } from "../user/user.domain";
 
 interface SupportCapabilities {
   canSubmit: boolean;
@@ -23,7 +24,7 @@ class SupportCapabilitiesService {
     marketCode?: string;
   }): SupportCapabilities {
     const { viewer } = params;
-    const isPro = viewer?.sellerType === "pro" || viewer?.role === "pro_seller";
+    const isPro = isProSeller(viewer);
     const isSuspended = viewer?.status === "suspended";
 
     // Filter categories if needed

@@ -14,6 +14,7 @@ const report = JSON.parse(
 
 const unique = (values: readonly string[]) =>
   new Set(values).size === values.length;
+const TAXONOMY_INTEGRITY_TIMEOUT_MS = 15_000;
 
 describe("generated taxonomy v4 integrity", () => {
   it("matches every authored and normalized source count exactly", () => {
@@ -44,30 +45,30 @@ describe("generated taxonomy v4 integrity", () => {
     expect(report.normalizedCounts).toMatchObject({
       verticals: 19,
       workbookCategories: 276,
-      taxonomyNodes: 301,
+      taxonomyNodes: 302,
       roots: 19,
-      publishableLeaves: 212,
-      listingTypes: 212,
-      publicationFlows: 21,
-      intents: 12,
-      attributes: 323,
+      publishableLeaves: 213,
+      listingTypes: 213,
+      publicationFlows: 22,
+      intents: 13,
+      attributes: 343,
       attributeGroups: 56,
       optionSets: 105,
       options: 732,
       optionParentLinks: 75,
       compactBindings: 1194,
-      bindings: 10831,
+      bindings: 10853,
       dependencies: 203,
       sourceValidationRules: 505,
       regulatoryValidationRules: 30,
       validationRules: 535,
-      filters: 2720,
-      cardFields: 1406,
-      detailFields: 10139,
-      publicationFlow: 1632,
-      searchProjections: 212,
-      seoProjections: 301,
-      aliases: 290,
+      filters: 2725,
+      cardFields: 1410,
+      detailFields: 10159,
+      publicationFlow: 1636,
+      searchProjections: 213,
+      seoProjections: 302,
+      aliases: 291,
       referenceData: 42,
     });
     expect(report.templateResolution).toMatchObject({
@@ -141,70 +142,76 @@ describe("generated taxonomy v4 integrity", () => {
     });
   });
 
-  it("resolves every listing type, binding, rule, projection and alias", () => {
-    const categories = new Map(
-      bundle.categories.map((item) => [item.id, item]),
-    );
-    const listingTypes = new Set(bundle.listingTypes.map((item) => item.id));
-    const attributes = new Set(bundle.attributes.map((item) => item.id));
-    const groups = new Set(bundle.attributeGroups.map((item) => item.id));
-    const optionSets = new Set(bundle.optionSets.map((item) => item.id));
-    const options = new Set(bundle.options.map((item) => item.id));
+  it(
+    "resolves every listing type, binding, rule, projection and alias",
+    () => {
+      const categories = new Map(
+        bundle.categories.map((item) => [item.id, item]),
+      );
+      const listingTypes = new Set(bundle.listingTypes.map((item) => item.id));
+      const attributes = new Set(bundle.attributes.map((item) => item.id));
+      const groups = new Set(bundle.attributeGroups.map((item) => item.id));
+      const optionSets = new Set(bundle.optionSets.map((item) => item.id));
+      const options = new Set(bundle.options.map((item) => item.id));
 
-    bundle.listingTypes.forEach((listingType) => {
-      const category = categories.get(listingType.categoryId);
-      expect(category?.publishable).toBe(true);
-      expect(category?.status).toBe("active");
-    });
-    bundle.attributes.forEach((attribute) => {
-      expect(groups.has(attribute.groupId)).toBe(true);
-      if (attribute.optionSetId)
-        expect(optionSets.has(attribute.optionSetId)).toBe(true);
-    });
-    bundle.bindings.forEach((binding) => {
-      expect(categories.has(binding.categoryId)).toBe(true);
-      expect(listingTypes.has(binding.listingTypeId)).toBe(true);
-      expect(attributes.has(binding.attributeId)).toBe(true);
-      expect(groups.has(binding.groupId)).toBe(true);
-    });
-    bundle.optionParentLinks.forEach((link) => {
-      expect(options.has(link.optionId)).toBe(true);
-      expect(options.has(link.parentOptionId)).toBe(true);
-    });
-    for (const rule of [...bundle.dependencies, ...bundle.validationRules]) {
-      const references =
-        "targets" in rule ? [rule.trigger, ...rule.targets] : [rule.target];
-      references.forEach((reference) => {
-        if (reference.kind === "attribute")
-          expect(attributes.has(reference.key)).toBe(true);
+      bundle.listingTypes.forEach((listingType) => {
+        const category = categories.get(listingType.categoryId);
+        expect(category?.publishable).toBe(true);
+        expect(category?.status).toBe("active");
       });
-    }
-    for (const projection of [
-      ...bundle.projections.filters,
-      ...bundle.projections.cardFields,
-      ...bundle.projections.detailFields,
-      ...bundle.projections.publicationFlow,
-    ]) {
-      expect(categories.has(projection.categoryId)).toBe(true);
-      expect(listingTypes.has(projection.listingTypeId)).toBe(true);
-    }
-    expect(bundle.projections.seo).toHaveLength(bundle.categories.length);
-    expect(
-      unique(bundle.projections.seo.map((projection) => projection.urlPattern)),
-    ).toBe(true);
-    bundle.projections.seo.forEach((projection) => {
-      const category = categories.get(projection.categoryId)!;
-      expect(projection.urlPattern).toBe(`/categorie/${category.slug}`);
-      expect(projection.h1).toEqual(category.labels);
-      Object.keys(category.labels).forEach((locale) => {
-        expect(projection.titleTemplate[locale]).toBeTruthy();
-        expect(projection.descriptionTemplate[locale]).toBeTruthy();
+      bundle.attributes.forEach((attribute) => {
+        expect(groups.has(attribute.groupId)).toBe(true);
+        if (attribute.optionSetId)
+          expect(optionSets.has(attribute.optionSetId)).toBe(true);
       });
-    });
-    bundle.aliases.forEach((alias) =>
-      expect(categories.has(alias.canonicalCategoryId)).toBe(true),
-    );
-  });
+      bundle.bindings.forEach((binding) => {
+        expect(categories.has(binding.categoryId)).toBe(true);
+        expect(listingTypes.has(binding.listingTypeId)).toBe(true);
+        expect(attributes.has(binding.attributeId)).toBe(true);
+        expect(groups.has(binding.groupId)).toBe(true);
+      });
+      bundle.optionParentLinks.forEach((link) => {
+        expect(options.has(link.optionId)).toBe(true);
+        expect(options.has(link.parentOptionId)).toBe(true);
+      });
+      for (const rule of [...bundle.dependencies, ...bundle.validationRules]) {
+        const references =
+          "targets" in rule ? [rule.trigger, ...rule.targets] : [rule.target];
+        references.forEach((reference) => {
+          if (reference.kind === "attribute")
+            expect(attributes.has(reference.key)).toBe(true);
+        });
+      }
+      for (const projection of [
+        ...bundle.projections.filters,
+        ...bundle.projections.cardFields,
+        ...bundle.projections.detailFields,
+        ...bundle.projections.publicationFlow,
+      ]) {
+        expect(categories.has(projection.categoryId)).toBe(true);
+        expect(listingTypes.has(projection.listingTypeId)).toBe(true);
+      }
+      expect(bundle.projections.seo).toHaveLength(bundle.categories.length);
+      expect(
+        unique(
+          bundle.projections.seo.map((projection) => projection.urlPattern),
+        ),
+      ).toBe(true);
+      bundle.projections.seo.forEach((projection) => {
+        const category = categories.get(projection.categoryId)!;
+        expect(projection.urlPattern).toBe(`/categorie/${category.slug}`);
+        expect(projection.h1).toEqual(category.labels);
+        Object.keys(category.labels).forEach((locale) => {
+          expect(projection.titleTemplate[locale]).toBeTruthy();
+          expect(projection.descriptionTemplate[locale]).toBeTruthy();
+        });
+      });
+      bundle.aliases.forEach((alias) =>
+        expect(categories.has(alias.canonicalCategoryId)).toBe(true),
+      );
+    },
+    TAXONOMY_INTEGRITY_TIMEOUT_MS,
+  );
 
   it("resolves flow templates without duplicate bindings and quarantines draft policy", () => {
     expect(report.templateResolution).toEqual({

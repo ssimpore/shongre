@@ -7,6 +7,16 @@ import type {
 import { httpClient } from "./http-client";
 
 export class HttpModerationService implements ModerationServiceContract {
+  async submitReport(input: {
+    listingId?: string;
+    reportedUserId?: string;
+    deliveryRequestId?: string;
+    reason: "fraud" | "counterfeit" | "prohibited" | "harassment" | "other";
+    details: string;
+  }): Promise<{ id: string; status: "pending" }> {
+    return httpClient.post("/reports", input);
+  }
+
   async listOwnCases(_userId: string): Promise<OwnModerationCase[]> {
     const response = await httpClient.get<{ items: OwnModerationCase[] }>(
       "/moderation/cases/mine",

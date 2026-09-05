@@ -105,6 +105,13 @@ returns a neutral cancelled result and creates no account or session.
   authentication, forbids self-management, revokes all target sessions, and
   protects the last active owner. A role label alone grants no authority.
 
+The complete actor inventory, contextual decision flow, ownership and
+organization rules, market scope, entitlement separation, and denial
+remediation are documented in
+[`access-control-architecture.md`](../security/access-control-architecture.md).
+Authentication creates the verified principal; it does not replace the backend
+authorization decision.
+
 `auth_audit_events` records login outcome, provider, coarse IP prefix, generic
 failure category and non-sensitive metadata. A database constraint rejects
 metadata keys that resemble passwords, tokens, codes or secrets.

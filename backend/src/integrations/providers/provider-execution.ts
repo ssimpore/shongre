@@ -1,4 +1,5 @@
 import { AppError } from "../../shared/errors/app-error.js";
+import { config } from "../../app/config/index.js";
 
 type CircuitState = "CLOSED" | "OPEN" | "HALF_OPEN";
 
@@ -35,12 +36,18 @@ export class ProviderExecutionGuard {
   private circuits = new Map<string, CircuitRecord>();
 
   constructor(
-    private readonly failureThreshold = 3,
-    private readonly cooldownMs = 30_000,
+    private readonly failureThreshold = config.performance
+      .providerCircuitFailureThreshold,
+    private readonly cooldownMs = config.performance.providerCircuitCooldownMs,
+    private readonly retryBaseDelayMs = config.performance
+      .providerRetryBaseDelayMs,
   ) {}
 
   async execute<T>(options: ProviderExecutionOptions<T>): Promise<T> {
-    const maxAttempts = Math.max(1, options.maxAttempts ?? 2);
+    const maxAttempts = Math.max(
+      1,
+      options.maxAttempts ?? config.performance.providerDefaultMaxAttempts,
+    );
     if (options.mutating && maxAttempts > 1 && !options.idempotencyKey) {
       throw new AppError({
         code: "VALIDATION_ERROR",
@@ -84,7 +91,7 @@ export class ProviderExecutionGuard {
         const retryable = options.isRetryable?.(error) ?? false;
         if (!retryable || attempt === maxAttempts) break;
         await new Promise((resolve) =>
-          setTimeout(resolve, 100 * 2 ** (attempt - 1)),
+          setTimeout(resolve, this.retryBaseDelayMs * 2 ** (attempt - 1)),
         );
       }
     }

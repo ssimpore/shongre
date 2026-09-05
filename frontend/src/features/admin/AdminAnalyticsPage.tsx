@@ -28,6 +28,7 @@ import type {
   AnalyticsSeo,
   AnalyticsMetric,
 } from "@shongre/contracts/analytics";
+import { DEFAULT_MARKET_CURRENCY } from "../../configuration/market-baseline";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { services } from "../../api/client/service-registry";
@@ -77,7 +78,7 @@ function MetricCard({ metric }: { metric: AnalyticsMetric }) {
       : metric.unit === "currency_minor"
         ? new Intl.NumberFormat("fr-FR", {
             style: "currency",
-            currency: metric.currency || "EUR",
+            currency: metric.currency || DEFAULT_MARKET_CURRENCY,
           }).format(metric.value / 100)
         : metric.value.toLocaleString("fr-FR");
   return (

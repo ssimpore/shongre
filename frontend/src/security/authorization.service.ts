@@ -1,9 +1,15 @@
 import {
   canonicalAccessContext,
+  canOperateInMarket,
+  evaluateAuthorization,
+  isCustomerMarketplaceCapability,
   resolveEffectiveCapabilities,
   type AccountType,
+  type AuthorizationDecision,
+  type AuthorizationVerificationDimension,
   type ProfessionalVertical,
 } from "@shongre/contracts/access-control";
+import { getCountryConfig } from "@shongre/contracts";
 import { isProSeller } from "../domains/user/user.domain";
 import type { Permission, UserProfile } from "../types";
 import { PRO_PLANS, type ProPlan } from "../configuration/plans.config";
@@ -28,11 +34,15 @@ export interface ResourceOwnershipContext {
 
 export interface AuthorizationContextOptions {
   country?: string;
-  currentCount?: number;
-  skipOwnershipCheck?: boolean;
+  accountTypes?: readonly AccountType[];
+  professionalVerticals?: readonly ProfessionalVertical[];
+  requiredVerification?: readonly AuthorizationVerificationDimension[];
+  entitlement?: CommercialEntitlement;
+  featureFlag?: string;
+  enabledFeatureFlags?: readonly string[];
 }
 
-type CommercialEntitlement =
+export type CommercialEntitlement =
   | "storefrontCustomization"
   | "prioritySupport"
   | "bulkImportExport"
@@ -54,6 +64,8 @@ export interface FeatureRequirement {
   professionalVerticals?: readonly ProfessionalVertical[];
   requiresVerification?: boolean;
   country?: string;
+  featureFlag?: string;
+  enabledFeatureFlags?: readonly string[];
 }
 
 interface FeatureAvailability {
@@ -127,11 +139,10 @@ export class EntitlementLimitError extends AuthorizationError {
   }
 }
 
-function resourceBelongsToUser(
-  user: UserProfile,
+function authorizationResource(
   permission: Permission,
   resource: ResourceOwnershipContext,
-): boolean {
+): { ownerIds?: string[]; organizationId?: string } {
   const resourceOwnerId =
     resource.ownerId ??
     resource.sellerId ??
@@ -145,20 +156,15 @@ function resourceBelongsToUser(
       ? resource.id
       : undefined);
 
-  if (resourceOwnerId) return resourceOwnerId === user.id;
-  if (resource.organizationId) {
-    return Boolean(
-      resource.authorizedOrganizationIds?.includes(resource.organizationId),
-    );
-  }
-  // The route/component may only be checking whether the action is generally
-  // available. Resource-level authorization must run once a resource exists.
-  return true;
+  return {
+    ownerIds: resourceOwnerId ? [resourceOwnerId] : undefined,
+    organizationId: resource.organizationId,
+  };
 }
 
 class AuthorizationService {
   getEffectivePermissions(user: UserProfile | null): Permission[] {
-    return resolveEffectiveCapabilities(user);
+    return user?.capabilities ?? resolveEffectiveCapabilities(user);
   }
 
   can(
@@ -167,20 +173,83 @@ class AuthorizationService {
     resource?: ResourceOwnershipContext,
     options?: AuthorizationContextOptions,
   ): boolean {
-    if (!this.getEffectivePermissions(user).includes(permission)) return false;
+    return this.decision(user, permission, resource, options).allowed;
+  }
 
-    if (
-      user &&
-      resource &&
-      permission.endsWith(".own") &&
-      !options?.skipOwnershipCheck &&
-      !resourceBelongsToUser(user, permission, resource)
-    ) {
-      return false;
-    }
-
+  decision(
+    user: UserProfile | null,
+    permission: Permission,
+    resource?: ResourceOwnershipContext,
+    options?: AuthorizationContextOptions,
+  ): AuthorizationDecision {
     const targetCountry = options?.country ?? resource?.country;
-    return !targetCountry || this.canAccessMarket(user, targetCountry);
+    const configuredMarket = targetCountry
+      ? getCountryConfig(targetCountry)
+      : undefined;
+    const countries = user?.marketScope?.countries?.length
+      ? user.marketScope.countries
+      : user?.country
+        ? [user.country]
+        : [];
+    const plan = this.getUserPlan(user);
+    const entitlements = user
+      ? ([
+          plan.storefrontCustomization && "storefrontCustomization",
+          plan.prioritySupport && "prioritySupport",
+          plan.bulkImportExport && "bulkImportExport",
+          plan.automaticRelisting && "automaticRelisting",
+        ].filter(Boolean) as CommercialEntitlement[])
+      : [];
+
+    return evaluateAuthorization(
+      {
+        subject: user,
+        subjectId: user?.id,
+        effectiveCapabilities: user?.capabilities,
+        organizationIds: resource?.authorizedOrganizationIds,
+        marketCodes: countries,
+        verification: {
+          email: Boolean(user?.isEmailVerified),
+          phone: Boolean(user?.isPhoneVerified),
+          identity: Boolean(
+            user?.isIdentityVerified ||
+            user?.professionalVerification?.status === "verified",
+          ),
+          business: Boolean(
+            user?.professionalVerification?.status === "verified",
+          ),
+          payout: user?.bankPayoutVerification?.status === "verified",
+        },
+        entitlements,
+        featureFlags: options?.enabledFeatureFlags,
+      },
+      {
+        capability: permission,
+        accountTypes: options?.accountTypes,
+        professionalVerticals: options?.professionalVerticals,
+        requiredVerification: options?.requiredVerification,
+        entitlement: options?.entitlement,
+        featureFlag: options?.featureFlag,
+        market: targetCountry
+          ? {
+              code: targetCountry,
+              enabled: Boolean(
+                configuredMarket?.enabled &&
+                (!isCustomerMarketplaceCapability(permission) ||
+                  configuredMarket.marketplace.enabled),
+              ),
+            }
+          : undefined,
+        resourceScope:
+          user && resource && permission.endsWith(".own")
+            ? "owner_or_organization"
+            : undefined,
+        resource:
+          user && resource && permission.endsWith(".own")
+            ? authorizationResource(permission, resource)
+            : undefined,
+      },
+    );
   }
 
   canAccessRoute(user: UserProfile | null, policyId: RoutePolicyId): boolean {
@@ -211,47 +280,33 @@ class AuthorizationService {
     if (status === "banned" || status === "closed") {
       throw new ForbiddenError("Ce compte n'est plus autorisé à agir.");
     }
-    if (!effectivePermissions.includes(permission)) {
-      throw new ForbiddenError();
-    }
-
-    if (
-      user &&
-      resource &&
-      permission.endsWith(".own") &&
-      !options?.skipOwnershipCheck &&
-      !resourceBelongsToUser(user, permission, resource)
-    ) {
+    const decision = this.decision(user, permission, resource, options);
+    if (decision.denialReason === "resource_scope") {
       throw new ResourceOwnershipError(
         "Vous ne pouvez administrer que vos propres ressources ou celles d'une organisation autorisée.",
       );
     }
-
-    const targetCountry = options?.country ?? resource?.country;
-    if (targetCountry && !this.canAccessMarket(user, targetCountry)) {
-      throw new MarketScopeForbiddenError(targetCountry);
+    if (
+      decision.denialReason === "market_scope" ||
+      decision.denialReason === "market_unavailable"
+    ) {
+      throw new MarketScopeForbiddenError(
+        options?.country ?? resource?.country ?? "inconnu",
+      );
     }
+    if (!decision.allowed) throw new ForbiddenError();
   }
 
   canAccessMarket(user: UserProfile | null, countryCode?: string): boolean {
     if (!countryCode || !user) return true;
-    const access = canonicalAccessContext(user);
-
-    // Customer accounts browse markets; operational scope constrains staff
-    // actions. Owners are the sole implicit global governance context.
-    if (access.staffStatus !== "active" || access.staffRole === "owner") {
-      return true;
-    }
-
     const countries = user.marketScope?.countries?.length
       ? user.marketScope.countries
       : user.country
         ? [user.country]
         : [];
-    const normalizedTarget = countryCode.toUpperCase();
-    return (
-      countries.includes("*") ||
-      countries.some((country) => country.toUpperCase() === normalizedTarget)
+    return canOperateInMarket(
+      { subject: user, marketCodes: countries },
+      { code: countryCode, enabled: true },
     );
   }
 
@@ -279,57 +334,38 @@ class AuthorizationService {
     user: UserProfile | null,
     requirement: FeatureRequirement,
   ): FeatureAvailability {
-    const access = canonicalAccessContext(user);
-    if (
-      requirement.accountTypes &&
-      access.accountType !== "guest" &&
-      !requirement.accountTypes.includes(access.accountType)
-    ) {
-      return { state: "unavailable", capability: requirement.capability };
-    }
-    if (
-      requirement.professionalVerticals &&
-      (!access.professionalVertical ||
-        !requirement.professionalVerticals.includes(
-          access.professionalVertical,
-        ))
-    ) {
-      return { state: "unavailable", capability: requirement.capability };
-    }
-    if (access.status !== "active") {
-      return { state: "status_blocked", capability: requirement.capability };
-    }
-    if (
-      requirement.requiresVerification &&
-      !(
-        user?.isIdentityVerified ||
-        user?.professionalVerification?.status === "verified"
-      )
-    ) {
-      return {
-        state: "verification_required",
-        capability: requirement.capability,
-      };
-    }
-    if (
-      requirement.country &&
-      !this.canAccessMarket(user, requirement.country)
-    ) {
-      return {
-        state: "market_unavailable",
-        capability: requirement.capability,
-      };
-    }
-    if (!this.can(user, requirement.capability)) {
-      return { state: "restricted", capability: requirement.capability };
-    }
-    if (
-      requirement.entitlement &&
-      !this.hasEntitlement(user, requirement.entitlement)
-    ) {
-      return { state: "plan_locked", capability: requirement.capability };
-    }
-    return { state: "available", capability: requirement.capability };
+    const decision = this.decision(user, requirement.capability, undefined, {
+      country: requirement.country,
+      accountTypes: requirement.accountTypes,
+      professionalVerticals: requirement.professionalVerticals,
+      requiredVerification: requirement.requiresVerification
+        ? ["identity"]
+        : undefined,
+      entitlement: requirement.entitlement,
+      featureFlag: requirement.featureFlag,
+      enabledFeatureFlags: requirement.enabledFeatureFlags,
+    });
+    const stateByReason: Partial<
+      Record<
+        NonNullable<AuthorizationDecision["denialReason"]>,
+        FeatureAvailabilityState
+      >
+    > = {
+      account_status: "status_blocked",
+      verification_required: "verification_required",
+      entitlement_required: "plan_locked",
+      market_scope: "market_unavailable",
+      market_unavailable: "market_unavailable",
+      account_type: "unavailable",
+      professional_vertical: "unavailable",
+      feature_disabled: "unavailable",
+    };
+    return {
+      state: decision.allowed
+        ? "available"
+        : (stateByReason[decision.denialReason!] ?? "restricted"),
+      capability: requirement.capability,
+    };
   }
 
   getMaxListingsQuota(user: UserProfile | null): number {

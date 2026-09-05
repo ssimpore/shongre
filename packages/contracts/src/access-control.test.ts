@@ -1,8 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
+  CAPABILITIES,
+  ACCOUNT_STATUSES,
   CUSTOMER_MARKETPLACE_CAPABILITIES,
+  PROFESSIONAL_VERTICALS,
   STAFF_ROLES,
+  STAFF_STATUSES,
   canonicalAccessContext,
+  evaluateAuthorization,
+  hasEffectiveCapability,
   resolveCapabilityFacts,
   resolveEffectiveCapabilities,
   type AccessSubject,
@@ -12,6 +18,10 @@ const capabilities = (subject: AccessSubject) =>
   new Set(resolveEffectiveCapabilities({ status: "active", ...subject }));
 
 describe("canonical access-control policy", () => {
+  it("keeps the canonical capability vocabulary unique", () => {
+    expect(new Set(CAPABILITIES).size).toBe(CAPABILITIES.length);
+  });
+
   it("models buying and selling as activities of one individual account", () => {
     const individual = capabilities({ accountType: "individual" });
     expect(individual.has("favorite.manage.own")).toBe(true);
@@ -318,5 +328,282 @@ describe("canonical access-control policy", () => {
       effective: false,
       ineffectiveReason: "directly_revoked",
     });
+  });
+
+  it.each([
+    ["guest read", null, "listing.read", true, null],
+    ["guest write", null, "listing.create", false, "unauthenticated"],
+    [
+      "individual seller",
+      { accountType: "individual", status: "active" },
+      "listing.create",
+      true,
+      null,
+    ],
+    [
+      "pending seller",
+      { accountType: "individual", status: "pending" },
+      "listing.create",
+      false,
+      "account_status",
+    ],
+    [
+      "banned public read",
+      { accountType: "individual", status: "banned" },
+      "listing.read",
+      false,
+      "account_status",
+    ],
+    [
+      "finance refund",
+      {
+        accountType: "individual",
+        staffStatus: "active",
+        staffRole: "finance",
+      },
+      "order.refund",
+      true,
+      null,
+    ],
+    [
+      "admin moderation",
+      {
+        accountType: "individual",
+        staffStatus: "active",
+        staffRole: "admin",
+      },
+      "moderation.action",
+      false,
+      "missing_capability",
+    ],
+    [
+      "suspended staff",
+      {
+        accountType: "individual",
+        staffStatus: "suspended",
+        staffRole: "finance",
+      },
+      "order.refund",
+      false,
+      "inactive_staff",
+    ],
+  ] as const)(
+    "returns an explainable decision for %s",
+    (_label, subject, capability, allowed, denialReason) => {
+      expect(evaluateAuthorization({ subject }, { capability })).toMatchObject({
+        allowed,
+        denialReason,
+      });
+    },
+  );
+
+  it("narrows capabilities with ownership, organization, market, verification, entitlement and flags", () => {
+    const customer = {
+      accountType: "professional" as const,
+      professionalVertical: "generic" as const,
+      status: "active" as const,
+    };
+    const actor = {
+      subject: customer,
+      subjectId: "user-1",
+      organizationIds: ["org-1"],
+      verification: { identity: true },
+      entitlements: ["bulkPublish"],
+      featureFlags: ["listing-v2"],
+    };
+    const requirement = {
+      capability: "listing.update.own" as const,
+      accountTypes: ["professional" as const],
+      requiredVerification: ["identity" as const],
+      entitlement: "bulkPublish",
+      featureFlag: "listing-v2",
+      market: { code: "FR", enabled: true },
+      resourceScope: "owner_or_organization" as const,
+      resource: { organizationId: "org-1" },
+    };
+
+    expect(evaluateAuthorization(actor, requirement).allowed).toBe(true);
+    expect(
+      evaluateAuthorization(actor, {
+        ...requirement,
+        resource: { organizationId: "org-2" },
+      }).denialReason,
+    ).toBe("resource_scope");
+    expect(
+      evaluateAuthorization({ ...actor, entitlements: [] }, requirement)
+        .denialReason,
+    ).toBe("entitlement_required");
+    expect(
+      evaluateAuthorization({ ...actor, verification: {} }, requirement)
+        .denialReason,
+    ).toBe("verification_required");
+    expect(
+      evaluateAuthorization({ ...actor, featureFlags: [] }, requirement)
+        .denialReason,
+    ).toBe("feature_disabled");
+  });
+
+  it("requires explicit market assignment for non-owner Staff", () => {
+    const staff = {
+      accountType: "individual" as const,
+      status: "active" as const,
+      staffStatus: "active" as const,
+      staffRole: "market_manager" as const,
+    };
+    const requirement = {
+      capability: "market.configure" as const,
+      market: { code: "BE", enabled: true },
+    };
+
+    expect(
+      evaluateAuthorization(
+        { subject: staff, marketCodes: ["FR"] },
+        requirement,
+      ).denialReason,
+    ).toBe("market_scope");
+    expect(
+      evaluateAuthorization(
+        { subject: staff, marketCodes: ["BE"] },
+        requirement,
+      ).allowed,
+    ).toBe(true);
+    expect(
+      evaluateAuthorization(
+        {
+          subject: { ...staff, staffRole: "owner" },
+          marketCodes: [],
+        },
+        { ...requirement, capability: "market.manage" },
+      ).allowed,
+    ).toBe(true);
+  });
+
+  it("never re-derives a denied server capability from a presentation role", () => {
+    expect(
+      evaluateAuthorization(
+        {
+          subject: {
+            accountType: "individual",
+            staffStatus: "active",
+            staffRole: "admin",
+          },
+          effectiveCapabilities: [],
+        },
+        { capability: "admin.access" },
+      ).denialReason,
+    ).toBe("missing_capability");
+  });
+
+  it("rejects a cross-plane capability even when an upstream projection contains it", () => {
+    expect(
+      evaluateAuthorization(
+        {
+          subject: {
+            accountType: "individual",
+            staffStatus: "active",
+            staffRole: "admin",
+          },
+          effectiveCapabilities: ["listing.create"],
+        },
+        { capability: "listing.create" },
+      ).denialReason,
+    ).toBe("staff_separation");
+  });
+
+  it("does not let a stale capability projection bypass account lifecycle", () => {
+    expect(
+      evaluateAuthorization(
+        {
+          subject: { accountType: "individual", status: "banned" },
+          effectiveCapabilities: ["listing.create"],
+        },
+        { capability: "listing.create" },
+      ).denialReason,
+    ).toBe("account_status");
+    expect(
+      evaluateAuthorization(
+        {
+          subject: { accountType: "individual", status: "suspended" },
+          effectiveCapabilities: ["profile.read"],
+        },
+        { capability: "profile.read" },
+      ).allowed,
+    ).toBe(true);
+  });
+
+  it("asks a guest to sign in before evaluating identity-bound context", () => {
+    expect(
+      evaluateAuthorization(
+        { subject: null },
+        {
+          capability: "listing.read",
+          accountTypes: ["professional"],
+          requiredVerification: ["identity"],
+        },
+      ),
+    ).toMatchObject({
+      allowed: false,
+      denialReason: "unauthenticated",
+      remediation: "sign_in",
+    });
+  });
+
+  it("exhaustively preserves canonical grants across actor, status and capability combinations", () => {
+    const subjects: Array<AccessSubject | null> = [
+      null,
+      ...ACCOUNT_STATUSES.map((status) => ({
+        accountType: "individual" as const,
+        status,
+      })),
+      ...PROFESSIONAL_VERTICALS.flatMap((professionalVertical) =>
+        ACCOUNT_STATUSES.map((status) => ({
+          accountType: "professional" as const,
+          professionalVertical,
+          status,
+        })),
+      ),
+      ...STAFF_ROLES.flatMap((staffRole) =>
+        STAFF_STATUSES.filter((staffStatus) => staffStatus !== "none").map(
+          (staffStatus) => ({
+            accountType: "individual" as const,
+            status: "active" as const,
+            staffStatus,
+            staffRole,
+          }),
+        ),
+      ),
+    ];
+
+    for (const subject of subjects) {
+      for (const capability of CAPABILITIES) {
+        const decision = evaluateAuthorization({ subject }, { capability });
+        expect(decision.allowed).toBe(
+          hasEffectiveCapability(subject, capability),
+        );
+
+        if (decision.allowed && capability.endsWith(".own")) {
+          expect(
+            evaluateAuthorization(
+              { subject, subjectId: "actor" },
+              {
+                capability,
+                resourceScope: "owner",
+                resource: { ownerIds: ["actor"] },
+              },
+            ).allowed,
+          ).toBe(true);
+          expect(
+            evaluateAuthorization(
+              { subject, subjectId: "actor" },
+              {
+                capability,
+                resourceScope: "owner",
+                resource: { ownerIds: ["foreign"] },
+              },
+            ).denialReason,
+          ).toBe("resource_scope");
+        }
+      }
+    }
   });
 });

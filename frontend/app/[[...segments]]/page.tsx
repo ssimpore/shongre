@@ -24,6 +24,8 @@ import { resolveServerApplicationContext } from "../../src/platform/applications
 import { DEMO_SOLUTIONS } from "../../src/api/adapters/demo/demo-solutions.data";
 import { PUBLIC_SOLUTION_LIFECYCLES } from "../../src/domains/solutions/solutions.presentation";
 import { DEFAULT_SHARE_IMAGE_PATH } from "../../src/services/seo.service";
+import { createPublicRuntimeConfig } from "../../src/platform/runtime-config/public-runtime-config.server";
+import { socialProfilesFromExternalLinks } from "../../src/platform/seo/discovery-structured-data";
 
 interface PageProps {
   params: Promise<{ segments?: string[] }>;
@@ -305,7 +307,12 @@ export default async function Page({ params, searchParams }: PageProps) {
     permanentRedirect(destination.toString());
   }
 
-  const structuredData = structuredDataForRoute(policy, context, routeData);
+  const structuredData = structuredDataForRoute(
+    policy,
+    context,
+    routeData,
+    socialProfilesFromExternalLinks(createPublicRuntimeConfig().externalLinks),
+  );
   const initialPath = `${context.publicPath}${queryString ? `?${queryString}` : ""}`;
 
   return (

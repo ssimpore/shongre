@@ -22,6 +22,8 @@ import {
   resolveSeoPolicy,
   structuredDataForPolicy,
 } from "../../platform/seo/seo-policy";
+import { getPublicRuntimeConfig } from "../../platform/runtime-config/public-runtime-config";
+import { socialProfilesFromExternalLinks } from "../../platform/seo/discovery-structured-data";
 import { HomeHeroSection } from "./components/HomeHeroSection";
 import { HomeRecentSearches } from "./components/HomeRecentSearches";
 
@@ -125,7 +127,11 @@ export const HomePage: React.FC = () => {
     });
     return pageMetaForPolicy(
       policy,
-      structuredDataForPolicy(policy, marketContext, routeData),
+      structuredDataForPolicy(policy, marketContext, routeData, {
+        socialProfiles: socialProfilesFromExternalLinks(
+          getPublicRuntimeConfig().externalLinks,
+        ),
+      }),
     );
   }, [marketContext]);
   usePageMeta(pageMeta);

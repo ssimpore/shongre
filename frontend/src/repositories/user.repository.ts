@@ -8,6 +8,70 @@ import { DEMO_USERS, INITIAL_REVIEWS } from "../mocks/initialDemoData";
 import { authorizationService } from "../security/authorization.service";
 import { auditService } from "../security/audit.service";
 
+export type EditableUserProfile = Pick<
+  UserProfile,
+  | "name"
+  | "avatarUrl"
+  | "phone"
+  | "city"
+  | "postalCode"
+  | "department"
+  | "region"
+  | "country"
+  | "bio"
+  | "companyName"
+  | "sirenSiret"
+  | "siret"
+  | "vatNumber"
+  | "legalForm"
+  | "storeSlug"
+  | "storeBannerUrl"
+  | "storeOpeningHours"
+  | "businessAddress"
+  | "deliveryZones"
+  | "websiteUrl"
+  | "services"
+  | "returnPolicy"
+  | "featuredListingIds"
+  | "defaultPublicationMarkets"
+>;
+
+const EDITABLE_PROFILE_KEYS = [
+  "name",
+  "avatarUrl",
+  "phone",
+  "city",
+  "postalCode",
+  "department",
+  "region",
+  "country",
+  "bio",
+  "companyName",
+  "sirenSiret",
+  "siret",
+  "vatNumber",
+  "legalForm",
+  "storeSlug",
+  "storeBannerUrl",
+  "storeOpeningHours",
+  "businessAddress",
+  "deliveryZones",
+  "websiteUrl",
+  "services",
+  "returnPolicy",
+  "featuredListingIds",
+  "defaultPublicationMarkets",
+] as const satisfies readonly (keyof EditableUserProfile)[];
+
+const editableProfilePatch = (
+  updates: Partial<EditableUserProfile>,
+): Partial<EditableUserProfile> =>
+  Object.fromEntries(
+    EDITABLE_PROFILE_KEYS.flatMap((key) =>
+      updates[key] === undefined ? [] : [[key, updates[key]]],
+    ),
+  ) as Partial<EditableUserProfile>;
+
 /**
  * Demo storage accepts both stable fixture keys (`seller_camille`) and user ids
  * (`user_camille`) so older sessions and direct lookups keep working. A saved
@@ -31,7 +95,7 @@ export interface IUserRepository {
   getProSellerBySlug(slug: string): Promise<UserProfile | null>;
   updateProfile(
     id: string,
-    updates: Partial<UserProfile>,
+    updates: Partial<EditableUserProfile>,
   ): Promise<UserProfile>;
   switchDemoRole(role: UserRole): Promise<UserProfile | null>;
   switchDemoUser(userKey: string): Promise<UserProfile | null>;
@@ -138,7 +202,7 @@ class MockUserRepository implements IUserRepository {
 
   async updateProfile(
     id: string,
-    updates: Partial<UserProfile>,
+    updates: Partial<EditableUserProfile>,
   ): Promise<UserProfile> {
     const currentUser = storageService.getCurrentUser();
     const user = await this.getUserById(id);
@@ -149,7 +213,7 @@ class MockUserRepository implements IUserRepository {
       authorizationService.assertCan(currentUser, "profile.update.own", user);
     }
 
-    const updated = { ...user, ...updates };
+    const updated = { ...user, ...editableProfilePatch(updates) };
     storageService.saveUser(updated);
     DEMO_USERS[id] = updated;
     return updated;

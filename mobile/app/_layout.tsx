@@ -1,4 +1,5 @@
-import { Stack } from "expo-router";
+import { Stack, useRouter } from "expo-router";
+import * as Notifications from "expo-notifications";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useFonts } from "expo-font";
@@ -9,11 +10,34 @@ import { Inter_700Bold } from "@expo-google-fonts/inter/700Bold";
 import { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { AuthProvider } from "@/features/auth/AuthProvider";
-import { MarketProvider } from "@/features/market/MarketProvider";
+import { AuthProvider, useAuth } from "@/features/auth/AuthProvider";
+import { MarketProvider, useMarket } from "@/features/market/MarketProvider";
 import { mobileColors as colors } from "@shongre/design-tokens/native";
+import { resolveDeliveryNotificationRoute } from "@/services/notifications/notification-deep-link";
 
 void SplashScreen.preventAutoHideAsync();
+
+function NotificationDeepLinkBridge() {
+  const router = useRouter();
+  const { user } = useAuth();
+  const { activeMarket } = useMarket();
+  useEffect(() => {
+    const open = (response: Notifications.NotificationResponse | null) => {
+      if (!response) return;
+      const route = resolveDeliveryNotificationRoute({
+        data: response.notification.request.content.data,
+        authenticated: Boolean(user),
+        marketCode: activeMarket.code,
+      });
+      if (route) router.push(route as never);
+    };
+    void Notifications.getLastNotificationResponseAsync().then(open);
+    const subscription =
+      Notifications.addNotificationResponseReceivedListener(open);
+    return () => subscription.remove();
+  }, [activeMarket.code, router, user]);
+  return null;
+}
 
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts({
@@ -34,6 +58,7 @@ export default function RootLayout() {
       <SafeAreaProvider>
         <MarketProvider>
           <AuthProvider>
+            <NotificationDeepLinkBridge />
             <StatusBar style="dark" />
             <Stack
               screenOptions={{
@@ -72,6 +97,10 @@ export default function RootLayout() {
               <Stack.Screen
                 name="account/digital-selling"
                 options={{ title: "Vente numérique" }}
+              />
+              <Stack.Screen
+                name="account/delivery"
+                options={{ title: "Livraison & coursier" }}
               />
             </Stack>
           </AuthProvider>

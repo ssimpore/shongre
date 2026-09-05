@@ -8,8 +8,12 @@ import type {
   StaffStatus,
 } from "@shongre/contracts/access-control";
 import {
+  evaluateAuthorization,
+  isAuthorizationResourceInScope,
   isCustomerMarketplaceCapability,
   isStaffCapability,
+  type AuthorizationActorContext,
+  type AuthorizationRequirement,
 } from "@shongre/contracts/access-control";
 
 /**
@@ -75,13 +79,26 @@ export function requirePermission(
   principal: Principal,
   permission: Permission,
 ): Principal {
+  return requireAuthorization(principal, { capability: permission });
+}
+
+/**
+ * Request-edge policy guard shared by coarse route permissions and contextual
+ * market, verification, entitlement, feature, ownership or organization gates.
+ * Adapters must supply authoritative facts; omitted required facts fail closed.
+ */
+export function requireAuthorization(
+  principal: Principal,
+  requirement: AuthorizationRequirement,
+  context: Omit<AuthorizationActorContext, "subject" | "subjectId"> = {},
+): Principal {
   requireAuthenticated(principal);
   // Defense in depth: even a stale/forged in-memory capability projection may
   // never bridge a Staff identity back into the customer marketplace plane.
   if (
     principal.staffStatus &&
     principal.staffStatus !== "none" &&
-    isCustomerMarketplaceCapability(permission)
+    isCustomerMarketplaceCapability(requirement.capability)
   ) {
     throw new AppError({
       code: "FORBIDDEN",
@@ -90,7 +107,7 @@ export function requirePermission(
       details: { reason: "staff_marketplace_separation" },
     });
   }
-  if (isStaffCapability(permission)) {
+  if (isStaffCapability(requirement.capability)) {
     if (principal.staffStatus !== "active") {
       throw new AppError({
         code: "FORBIDDEN",
@@ -110,12 +127,25 @@ export function requirePermission(
   // Role labels and token claims are never authority. AuthService always
   // reloads the current profile/membership and places the resolved capability
   // projection on the request principal.
-  const allowed = principal.capabilities?.includes(permission) ?? false;
-  if (!allowed) {
+  const decision = evaluateAuthorization(
+    {
+      ...context,
+      subject: {
+        ...principal,
+        accountType:
+          principal.accountType === "guest" ? undefined : principal.accountType,
+      },
+      subjectId: principal.userId,
+      effectiveCapabilities: principal.capabilities ?? [],
+    },
+    requirement,
+  );
+  if (!decision.allowed) {
     throw new AppError({
       code: "FORBIDDEN",
       message:
         "Vous n'avez pas les droits nécessaires pour effectuer cette action.",
+      details: { reason: decision.denialReason },
     });
   }
   return principal;
@@ -168,7 +198,15 @@ export function requireOwnership(
 ): Principal {
   requireAuthenticated(principal);
 
-  if (principal.userId === resourceOwnerId) return principal;
+  if (
+    isAuthorizationResourceInScope(
+      { subjectId: principal.userId },
+      { ownerIds: [resourceOwnerId] },
+      "owner",
+    )
+  ) {
+    return principal;
+  }
   if (override && principal.capabilities?.includes(override)) {
     requirePermission(principal, override);
     return principal;

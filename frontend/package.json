@@ -15,11 +15,11 @@
     "preview": "node scripts/next-cli.mjs start",
     "start": "node scripts/next-cli.mjs start",
     "clean": "rm -rf .next out server.js",
-    "lint": "tsc --noEmit && node scripts/check-design-tokens.mjs && node scripts/normalize-control-metrics.mjs --check && node scripts/check-i18n-coverage.mjs && node scripts/check-navigation-integrity.mjs && node scripts/check-route-coverage.mjs",
+    "lint": "tsc --noEmit && node scripts/check-design-tokens.mjs && node scripts/normalize-control-metrics.mjs --check && node scripts/check-i18n-coverage.mjs && node scripts/check-navigation-integrity.mjs && node scripts/check-route-coverage.mjs && npm run check:seo",
     "typecheck": "tsc --noEmit",
     "pretest": "npm run build --workspace=@shongre/design-tokens",
     "test": "vitest run",
-    "test:critical": "vitest run src/security src/api/adapters/demo/demo-payments.service.test.ts src/api/adapters/demo/demo-promotions.service.test.ts src/domains/publication src/domains/messaging src/domains/transaction src/domains/verification src/services/storage.favorites.test.ts",
+    "test:critical": "vitest run src/security src/api/adapters/demo/demo-payments.service.test.ts src/api/adapters/demo/demo-promotions.service.test.ts src/api/adapters/demo/demo-delivery.service.test.ts src/domains/publication src/domains/messaging src/domains/transaction src/domains/verification src/services/storage.favorites.test.ts",
     "test:crm": "vitest run src/api/adapters/demo/demo-crm.service.test.ts src/api/adapters/demo/demo-prospecting.service.test.ts src/api/adapters/demo/demo-provider-control-plane.service.test.ts src/api/adapters/http/http-crm-prospecting.service.test.ts src/api/client/service-registry.test.ts src/features/crm/CrmSurfaceContext.test.ts",
     "test:marketing": "vitest run src/api/adapters/demo/demo-marketing.service.test.ts src/api/client/service-registry.test.ts",
     "check": "node ./bin/shongre.js check",
@@ -36,7 +36,8 @@
     "check:taxonomy": "tsx scripts/check-taxonomy-coverage.ts",
     "check:navigation": "node scripts/check-navigation-integrity.mjs",
     "check:routes": "node scripts/check-route-coverage.mjs",
-    "check:bundle": "node scripts/check-client-bundle-budget.mjs",
+    "check:bundle": "tsx scripts/check-client-bundle-budget.mjs",
+    "check:seo": "tsx scripts/check-seo-governance.ts",
     "seo:audit": "node scripts/seo-audit.mjs"
   },
   "dependencies": {

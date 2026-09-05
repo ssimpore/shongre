@@ -3,9 +3,11 @@ import {
   publicationInputSchema,
   type ListingCardView,
   type PublicationInput,
+  type AuthUser,
 } from "@shongre/contracts";
 import { apiRequest } from "@/api/http-client";
 import { mobileEnvironment } from "@/config/environment";
+import { requireMobileAuthorization } from "@/features/auth/authorization";
 import { mapBackendListing, type BackendListing } from "./listing.mapper";
 
 const demoListings: ListingCardView[] = [
@@ -206,7 +208,7 @@ export interface ListingsService {
     scope?: MobileSearchScope,
   ): Promise<ListingCardView[]>;
   get(id: string, marketCode: string): Promise<ListingCardView | null>;
-  publish(input: PublicationInput): Promise<ListingCardView>;
+  publish(input: PublicationInput, actor: AuthUser): Promise<ListingCardView>;
 }
 
 export class DemoListingsService implements ListingsService {
@@ -236,8 +238,19 @@ export class DemoListingsService implements ListingsService {
       ) || null
     );
   }
-  async publish(input: PublicationInput): Promise<ListingCardView> {
+  async publish(
+    input: PublicationInput,
+    actor: AuthUser,
+  ): Promise<ListingCardView> {
     const draft = publicationInputSchema.parse(input);
+    const market = getCountryConfig(draft.marketCode);
+    requireMobileAuthorization(actor, {
+      capability: "listing.create",
+      market: {
+        code: draft.marketCode,
+        enabled: Boolean(market?.marketplace.enabled),
+      },
+    });
     return {
       id: "demo-new-listing",
       title: draft.title,
@@ -294,8 +307,19 @@ class HttpListingsService implements ListingsService {
     return item ? mapBackendListing(item) : null;
   }
 
-  async publish(input: PublicationInput): Promise<ListingCardView> {
+  async publish(
+    input: PublicationInput,
+    actor: AuthUser,
+  ): Promise<ListingCardView> {
     const draft = publicationInputSchema.parse(input);
+    const market = getCountryConfig(draft.marketCode);
+    requireMobileAuthorization(actor, {
+      capability: "listing.create",
+      market: {
+        code: draft.marketCode,
+        enabled: Boolean(market?.marketplace.enabled),
+      },
+    });
     const item = await apiRequest<BackendListing>(
       "/listings/publish",
       {

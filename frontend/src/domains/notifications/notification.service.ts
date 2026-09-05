@@ -151,6 +151,7 @@ class NotificationService {
       transactions: { inApp: true, email: true, push: true, isMandatory: true },
       listings: { inApp: true, email: true, push: false },
       delivery: { inApp: true, email: true, push: true, isMandatory: true },
+      delivery_opportunities: { inApp: false, email: false, push: false },
       reviews: { inApp: true, email: false, push: true },
       promotions: { inApp: true, email: false, push: false },
       security: { inApp: true, email: true, push: true, isMandatory: true },

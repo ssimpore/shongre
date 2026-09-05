@@ -1,6 +1,12 @@
 import { PAGE_SIZES } from "../../configuration/pagination.config";
+import { routes } from "../../configuration/routes";
 import React, { useState, useEffect, useMemo, useRef } from "react";
-import { useNavigate, useSearchParams, useParams } from "react-router-dom";
+import {
+  useLocation,
+  useNavigate,
+  useSearchParams,
+  useParams,
+} from "react-router-dom";
 import {
   SlidersHorizontal,
   Bookmark,
@@ -97,6 +103,7 @@ function humanizeFacetValue(value: string): string {
 
 export const SearchPage: React.FC = () => {
   const { t } = useTranslation();
+  const location = useLocation();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const {
@@ -412,7 +419,11 @@ export const SearchPage: React.FC = () => {
 
   const handleSaveSearch = async () => {
     if (!currentUser) {
-      toast.info(t("watch.save.loginRequired"));
+      navigate(
+        routes.auth.login(
+          `${location.pathname}${location.search}${location.hash}`,
+        ),
+      );
       return;
     }
     const categoryId = TaxonomyMigration.resolveCanonicalNode(

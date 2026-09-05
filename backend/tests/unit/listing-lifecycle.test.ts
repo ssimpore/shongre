@@ -1,4 +1,5 @@
 import { beforeEach, describe, it, expect } from "vitest";
+import { DELIVERY_TAXONOMY_CATEGORY_ID } from "@shongre/contracts/delivery";
 import { listingsService } from "../../src/modules/listings/listings.service.js";
 import { ordersService } from "../../src/modules/orders/orders.service.js";
 import {
@@ -23,6 +24,21 @@ describe("Listing & Order Lifecycle", () => {
         "user_thomas",
       ),
     ).rejects.toThrow();
+  });
+
+  it("keeps delivery requests out of the generic listing publication path", async () => {
+    await expect(
+      listingsService.publishListing(
+        {
+          title: "Livrer un colis",
+          description: "Demande de livraison locale entre deux quartiers.",
+          priceModel: "on_request",
+          categoryId: DELIVERY_TAXONOMY_CATEGORY_ID,
+          marketCode: "FR",
+        },
+        "user_thomas",
+      ),
+    ).rejects.toMatchObject({ code: "VALIDATION_ERROR" });
   });
 
   it("parses bounded professional CSV imports with market money", async () => {

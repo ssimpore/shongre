@@ -12,6 +12,7 @@ import {
 import { messagesFr, MessageKey } from "./messages.fr";
 import { messagesEn } from "./messages.en";
 import { digitalMessagesFr } from "./digital.catalogue.fr";
+import { deliveryCatalogueFr } from "./delivery.catalogue.fr";
 import { SHIPPED_LOCALES } from "./locale";
 
 const UNSHIPPED_CATALOGUE_MISSING_KEY_BUDGETS: Record<string, number> = {
@@ -171,6 +172,7 @@ describe("catalogue integrity", () => {
     const sourceKeys = new Set([
       ...Object.keys(messagesFr),
       ...Object.keys(digitalMessagesFr),
+      ...Object.keys(deliveryCatalogueFr),
     ]);
     const orphans = Object.keys(messagesEn).filter(
       (key) => !sourceKeys.has(key),

@@ -24,6 +24,40 @@ export class DemoModerationService implements ModerationServiceContract {
   ];
   private readonly appeals: ModerationAppeal[] = [];
 
+  async submitReport(input: {
+    listingId?: string;
+    reportedUserId?: string;
+    deliveryRequestId?: string;
+    reason: "fraud" | "counterfeit" | "prohibited" | "harassment" | "other";
+    details: string;
+  }): Promise<{ id: string; status: "pending" }> {
+    await simulateNetworkDelay();
+    requireDemoCapability("report.create");
+    if (input.details.trim().length < 10)
+      throw new Error("Le signalement est incomplet.");
+    const targetType = input.listingId
+      ? "listing"
+      : input.deliveryRequestId
+        ? "delivery_request"
+        : "user";
+    const id = deterministicRuntimeId("moderation-case", [
+      targetType,
+      input.listingId ?? input.reportedUserId ?? input.deliveryRequestId ?? "",
+      input.reason,
+    ]);
+    if (!this.cases.some((moderationCase) => moderationCase.id === id)) {
+      this.cases.push({
+        id,
+        targetType,
+        deliveryRequestId: input.deliveryRequestId,
+        category: input.reason,
+        status: "open",
+        createdAt: new Date().toISOString(),
+      });
+    }
+    return { id, status: "pending" };
+  }
+
   async listOwnCases(_userId: string): Promise<OwnModerationCase[]> {
     await simulateNetworkDelay();
     requireDemoCapability("report.create");

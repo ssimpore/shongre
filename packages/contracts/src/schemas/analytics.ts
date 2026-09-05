@@ -107,6 +107,16 @@ export const ANALYTICS_EVENT_NAMES = [
   "homepage_deals_view",
   "homepage_deal_click",
   "homepage_deals_view_all_click",
+  "delivery_request_started",
+  "delivery_request_published",
+  "delivery_request_viewed",
+  "delivery_match_completed",
+  "delivery_opportunity_notified",
+  "delivery_application_submitted",
+  "delivery_application_accepted",
+  "delivery_assignment_status_changed",
+  "delivery_request_cancelled",
+  "delivery_request_completed",
 ] as const;
 
 export type AnalyticsEventName = (typeof ANALYTICS_EVENT_NAMES)[number];
@@ -182,6 +192,15 @@ export interface FeatureAnalyticsProperties extends BaseAnalyticsProperties {
   experimentKey?: string;
 }
 
+export interface DeliveryAnalyticsProperties extends BaseAnalyticsProperties {
+  originType?: "standalone" | "order";
+  vehicleClass?: "bicycle" | "cargo_bicycle" | "scooter" | "car" | "van";
+  lifecycleState?: string;
+  applicationCount?: number;
+  eligibleCourierCount?: number;
+  notifiedCourierCount?: number;
+}
+
 type SearchEvent =
   | "search_started"
   | "search_performed"
@@ -226,6 +245,18 @@ type MessagingEvent =
   | "message_received"
   | "contact_revealed";
 
+type DeliveryEvent =
+  | "delivery_request_started"
+  | "delivery_request_published"
+  | "delivery_request_viewed"
+  | "delivery_match_completed"
+  | "delivery_opportunity_notified"
+  | "delivery_application_submitted"
+  | "delivery_application_accepted"
+  | "delivery_assignment_status_changed"
+  | "delivery_request_cancelled"
+  | "delivery_request_completed";
+
 export type AnalyticsEventProperties<Name extends AnalyticsEventName> =
   Name extends "page_viewed" | "navigation_performed"
     ? PageAnalyticsProperties
@@ -237,12 +268,14 @@ export type AnalyticsEventProperties<Name extends AnalyticsEventName> =
           ? FinancialAnalyticsProperties
           : Name extends MessagingEvent
             ? MessagingAnalyticsProperties
-            : Name extends "web_vital_measured"
-              ? WebVitalAnalyticsProperties
-              : Name extends
-                    "feature_flag_evaluated" | "experiment_exposure_recorded"
-                ? FeatureAnalyticsProperties
-                : BaseAnalyticsProperties;
+            : Name extends DeliveryEvent
+              ? DeliveryAnalyticsProperties
+              : Name extends "web_vital_measured"
+                ? WebVitalAnalyticsProperties
+                : Name extends
+                      "feature_flag_evaluated" | "experiment_exposure_recorded"
+                  ? FeatureAnalyticsProperties
+                  : BaseAnalyticsProperties;
 
 export interface AnalyticsContext {
   eventId: string;

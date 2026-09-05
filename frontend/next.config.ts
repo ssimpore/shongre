@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import path from "node:path";
+import { SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS } from "@shongre/contracts/performance";
 const isProduction = process.env.NODE_ENV === "production";
 const allowedDevOrigins = Array.from(
   new Set([
@@ -15,6 +16,14 @@ const developmentAssetHeaders = [
   { key: "Cache-Control", value: "no-store, max-age=0, must-revalidate" },
   { key: "Cloudflare-CDN-Cache-Control", value: "no-store" },
   { key: "CDN-Cache-Control", value: "no-store" },
+];
+const publicReferenceCache =
+  SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS.publicCache.reference;
+const generatedAssetHeaders = [
+  {
+    key: "Cache-Control",
+    value: `public, max-age=${publicReferenceCache.browserMaxAgeSeconds}, s-maxage=${publicReferenceCache.sharedMaxAgeSeconds}, stale-while-revalidate=${publicReferenceCache.staleWhileRevalidateSeconds}, stale-if-error=${publicReferenceCache.staleIfErrorSeconds}`,
+  },
 ];
 const nextConfig: NextConfig = {
   agentRules: false,
@@ -63,6 +72,19 @@ const nextConfig: NextConfig = {
   },
   async headers() {
     return [
+      ...(isProduction
+        ? [
+            {
+              source: "/brand/shongre/:path*",
+              headers: generatedAssetHeaders,
+            },
+            {
+              source:
+                "/:icon(favicon\\.ico|favicon-[0-9]+x[0-9]+\\.png|apple-touch-icon\\.png)",
+              headers: generatedAssetHeaders,
+            },
+          ]
+        : []),
       ...(!isProduction && process.env.SHONGRE_DISABLE_DEV_ASSET_HEADERS !== "1"
         ? [
             {

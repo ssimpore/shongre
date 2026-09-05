@@ -19,6 +19,7 @@ import { providerWebhookWorker } from "./payments/provider-webhook-worker.js";
 import { multilingualSearchReindexWorker } from "./search/multilingual-search-reindex-worker.js";
 import { digitalFulfillmentWorker } from "./digital-products/digital-fulfillment-worker.js";
 import { watchSubscriptionsWorker } from "./watch-subscriptions/watch-subscriptions-worker.js";
+import { deliveryOutboxWorker } from "./delivery/delivery-outbox-worker.js";
 
 interface ScheduledJob {
   name: string;
@@ -101,6 +102,12 @@ const jobs: ScheduledJob[] = [
     group: "communications",
     intervalSeconds: 10,
     run: () => digitalFulfillmentWorker.run(),
+  },
+  {
+    name: "delivery_domain_outbox",
+    group: "communications",
+    intervalSeconds: 10,
+    run: () => deliveryOutboxWorker.run(),
   },
   {
     name: "commercial_configuration",

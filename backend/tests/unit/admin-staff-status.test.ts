@@ -24,7 +24,7 @@ const principal = (overrides: Partial<Principal> = {}): Principal => ({
   staffRole: "admin",
   mfaVerified: true,
   recentlyAuthenticated: true,
-  capabilities: ["admin.staff.manage"],
+  capabilities: ["admin.staff.manage", "user.read", "user.suspend"],
   ...overrides,
 });
 
@@ -145,5 +145,23 @@ describe("AdminService Staff lifecycle", () => {
         actor: principal(),
       }),
     ).rejects.toMatchObject({ code: "CONFLICT" });
+  });
+
+  it("enforces the action-specific account-status capability in the service", async () => {
+    const setup = service();
+
+    await expect(
+      setup.value.updateUserStatus({
+        userId: target.id,
+        status: "suspended",
+        reason: "Suspension demandée sans la capacité opérationnelle requise",
+        actor: principal({
+          capabilities: ["admin.staff.manage", "user.read"],
+        }),
+      }),
+    ).rejects.toMatchObject({
+      code: "FORBIDDEN",
+      details: { reason: "missing_capability" },
+    });
   });
 });

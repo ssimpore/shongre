@@ -36,7 +36,7 @@ import { services } from "../../api/client/service-registry";
 import type { SupportCaseCategory } from "@shongre/contracts/support";
 import { storageService } from "../../services/storage.service";
 import { SupportContextCard } from "./components/SupportContextCard";
-import { usePageMeta } from "../../hooks/usePageMeta";
+import { useStaticPageSeo } from "../../hooks/useStaticPageSeo";
 import { useTranslation } from "../../i18n/I18nProvider";
 
 const CATEGORY_ICONS: Record<string, React.ReactNode> = {
@@ -53,12 +53,7 @@ const CATEGORY_ICONS: Record<string, React.ReactNode> = {
 
 export const ContactPage: React.FC = () => {
   const { t } = useTranslation();
-  usePageMeta({
-    title: "Contacter Shongre",
-    description:
-      "Une question, un problème sur une annonce ou une transaction ? Contactez l'équipe Shongre et suivez votre demande.",
-    canonicalPath: "/contact",
-  });
+  useStaticPageSeo("/contact");
 
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();

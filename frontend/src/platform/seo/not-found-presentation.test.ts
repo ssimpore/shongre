@@ -29,12 +29,16 @@ describe("not-found presentation", () => {
   it("renders a token-backed, non-indexable document without inline element styles", () => {
     const html = renderNotFoundDocument(
       resolveNotFoundPresentation(undefined, "/collections/inconnue"),
+      "France",
     );
 
     expect(html).toContain("<title>Collection introuvable | SHONGRE.</title>");
-    expect(html).toContain(
-      `src="${webBrandAssets.logo.header.primary240.src}"`,
-    );
+    expect(html).toContain(`src="${webBrandAssets.icon.primary.src}"`);
+    expect(html).toContain(`src="${webBrandAssets.logo.wordmark.primary.src}"`);
+    expect(html).toContain('class="brand-icon"');
+    expect(html).toContain('class="brand-wordmark"');
+    expect(html).toContain('class="brand-market-label"');
+    expect(html).toContain("France");
     expect(html).toContain('name="robots" content="noindex, nofollow"');
     expect(html).toContain('href="/collections"');
     expect(html).toContain(

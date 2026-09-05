@@ -250,6 +250,9 @@ export class DemoMessagingService implements MessagingService {
     );
     if (!Number.isSafeInteger(input.amountMinor) || input.amountMinor <= 0)
       throw new Error("Le montant de l’offre est invalide.");
+    const market = getCountryConfig(input.marketCode);
+    if (!market)
+      throw new Error("Le marché de cette conversation est invalide.");
     return {
       ...this.append(
         input.conversationId,
@@ -257,7 +260,7 @@ export class DemoMessagingService implements MessagingService {
         "Offre de prix proposée.",
         {
           amountMinor: input.amountMinor,
-          currency: getCountryConfig(input.marketCode)?.currency || "EUR",
+          currency: market.currency,
           status: "pending",
         },
       ),

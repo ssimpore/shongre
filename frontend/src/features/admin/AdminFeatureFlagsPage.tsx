@@ -5,6 +5,11 @@ import type {
   FeatureFlagRule,
 } from "@shongre/contracts/feature-flags";
 import { FEATURE_FLAG_CONSTRAINTS } from "@shongre/contracts/feature-flags";
+import { getCountryConfig } from "@shongre/contracts";
+import {
+  DELIVERY_FEATURE_FLAG_KEY,
+  deliveryMarketActivationIssues,
+} from "@shongre/contracts/delivery";
 import type { FeatureFlagAdminEntry } from "../../api/contracts/feature-flags.contract";
 import { services } from "../../api/client/service-registry";
 import { useToast } from "../../app/providers/ToastProvider";
@@ -16,6 +21,7 @@ import {
 } from "../../design-system/primitives/FormField";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useTranslation } from "../../i18n/I18nProvider";
+import { deliveryCatalogueFr } from "../../i18n/delivery.catalogue.fr";
 
 interface DefinitionDraft {
   description: string;
@@ -38,7 +44,7 @@ const toDraft = (value: FeatureFlagDefinition): DefinitionDraft => ({
 });
 
 export const AdminFeatureFlagsPage: React.FC = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(deliveryCatalogueFr);
   usePageMeta({
     title: t("admin.adminFeatureFlagsPage.fonctionnalitesConsoleShongre"),
     description: t(
@@ -85,6 +91,16 @@ export const AdminFeatureFlagsPage: React.FC = () => {
   const selected = useMemo(
     () => entries.find((entry) => entry.definition.key === selectedKey) ?? null,
     [entries, selectedKey],
+  );
+  const isDeliveryFlag = selectedKey === DELIVERY_FEATURE_FLAG_KEY;
+  const deliveryActivationIssues = useMemo(
+    () =>
+      isDeliveryFlag
+        ? deliveryMarketActivationIssues(
+            getCountryConfig(newRule.marketCode.trim().toUpperCase()),
+          )
+        : [],
+    [isDeliveryFlag, newRule.marketCode],
   );
 
   useEffect(() => {
@@ -198,7 +214,9 @@ export const AdminFeatureFlagsPage: React.FC = () => {
                     className={`w-full p-4 text-left ${selectedKey === entry.definition.key ? "bg-primary-surface-soft" : "hover:bg-surface-soft"}`}
                   >
                     <span className="block break-all font-mono text-xs font-bold text-text-main">
-                      {entry.definition.key}
+                      {entry.definition.key === DELIVERY_FEATURE_FLAG_KEY
+                        ? t("admin.featureFlags.deliveryLabel")
+                        : entry.definition.key}
                     </span>
                     <span className="mt-2 flex items-center gap-2">
                       <Badge
@@ -326,6 +344,7 @@ export const AdminFeatureFlagsPage: React.FC = () => {
                     <input
                       type="checkbox"
                       checked={draft.defaultEnabled}
+                      disabled={isDeliveryFlag}
                       onChange={(event) =>
                         setDraft({
                           ...draft,
@@ -372,6 +391,18 @@ export const AdminFeatureFlagsPage: React.FC = () => {
                 >
                   {t("admin.adminFeatureFlagsPage.reglesCiblees")}
                 </h2>
+                {isDeliveryFlag ? (
+                  <div
+                    className={`mt-3 rounded-control border p-3 text-xs ${deliveryActivationIssues.length ? "border-warning-border bg-warning-surface text-warning" : "border-success-border bg-success-surface text-success"}`}
+                    role="status"
+                  >
+                    {deliveryActivationIssues.length
+                      ? t("admin.featureFlags.deliveryBlocked", {
+                          reasons: deliveryActivationIssues.join(", "),
+                        })
+                      : t("admin.featureFlags.deliveryReady")}
+                  </div>
+                ) : null}
                 <div className="mt-3 space-y-2">
                   {selected.rules.length === 0 ? (
                     <p className="rounded-control bg-surface-soft p-4 text-xs text-text-secondary">
@@ -493,7 +524,11 @@ export const AdminFeatureFlagsPage: React.FC = () => {
                       type="submit"
                       variant="outline"
                       size="sm"
-                      disabled={saving || newRule.reason.trim().length < 10}
+                      disabled={
+                        saving ||
+                        newRule.reason.trim().length < 10 ||
+                        (newRule.enabled && deliveryActivationIssues.length > 0)
+                      }
                     >
                       {t("admin.adminFeatureFlagsPage.ajouterLaRegle")}
                     </Button>

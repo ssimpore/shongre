@@ -95,6 +95,11 @@ import {
   PostgresEmploymentRepository,
 } from "./employment.repository.js";
 import {
+  DeliveryRepository,
+  DemoDeliveryRepository,
+  PostgresDeliveryRepository,
+} from "./delivery.repository.js";
+import {
   IPublisherRepository,
   DemoPublisherRepository,
   PostgresPublisherRepository,
@@ -172,6 +177,7 @@ export interface RepositoryContainer {
   auto: IAutoRepository;
   realEstate: IRealEstateRepository;
   employment: EmploymentRepository;
+  delivery: DeliveryRepository;
   publishers: IPublisherRepository;
   discoveryConfiguration: IDiscoveryConfigurationRepository;
   support: ISupportRepository;
@@ -214,6 +220,7 @@ export function createRepositoryContainer(
       auto: new PostgresAutoRepository(),
       realEstate: new PostgresRealEstateRepository(),
       employment: new PostgresEmploymentRepository(),
+      delivery: new PostgresDeliveryRepository(),
       publishers: new PostgresPublisherRepository(),
       discoveryConfiguration: new PostgresDiscoveryConfigurationRepository(),
       support: new PostgresSupportRepository(),
@@ -249,6 +256,7 @@ export function createRepositoryContainer(
     auto: new DemoAutoRepository(),
     realEstate: new DemoRealEstateRepository(),
     employment: new DemoEmploymentRepository(),
+    delivery: new DemoDeliveryRepository(),
     publishers: new DemoPublisherRepository(users),
     discoveryConfiguration: new DemoDiscoveryConfigurationRepository(),
     support: new DemoSupportRepository(),

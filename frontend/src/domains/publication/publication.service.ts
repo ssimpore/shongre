@@ -22,6 +22,8 @@ import {
 import { marketService } from "../market/market.service";
 import { digitalFulfillmentVersionInputSchema } from "@shongre/contracts/digital-products";
 import { sanitizePublicationDraftForPersistence } from "./publication.taxonomy-state";
+import { isProSeller } from "../user/user.domain";
+import { authorizationService } from "../../security/authorization.service";
 
 const DRAFT_STORAGE_PREFIX = "shongre_publication_draft_v2:";
 
@@ -179,7 +181,7 @@ export class PublicationService {
       (!isDigital && resolvedSchema?.listingFamily === "physical_product") ||
       resolvedSchema?.listingFamily === "vehicle" ||
       resolvedSchema?.listingFamily === "professional_equipment";
-    if (usesInventory && (user?.role === "pro_seller" || draft.proInventory)) {
+    if (usesInventory && (isProSeller(user) || draft.proInventory)) {
       const stock = draft.proInventory?.stock ?? 1;
       if (stock < 1) {
         errors.push({
@@ -404,7 +406,7 @@ export class PublicationService {
         .filter((l) => l.sellerId === user.id && l.status === "active");
       const policy = getDemoPublicationPolicy({
         marketCode: marketCode.toUpperCase(),
-        audience: user.role === "pro_seller" ? "professional" : "individual",
+        audience: isProSeller(user) ? "professional" : "individual",
         categoryId: normalizeCommercialCategory(draft.taxonomyNodeId),
         planId: user.activePlanId,
       });
@@ -451,7 +453,7 @@ export class PublicationService {
       marketCode: (
         draft.marketCode || marketService.getDefaultMarket().code
       ).toUpperCase(),
-      audience: user.role === "pro_seller" ? "professional" : "individual",
+      audience: isProSeller(user) ? "professional" : "individual",
       categoryId: normalizeCommercialCategory(rootNode?.slug || node?.slug),
       planId: user.activePlanId,
     });
@@ -517,7 +519,7 @@ export class PublicationService {
       Date.now() + policy.durationDays * 24 * 60 * 60 * 1000,
     ).toISOString();
 
-    const isPro = user.role === "pro_seller";
+    const isPro = isProSeller(user);
 
     const rawSelectedMarkets =
       draft.selectedMarkets && draft.selectedMarkets.length > 0
@@ -635,13 +637,9 @@ export class PublicationService {
       throw new Error(`Annonce #${id} introuvable.`);
     }
 
-    if (
-      existing.sellerId !== user.id &&
-      user.role !== "admin" &&
-      user.role !== "super_admin"
-    ) {
-      throw new Error("Vous n'êtes pas autorisé à modifier cette annonce.");
-    }
+    authorizationService.assertCan(user, "listing.update.own", {
+      sellerId: existing.sellerId,
+    });
 
     // If listing is currently reserved or has an active transaction, lock price and seller
     if (

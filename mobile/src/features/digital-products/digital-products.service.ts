@@ -9,6 +9,7 @@ import type {
   DigitalSellerProfile,
   FulfillmentType,
 } from "@shongre/contracts/digital-products";
+import { DEFAULT_COUNTRY_CONFIG, getCountryConfig } from "@shongre/contracts";
 import { apiRequest } from "@/api/http-client";
 import { mobileEnvironment } from "@/config/environment";
 
@@ -131,7 +132,7 @@ function demoPolicy(marketCode: string): DigitalPolicyProjection {
     throw new Error("Marché numérique introuvable.");
   }
   const enabled = ["FR", "BE", "CH"].includes(marketCode);
-  const currency = marketCode === "CH" ? "CHF" : "EUR";
+  const currency = getCountryConfig(marketCode)!.currency;
   return {
     marketCode,
     version: 1,
@@ -239,7 +240,7 @@ function entitlement(
     orderItemId: `demo-item-${index}`,
     listingId: `demo-listing-${index}`,
     sellerId: "user_camille",
-    marketCode: "FR",
+    marketCode: DEFAULT_COUNTRY_CONFIG.code,
     title,
     fulfillmentTypes: [type],
     primaryFulfillmentType: type,
@@ -256,7 +257,10 @@ function entitlement(
             : status === "REFUNDED"
               ? "REFUNDED"
               : "CONFIRMED",
-    price: { amountMinor: 2_900, currency: "EUR" },
+    price: {
+      amountMinor: 2_900,
+      currency: DEFAULT_COUNTRY_CONFIG.currency,
+    },
     commercialEvidenceId: "demo-catalog-v1",
     availableAt: status === "ACCESS_AVAILABLE" ? NOW : null,
     expiresAt: UNTIL,

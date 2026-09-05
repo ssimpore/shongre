@@ -80,7 +80,9 @@ export class StripeCheckoutAdapter {
             "Stripe-Version": STRIPE_API_VERSION,
           },
           body,
-          signal: AbortSignal.timeout(10_000),
+          signal: AbortSignal.timeout(
+            config.performance.providerRequestTimeoutMs,
+          ),
         });
         const payload: unknown = await response.json();
         if (!response.ok) throw stripeError(response.status, payload);
@@ -259,7 +261,9 @@ export class StripeCheckoutAdapter {
               Authorization: `Bearer ${config.stripeSecretKey}`,
               "Stripe-Version": STRIPE_API_VERSION,
             },
-            signal: AbortSignal.timeout(10_000),
+            signal: AbortSignal.timeout(
+              config.performance.providerRequestTimeoutMs,
+            ),
           },
         );
         const payload: unknown = await response.json();
@@ -283,7 +287,9 @@ export class StripeCheckoutAdapter {
           Authorization: `Bearer ${config.stripeSecretKey}`,
           "Stripe-Version": STRIPE_API_VERSION,
         },
-        signal: AbortSignal.timeout(10_000),
+        signal: AbortSignal.timeout(
+          config.performance.providerRequestTimeoutMs,
+        ),
       },
     );
     const payload: unknown = await response.json();

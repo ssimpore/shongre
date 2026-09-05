@@ -48,7 +48,9 @@ export class AuthEmailSender {
           "Idempotency-Key": idempotencyKey,
         },
         body: JSON.stringify(input),
-        signal: AbortSignal.timeout(10_000),
+        signal: AbortSignal.timeout(
+          config.performance.providerRequestTimeoutMs,
+        ),
       });
       lastStatus = response.status;
       if (response.ok) {

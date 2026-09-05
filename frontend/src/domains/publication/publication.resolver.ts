@@ -17,6 +17,7 @@ import {
 } from "../taxonomy/taxonomy.types";
 import { ListingIntent, PriceModel } from "./publication.types";
 import { marketService } from "../market/market.service";
+import { DEFAULT_MARKET_CURRENCY } from "../../configuration/market-baseline";
 
 interface ResolvedPublicationField {
   attribute: TaxonomyAttribute;
@@ -251,7 +252,8 @@ class PublicationResolver {
     // 8. Resolve Market Currency
     const effectiveMarket = marketService.getEffectiveConfig(marketCode);
     const currency = {
-      code: effectiveMarket.localization.defaultCurrency || "EUR",
+      code:
+        effectiveMarket.localization.defaultCurrency || DEFAULT_MARKET_CURRENCY,
       symbol: effectiveMarket.localization.currencySymbol || "€",
     };
 

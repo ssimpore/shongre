@@ -1,14 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   Building2,
   BedDouble,
-  CalendarDays,
   CheckCircle2,
   KeyRound,
   MapPin,
   Maximize2,
-  MessageSquare,
   Phone,
   ShieldCheck,
 } from "lucide-react";
@@ -47,6 +45,11 @@ import {
   transactionLabels,
 } from "./immo-format";
 import { useTranslation } from "../../i18n/I18nProvider";
+import {
+  PROPERTY_LEAD_FORM_ID,
+  PropertyPrimaryActionButton,
+  PropertyStickyHeader,
+} from "./components/PropertyStickyHeader";
 
 type LeadForm = {
   type: PropertyLead["type"];
@@ -83,6 +86,7 @@ export const ImmoPropertyDetailPage: React.FC = () => {
   const [sending, setSending] = useState(false);
   const [sentLeadId, setSentLeadId] = useState<string>();
   const [appointmentAt, setAppointmentAt] = useState("2026-08-26T14:30");
+  const originalListingHeaderRef = useRef<HTMLDivElement>(null);
   const [form, setForm] = useState<LeadForm>({
     type: "information",
     name: currentUser?.name || "",
@@ -252,8 +256,22 @@ export const ImmoPropertyDetailPage: React.FC = () => {
       ? "immo.propertyDetail.professionalAdvertiser"
       : "immo.propertyDetail.individualAdvertiser",
   );
+  const formattedPrice = `${formatImmoMoney(
+    property.financials.price,
+    currentLocale,
+    convertMoney,
+  )}${pricePeriodSuffix[property.financials.period]}`;
   return (
     <div className="bg-bg-subtle pb-14">
+      <PropertyStickyHeader
+        originalHeaderRef={originalListingHeaderRef}
+        eyebrow={`${transactionLabels[property.transactionType]} · ${propertyTypeLabels[property.propertyType]} · ${property.address.publicLabel}`}
+        title={property.title}
+        price={formattedPrice}
+        phase={sentLeadId ? "appointment" : "lead"}
+        isSending={sending}
+        onRequestVisit={requestVisit}
+      />
       <Container className="py-5">
         <nav aria-label="Fil d’Ariane" className="mb-4 text-xs text-text-muted">
           Immobilier / {propertyTypeLabels[property.propertyType]} /{" "}
@@ -290,7 +308,11 @@ export const ImmoPropertyDetailPage: React.FC = () => {
                 </div>
               </div>
               <div className="p-5 sm:p-6">
-                <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
+                <div
+                  ref={originalListingHeaderRef}
+                  data-testid="immo-original-listing-header"
+                  className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start"
+                >
                   <div>
                     <p className="text-xs font-bold uppercase tracking-wide text-primary">
                       {transactionLabels[property.transactionType]} ·{" "}
@@ -305,12 +327,7 @@ export const ImmoPropertyDetailPage: React.FC = () => {
                     </p>
                   </div>
                   <p className="shrink-0 text-xl font-bold text-primary">
-                    {formatImmoMoney(
-                      property.financials.price,
-                      currentLocale,
-                      convertMoney,
-                    )}
-                    {pricePeriodSuffix[property.financials.period]}
+                    {formattedPrice}
                   </p>
                 </div>
                 <div className="mt-5 grid grid-cols-3 gap-2 border-y border-border-subtle py-4 text-center">
@@ -429,6 +446,7 @@ export const ImmoPropertyDetailPage: React.FC = () => {
             />
             {!sentLeadId ? (
               <form
+                id={PROPERTY_LEAD_FORM_ID}
                 data-marketplace-action="message.send"
                 onSubmit={submitLead}
                 className="space-y-3"
@@ -510,16 +528,12 @@ export const ImmoPropertyDetailPage: React.FC = () => {
                     annonceur pour répondre à cette demande.
                   </span>
                 </label>
-                <Button
-                  data-marketplace-action="message.send"
-                  type="submit"
-                  variant="primary"
-                  className="w-full"
-                  isLoading={sending}
-                  leftIcon={<MessageSquare className="h-icon-md w-icon-md" />}
-                >
-                  Envoyer la demande
-                </Button>
+                <PropertyPrimaryActionButton
+                  phase="lead"
+                  isSending={sending}
+                  placement="panel"
+                  onRequestVisit={requestVisit}
+                />
                 <Button
                   data-marketplace-action="message.prepare"
                   type="button"
@@ -557,15 +571,12 @@ export const ImmoPropertyDetailPage: React.FC = () => {
                     onChange={(event) => setAppointmentAt(event.target.value)}
                   />
                 </FormField>
-                <Button
-                  data-marketplace-action="appointment.request"
-                  variant="primary"
-                  className="w-full"
-                  onClick={requestVisit}
-                  leftIcon={<CalendarDays className="h-icon-md w-icon-md" />}
-                >
-                  Demander ce créneau
-                </Button>
+                <PropertyPrimaryActionButton
+                  phase="appointment"
+                  isSending={sending}
+                  placement="panel"
+                  onRequestVisit={requestVisit}
+                />
               </div>
             )}
           </aside>

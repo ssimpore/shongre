@@ -13,9 +13,24 @@ import {
   selectTaxonomyPathNode,
 } from "../../domains/publication/publication.onboarding";
 import { toTaxonomyV4ListingIntent } from "../../domains/publication/publication.taxonomy-state";
+import { DELIVERY_TAXONOMY_CATEGORY_ID } from "@shongre/contracts/delivery";
 
 export type ListingOnboardingLoadState =
   "loading" | "ready" | "empty" | "error";
+
+export function excludeExternallyManagedPublicationNodes(
+  response: TaxonomyV4TreeResponse,
+): TaxonomyV4TreeResponse {
+  return {
+    ...response,
+    items: response.items.filter(
+      (item) => item.id !== DELIVERY_TAXONOMY_CATEGORY_ID,
+    ),
+    listingTypes: response.listingTypes.filter(
+      (listingType) => listingType.categoryId !== DELIVERY_TAXONOMY_CATEGORY_ID,
+    ),
+  };
+}
 
 export function useListingOnboardingController(input: {
   marketContext: MarketContext | null;
@@ -50,9 +65,12 @@ export function useListingOnboardingController(input: {
       })
       .then((response) => {
         if (!active) return;
-        setTree(response);
+        const genericListingTree =
+          excludeExternallyManagedPublicationNodes(response);
+        setTree(genericListingTree);
         setState(
-          response.items.length > 0 && response.listingTypes.length > 0
+          genericListingTree.items.length > 0 &&
+            genericListingTree.listingTypes.length > 0
             ? "ready"
             : "empty",
         );

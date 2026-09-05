@@ -911,9 +911,10 @@ async function main(): Promise<void> {
       "webBrandAssets.logo.header.primary480.src",
     ],
     "frontend/src/platform/seo/not-found-presentation.ts": [
-      "webBrandAssets.logo.header.primary240",
+      "webBrandAssets.icon.primary",
+      "webBrandAssets.logo.wordmark.primary",
     ],
-    "frontend/src/platform/seo/seo-policy.ts": [
+    "frontend/src/platform/seo/discovery-structured-data.ts": [
       "webBrandAssets.icon.structuredData.src",
     ],
     "mobile/app.config.ts": [

@@ -485,7 +485,9 @@ export class ProviderControlPlaneService {
           Authorization: `Bearer ${config.stripeSecretKey}`,
           "Stripe-Version": "2026-07-29.dahlia",
         },
-        signal: AbortSignal.timeout(5_000),
+        signal: AbortSignal.timeout(
+          config.performance.providerHealthCheckTimeoutMs,
+        ),
       });
       const success = response.ok;
       const result: ProviderDiagnosticResult = {

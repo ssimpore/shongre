@@ -106,8 +106,11 @@ export function structuredDataForRoute(
   policy: SeoRoutePolicy,
   marketContext: MarketContext,
   routeData: PublicRouteDataResolution,
+  socialProfiles: readonly string[] = [],
 ): string[] {
   return serializeStructuredData(
-    structuredDataForPolicy(policy, marketContext, routeData),
+    structuredDataForPolicy(policy, marketContext, routeData, {
+      socialProfiles,
+    }),
   );
 }

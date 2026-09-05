@@ -5,6 +5,7 @@ import {
   repositories,
   AdminStatsSummary,
   IModerationRepository,
+  DeliveryRepository,
 } from "../../infrastructure/database/repositories/index.js";
 import { logger } from "../../infrastructure/logging/logger.js";
 import { AppError } from "../../shared/errors/app-error.js";
@@ -36,6 +37,7 @@ import {
 } from "../auth/session.service.js";
 import { config } from "../../app/config/index.js";
 import { presentCapabilityFact } from "./capability-presentation.js";
+import { reportInputSchema } from "@shongre/contracts";
 
 export type { AdminStatsSummary };
 
@@ -45,6 +47,7 @@ export class AdminService {
     private userRepo: IUserRepository = repositories.users,
     private moderationRepo: IModerationRepository = repositories.moderation,
     private sessions: SessionService = sessionService,
+    private deliveryRepo: DeliveryRepository = repositories.delivery,
   ) {}
 
   async getPlatformStats(): Promise<AdminStatsSummary> {
@@ -256,6 +259,15 @@ export class AdminService {
     reason: string;
     actor: Principal;
   }): Promise<UserProfile> {
+    requirePermission(input.actor, "user.read");
+    requirePermission(
+      input.actor,
+      input.status === "active"
+        ? "user.reactivate"
+        : input.status === "restricted"
+          ? "compliance.restrict_account"
+          : "user.suspend",
+    );
     if (
       !new Set(["active", "restricted", "suspended", "banned"]).has(
         input.status,
@@ -454,6 +466,8 @@ export class AdminService {
     notes: string;
     actor: Principal;
   }): Promise<UserProfile> {
+    requirePermission(input.actor, "user.verify");
+    requireRecentAuthentication(input.actor);
     if (!input.notes || input.notes.trim().length < 10) {
       throw new AppError({
         code: "VALIDATION_ERROR",
@@ -506,6 +520,12 @@ export class AdminService {
     reason: string;
     actor: Principal;
   }): Promise<void> {
+    requirePermission(input.actor, "report.review");
+    if (input.action === "ban_user") {
+      requirePermission(input.actor, "user.suspend");
+    } else if (input.action === "remove_listing") {
+      requirePermission(input.actor, "moderation.action");
+    }
     if (!new Set(["dismiss", "remove_listing", "ban_user"]).has(input.action)) {
       throw new AppError({
         code: "VALIDATION_ERROR",
@@ -541,58 +561,49 @@ export class AdminService {
     reporterId: string;
     listingId?: string;
     reportedUserId?: string;
+    deliveryRequestId?: string;
     reason?: string;
     details?: string;
   }): Promise<{ id: string; status: "pending" }> {
-    const reasons = new Set([
-      "fraud",
-      "counterfeit",
-      "prohibited",
-      "harassment",
-      "other",
-    ]);
-    if (!input.listingId && !input.reportedUserId) {
+    const parsed = reportInputSchema.safeParse(input);
+    if (!parsed.success) {
       throw new AppError({
         code: "VALIDATION_ERROR",
-        message: "Une annonce ou un utilisateur doit être signalé.",
+        message: "Le signalement est incomplet ou invalide.",
       });
     }
-    if (!input.reason || !reasons.has(input.reason)) {
-      throw new AppError({
-        code: "VALIDATION_ERROR",
-        message: "Motif de signalement invalide.",
-      });
-    }
-    if (
-      !input.details ||
-      input.details.trim().length < 10 ||
-      input.details.length > 2000
-    ) {
-      throw new AppError({
-        code: "VALIDATION_ERROR",
-        message:
-          "Le détail du signalement doit contenir entre 10 et 2 000 caractères.",
-      });
-    }
-    if (input.reportedUserId === input.reporterId) {
+    if (parsed.data.reportedUserId === input.reporterId) {
       throw new AppError({
         code: "VALIDATION_ERROR",
         message: "Vous ne pouvez pas signaler votre propre compte.",
       });
     }
+    let deliveryRequesterId: string | undefined;
+    if (parsed.data.deliveryRequestId) {
+      const request = await this.deliveryRepo.getRequest(
+        parsed.data.deliveryRequestId,
+      );
+      if (!request || request.requesterId === input.reporterId) {
+        throw new AppError({
+          code: "NOT_FOUND",
+          message: "Demande de livraison introuvable.",
+        });
+      }
+      deliveryRequesterId = request.requesterId;
+    }
     const report = await this.adminRepo.createReport({
       reporterId: input.reporterId,
-      listingId: input.listingId,
-      reportedUserId: input.reportedUserId,
-      reason: input.reason,
-      details: input.details.trim(),
+      ...parsed.data,
+      details: parsed.data.details.trim(),
     });
     await this.moderationRepo.createCaseForReport({
       reportId: report.id,
       reporterId: input.reporterId,
-      listingId: input.listingId,
-      reportedUserId: input.reportedUserId,
-      category: input.reason,
+      listingId: parsed.data.listingId,
+      reportedUserId: parsed.data.reportedUserId,
+      deliveryRequestId: parsed.data.deliveryRequestId,
+      affectedUserId: deliveryRequesterId,
+      category: parsed.data.reason,
     });
     return { ...report, status: "pending" };
   }

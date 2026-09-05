@@ -88,7 +88,9 @@ export class LiveKYCProvider implements IKYCProvider {
           Authorization: `Bearer ${config.kycProviderApiToken}`,
           ...(init?.headers || {}),
         },
-        signal: AbortSignal.timeout(10_000),
+        signal: AbortSignal.timeout(
+          config.performance.providerRequestTimeoutMs,
+        ),
       },
     );
     const payload: any = await response.json().catch(() => ({}));
@@ -111,7 +113,7 @@ export class LiveKYCProvider implements IKYCProvider {
         "Stripe-Version": "2026-07-29.dahlia",
         ...(init?.headers || {}),
       },
-      signal: AbortSignal.timeout(10_000),
+      signal: AbortSignal.timeout(config.performance.providerRequestTimeoutMs),
     });
     const payload: any = await response.json().catch(() => ({}));
     if (!response.ok) {

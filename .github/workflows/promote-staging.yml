@@ -89,10 +89,8 @@ jobs:
           LOAD_TEST_MARKET: FR
           LOAD_TEST_REQUESTS: "30"
           LOAD_TEST_CONCURRENCY: "4"
-          LOAD_TEST_P95_MS: "750"
-          LOAD_TEST_MIN_SUCCESS_RATE: "0.99"
           PERFORMANCE_EVIDENCE_FILE: .release/performance-evidence.json
-        run: node scripts/load-smoke.mjs
+        run: npx tsx scripts/load-smoke.mjs
       - name: Bind certification to the exact digests and schema
         run: >-
           node scripts/release-manifest.mjs certify

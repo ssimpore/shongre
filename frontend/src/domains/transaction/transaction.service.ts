@@ -9,12 +9,14 @@ import {
   TransactionDispute,
 } from "../../types";
 import { TRANSACTION_CONFIG } from "../../configuration/transaction.config";
+import { DEFAULT_MARKET_CURRENCY } from "../../configuration/market-baseline";
 import {
   deterministicCode,
   deterministicRuntimeId,
 } from "../../utilities/deterministic-id";
 import { storageService } from "../../services/storage.service";
 import { auditService } from "../../security/audit.service";
+import { authorizationService } from "../../security/authorization.service";
 import { marketService } from "../market/market.service";
 import { OrderPricingSnapshot } from "./transaction.types";
 import {
@@ -112,7 +114,7 @@ class TransactionService {
       discountMinor: 0,
       totalAmountMinor,
       sellerPayoutAmountMinor,
-      currency: config.localization.defaultCurrency || "EUR",
+      currency: config.localization.defaultCurrency || DEFAULT_MARKET_CURRENCY,
     };
   }
   /**
@@ -504,13 +506,9 @@ class TransactionService {
       .find((t) => t.id === transactionId);
     if (!tx) throw new Error("Transaction introuvable.");
 
-    if (
-      tx.sellerId !== seller.id &&
-      seller.role !== "admin" &&
-      seller.role !== "super_admin"
-    ) {
+    authorizationService.assertCan(seller, "order.manage.seller");
+    if (tx.sellerId !== seller.id)
       throw new Error("Vous n'êtes pas autorisé à accepter cette réservation.");
-    }
 
     const now = new Date().toISOString();
     const nextStatus: TransactionStatus =
@@ -766,15 +764,9 @@ class TransactionService {
       .find((t) => t.id === transactionId);
     if (!tx) throw new Error("Transaction introuvable.");
 
-    if (
-      tx.buyerId !== buyer.id &&
-      buyer.role !== "admin" &&
-      buyer.role !== "super_admin"
-    ) {
-      throw new Error(
-        "Seul l'acheteur peut confirmer la bonne réception de la commande.",
-      );
-    }
+    authorizationService.assertCan(buyer, "order.read.own", {
+      buyerId: tx.buyerId,
+    });
 
     const now = new Date().toISOString();
 
@@ -938,87 +930,6 @@ class TransactionService {
   }
 
   /**
-   * Resolve dispute (Support / Admin action)
-   */
-  async resolveDispute(
-    transactionId: string,
-    admin: UserProfile,
-    resolution: {
-      action: "full_refund" | "partial_refund" | "seller_payout" | "closed";
-      note: string;
-      refundAmount?: number;
-    },
-  ): Promise<Transaction> {
-    const tx = storageService
-      .getTransactions()
-      .find((t) => t.id === transactionId);
-    if (!tx) throw new Error("Transaction introuvable.");
-    if (!tx.dispute)
-      throw new Error("Aucun litige en cours sur cette transaction.");
-
-    const now = new Date().toISOString();
-    tx.dispute.status =
-      resolution.action === "seller_payout"
-        ? "resolved_payout"
-        : resolution.action === "closed"
-          ? "closed"
-          : "resolved_refund";
-    tx.dispute.resolvedAt = now;
-    tx.dispute.resolutionNote = resolution.note;
-    tx.dispute.resolutionAction = resolution.action;
-    tx.dispute.refundAmount = resolution.refundAmount;
-
-    if (resolution.action === "full_refund") {
-      tx.status = "refunded";
-      if (tx.payment) {
-        tx.payment.escrowStatus = "refunded";
-        tx.payment.refundedAt = now;
-      }
-      // Revert listing to active
-      const listing = storageService
-        .getListings()
-        .find((l) => l.id === tx.listingId);
-      if (listing) {
-        listing.status = "active";
-        listing.activeReservationId = undefined;
-        storageService.saveListing(listing);
-      }
-    } else if (resolution.action === "seller_payout") {
-      tx.status = "completed";
-      tx.completedAt = now;
-      if (tx.payment) {
-        tx.payment.escrowStatus = "released";
-        tx.payment.releasedAt = now;
-      }
-      this.creditSellerBalance(tx.sellerId, tx.sellerPayoutAmount || tx.amount);
-    }
-
-    tx.updatedAt = now;
-    tx.statusHistory = tx.statusHistory || [];
-    tx.statusHistory.push({
-      status: tx.status,
-      timestamp: now,
-      actorId: admin.id,
-      actorName: admin.name,
-      note: `Arbitrage rendu : ${resolution.action.toUpperCase()}. Note : ${resolution.note}`,
-    });
-
-    storageService.saveTransaction(tx);
-
-    auditService.logEvent({
-      actorId: admin.id,
-      actorName: admin.name,
-      actorRole: admin.role || "support",
-      targetId: tx.id,
-      targetName: tx.listingTitle,
-      action: "listing_moderated",
-      details: `Litige résolu par l'administrateur avec l'action "${resolution.action}".`,
-    });
-
-    return tx;
-  }
-
-  /**
    * Buyer cancels reservation before seller confirmation
    */
   async cancelReservationByBuyer(
@@ -1031,13 +942,9 @@ class TransactionService {
       .find((t) => t.id === transactionId);
     if (!tx) throw new Error("Transaction introuvable.");
 
-    if (
-      tx.buyerId !== buyer.id &&
-      buyer.role !== "admin" &&
-      buyer.role !== "super_admin"
-    ) {
-      throw new Error("Action non autorisée.");
-    }
+    authorizationService.assertCan(buyer, "order.read.own", {
+      buyerId: tx.buyerId,
+    });
 
     if (
       tx.status !== "pending_seller_confirmation" &&

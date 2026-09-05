@@ -213,6 +213,11 @@ export class NotificationsService {
         push: true,
         isMandatory: true,
       },
+      delivery_opportunities: {
+        inApp: false,
+        email: false,
+        push: false,
+      },
       reviews: { inApp: true, email: false, push: true },
       promotions: { inApp: true, email: false, push: false },
       security: {
@@ -255,6 +260,8 @@ export class NotificationsService {
 
   private resolveCategory(type: string): NotificationCategory {
     const normalized = String(type || "").toLowerCase();
+    if (/delivery\.request\.matched/.test(normalized))
+      return "delivery_opportunities";
     if (/message|offer|conversation/.test(normalized)) return "messages";
     if (/payment|order|escrow|refund|payout|transaction/.test(normalized))
       return "transactions";

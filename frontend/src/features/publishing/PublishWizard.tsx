@@ -53,6 +53,7 @@ import { plural } from "../../utilities/formatters";
 import { Image } from "../../design-system/primitives/Image";
 import { ProgressBar } from "../../design-system/primitives/ProgressBar";
 import { useTranslation } from "../../i18n/I18nProvider";
+import { deliveryCatalogueFr } from "../../i18n/delivery.catalogue.fr";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import {
   CONTROL_FOCUS_CLASS,
@@ -77,6 +78,7 @@ import { PublishPreparationScreen } from "./PublishPreparationScreen";
 import { TaxonomyV4Field } from "./TaxonomyV4Field";
 import { useMarketPromotions } from "../../domains/monetization/useMarketPromotions";
 import { useRegionalFormatters } from "../../hooks/useRegionalFormatters";
+import { isProSeller } from "../../domains/user/user.domain";
 import {
   isCurrentTaxonomyV4Schema,
   sanitizePublicationDraftForSubmission,
@@ -91,6 +93,8 @@ import {
   groupTaxonomyPublicationFields,
   localizedTaxonomyLabel,
 } from "../../domains/publication/publication.onboarding";
+import { useDeliveryAvailability } from "../delivery/useDeliveryAvailability";
+import { routes } from "../../configuration/routes";
 
 /**
  * Publication is three phases, not ten steps.
@@ -173,7 +177,7 @@ const hasMeaningfulDraftContent = (draft: PublicationDraftState) =>
   );
 
 export const PublishWizard: React.FC = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(deliveryCatalogueFr);
   const { currencySymbol, marketContext, currentLocale, formatPrice } =
     useMarketLocation();
   const marketPromotions = useMarketPromotions();
@@ -315,6 +319,7 @@ export const PublishWizard: React.FC = () => {
     draft,
     setDraft,
   });
+  const deliveryAvailability = useDeliveryAvailability();
 
   useEffect(() => {
     let active = true;
@@ -746,7 +751,7 @@ export const PublishWizard: React.FC = () => {
     return transactionCapabilitiesService.resolve({
       taxonomyNodeId: draft.taxonomyNodeId,
       marketCode: draft.marketCode,
-      sellerType: currentUser?.role === "pro_seller" ? "pro" : "individual",
+      sellerType: isProSeller(currentUser) ? "pro" : "individual",
       listingIntent: draft.listingIntent,
       price: draft.pricing.amount,
       stock: draft.proInventory?.stock,
@@ -764,7 +769,7 @@ export const PublishWizard: React.FC = () => {
     return fulfillmentResolver.resolveCapabilities({
       taxonomyNodeId: draft.taxonomyNodeId,
       marketCode: draft.marketCode,
-      sellerType: currentUser?.role === "pro_seller" ? "pro" : "individual",
+      sellerType: isProSeller(currentUser) ? "pro" : "individual",
       price: draft.pricing.amount,
     });
   }, [
@@ -1285,56 +1290,79 @@ export const PublishWizard: React.FC = () => {
 
           {/* Listing Intent Selector */}
           {phaseOneStage === "intent" && onboarding.model && (
-            <fieldset>
-              <legend className="mb-2 block text-xs font-bold uppercase tracking-wider text-text-emphasis">
-                {t("publishing.publishWizard.typeDAnnonceIntention")}
-              </legend>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                {onboarding.model.intents.map((option) => {
-                  const intent = option.intent;
-                  const label = localizedTaxonomyLabel(
-                    option.labels,
-                    currentLocale,
-                  );
-                  return (
-                    <label
-                      key={intent}
-                      className={`relative flex min-h-control-md cursor-pointer items-center gap-2.5 rounded-control border p-3 text-left ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} ${
-                        draft.listingIntent === intent
-                          ? "border-primary bg-primary-light text-primary font-semibold"
-                          : "border-border-base bg-bg-surface text-text-main hover:bg-bg-subtle"
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="listing-intent"
-                        value={intent}
-                        checked={draft.listingIntent === intent}
-                        onChange={() => selectListingIntent(intent)}
-                        className="sr-only"
-                      />
-                      <span
-                        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-control ${
+            <div className="space-y-4">
+              {deliveryAvailability.state === "enabled" && (
+                <section className="flex flex-col gap-3 rounded-card border border-primary-border bg-primary-light p-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <h3 className="text-sm font-bold text-text-main">
+                      {t("delivery.publicationEntry.title")}
+                    </h3>
+                    <p className="mt-1 text-xs text-text-secondary">
+                      {t("delivery.publicationEntry.description")}
+                    </p>
+                  </div>
+                  <Button
+                    to={routes.delivery.create()}
+                    variant="secondary"
+                    leftIcon={
+                      <Truck className="h-icon-md w-icon-md" aria-hidden />
+                    }
+                  >
+                    {t("delivery.publicationEntry.action")}
+                  </Button>
+                </section>
+              )}
+              <fieldset>
+                <legend className="mb-2 block text-xs font-bold uppercase tracking-wider text-text-emphasis">
+                  {t("publishing.publishWizard.typeDAnnonceIntention")}
+                </legend>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {onboarding.model.intents.map((option) => {
+                    const intent = option.intent;
+                    const label = localizedTaxonomyLabel(
+                      option.labels,
+                      currentLocale,
+                    );
+                    return (
+                      <label
+                        key={intent}
+                        className={`relative flex min-h-control-md cursor-pointer items-center gap-2.5 rounded-control border p-3 text-left ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} ${
                           draft.listingIntent === intent
-                            ? "bg-primary text-text-inverse"
-                            : "bg-primary-light text-primary"
+                            ? "border-primary bg-primary-light text-primary font-semibold"
+                            : "border-border-base bg-bg-surface text-text-main hover:bg-bg-subtle"
                         }`}
                       >
-                        <ListingIntentIcon
-                          intent={intent}
-                          className="h-icon-sm w-icon-sm"
+                        <input
+                          type="radio"
+                          name="listing-intent"
+                          value={intent}
+                          checked={draft.listingIntent === intent}
+                          onChange={() => selectListingIntent(intent)}
+                          className="sr-only"
                         />
-                      </span>
-                      <span className="min-w-0">
-                        <span className="block truncate text-xs font-bold">
-                          {label}
+                        <span
+                          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-control ${
+                            draft.listingIntent === intent
+                              ? "bg-primary text-text-inverse"
+                              : "bg-primary-light text-primary"
+                          }`}
+                        >
+                          <ListingIntentIcon
+                            intent={intent}
+                            className="h-icon-sm w-icon-sm"
+                          />
                         </span>
-                      </span>
-                    </label>
-                  );
-                })}
-              </div>
-            </fieldset>
+                        <span className="min-w-0">
+                          <span className="block truncate text-xs font-bold">
+                            {label}
+                          </span>
+                        </span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </fieldset>
+            </div>
           )}
 
           {/* Taxonomy Search */}
@@ -1953,7 +1981,7 @@ export const PublishWizard: React.FC = () => {
               )}
 
             {/* Pro Inventory section if Pro Seller */}
-            {currentUser?.role === "pro_seller" && isProductLike && (
+            {isProSeller(currentUser) && isProductLike && (
               <div className="pt-4 border-t border-border-subtle space-y-3">
                 <h3 className="text-xs font-bold text-text-main uppercase tracking-wider flex items-center gap-1.5">
                   <Store className="w-icon-sm h-icon-sm text-primary" />
@@ -2867,8 +2895,7 @@ export const PublishWizard: React.FC = () => {
                   condition: draft.condition as any,
                   sellerId: currentUser?.id || "demo",
                   sellerName: currentUser?.name || "Vendeur Shongre",
-                  sellerType:
-                    currentUser?.role === "pro_seller" ? "pro" : "individual",
+                  sellerType: isProSeller(currentUser) ? "pro" : "individual",
                   sellerRating: 5.0,
                   sellerReviewCount: 12,
                   sellerIsVerified: true,

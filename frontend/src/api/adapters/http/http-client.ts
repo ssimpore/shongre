@@ -4,6 +4,7 @@ import type { ApiPath, ApiPathForMethod } from "@shongre/contracts/openapi";
 import { deterministicRuntimeId } from "../../../utilities/deterministic-id";
 import { currentBrowserMarketCode } from "../../../domains/market/market-routing";
 import { telemetryService } from "../../../services/telemetry.service";
+import { SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS } from "@shongre/contracts/performance";
 
 interface HttpRequestOptions extends RequestInit {
   params?: Record<string, string | number | boolean | undefined>;
@@ -43,6 +44,9 @@ class HttpClient {
         ...(marketCode ? { "X-Shongre-Market": marketCode } : {}),
       },
       body: "{}",
+      signal: AbortSignal.timeout(
+        SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS.frontend.apiRequestTimeoutMs,
+      ),
     })
       .then((response) => response.ok)
       .catch(() => false)
@@ -59,7 +63,8 @@ class HttpClient {
     const {
       params,
       headers,
-      timeoutMs = 15000,
+      timeoutMs = SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS.frontend
+        .apiRequestTimeoutMs,
       _retried = false,
       ...customConfig
     } = options;

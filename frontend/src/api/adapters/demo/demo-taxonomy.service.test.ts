@@ -67,8 +67,8 @@ describe("DemoTaxonomyService header navigation", () => {
         marketContext: context,
         locale: context.locale ?? "fr-FR",
       });
-      expect(tree.items).toHaveLength(301);
-      expect(tree.listingTypes).toHaveLength(212);
+      expect(tree.items).toHaveLength(302);
+      expect(tree.listingTypes).toHaveLength(213);
       expect(tree.marketCode).toBe(context.countryCode);
     }
     await expect(

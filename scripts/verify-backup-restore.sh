@@ -76,7 +76,7 @@ if [[ -n "${STORAGE_BACKUP_DOWNLOAD_URL:-}" || -n "${STORAGE_RESTORE_UPLOAD_URL:
     fi
   done
   STORAGE_RESTORE_EVIDENCE_FILE="$storage_evidence_path" \
-    node "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/verify-storage-restore.mjs"
+    npx tsx "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/verify-storage-restore.mjs"
   storage_status="PASS"
   storage_summary="$(tr -d '\n' < "$storage_evidence_path")"
 fi

@@ -123,6 +123,26 @@ test.describe("SEO response and hydration contract", () => {
     });
   });
 
+  test("renders the canonical organization trust page and applicable schema", async ({
+    request,
+  }) => {
+    const response = await request.get("/a-propos");
+    expect(response.status()).toBe(200);
+    const html = await response.text();
+    expect(html).toContain("<h1");
+    expect(html).toContain("À propos de SHONGRE.");
+    expect(html).toContain('/a-propos"');
+    const schemas = [
+      ...html.matchAll(
+        /<script[^>]+type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g,
+      ),
+    ].map((match) => JSON.parse(match[1]));
+    expect(schemas.map((schema) => schema["@type"])).toEqual([
+      "AboutPage",
+      "BreadcrumbList",
+    ]);
+  });
+
   test("noindexes arbitrary search state while preserving crawlable links", async ({
     request,
   }) => {
@@ -231,6 +251,7 @@ test.describe("SEO response and hydration contract", () => {
       "/sitemap.xml",
       "/be/sitemap.xml",
       "/gateway-sitemap.xml",
+      "/llms.txt",
     ]) {
       expect((await request.get(sitemap)).status(), sitemap).toBe(404);
     }

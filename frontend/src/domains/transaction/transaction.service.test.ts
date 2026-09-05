@@ -1,7 +1,11 @@
-import { describe, it, expect } from "vitest";
+import { afterEach, describe, it, expect, vi } from "vitest";
 import { transactionService } from "./transaction.service";
+import { storageService } from "../../services/storage.service";
+import type { UserProfile } from "../../types";
 
 describe("TransactionService - Escrow & Fee Calculations", () => {
+  afterEach(() => vi.restoreAllMocks());
+
   it("calculates buyer protection fee and minor units correctly for an individual seller", () => {
     const itemPrice = 100; // 100 EUR
     const amounts = transactionService.calculateAmounts(
@@ -99,5 +103,42 @@ describe("TransactionService - Escrow & Fee Calculations", () => {
   it("generates a human-readable transaction reference code starting with SHG-", () => {
     const ref = transactionService.generateReferenceCode();
     expect(ref).toMatch(/^SHG-[A-Z0-9]{6}$/);
+  });
+
+  it("does not let a Staff role bypass customer order ownership", async () => {
+    vi.spyOn(storageService, "getTransactions").mockReturnValue([
+      {
+        id: "tx-foreign",
+        sellerId: "seller-owner",
+        buyerId: "buyer-owner",
+      } as never,
+    ]);
+    const staff = {
+      id: "staff-admin",
+      email: "staff-admin@example.test",
+      name: "Staff Admin",
+      accountType: "individual",
+      status: "active",
+      staffStatus: "active",
+      staffRole: "admin",
+      role: "individual_buyer",
+      primaryRole: "buyer",
+      sellerType: "individual",
+      isVerified: true,
+      city: "Paris",
+      postalCode: "75001",
+      createdAt: "2026-01-01T00:00:00.000Z",
+      rating: 0,
+      reviewCount: 0,
+      responseRatePercent: 0,
+      responseTimeText: "Non applicable",
+    } satisfies UserProfile;
+
+    await expect(
+      transactionService.sellerAcceptReservation("tx-foreign", staff),
+    ).rejects.toThrow();
+    await expect(
+      transactionService.confirmBuyerReceipt("tx-foreign", staff),
+    ).rejects.toThrow();
   });
 });

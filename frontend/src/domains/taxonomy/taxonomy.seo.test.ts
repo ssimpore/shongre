@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { DELIVERY_TAXONOMY_CATEGORY_ID } from "@shongre/contracts/delivery";
 import {
   listTaxonomySeoRecords,
   resolveLocalizedTaxonomySeoText,
@@ -11,11 +12,11 @@ import {
 describe("generated taxonomy SEO projection", () => {
   it("covers every current taxonomy node with a unique canonical route", () => {
     const records = listTaxonomySeoRecords();
-    expect(records).toHaveLength(301);
-    expect(new Set(records.map(({ node }) => node.id)).size).toBe(301);
+    expect(records).toHaveLength(302);
+    expect(new Set(records.map(({ node }) => node.id)).size).toBe(302);
     expect(
       new Set(records.map(({ projection }) => projection.urlPattern)).size,
-    ).toBe(301);
+    ).toBe(302);
 
     records.forEach(({ node, projection }) => {
       expect(projection.categoryId).toBe(node.id);
@@ -63,9 +64,17 @@ describe("generated taxonomy SEO projection", () => {
 
   it("honors each taxonomy node's explicit market availability", () => {
     listTaxonomySeoRecords().forEach(({ node }) => {
-      expect(taxonomyNodeIsIndexableInMarket(node, "FR"), node.id).toBe(true);
-      expect(taxonomyNodeIsIndexableInMarket(node, "BE"), node.id).toBe(true);
-      expect(taxonomyNodeIsIndexableInMarket(node, "CH"), node.id).toBe(true);
+      const enabledMarketIsIndexable =
+        node.id !== DELIVERY_TAXONOMY_CATEGORY_ID;
+      expect(taxonomyNodeIsIndexableInMarket(node, "FR"), node.id).toBe(
+        enabledMarketIsIndexable,
+      );
+      expect(taxonomyNodeIsIndexableInMarket(node, "BE"), node.id).toBe(
+        enabledMarketIsIndexable,
+      );
+      expect(taxonomyNodeIsIndexableInMarket(node, "CH"), node.id).toBe(
+        enabledMarketIsIndexable,
+      );
       expect(taxonomyNodeIsIndexableInMarket(node, "SN"), node.id).toBe(false);
       expect(taxonomyNodeIsIndexableInMarket(node, "BF"), node.id).toBe(false);
     });

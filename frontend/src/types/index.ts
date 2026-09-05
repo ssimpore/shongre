@@ -199,6 +199,8 @@ export interface UserProfile {
   // Direct permission grants / revokes
   customPermissions?: Permission[];
   revokedPermissions?: Permission[];
+  /** Server-resolved authority projection; an empty array is authoritative. */
+  capabilities?: Permission[];
   capabilityOverrideVersion?: number;
 
   /**

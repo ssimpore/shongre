@@ -44,7 +44,6 @@ export const messagesEn: MessageCatalogue = {
   "watch.empty.description":
     "Follow a price drop, seller or search to find it here.",
   "watch.empty.action": "Explore listings",
-  "watch.save.loginRequired": "Sign in to create an alert.",
   "watch.save.success": "Search saved with alerts enabled.",
   "watch.save.title": "Saved search",
   "watch.save.error": "This alert could not be created.",
@@ -83,6 +82,7 @@ export const messagesEn: MessageCatalogue = {
   "account.navigation.settingsSupport": "Settings and support",
   // --- Generic actions and states -----------------------------------------
   "common.loading": "Loading…",
+  "common.home": "Home",
   "common.retry": "Try again",
   "common.cancel": "Cancel",
   "common.save": "Save",
@@ -349,6 +349,7 @@ export const messagesEn: MessageCatalogue = {
 
   // --- Footer ---------------------------------------------------------------
   "footer.findTutor": "Find a tutor",
+  "footer.about": "About",
   "footer.offerCourses": "Offer tutoring",
   "footer.legalHeading": "Legal information",
   "footer.terms": "Terms of use",
@@ -383,6 +384,19 @@ export const messagesEn: MessageCatalogue = {
   "footer.appPitch": "Take Shongre with you everywhere.",
   "footer.downloadFrom": "Download from",
   "footer.comingToStore": "Coming soon to",
+  "about.eyebrow": "Our identity",
+  "about.title": "About SHONGRE.",
+  "about.introduction":
+    "SHONGRE. is a local marketplace designed to make exchanges between individuals and professionals simpler and easier to understand.",
+  "about.missionTitle": "Our mission",
+  "about.missionBody":
+    "Help people publish, discover and compare useful offers in their market, with clear local context and journeys tailored to each category.",
+  "about.trustTitle": "Trust by design",
+  "about.trustBody":
+    "Visible information, statuses, controls and contact options are presented without artificial promises. Safety and privacy rules remain accessible from every page.",
+  "about.marketsTitle": "A multi-market platform",
+  "about.marketsBody":
+    "Each country has its own market context, currency, rules and availability. A local launch is described as active only after its corresponding requirements have been approved.",
   "footer.downloadApp": "Download Shongre from {store}",
   "footer.followHeading": "Follow Shongre",
   "footer.followOn": "Follow Shongre on {network}",
@@ -3370,6 +3384,24 @@ export const messagesEn: MessageCatalogue = {
     "You must be signed in to access this section.",
   "security.requirePermission.creerUnCompte": "Create an account",
   "security.requirePermission.retourALAccueil": "Back home",
+  "security.requirePermission.verificationRequiredTitle":
+    "Verification required",
+  "security.requirePermission.verificationRequiredMessage":
+    "Verify only the information needed for this action to continue.",
+  "security.requirePermission.continueVerification": "Continue verification",
+  "security.requirePermission.professionalFeatureTitle": "Professional feature",
+  "security.requirePermission.professionalFeatureMessage":
+    "Your account does not yet include the required commercial plan. Changing plans does not alter administrative permissions.",
+  "security.requirePermission.marketUnavailableTitle":
+    "Unavailable in this marketplace",
+  "security.requirePermission.marketUnavailableMessage":
+    "This action is not offered in the selected marketplace or is outside your authorized scope.",
+  "security.requirePermission.staffSeparationTitle": "Separate Staff access",
+  "security.requirePermission.staffSeparationMessage":
+    "Internal tools and customer actions use separate spaces. Contact an owner if your assignment needs to change.",
+  "security.requirePermission.featureUnavailableTitle": "Feature unavailable",
+  "security.requirePermission.featureUnavailableMessage":
+    "This feature is not enabled for your current context.",
   "security.requirePermission.contacterLeSupportDeSecurite":
     "Contact security support",
   "security.requirePermission.decouvrirLesOffresPro": "Explore the Pro plans",
@@ -3947,6 +3979,10 @@ export const messagesEn: MessageCatalogue = {
   "admin.immo.listingsTableLabel": "Real-estate listings table",
   "immo.propertyDetail.individualAdvertiser": "Individual",
   "immo.propertyDetail.professionalAdvertiser": "Professional",
+  "immo.propertyDetail.stickyHeaderLabel":
+    "Property summary and primary action",
+  "immo.propertyDetail.sendRequest": "Send request",
+  "immo.propertyDetail.requestAppointment": "Request this time",
 
   "admin.solutions.catalogTableLabel": "Solutions catalogue table",
   "admin.monetization.firstTableLabel": "Commission grid table",
@@ -4160,4 +4196,162 @@ export const messagesEn: MessageCatalogue = {
   "admin.adminOverviewPage.openItems": "open cases",
   "admin.adminOverviewPage.traiterSignalementsCount":
     "Review reports ({count})",
+  "delivery.nav": "Delivery & courier",
+  "delivery.meta.title": "Delivery & courier | Shongre",
+  "delivery.meta.description":
+    "Post a local delivery request or offer your courier availability.",
+  "delivery.title": "Delivery & courier",
+  "delivery.subtitle":
+    "Arrange a local delivery with an available Shongre member nearby.",
+  "delivery.create": "Create a request",
+  "delivery.publicationEntry.title": "I need a delivery",
+  "delivery.publicationEntry.description":
+    "Publish a dedicated request with a route, time window and package.",
+  "delivery.publicationEntry.action": "Arrange a delivery",
+  "delivery.requesterWorkspace": "My requests",
+  "delivery.courierWorkspace": "Courier workspace",
+  "delivery.search.pickup": "Pickup postcode",
+  "delivery.search.vehicle": "Required vehicle",
+  "delivery.search.allVehicles": "All vehicles",
+  "delivery.search.submit": "Search",
+  "delivery.search.emptyTitle": "No open requests",
+  "delivery.search.emptyDescription": "Change the pickup area or try later.",
+  "delivery.unavailable.title": "Delivery is unavailable in this market",
+  "delivery.unavailable.description":
+    "This feature remains closed until every operational requirement is approved.",
+  "delivery.route": "{pickup} → {dropoff}",
+  "delivery.applications": "{count} application(s)",
+  "delivery.viewRequest": "View request",
+  "delivery.request.details": "Request details",
+  "delivery.request.package": "Package",
+  "delivery.request.weight": "Approximate weight",
+  "delivery.request.window": "Requested time window",
+  "delivery.request.apply": "Offer my services",
+  "delivery.request.applyMessage": "Your message",
+  "delivery.request.availability": "Your availability",
+  "delivery.request.quote": "Proposed price in {currency} (optional)",
+  "delivery.request.submitApplication": "Send my application",
+  "delivery.request.applicationSent": "Your application was sent.",
+  "delivery.request.profileRequired":
+    "Activate your courier profile before applying.",
+  "delivery.request.loginRequired": "Sign in to offer your services.",
+  "delivery.create.title": "New delivery request",
+  "delivery.create.description":
+    "Exact addresses and contact details stay private until assignment.",
+  "delivery.create.requestTitle": "Title",
+  "delivery.create.requestDescription": "Description",
+  "delivery.create.pickup": "Pickup address",
+  "delivery.create.dropoff": "Drop-off address",
+  "delivery.create.city": "City",
+  "delivery.create.postalCode": "Postcode",
+  "delivery.create.street": "Address",
+  "delivery.create.contactName": "Contact name",
+  "delivery.create.contactPhone": "Contact phone",
+  "delivery.create.packageType": "Package type",
+  "delivery.create.weightKg": "Approximate weight (kg)",
+  "delivery.create.expiresAt": "Application deadline",
+  "delivery.create.publish": "Publish request",
+  "delivery.create.success": "Your delivery request is published.",
+  "delivery.order.create": "Arrange a courier",
+  "delivery.order.description":
+    "You can link a local courier request to this eligible physical order.",
+  "delivery.order.prefillTitle": "Delivery for {listing}",
+  "delivery.order.prefillDescription":
+    "Local delivery requested for the Shongre order: {listing}.",
+  "delivery.order.linked": "Linked to order {order}",
+  "delivery.order.invalidTitle": "This order cannot use courier delivery",
+  "delivery.order.invalidDescription":
+    "It may be outside this market, digital, completed, or no longer owned by your account.",
+  "delivery.order.standalone": "Create a standalone request",
+  "delivery.workspace.empty": "You have not created a request yet.",
+  "delivery.workspace.applications": "Applications received",
+  "delivery.workspace.accept": "Choose this courier",
+  "delivery.workspace.accepted": "The courier was selected.",
+  "delivery.workspace.selectTitle": "Choose this courier?",
+  "delivery.workspace.selectMessage":
+    "This selection is final for the current request and will close the other applications.",
+  "delivery.workspace.confirmSelection": "Confirm selection",
+  "delivery.workspace.statusActions": "Tracking actions",
+  "delivery.workspace.privateStops": "Exact transport details",
+  "delivery.workspace.updated": "The delivery status was updated.",
+  "delivery.quoteDisclaimer":
+    "The proposed price is informational. Shongre does not collect or guarantee payment for the courier service.",
+  "delivery.report.action": "Report this request",
+  "delivery.report.title": "Report a delivery request",
+  "delivery.report.description":
+    "Help the moderation team review dangerous, prohibited, or misleading content.",
+  "delivery.report.reason": "Reason",
+  "delivery.report.reason.fraud": "Fraud or deception",
+  "delivery.report.reason.prohibited": "Prohibited or dangerous goods",
+  "delivery.report.reason.harassment": "Harassment or abusive behaviour",
+  "delivery.report.reason.other": "Another reason",
+  "delivery.report.details": "Details",
+  "delivery.report.submit": "Send report",
+  "delivery.report.success": "The report was submitted.",
+  "delivery.report.error": "The report could not be submitted.",
+  "delivery.moderation.suspend": "Suspend request",
+  "delivery.moderation.title": "Suspend the delivery request",
+  "delivery.moderation.reason": "Safety and moderation reason",
+  "delivery.moderation.placeholder":
+    "Describe the evidence reviewed and the identified risk.",
+  "delivery.moderation.suspended":
+    "The request was suspended and removed from new opportunities.",
+  "delivery.moderation.error": "The request could not be suspended.",
+  "delivery.courier.title": "My courier profile",
+  "delivery.courier.description": "Choose your area, vehicle and availability.",
+  "delivery.courier.status": "Availability",
+  "delivery.courier.active": "Active",
+  "delivery.courier.paused": "Paused",
+  "delivery.courier.inactive": "Inactive",
+  "delivery.courier.vehicle": "Vehicle",
+  "delivery.courier.maxWeight": "Maximum weight (kg)",
+  "delivery.courier.city": "Service city",
+  "delivery.courier.postalCode": "Service postcode",
+  "delivery.courier.primaryCity": "First area · city",
+  "delivery.courier.primaryPostalCode": "First area · postcode",
+  "delivery.courier.secondaryCity": "Second area · city (optional)",
+  "delivery.courier.secondaryPostalCode": "Second area · postcode (optional)",
+  "delivery.courier.notifications": "Receive new opportunities",
+  "delivery.courier.save": "Save my profile",
+  "delivery.courier.saved": "Your courier profile was saved.",
+  "delivery.courier.eligibilityRequired":
+    "Your profile must be approved before you can apply.",
+  "delivery.courier.eligibility.pending":
+    "Your profile is saved and awaiting approval. You cannot apply yet.",
+  "delivery.courier.eligibility.rejected":
+    "Your profile is not currently eligible. Contact support for help.",
+  "delivery.courier.eligibility.suspended":
+    "Your courier eligibility is suspended. You cannot apply.",
+  "delivery.courier.myApplications": "My applications",
+  "delivery.courier.assignments": "Assigned deliveries",
+  "delivery.vehicle.bicycle": "Bicycle",
+  "delivery.vehicle.cargo_bicycle": "Cargo bicycle",
+  "delivery.vehicle.scooter": "Scooter",
+  "delivery.vehicle.car": "Car",
+  "delivery.vehicle.van": "Van",
+  "delivery.status.draft": "Draft",
+  "delivery.status.pending_review": "Pending review",
+  "delivery.status.open": "Open",
+  "delivery.status.assigned": "Courier selected",
+  "delivery.status.picked_up": "Picked up",
+  "delivery.status.in_transit": "In transit",
+  "delivery.status.delivered": "Delivered",
+  "delivery.status.completed": "Completed",
+  "delivery.status.cancelled": "Cancelled",
+  "delivery.status.expired": "Expired",
+  "delivery.status.suspended": "Suspended",
+  "delivery.status.disputed": "Disputed",
+  "delivery.transition.picked_up": "Confirm pickup",
+  "delivery.transition.in_transit": "Start delivery",
+  "delivery.transition.delivered": "Confirm delivery",
+  "delivery.transition.completed": "Close delivery",
+  "delivery.transition.cancelled": "Cancel delivery",
+  "delivery.transition.disputed": "Report a problem",
+  "admin.featureFlags.deliveryLabel": "Delivery requests",
+  "admin.featureFlags.deliveryReady":
+    "This market meets the static prerequisites. A 100% rollout and reason are still required.",
+  "admin.featureFlags.deliveryBlocked":
+    "Activation is blocked for this market: {reasons}",
+  "delivery.error.generic":
+    "The operation could not be completed. Refresh and try again.",
 };

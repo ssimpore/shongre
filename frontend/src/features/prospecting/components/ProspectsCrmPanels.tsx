@@ -26,6 +26,7 @@ import type {
 import { Badge, Button, EmptyState, Spinner } from "../../../design-system";
 import type { ProspectingUsage } from "@shongre/contracts/prospecting";
 import type { ProspectingWorkspaceView } from "../useProspectingWorkspaceController";
+import { DEFAULT_MARKET_CURRENCY } from "../../../configuration/market-baseline";
 
 const DEMO_NOW = new Date("2026-08-27T12:00:00.000Z").getTime();
 
@@ -281,7 +282,8 @@ function PipelineBoard({
                   <span className="text-micro font-bold tabular-nums text-text-muted">
                     {money(
                       stageTotal,
-                      opportunities[0]?.amount.currency ?? "EUR",
+                      opportunities[0]?.amount.currency ??
+                        DEFAULT_MARKET_CURRENCY,
                       locale,
                     )}
                   </span>

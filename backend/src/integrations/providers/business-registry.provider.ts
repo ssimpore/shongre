@@ -54,7 +54,9 @@ export class SiretBusinessRegistryProvider implements IBusinessRegistryProvider 
             Accept: "application/json",
             Authorization: `Bearer ${config.businessRegistryApiToken}`,
           },
-          signal: AbortSignal.timeout(10_000),
+          signal: AbortSignal.timeout(
+            config.performance.providerRequestTimeoutMs,
+          ),
         });
         if (response.status === 404) return null;
         if (!response.ok) {

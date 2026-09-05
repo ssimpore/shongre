@@ -23,6 +23,7 @@ import { Button } from "../../../design-system/primitives/Button";
 import { Image } from "../../../design-system/primitives/Image";
 import { useTranslation } from "../../../i18n/I18nProvider";
 import { useRegionalFormatters } from "../../../hooks/useRegionalFormatters";
+import { DEFAULT_MARKET_CURRENCY } from "../../../configuration/market-baseline";
 
 interface MessageTimelineProps {
   items: TimelineItem[];
@@ -154,7 +155,7 @@ export const MessageTimeline: React.FC<MessageTimelineProps> = ({
                   amountMinor:
                     msg.offerAmountMinor ??
                     Math.round((msg.offerAmount || 0) * 100),
-                  currency: msg.offerCurrency || "EUR",
+                  currency: msg.offerCurrency || DEFAULT_MARKET_CURRENCY,
                 });
                 const offerStatusLabel = {
                   pending: "En attente",

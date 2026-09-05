@@ -44,6 +44,7 @@ const SERVICE_KEYS = [
   "auto",
   "realEstate",
   "employment",
+  "delivery",
   "digitalProducts",
   "businessRules",
   "finance",

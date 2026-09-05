@@ -57,8 +57,14 @@ const headerSignatureSizeClasses: Record<
   BrandHeaderSignatureSize,
   { icon: string; wordmark: string }
 > = {
-  compact: { icon: "h-9 w-9", wordmark: "w-24" },
-  standard: { icon: "h-11 w-11", wordmark: "w-30" },
+  compact: {
+    icon: "h-brand-signature-icon-compact w-brand-signature-icon-compact",
+    wordmark: "w-brand-signature-wordmark-compact",
+  },
+  standard: {
+    icon: "h-brand-signature-icon-standard w-brand-signature-icon-standard",
+    wordmark: "w-brand-signature-wordmark-standard",
+  },
 };
 
 interface AccessibleBrandImageProps {

@@ -12,6 +12,14 @@ export type ErrorCode =
   | "RATE_LIMITED"
   | "INTERNAL_ERROR"
   | "NETWORK_ERROR"
+  | "DELIVERY_FEATURE_UNAVAILABLE"
+  | "DELIVERY_MARKET_MISMATCH"
+  | "DELIVERY_REQUEST_NOT_OPEN"
+  | "DELIVERY_REQUEST_EXPIRED"
+  | "DELIVERY_APPLICATION_EXISTS"
+  | "DELIVERY_APPLICATION_CONFLICT"
+  | "DELIVERY_NOT_ELIGIBLE"
+  | "DELIVERY_ASSIGNMENT_CONFLICT"
   | "TAXONOMY_VERSION_UNSUPPORTED"
   | "TAXONOMY_CATEGORY_NOT_FOUND"
   | "TAXONOMY_CATEGORY_NOT_PUBLISHABLE"
@@ -69,7 +77,19 @@ export class AppError extends Error {
           this.statusCode = 400;
           break;
         case "CONFLICT":
+        case "DELIVERY_REQUEST_NOT_OPEN":
+        case "DELIVERY_REQUEST_EXPIRED":
+        case "DELIVERY_APPLICATION_EXISTS":
+        case "DELIVERY_APPLICATION_CONFLICT":
+        case "DELIVERY_ASSIGNMENT_CONFLICT":
           this.statusCode = 409;
+          break;
+        case "DELIVERY_FEATURE_UNAVAILABLE":
+          this.statusCode = 404;
+          break;
+        case "DELIVERY_MARKET_MISMATCH":
+        case "DELIVERY_NOT_ELIGIBLE":
+          this.statusCode = 403;
           break;
         case "RATE_LIMITED":
           this.statusCode = 429;

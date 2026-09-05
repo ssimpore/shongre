@@ -3,6 +3,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { basename, resolve } from "node:path";
 import { gzipSync } from "node:zlib";
+import { SHONGRE_PERFORMANCE_BUDGETS } from "@shongre/contracts/performance";
 
 const frontendRoot = resolve(import.meta.dirname, "..");
 const nextRoot = resolve(frontendRoot, ".next");
@@ -11,15 +12,9 @@ const manifestPath = resolve(
   "server/app/[[...segments]]/page_client-reference-manifest.js",
 );
 
-const BUDGETS = {
-  // Generated taxonomy is measured independently below. Keeping it out of the
-  // executable hydration cap means an approved taxonomy addition cannot hide
-  // executable growth or fail the same bytes against two separate budgets.
-  initialExecutableRawBytes: 1_725_000,
-  initialExecutableGzipBytes: 449_000,
-  executableChunkGzipBytes: 110_000,
-  generatedTaxonomyChunkGzipBytes: 650_000,
-};
+// Generated taxonomy remains independent from executable hydration so an
+// approved catalogue addition cannot conceal executable growth.
+const BUDGETS = SHONGRE_PERFORMANCE_BUDGETS.clientBundle;
 
 if (!existsSync(manifestPath)) {
   throw new Error(

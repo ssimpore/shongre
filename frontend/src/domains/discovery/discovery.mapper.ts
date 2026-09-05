@@ -1,7 +1,10 @@
 import type { DiscoveryDocument } from "@shongre/shared";
 import type { PromotionPlacementType } from "@shongre/contracts";
 import type { Listing } from "../../types";
-import { DEFAULT_MARKET_CODE } from "../../configuration/market-baseline";
+import {
+  DEFAULT_MARKET_CODE,
+  DEFAULT_MARKET_CURRENCY,
+} from "../../configuration/market-baseline";
 import { TaxonomyMigration } from "../taxonomy/taxonomy.migration";
 
 function promotionFor(listing: Listing): DiscoveryDocument["promotion"] {
@@ -88,7 +91,7 @@ export function toDemoDiscoveryDocument(listing: Listing): DiscoveryDocument {
     description: listing.description,
     searchableAttributes: attributeValues,
     priceMinor: Math.round(listing.price * 100),
-    currency: listing.currency || "EUR",
+    currency: listing.currency || DEFAULT_MARKET_CURRENCY,
     city: listing.city,
     status: listing.status,
     availability:

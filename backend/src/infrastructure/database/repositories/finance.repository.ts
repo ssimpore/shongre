@@ -447,12 +447,7 @@ export class PostgresFinanceRepository implements FinanceRepository {
       ],
       markets: (raw.markets ?? []).map((market: FinanceRow) => ({
         marketCode: market.marketCode,
-        label:
-          market.marketCode === "FR"
-            ? "France"
-            : market.marketCode === "BE"
-              ? "Belgique"
-              : market.marketCode,
+        label: getCountryConfig(market.marketCode)?.name ?? market.marketCode,
         platformRevenue: money(
           Number(market.platformRevenueMinor ?? 0),
           scope.currency,

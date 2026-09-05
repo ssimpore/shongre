@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseAttribution } from "./attribution";
+import { parseAnswerEngineAttribution, parseAttribution } from "./attribution";
 
 describe("analytics attribution", () => {
   it("centralizes bounded UTM parsing without carrying unrelated parameters", () => {
@@ -14,5 +14,14 @@ describe("analytics attribution", () => {
       term: undefined,
       content: undefined,
     });
+  });
+
+  it("records recognized answer-engine referrals without inventing a campaign", () => {
+    expect(
+      parseAnswerEngineAttribution("https://chatgpt.com/c/answer"),
+    ).toEqual({ source: "chatgpt.com", medium: "organic_ai" });
+    expect(parseAnswerEngineAttribution("https://example.com/article")).toEqual(
+      {},
+    );
   });
 });

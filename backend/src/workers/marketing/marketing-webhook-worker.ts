@@ -141,7 +141,9 @@ export class MarketingWebhookWorker {
       .digest("hex");
     const response = await safeProviderFetch(subscription.url, {
       method: "POST",
-      signal: AbortSignal.timeout(15_000),
+      signal: AbortSignal.timeout(
+        config.performance.providerGatewayRequestTimeoutMs,
+      ),
       headers: {
         "Content-Type": "application/json",
         "User-Agent": "Shongre-Marketing-Webhooks/1.0",

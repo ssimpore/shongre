@@ -10,6 +10,7 @@ export type NotificationCategory =
   | "transactions"
   | "listings"
   | "delivery"
+  | "delivery_opportunities"
   | "reviews"
   | "promotions"
   | "security"

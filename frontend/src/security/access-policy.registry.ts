@@ -69,6 +69,10 @@ export const ROUTE_POLICIES = {
     "employment.candidate.manage.own",
   ),
   requestCourse: customer("/education/demande", "course.request.create"),
+  createDeliveryRequest: customer(
+    "/livraison/nouvelle-demande",
+    "delivery.request.manage.own",
+  ),
   messagesShortcut: customer("/messages", "message.read.own"),
 
   accountOverview: customer("/compte"),
@@ -104,6 +108,11 @@ export const ROUTE_POLICIES = {
   accountNewsletter: customer("/compte/newsletter"),
   accountProfile: customer("/compte/profil", "profile.update.own"),
   accountCourse: customer("/compte/education", "course.profile.manage.own"),
+  accountDelivery: customer("/compte/livraison", "delivery.request.manage.own"),
+  accountDeliveryCourier: customer(
+    "/compte/livraison/coursier",
+    "delivery.courier.manage.own",
+  ),
   accountCourseOrganization: professional(
     "/compte/education/organisation",
     "course.organization.manage.own",
@@ -237,7 +246,7 @@ export function canAccessRoutePolicy(
 ): boolean {
   const policy: RoutePolicy = ROUTE_POLICIES[id];
   const access = canonicalAccessContext(user);
-  const capabilities = resolveEffectiveCapabilities(user);
+  const capabilities = user?.capabilities ?? resolveEffectiveCapabilities(user);
   const staffMarketplaceDemo =
     options?.allowStaffMarketplaceDemo === true &&
     access.staffStatus === "active" &&

@@ -338,7 +338,7 @@ export class AutoService {
           : undefined,
         warrantyLabel: data.warrantyLabel,
       },
-      price: { amountMinor: priceMinor, currency: "EUR" },
+      price: { amountMinor: priceMinor, currency: catalog.config.currency },
       priceIncludesTax: data.priceIncludesTax !== false,
       priceNegotiable: data.priceNegotiable === true,
       financingAvailable: data.financingAvailable === true,

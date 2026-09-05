@@ -116,6 +116,14 @@ attribute extensions.
 Organizations and stores similarly use `organization_markets` and
 `store_markets`. User identity, provider connections, CRM, messaging and audit
 remain shared unless a domain rule explicitly requires a market association.
+For contextual Staff and organization authorization, see
+[`access-control-architecture.md`](../security/access-control-architecture.md).
+Market selection and market availability can narrow authority but never grant a
+capability.
+
+The Web bootstrap exports in `frontend/src/configuration/market-baseline.ts`
+are direct projections of `DEFAULT_COUNTRY_CONFIG`; they are compatibility
+names, not an independent France, locale, or currency source.
 
 ## Identity across `.fr` and `.com`
 

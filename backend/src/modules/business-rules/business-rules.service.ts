@@ -70,7 +70,6 @@ import {
   requireMonetizationMarketContext,
 } from "./monetization-market-context.js";
 
-const CACHE_TTL_MS = 60_000;
 const QUOTE_TTL_MS = 30 * 60_000;
 
 function currentUtcMonth() {
@@ -229,9 +228,16 @@ export class BusinessRulesService {
   private readonly repository: BusinessRulesRepository;
   private readonly cache = new Map<
     string,
-    { catalog: MonetizationCatalog; expiresAt: number }
+    {
+      catalog: MonetizationCatalog;
+      freshUntil: number;
+      staleUntil: number;
+    }
   >();
-  private readonly lastKnownValid = new Map<string, MonetizationCatalog>();
+  private readonly catalogLoads = new Map<
+    string,
+    Promise<MonetizationCatalog>
+  >();
 
   constructor(repository?: BusinessRulesRepository) {
     this.repository =
@@ -239,6 +245,19 @@ export class BusinessRulesService {
       (config.dataMode === "database"
         ? new PostgresBusinessRulesRepository()
         : new DemoBusinessRulesRepository());
+  }
+
+  private freshCatalogTtlMs(marketCode: string): number {
+    const ratio = config.performance.commercialCatalogTtlJitterRatio;
+    const sample = createHash("sha256")
+      .update(marketCode)
+      .digest()
+      .readUInt16BE();
+    const multiplier = 1 - ratio + (sample / 65_535) * ratio * 2;
+    return Math.max(
+      1,
+      Math.round(config.performance.commercialCatalogFreshTtlMs * multiplier),
+    );
   }
 
   async getCatalogForContext(
@@ -446,48 +465,82 @@ export class BusinessRulesService {
   ) {
     marketCode = requireMarketCode(marketCode);
     const cached = this.cache.get(marketCode);
-    if (!options.includeDrafts && cached && cached.expiresAt > Date.now())
-      return cached.catalog;
-    try {
-      const loaded = await this.repository.getActiveCatalog(marketCode);
-      if (!loaded)
-        throw new Error(`No active commercial version for ${marketCode}`);
-      const catalog = normalizeEducationMonetizationCatalog(
-        monetizationCatalogSchema.parse(loaded),
-      );
-      const country = getCountryConfig(marketCode)!;
-      if (
-        catalog.marketCode !== marketCode ||
-        catalog.currency !== country.currency ||
-        catalog.products
-          .flatMap((product) => product.prices)
-          .some((price) => price.amount.currency !== catalog.currency)
-      ) {
-        throw new AppError({
-          code: "CONFLICT",
-          message: "Le catalogue commercial ne correspond pas au marché.",
-          details: { reasonCode: "COMMERCIAL_CATALOG_MARKET_MISMATCH" },
-        });
-      }
-      this.lastKnownValid.set(marketCode, catalog);
-      this.cache.set(marketCode, {
-        catalog,
-        expiresAt: Date.now() + CACHE_TTL_MS,
-      });
-      return catalog;
-    } catch (error) {
-      const lastValid = this.lastKnownValid.get(marketCode);
-      logger.error("commercial_catalog_load_failed", {
+    const now = Date.now();
+    if (!options.includeDrafts && cached && cached.freshUntil > now) {
+      logger.info("commercial_catalog_cache_access", {
         marketCode,
-        error: error instanceof Error ? error.message : "unknown",
-        fallback: lastValid ? "last_known_valid" : "none",
+        result: "fresh_hit",
       });
-      if (lastValid) return { ...lastValid, stale: true };
-      throw new AppError({
-        code: "NOT_FOUND",
-        message: "Configuration commerciale indisponible.",
+      return cached.catalog;
+    }
+    const existingLoad = !options.includeDrafts
+      ? this.catalogLoads.get(marketCode)
+      : undefined;
+    if (existingLoad) {
+      logger.info("commercial_catalog_cache_access", {
+        marketCode,
+        result: "coalesced",
+      });
+      return existingLoad;
+    }
+    if (!options.includeDrafts) {
+      logger.info("commercial_catalog_cache_access", {
+        marketCode,
+        result: cached ? "refresh" : "miss",
       });
     }
+
+    const load = (async () => {
+      try {
+        const loaded = await this.repository.getActiveCatalog(marketCode);
+        if (!loaded)
+          throw new Error(`No active commercial version for ${marketCode}`);
+        const catalog = normalizeEducationMonetizationCatalog(
+          monetizationCatalogSchema.parse(loaded),
+        );
+        const country = getCountryConfig(marketCode)!;
+        if (
+          catalog.marketCode !== marketCode ||
+          catalog.currency !== country.currency ||
+          catalog.products
+            .flatMap((product) => product.prices)
+            .some((price) => price.amount.currency !== catalog.currency)
+        ) {
+          throw new AppError({
+            code: "CONFLICT",
+            message: "Le catalogue commercial ne correspond pas au marché.",
+            details: { reasonCode: "COMMERCIAL_CATALOG_MARKET_MISMATCH" },
+          });
+        }
+        if (!options.includeDrafts) {
+          const freshUntil = Date.now() + this.freshCatalogTtlMs(marketCode);
+          this.cache.set(marketCode, {
+            catalog,
+            freshUntil,
+            staleUntil:
+              freshUntil + config.performance.commercialCatalogStaleIfErrorMs,
+          });
+        }
+        return catalog;
+      } catch (error) {
+        const canServeStale =
+          !options.includeDrafts && cached && cached.staleUntil > Date.now();
+        logger.error("commercial_catalog_load_failed", {
+          marketCode,
+          error: error instanceof Error ? error.message : "unknown",
+          fallback: canServeStale ? "bounded_stale" : "none",
+        });
+        if (canServeStale) return { ...cached.catalog, stale: true };
+        throw new AppError({
+          code: "NOT_FOUND",
+          message: "Configuration commerciale indisponible.",
+        });
+      } finally {
+        this.catalogLoads.delete(marketCode);
+      }
+    })();
+    if (!options.includeDrafts) this.catalogLoads.set(marketCode, load);
+    return load;
   }
 
   async getProfessionalPlanCatalog(marketCode: string) {

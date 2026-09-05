@@ -92,7 +92,7 @@ export const ProBusinessInfo: React.FC<ProBusinessInfoProps> = ({ seller }) => {
               <a
                 href={seller.websiteUrl}
                 target="_blank"
-                rel="noopener noreferrer"
+                rel="ugc nofollow noopener noreferrer"
                 className="font-bold text-primary hover:underline flex items-center gap-1 mt-0.5"
               >
                 <span>{seller.websiteUrl.replace(/^https?:\/\//, "")}</span>

@@ -6,6 +6,15 @@ import type {
   FeatureFlagRule,
   FeatureFlagRuleUpdate,
 } from "@shongre/contracts/feature-flags";
+import {
+  isMarketScopedOnlyFeatureFlag,
+  resolveFeatureFlagEvaluation,
+} from "@shongre/contracts/feature-flags";
+import { getCountryConfig } from "@shongre/contracts";
+import {
+  DELIVERY_FEATURE_FLAG_KEY,
+  deliveryMarketActivationIssues,
+} from "@shongre/contracts/delivery";
 import type {
   FeatureFlagAdminEntry,
   FeatureFlagServiceContract,
@@ -19,6 +28,17 @@ const DEFINITIONS_KEY = "shongre_demo_feature_flags_v1";
 const RULES_KEY = "shongre_demo_feature_flag_rules_v1";
 const SEEDED_AT = "2026-08-25T00:00:00.000Z";
 const SEEDED_DEFINITIONS: FeatureFlagDefinition[] = [
+  {
+    key: DELIVERY_FEATURE_FLAG_KEY,
+    description:
+      "Activates the delivery and courier marketplace in one ready market.",
+    owner: "Marketplace Operations",
+    defaultEnabled: false,
+    exposure: "public",
+    lifecycle: "active",
+    createdAt: SEEDED_AT,
+    updatedAt: SEEDED_AT,
+  },
   {
     key: "support.workspace",
     description: "Expose the canonical support workspace to authorized staff.",
@@ -51,6 +71,19 @@ const SEEDED_DEFINITIONS: FeatureFlagDefinition[] = [
     updatedAt: SEEDED_AT,
   },
 ];
+const SEEDED_RULES: FeatureFlagRule[] = [
+  {
+    id: "demo-delivery-fr",
+    flagKey: DELIVERY_FEATURE_FLAG_KEY,
+    marketCode: "FR",
+    enabled: true,
+    rolloutPercentage: 100,
+    priority: 100,
+    reason: "Deterministic France-only delivery scenario for local demos.",
+    createdAt: SEEDED_AT,
+    updatedAt: SEEDED_AT,
+  },
+];
 
 function definitions() {
   return storageService.get<FeatureFlagDefinition[]>(
@@ -60,36 +93,7 @@ function definitions() {
 }
 
 function rules() {
-  return storageService.get<FeatureFlagRule[]>(RULES_KEY, []);
-}
-
-function bucket(key: string, identity: string) {
-  let value = 2166136261;
-  for (const character of `${key}:${identity}`) {
-    value ^= character.charCodeAt(0);
-    value = Math.imul(value, 16777619);
-  }
-  return (value >>> 0) % 100;
-}
-
-function matches(
-  rule: FeatureFlagRule,
-  context: FeatureFlagContext,
-  now: string,
-) {
-  if (rule.startsAt && rule.startsAt > now) return false;
-  if (rule.endsAt && rule.endsAt <= now) return false;
-  if (rule.marketCode && rule.marketCode !== context.marketCode) return false;
-  if (rule.accountId && rule.accountId !== context.accountId) return false;
-  if (rule.organizationId && rule.organizationId !== context.organizationId)
-    return false;
-  const identity =
-    context.accountId ||
-    context.organizationId ||
-    context.anonymousId ||
-    context.marketCode ||
-    "anonymous";
-  return bucket(rule.flagKey, identity) < rule.rolloutPercentage;
+  return storageService.get<FeatureFlagRule[]>(RULES_KEY, SEEDED_RULES);
 }
 
 export class DemoFeatureFlagService implements FeatureFlagServiceContract {
@@ -100,34 +104,13 @@ export class DemoFeatureFlagService implements FeatureFlagServiceContract {
     await simulateNetworkDelay();
     const evaluatedAt = new Date().toISOString();
     const definition = definitions().find((value) => value.key === key);
-    let result: FeatureFlagEvaluation;
-    if (
-      !definition ||
-      definition.exposure !== "public" ||
-      definition.lifecycle !== "active" ||
-      (definition.expiresAt && definition.expiresAt <= evaluatedAt)
-    ) {
-      result = { key, enabled: false, source: "safe_default", evaluatedAt };
-    } else {
-      const rule = rules()
-        .filter((value) => value.flagKey === key)
-        .sort((left, right) => right.priority - left.priority)
-        .find((value) => matches(value, context, evaluatedAt));
-      result = rule
-        ? {
-            key,
-            enabled: rule.enabled,
-            source: "rule",
-            ruleId: rule.id,
-            evaluatedAt,
-          }
-        : {
-            key,
-            enabled: definition.defaultEnabled,
-            source: "default",
-            evaluatedAt,
-          };
-    }
+    const result = resolveFeatureFlagEvaluation({
+      key,
+      definition,
+      rules: rules().filter((value) => value.flagKey === key),
+      context,
+      evaluatedAt,
+    });
     analyticsService.track("feature_flag_evaluated", {
       flagKey: result.key,
       enabled: result.enabled,
@@ -152,6 +135,9 @@ export class DemoFeatureFlagService implements FeatureFlagServiceContract {
     requireDemoCapability("admin.configuration.manage");
     const current = definitions();
     const previous = current.find((value) => value.key === key);
+    if (isMarketScopedOnlyFeatureFlag(key) && input.defaultEnabled) {
+      throw new Error(`${key} must remain disabled by default`);
+    }
     const now = new Date().toISOString();
     const value: FeatureFlagDefinition = {
       key,
@@ -179,6 +165,24 @@ export class DemoFeatureFlagService implements FeatureFlagServiceContract {
     await simulateNetworkDelay();
     requireDemoCapability("admin.configuration.manage");
     const current = rules();
+    if (
+      isMarketScopedOnlyFeatureFlag(key) &&
+      (!input.marketCode || input.accountId || input.organizationId)
+    ) {
+      throw new Error(`${key} requires an exact market-only rule`);
+    }
+    if (key === DELIVERY_FEATURE_FLAG_KEY && input.enabled) {
+      const issues = deliveryMarketActivationIssues(
+        getCountryConfig(input.marketCode || ""),
+      );
+      if (input.rolloutPercentage !== 100 || issues.length > 0) {
+        throw new Error(
+          input.rolloutPercentage !== 100
+            ? "Delivery activation must cover the whole eligible market."
+            : `Delivery activation blocked: ${issues.join(", ")}`,
+        );
+      }
+    }
     const id = ruleId ?? `flag-rule-${current.length + 1}`;
     const previous = current.find((value) => value.id === id);
     const now = new Date().toISOString();

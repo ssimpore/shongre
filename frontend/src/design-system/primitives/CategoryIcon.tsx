@@ -95,6 +95,7 @@ export const ICON_NAME_MAP: Record<string, LucideIcon> = {
   Globe,
   Gift,
   Truck,
+  truck: Truck,
   Anchor,
   Ship: Anchor,
   Key,

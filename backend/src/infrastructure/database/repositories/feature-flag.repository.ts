@@ -5,6 +5,7 @@ import type {
   FeatureFlagRule,
   FeatureFlagRuleUpdate,
 } from "@shongre/contracts/feature-flags";
+import { DELIVERY_FEATURE_FLAG_KEY } from "@shongre/contracts/delivery";
 import { getSupabaseAdminClient } from "../../supabase/supabase-client.js";
 import { databaseFailure } from "./repository-error.js";
 
@@ -27,6 +28,17 @@ export interface IFeatureFlagRepository {
 
 const SEEDED_AT = "2026-08-25T00:00:00.000Z";
 const SEEDED_FLAGS: FeatureFlagDefinition[] = [
+  {
+    key: DELIVERY_FEATURE_FLAG_KEY,
+    description:
+      "Activates the delivery and courier marketplace in one ready market.",
+    owner: "Marketplace Operations",
+    defaultEnabled: false,
+    exposure: "public",
+    lifecycle: "active",
+    createdAt: SEEDED_AT,
+    updatedAt: SEEDED_AT,
+  },
   {
     key: "support.workspace",
     description: "Expose the canonical support workspace to authorized staff.",
@@ -59,12 +71,27 @@ const SEEDED_FLAGS: FeatureFlagDefinition[] = [
     updatedAt: SEEDED_AT,
   },
 ];
+const SEEDED_RULES: FeatureFlagRule[] = [
+  {
+    id: "demo-delivery-fr",
+    flagKey: DELIVERY_FEATURE_FLAG_KEY,
+    marketCode: "FR",
+    enabled: true,
+    rolloutPercentage: 100,
+    priority: 100,
+    reason: "Deterministic France-only delivery scenario for local demos.",
+    createdAt: SEEDED_AT,
+    updatedAt: SEEDED_AT,
+  },
+];
 
 export class DemoFeatureFlagRepository implements IFeatureFlagRepository {
   private readonly definitions = new Map(
     SEEDED_FLAGS.map((value) => [value.key, structuredClone(value)]),
   );
-  private readonly rules = new Map<string, FeatureFlagRule[]>();
+  private readonly rules = new Map<string, FeatureFlagRule[]>([
+    [DELIVERY_FEATURE_FLAG_KEY, structuredClone(SEEDED_RULES)],
+  ]);
 
   async getDefinition(key: string) {
     const value = this.definitions.get(key);

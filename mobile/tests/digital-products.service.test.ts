@@ -24,8 +24,8 @@ describe("mobile digital-products demo boundary", () => {
     ["FR", true, "EUR"],
     ["BE", true, "EUR"],
     ["CH", true, "CHF"],
-    ["SN", false, "EUR"],
-    ["BF", false, "EUR"],
+    ["SN", false, "XOF"],
+    ["BF", false, "XOF"],
   ] as const)(
     "projects the %s market policy",
     async (marketCode, enabled, currency) => {

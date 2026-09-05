@@ -238,6 +238,42 @@ function xmlLocations(xml) {
   );
 }
 
+function robotsGroups(value) {
+  const groups = [];
+  let agents = [];
+  let rules = [];
+  const flush = () => {
+    if (agents.length) groups.push({ agents, rules });
+    agents = [];
+    rules = [];
+  };
+  for (const rawLine of value.split(/\r?\n/)) {
+    const line = rawLine.replace(/\s*#.*$/, "").trim();
+    if (!line) continue;
+    const separator = line.indexOf(":");
+    if (separator < 0) continue;
+    const field = line.slice(0, separator).trim().toLowerCase();
+    const entry = line.slice(separator + 1).trim();
+    if (field === "user-agent") {
+      if (rules.length) flush();
+      agents.push(entry.toLowerCase());
+    } else if (agents.length) {
+      rules.push({ field, value: entry });
+    }
+  }
+  flush();
+  return groups;
+}
+
+function crawlerRule(groups, userAgent, field, value) {
+  const group = groups.find(({ agents }) =>
+    agents.includes(userAgent.toLowerCase()),
+  );
+  return Boolean(
+    group?.rules.some((rule) => rule.field === field && rule.value === value),
+  );
+}
+
 async function collectSitemapUrls(sitemapUrl, visited = new Set()) {
   if (visited.has(sitemapUrl) || visited.size >= 100) return [];
   visited.add(sitemapUrl);
@@ -321,7 +357,8 @@ if (!robotsResult) {
     robotsUrl,
   );
 } else {
-  lowerEnvironment = /^\s*Disallow:\s*\/\s*$/im.test(robotsResult.body);
+  const groups = robotsGroups(robotsResult.body);
+  lowerEnvironment = crawlerRule(groups, "*", "disallow", "/");
   const declaredSitemaps = [
     ...robotsResult.body.matchAll(/^\s*Sitemap:\s*(\S+)/gim),
   ].map((match) => match[1]);
@@ -337,7 +374,47 @@ if (!robotsResult) {
         `${targetOrigin}/sitemap.xml`,
       );
     }
+    const manifest = await request(`${targetOrigin}/llms.txt`, {
+      accept: "text/plain",
+    });
+    if (manifest?.response.status !== 404) {
+      report(
+        "error",
+        "NONPROD_DISCOVERY_MANIFEST_EXPOSED",
+        "A crawl-blocked environment must return 404 for llms.txt.",
+        `${targetOrigin}/llms.txt`,
+      );
+    }
   } else {
+    if (!crawlerRule(groups, "OAI-SearchBot", "allow", "/")) {
+      report(
+        "error",
+        "OPENAI_SEARCH_CRAWLER_BLOCKED",
+        "Production robots.txt must explicitly allow OAI-SearchBot on public pages.",
+        robotsUrl,
+      );
+    }
+    if (
+      !crawlerRule(groups, "GPTBot", "disallow", "/") &&
+      !crawlerRule(groups, "GPTBot", "allow", "/")
+    ) {
+      report(
+        "error",
+        "TRAINING_CRAWLER_POLICY_MISSING",
+        "Production robots.txt must explicitly declare the independent GPTBot policy.",
+        robotsUrl,
+      );
+    }
+    for (const privatePath of ["/admin/", "/compte/", "/messages"]) {
+      if (!crawlerRule(groups, "*", "disallow", privatePath)) {
+        report(
+          "error",
+          "PRIVATE_CRAWL_POLICY_MISSING",
+          `Wildcard crawler policy does not block ${privatePath}.`,
+          robotsUrl,
+        );
+      }
+    }
     if (!declaredSitemaps.length) {
       report(
         "error",
@@ -357,6 +434,27 @@ if (!robotsResult) {
         continue;
       }
       sitemapUrls.push(...(await collectSitemapUrls(sitemap)));
+    }
+
+    const manifestUrl = `${targetOrigin}/llms.txt`;
+    const manifest = await request(manifestUrl, { accept: "text/plain" });
+    if (manifest?.response.status !== 200) {
+      report(
+        "error",
+        "DISCOVERY_MANIFEST_STATUS",
+        `llms.txt returned ${manifest?.response.status ?? "no response"}.`,
+        manifestUrl,
+      );
+    } else if (
+      !manifest.body.includes("Canonical site:") ||
+      !manifest.body.includes("Sitemap:")
+    ) {
+      report(
+        "error",
+        "DISCOVERY_MANIFEST_INVALID",
+        "llms.txt is missing its canonical site or sitemap reference.",
+        manifestUrl,
+      );
     }
   }
 }

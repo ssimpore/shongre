@@ -49,6 +49,24 @@ describe("canonical OpenAPI contract", () => {
     ).not.toThrow();
   });
 
+  it("binds the strict self-profile allowlist to the profile update operation", () => {
+    const profileSchema =
+      specification.paths["/users/{id}"].put.requestBody.content[
+        "application/json"
+      ].schema;
+    expect(profileSchema).toEqual({
+      $ref: "#/components/schemas/UserProfileUpdateRequest",
+    });
+    expect(
+      specification.components.schemas.UserProfileUpdateRequest
+        .additionalProperties,
+    ).toBe(false);
+    expect(
+      specification.paths["/admin/business-rules/simulate"].post.requestBody
+        .content["application/json"].schema,
+    ).not.toEqual(profileSchema);
+  });
+
   it("rejects removal until deprecation and sunset are declared", () => {
     const current = { paths: {} };
     const undeclared = {

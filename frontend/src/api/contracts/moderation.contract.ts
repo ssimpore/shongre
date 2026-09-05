@@ -9,7 +9,8 @@ export type ModerationCaseStatus =
 
 export interface OwnModerationCase {
   id: string;
-  targetType: "listing" | "user";
+  targetType: "listing" | "user" | "delivery_request";
+  deliveryRequestId?: string;
   category: string;
   status: ModerationCaseStatus;
   resolutionAction?: "dismiss" | "remove_listing" | "ban_user";
@@ -37,6 +38,13 @@ export interface ModerationAppeal {
 }
 
 export interface ModerationServiceContract {
+  submitReport(input: {
+    listingId?: string;
+    reportedUserId?: string;
+    deliveryRequestId?: string;
+    reason: "fraud" | "counterfeit" | "prohibited" | "harassment" | "other";
+    details: string;
+  }): Promise<{ id: string; status: "pending" }>;
   listOwnCases(userId: string): Promise<OwnModerationCase[]>;
   listOwnAppeals(userId: string): Promise<ModerationAppeal[]>;
   submitAppeal(

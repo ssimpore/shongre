@@ -4,6 +4,7 @@ import { ZodError } from "zod";
 import {
   getCountryConfig,
   taxonomyV4ListingIntentSchema,
+  userProfileUpdateSchema,
 } from "@shongre/contracts";
 import {
   authService,
@@ -31,6 +32,7 @@ import {
   autoService,
   realEstateService,
   employmentService,
+  deliveryService,
   publisherEntitlementsService,
   unifiedDiscoveryService,
   socialAuthService,
@@ -62,7 +64,11 @@ import { captureServerException } from "../../infrastructure/observability/sentr
 import { storageService } from "../../infrastructure/storage/storage-service.js";
 import { apiRateLimiter } from "../../infrastructure/security/api-rate-limiter.js";
 import { providerWebhookInbox } from "../../infrastructure/queue/provider-webhook-inbox.js";
-import { Permission } from "../../shared/auth/rbac.js";
+import {
+  Permission,
+  permissionsForSubject,
+  type AuthorizationSubject,
+} from "../../shared/auth/rbac.js";
 import {
   Principal,
   GUEST_PRINCIPAL,
@@ -89,6 +95,10 @@ import { verifyStripeSignature } from "../../integrations/stripe/webhook-signatu
 import { stripeWebhookDispatcher } from "../../integrations/stripe/stripe-webhook-dispatcher.js";
 import { verifyComplianceWebhookSignature } from "../../integrations/providers/compliance-webhook-signature.js";
 import { config } from "../../app/config/index.js";
+import {
+  cacheInvalidationTags,
+  writeJsonResponse,
+} from "../../infrastructure/http/public-response-policy.js";
 import type {
   TrendingAdminConfig,
   TrendingTopicOverride,
@@ -186,11 +196,25 @@ function isNativeClient(req: IncomingMessage): boolean {
  * secure cookies. Native clients opt into the token response explicitly and
  * persist it in the operating-system keychain.
  */
-function publicAuthResult<T extends { user: unknown }>(
+function authUserProjection<T extends AuthorizationSubject>(
+  user: T,
+  capabilities: readonly Permission[] = permissionsForSubject(user),
+): T & { capabilities: readonly Permission[] } {
+  return { ...user, capabilities };
+}
+
+function publicAuthResult<T extends { user: AuthorizationSubject }>(
   result: T,
   req: IncomingMessage,
-): T | { user: T["user"] } {
-  return isNativeClient(req) ? result : { user: result.user };
+):
+  | (Omit<T, "user"> & {
+      user: T["user"] & { capabilities: readonly Permission[] };
+    })
+  | {
+      user: T["user"] & { capabilities: readonly Permission[] };
+    } {
+  const projected = { ...result, user: authUserProjection(result.user) };
+  return isNativeClient(req) ? projected : { user: projected.user };
 }
 
 interface RouteDef {
@@ -729,7 +753,7 @@ export class ApiV1Router {
         user.enabledProducts ??
         (facturationOnly ? ([] as const) : (["marketplace"] as const));
       return {
-        ...user,
+        ...authUserProjection(user, principal.capabilities ?? []),
         enabledProducts: Array.from(
           new Set([
             ...baselineProducts,
@@ -773,7 +797,10 @@ export class ApiV1Router {
           requestMetadata(req),
         );
         setSessionCookies(res, result.tokens);
-        return { user: result.user, returnTo: result.returnTo };
+        return {
+          user: authUserProjection(result.user),
+          returnTo: result.returnTo,
+        };
       },
     );
     this.addRoute("POST", "/auth/login", PUBLIC, async ({ body, req, res }) => {
@@ -1058,7 +1085,7 @@ export class ApiV1Router {
           requestMetadata(req),
         );
         return {
-          user: result.user,
+          user: authUserProjection(result.user),
           ...result.tokens,
           returnTo: result.returnTo,
         };
@@ -1183,7 +1210,7 @@ export class ApiV1Router {
         const ownerId = resolveOwnerId(principal, params.id, "user.manage");
         return usersService.updateUserProfile(
           ownerId,
-          sanitizeProfileUpdate(body, principal),
+          userProfileUpdateSchema.parse(body),
         );
       },
     );
@@ -2799,6 +2826,188 @@ export class ApiV1Router {
       "/orders/:id/refund",
       permission("order.refund"),
       async ({ params, body }) => ordersService.refundOrder(params.id, body),
+    );
+
+    // --------------------------------------------------------------------------
+    // DELIVERY & COURIER ROUTES
+    // --------------------------------------------------------------------------
+    this.addRoute(
+      "GET",
+      "/delivery/availability",
+      PUBLIC,
+      async ({ principal, marketCode }) =>
+        deliveryService.availability(
+          principal,
+          requireApiMarketContext(marketCode),
+        ),
+    );
+    this.addRoute(
+      "GET",
+      "/delivery/requests",
+      PUBLIC,
+      async ({ principal, query, marketCode }) =>
+        deliveryService.search(principal, requireApiMarketContext(marketCode), {
+          marketCode: requireApiRequestMarket(marketCode),
+          pickupPostalCode: query.get("pickupPostalCode") || undefined,
+          vehicleType: query.get("vehicleType") || undefined,
+          cursor: query.get("cursor") || undefined,
+          limit: query.get("limit") ? Number(query.get("limit")) : undefined,
+        }),
+    );
+    this.addRoute(
+      "GET",
+      "/delivery/requests/:requestId",
+      PUBLIC,
+      async ({ principal, params, marketCode }) =>
+        deliveryService.getPublicRequest(
+          principal,
+          requireApiMarketContext(marketCode),
+          params.requestId,
+        ),
+    );
+    this.addRoute(
+      "POST",
+      "/delivery/requests",
+      permission("delivery.request.manage.own"),
+      async ({ principal, body, marketCode }) =>
+        deliveryService.createDraft(
+          principal,
+          requireApiMarketContext(marketCode),
+          body,
+        ),
+    );
+    this.addRoute(
+      "POST",
+      "/delivery/requests/:requestId/publish",
+      permission("delivery.request.manage.own"),
+      async ({ principal, params, marketCode }) =>
+        deliveryService.publish(
+          principal,
+          requireApiMarketContext(marketCode),
+          params.requestId,
+        ),
+    );
+    this.addRoute(
+      "GET",
+      "/delivery/courier/profile",
+      permission("delivery.courier.manage.own"),
+      async ({ principal, marketCode }) =>
+        deliveryService.getCourierProfile(
+          principal,
+          requireApiMarketContext(marketCode),
+        ),
+    );
+    this.addRoute(
+      "PUT",
+      "/delivery/courier/profile",
+      permission("delivery.courier.manage.own"),
+      async ({ principal, body, marketCode }) =>
+        deliveryService.saveCourierProfile(
+          principal,
+          requireApiMarketContext(marketCode),
+          body,
+        ),
+    );
+    this.addRoute(
+      "GET",
+      "/delivery/me/requests",
+      permission("delivery.request.manage.own"),
+      async ({ principal, marketCode }) =>
+        deliveryService.listOwnRequests(
+          principal,
+          requireApiMarketContext(marketCode),
+        ),
+    );
+    this.addRoute(
+      "GET",
+      "/delivery/me/requests/:requestId",
+      permission("delivery.read"),
+      async ({ principal, params, marketCode }) =>
+        deliveryService.getPrivateRequest(
+          principal,
+          requireApiMarketContext(marketCode),
+          params.requestId,
+        ),
+    );
+    this.addRoute(
+      "POST",
+      "/delivery/requests/:requestId/applications",
+      permission("delivery.application.manage.own"),
+      async ({ principal, params, body, marketCode }) =>
+        deliveryService.submitApplication(
+          principal,
+          requireApiMarketContext(marketCode),
+          params.requestId,
+          body,
+        ),
+    );
+    this.addRoute(
+      "GET",
+      "/delivery/me/applications",
+      permission("delivery.application.manage.own"),
+      async ({ principal, marketCode }) =>
+        deliveryService.listOwnApplications(
+          principal,
+          requireApiMarketContext(marketCode),
+        ),
+    );
+    this.addRoute(
+      "POST",
+      "/delivery/applications/:applicationId/withdraw",
+      permission("delivery.application.manage.own"),
+      async ({ principal, params, marketCode }) =>
+        deliveryService.withdrawApplication(
+          principal,
+          requireApiMarketContext(marketCode),
+          params.applicationId,
+        ),
+    );
+    this.addRoute(
+      "POST",
+      "/delivery/requests/:requestId/applications/:applicationId/accept",
+      permission("delivery.request.manage.own"),
+      async ({ principal, params, body, marketCode }) =>
+        deliveryService.acceptApplication(
+          principal,
+          requireApiMarketContext(marketCode),
+          params.requestId,
+          params.applicationId,
+          body,
+        ),
+    );
+    this.addRoute(
+      "POST",
+      "/delivery/requests/:requestId/transition",
+      permission("delivery.read"),
+      async ({ principal, params, body, marketCode }) =>
+        deliveryService.transition(
+          principal,
+          requireApiMarketContext(marketCode),
+          params.requestId,
+          body,
+        ),
+    );
+    this.addRoute(
+      "GET",
+      "/admin/delivery/requests",
+      permission("delivery.admin.manage"),
+      async ({ principal, marketCode }) =>
+        deliveryService.adminList(
+          principal,
+          requireApiMarketContext(marketCode),
+        ),
+    );
+    this.addRoute(
+      "POST",
+      "/admin/delivery/requests/:requestId/suspend",
+      permission("delivery.moderate"),
+      async ({ principal, params, body, marketCode }) =>
+        deliveryService.suspendUnsafe(
+          principal,
+          requireApiMarketContext(marketCode),
+          params.requestId,
+          body,
+        ),
     );
 
     // --------------------------------------------------------------------------
@@ -5068,13 +5277,6 @@ export class ApiV1Router {
               "Vous ne pouvez pas modifier le statut de votre propre compte.",
           });
         }
-        if (body?.status === "active") {
-          requirePermission(principal, "user.reactivate");
-        } else if (body?.status === "restricted") {
-          requirePermission(principal, "compliance.restrict_account");
-        } else {
-          requirePermission(principal, "user.suspend");
-        }
         return adminService.updateUserStatus({
           userId: params.userId,
           status: body?.status,
@@ -5228,11 +5430,6 @@ export class ApiV1Router {
       "/admin/reports/:reportId/resolve",
       permission("report.review"),
       async ({ principal, params, body }) => {
-        if (body?.action === "ban_user") {
-          requirePermission(principal, "user.suspend");
-        } else if (body?.action === "remove_listing") {
-          requirePermission(principal, "moderation.action");
-        }
         await adminService.resolveReport({
           reportId: params.reportId,
           action: body?.action,
@@ -5775,10 +5972,34 @@ export class ApiV1Router {
 
         if (res.writableEnded) return;
 
-        res.writeHead(route.successStatus, {
-          "Content-Type": "application/json",
+        const invalidatedTags = cacheInvalidationTags({
+          method,
+          operationId: route.operationId,
+          marketCode,
+          params,
         });
-        res.end(JSON.stringify(result ?? null));
+        if (invalidatedTags.length > 0) {
+          logger.info("public_cache_invalidation_requested", {
+            operationId: route.operationId,
+            marketCode,
+            tags: invalidatedTags,
+          });
+          res.setHeader(
+            "X-Shongre-Cache-Invalidate",
+            invalidatedTags.join(","),
+          );
+        }
+        await writeJsonResponse({
+          req,
+          res,
+          method,
+          operationId: route.operationId,
+          accessKind: route.access.kind,
+          statusCode: route.successStatus,
+          marketCode,
+          params,
+          result,
+        });
       } catch (err: any) {
         this.writeError(res, err, method, pathname);
       }
@@ -5983,38 +6204,6 @@ function complianceReturnUrl(returnTo: unknown): string {
       ? returnTo
       : "/compte/verification";
   return new URL(safePath, config.frontendUrl).toString();
-}
-
-/**
- * Fields a user may change about themselves.
- *
- * An allowlist rather than a blocklist: `updateUserProfile` writes what it is
- * given, so a passthrough body would let a caller PUT their own
- * `primaryRole: 'admin'`, `status: 'active'` past a suspension, or
- * `isIdentityVerified: true`. Those transitions belong to admin and
- * verification flows.
- */
-function sanitizeProfileUpdate(
-  body: any,
-  _principal: Principal,
-): Record<string, unknown> {
-  if (!body || typeof body !== "object") return {};
-  const allowed = [
-    "name",
-    "avatarUrl",
-    "phone",
-    "city",
-    "postalCode",
-    "department",
-    "region",
-    "country",
-    "bio",
-  ];
-  const clean: Record<string, unknown> = {};
-  for (const key of allowed) {
-    if (body[key] !== undefined) clean[key] = body[key];
-  }
-  return clean;
 }
 
 function sanitizeTrendingConfigPatch(body: any): Partial<TrendingAdminConfig> {

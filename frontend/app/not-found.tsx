@@ -1,10 +1,14 @@
 import { headers } from "next/headers";
+import { getCountryConfig } from "@shongre/contracts";
 import { resolveNotFoundPresentation } from "../src/platform/seo/not-found-presentation";
-import { BrandLogo } from "../src/design-system/primitives/BrandLogo";
+import { BrandHeaderSignature } from "../src/design-system/primitives/BrandLogo";
 
 export default async function NotFound() {
   const requestHeaders = await headers();
   const pathname = requestHeaders.get("x-shongre-request-pathname") || "/";
+  const marketLabel = getCountryConfig(
+    requestHeaders.get("x-shongre-market-code") || "",
+  )?.name;
   const presentation = resolveNotFoundPresentation(undefined, pathname);
 
   return (
@@ -13,7 +17,11 @@ export default async function NotFound() {
       <meta name="robots" content="noindex, nofollow" />
       <section className="w-full max-w-xl rounded-card border border-border-base bg-bg-surface p-8 text-center shadow-sm sm:p-12">
         <div className="mb-6 flex justify-center">
-          <BrandLogo size="compact" />
+          <BrandHeaderSignature
+            priority
+            marketLabel={marketLabel}
+            marketLabelVisibility="desktop"
+          />
         </div>
         <p className="text-sm font-bold uppercase tracking-wide text-primary">
           Erreur 404

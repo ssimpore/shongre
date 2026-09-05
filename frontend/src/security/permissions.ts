@@ -85,6 +85,52 @@ const DESCRIBED_PERMISSIONS: PermissionDefinition[] = [
     isSensitive: true,
   },
 
+  // Shongre Livraison & coursier
+  {
+    id: "delivery.read",
+    name: "Consulter les demandes de livraison",
+    category: "Annonces",
+    description:
+      "Consulter les demandes de livraison publiques disponibles dans le marché autorisé.",
+  },
+  {
+    id: "delivery.request.manage.own",
+    name: "Gérer ses demandes de livraison",
+    category: "Annonces",
+    description:
+      "Créer, publier et faire progresser ses propres demandes de livraison.",
+  },
+  {
+    id: "delivery.courier.manage.own",
+    name: "Gérer son profil coursier",
+    category: "Profil & Compte",
+    description:
+      "Configurer sa disponibilité, ses zones et ses véhicules pour proposer des livraisons.",
+  },
+  {
+    id: "delivery.application.manage.own",
+    name: "Gérer ses candidatures de coursier",
+    category: "Annonces",
+    description:
+      "Candidater aux demandes compatibles et suivre ses propres candidatures.",
+  },
+  {
+    id: "delivery.admin.manage",
+    name: "Administrer Livraison & coursier",
+    category: "Marchés & Configuration",
+    description:
+      "Configurer l’ouverture et le fonctionnement du service par marché.",
+    isSensitive: true,
+  },
+  {
+    id: "delivery.moderate",
+    name: "Modérer les demandes de livraison",
+    category: "Modération & Signalements",
+    description:
+      "Suspendre une demande de livraison signalée après contrôle du contenu.",
+    isSensitive: true,
+  },
+
   // Shongre Immo
   {
     id: "immo.read",

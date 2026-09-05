@@ -13,6 +13,7 @@ import {
   minorToMajorAmount,
 } from "@shongre/shared";
 import { getCountryConfig } from "@shongre/contracts";
+import { logger } from "../../logging/logger.js";
 
 export interface IListingRepository {
   findById(id: string): Promise<Listing | null>;
@@ -413,8 +414,72 @@ export class DemoListingRepository implements IListingRepository {
 }
 
 export class PostgresListingRepository implements IListingRepository {
+  private static readonly LISTING_PROJECTION = [
+    "id",
+    "seller_id",
+    "store_id",
+    "publisher_type",
+    "publisher_user_id",
+    "publisher_organization_id",
+    "publisher_branch_id",
+    "publisher_verification_status",
+    "publication_offer_id",
+    "subscription_id",
+    "entitlement_snapshot",
+    "category_id",
+    "listing_type_id",
+    "listing_intent",
+    "title",
+    "description",
+    "price",
+    "original_price",
+    "currency",
+    "status",
+    "condition",
+    "brand",
+    "model",
+    "market_code",
+    "city",
+    "postal_code",
+    "department",
+    "region",
+    "country",
+    "latitude",
+    "longitude",
+    "allowed_delivery",
+    "shipping_cost",
+    "fulfillment_model",
+    "digital_fulfillment_version_id",
+    "product_version",
+    "is_urgent",
+    "is_featured",
+    "urgent_expires_at",
+    "featured_expires_at",
+    "bumped_at",
+    "promotion_state",
+    "promotion_type",
+    "promotion_source",
+    "promotion_source_id",
+    "promotion_label",
+    "promotion_start_at",
+    "promotion_end_at",
+    "published_at",
+    "materially_updated_at",
+    "organic_freshness_at",
+    "promoted_at",
+    "external_stock_id",
+    "duplicate_group_id",
+    "view_count",
+    "favorite_count",
+    "safety_risk_score",
+    "attributes",
+    "created_at",
+    "updated_at",
+    "expires_at",
+  ].join(", ");
+
   private static readonly SELLER_PROJECTION =
-    "id, slug, name, account_type, account_family, primary_role, status, avatar_url, city, country, bio, is_verified, is_identity_verified, is_phone_verified, is_email_verified, is_business_verified, rating, review_count, response_rate_percent, response_time_text, created_at";
+    "id, slug, email, name, account_type, account_family, primary_role, status, avatar_url, city, postal_code, country, bio, is_verified, is_identity_verified, is_phone_verified, is_email_verified, is_business_verified, rating, review_count, response_rate_percent, response_time_text, created_at";
 
   private static readonly MARKET_PUBLICATION_PROJECTION =
     "market_code, status, is_primary, price_minor, currency, localized_content, available_services, compliance_state, published_at, sort_date";
@@ -635,7 +700,7 @@ export class PostgresListingRepository implements IListingRepository {
       const { data, error } = await supabase
         .from("listings")
         .select(
-          `*, listing_media(url, sort_order), listing_market_publications(${PostgresListingRepository.MARKET_PUBLICATION_PROJECTION}), profiles:seller_id(${PostgresListingRepository.SELLER_PROJECTION}), publisher_organization:publisher_organization_id(status)`,
+          `${PostgresListingRepository.LISTING_PROJECTION}, listing_media(url, sort_order), listing_market_publications(${PostgresListingRepository.MARKET_PUBLICATION_PROJECTION}), profiles:seller_id(${PostgresListingRepository.SELLER_PROJECTION}), publisher_organization:publisher_organization_id(status)`,
         )
         .eq("id", id)
         .single();
@@ -660,7 +725,7 @@ export class PostgresListingRepository implements IListingRepository {
       const { data, error } = await ((supabase as any)
         .from("listings")
         .select(
-          `*, listing_media(url, sort_order), listing_market_publications!inner(${PostgresListingRepository.MARKET_PUBLICATION_PROJECTION}), profiles:seller_id(${PostgresListingRepository.SELLER_PROJECTION}), publisher_organization:publisher_organization_id(status)`,
+          `${PostgresListingRepository.LISTING_PROJECTION}, listing_media(url, sort_order), listing_market_publications!inner(${PostgresListingRepository.MARKET_PUBLICATION_PROJECTION}), profiles:seller_id(${PostgresListingRepository.SELLER_PROJECTION}), publisher_organization:publisher_organization_id(status)`,
         )
         .eq("id", id)
         .eq("listing_market_publications.market_code", requestedMarketCode)
@@ -689,6 +754,7 @@ export class PostgresListingRepository implements IListingRepository {
     page: number;
     totalPages: number;
   }> {
+    const startedAt = performance.now();
     try {
       const supabase = getSupabaseAdminClient();
       const page = Math.max(1, filters.page || 1);
@@ -704,7 +770,7 @@ export class PostgresListingRepository implements IListingRepository {
       let query = (supabase as any)
         .from("listings")
         .select(
-          `*, listing_media(url, sort_order), ${publicationJoin}, profiles:seller_id(${PostgresListingRepository.SELLER_PROJECTION}), publisher_organization:publisher_organization_id(status)`,
+          `${PostgresListingRepository.LISTING_PROJECTION}, listing_media(url, sort_order), ${publicationJoin}, profiles:seller_id(${PostgresListingRepository.SELLER_PROJECTION}), publisher_organization:publisher_organization_id(status)`,
           { count: "exact" },
         )
         .eq("status", "published");
@@ -786,12 +852,19 @@ export class PostgresListingRepository implements IListingRepository {
       } else {
         // Promotion never masquerades as organic freshness. Sponsored
         // insertion is handled separately by UnifiedDiscoveryService.
-        query = query
-          .order("organic_freshness_at", {
-            ascending: false,
-            nullsFirst: false,
-          })
-          .order("created_at", { ascending: false });
+        query = requestedMarketCode
+          ? query
+              .order("sort_date", {
+                ascending: false,
+                referencedTable: "listing_market_publications",
+              })
+              .order("id", { ascending: false })
+          : query
+              .order("organic_freshness_at", {
+                ascending: false,
+                nullsFirst: false,
+              })
+              .order("created_at", { ascending: false });
       }
 
       query = query.range(offset, offset + limit - 1);
@@ -804,6 +877,17 @@ export class PostgresListingRepository implements IListingRepository {
       const items = data.map((r: any) =>
         this.mapRowToListing(r, requestedMarketCode),
       );
+
+      logger.info("database_query_completed", {
+        operation: "listings.search",
+        durationMs: Math.round(performance.now() - startedAt),
+        rowCount: items.length,
+        totalCount: total,
+        marketCode: requestedMarketCode || null,
+        page,
+        limit,
+        sortBy: filters.sortBy || "recent",
+      });
 
       return { items, total, page, totalPages };
     } catch (error) {
@@ -878,7 +962,7 @@ export class PostgresListingRepository implements IListingRepository {
     const { data, error } = await (supabase
       .from("listings")
       .upsert(payload as any)
-      .select()
+      .select("id")
       .single() as any);
     if (error || !data) {
       databaseFailure("listings.save", error);
@@ -889,7 +973,9 @@ export class PostgresListingRepository implements IListingRepository {
       .upsert(publicationRows, { onConflict: "listing_id,market_code" });
     if (publicationError)
       databaseFailure("listings.saveMarketPublications", publicationError);
-    return (await this.findById(data.id)) || this.mapRowToListing(data);
+    const persisted = await this.findById(data.id);
+    if (!persisted) databaseFailure("listings.saveReload", null);
+    return persisted;
   }
 
   async update(id: string, updates: Partial<Listing>): Promise<Listing> {
@@ -947,7 +1033,7 @@ export class PostgresListingRepository implements IListingRepository {
     const { data, error } = await ((supabase.from("listings") as any)
       .update(payload)
       .eq("id", id)
-      .select()
+      .select("id,currency")
       .single() as any);
     if (error || !data) {
       databaseFailure("listings.update", error);
@@ -965,7 +1051,9 @@ export class PostgresListingRepository implements IListingRepository {
       if (publicationError)
         databaseFailure("listings.updatePrimaryMarketPrice", publicationError);
     }
-    return (await this.findById(id)) || this.mapRowToListing(data);
+    const persisted = await this.findById(id);
+    if (!persisted) databaseFailure("listings.updateReload", null);
+    return persisted;
   }
 
   async delete(id: string): Promise<boolean> {

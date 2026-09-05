@@ -12,6 +12,7 @@ import { simulateNetworkDelay } from "../../client/api-client.config";
 import { marketService } from "../../../domains/market/market.service";
 import { resolveCanonicalTaxonomyIdentity } from "../../../domains/taxonomy/taxonomy.identity";
 import { requireDemoCapability } from "./demo-authorization";
+import { filterDemoDeliveryDiscoveryListings } from "./demo-delivery-discovery";
 
 const BULK_IMPORT_SAMPLE: BulkListingImportTemplate = {
   fileName: "modele_import_annonces_shongre.csv",
@@ -59,18 +60,38 @@ function splitSemicolonRow(line: string): string[] {
 }
 
 export class DemoListingsService implements ListingsServiceContract {
+  private async getVisibleListings(filter: SearchFilters = {}) {
+    const page = Math.max(1, filter.page ?? 1);
+    const limit = Math.max(1, filter.limit ?? 12);
+    const result = await listingRepository.getListings({
+      ...filter,
+      page: 1,
+      limit: Number.MAX_SAFE_INTEGER,
+    });
+    const visible = await filterDemoDeliveryDiscoveryListings(result.listings);
+    const start = (page - 1) * limit;
+    return {
+      listings: visible.slice(start, start + limit),
+      total: visible.length,
+      page,
+      totalPages: Math.max(1, Math.ceil(visible.length / limit)),
+    };
+  }
+
   async getListings(
     filter?: SearchFilters,
   ): Promise<{ listings: Listing[]; total: number }> {
     await simulateNetworkDelay();
     requireDemoCapability("listing.read");
-    return listingRepository.getListings(filter);
+    return this.getVisibleListings(filter);
   }
 
   async getListingById(id: string): Promise<Listing | null> {
     await simulateNetworkDelay();
     requireDemoCapability("listing.read");
-    return listingRepository.getListingById(id);
+    const listing = await listingRepository.getListingById(id);
+    if (!listing) return null;
+    return (await filterDemoDeliveryDiscoveryListings([listing]))[0] ?? null;
   }
 
   async searchListings(params: SearchFilters): Promise<{
@@ -81,12 +102,12 @@ export class DemoListingsService implements ListingsServiceContract {
   }> {
     await simulateNetworkDelay();
     requireDemoCapability("listing.read");
-    const res = await listingRepository.getListings(params);
+    const result = await this.getVisibleListings(params);
     return {
-      items: res.listings,
-      total: res.total,
-      page: res.page,
-      totalPages: res.totalPages,
+      items: result.listings,
+      total: result.total,
+      page: result.page,
+      totalPages: result.totalPages,
     };
   }
 

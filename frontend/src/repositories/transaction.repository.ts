@@ -32,11 +32,6 @@ export interface ITransactionRepository {
     id: string,
     dispute: Omit<TransactionDispute, "id" | "createdAt">,
   ): Promise<Transaction>;
-  resolveDispute(
-    id: string,
-    action: "full_refund" | "partial_refund" | "seller_payout",
-    note?: string,
-  ): Promise<Transaction>;
   requestSellerPayout(
     sellerId: string,
     amount: number,
@@ -231,47 +226,6 @@ class MockTransactionRepository implements ITransactionRepository {
       note: `Litige ouvert : "${dispute.reason}". Le versement reste suspendu pendant l'examen.`,
     });
 
-    storageService.saveTransaction(tx);
-    return tx;
-  }
-
-  async resolveDispute(
-    id: string,
-    action: "full_refund" | "partial_refund" | "seller_payout",
-    note?: string,
-  ): Promise<Transaction> {
-    const tx = await this.getTransactionById(id);
-    if (!tx) throw new Error("Transaction non trouvée");
-
-    const now = new Date().toISOString();
-
-    if (action === "full_refund") {
-      tx.status = "refunded";
-      if (tx.payment) {
-        tx.payment.escrowStatus = "refunded";
-        tx.payment.refundedAt = now;
-      }
-      if (tx.dispute) {
-        tx.dispute.status = "resolved_refund";
-        tx.dispute.resolvedAt = now;
-        tx.dispute.resolutionNote =
-          note || "Remboursement intégral accordé à l'acheteur.";
-      }
-    } else {
-      tx.status = "completed";
-      if (tx.payment) {
-        tx.payment.escrowStatus = "released";
-        tx.payment.releasedAt = now;
-      }
-      if (tx.dispute) {
-        tx.dispute.status = "resolved_payout";
-        tx.dispute.resolvedAt = now;
-        tx.dispute.resolutionNote =
-          note || "Litige clôturé en faveur du vendeur.";
-      }
-    }
-
-    tx.updatedAt = now;
     storageService.saveTransaction(tx);
     return tx;
   }

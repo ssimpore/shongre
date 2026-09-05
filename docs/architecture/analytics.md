@@ -160,6 +160,12 @@ signals only.
 
 ## SEO and Search Console
 
+Crawler purpose, answer-engine referral classification, structured entity
+identity and the public discovery audit are defined in
+[`seo-geo-discovery.md`](seo-geo-discovery.md). Recognized answer-engine
+referrals use the same consent-gated acquisition envelope with medium
+`organic_ai`; explicit UTM attribution remains authoritative.
+
 The Search Console worker uses a server-side service account with the official
 Search Analytics API. It imports finalized data three days behind, paginates in
 25,000-row pages, and upserts by date/site/market/query/page/country/device.

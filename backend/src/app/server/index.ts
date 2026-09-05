@@ -222,6 +222,14 @@ export function createHttpServer() {
           path: new URL(req.url || "/", "http://request.invalid").pathname,
           statusCode: res.statusCode,
           durationMs: Math.round(performance.now() - startedAt),
+          cacheControl: String(res.getHeader("Cache-Control") || ""),
+          cacheTagCount: String(res.getHeader("Cache-Tag") || "")
+            .split(",")
+            .filter(Boolean).length,
+          contentEncoding: String(
+            res.getHeader("Content-Encoding") || "identity",
+          ),
+          responseBytes: Number(res.getHeader("Content-Length") || 0),
         });
       });
 
@@ -349,9 +357,12 @@ export function createHttpServer() {
   );
 
   server.requestTimeout = config.requestTimeoutMs;
-  server.headersTimeout = Math.min(config.requestTimeoutMs, 15_000);
-  server.keepAliveTimeout = 5_000;
-  server.maxRequestsPerSocket = 1_000;
+  server.headersTimeout = Math.min(
+    config.requestTimeoutMs,
+    config.performance.headersTimeoutMs,
+  );
+  server.keepAliveTimeout = config.performance.keepAliveTimeoutMs;
+  server.maxRequestsPerSocket = config.performance.maxRequestsPerSocket;
 
   return server;
 }

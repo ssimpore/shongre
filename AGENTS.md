@@ -392,6 +392,11 @@ component → hook/controller → service contract → demo or HTTP adapter
 - Authentication is not authorization. Backend capability checks remain
   authoritative even when RLS and client route guards provide additional
   boundaries.
+- Contextual access must use the canonical `evaluateAuthorization()` contract
+  and backend `requireAuthorization()` guard. Ownership, organization, market,
+  verification, entitlement, and feature facts may only narrow an effective
+  capability; absent required facts deny access, and an empty server-resolved
+  capability projection must never be reconstructed from a role label.
 - Collect and retain only required data. Never put KYC/KYB, identity documents,
   payment/bank data, private messages, credentials, internal fraud signals, or
   raw request bodies in URLs, public storage, analytics, or general logs.
@@ -536,6 +541,35 @@ France-only happy path is insufficient for market-sensitive work.
 
 ## Marketplace domain invariants
 
+### Delivery and courier
+
+- `delivery` owns local delivery requests and courier applications. Its
+  taxonomy identity is `services.local_services.delivery_courier` and its
+  runtime gate is the exact market-scoped, default-off
+  `delivery.marketplace` flag. Taxonomy availability or a global flag must
+  never activate the feature. Disabling the flag blocks new work while
+  preserving closure paths for assignments already in progress.
+- Public delivery projections contain only coarse localities and public
+  requirements. Exact stops, contacts, access notes, source orders, courier
+  identity, and application content are participant-private. Request,
+  application, profile, matching, events, and outbox state remain
+  market-scoped and backend-authoritative.
+- Courier selection and lifecycle transitions must use the version-checked,
+  row-locking database functions from `00096_delivery_marketplace.sql` so one
+  application wins and its event/outbox mutation commits atomically. Delivery
+  quotes do not alter order money or state; payment, escrow, commission, route
+  optimization, tracking, carrier, and cross-border behavior are outside this
+  domain unless separately approved.
+- Delivery UGC reports use the canonical report/moderation boundary.
+  `delivery.moderate` is a distinct least-privilege Staff capability: it may
+  suspend unsafe requests and stop new applications without deleting private
+  records or immutable evidence, even while the market kill switch is off.
+  Account deletion must block on non-terminal delivery work and purge exact
+  stop/contact rows after terminal work; retain coarse facts only under an
+  approved retention/legal-hold policy. Add delivery to the shared account
+  exporter when that platform-wide boundary exists, never as a separate export
+  system.
+
 - Taxonomy is hierarchical, variable-depth, market-aware, and metadata-driven.
   The normalized v4 source is backend-owned and compiled through the root
   `taxonomy-import`, `taxonomy-compile`, and `taxonomy-check` targets; runtime
@@ -669,6 +703,16 @@ France-only happy path is insufficient for market-sensitive work.
   decorative animation that interferes with interaction or performance.
 - Measure before optimizing. Prioritize LCP, INP, CLS, and TTFB on homepage,
   search, listing detail, publication, and workspace surfaces.
+- `packages/contracts/src/operational-performance.ts` is the only source for
+  SLOs, bundle/query/load budgets, cache defaults, infrastructure timeouts, and
+  retry timing. Applications expose overrides only through validated runtime
+  configuration; do not redeclare numeric operational policy locally.
+- Shared caching is deny-by-default. Only registered anonymous public
+  projections may emit shared-cache headers, and their keys/tags must vary by
+  every relevant host, market, locale, tenant, organization, principal/role,
+  permission version, or other authorization dimension. Credentials, private
+  data, errors, and permission-dependent responses remain `private, no-store`.
+  Writes must publish deterministic versioned invalidation tags.
 - Every production Web build runs `frontend/scripts/check-client-bundle-budget.mjs`.
   Keep ordinary executable chunks and generated taxonomy data measured
   separately; do not raise either hydration budget without recorded artifact
@@ -697,6 +741,13 @@ France-only happy path is insufficient for market-sensitive work.
   structured-data eligibility, alternates, timestamps, redirects, and exclusion
   reasons. Metadata, sitemaps, schema, and tests must consume it rather than
   invent parallel route rules.
+- The `frontend/src/platform/seo/discovery-governance.ts`,
+  `discovery-structured-data.ts`, and `discovery-referrers.ts` module family is
+  the companion source for crawler-purpose policy, private crawl exclusions,
+  stable SHONGRE. entity identity, answer-engine referral classification,
+  webmaster-token validation, and the supplemental discovery manifest. Keep
+  server-only policy out of client bundles. Search/retrieval access and model-
+  training consent are independent; never infer one from the other.
 - Client pages that declare metadata use `frontend/src/hooks/usePageMeta.ts`;
   `frontend/src/services/seo.service.ts` applies the shared policy output. Never
   set `document.title`, canonical/robots tags, or JSON-LD ad hoc in components.
@@ -710,6 +761,10 @@ France-only happy path is insufficient for market-sensitive work.
 - Only production may be indexable. Lower environments emit noindex/nofollow/
   noarchive behavior, block crawling, and omit public sitemaps. Robots controls
   are not an authorization or privacy boundary.
+- A crawler user-agent is not identity. CDN/WAF rules may grant bot-specific
+  treatment only after validating the request against the provider's current
+  official IP publication; application authorization, private-route denial and
+  rate limits still apply. Do not commit a stale provider IP snapshot.
 - Only active, marketplace-enabled, legally approved, SEO-indexable market
   contexts may emit indexable pages, reciprocal alternates, structured data, or
   sitemap entries. Do not block a production URL in robots while relying on its
@@ -734,6 +789,17 @@ France-only happy path is insufficient for market-sensitive work.
   ratings, reviews, price, currency, availability, seller/employer identity,
   location, dates, salary, or organization facts. Remove misleading active
   offers/jobs when lifecycle changes.
+- Mark user-supplied outbound links `ugc nofollow` in addition to safe new-tab
+  attributes. Never use cloaking, hidden text, purchased links, private blog
+  networks, fabricated reviews/quotes/statistics, keyword stuffing, doorway
+  pages, or scaled low-value generated content. AI-assisted editorial content
+  requires the same named ownership, sourcing, review, freshness and correction
+  process as human-drafted content.
+- `llms.txt` is an optional bounded directory of canonical public references;
+  it never replaces HTML, robots, noindex, authorization, canonicals or
+  sitemaps. Do not expose private data, duplicate volatile listing facts, or
+  manufacture editorial/location pages, authorship, methodology, sources or
+  update dates for search or answer-engine visibility.
 - Do not use sitemap ping services or the Google Indexing API for ordinary
   classifieds, property, vehicles, services, profiles, or category pages. Any
   future qualifying job integration is backend-owned, explicitly authorized,
@@ -921,10 +987,12 @@ sources rather than being copied into this file:
 | OpenAPI workflow and generated inventory                   | `docs/architecture/openapi.md`, `backend/docs/api.md`, `backend/docs/generated/endpoint-inventory.md`                                                        |
 | Multi-country modeling and launch behavior                 | `docs/architecture/multi-country.md`                                                                                                                         |
 | Shared UI and platform boundaries                          | `docs/architecture/cross-platform-ui.md`                                                                                                                     |
+| Delivery and courier marketplace                           | `docs/architecture/delivery-courier.md`                                                                                                                      |
 | Brand source, runtime mappings, and upgrade workflow       | `docs/architecture/brand-assets.md`                                                                                                                          |
 | Mobile architecture and threat model                       | `docs/architecture/mobile.md`, `docs/security/mobile-threat-model.md`                                                                                        |
 | Current mobile/store policies and evidence                 | `docs/compliance/store-requirements.md`, `mobile/store/`                                                                                                     |
 | Analytics, consent, SEO ingestion, and observability       | `docs/architecture/analytics.md`, `frontend/docs/analytics.md`, `backend/docs/analytics.md`                                                                  |
+| Performance, caching, database plans, and scaling          | `docs/architecture/performance-scalability.md`, `infrastructure/monitoring/README.md`                                                                        |
 | CRM, provider, marketing, and prospecting platforms        | `backend/docs/crm-platform.md`, `backend/docs/provider-platform.md`, `backend/docs/marketing-platform.md`, `backend/docs/prospecting-platform.md`            |
 | Docker, Cloudflare, release, backup, and incidents         | `docs/operations/docker-cloudflare-deployment.md`, `docs/operations/release.md`, `docs/operations/backup-restore.md`, `docs/operations/incident-response.md` |
 

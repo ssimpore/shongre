@@ -7,6 +7,7 @@ import type {
   DigitalProvisioningTask,
   DigitalSellerProfile,
 } from "@shongre/contracts/digital-products";
+import { DEFAULT_COUNTRY_CONFIG, getCountryConfig } from "@shongre/contracts";
 import { AppError } from "../../shared/errors/app-error.js";
 import {
   encryptDigitalSecret,
@@ -54,7 +55,7 @@ const UUIDS = {
 function policyFor(marketCode: string): DigitalMarketPolicy | null {
   if (!new Set(["FR", "BE", "CH", "SN", "BF"]).has(marketCode)) return null;
   const active = new Set(["FR", "BE", "CH"]).has(marketCode);
-  const currency = marketCode === "CH" ? "CHF" : "EUR";
+  const currency = getCountryConfig(marketCode)!.currency;
   return {
     id: UUIDS.policy,
     marketCode,
@@ -175,6 +176,9 @@ function entitlement(
   const fulfillmentTypes = input.fulfillmentTypes ?? [
     input.primaryFulfillmentType,
   ];
+  const marketCode = input.marketCode ?? DEFAULT_COUNTRY_CONFIG.code;
+  const currency =
+    getCountryConfig(marketCode)?.currency ?? DEFAULT_COUNTRY_CONFIG.currency;
   const now = "2026-09-01T10:00:00.000Z";
   return {
     id: input.id,
@@ -182,7 +186,7 @@ function entitlement(
     orderItemId: input.orderItemId ?? `demo-item-${input.id.slice(-3)}`,
     listingId: input.listingId ?? `demo-digital-${input.id.slice(-3)}`,
     sellerId: input.sellerId ?? "user_camille",
-    marketCode: input.marketCode ?? "FR",
+    marketCode,
     title: input.title ?? "Produit numérique de démonstration",
     fulfillmentTypes,
     primaryFulfillmentType: input.primaryFulfillmentType,
@@ -190,7 +194,7 @@ function entitlement(
     fulfillmentVersion: input.fulfillmentVersion ?? 1,
     status: input.status,
     paymentStatus: input.paymentStatus,
-    price: input.price ?? { amountMinor: 2_900, currency: "EUR" },
+    price: input.price ?? { amountMinor: 2_900, currency },
     commercialEvidenceId:
       input.commercialEvidenceId ?? "demo-catalog-snapshot-v1",
     availableAt: input.availableAt === undefined ? now : input.availableAt,
@@ -1091,7 +1095,8 @@ export class DemoDigitalProductsStore implements DigitalProductStore {
   async getAdminOverview(marketCode: string) {
     return {
       assets: [...this.assets.values()].filter(
-        (asset) => !asset.listingId || marketCode === "FR",
+        (asset) =>
+          !asset.listingId || this.assetMarkets.get(asset.id) === marketCode,
       ),
       inventory: [...this.batches.entries()].map(([id, batch]) =>
         this.inventory(id, batch),

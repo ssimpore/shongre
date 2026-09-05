@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { DELIVERY_FEATURE_FLAG_KEY } from "./delivery";
 import { MARKET_CODE_LENGTH } from "./primitives";
 
 export const FEATURE_FLAG_CONSTRAINTS = {
@@ -111,3 +112,92 @@ export type FeatureFlagDefinitionUpdate = z.infer<
   typeof featureFlagDefinitionUpdateSchema
 >;
 export type FeatureFlagRuleUpdate = z.infer<typeof featureFlagRuleUpdateSchema>;
+
+/** Flags in this set may only be activated by an exact market-scoped rule. */
+export const MARKET_SCOPED_ONLY_FEATURE_FLAGS = [
+  DELIVERY_FEATURE_FLAG_KEY,
+] as const;
+
+export function isMarketScopedOnlyFeatureFlag(key: string): boolean {
+  return (MARKET_SCOPED_ONLY_FEATURE_FLAGS as readonly string[]).includes(key);
+}
+
+function stableFeatureFlagBucket(key: string, identity: string): number {
+  let value = 2_166_136_261;
+  for (const character of `${key}:${identity}`) {
+    value ^= character.charCodeAt(0);
+    value = Math.imul(value, 16_777_619);
+  }
+  return (value >>> 0) % 100;
+}
+
+export function featureFlagRuleMatches(
+  rule: FeatureFlagRule,
+  context: FeatureFlagContext,
+  nowIso: string,
+): boolean {
+  if (rule.startsAt && rule.startsAt > nowIso) return false;
+  if (rule.endsAt && rule.endsAt <= nowIso) return false;
+  if (rule.marketCode && rule.marketCode !== context.marketCode) return false;
+  if (rule.accountId && rule.accountId !== context.accountId) return false;
+  if (rule.organizationId && rule.organizationId !== context.organizationId)
+    return false;
+  if (
+    isMarketScopedOnlyFeatureFlag(rule.flagKey) &&
+    (!rule.marketCode ||
+      rule.accountId ||
+      rule.organizationId ||
+      rule.marketCode !== context.marketCode)
+  ) {
+    return false;
+  }
+  const identity =
+    context.accountId ||
+    context.organizationId ||
+    context.anonymousId ||
+    `${context.marketCode || "global"}:anonymous`;
+  return (
+    stableFeatureFlagBucket(rule.flagKey, identity) < rule.rolloutPercentage
+  );
+}
+
+export function resolveFeatureFlagEvaluation(input: {
+  key: string;
+  definition: FeatureFlagDefinition | null | undefined;
+  rules: readonly FeatureFlagRule[];
+  context: FeatureFlagContext;
+  evaluatedAt: string;
+}): FeatureFlagEvaluation {
+  const { key, definition, rules, context, evaluatedAt } = input;
+  if (
+    !definition ||
+    definition.exposure !== "public" ||
+    definition.lifecycle !== "active" ||
+    (definition.expiresAt && definition.expiresAt <= evaluatedAt)
+  ) {
+    return { key, enabled: false, source: "safe_default", evaluatedAt };
+  }
+  const rule = [...rules]
+    .sort((left, right) => right.priority - left.priority)
+    .find((candidate) =>
+      featureFlagRuleMatches(candidate, context, evaluatedAt),
+    );
+  if (rule) {
+    return {
+      key,
+      enabled: rule.enabled,
+      source: "rule",
+      ruleId: rule.id,
+      evaluatedAt,
+    };
+  }
+  if (isMarketScopedOnlyFeatureFlag(key)) {
+    return { key, enabled: false, source: "safe_default", evaluatedAt };
+  }
+  return {
+    key,
+    enabled: definition.defaultEnabled,
+    source: "default",
+    evaluatedAt,
+  };
+}

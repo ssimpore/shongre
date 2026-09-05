@@ -1,11 +1,18 @@
 import type { VehiclePrivate } from "@shongre/contracts/auto";
 import type { CourseOffer, TutorProfile } from "@shongre/contracts/courses";
 import type { JobPostingDetail } from "@shongre/contracts/employment";
+import {
+  DELIVERY_TAXONOMY_CATEGORY_ID,
+  type DeliveryPublicRequest,
+} from "@shongre/contracts/delivery";
 import type { PropertyPrivate } from "@shongre/contracts/real-estate";
+import { getCountryConfig } from "@shongre/contracts";
 import type { Listing, ListingCondition, ListingStatus } from "../../types";
+import { webBrandAssets } from "@shongre/brand/web";
+import { DEFAULT_MARKET_CURRENCY } from "../../configuration/market-baseline";
 
 export type DiscoveryVertical =
-  "automotive" | "employment" | "real_estate" | "tutoring";
+  "automotive" | "delivery" | "employment" | "real_estate" | "tutoring";
 
 const EMPLOYMENT_FALLBACK_IMAGE =
   "https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&w=960&q=82";
@@ -15,6 +22,98 @@ const AUTO_FALLBACK_IMAGE =
   "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=960&q=82";
 const IMMO_FALLBACK_IMAGE =
   "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=960&q=82";
+
+export function projectDeliveryRequest(
+  request: DeliveryPublicRequest,
+): Listing {
+  const publishedAt = request.publishedAt || request.expiresAt;
+  const country = getCountryConfig(request.marketCode);
+  if (!country)
+    throw new Error(`Unsupported delivery market: ${request.marketCode}`);
+  const currency = request.budget?.currency || country.currency;
+  const photo = {
+    id: `delivery_${request.id}_brand`,
+    url: webBrandAssets.icon.primary.src,
+    isCover: true,
+    alt: "",
+  };
+  return {
+    id: `delivery_${request.id}`,
+    title: request.title,
+    description: request.description,
+    price: (request.budget?.amountMinor || 0) / 100,
+    currency,
+    pricePresentation: {
+      kind: "service_rate",
+      visibility: request.budget ? "public" : "undisclosed",
+      minimumAmountMinor: request.budget?.amountMinor,
+      maximumAmountMinor: request.budget?.amountMinor,
+      currency,
+      period: "total",
+    },
+    isNegotiable: false,
+    isFreeDonation: false,
+    fulfillmentTypes: ["PHYSICAL"],
+    requiresPhysicalDelivery: true,
+    categorySlug: "services",
+    subCategorySlug: DELIVERY_TAXONOMY_CATEGORY_ID,
+    categoryLabel: "Services",
+    subCategoryLabel: "Livraison & coursier",
+    condition: "not_applicable",
+    sellerId: `delivery-requester:${request.id}`,
+    sellerName: request.requester.displayName,
+    sellerType: "individual",
+    publisherType: "private",
+    publisherVerificationStatus: request.requester.verified
+      ? "identity_verified"
+      : "unverified",
+    sellerRating: 0,
+    sellerReviewCount: 0,
+    sellerIsVerified: request.requester.verified,
+    sellerCity: request.pickupLocality.city,
+    sellerPostalCode: request.pickupLocality.postalCode,
+    city: request.pickupLocality.city,
+    postalCode: request.pickupLocality.postalCode,
+    department: "",
+    region: "",
+    photos: [photo],
+    coverImageUrl: photo.url,
+    deliveryOptions: [],
+    isOnlinePaymentAvailable: false,
+    isReservable: false,
+    attributes: {
+      verticalType: "delivery",
+      verticalEntityId: request.id,
+      canonicalPath: `/livraison/demande/${request.id}`,
+      categoryPath: [
+        "services",
+        "services.local_services",
+        DELIVERY_TAXONOMY_CATEGORY_ID,
+      ],
+      originType: request.origin,
+      pickupCity: request.pickupLocality.city,
+      pickupPostalCode: request.pickupLocality.postalCode,
+      dropoffCity: request.dropoffLocality.city,
+      dropoffPostalCode: request.dropoffLocality.postalCode,
+      packageType: request.package.type,
+      approximateWeightGrams: request.package.approximateWeightGrams,
+      handlingRequirements: request.package.handlingRequirements,
+      requiredVehicleType: request.package.requiredVehicleType,
+      applicationCount: request.applicationCount,
+    },
+    status: request.status === "open" ? "active" : "archived",
+    createdAt: publishedAt,
+    updatedAt: publishedAt,
+    expiresAt: request.expiresAt,
+    viewsCount: 0,
+    favoritesCount: 0,
+    contactCount: 0,
+    publishedAt,
+    organicFreshnessAt: publishedAt,
+    marketCode: request.marketCode,
+    marketCodes: [request.marketCode],
+  };
+}
 
 function expiresAfter(reference: string, days = 90): string {
   const timestamp = new Date(reference).getTime();
@@ -341,7 +440,9 @@ export function projectEmploymentJob(job: JobPostingDetail): Listing {
   const contractCode = idSuffix(job.contractTypeId);
   const salaryFrequency = idSuffix(job.salary?.frequencyId);
   const salaryCurrency =
-    job.salary?.minimum?.currency || job.salary?.maximum?.currency || "EUR";
+    job.salary?.minimum?.currency ||
+    job.salary?.maximum?.currency ||
+    DEFAULT_MARKET_CURRENCY;
 
   return {
     id: listingId,
@@ -490,7 +591,7 @@ export function projectCourseOffer(
     .sort((a, b) => a.price.amountMinor - b.price.amountMinor);
   const price = activePrices[0]?.price || {
     amountMinor: 0,
-    currency: "EUR",
+    currency: DEFAULT_MARKET_CURRENCY,
   };
   const imageUrls = [tutor.avatarUrl, ...tutor.mediaUrls].filter(
     (url): url is string => Boolean(url),

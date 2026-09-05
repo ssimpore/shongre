@@ -50,9 +50,7 @@ test.describe("Shongre Immo", () => {
     await page.getByRole("button", { name: "Créer une alerte" }).click();
     await expect
       .poll(() =>
-        page.evaluate(() =>
-          localStorage.getItem("shongre_saved_searches_v2"),
-        ),
+        page.evaluate(() => localStorage.getItem("shongre_saved_searches_v2")),
       )
       .toContain("real_estate");
     expect(await page.locator("body").innerText()).not.toContain(
@@ -104,6 +102,150 @@ test.describe("Shongre Immo", () => {
     await expect(
       page.locator('head script[type="application/ld+json"]'),
     ).toHaveCount(1);
+  });
+
+  test("desktop property header replaces the scrolled summary and reuses its primary action", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await usePersona(page, "individual_buyer");
+    await page.goto("/immo/bien/maison-familiale-ecully-jardin", {
+      waitUntil: "domcontentloaded",
+    });
+    await waitForStableLayout(page);
+
+    const originalHeader = page.getByTestId("immo-original-listing-header");
+    const stickyHeader = page.getByTestId("immo-desktop-sticky-header");
+    await expect(originalHeader).toBeVisible();
+    await expect(stickyHeader).toHaveAttribute("data-state", "hidden");
+    await expect(stickyHeader).toBeHidden();
+
+    await page.getByRole("textbox", { name: "Nom" }).fill("Thomas Laurent");
+    await page
+      .getByRole("textbox", { name: "E-mail" })
+      .fill("thomas.laurent@example.test");
+    await page.getByRole("checkbox").check();
+
+    const placeOriginalBottom = async (gapFromChrome: number) => {
+      await page.evaluate((gap) => {
+        const original = document.querySelector<HTMLElement>(
+          '[data-testid="immo-original-listing-header"]',
+        );
+        const chrome = document.querySelector<HTMLElement>(
+          '[data-environment-header-stack="true"]',
+        );
+        if (!original || !chrome) throw new Error("Property headers not found");
+        window.scrollBy(
+          0,
+          original.getBoundingClientRect().bottom -
+            chrome.getBoundingClientRect().bottom -
+            gap,
+        );
+      }, gapFromChrome);
+    };
+
+    // The replacement stays hidden while any of the original summary remains
+    // below the global chrome, then appears as soon as it has fully passed.
+    await placeOriginalBottom(2);
+    await expect(stickyHeader).toHaveAttribute("data-state", "hidden");
+    await page.evaluate(() => window.scrollBy(0, 8));
+    await expect(stickyHeader).toHaveAttribute("data-state", "visible");
+    await expect(stickyHeader).toBeVisible();
+    expect(
+      await page.evaluate(() => {
+        const original = document.querySelector<HTMLElement>(
+          '[data-testid="immo-original-listing-header"]',
+        );
+        const chrome = document.querySelector<HTMLElement>(
+          '[data-environment-header-stack="true"]',
+        );
+        return Boolean(
+          original &&
+          chrome &&
+          original.getBoundingClientRect().bottom <=
+            chrome.getBoundingClientRect().bottom,
+        );
+      }),
+    ).toBe(true);
+
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await expect(stickyHeader).toHaveAttribute("data-state", "hidden");
+    await expect(stickyHeader).toBeHidden();
+
+    await placeOriginalBottom(-8);
+    await expect(stickyHeader).toHaveAttribute("data-state", "visible");
+    const stickyCta = stickyHeader.getByRole("button", {
+      name: "Envoyer la demande",
+    });
+    await expect(stickyCta).toHaveAttribute("form", "immo-property-lead-form");
+    await expect(stickyCta).toHaveAttribute(
+      "data-marketplace-action",
+      "message.send",
+    );
+    await stickyCta.click();
+    await expect(
+      stickyHeader.getByRole("button", { name: "Demander ce créneau" }),
+    ).toBeVisible();
+    await expect(page.getByText("Demande envoyée")).toBeVisible();
+  });
+
+  test("compact property header remains desktop-only", async ({ page }) => {
+    await usePersona(page, "guest");
+
+    for (const viewport of [
+      { width: 390, height: 844 },
+      { width: 820, height: 900 },
+    ]) {
+      await page.setViewportSize(viewport);
+      await page.goto("/immo/bien/maison-familiale-ecully-jardin", {
+        waitUntil: "domcontentloaded",
+      });
+      await waitForStableLayout(page);
+      const stickyHeader = page.getByTestId("immo-desktop-sticky-header");
+      await page.evaluate(() =>
+        window.scrollTo(0, document.documentElement.scrollHeight),
+      );
+      await expect(stickyHeader).toHaveAttribute("data-state", "hidden");
+      await expect(stickyHeader).toBeHidden();
+    }
+  });
+
+  test("compact property header honors reduced-motion preferences", async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await usePersona(page, "guest");
+    await page.goto("/immo/bien/maison-familiale-ecully-jardin", {
+      waitUntil: "domcontentloaded",
+    });
+    await waitForStableLayout(page);
+
+    const stickyHeader = page.getByTestId("immo-desktop-sticky-header");
+    await page.evaluate(() => {
+      const original = document.querySelector<HTMLElement>(
+        '[data-testid="immo-original-listing-header"]',
+      );
+      const chrome = document.querySelector<HTMLElement>(
+        '[data-environment-header-stack="true"]',
+      );
+      if (!original || !chrome) throw new Error("Property headers not found");
+      window.scrollBy(
+        0,
+        original.getBoundingClientRect().bottom -
+          chrome.getBoundingClientRect().bottom +
+          8,
+      );
+    });
+    await expect(stickyHeader).toHaveAttribute("data-state", "visible");
+    const transitionDurations = await stickyHeader.evaluate((element) =>
+      getComputedStyle(element)
+        .transitionDuration.split(",")
+        .map((duration) => Number.parseFloat(duration)),
+    );
+    expect(transitionDurations.every((duration) => duration <= 0.001)).toBe(
+      true,
+    );
   });
 
   test("property advertiser identity opens an owner profile or agency storefront", async ({

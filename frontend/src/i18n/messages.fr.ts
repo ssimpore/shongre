@@ -1,4 +1,5 @@
 import type { DigitalMessageKey } from "./digital.catalogue.fr";
+import type { DeliveryMessageKey } from "./delivery.catalogue.fr";
 
 /**
  * The source catalogue. Every key the product uses is declared here first, and
@@ -16,6 +17,7 @@ import type { DigitalMessageKey } from "./digital.catalogue.fr";
 export const messagesFr = {
   // --- Generic actions and states -----------------------------------------
   "common.loading": "Chargement…",
+  "common.home": "Accueil",
   "common.retry": "Réessayer",
   "common.cancel": "Annuler",
   "common.save": "Enregistrer",
@@ -61,7 +63,6 @@ export const messagesFr = {
   "watch.empty.description":
     "Suivez une baisse de prix, un vendeur ou une recherche pour la retrouver ici.",
   "watch.empty.action": "Explorer les annonces",
-  "watch.save.loginRequired": "Connectez-vous pour créer une alerte.",
   "watch.save.success": "Recherche enregistrée avec alertes activées.",
   "watch.save.title": "Recherche sauvegardée",
   "watch.save.error": "Impossible de créer cette alerte.",
@@ -359,6 +360,7 @@ export const messagesFr = {
 
   // --- Footer ---------------------------------------------------------------
   "footer.findTutor": "Trouver un professeur",
+  "footer.about": "À propos",
   "footer.offerCourses": "Proposer des cours",
   "footer.legalHeading": "Informations légales",
   "footer.terms": "CGU",
@@ -393,6 +395,19 @@ export const messagesFr = {
   "footer.appPitch": "Emportez Shongre partout avec vous.",
   "footer.downloadFrom": "Télécharger sur",
   "footer.comingToStore": "Bientôt sur",
+  "about.eyebrow": "Notre identité",
+  "about.title": "À propos de SHONGRE.",
+  "about.introduction":
+    "SHONGRE. est une place de marché locale conçue pour rendre les échanges entre particuliers et professionnels plus simples et plus lisibles.",
+  "about.missionTitle": "Notre mission",
+  "about.missionBody":
+    "Aider chacun à publier, découvrir et comparer des offres utiles dans son marché, avec un contexte local clair et des parcours adaptés à chaque catégorie.",
+  "about.trustTitle": "La confiance par conception",
+  "about.trustBody":
+    "Les informations visibles, les statuts, les contrôles et les moyens de contact sont présentés sans promesse artificielle. Les règles de sécurité et de confidentialité restent accessibles depuis chaque page.",
+  "about.marketsTitle": "Une plateforme multi-marché",
+  "about.marketsBody":
+    "Chaque pays dispose de son contexte de marché, de sa devise, de ses règles et de ses disponibilités. Une ouverture locale n’est annoncée comme active qu’après validation des prérequis correspondants.",
   "footer.downloadApp": "Télécharger Shongre sur {store}",
   "footer.followHeading": "Suivez Shongre",
   "footer.followOn": "Suivre Shongre sur {network}",
@@ -4066,6 +4081,27 @@ export const messagesFr = {
     "Découvrir les offres Pro",
   "security.requirePermission.retourAMonCompte": "Retour à mon compte",
   "security.requirePermission.retourALAccueil": "Retour à l'accueil",
+  "security.requirePermission.verificationRequiredTitle":
+    "Vérification requise",
+  "security.requirePermission.verificationRequiredMessage":
+    "Vérifiez uniquement les informations nécessaires à cette action pour continuer.",
+  "security.requirePermission.continueVerification":
+    "Continuer la vérification",
+  "security.requirePermission.professionalFeatureTitle":
+    "Fonctionnalité professionnelle",
+  "security.requirePermission.professionalFeatureMessage":
+    "Votre compte ne dispose pas encore de l’offre commerciale nécessaire. Vos droits administratifs ne sont pas affectés par un changement d’offre.",
+  "security.requirePermission.marketUnavailableTitle":
+    "Indisponible sur ce marché",
+  "security.requirePermission.marketUnavailableMessage":
+    "Cette action n’est pas proposée dans le marché sélectionné ou ne fait pas partie de votre périmètre autorisé.",
+  "security.requirePermission.staffSeparationTitle": "Accès Staff séparé",
+  "security.requirePermission.staffSeparationMessage":
+    "Les outils internes et les actions client utilisent des espaces distincts. Contactez un propriétaire si votre affectation doit évoluer.",
+  "security.requirePermission.featureUnavailableTitle":
+    "Fonctionnalité indisponible",
+  "security.requirePermission.featureUnavailableMessage":
+    "Cette fonctionnalité n’est pas activée pour votre contexte actuel.",
 
   // --- publishCta ---
   "publishCta.accountSuspended": "Compte suspendu",
@@ -4684,6 +4720,10 @@ export const messagesFr = {
   "admin.immo.listingsTableLabel": "Tableau des annonces immobilières",
   "immo.propertyDetail.individualAdvertiser": "Particulier",
   "immo.propertyDetail.professionalAdvertiser": "Professionnel",
+  "immo.propertyDetail.stickyHeaderLabel":
+    "Résumé du bien et action principale",
+  "immo.propertyDetail.sendRequest": "Envoyer la demande",
+  "immo.propertyDetail.requestAppointment": "Demander ce créneau",
 
   "admin.solutions.catalogTableLabel": "Tableau du catalogue de solutions",
   "admin.monetization.firstTableLabel": "Tableau des grilles de commission",
@@ -5802,10 +5842,15 @@ export const messagesFr = {
   "admin.adminOverviewPage.openItems": "dossiers ouverts",
   "admin.adminOverviewPage.traiterSignalementsCount":
     "Traiter les signalements ({count})",
+
+  // --- Delivery & courier -------------------------------------------------
+  "delivery.nav": "Livraison & coursier",
+  "delivery.courierWorkspace": "Espace coursier",
 } as const;
 
 /** The keys literally stored in a catalogue, plural variants included. */
-export type CatalogueKey = keyof typeof messagesFr | DigitalMessageKey;
+export type CatalogueKey =
+  keyof typeof messagesFr | DigitalMessageKey | DeliveryMessageKey;
 
 /**
  * The base key of a countable message.

@@ -192,7 +192,7 @@ async function stripeConnectRequest(
       "Stripe-Version": "2026-02-25.clover",
       ...(init.headers || {}),
     },
-    signal: AbortSignal.timeout(10_000),
+    signal: AbortSignal.timeout(config.performance.providerRequestTimeoutMs),
   });
   const payload: any = await response.json().catch(() => ({}));
   if (!response.ok) {

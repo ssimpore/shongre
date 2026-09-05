@@ -6,6 +6,9 @@ rollout instructions are documented in
 The provider-neutral analytics, product intelligence, SEO ingestion,
 consent/privacy, reporting and observability architecture is documented in
 [`docs/architecture/analytics.md`](docs/architecture/analytics.md).
+Technical SEO, answer-engine discovery, crawler governance, entity identity and
+the live crawl-audit workflow are documented in
+[`docs/architecture/seo-geo-discovery.md`](docs/architecture/seo-geo-discovery.md).
 The six-environment deployment, domain, Supabase, provider, CI/CD, DNS and
 rollback model is documented in
 [`docs/architecture/environments.md`](docs/architecture/environments.md).

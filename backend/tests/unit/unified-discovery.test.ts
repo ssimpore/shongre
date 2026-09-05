@@ -1,7 +1,12 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import { DEFAULT_DISCOVERY_CONFIGURATION } from "@shongre/shared";
+import { DELIVERY_TAXONOMY_CATEGORY_ID } from "@shongre/contracts/delivery";
 import { DemoListingRepository } from "../../src/infrastructure/database/repositories/listing.repository.js";
 import { DemoDiscoveryConfigurationRepository } from "../../src/infrastructure/database/repositories/discovery-configuration.repository.js";
-import { UnifiedDiscoveryService } from "../../src/modules/discovery/discovery.service.js";
+import {
+  UnifiedDiscoveryService,
+  deliveryRequestToDiscoveryListing,
+} from "../../src/modules/discovery/discovery.service.js";
 import type { Listing } from "../../src/shared/types/index.js";
 
 const NOW = "2026-08-23T10:00:00.000Z";
@@ -107,5 +112,69 @@ describe("UnifiedDiscoveryService", () => {
     });
     expect(unified.items).toHaveLength(2);
     expect(privateOnly.items.map((item) => item.id)).toEqual(["private"]);
+  });
+
+  it("adds only gated public-safe delivery projections to Services discovery", async () => {
+    const request = {
+      id: "418711cb-aee0-4fa3-a102-8ec6ea2a2cb8",
+      slug: "livraison-paris-boulogne",
+      marketCode: "FR",
+      origin: "order" as const,
+      status: "open" as const,
+      title: "Livrer un petit meuble",
+      description: "Transport local d'un meuble protégé.",
+      pickupLocality: { city: "Paris", postalCode: "75011" },
+      dropoffLocality: {
+        city: "Boulogne-Billancourt",
+        postalCode: "92100",
+      },
+      pickupWindow: {
+        startsAt: "2027-01-15T09:00:00.000Z",
+        endsAt: "2027-01-15T11:00:00.000Z",
+      },
+      deliveryWindow: {
+        startsAt: "2027-01-15T12:00:00.000Z",
+        endsAt: "2027-01-15T16:00:00.000Z",
+      },
+      package: {
+        type: "Petit meuble",
+        count: 1,
+        approximateWeightGrams: 18_000,
+        handlingRequirements: ["Fragile"],
+        requiredVehicleType: "van" as const,
+        loadingAssistanceRequired: true,
+      },
+      budget: { amountMinor: 4_500, currency: "EUR" },
+      requester: { displayName: "Camille", verified: false },
+      applicationCount: 1,
+      expiresAt: "2027-01-14T20:00:00.000Z",
+      publishedAt: "2026-09-05T12:00:00.000Z",
+      version: 2,
+    };
+    const projection = deliveryRequestToDiscoveryListing(request);
+    expect(projection.attributes.canonicalPath).toBe(
+      `/livraison/demande/${request.id}`,
+    );
+    expect(JSON.stringify(projection)).not.toContain("sourceOrderId");
+    expect(JSON.stringify(projection)).not.toContain("street");
+
+    const service = new UnifiedDiscoveryService(
+      new DemoListingRepository({}),
+      new DemoDiscoveryConfigurationRepository(),
+      DEFAULT_DISCOVERY_CONFIGURATION,
+      {
+        searchPublic: vi.fn().mockResolvedValue({ items: [request] }),
+      } as never,
+      { evaluatePublic: vi.fn().mockResolvedValue({ enabled: true }) } as never,
+    );
+    const result = await service.search({
+      marketCode: "FR",
+      categoryId: "services",
+    });
+    expect(result.items).toHaveLength(1);
+    expect(result.items[0]).toMatchObject({
+      listingIntent: "SERVICE_REQUEST",
+      categoryId: DELIVERY_TAXONOMY_CATEGORY_ID,
+    });
   });
 });

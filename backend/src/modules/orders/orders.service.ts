@@ -110,7 +110,13 @@ export class OrdersService {
 
   async getOrderById(orderId: string): Promise<Transaction | null> {
     const order = await this.orderRepo.findById(orderId);
-    return order ? this.toParticipantOrder(order) : null;
+    if (!order) return null;
+    const listing =
+      order.listing ?? (await this.listingRepo.findById(order.listingId));
+    return this.toParticipantOrder({
+      ...order,
+      ...(listing ? { listing } : {}),
+    });
   }
 
   async getPurchases(userId: string): Promise<Transaction[]> {

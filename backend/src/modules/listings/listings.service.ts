@@ -55,6 +55,7 @@ import {
   digitalProductsService,
   DigitalProductsService,
 } from "../digital-products/digital-products.service.js";
+import { DELIVERY_TAXONOMY_CATEGORY_ID } from "@shongre/contracts/delivery";
 
 export interface PublicationDraftInput {
   title?: string;
@@ -472,6 +473,13 @@ export class ListingsService {
       throw new AppError({
         code: "VALIDATION_ERROR",
         message: "Titre et catégorie obligatoires pour publier une annonce.",
+      });
+    }
+    if (draft.categoryId === DELIVERY_TAXONOMY_CATEGORY_ID) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message:
+          "Les demandes de livraison doivent utiliser le parcours de livraison dédié.",
       });
     }
 

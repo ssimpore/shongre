@@ -26,7 +26,10 @@ import { deepMergeOverrides } from "../domains/market/market.resolver";
 import { normalizeListingTaxonomyIdentity } from "../domains/taxonomy/taxonomy.identity";
 import { routes } from "../configuration/routes";
 import { telemetryService } from "./telemetry.service";
-import { DEFAULT_MARKET_CODE } from "../configuration/market-baseline";
+import {
+  DEFAULT_MARKET_CODE,
+  DEFAULT_MARKET_CURRENCY,
+} from "../configuration/market-baseline";
 import { getCountryConfig } from "@shongre/contracts";
 import { staffRoleFromLegacyRole } from "@shongre/contracts/access-control";
 
@@ -910,7 +913,10 @@ class StorageService {
       );
       const country = getCountryConfig(rawMarket.code);
       const currency = String(
-        rawMarket.currency || seed?.currency || country?.currency || "EUR",
+        rawMarket.currency ||
+          seed?.currency ||
+          country?.currency ||
+          DEFAULT_MARKET_CURRENCY,
       ).toUpperCase();
       const supportedCurrencies = Array.from(
         new Set(

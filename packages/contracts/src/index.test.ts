@@ -30,6 +30,21 @@ describe("shared public contracts", () => {
       reportInputSchema.safeParse({ reason: "other", details: "Trop court" })
         .success,
     ).toBe(false);
+    expect(
+      reportInputSchema.safeParse({
+        deliveryRequestId: "418711cb-aee0-4fa3-a102-8ec6ea2a2cb8",
+        reason: "prohibited",
+        details: "Le colis décrit semble appartenir à une catégorie interdite.",
+      }).success,
+    ).toBe(true);
+    expect(
+      reportInputSchema.safeParse({
+        listingId: "listing-1",
+        deliveryRequestId: "418711cb-aee0-4fa3-a102-8ec6ea2a2cb8",
+        reason: "other",
+        details: "Un signalement ne doit viser qu’une seule ressource.",
+      }).success,
+    ).toBe(false);
   });
 
   it("limits deletion reasons while requiring reauthentication", () => {

@@ -2326,6 +2326,39 @@ export const INITIAL_MESSAGES: Record<string, import("../types").Message[]> = {
 
 export const INITIAL_TRANSACTIONS: Transaction[] = [
   {
+    id: "7d3e760f-4ad7-47e5-8ca5-2a4ea59a3151",
+    code: "SHG-DEL001",
+    marketCode: "FR",
+    currency: "EUR",
+    listingId: "list-101",
+    listingTitle: "Fauteuil Lounge Vintage Scandinave en Chêne Massif",
+    listingPrice: 360,
+    listingPhotoUrl:
+      "https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?auto=format&fit=crop&w=400&q=80",
+    listingCoverImageUrl:
+      "https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?auto=format&fit=crop&w=400&q=80",
+    categorySlug: "maison-jardin",
+    buyerId: "user_thomas",
+    buyerName: "Thomas Laurent",
+    sellerId: "user_camille",
+    sellerName: "Camille Martin",
+    sellerType: "individual",
+    amount: 360,
+    protectionFee: 15.1,
+    shippingFee: 0,
+    totalAmount: 375.1,
+    deliveryMethod: "home_delivery",
+    status: "escrow_funded",
+    deliveryAddress: {
+      fullName: "Thomas Laurent",
+      street: "15 rue Saint-Ferréol",
+      postalCode: "13001",
+      city: "Marseille",
+    },
+    createdAt: "2026-09-05T09:00:00.000Z",
+    updatedAt: "2026-09-05T09:00:00.000Z",
+  },
+  {
     id: "tx-901",
     code: "SHG-849201",
     listingId: "list-101",

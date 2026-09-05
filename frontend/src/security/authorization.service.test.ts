@@ -38,6 +38,27 @@ describe("AuthorizationService - RBAC Permissions & Security Rules", () => {
     ).toBe(true);
   });
 
+  it("treats an empty server capability projection as authoritative", () => {
+    const buyer: Partial<UserProfile> = {
+      id: "server-restricted-buyer",
+      role: "individual_buyer",
+      primaryRole: "buyer",
+      accountType: "individual",
+      status: "active",
+      capabilities: [],
+    };
+
+    expect(
+      authorizationService.can(buyer as UserProfile, "listing.create"),
+    ).toBe(false);
+    expect(
+      authorizationService.canAccessRoute(
+        buyer as UserProfile,
+        "publishListing",
+      ),
+    ).toBe(false);
+  });
+
   it("enforces resource ownership when editing an announcement", () => {
     const seller: Partial<UserProfile> = {
       id: "user-seller-1",
@@ -63,6 +84,59 @@ describe("AuthorizationService - RBAC Permissions & Security Rules", () => {
         otherListing,
       ),
     ).toBe(false);
+    expect(
+      authorizationService.can(seller as UserProfile, "listing.update.own", {
+        id: "list-without-owner-context",
+      }),
+    ).toBe(false);
+  });
+
+  it("explains organization, verification, subscription, feature and market denials", () => {
+    const professional = {
+      id: "pro-1",
+      role: "pro_seller",
+      primaryRole: "pro_seller",
+      accountType: "professional",
+      professionalVertical: "generic",
+      status: "active",
+      activePlanId: "free",
+      country: "FR",
+      marketScope: { countries: ["FR"] },
+      isIdentityVerified: false,
+    } as UserProfile;
+
+    expect(
+      authorizationService.decision(professional, "listing.update.own", {
+        organizationId: "org-other",
+        authorizedOrganizationIds: ["org-own"],
+      }).denialReason,
+    ).toBe("resource_scope");
+    expect(
+      authorizationService.decision(professional, "listing.create", undefined, {
+        requiredVerification: ["identity"],
+      }).denialReason,
+    ).toBe("verification_required");
+    expect(
+      authorizationService.decision(professional, "listing.create", undefined, {
+        entitlement: "bulkImportExport",
+      }).denialReason,
+    ).toBe("entitlement_required");
+    expect(
+      authorizationService.decision(professional, "listing.create", undefined, {
+        featureFlag: "listing-v2",
+        enabledFeatureFlags: [],
+      }).denialReason,
+    ).toBe("feature_disabled");
+    expect(
+      authorizationService.decision(professional, "listing.create", undefined, {
+        country: "ZZ",
+      }).denialReason,
+    ).toBe("market_unavailable");
+    expect(
+      authorizationService.decision(professional, "listing.create", undefined, {
+        country: "SN",
+      }).denialReason,
+    ).toBe("market_unavailable");
   });
 
   it("restricts suspended users from creating listings or orders", () => {

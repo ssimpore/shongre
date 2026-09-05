@@ -146,7 +146,7 @@ export class GeminiAIProvider implements IAIProvider {
                 },
               },
             }),
-            signal: AbortSignal.timeout(12_000),
+            signal: AbortSignal.timeout(config.performance.aiRequestTimeoutMs),
           },
         );
         const payload: any = await response.json().catch(() => ({}));

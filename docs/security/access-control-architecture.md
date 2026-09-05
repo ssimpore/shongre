@@ -26,6 +26,23 @@ The source-of-truth policy is
 `packages/contracts/src/access-control.ts`. Frontend role metadata and backend
 legacy helpers derive from it; they do not maintain separate grants.
 
+The canonical evaluator is `evaluateAuthorization(actor, requirement)`. It
+combines an effective capability with account type and status, Staff state,
+professional vertical, ownership or organization membership, market scope and
+availability, verification dimensions, commercial entitlement, and feature
+policy. Every contextual fact can only narrow an already-effective capability;
+none can manufacture authority. Missing required facts deny access.
+
+Backend request guards pass the capability projection reloaded for the current
+session as `effectiveCapabilities`. An empty projection is authoritative and is
+never reconstructed from a role label. Account lifecycle and Staff/customer
+plane separation remain structural restrictions, so a stale projection cannot
+restore authority removed by a suspension, ban, closure, or Staff transition.
+Authentication and session responses expose that same non-secret capability
+projection to Web and mobile; both clients treat even an empty array as
+authoritative. They use the evaluator only to present or stop unavailable
+actions; backend domain services and RLS remain the authorization boundary.
+
 ## B. Problems found
 
 - Frontend and backend role matrices drifted independently.
@@ -73,6 +90,21 @@ legacy helpers derive from it; they do not maintain separate grants.
 - Backend principals reload current account state and effective capabilities
   per request instead of trusting role/capability claims in the token.
 - Sensitive admin actions require exact capabilities and audited reasons.
+- Request-edge `requireAuthorization()` produces stable denial reasons for
+  account, Staff, capability, verification, entitlement, feature, market, and
+  resource failures. Domain services repeat action-specific step-up checks.
+- Web route guards now show context-specific sign-in, verification, upgrade,
+  market, and support remediation without exposing foreign-resource existence.
+- Demo listing and transaction mutations use customer capabilities plus
+  ownership; legacy `admin`/`super_admin` role labels no longer bypass seller or
+  buyer ownership.
+- Two unreachable demo dispute-resolution implementations were removed; dispute
+  decisions remain in the backend-authoritative, capability-checked workflow.
+- Mobile publication passes the authenticated actor through the same policy in
+  both demo and HTTP modes before contacting the server.
+- Self-service profile updates use one strict typed allowlist in the shared
+  contract and OpenAPI. Unknown fields such as role, status, capability, and
+  verification are rejected rather than silently accepted.
 - Migration `00023_canonical_access_control.sql` backfills dimensions, creates
   capability grants, replaces core RLS policies, restricts profile column
   updates, and publishes a privacy-safe profile view.
@@ -105,6 +137,13 @@ Lifecycle filtering runs after all grants and overrides. Restricted and
 suspended accounts retain only the small safe set defined by the shared policy;
 banned and closed accounts receive no authenticated capabilities.
 
+Stable contextual denial reasons distinguish unauthenticated, account-status,
+inactive-Staff, Staff/customer separation, missing capability, account-type,
+professional-vertical, verification, entitlement, feature, market, and resource
+scope failures. They map to a bounded remediation (`sign_in`, `verify`,
+`upgrade`, `switch_market`, or `contact_support`) rather than leaking policy or
+resource data.
+
 ## E. Professional vertical model
 
 All professionals receive the common customer communication, account-safety,
@@ -135,7 +174,7 @@ vertical grant alone never grants access to another organization.
 | Operations      | provider health/read                                 | moderation, finance, Staff administration        |
 | Commercial      | CRM and commercial-rule editing                      | moderation, finance, platform configuration      |
 | Content manager | taxonomy and marketing content                       | listing promotion, users, finance, moderation    |
-| Market manager  | market/vertical configuration in assigned markets    | finance and Staff administration                 |
+| Market manager  | market/vertical configuration                        | finance and Staff administration                 |
 | Admin           | platform configuration and staff administration      | moderation and refunds unless separately granted |
 | Owner           | permission governance and provider credentials       | moderation and refunds unless separately granted |
 
@@ -147,8 +186,11 @@ receive neither customer nor employee capabilities and cannot establish a new
 session. Every Staff role includes `staff.internal.access`; narrower
 capabilities continue to gate each internal tool. Customer capabilities are
 not displayed in a Staff override projection and cannot be directly granted to
-Staff. Non-owner Staff operations are also constrained by assigned market
-scope.
+Staff. The shared evaluator supports assigned-market restrictions and denies a
+contextual decision when a required Staff market scope is missing. Persisted
+per-Staff market assignments are not yet part of `staff_memberships`, however,
+so current backend Staff roles remain platform-wide unless a domain supplies an
+authoritative scope explicitly.
 
 `admin` and `owner` receive `admin.permissions.manage`. Capability overrides
 are separate from Staff membership changes: they use complete canonical grant
@@ -229,7 +271,7 @@ remain neutral Staff-safe public surfaces.
 | `PUT /admin/users/:id/capability-overrides` | `admin.permissions.manage`                         | no self/owner escalation; optimistic version; atomic audit + session revocation                    |
 | `PUT /admin/users/:id/status`               | read + action-specific restrict/suspend/reactivate | no self-status mutation; reason + audit                                                            |
 | `PUT /admin/users/:id/staff-status`         | `admin.staff.manage`                               | active Staff + MFA + recent auth; no self-management; owner protection; audit + session revocation |
-| `PUT /admin/users/:id/verification`         | `user.verify`                                      | professional target; note + audit                                                                  |
+| `PUT /admin/users/:id/verification`         | `user.verify`                                      | recent authentication; professional target; note + audit                                           |
 | `GET /admin/reports`                        | `report.review`                                    | staff only                                                                                         |
 | Resolve report: dismiss                     | `report.review`                                    | reason + audit                                                                                     |
 | Resolve report: remove listing              | `report.review` + `moderation.action`              | reason + audit                                                                                     |
@@ -242,6 +284,16 @@ remain neutral Staff-safe public surfaces.
 Every backend route must declare `public`, `authenticated`, or an explicit
 permission when registered. Capability checks use capabilities recomputed from
 the current database profile, not client-provided claims.
+
+France is the default configured marketplace, not a security fallback. Customer
+operations additionally require the target market's marketplace policy to be
+enabled. In scoped decisions, non-owner Staff need an explicit market assignment
+and owner is the only implicit global Staff scope. Until Staff market assignments
+are persisted and loaded into backend principals, this is an available
+deny-by-default policy boundary rather than a universal production personnel
+scope. Canonical host/referrer, market header, and explicit request fields remain
+cross-validated as described in
+[`multi-country.md`](../architecture/multi-country.md).
 
 ## J. Migration
 
@@ -304,6 +356,17 @@ Automated coverage includes:
   and session-revocation checks;
 - RLS enablement, safe profile projection, and broad admin-helper retirement;
 - suspended/restricted/banned lifecycle filtering.
+- every canonical capability across guest, every account status, every
+  professional vertical, every Staff role, and every Staff state;
+- owner and foreign-owner resource decisions, organization scope, market scope,
+  progressive verification, commercial entitlement, feature flags, and empty
+  server capability projections;
+- strict profile mass-assignment rejection plus successful allowlisted profile
+  mutation through the direct API;
+- mobile guest, customer, suspended-account, Staff-separation, and unavailable
+  market decisions.
+- direct negative tests proving Staff role labels cannot mutate a foreign
+  listing or act as the buyer or seller of a customer order.
 
 ## L. UX validation
 

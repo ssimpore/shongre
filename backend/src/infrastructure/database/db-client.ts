@@ -2,7 +2,7 @@ import {
   getSupabaseAdminClient,
   getSupabaseAnonClient,
 } from "../supabase/supabase-client.js";
-import { isBackendDemoMode } from "../../app/config/index.js";
+import { config, isBackendDemoMode } from "../../app/config/index.js";
 import { logger } from "../logging/logger.js";
 
 export class DatabaseClient {
@@ -21,7 +21,10 @@ export class DatabaseClient {
 
     try {
       const timeoutPromise = new Promise<boolean>((resolve) =>
-        setTimeout(() => resolve(false), 2000),
+        setTimeout(
+          () => resolve(false),
+          config.performance.databaseHealthCheckTimeoutMs,
+        ),
       );
       const queryPromise = (async () => {
         const { data, error } = await this.admin

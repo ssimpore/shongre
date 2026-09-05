@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { resolveMarketContext } from "@shongre/contracts";
 import { INITIAL_LISTINGS } from "../../mocks/initialDemoData";
-import { listTaxonomySeoRecords } from "../../domains/taxonomy/taxonomy.seo";
+import {
+  listTaxonomySeoRecords,
+  taxonomyNodeIsIndexableInMarket,
+} from "../../domains/taxonomy/taxonomy.seo";
 import type { PublicRouteDataResolution } from "./public-route-data";
 import {
   isSeoMarketEnabled,
@@ -37,6 +40,47 @@ const categoryRouteData = (
 });
 
 describe("central SEO policy", () => {
+  it("uses one stable organization identity and typed trust-page schema", () => {
+    const market = context("shongre.fr", "/");
+    const homePolicy = resolveSeoPolicy({
+      pathname: "/",
+      marketContext: market,
+    });
+    const homeSchemas = structuredDataForPolicy(homePolicy, market, {
+      status: "not_applicable",
+      data: null,
+    });
+    expect(homeSchemas).toEqual([
+      expect.objectContaining({
+        "@type": "Organization",
+        "@id": "https://shongre.com/#organization",
+        name: "SHONGRE.",
+      }),
+      expect.objectContaining({
+        "@type": "WebSite",
+        publisher: { "@id": "https://shongre.com/#organization" },
+      }),
+    ]);
+
+    const aboutMarket = context("shongre.fr", "/a-propos");
+    const aboutPolicy = resolveSeoPolicy({
+      pathname: "/a-propos",
+      marketContext: aboutMarket,
+    });
+    expect(aboutPolicy).toMatchObject({
+      knownRoute: true,
+      indexable: true,
+      sitemapEligible: true,
+      canonicalUrl: "https://shongre.fr/a-propos",
+    });
+    expect(
+      structuredDataForPolicy(aboutPolicy, aboutMarket, {
+        status: "not_applicable",
+        data: null,
+      }).map((entry) => entry["@type"]),
+    ).toEqual(["AboutPage", "BreadcrumbList"]);
+  });
+
   it.each([
     ["shongre.fr", "/auto", "https://shongre.fr/auto", "fr-FR"],
     ["shongre.com", "/be/immo", "https://shongre.com/be/immo", "fr-BE"],
@@ -282,17 +326,50 @@ describe("central SEO policy", () => {
     });
   });
 
+  it("keeps short-lived delivery requests out of search indexes", () => {
+    const pathname = "/livraison/demande/delivery-request-1";
+    const policy = resolveSeoPolicy({
+      pathname,
+      marketContext: context("shongre.fr", pathname),
+    });
+
+    expect(policy).toMatchObject({
+      knownRoute: true,
+      indexable: false,
+      sitemapEligible: false,
+      structuredDataEligible: false,
+    });
+  });
+
+  it("recognizes the feature-gated delivery marketplace without indexing it", () => {
+    const pathname = "/livraison";
+    const policy = resolveSeoPolicy({
+      pathname,
+      marketContext: context("shongre.fr", pathname),
+    });
+
+    expect(policy).toMatchObject({
+      knownRoute: true,
+      indexable: false,
+      sitemapEligible: false,
+      structuredDataEligible: false,
+      exclusionReason: "SERVER_CONTENT_NOT_VALIDATED",
+    });
+  });
+
   it("applies the generated localized SEO projection to every taxonomy node", () => {
     const market = context("shongre.fr", "/categories");
     listTaxonomySeoRecords().forEach(({ node, projection }) => {
       const pathname = projection.urlPattern;
+      const expectedIndexable =
+        projection.indexable && taxonomyNodeIsIndexableInMarket(node, "FR");
       const policy = resolveSeoPolicy({
         pathname,
         marketContext: market,
         routeData: categoryRouteData(pathname),
       });
       expect(policy.knownRoute, node.id).toBe(true);
-      expect(policy.indexable, node.id).toBe(true);
+      expect(policy.indexable, node.id).toBe(expectedIndexable);
       expect(policy.canonicalPath, node.id).toBe(projection.urlPattern);
       expect(policy.canonicalUrl, node.id).toBe(
         `https://shongre.fr${projection.urlPattern}`,
@@ -304,7 +381,9 @@ describe("central SEO policy", () => {
         projection.descriptionTemplate["fr-FR"],
       );
       expect(policy.taxonomyHeading, node.id).toBe(projection.h1["fr-FR"]);
-      expect(policy.sitemapEligible, node.id).toBe(projection.sitemap.eligible);
+      expect(policy.sitemapEligible, node.id).toBe(
+        projection.sitemap.eligible && expectedIndexable,
+      );
     });
   });
 

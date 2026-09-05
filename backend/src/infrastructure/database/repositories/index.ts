@@ -20,6 +20,7 @@ export * from "./courses.repository.js";
 export * from "./auto.repository.js";
 export * from "./real-estate.repository.js";
 export * from "./employment.repository.js";
+export * from "./delivery.repository.js";
 export * from "./finance.repository.js";
 export * from "./publisher.repository.js";
 export * from "./discovery-configuration.repository.js";

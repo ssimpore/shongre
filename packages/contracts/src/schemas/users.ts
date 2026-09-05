@@ -15,3 +15,31 @@ export const publicUserSchema = z.object({
   isBusinessVerified: z.boolean().default(false),
 });
 export type PublicUser = z.infer<typeof publicUserSchema>;
+
+/**
+ * Public self-service profile fields. Account state, roles, Staff membership,
+ * permissions and verification are deliberately absent and have dedicated
+ * server-authoritative workflows.
+ */
+export const userProfileUpdateSchema = z
+  .object({
+    name: z.string().trim().min(1).max(120).optional(),
+    avatarUrl: z.string().url().max(2_048).optional(),
+    phone: z.string().trim().min(8).max(32).optional(),
+    city: z.string().trim().min(1).max(120).optional(),
+    postalCode: z.string().trim().min(1).max(20).optional(),
+    department: z.string().trim().min(1).max(120).optional(),
+    region: z.string().trim().min(1).max(120).optional(),
+    country: z
+      .string()
+      .trim()
+      .regex(/^[A-Za-z]{2}$/)
+      .transform((value) => value.toUpperCase())
+      .optional(),
+    bio: z.string().trim().max(2_000).optional(),
+  })
+  .strict()
+  .refine((value) => Object.keys(value).length > 0, {
+    message: "Au moins un champ de profil modifiable est requis.",
+  });
+export type UserProfileUpdate = z.infer<typeof userProfileUpdateSchema>;

@@ -399,6 +399,7 @@ const FLOW_INTENTS: Record<string, string> = {
   property_rent: "RENT_OUT",
   property_sale: "SELL",
   service_offer: "SERVICE_OFFER",
+  service_request: "SERVICE_REQUEST",
   ticket_resale: "SELL",
   training_offer: "COURSE_OFFER",
   vehicle_light: "SELL",
@@ -413,6 +414,10 @@ const INTENT_LABELS: Record<string, { "fr-FR": string; "en-US": string }> = {
   RENT_OUT: { "fr-FR": "Louer", "en-US": "Rent out" },
   RENT_SEEK: { "fr-FR": "Rechercher une location", "en-US": "Seek a rental" },
   SERVICE_OFFER: { "fr-FR": "Proposer un service", "en-US": "Offer a service" },
+  SERVICE_REQUEST: {
+    "fr-FR": "Demander un service",
+    "en-US": "Request a service",
+  },
   NOTICE: { "fr-FR": "Publier une annonce", "en-US": "Publish a notice" },
   COURSE_OFFER: { "fr-FR": "Proposer un cours", "en-US": "Offer a course" },
   JOB_OFFER: {

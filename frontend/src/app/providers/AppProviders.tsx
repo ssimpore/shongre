@@ -19,6 +19,7 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: QUERY_CLIENT_CONFIG.staleTimeMs,
+      gcTime: QUERY_CLIENT_CONFIG.gcTimeMs,
       refetchOnWindowFocus: false,
       retry: QUERY_CLIENT_CONFIG.retryCount,
     },

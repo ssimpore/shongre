@@ -154,9 +154,13 @@ function notFoundResponse(
   environment: EnvironmentConfig,
   resourceType?: string,
   pathname = "/",
+  marketLabel?: string,
 ): NextResponse {
   const response = new NextResponse(
-    renderNotFoundDocument(resolveNotFoundPresentation(resourceType, pathname)),
+    renderNotFoundDocument(
+      resolveNotFoundPresentation(resourceType, pathname),
+      marketLabel,
+    ),
     {
       status: 404,
       headers: {
@@ -215,6 +219,7 @@ export async function proxy(request: NextRequest) {
     "/robots.txt",
     "/sitemap.xml",
     "/gateway-sitemap.xml",
+    "/llms.txt",
   ].includes(request.nextUrl.pathname);
   let context: ReturnType<typeof resolveMarketContext>;
   try {
@@ -347,6 +352,7 @@ export async function proxy(request: NextRequest) {
         environment,
         routeData.status === "not_found" ? routeData.resourceType : undefined,
         request.nextUrl.pathname,
+        context.country?.name,
       );
     }
     if (policy.redirectPath) {

@@ -33,7 +33,9 @@ describe("API v1 Endpoints Integration", () => {
         `Login failed for ${email}: ${res.status} ${await res.text()}`,
       );
     }
-    return (await res.json()).token;
+    const body = await res.json();
+    expect(Array.isArray(body.user?.capabilities)).toBe(true);
+    return body.token;
   }
 
   async function loginStaff(email: string): Promise<string> {
@@ -157,6 +159,51 @@ describe("API v1 Endpoints Integration", () => {
     const markets = await res.json();
     expect(Array.isArray(markets)).toBe(true);
     expect(markets.some((m: any) => m.code === "FR")).toBe(true);
+  });
+
+  it("uses ETags only for anonymous allowlisted public projections", async () => {
+    const initial = await fetch(`${baseUrl}/api/v1/markets`);
+    const etag = initial.headers.get("etag");
+    expect(initial.headers.get("cache-control")).toMatch(
+      /public.*max-age=300.*s-maxage=.*stale-while-revalidate=.*stale-if-error=/,
+    );
+    expect(initial.headers.get("cache-tag")).toContain("shongre-v1-markets");
+    expect(initial.headers.get("vary")).toContain("X-Shongre-Market");
+    expect(etag).toMatch(/^"[A-Za-z0-9_-]+"$/);
+
+    const unchanged = await fetch(`${baseUrl}/api/v1/markets`, {
+      headers: { "If-None-Match": String(etag) },
+    });
+    expect(unchanged.status).toBe(304);
+    expect(await unchanged.text()).toBe("");
+
+    const credentialed = await fetch(`${baseUrl}/api/v1/markets`, {
+      headers: { Authorization: `Bearer ${buyerToken}` },
+    });
+    expect(credentialed.status).toBe(200);
+    expect(credentialed.headers.get("cache-control")).toBe(
+      "private, no-store, max-age=0",
+    );
+    expect(credentialed.headers.get("etag")).toBeNull();
+
+    const principalDependent = await fetch(
+      `${baseUrl}/api/v1/feature-flags/example`,
+    );
+    expect(principalDependent.headers.get("cache-control")).toBe(
+      "private, no-store, max-age=0",
+    );
+    expect(principalDependent.headers.get("etag")).toBeNull();
+
+    const compressed = await fetch(`${baseUrl}/api/v1/listings?marketCode=FR`, {
+      headers: {
+        Accept: "application/json",
+        "Accept-Encoding": "gzip",
+        "X-Shongre-Market": "FR",
+      },
+    });
+    expect(compressed.status).toBe(200);
+    expect(compressed.headers.get("content-encoding")).toBe("gzip");
+    expect(compressed.headers.get("cache-control")).toContain("max-age=0");
   });
 
   it("keeps probable-country detection non-authoritative and privacy-safe", async () => {
@@ -346,8 +393,8 @@ describe("API v1 Endpoints Integration", () => {
         marketCode,
         locale,
       });
-      expect(tree.items).toHaveLength(301);
-      expect(tree.listingTypes).toHaveLength(212);
+      expect(tree.items).toHaveLength(302);
+      expect(tree.listingTypes).toHaveLength(213);
       expect(
         tree.items.some((node: any) => node.sourceKey === "vehicles.cars.suv"),
       ).toBe(true);
@@ -1346,13 +1393,23 @@ describe("API v1 Endpoints Integration", () => {
         name: "Thomas Renamed",
         primaryRole: "super_admin",
         status: "active",
-        isIdentityVerified: true,
+        isIdentityVerified: false,
       }),
     });
-    expect(res.status).toBe(200);
-    const updated = await res.json();
+    expect(res.status).toBe(400);
+    const rejected = await res.json();
+    expect(rejected.error?.code).toBe("VALIDATION_ERROR");
+
+    const allowed = await fetch(`${baseUrl}/api/v1/users/user_thomas`, {
+      method: "PUT",
+      headers: auth(buyerToken),
+      body: JSON.stringify({ name: "Thomas Renamed" }),
+    });
+    expect(allowed.status).toBe(200);
+    const updated = await allowed.json();
     expect(updated.name).toBe("Thomas Renamed");
     expect(updated.primaryRole).not.toBe("super_admin");
+    expect(updated.isIdentityVerified).toBe(true);
   });
 
   it("rejects seller attempts to change listing lifecycle and promotion state", async () => {

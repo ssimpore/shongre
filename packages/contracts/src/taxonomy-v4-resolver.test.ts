@@ -29,8 +29,8 @@ describe("TaxonomyV4PublicResolver", () => {
       expect(context.locale).toBe(locale);
       expect(context.currency).toBe(currency);
       const tree = resolver.tree(context, locale);
-      expect(tree.items).toHaveLength(301);
-      expect(tree.listingTypes).toHaveLength(212);
+      expect(tree.items).toHaveLength(302);
+      expect(tree.listingTypes).toHaveLength(213);
       expect(
         tree.listingTypes.every((listingType) =>
           listingType.marketAvailability.some(

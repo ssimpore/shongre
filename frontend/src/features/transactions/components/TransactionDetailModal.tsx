@@ -15,6 +15,9 @@ import { formatRelativeDate } from "../../../utilities/formatters";
 import { DisputeModal } from "./DisputeModal";
 import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
 import { ORDER_HANDOVER_POLICY } from "../../../api/contracts/orders.contract";
+import { routes } from "../../../configuration/routes";
+import { useTranslation } from "../../../i18n/I18nProvider";
+import { deliveryCatalogueFr } from "../../../i18n/delivery.catalogue.fr";
 
 interface TransactionDetailModalProps {
   isOpen: boolean;
@@ -45,7 +48,8 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
   currentUser,
   onUpdate,
 }) => {
-  const { currentLocale, formatPrice } = useMarketLocation();
+  const { activeMarket, currentLocale, formatPrice } = useMarketLocation();
+  const { t } = useTranslation(deliveryCatalogueFr);
   const [tx, setTx] = useState(transaction);
   const [handoverCode, setHandoverCode] = useState<{
     code: string;
@@ -56,6 +60,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
   const [trackingNumber, setTrackingNumber] = useState("");
   const [isDisputeOpen, setIsDisputeOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [deliveryAvailable, setDeliveryAvailable] = useState(false);
   const [feedback, setFeedback] = useState<{
     type: "success" | "error";
     text: string;
@@ -65,6 +70,41 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
 
   const isBuyer = currentUser.id === tx.buyerId;
   const isSeller = currentUser.id === tx.sellerId;
+
+  useEffect(() => {
+    let active = true;
+    const eligibleOrder =
+      isOpen &&
+      (isBuyer || isSeller) &&
+      tx.deliveryMethod !== "digital" &&
+      (tx.marketCode ?? activeMarket.code) === activeMarket.code &&
+      ["escrow_funded", "shipped", "pin_pending"].includes(tx.status);
+    if (!eligibleOrder) {
+      setDeliveryAvailable(false);
+      return () => {
+        active = false;
+      };
+    }
+    services.delivery
+      .getAvailability(activeMarket.code)
+      .then((availability) => {
+        if (active) setDeliveryAvailable(availability.enabled);
+      })
+      .catch(() => {
+        if (active) setDeliveryAvailable(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [
+    activeMarket.code,
+    isBuyer,
+    isOpen,
+    isSeller,
+    tx.deliveryMethod,
+    tx.marketCode,
+    tx.status,
+  ]);
 
   const update = (next: Transaction) => {
     setTx(next);
@@ -326,6 +366,22 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
               </Button>
             )}
           </div>
+          {deliveryAvailable &&
+            tx.deliveryMethod !== "digital" &&
+            ["escrow_funded", "shipped", "pin_pending"].includes(tx.status) && (
+              <section className="rounded-2xl border border-border-disabled bg-bg-subtle p-4">
+                <p className="text-sm text-text-secondary">
+                  {t("delivery.order.description")}
+                </p>
+                <Button
+                  className="mt-3"
+                  variant="secondary"
+                  to={routes.delivery.create(tx.id)}
+                >
+                  {t("delivery.order.create")}
+                </Button>
+              </section>
+            )}
         </div>
       </Modal>
 

@@ -32,6 +32,7 @@ export * from "./courses/courses.service.js";
 export * from "./auto/auto.service.js";
 export * from "./real-estate/real-estate.service.js";
 export * from "./employment/employment.service.js";
+export * from "./delivery/index.js";
 export * from "./providers/index.js";
 export * from "./support/support.service.js";
 export * from "./feature-flags/index.js";

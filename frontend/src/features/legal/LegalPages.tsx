@@ -12,20 +12,63 @@ import { storageService } from "../../services/storage.service";
 import { Button } from "../../design-system/primitives/Button";
 import { ListingCard } from "../../design-system/primitives/ListingCard";
 import { ListingGrid } from "../../design-system/primitives/ListingGrid";
+import { useStaticPageSeo } from "../../hooks/useStaticPageSeo";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { routes } from "../../configuration/routes";
 
 const DEALS_PER_PAGE = 8;
 
+export const AboutPage: React.FC = () => {
+  const { t } = useTranslation();
+  useStaticPageSeo("/a-propos");
+
+  return (
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-10 space-y-6">
+      <Breadcrumbs
+        items={[
+          { label: t("common.home"), href: "/" },
+          { label: t("about.title") },
+        ]}
+      />
+      <article className="bg-bg-surface p-6 sm:p-10 rounded-2xl border border-border-base shadow-xs space-y-8 text-xs sm:text-sm text-text-emphasis leading-relaxed">
+        <header className="space-y-3">
+          <p className="text-xs font-bold uppercase tracking-wide text-primary">
+            {t("about.eyebrow")}
+          </p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-text-main">
+            {t("about.title")}
+          </h1>
+          <p className="text-base text-text-supporting">
+            {t("about.introduction")}
+          </p>
+        </header>
+        <section className="space-y-2" aria-labelledby="about-mission">
+          <h2 id="about-mission" className="text-lg font-bold text-text-main">
+            {t("about.missionTitle")}
+          </h2>
+          <p>{t("about.missionBody")}</p>
+        </section>
+        <section className="space-y-2" aria-labelledby="about-trust">
+          <h2 id="about-trust" className="text-lg font-bold text-text-main">
+            {t("about.trustTitle")}
+          </h2>
+          <p>{t("about.trustBody")}</p>
+        </section>
+        <section className="space-y-2" aria-labelledby="about-markets">
+          <h2 id="about-markets" className="text-lg font-bold text-text-main">
+            {t("about.marketsTitle")}
+          </h2>
+          <p>{t("about.marketsBody")}</p>
+        </section>
+      </article>
+    </div>
+  );
+};
+
 export const TermsPage: React.FC = () => {
   const { t } = useTranslation();
-  usePageMeta({
-    title: "Conditions Générales d'Utilisation",
-    description:
-      "Les conditions d'utilisation de la place de marché Shongre : rôle de la plateforme, paiements et litiges, engagements des vendeurs professionnels.",
-    canonicalPath: "/conditions-utilisation",
-  });
+  useStaticPageSeo("/conditions-utilisation");
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-10 space-y-6">
@@ -67,12 +110,7 @@ export const TermsPage: React.FC = () => {
 
 export const PrivacyPage: React.FC = () => {
   const { t } = useTranslation();
-  usePageMeta({
-    title: "Politique de confidentialité & RGPD",
-    description:
-      "Comment Shongre collecte, utilise et protège vos données personnelles, conformément au RGPD et à la loi Informatique et Libertés.",
-    canonicalPath: "/confidentialite",
-  });
+  useStaticPageSeo("/confidentialite");
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-10 space-y-6">
@@ -99,12 +137,7 @@ export const PrivacyPage: React.FC = () => {
 
 export const LegalNoticesPage: React.FC = () => {
   const { t } = useTranslation();
-  usePageMeta({
-    title: "Mentions légales",
-    description:
-      "Éditeur, hébergeur et informations légales de la place de marché Shongre.",
-    canonicalPath: "/mentions-legales",
-  });
+  useStaticPageSeo("/mentions-legales");
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-10 space-y-6">
@@ -138,12 +171,7 @@ export const LegalNoticesPage: React.FC = () => {
 
 export const AccessibilityPage: React.FC = () => {
   const { t } = useTranslation();
-  usePageMeta({
-    title: "Accessibilité",
-    description:
-      "Notre démarche d'accessibilité numérique : niveau de conformité visé, aménagements en place et moyen de nous signaler un obstacle.",
-    canonicalPath: "/accessibilite",
-  });
+  useStaticPageSeo("/accessibilite");
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-10 space-y-6">
@@ -172,12 +200,7 @@ export const AccessibilityPage: React.FC = () => {
 
 export const HelpSafetyPage: React.FC = () => {
   const { t } = useTranslation();
-  usePageMeta({
-    title: "Sécurité & prévention des fraudes",
-    description:
-      "Reconnaître une arnaque, sécuriser un paiement et acheter ou vendre sereinement sur Shongre.",
-    canonicalPath: "/securite",
-  });
+  useStaticPageSeo("/securite");
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-10 space-y-6">

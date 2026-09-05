@@ -65,6 +65,27 @@ const CANONICAL_DEMO_ORDERS: Record<string, OrderRecord> = {
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   },
+  "7d3e760f-4ad7-47e5-8ca5-2a4ea59a3151": {
+    id: "7d3e760f-4ad7-47e5-8ca5-2a4ea59a3151",
+    orderNumber: "CMD-DELIVERY-001",
+    transactionType: "DIRECT_PURCHASE",
+    listingId: "list_1",
+    buyerId: "user_thomas",
+    sellerId: "user_camille",
+    status: "escrow_funded",
+    itemAmount: 250,
+    protectionFee: 10.7,
+    shippingFee: 0,
+    totalCharged: 260.7,
+    escrowSecuredAmount: 250,
+    currency: "EUR",
+    deliveryMethod: "hand_delivery",
+    fulfillmentModel: "PHYSICAL",
+    paymentMethod: "card",
+    handoverPinAttempts: 0,
+    createdAt: "2026-09-05T09:00:00.000Z",
+    updatedAt: "2026-09-05T09:00:00.000Z",
+  },
 };
 
 export class DemoOrderRepository implements IOrderRepository {

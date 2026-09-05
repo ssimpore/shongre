@@ -22,6 +22,7 @@ import {
   getListingFieldLabel,
   normalizeListingFieldKey,
 } from "./listing-field-labels";
+import { isProSeller } from "../user/user.domain";
 
 /**
  * Demo and imported listings can contain attributes that are not yet present
@@ -679,7 +680,7 @@ class ListingDisplayResolver {
             ? "https://schema.org/NewCondition"
             : "https://schema.org/UsedCondition",
         seller: {
-          "@type": seller?.role === "pro_seller" ? "Organization" : "Person",
+          "@type": isProSeller(seller) ? "Organization" : "Person",
           name: seller?.name || listing.sellerName,
         },
       },

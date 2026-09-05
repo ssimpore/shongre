@@ -11,6 +11,7 @@ import { toDemoDiscoveryDocument } from "../../../domains/discovery/discovery.ma
 import { getCountryConfig } from "@shongre/contracts";
 import { TaxonomyMigration } from "../../../domains/taxonomy/taxonomy.migration";
 import { requireDemoCapability } from "./demo-authorization";
+import { filterDemoDeliveryDiscoveryListings } from "./demo-delivery-discovery";
 
 const POPULAR_KEYWORDS_BY_MARKET: Record<string, string[]> = {
   FR: [
@@ -96,8 +97,11 @@ export class DemoSearchService implements SearchServiceContract {
     const requestedTaxonomyNode = TaxonomyMigration.resolveCanonicalNode(
       params.subCategorySlug || params.categorySlug,
     );
+    const discoveryListings = await filterDemoDeliveryDiscoveryListings(
+      res.listings,
+    );
     const ranked = runUnifiedDiscovery(
-      res.listings.map(toDemoDiscoveryDocument),
+      discoveryListings.map(toDemoDiscoveryDocument),
       {
         requestId: `demo-search:${JSON.stringify(params)}`,
         marketCode,
@@ -124,7 +128,7 @@ export class DemoSearchService implements SearchServiceContract {
       },
     );
     const listingsById = new Map(
-      res.listings.map((listing) => [listing.id, listing]),
+      discoveryListings.map((listing) => [listing.id, listing]),
     );
     const items = ranked.items.flatMap((item) => {
       const listing = listingsById.get(item.document.id);
@@ -135,7 +139,7 @@ export class DemoSearchService implements SearchServiceContract {
       total: ranked.totalResults,
       page: ranked.page,
       totalPages: ranked.totalPages,
-      facets: buildAttributeFacets(res.listings),
+      facets: buildAttributeFacets(discoveryListings),
     };
   }
 

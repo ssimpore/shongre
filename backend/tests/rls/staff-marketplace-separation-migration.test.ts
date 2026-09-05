@@ -16,10 +16,17 @@ const demoCapabilityMigration = readFileSync(
   ),
   "utf8",
 );
+const deliveryMigration = readFileSync(
+  new URL(
+    "../../supabase/migrations/00096_delivery_marketplace.sql",
+    import.meta.url,
+  ),
+  "utf8",
+);
 
 describe("Staff/customer marketplace separation migration", () => {
   it("keeps the database deny-list in parity with the canonical contract", () => {
-    const functionBody = migration.match(
+    const functionBody = deliveryMigration.match(
       /CREATE OR REPLACE FUNCTION public\.is_customer_marketplace_capability[\s\S]+?\]::TEXT\[\]\);/,
     )?.[0];
     expect(functionBody).toBeDefined();

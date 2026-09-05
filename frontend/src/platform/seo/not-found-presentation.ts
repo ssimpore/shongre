@@ -2,6 +2,7 @@ import { brand } from "@shongre/brand";
 import { webBrandAssets } from "@shongre/brand/web";
 import {
   borders,
+  breakpoints,
   colors,
   motion,
   radius,
@@ -95,7 +96,7 @@ export function resolveNotFoundPresentation(
   }
   return {
     title: "Page introuvable",
-    description: "Cette adresse ne correspond à aucune page publique Shongre.",
+    description: "Cette adresse ne correspond à aucune page publique SHONGRE.",
     returnHref: "/",
     returnLabel: "Retour à l’accueil",
   };
@@ -117,11 +118,16 @@ function escapeHtml(value: string): string {
 
 export function renderNotFoundDocument(
   presentation: NotFoundPresentation,
+  marketLabel?: string,
 ): string {
   const title = escapeHtml(presentation.title);
   const description = escapeHtml(presentation.description);
   const returnHref = escapeHtml(presentation.returnHref);
   const returnLabel = escapeHtml(presentation.returnLabel);
+  const escapedMarketLabel = marketLabel ? escapeHtml(marketLabel) : "";
+  const accessibleBrandLabel = escapeHtml(
+    `${brand.name}${marketLabel ? ` ${marketLabel}` : ""}`,
+  );
   // This response is emitted by the edge proxy before the App Router layout,
   // so it cannot inherit next/font's generated class. It still consumes the
   // canonical stack and its system fallback instead of loading a second font.
@@ -151,11 +157,48 @@ export function renderNotFoundDocument(
       border-radius: ${radius.card};
       box-shadow: ${shadows.sm};
     }
-    .brand-logo {
-      display: block;
-      width: ${sizing.components["brand-logo-compact"]};
-      height: auto;
+    .brand-signature {
+      display: inline-flex;
+      align-items: center;
+      gap: ${spacing.sm};
       margin: 0 auto ${spacing.lg};
+    }
+    .brand-icon {
+      display: block;
+      flex: none;
+      width: ${sizing.components["brand-signature-icon-compact"]};
+      height: ${sizing.components["brand-signature-icon-compact"]};
+      border-radius: ${radius.sm};
+      object-fit: contain;
+    }
+    .brand-wordmark-stack {
+      min-width: 0;
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: ${spacing.xs};
+    }
+    .brand-wordmark {
+      display: block;
+      width: ${sizing.components["brand-signature-wordmark-compact"]};
+      height: auto;
+      object-fit: contain;
+    }
+    .brand-market-label {
+      max-width: 100%;
+      overflow: hidden;
+      color: ${colors.text.tertiary};
+      font-size: ${typography.fontSizes.overline};
+      font-weight: ${typography.fontWeights.semibold};
+      line-height: ${typography.lineHeights.none};
+      letter-spacing: ${typography.letterSpacing.wider};
+      text-overflow: ellipsis;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    @media (max-width: calc(${breakpoints.lg} - 0.01px)) {
+      .brand-market-label { display: none; }
     }
     .status {
       margin: 0;
@@ -205,7 +248,7 @@ export function renderNotFoundDocument(
     '<meta name="viewport" content="width=device-width, initial-scale=1">' +
     '<meta name="robots" content="noindex, nofollow">' +
     `<title>${title} | ${brand.name}</title><style>${styles}</style></head>` +
-    `<body><main><section><img class="brand-logo" src="${webBrandAssets.logo.header.primary240.src}" width="${webBrandAssets.logo.header.primary240.width}" height="${webBrandAssets.logo.header.primary240.height}" alt="${brand.name}">` +
+    `<body><main><section><span class="brand-signature" data-brand-signature="primary" role="img" aria-label="${accessibleBrandLabel}"><img class="brand-icon" src="${webBrandAssets.icon.primary.src}" width="${webBrandAssets.icon.primary.width}" height="${webBrandAssets.icon.primary.height}" alt="" aria-hidden="true"><span class="brand-wordmark-stack"><img class="brand-wordmark" src="${webBrandAssets.logo.wordmark.primary.src}" width="${webBrandAssets.logo.wordmark.primary.width}" height="${webBrandAssets.logo.wordmark.primary.height}" alt="" aria-hidden="true">${escapedMarketLabel ? `<span class="brand-market-label" data-brand-market-label aria-hidden="true">${escapedMarketLabel}</span>` : ""}</span></span>` +
     `<p class="status">Erreur 404</p><h1>${title}</h1>` +
     `<p class="description">${description}</p><a href="${returnHref}">${returnLabel}</a>` +
     "</section></main></body></html>"

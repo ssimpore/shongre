@@ -15,9 +15,10 @@ export type ModerationCaseStatus =
 export interface ModerationCaseRecord {
   id: string;
   reportId: string;
-  targetType: "listing" | "user";
+  targetType: "listing" | "user" | "delivery_request";
   listingId?: string;
   reportedUserId?: string;
+  deliveryRequestId?: string;
   affectedUserId?: string;
   category: string;
   severity: "low" | "medium" | "high" | "critical";
@@ -52,6 +53,7 @@ export type OwnModerationCaseRecord = Pick<
   ModerationCaseRecord,
   | "id"
   | "targetType"
+  | "deliveryRequestId"
   | "category"
   | "status"
   | "resolutionAction"
@@ -66,6 +68,8 @@ export interface IModerationRepository {
     reporterId: string;
     listingId?: string;
     reportedUserId?: string;
+    deliveryRequestId?: string;
+    affectedUserId?: string;
     category: string;
   }): Promise<void>;
   listCases(status?: ModerationCaseStatus): Promise<ModerationCaseRecord[]>;
@@ -125,6 +129,8 @@ export class DemoModerationRepository implements IModerationRepository {
     reporterId: string;
     listingId?: string;
     reportedUserId?: string;
+    deliveryRequestId?: string;
+    affectedUserId?: string;
     category: string;
   }): Promise<void> {
     if (
@@ -138,10 +144,15 @@ export class DemoModerationRepository implements IModerationRepository {
     this.cases.set(id, {
       id,
       reportId: input.reportId,
-      targetType: input.listingId ? "listing" : "user",
+      targetType: input.listingId
+        ? "listing"
+        : input.deliveryRequestId
+          ? "delivery_request"
+          : "user",
       listingId: input.listingId,
       reportedUserId: input.reportedUserId,
-      affectedUserId: input.reportedUserId,
+      deliveryRequestId: input.deliveryRequestId,
+      affectedUserId: input.affectedUserId ?? input.reportedUserId,
       category: input.category,
       severity: ["fraud", "counterfeit", "prohibited"].includes(input.category)
         ? "high"
@@ -301,6 +312,7 @@ export class PostgresModerationRepository implements IModerationRepository {
       targetType: row.target_type,
       listingId: row.listing_id || undefined,
       reportedUserId: row.reported_user_id || undefined,
+      deliveryRequestId: row.delivery_request_id || undefined,
       category: row.category,
       severity: row.severity,
       status: row.status,

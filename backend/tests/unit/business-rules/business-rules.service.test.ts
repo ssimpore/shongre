@@ -6,6 +6,27 @@ import { DemoBusinessRulesRepository } from "../../../src/infrastructure/databas
 import { BusinessRulesService } from "../../../src/modules/business-rules/business-rules.service.js";
 
 describe("BusinessRulesService quotes", () => {
+  it("coalesces concurrent active-catalog loads per market", async () => {
+    class CountingRepository extends DemoBusinessRulesRepository {
+      calls = 0;
+
+      override async getActiveCatalog(marketCode: string) {
+        this.calls += 1;
+        await new Promise((resolve) => setTimeout(resolve, 5));
+        return super.getActiveCatalog(marketCode);
+      }
+    }
+
+    const repository = new CountingRepository();
+    const service = new BusinessRulesService(repository);
+    const catalogs = await Promise.all(
+      Array.from({ length: 20 }, () => service.getCatalog("FR")),
+    );
+
+    expect(repository.calls).toBe(1);
+    expect(catalogs.every((catalog) => catalog.marketCode === "FR")).toBe(true);
+  });
+
   it("presents the migration-target professional plans once without legacy overrides", async () => {
     const service = new BusinessRulesService(new DemoBusinessRulesRepository());
     const presentation = await service.getProfessionalPlanCatalog("FR");

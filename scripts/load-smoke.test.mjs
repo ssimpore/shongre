@@ -21,8 +21,34 @@ const server = createServer((request, response) => {
     );
     return;
   }
-  if (request.url === "/api/v1/listings?marketCode=FR") {
+  if (
+    request.method === "GET" &&
+    request.url === "/api/v1/listings?marketCode=FR"
+  ) {
     response.end(JSON.stringify({ listings: [], total: 0 }));
+    return;
+  }
+  if (request.method === "POST" && request.url === "/api/v1/listings/search") {
+    response.end(
+      JSON.stringify({ items: [], total: 0, page: 1, totalPages: 1 }),
+    );
+    return;
+  }
+  if (request.url === "/api/v1/markets") {
+    const etag = '"test-market-etag"';
+    response.setHeader(
+      "Cache-Control",
+      "public, max-age=300, s-maxage=300, stale-while-revalidate=600, stale-if-error=3600",
+    );
+    response.setHeader("Cache-Tag", "shongre-v1-markets");
+    response.setHeader("Vary", "X-Shongre-Market, Accept-Language");
+    response.setHeader("ETag", etag);
+    if (request.headers["if-none-match"] === etag) {
+      response.statusCode = 304;
+      response.end();
+      return;
+    }
+    response.end(JSON.stringify([{ code: "FR" }]));
     return;
   }
   response.statusCode = 404;
@@ -47,6 +73,9 @@ try {
     evidencePath,
   });
   if (evidence.result !== "PASS") throw new Error("load evidence did not pass");
+  if (evidence.conditionalCache.result !== "PASS") {
+    throw new Error("conditional cache evidence did not pass");
+  }
   const persisted = JSON.parse(readFileSync(evidencePath, "utf8"));
   if (persisted.scope !== "MARKET_SCOPED" || persisted.marketCode !== "FR") {
     throw new Error("load evidence lost its market scope");

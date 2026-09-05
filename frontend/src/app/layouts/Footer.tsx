@@ -60,6 +60,7 @@ const SOCIAL_ICONS: Record<SocialNetworkId, BrandIcon> = {
 };
 
 const LEGAL_LINKS = [
+  { to: routes.about(), labelKey: "footer.about" },
   { to: "/conditions-utilisation", labelKey: "footer.terms" },
   { to: "/confidentialite", labelKey: "footer.privacy" },
   { to: "/mentions-legales", labelKey: "footer.legalNotices" },
@@ -335,6 +336,9 @@ export const Footer: React.FC = () => {
               <FooterLink to="/securite">{t("footer.safetyTips")}</FooterLink>
               <FooterLink to="/contact">
                 {t("footer.contactSupport")}
+              </FooterLink>
+              <FooterLink to={routes.delivery.marketplace()}>
+                {t("delivery.nav")}
               </FooterLink>
               <FooterLink to={routes.deals()}>
                 {t("footer.currentDeals")}

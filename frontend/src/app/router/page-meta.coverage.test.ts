@@ -88,6 +88,7 @@ describe("page metadata coverage", () => {
       );
       expect(
         source.includes("usePageMeta(") ||
+          source.includes("useStaticPageSeo(") ||
           Boolean(delegatedOwner && source.includes(delegatedOwner)),
       ).toBe(true);
     },

@@ -3,10 +3,8 @@ import { cache } from "react";
 import { PAGE_SIZES } from "../../configuration/pagination.config";
 import { listingRepository } from "../../repositories/listing.repository";
 import { userRepository } from "../../repositories/user.repository";
-import { DemoEmploymentService } from "../../api/adapters/demo/demo-employment.service";
-import { DemoAutoService } from "../../api/adapters/demo/demo-auto.service";
-import { DemoCoursesService } from "../../api/adapters/demo/demo-courses.service";
-import { DemoRealEstateService } from "../../api/adapters/demo/demo-real-estate.service";
+import { createServiceRegistry } from "../../api/client/service-registry";
+import { apiClientConfig } from "../../api/client/api-client.config";
 import { collectionService } from "../../domains/collection/collection.service";
 import type { SearchFilters, UserProfile } from "../../types";
 import { employmentSearchQuerySchema } from "@shongre/contracts/employment";
@@ -17,10 +15,11 @@ import type {
 import { listingIsPublishedInMarket } from "./public-route-data";
 import { COUNTRY_REGISTRY } from "@shongre/contracts";
 
-const employmentService = new DemoEmploymentService();
-const autoService = new DemoAutoService();
-const coursesService = new DemoCoursesService();
-const realEstateService = new DemoRealEstateService();
+const serverServices = createServiceRegistry(apiClientConfig.dataMode);
+const employmentService = serverServices.employment;
+const autoService = serverServices.auto;
+const coursesService = serverServices.courses;
+const realEstateService = serverServices.realEstate;
 
 function decoded(value: string): string | null {
   try {
@@ -394,11 +393,10 @@ export async function listServerPublicSitemapData(countryCode: string) {
   const sellerIds = Array.from(
     new Set(activeListings.map((listing) => listing.sellerId)),
   );
-  const sellers = (
-    await Promise.all(
-      sellerIds.map((sellerId) => userRepository.getUserById(sellerId)),
-    )
-  ).filter(publicSeller);
+  const sellerIdSet = new Set(sellerIds);
+  const sellers = (await userRepository.getAllUsers()).filter(
+    (seller) => sellerIdSet.has(seller.id) && publicSeller(seller),
+  );
 
   const employmentResult =
     countryCode === "FR"

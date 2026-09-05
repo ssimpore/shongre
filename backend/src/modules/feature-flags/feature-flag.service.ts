@@ -1,4 +1,3 @@
-import { createHash } from "node:crypto";
 import {
   featureFlagContextSchema,
   featureFlagDefinitionUpdateSchema,
@@ -6,37 +5,20 @@ import {
   featureFlagRuleUpdateSchema,
   type FeatureFlagContext,
   type FeatureFlagEvaluation,
-  type FeatureFlagRule,
+  isMarketScopedOnlyFeatureFlag,
+  resolveFeatureFlagEvaluation,
 } from "@shongre/contracts/feature-flags";
 import type { IFeatureFlagRepository } from "../../infrastructure/database/repositories/feature-flag.repository.js";
 import { repositories } from "../../infrastructure/database/repositories/repository-container.js";
 import { logger } from "../../infrastructure/logging/logger.js";
 import type { Principal } from "../../shared/auth/principal.js";
 import { requirePermission } from "../../shared/auth/principal.js";
-
-function stableBucket(key: string, identity: string): number {
-  const digest = createHash("sha256").update(`${key}:${identity}`).digest();
-  return digest.readUInt32BE(0) % 100;
-}
-
-function ruleMatches(
-  rule: FeatureFlagRule,
-  context: FeatureFlagContext,
-  nowIso: string,
-): boolean {
-  if (rule.startsAt && rule.startsAt > nowIso) return false;
-  if (rule.endsAt && rule.endsAt <= nowIso) return false;
-  if (rule.marketCode && rule.marketCode !== context.marketCode) return false;
-  if (rule.accountId && rule.accountId !== context.accountId) return false;
-  if (rule.organizationId && rule.organizationId !== context.organizationId)
-    return false;
-  const identity =
-    context.accountId ||
-    context.organizationId ||
-    context.anonymousId ||
-    `${context.marketCode || "global"}:anonymous`;
-  return stableBucket(rule.flagKey, identity) < rule.rolloutPercentage;
-}
+import { getCountryConfig } from "@shongre/contracts";
+import {
+  DELIVERY_FEATURE_FLAG_KEY,
+  deliveryMarketActivationIssues,
+} from "@shongre/contracts/delivery";
+import { AppError } from "../../shared/errors/app-error.js";
 
 export class FeatureFlagService {
   constructor(
@@ -69,24 +51,13 @@ export class FeatureFlagService {
       ) {
         return { key, enabled: false, source: "safe_default", evaluatedAt };
       }
-      const rule = (await this.repository.listRules(key)).find((candidate) =>
-        ruleMatches(candidate, context, evaluatedAt),
-      );
-      if (rule) {
-        return {
-          key,
-          enabled: rule.enabled,
-          source: "rule",
-          ruleId: rule.id,
-          evaluatedAt,
-        };
-      }
-      return {
+      return resolveFeatureFlagEvaluation({
         key,
-        enabled: definition.defaultEnabled,
-        source: "default",
+        definition,
+        rules: await this.repository.listRules(key),
+        context,
         evaluatedAt,
-      };
+      });
     } catch (error) {
       logger.error("feature_flag_evaluation_failed", {
         key,
@@ -117,6 +88,9 @@ export class FeatureFlagService {
     requirePermission(principal, "admin.configuration.manage");
     const key = featureFlagKeySchema.parse(keyInput);
     const value = featureFlagDefinitionUpdateSchema.parse(input);
+    if (isMarketScopedOnlyFeatureFlag(key) && value.defaultEnabled) {
+      throw new Error(`${key} must remain disabled by default`);
+    }
     const result = await this.repository.upsertDefinition(
       key,
       value,
@@ -144,6 +118,29 @@ export class FeatureFlagService {
     requirePermission(principal, "admin.configuration.manage");
     const key = featureFlagKeySchema.parse(keyInput);
     const value = featureFlagRuleUpdateSchema.parse(input);
+    if (
+      isMarketScopedOnlyFeatureFlag(key) &&
+      (!value.marketCode || value.accountId || value.organizationId)
+    ) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: `${key} requires an exact market-only rule`,
+      });
+    }
+    if (key === DELIVERY_FEATURE_FLAG_KEY && value.enabled) {
+      const issues = deliveryMarketActivationIssues(
+        getCountryConfig(value.marketCode || ""),
+      );
+      if (value.rolloutPercentage !== 100 || issues.length > 0) {
+        throw new AppError({
+          code: "VALIDATION_ERROR",
+          message:
+            value.rolloutPercentage !== 100
+              ? "Delivery activation must cover the whole eligible market."
+              : `Delivery activation blocked: ${issues.join(", ")}`,
+        });
+      }
+    }
     const result = await this.repository.upsertRule(
       key,
       ruleId === "new" ? undefined : ruleId,

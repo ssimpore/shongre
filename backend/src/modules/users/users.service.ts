@@ -16,6 +16,7 @@ import {
 } from "../../infrastructure/database/repositories/auth.repository.js";
 import type { AuthProvider } from "../../shared/auth/identity.js";
 import { analyticsService } from "../analytics/analytics.service.js";
+import type { DeliveryRepository } from "../../infrastructure/database/repositories/delivery.repository.js";
 
 export class UsersService {
   constructor(
@@ -23,6 +24,7 @@ export class UsersService {
     private orderRepo: IOrderRepository = repositories.orders,
     private adminRepo: IAdminRepository = repositories.admin,
     private authRepo: IAuthRepository = authRepository,
+    private deliveryRepo: DeliveryRepository = repositories.delivery,
   ) {}
 
   async getUserById(id: string): Promise<UserProfile | null> {
@@ -121,6 +123,21 @@ export class UsersService {
       });
     }
 
+    try {
+      await this.deliveryRepo.prepareAccountDeletion(userId);
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        error.message === "DELIVERY_ACTIVE_ASSIGNMENT"
+      ) {
+        throw new AppError({
+          code: "CONFLICT",
+          message:
+            "Une livraison est encore en cours. Terminez-la ou annulez-la avant de supprimer le compte.",
+        });
+      }
+      throw error;
+    }
     await analyticsService.anonymizeSubject(userId);
     await this.userRepo.anonymize(userId, reason);
     await Promise.all([

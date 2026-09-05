@@ -8,7 +8,6 @@ import {
   type RouteObject,
 } from "react-router-dom";
 import { MainLayout } from "../layouts/MainLayout";
-import { AccountLayout } from "../layouts/AccountLayout";
 import { FocusedLayout } from "../layouts/FocusedLayout";
 import { ProductLayout } from "../layouts/ProductLayout";
 import { SolutionsLayout } from "../../features/solutions/SolutionsLayout";
@@ -25,6 +24,11 @@ import type { Permission } from "../../types";
 import type { ShongreApplicationId } from "../../platform/applications/application-registry";
 
 // Lazy Loaded Features
+const AccountLayout = lazy(() =>
+  import("../layouts/AccountLayout").then((module) => ({
+    default: module.AccountLayout,
+  })),
+);
 const HomePage = lazy(() =>
   import("../../features/home/HomePage").then((m) => ({ default: m.HomePage })),
 );
@@ -46,6 +50,31 @@ const SearchPage = lazy(() =>
 const ListingDetailPage = lazy(() =>
   import("../../features/listings/ListingDetailPage").then((m) => ({
     default: m.ListingDetailPage,
+  })),
+);
+const DeliveryMarketplacePage = lazy(() =>
+  import("../../features/delivery/DeliveryPages").then((module) => ({
+    default: module.DeliveryMarketplacePage,
+  })),
+);
+const DeliveryRequestDetailPage = lazy(() =>
+  import("../../features/delivery/DeliveryPages").then((module) => ({
+    default: module.DeliveryRequestDetailPage,
+  })),
+);
+const DeliveryCreatePage = lazy(() =>
+  import("../../features/delivery/DeliveryPages").then((module) => ({
+    default: module.DeliveryCreatePage,
+  })),
+);
+const DeliveryWorkspacePage = lazy(() =>
+  import("../../features/delivery/DeliveryPages").then((module) => ({
+    default: module.DeliveryWorkspacePage,
+  })),
+);
+const DeliveryCourierWorkspacePage = lazy(() =>
+  import("../../features/delivery/DeliveryPages").then((module) => ({
+    default: module.DeliveryCourierWorkspacePage,
   })),
 );
 const PublishWizard = lazy(() =>
@@ -376,6 +405,11 @@ const AccountTypeOnboardingPage = lazy(() =>
 );
 
 // Legal Pages
+const AboutPage = lazy(() =>
+  import("../../features/legal/LegalPages").then((m) => ({
+    default: m.AboutPage,
+  })),
+);
 const TermsPage = lazy(() =>
   import("../../features/legal/LegalPages").then((m) => ({
     default: m.TermsPage,
@@ -935,6 +969,14 @@ const APP_ROUTES: RouteObject[] = [
           </RequireRoutePolicy>
         ),
       },
+      {
+        path: "livraison/nouvelle-demande",
+        element: (
+          <RequireRoutePolicy policyId="createDeliveryRequest">
+            {withSuspense(DeliveryCreatePage)}
+          </RequireRoutePolicy>
+        ),
+      },
 
       // Signing in and signing up are task-completion flows too: the full
       // marketplace shell around a login form offers a dozen ways to wander off
@@ -1011,6 +1053,11 @@ const APP_ROUTES: RouteObject[] = [
       },
       { path: "categorie/:categorySlug", element: withSuspense(SearchPage) },
       { path: "annonce/:id", element: withSuspense(ListingDetailPage) },
+      { path: "livraison", element: withSuspense(DeliveryMarketplacePage) },
+      {
+        path: "livraison/demande/:requestId",
+        element: withSuspense(DeliveryRequestDetailPage),
+      },
       { path: "auto", element: withSuspense(AutoSearchPage) },
       {
         path: "auto/vehicule/:slug",
@@ -1088,6 +1135,7 @@ const APP_ROUTES: RouteObject[] = [
       },
 
       // Legal & Info
+      { path: "a-propos", element: withSuspense(AboutPage) },
       { path: "conditions-utilisation", element: withSuspense(TermsPage) },
       { path: "terms", element: withSuspense(TermsPage) },
       { path: "confidentialite", element: withSuspense(PrivacyPage) },
@@ -1127,7 +1175,7 @@ const APP_ROUTES: RouteObject[] = [
         path: "compte",
         element: (
           <RequireRoutePolicy policyId="accountOverview">
-            <AccountLayout />
+            {withSuspense(AccountLayout)}
           </RequireRoutePolicy>
         ),
         children: [
@@ -1289,6 +1337,30 @@ const APP_ROUTES: RouteObject[] = [
             element: (
               <RequireRoutePolicy policyId="accountCourse">
                 {withSuspense(CourseTutorWorkspacePage)}
+              </RequireRoutePolicy>
+            ),
+          },
+          {
+            path: "livraison",
+            element: (
+              <RequireRoutePolicy policyId="accountDelivery">
+                {withSuspense(DeliveryWorkspacePage)}
+              </RequireRoutePolicy>
+            ),
+          },
+          {
+            path: "livraison/:requestId",
+            element: (
+              <RequireRoutePolicy policyId="accountDelivery">
+                {withSuspense(DeliveryWorkspacePage)}
+              </RequireRoutePolicy>
+            ),
+          },
+          {
+            path: "livraison/coursier",
+            element: (
+              <RequireRoutePolicy policyId="accountDeliveryCourier">
+                {withSuspense(DeliveryCourierWorkspacePage)}
               </RequireRoutePolicy>
             ),
           },

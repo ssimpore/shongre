@@ -138,7 +138,7 @@ export const NoResultsFound: React.FC<NoResultsFoundProps> = ({
       {/* Action Buttons */}
       <div
         id={`${id}-actions`}
-        className="mt-6 grid w-full max-w-md grid-cols-1 items-stretch gap-3 sm:grid-cols-2"
+        className="mt-6 grid w-full max-w-lg grid-cols-1 items-stretch gap-3 sm:grid-cols-2"
       >
         {onClearFilters && (
           <Button

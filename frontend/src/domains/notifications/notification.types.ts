@@ -9,6 +9,7 @@ export type NotificationCategory =
   | "transactions"
   | "listings"
   | "delivery"
+  | "delivery_opportunities"
   | "reviews"
   | "monetization"
   | "account"
@@ -53,6 +54,18 @@ export type NotificationType =
   | "fulfillment.shipped"
   | "fulfillment.delivered"
   | "fulfillment.receipt_required"
+  | "delivery.request.matched"
+  | "delivery.application.submitted"
+  | "delivery.application.withdrawn"
+  | "delivery.application.accepted"
+  | "delivery.application.rejected"
+  | "delivery.request.cancelled"
+  | "delivery.assignment.updated"
+  | "delivery.picked_up"
+  | "delivery.in_transit"
+  | "delivery.delivered"
+  | "delivery.completed"
+  | "delivery.disputed"
   // Reviews
   | "review.available"
   | "review.received"
@@ -186,6 +199,7 @@ export interface NotificationPreferences {
   transactions: CategoryChannelPreference;
   listings: CategoryChannelPreference;
   delivery: CategoryChannelPreference;
+  delivery_opportunities: CategoryChannelPreference;
   reviews: CategoryChannelPreference;
   promotions: CategoryChannelPreference;
   security: CategoryChannelPreference;

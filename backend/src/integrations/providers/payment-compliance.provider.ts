@@ -99,7 +99,7 @@ export class LivePaymentComplianceProvider implements PaymentComplianceProvider 
         ...(idempotencyKey ? { "Idempotency-Key": idempotencyKey } : {}),
         ...(init.headers || {}),
       },
-      signal: AbortSignal.timeout(10_000),
+      signal: AbortSignal.timeout(config.performance.providerRequestTimeoutMs),
     });
     const payload: any = await response.json().catch(() => ({}));
     if (!response.ok) {

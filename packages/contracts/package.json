@@ -18,6 +18,7 @@
     "./vertical": "./src/schemas/vertical.ts",
     "./real-estate": "./src/schemas/real-estate.ts",
     "./employment": "./src/schemas/employment.ts",
+    "./delivery": "./src/schemas/delivery.ts",
     "./employment-catalog": "./src/fixtures/employment-catalog.ts",
     "./employment-demo": "./src/fixtures/employment-demo.ts",
     "./monetization": "./src/schemas/monetization.ts",
@@ -48,6 +49,7 @@
     "./vertical-monetization-adapters": "./src/fixtures/vertical-monetization-adapters.ts",
     "./provider-platform": "./src/provider-platform.ts",
     "./environment": "./src/app-environment.ts",
+    "./performance": "./src/operational-performance.ts",
     "./openapi": "./src/openapi.ts"
   },
   "scripts": {

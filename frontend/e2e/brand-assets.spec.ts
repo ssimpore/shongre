@@ -20,6 +20,51 @@ test.beforeEach(async ({ page }) => {
   await usePersona(page, "guest");
 });
 
+test("real 404 pages reuse the header icon and wordmark composition", async ({
+  page,
+}) => {
+  const browserProblems = captureBrowserProblems(page);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  const response = await page.goto("/does-not-exist", {
+    waitUntil: "domcontentloaded",
+  });
+
+  expect(response?.status()).toBe(404);
+  const signature = page.locator('[data-brand-signature="primary"]');
+  await expect(signature).toBeVisible();
+  await expect(signature).toHaveAttribute("aria-label", "SHONGRE. France");
+  const icon = signature.locator("img").nth(0);
+  const wordmark = signature.locator("img").nth(1);
+  await expect(icon).toHaveAttribute("src", webBrandAssets.icon.primary.src);
+  await expect(wordmark).toHaveAttribute(
+    "src",
+    webBrandAssets.logo.wordmark.primary.src,
+  );
+  expect(
+    await icon.evaluate((image) => image.getBoundingClientRect().width),
+  ).toBe(36);
+  expect(
+    await icon.evaluate((image) => getComputedStyle(image).borderRadius),
+  ).toBe("4px");
+  expect(
+    await wordmark.evaluate((image) => image.getBoundingClientRect().width),
+  ).toBe(96);
+  await expect(signature.locator("[data-brand-market-label]")).toHaveText(
+    "France",
+  );
+
+  await page.getByRole("link", { name: "Retour à l’accueil" }).click();
+  await expect(page).toHaveURL(/\/$/);
+  expect(
+    browserProblems.filter(
+      (problem) =>
+        !problem.includes(
+          "Failed to load resource: the server responded with a status of 404",
+        ),
+    ),
+  ).toEqual([]);
+});
+
 test("official desktop signatures and metadata are served from the curated runtime set", async ({
   page,
   request,

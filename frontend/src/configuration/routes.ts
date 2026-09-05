@@ -52,6 +52,7 @@ const withQuery = (
 
 export const routes = {
   home: () => "/",
+  about: () => "/a-propos",
   category: (categorySlug: string, params: { subCategory?: string } = {}) =>
     withQuery(`/categorie/${pathSegment(categorySlug)}`, {
       subCategory: params.subCategory,
@@ -158,6 +159,20 @@ export const routes = {
     candidateWorkspace: () => "/compte/emploi",
     recruiterWorkspace: () => "/compte/emploi/recruteur",
   },
+  delivery: {
+    marketplace: () => "/livraison",
+    request: (requestId: string) =>
+      `/livraison/demande/${pathSegment(requestId)}`,
+    create: (sourceOrderId?: string) =>
+      sourceOrderId
+        ? `/livraison/nouvelle-demande?orderId=${encodeURIComponent(sourceOrderId)}`
+        : "/livraison/nouvelle-demande",
+    workspace: (requestId?: string) =>
+      requestId
+        ? `/compte/livraison/${pathSegment(requestId)}`
+        : "/compte/livraison",
+    courierWorkspace: () => "/compte/livraison/coursier",
+  },
   collections: {
     list: () => "/collections",
     detail: (slug: string) => `/collections/${pathSegment(slug)}`,
@@ -241,6 +256,11 @@ export const routes = {
         ? `/compte/support/${pathSegment(requestId)}`
         : "/compte/support",
     moderationAppeals: () => "/compte/recours",
+    delivery: (requestId?: string) =>
+      requestId
+        ? `/compte/livraison/${pathSegment(requestId)}`
+        : "/compte/livraison",
+    deliveryCourier: () => "/compte/livraison/coursier",
     newsletter: () => "/compte/newsletter",
     pro: {
       dashboard: () => `/compte/pro/tableau-de-bord`,

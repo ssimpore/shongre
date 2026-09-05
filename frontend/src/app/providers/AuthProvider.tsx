@@ -29,6 +29,7 @@ import {
   isAccountLimited,
 } from "../../domains/user/user.domain";
 import { analyticsService } from "../../services/analytics.service";
+import type { EditableUserProfile } from "../../repositories/user.repository";
 
 interface AuthContextType {
   currentUser: UserProfile | null;
@@ -89,7 +90,7 @@ interface AuthContextType {
   refreshUser: () => Promise<void>;
   switchRole: (role: UserRole) => Promise<void>;
   switchDemoUser: (userKey: string) => Promise<void>;
-  updateProfile: (updates: Partial<UserProfile>) => Promise<void>;
+  updateProfile: (updates: Partial<EditableUserProfile>) => Promise<void>;
   can: (
     permission: Permission,
     resource?: ResourceOwnershipContext | any,
@@ -314,7 +315,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     announceAuthChange(user ? "login" : "logout");
   };
 
-  const updateProfile = async (updates: Partial<UserProfile>) => {
+  const updateProfile = async (updates: Partial<EditableUserProfile>) => {
     if (!currentUser) return;
     const { userRepository } =
       await import("../../repositories/user.repository");

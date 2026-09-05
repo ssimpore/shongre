@@ -3,8 +3,6 @@ import {
   COUNTRY_REGISTRY,
   type MarketContext,
 } from "@shongre/contracts";
-import { brand } from "@shongre/brand";
-import { webBrandAssets } from "@shongre/brand/web";
 import {
   resolveLocalizedTaxonomySeoText,
   resolveTaxonomySeoRecord,
@@ -25,6 +23,13 @@ import type {
   PublicRouteDataResolution,
 } from "./public-route-data";
 import { listingMarketCodes } from "./public-route-data";
+import { DEFAULT_MARKET_CURRENCY } from "../../configuration/market-baseline";
+import {
+  DISCOVERY_PUBLIC_PATHS,
+  organizationStructuredData,
+  staticPageSchemaType,
+  staticPageStructuredData,
+} from "./discovery-structured-data";
 
 const PROGRAMMATIC_SEO_THRESHOLDS = Object.freeze({
   categoryInventory: 1,
@@ -114,6 +119,14 @@ const STATIC_PAGES: Readonly<Record<string, StaticPagePolicy>> = Object.freeze({
     title: DEFAULT_TITLE,
     description: HOMEPAGE_DESCRIPTION,
     resourceType: "home",
+    sitemapEligible: true,
+    alternate: true,
+  },
+  [DISCOVERY_PUBLIC_PATHS.about]: {
+    title: "À propos de SHONGRE.",
+    description:
+      "Découvrez la mission de SHONGRE., sa place de marché locale et les principes de confiance qui structurent le service.",
+    resourceType: "static_content",
     sitemapEligible: true,
     alternate: true,
   },
@@ -296,14 +309,17 @@ const PRIVATE_ROUTE_PATTERNS = [
   /^\/newsletter\/(?:confirmer|desabonnement|preferences)(?:\/|$)/,
   /^\/emploi\/offre\/[^/]+\/postuler$/,
   /^\/education\/demande$/,
+  /^\/livraison\/nouvelle-demande$/,
   /^\/auto\/comparer$/,
 ];
 
 const KNOWN_NOINDEX_PUBLIC_PATTERNS = [
+  /^\/livraison$/,
   /^\/auto\/vehicule\/[^/]+$/,
   /^\/immo\/bien\/[^/]+$/,
   /^\/education(?:\/professeur\/[^/]+)?$/,
   /^\/emploi\/(?:metier|secteur|lieu)\/[^/]+$/,
+  /^\/livraison\/demande\/[^/]+$/,
 ];
 
 function normalizedPath(pathname: string): string {
@@ -365,7 +381,7 @@ function formatListingPrice(
   if (listing.isFreeDonation) return "Don gratuit";
   return new Intl.NumberFormat(context.locale || "fr-FR", {
     style: "currency",
-    currency: listing.currency || context.currency || "EUR",
+    currency: listing.currency || context.currency || DEFAULT_MARKET_CURRENCY,
     maximumFractionDigits: Number.isInteger(listing.price) ? 0 : 2,
   }).format(listing.price);
 }
@@ -871,9 +887,9 @@ export function resolveSeoPolicy({
       resourceType: staticPage.resourceType,
       lifecycle: "not_applicable",
       sitemapEligible: staticPage.sitemapEligible,
-      structuredDataEligible: ["/", "/categories", "/auto", "/immo"].includes(
-        pathname,
-      ),
+      structuredDataEligible:
+        ["/", "/categories", "/auto", "/immo"].includes(pathname) ||
+        Boolean(staticPageSchemaType(pathname)),
       openGraphType: "website",
       alternateCountryCodes: staticPage.alternate
         ? allMarkets
@@ -932,31 +948,36 @@ export function structuredDataForPolicy(
   policy: SeoRoutePolicy,
   context: MarketContext,
   routeData: PublicRouteDataResolution,
+  options: { socialProfiles?: readonly string[] } = {},
 ): StructuredData[] {
   if (!policy.structuredDataEligible) return [];
   const data = routeData.status === "found" ? routeData.data : null;
 
   if (policy.resourceType === "home") {
-    const origin = new URL(policy.canonicalUrl).origin;
-    return [
-      {
-        "@context": "https://schema.org",
-        "@type": "Organization",
-        name: brand.name,
-        url: origin,
-        logo: new URL(
-          webBrandAssets.icon.structuredData.src,
-          origin,
-        ).toString(),
-      },
-      {
-        "@context": "https://schema.org",
-        "@type": "WebSite",
-        name: brand.name,
-        url: policy.canonicalUrl,
-        inLanguage: context.locale || undefined,
-      },
-    ];
+    return organizationStructuredData({
+      context,
+      canonicalUrl: policy.canonicalUrl,
+      socialProfiles: options.socialProfiles,
+    });
+  }
+
+  if (policy.resourceType === "static_content") {
+    const page = staticPageStructuredData({
+      canonicalPath: policy.canonicalPath,
+      canonicalUrl: policy.canonicalUrl,
+      title: policy.title,
+      description: policy.description,
+      locale: context.locale || undefined,
+    });
+    return page
+      ? [
+          page,
+          breadcrumb(context, [
+            { name: "Accueil", path: "/" },
+            { name: policy.title.replace(/\s*[|—].*$/, "") },
+          ]),
+        ]
+      : [];
   }
 
   if (
@@ -993,7 +1014,8 @@ export function structuredDataForPolicy(
         offers: {
           "@type": "Offer",
           price: listing.isFreeDonation ? 0 : listing.price,
-          priceCurrency: listing.currency || context.currency || "EUR",
+          priceCurrency:
+            listing.currency || context.currency || DEFAULT_MARKET_CURRENCY,
           availability: "https://schema.org/InStock",
           itemCondition: "https://schema.org/UsedCondition",
           url: policy.canonicalUrl,

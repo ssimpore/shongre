@@ -28,6 +28,7 @@ import { VerificationBadge } from "@shongre/ui/web";
 import { services } from "../../../api/client/service-registry";
 import { Button } from "../../../design-system/primitives/Button";
 import { Modal } from "../../../design-system/primitives/Modal";
+import { DEFAULT_MARKET_CURRENCY } from "../../../configuration/market-baseline";
 import {
   FormField,
   Input,
@@ -239,7 +240,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
   const openValue = opportunities
     .filter((opportunity) => opportunity.status === "open")
     .reduce((sum, opportunity) => sum + opportunity.amount.amountMinor, 0);
-  const currency = opportunities[0]?.amount.currency ?? "EUR";
+  const currency = opportunities[0]?.amount.currency ?? DEFAULT_MARKET_CURRENCY;
 
   return (
     <div className="space-y-4 pb-8">

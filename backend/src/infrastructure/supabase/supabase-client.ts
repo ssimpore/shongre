@@ -5,6 +5,16 @@ import { config } from "../../app/config/index.js";
 let anonClientInstance: SupabaseClient<Database> | null = null;
 let adminClientInstance: SupabaseClient<Database> | null = null;
 
+const fetchWithDatabaseTimeout: typeof fetch = (input, init = {}) => {
+  const timeout = AbortSignal.timeout(
+    config.performance.databaseRequestTimeoutMs,
+  );
+  const signal = init.signal
+    ? AbortSignal.any([init.signal, timeout])
+    : timeout;
+  return fetch(input, { ...init, signal });
+};
+
 export function getSupabaseAnonClient(): SupabaseClient<Database> {
   const url = config.supabaseUrl;
   const anonKey = config.supabaseAnonKey;
@@ -16,7 +26,9 @@ export function getSupabaseAnonClient(): SupabaseClient<Database> {
   }
 
   if (!anonClientInstance) {
-    anonClientInstance = createClient<Database>(url, anonKey);
+    anonClientInstance = createClient<Database>(url, anonKey, {
+      global: { fetch: fetchWithDatabaseTimeout },
+    });
   }
   return anonClientInstance;
 }
@@ -37,6 +49,7 @@ export function getSupabaseAdminClient(): SupabaseClient<Database> {
         autoRefreshToken: false,
         persistSession: false,
       },
+      global: { fetch: fetchWithDatabaseTimeout },
     });
   }
   return adminClientInstance;

@@ -14,7 +14,7 @@ import {
   Headphones,
 } from "lucide-react";
 import { Button } from "../../design-system/primitives/Button";
-import { usePageMeta } from "../../hooks/usePageMeta";
+import { useStaticPageSeo } from "../../hooks/useStaticPageSeo";
 import { useTranslation } from "../../i18n/I18nProvider";
 
 interface HelpArticle {
@@ -96,12 +96,7 @@ const FAQ_ARTICLES: HelpArticle[] = [
 
 export const HelpCenterPage: React.FC = () => {
   const { t } = useTranslation();
-  usePageMeta({
-    title: "Centre d'aide",
-    description:
-      "Réponses aux questions les plus fréquentes sur la publication d'annonces, les paiements, la livraison et la sécurité sur Shongre.",
-    canonicalPath: "/aide",
-  });
+  useStaticPageSeo("/aide");
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");

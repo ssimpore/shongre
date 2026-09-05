@@ -4,8 +4,8 @@
 
 - Contract version: `1.0.0`
 - API base path: `/api/v1`
-- Operations: **496**
-- Specification SHA-256: `40738b5598b07862`
+- Operations: **512**
+- Specification SHA-256: `c347436348cd9822`
 
 ## account
 
@@ -305,6 +305,27 @@
 | `GET` | `/crm/tasks` | `listCrmTasks` | `permission` | `crm.tasks.read` | `200` |
 | `POST` | `/crm/tasks` | `createCrmTask` | `permission` | `crm.tasks.create` | `201` |
 | `GET` | `/provider-connections` | `listProviderConnections` | `permission` | `provider.configuration.read` | `200` |
+
+## delivery
+
+| Method | Path | Operation ID | Access | Permission | Success |
+| --- | --- | --- | --- | --- | --- |
+| `POST` | `/admin/delivery/requests/{requestId}/suspend` | `postAdminDeliveryRequestSuspend` | `permission` | `delivery.moderate` | `200` |
+| `GET` | `/admin/delivery/requests` | `getAdminDeliveryRequests` | `permission` | `delivery.admin.manage` | `200` |
+| `POST` | `/delivery/applications/{applicationId}/withdraw` | `postDeliveryApplicationWithdraw` | `permission` | `delivery.application.manage.own` | `200` |
+| `GET` | `/delivery/availability` | `getDeliveryAvailability` | `public` | — | `200` |
+| `GET` | `/delivery/courier/profile` | `getDeliveryCourierProfile` | `permission` | `delivery.courier.manage.own` | `200` |
+| `PUT` | `/delivery/courier/profile` | `putDeliveryCourierProfile` | `permission` | `delivery.courier.manage.own` | `200` |
+| `GET` | `/delivery/me/applications` | `getOwnDeliveryApplications` | `permission` | `delivery.application.manage.own` | `200` |
+| `GET` | `/delivery/me/requests/{requestId}` | `getOwnDeliveryRequest` | `permission` | `delivery.read` | `200` |
+| `GET` | `/delivery/me/requests` | `getOwnDeliveryRequests` | `permission` | `delivery.request.manage.own` | `200` |
+| `POST` | `/delivery/requests/{requestId}/applications/{applicationId}/accept` | `postDeliveryApplicationAccept` | `permission` | `delivery.request.manage.own` | `200` |
+| `POST` | `/delivery/requests/{requestId}/applications` | `postDeliveryApplication` | `permission` | `delivery.application.manage.own` | `201` |
+| `POST` | `/delivery/requests/{requestId}/publish` | `postDeliveryRequestPublish` | `permission` | `delivery.request.manage.own` | `200` |
+| `POST` | `/delivery/requests/{requestId}/transition` | `postDeliveryRequestTransition` | `permission` | `delivery.read` | `200` |
+| `GET` | `/delivery/requests/{requestId}` | `getDeliveryRequest` | `public` | — | `200` |
+| `GET` | `/delivery/requests` | `getDeliveryRequests` | `public` | — | `200` |
+| `POST` | `/delivery/requests` | `postDeliveryRequest` | `permission` | `delivery.request.manage.own` | `201` |
 
 ## digital-products-admin
 

@@ -38,6 +38,15 @@ export function useAuthorization() {
     };
   }, [currentUser]);
 
+  const decision = useMemo(() => {
+    return (
+      permission: Permission,
+      resource?: ResourceOwnershipContext,
+      options?: AuthorizationContextOptions,
+    ) =>
+      authorizationService.decision(currentUser, permission, resource, options);
+  }, [currentUser]);
+
   const hasEntitlement = useMemo(() => {
     return (
       entitlement:
@@ -88,6 +97,7 @@ export function useAuthorization() {
     currentUser,
     permissions: effectivePermissions,
     can,
+    decision,
     hasEntitlement,
     canAccessMarket,
     getFeatureAvailability,

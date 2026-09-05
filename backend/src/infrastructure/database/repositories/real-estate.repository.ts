@@ -2628,7 +2628,7 @@ export class PostgresRealEstateRepository extends DemoRealEstateRepository {
           : 0,
         subscriptionMrr: {
           amountMinor: subscriptionMinor,
-          currency: code === "FR" ? "EUR" : catalog.config.currency,
+          currency: catalog.config.currency,
         },
         addOnRevenue: {
           amountMinor: addOnMinor,

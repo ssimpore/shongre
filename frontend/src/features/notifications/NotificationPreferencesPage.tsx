@@ -151,6 +151,12 @@ export const NotificationPreferencesPage: React.FC = () => {
       isMandatory: true,
     },
     {
+      key: "delivery_opportunities",
+      title: "Opportunités de livraison",
+      description:
+        "Demandes locales correspondant à votre zone et à votre profil coursier.",
+    },
+    {
       key: "reviews",
       title: "Avis & Notations",
       description:

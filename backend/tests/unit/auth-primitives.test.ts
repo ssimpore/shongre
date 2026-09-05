@@ -17,6 +17,7 @@ import {
   forbidStaffMarketplaceAccess,
   Principal,
   requireAuthenticated,
+  requireAuthorization,
   requirePermission,
   requireOwnership,
   requireRecentAuthentication,
@@ -217,6 +218,21 @@ describe("Principal guards", () => {
         "admin.access",
       ),
     ).toThrow(/droits/i);
+
+    expect(() =>
+      requirePermission(
+        {
+          userId: "missing-projection",
+          email: "attacker@example.test",
+          role: "admin",
+          accountType: "individual",
+          staffStatus: "active",
+          staffRole: "admin",
+          mfaVerified: true,
+        },
+        "admin.access",
+      ),
+    ).toThrow(/droits/i);
   });
 
   it("requires MFA for Staff capabilities and rejects the customer plane", () => {
@@ -275,6 +291,34 @@ describe("Principal guards", () => {
     expect(() => requirePermission(GUEST_PRINCIPAL, "listing.read")).toThrow(
       /connecté/i,
     );
+  });
+
+  it("fails closed when required contextual authorization facts are absent", () => {
+    expect(() =>
+      requireAuthorization(
+        { ...buyer, capabilities: ["listing.create"] },
+        {
+          capability: "listing.create",
+          requiredVerification: ["identity"],
+        },
+      ),
+    ).toThrow(/droits/i);
+
+    expect(() =>
+      requireAuthorization(
+        { ...buyer, capabilities: ["listing.create"] },
+        {
+          capability: "listing.create",
+          requiredVerification: ["identity"],
+          featureFlag: "listing-v2",
+          market: { code: "FR", enabled: true },
+        },
+        {
+          verification: { identity: true },
+          featureFlags: ["listing-v2"],
+        },
+      ),
+    ).not.toThrow();
   });
 
   it("allows owners and refuses everyone else", () => {

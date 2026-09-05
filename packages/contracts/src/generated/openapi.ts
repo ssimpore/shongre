@@ -609,6 +609,40 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/admin/delivery/requests": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** List delivery requests for an authorized market operator */
+        readonly get: operations["getAdminDeliveryRequests"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/admin/delivery/requests/{requestId}/suspend": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Suspend an unsafe delivery request without deleting evidence */
+        readonly post: operations["postAdminDeliveryRequestSuspend"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/admin/discovery/configuration": {
         readonly parameters: {
             readonly query?: never;
@@ -3255,6 +3289,212 @@ export interface paths {
         readonly get: operations["getCurrencyCatalog"];
         readonly put?: never;
         readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/delivery/applications/{applicationId}/withdraw": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Withdraw an owned pending courier application */
+        readonly post: operations["postDeliveryApplicationWithdraw"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/delivery/availability": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** Resolve delivery availability for one canonical market */
+        readonly get: operations["getDeliveryAvailability"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/delivery/courier/profile": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** Read the caller courier profile */
+        readonly get: operations["getDeliveryCourierProfile"];
+        /** Create or update the caller courier profile */
+        readonly put: operations["putDeliveryCourierProfile"];
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/delivery/me/applications": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** List courier applications owned by the caller */
+        readonly get: operations["getOwnDeliveryApplications"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/delivery/me/requests": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** List delivery requests owned by the caller */
+        readonly get: operations["getOwnDeliveryRequests"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/delivery/me/requests/{requestId}": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** Read private delivery assignment data as a participant */
+        readonly get: operations["getOwnDeliveryRequest"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/delivery/requests": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** Search public-safe open delivery requests */
+        readonly get: operations["getDeliveryRequests"];
+        readonly put?: never;
+        /** Create an owned delivery request draft */
+        readonly post: operations["postDeliveryRequest"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/delivery/requests/{requestId}": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** Read one public-safe open delivery request */
+        readonly get: operations["getDeliveryRequest"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/delivery/requests/{requestId}/applications": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Apply to an open delivery request */
+        readonly post: operations["postDeliveryApplication"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/delivery/requests/{requestId}/applications/{applicationId}/accept": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Atomically accept one application and reject competitors */
+        readonly post: operations["postDeliveryApplicationAccept"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/delivery/requests/{requestId}/publish": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Publish an owned delivery request */
+        readonly post: operations["postDeliveryRequestPublish"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/delivery/requests/{requestId}/transition": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Transition a delivery assignment using optimistic concurrency */
+        readonly post: operations["postDeliveryRequestTransition"];
         readonly delete?: never;
         readonly options?: never;
         readonly head?: never;
@@ -8665,7 +8905,7 @@ export interface components {
             readonly events: readonly components["schemas"]["AnalyticsEvent"][];
         };
         /** @enum {string} */
-        readonly AnalyticsEventName: "session_started" | "page_viewed" | "navigation_performed" | "signup_started" | "signup_completed" | "login_started" | "login_completed" | "logout_completed" | "verification_started" | "verification_completed" | "password_reset_requested" | "onboarding_started" | "onboarding_step_completed" | "onboarding_completed" | "search_started" | "search_performed" | "search_result_clicked" | "filter_applied" | "filter_removed" | "sort_changed" | "category_viewed" | "subcategory_viewed" | "recommendation_viewed" | "listing_viewed" | "listing_shared" | "listing_favorited" | "listing_unfavorited" | "publication_started" | "publication_step_completed" | "publication_abandoned" | "publication_completed" | "listing_published" | "listing_updated" | "listing_paused" | "listing_reactivated" | "listing_deleted" | "seller_profile_viewed" | "seller_followed" | "seller_contacted" | "conversation_started" | "message_sent" | "message_received" | "contact_revealed" | "offer_started" | "offer_sent" | "offer_accepted" | "offer_rejected" | "checkout_started" | "checkout_completed" | "transaction_started" | "transaction_completed" | "transaction_cancelled" | "refund_requested" | "refund_completed" | "plan_viewed" | "subscription_checkout_started" | "subscription_started" | "subscription_upgraded" | "subscription_downgraded" | "subscription_cancelled" | "promotion_viewed" | "promotion_checkout_started" | "promotion_purchased" | "boost_purchased" | "featured_listing_purchased" | "lead_received" | "lead_viewed" | "lead_contacted" | "lead_converted" | "crm_contact_created" | "crm_opportunity_created" | "crm_opportunity_converted" | "newsletter_campaign_created" | "newsletter_campaign_scheduled" | "newsletter_campaign_sent" | "report_started" | "report_submitted" | "kyc_started" | "kyc_completed" | "moderation_action_performed" | "support_request_created" | "support_request_resolved" | "web_vital_measured" | "feature_flag_evaluated" | "experiment_exposure_recorded" | "trending_section_view" | "trending_topic_impression" | "trending_topic_click" | "trending_topic_change" | "trending_listing_impression" | "trending_listing_click" | "trending_see_all_click" | "homepage_section_view" | "homepage_section_click" | "homepage_trending_topic_view" | "homepage_trending_topic_click" | "homepage_trending_view_all_click" | "homepage_deals_view" | "homepage_deal_click" | "homepage_deals_view_all_click";
+        readonly AnalyticsEventName: "session_started" | "page_viewed" | "navigation_performed" | "signup_started" | "signup_completed" | "login_started" | "login_completed" | "logout_completed" | "verification_started" | "verification_completed" | "password_reset_requested" | "onboarding_started" | "onboarding_step_completed" | "onboarding_completed" | "search_started" | "search_performed" | "search_result_clicked" | "filter_applied" | "filter_removed" | "sort_changed" | "category_viewed" | "subcategory_viewed" | "recommendation_viewed" | "listing_viewed" | "listing_shared" | "listing_favorited" | "listing_unfavorited" | "publication_started" | "publication_step_completed" | "publication_abandoned" | "publication_completed" | "listing_published" | "listing_updated" | "listing_paused" | "listing_reactivated" | "listing_deleted" | "seller_profile_viewed" | "seller_followed" | "seller_contacted" | "conversation_started" | "message_sent" | "message_received" | "contact_revealed" | "offer_started" | "offer_sent" | "offer_accepted" | "offer_rejected" | "checkout_started" | "checkout_completed" | "transaction_started" | "transaction_completed" | "transaction_cancelled" | "refund_requested" | "refund_completed" | "plan_viewed" | "subscription_checkout_started" | "subscription_started" | "subscription_upgraded" | "subscription_downgraded" | "subscription_cancelled" | "promotion_viewed" | "promotion_checkout_started" | "promotion_purchased" | "boost_purchased" | "featured_listing_purchased" | "lead_received" | "lead_viewed" | "lead_contacted" | "lead_converted" | "crm_contact_created" | "crm_opportunity_created" | "crm_opportunity_converted" | "newsletter_campaign_created" | "newsletter_campaign_scheduled" | "newsletter_campaign_sent" | "report_started" | "report_submitted" | "kyc_started" | "kyc_completed" | "moderation_action_performed" | "support_request_created" | "support_request_resolved" | "web_vital_measured" | "feature_flag_evaluated" | "experiment_exposure_recorded" | "trending_section_view" | "trending_topic_impression" | "trending_topic_click" | "trending_topic_change" | "trending_listing_impression" | "trending_listing_click" | "trending_see_all_click" | "homepage_section_view" | "homepage_section_click" | "homepage_trending_topic_view" | "homepage_trending_topic_click" | "homepage_trending_view_all_click" | "homepage_deals_view" | "homepage_deal_click" | "homepage_deals_view_all_click" | "delivery_request_started" | "delivery_request_published" | "delivery_request_viewed" | "delivery_match_completed" | "delivery_opportunity_notified" | "delivery_application_submitted" | "delivery_application_accepted" | "delivery_assignment_status_changed" | "delivery_request_cancelled" | "delivery_request_completed";
         readonly AnalyticsIngestionResult: {
             readonly accepted: number;
         };
@@ -8771,7 +9011,7 @@ export interface components {
          * @description Canonical Shongre capability identifier from packages/contracts/src/access-control.ts.
          * @enum {string}
          */
-        readonly Capability: "marketplace.customer.access" | "profile.read" | "profile.update.own" | "seller.profile.read" | "seller.profile.update.own" | "listing.read" | "listing.create" | "listing.update.own" | "listing.delete.own" | "listing.publish" | "listing.mark_reserved" | "listing.mark_sold" | "listing.promote" | "listing.moderate" | "listing.feature" | "listing.bulk_import" | "message.read.own" | "message.send" | "message.block" | "conversation.manage.own" | "conversation.audit.privileged" | "favorite.manage.own" | "saved_search.manage.own" | "order.create" | "order.read.own" | "order.manage.seller" | "order.refund" | "transaction.audit.finance" | "finance.account.read.own" | "finance.organization.read.own" | "finance.platform.read" | "finance.transactions.read" | "finance.reconciliation.manage" | "finance.payouts.manage" | "finance.adjustments.create" | "finance.exports.read" | "invoice.read" | "invoice.create" | "invoice.finalize" | "invoice.transmit" | "invoice.export" | "invoice.party.manage" | "invoice.received.manage" | "invoicing.tenant.manage" | "invoicing.audit.read" | "support.invoicing.inspect" | "payment.initiate" | "payment.refund" | "review.create" | "review.update.own" | "review.moderate" | "store.manage.own" | "store.analytics.read.own" | "analytics.platform.read" | "analytics.marketing.read" | "analytics.finance.read" | "analytics.technical.read" | "store.customization.manage" | "subscription.manage.own" | "subscription.upgrade" | "monetization.manage" | "monetization.pricing.update" | "monetization.orders.read" | "monetization.plans.read" | "monetization.plans.manage" | "monetization.pricing.manage" | "monetization.promotions.read" | "monetization.promotions.manage" | "monetization.trials.manage" | "monetization.subscriptions.read" | "monetization.subscriptions.manage" | "monetization.complimentary_grants.request" | "monetization.complimentary_grants.create" | "user.read" | "user.manage" | "user.suspend" | "user.reactivate" | "user.verify" | "staff.internal.access" | "staff.marketplace.demo" | "staff.support.access" | "staff.operations.access" | "staff.finance.access" | "staff.commercial.access" | "support.case.read" | "support.case.manage" | "compliance.review" | "compliance.restrict_account" | "compliance.sensitive.read" | "compliance.policy.read" | "compliance.policy.manage" | "compliance.retention.manage" | "compliance.audit.read" | "report.create" | "report.review" | "moderation.review" | "moderation.action" | "market.manage" | "market.configure" | "taxonomy.manage" | "course.read" | "course.request.create" | "course.profile.manage.own" | "course.offer.manage.own" | "course.lead.read.own" | "course.lead.respond.own" | "course.organization.manage.own" | "course.booking.create" | "course.admin.manage" | "auto.read" | "auto.vehicle.manage.own" | "auto.dealer.manage.own" | "auto.lead.manage.own" | "auto.inventory.import.own" | "auto.admin.manage" | "immo.read" | "immo.property.manage.own" | "immo.agency.manage.own" | "immo.lead.manage.own" | "immo.inventory.import.own" | "immo.admin.manage" | "employment.read" | "employment.candidate.manage.own" | "employment.job.manage.own" | "employment.recruiter.manage.own" | "employment.application.manage.own" | "employment.import.own" | "employment.admin.manage" | "provider.read" | "provider.manage" | "provider.configuration.read" | "provider.configuration.manage" | "provider.routing.manage" | "provider.credentials.status.read" | "provider.credentials.manage" | "provider.health.read" | "provider.test" | "admin.access" | "admin.configuration.manage" | "admin.staff.manage" | "admin.permissions.manage" | "role.manage" | "permission.manage" | "audit.read" | "crm.access" | "crm.contact.read" | "crm.contact.manage" | "crm.company.read" | "crm.company.manage" | "crm.opportunity.read" | "crm.opportunity.manage" | "crm.ai_prospecting.use" | "crm.prospecting.read" | "crm.prospecting.profiles.manage" | "crm.prospecting.discover" | "crm.prospecting.import" | "crm.prospecting.enrich" | "crm.prospecting.score" | "crm.prospecting.merge" | "crm.prospecting.lists.manage" | "crm.prospecting.campaigns.manage" | "crm.prospecting.outreach.approve" | "crm.prospecting.sources.manage" | "crm.prospecting.compliance.manage" | "crm.prospecting.analytics.read" | "crm.prospecting.export" | "crm.prospecting.convert_shongre" | "crm.prospecting.internal_first_party" | "crm.dashboard.read" | "crm.accounts.read" | "crm.accounts.create" | "crm.accounts.update" | "crm.accounts.delete" | "crm.accounts.export" | "crm.contacts.read" | "crm.contacts.create" | "crm.contacts.update" | "crm.contacts.delete" | "crm.contacts.export" | "crm.pipelines.read" | "crm.pipelines.manage" | "crm.opportunities.read" | "crm.opportunities.create" | "crm.opportunities.update" | "crm.opportunities.transition" | "crm.opportunities.delete" | "crm.opportunities.export" | "crm.tasks.read" | "crm.tasks.create" | "crm.tasks.complete" | "crm.tasks.manage" | "crm.activities.read" | "crm.activities.create" | "crm.activities.manage" | "crm.analytics.read" | "crm.automation.manage" | "crm.email.send" | "crm.email.read" | "crm.email.templates.manage" | "crm.ai.use" | "crm.configuration.manage" | "crm.products.read" | "crm.products.manage" | "crm.quotes.read" | "crm.quotes.create" | "crm.quotes.manage" | "crm.custom_fields.read" | "crm.custom_fields.manage" | "marketing.dashboard.read" | "marketing.profiles.read" | "marketing.profiles.manage" | "marketing.profiles.export" | "marketing.lists.read" | "marketing.lists.manage" | "marketing.segments.read" | "marketing.segments.manage" | "marketing.campaigns.read" | "marketing.campaigns.create" | "marketing.campaigns.update" | "marketing.campaigns.approve" | "marketing.campaigns.send" | "marketing.campaigns.pause" | "marketing.campaigns.cancel" | "marketing.templates.read" | "marketing.templates.manage" | "marketing.automation.read" | "marketing.automation.manage" | "marketing.analytics.read" | "marketing.senders.manage" | "marketing.domains.manage" | "marketing.compliance.read" | "marketing.compliance.manage" | "marketing.settings.manage" | "commercial_rules.read" | "commercial_rules.edit" | "commercial_rules.approve" | "commercial_rules.publish" | "commissions.read" | "commissions.simulate" | "commissions.manage" | "commissions.publish" | "commissions.override_account" | "commissions.promotions.manage" | "commissions.analytics.read" | "finance.commission_revenue.read";
+        readonly Capability: "marketplace.customer.access" | "profile.read" | "profile.update.own" | "seller.profile.read" | "seller.profile.update.own" | "listing.read" | "listing.create" | "listing.update.own" | "listing.delete.own" | "listing.publish" | "listing.mark_reserved" | "listing.mark_sold" | "listing.promote" | "listing.moderate" | "listing.feature" | "listing.bulk_import" | "message.read.own" | "message.send" | "message.block" | "conversation.manage.own" | "conversation.audit.privileged" | "favorite.manage.own" | "saved_search.manage.own" | "order.create" | "order.read.own" | "order.manage.seller" | "order.refund" | "transaction.audit.finance" | "finance.account.read.own" | "finance.organization.read.own" | "finance.platform.read" | "finance.transactions.read" | "finance.reconciliation.manage" | "finance.payouts.manage" | "finance.adjustments.create" | "finance.exports.read" | "invoice.read" | "invoice.create" | "invoice.finalize" | "invoice.transmit" | "invoice.export" | "invoice.party.manage" | "invoice.received.manage" | "invoicing.tenant.manage" | "invoicing.audit.read" | "support.invoicing.inspect" | "payment.initiate" | "payment.refund" | "review.create" | "review.update.own" | "review.moderate" | "store.manage.own" | "store.analytics.read.own" | "analytics.platform.read" | "analytics.marketing.read" | "analytics.finance.read" | "analytics.technical.read" | "store.customization.manage" | "subscription.manage.own" | "subscription.upgrade" | "monetization.manage" | "monetization.pricing.update" | "monetization.orders.read" | "monetization.plans.read" | "monetization.plans.manage" | "monetization.pricing.manage" | "monetization.promotions.read" | "monetization.promotions.manage" | "monetization.trials.manage" | "monetization.subscriptions.read" | "monetization.subscriptions.manage" | "monetization.complimentary_grants.request" | "monetization.complimentary_grants.create" | "user.read" | "user.manage" | "user.suspend" | "user.reactivate" | "user.verify" | "staff.internal.access" | "staff.marketplace.demo" | "staff.support.access" | "staff.operations.access" | "staff.finance.access" | "staff.commercial.access" | "support.case.read" | "support.case.manage" | "compliance.review" | "compliance.restrict_account" | "compliance.sensitive.read" | "compliance.policy.read" | "compliance.policy.manage" | "compliance.retention.manage" | "compliance.audit.read" | "report.create" | "report.review" | "moderation.review" | "moderation.action" | "market.manage" | "market.configure" | "taxonomy.manage" | "course.read" | "course.request.create" | "course.profile.manage.own" | "course.offer.manage.own" | "course.lead.read.own" | "course.lead.respond.own" | "course.organization.manage.own" | "course.booking.create" | "course.admin.manage" | "auto.read" | "auto.vehicle.manage.own" | "auto.dealer.manage.own" | "auto.lead.manage.own" | "auto.inventory.import.own" | "auto.admin.manage" | "immo.read" | "immo.property.manage.own" | "immo.agency.manage.own" | "immo.lead.manage.own" | "immo.inventory.import.own" | "immo.admin.manage" | "employment.read" | "employment.candidate.manage.own" | "employment.job.manage.own" | "employment.recruiter.manage.own" | "employment.application.manage.own" | "employment.import.own" | "employment.admin.manage" | "delivery.read" | "delivery.request.manage.own" | "delivery.courier.manage.own" | "delivery.application.manage.own" | "delivery.admin.manage" | "delivery.moderate" | "provider.read" | "provider.manage" | "provider.configuration.read" | "provider.configuration.manage" | "provider.routing.manage" | "provider.credentials.status.read" | "provider.credentials.manage" | "provider.health.read" | "provider.test" | "admin.access" | "admin.configuration.manage" | "admin.staff.manage" | "admin.permissions.manage" | "role.manage" | "permission.manage" | "audit.read" | "crm.access" | "crm.contact.read" | "crm.contact.manage" | "crm.company.read" | "crm.company.manage" | "crm.opportunity.read" | "crm.opportunity.manage" | "crm.ai_prospecting.use" | "crm.prospecting.read" | "crm.prospecting.profiles.manage" | "crm.prospecting.discover" | "crm.prospecting.import" | "crm.prospecting.enrich" | "crm.prospecting.score" | "crm.prospecting.merge" | "crm.prospecting.lists.manage" | "crm.prospecting.campaigns.manage" | "crm.prospecting.outreach.approve" | "crm.prospecting.sources.manage" | "crm.prospecting.compliance.manage" | "crm.prospecting.analytics.read" | "crm.prospecting.export" | "crm.prospecting.convert_shongre" | "crm.prospecting.internal_first_party" | "crm.dashboard.read" | "crm.accounts.read" | "crm.accounts.create" | "crm.accounts.update" | "crm.accounts.delete" | "crm.accounts.export" | "crm.contacts.read" | "crm.contacts.create" | "crm.contacts.update" | "crm.contacts.delete" | "crm.contacts.export" | "crm.pipelines.read" | "crm.pipelines.manage" | "crm.opportunities.read" | "crm.opportunities.create" | "crm.opportunities.update" | "crm.opportunities.transition" | "crm.opportunities.delete" | "crm.opportunities.export" | "crm.tasks.read" | "crm.tasks.create" | "crm.tasks.complete" | "crm.tasks.manage" | "crm.activities.read" | "crm.activities.create" | "crm.activities.manage" | "crm.analytics.read" | "crm.automation.manage" | "crm.email.send" | "crm.email.read" | "crm.email.templates.manage" | "crm.ai.use" | "crm.configuration.manage" | "crm.products.read" | "crm.products.manage" | "crm.quotes.read" | "crm.quotes.create" | "crm.quotes.manage" | "crm.custom_fields.read" | "crm.custom_fields.manage" | "marketing.dashboard.read" | "marketing.profiles.read" | "marketing.profiles.manage" | "marketing.profiles.export" | "marketing.lists.read" | "marketing.lists.manage" | "marketing.segments.read" | "marketing.segments.manage" | "marketing.campaigns.read" | "marketing.campaigns.create" | "marketing.campaigns.update" | "marketing.campaigns.approve" | "marketing.campaigns.send" | "marketing.campaigns.pause" | "marketing.campaigns.cancel" | "marketing.templates.read" | "marketing.templates.manage" | "marketing.automation.read" | "marketing.automation.manage" | "marketing.analytics.read" | "marketing.senders.manage" | "marketing.domains.manage" | "marketing.compliance.read" | "marketing.compliance.manage" | "marketing.settings.manage" | "commercial_rules.read" | "commercial_rules.edit" | "commercial_rules.approve" | "commercial_rules.publish" | "commissions.read" | "commissions.simulate" | "commissions.manage" | "commissions.publish" | "commissions.override_account" | "commissions.promotions.manage" | "commissions.analytics.read" | "finance.commission_revenue.read";
         /** @enum {string} */
         readonly CapabilityIneffectiveReason: "directly_revoked" | "inactive_staff" | "staff_separation" | "account_status" | "not_granted";
         readonly CapabilityManagementEntry: {
@@ -9515,6 +9755,177 @@ export interface components {
             readonly minorUnitDigits: number;
             readonly reason: string;
             readonly symbol: string;
+        };
+        readonly DeliveryApplication: {
+            readonly availabilityNote: string;
+            readonly courier: {
+                readonly displayName: string;
+                readonly vehicleTypes: readonly components["schemas"]["DeliveryVehicleType"][];
+                readonly verified: boolean;
+            };
+            /** Format: date-time */
+            readonly createdAt: string;
+            /** Format: uuid */
+            readonly id: string;
+            readonly message: string;
+            readonly quote?: components["schemas"]["DeliveryMoney"];
+            /** Format: uuid */
+            readonly requestId: string;
+            readonly status: components["schemas"]["DeliveryApplicationStatus"];
+            /** Format: date-time */
+            readonly updatedAt: string;
+        };
+        readonly DeliveryApplicationInput: {
+            readonly availabilityNote: string;
+            readonly idempotencyKey: string;
+            readonly marketCode?: string;
+            readonly message: string;
+            readonly quote?: components["schemas"]["DeliveryMoney"];
+        };
+        /** @enum {string} */
+        readonly DeliveryApplicationStatus: "submitted" | "withdrawn" | "accepted" | "rejected" | "expired";
+        readonly DeliveryAvailability: {
+            readonly enabled: boolean;
+            readonly marketCode: string;
+            readonly readOnlyAssigned: boolean;
+            readonly reasons: readonly ("country_disabled" | "marketplace_disabled" | "delivery_capability_disabled" | "taxonomy_unavailable" | "feature_flag_disabled" | "operational_readiness_incomplete")[];
+        };
+        readonly DeliveryCourierProfile: components["schemas"]["DeliveryCourierProfileInput"] & {
+            /** @enum {string} */
+            readonly eligibilityStatus: "pending" | "eligible" | "rejected" | "suspended";
+            /** Format: uuid */
+            readonly id: string;
+            readonly marketCode: string;
+            /** Format: date-time */
+            readonly updatedAt: string;
+        };
+        readonly DeliveryCourierProfileInput: {
+            readonly availabilityNote?: string;
+            readonly marketCode?: string;
+            readonly maxWeightGrams: number;
+            readonly opportunityNotifications: boolean;
+            readonly serviceLocalities: readonly components["schemas"]["DeliveryLocality"][];
+            readonly status: components["schemas"]["DeliveryCourierStatus"];
+            readonly vehicleTypes: readonly components["schemas"]["DeliveryVehicleType"][];
+        };
+        /** @enum {string} */
+        readonly DeliveryCourierStatus: "inactive" | "active" | "paused" | "suspended";
+        readonly DeliveryLocality: {
+            readonly city: string;
+            readonly postalCode: string;
+        };
+        readonly DeliveryModerationSuspendInput: {
+            readonly expectedVersion?: number;
+            readonly reason: string;
+        };
+        readonly DeliveryMoney: {
+            readonly amountMinor: number;
+            readonly currency: string;
+        };
+        readonly DeliveryPackage: {
+            readonly approximateWeightGrams: number;
+            readonly count: number;
+            readonly dimensionsCm?: {
+                readonly height: number;
+                readonly length: number;
+                readonly width: number;
+            };
+            readonly handlingRequirements: readonly string[];
+            readonly loadingAssistanceRequired: boolean;
+            readonly requiredVehicleType?: components["schemas"]["DeliveryVehicleType"];
+            readonly type: string;
+        };
+        readonly DeliveryPrivateRequest: components["schemas"]["DeliveryPublicRequest"] & {
+            readonly applications: readonly components["schemas"]["DeliveryApplication"][];
+            readonly dropoff: components["schemas"]["DeliveryPrivateStop"];
+            readonly pickup: components["schemas"]["DeliveryPrivateStop"];
+            /** Format: uuid */
+            readonly selectedApplicationId?: string;
+            /** Format: uuid */
+            readonly sourceOrderId?: string;
+        };
+        readonly DeliveryPrivateStop: {
+            readonly accessInstructions?: string;
+            readonly city: string;
+            readonly complement?: string;
+            readonly contactName: string;
+            readonly contactPhone: string;
+            readonly postalCode: string;
+            readonly street: string;
+        };
+        readonly DeliveryPublicRequest: {
+            readonly applicationCount: number;
+            readonly budget?: components["schemas"]["DeliveryMoney"];
+            readonly deliveryWindow: components["schemas"]["DeliveryWindow"];
+            readonly description: string;
+            readonly dropoffLocality: components["schemas"]["DeliveryLocality"];
+            /** Format: date-time */
+            readonly expiresAt: string;
+            /** Format: uuid */
+            readonly id: string;
+            readonly marketCode: string;
+            /** @enum {string} */
+            readonly origin: "standalone" | "order";
+            readonly package: components["schemas"]["DeliveryPackage"];
+            readonly pickupLocality: components["schemas"]["DeliveryLocality"];
+            readonly pickupWindow: components["schemas"]["DeliveryWindow"];
+            readonly publicInstructions?: string;
+            /** Format: date-time */
+            readonly publishedAt?: string;
+            readonly requester: {
+                readonly displayName: string;
+                readonly verified: boolean;
+            };
+            readonly slug: string;
+            readonly status: components["schemas"]["DeliveryRequestStatus"];
+            readonly title: string;
+            readonly version: number;
+        };
+        readonly DeliveryRequestInput: {
+            readonly budget?: components["schemas"]["DeliveryMoney"];
+            readonly deliveryWindow: components["schemas"]["DeliveryWindow"];
+            readonly description: string;
+            readonly dropoff: components["schemas"]["DeliveryPrivateStop"];
+            /** Format: date-time */
+            readonly expiresAt: string;
+            readonly idempotencyKey: string;
+            readonly marketCode: string;
+            /** @enum {string} */
+            readonly origin: "standalone" | "order";
+            readonly package: components["schemas"]["DeliveryPackage"];
+            readonly pickup: components["schemas"]["DeliveryPrivateStop"];
+            readonly pickupWindow: components["schemas"]["DeliveryWindow"];
+            readonly publicInstructions?: string;
+            /** Format: uuid */
+            readonly sourceOrderId?: string;
+            readonly title: string;
+        };
+        readonly DeliveryRequestPage: {
+            readonly items: readonly components["schemas"]["DeliveryPublicRequest"][];
+            readonly nextCursor?: string;
+        };
+        /** @enum {string} */
+        readonly DeliveryRequestStatus: "draft" | "pending_review" | "open" | "assigned" | "picked_up" | "in_transit" | "delivered" | "completed" | "cancelled" | "expired" | "suspended" | "disputed";
+        readonly DeliverySelectedCourierAssignment: components["schemas"]["DeliveryPublicRequest"] & {
+            readonly dropoff: components["schemas"]["DeliveryPrivateStop"];
+            readonly pickup: components["schemas"]["DeliveryPrivateStop"];
+            readonly selectedApplication: components["schemas"]["DeliveryApplication"];
+            /** Format: uuid */
+            readonly selectedApplicationId: string;
+        };
+        readonly DeliveryTransitionInput: {
+            readonly expectedVersion: number;
+            readonly marketCode: string;
+            readonly note?: string;
+            readonly status: components["schemas"]["DeliveryRequestStatus"];
+        };
+        /** @enum {string} */
+        readonly DeliveryVehicleType: "bicycle" | "cargo_bicycle" | "scooter" | "car" | "van";
+        readonly DeliveryWindow: {
+            /** Format: date-time */
+            readonly endsAt: string;
+            /** Format: date-time */
+            readonly startsAt: string;
         };
         readonly DigitalAccessGrant: {
             /** @enum {string} */
@@ -11260,6 +11671,16 @@ export interface components {
         readonly ReorderSolutionsInput: {
             readonly solutionIds: readonly string[];
         };
+        /** @description Exactly one of listingId, reportedUserId, or deliveryRequestId is required. */
+        readonly ReportInput: {
+            /** Format: uuid */
+            readonly deliveryRequestId?: string;
+            readonly details: string;
+            readonly listingId?: string;
+            /** @enum {string} */
+            readonly reason: "fraud" | "counterfeit" | "prohibited" | "harassment" | "other";
+            readonly reportedUserId?: string;
+        };
         readonly SellerAnalytics: {
             /** Format: date-time */
             readonly generatedAt: string;
@@ -11712,6 +12133,18 @@ export interface components {
             readonly frequency?: components["schemas"]["WatchFrequency"];
             /** @enum {string} */
             readonly status?: "active" | "paused";
+        };
+        readonly UserProfileUpdateRequest: {
+            /** Format: uri */
+            readonly avatarUrl?: string;
+            readonly bio?: string;
+            readonly city?: string;
+            readonly country?: string;
+            readonly department?: string;
+            readonly name?: string;
+            readonly phone?: string;
+            readonly postalCode?: string;
+            readonly region?: string;
         };
         readonly WatchChannels: {
             readonly email: boolean;
@@ -13022,6 +13455,78 @@ export interface operations {
                 };
                 content: {
                     readonly "application/json": components["schemas"]["CurrencyDefinition"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getAdminDeliveryRequests: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["DeliveryRequestPage"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly postAdminDeliveryRequestSuspend: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path: {
+                readonly requestId: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["DeliveryModerationSuspendInput"];
+            };
+        };
+        readonly responses: {
+            /** @description Delivery request suspended. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["DeliveryPublicRequest"];
                 };
             };
             readonly 400: components["responses"]["BadRequest"];
@@ -18638,6 +19143,519 @@ export interface operations {
                 };
                 content: {
                     readonly "application/json": components["schemas"]["CurrencyCatalog"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly postDeliveryApplicationWithdraw: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path: {
+                readonly applicationId: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": Record<string, never>;
+            };
+        };
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["DeliveryApplication"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getDeliveryAvailability: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["DeliveryAvailability"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getDeliveryCourierProfile: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["DeliveryCourierProfile"] | null;
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly putDeliveryCourierProfile: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["DeliveryCourierProfileInput"];
+            };
+        };
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["DeliveryCourierProfile"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getOwnDeliveryApplications: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": readonly components["schemas"]["DeliveryApplication"][];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getOwnDeliveryRequests: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": readonly components["schemas"]["DeliveryPrivateRequest"][];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getOwnDeliveryRequest: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path: {
+                readonly requestId: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["DeliveryPrivateRequest"] | components["schemas"]["DeliverySelectedCourierAssignment"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getDeliveryRequests: {
+        readonly parameters: {
+            readonly query?: {
+                readonly cursor?: string;
+                readonly limit?: string;
+                readonly pickupPostalCode?: string;
+                readonly vehicleType?: string;
+            };
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["DeliveryRequestPage"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly postDeliveryRequest: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["DeliveryRequestInput"];
+            };
+        };
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 201: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["DeliveryPrivateRequest"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getDeliveryRequest: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path: {
+                readonly requestId: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["DeliveryPublicRequest"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly postDeliveryApplication: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path: {
+                readonly requestId: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["DeliveryApplicationInput"];
+            };
+        };
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 201: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["DeliveryApplication"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly postDeliveryApplicationAccept: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path: {
+                readonly applicationId: string;
+                readonly requestId: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": {
+                    readonly expectedVersion: number;
+                    readonly marketCode: string;
+                };
+            };
+        };
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["DeliveryPrivateRequest"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly postDeliveryRequestPublish: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path: {
+                readonly requestId: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": {
+                    readonly marketCode?: string;
+                };
+            };
+        };
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["DeliveryPrivateRequest"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly postDeliveryRequestTransition: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path: {
+                readonly requestId: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["DeliveryTransitionInput"];
+            };
+        };
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["DeliveryPrivateRequest"] | components["schemas"]["DeliverySelectedCourierAssignment"];
                 };
             };
             readonly 400: components["responses"]["BadRequest"];
@@ -28277,9 +29295,7 @@ export interface operations {
         };
         readonly requestBody: {
             readonly content: {
-                readonly "application/json": {
-                    readonly [key: string]: unknown;
-                };
+                readonly "application/json": components["schemas"]["ReportInput"];
             };
         };
         readonly responses: {
@@ -29084,9 +30100,7 @@ export interface operations {
         };
         readonly requestBody: {
             readonly content: {
-                readonly "application/json": {
-                    readonly [key: string]: unknown;
-                };
+                readonly "application/json": components["schemas"]["UserProfileUpdateRequest"];
             };
         };
         readonly responses: {

@@ -7,6 +7,8 @@
  * ownership and organization scope remain request/resource-level decisions.
  */
 
+import type { VerificationDimension as ComplianceVerificationDimension } from "./schemas/compliance";
+
 export const ACCOUNT_TYPES = ["individual", "professional"] as const;
 export type AccountType = (typeof ACCOUNT_TYPES)[number];
 export type LegacyAccountType = AccountType | "staff" | "internal";
@@ -216,6 +218,12 @@ export const CAPABILITIES = [
   "employment.application.manage.own",
   "employment.import.own",
   "employment.admin.manage",
+  "delivery.read",
+  "delivery.request.manage.own",
+  "delivery.courier.manage.own",
+  "delivery.application.manage.own",
+  "delivery.admin.manage",
+  "delivery.moderate",
   "provider.read",
   "provider.manage",
   "provider.configuration.read",
@@ -405,6 +413,10 @@ export const CUSTOMER_MARKETPLACE_CAPABILITIES = [
   "employment.recruiter.manage.own",
   "employment.application.manage.own",
   "employment.import.own",
+  "delivery.read",
+  "delivery.request.manage.own",
+  "delivery.courier.manage.own",
+  "delivery.application.manage.own",
 ] as const satisfies readonly Capability[];
 
 const CUSTOMER_MARKETPLACE_CAPABILITY_SET = new Set<Capability>(
@@ -426,6 +438,7 @@ export const STAFF_MARKETPLACE_READ_CAPABILITIES = [
   "auto.read",
   "immo.read",
   "employment.read",
+  "delivery.read",
 ] as const satisfies readonly Capability[];
 
 const STAFF_MARKETPLACE_READ_CAPABILITY_SET = new Set<Capability>(
@@ -562,6 +575,7 @@ const PUBLIC_CAPABILITIES = [
   "auto.read",
   "immo.read",
   "employment.read",
+  "delivery.read",
 ] as const satisfies readonly Capability[];
 
 const CUSTOMER_CORE_CAPABILITIES = [
@@ -581,6 +595,9 @@ const CUSTOMER_CORE_CAPABILITIES = [
   "payment.initiate",
   "review.create",
   "review.update.own",
+  "delivery.request.manage.own",
+  "delivery.courier.manage.own",
+  "delivery.application.manage.own",
 ] as const satisfies readonly Capability[];
 
 const INDIVIDUAL_CAPABILITIES = [
@@ -697,6 +714,7 @@ export const STAFF_ROLE_CAPABILITIES: Record<StaffRole, readonly Capability[]> =
       "report.review",
       "moderation.review",
       "moderation.action",
+      "delivery.moderate",
       "review.moderate",
       "user.read",
     ],
@@ -711,6 +729,7 @@ export const STAFF_ROLE_CAPABILITIES: Record<StaffRole, readonly Capability[]> =
       "compliance.restrict_account",
       "compliance.audit.read",
       "report.review",
+      "delivery.moderate",
       "audit.read",
     ],
     compliance: [
@@ -768,6 +787,7 @@ export const STAFF_ROLE_CAPABILITIES: Record<StaffRole, readonly Capability[]> =
       "provider.health.read",
       "analytics.platform.read",
       "analytics.technical.read",
+      "delivery.admin.manage",
     ],
     commercial: [
       "staff.internal.access",
@@ -820,6 +840,7 @@ export const STAFF_ROLE_CAPABILITIES: Record<StaffRole, readonly Capability[]> =
       "auto.admin.manage",
       "immo.admin.manage",
       "employment.admin.manage",
+      "delivery.admin.manage",
       "analytics.platform.read",
       "analytics.marketing.read",
       "analytics.technical.read",
@@ -872,6 +893,7 @@ export const STAFF_ROLE_CAPABILITIES: Record<StaffRole, readonly Capability[]> =
       "auto.admin.manage",
       "immo.admin.manage",
       "employment.admin.manage",
+      "delivery.admin.manage",
       "role.manage",
       "audit.read",
       "commercial_rules.read",
@@ -945,6 +967,7 @@ export const STAFF_ROLE_CAPABILITIES: Record<StaffRole, readonly Capability[]> =
       "provider.credentials.manage",
       "provider.health.read",
       "provider.test",
+      "delivery.admin.manage",
       "role.manage",
       "permission.manage",
       "audit.read",
@@ -1147,6 +1170,23 @@ const SUSPENDED_CAPABILITIES = new Set<Capability>([
   "report.create",
 ]);
 
+const capabilityAllowedForAccountStatus = (
+  status: AccountStatus,
+  capability: Capability,
+): boolean => {
+  if (status === "active") return true;
+  if (status === "restricted") return RESTRICTED_CAPABILITIES.has(capability);
+  if (status === "suspended") return SUSPENDED_CAPABILITIES.has(capability);
+  if (status === "banned" || status === "closed") return false;
+  return (
+    PUBLIC_CAPABILITIES.includes(
+      capability as (typeof PUBLIC_CAPABILITIES)[number],
+    ) ||
+    capability === "profile.update.own" ||
+    capability === "report.create"
+  );
+};
+
 /** Resolve effective coarse-grained capabilities. Deny-by-default. */
 export function resolveEffectiveCapabilities(
   subject: AccessSubject | null | undefined,
@@ -1233,6 +1273,298 @@ export function hasEffectiveCapability(
   capability: Capability,
 ): boolean {
   return resolveEffectiveCapabilities(subject).includes(capability);
+}
+
+export type AuthorizationVerificationDimension =
+  ComplianceVerificationDimension;
+
+export type AuthorizationDenialReason =
+  | "unauthenticated"
+  | "account_status"
+  | "inactive_staff"
+  | "staff_separation"
+  | "missing_capability"
+  | "account_type"
+  | "professional_vertical"
+  | "verification_required"
+  | "entitlement_required"
+  | "feature_disabled"
+  | "market_unavailable"
+  | "market_scope"
+  | "resource_scope";
+
+export type AuthorizationRemediation =
+  "sign_in" | "contact_support" | "verify" | "upgrade" | "switch_market" | null;
+
+/**
+ * Request/resource facts supplied by an authoritative adapter. Organization
+ * roles and subscription names never become capabilities here: their owning
+ * services resolve them into explicit memberships and entitlement keys first.
+ */
+export interface AuthorizationActorContext {
+  subject: AccessSubject | null | undefined;
+  subjectId?: string;
+  /**
+   * Optional server-authoritative projection. When supplied—even empty—it is
+   * used verbatim instead of re-deriving grants from presentation role labels.
+   */
+  effectiveCapabilities?: readonly Capability[];
+  organizationIds?: readonly string[];
+  marketCodes?: readonly string[];
+  verification?: Partial<Record<AuthorizationVerificationDimension, boolean>>;
+  entitlements?: readonly string[];
+  featureFlags?: readonly string[];
+}
+
+export interface AuthorizationResourceContext {
+  ownerIds?: readonly string[];
+  organizationId?: string;
+}
+
+export interface AuthorizationRequirement {
+  capability: Capability;
+  accountTypes?: readonly AccountType[];
+  professionalVerticals?: readonly ProfessionalVertical[];
+  requiredVerification?: readonly AuthorizationVerificationDimension[];
+  entitlement?: string;
+  featureFlag?: string;
+  market?: {
+    code: string;
+    enabled: boolean;
+  };
+  resourceScope?: "owner" | "owner_or_organization";
+  resource?: AuthorizationResourceContext;
+}
+
+export interface AuthorizationDecision {
+  allowed: boolean;
+  capability: Capability;
+  denialReason: AuthorizationDenialReason | null;
+  remediation: AuthorizationRemediation;
+}
+
+const allowDecision = (capability: Capability): AuthorizationDecision => ({
+  allowed: true,
+  capability,
+  denialReason: null,
+  remediation: null,
+});
+
+const denyDecision = (
+  capability: Capability,
+  denialReason: AuthorizationDenialReason,
+  remediation: Exclude<AuthorizationRemediation, null>,
+): AuthorizationDecision => ({
+  allowed: false,
+  capability,
+  denialReason,
+  remediation,
+});
+
+const normalizedScopeContains = (
+  values: readonly string[] | undefined,
+  candidate: string,
+): boolean => {
+  const normalizedCandidate = candidate.trim().toUpperCase();
+  return Boolean(
+    normalizedCandidate &&
+    values?.some((value) => {
+      const normalized = value.trim().toUpperCase();
+      return normalized === "*" || normalized === normalizedCandidate;
+    }),
+  );
+};
+
+export function isAuthorizationResourceInScope(
+  actor: Pick<AuthorizationActorContext, "subjectId" | "organizationIds">,
+  resource: AuthorizationResourceContext | undefined,
+  scope: "owner" | "owner_or_organization",
+): boolean {
+  if (!resource) return false;
+  if (
+    actor.subjectId &&
+    resource.ownerIds?.some((ownerId) => ownerId === actor.subjectId)
+  ) {
+    return true;
+  }
+  return (
+    scope === "owner_or_organization" &&
+    typeof resource.organizationId === "string" &&
+    Boolean(actor.organizationIds?.includes(resource.organizationId))
+  );
+}
+
+export function canOperateInMarket(
+  actor: Pick<AuthorizationActorContext, "subject" | "marketCodes">,
+  market: AuthorizationRequirement["market"],
+): boolean {
+  if (!market?.enabled) return false;
+  const access = canonicalAccessContext(actor.subject);
+  if (access.staffStatus !== "active") return true;
+  if (access.staffRole === "owner") return true;
+  return normalizedScopeContains(actor.marketCodes, market.code);
+}
+
+/**
+ * Explainable, deterministic authorization for presentation and request-edge
+ * enforcement. It never grants a capability from an entitlement, feature flag,
+ * organization membership, or market assignment; those facts can only narrow
+ * an already effective capability.
+ */
+export function evaluateAuthorization(
+  actor: AuthorizationActorContext,
+  requirement: AuthorizationRequirement,
+): AuthorizationDecision {
+  const access = canonicalAccessContext(actor.subject);
+  const effective = actor.effectiveCapabilities
+    ? actor.effectiveCapabilities.includes(requirement.capability)
+    : hasEffectiveCapability(actor.subject, requirement.capability);
+
+  // Staff/customer plane separation and inactive Staff membership are
+  // structural constraints. Enforce them even if an upstream projection is
+  // stale or malformed and happens to contain the requested capability.
+  if (
+    access.staffStatus !== "none" &&
+    isCustomerMarketplaceCapability(requirement.capability)
+  ) {
+    return denyDecision(
+      requirement.capability,
+      "staff_separation",
+      "contact_support",
+    );
+  }
+  if (
+    access.staffStatus !== "none" &&
+    access.staffStatus !== "active" &&
+    isStaffCapability(requirement.capability)
+  ) {
+    return denyDecision(
+      requirement.capability,
+      "inactive_staff",
+      "contact_support",
+    );
+  }
+  // Account lifecycle is also structural. A stale server projection must not
+  // restore authority that the current restricted, suspended, banned, closed,
+  // or pending state removes.
+  if (
+    !capabilityAllowedForAccountStatus(access.status, requirement.capability)
+  ) {
+    return denyDecision(
+      requirement.capability,
+      "account_status",
+      "contact_support",
+    );
+  }
+
+  if (!effective) {
+    if (access.accountType === "guest") {
+      return denyDecision(requirement.capability, "unauthenticated", "sign_in");
+    }
+    if (access.status !== "active") {
+      return denyDecision(
+        requirement.capability,
+        "account_status",
+        "contact_support",
+      );
+    }
+    return denyDecision(
+      requirement.capability,
+      "missing_capability",
+      "contact_support",
+    );
+  }
+
+  if (
+    access.accountType === "guest" &&
+    (requirement.accountTypes ||
+      requirement.professionalVerticals ||
+      requirement.requiredVerification ||
+      requirement.entitlement ||
+      requirement.resourceScope)
+  ) {
+    return denyDecision(requirement.capability, "unauthenticated", "sign_in");
+  }
+  if (
+    requirement.accountTypes &&
+    (access.accountType === "guest" ||
+      !requirement.accountTypes.includes(access.accountType))
+  ) {
+    return denyDecision(requirement.capability, "account_type", "upgrade");
+  }
+  if (
+    requirement.professionalVerticals &&
+    (!access.professionalVertical ||
+      !requirement.professionalVerticals.includes(access.professionalVertical))
+  ) {
+    return denyDecision(
+      requirement.capability,
+      "professional_vertical",
+      "upgrade",
+    );
+  }
+  if (
+    requirement.requiredVerification?.some(
+      (dimension) => actor.verification?.[dimension] !== true,
+    )
+  ) {
+    return denyDecision(
+      requirement.capability,
+      "verification_required",
+      "verify",
+    );
+  }
+  if (
+    requirement.entitlement &&
+    !actor.entitlements?.includes(requirement.entitlement)
+  ) {
+    return denyDecision(
+      requirement.capability,
+      "entitlement_required",
+      "upgrade",
+    );
+  }
+  if (
+    requirement.featureFlag &&
+    !actor.featureFlags?.includes(requirement.featureFlag)
+  ) {
+    return denyDecision(
+      requirement.capability,
+      "feature_disabled",
+      "contact_support",
+    );
+  }
+  if (requirement.market) {
+    if (!requirement.market.enabled) {
+      return denyDecision(
+        requirement.capability,
+        "market_unavailable",
+        "switch_market",
+      );
+    }
+    if (!canOperateInMarket(actor, requirement.market)) {
+      return denyDecision(
+        requirement.capability,
+        "market_scope",
+        "switch_market",
+      );
+    }
+  }
+  if (
+    requirement.resourceScope &&
+    !isAuthorizationResourceInScope(
+      actor,
+      requirement.resource,
+      requirement.resourceScope,
+    )
+  ) {
+    return denyDecision(
+      requirement.capability,
+      "resource_scope",
+      "contact_support",
+    );
+  }
+  return allowDecision(requirement.capability);
 }
 
 /**

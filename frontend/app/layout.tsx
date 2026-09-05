@@ -16,6 +16,7 @@ import {
   createPublicRuntimeConfig,
   serializePublicRuntimeConfig,
 } from "../src/platform/runtime-config/public-runtime-config.server";
+import { validWebmasterVerificationToken } from "../src/platform/seo/discovery-governance";
 
 const nunitoSans = Nunito_Sans({
   subsets: ["latin"],
@@ -26,6 +27,12 @@ const nunitoSans = Nunito_Sans({
 });
 
 export function generateMetadata(): Metadata {
+  const googleVerification = validWebmasterVerificationToken(
+    process.env.SEO_GOOGLE_SITE_VERIFICATION,
+  );
+  const bingVerification = validWebmasterVerificationToken(
+    process.env.SEO_BING_SITE_VERIFICATION,
+  );
   return {
     metadataBase: webEnvironmentFromEnvironment().urls.internationalApp,
     title: {
@@ -74,6 +81,16 @@ export function generateMetadata(): Metadata {
       description: DEFAULT_DESCRIPTION,
       images: [DEFAULT_SHARE_IMAGE_PATH],
     },
+    ...(googleVerification || bingVerification
+      ? {
+          verification: {
+            ...(googleVerification ? { google: googleVerification } : {}),
+            ...(bingVerification
+              ? { other: { "msvalidate.01": bingVerification } }
+              : {}),
+          },
+        }
+      : {}),
   };
 }
 

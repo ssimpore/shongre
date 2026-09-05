@@ -23,6 +23,7 @@ import { ConfirmModal } from "../../design-system/primitives/ConfirmModal";
 import { PromptModal } from "../../design-system/primitives/PromptModal";
 import { Image } from "../../design-system/primitives/Image";
 import { useTranslation } from "../../i18n/I18nProvider";
+import { deliveryCatalogueFr } from "../../i18n/delivery.catalogue.fr";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { getListingCategoryLabel } from "../../domains/taxonomy/taxonomy.display";
 import { useAuth } from "../../app/providers/AuthProvider";
@@ -33,12 +34,13 @@ import type {
   OwnModerationCase,
 } from "../../api/contracts/moderation.contract";
 import { MODERATION_CONSTRAINTS } from "@shongre/contracts";
+import { DELIVERY_CONSTRAINTS } from "@shongre/contracts/delivery";
 
 type AppealDecision = "upheld" | "overturned" | "rejected";
 
 export const AdminModerationPage: React.FC = () => {
-  const { t } = useTranslation();
-  const { formatPrice } = useMarketLocation();
+  const { t } = useTranslation(deliveryCatalogueFr);
+  const { formatPrice, activeMarket } = useMarketLocation();
   usePageMeta({
     title: t("meta.adminModeration.title"),
     description: t("meta.adminModeration.description"),
@@ -47,11 +49,12 @@ export const AdminModerationPage: React.FC = () => {
   });
 
   const toast = useToast();
-  const { can } = useAuth();
+  const { can, currentUser } = useAuth();
   const canReviewReports = can("report.review");
   const canModerateListings = can("listing.moderate");
   const canSuspendUsers = can("user.suspend");
   const canReactivateUsers = can("user.reactivate");
+  const canModerateDelivery = can("delivery.moderate");
 
   const [activeTab, setActiveTab] = useState<
     "reports" | "appeals" | "listings" | "users"
@@ -71,6 +74,11 @@ export const AdminModerationPage: React.FC = () => {
     appealId: string;
     decision: AppealDecision;
   } | null>(null);
+  const [deliveryRequestToSuspend, setDeliveryRequestToSuspend] = useState<
+    string | null
+  >(null);
+  const [suspendedDeliveryRequestIds, setSuspendedDeliveryRequestIds] =
+    useState<Set<string>>(() => new Set());
 
   // AI Safety Analysis modal state
   const [selectedListingForAI, setSelectedListingForAI] =
@@ -159,6 +167,34 @@ export const AdminModerationPage: React.FC = () => {
           ? error.message
           : "Impossible de traiter ce signalement.",
       );
+    }
+  };
+
+  const handleSuspendDeliveryRequest = async (reason: string) => {
+    if (!deliveryRequestToSuspend || !currentUser) return;
+    try {
+      await services.delivery.suspendUnsafe(
+        {
+          userId: currentUser.id,
+          displayName: currentUser.name || "Membre Shongre",
+          verified: Boolean(
+            currentUser.isIdentityVerified || currentUser.isEmailVerified,
+          ),
+        },
+        deliveryRequestToSuspend,
+        activeMarket.code,
+        reason,
+      );
+      setSuspendedDeliveryRequestIds((current) =>
+        new Set(current).add(deliveryRequestToSuspend),
+      );
+      toast.success(t("delivery.moderation.suspended"));
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : t("delivery.moderation.error"),
+      );
+    } finally {
+      setDeliveryRequestToSuspend(null);
     }
   };
 
@@ -458,6 +494,24 @@ export const AdminModerationPage: React.FC = () => {
                         {moderationCase.resolutionReason}
                       </p>
                     )}
+                    {canModerateDelivery &&
+                    moderationCase.targetType === "delivery_request" &&
+                    moderationCase.deliveryRequestId &&
+                    !suspendedDeliveryRequestIds.has(
+                      moderationCase.deliveryRequestId,
+                    ) ? (
+                      <Button
+                        size="sm"
+                        variant="danger"
+                        onClick={() =>
+                          setDeliveryRequestToSuspend(
+                            moderationCase.deliveryRequestId!,
+                          )
+                        }
+                      >
+                        {t("delivery.moderation.suspend")}
+                      </Button>
+                    ) : null}
                   </article>
                 ))
               )}
@@ -874,6 +928,18 @@ export const AdminModerationPage: React.FC = () => {
           "admin.adminModerationPage.exSignalementsMultiplesPourNon",
         )}
         confirmText="Confirmer la suspension"
+        required
+      />
+      <PromptModal
+        isOpen={Boolean(deliveryRequestToSuspend)}
+        onClose={() => setDeliveryRequestToSuspend(null)}
+        onSubmit={(reason) => void handleSuspendDeliveryRequest(reason)}
+        title={t("delivery.moderation.title")}
+        label={t("delivery.moderation.reason")}
+        placeholder={t("delivery.moderation.placeholder")}
+        confirmText={t("delivery.moderation.suspend")}
+        multiline
+        minLength={DELIVERY_CONSTRAINTS.moderationReason.minLength}
         required
       />
       <PromptModal

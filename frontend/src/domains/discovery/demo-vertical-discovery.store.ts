@@ -1,6 +1,7 @@
 import type { VehiclePrivate } from "@shongre/contracts/auto";
 import type { CourseOffer, TutorProfile } from "@shongre/contracts/courses";
 import type { JobPostingDetail } from "@shongre/contracts/employment";
+import type { DeliveryPublicRequest } from "@shongre/contracts/delivery";
 import { EMPLOYMENT_DEMO_JOBS } from "@shongre/contracts/employment-demo";
 import type { PropertyPrivate } from "@shongre/contracts/real-estate";
 import { AUTO_DEMO_PRIVATE_VEHICLES } from "../../mocks/autoDemoData";
@@ -14,6 +15,7 @@ import type { Listing } from "../../types";
 import {
   projectAutoVehicle,
   projectCourseOffer,
+  projectDeliveryRequest,
   projectEmploymentJob,
   projectRealEstateProperty,
   type DiscoveryVertical,
@@ -85,6 +87,10 @@ class DemoVerticalDiscoveryStore {
 
   syncEmploymentJob(job: JobPostingDetail): Listing {
     return this.upsert("employment", job.id, projectEmploymentJob(job));
+  }
+
+  syncDeliveryRequest(request: DeliveryPublicRequest): Listing {
+    return this.upsert("delivery", request.id, projectDeliveryRequest(request));
   }
 
   syncCourseOffer(tutor: TutorProfile, offer: CourseOffer): Listing {

@@ -8,8 +8,8 @@ describe("deterministic digital product demo service", () => {
     ["FR", true, "EUR"],
     ["BE", true, "EUR"],
     ["CH", true, "CHF"],
-    ["SN", false, "EUR"],
-    ["BF", false, "EUR"],
+    ["SN", false, "XOF"],
+    ["BF", false, "XOF"],
   ] as const)(
     "projects %s market availability",
     async (marketCode, enabled, currency) => {

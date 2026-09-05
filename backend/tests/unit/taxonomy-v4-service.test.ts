@@ -26,7 +26,7 @@ describe("TaxonomyV4Service", () => {
     "lists market-enabled listing types for %s%s",
     (hostname, pathname, code) => {
       const listingTypes = service.listListingTypes(market(hostname, pathname));
-      expect(listingTypes).toHaveLength(212);
+      expect(listingTypes).toHaveLength(213);
       expect(
         listingTypes.every((listingType) =>
           listingType.marketAvailability.some(

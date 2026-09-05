@@ -9,7 +9,7 @@ describe("canonical taxonomy coverage gate", () => {
     const report = buildTaxonomyCoverageReport();
 
     expect(report.totals.roots).toBe(19);
-    expect(report.totals.publishableLeaves).toBe(212);
+    expect(report.totals.publishableLeaves).toBe(213);
     expect(report.totals.completeLeaves).toBe(report.totals.publishableLeaves);
     expect(report.blockingIssues).toEqual([]);
   });

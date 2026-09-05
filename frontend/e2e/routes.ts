@@ -14,6 +14,8 @@ export interface RouteUnderTest {
  * 404-page assertion — so the fixture id is pinned here on purpose.
  */
 export const DEMO_LISTING_ID = "list-117";
+export const DEMO_DELIVERY_REQUEST_ID =
+  "418711cb-aee0-4fa3-a102-8ec6ea2a2cb8";
 
 export const PUBLIC_ROUTES: RouteUnderTest[] = [
   { path: "/", name: "homepage", persona: "guest" },
@@ -98,6 +100,7 @@ export const PUBLIC_ROUTES: RouteUnderTest[] = [
   },
   { path: "/connexion", name: "login", persona: "guest" },
   { path: "/inscription", name: "register-choice", persona: "guest" },
+  { path: "/a-propos", name: "about", persona: "guest" },
   { path: "/aide", name: "help-center", persona: "guest" },
   { path: "/contact", name: "contact", persona: "guest" },
   { path: "/newsletter", name: "newsletter", persona: "guest" },
@@ -209,9 +212,35 @@ export const PUBLIC_ROUTES: RouteUnderTest[] = [
   { path: "/support", name: "help-center-alias", persona: "guest" },
   { path: "/terms", name: "legal-terms-en-alias", persona: "guest" },
   { path: "/privacy", name: "legal-privacy-en-alias", persona: "guest" },
+  { path: "/livraison", name: "delivery-marketplace", persona: "guest" },
+  {
+    path: `/livraison/demande/${DEMO_DELIVERY_REQUEST_ID}`,
+    name: "delivery-request-detail",
+    persona: "guest",
+  },
 ];
 
 const BUYER_ROUTES: RouteUnderTest[] = [
+  {
+    path: "/livraison/nouvelle-demande",
+    name: "delivery-create",
+    persona: "individual_buyer",
+  },
+  {
+    path: "/compte/livraison",
+    name: "delivery-requester-workspace",
+    persona: "individual_buyer",
+  },
+  {
+    path: `/compte/livraison/${DEMO_DELIVERY_REQUEST_ID}`,
+    name: "delivery-requester-detail",
+    persona: "individual_buyer",
+  },
+  {
+    path: "/compte/livraison/coursier",
+    name: "delivery-courier-workspace",
+    persona: "individual_buyer",
+  },
   {
     path: "/compte/achats-numeriques",
     name: "digital-purchases",

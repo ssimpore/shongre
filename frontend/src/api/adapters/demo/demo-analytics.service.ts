@@ -6,13 +6,17 @@ import type {
 } from "@shongre/contracts/analytics";
 import { getCountryConfig } from "@shongre/contracts";
 import {
+  DEFAULT_MARKET_CODE,
+  DEFAULT_MARKET_CURRENCY,
+} from "../../../configuration/market-baseline";
+import {
   requireDemoAnyCapability,
   requireDemoCapability,
 } from "./demo-authorization";
 
 const GENERATED_AT = "2026-08-27T12:00:00.000Z";
 const market = (query: AnalyticsDashboardQuery) =>
-  query.marketCode === "ALL" ? "FR" : query.marketCode;
+  query.marketCode === "ALL" ? DEFAULT_MARKET_CODE : query.marketCode;
 const series = (factor = 1): AnalyticsTimeSeriesPoint[] =>
   [21, 22, 23, 24, 25, 26, 27].map((day, index) => ({
     date: `2026-08-${day}`,
@@ -169,7 +173,8 @@ export class DemoAnalyticsService implements AnalyticsServiceContract {
       "analytics.platform.read",
       "analytics.finance.read",
     ]);
-    const currency = getCountryConfig(market(scope))?.currency ?? "EUR";
+    const currency =
+      getCountryConfig(market(scope))?.currency ?? DEFAULT_MARKET_CURRENCY;
     return {
       generatedAt: GENERATED_AT,
       scope,

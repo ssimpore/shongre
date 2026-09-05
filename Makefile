@@ -3,11 +3,11 @@ SHELL := /bin/bash
 
 .PHONY: help setup doctor info env-info env env-init env-check env-local env-test env-preview env-development env-staging env-production install reinstall \
 	dev demo dev-web dev-staging staging dev-mobile dev-all start stop stop-all restart status health smoke logs \
-	web frontend web-dev frontend-dev frontend-start frontend-build frontend-lint frontend-typecheck frontend-test frontend-test-e2e frontend-check frontend-clean frontend-logs seo-audit \
+	web frontend web-dev frontend-dev frontend-start frontend-build frontend-lint frontend-typecheck frontend-test frontend-test-e2e frontend-check frontend-clean frontend-logs seo-check seo-audit \
 	backend backend-dev backend-start worker worker-dev worker-start backend-build backend-lint backend-typecheck backend-test backend-check backend-health backend-logs worker-logs \
 	contracts-lint contracts-typecheck contracts-test contracts-check openapi-lint openapi-generate openapi-check openapi-docs openapi-breaking-check \
 	brand-sync brand-check brand-activate brand-activation-check tokens-check tokens-build ui-check ui-test ui-lint ui-typecheck ui-build shared-check cross-platform-check \
-	mobile mobile-dev mobile-start mobile-stop mobile-status mobile-health mobile-web expo expo-start expo-clear expo-doctor ios ios-run ios-open ios-clean android android-run android-open android-clean mobile-prebuild mobile-prebuild-clean mobile-lint mobile-typecheck mobile-test mobile-check \
+	mobile mobile-dev mobile-start mobile-stop mobile-status mobile-health mobile-web expo expo-start expo-clear expo-doctor ios ios-run ios-open ios-clean android android-run android-open android-clean mobile-prebuild mobile-prebuild-clean mobile-lint mobile-typecheck mobile-test mobile-dead-code mobile-check \
 	infra infra-start infra-stop infra-restart infra-status infra-health infra-logs infra-config infra-check infra-validate \
 	db-start db-stop db-status db-health db-migrate db-diff migrations-check db-seed monetization-draft-import taxonomy-db-dry-run taxonomy-db-import db-reset db-types db-shell supabase-start supabase-stop supabase-status supabase-reset supabase-migrate supabase-seed supabase-types supabase-link supabase-pull supabase-push \
 	ports check-ports free-app-ports free-ports free-port \
@@ -16,7 +16,7 @@ SHELL := /bin/bash
 	eas-doctor ios-preview-build android-preview-build ios-production-build android-production-build eas-build-ios eas-build-android eas-build-all submit-ios submit-android \
 	privacy-check permissions-check sdk-audit version version-check version-bump-patch version-bump-minor version-bump-major reviewer-access-check association-files deep-links-check mobile-identifiers-check mobile-production-env-check release-content-check ios-sdk-check ios-privacy-check ios-permissions-check ios-entitlements-check ios-signing-check ios-store-check ios-release-check android-sdk-check android-data-safety-check android-permissions-check android-16kb-check android-signing-check android-store-check android-release-check release-check store-check \
 	production-config-check production-release-check backup-restore-test secret-scan hostname-check deploy-dev deploy-staging deploy-prod rollback remote-health \
-	operations-tooling-check capability-inventory-check capability-inventory-update performance-smoke storage-restore-test observability-evidence edge-functions-evidence \
+	operations-tooling-check capability-inventory-check capability-inventory-update performance-smoke performance-db-plan performance-check storage-restore-test observability-evidence edge-functions-evidence \
 	docker-config docker-build docker-build-frontend docker-build-backend docker-start docker-stop docker-status docker-health docker-logs docker-scan docker-audit \
 	tunnel-status tunnel-health tunnel-logs api-schema api-types contracts release-manifest-check deployment-config-check env-matrix-check
 
@@ -177,6 +177,8 @@ frontend-test: ## Run Web unit and component tests
 	@SHONGRE_ENV=test bash -c 'source scripts/env.sh && npm run test --workspace=frontend'
 frontend-test-e2e: ## Run the real Playwright browser suite
 	@SHONGRE_ENV=test scripts/e2e.sh $(E2E_ARGS)
+seo-check: ## Validate centralized SEO and GEO discovery governance
+	@npm run check:seo --workspace=frontend
 seo-audit: ## Audit a public origin (SEO_ORIGIN=https://example.test)
 	@test -n "$(SEO_ORIGIN)" || { echo "SEO_ORIGIN is required"; exit 2; }
 	@node frontend/scripts/seo-audit.mjs "$(SEO_ORIGIN)" $(SEO_AUDIT_ARGS)
@@ -220,10 +222,12 @@ deployment-config-check: ## Test deploy-file isolation, target binding, and perm
 operations-tooling-check: ## Test release evidence, hosted load, storage restore, and observability tooling
 	@$(MAKE) capability-inventory-check
 	@node scripts/production-readiness.test.mjs
-	@node scripts/load-smoke.test.mjs
-	@node scripts/verify-storage-restore.test.mjs
-	@node scripts/verify-observability.test.mjs
+	@npx tsx scripts/load-smoke.test.mjs
+	@APP_ENV=test npx tsx scripts/database-performance-plan.test.mjs
+	@npx tsx scripts/verify-storage-restore.test.mjs
+	@npx tsx scripts/verify-observability.test.mjs
 	@node scripts/check-runtime-hostnames.test.mjs
+	@npx tsx scripts/check-performance-contract.mjs
 
 capability-inventory-check: ## Reject stale generated counts in the capability matrix
 	@node scripts/update-capability-inventory.mjs --check
@@ -319,9 +323,11 @@ mobile-typecheck:
 	@npm run typecheck --workspace=mobile
 mobile-test:
 	@SHONGRE_ENV=test bash -c 'source scripts/env.sh && npm run test --workspace=mobile'
+mobile-dead-code: ## Reject unreachable Expo source files
+	@npm run dead-code --workspace=mobile
 mobile-runtime-resolution-check:
 	@npm run check:runtime-resolution --workspace=mobile
-mobile-check: mobile-lint mobile-typecheck mobile-test mobile-runtime-resolution-check expo-doctor mobile-production-env-check ## Validate Expo source, types, tests, runtime resolution, and configuration
+mobile-check: mobile-lint mobile-typecheck mobile-test mobile-dead-code mobile-runtime-resolution-check expo-doctor mobile-production-env-check ## Validate Expo source, types, tests, reachability, runtime resolution, and configuration
 
 ##@ Infrastructure & database
 infra: infra-start
@@ -378,11 +384,15 @@ production-release-check:
 backup-restore-test:
 	@scripts/verify-backup-restore.sh
 storage-restore-test: ## Verify a representative object from backup through an isolated restore target
-	@node scripts/verify-storage-restore.mjs
+	@npx tsx scripts/verify-storage-restore.mjs
 performance-smoke: ## Measure hosted API success-rate and p95 budgets and write release evidence
-	@node scripts/load-smoke.mjs
+	@npx tsx scripts/load-smoke.mjs
+performance-db-plan: ## EXPLAIN a production-sized discovery shape in an isolated local PostgreSQL session
+	@source scripts/env.sh && npx tsx scripts/database-performance-plan.mjs
+performance-check: ## Reject drift in SLOs, budgets, cache policy, timeouts, and hot-query projections
+	@npx tsx scripts/check-performance-contract.mjs
 observability-evidence: ## Prove request IDs and record confirmed drain, trace, alert, and on-call evidence
-	@node scripts/verify-observability.mjs
+	@npx tsx scripts/verify-observability.mjs
 edge-functions-evidence: ## Prove only reviewed Supabase Edge Functions are deployed
 	@node scripts/verify-edge-functions.mjs
 secret-scan:
@@ -432,7 +442,7 @@ free-app-ports free-ports:
 	@source scripts/env.sh && scripts/free-port.sh "$$FRONTEND_PORT" frontend && scripts/free-port.sh "$$BACKEND_PORT" backend && scripts/free-port.sh "$$EXPO_METRO_PORT" metro && scripts/free-port.sh "$$EXPO_WEB_PORT" expo-web
 
 ##@ Quality gates
-lint: openapi-check ui-lint frontend-lint backend-lint mobile-lint contracts-typecheck ## Run established static and architecture linters
+lint: openapi-check ui-lint frontend-lint backend-lint mobile-lint mobile-dead-code contracts-typecheck ## Run established static and architecture linters
 lint-fix:
 	@echo 'No unsafe global autofix is configured; use package-local focused fixes.'
 format: ## Format supported source and documentation files with Prettier

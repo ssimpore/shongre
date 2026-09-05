@@ -432,6 +432,126 @@ export const NOTIFICATION_TEMPLATES: Record<
     getDestination: transactionDestination,
   },
 
+  "delivery.request.matched": {
+    type: "delivery.request.matched",
+    category: "delivery_opportunities",
+    defaultPriority: "normal",
+    getTitle: () => "Nouvelle opportunité de livraison",
+    getBody: (ctx) => ctx?.summary || "Une demande correspond à votre zone.",
+    getDestination: (ctx) =>
+      ctx?.requestId
+        ? `/livraison/demande/${encodeURIComponent(ctx.requestId)}`
+        : "/livraison",
+  },
+
+  "delivery.application.submitted": {
+    type: "delivery.application.submitted",
+    category: "delivery",
+    defaultPriority: "normal",
+    getTitle: () => "Nouvelle candidature de coursier",
+    getBody: () => "Un coursier a répondu à votre demande de livraison.",
+    getDestination: (ctx) =>
+      ctx?.requestId
+        ? `/compte/livraison/${encodeURIComponent(ctx.requestId)}`
+        : "/compte/livraison",
+  },
+
+  "delivery.application.accepted": {
+    type: "delivery.application.accepted",
+    category: "delivery",
+    defaultPriority: "high",
+    getTitle: () => "Candidature acceptée",
+    getBody: () => "Le demandeur vous a confié cette livraison.",
+    getDestination: () => "/compte/livraison/coursier",
+  },
+
+  "delivery.application.withdrawn": {
+    type: "delivery.application.withdrawn",
+    category: "delivery",
+    defaultPriority: "normal",
+    getTitle: () => "Candidature retirée",
+    getBody: () => "Un coursier a retiré sa candidature.",
+    getDestination: (ctx) =>
+      ctx?.requestId
+        ? `/compte/livraison/${encodeURIComponent(ctx.requestId)}`
+        : "/compte/livraison",
+  },
+
+  "delivery.application.rejected": {
+    type: "delivery.application.rejected",
+    category: "delivery",
+    defaultPriority: "normal",
+    getTitle: () => "Une autre candidature a été retenue",
+    getBody: () => "Le demandeur a choisi un autre coursier.",
+    getDestination: () => "/compte/livraison/coursier",
+  },
+
+  "delivery.request.cancelled": {
+    type: "delivery.request.cancelled",
+    category: "delivery",
+    defaultPriority: "high",
+    getTitle: () => "Livraison annulée",
+    getBody: () => "La demande de livraison a été annulée.",
+    getDestination: () => "/compte/livraison",
+  },
+
+  "delivery.assignment.updated": {
+    type: "delivery.assignment.updated",
+    category: "delivery",
+    defaultPriority: "high",
+    getTitle: () => "Livraison mise à jour",
+    getBody: (ctx) => ctx?.summary || "Le statut de la livraison a changé.",
+    getDestination: (ctx) =>
+      ctx?.requestId
+        ? `/compte/livraison/${encodeURIComponent(ctx.requestId)}`
+        : "/compte/livraison",
+  },
+
+  "delivery.picked_up": {
+    type: "delivery.picked_up",
+    category: "delivery",
+    defaultPriority: "high",
+    getTitle: () => "Colis récupéré",
+    getBody: () => "Le coursier a confirmé la récupération.",
+    getDestination: () => "/compte/livraison",
+  },
+
+  "delivery.in_transit": {
+    type: "delivery.in_transit",
+    category: "delivery",
+    defaultPriority: "high",
+    getTitle: () => "Livraison en cours",
+    getBody: () => "Le colis est en route.",
+    getDestination: () => "/compte/livraison",
+  },
+
+  "delivery.delivered": {
+    type: "delivery.delivered",
+    category: "delivery",
+    defaultPriority: "high",
+    getTitle: () => "Colis livré",
+    getBody: () => "Le coursier a indiqué que le colis est livré.",
+    getDestination: () => "/compte/livraison",
+  },
+
+  "delivery.completed": {
+    type: "delivery.completed",
+    category: "delivery",
+    defaultPriority: "normal",
+    getTitle: () => "Livraison terminée",
+    getBody: () => "La livraison est maintenant terminée.",
+    getDestination: () => "/compte/livraison",
+  },
+
+  "delivery.disputed": {
+    type: "delivery.disputed",
+    category: "delivery",
+    defaultPriority: "high",
+    getTitle: () => "Litige de livraison ouvert",
+    getBody: () => "La livraison nécessite l’intervention de Shongre.",
+    getDestination: () => "/compte/livraison",
+  },
+
   // 7. Reviews
   "review.available": {
     type: "review.available",

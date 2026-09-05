@@ -36,6 +36,7 @@ export interface IAdminRepository {
     reporterId: string;
     listingId?: string;
     reportedUserId?: string;
+    deliveryRequestId?: string;
     reason: string;
     details: string;
   }): Promise<{ id: string }>;
@@ -102,13 +103,14 @@ export class DemoAdminRepository implements IAdminRepository {
     reporterId: string;
     listingId?: string;
     reportedUserId?: string;
+    deliveryRequestId?: string;
     reason: string;
     details: string;
   }): Promise<{ id: string }> {
     const id = `rep_${this.reports.length + 2}`;
     this.reports.push({
       id,
-      listingId: report.listingId || "",
+      listingId: report.listingId || report.deliveryRequestId || "",
       reason: report.reason,
       reporterName: "Utilisateur",
       createdAt: new Date().toISOString(),
@@ -237,6 +239,7 @@ export class PostgresAdminRepository implements IAdminRepository {
     reporterId: string;
     listingId?: string;
     reportedUserId?: string;
+    deliveryRequestId?: string;
     reason: string;
     details: string;
   }): Promise<{ id: string }> {
@@ -246,6 +249,7 @@ export class PostgresAdminRepository implements IAdminRepository {
         reporter_id: report.reporterId,
         listing_id: report.listingId || null,
         reported_user_id: report.reportedUserId || null,
+        delivery_request_id: report.deliveryRequestId || null,
         reason: report.reason,
         details: report.details,
         status: "pending",

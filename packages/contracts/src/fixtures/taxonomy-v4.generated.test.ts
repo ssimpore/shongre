@@ -10,20 +10,20 @@ const bundle = taxonomyV4PublicBundleSchema.parse(JSON.parse(rawBundle));
 describe("generated taxonomy v4 public projection", () => {
   it("matches the normalized source coverage", () => {
     expect(bundle.metadata.sourceCounts).toEqual({
-      categories: 301,
-      listingTypes: 212,
-      attributes: 323,
-      bindings: 10_831,
+      categories: 302,
+      listingTypes: 213,
+      attributes: 343,
+      bindings: 10_853,
     });
-    expect(bundle.categories).toHaveLength(301);
+    expect(bundle.categories).toHaveLength(302);
     expect(
       bundle.categories.filter((category) => !category.parentId),
     ).toHaveLength(19);
     expect(
       bundle.categories.filter((category) => category.publishable),
-    ).toHaveLength(212);
-    expect(bundle.listingTypes).toHaveLength(212);
-    expect(bundle.attributes).toHaveLength(317);
+    ).toHaveLength(213);
+    expect(bundle.listingTypes).toHaveLength(213);
+    expect(bundle.attributes).toHaveLength(335);
     expect(bundle.attributeGroups).toHaveLength(56);
     expect(
       bundle.attributeGroups.some((group) => group.id === "G_INTERNAL"),
@@ -31,15 +31,15 @@ describe("generated taxonomy v4 public projection", () => {
     expect(bundle.optionSets).toHaveLength(104);
     expect(bundle.options).toHaveLength(725);
     expect(bundle.optionParentLinks).toHaveLength(75);
-    expect(bundle.bindings).toHaveLength(10_831);
+    expect(bundle.bindings).toHaveLength(10_851);
     expect(bundle.dependencyRules).toHaveLength(203);
     expect(bundle.validationRules).toHaveLength(499);
-    expect(bundle.projections.filters).toHaveLength(2_720);
-    expect(bundle.projections.cardFields).toHaveLength(1_406);
-    expect(bundle.projections.detailFields).toHaveLength(10_139);
-    expect(bundle.projections.publicationFlow).toHaveLength(1_632);
-    expect(bundle.projections.search).toHaveLength(212);
-    expect(bundle.projections.seo).toHaveLength(301);
+    expect(bundle.projections.filters).toHaveLength(2_725);
+    expect(bundle.projections.cardFields).toHaveLength(1_410);
+    expect(bundle.projections.detailFields).toHaveLength(10_159);
+    expect(bundle.projections.publicationFlow).toHaveLength(1_636);
+    expect(bundle.projections.search).toHaveLength(213);
+    expect(bundle.projections.seo).toHaveLength(302);
     expect(
       bundle.attributes.some(
         (attribute) => attribute.id === "moderation_risk_level",

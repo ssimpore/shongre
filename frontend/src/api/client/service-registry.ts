@@ -12,6 +12,7 @@ import type { CurrenciesServiceContract } from "../contracts/currencies.contract
 import type { CrmProspectingServiceContract } from "../contracts/crm-prospecting.contract";
 import type { CrmServiceContract } from "../contracts/crm.contract";
 import type { EmploymentServiceContract } from "../contracts/employment.contract";
+import type { DeliveryServiceContract } from "../contracts/delivery.contract";
 import type { DigitalProductsServiceContract } from "../contracts/digital-products.contract";
 import type { FeatureFlagServiceContract } from "../contracts/feature-flags.contract";
 import type { HomepageServiceContract } from "../contracts/homepage.contract";
@@ -62,6 +63,7 @@ export interface ServiceRegistry {
   auto: AutoServiceContract;
   realEstate: RealEstateServiceContract;
   employment: EmploymentServiceContract;
+  delivery: DeliveryServiceContract;
   digitalProducts: DigitalProductsServiceContract;
   businessRules: BusinessRulesServiceContract;
   finance: FinanceServiceContract;
@@ -174,6 +176,10 @@ const demoServiceLoaders: ServiceLoaders = {
   employment: () =>
     import("../adapters/demo/demo-employment.service").then(
       ({ demoEmploymentService }) => demoEmploymentService,
+    ),
+  delivery: () =>
+    import("../adapters/demo/demo-delivery.service").then(
+      ({ demoDeliveryService }) => demoDeliveryService,
     ),
   digitalProducts: () =>
     import("../adapters/demo/demo-digital-products.service").then(
@@ -325,6 +331,10 @@ const httpServiceLoaders: ServiceLoaders = {
   employment: () =>
     import("../adapters/http/http-employment.service").then(
       ({ httpEmploymentService }) => httpEmploymentService,
+    ),
+  delivery: () =>
+    import("../adapters/http/http-delivery.service").then(
+      ({ httpDeliveryService }) => httpDeliveryService,
     ),
   digitalProducts: () =>
     import("../adapters/http/http-digital-products.service").then(

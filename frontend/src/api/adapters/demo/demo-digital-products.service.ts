@@ -9,6 +9,7 @@ import type {
   DigitalSellerProfile,
   FulfillmentType,
 } from "@shongre/contracts/digital-products";
+import { getCountryConfig } from "@shongre/contracts";
 import type {
   ConsumedDigitalAccess,
   DigitalAccessReportType,
@@ -42,6 +43,7 @@ function policy(marketCode: string): DigitalPolicyProjection {
     });
   }
   const enabled = ["FR", "BE", "CH"].includes(marketCode);
+  const currency = getCountryConfig(marketCode)!.currency;
   return {
     marketCode,
     version: 1,
@@ -116,14 +118,14 @@ function policy(marketCode: string): DigitalPolicyProjection {
     defaultEntitlementDurationDays: 365,
     defaultDownloadLimit: 5,
     defaultRevealLimit: 3,
-    currency: marketCode === "CH" ? "CHF" : "EUR",
+    currency,
     minimumPrice: {
       amountMinor: 100,
-      currency: marketCode === "CH" ? "CHF" : "EUR",
+      currency,
     },
     maximumPrice: {
       amountMinor: 100_000,
-      currency: marketCode === "CH" ? "CHF" : "EUR",
+      currency,
     },
     capabilities: {
       onboarding: enabled,

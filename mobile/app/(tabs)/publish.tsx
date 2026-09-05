@@ -783,7 +783,7 @@ export default function PublishScreen() {
     setPublishing(true);
     setError("");
     try {
-      const listing = await listingsService.publish(parsed.data);
+      const listing = await listingsService.publish(parsed.data, user);
       await mobileDigitalDraftStore.clear(user.id, activeMarket.code);
       Alert.alert(
         "Annonce envoyée",
