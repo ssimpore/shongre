@@ -706,7 +706,7 @@ export const ImmoSearchPage: React.FC = () => {
                 aria-label="Vue liste"
                 aria-pressed={view === "list"}
                 onClick={() => setParam("view", "list")}
-                className={`grid h-control-sm w-8 place-items-center rounded-control ${view === "list" ? "bg-primary text-white" : "text-text-secondary"}`}
+                className={`grid h-control-sm w-8 place-items-center rounded-control ${view === "list" ? "bg-primary text-text-inverse" : "text-text-secondary"}`}
               >
                 <List className="h-icon-md w-icon-md" />
               </button>
@@ -715,7 +715,7 @@ export const ImmoSearchPage: React.FC = () => {
                 aria-label="Vue carte"
                 aria-pressed={view === "map"}
                 onClick={() => setParam("view", "map")}
-                className={`grid h-control-sm w-8 place-items-center rounded-control ${view === "map" ? "bg-primary text-white" : "text-text-secondary"}`}
+                className={`grid h-control-sm w-8 place-items-center rounded-control ${view === "map" ? "bg-primary text-text-inverse" : "text-text-secondary"}`}
               >
                 <Map className="h-icon-md w-icon-md" />
               </button>

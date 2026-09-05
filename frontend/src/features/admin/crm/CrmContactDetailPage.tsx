@@ -253,7 +253,7 @@ export const CrmContactDetailPage: React.FC = () => {
 
   return (
     <div className="space-y-4 pb-8">
-      <section className="rounded-2xl border border-stone-800 bg-stone-950 p-5 text-text-inverse shadow-sm sm:p-6">
+      <section className="rounded-2xl border border-border-inverse bg-surface-inverse-deep p-5 text-text-inverse shadow-sm sm:p-6">
         <Link
           to={crmPaths.contacts}
           className="inline-flex items-center gap-1 text-micro font-bold uppercase tracking-wider text-text-disabled hover:text-text-inverse"
@@ -262,7 +262,7 @@ export const CrmContactDetailPage: React.FC = () => {
         </Link>
         <div className="mt-3 flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
           <div className="flex min-w-0 items-start gap-4">
-            <span className="inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-pill border border-stone-700 bg-stone-900 text-lg font-bold">
+            <span className="inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-pill border border-border-inverse-subtle bg-surface-inverse text-lg font-bold">
               {initials}
             </span>
             <div className="min-w-0">
@@ -271,7 +271,7 @@ export const CrmContactDetailPage: React.FC = () => {
                   {contact.fullName}
                 </h1>
                 {contact.doNotContact && (
-                  <span className="inline-flex items-center gap-1 rounded-pill bg-red-950 px-2 py-1 text-micro font-bold text-red-300">
+                  <span className="inline-flex items-center gap-1 rounded-pill bg-danger-inverse-deep px-2 py-1 text-micro font-bold text-danger-on-inverse-strong">
                     <ShieldAlert className="h-icon-xs w-icon-xs" /> Ne pas
                     contacter
                   </span>
@@ -315,7 +315,7 @@ export const CrmContactDetailPage: React.FC = () => {
             <Button
               variant="outline"
               size="sm"
-              className="border-stone-700 bg-stone-900 text-text-inverse hover:bg-stone-800"
+              className="border-border-inverse-subtle bg-surface-inverse text-text-inverse hover:bg-surface-inverse-hover"
               onClick={() => setTaskOpen(true)}
             >
               <CalendarClock className="h-icon-md w-icon-md" />{" "}
@@ -330,7 +330,7 @@ export const CrmContactDetailPage: React.FC = () => {
 
       <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <article className="rounded-2xl border border-border-base bg-bg-surface p-4 shadow-xs">
-          <span className="text-micro font-bold uppercase tracking-wider text-stone-500">
+          <span className="text-micro font-bold uppercase tracking-wider text-text-tertiary">
             Entreprises
           </span>
           <strong className="mt-1 block text-2xl font-bold">
@@ -338,7 +338,7 @@ export const CrmContactDetailPage: React.FC = () => {
           </strong>
         </article>
         <article className="rounded-2xl border border-border-base bg-bg-surface p-4 shadow-xs">
-          <span className="text-micro font-bold uppercase tracking-wider text-stone-500">
+          <span className="text-micro font-bold uppercase tracking-wider text-text-tertiary">
             {t("admin.crmOverviewPage.opportunites")}
           </span>
           <strong className="mt-1 block text-2xl font-bold">
@@ -346,7 +346,7 @@ export const CrmContactDetailPage: React.FC = () => {
           </strong>
         </article>
         <article className="rounded-2xl border border-border-base bg-bg-surface p-4 shadow-xs">
-          <span className="text-micro font-bold uppercase tracking-wider text-stone-500">
+          <span className="text-micro font-bold uppercase tracking-wider text-text-tertiary">
             {t("admin.crmContactDetailPage.pipelineOuvert")}
           </span>
           <strong className="mt-1 block text-2xl font-bold text-primary">
@@ -358,7 +358,7 @@ export const CrmContactDetailPage: React.FC = () => {
           </strong>
         </article>
         <article className="rounded-2xl border border-border-base bg-bg-surface p-4 shadow-xs">
-          <span className="text-micro font-bold uppercase tracking-wider text-stone-500">
+          <span className="text-micro font-bold uppercase tracking-wider text-text-tertiary">
             {t("admin.crmContactDetailPage.tachesOuvertes")}
           </span>
           <strong className="mt-1 block text-2xl font-bold">
@@ -373,7 +373,7 @@ export const CrmContactDetailPage: React.FC = () => {
             <div className="flex items-center justify-between border-b border-border-subtle px-5 py-3.5">
               <div>
                 <h2 className="text-sm font-bold">Historique</h2>
-                <p className="text-micro text-stone-500">
+                <p className="text-micro text-text-tertiary">
                   {t(
                     "admin.crmContactDetailPage.interactionsImmuablesDuContact",
                   )}
@@ -389,13 +389,13 @@ export const CrmContactDetailPage: React.FC = () => {
             </div>
             <div className="divide-y divide-border-subtle px-5">
               {activities.length === 0 ? (
-                <p className="py-8 text-center text-xs text-stone-500">
+                <p className="py-8 text-center text-xs text-text-tertiary">
                   {t("admin.crmCompanyDetailPage.aucuneActiviteEnregistree")}
                 </p>
               ) : (
                 activities.map((activity) => (
                   <article key={activity.id} className="flex gap-3 py-3">
-                    <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-pill bg-stone-100 text-text-secondary">
+                    <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-pill bg-surface-muted text-text-secondary">
                       <MessageSquareText className="h-icon-sm w-icon-sm" />
                     </span>
                     <div className="min-w-0 flex-1">
@@ -403,7 +403,7 @@ export const CrmContactDetailPage: React.FC = () => {
                         <strong className="text-xs font-bold">
                           {activity.title}
                         </strong>
-                        <time className="text-micro text-stone-500">
+                        <time className="text-micro text-text-tertiary">
                           {new Intl.DateTimeFormat(currentLocale, {
                             dateStyle: "medium",
                           }).format(new Date(activity.occurredAt))}
@@ -429,7 +429,7 @@ export const CrmContactDetailPage: React.FC = () => {
                 <h2 className="text-sm font-bold">
                   {t("admin.crmContactDetailPage.opportunitesLiees")}
                 </h2>
-                <p className="text-micro text-stone-500">
+                <p className="text-micro text-text-tertiary">
                   {t(
                     "admin.crmContactDetailPage.influenceEtEngagementsEnCours",
                   )}
@@ -439,7 +439,7 @@ export const CrmContactDetailPage: React.FC = () => {
             </div>
             <div className="divide-y divide-border-subtle px-5">
               {opportunities.length === 0 ? (
-                <p className="py-8 text-center text-xs text-stone-500">
+                <p className="py-8 text-center text-xs text-text-tertiary">
                   {t("admin.crmContactDetailPage.aucuneOpportuniteLiee")}
                 </p>
               ) : (
@@ -453,7 +453,7 @@ export const CrmContactDetailPage: React.FC = () => {
                       <strong className="block truncate text-xs">
                         {opportunity.name}
                       </strong>
-                      <span className="text-micro text-stone-500">
+                      <span className="text-micro text-text-tertiary">
                         {opportunity.stageName} · {opportunity.probability}%
                       </span>
                     </span>
@@ -477,7 +477,9 @@ export const CrmContactDetailPage: React.FC = () => {
                 <h2 className="text-sm font-bold">
                   {t("admin.crmContactDetailPage.tachesAssociees")}
                 </h2>
-                <p className="text-micro text-stone-500">Prochaines actions</p>
+                <p className="text-micro text-text-tertiary">
+                  Prochaines actions
+                </p>
               </div>
               <Button
                 variant="outline"
@@ -489,7 +491,7 @@ export const CrmContactDetailPage: React.FC = () => {
             </div>
             <div className="divide-y divide-border-subtle px-4">
               {tasks.length === 0 ? (
-                <p className="py-7 text-center text-xs text-stone-500">
+                <p className="py-7 text-center text-xs text-text-tertiary">
                   {t("admin.crmContactDetailPage.aucuneTachePlanifiee")}
                 </p>
               ) : (
@@ -514,7 +516,7 @@ export const CrmContactDetailPage: React.FC = () => {
                       >
                         {task.title}
                       </strong>
-                      <time className="text-micro text-stone-500">
+                      <time className="text-micro text-text-tertiary">
                         {new Intl.DateTimeFormat(currentLocale, {
                           dateStyle: "medium",
                           timeStyle: "short",
@@ -543,8 +545,8 @@ export const CrmContactDetailPage: React.FC = () => {
                 ["Source", contactSourceLabel],
               ].map(([label, value]) => (
                 <div key={label} className="flex justify-between gap-3 py-2.5">
-                  <dt className="shrink-0 text-stone-500">{label}</dt>
-                  <dd className="min-w-0 break-words text-right font-bold text-stone-800">
+                  <dt className="shrink-0 text-text-tertiary">{label}</dt>
+                  <dd className="min-w-0 break-words text-right font-bold text-text-strong">
                     {value}
                   </dd>
                 </div>
@@ -554,7 +556,7 @@ export const CrmContactDetailPage: React.FC = () => {
               <Link
                 key={account.id}
                 to={crmPaths.company(account.id)}
-                className="mt-3 flex items-center gap-2 rounded-control bg-stone-50 p-3 text-xs font-bold hover:text-primary"
+                className="mt-3 flex items-center gap-2 rounded-control bg-surface-soft p-3 text-xs font-bold hover:text-primary"
               >
                 <Building2 className="h-icon-md w-icon-md" /> {account.name}
               </Link>

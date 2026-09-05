@@ -91,18 +91,18 @@ export const MessageTimeline: React.FC<MessageTimelineProps> = ({
        an unnamed scroll box. */
     <div
       ref={scrollRef}
-      className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 bg-stone-50/50"
+      className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 bg-surface-soft/50"
       tabIndex={0}
       role="log"
       aria-label={t("messaging.messageTimeline.historiqueDeLaConversation")}
     >
       {groups.length === 0 ? (
-        <div className="h-full flex flex-col items-center justify-center text-center p-8 text-stone-500 space-y-2">
-          <Info className="w-8 h-8 text-stone-300" />
-          <p className="text-xs font-bold text-stone-600">
+        <div className="h-full flex flex-col items-center justify-center text-center p-8 text-text-tertiary space-y-2">
+          <Info className="w-8 h-8 text-text-inverse-muted" />
+          <p className="text-xs font-bold text-text-supporting">
             {t("messaging.messageTimeline.debutDeLaConversation")}
           </p>
-          <p className="text-micro text-stone-500 max-w-xs">
+          <p className="text-micro text-text-tertiary max-w-xs">
             {t("messaging.messageTimeline.posezVosQuestionsAuVendeur")}
           </p>
         </div>
@@ -111,7 +111,7 @@ export const MessageTimeline: React.FC<MessageTimelineProps> = ({
           <div key={groupIdx} className="space-y-4">
             {/* Date Separator Pill */}
             <div className="flex items-center justify-center">
-              <span className="px-3 py-1 bg-stone-200/80 text-stone-600 text-micro font-bold uppercase tracking-wider rounded-full shadow-2xs">
+              <span className="px-3 py-1 bg-surface-disabled/80 text-text-supporting text-micro font-bold uppercase tracking-wider rounded-full shadow-2xs">
                 {group.dateLabel}
               </span>
             </div>
@@ -123,15 +123,15 @@ export const MessageTimeline: React.FC<MessageTimelineProps> = ({
                   const sys = item as SystemTimelineEvent;
                   return (
                     <div key={sys.id} className="my-3 flex justify-center">
-                      <div className="max-w-md w-full bg-white border border-border-base rounded-2xl p-3.5 shadow-2xs text-center space-y-1">
-                        <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-stone-900">
+                      <div className="max-w-md w-full bg-bg-surface border border-border-base rounded-2xl p-3.5 shadow-2xs text-center space-y-1">
+                        <div className="flex items-center justify-center gap-1.5 text-xs font-bold text-text-main">
                           <ShieldCheck className="w-icon-md h-icon-md text-primary" />
                           <span>{sys.title}</span>
                         </div>
-                        <p className="text-xs text-stone-600 leading-relaxed font-medium">
+                        <p className="text-xs text-text-supporting leading-relaxed font-medium">
                           {sys.description}
                         </p>
-                        <span className="text-micro text-stone-500 font-semibold block pt-0.5">
+                        <span className="text-micro text-text-tertiary font-semibold block pt-0.5">
                           {formatTime(sys.createdAt)}
                         </span>
                       </div>
@@ -171,7 +171,7 @@ export const MessageTimeline: React.FC<MessageTimelineProps> = ({
                     className={`flex flex-col ${isMe ? "items-end" : "items-start"} group`}
                   >
                     {!isMe && (
-                      <span className="text-micro font-bold text-stone-500 mb-1 ml-1">
+                      <span className="text-micro font-bold text-text-tertiary mb-1 ml-1">
                         {msg.senderName}
                       </span>
                     )}
@@ -179,8 +179,8 @@ export const MessageTimeline: React.FC<MessageTimelineProps> = ({
                     <div
                       className={`max-w-message-bubble sm:max-w-message-bubble-wide rounded-2xl px-4 py-2.5 shadow-2xs text-xs font-medium ${
                         isMe
-                          ? "bg-primary text-white rounded-br-xs"
-                          : "bg-white text-stone-900 border border-border-base rounded-bl-xs"
+                          ? "bg-primary text-text-inverse rounded-br-xs"
+                          : "bg-bg-surface text-text-main border border-border-base rounded-bl-xs"
                       }`}
                     >
                       {/* Photo Attachment */}
@@ -195,9 +195,9 @@ export const MessageTimeline: React.FC<MessageTimelineProps> = ({
                             src={msg.attachment.url}
                             alt={t("messaging.messageTimeline.photoPartagee")}
                             sizes="(max-width: 640px) 75vw, 320px"
-                            className="max-h-60 w-full object-cover rounded-xl border border-white/20 hover:scale-102 transition-transform"
+                            className="max-h-60 w-full object-cover rounded-xl border border-border-on-inverse/20 hover:scale-102 transition-transform"
                           />
-                          <span className="absolute right-2 bottom-2 p-1.5 rounded-lg bg-black/60 text-white backdrop-blur-sm opacity-0 group-hover/img:opacity-100 group-focus-visible/img:opacity-100 transition-opacity">
+                          <span className="absolute right-2 bottom-2 p-1.5 rounded-lg bg-surface-overlay-deep/60 text-text-inverse backdrop-blur-sm opacity-0 group-hover/img:opacity-100 group-focus-visible/img:opacity-100 transition-opacity">
                             <Maximize2 className="w-icon-sm h-icon-sm" />
                           </span>
                         </button>
@@ -269,12 +269,12 @@ export const MessageTimeline: React.FC<MessageTimelineProps> = ({
 
                       {/* Timestamp & Status Ticks */}
                       <div
-                        /* `text-white/75` on the terracotta bubble measured
+                        /* `text-text-inverse/75` on the terracotta bubble measured
                            3.48:1 — the timestamp and read receipt are real
                            content, so they take the full-strength white the
                            message body already uses. */
                         className={`flex items-center justify-end gap-1 text-micro mt-1 ${
-                          isMe ? "text-white" : "text-stone-500"
+                          isMe ? "text-text-inverse" : "text-text-tertiary"
                         }`}
                       >
                         <span>{formatTime(msg.createdAt)}</span>
@@ -288,13 +288,13 @@ export const MessageTimeline: React.FC<MessageTimelineProps> = ({
                               <Check className="w-icon-xs h-icon-xs" />
                             )}
                             {msg.status === "delivered" && (
-                              <CheckCheck className="w-icon-xs h-icon-xs text-white/90" />
+                              <CheckCheck className="w-icon-xs h-icon-xs text-text-inverse/90" />
                             )}
                             {msg.status === "read" && (
-                              <CheckCheck className="w-icon-xs h-icon-xs text-white" />
+                              <CheckCheck className="w-icon-xs h-icon-xs text-text-inverse" />
                             )}
                             {msg.status === "failed" && (
-                              <span className="flex items-center gap-1 text-red-200 font-bold">
+                              <span className="flex items-center gap-1 text-danger-on-inverse-muted font-bold">
                                 <AlertCircle className="w-icon-xs h-icon-xs" />
                                 <span>
                                   {t("messaging.messageTimeline.echec")}
@@ -303,7 +303,7 @@ export const MessageTimeline: React.FC<MessageTimelineProps> = ({
                                   <button
                                     type="button"
                                     onClick={() => onRetryMessage(msg)}
-                                    className="underline ml-0.5 hover:text-white"
+                                    className="underline ml-0.5 hover:text-text-inverse"
                                   >
                                     {t("messaging.messageTimeline.reessayer")}
                                   </button>
@@ -324,7 +324,7 @@ export const MessageTimeline: React.FC<MessageTimelineProps> = ({
 
       {/* Real-time Typing Indicator */}
       {typingState?.isTyping && (
-        <div className="flex items-center gap-2 text-xs font-semibold text-stone-500 bg-white border border-border-base px-3 py-1.5 rounded-full w-fit shadow-2xs animate-fade-in">
+        <div className="flex items-center gap-2 text-xs font-semibold text-text-tertiary bg-bg-surface border border-border-base px-3 py-1.5 rounded-full w-fit shadow-2xs animate-fade-in">
           <span className="flex gap-1">
             <span className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" />
             <span className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce [animation-delay:0.2s]" />

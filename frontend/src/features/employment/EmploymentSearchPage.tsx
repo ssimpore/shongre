@@ -469,7 +469,7 @@ export const EmploymentSearchPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-bg-base">
-      <section className="border-b border-border-base bg-text-main text-white">
+      <section className="border-b border-border-base bg-surface-inverse text-text-inverse">
         <Container className="py-5 sm:py-8">
           <div className="max-w-3xl">
             <p className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-primary-light">
@@ -482,7 +482,7 @@ export const EmploymentSearchPage: React.FC = () => {
             <h1 className="text-2xl font-bold sm:text-3xl lg:text-4xl">
               {t("employment.search.title")}
             </h1>
-            <p className="mt-2 hidden max-w-2xl text-sm text-white/75 sm:block sm:text-base">
+            <p className="mt-2 hidden max-w-2xl text-sm text-text-inverse/75 sm:block sm:text-base">
               {t("employment.search.subtitle")}
             </p>
             <form

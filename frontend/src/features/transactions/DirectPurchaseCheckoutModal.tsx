@@ -244,26 +244,26 @@ export const DirectPurchaseCheckoutModal: React.FC<
     >
       <div className="space-y-6">
         {/* Item Summary Card */}
-        <div className="p-4 bg-stone-50 rounded-2xl border border-stone-200/60 flex items-center justify-between gap-4 shadow-2xs">
+        <div className="p-4 bg-surface-soft rounded-2xl border border-border-disabled/60 flex items-center justify-between gap-4 shadow-2xs">
           <div className="flex items-center gap-4 min-w-0">
             <Image
               src={listing.coverImageUrl}
               alt={listing.title}
               sizes="64px"
-              className="w-16 h-16 rounded-xl object-cover shrink-0 border border-stone-200"
+              className="w-16 h-16 rounded-xl object-cover shrink-0 border border-border-disabled"
             />
             <div className="min-w-0">
               <span className="text-xs font-bold text-primary uppercase tracking-wider block mb-0.5">
                 {getListingCategoryLabel(listing)} ›{" "}
                 {getListingSubCategoryLabel(listing)}
               </span>
-              <h4 className="text-sm font-bold text-stone-900 truncate mb-1">
+              <h4 className="text-sm font-bold text-text-main truncate mb-1">
                 {listing.title}
               </h4>
-              <div className="text-xs font-medium text-stone-500 flex items-center gap-2">
+              <div className="text-xs font-medium text-text-tertiary flex items-center gap-2">
                 <span>Vendeur : {listing.sellerName}</span>
                 <span>•</span>
-                <span className="font-bold text-stone-900">
+                <span className="font-bold text-text-main">
                   {formatPrice(listing.price, {
                     sourceCurrency: listing.currency,
                   })}
@@ -277,7 +277,7 @@ export const DirectPurchaseCheckoutModal: React.FC<
         {step === "delivery" && (
           <div className="space-y-5">
             <div>
-              <h3 className="text-sm font-bold text-stone-900 uppercase tracking-wider mb-2 flex items-center gap-2">
+              <h3 className="text-sm font-bold text-text-main uppercase tracking-wider mb-2 flex items-center gap-2">
                 <Truck className="w-icon-md h-icon-md text-primary" />
                 <span>
                   {t(
@@ -285,7 +285,7 @@ export const DirectPurchaseCheckoutModal: React.FC<
                   )}
                 </span>
               </h3>
-              <p className="text-xs text-stone-500">
+              <p className="text-xs text-text-tertiary">
                 {t(
                   "transactions.directPurchaseCheckoutModal.selectionnezParmiLesOptionsReellement",
                 )}
@@ -302,8 +302,8 @@ export const DirectPurchaseCheckoutModal: React.FC<
                     onSelect={() => setSelectedQuoteId(quote.id)}
                     className={`p-4 rounded-2xl border transition-all duration-normal flex items-center justify-between shadow-2xs hover:shadow-sm ${
                       isSelected
-                        ? "border-primary bg-primary-light ring-1 ring-primary/50"
-                        : "border-stone-200/60 bg-white hover:bg-stone-50 hover:border-stone-300"
+                        ? "border-primary bg-primary-light ring-1 ring-primary-ring-strong"
+                        : "border-border-disabled/60 bg-bg-surface hover:bg-surface-soft hover:border-border-prominent"
                     }`}
                   >
                     <div className="flex items-center gap-4">
@@ -311,24 +311,24 @@ export const DirectPurchaseCheckoutModal: React.FC<
                         className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
                           isSelected
                             ? "border-primary bg-primary"
-                            : "border-stone-300"
+                            : "border-border-prominent"
                         }`}
                       >
                         {isSelected && (
-                          <div className="w-2 h-2 rounded-full bg-white" />
+                          <div className="w-2 h-2 rounded-full bg-bg-surface" />
                         )}
                       </div>
                       <div>
-                        <div className="text-sm font-bold text-stone-900 mb-0.5">
+                        <div className="text-sm font-bold text-text-main mb-0.5">
                           {quote.title}
                         </div>
-                        <div className="text-xs text-stone-500 font-medium">
+                        <div className="text-xs text-text-tertiary font-medium">
                           {quote.description}
                         </div>
                       </div>
                     </div>
 
-                    <div className="text-right font-bold text-sm text-stone-900">
+                    <div className="text-right font-bold text-sm text-text-main">
                       {quote.price === 0
                         ? "Gratuit"
                         : formatPrice(quote.price, {
@@ -343,8 +343,8 @@ export const DirectPurchaseCheckoutModal: React.FC<
             {/* Destination Address if shipping */}
             {requiresPhysicalDelivery &&
               selectedQuote?.deliveryType !== "hand_delivery" && (
-                <div className="pt-5 mt-2 border-t border-stone-100 space-y-4">
-                  <h4 className="text-sm font-bold text-stone-900 uppercase tracking-wider flex items-center gap-2">
+                <div className="pt-5 mt-2 border-t border-border-soft space-y-4">
+                  <h4 className="text-sm font-bold text-text-main uppercase tracking-wider flex items-center gap-2">
                     <MapPin className="w-icon-md h-icon-md text-primary" />
                     <span>
                       {t(
@@ -424,10 +424,10 @@ export const DirectPurchaseCheckoutModal: React.FC<
               )}
 
             {/* Pricing Summary */}
-            <div className="p-5 bg-stone-50 rounded-2xl border border-stone-200/60 space-y-3 text-sm font-medium">
-              <div className="flex justify-between text-stone-600">
+            <div className="p-5 bg-surface-soft rounded-2xl border border-border-disabled/60 space-y-3 text-sm font-medium">
+              <div className="flex justify-between text-text-supporting">
                 <span>Prix de l'article</span>
-                <span className="font-bold text-stone-900">
+                <span className="font-bold text-text-main">
                   {authoritativeQuote
                     ? formatPrice(authoritativeQuote.itemAmountMinor / 100, {
                         sourceCurrency: authoritativeQuote.currency,
@@ -435,13 +435,13 @@ export const DirectPurchaseCheckoutModal: React.FC<
                     : "—"}
                 </span>
               </div>
-              <div className="flex justify-between text-stone-600">
+              <div className="flex justify-between text-text-supporting">
                 <span>
                   {requiresPhysicalDelivery
                     ? `Frais de livraison (${selectedQuote?.title})`
                     : t("digital.common.noShipping")}
                 </span>
-                <span className="font-bold text-stone-900">
+                <span className="font-bold text-text-main">
                   {authoritativeQuote?.shippingFeeMinor === 0
                     ? "Gratuit"
                     : authoritativeQuote
@@ -452,7 +452,7 @@ export const DirectPurchaseCheckoutModal: React.FC<
                 </span>
               </div>
               {(authoritativeQuote?.protectionFeeMinor || 0) > 0 && (
-                <div className="flex justify-between text-stone-600">
+                <div className="flex justify-between text-text-supporting">
                   <span className="flex items-center gap-1.5">
                     <ShieldCheck className="w-icon-md h-icon-md text-success" />
                     <span>
@@ -461,7 +461,7 @@ export const DirectPurchaseCheckoutModal: React.FC<
                       )}
                     </span>
                   </span>
-                  <span className="font-bold text-stone-900">
+                  <span className="font-bold text-text-main">
                     {formatPrice(
                       (authoritativeQuote?.protectionFeeMinor || 0) / 100,
                       { sourceCurrency: authoritativeQuote?.currency },
@@ -469,7 +469,7 @@ export const DirectPurchaseCheckoutModal: React.FC<
                   </span>
                 </div>
               )}
-              <div className="pt-3 border-t border-stone-200 flex justify-between text-base font-bold text-stone-900">
+              <div className="pt-3 border-t border-border-disabled flex justify-between text-base font-bold text-text-main">
                 <span>
                   {t("transactions.directPurchaseCheckoutModal.totalARegler")}
                 </span>
@@ -515,7 +515,7 @@ export const DirectPurchaseCheckoutModal: React.FC<
         {step === "payment" && (
           <div className="space-y-5">
             <div>
-              <h3 className="text-sm font-bold text-stone-900 uppercase tracking-wider mb-2 flex items-center gap-2">
+              <h3 className="text-sm font-bold text-text-main uppercase tracking-wider mb-2 flex items-center gap-2">
                 <CreditCard className="w-icon-md h-icon-md text-primary" />
                 <span>
                   {t(
@@ -523,7 +523,7 @@ export const DirectPurchaseCheckoutModal: React.FC<
                   )}
                 </span>
               </h3>
-              <p className="text-xs text-stone-500">
+              <p className="text-xs text-text-tertiary">
                 {t(
                   "transactions.directPurchaseCheckoutModal.fondsConservesSousSequestreBancaire",
                 )}
@@ -531,14 +531,14 @@ export const DirectPurchaseCheckoutModal: React.FC<
             </div>
 
             {/* Provider-hosted payment */}
-            <div className="p-5 rounded-2xl border border-stone-200/60 bg-stone-50 space-y-3 shadow-inner">
+            <div className="p-5 rounded-2xl border border-border-disabled/60 bg-surface-soft space-y-3 shadow-inner">
               <div className="flex items-center gap-3">
                 <Lock className="w-icon-lg h-icon-lg text-success shrink-0" />
                 <div>
-                  <p className="text-sm font-bold text-stone-900">
+                  <p className="text-sm font-bold text-text-main">
                     Paiement hébergé et sécurisé
                   </p>
-                  <p className="text-xs text-stone-500 mt-1">
+                  <p className="text-xs text-text-tertiary mt-1">
                     Vous serez redirigé vers notre prestataire. La commande ne
                     sera confirmée qu’après validation du paiement par celui-ci.
                   </p>
@@ -592,20 +592,20 @@ export const DirectPurchaseCheckoutModal: React.FC<
             </div>
 
             <div>
-              <h3 className="text-2xl font-bold text-stone-900">
+              <h3 className="text-2xl font-bold text-text-main">
                 Commande enregistrée
               </h3>
-              <p className="text-sm font-medium text-stone-500 mt-2">
+              <p className="text-sm font-medium text-text-tertiary mt-2">
                 {t(
                   "transactions.directPurchaseCheckoutModal.referenceCommande",
                 )}
-                <span className="font-mono font-bold text-stone-800">
+                <span className="font-mono font-bold text-text-strong">
                   {completedOrderId}
                 </span>
               </p>
             </div>
 
-            <div className="p-5 bg-stone-50 border border-stone-200/60 rounded-3xl max-w-sm mx-auto text-sm text-stone-600 text-left shadow-inner font-medium">
+            <div className="p-5 bg-surface-soft border border-border-disabled/60 rounded-3xl max-w-sm mx-auto text-sm text-text-supporting text-left shadow-inner font-medium">
               Le statut final du paiement et, le cas échéant, le code de remise
               sont disponibles depuis vos achats. Un code de remise n’est créé
               qu’après confirmation du paiement.

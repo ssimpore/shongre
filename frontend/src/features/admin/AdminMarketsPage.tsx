@@ -425,12 +425,12 @@ export const AdminMarketsPage: React.FC = () => {
         <div className="flex-1 space-y-0.5">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-xs font-bold text-text-main">{label}</span>
-            <span className="text-micro font-mono text-stone-500">
+            <span className="text-micro font-mono text-text-tertiary">
               ({path})
             </span>
 
             {isBaseline ? (
-              <span className="inline-flex items-center gap-1 text-micro bg-stone-100 text-stone-700 font-bold px-2 py-0.5 rounded-pill border border-stone-200">
+              <span className="inline-flex items-center gap-1 text-micro bg-surface-muted text-text-emphasis font-bold px-2 py-0.5 rounded-pill border border-border-disabled">
                 {t("admin.adminMarketsPage.marcheParDefaut")}{" "}
                 {baselineMarket.name}
               </span>
@@ -440,7 +440,7 @@ export const AdminMarketsPage: React.FC = () => {
               </span>
             )}
           </div>
-          <p className="text-micro text-stone-500">{description}</p>
+          <p className="text-micro text-text-tertiary">{description}</p>
         </div>
 
         {/* Value and Actions */}
@@ -479,7 +479,7 @@ export const AdminMarketsPage: React.FC = () => {
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-micro h-control-sm px-2 text-stone-500 hover:text-danger hover:bg-danger-surface"
+                className="text-micro h-control-sm px-2 text-text-tertiary hover:text-danger hover:bg-danger-surface"
                 title={t(
                   "admin.adminMarketsPage.supprimerLaSurchargeEtReactiver",
                 )}
@@ -508,7 +508,7 @@ export const AdminMarketsPage: React.FC = () => {
               {t("admin.adminMarketsPage.registreMultiMarches")}
             </span>
           </div>
-          <p className="text-xs sm:text-sm text-stone-500 mt-1">
+          <p className="text-xs sm:text-sm text-text-tertiary mt-1">
             {t("admin.adminMarketsPage.gerezLesPaysActivesDevises")}
             {t(
               "admin.adminMarketsPage.chaqueMarchePossedeUnePolitiqueCompleteEtExpliciteLaFrance",
@@ -538,7 +538,7 @@ export const AdminMarketsPage: React.FC = () => {
           className={`pb-3 px-4 text-xs font-semibold border-b-2 transition-all cursor-pointer ${
             activeTab === "overview"
               ? "border-primary text-primary"
-              : "border-transparent text-stone-500 hover:text-text-main"
+              : "border-transparent text-text-tertiary hover:text-text-main"
           }`}
         >
           Vue d'ensemble ({plural(markets.length, "marché")})
@@ -549,7 +549,7 @@ export const AdminMarketsPage: React.FC = () => {
           className={`pb-3 px-4 text-xs font-semibold border-b-2 transition-all cursor-pointer ${
             activeTab === "editor"
               ? "border-primary text-primary"
-              : "border-transparent text-stone-500 hover:text-text-main"
+              : "border-transparent text-text-tertiary hover:text-text-main"
           }`}
         >
           <Settings2
@@ -566,7 +566,7 @@ export const AdminMarketsPage: React.FC = () => {
           className={`pb-3 px-4 text-xs font-semibold border-b-2 transition-all cursor-pointer ${
             activeTab === "matrix"
               ? "border-primary text-primary"
-              : "border-transparent text-stone-500 hover:text-text-main"
+              : "border-transparent text-text-tertiary hover:text-text-main"
           }`}
         >
           <BarChart3
@@ -581,7 +581,7 @@ export const AdminMarketsPage: React.FC = () => {
           className={`pb-3 px-4 text-xs font-semibold border-b-2 transition-all cursor-pointer ${
             activeTab === "currencies"
               ? "border-primary text-primary"
-              : "border-transparent text-stone-500 hover:text-text-main"
+              : "border-transparent text-text-tertiary hover:text-text-main"
           }`}
         >
           <Coins
@@ -617,7 +617,7 @@ export const AdminMarketsPage: React.FC = () => {
                   key={m.code}
                   className={`p-4 rounded-2xl border transition-all relative flex flex-col justify-between ${
                     isDefault
-                      ? "border-primary/50 bg-gradient-to-b from-white to-primary-light/10 shadow-sm"
+                      ? "border-primary-border-strong bg-gradient-to-b from-bg-surface to-primary-surface-faint shadow-sm"
                       : "border-border-base bg-bg-surface hover:border-border-hover"
                   }`}
                 >
@@ -628,11 +628,11 @@ export const AdminMarketsPage: React.FC = () => {
                         <div className="min-w-0">
                           <div className="font-bold text-sm text-text-main flex items-center gap-1.5 min-w-0">
                             <span className="truncate">{m.name}</span>
-                            <span className="font-mono text-xs text-stone-500 shrink-0">
+                            <span className="font-mono text-xs text-text-tertiary shrink-0">
                               ({m.code})
                             </span>
                           </div>
-                          <div className="text-micro text-stone-500 font-medium truncate">
+                          <div className="text-micro text-text-tertiary font-medium truncate">
                             {m.currency} ({m.currencySymbol}) •{" "}
                             {m.defaultLocale}
                           </div>
@@ -755,7 +755,7 @@ export const AdminMarketsPage: React.FC = () => {
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-stone-500">
+                <p className="text-xs text-text-tertiary">
                   {selectedMarket.isDefault
                     ? "Marché initial par défaut ; ses changements ne se propagent pas aux autres pays."
                     : `${inheritanceMetrics.percentOverridden}% de politique locale explicite • aucun héritage inter-marché`}
@@ -764,7 +764,7 @@ export const AdminMarketsPage: React.FC = () => {
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold text-stone-500">
+              <span className="text-xs font-semibold text-text-tertiary">
                 {t("admin.adminMarketsPage.selectionnerUnMarche")}
               </span>
               <Select
@@ -872,8 +872,8 @@ export const AdminMarketsPage: React.FC = () => {
                 aria-current={activeDomainTab === tab.id ? "true" : undefined}
                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-control text-xs font-semibold transition-colors whitespace-nowrap cursor-pointer ${
                   activeDomainTab === tab.id
-                    ? "bg-stone-900 text-text-inverse"
-                    : "bg-stone-100 text-text-secondary hover:bg-stone-200"
+                    ? "bg-surface-inverse text-text-inverse"
+                    : "bg-surface-muted text-text-secondary hover:bg-surface-disabled"
                 }`}
               >
                 <tab.Icon className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
@@ -908,7 +908,7 @@ export const AdminMarketsPage: React.FC = () => {
                       key={label}
                       className="rounded-control border border-border-subtle bg-bg-surface p-4"
                     >
-                      <p className="text-micro font-bold uppercase tracking-wide text-stone-500">
+                      <p className="text-micro font-bold uppercase tracking-wide text-text-tertiary">
                         {label}
                       </p>
                       <p className="mt-1 break-words font-mono text-xs font-bold text-text-main">
@@ -1061,7 +1061,7 @@ export const AdminMarketsPage: React.FC = () => {
                         className={`p-4 rounded-2xl border transition-all ${
                           isRootEnabled
                             ? "bg-bg-surface border-border-base shadow-xs"
-                            : "bg-stone-50/80 border-stone-200 opacity-75"
+                            : "bg-surface-soft/80 border-border-disabled opacity-75"
                         }`}
                       >
                         <div className="flex items-center justify-between pb-3 border-b border-border-subtle">
@@ -1074,7 +1074,7 @@ export const AdminMarketsPage: React.FC = () => {
                               <div className="text-xs font-bold text-text-main">
                                 {getTaxonomyLabel(rootCat, "compact")}
                               </div>
-                              <div className="text-micro text-stone-500">
+                              <div className="text-micro text-text-tertiary">
                                 Slug: {rootCat.slug}
                               </div>
                             </div>
@@ -1085,7 +1085,7 @@ export const AdminMarketsPage: React.FC = () => {
                               className={`text-micro font-bold px-2 py-0.5 rounded-pill ${
                                 isRootEnabled
                                   ? "bg-success-surface text-success"
-                                  : "bg-stone-200 text-stone-700"
+                                  : "bg-surface-disabled text-text-emphasis"
                               }`}
                             >
                               {isRootEnabled ? "Ouverte" : "Fermée"}
@@ -1122,7 +1122,7 @@ export const AdminMarketsPage: React.FC = () => {
                         {/* Subcategories list */}
                         {rootCat.children && rootCat.children.length > 0 && (
                           <div className="pt-3 space-y-1.5">
-                            <div className="text-micro font-bold text-stone-500 uppercase tracking-wider">
+                            <div className="text-micro font-bold text-text-tertiary uppercase tracking-wider">
                               {t("admin.adminMarketsPage.sousCategories")}
                               {rootCat.children.length})
                             </div>
@@ -1139,8 +1139,8 @@ export const AdminMarketsPage: React.FC = () => {
                                     key={sub.id}
                                     className={`p-2 rounded-control border flex items-center justify-between text-xs ${
                                       isSubEnabled
-                                        ? "bg-bg-base/40 border-border-subtle text-stone-800"
-                                        : "bg-stone-100 border-stone-200 text-stone-500 line-through"
+                                        ? "bg-bg-base/40 border-border-subtle text-text-strong"
+                                        : "bg-surface-muted border-border-disabled text-text-tertiary line-through"
                                     }`}
                                   >
                                     <span className="truncate pr-1 font-medium">
@@ -1551,7 +1551,7 @@ export const AdminMarketsPage: React.FC = () => {
           <div className="p-4 rounded-2xl bg-bg-surface border border-border-base overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="border-b border-border-base bg-stone-50">
+                <tr className="border-b border-border-base bg-surface-soft">
                   <th scope="col" className="p-3 font-bold text-text-main">
                     {t("admin.adminMarketsPage.parametreRegle")}
                   </th>
@@ -1576,7 +1576,7 @@ export const AdminMarketsPage: React.FC = () => {
               </thead>
               <tbody className="divide-y divide-border-subtle">
                 <tr>
-                  <td className="p-3 font-bold text-stone-700">
+                  <td className="p-3 font-bold text-text-emphasis">
                     {t("admin.adminMarketsPage.statutDuMarche")}
                   </td>
                   {markets.map((m) => (
@@ -1586,7 +1586,7 @@ export const AdminMarketsPage: React.FC = () => {
                   ))}
                 </tr>
                 <tr>
-                  <td className="p-3 font-bold text-stone-700">
+                  <td className="p-3 font-bold text-text-emphasis">
                     Devise & Symbole
                   </td>
                   {markets.map((m) => {
@@ -1611,7 +1611,7 @@ export const AdminMarketsPage: React.FC = () => {
                   })}
                 </tr>
                 <tr>
-                  <td className="p-3 font-bold text-stone-700">
+                  <td className="p-3 font-bold text-text-emphasis">
                     {t("admin.adminMarketsPage.tauxDeTvaStandard")}
                   </td>
                   {markets.map((m) => {
@@ -1635,7 +1635,7 @@ export const AdminMarketsPage: React.FC = () => {
                   })}
                 </tr>
                 <tr>
-                  <td className="p-3 font-bold text-stone-700">
+                  <td className="p-3 font-bold text-text-emphasis">
                     {t("admin.adminMarketsPage.fraisProtectionAcheteur")}
                   </td>
                   {markets.map((m) => {
@@ -1664,7 +1664,7 @@ export const AdminMarketsPage: React.FC = () => {
                   })}
                 </tr>
                 <tr>
-                  <td className="p-3 font-bold text-stone-700">
+                  <td className="p-3 font-bold text-text-emphasis">
                     Identifiant Entreprise (Pro)
                   </td>
                   {markets.map((m) => {
@@ -1688,7 +1688,7 @@ export const AdminMarketsPage: React.FC = () => {
                   })}
                 </tr>
                 <tr>
-                  <td className="p-3 font-bold text-stone-700">
+                  <td className="p-3 font-bold text-text-emphasis">
                     {t("admin.adminMarketsPage.reservationAvecSequestre")}
                   </td>
                   {markets.map((m) => {
@@ -1700,7 +1700,7 @@ export const AdminMarketsPage: React.FC = () => {
                     return (
                       <td key={m.code} className="p-3">
                         <span
-                          className={`font-bold ${cfg.reservation.enabled ? "text-success" : "text-stone-500"}`}
+                          className={`font-bold ${cfg.reservation.enabled ? "text-success" : "text-text-tertiary"}`}
                         >
                           {cfg.reservation.enabled
                             ? "✓ Activée"
@@ -1743,7 +1743,7 @@ export const AdminMarketsPage: React.FC = () => {
       >
         <div className="space-y-4">
           <div className="grid gap-3 sm:grid-cols-2">
-            <label className="space-y-1 text-xs font-semibold text-stone-700">
+            <label className="space-y-1 text-xs font-semibold text-text-emphasis">
               {t("admin.adminMarketsPage.modeDeDomaineCanonique")}
               <Select
                 size="compact"
@@ -1760,17 +1760,17 @@ export const AdminMarketsPage: React.FC = () => {
                 <option value="international">International</option>
               </Select>
             </label>
-            <label className="space-y-1 text-xs font-semibold text-stone-700">
+            <label className="space-y-1 text-xs font-semibold text-text-emphasis">
               {t("admin.adminMarketsPage.prefixePublic")}
               <input
                 value={routingBasePath}
                 onChange={(event) => setRoutingBasePath(event.target.value)}
                 placeholder="/be"
-                className="h-control-md w-full rounded-control border border-border-base bg-bg-base px-3 font-mono text-xs focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                className="h-control-md w-full rounded-control border border-border-base bg-bg-base px-3 font-mono text-xs focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary-ring"
               />
             </label>
           </div>
-          <label className="flex items-center justify-between rounded-control border border-border-subtle p-3 text-xs font-semibold text-stone-700">
+          <label className="flex items-center justify-between rounded-control border border-border-subtle p-3 text-xs font-semibold text-text-emphasis">
             {t("admin.adminMarketsPage.visibleSurLePortailInternational")}
             <input
               type="checkbox"
@@ -1781,7 +1781,7 @@ export const AdminMarketsPage: React.FC = () => {
               className="h-4 w-4 accent-primary"
             />
           </label>
-          <label className="flex items-center justify-between rounded-control border border-border-subtle p-3 text-xs font-semibold text-stone-700">
+          <label className="flex items-center justify-between rounded-control border border-border-subtle p-3 text-xs font-semibold text-text-emphasis">
             Autoriser l’indexation SEO
             <input
               type="checkbox"
@@ -1790,7 +1790,7 @@ export const AdminMarketsPage: React.FC = () => {
               className="h-4 w-4 accent-primary"
             />
           </label>
-          <label className="block space-y-1 text-xs font-semibold text-stone-700">
+          <label className="block space-y-1 text-xs font-semibold text-text-emphasis">
             {t("admin.taxonomyHeader.reasonLabel")}
             <textarea
               value={routingChangeReason}
@@ -1802,7 +1802,7 @@ export const AdminMarketsPage: React.FC = () => {
               placeholder={t(
                 "admin.adminMarketsPage.expliquezLeChangementEtSonImpactOperationnel",
               )}
-              className="min-h-control-touch w-full resize-y rounded-control border border-border-base bg-bg-base px-3 py-2 text-xs font-normal focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className="min-h-control-touch w-full resize-y rounded-control border border-border-base bg-bg-base px-3 py-2 text-xs font-normal focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary-ring"
             />
           </label>
           <div className="flex justify-end gap-2 border-t border-border-subtle pt-3">
@@ -1840,7 +1840,7 @@ export const AdminMarketsPage: React.FC = () => {
         <form onSubmit={handleCreateMarket} className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-stone-700 uppercase">
+              <label className="text-xs font-semibold text-text-emphasis uppercase">
                 Code ISO Pays (2 lettres)
               </label>
               <input
@@ -1851,11 +1851,11 @@ export const AdminMarketsPage: React.FC = () => {
                 placeholder={t("admin.adminMarketsPage.exItPtDeUk")}
                 value={newMarketCode}
                 onChange={(e) => setNewMarketCode(e.target.value.toUpperCase())}
-                className="w-full h-control-md px-3 text-xs uppercase font-mono font-bold bg-bg-base border border-border-base rounded-control focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
+                className="w-full h-control-md px-3 text-xs uppercase font-mono font-bold bg-bg-base border border-border-base rounded-control focus:border-primary focus:ring-2 focus:ring-primary-ring focus:outline-none"
               />
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-stone-700 uppercase">
+              <label className="text-xs font-semibold text-text-emphasis uppercase">
                 Drapeau (Emoji)
               </label>
               <input
@@ -1864,13 +1864,13 @@ export const AdminMarketsPage: React.FC = () => {
                 placeholder="ex: 🇮🇹, 🇵🇹, 🇩🇪"
                 value={newMarketFlag}
                 onChange={(e) => setNewMarketFlag(e.target.value)}
-                className="w-full h-control-md px-3 text-sm bg-bg-base border border-border-base rounded-control focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
+                className="w-full h-control-md px-3 text-sm bg-bg-base border border-border-base rounded-control focus:border-primary focus:ring-2 focus:ring-primary-ring focus:outline-none"
               />
             </div>
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-stone-700 uppercase">
+            <label className="text-xs font-semibold text-text-emphasis uppercase">
               Fuseau horaire IANA
             </label>
             <input
@@ -1879,12 +1879,12 @@ export const AdminMarketsPage: React.FC = () => {
               placeholder="ex: Europe/Rome, Africa/Dakar"
               value={newMarketTimezone}
               onChange={(e) => setNewMarketTimezone(e.target.value)}
-              className="w-full h-control-md px-3 text-xs font-mono bg-bg-base border border-border-base rounded-control focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
+              className="w-full h-control-md px-3 text-xs font-mono bg-bg-base border border-border-base rounded-control focus:border-primary focus:ring-2 focus:ring-primary-ring focus:outline-none"
             />
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-stone-700 uppercase">
+            <label className="text-xs font-semibold text-text-emphasis uppercase">
               {t("admin.adminMarketsPage.nomDuMarche")}
             </label>
             <input
@@ -1893,13 +1893,13 @@ export const AdminMarketsPage: React.FC = () => {
               placeholder="ex: Italie, Portugal, Allemagne"
               value={newMarketName}
               onChange={(e) => setNewMarketName(e.target.value)}
-              className="w-full h-control-md px-3 text-xs bg-bg-base border border-border-base rounded-control focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
+              className="w-full h-control-md px-3 text-xs bg-bg-base border border-border-base rounded-control focus:border-primary focus:ring-2 focus:ring-primary-ring focus:outline-none"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-stone-700 uppercase">
+              <label className="text-xs font-semibold text-text-emphasis uppercase">
                 {t("admin.adminMarketsPage.localeParDefaut")}
               </label>
               <input
@@ -1908,11 +1908,11 @@ export const AdminMarketsPage: React.FC = () => {
                 placeholder={t("admin.adminMarketsPage.exItItPtPt")}
                 value={newMarketLocale}
                 onChange={(e) => setNewMarketLocale(e.target.value)}
-                className="w-full h-control-md px-3 text-xs font-mono bg-bg-base border border-border-base rounded-control focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
+                className="w-full h-control-md px-3 text-xs font-mono bg-bg-base border border-border-base rounded-control focus:border-primary focus:ring-2 focus:ring-primary-ring focus:outline-none"
               />
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-stone-700 uppercase">
+              <label className="text-xs font-semibold text-text-emphasis uppercase">
                 Devise
               </label>
               <input
@@ -1923,7 +1923,7 @@ export const AdminMarketsPage: React.FC = () => {
                 onChange={(e) =>
                   setNewMarketCurrency(e.target.value.toUpperCase())
                 }
-                className="w-full h-control-md px-3 text-xs font-mono font-bold bg-bg-base border border-border-base rounded-control focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
+                className="w-full h-control-md px-3 text-xs font-mono font-bold bg-bg-base border border-border-base rounded-control focus:border-primary focus:ring-2 focus:ring-primary-ring focus:outline-none"
               />
             </div>
           </div>
@@ -1931,7 +1931,7 @@ export const AdminMarketsPage: React.FC = () => {
           <div className="space-y-1">
             <label
               htmlFor="admin-new-market-status"
-              className="text-xs font-semibold text-stone-700 uppercase"
+              className="text-xs font-semibold text-text-emphasis uppercase"
             >
               Statut Initial
             </label>
@@ -1992,7 +1992,7 @@ export const AdminMarketsPage: React.FC = () => {
           <div className="space-y-1">
             <label
               htmlFor="admin-edit-override-value"
-              className="text-xs font-semibold text-stone-700 uppercase"
+              className="text-xs font-semibold text-text-emphasis uppercase"
             >
               {t("admin.adminMarketsPage.nouvelleValeurPour")}{" "}
               {selectedMarket.name}
@@ -2037,13 +2037,13 @@ export const AdminMarketsPage: React.FC = () => {
                 }
                 value={editingValueInput}
                 onChange={(e) => setEditingValueInput(e.target.value)}
-                className="w-full h-control-md px-3 text-xs font-mono font-bold bg-bg-base border border-border-base rounded-control focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none"
+                className="w-full h-control-md px-3 text-xs font-mono font-bold bg-bg-base border border-border-base rounded-control focus:border-primary focus:ring-2 focus:ring-primary-ring focus:outline-none"
               />
             )}
           </div>
 
-          <div className="p-3 rounded-control bg-stone-50 border border-stone-200 text-micro text-text-secondary space-y-1">
-            <div className="font-bold text-stone-800">
+          <div className="p-3 rounded-control bg-surface-soft border border-border-disabled text-micro text-text-secondary space-y-1">
+            <div className="font-bold text-text-strong">
               {t("admin.adminMarketsPage.regleDePersistance")}
             </div>
             <p>{t("admin.adminMarketsPage.cetteValeurSeraEnregistreeEn")}</p>

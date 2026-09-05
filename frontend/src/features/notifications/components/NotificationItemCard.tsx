@@ -44,10 +44,10 @@ export const NotificationItemCard: React.FC<NotificationItemCardProps> = ({
       case "listings":
         return <Tag className="w-icon-md h-icon-md text-primary" />;
       case "delivery":
-        return <Package className="w-icon-md h-icon-md text-indigo-600" />;
+        return <Package className="w-icon-md h-icon-md text-insight" />;
       case "reviews":
         return (
-          <Star className="w-icon-md h-icon-md text-amber-500 fill-amber-400" />
+          <Star className="w-icon-md h-icon-md text-rating-strong fill-rating-fill" />
         );
       case "monetization":
         return <DollarSign className="w-icon-md h-icon-md text-warning" />;
@@ -58,7 +58,9 @@ export const NotificationItemCard: React.FC<NotificationItemCardProps> = ({
         return <AlertCircle className="w-icon-md h-icon-md text-warning" />;
       case "system":
       default:
-        return <Sparkles className="w-icon-md h-icon-md text-stone-600" />;
+        return (
+          <Sparkles className="w-icon-md h-icon-md text-text-supporting" />
+        );
     }
   };
 
@@ -69,12 +71,12 @@ export const NotificationItemCard: React.FC<NotificationItemCardProps> = ({
       type="button"
       onClick={() => onSelect(notification)}
       className={`flex w-full items-start gap-3 text-left transition-colors cursor-pointer group ${
-        isCompact ? "p-3 hover:bg-stone-50" : "p-4 hover:bg-stone-50/80"
-      } ${isUnread ? "bg-primary/5" : "bg-white"}`}
+        isCompact ? "p-3 hover:bg-surface-soft" : "p-4 hover:bg-surface-soft/80"
+      } ${isUnread ? "bg-primary-surface-soft" : "bg-bg-surface"}`}
     >
       {/* Category Icon Badge */}
       <div
-        className={`rounded-xl flex items-center justify-center shrink-0 border border-border-base bg-white shadow-2xs ${
+        className={`rounded-xl flex items-center justify-center shrink-0 border border-border-base bg-bg-surface shadow-2xs ${
           isCompact ? "w-8 h-8" : "w-10 h-10"
         }`}
       >
@@ -86,18 +88,20 @@ export const NotificationItemCard: React.FC<NotificationItemCardProps> = ({
         <div className="flex items-center justify-between gap-2 mb-0.5">
           <h2
             className={`text-xs truncate ${
-              isUnread ? "font-bold text-stone-950" : "font-bold text-stone-800"
+              isUnread
+                ? "font-bold text-text-deep"
+                : "font-bold text-text-strong"
             }`}
           >
             {notification.title}
           </h2>
-          <span className="text-micro text-stone-500 font-medium shrink-0">
+          <span className="text-micro text-text-tertiary font-medium shrink-0">
             {formatRelativeDate(notification.createdAt)}
           </span>
         </div>
 
         <p
-          className={`text-xs leading-relaxed line-clamp-2 ${isUnread ? "text-stone-700 font-medium" : "text-stone-500"}`}
+          className={`text-xs leading-relaxed line-clamp-2 ${isUnread ? "text-text-emphasis font-medium" : "text-text-tertiary"}`}
         >
           {notification.body}
         </p>
@@ -115,7 +119,7 @@ export const NotificationItemCard: React.FC<NotificationItemCardProps> = ({
 
       {/* Unread Pill Indicator */}
       {isUnread && (
-        <span className="w-2 h-2 rounded-full bg-primary shrink-0 mt-2 ring-4 ring-primary/10" />
+        <span className="w-2 h-2 rounded-full bg-primary shrink-0 mt-2 ring-4 ring-primary-ring" />
       )}
     </button>
   );

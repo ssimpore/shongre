@@ -81,9 +81,11 @@ function MetricCard({ metric }: { metric: AnalyticsMetric }) {
           }).format(metric.value / 100)
         : metric.value.toLocaleString("fr-FR");
   return (
-    <article className="rounded-control border border-stone-200 bg-bg-surface p-4 shadow-xs">
+    <article className="rounded-control border border-border-disabled bg-bg-surface p-4 shadow-xs">
       <div className="flex items-center justify-between gap-3">
-        <p className="text-xs font-semibold text-stone-500">{metric.label}</p>
+        <p className="text-xs font-semibold text-text-tertiary">
+          {metric.label}
+        </p>
         <TrendingUp
           className="h-icon-sm w-icon-sm text-primary"
           aria-hidden="true"
@@ -93,7 +95,7 @@ function MetricCard({ metric }: { metric: AnalyticsMetric }) {
         {formatted}
       </p>
       {metric.previousValue !== undefined && (
-        <p className="mt-1 text-micro text-stone-500">
+        <p className="mt-1 text-micro text-text-tertiary">
           Période précédente : {metric.previousValue.toLocaleString("fr-FR")}
         </p>
       )}
@@ -120,7 +122,7 @@ function TrendChart({
 }) {
   return (
     <section
-      className="rounded-control border border-stone-200 bg-bg-surface p-4 shadow-xs"
+      className="rounded-control border border-border-disabled bg-bg-surface p-4 shadow-xs"
       aria-labelledby="analytics-trend-title"
     >
       <h2
@@ -294,7 +296,7 @@ export const AdminAnalyticsPage: React.FC = () => {
 
   return (
     <div className="space-y-5">
-      <header className="flex flex-col justify-between gap-4 rounded-control border border-stone-200 bg-bg-surface p-5 shadow-xs lg:flex-row lg:items-end">
+      <header className="flex flex-col justify-between gap-4 rounded-control border border-border-disabled bg-bg-surface p-5 shadow-xs lg:flex-row lg:items-end">
         <div>
           <div className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary">
             <BarChart3 className="h-icon-sm w-icon-sm" aria-hidden="true" />{" "}
@@ -313,7 +315,7 @@ export const AdminAnalyticsPage: React.FC = () => {
           <label className="text-xs font-semibold text-text-secondary">
             {t("admin.adminAnalyticsPage.periode")}
             <select
-              className="mt-1 block h-control-md rounded-control border border-stone-300 bg-bg-surface px-3 text-xs"
+              className="mt-1 block h-control-md rounded-control border border-border-prominent bg-bg-surface px-3 text-xs"
               value={range}
               onChange={(event) => updateFilter("range", event.target.value)}
             >
@@ -333,7 +335,7 @@ export const AdminAnalyticsPage: React.FC = () => {
           <label className="text-xs font-semibold text-text-secondary">
             {t("invoicing.product.previewMarket")}
             <select
-              className="mt-1 block h-control-md rounded-control border border-stone-300 bg-bg-surface px-3 text-xs"
+              className="mt-1 block h-control-md rounded-control border border-border-prominent bg-bg-surface px-3 text-xs"
               value={marketCode}
               onChange={(event) => updateFilter("market", event.target.value)}
             >
@@ -353,7 +355,7 @@ export const AdminAnalyticsPage: React.FC = () => {
                 Du
                 <input
                   type="date"
-                  className="mt-1 block h-control-md rounded-control border border-stone-300 bg-bg-surface px-3 text-xs"
+                  className="mt-1 block h-control-md rounded-control border border-border-prominent bg-bg-surface px-3 text-xs"
                   value={from || ""}
                   onChange={(event) => updateFilter("from", event.target.value)}
                 />
@@ -362,7 +364,7 @@ export const AdminAnalyticsPage: React.FC = () => {
                 Au
                 <input
                   type="date"
-                  className="mt-1 block h-control-md rounded-control border border-stone-300 bg-bg-surface px-3 text-xs"
+                  className="mt-1 block h-control-md rounded-control border border-border-prominent bg-bg-surface px-3 text-xs"
                   value={to || ""}
                   onChange={(event) => updateFilter("to", event.target.value)}
                 />
@@ -373,8 +375,8 @@ export const AdminAnalyticsPage: React.FC = () => {
       </header>
 
       {(activeTab === "acquisition" || activeTab === "search") && (
-        <details className="rounded-control border border-stone-200 bg-bg-surface p-4">
-          <summary className="cursor-pointer text-xs font-bold text-stone-700">
+        <details className="rounded-control border border-border-disabled bg-bg-surface p-4">
+          <summary className="cursor-pointer text-xs font-bold text-text-emphasis">
             {t("admin.adminAnalyticsPage.dimensionsAvancees")}
           </summary>
           <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -382,7 +384,7 @@ export const AdminAnalyticsPage: React.FC = () => {
               <label className="text-xs font-semibold text-text-secondary">
                 {t("publishing.publishWizard.categorie")}
                 <input
-                  className="mt-1 block h-control-md w-full rounded-control border border-stone-300 px-3 text-xs"
+                  className="mt-1 block h-control-md w-full rounded-control border border-border-prominent px-3 text-xs"
                   value={categoryId || ""}
                   onChange={(event) =>
                     updateFilter("category", event.target.value)
@@ -398,7 +400,7 @@ export const AdminAnalyticsPage: React.FC = () => {
                 <label className="text-xs font-semibold text-text-secondary">
                   Source
                   <input
-                    className="mt-1 block h-control-md w-full rounded-control border border-stone-300 px-3 text-xs"
+                    className="mt-1 block h-control-md w-full rounded-control border border-border-prominent px-3 text-xs"
                     value={source || ""}
                     onChange={(event) =>
                       updateFilter("source", event.target.value)
@@ -409,7 +411,7 @@ export const AdminAnalyticsPage: React.FC = () => {
                 <label className="text-xs font-semibold text-text-secondary">
                   Campagne
                   <input
-                    className="mt-1 block h-control-md w-full rounded-control border border-stone-300 px-3 text-xs"
+                    className="mt-1 block h-control-md w-full rounded-control border border-border-prominent px-3 text-xs"
                     value={campaign || ""}
                     onChange={(event) =>
                       updateFilter("campaign", event.target.value)
@@ -423,7 +425,7 @@ export const AdminAnalyticsPage: React.FC = () => {
       )}
 
       <div
-        className="overflow-x-auto rounded-control border border-stone-200 bg-bg-surface p-1"
+        className="overflow-x-auto rounded-control border border-border-disabled bg-bg-surface p-1"
         role="tablist"
         aria-label={t("admin.adminAnalyticsPage.perimetresAnalytics")}
       >
@@ -434,7 +436,7 @@ export const AdminAnalyticsPage: React.FC = () => {
               type="button"
               role="tab"
               aria-selected={activeTab === tab.id}
-              className={`rounded-lg px-3 py-2 text-xs font-semibold transition-colors ${activeTab === tab.id ? "bg-stone-900 text-text-inverse" : "text-text-secondary hover:bg-stone-100"}`}
+              className={`rounded-lg px-3 py-2 text-xs font-semibold transition-colors ${activeTab === tab.id ? "bg-surface-inverse text-text-inverse" : "text-text-secondary hover:bg-surface-muted"}`}
               onClick={() => updateFilter("tab", tab.id)}
             >
               {tab.label}
@@ -476,7 +478,7 @@ export const AdminAnalyticsPage: React.FC = () => {
           {activeTab === "monetization" &&
             "reconciliationStatus" in data &&
             data.reconciliationStatus === "partial" && (
-              <p className="rounded-control border border-warning/30 bg-warning/10 p-3 text-xs text-stone-700">
+              <p className="rounded-control border border-warning/30 bg-warning/10 p-3 text-xs text-text-emphasis">
                 {t(
                   "admin.adminAnalyticsPage.selectionnezUnMarchePourUnRapprochementCompletDansSaDevise",
                 )}
@@ -488,16 +490,21 @@ export const AdminAnalyticsPage: React.FC = () => {
                 title={t("admin.adminAnalyticsPage.activiteProduit")}
                 data={data.activity}
               />
-              <section className="rounded-control border border-stone-200 bg-bg-surface p-4">
+              <section className="rounded-control border border-border-disabled bg-bg-surface p-4">
                 <h2 className="mb-3 text-sm font-bold">Entonnoir principal</h2>
                 <div className="grid gap-2 sm:grid-cols-4">
                   {data.funnel.map((step) => (
-                    <div key={step.step} className="rounded-lg bg-stone-50 p-3">
-                      <div className="text-xs text-stone-500">{step.label}</div>
+                    <div
+                      key={step.step}
+                      className="rounded-lg bg-surface-soft p-3"
+                    >
+                      <div className="text-xs text-text-tertiary">
+                        {step.label}
+                      </div>
                       <div className="text-xl font-bold">
                         {step.count.toLocaleString("fr-FR")}
                       </div>
-                      <div className="text-micro text-stone-500">
+                      <div className="text-micro text-text-tertiary">
                         {step.conversionFromPrevious === undefined
                           ? "Point d’entrée"
                           : `${step.conversionFromPrevious.toFixed(1)} % de l’étape précédente`}
@@ -511,10 +518,10 @@ export const AdminAnalyticsPage: React.FC = () => {
           {activeTab === "acquisition" && "channels" in data && (
             <ScrollableRegion
               aria-label={t("admin.adminAnalyticsPage.acquisitionParCanal")}
-              className="rounded-control border border-stone-200 bg-bg-surface"
+              className="rounded-control border border-border-disabled bg-bg-surface"
             >
               <table className="w-full whitespace-nowrap text-left text-xs">
-                <thead className="bg-stone-50 text-text-secondary">
+                <thead className="bg-surface-soft text-text-secondary">
                   <tr>
                     <th className="p-3">Canal</th>
                     <th>Visiteurs</th>
@@ -527,7 +534,7 @@ export const AdminAnalyticsPage: React.FC = () => {
                   {(data as AnalyticsAcquisition).channels.map((row) => (
                     <tr
                       key={`${row.source}-${row.medium}`}
-                      className="border-t border-stone-100"
+                      className="border-t border-border-soft"
                     >
                       <td className="p-3 font-semibold">
                         {row.source} / {row.medium}
@@ -547,14 +554,14 @@ export const AdminAnalyticsPage: React.FC = () => {
               aria-label={t(
                 "admin.adminAnalyticsPage.demandesDeRechercheSousServies",
               )}
-              className="rounded-control border border-stone-200 bg-bg-surface"
+              className="rounded-control border border-border-disabled bg-bg-surface"
             >
-              <div className="flex items-center gap-2 border-b border-stone-100 p-4">
+              <div className="flex items-center gap-2 border-b border-border-soft p-4">
                 <Search className="h-icon-sm w-icon-sm" />
                 <h2 className="text-sm font-bold">Demandes sous-servies</h2>
               </div>
               <table className="w-full whitespace-nowrap text-left text-xs">
-                <thead className="bg-stone-50 text-text-secondary">
+                <thead className="bg-surface-soft text-text-secondary">
                   <tr>
                     <th className="p-3">
                       {t("admin.adminAnalyticsPage.requete")}
@@ -570,7 +577,7 @@ export const AdminAnalyticsPage: React.FC = () => {
                   {data.opportunities.map((row) => (
                     <tr
                       key={`${row.marketCode}-${row.query}`}
-                      className="border-t border-stone-100"
+                      className="border-t border-border-soft"
                     >
                       <td className="p-3 font-semibold">{row.query}</td>
                       <td>{row.marketCode}</td>
@@ -600,10 +607,10 @@ export const AdminAnalyticsPage: React.FC = () => {
                 aria-label={t(
                   "admin.adminAnalyticsPage.requetesOrganiquesSearchConsole",
                 )}
-                className="rounded-control border border-stone-200 bg-bg-surface"
+                className="rounded-control border border-border-disabled bg-bg-surface"
               >
                 <table className="w-full whitespace-nowrap text-left text-xs">
-                  <thead className="bg-stone-50">
+                  <thead className="bg-surface-soft">
                     <tr>
                       <th className="p-3">
                         {t("admin.adminAnalyticsPage.requete")}
@@ -619,7 +626,7 @@ export const AdminAnalyticsPage: React.FC = () => {
                     {data.queries.map((row) => (
                       <tr
                         key={`${row.query}-${row.page}`}
-                        className="border-t border-stone-100"
+                        className="border-t border-border-soft"
                       >
                         <td className="p-3 font-semibold">{row.query}</td>
                         <td>{row.clicks}</td>
@@ -640,14 +647,14 @@ export const AdminAnalyticsPage: React.FC = () => {
           {data.map((provider) => (
             <article
               key={provider.provider}
-              className="rounded-control border border-stone-200 bg-bg-surface p-4"
+              className="rounded-control border border-border-disabled bg-bg-surface p-4"
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <h2 className="text-sm font-bold capitalize">
                     {provider.provider.replace("_", " ")}
                   </h2>
-                  <p className="mt-1 text-xs text-stone-500">
+                  <p className="mt-1 text-xs text-text-tertiary">
                     {provider.message}
                   </p>
                 </div>
@@ -660,7 +667,7 @@ export const AdminAnalyticsPage: React.FC = () => {
                   <Activity className="h-icon-md w-icon-md text-text-disabled" />
                 )}
               </div>
-              <div className="mt-3 flex gap-4 text-micro text-stone-500">
+              <div className="mt-3 flex gap-4 text-micro text-text-tertiary">
                 <span>
                   {t("admin.adminAnalyticsPage.echecs")} {provider.failedEvents}
                 </span>

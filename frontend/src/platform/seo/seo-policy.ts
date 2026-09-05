@@ -3,6 +3,8 @@ import {
   COUNTRY_REGISTRY,
   type MarketContext,
 } from "@shongre/contracts";
+import { brand } from "@shongre/brand";
+import { webBrandAssets } from "@shongre/brand/web";
 import {
   resolveLocalizedTaxonomySeoText,
   resolveTaxonomySeoRecord,
@@ -940,14 +942,17 @@ export function structuredDataForPolicy(
       {
         "@context": "https://schema.org",
         "@type": "Organization",
-        name: "SHONGRE.",
+        name: brand.name,
         url: origin,
-        logo: new URL("/brand/shongre/icon/primary.svg", origin).toString(),
+        logo: new URL(
+          webBrandAssets.icon.structuredData.src,
+          origin,
+        ).toString(),
       },
       {
         "@context": "https://schema.org",
         "@type": "WebSite",
-        name: "SHONGRE.",
+        name: brand.name,
         url: policy.canonicalUrl,
         inLanguage: context.locale || undefined,
       },

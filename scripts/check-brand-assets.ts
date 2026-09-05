@@ -1,34 +1,57 @@
 #!/usr/bin/env node
 
-import { access, readFile, readdir, stat } from "node:fs/promises";
+import { access, lstat, readFile, readdir, stat } from "node:fs/promises";
 import path from "node:path";
 import sharp from "sharp";
 import {
   BRAND_SIGNATURE,
   BRAND_VERSION,
+  brandActiveRegistryDestination,
   brandAssetMappings,
+  brandConfigPath,
+  brandConsumerAssets,
   brandDocumentAdapterDestination,
   brandDocumentLogoSource,
+  brandGeneratedDestinations,
+  brandMobileImageRegistryDestination,
+  brandMobileRegistryDestination,
   brandSourceRoot,
   brandTokenAdapterDestination,
   brandTokenSource,
   brandTokenTypesDestination,
+  brandWebRegistryDestination,
   generatedInventoryPath,
-  managedLegacyBrandPaths,
   repositoryRoot,
   requiredImageProperties,
+  parseBrandConfig,
 } from "./brand-assets.config";
 import {
   absoluteRepositoryPath,
+  canonicalBrandPath,
   readCanonicalChecksums,
   renderBrandDocumentAdapter,
+  renderBrandActiveRegistry,
+  renderBrandMobileImageRegistry,
+  renderBrandMobileRegistry,
   renderBrandTokenAdapter,
   renderBrandTokenTypes,
+  renderBrandWebRegistry,
   sha256,
   validateCanonicalChecksums,
 } from "./brand-assets.lib";
+import { validateBrandKit } from "./brand-kit-validation";
 
 const failures: string[] = [];
+let orangeAssetsValidated = 0;
+const prohibitedLegacyAssetPaths = [
+  "frontend/public/favicon.svg",
+  "mobile/assets/adaptive-icon.png",
+  "mobile/assets/favicon.png",
+  "mobile/assets/icon.png",
+  "mobile/assets/icon.svg",
+  "mobile/assets/splash.png",
+  "packages/brand/src/logos/mark.svg",
+] as const;
 
 async function exists(file: string): Promise<boolean> {
   try {
@@ -52,8 +75,186 @@ async function filesUnder(directory: string): Promise<string[]> {
   ).flat();
 }
 
+const unmanagedAssetExtensions = /\.(?:eps|ico|jpe?g|pdf|png|svg|tiff?|webp)$/i;
+const auditIgnoredDirectories = new Set([
+  ".expo",
+  ".git",
+  ".next",
+  "coverage",
+  "dist",
+  "node_modules",
+  "playwright-report",
+  "test-results",
+]);
+
+async function auditableAssetFiles(directory: string): Promise<string[]> {
+  if (!(await exists(directory))) return [];
+  const relativeDirectory = path
+    .relative(repositoryRoot, directory)
+    .replaceAll(path.sep, "/");
+  if (
+    auditIgnoredDirectories.has(path.basename(directory)) ||
+    relativeDirectory === "mobile/ios" ||
+    relativeDirectory === "mobile/android"
+  ) {
+    return [];
+  }
+  const entries = await readdir(directory, { withFileTypes: true });
+  return (
+    await Promise.all(
+      entries.map((entry) => {
+        const target = path.join(directory, entry.name);
+        if (entry.isDirectory()) return auditableAssetFiles(target);
+        return unmanagedAssetExtensions.test(entry.name) ? [target] : [];
+      }),
+    )
+  ).flat();
+}
+
+interface CanonicalManifestRow {
+  path: string;
+  bytes: number;
+  mediaType: string;
+  width?: number;
+  height?: number;
+  sha256: string;
+}
+
+async function validateCanonicalAssetManifest(): Promise<void> {
+  const manifestPath = canonicalBrandPath("ASSET_MANIFEST.csv");
+  const contents = await readFile(manifestPath, "utf8");
+  const lines = contents.trim().split(/\r?\n/);
+  const expectedHeader = "path,bytes,media_type,width_px,height_px,mode,sha256";
+  if (lines.shift() !== expectedHeader) {
+    throw new Error(`ASSET_MANIFEST.csv must use header ${expectedHeader}.`);
+  }
+
+  const rows = new Map<string, CanonicalManifestRow>();
+  for (const [index, line] of lines.entries()) {
+    const fields = line.split(",");
+    if (fields.length !== 7) {
+      throw new Error(
+        `ASSET_MANIFEST.csv row ${index + 2} must contain exactly seven fields.`,
+      );
+    }
+    const [relative, bytes, mediaType, width, height, , digest] = fields;
+    if (
+      !relative ||
+      relative.startsWith("/") ||
+      relative.split("/").includes("..") ||
+      rows.has(relative)
+    ) {
+      throw new Error(
+        `ASSET_MANIFEST.csv row ${index + 2} has an unsafe or duplicate path.`,
+      );
+    }
+    const byteCount = Number(bytes);
+    if (!Number.isSafeInteger(byteCount) || byteCount < 0) {
+      throw new Error(
+        `ASSET_MANIFEST.csv row ${index + 2} has invalid byte size ${bytes}.`,
+      );
+    }
+    if (!mediaType || !/^[a-f\d]{64}$/i.test(digest)) {
+      throw new Error(
+        `ASSET_MANIFEST.csv row ${index + 2} has invalid media type or checksum.`,
+      );
+    }
+    const parseDimension = (value: string): number | undefined => {
+      if (!value) return undefined;
+      const parsed = Number(value);
+      if (!Number.isSafeInteger(parsed) || parsed < 1) {
+        throw new Error(
+          `ASSET_MANIFEST.csv row ${index + 2} has invalid dimension ${value}.`,
+        );
+      }
+      return parsed;
+    };
+    rows.set(relative, {
+      path: relative,
+      bytes: byteCount,
+      mediaType,
+      width: parseDimension(width),
+      height: parseDimension(height),
+      sha256: digest.toLowerCase(),
+    });
+  }
+
+  const sourceFiles = (await filesUnder(brandSourceRoot))
+    .map((file) =>
+      path.relative(brandSourceRoot, file).replaceAll(path.sep, "/"),
+    )
+    .filter(
+      (relative) =>
+        relative !== "ASSET_MANIFEST.csv" && relative !== "CHECKSUMS.sha256",
+    );
+  for (const relative of sourceFiles) {
+    const row = rows.get(relative);
+    if (!row) {
+      failures.push(
+        `Canonical asset is absent from ASSET_MANIFEST.csv: ${relative}`,
+      );
+      continue;
+    }
+    const file = canonicalBrandPath(relative);
+    const details = await stat(file);
+    if (details.size !== row.bytes) {
+      failures.push(
+        `ASSET_MANIFEST.csv byte size is stale for ${relative}: expected ${row.bytes}, received ${details.size}.`,
+      );
+    }
+    const digest = await sha256(file);
+    if (digest !== row.sha256) {
+      failures.push(`ASSET_MANIFEST.csv checksum is stale for ${relative}.`);
+    }
+    if ((row.width === undefined) !== (row.height === undefined)) {
+      failures.push(
+        `ASSET_MANIFEST.csv must provide both dimensions or neither for ${relative}.`,
+      );
+    } else if (row.width && row.height) {
+      let actualWidth: number | undefined;
+      let actualHeight: number | undefined;
+      if (/\.eps$/i.test(relative)) {
+        const eps = await readFile(file, "utf8");
+        const bounds = eps.match(
+          /^%%HiResBoundingBox:\s+\S+\s+\S+\s+(\d+)\s+(\d+)$/m,
+        );
+        actualWidth = bounds ? Number(bounds[1]) : undefined;
+        actualHeight = bounds ? Number(bounds[2]) : undefined;
+      } else if (/\.ico$/i.test(relative)) {
+        const ico = await readFile(file);
+        const count = ico.length >= 6 ? ico.readUInt16LE(4) : 0;
+        const entries = Array.from({ length: count }, (_, index) => {
+          const offset = 6 + index * 16;
+          return {
+            width: ico[offset] === 0 ? 256 : ico[offset],
+            height: ico[offset + 1] === 0 ? 256 : ico[offset + 1],
+          };
+        }).filter(({ width, height }) => width && height);
+        actualWidth = Math.max(0, ...entries.map(({ width }) => width));
+        actualHeight = Math.max(0, ...entries.map(({ height }) => height));
+      } else {
+        const metadata = await sharp(file).metadata();
+        actualWidth = metadata.width;
+        actualHeight = metadata.height;
+      }
+      if (actualWidth !== row.width || actualHeight !== row.height) {
+        failures.push(
+          `ASSET_MANIFEST.csv dimensions are stale for ${relative}: expected ${row.width}x${row.height}, received ${actualWidth}x${actualHeight}.`,
+        );
+      }
+    }
+  }
+  for (const relative of rows.keys()) {
+    if (!sourceFiles.includes(relative)) {
+      failures.push(
+        `ASSET_MANIFEST.csv points to a missing asset: ${relative}`,
+      );
+    }
+  }
+}
+
 async function validateAndroidAdaptiveSafeZone(source: string): Promise<void> {
-  const file = path.join(brandSourceRoot, source);
+  const file = canonicalBrandPath(source);
   const { data, info } = await sharp(file)
     .ensureAlpha()
     .raw()
@@ -91,7 +292,7 @@ async function validateAndroidAdaptiveSafeZone(source: string): Promise<void> {
 }
 
 async function validateSquareIconCoverage(source: string): Promise<void> {
-  const file = path.join(brandSourceRoot, source);
+  const file = canonicalBrandPath(source);
   const { data, info } = await sharp(file)
     .ensureAlpha()
     .raw()
@@ -125,8 +326,32 @@ async function validateSquareIconCoverage(source: string): Promise<void> {
 
 async function main(): Promise<void> {
   try {
+    const selected = parseBrandConfig(
+      await readFile(brandConfigPath, "utf8"),
+    ).activeVersion;
+    if (selected !== BRAND_VERSION) {
+      failures.push(
+        `brand/shongre/brand.config.json selects ${selected || "nothing"}; expected ${BRAND_VERSION}.`,
+      );
+    }
+  } catch (error) {
+    failures.push(
+      `Unable to read brand/shongre/brand.config.json: ${(error as Error).message}`,
+    );
+  }
+
+  try {
+    const report = await validateBrandKit(BRAND_VERSION);
+    orangeAssetsValidated = report.artworkComparisons;
+  } catch (error) {
+    failures.push(
+      `Active brand kit is incompatible: ${(error as Error).message}`,
+    );
+  }
+
+  try {
     const versionFile = await readFile(
-      path.join(brandSourceRoot, "VERSION.txt"),
+      canonicalBrandPath("VERSION.txt"),
       "utf8",
     );
     const version = versionFile.match(/^Version:\s*v?([^\s]+)\s*$/m)?.[1];
@@ -164,6 +389,11 @@ async function main(): Promise<void> {
       if (!checksums.has(relative)) {
         failures.push(`Canonical brand file is not checksummed: ${relative}`);
       }
+      if ((await lstat(canonicalBrandPath(relative))).isSymbolicLink()) {
+        failures.push(
+          `Canonical brand entry must not be a symlink: ${relative}`,
+        );
+      }
     }
     for (const relative of checksums.keys()) {
       if (!sourceFiles.includes(relative)) {
@@ -172,6 +402,12 @@ async function main(): Promise<void> {
         );
       }
     }
+  } catch (error) {
+    failures.push((error as Error).message);
+  }
+
+  try {
+    await validateCanonicalAssetManifest();
   } catch (error) {
     failures.push((error as Error).message);
   }
@@ -188,13 +424,13 @@ async function main(): Promise<void> {
     "09_Documentation",
     "10_Previews",
   ]) {
-    if (!(await exists(path.join(brandSourceRoot, directory)))) {
+    if (!(await exists(canonicalBrandPath(directory)))) {
       failures.push(`Canonical brand directory is missing: ${directory}`);
     }
   }
 
   for (const requirement of requiredImageProperties) {
-    const file = path.join(brandSourceRoot, requirement.source);
+    const file = canonicalBrandPath(requirement.source);
     try {
       const metadata = await sharp(file).metadata();
       if (
@@ -247,7 +483,7 @@ async function main(): Promise<void> {
   }
 
   for (const mapping of brandAssetMappings) {
-    const source = path.join(brandSourceRoot, mapping.source);
+    const source = canonicalBrandPath(mapping.source);
     const destination = absoluteRepositoryPath(mapping.destination);
     try {
       if ((await sha256(source)) !== (await sha256(destination))) {
@@ -302,6 +538,26 @@ async function main(): Promise<void> {
     failures.push((error as Error).message);
   }
 
+  for (const [destination, render] of [
+    [brandActiveRegistryDestination, renderBrandActiveRegistry],
+    [brandWebRegistryDestination, renderBrandWebRegistry],
+    [brandMobileRegistryDestination, async () => renderBrandMobileRegistry()],
+    [brandMobileImageRegistryDestination, renderBrandMobileImageRegistry],
+  ] as const) {
+    try {
+      const expected = await render();
+      const actual = await readFile(
+        absoluteRepositoryPath(destination),
+        "utf8",
+      );
+      if (actual !== expected) {
+        failures.push(`Generated brand registry is stale: ${destination}`);
+      }
+    } catch (error) {
+      failures.push((error as Error).message);
+    }
+  }
+
   try {
     const inventory = JSON.parse(
       await readFile(generatedInventoryPath, "utf8"),
@@ -310,12 +566,7 @@ async function main(): Promise<void> {
       generated?: string[];
       files?: Record<string, string>;
     };
-    const expected = [
-      ...brandAssetMappings.map(({ destination }) => destination),
-      brandDocumentAdapterDestination,
-      brandTokenAdapterDestination,
-      brandTokenTypesDestination,
-    ].sort();
+    const expected = [...brandGeneratedDestinations].sort();
     if (
       inventory.brandVersion !== BRAND_VERSION ||
       JSON.stringify(inventory.generated) !== JSON.stringify(expected)
@@ -365,10 +616,61 @@ async function main(): Promise<void> {
     }
   }
 
-  for (const relative of managedLegacyBrandPaths) {
-    if (await exists(absoluteRepositoryPath(relative))) {
-      failures.push(`Obsolete generated brand asset still exists: ${relative}`);
+  const mobileBrandRoot = path.join(repositoryRoot, "mobile/assets/brand");
+  const allowedMobile = new Set(
+    brandAssetMappings
+      .filter(({ destination }) =>
+        destination.startsWith("mobile/assets/brand/"),
+      )
+      .map(({ destination }) => absoluteRepositoryPath(destination)),
+  );
+  for (const file of await filesUnder(mobileBrandRoot)) {
+    if (!allowedMobile.has(file)) {
+      failures.push(
+        `Unmanaged file would enter the Expo brand bundle: ${path.relative(repositoryRoot, file)}`,
+      );
     }
+  }
+
+  for (const relative of prohibitedLegacyAssetPaths) {
+    if (await exists(absoluteRepositoryPath(relative))) {
+      failures.push(`Obsolete brand asset still exists: ${relative}`);
+    }
+  }
+
+  try {
+    const canonicalDigests = new Set((await readCanonicalChecksums()).values());
+    const approvedCopies = new Set(
+      brandAssetMappings.map(({ destination }) =>
+        absoluteRepositoryPath(destination),
+      ),
+    );
+    const candidateFiles = (
+      await Promise.all(
+        [
+          "frontend",
+          "mobile",
+          "backend",
+          "packages",
+          "docs",
+          "infrastructure",
+        ].map((relative) =>
+          auditableAssetFiles(absoluteRepositoryPath(relative)),
+        ),
+      )
+    ).flat();
+    for (const file of candidateFiles) {
+      if (approvedCopies.has(file)) continue;
+      if (canonicalDigests.has(await sha256(file))) {
+        failures.push(
+          `Canonical brand asset has an unmanaged duplicate: ${path.relative(repositoryRoot, file)}`,
+        );
+      }
+    }
+  } catch (error) {
+    failures.push(
+      `Unable to audit duplicate brand assets: ${(error as Error).message}`,
+    );
   }
 
   const sourceFiles = (
@@ -410,6 +712,29 @@ async function main(): Promise<void> {
     }
   }
 
+  for (const file of sourceFiles) {
+    const relative = path
+      .relative(repositoryRoot, file)
+      .replaceAll(path.sep, "/");
+    if (
+      /\.(?:test|spec)\.[cm]?[jt]sx?$/.test(relative) ||
+      relative.includes(".generated.")
+    ) {
+      continue;
+    }
+    const contents = await readFile(file, "utf8");
+    for (const pattern of [
+      /["'`]\/brand\/shongre\/(?:icon|logo|pwa|social)\//,
+      /["'`]\.\/assets\/brand\//,
+    ]) {
+      if (pattern.test(contents)) {
+        failures.push(
+          `${relative} hardcodes a generated brand path instead of consuming a governed registry.`,
+        );
+      }
+    }
+  }
+
   for (const jsonFile of [
     "03_Web/site.webmanifest",
     "04_iOS/AppIcon.appiconset/Contents.json",
@@ -417,23 +742,23 @@ async function main(): Promise<void> {
     "08_Design_Tokens/ios/Colors.json",
   ]) {
     try {
-      JSON.parse(await readFile(path.join(brandSourceRoot, jsonFile), "utf8"));
+      JSON.parse(await readFile(canonicalBrandPath(jsonFile), "utf8"));
     } catch (error) {
       failures.push(`${jsonFile} is invalid JSON: ${(error as Error).message}`);
     }
   }
 
   try {
+    const tokenDocument = JSON.parse(
+      await readFile(canonicalBrandPath(brandTokenSource), "utf8"),
+    ) as { color?: Record<string, { value?: string }> };
     const css = await readFile(
-      path.join(brandSourceRoot, "08_Design_Tokens/shongre-brand.css"),
+      canonicalBrandPath("08_Design_Tokens/shongre-brand.css"),
       "utf8",
     );
-    for (const declaration of [
-      "--shongre-orange: #ff6500",
-      "--shongre-ink: #172033",
-      "--shongre-white: #ffffff",
-      "--shongre-mist: #f7f8fa",
-    ]) {
+    for (const name of ["orange", "ink", "white", "mist"]) {
+      const value = tokenDocument.color?.[name]?.value?.toLowerCase();
+      const declaration = `--shongre-${name}: ${value}`;
       if (!css.toLowerCase().includes(declaration)) {
         failures.push(`Canonical brand CSS is missing ${declaration}.`);
       }
@@ -455,7 +780,7 @@ async function main(): Promise<void> {
     "08_Design_Tokens/android/colors.xml",
   ]) {
     try {
-      const xml = await readFile(path.join(brandSourceRoot, xmlFile), "utf8");
+      const xml = await readFile(canonicalBrandPath(xmlFile), "utf8");
       if (!/^<\?xml[\s\S]*<([\w-]+)[\s\S]*<\/\1>\s*$/m.test(xml)) {
         failures.push(`${xmlFile} is not a complete XML document.`);
       }
@@ -468,12 +793,13 @@ async function main(): Promise<void> {
     absoluteRepositoryPath(brandTokenAdapterDestination),
     "utf8",
   ).catch(() => "");
+  const canonicalTokenDocument = JSON.parse(
+    await readFile(canonicalBrandPath(brandTokenSource), "utf8"),
+  ) as { color?: Record<string, { value?: string }> };
   for (const expected of [
-    BRAND_SIGNATURE,
-    "#FF6500",
-    "#172033",
-    "#FFFFFF",
-    "#F7F8FA",
+    ...["orange", "ink", "white", "mist"].map(
+      (name) => canonicalTokenDocument.color?.[name]?.value ?? "",
+    ),
   ]) {
     if (!tokenAdapter.includes(expected))
       failures.push(`Generated token adapter is missing ${expected}.`);
@@ -488,8 +814,10 @@ async function main(): Promise<void> {
       "The design system does not consume the generated brand tokens.",
     );
   }
-  for (const duplicated of ["#FF6500", "#172033", "#F7F8FA"]) {
-    if (themeSource.toUpperCase().includes(duplicated)) {
+  for (const duplicated of ["orange", "ink", "white", "mist"].map(
+    (name) => canonicalTokenDocument.color?.[name]?.value ?? "",
+  )) {
+    if (themeSource.toUpperCase().includes(duplicated.toUpperCase())) {
       failures.push(`theme.ts duplicates canonical brand value ${duplicated}.`);
     }
   }
@@ -525,9 +853,9 @@ async function main(): Promise<void> {
     "marketLabel?: string",
     "data-brand-market-label",
     "rounded-sm",
-    'src: "/brand/shongre/pwa/icon-maskable-192.png"',
-    'src: "/brand/shongre/logo/wordmark-primary.svg"',
-    'src: "/brand/shongre/logo/wordmark-reverse.png"',
+    'from "@shongre/brand/web"',
+    "webBrandAssets.icon.primary",
+    "webBrandAssets.logo",
   ]) {
     if (!logoComponent.includes(requiredHeaderPrimitive)) {
       failures.push(
@@ -571,30 +899,45 @@ async function main(): Promise<void> {
 
   for (const [configuration, references] of Object.entries({
     "frontend/app/layout.tsx": [
-      "/favicon.ico",
-      "/favicon-16x16.png",
-      "/favicon-32x32.png",
-      "/favicon-48x48.png",
-      "/favicon-64x64.png",
-      "/favicon-96x96.png",
-      "/apple-touch-icon.png",
-      "/manifest.webmanifest",
+      "webBrandAssets.favicon",
+      "webBrandAssets.manifest",
       "DEFAULT_SHARE_IMAGE_PATH",
     ],
     "frontend/src/services/seo.service.ts": [
-      "/brand/shongre/social/open-graph-light.png",
+      "webBrandAssets.social.openGraphLight.src",
     ],
-    "frontend/app/manifest.ts": [
-      "/brand/shongre/pwa/icon-192.png",
-      "/brand/shongre/pwa/icon-512.png",
-      "/brand/shongre/pwa/icon-maskable-192.png",
-      "/brand/shongre/pwa/icon-maskable-512.png",
+    "frontend/app/manifest.ts": ["webBrandAssets.pwa.icons"],
+    "frontend/app/og/solutions/[slug]/route.tsx": [
+      "webBrandAssets.logo.header.primary480.src",
+    ],
+    "frontend/src/platform/seo/not-found-presentation.ts": [
+      "webBrandAssets.logo.header.primary240",
+    ],
+    "frontend/src/platform/seo/seo-policy.ts": [
+      "webBrandAssets.icon.structuredData.src",
     ],
     "mobile/app.config.ts": [
-      "./assets/brand/app-icon.png",
-      "./assets/brand/adaptive-icon-foreground.png",
-      "./assets/brand/adaptive-icon-background.png",
-      "./assets/brand/adaptive-icon-monochrome.png",
+      'from "./brand-assets.generated.json"',
+      "mobileBrandAssets.cacheKey",
+      "mobileBrandAssets.expo.appIcon",
+      "mobileBrandAssets.expo.adaptiveForeground",
+      "mobileBrandAssets.expo.adaptiveBackground",
+      "mobileBrandAssets.expo.adaptiveMonochrome",
+    ],
+    "mobile/src/components/BrandLogo.tsx": [
+      'from "../brand-images.generated"',
+      "mobileBrandImages[variant]",
+    ],
+    "mobile/plugins/with-brand-assets.cjs": [
+      'require("../brand-assets.generated.json")',
+      "mobileBrandAssets.native.iosAppIconSet",
+      "mobileBrandAssets.native.androidResources",
+    ],
+    "backend/src/modules/business-rules/business-rules.service.ts": [
+      'from "@shongre/brand/document"',
+    ],
+    "frontend/src/api/adapters/demo/demo-business-rules.service.ts": [
+      'from "@shongre/brand/document"',
     ],
   })) {
     const contents = await readFile(
@@ -608,6 +951,16 @@ async function main(): Promise<void> {
         );
       }
     }
+  }
+
+  const brandIndex = await readFile(
+    absoluteRepositoryPath("packages/brand/src/index.ts"),
+    "utf8",
+  ).catch(() => "");
+  if (brandIndex.includes("document.generated")) {
+    failures.push(
+      "The main brand entry point re-exports embedded document artwork; use the document subpath to protect client bundles.",
+    );
   }
 
   const webMetadataSource = await readFile(
@@ -660,7 +1013,7 @@ async function main(): Promise<void> {
   }
 
   process.stdout.write(
-    `SHONGRE. v${BRAND_VERSION} validated (${brandAssetMappings.length} runtime mappings).\n`,
+    `SHONGRE. v${BRAND_VERSION} validated (${brandAssetMappings.length} runtime mappings; ${orangeAssetsValidated} orange artwork comparisons).\n`,
   );
 }
 

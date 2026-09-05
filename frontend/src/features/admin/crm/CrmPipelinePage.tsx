@@ -48,12 +48,12 @@ function money(amountMinor: number, currency: string, locale: string) {
 
 const columnTone: Record<string, string> = {
   blue: "bg-info",
-  teal: "bg-cyan-500",
-  amber: "bg-amber-500",
+  teal: "bg-communication-fill",
+  amber: "bg-rating-strong",
   orange: "bg-primary",
   red: "bg-danger",
   green: "bg-success",
-  neutral: "bg-stone-400",
+  neutral: "bg-surface-strong",
 };
 
 const columnProgressVariant: Record<
@@ -306,7 +306,7 @@ export const CrmPipelinePage: React.FC = () => {
 
   return (
     <div className="space-y-4 pb-8">
-      <section className="rounded-2xl border border-stone-800 bg-stone-950 p-5 text-text-inverse shadow-sm sm:p-6">
+      <section className="rounded-2xl border border-border-inverse bg-surface-inverse-deep p-5 text-text-inverse shadow-sm sm:p-6">
         <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
           <div>
             <Link
@@ -377,7 +377,7 @@ export const CrmPipelinePage: React.FC = () => {
             placeholder={t(
               "admin.crmPipelinePage.rechercherUneOpportuniteOuUneEntreprise",
             )}
-            className="h-control-md w-full rounded-control border border-stone-200 bg-stone-50 pl-9 pr-3 text-xs outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
+            className="h-control-md w-full rounded-control border border-border-disabled bg-surface-soft pl-9 pr-3 text-xs outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring"
           />
         </label>
         <div className="flex items-center gap-2">
@@ -388,7 +388,7 @@ export const CrmPipelinePage: React.FC = () => {
             />{" "}
             Filtres
           </Button>
-          <span className="hidden text-micro text-stone-500 sm:inline">
+          <span className="hidden text-micro text-text-tertiary sm:inline">
             {t(
               "admin.crmPipelinePage.utilisezLesFlechesSurChaqueCartePourDeplacerSansGlisser",
             )}
@@ -412,13 +412,13 @@ export const CrmPipelinePage: React.FC = () => {
             <section
               key={stage.id}
               aria-labelledby={`stage-${stage.id}`}
-              className="w-68 shrink-0 overflow-hidden rounded-2xl border border-stone-200 bg-stone-100/80"
+              className="w-68 shrink-0 overflow-hidden rounded-2xl border border-border-disabled bg-surface-muted/80"
             >
-              <div className="border-b border-stone-200 bg-bg-surface px-3.5 py-3">
+              <div className="border-b border-border-disabled bg-bg-surface px-3.5 py-3">
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex min-w-0 items-center gap-2">
                     <span
-                      className={`h-2 w-2 shrink-0 rounded-pill ${columnTone[stage.colorToken] ?? "bg-stone-400"}`}
+                      className={`h-2 w-2 shrink-0 rounded-pill ${columnTone[stage.colorToken] ?? "bg-surface-strong"}`}
                       aria-hidden="true"
                     />
                     <h2
@@ -427,11 +427,11 @@ export const CrmPipelinePage: React.FC = () => {
                     >
                       {stage.name}
                     </h2>
-                    <span className="rounded-pill bg-stone-100 px-1.5 py-0.5 text-micro font-bold text-text-secondary">
+                    <span className="rounded-pill bg-surface-muted px-1.5 py-0.5 text-micro font-bold text-text-secondary">
                       {stageItems.length}
                     </span>
                   </div>
-                  <strong className="text-micro font-bold tabular-nums text-stone-700">
+                  <strong className="text-micro font-bold tabular-nums text-text-emphasis">
                     {money(stageAmount, activeMarket.currency, currentLocale)}
                   </strong>
                 </div>
@@ -444,22 +444,22 @@ export const CrmPipelinePage: React.FC = () => {
               </div>
               <div className="max-h-96 space-y-2 overflow-y-auto p-2.5">
                 {stageItems.length === 0 ? (
-                  <div className="rounded-control border border-dashed border-stone-300 bg-bg-surface/60 px-3 py-8 text-center text-micro text-stone-500">
+                  <div className="rounded-control border border-dashed border-border-prominent bg-bg-surface/60 px-3 py-8 text-center text-micro text-text-tertiary">
                     {t("admin.crmPipelinePage.aucuneOpportunite")}
                   </div>
                 ) : (
                   stageItems.map((opportunity) => (
                     <article
                       key={opportunity.id}
-                      className="rounded-control border border-stone-200 bg-bg-surface p-3 shadow-xs transition hover:-translate-y-px hover:shadow-sm"
+                      className="rounded-control border border-border-disabled bg-bg-surface p-3 shadow-xs transition hover:-translate-y-px hover:shadow-sm"
                     >
                       <Link
                         to={crmPaths.opportunity(opportunity.id)}
-                        className="block text-xs font-bold leading-snug text-stone-950 hover:text-primary"
+                        className="block text-xs font-bold leading-snug text-text-deep hover:text-primary"
                       >
                         {opportunity.name}
                       </Link>
-                      <div className="mt-1.5 flex items-center gap-1.5 text-micro text-stone-500">
+                      <div className="mt-1.5 flex items-center gap-1.5 text-micro text-text-tertiary">
                         <Building2
                           className="h-icon-xs w-icon-xs shrink-0"
                           aria-hidden="true"
@@ -468,22 +468,22 @@ export const CrmPipelinePage: React.FC = () => {
                           {opportunity.accountName ?? "Sans entreprise"}
                         </span>
                       </div>
-                      <div className="mt-3 flex items-end justify-between gap-2 border-t border-stone-100 pt-2.5">
+                      <div className="mt-3 flex items-end justify-between gap-2 border-t border-border-soft pt-2.5">
                         <div>
-                          <strong className="block text-sm font-bold tabular-nums text-stone-950">
+                          <strong className="block text-sm font-bold tabular-nums text-text-deep">
                             {money(
                               opportunity.amount.amountMinor,
                               opportunity.amount.currency,
                               currentLocale,
                             )}
                           </strong>
-                          <span className="text-micro text-stone-500">
+                          <span className="text-micro text-text-tertiary">
                             {opportunity.probability}% ·{" "}
                             {forecastLabel(opportunity.forecastCategory)}
                           </span>
                         </div>
                         {opportunity.expectedCloseDate && (
-                          <span className="inline-flex items-center gap-1 text-micro font-semibold text-stone-500">
+                          <span className="inline-flex items-center gap-1 text-micro font-semibold text-text-tertiary">
                             <CalendarDays
                               className="h-icon-xs w-icon-xs"
                               aria-hidden="true"
@@ -499,7 +499,7 @@ export const CrmPipelinePage: React.FC = () => {
                           </span>
                         )}
                       </div>
-                      <div className="mt-2.5 flex items-center justify-between rounded-lg bg-stone-50 p-1">
+                      <div className="mt-2.5 flex items-center justify-between rounded-lg bg-surface-soft p-1">
                         <button
                           type="button"
                           disabled={stageIndex === 0}
@@ -511,14 +511,14 @@ export const CrmPipelinePage: React.FC = () => {
                             )
                           }
                           aria-label={`Déplacer « ${opportunity.name} » vers l’étape précédente`}
-                          className="inline-flex h-7 w-7 items-center justify-center rounded-md text-stone-500 hover:bg-bg-surface hover:text-stone-950 disabled:cursor-not-allowed disabled:opacity-25"
+                          className="inline-flex h-7 w-7 items-center justify-center rounded-md text-text-tertiary hover:bg-bg-surface hover:text-text-deep disabled:cursor-not-allowed disabled:opacity-25"
                         >
                           <ArrowLeft
                             className="h-icon-sm w-icon-sm"
                             aria-hidden="true"
                           />
                         </button>
-                        <span className="inline-flex min-w-0 items-center gap-1 text-micro text-stone-500">
+                        <span className="inline-flex min-w-0 items-center gap-1 text-micro text-text-tertiary">
                           <UserRound
                             className="h-icon-xs w-icon-xs shrink-0"
                             aria-hidden="true"
@@ -538,7 +538,7 @@ export const CrmPipelinePage: React.FC = () => {
                             )
                           }
                           aria-label={`Déplacer « ${opportunity.name} » vers l’étape suivante`}
-                          className="inline-flex h-7 w-7 items-center justify-center rounded-md text-stone-500 hover:bg-bg-surface hover:text-stone-950 disabled:cursor-not-allowed disabled:opacity-25"
+                          className="inline-flex h-7 w-7 items-center justify-center rounded-md text-text-tertiary hover:bg-bg-surface hover:text-text-deep disabled:cursor-not-allowed disabled:opacity-25"
                         >
                           <ArrowRight
                             className="h-icon-sm w-icon-sm"
@@ -670,7 +670,7 @@ export const CrmPipelinePage: React.FC = () => {
             {closing.stage.isWon ? (
               <>
                 <FormField label="Valeur contractuelle">
-                  <div className="flex h-10 items-center gap-2 rounded-lg border border-stone-200 bg-stone-50 px-3 font-bold text-text-main">
+                  <div className="flex h-10 items-center gap-2 rounded-lg border border-border-disabled bg-surface-soft px-3 font-bold text-text-main">
                     <CircleDollarSign
                       className="h-icon-md w-icon-md text-success"
                       aria-hidden="true"

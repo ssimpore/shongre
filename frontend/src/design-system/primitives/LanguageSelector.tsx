@@ -219,13 +219,13 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
 
   const buttonClasses =
     variant === "footer"
-      ? `flex h-control-sm items-center gap-1.5 rounded-control px-2.5 text-xs font-bold text-stone-300 hover:text-white bg-stone-800/80 hover:bg-stone-800 border border-stone-700/80 hover:border-stone-600 ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer select-none ${
+      ? `flex h-control-sm items-center gap-1.5 rounded-control px-2.5 text-xs font-bold text-text-inverse-muted hover:text-text-inverse bg-surface-inverse-hover/80 hover:bg-surface-inverse-hover border border-border-inverse-subtle/80 hover:border-border-inverse-muted ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer select-none ${
           isOpen
-            ? "bg-stone-800 text-white border-stone-600 ring-1 ring-stone-600"
+            ? "bg-surface-inverse-hover text-text-inverse border-border-inverse-muted ring-1 ring-border-inverse-muted"
             : ""
         }`
-      : `flex h-control-md items-center gap-1.5 rounded-control px-2.5 text-xs font-bold text-stone-700 hover:text-stone-950 hover:bg-bg-subtle ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer select-none border border-transparent hover:border-border-base ${
-          isOpen ? "bg-bg-subtle border-border-base text-stone-950" : ""
+      : `flex h-control-md items-center gap-1.5 rounded-control px-2.5 text-xs font-bold text-text-emphasis hover:text-text-deep hover:bg-bg-subtle ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer select-none border border-transparent hover:border-border-base ${
+          isOpen ? "bg-bg-subtle border-border-base text-text-deep" : ""
         }`;
 
   const horizontal = alignRight ? "right-0" : "left-0";
@@ -255,7 +255,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
       >
         <CountryFlag countryCode={activeMarket.code} />
         <span
-          className={`font-bold uppercase tracking-wide ${variant === "footer" ? "text-stone-200" : "text-stone-800"}`}
+          className={`font-bold uppercase tracking-wide ${variant === "footer" ? "text-text-inverse-faint" : "text-text-strong"}`}
         >
           {activeLanguage.code.slice(0, 2)}
         </span>
@@ -267,7 +267,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
                   ? "rotate-180 text-primary-light"
                   : // Deliberately a light neutral on the footer's dark panel, not
                     // the theme-following "disabled" role — it must not invert.
-                    "text-stone-400"
+                    "text-text-inverse-subtle"
                 : isOpen
                   ? "rotate-180 text-primary"
                   : "text-text-muted"
@@ -276,7 +276,9 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
         ) : (
           <Settings2
             className={`h-icon-sm w-icon-sm ${
-              variant === "footer" ? "text-stone-400" : "text-text-muted"
+              variant === "footer"
+                ? "text-text-inverse-subtle"
+                : "text-text-muted"
             }`}
             aria-hidden="true"
           />
@@ -331,20 +333,20 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
           </div>
 
           {/* Preferences Link at bottom */}
-          <div className="border-t border-stone-100 mt-1 pt-1 px-1">
+          <div className="border-t border-border-soft mt-1 pt-1 px-1">
             <button
               id={`${idPrefix}-preferences-link`}
               type="button"
               role="menuitem"
               onClick={handleOpenPreferences}
-              className={`w-full min-h-control-sm flex items-center justify-between px-2.5 py-2 text-xs font-semibold text-stone-700 hover:text-stone-950 hover:bg-bg-subtle rounded-control ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer text-left group`}
+              className={`w-full min-h-control-sm flex items-center justify-between px-2.5 py-2 text-xs font-semibold text-text-emphasis hover:text-text-deep hover:bg-bg-subtle rounded-control ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer text-left group`}
             >
               <div className="flex items-center gap-2">
                 <Settings2 className="w-icon-sm h-icon-sm text-primary shrink-0" />
                 <span>{t("language.preferences")}</span>
               </div>
               <div className="flex items-center text-text-muted">
-                <ChevronRight className="w-icon-xs h-icon-xs text-text-disabled group-hover:text-stone-700 group-hover:translate-x-0.5 transition-transform" />
+                <ChevronRight className="w-icon-xs h-icon-xs text-text-disabled group-hover:text-text-emphasis group-hover:translate-x-0.5 transition-transform" />
               </div>
             </button>
           </div>

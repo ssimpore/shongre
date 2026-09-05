@@ -97,10 +97,10 @@ export const VerifyEmailPage: React.FC = () => {
             <CheckCircle2 className="w-8 h-8" />
           </div>
 
-          <h2 className="text-lg font-bold text-stone-900">
+          <h2 className="text-lg font-bold text-text-main">
             {t("auth.verifyEmailPage.emailValideAvecSucces")}
           </h2>
-          <p className="text-xs text-stone-600 max-w-sm mx-auto leading-relaxed">
+          <p className="text-xs text-text-supporting max-w-sm mx-auto leading-relaxed">
             {t("auth.verifyEmailPage.votreCompteEstDesormaisSecurise")}
           </p>
 
@@ -143,12 +143,12 @@ export const VerifyEmailPage: React.FC = () => {
             </div>
           )}
 
-          <div className="p-4 rounded-xl bg-stone-50 border border-stone-200 text-xs text-stone-700 flex items-start gap-3">
+          <div className="p-4 rounded-xl bg-surface-soft border border-border-disabled text-xs text-text-emphasis flex items-start gap-3">
             <Mail className="w-icon-lg h-icon-lg text-primary shrink-0 mt-0.5" />
             <div className="leading-relaxed">
               Consultez la boîte de réception de votre adresse email{" "}
               {currentUser?.email && (
-                <strong className="text-stone-900">{currentUser.email}</strong>
+                <strong className="text-text-main">{currentUser.email}</strong>
               )}
               . Cliquez sur le lien reçu ou collez le jeton de validation
               ci-dessous.
@@ -163,7 +163,7 @@ export const VerifyEmailPage: React.FC = () => {
             className="space-y-3 pt-2"
           >
             <div>
-              <label className="block text-xs font-semibold text-stone-800 mb-1.5">
+              <label className="block text-xs font-semibold text-text-strong mb-1.5">
                 {t("auth.verifyEmailPage.jetonDeValidationOuCode")}
               </label>
               <input
@@ -172,7 +172,7 @@ export const VerifyEmailPage: React.FC = () => {
                 onChange={(e) => setTokenInput(e.target.value)}
                 placeholder={t("auth.verifyEmailPage.collezIciVotreJetonDe")}
                 required
-                className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-mono text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
+                className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-mono text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
               />
             </div>
 

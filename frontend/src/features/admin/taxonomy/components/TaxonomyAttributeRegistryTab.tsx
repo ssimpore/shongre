@@ -61,7 +61,7 @@ export const TaxonomyAttributeRegistryTab: React.FC = () => {
               )}
             </span>
           </h3>
-          <p className="text-xs text-stone-500 mt-1">
+          <p className="text-xs text-text-tertiary mt-1">
             {t("admin.taxonomyAttributeRegistryTab.gerezLeDictionnaireDes")}{" "}
             {attributes.length}{" "}
             {t(
@@ -94,7 +94,7 @@ export const TaxonomyAttributeRegistryTab: React.FC = () => {
             )}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full h-control-md pl-9 pr-3 bg-bg-base border border-border-base rounded-control text-xs font-semibold focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            className="w-full h-control-md pl-9 pr-3 bg-bg-base border border-border-base rounded-control text-xs font-semibold focus:outline-hidden focus:ring-2 focus:ring-primary-ring focus:border-primary"
           />
         </div>
 
@@ -151,17 +151,17 @@ export const TaxonomyAttributeRegistryTab: React.FC = () => {
                   </span>
                 </div>
 
-                <div className="flex items-center gap-2 text-xs font-mono text-stone-500">
+                <div className="flex items-center gap-2 text-xs font-mono text-text-tertiary">
                   <span>ID : {attr.id}</span>
                   {attr.unit && (
-                    <span className="bg-stone-100 text-stone-700 px-1.5 py-0.5 rounded font-bold">
+                    <span className="bg-surface-muted text-text-emphasis px-1.5 py-0.5 rounded font-bold">
                       {attr.unit}
                     </span>
                   )}
                 </div>
 
                 {attr.helpText && (
-                  <p className="text-micro text-stone-500 line-clamp-2 italic">
+                  <p className="text-micro text-text-tertiary line-clamp-2 italic">
                     « {attr.helpText} »
                   </p>
                 )}
@@ -184,7 +184,7 @@ export const TaxonomyAttributeRegistryTab: React.FC = () => {
                     </span>
                   )}
                   {attr.options && (
-                    <span className="bg-purple-50 text-purple-700 px-1.5 py-0.5 rounded font-semibold">
+                    <span className="bg-automation-surface text-automation-strong px-1.5 py-0.5 rounded font-semibold">
                       {plural(attr.options.length, "option")}
                     </span>
                   )}
@@ -193,7 +193,7 @@ export const TaxonomyAttributeRegistryTab: React.FC = () => {
 
               {/* Card Footer: Usage & Edit */}
               <div className="flex items-center justify-between pt-3 border-t border-border-subtle text-xs">
-                <span className="text-micro text-stone-500 font-medium">
+                <span className="text-micro text-text-tertiary font-medium">
                   {t("admin.taxonomyAttributeRegistryTab.utilisePar")}
                   <strong>{consumersCount}</strong> rubrique
                   {consumersCount > 1 ? "s" : ""}

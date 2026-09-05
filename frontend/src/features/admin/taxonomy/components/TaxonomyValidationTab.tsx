@@ -53,7 +53,7 @@ export const TaxonomyValidationTab: React.FC<TaxonomyValidationTabProps> = ({
               {t("admin.taxonomyValidationTab.moteurDAuditValidationD")}
             </span>
           </h3>
-          <p className="text-xs text-stone-500 mt-1">
+          <p className="text-xs text-text-tertiary mt-1">
             {t(
               "admin.taxonomyValidationTab.controleAutomatiqueDeStructureUnicite",
             )}
@@ -74,7 +74,7 @@ export const TaxonomyValidationTab: React.FC<TaxonomyValidationTabProps> = ({
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
         <div className="bg-bg-surface p-4 rounded-2xl border border-border-base shadow-xs space-y-1">
-          <div className="flex items-center justify-between text-xs text-stone-500">
+          <div className="flex items-center justify-between text-xs text-text-tertiary">
             <span>{t("admin.taxonomyValidationTab.etatGlobal")}</span>
             {errors.length === 0 ? (
               <CheckCircle2 className="w-icon-md h-icon-md text-success" />
@@ -90,7 +90,7 @@ export const TaxonomyValidationTab: React.FC<TaxonomyValidationTabProps> = ({
         </div>
 
         <div className="bg-bg-surface p-4 rounded-2xl border border-border-base shadow-xs space-y-1">
-          <div className="flex items-center justify-between text-xs text-stone-500">
+          <div className="flex items-center justify-between text-xs text-text-tertiary">
             <span>Erreurs bloquantes</span>
             <AlertOctagon className="w-icon-md h-icon-md text-danger" />
           </div>
@@ -98,7 +98,7 @@ export const TaxonomyValidationTab: React.FC<TaxonomyValidationTabProps> = ({
         </div>
 
         <div className="bg-bg-surface p-4 rounded-2xl border border-border-base shadow-xs space-y-1">
-          <div className="flex items-center justify-between text-xs text-stone-500">
+          <div className="flex items-center justify-between text-xs text-text-tertiary">
             <span>Avertissements</span>
             <AlertTriangle className="w-icon-md h-icon-md text-warning" />
           </div>
@@ -106,7 +106,7 @@ export const TaxonomyValidationTab: React.FC<TaxonomyValidationTabProps> = ({
         </div>
 
         <div className="bg-bg-surface p-4 rounded-2xl border border-border-base shadow-xs space-y-1">
-          <div className="flex items-center justify-between text-xs text-stone-500">
+          <div className="flex items-center justify-between text-xs text-text-tertiary">
             <span>Recommandations</span>
             <Info className="w-icon-md h-icon-md text-info" />
           </div>
@@ -121,7 +121,7 @@ export const TaxonomyValidationTab: React.FC<TaxonomyValidationTabProps> = ({
           onClick={() => setSeverityFilter("all")}
           className={`px-3 py-1.5 rounded-control transition-all ${
             severityFilter === "all"
-              ? "bg-stone-900 text-text-inverse"
+              ? "bg-surface-inverse text-text-inverse"
               : "bg-bg-base text-text-secondary hover:bg-bg-subtle border border-border-base"
           }`}
         >
@@ -144,7 +144,7 @@ export const TaxonomyValidationTab: React.FC<TaxonomyValidationTabProps> = ({
           onClick={() => setSeverityFilter("warning")}
           className={`px-3 py-1.5 rounded-control transition-all ${
             severityFilter === "warning"
-              ? "bg-amber-500 text-text-inverse"
+              ? "bg-rating-strong text-text-inverse"
               : "bg-warning-surface text-warning hover:bg-warning-surface border border-warning-border"
           }`}
         >
@@ -166,12 +166,12 @@ export const TaxonomyValidationTab: React.FC<TaxonomyValidationTabProps> = ({
       {/* Issues List */}
       <div className="space-y-3">
         {filteredIssues.length === 0 ? (
-          <div className="p-8 text-center bg-bg-surface rounded-2xl border border-border-base text-xs text-stone-500 space-y-2">
+          <div className="p-8 text-center bg-bg-surface rounded-2xl border border-border-base text-xs text-text-tertiary space-y-2">
             <CheckCircle2 className="w-8 h-8 text-success mx-auto" />
             <p className="font-bold text-text-main text-sm">
               {t("admin.taxonomyValidationTab.aucuneAnomalieDetecteeDansCe")}
             </p>
-            <p className="text-stone-500">
+            <p className="text-text-tertiary">
               {t("admin.taxonomyValidationTab.laTaxonomieRespecteToutesLes")}
             </p>
           </div>
@@ -188,8 +188,8 @@ export const TaxonomyValidationTab: React.FC<TaxonomyValidationTabProps> = ({
                   issue.severity === "error"
                     ? "border-danger-border hover:border-danger"
                     : issue.severity === "warning"
-                      ? "border-warning-border hover:border-amber-400"
-                      : "border-info-border hover:border-blue-400"
+                      ? "border-warning-border hover:border-rating-fill"
+                      : "border-info-border hover:border-info-highlight"
                 }`}
               >
                 <div className="flex items-start gap-3">
@@ -197,7 +197,7 @@ export const TaxonomyValidationTab: React.FC<TaxonomyValidationTabProps> = ({
                     {issue.severity === "error" ? (
                       <AlertOctagon className="w-icon-lg h-icon-lg text-danger" />
                     ) : issue.severity === "warning" ? (
-                      <AlertTriangle className="w-icon-lg h-icon-lg text-amber-500" />
+                      <AlertTriangle className="w-icon-lg h-icon-lg text-rating-strong" />
                     ) : (
                       <Info className="w-icon-lg h-icon-lg text-info" />
                     )}
@@ -223,12 +223,12 @@ export const TaxonomyValidationTab: React.FC<TaxonomyValidationTabProps> = ({
                       )}
                     </div>
 
-                    <p className="text-xs text-stone-700 font-medium">
+                    <p className="text-xs text-text-emphasis font-medium">
                       {issue.message}
                     </p>
 
                     {issue.remediation && (
-                      <p className="text-micro text-stone-500 italic">
+                      <p className="text-micro text-text-tertiary italic">
                         {t("admin.taxonomyValidationTab.actionSuggeree")}{" "}
                         {issue.remediation}
                       </p>

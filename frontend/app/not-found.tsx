@@ -13,7 +13,7 @@ export default async function NotFound() {
       <meta name="robots" content="noindex, nofollow" />
       <section className="w-full max-w-xl rounded-card border border-border-base bg-bg-surface p-8 text-center shadow-sm sm:p-12">
         <div className="mb-6 flex justify-center">
-          <BrandLogo size="compact" priority />
+          <BrandLogo size="compact" />
         </div>
         <p className="text-sm font-bold uppercase tracking-wide text-primary">
           Erreur 404
@@ -26,7 +26,7 @@ export default async function NotFound() {
         </p>
         <a
           href={presentation.returnHref}
-          className="mt-8 inline-flex min-h-control-touch items-center justify-center rounded-control bg-primary px-5 text-sm font-bold text-white motion-interactive hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+          className="mt-8 inline-flex min-h-control-touch items-center justify-center rounded-control bg-primary px-5 text-sm font-bold text-text-inverse motion-interactive hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
         >
           {presentation.returnLabel}
         </a>

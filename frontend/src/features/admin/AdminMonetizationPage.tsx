@@ -708,7 +708,7 @@ export const AdminMonetizationPage: React.FC = () => {
         aria-live="polite"
       >
         <LoaderCircle className="w-icon-lg h-icon-lg animate-spin text-primary" />
-        <span className="ml-2 text-sm font-semibold text-stone-700">
+        <span className="ml-2 text-sm font-semibold text-text-emphasis">
           {t("admin.adminMonetizationPage.chargementDuCatalogueCommercial")}
         </span>
       </div>
@@ -721,7 +721,7 @@ export const AdminMonetizationPage: React.FC = () => {
         <h1 className="text-lg font-bold text-text-main">
           Catalogue indisponible
         </h1>
-        <p className="mt-1 text-sm text-stone-700">{error}</p>
+        <p className="mt-1 text-sm text-text-emphasis">{error}</p>
         <Button className="mt-4" size="sm" onClick={() => void loadOverview()}>
           {t("common.retry")}
         </Button>
@@ -742,12 +742,12 @@ export const AdminMonetizationPage: React.FC = () => {
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2 text-micro font-bold uppercase tracking-wider text-primary">
               <BadgeEuro className="w-icon-md h-icon-md" /> Pilotage commercial
-              <span className="text-stone-300">•</span>
-              <span className="text-stone-500">
+              <span className="text-text-inverse-muted">•</span>
+              <span className="text-text-tertiary">
                 {activeMarket.name} · {activeMarket.currency}
               </span>
             </div>
-            <h1 className="mt-1 text-xl sm:text-2xl font-bold tracking-tight text-stone-950">
+            <h1 className="mt-1 text-xl sm:text-2xl font-bold tracking-tight text-text-deep">
               {t("admin.adminMonetizationPage.businessMonetisation")}
             </h1>
             <p className="mt-1 text-xs sm:text-sm text-text-secondary max-w-3xl">
@@ -809,7 +809,7 @@ export const AdminMonetizationPage: React.FC = () => {
             >
               <Icon className={`w-4 h-4 shrink-0 ${tone}`} />
               <div className="min-w-0">
-                <div className="text-micro text-stone-500 truncate">
+                <div className="text-micro text-text-tertiary truncate">
                   {label}
                 </div>
                 <div className={`text-xs font-bold ${tone}`}>{value}</div>
@@ -846,7 +846,7 @@ export const AdminMonetizationPage: React.FC = () => {
                 key={item.id}
                 type="button"
                 onClick={() => setTab(item.id)}
-                className={`h-control-touch px-3 text-xs font-semibold border-b-2 focus-visible:outline-2 focus-visible:outline-primary ${tab === item.id ? "border-primary text-primary" : "border-transparent text-text-secondary hover:text-stone-950"}`}
+                className={`h-control-touch px-3 text-xs font-semibold border-b-2 focus-visible:outline-2 focus-visible:outline-primary ${tab === item.id ? "border-primary text-primary" : "border-transparent text-text-secondary hover:text-text-deep"}`}
                 id={`monetization-tab-${item.id}`}
                 role="tab"
                 aria-selected={tab === item.id}
@@ -890,7 +890,7 @@ export const AdminMonetizationPage: React.FC = () => {
                 className="w-full h-control-touch rounded-control border border-border-base bg-bg-surface pl-9 pr-3 text-xs focus-visible:outline-2 focus-visible:outline-primary"
               />
             </label>
-            <label className="flex items-center gap-2 rounded-control border border-border-base px-3 h-control-touch text-xs font-semibold text-stone-700">
+            <label className="flex items-center gap-2 rounded-control border border-border-base px-3 h-control-touch text-xs font-semibold text-text-emphasis">
               <Filter className="w-icon-md h-icon-md" />
               <span className="sr-only">Audience</span>
               <Select
@@ -908,7 +908,7 @@ export const AdminMonetizationPage: React.FC = () => {
               </Select>
             </label>
             {tab === "plans" && (
-              <label className="flex items-center gap-2 rounded-control border border-border-base px-3 h-control-touch text-xs font-semibold text-stone-700">
+              <label className="flex items-center gap-2 rounded-control border border-border-base px-3 h-control-touch text-xs font-semibold text-text-emphasis">
                 <Layers3 className="w-icon-md h-icon-md" />
                 <span className="sr-only">Verticale</span>
                 <Select
@@ -944,7 +944,7 @@ export const AdminMonetizationPage: React.FC = () => {
           >
             {(tab === "catalog" || tab === "plans") && (
               <div className="divide-y divide-border-subtle">
-                <div className="hidden md:grid grid-cols-admin-monetization gap-3 px-4 py-2 bg-bg-subtle text-micro font-bold uppercase tracking-wide text-stone-500">
+                <div className="hidden md:grid grid-cols-admin-monetization gap-3 px-4 py-2 bg-bg-subtle text-micro font-bold uppercase tracking-wide text-text-tertiary">
                   <span>Produit</span>
                   <span>
                     {tab === "plans" ? "Verticale · niveau" : "Audience"}
@@ -965,14 +965,14 @@ export const AdminMonetizationPage: React.FC = () => {
                       className={`w-full text-left p-4 md:grid md:grid-cols-admin-monetization md:items-center gap-3 hover:bg-bg-subtle focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary ${selected ? "bg-primary-light" : "bg-bg-surface"}`}
                     >
                       <span className="min-w-0">
-                        <span className="block text-xs font-bold text-stone-950 truncate">
+                        <span className="block text-xs font-bold text-text-deep truncate">
                           {product.name}
                         </span>
-                        <span className="block text-micro text-stone-500 truncate">
+                        <span className="block text-micro text-text-tertiary truncate">
                           {PRODUCT_KIND[product.kind]} · {product.code}
                         </span>
                       </span>
-                      <span className="mt-2 md:mt-0 inline-flex text-xs font-semibold text-stone-700 capitalize">
+                      <span className="mt-2 md:mt-0 inline-flex text-xs font-semibold text-text-emphasis capitalize">
                         {tab === "plans"
                           ? `${
                               overview.catalog.verticals.find(
@@ -986,7 +986,7 @@ export const AdminMonetizationPage: React.FC = () => {
                             ? "Toutes"
                             : product.audience}
                       </span>
-                      <span className="ml-3 md:ml-0 text-xs font-bold text-stone-950">
+                      <span className="ml-3 md:ml-0 text-xs font-bold text-text-deep">
                         {formatMinor(
                           price.amount.amountMinor,
                           price.amount.currency,
@@ -1015,7 +1015,7 @@ export const AdminMonetizationPage: React.FC = () => {
                   );
                 })}
                 {products.length === 0 && (
-                  <div className="p-8 text-center text-sm text-stone-500">
+                  <div className="p-8 text-center text-sm text-text-tertiary">
                     {t(
                       "admin.adminMonetizationPage.aucuneOffreNeCorrespondAuxFiltres",
                     )}
@@ -1028,10 +1028,10 @@ export const AdminMonetizationPage: React.FC = () => {
               <div className="p-4">
                 <div className="mb-4 flex items-start justify-between gap-3">
                   <div>
-                    <h2 className="text-sm font-bold text-stone-950">
+                    <h2 className="text-sm font-bold text-text-deep">
                       Verticales commerciales
                     </h2>
-                    <p className="mt-1 text-micro text-stone-500">
+                    <p className="mt-1 text-micro text-text-tertiary">
                       {t(
                         "admin.adminMonetizationPage.identifiantsStablesCategoriesEtCapacitesPubliesViaLeWorkflowVersionne",
                       )}
@@ -1060,7 +1060,7 @@ export const AdminMonetizationPage: React.FC = () => {
                           <div className="flex items-start justify-between gap-3">
                             <div>
                               <div className="flex flex-wrap items-center gap-2">
-                                <h3 className="text-sm font-bold text-stone-950">
+                                <h3 className="text-sm font-bold text-text-deep">
                                   {vertical.name}
                                 </h3>
                                 <Badge
@@ -1073,7 +1073,7 @@ export const AdminMonetizationPage: React.FC = () => {
                                   {labelIdentifier(vertical.status)}
                                 </Badge>
                               </div>
-                              <p className="mt-1 text-micro text-stone-500">
+                              <p className="mt-1 text-micro text-text-tertiary">
                                 {vertical.id} · ordre {vertical.sortOrder} ·{" "}
                                 {planCount} forfait(s)
                               </p>
@@ -1093,7 +1093,7 @@ export const AdminMonetizationPage: React.FC = () => {
                             {vertical.categoryIds.map((categoryId) => (
                               <span
                                 key={categoryId}
-                                className="rounded bg-bg-subtle px-2 py-1 text-micro font-semibold text-stone-700"
+                                className="rounded bg-bg-subtle px-2 py-1 text-micro font-semibold text-text-emphasis"
                               >
                                 {categoryId}
                               </span>
@@ -1122,7 +1122,7 @@ export const AdminMonetizationPage: React.FC = () => {
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
-                        <h2 className="text-xs font-bold text-stone-950">
+                        <h2 className="text-xs font-bold text-text-deep">
                           {rule.name}
                         </h2>
                         <Badge
@@ -1133,7 +1133,7 @@ export const AdminMonetizationPage: React.FC = () => {
                           {statusLabel(rule.status)}
                         </Badge>
                       </div>
-                      <p className="mt-1 text-micro text-stone-500">
+                      <p className="mt-1 text-micro text-text-tertiary">
                         {rule.key} {t("admin.adminMonetizationPage.priorite")}{" "}
                         {rule.priority} · {rule.conditions.length} condition(s)
                       </p>
@@ -1141,7 +1141,7 @@ export const AdminMonetizationPage: React.FC = () => {
                         {Object.entries(rule.outcome).map(([key, value]) => (
                           <span
                             key={key}
-                            className="rounded bg-bg-subtle px-2 py-1 text-micro font-semibold text-stone-700"
+                            className="rounded bg-bg-subtle px-2 py-1 text-micro font-semibold text-text-emphasis"
                           >
                             {labelIdentifier(key)} :{" "}
                             {formatRuleOutcomeValue(
@@ -1163,10 +1163,10 @@ export const AdminMonetizationPage: React.FC = () => {
               <div className="p-4">
                 <div className="mb-4 flex items-center justify-between gap-3">
                   <div>
-                    <h2 className="text-sm font-bold text-stone-950">
+                    <h2 className="text-sm font-bold text-text-deep">
                       {t("admin.adminMonetizationPage.campagnesEtCoupons")}
                     </h2>
-                    <p className="mt-1 text-micro text-stone-500">
+                    <p className="mt-1 text-micro text-text-tertiary">
                       {t(
                         "admin.adminMonetizationPage.lesChangementsSontAjoutesAUnBrouillonSoumisAuWorkflow",
                       )}
@@ -1183,7 +1183,7 @@ export const AdminMonetizationPage: React.FC = () => {
                       className="rounded-lg border border-border-base p-4"
                     >
                       <div className="flex items-center justify-between gap-2">
-                        <h2 className="text-sm font-bold text-stone-950">
+                        <h2 className="text-sm font-bold text-text-deep">
                           {promotion.name}
                         </h2>
                         <Badge>{statusLabel(promotion.status)}</Badge>
@@ -1202,24 +1202,24 @@ export const AdminMonetizationPage: React.FC = () => {
                       </p>
                       <dl className="mt-3 grid grid-cols-2 gap-2 text-micro">
                         <div>
-                          <dt className="text-stone-500">Cible</dt>
-                          <dd className="font-bold text-stone-800">
+                          <dt className="text-text-tertiary">Cible</dt>
+                          <dd className="font-bold text-text-strong">
                             {labelIdentifier(promotion.eligibleCustomerType)}
                           </dd>
                         </div>
                         <div>
-                          <dt className="text-stone-500">
+                          <dt className="text-text-tertiary">
                             {t("admin.adminMonetizationPage.duree")}
                           </dt>
-                          <dd className="font-bold text-stone-800">
+                          <dd className="font-bold text-text-strong">
                             {promotion.durationBillingPeriods
                               ? `${promotion.durationBillingPeriods} période(s)`
                               : "Ponctuelle"}
                           </dd>
                         </div>
                         <div>
-                          <dt className="text-stone-500">Verticales</dt>
-                          <dd className="font-bold text-stone-800">
+                          <dt className="text-text-tertiary">Verticales</dt>
+                          <dd className="font-bold text-text-strong">
                             {promotion.verticalIds
                               .map(
                                 (id) =>
@@ -1231,8 +1231,8 @@ export const AdminMonetizationPage: React.FC = () => {
                           </dd>
                         </div>
                         <div>
-                          <dt className="text-stone-500">Fin</dt>
-                          <dd className="font-bold text-stone-800">
+                          <dt className="text-text-tertiary">Fin</dt>
+                          <dd className="font-bold text-text-strong">
                             {formatDate(promotion.endsAt)}
                           </dd>
                         </div>
@@ -1252,7 +1252,7 @@ export const AdminMonetizationPage: React.FC = () => {
             {tab === "governance" && (
               <div className="space-y-5 p-4">
                 <div>
-                  <h2 className="text-sm font-bold text-stone-950">
+                  <h2 className="text-sm font-bold text-text-deep">
                     {t("admin.monetization.governanceTitle")}
                   </h2>
                   <p className="mt-1 max-w-3xl text-xs text-text-secondary">
@@ -1297,10 +1297,10 @@ export const AdminMonetizationPage: React.FC = () => {
                       key={metric.label}
                       className="rounded-lg border border-border-base p-4"
                     >
-                      <div className="text-micro font-bold uppercase tracking-wide text-stone-500">
+                      <div className="text-micro font-bold uppercase tracking-wide text-text-tertiary">
                         {metric.label}
                       </div>
-                      <div className="mt-1 text-xl font-bold text-stone-950">
+                      <div className="mt-1 text-xl font-bold text-text-deep">
                         {metric.value}
                       </div>
                       <div
@@ -1319,13 +1319,13 @@ export const AdminMonetizationPage: React.FC = () => {
                 <section aria-labelledby="migration-governance-title">
                   <h3
                     id="migration-governance-title"
-                    className="text-xs font-bold text-stone-950"
+                    className="text-xs font-bold text-text-deep"
                   >
                     {t("admin.monetization.migrationMappings")}
                   </h3>
                   <div className="mt-2 overflow-x-auto rounded-lg border border-border-base">
                     <table className="w-full min-w-160 text-left text-xs">
-                      <thead className="bg-bg-subtle text-micro uppercase tracking-wide text-stone-500">
+                      <thead className="bg-bg-subtle text-micro uppercase tracking-wide text-text-tertiary">
                         <tr>
                           <th className="p-3">
                             {t("admin.monetization.sourcePlan")}
@@ -1376,19 +1376,19 @@ export const AdminMonetizationPage: React.FC = () => {
 
                 <div className="grid gap-4 lg:grid-cols-2">
                   <section className="rounded-lg border border-border-base p-4">
-                    <h3 className="text-xs font-bold text-stone-950">
+                    <h3 className="text-xs font-bold text-text-deep">
                       {t("admin.monetization.campaignsAndPriceLocks")}
                     </h3>
                     <div className="mt-3 space-y-3">
                       {overview.catalog.campaigns.map((campaign) => (
                         <article key={campaign.id}>
                           <div className="flex items-center justify-between gap-2">
-                            <span className="font-bold text-stone-900">
+                            <span className="font-bold text-text-main">
                               {campaign.name}
                             </span>
                             <Badge>{statusLabel(campaign.status)}</Badge>
                           </div>
-                          <p className="mt-1 text-micro text-stone-500">
+                          <p className="mt-1 text-micro text-text-tertiary">
                             {campaign.trialDays || 0} jours ·{" "}
                             {campaign.maximumVerticals || "—"} verticale(s) ·{" "}
                             {labelIdentifier(campaign.conversionBehavior)}
@@ -1399,7 +1399,7 @@ export const AdminMonetizationPage: React.FC = () => {
                   </section>
 
                   <section className="rounded-lg border border-border-base p-4">
-                    <h3 className="text-xs font-bold text-stone-950">
+                    <h3 className="text-xs font-bold text-text-deep">
                       {t("admin.monetization.providerReadiness")}
                     </h3>
                     <div className="mt-3 space-y-2">
@@ -1439,10 +1439,10 @@ export const AdminMonetizationPage: React.FC = () => {
                       className="p-4 flex items-center justify-between gap-4"
                     >
                       <div>
-                        <h2 className="text-xs font-bold text-stone-950">
+                        <h2 className="text-xs font-bold text-text-deep">
                           {rule.name}
                         </h2>
-                        <p className="mt-1 text-micro text-stone-500">
+                        <p className="mt-1 text-micro text-text-tertiary">
                           {rule.scope.marketCodes.join(", ") || "Tous marchés"}{" "}
                           {t("admin.adminMonetizationPage.priorite")}{" "}
                           {rule.priority}
@@ -1454,7 +1454,7 @@ export const AdminMonetizationPage: React.FC = () => {
                           .map(([key, value]) => (
                             <div
                               key={key}
-                              className="text-xs font-bold text-stone-800"
+                              className="text-xs font-bold text-text-strong"
                             >
                               {labelIdentifier(key)} :{" "}
                               {formatRuleOutcomeValue(
@@ -1482,10 +1482,10 @@ export const AdminMonetizationPage: React.FC = () => {
                       <Gift className="w-icon-md h-icon-md" />
                     </div>
                     <div>
-                      <h2 className="text-sm font-bold text-stone-950">
+                      <h2 className="text-sm font-bold text-text-deep">
                         {t("admin.adminMonetizationPage.demanderUnAccesOffert")}
                       </h2>
-                      <p className="mt-1 text-micro text-stone-500">
+                      <p className="mt-1 text-micro text-text-tertiary">
                         {t(
                           "admin.adminMonetizationPage.laDemandeNeCreeAucunFauxPaiementEtAttendUne",
                         )}
@@ -1618,10 +1618,10 @@ export const AdminMonetizationPage: React.FC = () => {
                   onSubmit={(event) => void decideComplimentaryGrant(event)}
                 >
                   <div>
-                    <h2 className="text-sm font-bold text-stone-950">
+                    <h2 className="text-sm font-bold text-text-deep">
                       {t("admin.adminMonetizationPage.decisionFinale")}
                     </h2>
-                    <p className="mt-1 text-micro text-stone-500">
+                    <p className="mt-1 text-micro text-text-tertiary">
                       {t(
                         "admin.adminMonetizationPage.reserveeAuRoleProprietaireLeDemandeurNePeutPasApprouver",
                       )}
@@ -1692,34 +1692,34 @@ export const AdminMonetizationPage: React.FC = () => {
               <div className="p-4 space-y-5">
                 <div className="grid sm:grid-cols-2 xl:grid-cols-6 gap-3">
                   <div className="rounded-lg border border-border-base p-3">
-                    <div className="text-micro text-stone-500">
+                    <div className="text-micro text-text-tertiary">
                       Devis aujourd’hui
                     </div>
-                    <div className="mt-1 text-lg font-bold text-stone-950">
+                    <div className="mt-1 text-lg font-bold text-text-deep">
                       {overview.quoteCountToday}
                     </div>
                   </div>
                   <div className="rounded-lg border border-border-base p-3">
-                    <div className="text-micro text-stone-500">
+                    <div className="text-micro text-text-tertiary">
                       Abonnements actifs
                     </div>
-                    <div className="mt-1 text-lg font-bold text-stone-950">
+                    <div className="mt-1 text-lg font-bold text-text-deep">
                       {overview.activeSubscriptionCount}
                     </div>
                   </div>
                   <div className="rounded-lg border border-border-base p-3">
-                    <div className="text-micro text-stone-500">
+                    <div className="text-micro text-text-tertiary">
                       {t("admin.adminMonetizationPage.droitsMaterialises")}
                     </div>
-                    <div className="mt-1 text-lg font-bold text-stone-950">
+                    <div className="mt-1 text-lg font-bold text-text-deep">
                       {overview.entitlements.length}
                     </div>
                   </div>
                   <div className="rounded-lg border border-border-base p-3">
-                    <div className="text-micro text-stone-500">
+                    <div className="text-micro text-text-tertiary">
                       {t("admin.adminMonetizationPage.paiementsReussis")}
                     </div>
-                    <div className="mt-1 text-lg font-bold text-stone-950">
+                    <div className="mt-1 text-lg font-bold text-text-deep">
                       {
                         overview.payments.filter(
                           (payment) => payment.status === "succeeded",
@@ -1728,22 +1728,24 @@ export const AdminMonetizationPage: React.FC = () => {
                     </div>
                   </div>
                   <div className="rounded-lg border border-border-base p-3">
-                    <div className="text-micro text-stone-500">Factures</div>
-                    <div className="mt-1 text-lg font-bold text-stone-950">
+                    <div className="text-micro text-text-tertiary">
+                      Factures
+                    </div>
+                    <div className="mt-1 text-lg font-bold text-text-deep">
                       {overview.invoices.length}
                     </div>
                   </div>
                   <div className="rounded-lg border border-border-base p-3">
-                    <div className="text-micro text-stone-500">
+                    <div className="text-micro text-text-tertiary">
                       Remboursements
                     </div>
-                    <div className="mt-1 text-lg font-bold text-stone-950">
+                    <div className="mt-1 text-lg font-bold text-text-deep">
                       {overview.refunds.length}
                     </div>
                   </div>
                 </div>
                 <div>
-                  <h2 className="text-xs font-bold text-stone-950">
+                  <h2 className="text-xs font-bold text-text-deep">
                     {t("admin.adminMonetizationPage.abonnementsParCompte")}
                   </h2>
                   <ScrollableRegion
@@ -1778,19 +1780,19 @@ export const AdminMonetizationPage: React.FC = () => {
                           );
                           return (
                             <tr key={subscription.id}>
-                              <td className="px-3 py-2 font-mono text-stone-700">
+                              <td className="px-3 py-2 font-mono text-text-emphasis">
                                 {subscription.accountId}
                               </td>
                               <td className="px-3 py-2">
                                 <div className="font-bold text-text-main">
                                   {product?.name || subscription.productId}
                                 </div>
-                                <div className="text-micro text-stone-500">
+                                <div className="text-micro text-text-tertiary">
                                   {subscription.productVersionId ||
                                     "Version héritée"}
                                 </div>
                               </td>
-                              <td className="px-3 py-2 text-stone-700">
+                              <td className="px-3 py-2 text-text-emphasis">
                                 {labelIdentifier(
                                   subscription.verticalId || "general",
                                 )}{" "}
@@ -1804,7 +1806,7 @@ export const AdminMonetizationPage: React.FC = () => {
                                   {labelIdentifier(subscription.status)}
                                 </Badge>
                               </td>
-                              <td className="px-3 py-2 text-stone-700">
+                              <td className="px-3 py-2 text-text-emphasis">
                                 {formatDate(
                                   subscription.scheduledChangeAt ||
                                     subscription.currentPeriodEnd,
@@ -1826,7 +1828,7 @@ export const AdminMonetizationPage: React.FC = () => {
                           <tr>
                             <td
                               colSpan={5}
-                              className="px-3 py-5 text-center text-stone-500"
+                              className="px-3 py-5 text-center text-text-tertiary"
                             >
                               {t(
                                 "admin.adminMonetizationPage.aucunAbonnementAAfficher",
@@ -1839,7 +1841,7 @@ export const AdminMonetizationPage: React.FC = () => {
                   </ScrollableRegion>
                 </div>
                 <div>
-                  <h2 className="text-xs font-bold text-stone-950">
+                  <h2 className="text-xs font-bold text-text-deep">
                     Registre financier
                   </h2>
                   <ScrollableRegion
@@ -1878,7 +1880,7 @@ export const AdminMonetizationPage: React.FC = () => {
                             <td className="px-3 py-2 text-text-secondary">
                               {labelIdentifier(invoice.status)}
                             </td>
-                            <td className="px-3 py-2 text-right font-bold text-stone-950">
+                            <td className="px-3 py-2 text-right font-bold text-text-deep">
                               {formatMinor(
                                 invoice.total.amountMinor,
                                 invoice.total.currency,
@@ -1897,7 +1899,7 @@ export const AdminMonetizationPage: React.FC = () => {
                             <td className="px-3 py-2 text-text-secondary">
                               {labelIdentifier(refund.status)}
                             </td>
-                            <td className="px-3 py-2 text-right font-bold text-stone-950">
+                            <td className="px-3 py-2 text-right font-bold text-text-deep">
                               −{" "}
                               {formatMinor(
                                 refund.amount.amountMinor,
@@ -1911,7 +1913,7 @@ export const AdminMonetizationPage: React.FC = () => {
                             <tr>
                               <td
                                 colSpan={4}
-                                className="px-3 py-5 text-center text-stone-500"
+                                className="px-3 py-5 text-center text-text-tertiary"
                               >
                                 {t(
                                   "admin.adminMonetizationPage.aucunMouvementFinancierAAfficher",
@@ -1924,7 +1926,7 @@ export const AdminMonetizationPage: React.FC = () => {
                   </ScrollableRegion>
                 </div>
                 <div>
-                  <h2 className="text-xs font-bold text-stone-950">
+                  <h2 className="text-xs font-bold text-text-deep">
                     {t("admin.adminMonetizationPage.commandesRecentes")}
                   </h2>
                   <div className="mt-2 divide-y divide-border-subtle rounded-lg border border-border-base">
@@ -1937,12 +1939,12 @@ export const AdminMonetizationPage: React.FC = () => {
                           <div className="font-bold text-text-main truncate">
                             {order.id}
                           </div>
-                          <div className="text-micro text-stone-500">
+                          <div className="text-micro text-text-tertiary">
                             {labelIdentifier(order.provider)} ·{" "}
                             {labelIdentifier(order.status)}
                           </div>
                         </div>
-                        <div className="font-bold text-stone-950">
+                        <div className="font-bold text-text-deep">
                           {formatMinor(
                             order.total.amountMinor,
                             order.total.currency,
@@ -1951,7 +1953,7 @@ export const AdminMonetizationPage: React.FC = () => {
                       </div>
                     ))}
                     {overview.orders.length === 0 && (
-                      <div className="p-4 text-xs text-stone-500">
+                      <div className="p-4 text-xs text-text-tertiary">
                         {t(
                           "admin.adminMonetizationPage.aucuneCommandeCentralisee",
                         )}
@@ -1960,7 +1962,7 @@ export const AdminMonetizationPage: React.FC = () => {
                   </div>
                 </div>
                 <div>
-                  <h2 className="text-xs font-bold text-stone-950">
+                  <h2 className="text-xs font-bold text-text-deep">
                     {t("admin.adminMonetizationPage.auditRecent")}
                   </h2>
                   <div className="mt-2 divide-y divide-border-subtle rounded-lg border border-border-base">
@@ -1969,14 +1971,14 @@ export const AdminMonetizationPage: React.FC = () => {
                         <div className="font-bold text-text-main">
                           {event.action} · {event.entityId}
                         </div>
-                        <div className="mt-0.5 text-micro text-stone-500">
+                        <div className="mt-0.5 text-micro text-text-tertiary">
                           {event.actorName} · {formatDateTime(event.createdAt)}{" "}
                           · {event.reason}
                         </div>
                       </div>
                     ))}
                     {overview.auditEvents.length === 0 && (
-                      <div className="p-4 text-xs text-stone-500">
+                      <div className="p-4 text-xs text-text-tertiary">
                         {t("admin.adminMonetizationPage.aucunEvenementDAudit")}
                       </div>
                     )}
@@ -1997,7 +1999,7 @@ export const AdminMonetizationPage: React.FC = () => {
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
-                        <h2 className="text-xs font-bold text-stone-950">
+                        <h2 className="text-xs font-bold text-text-deep">
                           Version {version.versionNumber}
                         </h2>
                         <Badge
@@ -2012,7 +2014,7 @@ export const AdminMonetizationPage: React.FC = () => {
                           {statusLabel(version.status)}
                         </Badge>
                       </div>
-                      <p className="mt-1 text-micro text-stone-500 truncate">
+                      <p className="mt-1 text-micro text-text-tertiary truncate">
                         {version.reason} · {version.productCount} produits ·{" "}
                         {version.ruleCount}{" "}
                         {t("admin.adminMonetizationPage.regles")}
@@ -2071,11 +2073,11 @@ export const AdminMonetizationPage: React.FC = () => {
               <div>
                 <div className="flex items-center gap-2">
                   <Sparkles className="w-icon-md h-icon-md text-primary" />
-                  <h2 className="text-sm font-bold text-stone-950">
+                  <h2 className="text-sm font-bold text-text-deep">
                     {t("admin.adminMonetizationPage.pourquoiCeResultat")}
                   </h2>
                 </div>
-                <p className="mt-1 text-micro leading-relaxed text-stone-500">
+                <p className="mt-1 text-micro leading-relaxed text-text-tertiary">
                   {t(
                     "admin.adminMonetizationPage.simulezUnContexteSansPublierNiModifierLaConfiguration",
                   )}
@@ -2162,7 +2164,7 @@ export const AdminMonetizationPage: React.FC = () => {
               {evaluation ? (
                 <div className="rounded-lg border border-border-base bg-bg-surface p-3">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-micro font-bold uppercase tracking-wide text-stone-500">
+                    <span className="text-micro font-bold uppercase tracking-wide text-text-tertiary">
                       {t("admin.adminMonetizationPage.decision")}
                     </span>
                     <Badge
@@ -2173,14 +2175,16 @@ export const AdminMonetizationPage: React.FC = () => {
                   </div>
                   <div className="mt-3 grid grid-cols-2 gap-2">
                     <div>
-                      <div className="text-micro text-stone-500">Quota</div>
-                      <div className="text-sm font-bold text-stone-950">
+                      <div className="text-micro text-text-tertiary">Quota</div>
+                      <div className="text-sm font-bold text-text-deep">
                         {evaluation.quotaLimit ?? "—"}
                       </div>
                     </div>
                     <div>
-                      <div className="text-micro text-stone-500">Restant</div>
-                      <div className="text-sm font-bold text-stone-950">
+                      <div className="text-micro text-text-tertiary">
+                        Restant
+                      </div>
+                      <div className="text-sm font-bold text-text-deep">
                         {evaluation.quotaRemaining ?? "—"}
                       </div>
                     </div>
@@ -2192,10 +2196,10 @@ export const AdminMonetizationPage: React.FC = () => {
                           {index + 1}
                         </span>
                         <div>
-                          <div className="font-bold text-stone-800">
+                          <div className="font-bold text-text-strong">
                             {entry.ruleName}
                           </div>
-                          <div className="text-stone-500">
+                          <div className="text-text-tertiary">
                             {t("admin.crmTasksPage.priorite")} {entry.priority}{" "}
                             {t("admin.adminMonetizationPage.specificite")}{" "}
                             {entry.specificity}
@@ -2207,31 +2211,31 @@ export const AdminMonetizationPage: React.FC = () => {
                 </div>
               ) : selectedProduct ? (
                 <div className="rounded-lg border border-border-base bg-bg-surface p-3">
-                  <div className="text-micro font-bold uppercase tracking-wide text-stone-500">
+                  <div className="text-micro font-bold uppercase tracking-wide text-text-tertiary">
                     {t("admin.adminMonetizationPage.selection")}
                   </div>
-                  <div className="mt-1 text-xs font-bold text-stone-950">
+                  <div className="mt-1 text-xs font-bold text-text-deep">
                     {selectedProduct.name}
                   </div>
-                  <p className="mt-1 text-micro leading-relaxed text-stone-500">
+                  <p className="mt-1 text-micro leading-relaxed text-text-tertiary">
                     {selectedProduct.description}
                   </p>
                   {selectedProduct.kind === "subscription" && (
                     <dl className="mt-3 grid grid-cols-2 gap-2 rounded-control bg-bg-subtle p-2 text-micro">
                       <div>
-                        <dt className="text-stone-500">Famille</dt>
+                        <dt className="text-text-tertiary">Famille</dt>
                         <dd className="font-bold text-text-main">
                           {selectedProduct.commercialProfile.familyId}
                         </dd>
                       </div>
                       <div>
-                        <dt className="text-stone-500">Niveau</dt>
+                        <dt className="text-text-tertiary">Niveau</dt>
                         <dd className="font-bold capitalize text-text-main">
                           {selectedProduct.commercialProfile.tier || "—"}
                         </dd>
                       </div>
                       <div>
-                        <dt className="text-stone-500">Essai</dt>
+                        <dt className="text-text-tertiary">Essai</dt>
                         <dd className="font-bold text-text-main">
                           {selectedProduct.commercialProfile.trialPolicy.enabled
                             ? `${selectedProduct.commercialProfile.trialPolicy.durationDays} jours · paiement ${selectedProduct.commercialProfile.trialPolicy.requiresPaymentMethod ? "requis" : "facultatif"}`
@@ -2239,7 +2243,7 @@ export const AdminMonetizationPage: React.FC = () => {
                         </dd>
                       </div>
                       <div>
-                        <dt className="text-stone-500">Finance</dt>
+                        <dt className="text-text-tertiary">Finance</dt>
                         <dd className="font-bold text-text-main">
                           {labelIdentifier(
                             selectedProduct.commercialProfile.financeCategory,
@@ -2256,8 +2260,8 @@ export const AdminMonetizationPage: React.FC = () => {
                           key={entry.key}
                           className="flex items-start justify-between gap-3 text-micro"
                         >
-                          <dt className="text-stone-500">{entry.label}</dt>
-                          <dd className="flex flex-wrap items-center justify-end gap-1 font-bold text-stone-800">
+                          <dt className="text-text-tertiary">{entry.label}</dt>
+                          <dd className="flex flex-wrap items-center justify-end gap-1 font-bold text-text-strong">
                             <span>{String(entry.value)}</span>
                             <Badge variant={readiness.variant}>
                               {readiness.label}
@@ -2269,18 +2273,18 @@ export const AdminMonetizationPage: React.FC = () => {
                   </dl>
                   {selectedProduct.kind === "subscription" && (
                     <div className="mt-3 border-t border-border-subtle pt-3 text-micro">
-                      <div className="font-bold uppercase tracking-wide text-stone-500">
+                      <div className="font-bold uppercase tracking-wide text-text-tertiary">
                         {t(
                           "admin.adminMonetizationPage.transitionsConfigurees",
                         )}
                       </div>
-                      <p className="mt-1 text-stone-700">
+                      <p className="mt-1 text-text-emphasis">
                         {t("admin.adminMonetizationPage.montee")}{" "}
                         {selectedProduct.commercialProfile.upgradeProductIds.join(
                           ", ",
                         ) || "aucune"}
                       </p>
-                      <p className="mt-1 text-stone-700">
+                      <p className="mt-1 text-text-emphasis">
                         Baisse :{" "}
                         {selectedProduct.commercialProfile.downgradeProductIds.join(
                           ", ",
@@ -2289,14 +2293,14 @@ export const AdminMonetizationPage: React.FC = () => {
                     </div>
                   )}
                   <div className="mt-3 border-t border-border-subtle pt-3">
-                    <div className="text-micro font-bold uppercase tracking-wide text-stone-500">
+                    <div className="text-micro font-bold uppercase tracking-wide text-text-tertiary">
                       {t("admin.adminMonetizationPage.consommateursAffectes")}
                     </div>
                     <div className="mt-2 flex flex-wrap gap-1">
                       {selectedProduct.sourceConsumers.map((consumer) => (
                         <span
                           key={consumer}
-                          className="rounded bg-bg-subtle px-2 py-1 text-micro font-semibold text-stone-700"
+                          className="rounded bg-bg-subtle px-2 py-1 text-micro font-semibold text-text-emphasis"
                         >
                           {consumer}
                         </span>
@@ -2317,10 +2321,10 @@ export const AdminMonetizationPage: React.FC = () => {
               ) : null}
               <div className="rounded-lg border border-border-base bg-bg-surface p-3">
                 <div className="flex items-center gap-2 text-xs font-bold text-text-main">
-                  <History className="w-icon-md h-icon-md text-stone-500" />{" "}
+                  <History className="w-icon-md h-icon-md text-text-tertiary" />{" "}
                   {t("admin.adminMonetizationPage.tracabilite")}
                 </div>
-                <p className="mt-1 text-micro leading-relaxed text-stone-500">
+                <p className="mt-1 text-micro leading-relaxed text-text-tertiary">
                   {t(
                     "admin.adminMonetizationPage.chaquePublicationConserveLeMotifLeDiffLAuteurL",
                   )}
@@ -2884,7 +2888,7 @@ export const AdminMonetizationPage: React.FC = () => {
               }
             />
           </FormField>
-          <div className="rounded-control border border-warning-border bg-warning-surface p-3 text-xs text-stone-700">
+          <div className="rounded-control border border-warning-border bg-warning-surface p-3 text-xs text-text-emphasis">
             {t(
               "admin.adminMonetizationPage.laCampagneResteInactiveJusquAPublicationDuBrouillonSon",
             )}

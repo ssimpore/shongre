@@ -536,10 +536,10 @@ export const ImmoPublishWizardPage: React.FC = () => {
                       number <= Math.max(step, ...completedSteps, FIRST_STEP) &&
                       setStep(number)
                     }
-                    className={`flex w-full items-center gap-3 rounded-control px-3 py-2 text-left text-xs font-semibold ${active ? "bg-primary text-white" : "text-text-secondary hover:bg-bg-subtle"}`}
+                    className={`flex w-full items-center gap-3 rounded-control px-3 py-2 text-left text-xs font-semibold ${active ? "bg-primary text-text-inverse" : "text-text-secondary hover:bg-bg-subtle"}`}
                   >
                     <span
-                      className={`grid h-7 w-7 shrink-0 place-items-center rounded-full ${active ? "bg-white/15" : complete ? "bg-success-surface text-success" : "bg-bg-subtle"}`}
+                      className={`grid h-7 w-7 shrink-0 place-items-center rounded-full ${active ? "bg-bg-surface/15" : complete ? "bg-success-surface text-success" : "bg-bg-subtle"}`}
                     >
                       {complete ? (
                         <Check className="h-icon-md w-icon-md" />
@@ -1009,7 +1009,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
                   JPG, PNG ou WebP · maximum{" "}
                   {REAL_ESTATE_CONSTRAINTS.media.maxFileSizeMegabytes} Mo.
                 </p>
-                <label className="mt-3 inline-flex cursor-pointer rounded-control bg-primary px-4 py-2 text-xs font-semibold text-white">
+                <label className="mt-3 inline-flex cursor-pointer rounded-control bg-primary px-4 py-2 text-xs font-semibold text-text-inverse">
                   <input
                     type="file"
                     accept="image/*"

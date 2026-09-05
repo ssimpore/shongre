@@ -17,6 +17,7 @@ import {
   useSearchParams,
 } from "react-router-dom";
 import type { TaxonomyHeaderCategoryItem } from "@shongre/contracts";
+import { brand } from "@shongre/brand";
 import { ProBadge, VerifiedIcon } from "@shongre/ui/web";
 import {
   PlusCircle,
@@ -136,13 +137,13 @@ function AccountMenuDestinationLink({
       ? "text-primary hover:bg-primary-light"
       : item.emphasis === "warning"
         ? "text-warning hover:bg-warning-surface"
-        : "text-stone-800 hover:bg-bg-subtle";
+        : "text-text-strong hover:bg-bg-subtle";
   const iconTone =
     item.emphasis === "primary"
       ? "text-primary"
       : item.emphasis === "warning"
-        ? "text-amber-500"
-        : "text-stone-400";
+        ? "text-rating-strong"
+        : "text-text-inverse-subtle";
 
   return (
     <Link
@@ -160,7 +161,7 @@ function AccountMenuDestinationLink({
       <span className="min-w-0 flex-1 truncate">{label}</span>
       {item.count !== undefined ? (
         <span
-          className="shrink-0 text-micro tabular-nums text-stone-500"
+          className="shrink-0 text-micro tabular-nums text-text-tertiary"
           aria-label={`${item.count}`}
         >
           {item.count}
@@ -507,7 +508,7 @@ export const Header: React.FC = () => {
             <Link
               to={routes.home()}
               className="group flex min-w-0 items-center select-none"
-              aria-label="SHONGRE., accueil"
+              aria-label={`${brand.name} ${activeMarket.name}, accueil`}
             >
               {/* The market name repeats the market selector in the actions
                   row, so tablet drops it rather than the search field. */}
@@ -595,12 +596,12 @@ export const Header: React.FC = () => {
             <Link
               to="/compte/favoris"
               data-marketplace-action="favorite.manage"
-              className={`relative hidden h-control-md w-control-md items-center justify-center rounded-control text-stone-600 ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} hover:bg-bg-subtle hover:text-stone-950 active:bg-bg-muted lg:flex group`}
+              className={`relative hidden h-control-md w-control-md items-center justify-center rounded-control text-text-supporting ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} hover:bg-bg-subtle hover:text-text-deep active:bg-bg-muted lg:flex group`}
               aria-label="Favoris"
             >
               <Heart className="w-icon-lg h-icon-lg group-hover:scale-110 transition-transform duration-fast" />
               {favCount > 0 && (
-                <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-primary text-white text-micro font-bold flex items-center justify-center shadow-xs transform translate-x-1/4 -translate-y-1/4">
+                <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-primary text-text-inverse text-micro font-bold flex items-center justify-center shadow-xs transform translate-x-1/4 -translate-y-1/4">
                   {favCount}
                 </span>
               )}
@@ -610,12 +611,12 @@ export const Header: React.FC = () => {
             <Link
               to="/compte/messages"
               data-marketplace-action="message.open"
-              className={`relative hidden h-control-md w-control-md items-center justify-center rounded-control text-stone-600 ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} hover:bg-bg-subtle hover:text-stone-950 active:bg-bg-muted lg:flex group`}
+              className={`relative hidden h-control-md w-control-md items-center justify-center rounded-control text-text-supporting ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} hover:bg-bg-subtle hover:text-text-deep active:bg-bg-muted lg:flex group`}
               aria-label="Messagerie"
             >
               <MessageSquare className="w-icon-lg h-icon-lg group-hover:scale-110 transition-transform duration-fast" />
               {unreadMessagesCount > 0 && (
-                <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-primary text-white text-micro font-bold flex items-center justify-center shadow-xs transform translate-x-1/4 -translate-y-1/4">
+                <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-primary text-text-inverse text-micro font-bold flex items-center justify-center shadow-xs transform translate-x-1/4 -translate-y-1/4">
                   {unreadMessagesCount}
                 </span>
               )}
@@ -659,11 +660,11 @@ export const Header: React.FC = () => {
                     name={currentUser.name}
                     size="sm"
                   />
-                  <span className="text-sm font-bold text-stone-800 hidden lg:inline max-w-25 truncate">
+                  <span className="text-sm font-bold text-text-strong hidden lg:inline max-w-25 truncate">
                     {currentUser.name.split(" ")[0]}
                   </span>
                   <ChevronDown
-                    className={`w-icon-sm h-icon-sm text-stone-400 hidden sm:inline transition-transform duration-normal ${isAccountMenuOpen ? "rotate-180" : ""}`}
+                    className={`w-icon-sm h-icon-sm text-text-inverse-subtle hidden sm:inline transition-transform duration-normal ${isAccountMenuOpen ? "rotate-180" : ""}`}
                   />
                 </button>
               ) : (
@@ -687,7 +688,7 @@ export const Header: React.FC = () => {
                   className={`absolute right-0 mt-2 w-64 ${DROPDOWN_PANEL_CLASSES}`}
                 >
                   <div className="px-4 py-2.5 border-b border-border-subtle">
-                    <div className="flex min-w-0 items-center gap-1.5 text-sm font-bold text-stone-900">
+                    <div className="flex min-w-0 items-center gap-1.5 text-sm font-bold text-text-main">
                       <span className="truncate">{currentUser.name}</span>
                       {!isStaffIdentity && currentUser.isVerified ? (
                         <VerifiedIcon
@@ -696,7 +697,7 @@ export const Header: React.FC = () => {
                         />
                       ) : null}
                     </div>
-                    <div className="text-xs text-stone-500 truncate">
+                    <div className="text-xs text-text-tertiary truncate">
                       {currentUser.email}
                     </div>
                     <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
@@ -730,7 +731,7 @@ export const Header: React.FC = () => {
                   </div>
 
                   <div className="py-1">
-                    <div className="px-4 pb-1 pt-1 text-micro font-bold uppercase tracking-wider text-stone-500">
+                    <div className="px-4 pb-1 pt-1 text-micro font-bold uppercase tracking-wider text-text-tertiary">
                       {t("shell.header.accountMenu.availableAccess")}
                     </div>
                     {accountMenuItems.map((item) => (
@@ -782,12 +783,12 @@ export const Header: React.FC = () => {
                 isMobileMenuOpen ? t("nav.closeMenu") : t("nav.openMenu")
               }
               aria-expanded={isMobileMenuOpen}
-              className={`lg:hidden h-control-md w-control-md rounded-control text-stone-800 hover:text-stone-950 hover:bg-bg-subtle active:bg-bg-muted ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} flex items-center justify-center cursor-pointer`}
+              className={`lg:hidden h-control-md w-control-md rounded-control text-text-strong hover:text-text-deep hover:bg-bg-subtle active:bg-bg-muted ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} flex items-center justify-center cursor-pointer`}
             >
               {isMobileMenuOpen ? (
-                <X className="w-icon-xl h-icon-xl text-stone-900" />
+                <X className="w-icon-xl h-icon-xl text-text-main" />
               ) : (
-                <Menu className="w-icon-xl h-icon-xl text-stone-900" />
+                <Menu className="w-icon-xl h-icon-xl text-text-main" />
               )}
             </button>
           </div>
@@ -804,7 +805,7 @@ export const Header: React.FC = () => {
           onPointerEnter={revealCategoryNav}
           onFocusCapture={revealCategoryNav}
           onTouchStart={revealCategoryNav}
-          className={`bg-white/95 backdrop-blur-md motion-layout ${
+          className={`bg-bg-surface/95 backdrop-blur-md motion-layout ${
             isCategoryNavVisible
               ? "visible max-h-control-md translate-y-0 overflow-visible opacity-100"
               : "invisible pointer-events-none max-h-0 -translate-y-1 overflow-hidden opacity-0"
@@ -848,7 +849,7 @@ export const Header: React.FC = () => {
           <div className="fixed inset-0 z-drawer lg:hidden flex justify-end">
             {/* Backdrop overlay */}
             <div
-              className="fixed inset-0 bg-stone-900/40 backdrop-blur-xs transition-opacity duration-normal"
+              className="fixed inset-0 bg-surface-inverse/40 backdrop-blur-xs transition-opacity duration-normal"
               onClick={() => setIsMobileMenuOpen(false)}
               aria-hidden="true"
             />
@@ -868,7 +869,7 @@ export const Header: React.FC = () => {
                   to={routes.home()}
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="flex items-center select-none"
-                  aria-label="SHONGRE., accueil"
+                  aria-label={`${brand.name} ${activeMarket.name}, accueil`}
                 >
                   <span id={drawerTitleId} className="leading-none">
                     <BrandHeaderSignature marketLabel={activeMarket.name} />
@@ -878,7 +879,7 @@ export const Header: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className={`h-control-sm w-control-sm touch-square rounded-pill text-stone-500 hover:text-stone-900 hover:bg-bg-muted ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} active:scale-95 cursor-pointer bg-bg-surface shadow-2xs border border-border-base flex items-center justify-center`}
+                  className={`h-control-sm w-control-sm touch-square rounded-pill text-text-tertiary hover:text-text-main hover:bg-bg-muted ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} active:scale-95 cursor-pointer bg-bg-surface shadow-2xs border border-border-base flex items-center justify-center`}
                   aria-label={t("shell.header.fermerLeMenuMobile")}
                 >
                   <X className="w-icon-md h-icon-md" />
@@ -911,7 +912,7 @@ export const Header: React.FC = () => {
                         size="md"
                       />
                       <div className="flex-1 min-w-0">
-                        <div className="flex min-w-0 items-center gap-1.5 text-sm font-bold text-stone-900">
+                        <div className="flex min-w-0 items-center gap-1.5 text-sm font-bold text-text-main">
                           <span className="truncate">{currentUser.name}</span>
                           {!isStaffIdentity && currentUser.isVerified ? (
                             <VerifiedIcon
@@ -922,7 +923,7 @@ export const Header: React.FC = () => {
                             />
                           ) : null}
                         </div>
-                        <div className="text-xs text-stone-500 truncate">
+                        <div className="text-xs text-text-tertiary truncate">
                           {currentUser.email}
                         </div>
                         <div className="mt-1.5 flex items-center gap-1.5 flex-wrap">
@@ -957,21 +958,21 @@ export const Header: React.FC = () => {
                     </div>
                   ) : (
                     <div className="space-y-2.5">
-                      <div className="text-xs font-medium text-stone-600">
+                      <div className="text-xs font-medium text-text-supporting">
                         {t("shell.header.connectezVousPourGererVos")}
                       </div>
                       <div className="grid grid-cols-2 gap-2">
                         <Link
                           to="/connexion"
                           onClick={() => setIsMobileMenuOpen(false)}
-                          className={`inline-flex w-full h-control-md items-center justify-center px-3 text-center text-xs font-bold text-stone-900 bg-bg-surface border border-border-base rounded-control hover:bg-bg-subtle ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} shadow-xs`}
+                          className={`inline-flex w-full h-control-md items-center justify-center px-3 text-center text-xs font-bold text-text-main bg-bg-surface border border-border-base rounded-control hover:bg-bg-subtle ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} shadow-xs`}
                         >
                           Se connecter
                         </Link>
                         <Link
                           to="/inscription"
                           onClick={() => setIsMobileMenuOpen(false)}
-                          className={`inline-flex w-full h-control-md items-center justify-center px-3 text-center text-xs font-bold text-white bg-primary rounded-control hover:bg-primary-hover active:bg-primary-active ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} shadow-xs`}
+                          className={`inline-flex w-full h-control-md items-center justify-center px-3 text-center text-xs font-bold text-text-inverse bg-primary rounded-control hover:bg-primary-hover active:bg-primary-active ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} shadow-xs`}
                         >
                           S'inscrire
                         </Link>
@@ -1006,7 +1007,7 @@ export const Header: React.FC = () => {
                     <Link
                       to="/recherche?view=map"
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className="touch-row justify-between p-2.5 rounded-xl text-xs font-bold text-primary bg-primary-light hover:bg-primary-light/80 transition-colors"
+                      className="touch-row justify-between p-2.5 rounded-xl text-xs font-bold text-primary bg-primary-light hover:bg-primary-surface-soft transition-colors"
                     >
                       <span className="flex items-center gap-2.5">
                         <MapIcon className="w-icon-md h-icon-md text-primary" />
@@ -1022,23 +1023,23 @@ export const Header: React.FC = () => {
                       className="touch-row justify-between p-2.5 rounded-xl text-xs font-bold text-warning hover:bg-warning-surface transition-colors"
                     >
                       <span className="flex items-center gap-2.5">
-                        <Sparkles className="w-icon-md h-icon-md text-amber-500" />
+                        <Sparkles className="w-icon-md h-icon-md text-rating-strong" />
                         {t("shell.header.bonsPlansPrixReduits")}
                       </span>
-                      <ChevronRight className="w-icon-md h-icon-md text-amber-400" />
+                      <ChevronRight className="w-icon-md h-icon-md text-rating-fill" />
                     </Link>
 
                     {/* Boutiques Professionnelles */}
                     <Link
                       to="/professionnels"
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className="touch-row justify-between p-2.5 rounded-xl text-xs font-semibold text-stone-800 hover:bg-bg-subtle transition-colors"
+                      className="touch-row justify-between p-2.5 rounded-xl text-xs font-semibold text-text-strong hover:bg-bg-subtle transition-colors"
                     >
                       <span className="flex items-center gap-2.5">
                         <Briefcase className="w-icon-md h-icon-md text-primary" />
                         Boutiques Professionnelles
                       </span>
-                      <ChevronRight className="w-icon-md h-icon-md text-stone-400" />
+                      <ChevronRight className="w-icon-md h-icon-md text-text-inverse-subtle" />
                     </Link>
 
                     {/* Categories Collapsible */}
@@ -1048,14 +1049,14 @@ export const Header: React.FC = () => {
                         onClick={() =>
                           setIsMobileCategoriesOpen(!isMobileCategoriesOpen)
                         }
-                        className="w-full touch-row justify-between p-2.5 rounded-xl text-xs font-semibold text-stone-900 hover:bg-bg-subtle transition-colors cursor-pointer"
+                        className="w-full touch-row justify-between p-2.5 rounded-xl text-xs font-semibold text-text-main hover:bg-bg-subtle transition-colors cursor-pointer"
                       >
                         <span className="flex items-center gap-2.5">
                           <Layers className="w-icon-md h-icon-md text-primary" />
                           Catégories
                         </span>
                         <ChevronDown
-                          className={`w-icon-md h-icon-md text-stone-400 transition-transform ${
+                          className={`w-icon-md h-icon-md text-text-inverse-subtle transition-transform ${
                             isMobileCategoriesOpen ? "rotate-180" : ""
                           }`}
                         />
@@ -1068,7 +1069,7 @@ export const Header: React.FC = () => {
                               key={cat.categoryId}
                               to={`/categorie/${cat.slug}`}
                               onClick={() => setIsMobileMenuOpen(false)}
-                              className="flex items-center justify-between py-1.5 px-2 text-xs font-medium text-stone-700 hover:text-primary hover:bg-primary-light rounded-lg transition-colors"
+                              className="flex items-center justify-between py-1.5 px-2 text-xs font-medium text-text-emphasis hover:text-primary hover:bg-primary-light rounded-lg transition-colors"
                               title={getTaxonomyLabel(cat, "compact")}
                             >
                               <div className="flex items-center gap-2">
@@ -1105,7 +1106,7 @@ export const Header: React.FC = () => {
                       links above intentionally remain identical for everyone. */}
                   {isAuthenticated && currentUser && (
                     <div className="pt-3 border-t border-border-base mt-3 space-y-1">
-                      <div className="px-2.5 text-micro font-bold uppercase tracking-wider text-stone-500">
+                      <div className="px-2.5 text-micro font-bold uppercase tracking-wider text-text-tertiary">
                         {t("shell.header.accountMenu.availableAccess")}
                       </div>
                       {accountMenuItems.map((item) => (
@@ -1147,7 +1148,7 @@ export const Header: React.FC = () => {
 
                   {/* Mobile Language Selector */}
                   <div className="mt-4 flex items-center justify-between gap-3 border-t border-border-subtle pt-4">
-                    <div className="min-w-0 px-1 text-micro font-bold uppercase tracking-wider text-stone-500">
+                    <div className="min-w-0 px-1 text-micro font-bold uppercase tracking-wider text-text-tertiary">
                       Langue d'affichage
                     </div>
                     <LanguageSelector

@@ -62,7 +62,7 @@ describe("canonical identity status components", () => {
     expect(html).toContain('data-ui-pro-badge="true"');
     expect(html).toContain('role="img"');
     expect(html).toContain('aria-label="Compte professionnel"');
-    expect(html).toContain("bg-stone-900");
+    expect(html).toContain("bg-surface-inverse");
     expect(html).toContain("text-overline");
     expect(html).toContain("tracking-wide");
   });

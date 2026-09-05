@@ -63,16 +63,16 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
   return (
     <div
       ref={panelRef}
-      className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-dropdown border border-border-base z-popover overflow-hidden flex flex-col max-h-125 animate-in fade-in slide-in-from-top-2 duration-fast"
+      className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-bg-surface rounded-2xl shadow-dropdown border border-border-base z-popover overflow-hidden flex flex-col max-h-125 animate-in fade-in slide-in-from-top-2 duration-fast"
       role="region"
       aria-label={t("notifications.notificationPanel.panneauDesNotifications")}
     >
       {/* Header */}
-      <div className="p-3.5 border-b border-border-base flex items-center justify-between gap-2 bg-stone-50/50">
+      <div className="p-3.5 border-b border-border-base flex items-center justify-between gap-2 bg-surface-soft/50">
         <div className="flex items-center gap-2">
-          <h3 className="text-sm font-bold text-stone-900">Notifications</h3>
+          <h3 className="text-sm font-bold text-text-main">Notifications</h3>
           {unreadCount > 0 && (
-            <span className="px-2 py-0.5 rounded-full text-micro font-bold bg-primary text-white">
+            <span className="px-2 py-0.5 rounded-full text-micro font-bold bg-primary text-text-inverse">
               {unreadCount}
             </span>
           )}
@@ -83,7 +83,7 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
             <button
               type="button"
               onClick={onMarkAllAsRead}
-              className="text-micro font-semibold text-stone-600 hover:text-stone-900 p-1 hover:bg-stone-100 rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
+              className="text-micro font-semibold text-text-supporting hover:text-text-main p-1 hover:bg-surface-muted rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
             >
               <Check className="w-icon-sm h-icon-sm text-primary" />
               <span>{t("notifications.notificationPanel.toutLire")}</span>
@@ -93,7 +93,7 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
           <Link
             to="/compte/notifications/preferences"
             onClick={onClose}
-            className="p-1 text-stone-500 hover:text-stone-700 rounded-lg hover:bg-stone-100 transition-colors"
+            className="p-1 text-text-tertiary hover:text-text-emphasis rounded-lg hover:bg-surface-muted transition-colors"
             title={t(
               "notifications.notificationPanel.preferencesDeNotifications",
             )}
@@ -112,25 +112,25 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
           <div className="p-4 space-y-3">
             {[1, 2, 3].map((i) => (
               <div key={i} className="flex gap-3 animate-pulse">
-                <div className="w-8 h-8 rounded-xl bg-stone-200 shrink-0" />
+                <div className="w-8 h-8 rounded-xl bg-surface-disabled shrink-0" />
                 <div className="flex-1 space-y-2 py-1">
-                  <div className="h-3 bg-stone-200 rounded w-1/2" />
-                  <div className="h-2.5 bg-stone-100 rounded w-3/4" />
+                  <div className="h-3 bg-surface-disabled rounded w-1/2" />
+                  <div className="h-2.5 bg-surface-muted rounded w-3/4" />
                 </div>
               </div>
             ))}
           </div>
         ) : notifications.length === 0 ? (
           <div className="p-8 text-center space-y-2">
-            <div className="w-10 h-10 rounded-2xl bg-stone-100 flex items-center justify-center text-stone-400 mx-auto">
+            <div className="w-10 h-10 rounded-2xl bg-surface-muted flex items-center justify-center text-text-inverse-subtle mx-auto">
               <Bell className="w-icon-lg h-icon-lg" />
             </div>
-            <p className="text-xs font-bold text-stone-800">
+            <p className="text-xs font-bold text-text-strong">
               {t(
                 "notifications.notificationPanel.aucuneNotificationPourLeMoment",
               )}
             </p>
-            <p className="text-micro text-stone-500">
+            <p className="text-micro text-text-tertiary">
               {t(
                 "notifications.notificationPanel.vosAlertesMessagesEtTransactions",
               )}
@@ -151,7 +151,7 @@ export const NotificationPanel: React.FC<NotificationPanelProps> = ({
       </div>
 
       {/* Footer */}
-      <div className="p-2.5 border-t border-border-base bg-stone-50 text-center">
+      <div className="p-2.5 border-t border-border-base bg-surface-soft text-center">
         <Link
           to="/compte/notifications"
           onClick={onClose}

@@ -290,7 +290,7 @@ export function AccountSecurityPage() {
       <div
         role="status"
         aria-busy="true"
-        className="py-12 text-center text-sm text-stone-600"
+        className="py-12 text-center text-sm text-text-supporting"
       >
         {t("auth.security.loading")}
       </div>
@@ -302,11 +302,11 @@ export function AccountSecurityPage() {
       <header>
         <div className="flex items-center gap-2 text-primary">
           <ShieldCheck className="h-icon-lg w-icon-lg" aria-hidden="true" />
-          <h1 className="text-xl font-bold text-stone-950 sm:text-2xl">
+          <h1 className="text-xl font-bold text-text-deep sm:text-2xl">
             {t("auth.security.title")}
           </h1>
         </div>
-        <p className="mt-1 text-sm text-stone-600">
+        <p className="mt-1 text-sm text-text-supporting">
           {t("auth.security.description")}
         </p>
       </header>
@@ -325,10 +325,10 @@ export function AccountSecurityPage() {
           className="rounded-card border border-warning-border bg-warning-surface p-4 sm:p-5"
           aria-labelledby="reauth-title"
         >
-          <h2 id="reauth-title" className="text-sm font-bold text-stone-950">
+          <h2 id="reauth-title" className="text-sm font-bold text-text-deep">
             {t("auth.security.confirmIdentity")}
           </h2>
-          <p className="mt-1 text-xs text-stone-700">
+          <p className="mt-1 text-xs text-text-emphasis">
             {t("auth.security.confirmDescription")}
           </p>
           <form
@@ -343,7 +343,7 @@ export function AccountSecurityPage() {
               value={reauthPassword}
               onChange={(event) => setReauthPassword(event.target.value)}
               aria-label={t("auth.security.currentPassword")}
-              className="h-control-touch min-w-0 flex-1 rounded-control border border-stone-300 bg-white px-3 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className="h-control-touch min-w-0 flex-1 rounded-control border border-border-prominent bg-bg-surface px-3 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary-ring"
             />
             <Button
               type="submit"
@@ -370,11 +370,11 @@ export function AccountSecurityPage() {
               >
                 <h2
                   id="social-reauth-title"
-                  className="text-sm font-bold text-stone-950"
+                  className="text-sm font-bold text-text-deep"
                 >
                   {t("auth.security.confirmIdentity")}
                 </h2>
-                <p className="mt-1 text-xs text-stone-700">
+                <p className="mt-1 text-xs text-text-emphasis">
                   {t("auth.security.confirmDescription")}
                 </p>
                 <Button
@@ -395,10 +395,10 @@ export function AccountSecurityPage() {
         : null}
 
       <section
-        className="rounded-card border border-border-base bg-white p-4 shadow-xs sm:p-5"
+        className="rounded-card border border-border-base bg-bg-surface p-4 shadow-xs sm:p-5"
         aria-labelledby="methods-title"
       >
-        <h2 id="methods-title" className="text-base font-bold text-stone-950">
+        <h2 id="methods-title" className="text-base font-bold text-text-deep">
           {t("auth.security.methods")}
         </h2>
         <div className="mt-4 divide-y divide-border-subtle">
@@ -408,7 +408,7 @@ export function AccountSecurityPage() {
               className="flex flex-col gap-3 py-4 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between"
             >
               <div className="flex min-w-0 items-start gap-3">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-control bg-stone-100 text-stone-700">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-control bg-surface-muted text-text-emphasis">
                   {method.provider === "apple" ? (
                     <Apple className="h-icon-md w-icon-md" />
                   ) : method.provider === "password" ? (
@@ -419,7 +419,7 @@ export function AccountSecurityPage() {
                 </div>
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="text-sm font-bold text-stone-900">
+                    <h3 className="text-sm font-bold text-text-main">
                       {providerLabel(method.provider, passwordProviderLabel)}
                     </h3>
                     <Badge
@@ -432,7 +432,7 @@ export function AccountSecurityPage() {
                     </Badge>
                   </div>
                   {method.email ? (
-                    <p className="mt-1 truncate text-xs text-stone-500">
+                    <p className="mt-1 truncate text-xs text-text-tertiary">
                       {method.email}
                       {method.isPrivateRelay
                         ? ` · ${t("auth.security.privateRelay")}`
@@ -440,7 +440,7 @@ export function AccountSecurityPage() {
                     </p>
                   ) : null}
                   {method.connected && method.linkedAt ? (
-                    <p className="mt-1 text-xs text-stone-500">
+                    <p className="mt-1 text-xs text-text-tertiary">
                       {t("auth.security.linkedOn")}{" "}
                       {formatDate(method.linkedAt, locale)}
                       {method.lastUsedAt
@@ -477,7 +477,7 @@ export function AccountSecurityPage() {
                     {t("auth.security.connect")}
                   </Button>
                 ) : (
-                  <span className="text-xs text-stone-500">
+                  <span className="text-xs text-text-tertiary">
                     {t("auth.security.unavailable")}
                   </span>
                 )
@@ -488,15 +488,15 @@ export function AccountSecurityPage() {
       </section>
 
       <section
-        className="rounded-card border border-border-base bg-white p-4 shadow-xs sm:p-5"
+        className="rounded-card border border-border-base bg-bg-surface p-4 shadow-xs sm:p-5"
         aria-labelledby="mfa-title"
       >
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h2 id="mfa-title" className="text-base font-bold text-stone-950">
+            <h2 id="mfa-title" className="text-base font-bold text-text-deep">
               Double authentification
             </h2>
-            <p className="mt-1 text-xs text-stone-500">
+            <p className="mt-1 text-xs text-text-tertiary">
               Protégez les connexions avec une application TOTP et des codes de
               secours à usage unique.
             </p>
@@ -508,7 +508,7 @@ export function AccountSecurityPage() {
 
         {mfaStatus?.enabled ? (
           <form onSubmit={disableMfa} className="mt-4 space-y-3">
-            <p className="text-xs text-stone-600">
+            <p className="text-xs text-text-supporting">
               {mfaStatus.backupCodesRemaining} code(s) de secours restant(s).
               Une confirmation récente et un code valide sont nécessaires pour
               désactiver cette protection.
@@ -519,7 +519,7 @@ export function AccountSecurityPage() {
                 onChange={(event) => setMfaCode(event.target.value)}
                 aria-label="Code MFA pour désactiver"
                 placeholder="Code TOTP ou code de secours"
-                className="h-control-touch min-w-0 flex-1 rounded-control border border-stone-300 px-3 text-sm"
+                className="h-control-touch min-w-0 flex-1 rounded-control border border-border-prominent px-3 text-sm"
               />
               <Button
                 type="submit"
@@ -533,11 +533,11 @@ export function AccountSecurityPage() {
           </form>
         ) : mfaSetup ? (
           <div className="mt-4 space-y-4">
-            <div className="rounded-xl border border-border-base bg-stone-50 p-4">
-              <p className="text-xs font-bold text-stone-900">
+            <div className="rounded-xl border border-border-base bg-surface-soft p-4">
+              <p className="text-xs font-bold text-text-main">
                 Clé à saisir dans votre application d’authentification
               </p>
-              <code className="mt-2 block break-all rounded-lg bg-white p-2 text-xs font-bold">
+              <code className="mt-2 block break-all rounded-lg bg-bg-surface p-2 text-xs font-bold">
                 {mfaSetup.secret}
               </code>
               <a
@@ -548,14 +548,14 @@ export function AccountSecurityPage() {
               </a>
             </div>
             <div className="rounded-xl border border-warning-border bg-warning-surface p-4">
-              <p className="text-xs font-bold text-stone-900">
+              <p className="text-xs font-bold text-text-main">
                 Codes de secours — copiez-les maintenant
               </p>
               <div className="mt-2 grid grid-cols-2 gap-1 sm:grid-cols-4">
                 {mfaSetup.backupCodes.map((backupCode) => (
                   <code
                     key={backupCode}
-                    className="rounded bg-white px-2 py-1 text-center text-micro font-bold"
+                    className="rounded bg-bg-surface px-2 py-1 text-center text-micro font-bold"
                   >
                     {backupCode}
                   </code>
@@ -576,7 +576,7 @@ export function AccountSecurityPage() {
                 }
                 aria-label="Code MFA de confirmation"
                 placeholder="000000"
-                className="h-control-touch min-w-0 flex-1 rounded-control border border-stone-300 px-3 text-sm"
+                className="h-control-touch min-w-0 flex-1 rounded-control border border-border-prominent px-3 text-sm"
               />
               <Button
                 type="submit"
@@ -602,10 +602,10 @@ export function AccountSecurityPage() {
       </section>
 
       <section
-        className="rounded-card border border-border-base bg-white p-4 shadow-xs sm:p-5"
+        className="rounded-card border border-border-base bg-bg-surface p-4 shadow-xs sm:p-5"
         aria-labelledby="password-title"
       >
-        <h2 id="password-title" className="text-base font-bold text-stone-950">
+        <h2 id="password-title" className="text-base font-bold text-text-deep">
           {passwordMethod?.connected
             ? t("auth.security.changePassword")
             : t("auth.security.addPassword")}
@@ -646,18 +646,18 @@ export function AccountSecurityPage() {
       </section>
 
       <section
-        className="rounded-card border border-border-base bg-white p-4 shadow-xs sm:p-5"
+        className="rounded-card border border-border-base bg-bg-surface p-4 shadow-xs sm:p-5"
         aria-labelledby="sessions-title"
       >
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2
               id="sessions-title"
-              className="text-base font-bold text-stone-950"
+              className="text-base font-bold text-text-deep"
             >
               {t("auth.security.devices")}
             </h2>
-            <p className="mt-1 text-xs text-stone-500">
+            <p className="mt-1 text-xs text-text-tertiary">
               {t("auth.security.devicesDescription")}
             </p>
           </div>
@@ -679,12 +679,12 @@ export function AccountSecurityPage() {
               >
                 <div className="flex gap-3">
                   <Laptop
-                    className="mt-0.5 h-icon-md w-icon-md shrink-0 text-stone-500"
+                    className="mt-0.5 h-icon-md w-icon-md shrink-0 text-text-tertiary"
                     aria-hidden="true"
                   />
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
-                      <h3 className="text-sm font-bold text-stone-900">
+                      <h3 className="text-sm font-bold text-text-main">
                         {session.deviceLabel}
                       </h3>
                       {session.isCurrent ? (
@@ -693,7 +693,7 @@ export function AccountSecurityPage() {
                         </Badge>
                       ) : null}
                     </div>
-                    <p className="mt-1 text-xs text-stone-500">
+                    <p className="mt-1 text-xs text-text-tertiary">
                       {t("auth.security.lastActivity")} :{" "}
                       {formatDate(
                         session.lastUsedAt || session.issuedAt,
@@ -718,7 +718,7 @@ export function AccountSecurityPage() {
               </div>
             ))
           ) : (
-            <p className="py-4 text-sm text-stone-500">
+            <p className="py-4 text-sm text-text-tertiary">
               {t("auth.security.noSessions")}
             </p>
           )}
@@ -737,7 +737,7 @@ export function AccountSecurityPage() {
         ) : null}
       </section>
 
-      <p className="flex items-center gap-2 text-xs text-stone-500">
+      <p className="flex items-center gap-2 text-xs text-text-tertiary">
         <CheckCircle2
           className="h-icon-md w-icon-md text-success"
           aria-hidden="true"

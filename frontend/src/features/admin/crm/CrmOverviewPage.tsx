@@ -172,7 +172,7 @@ export const CrmOverviewPage: React.FC = () => {
       ),
       detail: "Valeur commerciale brute",
       icon: BriefcaseBusiness,
-      tone: "text-primary bg-primary-light border-primary/15",
+      tone: "text-primary bg-primary-light border-primary-border-soft",
     },
     {
       label: t("admin.crmOverviewPage.pipelinePondere"),
@@ -183,7 +183,7 @@ export const CrmOverviewPage: React.FC = () => {
       ),
       detail: "Valeur × probabilité",
       icon: BarChart3,
-      tone: "text-violet-700 bg-violet-50 border-violet-100",
+      tone: "text-staff-strong bg-staff-surface border-staff-surface-strong",
     },
     {
       label: t("admin.crmOverviewPage.aTraiter"),
@@ -199,7 +199,7 @@ export const CrmOverviewPage: React.FC = () => {
   return (
     <div className="space-y-4 pb-8">
       <CrmUniversalSearch />
-      <section className="overflow-hidden rounded-2xl border border-stone-800 bg-stone-950 text-text-inverse shadow-sm">
+      <section className="overflow-hidden rounded-2xl border border-border-inverse bg-surface-inverse-deep text-text-inverse shadow-sm">
         <div className="flex flex-col gap-5 p-5 sm:p-6 xl:flex-row xl:items-center xl:justify-between">
           <div className="min-w-0">
             <div className="mb-2 flex flex-wrap items-center gap-2 text-micro font-bold uppercase tracking-wide text-text-disabled">
@@ -210,7 +210,7 @@ export const CrmOverviewPage: React.FC = () => {
                   dashboard.marketCode}{" "}
                 · {dashboard.currency}
               </span>
-              <span className="rounded-pill border border-emerald-700/60 bg-emerald-950 px-2 py-0.5 text-emerald-300">
+              <span className="rounded-pill border border-success-strong/60 bg-success-inverse-deep px-2 py-0.5 text-success-on-inverse-strong">
                 {t("admin.crmOverviewPage.donneesSynchronisees")}
               </span>
             </div>
@@ -228,7 +228,7 @@ export const CrmOverviewPage: React.FC = () => {
               to={crmPaths.discover}
               variant="outline"
               size="sm"
-              className="border-stone-700 bg-stone-900 text-text-inverse hover:bg-stone-800"
+              className="border-border-inverse-subtle bg-surface-inverse text-text-inverse hover:bg-surface-inverse-hover"
             >
               <Sparkles
                 className="h-icon-md w-icon-md text-primary"
@@ -245,7 +245,7 @@ export const CrmOverviewPage: React.FC = () => {
         {crmPaths.kind === "admin" && (
           <nav
             aria-label="Navigation CRM rapide"
-            className="flex overflow-x-auto border-t border-stone-800 px-3 sm:px-4"
+            className="flex overflow-x-auto border-t border-border-inverse px-3 sm:px-4"
           >
             {[
               ["Vue d’ensemble", crmPaths.overview],
@@ -282,17 +282,17 @@ export const CrmOverviewPage: React.FC = () => {
             className="min-w-0 rounded-2xl border border-border-base bg-bg-surface p-4 shadow-xs"
           >
             <div className="flex min-w-0 items-start justify-between gap-2">
-              <span className="min-w-0 break-words text-micro font-bold uppercase tracking-wider text-stone-500">
+              <span className="min-w-0 break-words text-micro font-bold uppercase tracking-wider text-text-tertiary">
                 {label}
               </span>
               <span className={`shrink-0 rounded-lg border p-1.5 ${tone}`}>
                 <Icon className="h-3.5 w-3.5" aria-hidden="true" />
               </span>
             </div>
-            <strong className="mt-2 block truncate text-xl font-bold tabular-nums text-stone-950 sm:text-2xl">
+            <strong className="mt-2 block truncate text-xl font-bold tabular-nums text-text-deep sm:text-2xl">
               {value}
             </strong>
-            <span className="mt-1 block truncate text-micro text-stone-500">
+            <span className="mt-1 block truncate text-micro text-text-tertiary">
               {detail}
             </span>
           </article>
@@ -303,10 +303,10 @@ export const CrmOverviewPage: React.FC = () => {
         <section className="overflow-hidden rounded-2xl border border-border-base bg-bg-surface shadow-xs">
           <div className="flex items-center justify-between gap-3 border-b border-border-subtle px-4 py-3.5 sm:px-5">
             <div>
-              <h2 className="text-sm font-bold text-stone-950">
+              <h2 className="text-sm font-bold text-text-deep">
                 {t("admin.crmOverviewPage.pipelineCommercial")}
               </h2>
-              <p className="text-micro text-stone-500">
+              <p className="text-micro text-text-tertiary">
                 {t("admin.crmOverviewPage.repartitionPondereeParEtape")}
               </p>
             </div>
@@ -326,7 +326,7 @@ export const CrmOverviewPage: React.FC = () => {
                   key={stage.stageId}
                   className="flex items-center gap-3 text-xs"
                 >
-                  <span className="w-24 shrink-0 truncate font-bold text-stone-700">
+                  <span className="w-24 shrink-0 truncate font-bold text-text-emphasis">
                     {stage.stageName}
                   </span>
                   <ProgressBar
@@ -346,7 +346,7 @@ export const CrmOverviewPage: React.FC = () => {
                         currentLocale,
                       )}
                     </strong>
-                    <span className="text-micro text-stone-500">
+                    <span className="text-micro text-text-tertiary">
                       {stage.opportunityCount} dossier
                       {stage.opportunityCount > 1 ? "s" : ""}
                     </span>
@@ -354,12 +354,12 @@ export const CrmOverviewPage: React.FC = () => {
                 </div>
               ))}
           </div>
-          <div className="grid grid-cols-2 border-t border-border-subtle bg-stone-50/70">
+          <div className="grid grid-cols-2 border-t border-border-subtle bg-surface-soft/70">
             <div className="border-r border-border-subtle p-4">
-              <span className="text-micro font-bold uppercase tracking-wider text-stone-500">
+              <span className="text-micro font-bold uppercase tracking-wider text-text-tertiary">
                 {t("admin.crmOverviewPage.previsionCommit")}
               </span>
-              <strong className="mt-1 block text-lg font-bold tabular-nums text-stone-950">
+              <strong className="mt-1 block text-lg font-bold tabular-nums text-text-deep">
                 {money(
                   dashboard.forecastMinor,
                   dashboard.currency,
@@ -368,7 +368,7 @@ export const CrmOverviewPage: React.FC = () => {
               </strong>
             </div>
             <div className="p-4">
-              <span className="text-micro font-bold uppercase tracking-wider text-stone-500">
+              <span className="text-micro font-bold uppercase tracking-wider text-text-tertiary">
                 {t("admin.crmOverviewPage.revenuGagne")}
               </span>
               <strong className="mt-1 block text-lg font-bold tabular-nums text-success">
@@ -385,10 +385,10 @@ export const CrmOverviewPage: React.FC = () => {
         <section className="rounded-2xl border border-border-base bg-bg-surface shadow-xs">
           <div className="flex items-center justify-between border-b border-border-subtle px-4 py-3.5">
             <div>
-              <h2 className="text-sm font-bold text-stone-950">
+              <h2 className="text-sm font-bold text-text-deep">
                 {t("admin.crmOverviewPage.priorites")}
               </h2>
-              <p className="text-micro text-stone-500">
+              <p className="text-micro text-text-tertiary">
                 Prochaines actions commerciales
               </p>
             </div>
@@ -401,14 +401,14 @@ export const CrmOverviewPage: React.FC = () => {
             {dashboard.priorityTasks.slice(0, 5).map((task) => (
               <article key={task.id} className="flex gap-3 py-3">
                 <span
-                  className={`mt-1 h-2 w-2 shrink-0 rounded-pill ${task.priority === "urgent" ? "bg-danger" : task.priority === "high" ? "bg-primary" : "bg-stone-400"}`}
+                  className={`mt-1 h-2 w-2 shrink-0 rounded-pill ${task.priority === "urgent" ? "bg-danger" : task.priority === "high" ? "bg-primary" : "bg-surface-strong"}`}
                   aria-hidden="true"
                 />
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-xs font-bold text-text-main">
                     {task.title}
                   </p>
-                  <p className="mt-0.5 text-micro text-stone-500">
+                  <p className="mt-0.5 text-micro text-text-tertiary">
                     {new Intl.DateTimeFormat(currentLocale, {
                       day: "numeric",
                       month: "short",
@@ -436,10 +436,10 @@ export const CrmOverviewPage: React.FC = () => {
       <section className="overflow-hidden rounded-2xl border border-border-base bg-bg-surface shadow-xs">
         <div className="flex flex-col gap-3 border-b border-border-subtle px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between sm:px-5">
           <div>
-            <h2 className="text-sm font-bold text-stone-950">
+            <h2 className="text-sm font-bold text-text-deep">
               {t("admin.crmOverviewPage.opportunitesASuivre")}
             </h2>
-            <p className="text-micro text-stone-500">
+            <p className="text-micro text-text-tertiary">
               {t(
                 "admin.crmOverviewPage.dossiersOuvertsTriesParDerniereActivite",
               )}
@@ -458,13 +458,13 @@ export const CrmOverviewPage: React.FC = () => {
               placeholder="Rechercher…"
               value={opportunityQuery}
               onChange={(event) => setOpportunityQuery(event.target.value)}
-              className="h-control-md w-full rounded-control border border-stone-200 bg-stone-50 pl-9 pr-3 text-xs outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15"
+              className="h-control-md w-full rounded-control border border-border-disabled bg-surface-soft pl-9 pr-3 text-xs outline-none transition focus:border-primary focus:ring-2 focus:ring-primary-ring"
             />
           </label>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full min-w-3xl text-left text-xs">
-            <thead className="bg-stone-50 text-micro font-bold uppercase tracking-wider text-stone-500">
+            <thead className="bg-surface-soft text-micro font-bold uppercase tracking-wider text-text-tertiary">
               <tr>
                 <th className="px-5 py-2.5">
                   {t("admin.crmOverviewPage.opportunite")}
@@ -485,16 +485,16 @@ export const CrmOverviewPage: React.FC = () => {
               {visibleOpportunities.slice(0, 6).map((opportunity) => (
                 <tr
                   key={opportunity.id}
-                  className="transition-colors hover:bg-stone-50/80"
+                  className="transition-colors hover:bg-surface-soft/80"
                 >
                   <td className="px-5 py-3">
                     <Link
                       to={crmPaths.opportunity(opportunity.id)}
-                      className="font-bold text-stone-950 hover:text-primary"
+                      className="font-bold text-text-deep hover:text-primary"
                     >
                       {opportunity.name}
                     </Link>
-                    <span className="mt-0.5 block text-micro text-stone-500">
+                    <span className="mt-0.5 block text-micro text-text-tertiary">
                       {opportunity.accountName ?? "Sans entreprise"} ·{" "}
                       {opportunity.ownerName ?? "Non assignée"}
                     </span>
@@ -507,7 +507,7 @@ export const CrmOverviewPage: React.FC = () => {
                   <td className="px-4 py-3 text-text-secondary">
                     {shortDate(opportunity.expectedCloseDate, currentLocale)}
                   </td>
-                  <td className="px-4 py-3 text-right font-bold tabular-nums text-stone-950">
+                  <td className="px-4 py-3 text-right font-bold tabular-nums text-text-deep">
                     {money(
                       opportunity.amount.amountMinor,
                       opportunity.amount.currency,
@@ -515,7 +515,7 @@ export const CrmOverviewPage: React.FC = () => {
                     )}
                   </td>
                   <td className="px-5 py-3 text-right">
-                    <span className="font-bold tabular-nums text-stone-700">
+                    <span className="font-bold tabular-nums text-text-emphasis">
                       {opportunity.probability}%
                     </span>
                   </td>
@@ -525,7 +525,7 @@ export const CrmOverviewPage: React.FC = () => {
                 <tr>
                   <td
                     colSpan={5}
-                    className="px-5 py-10 text-center text-sm text-stone-500"
+                    className="px-5 py-10 text-center text-sm text-text-tertiary"
                   >
                     {t(
                       "admin.crmOverviewPage.aucuneOpportuniteNeCorrespondACetteRecherche",
@@ -536,7 +536,7 @@ export const CrmOverviewPage: React.FC = () => {
             </tbody>
           </table>
         </div>
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border-subtle bg-stone-50/60 px-5 py-3 text-micro text-stone-500">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border-subtle bg-surface-soft/60 px-5 py-3 text-micro text-text-tertiary">
           <span className="inline-flex items-center gap-1.5">
             <CheckCircle2
               className="h-icon-sm w-icon-sm text-success"

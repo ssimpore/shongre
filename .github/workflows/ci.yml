@@ -30,6 +30,8 @@ jobs:
         run: npm ci
       - name: Validate synchronized SHONGRE. brand assets
         run: make brand-check
+      - name: Enforce semantic design tokens and generated adapters
+        run: make tokens-check
       - name: Run the canonical repository gate
         run: make check
       - name: Validate every GitHub Actions workflow

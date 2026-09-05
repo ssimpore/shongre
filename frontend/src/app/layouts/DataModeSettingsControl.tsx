@@ -92,7 +92,7 @@ export const DataModeSettingsControl: React.FC = () => {
         onClick={openSettings}
         aria-label={t("shell.dataMode.openSettings")}
         title={t("shell.dataMode.openSettings")}
-        className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-control border border-stone-700 bg-stone-800 text-stone-300 transition-colors hover:border-stone-500 hover:bg-stone-700 hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+        className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-control border border-border-inverse-subtle bg-surface-inverse-hover text-text-inverse-muted transition-colors hover:border-border-neutral hover:bg-surface-inverse-muted hover:text-text-inverse focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-on-inverse"
       >
         <Settings2 className="h-icon-sm w-icon-sm" aria-hidden="true" />
       </button>
@@ -134,7 +134,7 @@ export const DataModeSettingsControl: React.FC = () => {
                     <span
                       className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-control ${
                         selected
-                          ? "bg-primary text-white"
+                          ? "bg-primary text-text-inverse"
                           : "bg-bg-subtle text-text-secondary"
                       }`}
                     >
@@ -144,7 +144,7 @@ export const DataModeSettingsControl: React.FC = () => {
                       <span className="flex items-center gap-2 text-sm font-bold text-text-main">
                         {title}
                         {mode === id ? (
-                          <span className="rounded-full bg-stone-100 px-2 py-0.5 text-micro font-semibold text-stone-600">
+                          <span className="rounded-full bg-surface-muted px-2 py-0.5 text-micro font-semibold text-text-supporting">
                             {t("shell.dataMode.active")}
                           </span>
                         ) : null}

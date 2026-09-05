@@ -81,12 +81,12 @@ export const MoveNodeModal: React.FC<MoveNodeModalProps> = ({
           <CategoryIcon category={node} size="md" withBackground />
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-mono uppercase bg-stone-200 text-stone-700 px-1.5 py-0.5 rounded font-bold">
+              <span className="text-xs font-mono uppercase bg-surface-disabled text-text-emphasis px-1.5 py-0.5 rounded font-bold">
                 {node.level}
               </span>
               <span className="font-bold text-text-main">{node.name}</span>
             </div>
-            <p className="text-xs text-stone-500 font-mono mt-0.5">
+            <p className="text-xs text-text-tertiary font-mono mt-0.5">
               ID : {node.id} • Slug : /{node.slug}
             </p>
           </div>

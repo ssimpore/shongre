@@ -1,7 +1,7 @@
 import { createHash, randomUUID } from "node:crypto";
 import { getCountryConfig, type MarketContext } from "@shongre/contracts";
 import { themeColors } from "@shongre/design-tokens";
-import { brandDocumentLogoDataUri } from "@shongre/brand";
+import { brandDocumentLogoDataUri } from "@shongre/brand/document";
 import type {
   CommercialAuditEvent,
   CommercialConfigurationVersion,

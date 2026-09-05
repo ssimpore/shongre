@@ -55,9 +55,10 @@ const BADGE_STYLES: Record<string, string> = {
   emerald: "bg-success-surface text-success border-success-border",
   sky: "bg-info-surface text-info border-info-border",
   amber: "bg-warning-surface text-warning border-warning-border",
-  purple: "bg-purple-50 text-purple-700 border-purple-200",
+  purple:
+    "bg-automation-surface text-automation-strong border-automation-border",
   rose: "bg-danger-surface text-danger border-danger-border",
-  indigo: "bg-indigo-50 text-indigo-700 border-indigo-200",
+  indigo: "bg-insight-surface text-insight-strong border-insight-border",
   success: "bg-success-surface text-success border-success-border",
   info: "bg-info-surface text-info border-info-border",
   warning: "bg-warning-surface text-warning border-warning-border",
@@ -331,7 +332,7 @@ export const CollectionsPage: React.FC = () => {
 
       {/* 2. Header / Hero Section */}
       {selectedCollection ? (
-        <section className="relative bg-gradient-to-b from-stone-900 to-stone-950 text-white pt-8 pb-12 sm:py-14 overflow-hidden">
+        <section className="relative bg-gradient-to-b from-surface-inverse to-surface-inverse-deep text-text-inverse pt-8 pb-12 sm:py-14 overflow-hidden">
           <div className="collections-dot-pattern absolute inset-0 opacity-20 pointer-events-none" />
 
           <Container className="relative z-raised">
@@ -340,7 +341,7 @@ export const CollectionsPage: React.FC = () => {
               <div className="lg:col-span-7 space-y-4">
                 <Link
                   to={routes.collections.list()}
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-stone-300 hover:text-white transition-colors mb-2"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-text-inverse-muted hover:text-text-inverse transition-colors mb-2"
                 >
                   <ArrowLeft className="w-icon-md h-icon-md" />
                   <span>
@@ -357,8 +358,8 @@ export const CollectionsPage: React.FC = () => {
                   >
                     {selectedCollection.badge.label}
                   </span>
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-stone-800 text-stone-300 text-xs font-medium border border-stone-700">
-                    <Layers className="w-icon-xs h-icon-xs text-stone-400" />
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-inverse-hover text-text-inverse-muted text-xs font-medium border border-border-inverse-subtle">
+                    <Layers className="w-icon-xs h-icon-xs text-text-inverse-subtle" />
                     {selectedCollection.itemCountLabel}
                   </span>
                 </div>
@@ -367,15 +368,15 @@ export const CollectionsPage: React.FC = () => {
                   {selectedCollection.title}
                 </Heading>
 
-                <p className="text-sm sm:text-base text-stone-300 max-w-xl leading-relaxed">
+                <p className="text-sm sm:text-base text-text-inverse-muted max-w-xl leading-relaxed">
                   {selectedCollection.description}
                 </p>
 
                 {/* Curator note */}
-                <div className="p-3.5 sm:p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xs flex items-start gap-3 max-w-xl">
+                <div className="p-3.5 sm:p-4 rounded-2xl bg-bg-surface/5 border border-border-on-inverse/10 backdrop-blur-xs flex items-start gap-3 max-w-xl">
                   <Sparkles className="w-icon-md h-icon-md text-primary shrink-0 mt-0.5" />
-                  <div className="text-xs text-stone-300 space-y-0.5">
-                    <p className="font-bold text-white">
+                  <div className="text-xs text-text-inverse-muted space-y-0.5">
+                    <p className="font-bold text-text-inverse">
                       {t("collections.collectionsPage.leMotDeLaRedaction")}
                     </p>
                     <p>{selectedCollection.curatorNote}</p>
@@ -385,14 +386,14 @@ export const CollectionsPage: React.FC = () => {
 
               {/* Right Column: Hero Cover Photo */}
               <div className="lg:col-span-5">
-                <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-white/10 aspect-4/3 max-w-md mx-auto lg:max-w-none">
+                <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-border-on-inverse/10 aspect-4/3 max-w-md mx-auto lg:max-w-none">
                   <Image
                     src={selectedCollection.coverImageUrl}
                     alt={selectedCollection.title}
                     sizes={IMAGE_SIZES.card}
                     className="w-full h-full object-cover"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-surface-overlay-deep/60 via-transparent to-transparent pointer-events-none" />
                 </div>
               </div>
             </div>
@@ -407,7 +408,7 @@ export const CollectionsPage: React.FC = () => {
                   {t("collections.collectionsPage.toutesNosCollections")}
                 </Heading>
 
-                <p className="text-sm sm:text-base text-stone-600 leading-relaxed font-normal max-w-2xl">
+                <p className="text-sm sm:text-base text-text-supporting leading-relaxed font-normal max-w-2xl">
                   {t(
                     "collections.collectionsPage.decouvrezDesUniversThematiquesPenses",
                   )}
@@ -432,7 +433,7 @@ export const CollectionsPage: React.FC = () => {
                       className="h-icon-md w-icon-md"
                     />
                   }
-                  className="h-control-touch bg-white shadow-2xs"
+                  className="h-control-touch bg-bg-surface shadow-2xs"
                 />
               </div>
             </div>
@@ -483,11 +484,11 @@ export const CollectionsPage: React.FC = () => {
             </div>
 
             {/* Active Pillar Description */}
-            <div className="flex items-center justify-between gap-4 text-xs text-stone-500 font-medium px-1">
+            <div className="flex items-center justify-between gap-4 text-xs text-text-tertiary font-medium px-1">
               <span>
                 {pillars.find((p) => p.id === activePillar)?.description || ""}
               </span>
-              <span className="font-bold text-stone-700 shrink-0">
+              <span className="font-bold text-text-emphasis shrink-0">
                 {visibleCollections.length} collection
                 {visibleCollections.length > 1 ? "s" : ""}
               </span>
@@ -514,7 +515,7 @@ export const CollectionsPage: React.FC = () => {
                         sizes={IMAGE_SIZES.compact}
                         className="h-full w-full object-cover motion-surface group-hover:scale-105"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/10 pointer-events-none" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-surface-overlay-deep/50 via-transparent to-surface-overlay-deep/10 pointer-events-none" />
 
                       <div className="absolute inset-x-2 top-2 z-raised">
                         <span
@@ -528,8 +529,8 @@ export const CollectionsPage: React.FC = () => {
                       </div>
 
                       <div className="absolute inset-x-2 bottom-2 z-raised">
-                        <span className="inline-flex max-w-full items-center gap-1 rounded-control bg-black/65 px-2 py-0.5 text-micro font-semibold text-white backdrop-blur-xs">
-                          <Layers className="h-icon-xs w-icon-xs shrink-0 text-stone-300" />
+                        <span className="inline-flex max-w-full items-center gap-1 rounded-control bg-surface-overlay-deep/65 px-2 py-0.5 text-micro font-semibold text-text-inverse backdrop-blur-xs">
+                          <Layers className="h-icon-xs w-icon-xs shrink-0 text-text-inverse-muted" />
                           <span className="truncate">{col.itemCountLabel}</span>
                         </span>
                       </div>
@@ -546,7 +547,7 @@ export const CollectionsPage: React.FC = () => {
                           {col.tags[0]}
                         </span>
 
-                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-bg-subtle text-text-secondary motion-interactive group-hover:bg-primary group-hover:text-white">
+                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-bg-subtle text-text-secondary motion-interactive group-hover:bg-primary group-hover:text-text-inverse">
                           <ChevronRight className="h-icon-sm w-icon-sm motion-interactive group-hover:translate-x-0.5" />
                         </div>
                       </div>
@@ -586,7 +587,7 @@ export const CollectionsPage: React.FC = () => {
         {selectedCollection && (
           <div className="space-y-6">
             {/* Filter Bar with sub-tags & local search */}
-            <div className="bg-white rounded-2xl border border-border-base p-4 shadow-2xs space-y-3">
+            <div className="bg-bg-surface rounded-2xl border border-border-base p-4 shadow-2xs space-y-3">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div
                   className="flex items-center gap-2 flex-wrap"
@@ -658,7 +659,7 @@ export const CollectionsPage: React.FC = () => {
             {/* Listings Grid */}
             <div>
               <div className="flex items-center justify-between gap-2 mb-4">
-                <h2 className="text-base sm:text-lg font-bold text-stone-900">
+                <h2 className="text-base sm:text-lg font-bold text-text-main">
                   {activeTag
                     ? `Sélection filtrée par "${activeTag}"`
                     : "Pièces sélectionnées"}
@@ -678,7 +679,7 @@ export const CollectionsPage: React.FC = () => {
                   {Array.from({ length: 8 }).map((_, idx) => (
                     <ListingCardSkeleton
                       key={idx}
-                      className="rounded-2xl border border-border-base bg-white p-3"
+                      className="rounded-2xl border border-border-base bg-bg-surface p-3"
                     />
                   ))}
                 </ListingRail>
@@ -746,7 +747,7 @@ export const CollectionsPage: React.FC = () => {
             {/* Other Collections Rail */}
             <div className="pt-10 border-t border-border-base space-y-4">
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-bold text-stone-900">
+                <h2 className="text-lg font-bold text-text-main">
                   {t("collections.collectionsPage.decouvrirDAutresCollections")}
                 </h2>
                 <Link
@@ -770,9 +771,9 @@ export const CollectionsPage: React.FC = () => {
                       <Link
                         key={c.id}
                         to={routes.collections.detail(c.slug)}
-                        className="group flex items-center gap-3.5 p-3 rounded-2xl bg-white border border-stone-200 hover:border-stone-300 w-72 shrink-0 shadow-2xs hover:shadow-md transition-all"
+                        className="group flex items-center gap-3.5 p-3 rounded-2xl bg-bg-surface border border-border-disabled hover:border-border-prominent w-72 shrink-0 shadow-2xs hover:shadow-md transition-all"
                       >
-                        <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 bg-stone-100">
+                        <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 bg-surface-muted">
                           <Image
                             src={c.coverImageUrl}
                             alt={c.title}
@@ -784,7 +785,7 @@ export const CollectionsPage: React.FC = () => {
                           <span className="text-micro font-bold text-primary uppercase block truncate">
                             {c.badge.label}
                           </span>
-                          <h3 className="text-xs font-bold text-stone-900 truncate group-hover:text-primary transition-colors">
+                          <h3 className="text-xs font-bold text-text-main truncate group-hover:text-primary transition-colors">
                             {c.title}
                           </h3>
                           <p className="text-micro text-text-secondary mt-0.5">

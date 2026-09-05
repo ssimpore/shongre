@@ -2,7 +2,6 @@ import { colors } from "./colors";
 import {
   themeAspect,
   themeBorders,
-  themeColors,
   themeIconStrokeWidths,
   themeLetterSpacing,
   themeOpacity,
@@ -29,7 +28,6 @@ const emToPx = (value: string, fontSize: number): number => {
 };
 
 export const nativeColors = colors;
-export const nativePalette = themeColors;
 /** Flat aliases for application composition; primitives use nativeColors. */
 export const mobileColors = {
   background: colors.surface.default,

@@ -171,7 +171,7 @@ export const LocationPickerModal: React.FC = () => {
           className={`w-full min-h-control-touch px-3 rounded-control border flex items-center justify-between motion-interactive cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
             isWholeCountry
               ? "border-primary bg-primary-light text-primary font-semibold"
-              : "border-border-base hover:border-stone-400 bg-white text-stone-800"
+              : "border-border-base hover:border-border-strong bg-bg-surface text-text-strong"
           }`}
         >
           <div className="flex items-center gap-2.5">
@@ -187,7 +187,7 @@ export const LocationPickerModal: React.FC = () => {
         <div className="space-y-1.5">
           <label
             htmlFor="location-city-input"
-            className="text-xs font-semibold text-stone-700 uppercase tracking-wider"
+            className="text-xs font-semibold text-text-emphasis uppercase tracking-wider"
           >
             Ville ou Code Postal ({activeMarket.name})
           </label>
@@ -258,7 +258,7 @@ export const LocationPickerModal: React.FC = () => {
         {/* Radius selector */}
         {cityInput.trim() && (
           <div className="space-y-2">
-            <label className="text-xs font-semibold text-stone-700 uppercase tracking-wider flex justify-between">
+            <label className="text-xs font-semibold text-text-emphasis uppercase tracking-wider flex justify-between">
               <span>{t("shell.locationPickerModal.rayonDeRecherche")}</span>
               <span className="text-primary font-semibold">
                 {radius === 0 ? "Ville exacte" : `+ ${radius} km`}
@@ -272,8 +272,8 @@ export const LocationPickerModal: React.FC = () => {
                   onClick={() => setRadius(r)}
                   className={`h-control-sm rounded-control text-xs font-semibold border motion-interactive cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
                     radius === r
-                      ? "bg-primary text-white border-primary"
-                      : "bg-stone-50 border-border-base text-stone-700 hover:bg-stone-100"
+                      ? "bg-primary text-text-inverse border-primary"
+                      : "bg-surface-soft border-border-base text-text-emphasis hover:bg-surface-muted"
                   }`}
                 >
                   {r === 0 ? "Exact" : `${r}km`}
@@ -297,8 +297,8 @@ export const LocationPickerModal: React.FC = () => {
                   onClick={() => handleSelectCity(city)}
                   className={`h-control-sm px-2.5 rounded-pill text-xs font-medium border motion-interactive cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
                     cityInput.toLowerCase() === city.name.toLowerCase()
-                      ? "bg-stone-900 text-white border-stone-900"
-                      : "bg-white border-border-base text-stone-700 hover:bg-stone-50"
+                      ? "bg-surface-inverse text-text-inverse border-border-inverse-strong"
+                      : "bg-bg-surface border-border-base text-text-emphasis hover:bg-surface-soft"
                   }`}
                 >
                   {city.name}

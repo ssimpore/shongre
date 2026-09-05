@@ -248,14 +248,14 @@ export const CrmPipelineSettingsPage: React.FC = () => {
 
   return (
     <div className="space-y-4 pb-8">
-      <section className="rounded-2xl border border-stone-800 bg-stone-950 p-5 text-text-inverse sm:p-6">
+      <section className="rounded-2xl border border-border-inverse bg-surface-inverse-deep p-5 text-text-inverse sm:p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
-            <span className="inline-flex h-11 w-11 items-center justify-center rounded-control bg-stone-900">
-              <GitBranch className="h-icon-lg w-icon-lg text-violet-300" />
+            <span className="inline-flex h-11 w-11 items-center justify-center rounded-control bg-surface-inverse">
+              <GitBranch className="h-icon-lg w-icon-lg text-staff-on-inverse" />
             </span>
             <div>
-              <p className="text-micro font-bold uppercase tracking-wider text-violet-300">
+              <p className="text-micro font-bold uppercase tracking-wider text-staff-on-inverse">
                 CRM · Configuration
               </p>
               <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
@@ -293,7 +293,7 @@ export const CrmPipelineSettingsPage: React.FC = () => {
                     </span>
                   )}
                 </div>
-                <p className="mt-1 text-xs text-stone-500">
+                <p className="mt-1 text-xs text-text-tertiary">
                   {pipeline.description ?? "Pipeline commercial"} · version{" "}
                   {pipeline.version}
                 </p>
@@ -317,7 +317,7 @@ export const CrmPipelineSettingsPage: React.FC = () => {
                   key={stage.id}
                   className="grid gap-3 px-5 py-4 sm:grid-cols-4 sm:items-center"
                 >
-                  <span className="inline-flex h-8 w-8 items-center justify-center rounded-pill bg-stone-950 text-micro font-bold text-text-inverse">
+                  <span className="inline-flex h-8 w-8 items-center justify-center rounded-pill bg-surface-inverse-deep text-micro font-bold text-text-inverse">
                     {index + 1}
                   </span>
                   <div>
@@ -337,14 +337,14 @@ export const CrmPipelineSettingsPage: React.FC = () => {
                         </span>
                       )}
                     </div>
-                    <p className="mt-0.5 text-micro text-stone-500">
+                    <p className="mt-0.5 text-micro text-text-tertiary">
                       {stage.requiredFields.length
                         ? `Champs requis : ${stage.requiredFields.join(", ")}`
                         : "Aucun champ additionnel requis"}
                     </p>
                   </div>
                   <div>
-                    <span className="text-micro text-stone-500">
+                    <span className="text-micro text-text-tertiary">
                       {t("admin.crmOverviewPage.probabilite")}
                     </span>
                     <strong className="block text-sm">
@@ -352,7 +352,7 @@ export const CrmPipelineSettingsPage: React.FC = () => {
                     </strong>
                   </div>
                   <div>
-                    <span className="text-micro text-stone-500">Type</span>
+                    <span className="text-micro text-text-tertiary">Type</span>
                     <strong className="block text-xs">
                       {stage.isOpen ? "Ouverte" : "Terminale"}
                     </strong>
@@ -360,7 +360,7 @@ export const CrmPipelineSettingsPage: React.FC = () => {
                 </article>
               ))}
             </div>
-            <div className="flex items-start gap-2 border-t border-border-subtle bg-stone-50 p-4 text-micro text-stone-500">
+            <div className="flex items-start gap-2 border-t border-border-subtle bg-surface-soft p-4 text-micro text-text-tertiary">
               <LockKeyhole className="mt-0.5 h-icon-sm w-icon-sm shrink-0" />
               {t(
                 "admin.crmPipelineSettingsPage.lesMisesAJourUtilisentUnControleDeVersionUne",
@@ -393,7 +393,7 @@ export const CrmPipelineSettingsPage: React.FC = () => {
                 required
               />
             </FormField>
-            <label className="flex items-center gap-2 self-end rounded-control bg-stone-50 px-3 py-2.5 font-semibold">
+            <label className="flex items-center gap-2 self-end rounded-control bg-surface-soft px-3 py-2.5 font-semibold">
               <input
                 type="checkbox"
                 checked={draft.isDefault}
@@ -440,7 +440,7 @@ export const CrmPipelineSettingsPage: React.FC = () => {
                 key={stage.id ?? `new-${index}`}
                 className="grid gap-2 rounded-control border border-border-subtle p-3 sm:grid-cols-5 sm:items-end"
               >
-                <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-stone-950 text-micro font-bold text-text-inverse">
+                <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-surface-inverse-deep text-micro font-bold text-text-inverse">
                   {index + 1}
                 </span>
                 <FormField label={`Nom de l’étape ${index + 1}`} required>
@@ -493,7 +493,7 @@ export const CrmPipelineSettingsPage: React.FC = () => {
                     onClick={() => moveStage(index, -1)}
                     disabled={index === 0}
                     aria-label={`Remonter l’étape ${stage.name}`}
-                    className="inline-flex h-control-md w-9 items-center justify-center rounded-control border border-stone-200 text-text-secondary enabled:hover:bg-stone-50 disabled:opacity-30"
+                    className="inline-flex h-control-md w-9 items-center justify-center rounded-control border border-border-disabled text-text-secondary enabled:hover:bg-surface-soft disabled:opacity-30"
                   >
                     <ArrowUp className="h-icon-sm w-icon-sm" />
                   </button>
@@ -502,7 +502,7 @@ export const CrmPipelineSettingsPage: React.FC = () => {
                     onClick={() => moveStage(index, 1)}
                     disabled={index === draft.stages.length - 1}
                     aria-label={`Descendre l’étape ${stage.name}`}
-                    className="inline-flex h-control-md w-9 items-center justify-center rounded-control border border-stone-200 text-text-secondary enabled:hover:bg-stone-50 disabled:opacity-30"
+                    className="inline-flex h-control-md w-9 items-center justify-center rounded-control border border-border-disabled text-text-secondary enabled:hover:bg-surface-soft disabled:opacity-30"
                   >
                     <ArrowDown className="h-icon-sm w-icon-sm" />
                   </button>

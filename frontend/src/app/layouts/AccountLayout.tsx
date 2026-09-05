@@ -257,7 +257,7 @@ export const AccountLayout: React.FC = () => {
     {
       to: routes.workspace.pro.subscriptions(),
       label: "Mon forfait & Facturation",
-      icon: <Sparkles className="w-icon-md h-icon-md text-amber-500" />,
+      icon: <Sparkles className="w-icon-md h-icon-md text-rating-strong" />,
       visible: canAccessRoute("accountProSubscriptions"),
     },
     {
@@ -307,7 +307,7 @@ export const AccountLayout: React.FC = () => {
                   data-account-identity
                 >
                   <span
-                    className="min-w-0 truncate font-bold text-xs text-stone-900 sm:text-sm"
+                    className="min-w-0 truncate font-bold text-xs text-text-main sm:text-sm"
                     title={accountName}
                   >
                     {accountName}
@@ -320,7 +320,7 @@ export const AccountLayout: React.FC = () => {
                   )}
                 </div>
                 <div
-                  className="text-xs text-stone-500 truncate"
+                  className="text-xs text-text-tertiary truncate"
                   title={currentUser?.email}
                 >
                   {currentUser?.email}
@@ -354,15 +354,15 @@ export const AccountLayout: React.FC = () => {
                 className={({ isActive }) =>
                   `flex min-h-control-sm items-center gap-1.5 px-3 text-xs font-semibold rounded-control whitespace-nowrap motion-interactive shrink-0 ${
                     isActive
-                      ? "bg-primary text-white shadow-xs"
-                      : "bg-bg-subtle text-stone-700 hover:bg-bg-muted hover:text-stone-900"
+                      ? "bg-primary text-text-inverse shadow-xs"
+                      : "bg-bg-subtle text-text-emphasis hover:bg-bg-muted hover:text-text-main"
                   }`
                 }
               >
                 {item.icon}
                 <span>{item.label}</span>
                 {item.count !== undefined && item.count > 0 && (
-                  <span className="text-micro font-bold px-2 py-1 rounded-full bg-white/20 text-current">
+                  <span className="text-micro font-bold px-2 py-1 rounded-full bg-bg-surface/20 text-current">
                     {item.count}
                   </span>
                 )}
@@ -377,7 +377,7 @@ export const AccountLayout: React.FC = () => {
                   className={({ isActive }) =>
                     `flex min-h-control-sm items-center gap-1.5 px-3 text-xs font-semibold rounded-control whitespace-nowrap motion-interactive shrink-0 ${
                       isActive
-                        ? "bg-primary text-white shadow-xs"
+                        ? "bg-primary text-text-inverse shadow-xs"
                         : "bg-warning-surface text-warning border border-warning-border hover:bg-warning-surface"
                     }`
                   }
@@ -391,7 +391,7 @@ export const AccountLayout: React.FC = () => {
                 type="button"
                 aria-expanded={secondaryMenuOpen || secondaryRouteActive}
                 onClick={() => setSecondaryMenuOpen((open) => !open)}
-                className="flex min-h-control-sm items-center gap-1.5 px-3 text-xs font-semibold rounded-control whitespace-nowrap motion-interactive shrink-0 bg-bg-subtle text-stone-700 hover:bg-bg-muted"
+                className="flex min-h-control-sm items-center gap-1.5 px-3 text-xs font-semibold rounded-control whitespace-nowrap motion-interactive shrink-0 bg-bg-subtle text-text-emphasis hover:bg-bg-muted"
               >
                 <Settings className="w-icon-md h-icon-md" />
                 <span>{t("account.navigation.more")}</span>
@@ -405,8 +405,8 @@ export const AccountLayout: React.FC = () => {
                   className={({ isActive }) =>
                     `flex min-h-control-sm items-center gap-1.5 px-3 text-xs font-semibold rounded-control whitespace-nowrap motion-interactive shrink-0 ${
                       isActive
-                        ? "bg-primary text-white shadow-xs"
-                        : "bg-bg-subtle text-stone-700 hover:bg-bg-muted"
+                        ? "bg-primary text-text-inverse shadow-xs"
+                        : "bg-bg-subtle text-text-emphasis hover:bg-bg-muted"
                     }`
                   }
                 >
@@ -434,7 +434,7 @@ export const AccountLayout: React.FC = () => {
                   data-account-identity
                 >
                   <span
-                    className="min-w-0 truncate text-sm font-bold text-stone-900"
+                    className="min-w-0 truncate text-sm font-bold text-text-main"
                     title={accountName}
                   >
                     {accountName}
@@ -447,7 +447,7 @@ export const AccountLayout: React.FC = () => {
                   )}
                 </div>
                 <div
-                  className="text-xs text-stone-500 truncate"
+                  className="text-xs text-text-tertiary truncate"
                   title={currentUser?.email}
                 >
                   {currentUser?.email}
@@ -469,7 +469,7 @@ export const AccountLayout: React.FC = () => {
 
             {/* Standard Nav Links */}
             <nav className="mt-4 space-y-1">
-              <div className="text-micro font-bold text-stone-500 uppercase tracking-wider px-3 mb-1">
+              <div className="text-micro font-bold text-text-tertiary uppercase tracking-wider px-3 mb-1">
                 Espace Personnel
               </div>
               {primaryNavItems.map((item) => (
@@ -481,7 +481,7 @@ export const AccountLayout: React.FC = () => {
                     `flex min-h-control-sm items-center justify-between px-3 text-xs font-semibold rounded-control motion-interactive ${
                       isActive
                         ? "border-l-2 border-primary bg-primary-light text-primary shadow-2xs"
-                        : "text-stone-700 hover:bg-bg-subtle hover:text-stone-900"
+                        : "text-text-emphasis hover:bg-bg-subtle hover:text-text-main"
                     }`
                   }
                 >
@@ -490,7 +490,7 @@ export const AccountLayout: React.FC = () => {
                     <span>{item.label}</span>
                   </div>
                   {item.count !== undefined && item.count > 0 && (
-                    <span className="text-micro font-bold px-2 py-1 rounded-full bg-stone-100 text-stone-700">
+                    <span className="text-micro font-bold px-2 py-1 rounded-full bg-surface-muted text-text-emphasis">
                       {item.count}
                     </span>
                   )}
@@ -507,7 +507,7 @@ export const AccountLayout: React.FC = () => {
                     }
                   }}
                 >
-                  <summary className="flex min-h-control-sm cursor-pointer list-none items-center justify-between px-3 text-xs font-semibold text-stone-700 hover:bg-bg-subtle rounded-control">
+                  <summary className="flex min-h-control-sm cursor-pointer list-none items-center justify-between px-3 text-xs font-semibold text-text-emphasis hover:bg-bg-subtle rounded-control">
                     <span className="flex items-center gap-2.5">
                       <Settings className="w-icon-md h-icon-md" />
                       {t("account.navigation.settingsSupport")}
@@ -528,7 +528,7 @@ export const AccountLayout: React.FC = () => {
                           `flex min-h-control-sm items-center gap-2.5 rounded-control px-3 text-xs font-semibold motion-interactive ${
                             isActive
                               ? "border-l-2 border-primary bg-primary-light text-primary shadow-2xs"
-                              : "text-stone-700 hover:bg-bg-subtle"
+                              : "text-text-emphasis hover:bg-bg-subtle"
                           }`
                         }
                       >
@@ -554,7 +554,7 @@ export const AccountLayout: React.FC = () => {
                         `flex min-h-control-sm items-center justify-between px-3 text-xs font-semibold rounded-control motion-interactive ${
                           isActive
                             ? "border-l-2 border-primary bg-primary-light text-primary shadow-2xs"
-                            : "text-stone-700 hover:bg-bg-subtle hover:text-stone-900"
+                            : "text-text-emphasis hover:bg-bg-subtle hover:text-text-main"
                         }`
                       }
                     >

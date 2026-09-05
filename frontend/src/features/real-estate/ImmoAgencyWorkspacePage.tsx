@@ -257,7 +257,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
             key={id}
             type="button"
             onClick={() => setTab(id)}
-            className={`flex min-w-max items-center gap-2 rounded-control px-3 py-2 text-xs font-semibold ${tab === id ? "bg-primary text-white" : "text-text-secondary hover:bg-bg-subtle"}`}
+            className={`flex min-w-max items-center gap-2 rounded-control px-3 py-2 text-xs font-semibold ${tab === id ? "bg-primary text-text-inverse" : "text-text-secondary hover:bg-bg-subtle"}`}
           >
             <Icon className="h-4 w-4" />
             {label}
@@ -560,7 +560,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
                     Prochain rappel
                     <input
                       type="datetime-local"
-                      className="mt-1 h-control-md w-full rounded-control border border-border-base bg-white px-2 text-xs"
+                      className="mt-1 h-control-md w-full rounded-control border border-border-base bg-bg-surface px-2 text-xs"
                       value={lead.nextReminderAt?.slice(0, 16) || ""}
                       onChange={async (event) => {
                         const value = event.target.value;
@@ -592,7 +592,7 @@ export const ImmoAgencyWorkspacePage: React.FC = () => {
                     <div className="mt-1 flex gap-2">
                       <input
                         id={`note-${lead.id}`}
-                        className="h-control-md min-w-0 flex-1 rounded-control border border-border-base bg-white px-3 text-xs"
+                        className="h-control-md min-w-0 flex-1 rounded-control border border-border-base bg-bg-surface px-3 text-xs"
                         value={noteDrafts[lead.id] || ""}
                         maxLength={REAL_ESTATE_CONSTRAINTS.leadNote.maxLength}
                         placeholder="Ex. rappeler après 18 h"

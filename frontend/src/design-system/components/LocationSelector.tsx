@@ -25,14 +25,14 @@ const variantClasses: Record<
   string
 > = {
   header:
-    "hidden xl:flex h-full max-w-27.5 min-w-0 shrink items-center gap-1.5 border-l border-border-base px-3.5 text-xs font-medium text-stone-700 hover:bg-bg-subtle 2xl:max-w-45 focus:outline-none focus-visible:bg-bg-subtle focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/40",
+    "hidden xl:flex h-full max-w-27.5 min-w-0 shrink items-center gap-1.5 border-l border-border-base px-3.5 text-xs font-medium text-text-emphasis hover:bg-bg-subtle 2xl:max-w-45 focus:outline-none focus-visible:bg-bg-subtle focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary-ring-strong",
   minimal:
-    "h-control-md w-full items-center justify-between rounded-control border border-border-base bg-bg-base px-2.5 text-xs font-semibold text-stone-700 hover:bg-bg-subtle",
+    "h-control-md w-full items-center justify-between rounded-control border border-border-base bg-bg-base px-2.5 text-xs font-semibold text-text-emphasis hover:bg-bg-subtle",
   "search-page":
-    "hidden h-control-touch max-w-full items-center gap-1.5 rounded-control border border-border-base bg-bg-base px-3.5 text-xs font-semibold text-stone-700 hover:bg-bg-subtle sm:flex sm:max-w-48",
+    "hidden h-control-touch max-w-full items-center gap-1.5 rounded-control border border-border-base bg-bg-base px-3.5 text-xs font-semibold text-text-emphasis hover:bg-bg-subtle sm:flex sm:max-w-48",
   field:
     "h-control-touch w-full items-center justify-between rounded-control border border-border-base bg-bg-surface px-3 text-xs font-semibold text-text-main hover:border-border-hover hover:bg-bg-subtle",
-  hero: "h-control-touch max-w-full shrink-0 items-center justify-between gap-2 rounded-control border border-border-base bg-bg-base px-3.5 text-xs font-semibold text-stone-700 hover:border-border-hover hover:bg-bg-subtle active:bg-bg-muted md:max-w-50 md:justify-start",
+  hero: "h-control-touch max-w-full shrink-0 items-center justify-between gap-2 rounded-control border border-border-base bg-bg-base px-3.5 text-xs font-semibold text-text-emphasis hover:border-border-hover hover:bg-bg-subtle active:bg-bg-muted md:max-w-50 md:justify-start",
 };
 
 export const LocationSelector: React.FC<LocationSelectorProps> = ({

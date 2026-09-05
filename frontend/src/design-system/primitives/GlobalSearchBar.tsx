@@ -489,7 +489,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
           role="search"
           aria-label={t("ui.globalSearchBar.rechercheGlobale")}
           onSubmit={handleSubmit}
-          className={`flex items-stretch h-control-md w-full min-w-0 bg-bg-base border border-border-base rounded-control overflow-visible focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 focus-within:bg-bg-surface focus-within:shadow-xs ${CONTROL_MOTION_CLASS} ${className}`}
+          className={`flex items-stretch h-control-md w-full min-w-0 bg-bg-base border border-border-base rounded-control overflow-visible focus-within:border-primary focus-within:ring-2 focus-within:ring-primary-ring-strong focus-within:bg-bg-surface focus-within:shadow-xs ${CONTROL_MOTION_CLASS} ${className}`}
         >
           {/* Category Trigger Dropdown.
               Hidden below `lg`: between 768px and 1024px the category picker and
@@ -510,10 +510,10 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                 aria-haspopup="dialog"
                 aria-controls={`${idPrefix}-header-category-menu`}
                 aria-label={t("ui.globalSearchBar.selectionnerUneCategorie")}
-                className={`h-full flex items-center gap-1.5 px-3 border-r border-border-base text-xs font-semibold ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer rounded-l-control focus:outline-none focus-visible:bg-bg-subtle focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-inset min-w-0 w-full ${
+                className={`h-full flex items-center gap-1.5 px-3 border-r border-border-base text-xs font-semibold ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer rounded-l-control focus:outline-none focus-visible:bg-bg-subtle focus-visible:ring-2 focus-visible:ring-primary-ring-strong focus-visible:ring-inset min-w-0 w-full ${
                   selectedCategorySlug
-                    ? "bg-primary-light text-primary hover:bg-primary-light/80"
-                    : "text-stone-700 hover:bg-bg-subtle"
+                    ? "bg-primary-light text-primary hover:bg-primary-surface-soft"
+                    : "text-text-emphasis hover:bg-bg-subtle"
                 }`}
               >
                 {activeCategory ? (
@@ -653,7 +653,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                 type="button"
                 onClick={handleClearQuery}
                 aria-label={t("ui.globalSearchBar.effacerLeTexte")}
-                className={`inline-flex items-center justify-center w-6 h-6 mr-1.5 text-text-muted hover:text-stone-700 rounded-full hover:bg-bg-muted ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer shrink-0`}
+                className={`inline-flex items-center justify-center w-6 h-6 mr-1.5 text-text-muted hover:text-text-emphasis rounded-full hover:bg-bg-muted ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer shrink-0`}
               >
                 <X className="w-icon-sm h-icon-sm" />
               </button>
@@ -683,7 +683,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                reaches the outer edge — otherwise a pale 1px rim traced the top,
                right and bottom of the orange block and read as a seam. The radius
                matches the form's *outer* 10px, not the inner 11px. */
-            className={`bg-primary hover:bg-primary-hover active:bg-primary-active text-white px-4 -my-px -mr-px h-search-submit-height flex items-center justify-center font-semibold text-xs ${CONTROL_MOTION_CLASS} cursor-pointer shrink-0 rounded-r-control focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset`}
+            className={`bg-primary hover:bg-primary-hover active:bg-primary-active text-text-inverse px-4 -my-px -mr-px h-search-submit-height flex items-center justify-center font-semibold text-xs ${CONTROL_MOTION_CLASS} cursor-pointer shrink-0 rounded-r-control focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset`}
           >
             <Search className="w-icon-md h-icon-md" />
           </button>
@@ -749,7 +749,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
               onFocus={() => setIsAutocompleteOpen(true)}
               onKeyDown={handleInputKeyDown}
               autoFocus={autoFocus}
-              className="w-full h-control-md pl-9 pr-9 text-xs text-text-main placeholder:text-text-disabled bg-bg-base border border-border-base rounded-control focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+              className="w-full h-control-md pl-9 pr-9 text-xs text-text-main placeholder:text-text-disabled bg-bg-base border border-border-base rounded-control focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring"
             />
             <Search className="absolute left-3 top-3 w-icon-md h-icon-md text-text-disabled pointer-events-none" />
             {query && (
@@ -757,7 +757,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                 type="button"
                 onClick={handleClearQuery}
                 aria-label={t("ui.globalSearchBar.effacerLeTexte")}
-                className={`absolute right-2.5 inline-flex items-center justify-center w-6 h-6 text-text-muted hover:text-stone-700 rounded-full hover:bg-bg-muted ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer`}
+                className={`absolute right-2.5 inline-flex items-center justify-center w-6 h-6 text-text-muted hover:text-text-emphasis rounded-full hover:bg-bg-muted ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer`}
               >
                 <X className="w-icon-sm h-icon-sm" />
               </button>
@@ -776,7 +776,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                     className={`w-full h-control-md flex items-center justify-between px-2.5 rounded-control border text-xs font-semibold ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer ${
                       selectedCategorySlug
                         ? "bg-primary-light border-primary-border text-primary"
-                        : "bg-bg-base border-border-base text-stone-700 hover:bg-bg-subtle"
+                        : "bg-bg-base border-border-base text-text-emphasis hover:bg-bg-subtle"
                     }`}
                   >
                     <span className="truncate">{activeCategoryLabel}</span>
@@ -788,7 +788,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                       <button
                         type="button"
                         onClick={() => handleCategorySelect(undefined)}
-                        className="w-full px-3 py-1.5 text-xs text-left font-semibold hover:bg-bg-subtle text-stone-800"
+                        className="w-full px-3 py-1.5 text-xs text-left font-semibold hover:bg-bg-subtle text-text-strong"
                       >
                         {t("ui.globalSearchBar.toutesLesCategories2")}
                       </button>
@@ -800,7 +800,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                           className={`w-full px-3 py-1.5 text-xs text-left flex items-center gap-2 hover:bg-primary-light ${
                             selectedCategorySlug === cat.slug
                               ? "font-semibold text-primary bg-primary-light"
-                              : "text-stone-700"
+                              : "text-text-emphasis"
                           }`}
                         >
                           <CategoryIcon category={cat} size="xs" />
@@ -832,7 +832,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
           <button
             id={`${idPrefix}-minimal-submit-button`}
             type="submit"
-            className={`w-full h-control-md rounded-control bg-primary hover:bg-primary-hover active:bg-primary-active text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-xs ${CONTROL_MOTION_CLASS} cursor-pointer`}
+            className={`w-full h-control-md rounded-control bg-primary hover:bg-primary-hover active:bg-primary-active text-text-inverse font-semibold text-xs flex items-center justify-center gap-2 shadow-xs ${CONTROL_MOTION_CLASS} cursor-pointer`}
           >
             <Search className="w-icon-md h-icon-md" />
             <span>Rechercher</span>
@@ -889,7 +889,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                 className={`h-control-touch px-3.5 rounded-control border text-xs font-semibold flex items-center justify-between sm:justify-start gap-2 w-full sm:w-auto ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer ${
                   selectedCategorySlug
                     ? "bg-primary-light border-primary-border text-primary font-semibold"
-                    : "bg-bg-base border-border-base hover:bg-bg-subtle text-stone-700"
+                    : "bg-bg-base border-border-base hover:bg-bg-subtle text-text-emphasis"
                 }`}
               >
                 <div className="flex items-center gap-2 truncate">
@@ -1012,14 +1012,14 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
               }}
               onFocus={() => setIsAutocompleteOpen(true)}
               onKeyDown={handleInputKeyDown}
-              className="w-full h-control-touch pl-10 pr-9 bg-bg-base text-sm text-text-main rounded-control border border-border-base focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+              className="w-full h-control-touch pl-10 pr-9 bg-bg-base text-sm text-text-main rounded-control border border-border-base focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring"
             />
             {query && (
               <button
                 type="button"
                 onClick={handleClearQuery}
                 aria-label={t("ui.globalSearchBar.effacerLeTexte")}
-                className={`absolute right-3 inline-flex items-center justify-center w-6 h-6 text-text-muted hover:text-stone-700 rounded-full hover:bg-bg-muted ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer`}
+                className={`absolute right-3 inline-flex items-center justify-center w-6 h-6 text-text-muted hover:text-text-emphasis rounded-full hover:bg-bg-muted ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer`}
               >
                 <X className="w-icon-sm h-icon-sm" />
               </button>
@@ -1044,7 +1044,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
             <button
               id={`${idPrefix}-page-submit-button`}
               type="submit"
-              className={`h-control-touch px-3.5 sm:px-5 rounded-control bg-primary hover:bg-primary-hover active:bg-primary-active text-white font-semibold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xs ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer shrink-0`}
+              className={`h-control-touch px-3.5 sm:px-5 rounded-control bg-primary hover:bg-primary-hover active:bg-primary-active text-text-inverse font-semibold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xs ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer shrink-0`}
               aria-label={t("ui.globalSearchBar.lancerLaRecherche")}
             >
               <Search className="w-icon-md h-icon-md" />
@@ -1109,7 +1109,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
               className={`w-full md:w-auto h-control-touch px-3.5 rounded-control border text-xs font-semibold flex items-center justify-between md:justify-start gap-2 ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer ${
                 selectedCategorySlug
                   ? "bg-primary-light border-primary-border text-primary"
-                  : "bg-bg-base hover:bg-bg-subtle text-stone-800 border-border-base hover:border-stone-300"
+                  : "bg-bg-base hover:bg-bg-subtle text-text-strong border-border-base hover:border-border-prominent"
               }`}
             >
               <div className="flex items-center gap-2 truncate">
@@ -1236,7 +1236,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
               type="button"
               onClick={handleClearQuery}
               aria-label={t("ui.globalSearchBar.effacerLaRecherche")}
-              className={`p-1 hover:bg-bg-muted rounded-full text-text-muted hover:text-stone-700 ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer shrink-0`}
+              className={`p-1 hover:bg-bg-muted rounded-full text-text-muted hover:text-text-emphasis ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer shrink-0`}
             >
               <X className="w-icon-sm h-icon-sm" />
             </button>
@@ -1262,7 +1262,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
           id={`${idPrefix}-hero-submit-button`}
           type="submit"
           aria-label={t("ui.globalSearchBar.lancerLaRechercheDePetites")}
-          className={`h-control-touch px-5 rounded-control bg-primary hover:bg-primary-hover active:bg-primary-active text-white font-semibold text-xs sm:text-sm shadow-md shadow-primary/20 active:scale-95 ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} flex items-center justify-center gap-2 shrink-0 cursor-pointer`}
+          className={`h-control-touch px-5 rounded-control bg-primary hover:bg-primary-hover active:bg-primary-active text-text-inverse font-semibold text-xs sm:text-sm shadow-md shadow-primary-shadow active:scale-95 ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} flex items-center justify-center gap-2 shrink-0 cursor-pointer`}
         >
           <Search className="w-icon-md h-icon-md shrink-0" />
           <span>Rechercher</span>

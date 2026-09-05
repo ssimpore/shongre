@@ -90,8 +90,8 @@ export const ProviderMarketOverridesTab: React.FC<
   return (
     <div className="space-y-6">
       {/* 1. Country Selection Bar */}
-      <div className="bg-bg-surface p-4 rounded-control border border-stone-200 shadow-xs">
-        <label className="block text-xs font-semibold text-stone-700 uppercase tracking-wider mb-2">
+      <div className="bg-bg-surface p-4 rounded-control border border-border-disabled shadow-xs">
+        <label className="block text-xs font-semibold text-text-emphasis uppercase tracking-wider mb-2">
           {t("admin.providerMarketOverridesTab.selectionnezLeMarcheAInspecter")}
         </label>
         <div className="flex flex-wrap gap-2">
@@ -109,7 +109,7 @@ export const ProviderMarketOverridesTab: React.FC<
                 className={`px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 border transition-all ${
                   isSelected
                     ? "bg-primary text-text-inverse border-primary shadow-xs"
-                    : "bg-stone-50 hover:bg-stone-100 text-stone-700 border-stone-200"
+                    : "bg-surface-soft hover:bg-surface-muted text-text-emphasis border-border-disabled"
                 }`}
               >
                 <span>{m.flag}</span>
@@ -134,26 +134,26 @@ export const ProviderMarketOverridesTab: React.FC<
       {/* 2. Side-by-side default-market comparison vs target assignment */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Default-market comparison card */}
-        <div className="bg-stone-50/80 p-5 rounded-control border border-stone-200 space-y-3">
-          <div className="flex items-center justify-between border-b border-stone-200 pb-2">
-            <span className="text-xs font-bold text-stone-800 flex items-center gap-1.5">
+        <div className="bg-surface-soft/80 p-5 rounded-control border border-border-disabled space-y-3">
+          <div className="flex items-center justify-between border-b border-border-disabled pb-2">
+            <span className="text-xs font-bold text-text-strong flex items-center gap-1.5">
               <span>{defaultMarket.flag}</span> {defaultMarket.name}{" "}
               {t("admin.providerMarketOverridesTab.marcheParDefaut")}
             </span>
-            <span className="text-micro font-bold bg-stone-200 text-stone-700 px-2 py-0.5 rounded">
+            <span className="text-micro font-bold bg-surface-disabled text-text-emphasis px-2 py-0.5 rounded">
               {t("admin.providerMarketOverridesTab.baseDHeritage")}
             </span>
           </div>
 
           <div className="space-y-2 text-xs">
-            <div className="flex justify-between py-1 border-b border-stone-200/50">
-              <span className="text-stone-500">Statut d'activation :</span>
+            <div className="flex justify-between py-1 border-b border-border-disabled/50">
+              <span className="text-text-tertiary">Statut d'activation :</span>
               <span className="font-bold text-text-main">
                 {configuration.enabled ? "Activé (En ligne)" : "Désactivé"}
               </span>
             </div>
-            <div className="flex justify-between py-1 border-b border-stone-200/50">
-              <span className="text-stone-500">
+            <div className="flex justify-between py-1 border-b border-border-disabled/50">
+              <span className="text-text-tertiary">
                 {t("admin.providerMarketOverridesTab.prioriteDeRoutage")}
               </span>
               <span className="font-bold text-text-main font-mono">
@@ -161,13 +161,13 @@ export const ProviderMarketOverridesTab: React.FC<
               </span>
             </div>
             <div className="flex justify-between py-1">
-              <span className="text-stone-500">Environnement :</span>
+              <span className="text-text-tertiary">Environnement :</span>
               <span className="font-bold text-text-main uppercase font-mono">
                 {labelIdentifier(configuration.environment)}
               </span>
             </div>
           </div>
-          <p className="text-micro text-stone-500 italic pt-2">
+          <p className="text-micro text-text-tertiary italic pt-2">
             {t(
               "admin.providerMarketOverridesTab.valeursAfficheesUniquementATitreDeComparaisonEllesNeSe",
             )}
@@ -179,10 +179,10 @@ export const ProviderMarketOverridesTab: React.FC<
           className={`p-5 rounded-control border shadow-xs space-y-4 ${
             isOverridden
               ? "bg-info-surface/30 border-info-border"
-              : "bg-bg-surface border-stone-200"
+              : "bg-bg-surface border-border-disabled"
           }`}
         >
-          <div className="flex items-center justify-between border-b border-stone-200 pb-2">
+          <div className="flex items-center justify-between border-b border-border-disabled pb-2">
             <span className="text-xs font-bold text-text-main flex items-center gap-1.5">
               <span>
                 {nonDefaultMarkets.find((m) => m.code === selectedMarket)?.flag}
@@ -198,7 +198,7 @@ export const ProviderMarketOverridesTab: React.FC<
                 )}
               </span>
             ) : (
-              <span className="text-micro font-semibold bg-stone-100 text-text-secondary px-2 py-0.5 rounded">
+              <span className="text-micro font-semibold bg-surface-muted text-text-secondary px-2 py-0.5 rounded">
                 {t("admin.providerMarketOverridesTab.aucuneAffectation")}
               </span>
             )}
@@ -217,21 +217,21 @@ export const ProviderMarketOverridesTab: React.FC<
 
           <div className="space-y-3">
             {/* Custom Enable Toggle */}
-            <div className="flex items-center justify-between p-2.5 rounded-lg border border-stone-200 bg-bg-surface">
-              <span className="text-xs font-bold text-stone-800">
+            <div className="flex items-center justify-between p-2.5 rounded-lg border border-border-disabled bg-bg-surface">
+              <span className="text-xs font-bold text-text-strong">
                 {t("admin.providerMarketOverridesTab.activeDansCePays")}
               </span>
               <input
                 type="checkbox"
                 checked={overrideEnabled}
                 onChange={(e) => setOverrideEnabled(e.target.checked)}
-                className="rounded border-stone-300 text-primary focus:ring-primary h-4 w-4"
+                className="rounded border-border-prominent text-primary focus:ring-primary h-4 w-4"
               />
             </div>
 
             {/* Custom Priority */}
-            <div className="flex items-center justify-between p-2.5 rounded-lg border border-stone-200 bg-bg-surface">
-              <span className="text-xs font-bold text-stone-800">
+            <div className="flex items-center justify-between p-2.5 rounded-lg border border-border-disabled bg-bg-surface">
+              <span className="text-xs font-bold text-text-strong">
                 {t("admin.providerMarketOverridesTab.prioriteLocale")}
               </span>
               <input
@@ -246,13 +246,13 @@ export const ProviderMarketOverridesTab: React.FC<
                       PROVIDER_CONFIGURATION_CONSTRAINTS.priority.min,
                   )
                 }
-                className="w-20 py-1 px-2 text-xs rounded border border-stone-200 font-bold text-stone-800 text-center h-control-touch"
+                className="w-20 py-1 px-2 text-xs rounded border border-border-disabled font-bold text-text-strong text-center h-control-touch"
               />
             </div>
 
             {/* Custom Notes */}
             <div>
-              <label className="block text-xs font-semibold text-stone-700 mb-1">
+              <label className="block text-xs font-semibold text-text-emphasis mb-1">
                 {t("admin.providerMarketOverridesTab.noteDeConformiteOuMotif")}
               </label>
               <input
@@ -262,13 +262,13 @@ export const ProviderMarketOverridesTab: React.FC<
                   "admin.providerMarketOverridesTab.exTransporteurDedieZoneFrontaliere",
                 )}
                 onChange={(e) => setCustomNotes(e.target.value)}
-                className="w-full py-1.5 px-2.5 text-xs rounded border border-stone-200 bg-bg-surface h-control-touch"
+                className="w-full py-1.5 px-2.5 text-xs rounded border border-border-disabled bg-bg-surface h-control-touch"
               />
             </div>
           </div>
 
           {/* Action buttons */}
-          <div className="flex items-center justify-between pt-2 border-t border-stone-200">
+          <div className="flex items-center justify-between pt-2 border-t border-border-disabled">
             {isOverridden ? (
               <Button
                 variant="ghost"
@@ -280,7 +280,7 @@ export const ProviderMarketOverridesTab: React.FC<
                 Supprimer l'affectation
               </Button>
             ) : (
-              <span className="text-xs text-stone-500 italic">
+              <span className="text-xs text-text-tertiary italic">
                 {t("admin.providerMarketOverridesTab.aucuneSurchargeDefinie")}
               </span>
             )}

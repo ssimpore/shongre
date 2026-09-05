@@ -67,10 +67,10 @@ export const FavoritesPage: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-stone-900">
+          <h1 className="text-xl sm:text-2xl font-bold text-text-main">
             Mes annonces favorites ({favoriteListings.length})
           </h1>
-          <p className="text-xs sm:text-sm text-stone-500 mt-0.5">
+          <p className="text-xs sm:text-sm text-text-tertiary mt-0.5">
             {t("favorites.favoritesPage.retrouvezLesAnnoncesQueVous")}
           </p>
         </div>
@@ -110,7 +110,7 @@ export const FavoritesPage: React.FC = () => {
         </section>
       ) : (
         <EmptyState
-          icon={<Heart className="w-10 h-10 text-stone-400" />}
+          icon={<Heart className="w-10 h-10 text-text-inverse-subtle" />}
           title={t("favorites.favoritesPage.aucunFavoriPourLeMoment")}
           description={t("favorites.favoritesPage.cliquezSurLeCUr")}
           action={

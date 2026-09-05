@@ -1,4 +1,5 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
+import { colors as semanticColors } from "@shongre/design-tokens";
 import { usePersona } from "./personas";
 import { expectNoHorizontalOverflow, waitForStableLayout } from "./overflow";
 import { ALL_ROUTES } from "./routes";
@@ -559,13 +560,13 @@ test.describe("design-token runtime contracts @serial", () => {
     const styles = await page.evaluate(() => {
       const probe = document.createElement("div");
       probe.className =
-        "fixed bg-primary text-white text-3xl h-control-md max-w-page rounded-control shadow-dropdown transition-all duration-normal";
+        "fixed bg-primary text-text-inverse text-3xl h-control-md max-w-page rounded-control shadow-dropdown transition-all duration-normal";
       probe.textContent = "Design token probe";
       document.body.appendChild(probe);
 
       const colorTokenProbe = document.createElement("div");
       colorTokenProbe.style.backgroundColor = "var(--color-primary)";
-      colorTokenProbe.style.color = "var(--color-white)";
+      colorTokenProbe.style.color = "var(--color-text-inverse)";
       document.body.appendChild(colorTokenProbe);
 
       const computed = getComputedStyle(probe);
@@ -597,6 +598,85 @@ test.describe("design-token runtime contracts @serial", () => {
       transitionDuration: "0.25s",
     });
     expect(styles.boxShadow).not.toBe("none");
+  });
+
+  test("renders every primary interaction state from the computed Shongre Orange family", async ({
+    page,
+  }) => {
+    const readColors = async () =>
+      page.evaluate(() => {
+        const button = document.querySelector<HTMLButtonElement>(
+          "main button.bg-primary",
+        );
+        if (!button) return null;
+        const resolveToken = (name: string) => {
+          const probe = document.createElement("span");
+          probe.style.color = `var(--color-${name})`;
+          document.body.appendChild(probe);
+          const color = getComputedStyle(probe).color;
+          probe.remove();
+          return color;
+        };
+        const computed = getComputedStyle(button);
+        return {
+          background: computed.backgroundColor,
+          border: computed.borderColor,
+          text: computed.color,
+          primary: resolveToken("primary"),
+          hover: resolveToken("primary-hover"),
+          active: resolveToken("primary-active"),
+          disabled: resolveToken("primary-disabled"),
+          disabledBorder: resolveToken("primary-disabled-border"),
+          textMain: resolveToken("text-main"),
+          canonical: getComputedStyle(document.documentElement)
+            .getPropertyValue("--color-brand-primary")
+            .trim()
+            .toUpperCase(),
+        };
+      });
+
+    for (const viewport of [
+      { width: 1408, height: 900 },
+      { width: 390, height: 844 },
+    ]) {
+      await page.setViewportSize(viewport);
+      await page.goto("/connexion", { waitUntil: "domcontentloaded" });
+      await waitForStableLayout(page);
+      const button = page.locator("main button.bg-primary").first();
+      await expect(button).toBeVisible();
+
+      let state = await readColors();
+      expect(state?.canonical).toBe(semanticColors.brand.primary);
+      expect(state?.background).toBe(state?.primary);
+
+      await button.hover();
+      await expect
+        .poll(async () => (await readColors())?.background)
+        .toBe(state?.hover);
+
+      const box = await button.boundingBox();
+      expect(box).not.toBeNull();
+      await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2);
+      await page.mouse.down();
+      await expect
+        .poll(async () => (await readColors())?.background)
+        .toBe(state?.active);
+      await page.mouse.up();
+
+      await button.evaluate((element) => {
+        element.disabled = true;
+      });
+      await expect
+        .poll(async () => (await readColors())?.background)
+        .toBe(state?.disabled);
+      state = await readColors();
+      expect(state?.border).toBe(state?.disabledBorder);
+      expect(state?.text).toBe(state?.textMain);
+      await expectNoHorizontalOverflow(
+        page,
+        `primary state audit at ${viewport.width}px`,
+      );
+    }
   });
 
   test("resolves the complete control scale with one shared radius", async ({
@@ -1268,7 +1348,7 @@ test.describe("design-token runtime contracts @serial", () => {
   }) => {
     await usePersona(page, "support");
 
-    for (const width of [1408, 1024, 888, 768, 390]) {
+    for (const width of [1408, 1024, 888, 768, 390, 320]) {
       await page.setViewportSize({ width, height: 844 });
       await page.goto("/recherche", { waitUntil: "domcontentloaded" });
       await waitForStableLayout(page);
@@ -1321,6 +1401,7 @@ test.describe("design-token runtime contracts @serial", () => {
             Math.abs(rect.top + rect.height / 2 - centerY),
           ),
           controlHeights: controlRects.map((rect) => rect.height),
+          controlWidths: controlRects.map((rect) => rect.width),
           developmentIndicatorCenterDelta: developmentIndicatorRect
             ? Math.abs(
                 developmentIndicatorRect.top +
@@ -1346,6 +1427,10 @@ test.describe("design-token runtime contracts @serial", () => {
       expect(alignment!.controlHeights.every((height) => height === 28)).toBe(
         true,
       );
+      expect(
+        alignment!.controlWidths.every((width) => width >= 24),
+        `demo-toolbar target narrower than the 24px WCAG 2.5.8 floor at ${width}px`,
+      ).toBe(true);
       if (alignment!.developmentIndicatorCenterDelta !== null) {
         expect(alignment!.developmentIndicatorCenterDelta).toBeLessThanOrEqual(
           0.5,

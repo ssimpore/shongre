@@ -358,11 +358,11 @@ export const DigitalFulfillmentEditor: React.FC<
       <div>
         <h3
           id="digital-fulfillment-heading"
-          className="text-lg font-bold text-stone-900"
+          className="text-lg font-bold text-text-main"
         >
           {t("digital.fulfillment.heading")}
         </h3>
-        <p className="mt-1 text-sm text-stone-600">
+        <p className="mt-1 text-sm text-text-supporting">
           {t("digital.fulfillment.description")}
         </p>
       </div>
@@ -376,7 +376,7 @@ export const DigitalFulfillmentEditor: React.FC<
               type="button"
               aria-pressed={active}
               onClick={() => selectMode(option)}
-              className={`rounded-xl border p-4 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${active ? "border-primary bg-primary-light" : "border-border-base bg-white hover:bg-stone-50"}`}
+              className={`rounded-xl border p-4 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${active ? "border-primary bg-primary-light" : "border-border-base bg-bg-surface hover:bg-surface-soft"}`}
             >
               <option.Icon className="mb-2 h-5 w-5" aria-hidden="true" />
               <span className="block text-sm font-bold">
@@ -480,12 +480,12 @@ export const DigitalFulfillmentEditor: React.FC<
                   if (file) void uploadFile(file);
                   event.currentTarget.value = "";
                 }}
-                className="block w-full rounded-control border border-border-base bg-white p-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="block w-full rounded-control border border-border-base bg-bg-surface p-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               />
               {assets.map((asset) => (
                 <div
                   key={asset.id}
-                  className="flex items-center justify-between gap-3 rounded-lg bg-white p-3 text-sm"
+                  className="flex items-center justify-between gap-3 rounded-lg bg-bg-surface p-3 text-sm"
                 >
                   <span className="min-w-0 truncate">{asset.safeFileName}</span>
                   <Badge>{asset.status}</Badge>
@@ -497,7 +497,7 @@ export const DigitalFulfillmentEditor: React.FC<
           {value.fulfillmentTypes.some(
             (type) => type === "ACCESS_LINK" || type === "ACCESS_CREDENTIALS",
           ) ? (
-            <div className="space-y-3 rounded-lg bg-white p-4">
+            <div className="space-y-3 rounded-lg bg-bg-surface p-4">
               <FormField label={t("digital.fulfillment.accessClass")} required>
                 <select
                   value={accessClass}
@@ -505,7 +505,7 @@ export const DigitalFulfillmentEditor: React.FC<
                     setAccessClass(event.target.value);
                     patchValue({ productAccessClass: event.target.value });
                   }}
-                  className="w-full rounded-control border border-border-base bg-white p-3 text-sm h-control-touch"
+                  className="w-full rounded-control border border-border-base bg-bg-surface p-3 text-sm h-control-touch"
                 >
                   {(policy?.credentialInventory.allowedClasses ?? []).map(
                     (item) => (
@@ -602,7 +602,7 @@ export const DigitalFulfillmentEditor: React.FC<
           ) : null}
 
           {value.fulfillmentTypes.includes("SELLER_PROVISIONED") ? (
-            <div className="rounded-lg bg-white p-4">
+            <div className="rounded-lg bg-bg-surface p-4">
               <FormField label={t("digital.fulfillment.accessClass")} required>
                 <select
                   value={value.productAccessClass ?? accessClass}
@@ -610,7 +610,7 @@ export const DigitalFulfillmentEditor: React.FC<
                     setAccessClass(event.target.value);
                     patchValue({ productAccessClass: event.target.value });
                   }}
-                  className="w-full rounded-control border border-border-base bg-white p-3 text-sm h-control-touch"
+                  className="w-full rounded-control border border-border-base bg-bg-surface p-3 text-sm h-control-touch"
                 >
                   {(policy?.credentialInventory.allowedClasses ?? []).map(
                     (item) => (

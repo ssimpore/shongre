@@ -137,12 +137,12 @@ export const ProviderOverviewDashboard: React.FC<
     <div className="space-y-6">
       {/* 1. Operational KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-bg-surface p-4 rounded-control border border-stone-200 shadow-xs flex flex-col justify-between">
+        <div className="bg-bg-surface p-4 rounded-control border border-border-disabled shadow-xs flex flex-col justify-between">
           <div className="flex items-start justify-between gap-2">
-            <span className="text-xs font-semibold text-stone-500 uppercase tracking-wider min-w-0">
+            <span className="text-xs font-semibold text-text-tertiary uppercase tracking-wider min-w-0">
               {t("admin.providerOverviewDashboard.integrationsRepertoriees")}
             </span>
-            <span className="p-2 rounded-lg bg-stone-100 text-stone-700 shrink-0">
+            <span className="p-2 rounded-lg bg-surface-muted text-text-emphasis shrink-0">
               <Cpu className="w-icon-md h-icon-md" />
             </span>
           </div>
@@ -150,22 +150,22 @@ export const ProviderOverviewDashboard: React.FC<
             <span className="text-2xl font-bold text-text-main">
               {metrics.total}
             </span>
-            <span className="ml-2 text-xs font-medium text-stone-500">
+            <span className="ml-2 text-xs font-medium text-text-tertiary">
               {metrics.implemented}{" "}
               {t("admin.providerOverviewDashboard.avecAdaptateur")}
             </span>
           </div>
         </div>
 
-        <div className="bg-bg-surface p-4 rounded-control border border-stone-200 shadow-xs flex flex-col justify-between">
+        <div className="bg-bg-surface p-4 rounded-control border border-border-disabled shadow-xs flex flex-col justify-between">
           <div className="flex items-start justify-between gap-2">
-            <span className="text-xs font-semibold text-stone-500 uppercase tracking-wider min-w-0">
+            <span className="text-xs font-semibold text-text-tertiary uppercase tracking-wider min-w-0">
               {t("admin.providerOverviewDashboard.santeOperationnelle")}
             </span>
             <span
               className={`p-2 rounded-lg shrink-0 ${
                 metrics.healthScore === null
-                  ? "bg-stone-100 text-text-secondary"
+                  ? "bg-surface-muted text-text-secondary"
                   : metrics.healthScore === 100
                     ? "bg-success-surface text-success"
                     : "bg-warning-surface text-warning"
@@ -181,7 +181,7 @@ export const ProviderOverviewDashboard: React.FC<
             <span
               className={`ml-2 text-xs font-medium ${
                 metrics.healthScore === null
-                  ? "text-stone-500"
+                  ? "text-text-tertiary"
                   : metrics.healthScore === 100
                     ? "text-success"
                     : "text-warning"
@@ -194,9 +194,9 @@ export const ProviderOverviewDashboard: React.FC<
           </div>
         </div>
 
-        <div className="bg-bg-surface p-4 rounded-control border border-stone-200 shadow-xs flex flex-col justify-between">
+        <div className="bg-bg-surface p-4 rounded-control border border-border-disabled shadow-xs flex flex-col justify-between">
           <div className="flex items-start justify-between gap-2">
-            <span className="text-xs font-semibold text-stone-500 uppercase tracking-wider min-w-0">
+            <span className="text-xs font-semibold text-text-tertiary uppercase tracking-wider min-w-0">
               {t("admin.providerOverviewDashboard.pretsPourProduction")}
             </span>
             <span className="p-2 rounded-lg bg-info-surface text-info">
@@ -207,15 +207,15 @@ export const ProviderOverviewDashboard: React.FC<
             <span className="text-2xl font-bold text-text-main">
               {metrics.productionReady}
             </span>
-            <span className="ml-2 text-xs font-medium text-stone-500">
+            <span className="ml-2 text-xs font-medium text-text-tertiary">
               sur {metrics.total}
             </span>
           </div>
         </div>
 
-        <div className="bg-bg-surface p-4 rounded-control border border-stone-200 shadow-xs flex flex-col justify-between">
+        <div className="bg-bg-surface p-4 rounded-control border border-border-disabled shadow-xs flex flex-col justify-between">
           <div className="flex items-start justify-between gap-2">
-            <span className="text-xs font-semibold text-stone-500 uppercase tracking-wider min-w-0">
+            <span className="text-xs font-semibold text-text-tertiary uppercase tracking-wider min-w-0">
               Actions Requises
             </span>
             <span
@@ -246,14 +246,14 @@ export const ProviderOverviewDashboard: React.FC<
       </div>
 
       {/* 2. Critical platform capabilities matrix */}
-      <div className="bg-bg-surface rounded-control border border-stone-200 shadow-xs p-5">
+      <div className="bg-bg-surface rounded-control border border-border-disabled shadow-xs p-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
           <div>
             <h2 className="text-sm font-bold text-text-main flex items-center gap-2">
               <ShieldCheck className="w-icon-md h-icon-md text-success" />
               {t("admin.providerOverviewDashboard.etatDesFonctionsCritiquesDe")}
             </h2>
-            <p className="text-xs text-stone-500 mt-0.5">
+            <p className="text-xs text-text-tertiary mt-0.5">
               {t(
                 "admin.providerOverviewDashboard.resolutionEnDirectDuPrestataire",
               )}
@@ -310,7 +310,7 @@ export const ProviderOverviewDashboard: React.FC<
             return (
               <div
                 key={item.capability}
-                className="p-3 rounded-lg border border-stone-200 bg-stone-50/60 hover:bg-stone-50 transition-colors flex flex-col justify-between"
+                className="p-3 rounded-lg border border-border-disabled bg-surface-soft/60 hover:bg-surface-soft transition-colors flex flex-col justify-between"
               >
                 <div>
                   <div className="mb-1.5 flex items-start justify-between gap-2">
@@ -344,19 +344,19 @@ export const ProviderOverviewDashboard: React.FC<
                       </span>
                     )}
                     {status === "unknown" && (
-                      <span className="flex items-center gap-1 text-micro font-bold text-text-secondary bg-stone-100 px-1.5 py-0.5 rounded-sm">
+                      <span className="flex items-center gap-1 text-micro font-bold text-text-secondary bg-surface-muted px-1.5 py-0.5 rounded-sm">
                         <CircleHelp className="w-icon-xs h-icon-xs" />
                         {t("sellerworkspace.accountOverviewPage.nonVerifie")}
                       </span>
                     )}
                   </div>
-                  <p className="text-micro text-stone-500 mb-2">
+                  <p className="text-micro text-text-tertiary mb-2">
                     {item.description}
                   </p>
                 </div>
 
-                <div className="pt-2 border-t border-stone-200/60 flex items-center justify-between text-micro">
-                  <span className="text-stone-500">Prestataire :</span>
+                <div className="pt-2 border-t border-border-disabled/60 flex items-center justify-between text-micro">
+                  <span className="text-text-tertiary">Prestataire :</span>
                   {catalogOwner ? (
                     <Link
                       to={`/admin/fournisseurs/${catalogOwner.id}`}
@@ -365,7 +365,7 @@ export const ProviderOverviewDashboard: React.FC<
                       {owner?.displayName}
                     </Link>
                   ) : (
-                    <span className="font-semibold text-stone-700 truncate max-w-35">
+                    <span className="font-semibold text-text-emphasis truncate max-w-35">
                       {owner?.displayName || "Aucun propriétaire"}
                     </span>
                   )}
@@ -379,7 +379,7 @@ export const ProviderOverviewDashboard: React.FC<
       {/* 3. Category Quick Filters & Recent Audit Logs */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Category breakdown */}
-        <div className="lg:col-span-2 bg-bg-surface rounded-control border border-stone-200 shadow-xs p-5">
+        <div className="lg:col-span-2 bg-bg-surface rounded-control border border-border-disabled shadow-xs p-5">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-bold text-text-main flex items-center gap-2">
               <Layers className="w-icon-md h-icon-md text-primary" />
@@ -387,7 +387,7 @@ export const ProviderOverviewDashboard: React.FC<
                 "admin.providerOverviewDashboard.repartitionParDomaineCategorie",
               )}
             </h2>
-            <span className="text-xs text-stone-500 font-mono">
+            <span className="text-xs text-text-tertiary font-mono">
               {Object.keys(PROVIDER_CATEGORIES).length}{" "}
               {t("admin.providerOverviewDashboard.categories")}
             </span>
@@ -410,7 +410,7 @@ export const ProviderOverviewDashboard: React.FC<
                       onSelectCategory(cat.id);
                       onNavigateToTab("catalog");
                     }}
-                    className="p-3 rounded-lg border border-stone-200 hover:border-primary hover:bg-primary-light/10 text-left transition-all flex items-center justify-between group"
+                    className="p-3 rounded-lg border border-border-disabled hover:border-primary hover:bg-primary-surface-faint text-left transition-all flex items-center justify-between group"
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       <span
@@ -418,11 +418,11 @@ export const ProviderOverviewDashboard: React.FC<
                       >
                         {cat.shortLabel}
                       </span>
-                      <span className="text-xs font-medium text-stone-700 group-hover:text-text-main truncate">
+                      <span className="text-xs font-medium text-text-emphasis group-hover:text-text-main truncate">
                         {cat.name}
                       </span>
                     </div>
-                    <span className="text-xs font-bold text-stone-500 group-hover:text-primary font-mono ml-2 shrink-0">
+                    <span className="text-xs font-bold text-text-tertiary group-hover:text-primary font-mono ml-2 shrink-0">
                       {count}
                     </span>
                   </button>
@@ -432,7 +432,7 @@ export const ProviderOverviewDashboard: React.FC<
         </div>
 
         {/* Recent Audit events */}
-        <div className="bg-bg-surface rounded-control border border-stone-200 shadow-xs p-5">
+        <div className="bg-bg-surface rounded-control border border-border-disabled shadow-xs p-5">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-bold text-text-main flex items-center gap-2">
               <Clock className="w-icon-md h-icon-md text-text-secondary" />
@@ -441,7 +441,7 @@ export const ProviderOverviewDashboard: React.FC<
           </div>
 
           {recentAudit.length === 0 ? (
-            <p className="text-xs text-stone-500 italic">
+            <p className="text-xs text-text-tertiary italic">
               {t(
                 "admin.providerOverviewDashboard.aucuneModificationRecenteEnregistree",
               )}
@@ -451,10 +451,10 @@ export const ProviderOverviewDashboard: React.FC<
               {recentAudit.map((evt) => (
                 <div
                   key={evt.id}
-                  className="text-xs border-b border-stone-100 pb-2.5 last:border-0 last:pb-0"
+                  className="text-xs border-b border-border-soft pb-2.5 last:border-0 last:pb-0"
                 >
-                  <div className="flex items-center justify-between text-micro text-stone-500 mb-0.5">
-                    <span className="font-semibold text-stone-700">
+                  <div className="flex items-center justify-between text-micro text-text-tertiary mb-0.5">
+                    <span className="font-semibold text-text-emphasis">
                       {evt.providerName}
                     </span>
                     <span>

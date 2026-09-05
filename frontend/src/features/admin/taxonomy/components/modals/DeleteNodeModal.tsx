@@ -88,11 +88,11 @@ export const DeleteNodeModal: React.FC<DeleteNodeModalProps> = ({
             </p>
           </div>
         ) : (
-          <div className="p-3.5 bg-stone-50 border border-stone-200 rounded-control text-xs text-stone-700">
+          <div className="p-3.5 bg-surface-soft border border-border-disabled rounded-control text-xs text-text-emphasis">
             <p className="font-semibold text-text-main">
               {t("admin.deleteNodeModal.ceNUdEstEligible")}
             </p>
-            <p className="text-stone-500 mt-1">
+            <p className="text-text-tertiary mt-1">
               {t("admin.deleteNodeModal.aucuneAnnonceActiveNiSous")}
             </p>
           </div>

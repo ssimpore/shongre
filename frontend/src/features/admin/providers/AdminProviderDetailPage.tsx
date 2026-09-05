@@ -126,10 +126,10 @@ export const AdminProviderDetailPage: React.FC = () => {
       </div>
 
       {/* Provider Header Card */}
-      <div className="bg-bg-surface p-6 rounded-control border border-stone-200 shadow-xs space-y-4">
+      <div className="bg-bg-surface p-6 rounded-control border border-border-disabled shadow-xs space-y-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex min-w-0 items-start gap-4">
-            <div className="w-12 h-12 rounded-control bg-stone-100 border border-stone-200 flex items-center justify-center font-bold text-lg text-stone-800 shrink-0">
+            <div className="w-12 h-12 rounded-control bg-surface-muted border border-border-disabled flex items-center justify-center font-bold text-lg text-text-strong shrink-0">
               {provider.name.charAt(0)}
             </div>
 
@@ -138,7 +138,7 @@ export const AdminProviderDetailPage: React.FC = () => {
                 <h1 className="text-xl font-bold text-text-main">
                   {provider.name}
                 </h1>
-                <span className="max-w-full break-all rounded border border-stone-200 bg-stone-100 px-2 py-0.5 font-mono text-xs font-bold text-text-secondary">
+                <span className="max-w-full break-all rounded border border-border-disabled bg-surface-muted px-2 py-0.5 font-mono text-xs font-bold text-text-secondary">
                   {provider.code}
                 </span>
                 <span
@@ -148,7 +148,7 @@ export const AdminProviderDetailPage: React.FC = () => {
                 </span>
               </div>
 
-              <div className="flex flex-wrap items-center gap-3 text-xs text-stone-500">
+              <div className="flex flex-wrap items-center gap-3 text-xs text-text-tertiary">
                 {provider.metadata.companyName && (
                   <span className="flex items-center gap-1">
                     <Building className="w-icon-sm h-icon-sm text-text-disabled" />
@@ -191,7 +191,7 @@ export const AdminProviderDetailPage: React.FC = () => {
             <span
               className={`inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-pill border ${
                 configuration.environment === "demo" || health === "unknown"
-                  ? "bg-stone-100 text-stone-700 border-stone-200"
+                  ? "bg-surface-muted text-text-emphasis border-border-disabled"
                   : health === "healthy"
                     ? "bg-success-surface text-success border-success-border"
                     : health === "degraded"
@@ -210,15 +210,15 @@ export const AdminProviderDetailPage: React.FC = () => {
                       : "Santé inconnue"}
             </span>
 
-            <span className="max-w-full break-all rounded-pill bg-stone-800 px-2.5 py-1 font-mono text-xs font-bold uppercase text-stone-200">
+            <span className="max-w-full break-all rounded-pill bg-surface-inverse-hover px-2.5 py-1 font-mono text-xs font-bold uppercase text-text-inverse-faint">
               {labelIdentifier(configuration.environment)}
             </span>
           </div>
         </div>
 
         {/* Capabilities badges bar */}
-        <div className="pt-3 border-t border-stone-100 flex flex-wrap items-center gap-1.5">
-          <span className="text-xs font-semibold text-stone-500 mr-1">
+        <div className="pt-3 border-t border-border-soft flex flex-wrap items-center gap-1.5">
+          <span className="text-xs font-semibold text-text-tertiary mr-1">
             {t("admin.adminProviderDetailPage.capacitesCataloguees")}
           </span>
           {provider.capabilities.map((cap) => {
@@ -235,7 +235,7 @@ export const AdminProviderDetailPage: React.FC = () => {
                     ? "bg-success-surface text-success border-success-border"
                     : demoOnly
                       ? "bg-info-surface text-info border-info-border"
-                      : "bg-stone-100 text-stone-700 border-stone-200"
+                      : "bg-surface-muted text-text-emphasis border-border-disabled"
                 }`}
               >
                 <ProviderCapabilityLabel capability={cap} compact />
@@ -246,14 +246,14 @@ export const AdminProviderDetailPage: React.FC = () => {
       </div>
 
       {/* Detail Tab Navigation */}
-      <div className="bg-bg-surface rounded-control border border-stone-200 shadow-xs p-1.5 flex flex-wrap gap-1">
+      <div className="bg-bg-surface rounded-control border border-border-disabled shadow-xs p-1.5 flex flex-wrap gap-1">
         <button
           type="button"
           onClick={() => setActiveTab("configuration")}
           className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all ${
             activeTab === "configuration"
               ? "bg-primary text-text-inverse shadow-xs"
-              : "text-text-secondary hover:text-text-main hover:bg-stone-100"
+              : "text-text-secondary hover:text-text-main hover:bg-surface-muted"
           }`}
         >
           <Sliders className="w-icon-sm h-icon-sm" />
@@ -266,7 +266,7 @@ export const AdminProviderDetailPage: React.FC = () => {
           className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all ${
             activeTab === "markets"
               ? "bg-primary text-text-inverse shadow-xs"
-              : "text-text-secondary hover:text-text-main hover:bg-stone-100"
+              : "text-text-secondary hover:text-text-main hover:bg-surface-muted"
           }`}
         >
           <Globe className="w-icon-sm h-icon-sm" />
@@ -279,7 +279,7 @@ export const AdminProviderDetailPage: React.FC = () => {
           className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all ${
             activeTab === "health"
               ? "bg-primary text-text-inverse shadow-xs"
-              : "text-text-secondary hover:text-text-main hover:bg-stone-100"
+              : "text-text-secondary hover:text-text-main hover:bg-surface-muted"
           }`}
         >
           <Activity className="w-icon-sm h-icon-sm" />
@@ -292,7 +292,7 @@ export const AdminProviderDetailPage: React.FC = () => {
           className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all ${
             activeTab === "dependencies"
               ? "bg-primary text-text-inverse shadow-xs"
-              : "text-text-secondary hover:text-text-main hover:bg-stone-100"
+              : "text-text-secondary hover:text-text-main hover:bg-surface-muted"
           }`}
         >
           <Layers className="w-icon-sm h-icon-sm" />
@@ -307,7 +307,7 @@ export const AdminProviderDetailPage: React.FC = () => {
           className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all ${
             activeTab === "audit"
               ? "bg-primary text-text-inverse shadow-xs"
-              : "text-text-secondary hover:text-text-main hover:bg-stone-100"
+              : "text-text-secondary hover:text-text-main hover:bg-surface-muted"
           }`}
         >
           <Clock className="w-icon-sm h-icon-sm" />
@@ -345,8 +345,8 @@ export const AdminProviderDetailPage: React.FC = () => {
       )}
 
       {activeTab === "dependencies" && (
-        <div className="bg-bg-surface p-5 rounded-control border border-stone-200 shadow-xs space-y-4">
-          <h2 className="text-sm font-bold text-text-main border-b border-stone-100 pb-2">
+        <div className="bg-bg-surface p-5 rounded-control border border-border-disabled shadow-xs space-y-4">
+          <h2 className="text-sm font-bold text-text-main border-b border-border-soft pb-2">
             {t(
               "admin.adminProviderDetailPage.fonctionnalitesShongreDependantesDeCe",
             )}
@@ -357,15 +357,17 @@ export const AdminProviderDetailPage: React.FC = () => {
               return (
                 <div
                   key={cap}
-                  className="p-3.5 rounded-lg border border-stone-200 bg-stone-50/60 space-y-2"
+                  className="p-3.5 rounded-lg border border-border-disabled bg-surface-soft/60 space-y-2"
                 >
                   <ProviderCapabilityLabel
                     capability={cap}
                     showCategory
                     className="text-text-main"
                   />
-                  <p className="text-xs text-stone-500">{meta.description}</p>
-                  <div className="pt-2 border-t border-stone-200/60">
+                  <p className="text-xs text-text-tertiary">
+                    {meta.description}
+                  </p>
+                  <div className="pt-2 border-t border-border-disabled/60">
                     <span className="text-micro font-semibold text-text-secondary block mb-1">
                       {t(
                         "admin.adminProviderDetailPage.fonctionnalitesDirectes",
@@ -375,7 +377,7 @@ export const AdminProviderDetailPage: React.FC = () => {
                       {meta.usedByFeatures.map((f) => (
                         <span
                           key={f}
-                          className="text-micro bg-stone-200/70 text-stone-800 px-1.5 py-0.5 rounded font-medium"
+                          className="text-micro bg-surface-disabled/70 text-text-strong px-1.5 py-0.5 rounded font-medium"
                         >
                           {f}
                         </span>

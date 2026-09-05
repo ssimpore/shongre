@@ -289,7 +289,7 @@ export const AdminImmoPage: React.FC = () => {
                             offer.prices[0].amount.amountMinor /
                             MONETIZATION_ADMIN_CONSTRAINTS.moneyMajorToMinor
                           }
-                          className="h-control-md w-24 rounded-control border border-border-base bg-white px-2"
+                          className="h-control-md w-24 rounded-control border border-border-base bg-bg-surface px-2"
                           onBlur={(event) =>
                             saveOffer(offer.id, {
                               prices: offer.prices.map((price, index) =>
@@ -332,7 +332,7 @@ export const AdminImmoPage: React.FC = () => {
                             MONETIZATION_ADMIN_CONSTRAINTS.nonNegativeInteger
                               .min,
                         )}
-                        className="h-control-md w-20 rounded-control border border-border-base bg-white px-2"
+                        className="h-control-md w-20 rounded-control border border-border-base bg-bg-surface px-2"
                         onBlur={(event) =>
                           saveOffer(offer.id, {
                             entitlements: {
@@ -359,7 +359,7 @@ export const AdminImmoPage: React.FC = () => {
                             MONETIZATION_ADMIN_CONSTRAINTS.positiveInteger.step
                           }
                           defaultValue={offer.prices[0].durationDays || ""}
-                          className="h-control-md w-16 rounded-control border border-border-base bg-white px-2"
+                          className="h-control-md w-16 rounded-control border border-border-base bg-bg-surface px-2"
                           onBlur={(event) =>
                             saveOffer(offer.id, {
                               prices: offer.prices.map((price, index) =>
@@ -397,7 +397,7 @@ export const AdminImmoPage: React.FC = () => {
                             MONETIZATION_ADMIN_CONSTRAINTS.nonNegativeInteger
                               .min
                           }
-                          className="h-control-md w-16 rounded-control border border-border-base bg-white px-2"
+                          className="h-control-md w-16 rounded-control border border-border-base bg-bg-surface px-2"
                           onBlur={(event) =>
                             saveOffer(offer.id, {
                               prices: offer.prices.map((price, index) =>
@@ -434,7 +434,7 @@ export const AdminImmoPage: React.FC = () => {
                             offer.prices[0].taxRateBps /
                             MONETIZATION_ADMIN_CONSTRAINTS.percentageToBps
                           }
-                          className="h-control-md w-16 rounded-control border border-border-base bg-white px-2"
+                          className="h-control-md w-16 rounded-control border border-border-base bg-bg-surface px-2"
                           onBlur={(event) =>
                             saveOffer(offer.id, {
                               prices: offer.prices.map((price, index) =>
@@ -556,7 +556,7 @@ export const AdminImmoPage: React.FC = () => {
                           addOn.price.amountMinor /
                           MONETIZATION_ADMIN_CONSTRAINTS.moneyMajorToMinor
                         }
-                        className="h-control-md w-20 rounded-control border border-border-base bg-white px-2"
+                        className="h-control-md w-20 rounded-control border border-border-base bg-bg-surface px-2"
                         onBlur={(event) =>
                           saveAddOn(addOn.id, {
                             price: {
@@ -582,7 +582,7 @@ export const AdminImmoPage: React.FC = () => {
                           MONETIZATION_ADMIN_CONSTRAINTS.positiveInteger.step
                         }
                         defaultValue={addOn.validityDays || ""}
-                        className="h-control-md w-16 rounded-control border border-border-base bg-white px-2"
+                        className="h-control-md w-16 rounded-control border border-border-base bg-bg-surface px-2"
                         onBlur={(event) =>
                           saveAddOn(addOn.id, {
                             validityDays: event.target.value

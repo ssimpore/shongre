@@ -59,7 +59,7 @@ export function Avatar({
       <div
         className={cn(
           sizes[size],
-          "rounded-full overflow-hidden flex items-center justify-center font-semibold bg-bg-subtle text-stone-700 border border-border-base",
+          "rounded-full overflow-hidden flex items-center justify-center font-semibold bg-bg-subtle text-text-emphasis border border-border-base",
         )}
       >
         {src ? (

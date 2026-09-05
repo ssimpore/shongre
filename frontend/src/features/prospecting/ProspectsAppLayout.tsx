@@ -151,7 +151,7 @@ export function ProspectsAppLayout() {
           className={({ isActive }) =>
             `inline-flex h-control-sm items-center gap-1.5 rounded-control px-2.5 text-micro font-bold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
               isActive
-                ? "bg-primary text-white"
+                ? "bg-primary text-text-inverse"
                 : "text-text-secondary hover:bg-bg-muted hover:text-text-main"
             }`
           }
@@ -201,7 +201,7 @@ export function ProspectsAppLayout() {
               id="prospects-section-navigation"
               value={activePath}
               onChange={(event) => navigate(event.target.value)}
-              className="h-control-md w-full rounded-control border border-border-base bg-bg-surface px-3 text-xs font-bold text-text-main outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
+              className="h-control-md w-full rounded-control border border-border-base bg-bg-surface px-3 text-xs font-bold text-text-main outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring"
             >
               {visibleNavigation.map((item) => (
                 <option key={item.to} value={item.to}>

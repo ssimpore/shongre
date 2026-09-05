@@ -36,8 +36,8 @@ export interface FilterChipProps {
 
 const TONE_STYLES: Record<NonNullable<FilterChipProps["tone"]>, string> = {
   query: "bg-primary-light text-primary border-primary-border",
-  neutral: "bg-stone-100 text-stone-800 border-stone-200",
-  strong: "bg-stone-900 text-white border-stone-900",
+  neutral: "bg-surface-muted text-text-strong border-border-disabled",
+  strong: "bg-surface-inverse text-text-inverse border-border-inverse-strong",
   success: "bg-success-surface text-success border-success-border",
   warning: "bg-warning-surface text-warning border-warning-border",
 };
@@ -68,7 +68,9 @@ export const FilterChip: React.FC<FilterChipProps> = ({
       {count !== undefined && count > 0 ? (
         <span
           className={`inline-flex min-w-5 items-center justify-center rounded-pill px-1.5 py-0.5 text-micro font-bold ${
-            selected ? "bg-primary text-white" : "bg-primary/15 text-primary"
+            selected
+              ? "bg-primary text-text-inverse"
+              : "bg-primary-surface-selected text-primary"
           }`}
         >
           {count}
@@ -109,7 +111,7 @@ export const FilterChip: React.FC<FilterChipProps> = ({
              negative margin lets the larger box overlap the chip's padding
              instead of widening every chip on the page, and coarse pointers get
              the full 44px target. */
-          className={`shrink-0 w-6 h-6 -my-1 -mr-1 pointer-coarse:w-control-touch pointer-coarse:h-control-touch inline-flex items-center justify-center rounded-full ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} hover:bg-black/10 cursor-pointer`}
+          className={`shrink-0 w-6 h-6 -my-1 -mr-1 pointer-coarse:w-control-touch pointer-coarse:h-control-touch inline-flex items-center justify-center rounded-full ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} hover:bg-surface-overlay-deep/10 cursor-pointer`}
         >
           <X className="w-icon-xs h-icon-xs" />
         </button>

@@ -34,8 +34,8 @@ import {
 import { BASELINE_MONETIZATION_CATALOG } from "@shongre/contracts/monetization-catalog";
 import { PROPOSED_MONETIZATION_DRAFT_CATALOG } from "@shongre/contracts/monetization-proposed-catalog";
 import { isSameBusinessVertical } from "@shongre/contracts/business-verticals";
-import { colors, palette, typography } from "@shongre/design-tokens";
-import { brandDocumentLogoDataUri } from "@shongre/brand";
+import { colors, typography } from "@shongre/design-tokens";
+import { brandDocumentLogoDataUri } from "@shongre/brand/document";
 import {
   getBillingUsagePresentation,
   resolveAllEffectiveEntitlements,
@@ -1399,7 +1399,7 @@ export class DemoBusinessRulesService implements BusinessRulesServiceContract {
     // the Next.js root class. Reuse the canonical stack and tokens here; Nunito
     // Sans resolves locally when available and otherwise follows the approved
     // system fallbacks without a second font loader or runtime font request.
-    const documentStyles = `body{font-family:${typography.fontFamilies.sans};color:${colors.text.primary};max-width:760px;margin:48px auto;padding:0 24px}header,section{display:flex;justify-content:space-between;gap:32px;margin-bottom:40px}.brand-logo{display:block;width:180px;height:auto;margin:0 0 8px}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:12px;border-bottom:1px solid ${palette["stone-200"]}}.number{text-align:right}.total{font-weight:${typography.fontWeights.bold};font-size:${typography.fontSizes.lg};line-height:${typography.textLineHeights.lg}}small{color:${colors.text.muted}}`;
+    const documentStyles = `body{font-family:${typography.fontFamilies.sans};color:${colors.text.primary};max-width:760px;margin:48px auto;padding:0 24px}header,section{display:flex;justify-content:space-between;gap:32px;margin-bottom:40px}.brand-logo{display:block;width:180px;height:auto;margin:0 0 8px}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:12px;border-bottom:1px solid ${colors.border.disabled}}.number{text-align:right}.total{font-weight:${typography.fontWeights.bold};font-size:${typography.fontSizes.lg};line-height:${typography.textLineHeights.lg}}small{color:${colors.text.muted}}`;
     return {
       fileName: `${invoice.number}.html`,
       mimeType: "text/html;charset=utf-8",

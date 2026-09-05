@@ -1,5 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import { webBrandAssets } from "@shongre/brand/web";
 import { BrandHeaderSignature, BrandIcon, BrandLogo } from "./BrandLogo";
 
 describe("official SHONGRE. brand primitives", () => {
@@ -8,8 +9,8 @@ describe("official SHONGRE. brand primitives", () => {
       <BrandLogo layout="horizontal" variant="primary" priority />,
     );
     expect(markup).toContain('alt="SHONGRE."');
-    expect(markup).toContain("header-primary-480.png");
-    expect(markup).toContain("header-primary-960.png 960w");
+    expect(markup).toContain(webBrandAssets.logo.horizontal.primary.src);
+    expect(markup).toContain(webBrandAssets.logo.horizontal.primary.srcSet);
     expect(markup).toContain('sizes="152px"');
     expect(markup).toContain('fetchPriority="high"');
   });
@@ -26,7 +27,7 @@ describe("official SHONGRE. brand primitives", () => {
 
   it("uses the shared mask-safe source and radius for primary icons", () => {
     const markup = renderToStaticMarkup(<BrandIcon decorative />);
-    expect(markup).toContain("/brand/shongre/pwa/icon-maskable-192.png");
+    expect(markup).toContain(webBrandAssets.icon.primary.src);
     expect(markup).toContain("rounded-sm");
   });
 
@@ -40,8 +41,8 @@ describe("official SHONGRE. brand primitives", () => {
     );
     expect(markup).toContain('role="img"');
     expect(markup).toContain('aria-label="SHONGRE."');
-    expect(markup).toContain("/brand/shongre/pwa/icon-maskable-192.png");
-    expect(markup).toContain("/brand/shongre/logo/wordmark-primary.svg");
+    expect(markup).toContain(webBrandAssets.icon.primary.src);
+    expect(markup).toContain(webBrandAssets.logo.wordmark.primary.src);
     expect(markup).toContain("rounded-sm");
     expect(markup).toContain("data-brand-market-label");
     expect(markup).toContain("hidden lg:block");
@@ -53,10 +54,8 @@ describe("official SHONGRE. brand primitives", () => {
       <BrandHeaderSignature variant="reverse" decorative />,
     );
     expect(reverseMarkup).toContain('data-brand-signature="reverse"');
-    expect(reverseMarkup).toContain(
-      "/brand/shongre/logo/wordmark-reverse.png",
-    );
-    expect(reverseMarkup).toContain("/brand/shongre/pwa/icon-maskable-192.png");
+    expect(reverseMarkup).toContain(webBrandAssets.logo.wordmark.reverse.src);
+    expect(reverseMarkup).toContain(webBrandAssets.icon.primary.src);
     expect(reverseMarkup).toContain("rounded-sm");
   });
 

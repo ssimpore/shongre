@@ -1169,7 +1169,7 @@ export const PublishWizard: React.FC = () => {
           <h1
             ref={wizardHeadingRef}
             tabIndex={-1}
-            className="text-2xl sm:text-3xl font-bold text-stone-900 tracking-tight focus:outline-none"
+            className="text-2xl sm:text-3xl font-bold text-text-main tracking-tight focus:outline-none"
           >
             {t("publishing.publishWizard.deposerUneAnnonceSurShongre")}
           </h1>
@@ -1179,7 +1179,7 @@ export const PublishWizard: React.FC = () => {
           <Badge variant="neutral" size="sm">
             Étape {currentStep} / {PHASES.length}
           </Badge>
-          <span className="text-xs text-stone-500 hidden sm:inline">
+          <span className="text-xs text-text-tertiary hidden sm:inline">
             {t("publishing.publishWizard.brouillonAutoSauvegarde")}
           </span>
         </div>
@@ -1197,7 +1197,7 @@ export const PublishWizard: React.FC = () => {
           Three phases fit a rail at every width, so the phone no longer needs a
           separate compact treatment — it gets the same rail with the hint text
           dropped. */}
-      <div className="bg-white p-3 rounded-2xl border border-border-base shadow-xs space-y-2.5">
+      <div className="bg-bg-surface p-3 rounded-2xl border border-border-base shadow-xs space-y-2.5">
         <ProgressBar
           value={currentStep}
           max={PHASES.length}
@@ -1225,26 +1225,26 @@ export const PublishWizard: React.FC = () => {
                     isCurrent
                       ? "bg-primary-light text-primary ring-1 ring-primary"
                       : isDone
-                        ? "text-success hover:bg-stone-50"
+                        ? "text-success hover:bg-surface-soft"
                         : isLocked
-                          ? "text-stone-400"
-                          : "text-stone-500 hover:text-stone-700"
+                          ? "text-text-inverse-subtle"
+                          : "text-text-tertiary hover:text-text-emphasis"
                   }`}
                 >
                   <span
                     className={`w-5 h-5 rounded-full flex items-center justify-center text-micro font-bold shrink-0 mt-px ${
                       isCurrent
-                        ? "bg-primary text-white"
+                        ? "bg-primary text-text-inverse"
                         : isDone
-                          ? "bg-success text-white"
-                          : "bg-stone-200 text-stone-700"
+                          ? "bg-success text-text-inverse"
+                          : "bg-surface-disabled text-text-emphasis"
                     }`}
                   >
                     {isDone ? "✓" : p.id}
                   </span>
                   <span className="min-w-0">
                     <span className="block leading-tight">{p.label}</span>
-                    <span className="hidden sm:block font-medium text-micro text-stone-500 leading-tight mt-0.5">
+                    <span className="hidden sm:block font-medium text-micro text-text-tertiary leading-tight mt-0.5">
                       {p.hint}
                     </span>
                   </span>
@@ -1259,18 +1259,18 @@ export const PublishWizard: React.FC = () => {
       {/* STEP 1: CATEGORY & INTENT SELECTION */}
       {/* ========================================================================= */}
       {showsPanel(1) && phaseOneStage !== "details" && (
-        <div className="bg-white rounded-2xl border border-border-base p-6 sm:p-8 space-y-6 shadow-xs">
+        <div className="bg-bg-surface rounded-2xl border border-border-base p-6 sm:p-8 space-y-6 shadow-xs">
           <div>
             <h2
               ref={phaseOneHeadingRef}
               tabIndex={-1}
-              className="text-xl sm:text-2xl font-bold text-stone-900 focus:outline-none"
+              className="text-xl sm:text-2xl font-bold text-text-main focus:outline-none"
             >
               {phaseOneStage === "intent"
                 ? t("publishing.publishWizard.queSouhaitezVousPublier")
                 : t("publishing.publishWizard.categoryTitle")}
             </h2>
-            <p className="text-xs sm:text-sm text-stone-500 mt-1">
+            <p className="text-xs sm:text-sm text-text-tertiary mt-1">
               {phaseOneStage === "intent"
                 ? t("publishing.publishWizard.intentHelp")
                 : t("publishing.publishWizard.categoryHelp")}
@@ -1286,7 +1286,7 @@ export const PublishWizard: React.FC = () => {
           {/* Listing Intent Selector */}
           {phaseOneStage === "intent" && onboarding.model && (
             <fieldset>
-              <legend className="mb-2 block text-xs font-bold uppercase tracking-wider text-stone-700">
+              <legend className="mb-2 block text-xs font-bold uppercase tracking-wider text-text-emphasis">
                 {t("publishing.publishWizard.typeDAnnonceIntention")}
               </legend>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -1316,7 +1316,7 @@ export const PublishWizard: React.FC = () => {
                       <span
                         className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-control ${
                           draft.listingIntent === intent
-                            ? "bg-primary text-white"
+                            ? "bg-primary text-text-inverse"
                             : "bg-primary-light text-primary"
                         }`}
                       >
@@ -1340,11 +1340,11 @@ export const PublishWizard: React.FC = () => {
           {/* Taxonomy Search */}
           {phaseOneStage === "category" && (
             <div className="space-y-3">
-              <label className="text-xs font-semibold text-stone-700 uppercase tracking-wider block">
+              <label className="text-xs font-semibold text-text-emphasis uppercase tracking-wider block">
                 {t("publishing.publishWizard.rechercherUneCategorieOuUn")}
               </label>
               <div className="relative">
-                <Search className="w-icon-md h-icon-md text-stone-400 absolute left-3 top-3" />
+                <Search className="w-icon-md h-icon-md text-text-inverse-subtle absolute left-3 top-3" />
                 <input
                   type="text"
                   placeholder={t(
@@ -1355,7 +1355,7 @@ export const PublishWizard: React.FC = () => {
                   )}
                   value={categorySearchQuery}
                   onChange={(e) => setCategorySearchQuery(e.target.value)}
-                  className="w-full h-control-md pl-9 pr-3 bg-bg-base text-xs text-stone-900 rounded-control border border-border-base focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 font-medium"
+                  className="w-full h-control-md pl-9 pr-3 bg-bg-base text-xs text-text-main rounded-control border border-border-base focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring font-medium"
                 />
               </div>
 
@@ -1369,7 +1369,7 @@ export const PublishWizard: React.FC = () => {
                         selectTaxonomyNode(n.id);
                         setCategorySearchQuery("");
                       }}
-                      className="w-full p-2.5 text-left hover:bg-white flex items-center justify-between transition-colors rounded-lg cursor-pointer"
+                      className="w-full p-2.5 text-left hover:bg-bg-surface flex items-center justify-between transition-colors rounded-lg cursor-pointer"
                     >
                       <div className="flex items-center gap-2.5">
                         <CategoryIcon
@@ -1378,7 +1378,7 @@ export const PublishWizard: React.FC = () => {
                           className="shrink-0"
                         />
                         <div>
-                          <div className="font-bold text-stone-900">
+                          <div className="font-bold text-text-main">
                             {localizedTaxonomyLabel(n.labels, currentLocale)}
                           </div>
                         </div>
@@ -1403,7 +1403,7 @@ export const PublishWizard: React.FC = () => {
                     key={`${level.depth}:${level.parentId ?? "root"}`}
                     className="space-y-3"
                   >
-                    <legend className="text-xs font-bold uppercase tracking-wider text-stone-700">
+                    <legend className="text-xs font-bold uppercase tracking-wider text-text-emphasis">
                       {t("publishing.publishWizard.categoryLevel", {
                         count: level.depth + 1,
                       })}
@@ -1495,7 +1495,7 @@ export const PublishWizard: React.FC = () => {
       {/* STEP 2: CHARACTERISTICS & DYNAMIC ATTRIBUTES */}
       {/* ========================================================================= */}
       {showsPanel(2) && phaseOneStage === "details" && (
-        <div className="bg-white rounded-2xl border border-border-base p-6 sm:p-8 space-y-6 shadow-xs">
+        <div className="bg-bg-surface rounded-2xl border border-border-base p-6 sm:p-8 space-y-6 shadow-xs">
           <div>
             {/* The category name is only known once one is chosen. Now that this
                 panel shares a page with the category picker it can render before
@@ -1503,14 +1503,14 @@ export const PublishWizard: React.FC = () => {
             <h2
               ref={detailsHeadingRef}
               tabIndex={-1}
-              className="text-xl sm:text-2xl font-bold text-stone-900 focus:outline-none"
+              className="text-xl sm:text-2xl font-bold text-text-main focus:outline-none"
             >
               Caractéristiques techniques
               {schema?.node
                 ? ` · ${getTaxonomyLabel(schema.node, "compact")}`
                 : ""}
             </h2>
-            <p className="text-xs sm:text-sm text-stone-500 mt-1">
+            <p className="text-xs sm:text-sm text-text-tertiary mt-1">
               {schema?.node
                 ? schema.listingFamily === "job"
                   ? "Précisez la disponibilité du poste et les critères utiles aux candidats."
@@ -1530,7 +1530,7 @@ export const PublishWizard: React.FC = () => {
               ),
             ) && (
               <div>
-                <label className="text-xs font-semibold text-stone-700 uppercase tracking-wider block mb-2">
+                <label className="text-xs font-semibold text-text-emphasis uppercase tracking-wider block mb-2">
                   {schema?.listingFamily === "job"
                     ? "Disponibilité du poste"
                     : schema?.listingFamily === "service"
@@ -1546,11 +1546,11 @@ export const PublishWizard: React.FC = () => {
                       className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
                         draft.condition === c.value
                           ? "border-primary bg-primary-light text-primary font-semibold ring-1 ring-primary"
-                          : "border-border-base bg-white hover:bg-stone-50 text-stone-800"
+                          : "border-border-base bg-bg-surface hover:bg-surface-soft text-text-strong"
                       }`}
                     >
                       <div className="text-xs font-bold">{c.label}</div>
-                      <div className="text-micro text-stone-500 mt-0.5">
+                      <div className="text-micro text-text-tertiary mt-0.5">
                         {c.description}
                       </div>
                     </button>
@@ -1618,7 +1618,7 @@ export const PublishWizard: React.FC = () => {
                   >
                     <h3
                       id={`taxonomy-group-${group.id}`}
-                      className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-stone-900"
+                      className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-text-main"
                     >
                       <Tag
                         className="h-icon-sm w-icon-sm text-primary"
@@ -1684,12 +1684,12 @@ export const PublishWizard: React.FC = () => {
       {/* STEP 3: PHOTOS & MEDIA */}
       {/* ========================================================================= */}
       {showsPanel(3) && phaseOneStage === "details" && (
-        <div className="bg-white rounded-2xl border border-border-base p-6 sm:p-8 space-y-6 shadow-xs">
+        <div className="bg-bg-surface rounded-2xl border border-border-base p-6 sm:p-8 space-y-6 shadow-xs">
           <div>
-            <h2 className="text-xl sm:text-2xl font-bold text-stone-900">
+            <h2 className="text-xl sm:text-2xl font-bold text-text-main">
               {t("publishing.publishWizard.photosDeVotreAnnonce")}
             </h2>
-            <p className="text-xs sm:text-sm text-stone-500 mt-1">
+            <p className="text-xs sm:text-sm text-text-tertiary mt-1">
               {minimumPhotoCount > 0
                 ? `${minimumPhotoCount} photo${minimumPhotoCount > 1 ? "s" : ""} minimum · ${maximumPhotoCount} maximum pour cette catégorie.`
                 : `Média facultatif · ${maximumPhotoCount} maximum pour cette catégorie.`}
@@ -1718,7 +1718,7 @@ export const PublishWizard: React.FC = () => {
                     problem — Tab moved focus onto buttons they could not see. */}
                 <div
                   aria-hidden="true"
-                  className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-fast pointer-events-none"
+                  className="absolute inset-0 bg-surface-overlay-deep/40 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-fast pointer-events-none"
                 />
                 <div className="absolute inset-0 flex flex-col justify-between p-2 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 pointer-coarse:opacity-100 transition-opacity duration-fast">
                   <div className="flex justify-end">
@@ -1726,7 +1726,7 @@ export const PublishWizard: React.FC = () => {
                       type="button"
                       onClick={() => handleRemovePhoto(photo.id)}
                       aria-label={`Supprimer la photo ${index + 1}`}
-                      className="w-7 h-7 inline-flex items-center justify-center bg-danger text-white rounded-md shadow-xs hover:bg-danger-hover active:bg-danger-active transition-colors duration-fast cursor-pointer"
+                      className="w-7 h-7 inline-flex items-center justify-center bg-danger text-text-inverse rounded-md shadow-xs hover:bg-danger-hover active:bg-danger-active transition-colors duration-fast cursor-pointer"
                     >
                       <Trash2 className="w-icon-md h-icon-md" />
                     </button>
@@ -1736,7 +1736,7 @@ export const PublishWizard: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => handleSetCoverPhoto(photo.id)}
-                        className="w-full min-h-6 py-1.5 bg-white/95 text-stone-900 text-micro font-semibold rounded shadow-xs hover:bg-white active:bg-bg-subtle transition-colors duration-fast cursor-pointer"
+                        className="w-full min-h-6 py-1.5 bg-bg-surface/95 text-text-main text-micro font-semibold rounded shadow-xs hover:bg-bg-surface active:bg-bg-subtle transition-colors duration-fast cursor-pointer"
                       >
                         Mettre en couverture
                       </button>
@@ -1744,7 +1744,7 @@ export const PublishWizard: React.FC = () => {
                   </div>
                 </div>
                 {photo.isCover && (
-                  <div className="absolute top-2 left-2 bg-primary text-white text-micro font-bold px-1.5 py-0.5 rounded shadow-xs">
+                  <div className="absolute top-2 left-2 bg-primary text-text-inverse text-micro font-bold px-1.5 py-0.5 rounded shadow-xs">
                     Couverture
                   </div>
                 )}
@@ -1752,7 +1752,7 @@ export const PublishWizard: React.FC = () => {
             ))}
 
             {draft.photos.length < maximumPhotoCount && (
-              <label className="aspect-square rounded-xl border-2 border-dashed border-border-base hover:border-primary bg-bg-base flex flex-col items-center justify-center gap-1.5 text-stone-500 hover:text-primary transition-colors cursor-pointer p-4 focus-within:ring-2 focus-within:ring-primary/30">
+              <label className="aspect-square rounded-xl border-2 border-dashed border-border-base hover:border-primary bg-bg-base flex flex-col items-center justify-center gap-1.5 text-text-tertiary hover:text-primary transition-colors cursor-pointer p-4 focus-within:ring-2 focus-within:ring-primary-ring-strong">
                 <input
                   type="file"
                   accept="image/jpeg,image/png,image/webp"
@@ -1764,11 +1764,11 @@ export const PublishWizard: React.FC = () => {
                     event.target.value = "";
                   }}
                 />
-                <Camera className="w-icon-xl h-icon-xl text-stone-400" />
+                <Camera className="w-icon-xl h-icon-xl text-text-inverse-subtle" />
                 <span className="text-xs font-bold">
                   {isUploadingPhoto ? "Téléversement…" : "+ Ajouter photo"}
                 </span>
-                <span className="text-micro text-stone-500">
+                <span className="text-micro text-text-tertiary">
                   JPEG, PNG ou WebP · 10 Mo max
                 </span>
               </label>
@@ -1781,28 +1781,28 @@ export const PublishWizard: React.FC = () => {
       {/* STEP 4: TITLE, DESCRIPTION & AI */}
       {/* ========================================================================= */}
       {showsPanel(4) && (
-        <div className="bg-white rounded-2xl border border-border-base p-6 sm:p-8 space-y-6 shadow-xs">
+        <div className="bg-bg-surface rounded-2xl border border-border-base p-6 sm:p-8 space-y-6 shadow-xs">
           <div>
-            <h2 className="text-xl sm:text-2xl font-bold text-stone-900">
+            <h2 className="text-xl sm:text-2xl font-bold text-text-main">
               {t("publishing.publishWizard.titreDescriptionDetaillee")}
             </h2>
-            <p className="text-xs sm:text-sm text-stone-500 mt-1">
+            <p className="text-xs sm:text-sm text-text-tertiary mt-1">
               {t("publishing.publishWizard.redigezUnTitreClairOu")}
             </p>
           </div>
 
           {/* AI GEMINI ASSISTANT */}
-          <div className="p-4 bg-gradient-to-r from-primary-light via-orange-50/70 to-amber-50/80 rounded-2xl border border-primary-border space-y-3">
+          <div className="p-4 bg-gradient-to-r from-primary-light via-primary-surface-faint to-rating-surface/80 rounded-2xl border border-primary-border space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-primary text-white flex items-center justify-center shadow-xs">
+                <div className="w-7 h-7 rounded-lg bg-primary text-text-inverse flex items-center justify-center shadow-xs">
                   <Sparkles className="w-icon-md h-icon-md" />
                 </div>
                 <div>
-                  <h3 className="text-xs font-bold text-stone-900 uppercase tracking-wider">
+                  <h3 className="text-xs font-bold text-text-main uppercase tracking-wider">
                     {t("publishing.publishWizard.assistantIaRedactionGemini")}
                   </h3>
-                  <p className="text-micro text-stone-500">
+                  <p className="text-micro text-text-tertiary">
                     {t(
                       "publishing.publishWizard.generezUneDescriptionOptimiseePour",
                     )}
@@ -1857,9 +1857,9 @@ export const PublishWizard: React.FC = () => {
       {/* STEP 5: PRICING & STOCK */}
       {/* ========================================================================= */}
       {showsPanel(5) && (
-        <div className="bg-white rounded-2xl border border-border-base p-6 sm:p-8 space-y-6 shadow-xs">
+        <div className="bg-bg-surface rounded-2xl border border-border-base p-6 sm:p-8 space-y-6 shadow-xs">
           <div>
-            <h2 className="text-xl sm:text-2xl font-bold text-stone-900">
+            <h2 className="text-xl sm:text-2xl font-bold text-text-main">
               {schema?.listingFamily === "job"
                 ? "Rémunération"
                 : schema?.listingFamily === "service"
@@ -1868,7 +1868,7 @@ export const PublishWizard: React.FC = () => {
                     ? "Prix ou loyer"
                     : t("publishing.publishWizard.prixDeVenteStock")}
             </h2>
-            <p className="text-xs sm:text-sm text-stone-500 mt-1">
+            <p className="text-xs sm:text-sm text-text-tertiary mt-1">
               {schema?.listingFamily === "job"
                 ? "Indiquez une fourchette ou choisissez de communiquer la rémunération sur demande."
                 : `Définissez votre tarification en ${schema?.currency.symbol || currencySymbol}.`}
@@ -1955,7 +1955,7 @@ export const PublishWizard: React.FC = () => {
             {/* Pro Inventory section if Pro Seller */}
             {currentUser?.role === "pro_seller" && isProductLike && (
               <div className="pt-4 border-t border-border-subtle space-y-3">
-                <h3 className="text-xs font-bold text-stone-900 uppercase tracking-wider flex items-center gap-1.5">
+                <h3 className="text-xs font-bold text-text-main uppercase tracking-wider flex items-center gap-1.5">
                   <Store className="w-icon-sm h-icon-sm text-primary" />
                   <span>
                     {t(
@@ -2015,12 +2015,12 @@ export const PublishWizard: React.FC = () => {
       {/* STEP 6: TRANSACTIONS & MODES */}
       {/* ========================================================================= */}
       {showsPanel(6) && (
-        <div className="bg-white rounded-2xl border border-border-base p-6 sm:p-8 space-y-6 shadow-xs">
+        <div className="bg-bg-surface rounded-2xl border border-border-base p-6 sm:p-8 space-y-6 shadow-xs">
           <div>
-            <h2 className="text-xl sm:text-2xl font-bold text-stone-900">
+            <h2 className="text-xl sm:text-2xl font-bold text-text-main">
               {t("publishing.publishWizard.commentSouhaitezVousVendre")}
             </h2>
-            <p className="text-xs sm:text-sm text-stone-500 mt-1">
+            <p className="text-xs sm:text-sm text-text-tertiary mt-1">
               {t("publishing.publishWizard.activezLesOptionsDeTransaction")}
             </p>
           </div>
@@ -2029,14 +2029,14 @@ export const PublishWizard: React.FC = () => {
             {/* Contact Direct */}
             <div className="p-4 rounded-xl border border-border-base bg-bg-base/40 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-stone-100 flex items-center justify-center text-stone-700">
+                <div className="w-8 h-8 rounded-lg bg-surface-muted flex items-center justify-center text-text-emphasis">
                   <Bot className="w-icon-md h-icon-md" />
                 </div>
                 <div>
-                  <div className="text-xs font-bold text-stone-900">
+                  <div className="text-xs font-bold text-text-main">
                     Contact direct & Messagerie
                   </div>
-                  <div className="text-micro text-stone-500">
+                  <div className="text-micro text-text-tertiary">
                     {t("publishing.publishWizard.lesAcheteursPeuventVousPoser")}
                   </div>
                 </div>
@@ -2062,7 +2062,7 @@ export const PublishWizard: React.FC = () => {
               className={`p-4 rounded-xl border transition-all ${
                 transactionCaps.canDirectPurchase
                   ? "border-border-base bg-bg-base/40"
-                  : "border-stone-200 bg-stone-50 opacity-60"
+                  : "border-border-disabled bg-surface-soft opacity-60"
               } flex items-center justify-between`}
             >
               <div className="flex items-center gap-3">
@@ -2070,7 +2070,7 @@ export const PublishWizard: React.FC = () => {
                   <ShieldCheck className="w-icon-md h-icon-md" />
                 </div>
                 <div>
-                  <div className="text-xs font-bold text-stone-900 flex items-center gap-2">
+                  <div className="text-xs font-bold text-text-main flex items-center gap-2">
                     <span>
                       {t("publishing.publishWizard.achatEnLigneDirectSans")}
                     </span>
@@ -2078,7 +2078,7 @@ export const PublishWizard: React.FC = () => {
                       {t("publishing.publishWizard.sequestreGaranti")}
                     </span>
                   </div>
-                  <div className="text-micro text-stone-500">
+                  <div className="text-micro text-text-tertiary">
                     {t(
                       "publishing.publishWizard.lAcheteurPeutPayerImmediatement",
                     )}
@@ -2115,7 +2115,7 @@ export const PublishWizard: React.FC = () => {
                 className={`p-4 rounded-xl border transition-all ${
                   transactionCaps.canReserve
                     ? "border-border-base bg-bg-base/40"
-                    : "border-stone-200 bg-stone-50 opacity-60"
+                    : "border-border-disabled bg-surface-soft opacity-60"
                 } flex items-center justify-between`}
               >
                 <div className="flex items-center gap-3">
@@ -2123,10 +2123,10 @@ export const PublishWizard: React.FC = () => {
                     <Clock className="w-icon-md h-icon-md" />
                   </div>
                   <div>
-                    <div className="text-xs font-bold text-stone-900">
+                    <div className="text-xs font-bold text-text-main">
                       {t("publishing.publishWizard.reservationAvecAcompte")}
                     </div>
-                    <div className="text-micro text-stone-500">
+                    <div className="text-micro text-text-tertiary">
                       {t("publishing.publishWizard.permetALAcheteurDe")}
                     </div>
                   </div>
@@ -2156,7 +2156,7 @@ export const PublishWizard: React.FC = () => {
       {/* STEP 7: FULFILLMENT & SHIPPING */}
       {/* ========================================================================= */}
       {showsPanel(7) && (
-        <div className="bg-white rounded-2xl border border-border-base p-6 sm:p-8 space-y-6 shadow-xs">
+        <div className="bg-bg-surface rounded-2xl border border-border-base p-6 sm:p-8 space-y-6 shadow-xs">
           <DigitalFulfillmentEditor
             marketCode={draft.marketCode}
             sellerId={currentUser?.id}
@@ -2203,10 +2203,10 @@ export const PublishWizard: React.FC = () => {
                     <MapPin className="w-icon-md h-icon-md" />
                   </div>
                   <div>
-                    <div className="text-xs font-bold text-stone-900">
+                    <div className="text-xs font-bold text-text-main">
                       Remise en main propre
                     </div>
-                    <div className="text-micro text-stone-500">
+                    <div className="text-micro text-text-tertiary">
                       {t(
                         "publishing.publishWizard.gratuitAvecValidationParCode",
                       )}
@@ -2235,12 +2235,12 @@ export const PublishWizard: React.FC = () => {
                         <Package className="w-icon-md h-icon-md" />
                       </div>
                       <div>
-                        <div className="text-xs font-bold text-stone-900">
+                        <div className="text-xs font-bold text-text-main">
                           {t(
                             "publishing.publishWizard.livraisonEnColisMondialRelay",
                           )}
                         </div>
-                        <div className="text-micro text-stone-500">
+                        <div className="text-micro text-text-tertiary">
                           {t(
                             "publishing.publishWizard.etiquettePrepayeeGenereeAutomatiquementL",
                           )}
@@ -2262,7 +2262,7 @@ export const PublishWizard: React.FC = () => {
 
                   {draft.fulfillment.allowParcelShipping && (
                     <div className="pt-3 border-t border-border-subtle">
-                      <label className="text-xs font-semibold text-stone-700 block mb-1.5">
+                      <label className="text-xs font-semibold text-text-emphasis block mb-1.5">
                         {t(
                           "publishing.publishWizard.gabaritDuColisPoidsEstime",
                         )}
@@ -2306,8 +2306,8 @@ export const PublishWizard: React.FC = () => {
                             className={`p-2.5 rounded-lg border text-left cursor-pointer transition-colors ${
                               draft.fulfillment.packageSpecs?.sizeTier ===
                               pkg.id
-                                ? "bg-stone-900 text-white font-semibold"
-                                : "bg-white text-stone-800 border-border-base hover:bg-stone-50"
+                                ? "bg-surface-inverse text-text-inverse font-semibold"
+                                : "bg-bg-surface text-text-strong border-border-base hover:bg-surface-soft"
                             }`}
                           >
                             <div className="text-xs font-bold">{pkg.label}</div>
@@ -2330,12 +2330,12 @@ export const PublishWizard: React.FC = () => {
                       <Truck className="w-icon-md h-icon-md" />
                     </div>
                     <div>
-                      <div className="text-xs font-bold text-stone-900">
+                      <div className="text-xs font-bold text-text-main">
                         {t(
                           "publishing.publishWizard.transportDeMeublesGrosColis",
                         )}
                       </div>
-                      <div className="text-micro text-stone-500">
+                      <div className="text-micro text-text-tertiary">
                         {t(
                           "publishing.publishWizard.idealPourCanapesTablesElectromenager",
                         )}
@@ -2364,12 +2364,12 @@ export const PublishWizard: React.FC = () => {
       {/* STEP 8: LOCATION & PRIVACY */}
       {/* ========================================================================= */}
       {showsPanel(8) && !draft.digitalFulfillment && (
-        <div className="bg-white rounded-2xl border border-border-base p-6 sm:p-8 space-y-6 shadow-xs">
+        <div className="bg-bg-surface rounded-2xl border border-border-base p-6 sm:p-8 space-y-6 shadow-xs">
           <div>
-            <h2 className="text-xl sm:text-2xl font-bold text-stone-900">
+            <h2 className="text-xl sm:text-2xl font-bold text-text-main">
               {t("publishing.publishWizard.localisationDuBien")}
             </h2>
-            <p className="text-xs sm:text-sm text-stone-500 mt-1">
+            <p className="text-xs sm:text-sm text-text-tertiary mt-1">
               {t("publishing.publishWizard.parRespectPourVotreVie")}
             </p>
           </div>
@@ -2409,7 +2409,7 @@ export const PublishWizard: React.FC = () => {
           the seller's profile, so this is a disclosure rather than a required
           screen — most sellers publish to their home market and never open it. */}
       {showsPanel(ADVANCED_PANEL) && (
-        <div className="bg-white rounded-2xl border border-border-base shadow-xs overflow-hidden">
+        <div className="bg-bg-surface rounded-2xl border border-border-base shadow-xs overflow-hidden">
           <button
             type="button"
             onClick={() => setShowAdvanced((v) => !v)}
@@ -2419,10 +2419,10 @@ export const PublishWizard: React.FC = () => {
             <span className="flex items-center gap-2.5 min-w-0">
               <Globe className="w-icon-lg h-icon-lg text-primary shrink-0" />
               <span className="min-w-0">
-                <span className="block font-bold text-stone-900">
+                <span className="block font-bold text-text-main">
                   {t("publishing.publishWizard.optionsAvancees")}
                 </span>
-                <span className="block text-xs text-stone-500 mt-0.5">
+                <span className="block text-xs text-text-tertiary mt-0.5">
                   Diffusion multi-marchés et visibilité —{" "}
                   {plural(
                     draft.selectedMarkets?.length || 1,
@@ -2433,7 +2433,7 @@ export const PublishWizard: React.FC = () => {
               </span>
             </span>
             <ChevronRight
-              className={`w-icon-lg h-icon-lg text-stone-400 shrink-0 transition-transform duration-fast ${
+              className={`w-icon-lg h-icon-lg text-text-inverse-subtle shrink-0 transition-transform duration-fast ${
                 showAdvanced ? "rotate-90" : ""
               }`}
             />
@@ -2443,16 +2443,16 @@ export const PublishWizard: React.FC = () => {
       {showsPanel(ADVANCED_PANEL) && showAdvanced && (
         <div className="space-y-6">
           {/* MULTI-MARKET SELECTION CARD */}
-          <div className="bg-white rounded-2xl border border-border-base p-6 sm:p-8 space-y-6 shadow-xs">
+          <div className="bg-bg-surface rounded-2xl border border-border-base p-6 sm:p-8 space-y-6 shadow-xs">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-border-subtle">
               <div>
                 <div className="flex items-center gap-2">
                   <Globe className="w-icon-lg h-icon-lg text-primary" />
-                  <h2 className="text-xl sm:text-2xl font-bold text-stone-900">
+                  <h2 className="text-xl sm:text-2xl font-bold text-text-main">
                     {t("publishing.publishWizard.marchesEtPaysDeDiffusion")}
                   </h2>
                 </div>
-                <p className="text-xs sm:text-sm text-stone-500 mt-1">
+                <p className="text-xs sm:text-sm text-text-tertiary mt-1">
                   {t(
                     "publishing.publishWizard.diffusezVotreAnnonceSimultanementSur",
                   )}
@@ -2485,7 +2485,7 @@ export const PublishWizard: React.FC = () => {
                       "Tous les marchés éligibles ont été sélectionnés.",
                     );
                   }}
-                  className="text-xs px-3 py-1.5 rounded-xl border border-primary/30 text-primary hover:bg-primary-light/50 font-semibold transition-colors cursor-pointer"
+                  className="text-xs px-3 py-1.5 rounded-xl border border-primary-border text-primary hover:bg-primary-surface-faint font-semibold transition-colors cursor-pointer"
                 >
                   {t("publishing.publishWizard.tousLesMarches")}
                 </button>
@@ -2497,7 +2497,7 @@ export const PublishWizard: React.FC = () => {
                       `Diffusion restreinte au marché ${defaultMarket.name}.`,
                     );
                   }}
-                  className="text-xs px-3 py-1.5 rounded-xl border border-border-base text-stone-600 hover:bg-stone-50 font-semibold transition-colors cursor-pointer"
+                  className="text-xs px-3 py-1.5 rounded-xl border border-border-base text-text-supporting hover:bg-surface-soft font-semibold transition-colors cursor-pointer"
                 >
                   {defaultMarket.name} uniquement
                 </button>
@@ -2562,10 +2562,10 @@ export const PublishWizard: React.FC = () => {
                     }}
                     className={`p-4 rounded-xl border transition-all duration-fast cursor-pointer flex flex-col justify-between focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
                       isSelected
-                        ? "border-primary bg-primary-light/40 ring-1 ring-primary shadow-xs"
+                        ? "border-primary bg-primary-surface-faint ring-1 ring-primary shadow-xs"
                         : isCatEnabled
-                          ? "border-border-base bg-white hover:bg-stone-50"
-                          : "border-stone-200 bg-stone-50/70 opacity-60 cursor-not-allowed"
+                          ? "border-border-base bg-bg-surface hover:bg-surface-soft"
+                          : "border-border-disabled bg-surface-soft/70 opacity-60 cursor-not-allowed"
                     }`}
                   >
                     <div>
@@ -2573,13 +2573,13 @@ export const PublishWizard: React.FC = () => {
                         <div className="flex items-center gap-2">
                           <span className="text-2xl">{m.flag}</span>
                           <div>
-                            <div className="text-xs font-bold text-stone-900 flex items-center gap-1.5">
+                            <div className="text-xs font-bold text-text-main flex items-center gap-1.5">
                               {m.name}
-                              <span className="text-micro text-stone-500 font-semibold">
+                              <span className="text-micro text-text-tertiary font-semibold">
                                 ({m.code})
                               </span>
                             </div>
-                            <div className="text-micro text-stone-500">
+                            <div className="text-micro text-text-tertiary">
                               Devise :{" "}
                               {effectiveCfg.localization.defaultCurrency} (
                               {effectiveCfg.localization.currencySymbol})
@@ -2591,8 +2591,8 @@ export const PublishWizard: React.FC = () => {
                           aria-hidden="true"
                           className={`inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition-colors duration-fast ${
                             isSelected
-                              ? "border-primary bg-primary text-white"
-                              : "border-stone-300 bg-white text-transparent"
+                              ? "border-primary bg-primary text-text-inverse"
+                              : "border-border-prominent bg-bg-surface text-transparent"
                           }`}
                         >
                           <Check className="h-icon-sm w-icon-sm" />
@@ -2602,7 +2602,7 @@ export const PublishWizard: React.FC = () => {
                       {/* Market Badges & Rules */}
                       <div className="mt-3 flex flex-wrap gap-1.5">
                         {isPrimary && (
-                          <span className="text-micro bg-primary text-white font-bold px-2 py-0.5 rounded-full">
+                          <span className="text-micro bg-primary text-text-inverse font-bold px-2 py-0.5 rounded-full">
                             {t(
                               "publishing.publishWizard.marcheDOriginePrincipal",
                             )}
@@ -2613,7 +2613,7 @@ export const PublishWizard: React.FC = () => {
                             {t("publishing.publishWizard.categorieEligible")}
                           </span>
                         ) : (
-                          <span className="text-micro bg-stone-200 text-stone-600 font-semibold px-2 py-0.5 rounded-full">
+                          <span className="text-micro bg-surface-disabled text-text-supporting font-semibold px-2 py-0.5 rounded-full">
                             {t("publishing.publishWizard.categorieRestreinte")}
                           </span>
                         )}
@@ -2623,7 +2623,7 @@ export const PublishWizard: React.FC = () => {
                           </span>
                         )}
                         {effectiveCfg.payments?.enabled && (
-                          <span className="text-micro bg-purple-50 text-purple-700 font-medium px-2 py-0.5 rounded-full">
+                          <span className="text-micro bg-automation-surface text-automation-strong font-medium px-2 py-0.5 rounded-full">
                             {t("publishing.publishWizard.sequestre")}
                           </span>
                         )}
@@ -2647,8 +2647,8 @@ export const PublishWizard: React.FC = () => {
             {/* Cross-border Protection Notice */}
             <div className="p-4 bg-bg-base rounded-xl border border-border-base flex items-start gap-3">
               <ShieldCheck className="w-icon-lg h-icon-lg text-primary shrink-0 mt-0.5" />
-              <div className="text-xs text-stone-700 space-y-1">
-                <span className="font-bold text-stone-900">
+              <div className="text-xs text-text-emphasis space-y-1">
+                <span className="font-bold text-text-main">
                   {t(
                     "publishing.publishWizard.garantieSecuriteTransfrontaliere",
                   )}
@@ -2663,14 +2663,14 @@ export const PublishWizard: React.FC = () => {
           </div>
 
           {/* VISIBILITY BOOST OPTIONS */}
-          <div className="bg-white rounded-2xl border border-border-base p-6 sm:p-8 space-y-6 shadow-xs">
+          <div className="bg-bg-surface rounded-2xl border border-border-base p-6 sm:p-8 space-y-6 shadow-xs">
             <div>
-              <h2 className="text-xl sm:text-2xl font-bold text-stone-900">
+              <h2 className="text-xl sm:text-2xl font-bold text-text-main">
                 {t(
                   "publishing.publishWizard.optionsDeVisibiliteBoostFacultatif",
                 )}
               </h2>
-              <p className="text-xs sm:text-sm text-stone-500 mt-1">
+              <p className="text-xs sm:text-sm text-text-tertiary mt-1">
                 {t("publishing.publishWizard.multipliezVosVuesEnPositionnant")}
               </p>
             </div>
@@ -2708,15 +2708,15 @@ export const PublishWizard: React.FC = () => {
                   className={`p-4 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
                     (pack.id === "standard" && !draft.boostPackage) ||
                     draft.boostPackage === pack.id
-                      ? "border-primary bg-primary-light/60 ring-1 ring-primary"
-                      : "border-border-base bg-white hover:bg-stone-50"
+                      ? "border-primary bg-primary-surface-soft ring-1 ring-primary"
+                      : "border-border-base bg-bg-surface hover:bg-surface-soft"
                   }`}
                 >
                   <div>
-                    <div className="text-xs font-bold text-stone-900">
+                    <div className="text-xs font-bold text-text-main">
                       {pack.name}
                     </div>
-                    <div className="text-micro text-stone-500 mt-1">
+                    <div className="text-micro text-text-tertiary mt-1">
                       {pack.description}
                     </div>
                   </div>
@@ -2731,7 +2731,7 @@ export const PublishWizard: React.FC = () => {
               ))}
             </div>
             {visibilityOffersState === "loading" && (
-              <p className="text-xs text-stone-500" role="status">
+              <p className="text-xs text-text-tertiary" role="status">
                 {t("publishing.publishWizard.loadingOptionalOffers")}
               </p>
             )}
@@ -2745,12 +2745,12 @@ export const PublishWizard: React.FC = () => {
       {/* Review is the tail of the final phase, not a screen of its own — the
           seller reads it directly above the publish button. */}
       {showsPanel(REVIEW_PANEL) && (
-        <div className="bg-white rounded-2xl border border-primary-border ring-1 ring-primary-border p-6 sm:p-8 space-y-6 shadow-xs">
+        <div className="bg-bg-surface rounded-2xl border border-primary-border ring-1 ring-primary-border p-6 sm:p-8 space-y-6 shadow-xs">
           <div>
-            <h2 className="text-xl sm:text-2xl font-bold text-stone-900">
+            <h2 className="text-xl sm:text-2xl font-bold text-text-main">
               {t("publishing.publishWizard.recapitulatifDeVotreAnnonce")}
             </h2>
-            <p className="text-xs sm:text-sm text-stone-500 mt-1">
+            <p className="text-xs sm:text-sm text-text-tertiary mt-1">
               {t("publishing.publishWizard.relisezVotreAnnonceVousPourrez")}
             </p>
           </div>
@@ -2760,23 +2760,23 @@ export const PublishWizard: React.FC = () => {
             <div className="lg:col-span-7 space-y-4 text-xs">
               <div className="p-4 bg-bg-base rounded-xl border border-border-base space-y-2.5">
                 <div className="flex justify-between items-center pb-2 border-b border-border-subtle">
-                  <span className="text-stone-500">
+                  <span className="text-text-tertiary">
                     {t("publishing.publishWizard.categorie")}
                   </span>
-                  <span className="font-bold text-stone-900">
+                  <span className="font-bold text-text-main">
                     {schema?.node
                       ? getTaxonomyLabel(schema.node, "compact")
                       : ""}
                   </span>
                 </div>
                 <div className="flex justify-between items-center pb-2 border-b border-border-subtle">
-                  <span className="text-stone-500">Titre</span>
-                  <span className="font-bold text-stone-900 truncate max-w-50">
+                  <span className="text-text-tertiary">Titre</span>
+                  <span className="font-bold text-text-main truncate max-w-50">
                     {draft.title}
                   </span>
                 </div>
                 <div className="flex justify-between items-center pb-2 border-b border-border-subtle">
-                  <span className="text-stone-500">Prix</span>
+                  <span className="text-text-tertiary">Prix</span>
                   <span className="font-bold text-primary text-sm">
                     {draft.pricing.isFreeDonation
                       ? "Don gratuit"
@@ -2784,7 +2784,7 @@ export const PublishWizard: React.FC = () => {
                   </span>
                 </div>
                 <div className="flex justify-between items-center pb-2 border-b border-border-subtle">
-                  <span className="text-stone-500">
+                  <span className="text-text-tertiary">
                     {t("publishing.publishWizard.marchesDeDiffusion")}
                   </span>
                   <div className="flex flex-wrap items-center gap-1.5 justify-end">
@@ -2794,7 +2794,7 @@ export const PublishWizard: React.FC = () => {
                         return (
                           <span
                             key={mCode}
-                            className="text-micro font-bold bg-white border border-border-base px-2 py-0.5 rounded-full text-stone-800"
+                            className="text-micro font-bold bg-bg-surface border border-border-base px-2 py-0.5 rounded-full text-text-strong"
                           >
                             {m?.flag || "🌐"} {m?.name || mCode}{" "}
                             {mCode === defaultMarketCode ? "(Principal)" : ""}
@@ -2805,10 +2805,10 @@ export const PublishWizard: React.FC = () => {
                   </div>
                 </div>
                 <div className="flex justify-between items-center pb-2 border-b border-border-subtle">
-                  <span className="text-stone-500">
+                  <span className="text-text-tertiary">
                     {t("publishing.publishWizard.modesDeTransaction")}
                   </span>
-                  <span className="font-semibold text-stone-800">
+                  <span className="font-semibold text-text-strong">
                     {[
                       draft.transaction.allowDirectPurchase && "Achat en ligne",
                       draft.transaction.allowReservation && "Réservation",
@@ -2819,8 +2819,8 @@ export const PublishWizard: React.FC = () => {
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-stone-500">Localisation</span>
-                  <span className="font-bold text-stone-900">
+                  <span className="text-text-tertiary">Localisation</span>
+                  <span className="font-bold text-text-main">
                     {draft.location.city} ({draft.location.postalCode})
                   </span>
                 </div>
@@ -2842,7 +2842,7 @@ export const PublishWizard: React.FC = () => {
 
             {/* Right Live Card Preview */}
             <div className="lg:col-span-5 space-y-2">
-              <div className="text-xs font-bold text-stone-700 uppercase tracking-wider">
+              <div className="text-xs font-bold text-text-emphasis uppercase tracking-wider">
                 {t("publishing.publishWizard.apercuDansLesResultatsDe")}
               </div>
               <ListingCard
@@ -2916,7 +2916,7 @@ export const PublishWizard: React.FC = () => {
           advance. It now stays on screen, clears the home indicator via the
           safe-area inset, and keeps the step's one primary action reachable. */}
       <div className="sticky bottom-0 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 pb-safe-area-bottom pt-3 bg-bg-base/95 backdrop-blur-sm border-t border-border-base z-sticky">
-        <div className="bg-white p-3 sm:p-4 rounded-2xl border border-border-base shadow-xs flex items-center justify-between gap-3">
+        <div className="bg-bg-surface p-3 sm:p-4 rounded-2xl border border-border-base shadow-xs flex items-center justify-between gap-3">
           <Button
             variant="outline"
             size="md"

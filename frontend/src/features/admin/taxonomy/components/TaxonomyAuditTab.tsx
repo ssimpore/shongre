@@ -31,7 +31,7 @@ export const TaxonomyAuditTab: React.FC = () => {
               {t("admin.taxonomyAuditTab.journalDAuditTracabiliteDes")}
             </span>
           </h3>
-          <p className="text-xs text-stone-500 mt-1">
+          <p className="text-xs text-text-tertiary mt-1">
             {t("admin.taxonomyAuditTab.historiqueChronologiqueDeToutesLes")}
           </p>
         </div>
@@ -43,7 +43,7 @@ export const TaxonomyAuditTab: React.FC = () => {
             placeholder={t("admin.taxonomyAuditTab.filtrerLesLogsDAudit")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full h-control-md pl-9 pr-3 bg-bg-base border border-border-base rounded-control text-xs font-semibold focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            className="w-full h-control-md pl-9 pr-3 bg-bg-base border border-border-base rounded-control text-xs font-semibold focus:outline-hidden focus:ring-2 focus:ring-primary-ring focus:border-primary"
           />
         </div>
       </div>
@@ -53,7 +53,7 @@ export const TaxonomyAuditTab: React.FC = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="bg-bg-subtle/60 border-b border-border-subtle text-stone-500 uppercase tracking-wider text-micro">
+              <tr className="bg-bg-subtle/60 border-b border-border-subtle text-text-tertiary uppercase tracking-wider text-micro">
                 <th scope="col" className="py-3 px-4">
                   Date & Heure
                 </th>
@@ -76,7 +76,7 @@ export const TaxonomyAuditTab: React.FC = () => {
                 <tr>
                   <td
                     colSpan={5}
-                    className="py-8 text-center text-xs text-stone-500"
+                    className="py-8 text-center text-xs text-text-tertiary"
                   >
                     {t("admin.taxonomyAuditTab.aucunEvenementDAuditTrouve")}
                   </td>
@@ -87,7 +87,7 @@ export const TaxonomyAuditTab: React.FC = () => {
                     key={log.id}
                     className="hover:bg-bg-subtle/40 transition-colors"
                   >
-                    <td className="py-3 px-4 text-stone-500 font-mono flex items-center gap-1.5 whitespace-nowrap">
+                    <td className="py-3 px-4 text-text-tertiary font-mono flex items-center gap-1.5 whitespace-nowrap">
                       <Clock className="w-icon-sm h-icon-sm text-text-disabled" />
                       <span>{new Date(log.timestamp).toLocaleString()}</span>
                     </td>
@@ -95,20 +95,20 @@ export const TaxonomyAuditTab: React.FC = () => {
                       {log.nodeLabel}
                     </td>
                     <td className="py-3 px-4">
-                      <span className="px-2 py-0.5 rounded-pill font-medium bg-stone-100 text-stone-700">
+                      <span className="px-2 py-0.5 rounded-pill font-medium bg-surface-muted text-text-emphasis">
                         {log.action}
                       </span>
                     </td>
                     <td className="py-3 px-4">
-                      <div className="flex items-center gap-1.5 text-stone-700 font-medium">
+                      <div className="flex items-center gap-1.5 text-text-emphasis font-medium">
                         <User className="w-icon-sm h-icon-sm text-text-disabled" />
                         <span>{log.actor.name}</span>
-                        <span className="text-micro text-stone-500 font-mono">
+                        <span className="text-micro text-text-tertiary font-mono">
                           ({roleLabel(log.actor.role)})
                         </span>
                       </div>
                     </td>
-                    <td className="py-3 px-4 text-stone-500 max-w-sm truncate">
+                    <td className="py-3 px-4 text-text-tertiary max-w-sm truncate">
                       {log.details || "-"}
                     </td>
                   </tr>

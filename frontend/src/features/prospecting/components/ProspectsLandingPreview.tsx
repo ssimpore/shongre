@@ -63,7 +63,7 @@ function CandidateList() {
             <span
               className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-control text-xs font-bold ${
                 candidate.selected
-                  ? "bg-stone-900 text-white"
+                  ? "bg-surface-inverse text-text-inverse"
                   : "bg-bg-muted text-text-secondary"
               }`}
             >
@@ -97,7 +97,7 @@ function CandidateList() {
 function CompanyHeader() {
   return (
     <div className="flex items-start gap-3 border-b border-border-base p-4 sm:p-5">
-      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-control bg-stone-900 text-xs font-bold text-white">
+      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-control bg-surface-inverse text-xs font-bold text-text-inverse">
         HM
       </span>
       <div className="min-w-0 flex-1">
@@ -260,7 +260,7 @@ function DossierPreview({
         </div>
         <Link
           to={workspaceDestination}
-          className="inline-flex min-h-control-touch items-center justify-center gap-2 rounded-control bg-primary px-4 text-xs font-bold text-white transition-colors hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          className="inline-flex min-h-control-touch items-center justify-center gap-2 rounded-control bg-primary px-4 text-xs font-bold text-text-inverse transition-colors hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
         >
           Importer dans le CRM
           <ArrowRight className="h-icon-sm w-icon-sm" aria-hidden="true" />

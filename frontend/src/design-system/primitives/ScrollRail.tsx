@@ -132,7 +132,7 @@ export const ScrollRail: React.FC<ScrollRailProps> = ({
           type="button"
           onClick={() => nudge(-1)}
           aria-label={t("common.scrollRailLeft", { label })}
-          className={`absolute left-1 -translate-y-1/2 ${RAIL_CONTROL_CLASS} rounded-pill bg-stone-900 text-white border border-stone-900 shadow-lg hover:bg-primary hover:border-primary hover:text-white flex items-center justify-center ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer active:scale-95 z-sticky ${controlClassName}`}
+          className={`absolute left-1 -translate-y-1/2 ${RAIL_CONTROL_CLASS} rounded-pill bg-surface-inverse text-text-inverse border border-border-inverse-strong shadow-lg hover:bg-primary hover:border-primary hover:text-text-inverse flex items-center justify-center ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer active:scale-95 z-sticky ${controlClassName}`}
         >
           <ChevronLeft className={RAIL_CONTROL_ICON_CLASS} />
         </button>
@@ -143,7 +143,7 @@ export const ScrollRail: React.FC<ScrollRailProps> = ({
           type="button"
           onClick={() => nudge(1)}
           aria-label={t("common.scrollRailRight", { label })}
-          className={`absolute right-1 -translate-y-1/2 ${RAIL_CONTROL_CLASS} rounded-pill bg-stone-900 text-white border border-stone-900 shadow-lg hover:bg-primary hover:border-primary hover:text-white flex items-center justify-center ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer active:scale-95 z-sticky ${controlClassName}`}
+          className={`absolute right-1 -translate-y-1/2 ${RAIL_CONTROL_CLASS} rounded-pill bg-surface-inverse text-text-inverse border border-border-inverse-strong shadow-lg hover:bg-primary hover:border-primary hover:text-text-inverse flex items-center justify-center ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer active:scale-95 z-sticky ${controlClassName}`}
         >
           <ChevronRight className={RAIL_CONTROL_ICON_CLASS} />
         </button>

@@ -158,7 +158,7 @@ export function ListingCard({
               <span
                 data-listing-card-photo-count="true"
                 aria-label={`${listing.photoCount} photos`}
-                className="inline-flex shrink-0 items-center gap-1 rounded-control bg-overlay-scrim px-2 py-1 text-micro text-white backdrop-blur-xs"
+                className="inline-flex shrink-0 items-center gap-1 rounded-control bg-overlay-scrim px-2 py-1 text-micro text-text-inverse backdrop-blur-xs"
               >
                 <SemanticIcon name="camera" size="xs" />
                 {listing.photoCount}
@@ -169,7 +169,7 @@ export function ListingCard({
                 data-listing-card-delivery-overlay="true"
                 aria-label="Livraison disponible"
                 title="Livraison disponible"
-                className="ml-auto inline-flex min-w-0 items-center gap-1 truncate rounded-control bg-overlay-scrim px-2 py-1 text-micro font-semibold text-white backdrop-blur-xs"
+                className="ml-auto inline-flex min-w-0 items-center gap-1 truncate rounded-control bg-overlay-scrim px-2 py-1 text-micro font-semibold text-text-inverse backdrop-blur-xs"
               >
                 <SemanticIcon name="truck" size="xs" />
                 Livraison

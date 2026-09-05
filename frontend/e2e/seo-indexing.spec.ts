@@ -145,7 +145,7 @@ test.describe("SEO response and hydration contract", () => {
     expect(response.status()).toBe(200);
     const html = await response.text();
     expect(headValue(html, /<title>([\s\S]*?)<\/title>/)).toBe(
-      "Maison & Jardin | Shongre",
+      "Maison & Jardin | SHONGRE.",
     );
     expect(html).toContain("Maison &amp; Jardin");
     expect(headValue(html, /<link rel="canonical" href="([^"]+)"/)).toMatch(
@@ -166,7 +166,7 @@ test.describe("SEO response and hydration contract", () => {
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(
       "Maison & Jardin",
     );
-    await expect(page).toHaveTitle("Maison & Jardin | Shongre");
+    await expect(page).toHaveTitle("Maison & Jardin | SHONGRE.");
     await expect(
       page.locator('script[type="application/ld+json"]'),
     ).toHaveCount(2);

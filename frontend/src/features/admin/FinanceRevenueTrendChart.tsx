@@ -33,9 +33,9 @@ const SERIES = {
     stroke: "var(--color-primary)",
   },
   netRevenueMinor: {
-    dotClass: "bg-stone-500",
+    dotClass: "bg-surface-neutral",
     label: "Revenus nets",
-    stroke: "var(--color-stone-500)",
+    stroke: "var(--color-text-tertiary)",
   },
 } as const;
 
@@ -178,7 +178,7 @@ export function FinanceRevenueTrendChart({
           </span>
           <span className="flex items-center gap-1.5">
             <i
-              className="h-0.5 w-4 border-t border-dashed border-stone-500"
+              className="h-0.5 w-4 border-t border-dashed border-border-neutral"
               aria-hidden="true"
             />
             {SERIES.netRevenueMinor.label}

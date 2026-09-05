@@ -6,7 +6,7 @@ SHELL := /bin/bash
 	web frontend web-dev frontend-dev frontend-start frontend-build frontend-lint frontend-typecheck frontend-test frontend-test-e2e frontend-check frontend-clean frontend-logs seo-audit \
 	backend backend-dev backend-start worker worker-dev worker-start backend-build backend-lint backend-typecheck backend-test backend-check backend-health backend-logs worker-logs \
 	contracts-lint contracts-typecheck contracts-test contracts-check openapi-lint openapi-generate openapi-check openapi-docs openapi-breaking-check \
-	brand-sync brand-check tokens-check tokens-build ui-check ui-test ui-lint ui-typecheck ui-build shared-check cross-platform-check \
+	brand-sync brand-check brand-activate brand-activation-check tokens-check tokens-build ui-check ui-test ui-lint ui-typecheck ui-build shared-check cross-platform-check \
 	mobile mobile-dev mobile-start mobile-stop mobile-status mobile-health mobile-web expo expo-start expo-clear expo-doctor ios ios-run ios-open ios-clean android android-run android-open android-clean mobile-prebuild mobile-prebuild-clean mobile-lint mobile-typecheck mobile-test mobile-check \
 	infra infra-start infra-stop infra-restart infra-status infra-health infra-logs infra-config infra-check infra-validate \
 	db-start db-stop db-status db-health db-migrate db-diff migrations-check db-seed monetization-draft-import taxonomy-db-dry-run taxonomy-db-import db-reset db-types db-shell supabase-start supabase-stop supabase-status supabase-reset supabase-migrate supabase-seed supabase-types supabase-link supabase-pull supabase-push \
@@ -237,12 +237,21 @@ brand-sync: ## Synchronize approved runtime assets from the canonical SHONGRE. k
 
 brand-check: ## Validate the canonical kit, runtime mappings, and public boundary
 	@npm run brand:check
+	@node scripts/check-brand-version-references.mjs
+	@npm exec -- tsx scripts/verify-brand-version-propagation.ts
+
+brand-activate: ## Activate VERSION transactionally (usage: make brand-activate VERSION=vX.Y.Z)
+	@test -n "$(VERSION)" || { echo "VERSION is required" >&2; exit 2; }
+	@npm run brand:activate -- "$(VERSION)"
+
+brand-activation-check: check cross-platform-check frontend-test-e2e ## Run all gates required by a brand switch
 
 tokens-build:
 	@npm run build --workspace=@shongre/design-tokens
 tokens-check: tokens-build
 	@npm run check:generated --workspace=@shongre/design-tokens
 	@npm run test --workspace=@shongre/design-tokens
+	@npm run check:tokens --workspace=frontend
 	@npm run check:assets --workspace=@shongre/brand
 	@node scripts/check-cross-platform-ui.mjs
 	@node scripts/verify-token-propagation.mjs

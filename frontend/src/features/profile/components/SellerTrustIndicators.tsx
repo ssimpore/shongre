@@ -44,16 +44,16 @@ export const SellerTrustIndicators: React.FC<SellerTrustIndicatorsProps> = ({
             };
 
   return (
-    <section className="rounded-3xl border border-stone-200/60 bg-stone-50 p-5 shadow-sm sm:p-6">
+    <section className="rounded-3xl border border-border-disabled/60 bg-surface-soft p-5 shadow-sm sm:p-6">
       <div className="mb-5 flex items-center gap-2">
         <VerifiedIcon size="lg" />
-        <h2 className="text-sm font-bold uppercase tracking-wider text-stone-900">
+        <h2 className="text-sm font-bold uppercase tracking-wider text-text-main">
           Informations et signaux vérifiés
         </h2>
       </div>
 
       <div className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-3">
-        <article className="flex items-start gap-3 rounded-2xl border border-stone-200/60 bg-white p-4 shadow-2xs">
+        <article className="flex items-start gap-3 rounded-2xl border border-border-disabled/60 bg-bg-surface p-4 shadow-2xs">
           <div className="shrink-0 rounded-xl bg-success-surface p-2 text-success">
             {hasVerifiedIdentity ? (
               <VerifiedIcon size="lg" />
@@ -65,45 +65,45 @@ export const SellerTrustIndicators: React.FC<SellerTrustIndicatorsProps> = ({
             )}
           </div>
           <div>
-            <h3 className="mb-0.5 font-bold text-stone-900">
+            <h3 className="mb-0.5 font-bold text-text-main">
               {primarySignal.title}
             </h3>
-            <p className="text-xs leading-relaxed text-stone-500">
+            <p className="text-xs leading-relaxed text-text-tertiary">
               {primarySignal.description}
             </p>
           </div>
         </article>
 
-        <article className="flex items-start gap-3 rounded-2xl border border-stone-200/60 bg-white p-4 shadow-2xs">
+        <article className="flex items-start gap-3 rounded-2xl border border-border-disabled/60 bg-bg-surface p-4 shadow-2xs">
           <div className="shrink-0 rounded-xl bg-info-surface p-2 text-info">
             <Info className="h-icon-lg w-icon-lg" aria-hidden="true" />
           </div>
           <div>
-            <h3 className="mb-0.5 font-bold text-stone-900">
+            <h3 className="mb-0.5 font-bold text-text-main">
               Options par annonce
             </h3>
-            <p className="text-xs leading-relaxed text-stone-500">
+            <p className="text-xs leading-relaxed text-text-tertiary">
               Paiement, livraison et retrait dépendent de chaque annonce.
             </p>
           </div>
         </article>
 
-        <article className="flex items-start gap-3 rounded-2xl border border-stone-200/60 bg-white p-4 shadow-2xs">
+        <article className="flex items-start gap-3 rounded-2xl border border-border-disabled/60 bg-bg-surface p-4 shadow-2xs">
           <div className="shrink-0 rounded-xl bg-warning-surface p-2 text-warning">
             <Truck className="h-icon-lg w-icon-lg" aria-hidden="true" />
           </div>
           <div>
-            <h3 className="mb-0.5 font-bold text-stone-900">
+            <h3 className="mb-0.5 font-bold text-text-main">
               {t("profile.sellerTrustIndicators.livraisonRetrait")}
             </h3>
-            <p className="text-xs leading-relaxed text-stone-500">
+            <p className="text-xs leading-relaxed text-text-tertiary">
               {t("profile.sellerTrustIndicators.remiseEnMainPropreOu")}
             </p>
           </div>
         </article>
       </div>
 
-      <div className="mt-4 flex gap-2 rounded-xl bg-stone-100 p-3 text-xs text-stone-600">
+      <div className="mt-4 flex gap-2 rounded-xl bg-surface-muted p-3 text-xs text-text-supporting">
         <Clock className="h-icon-md w-icon-md shrink-0" aria-hidden="true" />
         <p>
           Taux de réponse : {seller.responseRatePercent ?? 0}%{" "}

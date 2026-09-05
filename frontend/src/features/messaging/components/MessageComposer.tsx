@@ -100,8 +100,8 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
 
   if (!capabilities.canSend) {
     return (
-      <div className="p-4 bg-stone-100 border-t border-border-base text-center text-xs font-semibold text-stone-500 flex items-center justify-center gap-2 shrink-0">
-        <ShieldAlert className="w-icon-md h-icon-md text-stone-400" />
+      <div className="p-4 bg-surface-muted border-t border-border-base text-center text-xs font-semibold text-text-tertiary flex items-center justify-center gap-2 shrink-0">
+        <ShieldAlert className="w-icon-md h-icon-md text-text-inverse-subtle" />
         <span>
           {capabilities.disabledReason ||
             "Vous ne pouvez pas envoyer de message dans cette conversation."}
@@ -129,10 +129,10 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
             className="w-12 h-12 object-cover rounded-lg"
           />
           <div className="min-w-0 flex-1 text-xs">
-            <span className="font-bold text-stone-800 block">
+            <span className="font-bold text-text-strong block">
               {t("messaging.messageComposer.photoPreteAEtreEnvoyee")}
             </span>
-            <span className="block truncate text-micro text-stone-500">
+            <span className="block truncate text-micro text-text-tertiary">
               {t("messaging.messageComposer.seraTransmiseAvecVotreMessage")}
             </span>
           </div>
@@ -155,7 +155,7 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
           className="space-y-2 rounded-control border border-border-base bg-bg-base p-3 text-xs"
         >
           <div className="flex items-center justify-between">
-            <span className="font-bold text-stone-800">
+            <span className="font-bold text-text-strong">
               {t("messaging.messageComposer.ajouterUnePhotoALa")}
             </span>
             <IconButton
@@ -176,7 +176,7 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
                   setAttachedPhoto(option.url);
                   setShowPhotoPicker(false);
                 }}
-                className="flex flex-col items-center gap-1 p-2 rounded-lg border border-border-base bg-white hover:border-primary hover:shadow-2xs transition-all text-center"
+                className="flex flex-col items-center gap-1 p-2 rounded-lg border border-border-base bg-bg-surface hover:border-primary hover:shadow-2xs transition-all text-center"
               >
                 <Image
                   src={option.url}
@@ -184,7 +184,7 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
                   sizes="40px"
                   className="w-10 h-10 object-cover rounded"
                 />
-                <span className="text-micro font-semibold text-stone-700 truncate w-full">
+                <span className="text-micro font-semibold text-text-emphasis truncate w-full">
                   {option.label}
                 </span>
               </button>
@@ -201,7 +201,7 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
               key={reply}
               type="button"
               onClick={() => setText(reply)}
-              className="px-2.5 py-1 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-700 text-micro font-semibold shrink-0 transition-colors"
+              className="px-2.5 py-1 rounded-lg bg-surface-muted hover:bg-surface-disabled text-text-emphasis text-micro font-semibold shrink-0 transition-colors"
             >
               {reply}
             </button>

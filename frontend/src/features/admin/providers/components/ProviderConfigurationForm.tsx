@@ -97,8 +97,8 @@ export const ProviderConfigurationForm: React.FC<
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* 1. General Operational Controls */}
-      <div className="bg-bg-surface p-5 rounded-control border border-stone-200 shadow-xs space-y-4">
-        <h2 className="text-sm font-bold text-text-main border-b border-stone-100 pb-2">
+      <div className="bg-bg-surface p-5 rounded-control border border-border-disabled shadow-xs space-y-4">
+        <h2 className="text-sm font-bold text-text-main border-b border-border-soft pb-2">
           {t(
             "admin.providerConfigurationForm.parametresGenerauxDActivationDeploiement",
           )}
@@ -106,11 +106,11 @@ export const ProviderConfigurationForm: React.FC<
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {/* Enable Toggle */}
-          <div className="flex flex-col justify-between p-3 rounded-lg border border-stone-200 bg-stone-50/60">
+          <div className="flex flex-col justify-between p-3 rounded-lg border border-border-disabled bg-surface-soft/60">
             <span className="text-xs font-bold text-text-main">
               {t("admin.providerConfigurationForm.etatDActivation")}
             </span>
-            <p className="text-micro text-stone-500 mb-2">
+            <p className="text-micro text-text-tertiary mb-2">
               {t(
                 "admin.providerConfigurationForm.autoriseUniquementLAdaptateurDisponibleDansCetEnvironnementNeProuve",
               )}
@@ -124,7 +124,7 @@ export const ProviderConfigurationForm: React.FC<
                   "admin.providerConfigurationForm.etatDActivation",
                 )}
               />
-              <span className="text-xs font-semibold text-stone-700">
+              <span className="text-xs font-semibold text-text-emphasis">
                 {!canEnable
                   ? "Adaptateur absent"
                   : enabled
@@ -137,7 +137,7 @@ export const ProviderConfigurationForm: React.FC<
           </div>
 
           {/* Environment selector */}
-          <div className="p-3 rounded-lg border border-stone-200 bg-stone-50/60 flex flex-col justify-between">
+          <div className="p-3 rounded-lg border border-border-disabled bg-surface-soft/60 flex flex-col justify-between">
             {/* These headings were `<span>`s, so the controls under them had no
                 accessible name at all — on the screen that holds a payment
                 provider's routing priority and environment. Promoted to real
@@ -148,7 +148,7 @@ export const ProviderConfigurationForm: React.FC<
             >
               Environnement
             </label>
-            <p className="text-micro text-stone-500 mb-2">
+            <p className="text-micro text-text-tertiary mb-2">
               {t("admin.providerConfigurationForm.contexteDExecution")}
             </p>
             <Select
@@ -170,14 +170,14 @@ export const ProviderConfigurationForm: React.FC<
           </div>
 
           {/* Priority */}
-          <div className="p-3 rounded-lg border border-stone-200 bg-stone-50/60 flex flex-col justify-between">
+          <div className="p-3 rounded-lg border border-border-disabled bg-surface-soft/60 flex flex-col justify-between">
             <label
               htmlFor="provider-priority"
               className="text-xs font-semibold text-text-main"
             >
               {t("admin.providerConfigurationForm.prioriteDeRoutage")}
             </label>
-            <p className="text-micro text-stone-500 mb-2">
+            <p className="text-micro text-text-tertiary mb-2">
               1 = Primaire, 2 = Secours
             </p>
             <input
@@ -193,27 +193,27 @@ export const ProviderConfigurationForm: React.FC<
                     PROVIDER_CONFIGURATION_CONSTRAINTS.priority.min,
                 )
               }
-              className="py-1 px-2 text-xs rounded border border-stone-200 bg-bg-surface font-bold text-stone-800 w-24 h-control-touch"
+              className="py-1 px-2 text-xs rounded border border-border-disabled bg-bg-surface font-bold text-text-strong w-24 h-control-touch"
             />
           </div>
         </div>
       </div>
 
       {/* 2. Schema-driven Settings & Safe Credentials */}
-      <div className="bg-bg-surface p-5 rounded-control border border-stone-200 shadow-xs space-y-4">
-        <div className="flex items-center justify-between border-b border-stone-100 pb-2">
+      <div className="bg-bg-surface p-5 rounded-control border border-border-disabled shadow-xs space-y-4">
+        <div className="flex items-center justify-between border-b border-border-soft pb-2">
           <div>
             <h2 className="text-sm font-bold text-text-main">
               {t(
                 "admin.providerConfigurationForm.parametresTechniquesClesDApi",
               )}
             </h2>
-            <p className="text-xs text-stone-500">
+            <p className="text-xs text-text-tertiary">
               {t("admin.providerConfigurationForm.lesClesSecretesSontGerees")}
             </p>
           </div>
 
-          <div className="flex items-center gap-1.5 text-xs text-text-secondary bg-stone-100 px-2.5 py-1 rounded-pill">
+          <div className="flex items-center gap-1.5 text-xs text-text-secondary bg-surface-muted px-2.5 py-1 rounded-pill">
             <Lock className="w-icon-sm h-icon-sm text-warning" />
             <span>
               {t("admin.providerConfigurationForm.securiteCertifiee")}
@@ -222,7 +222,7 @@ export const ProviderConfigurationForm: React.FC<
         </div>
 
         {schemaFields.length === 0 ? (
-          <p className="text-xs text-stone-500 italic">
+          <p className="text-xs text-text-tertiary italic">
             {t("admin.providerConfigurationForm.aucunParametreRequisPourCette")}
           </p>
         ) : (
@@ -236,7 +236,7 @@ export const ProviderConfigurationForm: React.FC<
                   <div className="flex items-center justify-between">
                     <label
                       htmlFor={`provider-field-${field.key}`}
-                      className="text-xs font-semibold text-stone-800 flex items-center gap-1.5"
+                      className="text-xs font-semibold text-text-strong flex items-center gap-1.5"
                     >
                       {field.label}
                       {field.required && <span className="text-danger">*</span>}
@@ -261,12 +261,12 @@ export const ProviderConfigurationForm: React.FC<
                         </span>
                       </div>
 
-                      <p className="text-xs text-stone-700 rounded border border-stone-200 bg-bg-surface px-2.5 py-2">
+                      <p className="text-xs text-text-emphasis rounded border border-border-disabled bg-bg-surface px-2.5 py-2">
                         {t(
                           "admin.providerConfigurationForm.valeurNonExposeeLeBackendDeriveCeStatutDepuisLe",
                         )}
                       </p>
-                      <p className="text-micro text-stone-500">
+                      <p className="text-micro text-text-tertiary">
                         {t(
                           "admin.providerConfigurationForm.protectionRenforceeLeSecretReel",
                         )}
@@ -281,9 +281,9 @@ export const ProviderConfigurationForm: React.FC<
                         onChange={(e) =>
                           handleFieldChange(field.key, e.target.checked)
                         }
-                        className="rounded border-stone-300 text-primary focus:ring-primary h-4 w-4"
+                        className="rounded border-border-prominent text-primary focus:ring-primary h-4 w-4"
                       />
-                      <span className="text-xs text-stone-700 font-medium">
+                      <span className="text-xs text-text-emphasis font-medium">
                         {field.description || "Activer cette option"}
                       </span>
                     </label>
@@ -316,7 +316,7 @@ export const ProviderConfigurationForm: React.FC<
                             : e.target.value,
                         )
                       }
-                      className="w-full h-control-touch py-2 px-3 text-xs rounded-control border border-stone-200 focus:outline-hidden focus:ring-2 focus:ring-primary bg-stone-50/50"
+                      className="w-full h-control-touch py-2 px-3 text-xs rounded-control border border-border-disabled focus:outline-hidden focus:ring-2 focus:ring-primary bg-surface-soft/50"
                     />
                   )}
                 </div>

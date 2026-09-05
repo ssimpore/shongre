@@ -24,7 +24,7 @@ export const FocusedLayout: React.FC = () => {
   const goBack = useSafeBack(routes.home());
 
   return (
-    <div className="min-h-screen flex flex-col bg-bg-base text-stone-900">
+    <div className="min-h-screen flex flex-col bg-bg-base text-text-main">
       <SkipLink />
       <AppScrollRestoration />
       <EnvironmentHeaderStack>
@@ -41,7 +41,7 @@ export const FocusedLayout: React.FC = () => {
             <button
               type="button"
               onClick={goBack}
-              className="inline-flex items-center justify-center gap-1.5 h-control-touch min-w-control-touch -ml-2 px-2 rounded-control text-sm font-semibold text-stone-700 hover:text-stone-950 hover:bg-bg-subtle motion-interactive cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:min-w-0"
+              className="inline-flex items-center justify-center gap-1.5 h-control-touch min-w-control-touch -ml-2 px-2 rounded-control text-sm font-semibold text-text-emphasis hover:text-text-deep hover:bg-bg-subtle motion-interactive cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:min-w-0"
             >
               <ArrowLeft className="w-icon-md h-icon-md" />
               <span className="sr-only sm:not-sr-only">Retour</span>
@@ -60,7 +60,7 @@ export const FocusedLayout: React.FC = () => {
             <Link
               to={routes.home()}
               aria-label={t("shell.focusedLayout.quitterEtRevenirAL")}
-              className="inline-flex items-center justify-center w-control-touch h-control-touch -mr-2 rounded-control text-stone-600 hover:text-stone-950 hover:bg-bg-subtle motion-interactive focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+              className="inline-flex items-center justify-center w-control-touch h-control-touch -mr-2 rounded-control text-text-supporting hover:text-text-deep hover:bg-bg-subtle motion-interactive focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             >
               <X className="w-icon-lg h-icon-lg" />
             </Link>

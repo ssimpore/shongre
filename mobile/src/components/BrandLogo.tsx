@@ -1,22 +1,13 @@
-import {
-  Image,
-  StyleSheet,
-  View,
-  type ImageSourcePropType,
-} from "react-native";
+import { Image, StyleSheet, View } from "react-native";
 import {
   nativeAspect,
   nativeSizing,
   nativeSpacing,
 } from "@shongre/design-tokens/native";
+import { mobileBrandImages } from "../brand-images.generated";
 
 export type BrandLogoVariant = "primary" | "reverse";
 export type BrandLogoSize = "compact" | "standard";
-
-const assets: Record<BrandLogoVariant, ImageSourcePropType> = {
-  primary: require("../../assets/brand/logo/horizontal-primary.png"),
-  reverse: require("../../assets/brand/logo/horizontal-reverse.png"),
-};
 
 const sizes = StyleSheet.create({
   compact: {
@@ -45,7 +36,7 @@ export function BrandLogo({
   return (
     <View style={styles.clearSpace}>
       <Image
-        source={assets[variant]}
+        source={mobileBrandImages[variant]}
         style={sizes[size]}
         resizeMode="contain"
         accessible={!decorative}

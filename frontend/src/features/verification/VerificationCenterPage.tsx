@@ -106,7 +106,7 @@ function statePresentation(state: VerificationRequirement["state"]) {
     };
   return {
     label: "Non nécessaire pour le moment",
-    className: "bg-stone-100 text-stone-600 border-stone-200",
+    className: "bg-surface-muted text-text-supporting border-border-disabled",
     icon: null,
   };
 }
@@ -268,7 +268,7 @@ export const VerificationCenterPage: React.FC = () => {
 
   return (
     <div className="mx-auto max-w-4xl space-y-5">
-      <section className="rounded-2xl border border-stone-200 bg-white p-5 shadow-xs sm:p-7">
+      <section className="rounded-2xl border border-border-disabled bg-bg-surface p-5 shadow-xs sm:p-7">
         <div className="flex items-start gap-4">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-success-surface text-success">
             <VerifiedIcon size="lg" />
@@ -277,10 +277,10 @@ export const VerificationCenterPage: React.FC = () => {
             <p className="text-xs font-bold uppercase tracking-wider text-success">
               Vérifications et confiance
             </p>
-            <h1 className="mt-1 text-2xl font-bold tracking-tight text-stone-950 sm:text-3xl">
+            <h1 className="mt-1 text-2xl font-bold tracking-tight text-text-deep sm:text-3xl">
               Juste ce qu’il faut, au bon moment
             </h1>
-            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-stone-600 sm:text-base">
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-text-supporting sm:text-base">
               Vous pouvez parcourir Shongre sans contrôle d’identité. Une étape
               supplémentaire apparaît seulement lorsqu’elle est nécessaire pour
               l’action que vous demandez.
@@ -292,16 +292,16 @@ export const VerificationCenterPage: React.FC = () => {
       {requestedAction ? (
         <section
           aria-labelledby="requested-action-title"
-          className="rounded-2xl border border-stone-200 bg-white p-5 shadow-xs sm:p-6"
+          className="rounded-2xl border border-border-disabled bg-bg-surface p-5 shadow-xs sm:p-6"
         >
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <p className="text-xs font-bold uppercase tracking-wider text-stone-500">
+              <p className="text-xs font-bold uppercase tracking-wider text-text-tertiary">
                 Action en cours
               </p>
               <h2
                 id="requested-action-title"
-                className="mt-1 text-xl font-bold text-stone-950"
+                className="mt-1 text-xl font-bold text-text-deep"
               >
                 {ACTION_LABELS[requestedAction]}
               </h2>
@@ -318,7 +318,7 @@ export const VerificationCenterPage: React.FC = () => {
           </div>
 
           {isEvaluating ? (
-            <p className="mt-4 text-sm text-stone-600" role="status">
+            <p className="mt-4 text-sm text-text-supporting" role="status">
               Vérification des exigences applicables…
             </p>
           ) : evaluationError ? (
@@ -331,13 +331,13 @@ export const VerificationCenterPage: React.FC = () => {
           ) : decision ? (
             <div className="mt-5 space-y-4">
               {decision.allowed ? (
-                <div className="rounded-xl border border-success-border bg-success-surface p-4 text-sm text-stone-700">
+                <div className="rounded-xl border border-success-border bg-success-surface p-4 text-sm text-text-emphasis">
                   Votre compte dispose déjà du niveau suffisant. Aucune autre
                   donnée ne vous est demandée.
                 </div>
               ) : (
                 <div className="space-y-2">
-                  <p className="text-sm text-stone-600">
+                  <p className="text-sm text-text-supporting">
                     Il reste {decision.missing.length} étape
                     {decision.missing.length > 1 ? "s" : ""} pour cette action :
                   </p>
@@ -347,20 +347,20 @@ export const VerificationCenterPage: React.FC = () => {
                       key={dimension}
                       onClick={() => void openRequirement(dimension)}
                       disabled={decision.pending.includes(dimension)}
-                      className="flex w-full items-center justify-between rounded-xl border border-stone-200 p-3 text-left transition-colors hover:border-stone-300 hover:bg-stone-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-success"
+                      className="flex w-full items-center justify-between rounded-xl border border-border-disabled p-3 text-left transition-colors hover:border-border-prominent hover:bg-surface-soft focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-success"
                     >
                       <span>
-                        <span className="block text-sm font-bold text-stone-900">
+                        <span className="block text-sm font-bold text-text-main">
                           {DIMENSION_LABELS[dimension]}
                         </span>
-                        <span className="mt-0.5 block text-xs text-stone-500">
+                        <span className="mt-0.5 block text-xs text-text-tertiary">
                           {decision.pending.includes(dimension)
                             ? "Vérification en cours — les autres fonctions restent disponibles."
                             : `Requise uniquement pour ${ACTION_LABELS[requestedAction].toLowerCase()}.`}
                         </span>
                       </span>
                       <ChevronRight
-                        className="h-icon-lg w-icon-lg text-stone-400"
+                        className="h-icon-lg w-icon-lg text-text-inverse-subtle"
                         aria-hidden="true"
                       />
                     </button>
@@ -369,7 +369,7 @@ export const VerificationCenterPage: React.FC = () => {
               )}
 
               {decision.legalReviewRequired ? (
-                <div className="rounded-xl border border-warning-border bg-warning-surface p-4 text-sm text-stone-700">
+                <div className="rounded-xl border border-warning-border bg-warning-surface p-4 text-sm text-text-emphasis">
                   <strong>LEGAL_REVIEW_REQUIRED :</strong> l’applicabilité
                   exacte de cette obligation doit être confirmée avant de la
                   rendre bloquante.
@@ -390,11 +390,11 @@ export const VerificationCenterPage: React.FC = () => {
         <div>
           <h2
             id="account-checks-title"
-            className="text-lg font-bold text-stone-950"
+            className="text-lg font-bold text-text-deep"
           >
             État de votre compte
           </h2>
-          <p className="mt-1 text-sm text-stone-600">
+          <p className="mt-1 text-sm text-text-supporting">
             Seules les vérifications déjà utiles ou recommandées sont affichées.
           </p>
         </div>
@@ -407,14 +407,14 @@ export const VerificationCenterPage: React.FC = () => {
             return (
               <article
                 key={id}
-                className="rounded-2xl border border-stone-200 bg-white p-4 shadow-xs"
+                className="rounded-2xl border border-border-disabled bg-bg-surface p-4 shadow-xs"
               >
                 <div className="flex items-start gap-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-stone-100 text-stone-700">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-surface-muted text-text-emphasis">
                     {dimensionIcon(id)}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <h3 className="font-bold text-stone-950">
+                    <h3 className="font-bold text-text-deep">
                       {requirement.shortLabel}
                     </h3>
                     <div className="mt-2">
@@ -456,7 +456,7 @@ export const VerificationCenterPage: React.FC = () => {
         </div>
       </section>
 
-      <p className="rounded-xl bg-stone-100 p-4 text-xs leading-relaxed text-stone-600">
+      <p className="rounded-xl bg-surface-muted p-4 text-xs leading-relaxed text-text-supporting">
         Les documents d’identité et informations bancaires sont traités dans les
         espaces sécurisés des prestataires concernés. Les badges publics
         n’affichent jamais vos documents, numéros fiscaux, données bancaires ou

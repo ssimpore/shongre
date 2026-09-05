@@ -71,17 +71,17 @@ export const IdentityVerificationModal: React.FC<
       }
     >
       <div className="space-y-5">
-        <div className="rounded-xl border border-stone-200 bg-stone-50 p-4">
+        <div className="rounded-xl border border-border-disabled bg-surface-soft p-4">
           <dl className="grid gap-4 text-sm sm:grid-cols-2">
             <div>
-              <dt className="font-bold text-stone-900">Pourquoi</dt>
-              <dd className="mt-1 text-stone-600">
+              <dt className="font-bold text-text-main">Pourquoi</dt>
+              <dd className="mt-1 text-text-supporting">
                 Débloquer l’action demandée, sans vérifier le reste du compte.
               </dd>
             </div>
             <div>
-              <dt className="font-bold text-stone-900">Traitement</dt>
-              <dd className="mt-1 text-stone-600">
+              <dt className="font-bold text-text-main">Traitement</dt>
+              <dd className="mt-1 text-text-supporting">
                 Un prestataire spécialisé contrôle le document dans un espace
                 sécurisé.
               </dd>
@@ -89,7 +89,7 @@ export const IdentityVerificationModal: React.FC<
           </dl>
         </div>
 
-        <div className="flex gap-3 text-sm text-stone-600">
+        <div className="flex gap-3 text-sm text-text-supporting">
           <LockKeyhole
             className="mt-0.5 h-icon-lg w-icon-lg shrink-0 text-success"
             aria-hidden="true"

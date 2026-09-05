@@ -10,7 +10,7 @@ export function GuestOnlyRoute({ children }: { children: ReactNode }) {
   if (isRestoring) {
     return (
       <div
-        className="mx-auto max-w-xl px-4 py-16 text-center text-sm text-stone-600"
+        className="mx-auto max-w-xl px-4 py-16 text-center text-sm text-text-supporting"
         role="status"
         aria-busy="true"
       >

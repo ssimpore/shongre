@@ -99,13 +99,13 @@ export const NotificationsPage: React.FC = () => {
       {/* 1. Header & Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-stone-900 flex items-center gap-2.5">
+          <h1 className="text-xl sm:text-2xl font-bold text-text-main flex items-center gap-2.5">
             <Bell className="w-icon-xl h-icon-xl text-primary" />
             <span>
               {t("notifications.notificationsPage.centreDeNotifications")}
             </span>
           </h1>
-          <p className="text-xs sm:text-sm text-stone-500 mt-0.5">
+          <p className="text-xs sm:text-sm text-text-tertiary mt-0.5">
             {t("notifications.notificationsPage.misesAJourEnDirect")}
           </p>
         </div>
@@ -149,8 +149,8 @@ export const NotificationsPage: React.FC = () => {
               onClick={() => setSelectedFilter(tab.id)}
               className={`px-3.5 py-2 rounded-xl text-xs font-semibold shrink-0 transition-all cursor-pointer flex items-center gap-2 ${
                 isActive
-                  ? "bg-stone-900 text-white shadow-xs"
-                  : "bg-stone-100 text-stone-600 hover:bg-stone-200 hover:text-stone-900"
+                  ? "bg-surface-inverse text-text-inverse shadow-xs"
+                  : "bg-surface-muted text-text-supporting hover:bg-surface-disabled hover:text-text-main"
               }`}
             >
               <span>{tab.label}</span>
@@ -158,8 +158,8 @@ export const NotificationsPage: React.FC = () => {
                 <span
                   className={`px-1.5 py-0.5 rounded-full text-micro font-bold ${
                     isActive
-                      ? "bg-primary text-white"
-                      : "bg-primary/20 text-primary"
+                      ? "bg-primary text-text-inverse"
+                      : "bg-primary-surface-strong text-primary"
                   }`}
                 >
                   {tab.count}
@@ -172,29 +172,29 @@ export const NotificationsPage: React.FC = () => {
 
       {/* 4. Notification List Groups */}
       {isLoading ? (
-        <div className="bg-white rounded-3xl border border-border-base p-6 space-y-4 shadow-xs">
+        <div className="bg-bg-surface rounded-3xl border border-border-base p-6 space-y-4 shadow-xs">
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className="flex gap-4 animate-pulse">
-              <div className="w-10 h-10 bg-stone-200 rounded-2xl shrink-0" />
+              <div className="w-10 h-10 bg-surface-disabled rounded-2xl shrink-0" />
               <div className="flex-1 space-y-2 py-1">
-                <div className="h-3.5 bg-stone-200 rounded w-1/3" />
-                <div className="h-3 bg-stone-100 rounded w-3/4" />
+                <div className="h-3.5 bg-surface-disabled rounded w-1/3" />
+                <div className="h-3 bg-surface-muted rounded w-3/4" />
               </div>
             </div>
           ))}
         </div>
       ) : groupedNotifications.length === 0 ? (
-        <div className="bg-white rounded-3xl border border-border-base p-12 text-center space-y-3 shadow-xs">
-          <div className="w-14 h-14 rounded-3xl bg-stone-100 text-stone-400 mx-auto flex items-center justify-center">
+        <div className="bg-bg-surface rounded-3xl border border-border-base p-12 text-center space-y-3 shadow-xs">
+          <div className="w-14 h-14 rounded-3xl bg-surface-muted text-text-inverse-subtle mx-auto flex items-center justify-center">
             <Bell className="w-7 h-7" />
           </div>
           <div>
-            <p className="text-sm font-bold text-stone-900">
+            <p className="text-sm font-bold text-text-main">
               {selectedFilter === "unread"
                 ? "Vous êtes à jour ! Aucune notification non lue."
                 : "Aucune notification dans cette catégorie."}
             </p>
-            <p className="text-xs text-stone-500 mt-1 max-w-sm mx-auto">
+            <p className="text-xs text-text-tertiary mt-1 max-w-sm mx-auto">
               {t(
                 "notifications.notificationsPage.vosAlertesConcernantLesBaisses",
               )}
@@ -207,14 +207,14 @@ export const NotificationsPage: React.FC = () => {
             <div key={gIdx} className="space-y-3">
               {/* Date Group Heading */}
               <div className="flex items-center gap-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-stone-500">
+                <span className="text-xs font-bold uppercase tracking-wider text-text-tertiary">
                   {group.dateLabel}
                 </span>
                 <div className="flex-1 h-px bg-border-subtle" />
               </div>
 
               {/* Items Card Container */}
-              <div className="bg-white rounded-3xl border border-border-base divide-y divide-border-subtle shadow-xs overflow-hidden">
+              <div className="bg-bg-surface rounded-3xl border border-border-base divide-y divide-border-subtle shadow-xs overflow-hidden">
                 {group.items.map((notif) => (
                   <NotificationItemCard
                     key={notif.id}

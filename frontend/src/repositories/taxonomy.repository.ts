@@ -403,7 +403,8 @@ class TaxonomyAdminRepository implements ITaxonomyAdminRepository {
       description: input.description?.trim(),
       iconName: input.iconName || (parent?.iconName ?? "Folder"),
       accentColor:
-        input.accentColor || (parent?.accentColor ?? themeColors["stone-500"]),
+        input.accentColor ||
+        (parent?.accentColor ?? themeColors["category-neutral-soft"]),
       sortOrder: parent
         ? (parent.children?.length || 0) + 1
         : this.nodes.length + 1,

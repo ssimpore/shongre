@@ -2,11 +2,14 @@
 
 ## Canonical source and versioning
 
-`brand/shongre/v1.0.0/` is the immutable source of truth for the approved
-SHONGRE. visual identity. It contains the complete supplied logo, icon, Web,
-iOS, Android, social, print, token, documentation, and preview package. Its
-`CHECKSUMS.sha256` protects every source file other than the checksum file
-itself, and `VERSION.txt` identifies the active version.
+`brand/shongre/brand.config.json` is the sole selector for the released
+directory that is the canonical source of truth. Its `activeVersion` resolves
+to one immutable `brand/shongre/vX.Y.Z/` kit containing the complete supplied
+logo, icon, Web, iOS, Android, social, print, token, documentation, and preview
+package. The selected kit's `CHECKSUMS.sha256`
+protects every source file other than the checksum file itself, while
+`VERSION.txt` identifies that release. Application code must never select a
+version independently.
 
 Do not edit a released version in place. A future release belongs in a new
 `brand/shongre/vX.Y.Z/` directory. The ZIP is an import artifact, not a second
@@ -14,31 +17,58 @@ source of truth, and is not committed once the checked and extracted version is
 present.
 
 The official signature is `SHONGRE.`: uppercase, with exactly one final period.
-In full color, the period is Shongre Orange. The canonical colors are Shongre
-Orange `#FF6500`, Shongre Ink `#172033`, White `#FFFFFF`, and Mist `#F7F8FA`.
+In full color, the period is Shongre Orange. Canonical palette values come only
+from the selected kit's `08_Design_Tokens/brand-tokens.json`; documentation,
+tests, and application code must not restate them. `brand-check` decodes every
+orange logo, icon, favicon, PWA, iOS, and Android
+master and requires its dominant opaque saturated warm pixel to equal the
+canonical orange token. Resampling and antialiased edge pixels are deliberately
+excluded from that comparison; they are blends, not alternate brand swatches.
 
 ## Generated runtime subset
 
-`scripts/brand-assets.config.ts` is the single runtime mapping. Run:
+`scripts/brand-assets.config.ts` is the single typed runtime mapping. It reads
+and schema-validates `brand.config.json`, then generates identity, Web, Expo,
+native, document, and token adapters so application code does not repeat asset
+paths or versions. Run:
 
 ```bash
 make brand-sync
 make brand-check
 ```
 
+To validate and activate a release as one transaction, run:
+
+```bash
+npm run brand:activate -- vX.Y.Z
+# equivalent Make entry point
+make brand-activate VERSION=vX.Y.Z
+```
+
+Before changing the selector, activation validates the candidate directory,
+semantic version, `VERSION.txt`, token identity/schema, full checksum and
+manifest coverage, required source contract, JSON/XML, image dimensions, and
+iOS opacity. It snapshots the selector and every managed output, synchronizes
+the candidate, then runs `brand-activation-check`: repository lint, type checks,
+unit/integration tests, production builds, cross-platform checks, Playwright
+responsive/visual behavior, and accessibility. Any sync or verification failure
+restores the previous selector and byte-identical generated outputs. A missing,
+corrupt, incomplete, or incompatible candidate is rejected before current state
+is touched. Concurrent activations are rejected by an ignored `.runtime` lock.
+
 `brand-sync` validates the source checksums before copying anything. It is
 idempotent, creates missing directories, writes a checksummed generated-file
 inventory at `scripts/generated/brand-assets.manifest.json`, and removes only
-paths recorded in its previous inventory or the explicit superseded-generator
-allowlist. It never changes the canonical kit and never deletes unrelated
-assets.
+paths recorded in its previous generated inventory. It never changes the
+canonical kit and never deletes unrelated assets.
 
-`brand-check` verifies the active version and complete checksum coverage,
-required dimensions, iOS opacity, Android background opacity and 66 dp critical
-safe-zone bounds, mapping freshness, generated inventory, configuration
-references, source JSON/XML/CSS, approved component variants, token ownership,
-obsolete references, Docker boundaries, and the absence of unmanaged print or
-documentation assets from the public tree.
+`brand-check` verifies the active configuration, `ASSET_MANIFEST.csv`, complete
+checksum coverage, required dimensions, iOS opacity, Android background opacity
+and 66 dp critical safe-zone bounds, mapping and registry freshness, generated
+inventory, configuration references, source JSON/XML/CSS, approved component
+variants, token ownership, obsolete references, unmanaged duplicate kit files,
+Docker boundaries, and the absence of unmanaged print or documentation assets
+from the public or Expo runtime trees.
 
 The current destinations are:
 
@@ -47,9 +77,12 @@ The current destinations are:
 | Web metadata        | `frontend/public/favicon*`, `frontend/public/apple-touch-icon.png` | Prepared Web favicons and touch icon                                     |
 | Web UI              | `frontend/public/brand/shongre/logo/`, `icon/`, and `pwa/`         | Approved logo layouts, standalone variants, and the header-safe PWA icon |
 | Web sharing/PWA     | `frontend/public/brand/shongre/social/` and `pwa/`                 | 1200×630 Open Graph images and 192/512 any/maskable icons                |
-| Design system       | `packages/design-tokens/src/brand.generated.js`                    | Canonical JSON brand palette                                             |
-| Standalone invoices | `packages/brand/src/document.generated.ts`                         | Embedded 240 px approved horizontal logo                                 |
-| Expo                | `mobile/assets/brand/`                                             | Store icon, splash logo, favicon, adaptive layers, and native resources  |
+| Identity registry   | `packages/brand/src/active.generated.ts`                           | Typed signature, selected version, and cache key                         |
+| Design system       | `packages/design-tokens/src/brand.generated.js`                    | Canonical palette from the version-matched token document                |
+| Web registry        | `@shongre/brand/web`                                               | Typed metadata, UI, PWA, SEO, and sharing paths and intrinsic sizes      |
+| Standalone invoices | `@shongre/brand/document`                                          | Embedded 240 px approved horizontal logo                                 |
+| Expo registry       | `mobile/brand-assets.generated.json`                               | Expo and native-plugin paths                                             |
+| Expo UI             | `mobile/src/brand-images.generated.ts` and `mobile/assets/brand/`  | Static Metro image registry plus runtime artwork                         |
 
 Files in those destinations are generated. Change the central mapping or the
 next canonical kit version, not the copies.
@@ -81,9 +114,10 @@ production hostname is embedded in source.
 
 Favicons use only the standalone SHONGRE monogram at prepared 16, 32, 48, 64,
 and 96 px sizes, with the multi-resolution ICO as a compatibility fallback.
-Metadata appends the kit version as a cache key so browsers do not retain an
-obsolete wordmark favicon. Never use a horizontal, stacked, or wordmark logo in
-favicon metadata.
+The generated registry appends the selected kit version to every logo, icon,
+favicon, PWA, and Open Graph URL. Changing `activeVersion` therefore invalidates
+browser/CDN caches without changing authored application paths. Never use a
+horizontal, stacked, or wordmark logo in favicon metadata.
 
 Use `BrandLogo`, `BrandIcon`, and `BrandHeaderSignature` from the existing Web
 design system. Their variant/layout/size unions are deliberately closed. The
@@ -115,11 +149,16 @@ primitives or generated document asset.
 The kit JSON generates a narrow adapter; `packages/design-tokens/` remains the
 only application token system. It maps the official palette to
 `--brand-primary`, `--brand-ink`, `--brand-background`, and
-`--brand-surface-subtle`. The darker `--brand-primary-hover` and existing
-interactive primary states are centralized derived colors: official orange
-does not provide AA contrast for normal white text, so it is not used as a
-white-text button background. Functional status, chart, category, and provider
-colors are not reclassified as brand colors.
+`--brand-surface-subtle`. A private typed recipe computes every orange UI role —
+accessible primary, hover, active, disabled, border, focus, subtle surface,
+inverse, fill, and approved orange category accents — from the single generated
+Shongre Orange input plus official Ink and White. Official orange does not
+provide AA contrast for normal white text, so filled controls use the derived
+accessible primary while identity artwork retains the selected kit's exact
+canonical swatch. Functional status, chart, unrelated category, country-flag,
+and provider colors are not
+reclassified as brand colors. `make tokens-check` rejects independently authored
+orange aliases and performs an in-memory one-token mutation proof.
 
 ## iOS, Android, and Expo
 
@@ -182,12 +221,15 @@ canonical file.
    unsafe paths/symlinks and verifying its supplier checksums.
 2. Keep the preceding version until all consumers and rollback evidence have
    migrated; do not mutate it.
-3. Update `BRAND_VERSION` and source filenames only in
-   `scripts/brand-assets.config.ts`.
-4. Run `make brand-sync`, then review the generated inventory and diff.
-5. Run `make brand-check`, `make ui-check`, `make cross-platform-check`, the
-   production Web build, Expo prebuild validation, and applicable Docker build.
+3. Preserve the canonical file contract used by
+   `scripts/brand-assets.config.ts`. If supplier filenames changed, add reviewed
+   compatibility exports to the new kit; activation must remain data-only.
+4. Run `npm run brand:activate -- vX.Y.Z`. Do not edit generated files.
+5. Review `brand.config.json`, the generated inventory, cache keys, and diff.
 6. Visually review light/dark Web headers, mobile widths, authentication,
    favicon/PWA/share images, invoices, and native icon masks.
-7. Remove the old version only in a later explicit cleanup after released
+7. Roll back immediately with
+   `npm run brand:activate -- v<previous-version>`; the same preflight and gates
+   apply, and no manual copying is required.
+8. Remove the old version only in a later explicit cleanup after released
    consumers and rollback procedures no longer reference it.

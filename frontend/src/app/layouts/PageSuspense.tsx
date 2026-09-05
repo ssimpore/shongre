@@ -11,10 +11,10 @@ export const PageSuspense: React.FC = () => {
     >
       {/* Brand Icon Spinner */}
       <div className="relative flex items-center justify-center mb-6">
-        <div className="w-14 h-14 rounded-2xl bg-primary-light border border-primary/20 flex items-center justify-center animate-pulse">
+        <div className="w-14 h-14 rounded-2xl bg-primary-light border border-primary-border flex items-center justify-center animate-pulse">
           <BrandIcon size="standard" decorative />
         </div>
-        <div className="absolute -inset-1 rounded-3xl border-2 border-primary/30 border-t-transparent animate-spin" />
+        <div className="absolute -inset-1 rounded-3xl border-2 border-primary-border border-t-transparent animate-spin" />
       </div>
 
       {/* Text & Skeleton hint */}

@@ -144,10 +144,10 @@ export const WatchSubscriptionsPage = () => {
   return (
     <div className="space-y-6" data-watch-subscriptions-page>
       <header>
-        <h1 className="text-xl font-bold text-stone-900 sm:text-2xl">
+        <h1 className="text-xl font-bold text-text-main sm:text-2xl">
           {t("watch.title")}
         </h1>
-        <p className="mt-1 text-sm text-stone-500">
+        <p className="mt-1 text-sm text-text-tertiary">
           {t("watch.description", { market: activeMarket.name })}
         </p>
       </header>
@@ -168,7 +168,7 @@ export const WatchSubscriptionsPage = () => {
         </div>
       ) : error ? (
         <EmptyState
-          icon={<BellRing className="h-10 w-10 text-stone-400" />}
+          icon={<BellRing className="h-10 w-10 text-text-inverse-subtle" />}
           title={t("watch.error.title")}
           description={error}
           action={
@@ -177,7 +177,7 @@ export const WatchSubscriptionsPage = () => {
         />
       ) : items.length === 0 ? (
         <EmptyState
-          icon={<BellRing className="h-10 w-10 text-stone-400" />}
+          icon={<BellRing className="h-10 w-10 text-text-inverse-subtle" />}
           title={t("watch.empty.title")}
           description={t("watch.empty.description")}
           action={<Button to="/recherche">{t("watch.empty.action")}</Button>}
@@ -205,10 +205,10 @@ export const WatchSubscriptionsPage = () => {
                       <p className="text-xs font-bold text-primary">
                         {t(presentation.labelKey)}
                       </p>
-                      <h2 className="truncate text-sm font-bold text-stone-900">
+                      <h2 className="truncate text-sm font-bold text-text-main">
                         {item.title}
                       </h2>
-                      <p className="mt-1 text-xs text-stone-500">
+                      <p className="mt-1 text-xs text-text-tertiary">
                         {item.status === "paused"
                           ? t("watch.status.paused")
                           : t("watch.status.active")}
@@ -232,7 +232,7 @@ export const WatchSubscriptionsPage = () => {
                           frequency: event.target.value as WatchFrequency,
                         })
                       }
-                      className="min-h-control-sm rounded-control border border-border-base bg-white px-3 text-xs font-semibold text-stone-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                      className="min-h-control-sm rounded-control border border-border-base bg-bg-surface px-3 text-xs font-semibold text-text-emphasis focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                     >
                       {Object.entries(frequencyLabelKeys).map(
                         ([value, labelKey]) => (
@@ -290,7 +290,7 @@ export const WatchSubscriptionsPage = () => {
                   ).map(([channel, label]) => (
                     <label
                       key={channel}
-                      className="flex min-h-control-sm cursor-pointer items-center gap-2 rounded-control border border-border-base bg-bg-subtle px-3 text-xs font-semibold text-stone-700"
+                      className="flex min-h-control-sm cursor-pointer items-center gap-2 rounded-control border border-border-base bg-bg-subtle px-3 text-xs font-semibold text-text-emphasis"
                     >
                       <input
                         type="checkbox"

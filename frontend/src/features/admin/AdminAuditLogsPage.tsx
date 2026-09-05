@@ -31,13 +31,13 @@ const AuditValueView: React.FC<AuditValueViewProps> = ({ value, field }) => {
 
   if (Array.isArray(value)) {
     if (value.length === 0)
-      return <span className="text-stone-500">Aucune donnée</span>;
+      return <span className="text-text-tertiary">Aucune donnée</span>;
     return (
       <div className="flex flex-wrap gap-1.5">
         {value.map((item, index) => (
           <span
             key={`${String(item)}-${index}`}
-            className="rounded-pill border border-stone-200 bg-stone-50 px-2 py-0.5 text-micro text-stone-700"
+            className="rounded-pill border border-border-disabled bg-surface-soft px-2 py-0.5 text-micro text-text-emphasis"
           >
             {formatAuditValue(item, field)}
           </span>
@@ -49,14 +49,14 @@ const AuditValueView: React.FC<AuditValueViewProps> = ({ value, field }) => {
   if (isAuditRecord(value)) {
     const entries = Object.entries(value);
     if (entries.length === 0) {
-      return <span className="text-stone-500">Aucune donnée</span>;
+      return <span className="text-text-tertiary">Aucune donnée</span>;
     }
     return (
       <dl className="space-y-2">
         {entries.map(([key, item]) => (
           <div
             key={key}
-            className="grid gap-1 rounded-control border border-stone-200 bg-bg-surface p-2 sm:grid-cols-audit-row sm:gap-3"
+            className="grid gap-1 rounded-control border border-border-disabled bg-bg-surface p-2 sm:grid-cols-audit-row sm:gap-3"
           >
             <dt className="font-semibold text-text-secondary">
               {auditFieldLabel(key)}
@@ -144,14 +144,14 @@ export const AdminAuditLogsPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-bg-surface rounded-control border border-stone-200 p-6 shadow-xs flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="bg-bg-surface rounded-control border border-border-disabled p-6 shadow-xs flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="text-xs font-bold uppercase tracking-wider text-primary">
               {t("admin.adminAuditLogsPage.tracabiliteConformite")}
             </span>
-            <span className="text-stone-300">•</span>
-            <span className="text-xs text-stone-500 font-medium">
+            <span className="text-text-inverse-muted">•</span>
+            <span className="text-xs text-text-tertiary font-medium">
               {t("admin.adminAuditLogsPage.conformiteRgpdSecuritePlateforme")}
             </span>
           </div>
@@ -188,7 +188,7 @@ export const AdminAuditLogsPage: React.FC = () => {
       </div>
 
       {/* Filters */}
-      <div className="bg-bg-surface rounded-control border border-stone-200 p-4 shadow-xs flex flex-col sm:flex-row gap-3">
+      <div className="bg-bg-surface rounded-control border border-border-disabled p-4 shadow-xs flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="w-icon-md h-icon-md text-text-disabled absolute left-3 top-1/2 -translate-y-1/2" />
           <input
@@ -199,7 +199,7 @@ export const AdminAuditLogsPage: React.FC = () => {
               "admin.adminAuditLogsPage.rechercherParActeurActionCible",
             )}
             aria-label={t("admin.adminAuditLogsPage.rechercherDansLeRegistreD")}
-            className="w-full pl-9 pr-3 py-2 text-xs border border-stone-200 rounded-control focus:outline-none focus:ring-1 focus:ring-primary h-control-touch"
+            className="w-full pl-9 pr-3 py-2 text-xs border border-border-disabled rounded-control focus:outline-none focus:ring-1 focus:ring-primary h-control-touch"
           />
         </div>
 
@@ -222,10 +222,10 @@ export const AdminAuditLogsPage: React.FC = () => {
       </div>
 
       {/* Logs Table */}
-      <div className="bg-bg-surface rounded-control border border-stone-200 shadow-xs overflow-hidden">
+      <div className="bg-bg-surface rounded-control border border-border-disabled shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-stone-100 text-stone-700 font-bold border-b border-stone-200">
+            <thead className="bg-surface-muted text-text-emphasis font-bold border-b border-border-disabled">
               <tr>
                 <th scope="col" className="p-3">
                   {t("admin.adminAuditLogsPage.dateEtHeure")}
@@ -247,10 +247,13 @@ export const AdminAuditLogsPage: React.FC = () => {
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-stone-200">
+            <tbody className="divide-y divide-border-disabled">
               {filteredLogs.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="p-8 text-center text-stone-500">
+                  <td
+                    colSpan={6}
+                    className="p-8 text-center text-text-tertiary"
+                  >
                     {t(
                       "admin.adminAuditLogsPage.aucunEvenementDAuditEnregistre",
                     )}
@@ -260,10 +263,10 @@ export const AdminAuditLogsPage: React.FC = () => {
                 filteredLogs.map((log) => (
                   <tr
                     key={log.id}
-                    className="hover:bg-stone-50 transition-colors"
+                    className="hover:bg-surface-soft transition-colors"
                   >
                     <td
-                      className="p-3 text-xs text-stone-500 whitespace-nowrap"
+                      className="p-3 text-xs text-text-tertiary whitespace-nowrap"
                       title={`Horodatage ISO : ${log.timestamp}`}
                     >
                       {formatLogTimestamp(log.timestamp)}
@@ -272,7 +275,7 @@ export const AdminAuditLogsPage: React.FC = () => {
                       <div className="font-bold text-text-main">
                         {log.actorName}
                       </div>
-                      <div className="text-micro text-stone-500">
+                      <div className="text-micro text-text-tertiary">
                         {roleLabel(log.actorRole)}
                       </div>
                     </td>
@@ -285,7 +288,7 @@ export const AdminAuditLogsPage: React.FC = () => {
                       </div>
                     </td>
                     <td
-                      className="p-3 text-stone-800"
+                      className="p-3 text-text-strong"
                       title={
                         log.targetId
                           ? `Identifiant cible : ${log.targetId}`
@@ -304,7 +307,7 @@ export const AdminAuditLogsPage: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => setSelectedLog(log)}
-                        className="text-stone-500 hover:text-text-main p-1 rounded-sm"
+                        className="text-text-tertiary hover:text-text-main p-1 rounded-sm"
                         aria-label={t(
                           "admin.adminAuditLogsPage.voirLePayloadDe",
                           { action: auditActionLabel(log.action) },
@@ -379,20 +382,20 @@ export const AdminAuditLogsPage: React.FC = () => {
             </dl>
 
             <section className="space-y-1.5 text-xs">
-              <h3 className="font-semibold text-stone-700">
+              <h3 className="font-semibold text-text-emphasis">
                 {t("admin.adminAuditLogsPage.details")}
               </h3>
-              <p className="rounded-control bg-stone-50 p-3 leading-relaxed text-stone-700">
+              <p className="rounded-control bg-surface-soft p-3 leading-relaxed text-text-emphasis">
                 {selectedLog.details}
               </p>
             </section>
 
             {selectedLog.previousValue !== undefined && (
               <section className="space-y-1.5 text-xs">
-                <h3 className="font-semibold text-stone-700">
+                <h3 className="font-semibold text-text-emphasis">
                   {t("admin.adminAuditLogsPage.etatPrecedent")}
                 </h3>
-                <div className="rounded-control bg-stone-50 p-2">
+                <div className="rounded-control bg-surface-soft p-2">
                   <AuditValueView value={selectedLog.previousValue} />
                 </div>
               </section>
@@ -400,44 +403,44 @@ export const AdminAuditLogsPage: React.FC = () => {
 
             {selectedLog.newValue !== undefined && (
               <section className="space-y-1.5 text-xs">
-                <h3 className="font-semibold text-stone-700">
+                <h3 className="font-semibold text-text-emphasis">
                   {t("admin.adminAuditLogsPage.nouvelEtat")}
                 </h3>
-                <div className="rounded-control bg-stone-50 p-2">
+                <div className="rounded-control bg-surface-soft p-2">
                   <AuditValueView value={selectedLog.newValue} />
                 </div>
               </section>
             )}
 
-            <details className="rounded-control border border-stone-200 bg-bg-surface text-xs">
+            <details className="rounded-control border border-border-disabled bg-bg-surface text-xs">
               <summary className="cursor-pointer px-3 py-2 font-semibold text-text-secondary">
                 {t("admin.adminAuditLogsPage.donneesTechniques")}
               </summary>
-              <dl className="grid gap-2 border-t border-stone-200 p-3 sm:grid-cols-audit-row">
-                <dt className="text-stone-500">{t("crm.source.event")}</dt>
-                <dd className="break-all font-mono text-micro text-stone-700">
+              <dl className="grid gap-2 border-t border-border-disabled p-3 sm:grid-cols-audit-row">
+                <dt className="text-text-tertiary">{t("crm.source.event")}</dt>
+                <dd className="break-all font-mono text-micro text-text-emphasis">
                   {selectedLog.id}
                 </dd>
-                <dt className="text-stone-500">Identifiant acteur</dt>
-                <dd className="break-all font-mono text-micro text-stone-700">
+                <dt className="text-text-tertiary">Identifiant acteur</dt>
+                <dd className="break-all font-mono text-micro text-text-emphasis">
                   {selectedLog.actorId}
                 </dd>
                 {selectedLog.targetId && (
                   <>
-                    <dt className="text-stone-500">Identifiant cible</dt>
-                    <dd className="break-all font-mono text-micro text-stone-700">
+                    <dt className="text-text-tertiary">Identifiant cible</dt>
+                    <dd className="break-all font-mono text-micro text-text-emphasis">
                       {selectedLog.targetId}
                     </dd>
                   </>
                 )}
-                <dt className="text-stone-500">Code action</dt>
-                <dd className="break-all font-mono text-micro text-stone-700">
+                <dt className="text-text-tertiary">Code action</dt>
+                <dd className="break-all font-mono text-micro text-text-emphasis">
                   {selectedLog.action}
                 </dd>
                 {selectedLog.ipAddress && (
                   <>
-                    <dt className="text-stone-500">Adresse IP</dt>
-                    <dd className="break-all font-mono text-micro text-stone-700">
+                    <dt className="text-text-tertiary">Adresse IP</dt>
+                    <dd className="break-all font-mono text-micro text-text-emphasis">
                       {selectedLog.ipAddress}
                     </dd>
                   </>
@@ -445,7 +448,7 @@ export const AdminAuditLogsPage: React.FC = () => {
               </dl>
             </details>
 
-            <div className="pt-3 border-t border-stone-200 text-right">
+            <div className="pt-3 border-t border-border-disabled text-right">
               <Button
                 size="sm"
                 onClick={() => setSelectedLog(null)}

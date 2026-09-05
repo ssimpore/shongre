@@ -97,7 +97,7 @@ export const HomeRecentSearches: React.FC<HomeRecentSearchesProps> = ({
                   exposes two valid, non-overlapping controls. */}
               <Link
                 to={item.to}
-                className="flex min-w-0 items-center gap-2 rounded-l-pill py-2 pl-3 pr-1 text-sm font-bold text-stone-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus group-hover:text-primary"
+                className="flex min-w-0 items-center gap-2 rounded-l-pill py-2 pl-3 pr-1 text-sm font-bold text-text-strong focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus group-hover:text-primary"
               >
                 <Search
                   className="h-icon-md w-icon-md shrink-0 text-primary"

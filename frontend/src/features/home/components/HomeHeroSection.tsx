@@ -74,7 +74,7 @@ export const HomeHeroSection: React.FC<{ section: HomepageSectionView }> = ({
           <Link
             to="/securite"
             data-home-hero-trust="true"
-            className="group mt-6 flex min-h-control-touch min-w-0 items-center gap-3 rounded-control border border-border-base bg-bg-base px-3 py-2 text-xs font-medium text-text-secondary shadow-2xs motion-interactive hover:border-primary-border hover:bg-primary-light/40 hover:shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus sm:px-4 sm:text-sm"
+            className="group mt-6 flex min-h-control-touch min-w-0 items-center gap-3 rounded-control border border-border-base bg-bg-base px-3 py-2 text-xs font-medium text-text-secondary shadow-2xs motion-interactive hover:border-primary-border hover:bg-primary-surface-faint hover:shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus sm:px-4 sm:text-sm"
             aria-label={`${t("home.homePage.trustSummary")}. ${t("home.heroBoostedScroll.enSavoirPlus")}`}
           >
             <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-pill bg-success-surface text-success">

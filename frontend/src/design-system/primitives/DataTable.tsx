@@ -91,7 +91,7 @@ export function DataTable<T>({
                       <dt className="text-micro font-semibold uppercase tracking-wider text-text-muted">
                         {col.header}
                       </dt>
-                      <dd className="mt-0.5 text-xs text-stone-800">
+                      <dd className="mt-0.5 text-xs text-text-strong">
                         {col.cell(row)}
                       </dd>
                     </div>
@@ -118,7 +118,7 @@ export function DataTable<T>({
     >
       <table className="w-full text-left text-xs">
         <caption className="sr-only">{caption}</caption>
-        <thead className="bg-stone-50 text-stone-700 font-bold border-b border-border-base">
+        <thead className="bg-surface-soft text-text-emphasis font-bold border-b border-border-base">
           <tr>
             {tableColumns.map((col) => (
               <th

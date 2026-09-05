@@ -41,28 +41,28 @@ const BOOST_STYLES: Record<
   }
 > = {
   urgent: {
-    swatchClass: "bg-danger text-white",
+    swatchClass: "bg-danger text-text-inverse",
     hoverClass: "hover:border-danger hover:bg-danger-surface",
     spanClass: "",
   },
   top_of_list: {
-    swatchClass: "bg-primary text-white",
+    swatchClass: "bg-primary text-text-inverse",
     hoverClass: "hover:border-primary hover:bg-primary-light",
     spanClass: "",
   },
   highlight: {
-    swatchClass: "bg-indigo-600 text-white",
-    hoverClass: "hover:border-indigo-500 hover:bg-indigo-50",
+    swatchClass: "bg-insight text-text-inverse",
+    hoverClass: "hover:border-insight-highlight hover:bg-insight-surface",
     spanClass: "sm:col-span-2",
   },
   gallery_boost: {
-    swatchClass: "bg-indigo-600 text-white",
-    hoverClass: "hover:border-indigo-500 hover:bg-indigo-50",
+    swatchClass: "bg-insight text-text-inverse",
+    hoverClass: "hover:border-insight-highlight hover:bg-insight-surface",
     spanClass: "sm:col-span-2",
   },
   spotlight: {
-    swatchClass: "bg-indigo-700 text-white",
-    hoverClass: "hover:border-indigo-600 hover:bg-indigo-50",
+    swatchClass: "bg-insight-strong text-text-inverse",
+    hoverClass: "hover:border-insight hover:bg-insight-surface",
     spanClass: "sm:col-span-2",
   },
 };
@@ -305,7 +305,7 @@ export const MyListingsPage: React.FC = () => {
           setMarketsModalListing(listing);
           setSelectedMarketsInModal(markets);
         }}
-        className="inline-flex min-h-control-sm items-center gap-1.5 rounded-control border border-border-base bg-bg-surface px-2.5 py-1 text-xs font-semibold text-stone-700 motion-interactive hover:bg-bg-subtle"
+        className="inline-flex min-h-control-sm items-center gap-1.5 rounded-control border border-border-base bg-bg-surface px-2.5 py-1 text-xs font-semibold text-text-emphasis motion-interactive hover:bg-bg-subtle"
         title={t("sellerworkspace.myListingsPage.gererLesPaysDePublication")}
       >
         <Globe
@@ -313,7 +313,7 @@ export const MyListingsPage: React.FC = () => {
           aria-hidden="true"
         />
         <span>{markets.join(", ")}</span>
-        <span className="text-micro font-normal text-stone-500">
+        <span className="text-micro font-normal text-text-tertiary">
           ({markets.length})
         </span>
       </button>
@@ -332,7 +332,7 @@ export const MyListingsPage: React.FC = () => {
             aria-label={t("sellerworkspace.myListingsPage.boosterLAnnonce")}
           >
             <Zap
-              className="h-icon-sm w-icon-sm fill-amber-500 text-warning"
+              className="h-icon-sm w-icon-sm fill-rating-strong text-warning"
               aria-hidden="true"
             />
             <span className={compact ? "" : "hidden lg:inline"}>Booster</span>
@@ -341,7 +341,7 @@ export const MyListingsPage: React.FC = () => {
           <button
             type="button"
             onClick={() => handleMarkAsSold(listing.id)}
-            className="min-h-control-sm rounded-control bg-stone-100 px-2.5 text-xs font-semibold text-stone-700 motion-interactive hover:bg-stone-200"
+            className="min-h-control-sm rounded-control bg-surface-muted px-2.5 text-xs font-semibold text-text-emphasis motion-interactive hover:bg-surface-disabled"
             title="Marquer comme vendu"
           >
             Vendu
@@ -377,7 +377,7 @@ export const MyListingsPage: React.FC = () => {
           <Link
             to={`/annonce/${listing.id}`}
             title={listing.title}
-            className="line-clamp-2 text-sm font-bold leading-snug text-stone-900 hover:text-primary"
+            className="line-clamp-2 text-sm font-bold leading-snug text-text-main hover:text-primary"
           >
             {listing.title}
           </Link>
@@ -396,7 +396,7 @@ export const MyListingsPage: React.FC = () => {
           <dt className="text-micro font-semibold uppercase tracking-wide text-text-muted">
             Prix
           </dt>
-          <dd className="truncate text-sm font-bold text-stone-900">
+          <dd className="truncate text-sm font-bold text-text-main">
             {formatPrice(listing.price, {
               sourceCurrency: listing.currency,
             })}
@@ -406,9 +406,9 @@ export const MyListingsPage: React.FC = () => {
           <dt className="text-micro font-semibold uppercase tracking-wide text-text-muted">
             Vues
           </dt>
-          <dd className="flex items-center gap-1 text-xs font-semibold text-stone-700">
+          <dd className="flex items-center gap-1 text-xs font-semibold text-text-emphasis">
             <Eye
-              className="h-icon-sm w-icon-sm text-stone-400"
+              className="h-icon-sm w-icon-sm text-text-inverse-subtle"
               aria-hidden="true"
             />
             <span>{listing.viewsCount ?? listing.viewCount ?? 0}</span>
@@ -418,7 +418,7 @@ export const MyListingsPage: React.FC = () => {
           <dt className="text-micro font-semibold uppercase tracking-wide text-text-muted">
             Publiée
           </dt>
-          <dd className="text-micro font-medium leading-tight text-stone-700">
+          <dd className="text-micro font-medium leading-tight text-text-emphasis">
             {formatRelativeDate(listing.createdAt)}
           </dd>
         </div>
@@ -436,10 +436,10 @@ export const MyListingsPage: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-stone-900">
+          <h1 className="text-xl sm:text-2xl font-bold text-text-main">
             {t("sellerworkspace.myListingsPage.gestionDeMesAnnonces")}
           </h1>
-          <p className="text-xs sm:text-sm text-stone-500 mt-0.5">
+          <p className="text-xs sm:text-sm text-text-tertiary mt-0.5">
             {t("sellerworkspace.myListingsPage.suivezLesVuesActivezDes")}
           </p>
         </div>
@@ -485,7 +485,7 @@ export const MyListingsPage: React.FC = () => {
       </div>
 
       {/* Filter tabs */}
-      <div className="bg-white rounded-2xl border border-border-base p-4 sm:p-6 shadow-xs space-y-4">
+      <div className="bg-bg-surface rounded-2xl border border-border-base p-4 sm:p-6 shadow-xs space-y-4">
         <Tabs
           tabs={tabs}
           activeTab={activeTab}
@@ -511,7 +511,7 @@ export const MyListingsPage: React.FC = () => {
               renderCompactRow={renderCompactListing}
               empty={
                 <EmptyState
-                  icon={<List className="w-8 h-8 text-stone-500" />}
+                  icon={<List className="w-8 h-8 text-text-tertiary" />}
                   title={emptyStateCopy.title}
                   description={emptyStateCopy.description}
                   action={
@@ -549,11 +549,11 @@ export const MyListingsPage: React.FC = () => {
                         <Link
                           to={`/annonce/${listing.id}`}
                           title={listing.title}
-                          className="font-bold text-sm text-stone-900 hover:text-primary line-clamp-2"
+                          className="font-bold text-sm text-text-main hover:text-primary line-clamp-2"
                         >
                           {listing.title}
                         </Link>
-                        <span className="text-xs text-stone-500 block truncate">
+                        <span className="text-xs text-text-tertiary block truncate">
                           {getListingCategoryLabel(listing)}
                         </span>
                       </div>
@@ -574,7 +574,7 @@ export const MyListingsPage: React.FC = () => {
                   id: "Prix",
                   header: "Prix",
                   cell: (listing) => (
-                    <span className="font-bold text-sm text-stone-900">
+                    <span className="font-bold text-sm text-text-main">
                       {formatPrice(listing.price, {
                         sourceCurrency: listing.currency,
                       })}
@@ -585,8 +585,8 @@ export const MyListingsPage: React.FC = () => {
                   id: "Vues",
                   header: "Vues",
                   cell: (listing) => (
-                    <div className="flex items-center gap-1.5 text-xs text-stone-600">
-                      <Eye className="w-icon-sm h-icon-sm text-stone-400" />
+                    <div className="flex items-center gap-1.5 text-xs text-text-supporting">
+                      <Eye className="w-icon-sm h-icon-sm text-text-inverse-subtle" />
                       <span>
                         {listing.viewsCount ?? listing.viewCount ?? 0}
                       </span>
@@ -597,7 +597,7 @@ export const MyListingsPage: React.FC = () => {
                   id: "Date",
                   header: "Date",
                   cell: (listing) => (
-                    <span className="text-xs text-stone-500">
+                    <span className="text-xs text-text-tertiary">
                       {formatRelativeDate(listing.createdAt)}
                     </span>
                   ),
@@ -623,7 +623,7 @@ export const MyListingsPage: React.FC = () => {
           maxWidth="lg"
         >
           <div className="space-y-4">
-            <p className="text-xs sm:text-sm text-stone-600">
+            <p className="text-xs sm:text-sm text-text-supporting">
               {t(
                 "sellerworkspace.myListingsPage.choisissezUneOptionDeVisibilite",
               )}
@@ -663,11 +663,11 @@ export const MyListingsPage: React.FC = () => {
                       >
                         {offer.badgeLabel}
                       </span>
-                      <span className="font-bold text-sm text-stone-900 shrink-0">
+                      <span className="font-bold text-sm text-text-main shrink-0">
                         {formatMoney(offer.price)}
                       </span>
                     </div>
-                    <p className="text-xs text-stone-600">
+                    <p className="text-xs text-text-supporting">
                       {offer.description}
                     </p>
                   </button>
@@ -687,7 +687,7 @@ export const MyListingsPage: React.FC = () => {
           maxWidth="md"
         >
           <div className="space-y-4">
-            <p className="text-xs sm:text-sm text-stone-600">
+            <p className="text-xs sm:text-sm text-text-supporting">
               {t(
                 "sellerworkspace.myListingsPage.selectionnezLesPaysEuropeensDans",
               )}
@@ -704,10 +704,10 @@ export const MyListingsPage: React.FC = () => {
                     <div className="flex items-center gap-3">
                       <span className="text-lg">{m.flag}</span>
                       <div>
-                        <span className="font-bold text-sm text-stone-900">
+                        <span className="font-bold text-sm text-text-main">
                           {m.name}
                         </span>
-                        <span className="text-xs text-stone-500 block">
+                        <span className="text-xs text-text-tertiary block">
                           Devise : {m.currency}
                         </span>
                       </div>

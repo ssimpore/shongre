@@ -57,11 +57,11 @@ export const OnboardingPreparationPage: React.FC<
             </span>
             <h1
               id={headingId}
-              className="mt-2 max-w-xl text-3xl font-bold tracking-tight text-stone-900 sm:text-4xl"
+              className="mt-2 max-w-xl text-3xl font-bold tracking-tight text-text-main sm:text-4xl"
             >
               {title}
             </h1>
-            <p className="mt-4 max-w-xl text-sm leading-relaxed text-stone-600 sm:text-base">
+            <p className="mt-4 max-w-xl text-sm leading-relaxed text-text-supporting sm:text-base">
               {description}
             </p>
 
@@ -89,7 +89,7 @@ export const OnboardingPreparationPage: React.FC<
                   <span>{skipNextTimeLabel}</span>
                 </label>
               ) : null}
-              <span className="inline-flex min-w-0 items-start gap-1.5 text-xs font-medium leading-relaxed text-stone-500">
+              <span className="inline-flex min-w-0 items-start gap-1.5 text-xs font-medium leading-relaxed text-text-tertiary">
                 <Clock3
                   className="mt-0.5 h-icon-md w-icon-md shrink-0"
                   aria-hidden="true"
@@ -99,7 +99,7 @@ export const OnboardingPreparationPage: React.FC<
             </div>
 
             <p
-              className="mt-5 flex items-start gap-2 text-xs leading-relaxed text-stone-500"
+              className="mt-5 flex items-start gap-2 text-xs leading-relaxed text-text-tertiary"
               aria-live="polite"
             >
               <ShieldCheck
@@ -111,7 +111,7 @@ export const OnboardingPreparationPage: React.FC<
           </div>
 
           <div className="min-w-0 border-t border-border-base bg-bg-subtle p-5 sm:p-8 lg:border-l lg:border-t-0 lg:p-10">
-            <h2 className="text-sm font-bold text-stone-900">
+            <h2 className="text-sm font-bold text-text-main">
               {checklistTitle}
             </h2>
             <ul className="mt-4 divide-y divide-border-base">
@@ -125,10 +125,10 @@ export const OnboardingPreparationPage: React.FC<
                       />
                     </span>
                     <span className="min-w-0">
-                      <span className="block text-sm font-bold text-stone-900">
+                      <span className="block text-sm font-bold text-text-main">
                         {itemTitle}
                       </span>
-                      <span className="mt-1 block text-xs leading-relaxed text-stone-600">
+                      <span className="mt-1 block text-xs leading-relaxed text-text-supporting">
                         {itemBody}
                       </span>
                     </span>

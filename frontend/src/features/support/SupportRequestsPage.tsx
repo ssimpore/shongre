@@ -61,10 +61,10 @@ export const SupportRequestsPage: React.FC = () => {
       {/* 1. Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-stone-900">
+          <h1 className="text-xl sm:text-2xl font-bold text-text-main">
             Aide & Assistance
           </h1>
-          <p className="text-xs sm:text-sm text-stone-500 mt-1">
+          <p className="text-xs sm:text-sm text-text-tertiary mt-1">
             {t("support.supportRequestsPage.suivezLEtatDeVos")}
           </p>
         </div>
@@ -92,7 +92,7 @@ export const SupportRequestsPage: React.FC = () => {
               className={`px-4 py-2.5 text-xs font-semibold whitespace-nowrap transition-colors border-b-2 -mb-px cursor-pointer ${
                 isActive
                   ? "border-primary text-primary"
-                  : "border-transparent text-stone-500 hover:text-stone-900"
+                  : "border-transparent text-text-tertiary hover:text-text-main"
               }`}
             >
               {tab.label}
@@ -109,15 +109,15 @@ export const SupportRequestsPage: React.FC = () => {
           ))}
         </div>
       ) : requests.length === 0 ? (
-        <div className="bg-white border border-border-base rounded-3xl p-10 text-center space-y-4 shadow-xs">
-          <div className="w-12 h-12 rounded-2xl bg-stone-100 text-stone-400 flex items-center justify-center mx-auto">
+        <div className="bg-bg-surface border border-border-base rounded-3xl p-10 text-center space-y-4 shadow-xs">
+          <div className="w-12 h-12 rounded-2xl bg-surface-muted text-text-inverse-subtle flex items-center justify-center mx-auto">
             <Headphones className="w-icon-xl h-icon-xl" />
           </div>
           <div className="space-y-1">
-            <h2 className="text-base font-bold text-stone-900">
+            <h2 className="text-base font-bold text-text-main">
               Aucune demande en cours
             </h2>
-            <p className="text-xs text-stone-500 max-w-sm mx-auto">
+            <p className="text-xs text-text-tertiary max-w-sm mx-auto">
               {t("support.supportRequestsPage.siVousRencontrezUneDifficulte")}
             </p>
           </div>
@@ -148,36 +148,36 @@ export const SupportRequestsPage: React.FC = () => {
               <Link
                 key={req.id}
                 to={`/compte/support/${req.id}`}
-                className="bg-white border border-border-base rounded-2xl p-4 sm:p-5 shadow-xs hover:border-stone-400 transition-all duration-fast cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-4 group focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                className="bg-bg-surface border border-border-base rounded-2xl p-4 sm:p-5 shadow-xs hover:border-border-strong transition-all duration-fast cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-4 group focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               >
                 <div className="space-y-1.5 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-micro font-bold font-mono text-stone-500 bg-stone-100 px-2 py-0.5 rounded-md">
+                    <span className="text-micro font-bold font-mono text-text-tertiary bg-surface-muted px-2 py-0.5 rounded-md">
                       {req.reference}
                     </span>
                     <Badge variant={statusInfo.variant} size="sm">
                       {statusInfo.label}
                     </Badge>
-                    <span className="text-micro text-stone-500">
+                    <span className="text-micro text-text-tertiary">
                       Mis à jour le {formatDate(req.updatedAt)}
                     </span>
                   </div>
 
-                  <h3 className="text-sm font-bold text-stone-900 group-hover:text-primary transition-colors truncate">
+                  <h3 className="text-sm font-bold text-text-main group-hover:text-primary transition-colors truncate">
                     {req.subject}
                   </h3>
 
-                  <p className="text-xs text-stone-600 line-clamp-1">
+                  <p className="text-xs text-text-supporting line-clamp-1">
                     {req.description}
                   </p>
                 </div>
 
                 <div className="flex items-center gap-3 shrink-0 self-end sm:self-center">
-                  <div className="flex items-center gap-1.5 text-xs text-stone-500 font-bold">
+                  <div className="flex items-center gap-1.5 text-xs text-text-tertiary font-bold">
                     <MessageSquare className="w-icon-md h-icon-md" />
                     <span aria-label="Dossier avec historique">1+</span>
                   </div>
-                  <ChevronRight className="w-icon-lg h-icon-lg text-stone-400 group-hover:translate-x-0.5 transition-transform" />
+                  <ChevronRight className="w-icon-lg h-icon-lg text-text-inverse-subtle group-hover:translate-x-0.5 transition-transform" />
                 </div>
               </Link>
             );

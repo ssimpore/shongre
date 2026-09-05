@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
+  contrastRatio,
+  deriveShongreOrangeTokens,
+  mixHex,
+} from "../src/brand-orange";
+import { brandPalette } from "../src/brand.generated.js";
+import {
   colors,
   iconStrokeWidths,
   nativeAspect,
@@ -40,12 +46,12 @@ describe("canonical design tokens", () => {
     expect(nativeColors.status.error).toBe(colors.status.error);
   });
 
-  it("preserves the official SHONGRE. v1.0.0 palette", () => {
+  it("preserves the official active SHONGRE. palette", () => {
     expect(colors.brand).toEqual({
-      primary: "#FF6500",
-      ink: "#172033",
-      background: "#FFFFFF",
-      surfaceSubtle: "#F7F8FA",
+      primary: brandPalette.orange,
+      ink: brandPalette.ink,
+      background: brandPalette.white,
+      surfaceSubtle: brandPalette.mist,
     });
     expect(colors.text.primary).toBe(colors.brand.ink);
     expect(colors.surface.default).toBe(colors.brand.background);
@@ -54,11 +60,89 @@ describe("canonical design tokens", () => {
 
   it("keeps primary controls WCAG AA readable", () => {
     expect(
-      contrast(themeColors.white, themeColors.primary),
+      contrast(themeColors["text-inverse"], themeColors.primary),
     ).toBeGreaterThanOrEqual(4.5);
     expect(
       contrast(themeColors.primary, themeColors["primary-light"]),
     ).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it("derives every Shongre Orange role from the single canonical swatch", () => {
+    const derived = deriveShongreOrangeTokens(
+      colors.brand.primary,
+      colors.brand.ink,
+      colors.brand.background,
+    );
+    expect({
+      canonical: themeColors["brand-primary"],
+      interactive: themeColors.primary,
+      hover: themeColors["primary-hover"],
+      active: themeColors["primary-active"],
+      disabled: themeColors["primary-disabled"],
+      disabledBorder: themeColors["primary-disabled-border"],
+      light: themeColors["primary-light"],
+      surfaceFaint: themeColors["primary-surface-faint"],
+      surface: themeColors["primary-surface"],
+      surfaceSelected: themeColors["primary-surface-selected"],
+      surfaceStrong: themeColors["primary-surface-strong"],
+      border: themeColors["primary-border"],
+      borderSoft: themeColors["primary-border-soft"],
+      borderStrong: themeColors["primary-border-strong"],
+      surfaceSoft: themeColors["primary-surface-soft"],
+      onInverseSoft: themeColors["primary-on-inverse-soft"],
+      onInverseMuted: themeColors["primary-on-inverse-muted"],
+      fill: themeColors["primary-fill"],
+      emphasis: themeColors["primary-emphasis"],
+      ring: themeColors["primary-ring"],
+      ringStrong: themeColors["primary-ring-strong"],
+      shadow: themeColors["primary-shadow"],
+      shadowStrong: themeColors["primary-shadow-strong"],
+      overlay: themeColors["primary-overlay"],
+      onDark: themeColors["primary-on-dark"],
+      onDarkRing: themeColors["primary-on-dark-ring"],
+      onDarkBorder: themeColors["primary-on-dark-border"],
+    }).toEqual(derived);
+    expect(themeColors.focus).toBe(derived.interactive);
+    expect(themeColors["category-vehicles"]).toBe(derived.interactive);
+    expect(themeColors["category-sport"]).toBe(derived.fill);
+    expect(
+      contrastRatio(themeColors.primary, themeColors["text-inverse"]),
+    ).toBeGreaterThanOrEqual(4.5);
+    expect(
+      contrastRatio(themeColors["primary-disabled"], themeColors["text-main"]),
+    ).toBeGreaterThanOrEqual(4.5);
+    expect(
+      contrastRatio(
+        themeColors["primary-on-dark"],
+        mixHex(colors.brand.ink, colors.brand.primary, 0.2),
+      ),
+    ).toBeGreaterThanOrEqual(4.75);
+  });
+
+  it("propagates a representative canonical orange change through every derived role", () => {
+    const original = deriveShongreOrangeTokens(
+      colors.brand.primary,
+      colors.brand.ink,
+      colors.brand.background,
+    );
+    const changed = deriveShongreOrangeTokens(
+      mixHex(colors.brand.primary, colors.brand.background, 0.2),
+      colors.brand.ink,
+      colors.brand.background,
+    );
+    for (const key of Object.keys(original) as (keyof typeof original)[]) {
+      expect(changed[key], `${key} follows the canonical swatch`).not.toBe(
+        original[key],
+      );
+    }
+  });
+
+  it("does not expose raw hue ramps or absolute white/black escape hatches", () => {
+    const rawColorName =
+      /^(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)(?:-\d{2,3})?$|^(?:white|black)$/;
+    expect(
+      Object.keys(themeColors).filter((key) => rawColorName.test(key)),
+    ).toEqual([]);
   });
 
   it("keeps native scale adapters aligned with canonical geometry", () => {

@@ -1,6 +1,6 @@
 import { createServer, IncomingMessage, ServerResponse } from "http";
 import { randomUUID } from "crypto";
-import { themeColors } from "@shongre/design-tokens";
+import { colors } from "@shongre/design-tokens";
 import { buildApiUrl, config } from "../config/index.js";
 import { bootstrapApp } from "../bootstrap/index.js";
 import { apiV1Router } from "../../api/v1/router.js";
@@ -19,17 +19,17 @@ function renderBackendHomePage(
   <title>Shongre Backend API</title>
   <style>
     :root {
-      --bg: ${themeColors["stone-950"]};
-      --card: ${themeColors["stone-900"]};
-      --card-hover: ${themeColors["stone-800"]};
-      --border: ${themeColors["stone-800"]};
-      --text: ${themeColors["stone-50"]};
-      --muted: ${themeColors["stone-400"]};
-      --primary: ${themeColors["sky-400"]};
-      --primary-hover: ${themeColors.info};
-      --secondary: ${themeColors["category-multimedia"]};
-      --success: ${themeColors["emerald-400"]};
-      --transparent: ${themeColors.transparent};
+      --bg: ${colors.surface.inverseDeep};
+      --card: ${colors.surface.inverse};
+      --card-hover: ${colors.surface.inverseHover};
+      --border: ${colors.border.inverse};
+      --text: ${colors.text.inverseBright};
+      --muted: ${colors.text.inverseSubtle};
+      --primary: ${colors.status.info};
+      --primary-hover: ${colors.status.info};
+      --secondary: ${colors.category.multimedia};
+      --success: ${colors.status.successOnInverseStrong};
+      --transparent: ${colors.surface.transparent};
       --success-glow: color-mix(in srgb, var(--success) 15%, var(--transparent));
       --success-border: color-mix(in srgb, var(--success) 30%, var(--transparent));
       --card-tint: color-mix(in srgb, var(--text) 2%, var(--transparent));

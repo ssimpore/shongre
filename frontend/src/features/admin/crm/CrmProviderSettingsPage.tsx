@@ -162,14 +162,14 @@ export const CrmProviderSettingsPage: React.FC = () => {
 
   return (
     <div className="space-y-4 pb-8">
-      <section className="rounded-2xl border border-stone-800 bg-stone-950 p-5 text-text-inverse sm:p-6">
+      <section className="rounded-2xl border border-border-inverse bg-surface-inverse-deep p-5 text-text-inverse sm:p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
-            <span className="inline-flex h-11 w-11 items-center justify-center rounded-control bg-stone-900">
-              <Icon className="h-5 w-5 text-violet-300" />
+            <span className="inline-flex h-11 w-11 items-center justify-center rounded-control bg-surface-inverse">
+              <Icon className="h-5 w-5 text-staff-on-inverse" />
             </span>
             <div>
-              <p className="text-micro font-bold uppercase tracking-wider text-violet-300">
+              <p className="text-micro font-bold uppercase tracking-wider text-staff-on-inverse">
                 CRM · Provider Platform
               </p>
               <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
@@ -189,7 +189,7 @@ export const CrmProviderSettingsPage: React.FC = () => {
               to="/admin/fournisseurs"
               variant="outline"
               size="sm"
-              className="border-stone-700 bg-stone-900 text-text-inverse hover:bg-stone-800"
+              className="border-border-inverse-subtle bg-surface-inverse text-text-inverse hover:bg-surface-inverse-hover"
             >
               <ExternalLink className="h-icon-md w-icon-md" /> Console
               fournisseurs
@@ -208,7 +208,7 @@ export const CrmProviderSettingsPage: React.FC = () => {
         <>
           <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             <article className="rounded-2xl border border-border-base bg-bg-surface p-4">
-              <span className="text-micro font-bold uppercase text-stone-500">
+              <span className="text-micro font-bold uppercase text-text-tertiary">
                 {t("admin.crmProviderSettingsPage.references")}
               </span>
               <strong className="mt-1 block text-2xl font-bold">
@@ -216,7 +216,7 @@ export const CrmProviderSettingsPage: React.FC = () => {
               </strong>
             </article>
             <article className="rounded-2xl border border-border-base bg-bg-surface p-4">
-              <span className="text-micro font-bold uppercase text-stone-500">
+              <span className="text-micro font-bold uppercase text-text-tertiary">
                 {t("admin.crmProviderSettingsPage.implementes")}
               </span>
               <strong className="mt-1 block text-2xl font-bold">
@@ -229,7 +229,7 @@ export const CrmProviderSettingsPage: React.FC = () => {
               </strong>
             </article>
             <article className="rounded-2xl border border-border-base bg-bg-surface p-4">
-              <span className="text-micro font-bold uppercase text-stone-500">
+              <span className="text-micro font-bold uppercase text-text-tertiary">
                 {t("admin.crmProviderSettingsPage.operationnels")}
               </span>
               <strong className="mt-1 block text-2xl font-bold text-success">
@@ -241,7 +241,7 @@ export const CrmProviderSettingsPage: React.FC = () => {
               </strong>
             </article>
             <article className="rounded-2xl border border-border-base bg-bg-surface p-4">
-              <span className="text-micro font-bold uppercase text-stone-500">
+              <span className="text-micro font-bold uppercase text-text-tertiary">
                 Environnement
               </span>
               <strong className="mt-1 block text-2xl font-bold">
@@ -252,7 +252,7 @@ export const CrmProviderSettingsPage: React.FC = () => {
           <section className="overflow-hidden rounded-2xl border border-border-base bg-bg-surface shadow-xs">
             <div className="border-b border-border-subtle px-5 py-4">
               <h2 className="text-sm font-bold">Connexions visibles</h2>
-              <p className="text-micro text-stone-500">
+              <p className="text-micro text-text-tertiary">
                 {t(
                   "admin.crmProviderSettingsPage.connexionsDuTenantEtConnexionsPersonnellesDuCompteCourantUniquement",
                 )}
@@ -274,7 +274,7 @@ export const CrmProviderSettingsPage: React.FC = () => {
                       <strong className="text-xs font-bold">
                         {connection.displayName}
                       </strong>
-                      <p className="mt-0.5 text-micro text-stone-500">
+                      <p className="mt-0.5 text-micro text-text-tertiary">
                         {connection.providerId} ·{" "}
                         {connection.capabilities.join(", ")}
                       </p>
@@ -288,11 +288,11 @@ export const CrmProviderSettingsPage: React.FC = () => {
                         </p>
                       )}
                     </div>
-                    <span className="rounded-pill bg-stone-100 px-2 py-1 text-center text-micro font-bold">
+                    <span className="rounded-pill bg-surface-muted px-2 py-1 text-center text-micro font-bold">
                       {connection.ownerType}
                     </span>
                     <span
-                      className={`inline-flex items-center gap-1 text-xs font-bold ${connection.status === "ACTIVE" ? "text-success" : "text-stone-500"}`}
+                      className={`inline-flex items-center gap-1 text-xs font-bold ${connection.status === "ACTIVE" ? "text-success" : "text-text-tertiary"}`}
                     >
                       <CheckCircle2 className="h-icon-sm w-icon-sm" />{" "}
                       {connection.status}
@@ -316,7 +316,7 @@ export const CrmProviderSettingsPage: React.FC = () => {
               <h2 className="text-sm font-bold">
                 {t("admin.crmProviderSettingsPage.registrePartage")}
               </h2>
-              <p className="text-micro text-stone-500">
+              <p className="text-micro text-text-tertiary">
                 {t(
                   "admin.crmProviderSettingsPage.capacitesDeclareesEtEtatRuntimeVerifiable",
                 )}
@@ -329,7 +329,7 @@ export const CrmProviderSettingsPage: React.FC = () => {
                   className="grid gap-3 px-5 py-4 lg:grid-cols-3"
                 >
                   <div className="flex gap-3">
-                    <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-control bg-stone-100">
+                    <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-control bg-surface-muted">
                       {aiOnly ? (
                         <Bot className="h-icon-md w-icon-md" />
                       ) : (
@@ -340,7 +340,7 @@ export const CrmProviderSettingsPage: React.FC = () => {
                       <strong className="text-xs font-bold">
                         {definition.displayName}
                       </strong>
-                      <p className="mt-0.5 text-micro text-stone-500">
+                      <p className="mt-0.5 text-micro text-text-tertiary">
                         {definition.id} · {definition.adapterStatus}
                       </p>
                       <div className="mt-2 flex flex-wrap gap-1">
@@ -349,7 +349,7 @@ export const CrmProviderSettingsPage: React.FC = () => {
                           .map((capability) => (
                             <code
                               key={capability}
-                              className="rounded bg-stone-100 px-1.5 py-0.5 text-micro text-text-secondary"
+                              className="rounded bg-surface-muted px-1.5 py-0.5 text-micro text-text-secondary"
                             >
                               {capability}
                             </code>
@@ -358,11 +358,11 @@ export const CrmProviderSettingsPage: React.FC = () => {
                     </div>
                   </div>
                   <div>
-                    <span className="text-micro text-stone-500">
+                    <span className="text-micro text-text-tertiary">
                       {t("admin.crmProviderSettingsPage.santeRuntime")}
                     </span>
                     <span
-                      className={`mt-1 flex items-center gap-1 text-xs font-bold ${runtime.health === "HEALTHY" ? "text-success" : "text-stone-500"}`}
+                      className={`mt-1 flex items-center gap-1 text-xs font-bold ${runtime.health === "HEALTHY" ? "text-success" : "text-text-tertiary"}`}
                     >
                       {runtime.health === "HEALTHY" ? (
                         <CheckCircle2 className="h-icon-sm w-icon-sm" />
@@ -373,7 +373,7 @@ export const CrmProviderSettingsPage: React.FC = () => {
                     </span>
                   </div>
                   <div>
-                    <span className="text-micro text-stone-500">
+                    <span className="text-micro text-text-tertiary">
                       {t("admin.crmProviderSettingsPage.preparation")}
                     </span>
                     <strong className="mt-1 block text-xs">

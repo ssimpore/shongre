@@ -71,7 +71,7 @@ export function GatewayCountrySelector({
                   country: recommendedEntry.country.name,
                 })}
               </h2>
-              <p className="mt-1 text-xs leading-relaxed text-stone-700">
+              <p className="mt-1 text-xs leading-relaxed text-text-emphasis">
                 {t("shell.marketDetection.gatewayEstimate")}
                 {recommendation?.status === "uncertain"
                   ? ` ${t("shell.marketDetection.lowConfidence")}`
@@ -84,7 +84,7 @@ export function GatewayCountrySelector({
                     recommendedEntry.country.code,
                   )
                 }
-                className="mt-3 inline-flex min-h-control-touch items-center gap-2 rounded-control bg-primary px-4 text-sm font-bold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                className="mt-3 inline-flex min-h-control-touch items-center gap-2 rounded-control bg-primary px-4 text-sm font-bold text-text-inverse focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               >
                 {t("shell.marketDetection.gatewayContinue", {
                   country: recommendedEntry.country.name,
@@ -125,10 +125,10 @@ export function GatewayCountrySelector({
                   {country.flag}
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block text-base font-bold text-stone-950">
+                  <span className="block text-base font-bold text-text-deep">
                     {country.name}
                   </span>
-                  <span className="block truncate text-xs text-stone-600">
+                  <span className="block truncate text-xs text-text-supporting">
                     {country.nativeName} · {country.currency}
                   </span>
                 </span>
@@ -138,7 +138,7 @@ export function GatewayCountrySelector({
                     aria-hidden="true"
                   />
                 ) : (
-                  <span className="rounded-control border border-border-base bg-bg-subtle px-2.5 py-1 text-xs font-bold text-stone-700">
+                  <span className="rounded-control border border-border-base bg-bg-subtle px-2.5 py-1 text-xs font-bold text-text-emphasis">
                     {publicMarketExperience(country) === "coming_soon"
                       ? t("shell.marketDetection.openingSoon")
                       : t("shell.marketDetection.unavailable")}

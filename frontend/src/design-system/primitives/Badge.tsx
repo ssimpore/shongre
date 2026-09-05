@@ -14,7 +14,7 @@ export interface BadgeProps {
   /**
    * `featured` is the boosted-listing ("Vedette") badge. It is a variant rather
    * than per-screen markup because the same listing state was previously drawn
-   * three different ways: terracotta on the listing cards, `bg-amber-500` in the
+   * three different ways: terracotta on the listing cards, `bg-rating-strong` in the
    * home rail — white on amber is 2.13:1, well under AA — and the `urgent`
    * (danger red) variant in the seller's table, which labelled a paid promotion
    * as a problem. One variant means one colour for one meaning.

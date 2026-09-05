@@ -527,10 +527,10 @@ export const MessagingPage: React.FC = () => {
             <MessageSquare className="w-7 h-7" />
           </div>
           <div className="space-y-1.5">
-            <h2 className="text-base font-bold text-stone-800">
+            <h2 className="text-base font-bold text-text-strong">
               {t("messaging.messagingPage.aucunMessagePourLeMoment")}
             </h2>
-            <p className="text-xs text-stone-500 max-w-sm leading-relaxed">
+            <p className="text-xs text-text-tertiary max-w-sm leading-relaxed">
               {t("messaging.messagingPage.vosEchangesAvecLesAcheteurs")}
             </p>
           </div>
@@ -565,7 +565,7 @@ export const MessagingPage: React.FC = () => {
 
           {/* 2. Right Conversation Pane */}
           <div
-            className={`flex-1 h-full flex flex-col min-w-0 bg-white ${
+            className={`flex-1 h-full flex flex-col min-w-0 bg-bg-surface ${
               !activeConvId ? "hidden md:flex" : "flex"
             }`}
           >
@@ -622,15 +622,15 @@ export const MessagingPage: React.FC = () => {
             ) : (
               /* Nothing selected, but conversations do exist — so pointing at the
              list is genuinely actionable here. */
-              <div className="h-full flex flex-col items-center justify-center text-center p-8 space-y-3 text-stone-500">
-                <div className="w-14 h-14 rounded-2xl bg-stone-100 flex items-center justify-center text-stone-400">
+              <div className="h-full flex flex-col items-center justify-center text-center p-8 space-y-3 text-text-tertiary">
+                <div className="w-14 h-14 rounded-2xl bg-surface-muted flex items-center justify-center text-text-inverse-subtle">
                   <Sparkles className="w-7 h-7 text-primary" />
                 </div>
                 <div>
-                  <p className="text-base font-bold text-stone-800">
+                  <p className="text-base font-bold text-text-strong">
                     {t("messaging.messagingPage.selectionnezUneConversation")}
                   </p>
-                  <p className="text-xs text-stone-500 mt-1 max-w-sm">
+                  <p className="text-xs text-text-tertiary mt-1 max-w-sm">
                     {t(
                       "messaging.messagingPage.choisissezUneConversationDansLa",
                     )}
@@ -687,7 +687,7 @@ export const MessagingPage: React.FC = () => {
           description={t("messaging.messagingPage.cetUtilisateurNePourraPlus")}
         >
           <div className="space-y-4 text-xs">
-            <p className="text-stone-600 leading-relaxed font-medium">
+            <p className="text-text-supporting leading-relaxed font-medium">
               {t("messaging.messagingPage.etesVousSurDeVouloir")}
             </p>
             <div className="flex gap-2 pt-2">
@@ -715,7 +715,7 @@ export const MessagingPage: React.FC = () => {
           description={t("messaging.messagingPage.aidezLEquipeDeModeration")}
         >
           <div className="space-y-4 text-xs">
-            <p className="text-stone-600 leading-relaxed">
+            <p className="text-text-supporting leading-relaxed">
               {t("messaging.messagingPage.votreSignalementSeraExamineEn")}
             </p>
             <div className="flex gap-2 pt-2">
@@ -751,7 +751,7 @@ export const MessagingPage: React.FC = () => {
           aria-modal="true"
           aria-labelledby={lightboxTitleId}
           tabIndex={-1}
-          className="fixed inset-0 z-modal bg-black/90 backdrop-blur-md flex items-center justify-center p-4"
+          className="fixed inset-0 z-modal bg-surface-overlay-deep/90 backdrop-blur-md flex items-center justify-center p-4"
           onClick={() => setLightboxImageUrl(null)}
         >
           <h2 id={lightboxTitleId} className="sr-only">
@@ -760,7 +760,7 @@ export const MessagingPage: React.FC = () => {
           <button
             type="button"
             onClick={() => setLightboxImageUrl(null)}
-            className="absolute top-4 right-4 p-3 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors"
+            className="absolute top-4 right-4 p-3 rounded-full bg-bg-surface/10 text-text-inverse hover:bg-bg-surface/20 transition-colors"
             aria-label={t("messaging.messagingPage.fermerLaVuePleinEcran")}
           >
             <X className="w-icon-xl h-icon-xl" />
@@ -769,7 +769,7 @@ export const MessagingPage: React.FC = () => {
             src={lightboxImageUrl}
             alt={t("messaging.messagingPage.vuePleinEcran")}
             sizes="90vw"
-            className="max-h-dialog-viewport-max-height max-w-dialog-viewport-max-width object-contain rounded-2xl shadow-2xl border border-white/10"
+            className="max-h-dialog-viewport-max-height max-w-dialog-viewport-max-width object-contain rounded-2xl shadow-2xl border border-border-on-inverse/10"
             onClick={(e) => e.stopPropagation()}
           />
         </div>

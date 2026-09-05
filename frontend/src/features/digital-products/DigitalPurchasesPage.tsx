@@ -480,7 +480,7 @@ export const DigitalPurchasesPage: React.FC = () => {
 
       {leaving ? (
         <div
-          className="fixed inset-0 z-modal flex items-center justify-center bg-black/50 p-4"
+          className="fixed inset-0 z-modal flex items-center justify-center bg-surface-overlay-deep/50 p-4"
           role="dialog"
           aria-modal="true"
           aria-labelledby="digital-leaving-title"

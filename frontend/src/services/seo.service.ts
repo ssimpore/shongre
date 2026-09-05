@@ -29,8 +29,10 @@ import {
   COUNTRY_REGISTRY,
   type MarketContext,
 } from "@shongre/contracts";
+import { brand } from "@shongre/brand";
+import { webBrandAssets } from "@shongre/brand/web";
 
-export const SITE_NAME = "SHONGRE.";
+export const SITE_NAME = brand.name;
 
 /** Must stay in step with the fallback description in `index.html`. */
 export const DEFAULT_DESCRIPTION =
@@ -40,7 +42,7 @@ export const DEFAULT_DESCRIPTION =
 
 export const DEFAULT_TITLE = "SHONGRE. — Petites annonces particuliers & pros";
 export const DEFAULT_SHARE_IMAGE_PATH =
-  "/brand/shongre/social/open-graph-light.png";
+  webBrandAssets.social.openGraphLight.src;
 
 export const HOMEPAGE_DESCRIPTION =
   "Achetez et vendez près de chez vous sur Shongre : véhicules, immobilier, mode, maison et high-tech, avec paiement sécurisé, livraison intégrée et vendeurs vérifiés.";

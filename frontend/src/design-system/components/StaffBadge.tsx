@@ -32,7 +32,7 @@ export const StaffBadge: React.FC<StaffBadgeProps> = ({
         className={`inline-flex items-center gap-1 rounded-full border px-2 py-1 text-micro font-bold ${
           status === "suspended"
             ? "border-warning-border bg-warning-surface text-warning"
-            : "border-stone-300 bg-stone-100 text-stone-700"
+            : "border-border-prominent bg-surface-muted text-text-emphasis"
         } ${className}`}
       >
         <ShieldOff className="h-icon-xs w-icon-xs" aria-hidden="true" />
@@ -54,7 +54,7 @@ export const StaffBadge: React.FC<StaffBadgeProps> = ({
       role="img"
       aria-label={accessibleName}
       title={accessibleName}
-      className={`inline-flex items-center gap-1 rounded-full border border-violet-200 bg-violet-50 px-2 py-1 text-micro font-bold text-violet-800 ${className}`}
+      className={`inline-flex items-center gap-1 rounded-full border border-staff-border bg-staff-surface px-2 py-1 text-micro font-bold text-staff-emphasis ${className}`}
     >
       <Building2 className="h-icon-xs w-icon-xs" aria-hidden="true" />
       {label}

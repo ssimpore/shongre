@@ -22,13 +22,11 @@
      rendered dark inside a light page. Declaring `light` makes the intent
      explicit and keeps the native chrome consistent with the design.
 
-     A real dark theme is not a token swap here. The neutral ramp is used two
-     different ways: as theme-following neutrals (~3.4k utilities), and as
-     deliberately dark surfaces that must stay dark in either theme — 28 photo
-     scrims (`bg-stone-950/55` under white text) and ~52 files with dark
-     buttons and panels. Flipping the ramp would turn those into light scrims
-     under white text. Separating the two is a scoped migration, not a
-     redefinition, and it needs to happen before `dark` can be honoured. */
+     Product dark surfaces are already explicit semantic inverse roles rather
+     than reversed neutral shades. A future user-selectable dark mode must add
+     an approved semantic theme mapping and visual coverage; until then the
+     shipped application remains intentionally light and browser-native chrome
+     must not invent a second theme. */
   :root {
     color-scheme: light;
   }

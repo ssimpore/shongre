@@ -7,6 +7,8 @@ import { fileURLToPath } from "node:url";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const failures = [];
 const rawColorPattern = /#[\da-f]{3,8}\b|\b(?:rgba?|hsla?|oklch)\s*\(/i;
+const rawPaletteApiPattern =
+  /\b(?:nativePalette\b|palette\s*\[|themeColors\s*\[\s*["'](?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|white|black)|--color-(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|white|black)\b)/;
 const rawNamedColorPattern = /(["'])(?:transparent|white|black)\1/i;
 const rawCssColorKeywordPattern =
   /(?:^|[;{]\s*)(?:color|background(?:-color|-image)?|border(?:-color)?|outline(?:-color)?|text-decoration-color|fill|stroke|scrollbar-color)\s*:[^;}]*?(?<![-\w])(?:transparent|white|black)(?![-\w])/im;
@@ -66,7 +68,11 @@ const sourceFiles = (
 for (const file of sourceFiles) {
   const relative = path.relative(root, file);
   const contents = await readFile(file, "utf8");
-  if (rawColorPattern.test(contents) || rawNamedColorPattern.test(contents)) {
+  if (
+    rawColorPattern.test(contents) ||
+    rawNamedColorPattern.test(contents) ||
+    rawPaletteApiPattern.test(contents)
+  ) {
     failures.push(`${relative}: raw colour value; use @shongre/design-tokens`);
   }
   const isNative =

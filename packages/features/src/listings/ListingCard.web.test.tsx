@@ -124,7 +124,7 @@ describe("canonical web listing card", () => {
 
     expect(html).toContain('data-ui-verified-icon="true"');
     expect(html).toContain("lucide-badge-check");
-    expect(html).toContain("text-white h-icon-sm w-icon-sm");
+    expect(html).toContain("text-text-inverse h-icon-sm w-icon-sm");
     expect(html).toContain("h-full w-full fill-success");
     expect(html).not.toContain(">Pro<");
   });

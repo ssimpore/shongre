@@ -21,7 +21,7 @@ export default function ErrorPage({
       <button
         type="button"
         onClick={reset}
-        className="h-control-touch rounded-control bg-primary px-5 text-sm font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+        className="h-control-touch rounded-control bg-primary px-5 text-sm font-semibold text-text-inverse focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
       >
         Réessayer
       </button>

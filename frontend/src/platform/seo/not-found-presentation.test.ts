@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { webBrandAssets } from "@shongre/brand/web";
 import {
   renderNotFoundDocument,
   resolveNotFoundPresentation,
@@ -31,7 +32,9 @@ describe("not-found presentation", () => {
     );
 
     expect(html).toContain("<title>Collection introuvable | SHONGRE.</title>");
-    expect(html).toContain('src="/brand/shongre/logo/header-primary-240.png"');
+    expect(html).toContain(
+      `src="${webBrandAssets.logo.header.primary240.src}"`,
+    );
     expect(html).toContain('name="robots" content="noindex, nofollow"');
     expect(html).toContain('href="/collections"');
     expect(html).toContain(

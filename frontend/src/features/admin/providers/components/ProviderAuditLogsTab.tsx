@@ -20,23 +20,23 @@ export const ProviderAuditLogsTab: React.FC<ProviderAuditLogsTabProps> = ({
   }, [providerId]);
 
   return (
-    <div className="bg-bg-surface rounded-control border border-stone-200 shadow-xs p-5 space-y-4">
-      <div className="flex items-center justify-between border-b border-stone-100 pb-2">
+    <div className="bg-bg-surface rounded-control border border-border-disabled shadow-xs p-5 space-y-4">
+      <div className="flex items-center justify-between border-b border-border-soft pb-2">
         <h4 className="text-sm font-bold text-text-main flex items-center gap-2">
           <Clock className="w-icon-md h-icon-md text-text-secondary" />
           {t("admin.providerAuditLogsTab.journalDAuditTracabiliteDes")}
         </h4>
-        <span className="text-xs text-stone-500 font-mono">
+        <span className="text-xs text-text-tertiary font-mono">
           {auditLogs.length} {t("admin.providerAuditLogsTab.evenementS")}
         </span>
       </div>
 
       {auditLogs.length === 0 ? (
-        <p className="text-xs text-stone-500 italic py-4 text-center">
+        <p className="text-xs text-text-tertiary italic py-4 text-center">
           {t("admin.providerAuditLogsTab.aucunEvenementDAuditEnregistre")}
         </p>
       ) : (
-        <div className="divide-y divide-stone-100">
+        <div className="divide-y divide-border-soft">
           {auditLogs.map((log) => (
             <div
               key={log.id}
@@ -56,7 +56,7 @@ export const ProviderAuditLogsTab: React.FC<ProviderAuditLogsTabProps> = ({
                 <p className="text-text-secondary text-micro">{log.details}</p>
               </div>
 
-              <div className="flex sm:flex-col items-start sm:items-end text-micro text-stone-500 shrink-0">
+              <div className="flex sm:flex-col items-start sm:items-end text-micro text-text-tertiary shrink-0">
                 <span className="font-medium text-text-secondary">
                   {log.actorName} ({roleLabel(log.actorRole)})
                 </span>

@@ -40,10 +40,10 @@ export const ListingFulfillmentSummary: React.FC<
     });
     return (
       <div
-        className={`rounded-3xl border border-primary/20 bg-primary-light/30 p-6 shadow-sm sm:p-8 ${className}`}
+        className={`rounded-3xl border border-primary-border bg-primary-surface-faint p-6 shadow-sm sm:p-8 ${className}`}
       >
         <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-white">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-text-inverse">
             <FileKey2 className="h-icon-md w-icon-md" aria-hidden="true" />
           </div>
           <div>
@@ -57,7 +57,7 @@ export const ListingFulfillmentSummary: React.FC<
               {labels.map((label) => (
                 <li
                   key={label}
-                  className="rounded-full border border-primary/20 bg-bg-surface px-3 py-1 text-xs font-bold text-text-main"
+                  className="rounded-full border border-primary-border bg-bg-surface px-3 py-1 text-xs font-bold text-text-main"
                 >
                   {label}
                 </li>
@@ -119,13 +119,13 @@ export const ListingFulfillmentSummary: React.FC<
 
   return (
     <div
-      className={`bg-white rounded-3xl border border-stone-200/60 p-6 sm:p-8 space-y-5 shadow-sm ${className}`}
+      className={`bg-bg-surface rounded-3xl border border-border-disabled/60 p-6 sm:p-8 space-y-5 shadow-sm ${className}`}
     >
-      <div className="flex items-center justify-between pb-3 border-b border-stone-100">
-        <h2 className="text-base font-bold text-stone-900">
+      <div className="flex items-center justify-between pb-3 border-b border-border-soft">
+        <h2 className="text-base font-bold text-text-main">
           {t("listings.listingFulfillmentSummary.remiseExpedition")}
         </h2>
-        <span className="text-xs text-stone-500 font-medium bg-stone-50 px-2 py-1 rounded-md">
+        <span className="text-xs text-text-tertiary font-medium bg-surface-soft px-2 py-1 rounded-md">
           {t("listings.listingFulfillmentSummary.choixDefinitifALaCommande")}
         </span>
       </div>
@@ -139,10 +139,10 @@ export const ListingFulfillmentSummary: React.FC<
                 <MapPin className="w-icon-md h-icon-md" />
               </div>
               <div>
-                <div className="text-xs sm:text-sm font-bold text-stone-900">
+                <div className="text-xs sm:text-sm font-bold text-text-main">
                   Remise en main propre
                 </div>
-                <div className="text-micro text-stone-500">
+                <div className="text-micro text-text-tertiary">
                   À convenir à {listing.city} ({listing.postalCode}) •
                   Validation par code secret PIN
                 </div>
@@ -162,19 +162,19 @@ export const ListingFulfillmentSummary: React.FC<
                 <Package className="w-icon-md h-icon-md" />
               </div>
               <div>
-                <div className="text-xs sm:text-sm font-bold text-stone-900">
+                <div className="text-xs sm:text-sm font-bold text-text-main">
                   {t(
                     "listings.listingFulfillmentSummary.livraisonEnColisAvecSuivi",
                   )}
                 </div>
-                <div className="text-micro text-stone-500">
+                <div className="text-micro text-text-tertiary">
                   {t(
                     "listings.listingFulfillmentSummary.mondialRelayPointRelaisLocker",
                   )}
                 </div>
               </div>
             </div>
-            <div className="text-xs sm:text-sm font-bold text-stone-900">
+            <div className="text-xs sm:text-sm font-bold text-text-main">
               {parcelPrice === null
                 ? t("listings.listingFulfillmentSummary.aPartirDe399")
                 : parcelPrice === 0
@@ -194,19 +194,19 @@ export const ListingFulfillmentSummary: React.FC<
                 <Truck className="w-icon-md h-icon-md" />
               </div>
               <div>
-                <div className="text-xs sm:text-sm font-bold text-stone-900">
+                <div className="text-xs sm:text-sm font-bold text-text-main">
                   {t(
                     "listings.listingFulfillmentSummary.transportDeMeublesGrosColis",
                   )}
                 </div>
-                <div className="text-micro text-stone-500">
+                <div className="text-micro text-text-tertiary">
                   {t(
                     "listings.listingFulfillmentSummary.livraisonParTransporteurSpecialiseCocolis",
                   )}
                 </div>
               </div>
             </div>
-            <div className="text-xs sm:text-sm font-bold text-stone-900">
+            <div className="text-xs sm:text-sm font-bold text-text-main">
               {t("listings.listingFulfillmentSummary.surDevisTransport")}
             </div>
           </div>
@@ -220,10 +220,10 @@ export const ListingFulfillmentSummary: React.FC<
                 <Store className="w-icon-md h-icon-md" />
               </div>
               <div>
-                <div className="text-xs sm:text-sm font-bold text-stone-900">
+                <div className="text-xs sm:text-sm font-bold text-text-main">
                   Retrait en boutique
                 </div>
-                <div className="text-micro text-stone-500">
+                <div className="text-micro text-text-tertiary">
                   {t(
                     "listings.listingFulfillmentSummary.retraitDirectDansLeMagasin",
                   )}

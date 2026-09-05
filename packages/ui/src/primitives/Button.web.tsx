@@ -69,7 +69,11 @@ export type ButtonProps = (
 // `whitespace-nowrap` is load-bearing: the size variants below pin an exact
 // height, so a label allowed to wrap spills out through the bottom edge.
 /** Everything except the display utility, which is applied conditionally below. */
-const baseStyles = `items-center justify-center font-medium whitespace-nowrap ${CONTROL_MOTION_CLASS} cursor-pointer select-none disabled:cursor-not-allowed disabled:bg-bg-muted disabled:text-text-muted disabled:border-border-base disabled:shadow-none disabled:hover:bg-bg-muted disabled:hover:shadow-none disabled:hover:translate-y-0 aria-disabled:cursor-not-allowed aria-disabled:bg-bg-muted aria-disabled:text-text-muted aria-disabled:border-border-base aria-disabled:shadow-none aria-disabled:hover:bg-bg-muted aria-disabled:hover:shadow-none aria-disabled:hover:translate-y-0 active:translate-y-0 active:scale-press-control ${CONTROL_FOCUS_CLASS}`;
+const baseStyles = `items-center justify-center font-medium whitespace-nowrap ${CONTROL_MOTION_CLASS} cursor-pointer select-none disabled:cursor-not-allowed disabled:shadow-none disabled:hover:shadow-none disabled:hover:translate-y-0 aria-disabled:cursor-not-allowed aria-disabled:shadow-none aria-disabled:hover:shadow-none aria-disabled:hover:translate-y-0 active:translate-y-0 active:scale-press-control ${CONTROL_FOCUS_CLASS}`;
+const neutralUnavailableStyles =
+  "disabled:bg-bg-muted disabled:text-text-muted disabled:border-border-base disabled:hover:bg-bg-muted aria-disabled:bg-bg-muted aria-disabled:text-text-muted aria-disabled:border-border-base aria-disabled:hover:bg-bg-muted";
+const primaryUnavailableStyles =
+  "disabled:bg-primary-disabled disabled:text-text-main disabled:border-primary-disabled-border disabled:hover:bg-primary-disabled aria-disabled:bg-primary-disabled aria-disabled:text-text-main aria-disabled:border-primary-disabled-border aria-disabled:hover:bg-primary-disabled";
 
 /**
  * A display utility supplied by the caller, which must win over the default.
@@ -113,22 +117,17 @@ const buttonClasses = createVariants({
       lg: `text-base px-6 gap-2.5 ${controlHeightClasses.lg} font-semibold ${CONTROL_RADIUS_CLASS}`,
     },
     variant: {
-      primary:
-        "bg-primary text-white hover:bg-primary-hover active:bg-primary-active shadow-sm hover:-translate-y-0.5 hover:shadow-md hover:shadow-primary/20",
+      primary: `bg-primary text-text-inverse hover:bg-primary-hover active:bg-primary-active shadow-sm hover:-translate-y-0.5 hover:shadow-md hover:shadow-primary-shadow ${primaryUnavailableStyles}`,
       /* The only filled variant that had no edge. On a white card that left it with
      no boundary at all — the "Message" action on a listing read as flat text
      rather than a control, sitting next to two bordered neighbours. A 1px border
      gives it definition while staying visibly lighter than `outline`'s 2px, so
      the two stay distinguishable when they appear side by side. */
-      secondary:
-        "bg-bg-base text-text-main border border-border-hover hover:bg-bg-subtle hover:border-border-hover active:bg-bg-muted shadow-2xs",
-      outline:
-        "border-2 border-border-base bg-bg-surface text-text-main hover:bg-bg-subtle hover:border-border-hover active:bg-bg-muted shadow-2xs",
-      ghost:
-        "bg-transparent text-text-secondary hover:text-text-main hover:bg-bg-subtle active:bg-bg-muted",
-      danger:
-        "bg-danger text-white hover:bg-danger-hover active:bg-danger-active shadow-sm hover:-translate-y-0.5 hover:shadow-md",
-      pro: "bg-stone-900 text-white hover:bg-stone-800 active:bg-stone-950 shadow-sm hover:-translate-y-0.5 hover:shadow-md hover:shadow-stone-900/10",
+      secondary: `bg-bg-base text-text-main border border-border-hover hover:bg-bg-subtle hover:border-border-hover active:bg-bg-muted shadow-2xs ${neutralUnavailableStyles}`,
+      outline: `border-2 border-border-base bg-bg-surface text-text-main hover:bg-bg-subtle hover:border-border-hover active:bg-bg-muted shadow-2xs ${neutralUnavailableStyles}`,
+      ghost: `bg-transparent text-text-secondary hover:text-text-main hover:bg-bg-subtle active:bg-bg-muted ${neutralUnavailableStyles}`,
+      danger: `bg-danger text-text-inverse hover:bg-danger-hover active:bg-danger-active shadow-sm hover:-translate-y-0.5 hover:shadow-md ${neutralUnavailableStyles}`,
+      pro: `bg-surface-inverse text-text-inverse hover:bg-surface-inverse-hover active:bg-surface-inverse-deep shadow-sm hover:-translate-y-0.5 hover:shadow-md hover:shadow-border-inverse-strong/10 ${neutralUnavailableStyles}`,
     },
     width: { auto: "", full: "w-full" },
   },

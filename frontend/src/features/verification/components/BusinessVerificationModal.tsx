@@ -108,7 +108,7 @@ export const BusinessVerificationModal: React.FC<
         <div>
           <label
             htmlFor="business-registration-id"
-            className="mb-1.5 block text-sm font-semibold text-stone-800"
+            className="mb-1.5 block text-sm font-semibold text-text-strong"
           >
             SIRET ou SIREN
           </label>
@@ -123,7 +123,7 @@ export const BusinessVerificationModal: React.FC<
               inputMode="numeric"
               autoComplete="off"
               placeholder="732 829 320 00074"
-              className="h-control-touch flex-1 rounded-control border border-stone-200 bg-white px-3.5 text-sm text-stone-900 focus:border-warning focus:outline-none"
+              className="h-control-touch flex-1 rounded-control border border-border-disabled bg-bg-surface px-3.5 text-sm text-text-main focus:border-warning focus:outline-none"
             />
             <Button
               type="button"
@@ -147,11 +147,11 @@ export const BusinessVerificationModal: React.FC<
                 aria-hidden="true"
               />
               <div>
-                <p className="font-bold text-stone-900">{company.name}</p>
-                <p className="mt-1 text-sm text-stone-700">
+                <p className="font-bold text-text-main">{company.name}</p>
+                <p className="mt-1 text-sm text-text-emphasis">
                   {company.legalForm} · {company.postalCode} {company.city}
                 </p>
-                <p className="mt-1 text-xs text-stone-600">
+                <p className="mt-1 text-xs text-text-supporting">
                   Entreprise active dans le registre officiel.
                 </p>
               </div>
@@ -159,7 +159,7 @@ export const BusinessVerificationModal: React.FC<
           </div>
         ) : null}
 
-        <div className="flex gap-3 rounded-xl border border-stone-200 bg-stone-50 p-4 text-sm text-text-secondary">
+        <div className="flex gap-3 rounded-xl border border-border-disabled bg-surface-soft p-4 text-sm text-text-secondary">
           <ShieldCheck
             className="mt-0.5 h-icon-lg w-icon-lg shrink-0 text-success"
             aria-hidden="true"

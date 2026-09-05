@@ -19,7 +19,7 @@ export function Card({
   const tones = {
     default: "bg-bg-surface text-text-main border-border-base",
     subtle: "bg-bg-subtle text-text-main border-border-base",
-    inverse: "bg-text-main text-text-inverse border-stone-800",
+    inverse: "bg-surface-inverse text-text-inverse border-border-inverse",
   } as const;
   const paddings = {
     none: "",

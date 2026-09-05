@@ -28,7 +28,7 @@ test.describe("multi-country public routing", () => {
       await page.goto(path, { waitUntil: "domcontentloaded" });
       await expect(
         page.getByRole("link", {
-          name: new RegExp(`Shongre\\. ${country.name}`),
+          name: new RegExp(`SHONGRE\\. ${country.name}`),
         }),
       ).toBeVisible();
       await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(

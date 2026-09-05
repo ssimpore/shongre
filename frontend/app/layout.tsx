@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Nunito_Sans } from "next/font/google";
 import { headers } from "next/headers";
 import { brand } from "@shongre/brand";
+import { webBrandAssets } from "@shongre/brand/web";
 import { colors } from "@shongre/design-tokens";
 import "../src/index.css";
 import {
@@ -24,8 +25,6 @@ const nunitoSans = Nunito_Sans({
   style: "normal",
 });
 
-const versionedBrandAsset = (path: string) => `${path}?v=${brand.version}`;
-
 export function generateMetadata(): Metadata {
   return {
     metadataBase: webEnvironmentFromEnvironment().urls.internationalApp,
@@ -34,53 +33,30 @@ export function generateMetadata(): Metadata {
       template: "%s",
     },
     description: DEFAULT_DESCRIPTION,
-    applicationName: "SHONGRE.",
+    applicationName: brand.name,
     icons: {
-      icon: [
-        {
-          url: versionedBrandAsset("/favicon-16x16.png"),
-          type: "image/png",
-          sizes: "16x16",
-        },
-        {
-          url: versionedBrandAsset("/favicon-32x32.png"),
-          type: "image/png",
-          sizes: "32x32",
-        },
-        {
-          url: versionedBrandAsset("/favicon-48x48.png"),
-          type: "image/png",
-          sizes: "48x48",
-        },
-        {
-          url: versionedBrandAsset("/favicon-64x64.png"),
-          type: "image/png",
-          sizes: "64x64",
-        },
-        {
-          url: versionedBrandAsset("/favicon-96x96.png"),
-          type: "image/png",
-          sizes: "96x96",
-        },
-      ],
+      icon: webBrandAssets.favicon.png.map(({ src, ...metadata }) => ({
+        url: src,
+        ...metadata,
+      })),
       shortcut: [
         {
-          url: versionedBrandAsset("/favicon.ico"),
-          type: "image/x-icon",
+          url: webBrandAssets.favicon.ico.src,
+          type: webBrandAssets.favicon.ico.type,
         },
       ],
       apple: [
         {
-          url: versionedBrandAsset("/apple-touch-icon.png"),
-          type: "image/png",
-          sizes: "180x180",
+          url: webBrandAssets.favicon.appleTouch.src,
+          type: webBrandAssets.favicon.appleTouch.type,
+          sizes: webBrandAssets.favicon.appleTouch.sizes,
         },
       ],
     },
-    manifest: "/manifest.webmanifest",
+    manifest: webBrandAssets.manifest,
     openGraph: {
       type: "website",
-      siteName: "SHONGRE.",
+      siteName: brand.name,
       title: DEFAULT_TITLE,
       description: DEFAULT_DESCRIPTION,
       images: [

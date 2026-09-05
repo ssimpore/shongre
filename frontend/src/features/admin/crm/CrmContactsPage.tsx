@@ -150,7 +150,7 @@ export const CrmContactsPage: React.FC = () => {
 
   return (
     <div className="space-y-4 pb-8">
-      <section className="rounded-2xl border border-stone-800 bg-stone-950 p-5 text-text-inverse shadow-sm sm:p-6">
+      <section className="rounded-2xl border border-border-inverse bg-surface-inverse-deep p-5 text-text-inverse shadow-sm sm:p-6">
         <Link
           to={crmPaths.overview}
           className="inline-flex items-center gap-1 text-micro font-bold uppercase tracking-wider text-text-disabled hover:text-text-inverse"
@@ -184,10 +184,10 @@ export const CrmContactsPage: React.FC = () => {
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             placeholder={t("admin.crmContactsPage.nomEmailPosteOuEntreprise")}
-            className="h-control-md w-full rounded-control border border-stone-200 bg-stone-50 pl-9 pr-3 text-xs outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
+            className="h-control-md w-full rounded-control border border-border-disabled bg-surface-soft pl-9 pr-3 text-xs outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring"
           />
         </label>
-        <span className="inline-flex items-center gap-1.5 text-micro text-stone-500">
+        <span className="inline-flex items-center gap-1.5 text-micro text-text-tertiary">
           <ShieldAlert className="h-icon-sm w-icon-sm text-text-disabled" />{" "}
           {t(
             "admin.crmContactsPage.lesPreferencesDeContactSontAppliqueesAvantToutEnvoi",
@@ -205,10 +205,10 @@ export const CrmContactsPage: React.FC = () => {
         ) : filtered.length === 0 ? (
           <div className="p-10 text-center">
             <UserRound className="mx-auto h-8 w-8 text-text-disabled" />
-            <h2 className="mt-3 text-sm font-bold text-stone-800">
+            <h2 className="mt-3 text-sm font-bold text-text-strong">
               {t("admin.crmContactsPage.aucunContactTrouve")}
             </h2>
-            <p className="mt-1 text-xs text-stone-500">
+            <p className="mt-1 text-xs text-text-tertiary">
               {t(
                 "admin.crmContactsPage.essayezUneAutreRechercheOuCreezUneFiche",
               )}
@@ -217,7 +217,7 @@ export const CrmContactsPage: React.FC = () => {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-4xl text-left text-xs">
-              <thead className="bg-stone-50 text-micro font-bold uppercase tracking-wider text-stone-500">
+              <thead className="bg-surface-soft text-micro font-bold uppercase tracking-wider text-text-tertiary">
                 <tr>
                   <th className="px-5 py-3">Contact</th>
                   <th className="px-4 py-3">Entreprise</th>
@@ -239,22 +239,22 @@ export const CrmContactsPage: React.FC = () => {
                   return (
                     <tr
                       key={contact.id}
-                      className="transition hover:bg-stone-50/80"
+                      className="transition hover:bg-surface-soft/80"
                     >
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-3">
-                          <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-pill bg-stone-950 text-micro font-bold text-text-inverse">
+                          <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-pill bg-surface-inverse-deep text-micro font-bold text-text-inverse">
                             {contact.firstName[0]}
                             {contact.lastName[0]}
                           </span>
                           <div className="min-w-0">
                             <Link
                               to={crmPaths.contact(contact.id)}
-                              className="block truncate font-bold text-stone-950 hover:text-primary"
+                              className="block truncate font-bold text-text-deep hover:text-primary"
                             >
                               {contact.fullName}
                             </Link>
-                            <span className="mt-0.5 block truncate text-micro text-stone-500">
+                            <span className="mt-0.5 block truncate text-micro text-text-tertiary">
                               {contact.jobTitle ?? "Fonction non renseignée"}
                             </span>
                           </div>
@@ -264,7 +264,7 @@ export const CrmContactsPage: React.FC = () => {
                         {account ? (
                           <Link
                             to={crmPaths.company(account.id)}
-                            className="inline-flex items-center gap-1.5 font-bold text-stone-700 hover:text-primary"
+                            className="inline-flex items-center gap-1.5 font-bold text-text-emphasis hover:text-primary"
                           >
                             <Building2 className="h-icon-sm w-icon-sm" />{" "}
                             {account.name}
@@ -321,7 +321,7 @@ export const CrmContactsPage: React.FC = () => {
             </table>
           </div>
         )}
-        <div className="flex items-center justify-between border-t border-border-subtle bg-stone-50/60 px-5 py-3 text-micro text-stone-500">
+        <div className="flex items-center justify-between border-t border-border-subtle bg-surface-soft/60 px-5 py-3 text-micro text-text-tertiary">
           <span>
             {filtered.length} {t("admin.crmCompaniesPage.resultat")}
             {filtered.length > 1 ? "s" : ""}

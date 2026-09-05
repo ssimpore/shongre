@@ -80,8 +80,8 @@ export const BankPayoutModal: React.FC<BankPayoutModalProps> = ({
       }
     >
       <div className="space-y-5">
-        <div className="rounded-xl border border-stone-200 bg-stone-50 p-4 text-sm text-stone-700">
-          <p className="font-bold text-stone-900">Ce qui se passe ensuite</p>
+        <div className="rounded-xl border border-border-disabled bg-surface-soft p-4 text-sm text-text-emphasis">
+          <p className="font-bold text-text-main">Ce qui se passe ensuite</p>
           <ol className="mt-3 space-y-2">
             <li>
               1. Le prestataire de paiement collecte les informations
@@ -92,7 +92,7 @@ export const BankPayoutModal: React.FC<BankPayoutModalProps> = ({
           </ol>
         </div>
 
-        <div className="flex gap-3 text-sm text-stone-600">
+        <div className="flex gap-3 text-sm text-text-supporting">
           <ShieldCheck
             className="mt-0.5 h-icon-lg w-icon-lg shrink-0 text-success"
             aria-hidden="true"

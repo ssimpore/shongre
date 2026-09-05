@@ -11,11 +11,11 @@ interface NewsletterTopicSelectorProps {
 }
 
 const TOPIC_ICONS: Record<string, React.ReactNode> = {
-  deals: <Tag className="w-icon-md h-icon-md text-amber-500" />,
+  deals: <Tag className="w-icon-md h-icon-md text-rating-strong" />,
   editorial: <Sparkles className="w-icon-md h-icon-md text-primary" />,
   seller_tips: <Lightbulb className="w-icon-md h-icon-md text-success" />,
   pro_insights: <Briefcase className="w-icon-md h-icon-md text-info" />,
-  new_features: <Zap className="w-icon-md h-icon-md text-indigo-500" />,
+  new_features: <Zap className="w-icon-md h-icon-md text-insight-highlight" />,
   local_trends: <MapPin className="w-icon-md h-icon-md text-danger" />,
 };
 
@@ -42,11 +42,11 @@ export const NewsletterTopicSelector: React.FC<
             onClick={() => toggleTopic(t.id)}
             className={`p-3.5 rounded-2xl border transition-all flex items-start gap-3 select-none cursor-pointer ${
               isChecked
-                ? "border-primary bg-primary/5 text-stone-900 ring-1 ring-primary/20"
-                : "border-border-base bg-white text-stone-700 hover:bg-stone-50"
+                ? "border-primary bg-primary-surface-soft text-text-main ring-1 ring-primary-ring"
+                : "border-border-base bg-bg-surface text-text-emphasis hover:bg-surface-soft"
             } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
           >
-            <div className="p-2 rounded-xl bg-stone-100 shrink-0 mt-0.5">
+            <div className="p-2 rounded-xl bg-surface-muted shrink-0 mt-0.5">
               {TOPIC_ICONS[t.id] || (
                 <Sparkles className="w-icon-md h-icon-md" />
               )}
@@ -54,7 +54,7 @@ export const NewsletterTopicSelector: React.FC<
 
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between gap-2 mb-0.5">
-                <span className="text-xs font-bold text-stone-900 block leading-tight">
+                <span className="text-xs font-bold text-text-main block leading-tight">
                   {t.label}
                 </span>
                 <input
@@ -62,10 +62,10 @@ export const NewsletterTopicSelector: React.FC<
                   checked={isChecked}
                   onChange={() => {}} // Handled by container click
                   disabled={disabled}
-                  className="w-4 h-4 rounded text-primary focus:ring-primary border-stone-300 pointer-events-none"
+                  className="w-4 h-4 rounded text-primary focus:ring-primary border-border-prominent pointer-events-none"
                 />
               </div>
-              <p className="text-micro text-stone-500 line-clamp-2 leading-relaxed">
+              <p className="text-micro text-text-tertiary line-clamp-2 leading-relaxed">
                 {t.description}
               </p>
             </div>

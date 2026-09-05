@@ -57,9 +57,9 @@ export const IconPickerModal: React.FC<IconPickerModalProps> = ({
                   onSelectIcon(iconName);
                   onClose();
                 }}
-                className={`p-2.5 rounded-control border flex flex-col items-center justify-center gap-1.5 transition-all text-stone-700 hover:border-primary hover:bg-bg-surface hover:text-primary ${
+                className={`p-2.5 rounded-control border flex flex-col items-center justify-center gap-1.5 transition-all text-text-emphasis hover:border-primary hover:bg-bg-surface hover:text-primary ${
                   isSelected
-                    ? "border-primary bg-primary-light text-primary ring-2 ring-primary/20 shadow-xs"
+                    ? "border-primary bg-primary-light text-primary ring-2 ring-primary-ring shadow-xs"
                     : "border-border-subtle bg-bg-surface"
                 }`}
                 title={iconName}

@@ -104,7 +104,7 @@ export const TaxonomyImportExportTab: React.FC<
                 )}
               </span>
             </h3>
-            <p className="text-xs text-stone-500 mt-1">
+            <p className="text-xs text-text-tertiary mt-1">
               {t("admin.taxonomyImportExportTab.generezUnExportCompletEt")}
             </p>
           </div>
@@ -131,7 +131,7 @@ export const TaxonomyImportExportTab: React.FC<
               )}
             </span>
           </h3>
-          <p className="text-xs text-stone-500 mt-1">
+          <p className="text-xs text-text-tertiary mt-1">
             {t("admin.taxonomyImportExportTab.collezLeSchemaJsonA")}
           </p>
         </div>
@@ -184,7 +184,7 @@ export const TaxonomyImportExportTab: React.FC<
             size="sm"
             onClick={() => setIsResetModalOpen(true)}
             leftIcon={
-              <RotateCcw className="w-icon-sm h-icon-sm text-stone-500" />
+              <RotateCcw className="w-icon-sm h-icon-sm text-text-tertiary" />
             }
           >
             {t(

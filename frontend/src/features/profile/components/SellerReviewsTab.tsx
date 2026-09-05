@@ -79,13 +79,13 @@ export const SellerReviewsTab: React.FC<SellerReviewsTabProps> = ({
   return (
     <div className="space-y-6">
       {/* Review Summary Score Card */}
-      <div className="bg-white rounded-2xl border border-border-base p-5 sm:p-7 shadow-xs">
+      <div className="bg-bg-surface rounded-2xl border border-border-base p-5 sm:p-7 shadow-xs">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
           {/* Main Average Score */}
           <div className="md:col-span-4 text-center md:text-left md:border-r md:border-border-subtle md:pr-6">
-            <div className="text-4xl sm:text-5xl font-bold text-stone-900 leading-none mb-2">
+            <div className="text-4xl sm:text-5xl font-bold text-text-main leading-none mb-2">
               {stats.average.toFixed(1)}
-              <span className="text-xl sm:text-2xl font-bold text-stone-500">
+              <span className="text-xl sm:text-2xl font-bold text-text-tertiary">
                 /5
               </span>
             </div>
@@ -96,17 +96,17 @@ export const SellerReviewsTab: React.FC<SellerReviewsTabProps> = ({
                   key={star}
                   className={`w-icon-lg h-icon-lg ${
                     star <= Math.round(stats.average)
-                      ? "fill-amber-400 text-amber-400"
-                      : "text-stone-300"
+                      ? "fill-rating-fill text-rating-fill"
+                      : "text-text-inverse-muted"
                   }`}
                 />
               ))}
             </div>
 
-            <p className="text-xs sm:text-sm text-stone-600 font-medium">
+            <p className="text-xs sm:text-sm text-text-supporting font-medium">
               Basé sur {stats.total} avis vérifié{stats.total > 1 ? "s" : ""}
             </p>
-            <p className="text-xs text-stone-500 mt-1">
+            <p className="text-xs text-text-tertiary mt-1">
               {t("profile.sellerReviewsTab.avisCertifiesSuiteAUne")}
             </p>
           </div>
@@ -128,9 +128,9 @@ export const SellerReviewsTab: React.FC<SellerReviewsTabProps> = ({
                     : "hover:bg-bg-base"
                 }`}
               >
-                <span className="flex items-center gap-1 w-12 shrink-0 font-medium text-stone-700">
+                <span className="flex items-center gap-1 w-12 shrink-0 font-medium text-text-emphasis">
                   {item.star}{" "}
-                  <Star className="w-icon-sm h-icon-sm fill-amber-400 text-amber-400" />
+                  <Star className="w-icon-sm h-icon-sm fill-rating-fill text-rating-fill" />
                 </span>
 
                 <ProgressBar
@@ -140,7 +140,7 @@ export const SellerReviewsTab: React.FC<SellerReviewsTabProps> = ({
                   className="flex-1"
                 />
 
-                <span className="w-12 text-right shrink-0 text-stone-500 text-xs">
+                <span className="w-12 text-right shrink-0 text-text-tertiary text-xs">
                   {item.count} ({item.percentage}%)
                 </span>
               </button>
@@ -173,7 +173,7 @@ export const SellerReviewsTab: React.FC<SellerReviewsTabProps> = ({
           {displayedReviews.map((rev) => (
             <div
               key={rev.id}
-              className="bg-white rounded-2xl border border-border-base p-5 shadow-xs transition-colors hover:border-stone-300"
+              className="bg-bg-surface rounded-2xl border border-border-base p-5 shadow-xs transition-colors hover:border-border-prominent"
             >
               <div className="flex items-start justify-between gap-4 mb-3">
                 <div className="flex items-center gap-3">
@@ -185,7 +185,7 @@ export const SellerReviewsTab: React.FC<SellerReviewsTabProps> = ({
                   />
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs sm:text-sm font-bold text-stone-900">
+                      <span className="text-xs sm:text-sm font-bold text-text-main">
                         {rev.authorName}
                       </span>
                       <VerificationBadge
@@ -194,22 +194,22 @@ export const SellerReviewsTab: React.FC<SellerReviewsTabProps> = ({
                       />
                     </div>
 
-                    <div className="flex items-center gap-2 mt-0.5 text-xs text-stone-500">
+                    <div className="flex items-center gap-2 mt-0.5 text-xs text-text-tertiary">
                       <span className="flex items-center gap-0.5">
                         {[1, 2, 3, 4, 5].map((star) => (
                           <Star
                             key={star}
                             className={`w-icon-sm h-icon-sm ${
                               star <= rev.rating
-                                ? "fill-amber-400 text-amber-400"
-                                : "text-stone-300"
+                                ? "fill-rating-fill text-rating-fill"
+                                : "text-text-inverse-muted"
                             }`}
                           />
                         ))}
                       </span>
                       <span>•</span>
                       <span className="flex items-center gap-1 text-xs">
-                        <Calendar className="w-icon-xs h-icon-xs text-stone-400" />
+                        <Calendar className="w-icon-xs h-icon-xs text-text-inverse-subtle" />
                         {formatDate(rev.createdAt)}
                       </span>
                     </div>
@@ -217,21 +217,21 @@ export const SellerReviewsTab: React.FC<SellerReviewsTabProps> = ({
                 </div>
 
                 {rev.listingTitle && (
-                  <div className="hidden sm:flex items-center gap-1.5 text-xs text-stone-500 bg-bg-base px-3 py-1.5 rounded-xl border border-border-base max-w-60 truncate">
-                    <ShoppingBag className="w-icon-sm h-icon-sm text-stone-400 shrink-0" />
+                  <div className="hidden sm:flex items-center gap-1.5 text-xs text-text-tertiary bg-bg-base px-3 py-1.5 rounded-xl border border-border-base max-w-60 truncate">
+                    <ShoppingBag className="w-icon-sm h-icon-sm text-text-inverse-subtle shrink-0" />
                     <span className="truncate">{rev.listingTitle}</span>
                   </div>
                 )}
               </div>
 
               {/* Review content */}
-              <p className="text-xs sm:text-sm text-stone-700 leading-relaxed whitespace-pre-line pl-1">
+              <p className="text-xs sm:text-sm text-text-emphasis leading-relaxed whitespace-pre-line pl-1">
                 {rev.comment}
               </p>
 
               {rev.listingTitle && (
-                <div className="sm:hidden mt-3 pt-2 border-t border-border-subtle flex items-center gap-1.5 text-xs text-stone-500">
-                  <ShoppingBag className="w-icon-xs h-icon-xs text-stone-400 shrink-0" />
+                <div className="sm:hidden mt-3 pt-2 border-t border-border-subtle flex items-center gap-1.5 text-xs text-text-tertiary">
+                  <ShoppingBag className="w-icon-xs h-icon-xs text-text-inverse-subtle shrink-0" />
                   <span className="truncate">Article : {rev.listingTitle}</span>
                 </div>
               )}
@@ -239,14 +239,14 @@ export const SellerReviewsTab: React.FC<SellerReviewsTabProps> = ({
           ))}
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-border-base p-10 text-center">
-          <MessageSquare className="w-12 h-12 text-stone-300 mx-auto mb-3" />
-          <h4 className="text-base font-bold text-stone-900 mb-1">
+        <div className="bg-bg-surface rounded-2xl border border-border-base p-10 text-center">
+          <MessageSquare className="w-12 h-12 text-text-inverse-muted mx-auto mb-3" />
+          <h4 className="text-base font-bold text-text-main mb-1">
             {selectedRatingFilter
               ? `Aucun avis avec ${selectedRatingFilter} étoile(s)`
               : "Pas encore d'avis pour ce vendeur"}
           </h4>
-          <p className="text-xs text-stone-500 max-w-sm mx-auto">
+          <p className="text-xs text-text-tertiary max-w-sm mx-auto">
             {selectedRatingFilter
               ? "Essayez de réinitialiser le filtre de note pour afficher les autres avis."
               : "Les avis clients apparaîtront ici dès que les premières transactions sécurisées auront été conclues."}

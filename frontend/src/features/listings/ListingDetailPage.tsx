@@ -672,14 +672,14 @@ export const ListingDetailPage: React.FC = () => {
   if (isLoading) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6 animate-pulse">
-        <div className="h-4 bg-stone-200 rounded w-1/4" />
+        <div className="h-4 bg-surface-disabled rounded w-1/4" />
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
-            <div className="aspect-16/10 bg-stone-200 rounded-2xl" />
-            <div className="h-8 bg-stone-200 rounded w-3/4" />
-            <div className="h-32 bg-stone-200 rounded-2xl" />
+            <div className="aspect-16/10 bg-surface-disabled rounded-2xl" />
+            <div className="h-8 bg-surface-disabled rounded w-3/4" />
+            <div className="h-32 bg-surface-disabled rounded-2xl" />
           </div>
-          <div className="h-80 bg-stone-200 rounded-2xl" />
+          <div className="h-80 bg-surface-disabled rounded-2xl" />
         </div>
       </div>
     );
@@ -800,7 +800,7 @@ export const ListingDetailPage: React.FC = () => {
             type="button"
             onClick={handleShare}
             aria-label={t("listings.listingDetailPage.partagerLAnnonce")}
-            className="flex items-center gap-1.5 text-xs font-semibold text-stone-600 hover:text-stone-900 bg-white border border-border-base px-3 py-1.5 rounded-xl transition-colors cursor-pointer shadow-2xs"
+            className="flex items-center gap-1.5 text-xs font-semibold text-text-supporting hover:text-text-main bg-bg-surface border border-border-base px-3 py-1.5 rounded-xl transition-colors cursor-pointer shadow-2xs"
           >
             <Share2 className="w-icon-sm h-icon-sm" />
             <span className="hidden sm:inline">Partager</span>
@@ -810,7 +810,7 @@ export const ListingDetailPage: React.FC = () => {
             data-marketplace-action="listing.report"
             onClick={() => setIsReportModalOpen(true)}
             aria-label={t("listings.listingDetailPage.signalerCetteAnnonce")}
-            className="flex items-center gap-1.5 text-xs font-semibold text-stone-500 hover:text-danger bg-white border border-border-base px-3 py-1.5 rounded-xl transition-colors cursor-pointer shadow-2xs"
+            className="flex items-center gap-1.5 text-xs font-semibold text-text-tertiary hover:text-danger bg-bg-surface border border-border-base px-3 py-1.5 rounded-xl transition-colors cursor-pointer shadow-2xs"
           >
             <Flag className="w-icon-sm h-icon-sm" />
             <span className="hidden sm:inline">Signaler</span>
@@ -839,9 +839,9 @@ export const ListingDetailPage: React.FC = () => {
           />
 
           {/* 2. PRIMARY SUMMARY CARD */}
-          <div className="bg-white rounded-3xl border border-stone-200/60 p-6 sm:p-8 space-y-5 shadow-sm relative overflow-hidden">
+          <div className="bg-bg-surface rounded-3xl border border-border-disabled/60 p-6 sm:p-8 space-y-5 shadow-sm relative overflow-hidden">
             {/* Subtle background glow */}
-            <div className="absolute -top-24 -right-24 w-64 h-64 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -top-24 -right-24 w-64 h-64 bg-primary-surface-soft rounded-full blur-3xl pointer-events-none" />
 
             <div className="flex items-start gap-4 relative z-raised">
               <div className="space-y-2 flex-1">
@@ -884,7 +884,7 @@ export const ListingDetailPage: React.FC = () => {
                 </div>
 
                 {/* Main H1 Title */}
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-stone-900 leading-tight tracking-tight">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-text-main leading-tight tracking-tight">
                   {listing.title}
                 </h1>
               </div>
@@ -907,7 +907,7 @@ export const ListingDetailPage: React.FC = () => {
                 {summaryAttributes.map((attrText, idx) => (
                   <span
                     key={idx}
-                    className="inline-flex items-center px-3.5 py-2 rounded-xl bg-stone-50 text-xs font-bold text-stone-700 border border-stone-200/60"
+                    className="inline-flex items-center px-3.5 py-2 rounded-xl bg-surface-soft text-xs font-bold text-text-emphasis border border-border-disabled/60"
                   >
                     {attrText}
                   </span>
@@ -927,9 +927,9 @@ export const ListingDetailPage: React.FC = () => {
             </div>
 
             {/* Metadata Footer: Location, Publication Date */}
-            <div className="flex items-center gap-4 text-xs font-medium text-stone-500 pt-5 mt-2 border-t border-stone-100 flex-wrap">
+            <div className="flex items-center gap-4 text-xs font-medium text-text-tertiary pt-5 mt-2 border-t border-border-soft flex-wrap">
               {listing.requiresPhysicalDelivery !== false ? (
-                <span className="flex items-center gap-1.5 text-stone-700">
+                <span className="flex items-center gap-1.5 text-text-emphasis">
                   <MapPin className="w-icon-md h-icon-md text-primary" />
                   {listing.city} ({listing.postalCode})
                 </span>
@@ -939,7 +939,7 @@ export const ListingDetailPage: React.FC = () => {
                 </Badge>
               )}
               <span className="flex items-center gap-1.5">
-                <Clock className="w-icon-md h-icon-md text-stone-400" />
+                <Clock className="w-icon-md h-icon-md text-text-inverse-subtle" />
                 Publiée {formatRelativeDate(listing.createdAt)}
               </span>
             </div>
@@ -949,12 +949,12 @@ export const ListingDetailPage: React.FC = () => {
           <ListingCharacteristics groups={groupedCharacteristics} />
 
           {/* 4. DESCRIPTION */}
-          <div className="bg-white rounded-3xl border border-stone-200/60 p-6 sm:p-8 space-y-4 shadow-sm">
-            <h2 className="text-base font-bold text-stone-900 pb-3 border-b border-stone-100 flex items-center gap-2">
+          <div className="bg-bg-surface rounded-3xl border border-border-disabled/60 p-6 sm:p-8 space-y-4 shadow-sm">
+            <h2 className="text-base font-bold text-text-main pb-3 border-b border-border-soft flex items-center gap-2">
               Description
             </h2>
             <div
-              className={`text-sm text-stone-600 leading-loose whitespace-pre-line font-medium ${
+              className={`text-sm text-text-supporting leading-loose whitespace-pre-line font-medium ${
                 !isDescriptionExpanded && listing.description.length > 450
                   ? "line-clamp-6 relative"
                   : ""
@@ -962,7 +962,7 @@ export const ListingDetailPage: React.FC = () => {
             >
               {listing.description}
               {!isDescriptionExpanded && listing.description.length > 450 && (
-                <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white to-transparent pointer-events-none" />
+                <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-bg-surface to-transparent pointer-events-none" />
               )}
             </div>
 
@@ -987,10 +987,12 @@ export const ListingDetailPage: React.FC = () => {
           <ListingSafetyNotice variant={intentPresentation.safetyVariant} />
 
           {/* 8. LISTING BOTTOM METADATA */}
-          <div className="p-4 rounded-xl bg-bg-base/60 text-micro text-stone-500 flex items-center justify-between flex-wrap gap-2 border border-border-subtle">
+          <div className="p-4 rounded-xl bg-bg-base/60 text-micro text-text-tertiary flex items-center justify-between flex-wrap gap-2 border border-border-subtle">
             <span>
               {t("listings.listingDetailPage.referenceAnnonce")}{" "}
-              <strong className="font-mono text-stone-700">{listing.id}</strong>
+              <strong className="font-mono text-text-emphasis">
+                {listing.id}
+              </strong>
             </span>
             <Link
               to={routes.contact({ context: "listing", listingId: listing.id })}
@@ -1009,7 +1011,7 @@ export const ListingDetailPage: React.FC = () => {
         {/* RIGHT COLUMN: Desktop Sticky Action & Transaction Panel */}
         {/* ========================================================================= */}
         <div className="lg:col-span-4 space-y-6">
-          <div className="bg-white rounded-3xl border border-stone-200/60 p-6 sm:p-8 space-y-6 shadow-md sticky top-24">
+          <div className="bg-bg-surface rounded-3xl border border-border-disabled/60 p-6 sm:p-8 space-y-6 shadow-md sticky top-24">
             {/* Price Box — the item price only.
                 The fee breakdown that used to sit here was removed for two
                 reasons. It quoted `calculateBuyerFee` (4% + 0.70 €), while
@@ -1020,7 +1022,7 @@ export const ListingDetailPage: React.FC = () => {
                 point. The fee is disclosed, itemised, in the checkout and
                 reservation flows where the amount is actually known. */}
             <div className="space-y-1">
-              <span className="text-xs text-stone-500 font-bold uppercase tracking-wider block">
+              <span className="text-xs text-text-tertiary font-bold uppercase tracking-wider block">
                 {t(intentPresentation.priceLabelKey)}
               </span>
               <PriceDisplay
@@ -1031,7 +1033,7 @@ export const ListingDetailPage: React.FC = () => {
                 size="xl"
               />
               {listing.isOnlinePaymentAvailable && listing.price > 0 && (
-                <p className="flex items-center gap-1.5 text-xs text-stone-500 pt-1.5">
+                <p className="flex items-center gap-1.5 text-xs text-text-tertiary pt-1.5">
                   <ShieldCheck className="w-icon-md h-icon-md text-success shrink-0" />
                   {t(
                     "listings.listingDetailPage.protectionAcheteurIncluseCalculeeAu",
@@ -1126,7 +1128,7 @@ export const ListingDetailPage: React.FC = () => {
             {/* OWNER ACTIONS vs BUYER ACTIONS */}
             {/* ===================================================================== */}
             {actions.isOwner ? (
-              <div className="p-5 bg-primary/5 border border-primary/20 rounded-2xl space-y-4">
+              <div className="p-5 bg-primary-surface-soft border border-primary-border rounded-2xl space-y-4">
                 <div className="flex items-center gap-2 text-primary font-bold text-sm">
                   <Edit3 className="w-icon-md h-icon-md" />
                   <span>
@@ -1206,7 +1208,7 @@ export const ListingDetailPage: React.FC = () => {
                     fullWidth
                     onClick={() => setIsDirectPurchaseModalOpen(true)}
                     leftIcon={<CreditCard className="h-icon-lg w-icon-lg" />}
-                    className="shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30"
+                    className="shadow-md shadow-primary-shadow hover:shadow-lg hover:shadow-primary-shadow-strong"
                   >
                     {t("listings.listingDetailPage.acheterMaintenant")}
                   </Button>
@@ -1302,10 +1304,10 @@ export const ListingDetailPage: React.FC = () => {
         <div className="pt-8 border-t border-border-subtle space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg sm:text-xl font-bold text-stone-900">
+              <h2 className="text-lg sm:text-xl font-bold text-text-main">
                 Annonces similaires dans {displayCategoryLabel}
               </h2>
-              <p className="text-xs text-stone-500">
+              <p className="text-xs text-text-tertiary">
                 {t(
                   "listings.listingDetailPage.selectionDArticlesRecommandesSelon",
                 )}
@@ -1539,10 +1541,10 @@ export const ListingDetailPage: React.FC = () => {
           {/* The total is a full-width summary on phones, matching the action
             hierarchy: amount first, choices second, primary CTA last. */}
           <div className="flex items-baseline gap-3 min-w-0 sm:block sm:shrink-0">
-            <div className="text-sm text-stone-500 font-bold uppercase tracking-wider shrink-0 sm:mb-0.5">
+            <div className="text-sm text-text-tertiary font-bold uppercase tracking-wider shrink-0 sm:mb-0.5">
               {t("listings.pricing.itemPrice")}
             </div>
-            <div className="text-2xl font-bold text-stone-900 truncate tabular-nums leading-none">
+            <div className="text-2xl font-bold text-text-main truncate tabular-nums leading-none">
               {listing.isFreeDonation
                 ? "Don gratuit"
                 : formatPrice(listing.price, {

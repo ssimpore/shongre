@@ -34,7 +34,7 @@ export const ProviderRoutingManager: React.FC = () => {
   return (
     <div className="space-y-4">
       {/* Header bar with market selector */}
-      <div className="bg-bg-surface p-4 rounded-control border border-stone-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="bg-bg-surface p-4 rounded-control border border-border-disabled shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h3 className="text-sm font-bold text-text-main flex items-center gap-2">
             <Sliders className="w-icon-md h-icon-md text-primary" />
@@ -42,7 +42,7 @@ export const ProviderRoutingManager: React.FC = () => {
               "admin.providerRoutingManager.gestionnaireDeRoutagePrioritesSecours",
             )}
           </h3>
-          <p className="text-xs text-stone-500 mt-0.5">
+          <p className="text-xs text-text-tertiary mt-0.5">
             {t(
               "admin.providerRoutingManager.seulsLesAdaptateursCompatiblesConfiguresEtVerifiesPeuventDevenirPrimaire",
             )}
@@ -79,7 +79,7 @@ export const ProviderRoutingManager: React.FC = () => {
             return (
               <div
                 key={capability.id}
-                className="bg-bg-surface p-4 rounded-control border border-stone-200 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4"
+                className="bg-bg-surface p-4 rounded-control border border-border-disabled shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4"
               >
                 {/* Capability description */}
                 <div className="max-w-md">
@@ -88,7 +88,7 @@ export const ProviderRoutingManager: React.FC = () => {
                     showCategory
                     className="text-text-main"
                   />
-                  <p className="mt-2 text-xs text-stone-500">
+                  <p className="mt-2 text-xs text-text-tertiary">
                     {capability.description}
                   </p>
                 </div>
@@ -100,13 +100,13 @@ export const ProviderRoutingManager: React.FC = () => {
                     className={`flex-1 p-2.5 rounded-lg border ${
                       primary
                         ? "border-success-border bg-success-surface/50"
-                        : "border-stone-200 bg-stone-50"
+                        : "border-border-disabled bg-surface-soft"
                     }`}
                   >
                     <div className="text-micro font-bold uppercase tracking-wider text-text-secondary mb-1 flex items-center justify-between">
                       <span>1. Prestataire Primaire</span>
                       {primary && (
-                        <span className="bg-emerald-200/70 text-success px-1 rounded text-micro">
+                        <span className="bg-success-on-inverse-muted/70 text-success px-1 rounded text-micro">
                           P1
                         </span>
                       )}
@@ -125,7 +125,7 @@ export const ProviderRoutingManager: React.FC = () => {
                         />
                       </div>
                     ) : (
-                      <span className="text-xs font-medium text-stone-500 italic">
+                      <span className="text-xs font-medium text-text-tertiary italic">
                         {t(
                           "admin.providerRoutingManager.aucunFournisseurVerifie",
                         )}
@@ -133,20 +133,20 @@ export const ProviderRoutingManager: React.FC = () => {
                     )}
                   </div>
 
-                  <span className="text-stone-300 font-bold">→</span>
+                  <span className="text-text-inverse-muted font-bold">→</span>
 
                   {/* Fallback Provider Box */}
                   <div
                     className={`flex-1 p-2.5 rounded-lg border ${
                       fallback
                         ? "border-info-border bg-info-surface/50"
-                        : "border-stone-200 bg-stone-50/50 border-dashed"
+                        : "border-border-disabled bg-surface-soft/50 border-dashed"
                     }`}
                   >
                     <div className="text-micro font-bold uppercase tracking-wider text-text-secondary mb-1 flex items-center justify-between">
                       <span>2. Secours (Fallback)</span>
                       {fallback && (
-                        <span className="bg-blue-200/70 text-info px-1 rounded text-micro">
+                        <span className="bg-info-surface-highlight/70 text-info px-1 rounded text-micro">
                           P2
                         </span>
                       )}
@@ -169,7 +169,7 @@ export const ProviderRoutingManager: React.FC = () => {
                         />
                       </div>
                     ) : (
-                      <span className="text-xs text-stone-500 italic">
+                      <span className="text-xs text-text-tertiary italic">
                         {t("admin.providerRoutingManager.aucunSecoursDefini")}
                       </span>
                     )}
@@ -186,7 +186,7 @@ export const ProviderRoutingManager: React.FC = () => {
                         : "Secours manuel"}
                     </span>
                   ) : (
-                    <span className="inline-flex items-center gap-1 text-micro font-semibold text-stone-500 bg-stone-100 px-2 py-1 rounded-pill">
+                    <span className="inline-flex items-center gap-1 text-micro font-semibold text-text-tertiary bg-surface-muted px-2 py-1 rounded-pill">
                       {t("admin.providerRoutingManager.aucunSecoursVerifie")}
                     </span>
                   )}

@@ -219,8 +219,8 @@ export const AdminUsersPage: React.FC = () => {
           <span className="text-xs font-bold uppercase tracking-wider text-primary">
             {t("admin.adminUsersPage.gouvernanceDesIdentites")}
           </span>
-          <span className="text-stone-300">•</span>
-          <span className="text-xs text-stone-500 font-medium">
+          <span className="text-text-inverse-muted">•</span>
+          <span className="text-xs text-text-tertiary font-medium">
             {t("admin.adminUsersPage.gestionDesComptesVerificationsKbis")}
           </span>
         </div>
@@ -245,7 +245,7 @@ export const AdminUsersPage: React.FC = () => {
                 "admin.adminUsersPage.rechercherUnNomEmailEntreprise",
               )}
               aria-label={t("admin.adminUsersPage.rechercherUnUtilisateur")}
-              className="w-full pl-9 pr-3 py-2 text-xs border border-border-base rounded-control focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 bg-bg-base h-control-touch"
+              className="w-full pl-9 pr-3 py-2 text-xs border border-border-base rounded-control focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring bg-bg-base h-control-touch"
             />
           </div>
 
@@ -304,7 +304,7 @@ export const AdminUsersPage: React.FC = () => {
           role="status"
           aria-live="polite"
           aria-atomic="true"
-          className="text-xs text-stone-500 font-semibold shrink-0"
+          className="text-xs text-text-tertiary font-semibold shrink-0"
         >
           {t("admin.adminUsersPage.utilisateursTrouves", {
             count: filteredUsers.length,
@@ -316,7 +316,7 @@ export const AdminUsersPage: React.FC = () => {
       <div className="bg-bg-surface rounded-2xl border border-border-base shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-stone-50 text-stone-700 font-bold border-b border-border-base">
+            <thead className="bg-surface-soft text-text-emphasis font-bold border-b border-border-base">
               <tr>
                 <th scope="col" className="p-3.5">
                   Utilisateur
@@ -371,7 +371,7 @@ export const AdminUsersPage: React.FC = () => {
                               )}
                             />
                           ) : null}
-                          <div className="text-xs text-stone-500">
+                          <div className="text-xs text-text-tertiary">
                             {u.companyName ? `${u.companyName} • ` : ""}
                             {u.email}
                           </div>
@@ -390,7 +390,7 @@ export const AdminUsersPage: React.FC = () => {
                             account type is worth showing (a professional account
                             with an individual role is a real state), so it stays
                             — as words. */}
-                        <span className="text-micro text-stone-500">
+                        <span className="text-micro text-text-tertiary">
                           {t(
                             `admin.accountType.${u.accountType || "individual"}` as MessageKey,
                           )}
@@ -419,7 +419,7 @@ export const AdminUsersPage: React.FC = () => {
                           </span>
                         )}
                         {u.siret && (
-                          <span className="text-micro text-stone-500 font-mono">
+                          <span className="text-micro text-text-tertiary font-mono">
                             SIRET: {u.siret}
                           </span>
                         )}
@@ -436,7 +436,7 @@ export const AdminUsersPage: React.FC = () => {
                     {/* Location */}
                     <td className="p-3.5 text-text-secondary">
                       <div>{u.city || "Non renseigné"}</div>
-                      <div className="text-micro text-stone-500 font-mono">
+                      <div className="text-micro text-text-tertiary font-mono">
                         {u.marketScope?.countries.join(", ") ||
                           activeMarket.code}
                       </div>
@@ -507,7 +507,7 @@ export const AdminUsersPage: React.FC = () => {
                               size="sm"
                               variant="outline"
                               onClick={() => setCapabilityModalUser(u)}
-                              className="text-xs text-violet-700 border-violet-200"
+                              className="text-xs text-staff-strong border-staff-border"
                             >
                               <KeyRound className="w-icon-xs h-icon-xs" />
                               {t("admin.capabilities.manageAction")}

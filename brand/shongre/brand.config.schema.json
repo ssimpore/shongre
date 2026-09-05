@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "brand.config.schema.json",
+  "title": "Shongre active brand configuration",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["$schema", "schemaVersion", "brand", "activeVersion"],
+  "properties": {
+    "$schema": { "const": "./brand.config.schema.json" },
+    "schemaVersion": { "const": 1 },
+    "brand": { "const": "shongre" },
+    "activeVersion": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    }
+  }
+}

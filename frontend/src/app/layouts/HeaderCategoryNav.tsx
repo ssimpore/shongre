@@ -162,7 +162,7 @@ const CategoryGroup: React.FC<CategoryGroupProps> = ({
       <h3
         id={headingId}
         role="presentation"
-        className="text-sm font-bold text-stone-950"
+        className="text-sm font-bold text-text-deep"
       >
         <Link
           role="menuitem"
@@ -184,7 +184,7 @@ const CategoryGroup: React.FC<CategoryGroupProps> = ({
                 role="menuitem"
                 to={getTaxonomyDestination(root, child)}
                 onClick={onNavigate}
-                className={`block min-h-7 rounded-control py-1 pr-2 text-sm font-medium leading-5 text-stone-600 hover:bg-bg-subtle hover:text-primary ${depth > 1 ? "pl-4" : "pl-2"} ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS}`}
+                className={`block min-h-7 rounded-control py-1 pr-2 text-sm font-medium leading-5 text-text-supporting hover:bg-bg-subtle hover:text-primary ${depth > 1 ? "pl-4" : "pl-2"} ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS}`}
               >
                 {getTaxonomyLabel(child, { compact: true, locale })}
               </Link>
@@ -225,20 +225,20 @@ const CategoryMegaMenuSidebar: React.FC<CategoryMegaMenuSidebarProps> = ({
       aria-label={label}
       className="min-w-0 border-l-4 border-primary bg-bg-subtle p-5 xl:p-6"
     >
-      <p className="text-micro font-bold uppercase tracking-wider text-stone-700">
+      <p className="text-micro font-bold uppercase tracking-wider text-text-emphasis">
         {t("nav.category.active")}
       </p>
       <div className="mt-3 flex items-center gap-3">
         <CategoryIcon category={root} size="md" withBackground />
         <h2
           role="presentation"
-          className="min-w-0 text-base font-bold text-stone-950"
+          className="min-w-0 text-base font-bold text-text-deep"
         >
           {label}
         </h2>
       </div>
       {root.description && (
-        <p className="mt-4 text-xs leading-relaxed text-stone-600">
+        <p className="mt-4 text-xs leading-relaxed text-text-supporting">
           {root.description}
         </p>
       )}
@@ -340,12 +340,12 @@ const CategoryOverviewMenu: React.FC<CategoryOverviewMenuProps> = ({
           aria-label={label}
           className="min-w-0 border-l-4 border-primary bg-bg-subtle p-5 xl:p-6"
         >
-          <p className="text-micro font-bold uppercase tracking-wider text-stone-700">
+          <p className="text-micro font-bold uppercase tracking-wider text-text-emphasis">
             {t("nav.category.autres")}
           </p>
           <h2
             role="presentation"
-            className="mt-3 text-base font-bold text-stone-950"
+            className="mt-3 text-base font-bold text-text-deep"
           >
             {label}
           </h2>
@@ -813,7 +813,7 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
             aria-label={t("nav.category.scrollPrevious")}
             aria-controls="header-category-rail"
             onClick={() => scrollCategories(-1)}
-            className={`absolute inset-y-0 left-0 z-raised flex w-9 items-center justify-center bg-gradient-to-r from-bg-surface via-bg-surface to-transparent text-stone-700 ${CONTROL_FOCUS_CLASS}`}
+            className={`absolute inset-y-0 left-0 z-raised flex w-9 items-center justify-center bg-gradient-to-r from-bg-surface via-bg-surface to-transparent text-text-emphasis ${CONTROL_FOCUS_CLASS}`}
           >
             <ChevronLeft className="h-icon-md w-icon-md" aria-hidden="true" />
           </button>
@@ -868,7 +868,7 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
                   {index > 0 && (
                     <li
                       aria-hidden="true"
-                      className="flex items-center px-1.5 text-sm font-bold text-stone-700"
+                      className="flex items-center px-1.5 text-sm font-bold text-text-emphasis"
                     >
                       ·
                     </li>
@@ -916,12 +916,12 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
                       aria-haspopup={hasMenu ? "menu" : undefined}
                       aria-controls={hasMenu ? CATEGORY_MENU_ID : undefined}
                       aria-expanded={hasMenu ? isExpanded : undefined}
-                      className={`relative inline-flex min-h-control-md items-center whitespace-nowrap rounded-control px-1.5 text-sm tracking-tight ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} focus-visible:bg-primary-light focus-visible:ring-2 focus-visible:ring-primary/20 ${
+                      className={`relative inline-flex min-h-control-md items-center whitespace-nowrap rounded-control px-1.5 text-sm tracking-tight ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} focus-visible:bg-primary-light focus-visible:ring-2 focus-visible:ring-primary-ring ${
                         isActive || isExpanded
                           ? "bg-primary-light font-bold text-primary after:absolute after:inset-x-1.5 after:bottom-0 after:h-0.5 after:rounded-sm after:bg-primary md:after:inset-x-2"
                           : item.kind === "link" && item.emphasis
-                            ? "font-bold text-stone-900 hover:bg-primary-light hover:text-primary"
-                            : "font-medium text-stone-800 hover:bg-bg-subtle hover:text-primary"
+                            ? "font-bold text-text-main hover:bg-primary-light hover:text-primary"
+                            : "font-medium text-text-strong hover:bg-bg-subtle hover:text-primary"
                       }`}
                     >
                       {label}
@@ -938,7 +938,7 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
             aria-label={t("nav.category.scrollNext")}
             aria-controls="header-category-rail"
             onClick={() => scrollCategories(1)}
-            className={`absolute inset-y-0 right-0 z-raised flex w-9 items-center justify-center bg-gradient-to-l from-bg-surface via-bg-surface to-transparent text-stone-700 ${CONTROL_FOCUS_CLASS}`}
+            className={`absolute inset-y-0 right-0 z-raised flex w-9 items-center justify-center bg-gradient-to-l from-bg-surface via-bg-surface to-transparent text-text-emphasis ${CONTROL_FOCUS_CLASS}`}
           >
             <ChevronRight className="h-icon-md w-icon-md" aria-hidden="true" />
           </button>

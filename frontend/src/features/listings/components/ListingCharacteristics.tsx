@@ -12,19 +12,19 @@ const GROUP_ICONS: Record<string, React.ReactNode> = {
   technical: <Cpu className="w-icon-md h-icon-md text-info" />,
   engine: <Car className="w-icon-md h-icon-md text-warning" />,
   property: <Home className="w-icon-md h-icon-md text-success" />,
-  energy: <Zap className="w-icon-md h-icon-md text-yellow-500" />,
-  dimensions: <Sliders className="w-icon-md h-icon-md text-purple-600" />,
+  energy: <Zap className="w-icon-md h-icon-md text-rating-strong-bright" />,
+  dimensions: <Sliders className="w-icon-md h-icon-md text-automation" />,
 };
 
 // DPE Energy Rating Colors
 const DPE_COLORS: Record<string, string> = {
-  A: "bg-success text-white",
-  B: "bg-success text-white",
-  C: "bg-lime-500 text-stone-900",
-  D: "bg-yellow-400 text-stone-900",
-  E: "bg-amber-500 text-white",
-  F: "bg-orange-600 text-white",
-  G: "bg-danger text-white",
+  A: "bg-success text-text-inverse",
+  B: "bg-success text-text-inverse",
+  C: "bg-sustainability-fill text-text-main",
+  D: "bg-rating-fill-bright text-text-main",
+  E: "bg-rating-strong text-text-inverse",
+  F: "bg-primary-fill text-text-inverse",
+  G: "bg-danger text-text-inverse",
 };
 
 export const ListingCharacteristics: React.FC<ListingCharacteristicsProps> = ({

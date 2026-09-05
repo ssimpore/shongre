@@ -143,7 +143,7 @@ export function SolutionsPage() {
   );
 
   return (
-    <div className="overflow-hidden bg-white">
+    <div className="overflow-hidden bg-bg-surface">
       <section className="border-b border-border-base py-10">
         <Container>
           <div className="max-w-3xl">
@@ -154,7 +154,7 @@ export function SolutionsPage() {
               {t("solutions.catalog.heroDescription")}
             </p>
           </div>
-          <div className="mt-7 inline-grid min-h-control-touch grid-cols-2 divide-x divide-border-base overflow-hidden rounded-control border border-border-base bg-white text-sm font-semibold text-text-main">
+          <div className="mt-7 inline-grid min-h-control-touch grid-cols-2 divide-x divide-border-base overflow-hidden rounded-control border border-border-base bg-bg-surface text-sm font-semibold text-text-main">
             <span className="flex items-center gap-2 px-4">
               <Grid2X2 className="h-icon-sm w-icon-sm" aria-hidden="true" />
               {/* An unresolved catalogue is unknown, not empty. Counting `[]`
@@ -191,7 +191,7 @@ export function SolutionsPage() {
       <section
         id="catalogue"
         aria-labelledby="catalogue-title"
-        className="scroll-mt-20 bg-white"
+        className="scroll-mt-20 bg-bg-surface"
       >
         <Container className="py-2 sm:py-4">
           <h2 id="catalogue-title" className="sr-only">

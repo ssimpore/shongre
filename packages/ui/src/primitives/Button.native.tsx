@@ -11,7 +11,6 @@ import {
   nativeBorders,
   nativeColors,
   nativeOpacity,
-  nativePalette,
   nativeRadius,
   nativeSizing,
   nativeSpacing,
@@ -78,16 +77,19 @@ export function Button({
         variantStyles[variant],
         fullWidth && styles.fullWidth,
         pressed && !unavailable && styles.pressed,
-        unavailable && styles.disabled,
+        unavailable && variant !== "primary" && styles.disabled,
+        unavailable && variant === "primary" && styles.primaryDisabled,
         style,
       ]}
     >
       {busy ? (
         <ActivityIndicator
           color={
-            variant === "primary" || variant === "pro"
-              ? nativeColors.action.onPrimary
-              : nativeColors.action.primary
+            variant === "primary" && unavailable
+              ? nativeColors.text.primary
+              : variant === "primary" || variant === "pro"
+                ? nativeColors.action.onPrimary
+                : nativeColors.action.primary
           }
         />
       ) : (
@@ -99,6 +101,7 @@ export function Button({
             styles.label,
             labelSizeStyles[size],
             labelVariantStyles[variant],
+            unavailable && variant === "primary" && styles.primaryDisabledLabel,
           ]}
         >
           {visibleLabel}
@@ -124,6 +127,11 @@ const styles = StyleSheet.create({
   fullWidth: { width: nativeSizing.full },
   pressed: { opacity: nativeOpacity.pressed },
   disabled: { opacity: nativeOpacity.disabled },
+  primaryDisabled: {
+    backgroundColor: nativeColors.action.primaryDisabled,
+    borderColor: nativeColors.action.primaryDisabledBorder,
+  },
+  primaryDisabledLabel: { color: nativeColors.text.primary },
   label: { fontFamily: nativeTypography.fontFamily.bold },
 });
 
@@ -160,16 +168,16 @@ const variantStyles = StyleSheet.create({
     borderWidth: nativeBorders.strong,
   },
   ghost: {
-    backgroundColor: nativePalette.transparent,
-    borderColor: nativePalette.transparent,
+    backgroundColor: nativeColors.surface.transparent,
+    borderColor: nativeColors.surface.transparent,
   },
   danger: {
     backgroundColor: nativeColors.status.error,
     borderColor: nativeColors.status.error,
   },
   pro: {
-    backgroundColor: nativePalette["stone-900"],
-    borderColor: nativePalette["stone-900"],
+    backgroundColor: nativeColors.surface.inverse,
+    borderColor: nativeColors.surface.inverse,
   },
 });
 const labelVariantStyles = StyleSheet.create({

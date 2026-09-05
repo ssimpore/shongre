@@ -108,34 +108,37 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
       >
         {toasts.map((toast) => {
           const typeStyles = {
-            success: "bg-emerald-900/90 text-white border-emerald-700",
-            error: "bg-red-900/90 text-white border-red-700",
-            info: "bg-stone-900/90 text-white border-stone-700",
-            warning: "bg-amber-900/90 text-white border-amber-700",
+            success:
+              "bg-success-inverse/90 text-text-inverse border-success-strong",
+            error:
+              "bg-danger-inverse/90 text-text-inverse border-danger-border-strong",
+            info: "bg-surface-inverse/90 text-text-inverse border-border-inverse-subtle",
+            warning:
+              "bg-rating-inverse/90 text-text-inverse border-rating-border",
           };
 
           const icons = {
             success: (
               <CheckCircle2
-                className="w-icon-lg h-icon-lg text-emerald-400 shrink-0"
+                className="w-icon-lg h-icon-lg text-success-on-inverse-vivid shrink-0"
                 aria-hidden="true"
               />
             ),
             error: (
               <AlertCircle
-                className="w-icon-lg h-icon-lg text-red-400 shrink-0"
+                className="w-icon-lg h-icon-lg text-danger-on-inverse-vivid shrink-0"
                 aria-hidden="true"
               />
             ),
             info: (
               <Info
-                className="w-icon-lg h-icon-lg text-sky-400 shrink-0"
+                className="w-icon-lg h-icon-lg text-info-on-inverse shrink-0"
                 aria-hidden="true"
               />
             ),
             warning: (
               <AlertCircle
-                className="w-icon-lg h-icon-lg text-amber-400 shrink-0"
+                className="w-icon-lg h-icon-lg text-rating-fill shrink-0"
                 aria-hidden="true"
               />
             ),
@@ -161,7 +164,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
                 /* 24px is the WCAG 2.5.8 floor; the glyph stays 16px and the
                    negative margin keeps the larger hit area from widening the
                    toast. */
-                className="shrink-0 -m-1 p-1 w-6 h-6 inline-flex items-center justify-center rounded text-stone-400 hover:text-white transition-colors"
+                className="shrink-0 -m-1 p-1 w-6 h-6 inline-flex items-center justify-center rounded text-text-inverse-subtle hover:text-text-inverse transition-colors"
               >
                 <X className="w-icon-md h-icon-md" aria-hidden="true" />
               </button>

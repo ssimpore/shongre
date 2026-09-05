@@ -33,7 +33,7 @@ export const MarketRecommendationBanner: React.FC = () => {
         <div className="min-w-0 flex-1">
           <h2
             id="market-recommendation-title"
-            className="text-sm font-bold text-stone-950"
+            className="text-sm font-bold text-text-deep"
           >
             {country
               ? t("shell.marketDetection.recommendationTitle", {
@@ -43,7 +43,7 @@ export const MarketRecommendationBanner: React.FC = () => {
                 ? t("shell.marketDetection.failureTitle")
                 : t("shell.marketDetection.unknownTitle")}
           </h2>
-          <p className="mt-0.5 text-xs leading-relaxed text-stone-700">
+          <p className="mt-0.5 text-xs leading-relaxed text-text-emphasis">
             {country
               ? t("shell.marketDetection.recommendationBody")
               : t("shell.marketDetection.selectCountryBody")}
@@ -74,7 +74,7 @@ export const MarketRecommendationBanner: React.FC = () => {
               <button
                 type="button"
                 onClick={dismissMarketRecommendation}
-                className="inline-flex min-h-control-touch items-center gap-1.5 rounded-control px-2 text-xs font-semibold text-stone-700 hover:bg-bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                className="inline-flex min-h-control-touch items-center gap-1.5 rounded-control px-2 text-xs font-semibold text-text-emphasis hover:bg-bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               >
                 <X className="h-icon-sm w-icon-sm" aria-hidden="true" />
                 {t("shell.marketDetection.ignore")}

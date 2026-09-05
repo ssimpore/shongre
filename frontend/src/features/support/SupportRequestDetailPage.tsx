@@ -87,8 +87,8 @@ export const SupportRequestDetailPage: React.FC = () => {
 
   if (!request) {
     return (
-      <div className="bg-white border border-border-base rounded-3xl p-10 text-center space-y-4 shadow-xs">
-        <h3 className="text-base font-bold text-stone-900">
+      <div className="bg-bg-surface border border-border-base rounded-3xl p-10 text-center space-y-4 shadow-xs">
+        <h3 className="text-base font-bold text-text-main">
           Dossier d'assistance introuvable
         </h3>
         <Button
@@ -113,7 +113,7 @@ export const SupportRequestDetailPage: React.FC = () => {
         <button
           type="button"
           onClick={() => navigate("/compte/support")}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-stone-600 hover:text-stone-950 transition-colors cursor-pointer"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-text-supporting hover:text-text-deep transition-colors cursor-pointer"
         >
           <ArrowLeft className="w-icon-md h-icon-md" />
           <span>
@@ -123,10 +123,10 @@ export const SupportRequestDetailPage: React.FC = () => {
       </div>
 
       {/* 2. Request Header Card */}
-      <div className="bg-white border border-border-base rounded-3xl p-6 shadow-xs space-y-4">
+      <div className="bg-bg-surface border border-border-base rounded-3xl p-6 shadow-xs space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border-subtle">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs font-bold font-mono text-stone-700 bg-stone-100 px-2.5 py-1 rounded-lg">
+            <span className="text-xs font-bold font-mono text-text-emphasis bg-surface-muted px-2.5 py-1 rounded-lg">
               {request.reference}
             </span>
             <Badge variant={statusInfo.variant} size="md">
@@ -134,28 +134,28 @@ export const SupportRequestDetailPage: React.FC = () => {
             </Badge>
           </div>
 
-          <span className="text-xs text-stone-500 font-medium">
+          <span className="text-xs text-text-tertiary font-medium">
             Ouvert le {formatDate(request.createdAt)}
           </span>
         </div>
 
         <div>
-          <h1 className="text-lg sm:text-xl font-bold text-stone-900">
+          <h1 className="text-lg sm:text-xl font-bold text-text-main">
             {request.subject}
           </h1>
-          <p className="text-xs text-stone-500 mt-0.5">
+          <p className="text-xs text-text-tertiary mt-0.5">
             {statusInfo.description}
           </p>
         </div>
 
-        <p className="text-sm leading-relaxed text-stone-700">
+        <p className="text-sm leading-relaxed text-text-emphasis">
           {request.description}
         </p>
       </div>
 
       {/* 3. Messages Timeline */}
       <div className="space-y-4">
-        <h2 className="text-xs font-bold uppercase tracking-wider text-stone-700 px-1">
+        <h2 className="text-xs font-bold uppercase tracking-wider text-text-emphasis px-1">
           Historique des échanges ({notes.length})
         </h2>
 
@@ -168,8 +168,8 @@ export const SupportRequestDetailPage: React.FC = () => {
                 key={msg.id}
                 className={`p-5 rounded-3xl border transition-all ${
                   isAgent
-                    ? "bg-primary/5 border-primary/20 mr-4 sm:mr-12"
-                    : "bg-white border-border-base ml-4 sm:ml-12"
+                    ? "bg-primary-surface-soft border-primary-border mr-4 sm:mr-12"
+                    : "bg-bg-surface border-border-base ml-4 sm:ml-12"
                 }`}
               >
                 <div className="flex items-center justify-between gap-2 mb-2">
@@ -177,8 +177,8 @@ export const SupportRequestDetailPage: React.FC = () => {
                     <div
                       className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs ${
                         isAgent
-                          ? "bg-primary text-white"
-                          : "bg-stone-200 text-stone-700"
+                          ? "bg-primary text-text-inverse"
+                          : "bg-surface-disabled text-text-emphasis"
                       }`}
                     >
                       {isAgent ? (
@@ -188,7 +188,7 @@ export const SupportRequestDetailPage: React.FC = () => {
                       )}
                     </div>
                     <div>
-                      <span className="text-xs font-bold text-stone-900 block leading-tight">
+                      <span className="text-xs font-bold text-text-main block leading-tight">
                         {isAgent
                           ? "Équipe Support Shongre"
                           : currentUser?.name || "Vous"}
@@ -201,12 +201,12 @@ export const SupportRequestDetailPage: React.FC = () => {
                     </div>
                   </div>
 
-                  <span className="text-micro text-stone-500 font-medium">
+                  <span className="text-micro text-text-tertiary font-medium">
                     {formatDate(msg.createdAt)}
                   </span>
                 </div>
 
-                <p className="text-xs sm:text-sm text-stone-800 leading-relaxed whitespace-pre-line pl-9">
+                <p className="text-xs sm:text-sm text-text-strong leading-relaxed whitespace-pre-line pl-9">
                   {msg.body}
                 </p>
               </div>
@@ -217,7 +217,7 @@ export const SupportRequestDetailPage: React.FC = () => {
 
       {/* 4. Reply Composer or Closed Banner */}
       {isClosedOrResolved ? (
-        <div className="p-4 bg-stone-100 border border-stone-200 rounded-2xl text-center text-xs text-stone-600 font-medium">
+        <div className="p-4 bg-surface-muted border border-border-disabled rounded-2xl text-center text-xs text-text-supporting font-medium">
           Ce dossier est résolu ou clôturé. Si vous rencontrez un nouveau
           problème, veuillez{" "}
           <button
@@ -232,10 +232,10 @@ export const SupportRequestDetailPage: React.FC = () => {
       ) : (
         <form
           onSubmit={handleSendReply}
-          className="bg-white border border-border-base rounded-3xl p-5 shadow-xs space-y-4"
+          className="bg-bg-surface border border-border-base rounded-3xl p-5 shadow-xs space-y-4"
         >
           <div className="flex items-center justify-between">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-stone-700">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-text-emphasis">
               {t("support.supportRequestDetailPage.repondreANotreEquipe")}
             </h3>
           </div>

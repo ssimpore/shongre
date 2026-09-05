@@ -373,10 +373,10 @@ export const AdminNewsletterPage: React.FC = () => {
 
   return (
     <div className="space-y-5 pb-8">
-      <section className="overflow-hidden rounded-2xl border border-stone-800 bg-stone-950 p-5 text-text-inverse shadow-sm sm:p-6">
+      <section className="overflow-hidden rounded-2xl border border-border-inverse bg-surface-inverse-deep p-5 text-text-inverse shadow-sm sm:p-6">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
           <div className="max-w-2xl">
-            <div className="flex flex-wrap items-center gap-2 text-micro font-bold uppercase tracking-wider text-violet-300">
+            <div className="flex flex-wrap items-center gap-2 text-micro font-bold uppercase tracking-wider text-staff-on-inverse">
               <span>CRM · Marketing</span>
               <span aria-hidden>·</span>
               <span>
@@ -429,8 +429,8 @@ export const AdminNewsletterPage: React.FC = () => {
               aria-current={activeTab === tab.id ? "page" : undefined}
               className={`flex min-h-control-sm shrink-0 items-center gap-2 rounded-control px-3 text-xs font-semibold transition-colors ${
                 activeTab === tab.id
-                  ? "bg-stone-950 text-text-inverse"
-                  : "text-text-secondary hover:bg-stone-100 hover:text-stone-950"
+                  ? "bg-surface-inverse-deep text-text-inverse"
+                  : "text-text-secondary hover:bg-surface-muted hover:text-text-deep"
               }`}
             >
               <Icon className="h-3.5 w-3.5" />
@@ -440,7 +440,7 @@ export const AdminNewsletterPage: React.FC = () => {
                   className={`rounded-pill px-1.5 py-0.5 text-micro ${
                     activeTab === tab.id
                       ? "bg-bg-surface/15 text-text-inverse"
-                      : "bg-stone-100 text-stone-500"
+                      : "bg-surface-muted text-text-tertiary"
                   }`}
                 >
                   {tab.count}
@@ -542,7 +542,7 @@ export const AdminNewsletterPage: React.FC = () => {
                     : "Des blocages empêchent l’envoi"}
                 </strong>
               </div>
-              <p className="mt-2 text-stone-700">
+              <p className="mt-2 text-text-emphasis">
                 {preflight.audience.eligible.toLocaleString("fr-FR")}{" "}
                 {t("admin.adminNewsletterPage.eligibles")}{" "}
                 {preflight.audience.excluded.toLocaleString("fr-FR")} exclus ·{" "}
@@ -705,15 +705,15 @@ const MetricCard: React.FC<{
   <article className="rounded-2xl border border-border-base bg-bg-surface p-5 shadow-xs">
     <div className="flex items-start justify-between gap-3">
       <div>
-        <p className="text-micro font-bold uppercase tracking-wider text-stone-500">
+        <p className="text-micro font-bold uppercase tracking-wider text-text-tertiary">
           {label}
         </p>
-        <p className="mt-2 text-2xl font-bold tabular-nums text-stone-950">
+        <p className="mt-2 text-2xl font-bold tabular-nums text-text-deep">
           {value}
         </p>
-        <p className="mt-1 text-xs text-stone-500">{detail}</p>
+        <p className="mt-1 text-xs text-text-tertiary">{detail}</p>
       </div>
-      <span className="rounded-control bg-violet-50 p-2.5 text-violet-700">
+      <span className="rounded-control bg-staff-surface p-2.5 text-staff-strong">
         <Icon className="h-4 w-4" />
       </span>
     </div>
@@ -805,10 +805,10 @@ const Campaigns: React.FC<{
   <section className="min-w-0 rounded-2xl border border-border-base bg-bg-surface p-5 shadow-xs">
     <div className="mb-4 flex items-center justify-between gap-3">
       <div>
-        <h2 className="text-sm font-bold text-stone-950">
+        <h2 className="text-sm font-bold text-text-deep">
           {compact ? "Campagnes récentes" : "Campagnes"}
         </h2>
-        <p className="mt-1 text-xs text-stone-500">
+        <p className="mt-1 text-xs text-text-tertiary">
           Versions, validation, planification et file d’envoi.
         </p>
       </div>
@@ -832,7 +832,7 @@ const Campaigns: React.FC<{
           >
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
-                <h3 className="truncate text-sm font-bold text-stone-950">
+                <h3 className="truncate text-sm font-bold text-text-deep">
                   {campaign.name}
                 </h3>
                 <Badge variant={statusVariant(campaign.status)} size="sm">
@@ -916,7 +916,7 @@ const Audiences: React.FC<{
             <div className="flex items-start justify-between gap-3">
               <div>
                 <h3 className="text-xs font-bold">{list.name}</h3>
-                <p className="mt-1 text-xs leading-relaxed text-stone-500">
+                <p className="mt-1 text-xs leading-relaxed text-text-tertiary">
                   {list.description}
                 </p>
               </div>
@@ -930,7 +930,7 @@ const Audiences: React.FC<{
     </section>
     <section className="rounded-2xl border border-border-base bg-bg-surface p-5 shadow-xs">
       <div className="flex items-center gap-2">
-        <ListFilter className="h-icon-md w-icon-md text-violet-700" />
+        <ListFilter className="h-icon-md w-icon-md text-staff-strong" />
         <h2 className="text-sm font-bold">Segments dynamiques</h2>
       </div>
       <div className="mt-4 space-y-2">
@@ -942,7 +942,7 @@ const Audiences: React.FC<{
             <div className="flex items-start justify-between gap-3">
               <div>
                 <h3 className="text-xs font-bold">{segment.name}</h3>
-                <p className="mt-1 text-xs leading-relaxed text-stone-500">
+                <p className="mt-1 text-xs leading-relaxed text-text-tertiary">
                   {segment.description}
                 </p>
                 <p className="mt-2 text-micro font-bold uppercase tracking-wider text-text-secondary">
@@ -962,7 +962,7 @@ const Audiences: React.FC<{
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-sm font-bold">Profils récents</h2>
-          <p className="mt-1 text-xs text-stone-500">
+          <p className="mt-1 text-xs text-text-tertiary">
             Profils marketing-only et profils liés aux contacts CRM.
           </p>
         </div>
@@ -972,7 +972,7 @@ const Audiences: React.FC<{
       </div>
       <div className="mt-4 overflow-x-auto">
         <table className="w-full min-w-2xl text-left text-xs">
-          <thead className="border-b border-border-base text-micro uppercase tracking-wider text-stone-500">
+          <thead className="border-b border-border-base text-micro uppercase tracking-wider text-text-tertiary">
             <tr>
               <th className="px-3 py-2 font-bold">Profil</th>
               <th className="px-3 py-2 font-bold">Statut</th>
@@ -1036,7 +1036,7 @@ const Templates: React.FC<{ templates: MarketingTemplate[] }> = ({
       <LayoutTemplate className="h-icon-md w-icon-md text-primary" />
       <div>
         <h2 className="text-sm font-bold">Modèles versionnés</h2>
-        <p className="mt-1 text-xs text-stone-500">
+        <p className="mt-1 text-xs text-text-tertiary">
           Une modification future ne change jamais une campagne déjà envoyée.
         </p>
       </div>
@@ -1048,7 +1048,7 @@ const Templates: React.FC<{ templates: MarketingTemplate[] }> = ({
           className="rounded-2xl border border-border-subtle p-4"
         >
           <div className="flex items-start justify-between gap-3">
-            <span className="rounded-control bg-violet-50 p-2 text-violet-700">
+            <span className="rounded-control bg-staff-surface p-2 text-staff-strong">
               <Sparkles className="h-icon-md w-icon-md" />
             </span>
             <Badge variant="neutral" size="sm">
@@ -1056,7 +1056,7 @@ const Templates: React.FC<{ templates: MarketingTemplate[] }> = ({
             </Badge>
           </div>
           <h3 className="mt-4 text-sm font-bold">{template.name}</h3>
-          <p className="mt-1 text-xs text-stone-500">{template.subject}</p>
+          <p className="mt-1 text-xs text-text-tertiary">{template.subject}</p>
           <p className="mt-3 text-micro font-bold uppercase tracking-wider text-text-secondary">
             {template.category} · {template.locale} ·{" "}
             {template.content.blocks.length} blocs
@@ -1076,7 +1076,7 @@ const Automation: React.FC<{
       <div className="flex items-center justify-between gap-3">
         <div>
           <h2 className="text-sm font-bold">Parcours marketing</h2>
-          <p className="mt-1 text-xs text-stone-500">
+          <p className="mt-1 text-xs text-text-tertiary">
             Runtime partagé, versions immuables, attentes persistées et reprise
             idempotente.
           </p>
@@ -1096,10 +1096,10 @@ const Automation: React.FC<{
           >
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <h3 className="text-sm font-bold text-stone-950">
+                <h3 className="text-sm font-bold text-text-deep">
                   {journey.name}
                 </h3>
-                <p className="mt-1 text-xs text-stone-500">
+                <p className="mt-1 text-xs text-text-tertiary">
                   {journey.description}
                 </p>
               </div>
@@ -1172,24 +1172,24 @@ const Analytics: React.FC<{
     <section className="rounded-2xl border border-border-base bg-bg-surface p-5 shadow-xs">
       <h2 className="text-sm font-bold">Qualité et délivrabilité</h2>
       <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4 text-xs">
-        <div className="rounded-control bg-stone-100 p-3">
+        <div className="rounded-control bg-surface-muted p-3">
           <strong className="block text-lg">{analytics.softBounces}</strong>
           Bounces temporaires
         </div>
-        <div className="rounded-control bg-stone-100 p-3">
+        <div className="rounded-control bg-surface-muted p-3">
           <strong className="block text-lg">{analytics.hardBounces}</strong>
           Bounces durs
         </div>
-        <div className="rounded-control bg-stone-100 p-3">
+        <div className="rounded-control bg-surface-muted p-3">
           <strong className="block text-lg">{analytics.complaints}</strong>
           Plaintes
         </div>
-        <div className="rounded-control bg-stone-100 p-3">
+        <div className="rounded-control bg-surface-muted p-3">
           <strong className="block text-lg">{analytics.unsubscribes}</strong>
           Désabonnements
         </div>
       </div>
-      <p className="mt-4 text-micro text-stone-500">
+      <p className="mt-4 text-micro text-text-tertiary">
         {analytics.openMetricCaveat}
       </p>
     </section>
@@ -1205,7 +1205,7 @@ const Compliance: React.FC<{ suppressions: MarketingSuppression[] }> = ({
         <Ban className="h-icon-md w-icon-md text-danger" />
         <div>
           <h2 className="text-sm font-bold">Suppressions actives</h2>
-          <p className="mt-1 text-xs text-stone-500">
+          <p className="mt-1 text-xs text-text-tertiary">
             Elles gagnent toujours sur listes, segments, imports,
             automatisations et suggestions IA.
           </p>
@@ -1222,7 +1222,7 @@ const Compliance: React.FC<{ suppressions: MarketingSuppression[] }> = ({
                 <strong className="text-xs">
                   {suppression.normalizedEmail}
                 </strong>
-                <p className="mt-1 text-micro text-stone-500">
+                <p className="mt-1 text-micro text-text-tertiary">
                   {suppression.source} · {formatDate(suppression.occurredAt)}
                 </p>
               </div>
@@ -1241,20 +1241,20 @@ const Compliance: React.FC<{ suppressions: MarketingSuppression[] }> = ({
     </section>
     <section className="rounded-2xl border border-border-base bg-bg-surface p-5 shadow-xs">
       <div className="flex items-center gap-2">
-        <Clock3 className="h-icon-md w-icon-md text-violet-700" />
+        <Clock3 className="h-icon-md w-icon-md text-staff-strong" />
         <h2 className="text-sm font-bold">Finalités séparées</h2>
       </div>
       <div className="mt-4 space-y-3 text-xs">
-        <div className="rounded-control bg-violet-50 p-3 text-violet-950">
+        <div className="rounded-control bg-staff-surface p-3 text-staff-inverse-deep">
           <strong className="block">MARKETING</strong>
           Bloqué par désabonnement, plainte, bounce dur ou suppression légale.
         </div>
-        <div className="rounded-control bg-stone-100 p-3 text-stone-700">
+        <div className="rounded-control bg-surface-muted p-3 text-text-emphasis">
           <strong className="block">TRANSACTIONAL / SECURITY</strong>
           N’est pas bloqué automatiquement par un désabonnement Newsletter.
         </div>
       </div>
-      <p className="mt-4 text-micro leading-relaxed text-stone-500">
+      <p className="mt-4 text-micro leading-relaxed text-text-tertiary">
         La preuve de consentement est historisée par canal, finalité, source et
         version. Les événements ne sont pas modifiables.
       </p>

@@ -173,7 +173,7 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({
             {showWorkspaceAction ? (
               <a
                 href={workspaceDestination}
-                className="inline-flex min-h-control-touch items-center justify-center gap-2 rounded-control bg-primary px-4 text-xs font-bold text-white shadow-sm transition-colors hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                className="inline-flex min-h-control-touch items-center justify-center gap-2 rounded-control bg-primary px-4 text-xs font-bold text-text-inverse shadow-sm transition-colors hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               >
                 {canOpenWorkspace
                   ? "Ouvrir l’application"
@@ -258,7 +258,7 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({
             {showWorkspaceAction ? (
               <a
                 href={workspaceDestination}
-                className="mt-3 inline-flex min-h-control-touch w-full items-center justify-center gap-2 rounded-control bg-primary px-4 text-sm font-bold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                className="mt-3 inline-flex min-h-control-touch w-full items-center justify-center gap-2 rounded-control bg-primary px-4 text-sm font-bold text-text-inverse focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               >
                 {isAuthenticated
                   ? "Ouvrir l’application"

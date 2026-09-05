@@ -163,7 +163,7 @@ const surfaceClasses = createVariants({
       base: "bg-bg-surface text-text-main",
       subtle: "bg-bg-subtle text-text-main",
       muted: "bg-bg-muted text-text-main",
-      inverse: "bg-text-main text-text-inverse",
+      inverse: "bg-surface-inverse text-text-inverse",
     },
     padding: { none: "", sm: "p-3", md: "p-4 sm:p-5", lg: "p-5 sm:p-6" },
     radius: {

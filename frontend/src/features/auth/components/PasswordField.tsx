@@ -81,7 +81,7 @@ export const PasswordField: React.FC<PasswordFieldProps> = ({
       {label && (
         <label
           htmlFor={id}
-          className="block text-xs font-semibold text-stone-800 mb-1.5"
+          className="block text-xs font-semibold text-text-strong mb-1.5"
         >
           {label} {required && <span className="text-primary">*</span>}
         </label>
@@ -98,10 +98,10 @@ export const PasswordField: React.FC<PasswordFieldProps> = ({
           required={required}
           autoComplete={autoComplete}
           disabled={disabled}
-          className={`w-full h-control-touch px-3.5 py-2.5 pr-11 bg-white border rounded-control text-sm text-stone-900 placeholder:text-stone-500 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all ${
+          className={`w-full h-control-touch px-3.5 py-2.5 pr-11 bg-bg-surface border rounded-control text-sm text-text-main placeholder:text-text-tertiary focus:outline-none focus:ring-2 focus:ring-primary-ring transition-all ${
             error
               ? "border-danger focus:border-danger bg-danger-surface/20"
-              : "border-stone-200 focus:border-primary"
+              : "border-border-disabled focus:border-primary"
           }`}
         />
 
@@ -132,9 +132,9 @@ export const PasswordField: React.FC<PasswordFieldProps> = ({
       )}
 
       {showStrength && value.length > 0 && (
-        <div className="mt-2.5 p-2.5 rounded-xl bg-stone-50 border border-stone-100 text-xs">
+        <div className="mt-2.5 p-2.5 rounded-xl bg-surface-soft border border-border-soft text-xs">
           <div className="flex items-center justify-between font-bold mb-1.5">
-            <span className="text-stone-500">
+            <span className="text-text-tertiary">
               {t("auth.passwordField.robustesseDuMotDePasse")}
             </span>
             <span className={strengthTextClass}>{strengthLabel}</span>
@@ -147,12 +147,12 @@ export const PasswordField: React.FC<PasswordFieldProps> = ({
             className="mb-2"
           />
 
-          <div className="grid grid-cols-2 gap-1 text-micro text-stone-600">
+          <div className="grid grid-cols-2 gap-1 text-micro text-text-supporting">
             <div className="flex items-center gap-1">
               {hasMinLength ? (
                 <Check className="w-icon-xs h-icon-xs text-success shrink-0" />
               ) : (
-                <X className="w-icon-xs h-icon-xs text-stone-300 shrink-0" />
+                <X className="w-icon-xs h-icon-xs text-text-inverse-muted shrink-0" />
               )}
               <span>{t("auth.passwordField.8CaracteresMinimum")}</span>
             </div>
@@ -160,7 +160,7 @@ export const PasswordField: React.FC<PasswordFieldProps> = ({
               {hasUppercase ? (
                 <Check className="w-icon-xs h-icon-xs text-success shrink-0" />
               ) : (
-                <X className="w-icon-xs h-icon-xs text-stone-300 shrink-0" />
+                <X className="w-icon-xs h-icon-xs text-text-inverse-muted shrink-0" />
               )}
               <span>1 lettre majuscule</span>
             </div>
@@ -168,7 +168,7 @@ export const PasswordField: React.FC<PasswordFieldProps> = ({
               {hasNumber ? (
                 <Check className="w-icon-xs h-icon-xs text-success shrink-0" />
               ) : (
-                <X className="w-icon-xs h-icon-xs text-stone-300 shrink-0" />
+                <X className="w-icon-xs h-icon-xs text-text-inverse-muted shrink-0" />
               )}
               <span>1 chiffre</span>
             </div>
@@ -176,7 +176,7 @@ export const PasswordField: React.FC<PasswordFieldProps> = ({
               {hasSpecial ? (
                 <Check className="w-icon-xs h-icon-xs text-success shrink-0" />
               ) : (
-                <X className="w-icon-xs h-icon-xs text-stone-300 shrink-0" />
+                <X className="w-icon-xs h-icon-xs text-text-inverse-muted shrink-0" />
               )}
               <span>{t("auth.passwordField.1CaractereSpecial")}</span>
             </div>

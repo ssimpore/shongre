@@ -70,7 +70,7 @@ export const NotificationDemoToolbar: React.FC = () => {
     {
       label: "Colis expédié",
       type: "fulfillment.shipped",
-      icon: <Package className="w-icon-sm h-icon-sm text-indigo-600" />,
+      icon: <Package className="w-icon-sm h-icon-sm text-insight" />,
       context: {
         type: "transaction",
         transactionId: "tx-501",
@@ -81,7 +81,7 @@ export const NotificationDemoToolbar: React.FC = () => {
       label: "Avis 5 étoiles reçu",
       type: "review.received",
       icon: (
-        <Star className="w-icon-sm h-icon-sm text-amber-500 fill-amber-400" />
+        <Star className="w-icon-sm h-icon-sm text-rating-strong fill-rating-fill" />
       ),
       context: {
         type: "account",
@@ -102,7 +102,7 @@ export const NotificationDemoToolbar: React.FC = () => {
     {
       label: "Signalement modérateur",
       type: "moderation.report_assigned",
-      icon: <ShieldAlert className="w-icon-sm h-icon-sm text-stone-700" />,
+      icon: <ShieldAlert className="w-icon-sm h-icon-sm text-text-emphasis" />,
       context: {
         type: "moderation",
         reportId: "9842",
@@ -111,14 +111,14 @@ export const NotificationDemoToolbar: React.FC = () => {
   ];
 
   return (
-    <div className="bg-stone-900 text-white rounded-2xl p-3.5 shadow-sm space-y-2.5">
+    <div className="bg-surface-inverse text-text-inverse rounded-2xl p-3.5 shadow-sm space-y-2.5">
       <button
         type="button"
         onClick={() => setIsExpanded(!isExpanded)}
         className="w-full flex items-center justify-between text-xs font-semibold hover:text-primary-on-dark transition-colors cursor-pointer"
       >
         <div className="flex items-center gap-2">
-          <Sparkles className="w-icon-md h-icon-md text-amber-400" />
+          <Sparkles className="w-icon-md h-icon-md text-rating-fill" />
           <span>
             {t(
               "notifications.notificationDemoToolbar.simulateurDEvenementsTempsReel",
@@ -133,8 +133,8 @@ export const NotificationDemoToolbar: React.FC = () => {
       </button>
 
       {isExpanded && (
-        <div className="pt-2 border-t border-stone-800 space-y-2">
-          <p className="text-micro text-stone-500">
+        <div className="pt-2 border-t border-border-inverse space-y-2">
+          <p className="text-micro text-text-tertiary">
             {t(
               "notifications.notificationDemoToolbar.cliquezSurUnScenarioPour",
             )}
@@ -146,7 +146,7 @@ export const NotificationDemoToolbar: React.FC = () => {
                 key={idx}
                 type="button"
                 onClick={() => simulateNotification(sc.type, sc.context)}
-                className="flex items-center gap-2 p-2 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-200 hover:text-white text-xs font-semibold transition-all border border-stone-700 text-left"
+                className="flex items-center gap-2 p-2 rounded-xl bg-surface-inverse-hover hover:bg-surface-inverse-muted text-text-inverse-faint hover:text-text-inverse text-xs font-semibold transition-all border border-border-inverse-subtle text-left"
               >
                 {sc.icon}
                 <span className="truncate">{sc.label}</span>

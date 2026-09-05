@@ -56,7 +56,7 @@ export const NewsletterPublicPreferencesPage: React.FC = () => {
 
   if (state === "loading")
     return (
-      <div className="mx-auto flex max-w-xl items-center justify-center px-4 py-24 text-stone-600">
+      <div className="mx-auto flex max-w-xl items-center justify-center px-4 py-24 text-text-supporting">
         <Loader2
           className="mr-2 h-icon-lg w-icon-lg animate-spin"
           aria-hidden="true"
@@ -92,10 +92,10 @@ export const NewsletterPublicPreferencesPage: React.FC = () => {
         <p className="text-xs font-bold uppercase tracking-wide text-primary">
           Newsletter Shongre
         </p>
-        <h1 className="mt-1 text-2xl font-bold text-stone-900">
+        <h1 className="mt-1 text-2xl font-bold text-text-main">
           Vos préférences
         </h1>
-        <p className="mt-2 text-sm text-stone-600">
+        <p className="mt-2 text-sm text-text-supporting">
           Choisissez les contenus adressés à{" "}
           <strong>{subscription.email}</strong>.
         </p>
@@ -109,7 +109,7 @@ export const NewsletterPublicPreferencesPage: React.FC = () => {
           Préférences enregistrées.
         </div>
       )}
-      <section className="rounded-3xl border border-border-base bg-white p-5 sm:p-7">
+      <section className="rounded-3xl border border-border-base bg-bg-surface p-5 sm:p-7">
         <NewsletterTopicSelector
           topics={newsletterTopicsService.getAllTopics()}
           selectedTopicIds={topics}

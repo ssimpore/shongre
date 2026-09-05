@@ -93,22 +93,22 @@ export const HomeCollectionExplorer: React.FC<HomeCollectionExplorerProps> = ({
                 className="absolute inset-0 h-full w-full object-cover motion-surface group-hover:scale-105"
               />
               <span
-                className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-black/10"
+                className="absolute inset-0 bg-gradient-to-t from-surface-overlay-deep/85 via-surface-overlay-deep/25 to-surface-overlay-deep/10"
                 aria-hidden="true"
               />
 
               <span className="absolute inset-x-3 top-3">
-                <span className="inline-flex max-w-full truncate rounded-pill border border-white/30 bg-black/55 px-2.5 py-1 text-micro font-bold text-white shadow-xs backdrop-blur-xs">
+                <span className="inline-flex max-w-full truncate rounded-pill border border-border-on-inverse/30 bg-surface-overlay-deep/55 px-2.5 py-1 text-micro font-bold text-text-inverse shadow-xs backdrop-blur-xs">
                   {collection.badge.label}
                 </span>
               </span>
 
-              <span className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-4 text-white">
+              <span className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-3 p-4 text-text-inverse">
                 <span className="min-w-0">
                   <span className="block text-base font-bold leading-tight">
                     {collection.shortTitle}
                   </span>
-                  <span className="mt-1 flex items-center gap-1.5 text-xs font-semibold text-white/85">
+                  <span className="mt-1 flex items-center gap-1.5 text-xs font-semibold text-text-inverse/85">
                     <Layers3
                       className="h-icon-sm w-icon-sm shrink-0"
                       aria-hidden="true"
@@ -118,7 +118,7 @@ export const HomeCollectionExplorer: React.FC<HomeCollectionExplorerProps> = ({
                     </span>
                   </span>
                 </span>
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/30 bg-white/15 backdrop-blur-xs motion-interactive group-hover:bg-white group-hover:text-primary">
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border-on-inverse/30 bg-bg-surface/15 backdrop-blur-xs motion-interactive group-hover:bg-bg-surface group-hover:text-primary">
                   <ArrowRight
                     className="h-icon-sm w-icon-sm motion-interactive group-hover:translate-x-0.5"
                     aria-hidden="true"

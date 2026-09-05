@@ -17,7 +17,7 @@ export function VerifiedIcon({ size = "sm", label }: VerifiedIconProps) {
   return (
     <span
       data-ui-verified-icon="true"
-      className={`inline-flex shrink-0 text-white ${sizeClasses[size]}`}
+      className={`inline-flex shrink-0 text-text-inverse ${sizeClasses[size]}`}
       role={label ? "img" : undefined}
       aria-label={label}
       aria-hidden={label ? undefined : true}

@@ -103,14 +103,14 @@ export const ModerationAppealsPage: React.FC = () => {
   return (
     <div className="space-y-6 max-w-4xl">
       <div className="space-y-1">
-        <h1 className="text-xl sm:text-2xl font-bold text-stone-900 flex items-center gap-2.5">
+        <h1 className="text-xl sm:text-2xl font-bold text-text-main flex items-center gap-2.5">
           <Scale
             className="w-icon-xl h-icon-xl text-primary"
             aria-hidden="true"
           />
           Décisions et recours
         </h1>
-        <p className="text-xs sm:text-sm text-stone-500">
+        <p className="text-xs sm:text-sm text-text-tertiary">
           Les recours sont examinés par une personne différente de celle ayant
           pris la décision initiale.
         </p>
@@ -123,12 +123,12 @@ export const ModerationAppealsPage: React.FC = () => {
           ))}
         </div>
       ) : cases.length === 0 ? (
-        <div className="rounded-2xl border border-border-base bg-white p-8 text-center">
-          <ShieldAlert className="mx-auto h-8 w-8 text-stone-400" />
-          <h2 className="mt-3 text-base font-bold text-stone-900">
+        <div className="rounded-2xl border border-border-base bg-bg-surface p-8 text-center">
+          <ShieldAlert className="mx-auto h-8 w-8 text-text-inverse-subtle" />
+          <h2 className="mt-3 text-base font-bold text-text-main">
             Aucune décision de modération
           </h2>
-          <p className="mt-1 text-xs text-stone-500">
+          <p className="mt-1 text-xs text-text-tertiary">
             Les éventuelles décisions concernant votre compte ou vos annonces
             apparaîtront ici.
           </p>
@@ -137,7 +137,7 @@ export const ModerationAppealsPage: React.FC = () => {
         <section aria-labelledby="moderation-cases-title" className="space-y-3">
           <h2
             id="moderation-cases-title"
-            className="text-base font-bold text-stone-900"
+            className="text-base font-bold text-text-main"
           >
             Vos dossiers
           </h2>
@@ -148,16 +148,16 @@ export const ModerationAppealsPage: React.FC = () => {
             return (
               <article
                 key={item.id}
-                className="rounded-2xl border border-border-base bg-white p-4 sm:p-5 shadow-xs"
+                className="rounded-2xl border border-border-base bg-bg-surface p-4 sm:p-5 shadow-xs"
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <p className="text-sm font-bold text-stone-900">
+                    <p className="text-sm font-bold text-text-main">
                       {item.targetType === "listing"
                         ? "Décision concernant une annonce"
                         : "Décision concernant votre compte"}
                     </p>
-                    <p className="mt-1 text-xs text-stone-500">
+                    <p className="mt-1 text-xs text-text-tertiary">
                       Dossier ouvert le {formatDate(item.createdAt)}
                     </p>
                   </div>
@@ -167,12 +167,12 @@ export const ModerationAppealsPage: React.FC = () => {
                   </Badge>
                 </div>
                 {item.resolutionReason && (
-                  <p className="mt-3 rounded-xl bg-stone-50 p-3 text-xs leading-relaxed text-stone-700">
+                  <p className="mt-3 rounded-xl bg-surface-soft p-3 text-xs leading-relaxed text-text-emphasis">
                     {item.resolutionReason}
                   </p>
                 )}
                 {activeAppeal?.decisionReason && (
-                  <p className="mt-2 text-xs text-stone-600">
+                  <p className="mt-2 text-xs text-text-supporting">
                     Motif du réexamen : {activeAppeal.decisionReason}
                   </p>
                 )}

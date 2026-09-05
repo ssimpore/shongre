@@ -78,7 +78,7 @@ export const SellerCard: React.FC<SellerCardProps> = ({
               to={`${profileUrl}?tab=reviews`}
               className="inline-flex items-center gap-1 min-h-6 font-semibold text-text-main hover:text-primary"
             >
-              <Star className="w-icon-sm h-icon-sm fill-amber-400 text-amber-400" />
+              <Star className="w-icon-sm h-icon-sm fill-rating-fill text-rating-fill" />
               {user.rating.toFixed(1)}
               <span className="font-normal text-text-muted">
                 ({user.reviewCount} avis)

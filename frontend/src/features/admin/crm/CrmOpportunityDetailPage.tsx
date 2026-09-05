@@ -75,12 +75,12 @@ const activityPresentation: Record<
   },
   EMAIL_SENT: {
     label: "Email envoyé",
-    tone: "bg-violet-50 text-violet-700",
+    tone: "bg-staff-surface text-staff-strong",
     icon: Mail,
   },
   EMAIL_RECEIVED: {
     label: "Email reçu",
-    tone: "bg-violet-50 text-violet-700",
+    tone: "bg-staff-surface text-staff-strong",
     icon: Mail,
   },
   NOTE_CREATED: {
@@ -358,7 +358,7 @@ export const CrmOpportunityDetailPage: React.FC = () => {
         <h1 className="mt-3 text-lg font-bold text-text-main">
           {t("admin.crmOpportunityDetailPage.opportuniteIntrouvable")}
         </h1>
-        <p className="mt-1 text-sm text-stone-500">{error}</p>
+        <p className="mt-1 text-sm text-text-tertiary">{error}</p>
         <div className="mt-5 flex justify-center gap-2">
           <Button
             variant="outline"
@@ -392,7 +392,7 @@ export const CrmOpportunityDetailPage: React.FC = () => {
 
   return (
     <div className="space-y-4 pb-8">
-      <section className="overflow-hidden rounded-2xl border border-stone-800 bg-stone-950 text-text-inverse shadow-sm">
+      <section className="overflow-hidden rounded-2xl border border-border-inverse bg-surface-inverse-deep text-text-inverse shadow-sm">
         <div className="p-5 sm:p-6">
           <Link
             to={crmPaths.pipeline}
@@ -405,7 +405,7 @@ export const CrmOpportunityDetailPage: React.FC = () => {
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 <span
-                  className={`rounded-pill px-2 py-1 text-micro font-bold ${opportunity.status === "won" ? "bg-emerald-950 text-emerald-300" : opportunity.status === "lost" ? "bg-rose-950 text-rose-300" : "bg-primary/15 text-orange-200"}`}
+                  className={`rounded-pill px-2 py-1 text-micro font-bold ${opportunity.status === "won" ? "bg-success-inverse-deep text-success-on-inverse-strong" : opportunity.status === "lost" ? "bg-critical-inverse-deep text-critical-on-inverse-strong" : "bg-primary-overlay text-primary-on-inverse-muted"}`}
                 >
                   {opportunity.stageName}
                 </span>
@@ -456,7 +456,7 @@ export const CrmOpportunityDetailPage: React.FC = () => {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="border-stone-700 bg-stone-900 text-text-inverse hover:bg-stone-800"
+                  className="border-border-inverse-subtle bg-surface-inverse text-text-inverse hover:bg-surface-inverse-hover"
                   onClick={() => setNoteOpen(true)}
                 >
                   <MessageSquareText className="h-icon-md w-icon-md" />{" "}
@@ -465,7 +465,7 @@ export const CrmOpportunityDetailPage: React.FC = () => {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="border-stone-700 bg-stone-900 text-text-inverse hover:bg-stone-800"
+                  className="border-border-inverse-subtle bg-surface-inverse text-text-inverse hover:bg-surface-inverse-hover"
                   onClick={() => setQuoteOpen(true)}
                   disabled={!opportunity.accountId}
                 >
@@ -485,7 +485,7 @@ export const CrmOpportunityDetailPage: React.FC = () => {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="border-stone-700 bg-stone-900 text-text-inverse hover:bg-stone-800"
+                    className="border-border-inverse-subtle bg-surface-inverse text-text-inverse hover:bg-surface-inverse-hover"
                     onClick={() => setCloseMode("lost")}
                   >
                     <XCircle className="h-icon-md w-icon-md" /> Perdue
@@ -502,7 +502,7 @@ export const CrmOpportunityDetailPage: React.FC = () => {
             reachable by keyboard. */}
         <ScrollableRegion
           aria-label={t("crm.opportunity.stageStepperLabel")}
-          className="border-t border-stone-800 px-4 py-4 sm:px-6"
+          className="border-t border-border-inverse px-4 py-4 sm:px-6"
         >
           <div className="flex min-w-3xl items-start">
             {pipeline.stages.map((stage, index) => {
@@ -519,12 +519,12 @@ export const CrmOpportunityDetailPage: React.FC = () => {
                 >
                   {index > 0 && (
                     <span
-                      className={`absolute right-1/2 top-3 h-0.5 w-full ${complete ? "bg-primary" : "bg-stone-700"}`}
+                      className={`absolute right-1/2 top-3 h-0.5 w-full ${complete ? "bg-primary" : "bg-surface-inverse-muted"}`}
                       aria-hidden="true"
                     />
                   )}
                   <span
-                    className={`relative z-raised inline-flex h-6 w-6 items-center justify-center rounded-pill border-2 text-micro font-bold ${current ? "border-primary bg-primary text-text-inverse ring-4 ring-primary/15" : complete ? "border-primary bg-primary text-text-inverse" : "border-stone-600 bg-stone-900 text-text-disabled"}`}
+                    className={`relative z-raised inline-flex h-6 w-6 items-center justify-center rounded-pill border-2 text-micro font-bold ${current ? "border-primary bg-primary text-text-inverse ring-4 ring-primary-ring" : complete ? "border-primary bg-primary text-text-inverse" : "border-border-inverse-muted bg-surface-inverse text-text-disabled"}`}
                   >
                     {complete ? (
                       <Check
@@ -536,7 +536,7 @@ export const CrmOpportunityDetailPage: React.FC = () => {
                     )}
                   </span>
                   <span
-                    className={`text-micro font-bold ${current ? "text-text-inverse" : "text-text-disabled group-hover:text-stone-200"}`}
+                    className={`text-micro font-bold ${current ? "text-text-inverse" : "text-text-disabled group-hover:text-text-inverse-faint"}`}
                   >
                     {stage.name}
                   </span>
@@ -552,10 +552,10 @@ export const CrmOpportunityDetailPage: React.FC = () => {
           <section className="rounded-2xl border border-border-base bg-bg-surface shadow-xs">
             <div className="flex items-center justify-between border-b border-border-subtle px-5 py-3.5">
               <div>
-                <h2 className="text-sm font-bold text-stone-950">
+                <h2 className="text-sm font-bold text-text-deep">
                   Historique commercial
                 </h2>
-                <p className="text-micro text-stone-500">
+                <p className="text-micro text-text-tertiary">
                   {t(
                     "admin.crmOpportunityDetailPage.journalImmuableDesEchangesEtChangements",
                   )}
@@ -571,25 +571,25 @@ export const CrmOpportunityDetailPage: React.FC = () => {
             </div>
             <div className="p-5">
               {activities.length === 0 ? (
-                <div className="rounded-control border border-dashed border-stone-200 p-8 text-center">
+                <div className="rounded-control border border-dashed border-border-disabled p-8 text-center">
                   <Clock3 className="mx-auto h-icon-xl w-icon-xl text-text-disabled" />
-                  <p className="mt-2 text-xs font-bold text-stone-700">
+                  <p className="mt-2 text-xs font-bold text-text-emphasis">
                     {t("admin.crmOpportunityDetailPage.aucuneActivite")}
                   </p>
-                  <p className="text-micro text-stone-500">
+                  <p className="text-micro text-text-tertiary">
                     {t(
                       "admin.crmOpportunityDetailPage.lesAppelsEmailsNotesEtTransitionsApparaitrontIci",
                     )}
                   </p>
                 </div>
               ) : (
-                <ol className="relative space-y-5 before:absolute before:bottom-3 before:left-4 before:top-3 before:w-px before:bg-stone-200">
+                <ol className="relative space-y-5 before:absolute before:bottom-3 before:left-4 before:top-3 before:w-px before:bg-surface-disabled">
                   {activities.map((activity) => {
                     const presentation = activityPresentation[
                       activity.activityType
                     ] ?? {
                       label: activity.activityType,
-                      tone: "bg-stone-100 text-stone-700",
+                      tone: "bg-surface-muted text-text-emphasis",
                       icon: Clock3,
                     };
                     const Icon = presentation.icon;
@@ -605,18 +605,18 @@ export const CrmOpportunityDetailPage: React.FC = () => {
                             <strong className="text-xs font-bold text-text-main">
                               {activity.title}
                             </strong>
-                            <time className="text-micro text-stone-500">
+                            <time className="text-micro text-text-tertiary">
                               {new Intl.DateTimeFormat(currentLocale, {
                                 dateStyle: "medium",
                                 timeStyle: "short",
                               }).format(new Date(activity.occurredAt))}
                             </time>
                           </div>
-                          <p className="mt-0.5 text-micro font-semibold text-stone-500">
+                          <p className="mt-0.5 text-micro font-semibold text-text-tertiary">
                             {presentation.label} · {activity.actorName}
                           </p>
                           {activity.description && (
-                            <p className="mt-1.5 rounded-lg bg-stone-50 p-2.5 text-xs leading-relaxed text-stone-700">
+                            <p className="mt-1.5 rounded-lg bg-surface-soft p-2.5 text-xs leading-relaxed text-text-emphasis">
                               {activity.description}
                             </p>
                           )}
@@ -632,10 +632,10 @@ export const CrmOpportunityDetailPage: React.FC = () => {
           <section className="rounded-2xl border border-border-base bg-bg-surface shadow-xs">
             <div className="flex items-center justify-between border-b border-border-subtle px-5 py-3.5">
               <div>
-                <h2 className="text-sm font-bold text-stone-950">
+                <h2 className="text-sm font-bold text-text-deep">
                   {t("admin.crmOpportunityDetailPage.tachesLiees")}
                 </h2>
-                <p className="text-micro text-stone-500">
+                <p className="text-micro text-text-tertiary">
                   {t(
                     "admin.crmOpportunityDetailPage.relancesEtProchainesEtapes",
                   )}
@@ -650,7 +650,7 @@ export const CrmOpportunityDetailPage: React.FC = () => {
             </div>
             <div className="divide-y divide-border-subtle px-5">
               {tasks.length === 0 ? (
-                <p className="py-7 text-center text-xs text-stone-500">
+                <p className="py-7 text-center text-xs text-text-tertiary">
                   {t("admin.crmOpportunityDetailPage.aucuneTacheAssociee")}
                 </p>
               ) : (
@@ -662,7 +662,7 @@ export const CrmOpportunityDetailPage: React.FC = () => {
                         task.status !== "completed" && void completeTask(task)
                       }
                       aria-label={`Marquer « ${task.title} » comme terminée`}
-                      className={`inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-pill border ${task.status === "completed" ? "border-success-border bg-success-surface text-success" : "border-stone-200 text-text-disabled hover:border-success-border hover:text-success"}`}
+                      className={`inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-pill border ${task.status === "completed" ? "border-success-border bg-success-surface text-success" : "border-border-disabled text-text-disabled hover:border-success-border hover:text-success"}`}
                     >
                       <Check className="h-icon-md w-icon-md" />
                     </button>
@@ -672,7 +672,7 @@ export const CrmOpportunityDetailPage: React.FC = () => {
                       >
                         {task.title}
                       </p>
-                      <p className="text-micro text-stone-500">
+                      <p className="text-micro text-text-tertiary">
                         {new Intl.DateTimeFormat(currentLocale, {
                           dateStyle: "medium",
                           timeStyle: "short",
@@ -693,8 +693,8 @@ export const CrmOpportunityDetailPage: React.FC = () => {
           <section className="rounded-2xl border border-border-base bg-bg-surface shadow-xs">
             <div className="flex items-center justify-between border-b border-border-subtle px-5 py-3.5">
               <div>
-                <h2 className="text-sm font-bold text-stone-950">Devis</h2>
-                <p className="text-micro text-stone-500">
+                <h2 className="text-sm font-bold text-text-deep">Devis</h2>
+                <p className="text-micro text-text-tertiary">
                   {t(
                     "admin.crmOpportunityDetailPage.propositionsChiffreesLieesALOpportunite",
                   )}
@@ -712,7 +712,7 @@ export const CrmOpportunityDetailPage: React.FC = () => {
             </div>
             <div className="divide-y divide-border-subtle px-5">
               {quotes.length === 0 ? (
-                <p className="py-7 text-center text-xs text-stone-500">
+                <p className="py-7 text-center text-xs text-text-tertiary">
                   {t("admin.crmOpportunityDetailPage.aucunDevisAssocie")}
                 </p>
               ) : (
@@ -721,14 +721,14 @@ export const CrmOpportunityDetailPage: React.FC = () => {
                     key={quote.id}
                     className="flex items-center gap-3 py-3"
                   >
-                    <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-stone-100 text-stone-700">
+                    <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-surface-muted text-text-emphasis">
                       <FileText className="h-icon-md w-icon-md" />
                     </span>
                     <div className="min-w-0 flex-1">
                       <strong className="block truncate text-xs">
                         {quote.quoteNumber}
                       </strong>
-                      <p className="text-micro text-stone-500">
+                      <p className="text-micro text-text-tertiary">
                         {quote.items.length} ligne(s) · valable{" "}
                         {quote.validUntil
                           ? new Intl.DateTimeFormat(currentLocale, {
@@ -737,7 +737,7 @@ export const CrmOpportunityDetailPage: React.FC = () => {
                           : "sans échéance"}
                       </p>
                     </div>
-                    <span className="rounded-pill bg-stone-100 px-2 py-1 text-micro font-bold text-text-secondary">
+                    <span className="rounded-pill bg-surface-muted px-2 py-1 text-micro font-bold text-text-secondary">
                       {quote.status}
                     </span>
                     <strong className="text-xs tabular-nums">
@@ -752,7 +752,7 @@ export const CrmOpportunityDetailPage: React.FC = () => {
 
         <aside className="min-w-0 space-y-4">
           <section className="rounded-2xl border border-border-base bg-bg-surface p-4 shadow-xs">
-            <h2 className="text-sm font-bold text-stone-950">Informations</h2>
+            <h2 className="text-sm font-bold text-text-deep">Informations</h2>
             <dl className="mt-3 divide-y divide-border-subtle text-xs">
               {[
                 ["Pipeline", opportunity.pipelineName],
@@ -766,26 +766,26 @@ export const CrmOpportunityDetailPage: React.FC = () => {
                   key={label}
                   className="flex items-center justify-between gap-3 py-2.5"
                 >
-                  <dt className="text-stone-500">{label}</dt>
-                  <dd className="text-right font-bold text-stone-800">
+                  <dt className="text-text-tertiary">{label}</dt>
+                  <dd className="text-right font-bold text-text-strong">
                     {value}
                   </dd>
                 </div>
               ))}
             </dl>
             {opportunity.nextStep && (
-              <div className="mt-3 rounded-control border border-primary/15 bg-primary-light p-3">
+              <div className="mt-3 rounded-control border border-primary-border-soft bg-primary-light p-3">
                 <span className="text-micro font-bold uppercase tracking-wider text-primary">
                   {t("admin.crmOpportunityDetailPage.prochaineEtape")}
                 </span>
-                <p className="mt-1 text-xs font-semibold text-stone-800">
+                <p className="mt-1 text-xs font-semibold text-text-strong">
                   {opportunity.nextStep}
                 </p>
               </div>
             )}
           </section>
 
-          <section className="rounded-2xl border border-stone-800 bg-stone-950 p-4 text-text-inverse shadow-xs">
+          <section className="rounded-2xl border border-border-inverse bg-surface-inverse-deep p-4 text-text-inverse shadow-xs">
             <div className="flex items-center gap-2">
               <Sparkles className="h-icon-md w-icon-md text-primary" />
               <h2 className="text-sm font-bold">Assistant commercial</h2>
@@ -795,8 +795,8 @@ export const CrmOpportunityDetailPage: React.FC = () => {
                 "admin.crmOpportunityDetailPage.redigezUneRelanceOuResumezLHistoriqueAvecLeFournisseur",
               )}
             </p>
-            <div className="mt-3 rounded-control border border-stone-800 bg-stone-900 p-3 text-micro text-text-disabled">
-              <Bot className="mb-1.5 h-icon-md w-icon-md text-stone-500" />
+            <div className="mt-3 rounded-control border border-border-inverse bg-surface-inverse p-3 text-micro text-text-disabled">
+              <Bot className="mb-1.5 h-icon-md w-icon-md text-text-tertiary" />
               {t(
                 "admin.crmOpportunityDetailPage.aucunFournisseurIaPersonnelActifLeCrmResteEntierementFonctionnel",
               )}
@@ -805,7 +805,7 @@ export const CrmOpportunityDetailPage: React.FC = () => {
               to="/admin/fournisseurs"
               variant="outline"
               size="sm"
-              className="mt-3 w-full border-stone-700 bg-stone-900 text-text-inverse hover:bg-stone-800"
+              className="mt-3 w-full border-border-inverse-subtle bg-surface-inverse text-text-inverse hover:bg-surface-inverse-hover"
             >
               <Settings2 className="h-icon-md w-icon-md" />{" "}
               {t("admin.crmOpportunityDetailPage.configurerLesFournisseurs")}
@@ -815,11 +815,11 @@ export const CrmOpportunityDetailPage: React.FC = () => {
           <section className="rounded-2xl border border-border-base bg-bg-surface p-4 shadow-xs">
             <div className="flex items-center gap-2">
               <Mail className="h-icon-md w-icon-md text-primary" />
-              <h2 className="text-sm font-bold text-stone-950">
+              <h2 className="text-sm font-bold text-text-deep">
                 Communication
               </h2>
             </div>
-            <p className="mt-2 text-xs leading-relaxed text-stone-500">
+            <p className="mt-2 text-xs leading-relaxed text-text-tertiary">
               {t(
                 "admin.crmOpportunityDetailPage.lEnvoiExigeUneConnexionMailboxOuEmailDeliveryExplicite",
               )}
@@ -928,8 +928,8 @@ export const CrmOpportunityDetailPage: React.FC = () => {
               );
               const price = product?.prices[0];
               return price ? (
-                <div className="rounded-control bg-stone-50 p-3">
-                  <span className="text-stone-500">Prix unitaire</span>
+                <div className="rounded-control bg-surface-soft p-3">
+                  <span className="text-text-tertiary">Prix unitaire</span>
                   <strong className="ml-2">
                     {money(
                       price.amount.amountMinor,
@@ -937,7 +937,7 @@ export const CrmOpportunityDetailPage: React.FC = () => {
                       currentLocale,
                     )}
                   </strong>
-                  <p className="mt-1 text-micro text-stone-500">
+                  <p className="mt-1 text-micro text-text-tertiary">
                     {t(
                       "admin.crmOpportunityDetailPage.tvaDeDemonstration20LeBackendResteAutoritaireSurLes",
                     )}

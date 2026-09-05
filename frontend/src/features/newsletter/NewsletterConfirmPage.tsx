@@ -45,7 +45,7 @@ export const NewsletterConfirmPage: React.FC = () => {
 
   if (state === "loading") {
     return (
-      <div className="mx-auto flex max-w-md items-center justify-center px-4 py-24 text-stone-600">
+      <div className="mx-auto flex max-w-md items-center justify-center px-4 py-24 text-text-supporting">
         <Loader2
           className="mr-2 h-icon-lg w-icon-lg animate-spin"
           aria-hidden="true"
@@ -57,7 +57,7 @@ export const NewsletterConfirmPage: React.FC = () => {
 
   return (
     <div className="max-w-md mx-auto px-4 py-16 text-center">
-      <div className="bg-white border border-border-base rounded-3xl p-8 sm:p-10 shadow-xs space-y-6">
+      <div className="bg-bg-surface border border-border-base rounded-3xl p-8 sm:p-10 shadow-xs space-y-6">
         <div
           className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto ${state === "confirmed" ? "bg-success-surface text-success" : "bg-danger-surface text-danger"}`}
         >
@@ -69,16 +69,16 @@ export const NewsletterConfirmPage: React.FC = () => {
         </div>
 
         <div className="space-y-2">
-          <h1 className="text-2xl font-bold text-stone-900">
+          <h1 className="text-2xl font-bold text-text-main">
             {state === "confirmed"
               ? t("newsletter.newsletterConfirmPage.abonnementConfirme")
               : "Lien invalide ou expiré"}
           </h1>
-          <p className="text-xs sm:text-sm text-stone-600">
+          <p className="text-xs sm:text-sm text-text-supporting">
             {state === "confirmed" ? (
               <>
                 L'adresse{" "}
-                <strong className="text-stone-900 font-mono">
+                <strong className="text-text-main font-mono">
                   {confirmedEmail}
                 </strong>{" "}
                 est désormais inscrite à la newsletter Shongre.
@@ -90,7 +90,7 @@ export const NewsletterConfirmPage: React.FC = () => {
         </div>
 
         {state === "confirmed" && (
-          <div className="p-4 bg-stone-50 border border-border-base rounded-2xl text-xs text-stone-500 text-left flex items-start gap-3">
+          <div className="p-4 bg-surface-soft border border-border-base rounded-2xl text-xs text-text-tertiary text-left flex items-start gap-3">
             <ShieldCheck className="w-icon-md h-icon-md text-success shrink-0 mt-0.5" />
             <span>
               {t(

@@ -152,7 +152,7 @@ export const CategoryFilterRail: React.FC<CategoryFilterRailProps> = ({
             aria-label={t(
               "ui.categoryFilterRail.faireDefilerLesCategoriesVers",
             )}
-            className={`hidden sm:flex absolute left-0 top-1/2 -translate-y-1/2 z-raised ${RAIL_CONTROL_CLASS} items-center justify-center rounded-pill bg-bg-surface/95 text-stone-700 shadow-md border border-border-base hover:bg-bg-subtle hover:text-text-main ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer -ml-2`}
+            className={`hidden sm:flex absolute left-0 top-1/2 -translate-y-1/2 z-raised ${RAIL_CONTROL_CLASS} items-center justify-center rounded-pill bg-bg-surface/95 text-text-emphasis shadow-md border border-border-base hover:bg-bg-subtle hover:text-text-main ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer -ml-2`}
           >
             <ChevronLeft className={RAIL_CONTROL_ICON_CLASS} />
           </button>
@@ -183,8 +183,8 @@ export const CategoryFilterRail: React.FC<CategoryFilterRailProps> = ({
               )}
               className={`shrink-0 inline-flex items-center gap-1.5 h-control-md px-3 rounded-pill text-xs font-semibold ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer select-none border active:scale-95 ${
                 !selectedCategorySlug
-                  ? "bg-stone-900 text-white border-stone-900 shadow-xs"
-                  : "bg-bg-surface text-stone-700 border-border-base hover:border-border-hover hover:bg-bg-subtle shadow-2xs"
+                  ? "bg-surface-inverse text-text-inverse border-border-inverse-strong shadow-xs"
+                  : "bg-bg-surface text-text-emphasis border-border-base hover:border-border-hover hover:bg-bg-subtle shadow-2xs"
               }`}
             >
               <LayoutGrid
@@ -215,15 +215,15 @@ export const CategoryFilterRail: React.FC<CategoryFilterRailProps> = ({
                 title={compactLabel}
                 className={`shrink-0 inline-flex items-center gap-1.5 h-control-md px-3 rounded-pill text-xs ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer select-none border active:scale-95 ${
                   isSelected
-                    ? "bg-stone-900 text-white border-stone-900 font-semibold shadow-xs"
-                    : "bg-bg-surface text-stone-700 border-border-base hover:border-border-hover hover:bg-bg-subtle font-medium shadow-2xs"
+                    ? "bg-surface-inverse text-text-inverse border-border-inverse-strong font-semibold shadow-xs"
+                    : "bg-bg-surface text-text-emphasis border-border-base hover:border-border-hover hover:bg-bg-subtle font-medium shadow-2xs"
                 }`}
               >
                 <span className="shrink-0 pointer-events-none">
                   <CategoryIcon
                     category={cat}
                     size="xs"
-                    className={isSelected ? "text-white" : ""}
+                    className={isSelected ? "text-text-inverse" : ""}
                   />
                 </span>
                 <span className="whitespace-nowrap pointer-events-none">
@@ -234,7 +234,7 @@ export const CategoryFilterRail: React.FC<CategoryFilterRailProps> = ({
                     aria-hidden="true"
                     className="ml-0.5 w-icon-sm h-icon-sm rounded-pill bg-bg-surface/20 hover:bg-bg-surface/30 flex items-center justify-center pointer-events-none"
                   >
-                    <X className="w-2.5 h-2.5 text-white" />
+                    <X className="w-2.5 h-2.5 text-text-inverse" />
                   </span>
                 )}
               </button>
@@ -250,7 +250,7 @@ export const CategoryFilterRail: React.FC<CategoryFilterRailProps> = ({
             aria-label={t(
               "ui.categoryFilterRail.faireDefilerLesCategoriesVers2",
             )}
-            className={`hidden sm:flex absolute right-0 top-1/2 -translate-y-1/2 z-raised ${RAIL_CONTROL_CLASS} items-center justify-center rounded-pill bg-bg-surface/95 text-stone-700 shadow-md border border-border-base hover:bg-bg-subtle hover:text-text-main ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer -mr-2`}
+            className={`hidden sm:flex absolute right-0 top-1/2 -translate-y-1/2 z-raised ${RAIL_CONTROL_CLASS} items-center justify-center rounded-pill bg-bg-surface/95 text-text-emphasis shadow-md border border-border-base hover:bg-bg-subtle hover:text-text-main ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer -mr-2`}
           >
             <ChevronRight className={RAIL_CONTROL_ICON_CLASS} />
           </button>
@@ -274,7 +274,7 @@ export const CategoryFilterRail: React.FC<CategoryFilterRailProps> = ({
               className={`shrink-0 h-control-sm px-2.5 rounded-control text-xs font-semibold ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer border ${
                 !selectedSubCategorySlug
                   ? "bg-primary-light text-primary border-primary-border font-semibold"
-                  : "bg-stone-100 text-text-secondary border-transparent hover:bg-stone-200"
+                  : "bg-surface-muted text-text-secondary border-transparent hover:bg-surface-disabled"
               }`}
             >
               Toutes
@@ -300,8 +300,8 @@ export const CategoryFilterRail: React.FC<CategoryFilterRailProps> = ({
                   }}
                   className={`shrink-0 h-control-sm px-2.5 rounded-control text-xs font-semibold ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer border ${
                     isSubSelected
-                      ? "bg-primary text-white border-primary shadow-2xs font-semibold"
-                      : "bg-stone-100 text-stone-700 border-transparent hover:bg-stone-200"
+                      ? "bg-primary text-text-inverse border-primary shadow-2xs font-semibold"
+                      : "bg-surface-muted text-text-emphasis border-transparent hover:bg-surface-disabled"
                   }`}
                   title={subLabel}
                 >

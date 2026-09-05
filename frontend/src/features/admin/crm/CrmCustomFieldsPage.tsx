@@ -130,10 +130,10 @@ export const CrmCustomFieldsPage: React.FC = () => {
 
   return (
     <div className="space-y-4 pb-8">
-      <section className="rounded-2xl border border-stone-800 bg-stone-950 p-5 text-text-inverse sm:p-6">
+      <section className="rounded-2xl border border-border-inverse bg-surface-inverse-deep p-5 text-text-inverse sm:p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-micro font-bold uppercase tracking-wider text-violet-300">
+            <p className="text-micro font-bold uppercase tracking-wider text-staff-on-inverse">
               CRM · Configuration
             </p>
             <h1 className="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">
@@ -152,12 +152,12 @@ export const CrmCustomFieldsPage: React.FC = () => {
       </section>
       <section className="overflow-hidden rounded-2xl border border-border-base bg-bg-surface shadow-xs">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border-subtle p-3">
-          <div className="inline-flex items-center gap-1 text-micro font-bold uppercase tracking-wider text-stone-500">
+          <div className="inline-flex items-center gap-1 text-micro font-bold uppercase tracking-wider text-text-tertiary">
             <SlidersHorizontal className="h-icon-sm w-icon-sm" />{" "}
             {t("admin.crmCustomFieldsPage.entite")}
           </div>
           <div
-            className="flex flex-wrap rounded-lg bg-stone-100 p-1"
+            className="flex flex-wrap rounded-lg bg-surface-muted p-1"
             role="tablist"
           >
             {Object.entries(entityLabels).map(([value, label]) => (
@@ -169,7 +169,7 @@ export const CrmCustomFieldsPage: React.FC = () => {
                 onClick={() =>
                   setEntityType(value as CrmCustomField["entityType"])
                 }
-                className={`rounded-md px-3 py-1.5 text-micro font-semibold ${entityType === value ? "bg-bg-surface text-stone-950 shadow-xs" : "text-stone-500"}`}
+                className={`rounded-md px-3 py-1.5 text-micro font-semibold ${entityType === value ? "bg-bg-surface text-text-deep shadow-xs" : "text-text-tertiary"}`}
               >
                 {label}
               </button>
@@ -209,16 +209,16 @@ export const CrmCustomFieldsPage: React.FC = () => {
                       </span>
                     )}
                   </div>
-                  <code className="mt-1 block text-micro text-stone-500">
+                  <code className="mt-1 block text-micro text-text-tertiary">
                     {field.key}
                   </code>
                   {field.description && (
-                    <p className="mt-1 text-micro text-stone-500">
+                    <p className="mt-1 text-micro text-text-tertiary">
                       {field.description}
                     </p>
                   )}
                 </div>
-                <span className="text-xs font-bold text-stone-700">
+                <span className="text-xs font-bold text-text-emphasis">
                   {fieldLabels[field.fieldType]}
                 </span>
                 <span className="rounded-pill bg-success-surface px-2 py-1 text-center text-micro font-bold text-success">
@@ -287,7 +287,7 @@ export const CrmCustomFieldsPage: React.FC = () => {
               />
             </FormField>
           )}
-          <label className="flex items-center gap-2 rounded-control bg-stone-50 p-3 font-semibold">
+          <label className="flex items-center gap-2 rounded-control bg-surface-soft p-3 font-semibold">
             <input
               type="checkbox"
               checked={required}

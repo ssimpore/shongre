@@ -99,14 +99,14 @@ export const ProDashboardPage: React.FC = () => {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-xl sm:text-2xl font-bold text-stone-900">
+            <h1 className="text-xl sm:text-2xl font-bold text-text-main">
               {t("sellerworkspace.proDashboardPage.tableauDeBordVendeurPro")}
             </h1>
             <VerificationBadge
               label={t("ui.identityStatus.verification.siret")}
             />
           </div>
-          <p className="text-xs sm:text-sm text-stone-500 mt-0.5">
+          <p className="text-xs sm:text-sm text-text-tertiary mt-0.5">
             {t("sellerworkspace.proDashboardPage.suiviDesPerformancesDeVotre")}
           </p>
         </div>
@@ -130,7 +130,7 @@ export const ProDashboardPage: React.FC = () => {
                 storeSlug: currentUser.storeSlug,
                 isProfessional: true,
               })}
-              className="motion-interactive flex items-center gap-2 rounded-control bg-stone-900 px-4 py-2.5 text-xs font-bold text-white shadow-sm hover:-translate-y-0.5 hover:bg-stone-800 hover:shadow-md"
+              className="motion-interactive flex items-center gap-2 rounded-control bg-surface-inverse px-4 py-2.5 text-xs font-bold text-text-inverse shadow-sm hover:-translate-y-0.5 hover:bg-surface-inverse-hover hover:shadow-md"
             >
               <span>Voir ma vitrine en ligne</span>
               <ArrowUpRight className="w-icon-md h-icon-md" />
@@ -171,18 +171,18 @@ export const ProDashboardPage: React.FC = () => {
         <>
           <section
             aria-labelledby="pro-action-queue"
-            className="rounded-2xl border border-primary/20 bg-primary-light p-5 shadow-xs"
+            className="rounded-2xl border border-primary-border bg-primary-light p-5 shadow-xs"
           >
             <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
               <div>
                 <h2
                   id="pro-action-queue"
-                  className="flex items-center gap-2 text-base font-bold text-stone-900"
+                  className="flex items-center gap-2 text-base font-bold text-text-main"
                 >
                   <CircleAlert className="h-icon-md w-icon-md text-primary" />
                   {t("sellerworkspace.proDashboardPage.actionQueueTitle")}
                 </h2>
-                <p className="mt-1 text-xs text-stone-600">
+                <p className="mt-1 text-xs text-text-supporting">
                   {t("sellerworkspace.proDashboardPage.actionQueueDescription")}
                 </p>
               </div>
@@ -197,12 +197,12 @@ export const ProDashboardPage: React.FC = () => {
                   className="surface-interactive rounded-control border border-border-base bg-bg-surface p-4"
                 >
                   <div className="flex items-center justify-between gap-3">
-                    <span className="text-sm font-bold text-stone-900">
+                    <span className="text-sm font-bold text-text-main">
                       {t("sellerworkspace.proDashboardPage.answerContacts")}
                     </span>
                     <ArrowUpRight className="h-icon-sm w-icon-sm text-primary" />
                   </div>
-                  <p className="mt-1 text-xs text-stone-500">
+                  <p className="mt-1 text-xs text-text-tertiary">
                     {unreadContactCount.toLocaleString(locale)}{" "}
                     {t("sellerworkspace.proDashboardPage.contactsAwaiting")}
                   </p>
@@ -214,14 +214,14 @@ export const ProDashboardPage: React.FC = () => {
                   className="surface-interactive rounded-control border border-border-base bg-bg-surface p-4"
                 >
                   <div className="flex items-center justify-between gap-3">
-                    <span className="text-sm font-bold text-stone-900">
+                    <span className="text-sm font-bold text-text-main">
                       {t(
                         "sellerworkspace.proDashboardPage.publishFirstListing",
                       )}
                     </span>
                     <ArrowUpRight className="h-icon-sm w-icon-sm text-primary" />
                   </div>
-                  <p className="mt-1 text-xs text-stone-500">
+                  <p className="mt-1 text-xs text-text-tertiary">
                     {t(
                       "sellerworkspace.proDashboardPage.publishFirstListingDescription",
                     )}
@@ -239,11 +239,11 @@ export const ProDashboardPage: React.FC = () => {
           {/* KPI Cards */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div className="motion-surface rounded-control border border-border-base bg-bg-surface p-4 shadow-xs hover:shadow-sm">
-              <div className="flex items-center justify-between text-stone-500 text-xs font-semibold mb-1">
+              <div className="flex items-center justify-between text-text-tertiary text-xs font-semibold mb-1">
                 <span>Vues totales catalogue</span>
                 <Eye className="w-icon-md h-icon-md text-primary" />
               </div>
-              <div className="text-2xl font-bold text-stone-900">
+              <div className="text-2xl font-bold text-text-main">
                 {(analytics?.monthlyViews || 0).toLocaleString(locale)}
               </div>
               {hasCatalogue ? (
@@ -256,18 +256,18 @@ export const ProDashboardPage: React.FC = () => {
                   cette semaine
                 </div>
               ) : (
-                <div className="text-xs text-stone-500 mt-1">
+                <div className="text-xs text-text-tertiary mt-1">
                   {t("sellerworkspace.proDashboardPage.pasEncoreDeDonnees")}
                 </div>
               )}
             </div>
 
             <div className="motion-surface rounded-control border border-border-base bg-bg-surface p-4 shadow-xs hover:shadow-sm">
-              <div className="flex items-center justify-between text-stone-500 text-xs font-semibold mb-1">
+              <div className="flex items-center justify-between text-text-tertiary text-xs font-semibold mb-1">
                 <span>Demandes & Contacts</span>
                 <MessageSquare className="w-icon-md h-icon-md text-info" />
               </div>
-              <div className="text-2xl font-bold text-stone-900">
+              <div className="text-2xl font-bold text-text-main">
                 {analytics?.contactsCount.toLocaleString(locale) || "0"}
               </div>
               {hasCatalogue ? (
@@ -283,23 +283,23 @@ export const ProDashboardPage: React.FC = () => {
                   %
                 </div>
               ) : (
-                <div className="text-xs text-stone-500 mt-1">
+                <div className="text-xs text-text-tertiary mt-1">
                   {t("sellerworkspace.proDashboardPage.pasEncoreDeDonnees")}
                 </div>
               )}
             </div>
 
             <div className="motion-surface rounded-control border border-border-base bg-bg-surface p-4 shadow-xs hover:shadow-sm">
-              <div className="flex items-center justify-between text-stone-500 text-xs font-semibold mb-1">
+              <div className="flex items-center justify-between text-text-tertiary text-xs font-semibold mb-1">
                 <span>
                   {t("sellerworkspace.proDashboardPage.tauxDeConversion")}
                 </span>
-                <BarChart2 className="w-icon-md h-icon-md text-amber-500" />
+                <BarChart2 className="w-icon-md h-icon-md text-rating-strong" />
               </div>
-              <div className="text-2xl font-bold text-stone-900">
+              <div className="text-2xl font-bold text-text-main">
                 {hasCatalogue ? `${analytics?.conversionRate}%` : "—"}
               </div>
-              <div className="text-xs text-stone-500 mt-1">
+              <div className="text-xs text-text-tertiary mt-1">
                 {hasCatalogue
                   ? t("sellerworkspace.proDashboardPage.surLesFichesArticles")
                   : t("sellerworkspace.proDashboardPage.pasEncoreDeDonnees")}
@@ -307,16 +307,16 @@ export const ProDashboardPage: React.FC = () => {
             </div>
 
             <div className="motion-surface rounded-control border border-border-base bg-bg-surface p-4 shadow-xs hover:shadow-sm">
-              <div className="flex items-center justify-between text-stone-500 text-xs font-semibold mb-1">
+              <div className="flex items-center justify-between text-text-tertiary text-xs font-semibold mb-1">
                 <span>
                   {t("sellerworkspace.proDashboardPage.volumeDeVentesEstime")}
                 </span>
                 <DollarSign className="w-icon-md h-icon-md text-success" />
               </div>
-              <div className="text-2xl font-bold text-stone-900">
+              <div className="text-2xl font-bold text-text-main">
                 {analytics ? formatMoney(analytics.monthlyRevenue) : "—"}
               </div>
-              <div className="text-xs text-stone-500 mt-1">
+              <div className="text-xs text-text-tertiary mt-1">
                 {hasCatalogue
                   ? t("sellerworkspace.proDashboardPage.ceMoisCi")
                   : t("sellerworkspace.proDashboardPage.pasEncoreDeDonnees")}
@@ -327,12 +327,12 @@ export const ProDashboardPage: React.FC = () => {
           {/* Analytics Chart Bar Visualizer */}
           <div className="space-y-4 rounded-card border border-border-base bg-bg-surface p-6 shadow-sm">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <h2 className="text-sm sm:text-base font-bold text-stone-900">
+              <h2 className="text-sm sm:text-base font-bold text-text-main">
                 {t("sellerworkspace.proDashboardPage.evolutionDeLAudience7")}
               </h2>
               {/* Summed from the series rendered below rather than written out
               again, so the caption cannot drift from the bars it describes. */}
-              <span className="text-xs text-stone-500">
+              <span className="text-xs text-text-tertiary">
                 {t("sellerworkspace.proDashboardPage.totalVuesUniques", {
                   count: weeklyStats.reduce((sum, d) => sum + d.views, 0),
                 })}
@@ -343,7 +343,7 @@ export const ProDashboardPage: React.FC = () => {
               {weeklyStats.map((item) => {
                 return (
                   <div key={item.date} className="flex items-center gap-2">
-                    <span className="w-16 shrink-0 text-xs font-bold text-stone-500 capitalize">
+                    <span className="w-16 shrink-0 text-xs font-bold text-text-tertiary capitalize">
                       {formatDay(item.date)}
                     </span>
                     <ProgressBar
@@ -352,7 +352,7 @@ export const ProDashboardPage: React.FC = () => {
                       label={`${item.views} vues ${formatDay(item.date)}`}
                       className="flex-1"
                     />
-                    <span className="w-16 shrink-0 text-right text-micro font-bold text-stone-600">
+                    <span className="w-16 shrink-0 text-right text-micro font-bold text-text-supporting">
                       {item.views}
                     </span>
                   </div>
@@ -363,7 +363,7 @@ export const ProDashboardPage: React.FC = () => {
 
           {/* Top performing articles */}
           <div className="space-y-4 rounded-card border border-border-base bg-bg-surface p-6 shadow-sm">
-            <h2 className="text-sm sm:text-base font-bold text-stone-900">
+            <h2 className="text-sm sm:text-base font-bold text-text-main">
               {t(
                 "sellerworkspace.proDashboardPage.articlesPharesDeVotreBoutique",
               )}
@@ -387,27 +387,29 @@ export const ProDashboardPage: React.FC = () => {
                         referrerPolicy="no-referrer"
                       />
                       <div className="min-w-0">
-                        <div className="font-bold text-xs sm:text-sm text-stone-900 truncate">
+                        <div className="font-bold text-xs sm:text-sm text-text-main truncate">
                           {listing.title}
                         </div>
-                        <div className="text-xs text-stone-500">
+                        <div className="text-xs text-text-tertiary">
                           {formatPrice(listing.price)}
                         </div>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-6 text-xs text-stone-600 shrink-0">
+                    <div className="flex items-center gap-6 text-xs text-text-supporting shrink-0">
                       <div className="text-right">
-                        <div className="font-bold text-stone-900">
+                        <div className="font-bold text-text-main">
                           {listing.viewsCount ?? listing.viewCount ?? 0}
                         </div>
-                        <div className="text-micro text-stone-500">Vues</div>
+                        <div className="text-micro text-text-tertiary">
+                          Vues
+                        </div>
                       </div>
                       <div className="text-right">
                         <div className="font-bold text-success">
                           {conversionRate}%
                         </div>
-                        <div className="text-micro text-stone-500">
+                        <div className="text-micro text-text-tertiary">
                           Conversion
                         </div>
                       </div>

@@ -211,12 +211,12 @@ export const TransactionsPage: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-stone-900">
+          <h1 className="text-xl sm:text-2xl font-bold text-text-main">
             {t(
               "transactions.transactionsPage.transactionsReservationsSequestre",
             )}
           </h1>
-          <p className="text-xs sm:text-sm text-stone-500 mt-0.5">
+          <p className="text-xs sm:text-sm text-text-tertiary mt-0.5">
             {t("transactions.transactionsPage.gerezVosReservationsVosRemises")}
           </p>
         </div>
@@ -284,7 +284,7 @@ export const TransactionsPage: React.FC = () => {
           className={`pb-3 text-sm font-semibold transition-all relative ${
             activeTab === "purchases"
               ? "text-primary border-b-2 border-primary"
-              : "text-stone-500 hover:text-stone-800"
+              : "text-text-tertiary hover:text-text-strong"
           }`}
         >
           Mes Achats & Réservations ({purchasesCount})
@@ -295,7 +295,7 @@ export const TransactionsPage: React.FC = () => {
           className={`pb-3 text-sm font-semibold transition-all relative ${
             activeTab === "sales"
               ? "text-primary border-b-2 border-primary"
-              : "text-stone-500 hover:text-stone-800"
+              : "text-text-tertiary hover:text-text-strong"
           }`}
         >
           Mes Ventes & Réservations Reçues ({salesCount})
@@ -304,7 +304,7 @@ export const TransactionsPage: React.FC = () => {
 
       {/* Status Filter Pills */}
       <div className="flex flex-wrap items-center gap-1.5 text-xs">
-        <span className="text-stone-500 font-bold mr-1 flex items-center gap-1">
+        <span className="text-text-tertiary font-bold mr-1 flex items-center gap-1">
           <Filter className="w-icon-sm h-icon-sm" /> Filtrer :
         </span>
         <button
@@ -312,8 +312,8 @@ export const TransactionsPage: React.FC = () => {
           onClick={() => setStatusFilter("all")}
           className={`px-3 py-1.5 rounded-xl font-semibold transition-all ${
             statusFilter === "all"
-              ? "bg-stone-900 text-white"
-              : "bg-stone-100 text-stone-600 hover:bg-stone-200"
+              ? "bg-surface-inverse text-text-inverse"
+              : "bg-surface-muted text-text-supporting hover:bg-surface-disabled"
           }`}
         >
           Toutes ({userTransactions.length})
@@ -323,7 +323,7 @@ export const TransactionsPage: React.FC = () => {
           onClick={() => setStatusFilter("pending")}
           className={`px-3 py-1.5 rounded-xl font-semibold transition-all ${
             statusFilter === "pending"
-              ? "bg-amber-600 text-white"
+              ? "bg-rating-emphasis text-text-inverse"
               : "bg-warning-surface text-warning hover:bg-warning-surface"
           }`}
         >
@@ -343,8 +343,8 @@ export const TransactionsPage: React.FC = () => {
           onClick={() => setStatusFilter("in_progress")}
           className={`px-3 py-1.5 rounded-xl font-semibold transition-all ${
             statusFilter === "in_progress"
-              ? "bg-primary text-white"
-              : "bg-primary-light text-primary hover:bg-primary-light/70"
+              ? "bg-primary text-text-inverse"
+              : "bg-primary-light text-primary hover:bg-primary-surface-soft"
           }`}
         >
           En cours & Réservées (
@@ -367,7 +367,7 @@ export const TransactionsPage: React.FC = () => {
           onClick={() => setStatusFilter("completed")}
           className={`px-3 py-1.5 rounded-xl font-semibold transition-all ${
             statusFilter === "completed"
-              ? "bg-success text-white"
+              ? "bg-success text-text-inverse"
               : "bg-success-surface text-success hover:bg-success-surface"
           }`}
         >
@@ -379,7 +379,7 @@ export const TransactionsPage: React.FC = () => {
           onClick={() => setStatusFilter("disputed")}
           className={`px-3 py-1.5 rounded-xl font-semibold transition-all ${
             statusFilter === "disputed"
-              ? "bg-danger text-white"
+              ? "bg-danger text-text-inverse"
               : "bg-danger-surface text-danger hover:bg-danger-surface"
           }`}
         >
@@ -415,16 +415,16 @@ export const TransactionsPage: React.FC = () => {
             return (
               <article
                 key={tx.id}
-                className="bg-white rounded-3xl border border-stone-200/60 p-6 shadow-sm space-y-5 hover:border-primary/40 transition-all"
+                className="bg-bg-surface rounded-3xl border border-border-disabled/60 p-6 shadow-sm space-y-5 hover:border-primary-border-strong transition-all"
               >
                 {/* Card Header */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-stone-100">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-border-soft">
                   <div className="flex items-center gap-2.5">
-                    <span className="text-xs font-bold text-stone-900 font-mono tracking-wider uppercase">
+                    <span className="text-xs font-bold text-text-main font-mono tracking-wider uppercase">
                       Dossier {tx.code || `#${tx.id.slice(0, 8)}`}
                     </span>
-                    <span className="text-stone-300">•</span>
-                    <span className="text-xs font-medium text-stone-500">
+                    <span className="text-text-inverse-muted">•</span>
+                    <span className="text-xs font-medium text-text-tertiary">
                       {formatRelativeDate(tx.createdAt)}
                     </span>
                   </div>
@@ -440,16 +440,16 @@ export const TransactionsPage: React.FC = () => {
                       src={tx.listingCoverImageUrl || tx.listingPhotoUrl}
                       alt=""
                       sizes="80px"
-                      className="w-20 h-20 rounded-xl object-cover border border-stone-200 shrink-0"
+                      className="w-20 h-20 rounded-xl object-cover border border-border-disabled shrink-0"
                       referrerPolicy="no-referrer"
                     />
                     <div className="min-w-0">
-                      <h3 className="font-bold text-base text-stone-900 hover:text-primary transition-colors truncate block mb-1">
+                      <h3 className="font-bold text-base text-text-main hover:text-primary transition-colors truncate block mb-1">
                         {tx.listingTitle}
                       </h3>
-                      <div className="text-sm text-stone-500 font-medium flex items-center gap-1.5 mb-2">
+                      <div className="text-sm text-text-tertiary font-medium flex items-center gap-1.5 mb-2">
                         <span>{isBuyer ? "Vendeur" : "Acheteur"} :</span>
-                        <strong className="text-stone-900">
+                        <strong className="text-text-main">
                           {isBuyer ? tx.sellerName : tx.buyerName}
                         </strong>
                       </div>
@@ -477,8 +477,8 @@ export const TransactionsPage: React.FC = () => {
                   </div>
 
                   {/* Financial Total & CTA */}
-                  <div className="text-right sm:self-center shrink-0 flex flex-col items-end gap-1.5 w-full sm:w-auto pt-4 sm:pt-0 border-t sm:border-0 border-stone-100 mt-2 sm:mt-0">
-                    <div className="text-xl font-bold text-stone-900">
+                  <div className="text-right sm:self-center shrink-0 flex flex-col items-end gap-1.5 w-full sm:w-auto pt-4 sm:pt-0 border-t sm:border-0 border-border-soft mt-2 sm:mt-0">
+                    <div className="text-xl font-bold text-text-main">
                       {formatPrice(
                         isSeller
                           ? tx.sellerPayoutAmount || tx.amount
@@ -486,7 +486,7 @@ export const TransactionsPage: React.FC = () => {
                         { sourceCurrency: tx.currency },
                       )}
                     </div>
-                    <span className="text-xs font-medium text-stone-500 mb-1">
+                    <span className="text-xs font-medium text-text-tertiary mb-1">
                       {isSeller ? "Montant de l’article" : "Total réglé"}
                     </span>
                     <Button
@@ -505,7 +505,7 @@ export const TransactionsPage: React.FC = () => {
                 </div>
 
                 {/* Progress Mini Step Tracker. */}
-                <div className="p-4 bg-stone-50 rounded-2xl border border-stone-200/60 flex items-center justify-between gap-3 text-xs font-medium text-stone-600 overflow-x-auto no-scrollbar shadow-inner">
+                <div className="p-4 bg-surface-soft rounded-2xl border border-border-disabled/60 flex items-center justify-between gap-3 text-xs font-medium text-text-supporting overflow-x-auto no-scrollbar shadow-inner">
                   <div
                     className={`flex items-center gap-1 font-semibold shrink-0 ${
                       paymentConfirmed ? "text-success" : "text-warning"
@@ -522,12 +522,12 @@ export const TransactionsPage: React.FC = () => {
                         : "Paiement en attente"}
                     </span>
                   </div>
-                  <span className="text-stone-300 shrink-0">→</span>
+                  <span className="text-text-inverse-muted shrink-0">→</span>
                   <div
                     className={`flex items-center gap-1 font-semibold shrink-0 whitespace-nowrap ${
                       tx.status === "shipped" || tx.status === "completed"
                         ? "text-success"
-                        : "text-stone-500"
+                        : "text-text-tertiary"
                     }`}
                   >
                     <CheckCircle2 className="w-icon-sm h-icon-sm shrink-0" />
@@ -537,12 +537,12 @@ export const TransactionsPage: React.FC = () => {
                         : "Remise / Envoi"}
                     </span>
                   </div>
-                  <span className="text-stone-300 shrink-0">→</span>
+                  <span className="text-text-inverse-muted shrink-0">→</span>
                   <div
                     className={`flex items-center gap-1 font-semibold shrink-0 whitespace-nowrap ${
                       tx.status === "completed"
                         ? "text-success font-bold"
-                        : "text-stone-500"
+                        : "text-text-tertiary"
                     }`}
                   >
                     <CheckCircle2 className="w-icon-sm h-icon-sm shrink-0" />
@@ -555,7 +555,7 @@ export const TransactionsPage: React.FC = () => {
         </section>
       ) : (
         <EmptyState
-          icon={<ShoppingBag className="w-10 h-10 text-stone-400" />}
+          icon={<ShoppingBag className="w-10 h-10 text-text-inverse-subtle" />}
           title={
             activeTab === "purchases"
               ? "Aucun achat ou réservation en cours"

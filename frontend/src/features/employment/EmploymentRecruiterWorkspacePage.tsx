@@ -344,7 +344,7 @@ export const EmploymentRecruiterWorkspacePage: React.FC = () => {
       <header className="rounded-card border border-border-base bg-bg-surface p-5 shadow-sm sm:p-6">
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-card bg-text-main font-bold text-white">
+            <div className="flex h-12 w-12 items-center justify-center rounded-card bg-surface-inverse font-bold text-text-inverse">
               {workspace.employer.name
                 .split(" ")
                 .map((part) => part[0])
@@ -396,7 +396,7 @@ export const EmploymentRecruiterWorkspacePage: React.FC = () => {
             key={id}
             type="button"
             onClick={() => setTab(id)}
-            className={`flex min-h-control-md min-w-max items-center gap-2 rounded-control px-3 text-xs font-semibold ${tab === id ? "bg-primary text-white" : "text-text-secondary hover:bg-bg-subtle"}`}
+            className={`flex min-h-control-md min-w-max items-center gap-2 rounded-control px-3 text-xs font-semibold ${tab === id ? "bg-primary text-text-inverse" : "text-text-secondary hover:bg-bg-subtle"}`}
           >
             {icon}
             {label}

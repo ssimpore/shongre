@@ -27,42 +27,42 @@ export function AnalyticsDebugPanel({
 
   return (
     <details
-      className="group relative shrink-0 text-xs text-white"
+      className="group relative shrink-0 text-xs text-text-inverse"
       data-version={version}
     >
       <summary
-        className="flex h-7 cursor-pointer list-none items-center gap-1.5 whitespace-nowrap rounded-md border border-stone-700 bg-stone-800 px-2 font-semibold text-white transition-colors hover:bg-stone-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary [&::-webkit-details-marker]:hidden"
+        className="flex h-7 cursor-pointer list-none items-center gap-1.5 whitespace-nowrap rounded-md border border-border-inverse-subtle bg-surface-inverse-hover px-2 font-semibold text-text-inverse transition-colors hover:bg-surface-inverse-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary [&::-webkit-details-marker]:hidden"
         aria-label={`Ouvrir le diagnostic Analytics, ${events.length} événement${events.length === 1 ? "" : "s"}`}
       >
         <BarChart3
-          className="h-icon-sm w-icon-sm text-stone-400"
+          className="h-icon-sm w-icon-sm text-text-inverse-subtle"
           aria-hidden="true"
         />
         <span className="hidden lg:inline">Analytics</span>
-        <span className="text-stone-500" aria-hidden="true">
+        <span className="text-text-tertiary" aria-hidden="true">
           ·
         </span>
         <span className="tabular-nums">{events.length}</span>
         <ChevronDown
-          className="h-icon-xs w-icon-xs text-stone-400 transition-transform group-open:rotate-180"
+          className="h-icon-xs w-icon-xs text-text-inverse-subtle transition-transform group-open:rotate-180"
           aria-hidden="true"
         />
       </summary>
-      <div className="fixed inset-x-3 top-9 z-popover hidden max-h-menu-max w-viewport-popover-max max-w-sm overflow-y-auto overscroll-contain rounded-control border border-stone-700 bg-stone-950 p-3 shadow-dropdown group-open:block sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-1">
+      <div className="fixed inset-x-3 top-9 z-popover hidden max-h-menu-max w-viewport-popover-max max-w-sm overflow-y-auto overscroll-contain rounded-control border border-border-inverse-subtle bg-surface-inverse-deep p-3 shadow-dropdown group-open:block sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-1">
         <p className="font-bold">Diagnostic Analytics</p>
         <dl className="mt-3 grid grid-cols-action-content gap-x-3 gap-y-1 text-micro">
-          <dt className="text-stone-400">Consentement</dt>
+          <dt className="text-text-inverse-subtle">Consentement</dt>
           <dd>
             analytics={String(categories.analytics)} · marketing=
             {String(categories.marketing)}
           </dd>
-          <dt className="text-stone-400">Providers</dt>
+          <dt className="text-text-inverse-subtle">Providers</dt>
           <dd>{providers.length ? providers.join(", ") : "aucun"}</dd>
-          <dt className="text-stone-400">Dernier événement</dt>
+          <dt className="text-text-inverse-subtle">Dernier événement</dt>
           <dd>{latest?.name ?? "—"}</dd>
         </dl>
         {latest && (
-          <pre className="mt-3 max-h-56 overflow-auto rounded-control bg-black p-2 text-micro leading-relaxed text-stone-200">
+          <pre className="mt-3 max-h-56 overflow-auto rounded-control bg-surface-overlay-deep p-2 text-micro leading-relaxed text-text-inverse-faint">
             {JSON.stringify(latest, null, 2)}
           </pre>
         )}

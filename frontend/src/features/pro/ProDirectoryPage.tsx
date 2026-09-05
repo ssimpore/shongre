@@ -42,12 +42,12 @@ export const ProDirectoryPage: React.FC = () => {
         ]}
       />
 
-      <div className="bg-gradient-to-r from-stone-900 to-stone-800 rounded-2xl p-6 sm:p-10 text-white flex flex-col md:flex-row items-center justify-between gap-6">
+      <div className="bg-gradient-to-r from-surface-inverse to-surface-inverse-hover rounded-2xl p-6 sm:p-10 text-text-inverse flex flex-col md:flex-row items-center justify-between gap-6">
         <div className="space-y-2 max-w-xl">
-          <h1 className="text-2xl sm:text-3xl font-bold text-white">
+          <h1 className="text-2xl sm:text-3xl font-bold text-text-inverse">
             {t("pro.proDirectoryPage.trouvezDesCommercantsEtArtisans")}
           </h1>
-          <p className="text-xs sm:text-sm text-stone-300">
+          <p className="text-xs sm:text-sm text-text-inverse-muted">
             {t("pro.proDirectoryPage.toutesLesEntreprisesReferenceesPossedent")}
           </p>
         </div>
@@ -65,14 +65,14 @@ export const ProDirectoryPage: React.FC = () => {
       {/* Search Input */}
       <div className="flex items-center justify-between gap-4">
         <div className="max-w-md w-full relative">
-          <Search className="w-icon-md h-icon-md text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <Search className="w-icon-md h-icon-md text-text-inverse-subtle absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             placeholder={t("proDirectory.rechercherParNomDeBoutique")}
             aria-label={t("proDirectory.rechercherUneBoutiqueProfessionnelle")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full h-control-touch pl-10 pr-3 bg-white text-xs sm:text-sm rounded-control border border-border-base focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+            className="w-full h-control-touch pl-10 pr-3 bg-bg-surface text-xs sm:text-sm rounded-control border border-border-base focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring"
           />
         </div>
         {/* Live, so filtering announces its own result. The count also stops
@@ -83,7 +83,7 @@ export const ProDirectoryPage: React.FC = () => {
           role="status"
           aria-live="polite"
           aria-atomic="true"
-          className="text-xs text-stone-500 font-semibold"
+          className="text-xs text-text-tertiary font-semibold"
         >
           {t("proDirectory.boutiquesDisponibles", { count: filtered.length })}
         </span>

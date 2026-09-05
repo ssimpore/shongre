@@ -10,7 +10,6 @@ import {
 import {
   nativeBorders,
   nativeColors,
-  nativePalette,
   nativeRadius,
   nativeSpacing,
   nativeTypography,
@@ -103,16 +102,16 @@ const sizeLabels = StyleSheet.create({
 });
 const variants = StyleSheet.create({
   neutral: {
-    backgroundColor: nativePalette["stone-100"],
-    borderColor: nativePalette["stone-200"],
+    backgroundColor: nativeColors.surface.mutedAlternative,
+    borderColor: nativeColors.border.disabled,
   },
   primary: {
     backgroundColor: nativeColors.action.primarySubtle,
     borderColor: nativeColors.action.primaryBorder,
   },
   inverse: {
-    backgroundColor: nativePalette["stone-900"],
-    borderColor: nativePalette["stone-900"],
+    backgroundColor: nativeColors.surface.inverse,
+    borderColor: nativeColors.surface.inverse,
   },
   urgent: {
     backgroundColor: nativeColors.status.errorSurface,
@@ -136,7 +135,7 @@ const variants = StyleSheet.create({
   },
 });
 const labels = StyleSheet.create({
-  neutral: { color: nativePalette["stone-700"] },
+  neutral: { color: nativeColors.text.emphasis },
   primary: { color: nativeColors.action.primary },
   inverse: { color: nativeColors.text.inverse },
   urgent: { color: nativeColors.status.error },

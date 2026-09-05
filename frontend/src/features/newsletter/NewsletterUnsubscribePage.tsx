@@ -39,15 +39,15 @@ export const NewsletterUnsubscribePage: React.FC = () => {
 
   return (
     <div className="mx-auto max-w-md px-4 py-16 text-center">
-      <div className="space-y-6 rounded-3xl border border-border-base bg-white p-8 shadow-xs sm:p-10">
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-stone-100 text-stone-600">
+      <div className="space-y-6 rounded-3xl border border-border-base bg-bg-surface p-8 shadow-xs sm:p-10">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-surface-muted text-text-supporting">
           <Mail className="h-7 w-7" aria-hidden="true" />
         </div>
         <div className="space-y-2">
-          <h1 className="text-2xl font-bold text-stone-900">
+          <h1 className="text-2xl font-bold text-text-main">
             Désabonnement newsletter
           </h1>
-          <p className="text-xs text-stone-500 sm:text-sm">
+          <p className="text-xs text-text-tertiary sm:text-sm">
             Le lien sécurisé ne modifie que vos communications marketing.
           </p>
         </div>
@@ -66,7 +66,7 @@ export const NewsletterUnsubscribePage: React.FC = () => {
                 Vous ne recevrez plus nos campagnes promotionnelles.
               </p>
             </div>
-            <div className="flex items-start gap-2.5 rounded-2xl border border-border-base bg-stone-50 p-4 text-left text-micro text-stone-500">
+            <div className="flex items-start gap-2.5 rounded-2xl border border-border-base bg-surface-soft p-4 text-left text-micro text-text-tertiary">
               <ShieldCheck
                 className="mt-0.5 h-icon-md w-icon-md shrink-0 text-success"
                 aria-hidden="true"

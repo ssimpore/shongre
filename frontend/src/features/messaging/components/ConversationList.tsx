@@ -55,11 +55,11 @@ export const ConversationList: React.FC<ConversationListProps> = ({
   ];
 
   return (
-    <div className="flex flex-col h-full bg-white border-r border-border-base">
+    <div className="flex flex-col h-full bg-bg-surface border-r border-border-base">
       {/* Header & Search */}
       <div className="p-4 border-b border-border-base space-y-3">
         <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold text-stone-900 flex items-center gap-2">
+          <h1 className="text-xl font-bold text-text-main flex items-center gap-2">
             <MessageSquare className="w-icon-lg h-icon-lg text-primary" />
             <span>Messagerie</span>
           </h1>
@@ -72,7 +72,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
 
         {/* Search Bar */}
         <div className="relative">
-          <Search className="w-icon-md h-icon-md text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <Search className="w-icon-md h-icon-md text-text-inverse-subtle absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             placeholder={t(
@@ -83,13 +83,13 @@ export const ConversationList: React.FC<ConversationListProps> = ({
             )}
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="w-full h-control-md pl-9 pr-8 text-xs font-semibold bg-stone-50 border border-border-base rounded-control focus:bg-white focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all placeholder:text-text-muted"
+            className="w-full h-control-md pl-9 pr-8 text-xs font-semibold bg-surface-soft border border-border-base rounded-control focus:bg-bg-surface focus:border-primary focus:ring-2 focus:ring-primary-ring focus:outline-none transition-all placeholder:text-text-muted"
           />
           {searchQuery && (
             <button
               type="button"
               onClick={() => onSearchChange("")}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-500 hover:text-stone-600 p-0.5"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-tertiary hover:text-text-supporting p-0.5"
               aria-label={t("messaging.conversationList.effacerLaRecherche")}
             >
               <X className="w-icon-sm h-icon-sm" />
@@ -133,11 +133,11 @@ export const ConversationList: React.FC<ConversationListProps> = ({
           <div className="p-4 space-y-4">
             {[1, 2, 3, 4].map((i) => (
               <div key={i} className="flex gap-3 animate-pulse">
-                <div className="w-12 h-12 bg-stone-200 rounded-full shrink-0" />
+                <div className="w-12 h-12 bg-surface-disabled rounded-full shrink-0" />
                 <div className="flex-1 space-y-2 py-1">
-                  <div className="h-3 bg-stone-200 rounded w-1/3" />
-                  <div className="h-3 bg-stone-100 rounded w-3/4" />
-                  <div className="h-2 bg-stone-100 rounded w-1/2" />
+                  <div className="h-3 bg-surface-disabled rounded w-1/3" />
+                  <div className="h-3 bg-surface-muted rounded w-3/4" />
+                  <div className="h-2 bg-surface-muted rounded w-1/2" />
                 </div>
               </div>
             ))}
@@ -145,14 +145,14 @@ export const ConversationList: React.FC<ConversationListProps> = ({
         ) : conversations.length === 0 ? (
           /* Empty State */
           <div className="p-8 text-center space-y-3">
-            <div className="w-12 h-12 rounded-2xl bg-stone-100 text-stone-400 mx-auto flex items-center justify-center">
+            <div className="w-12 h-12 rounded-2xl bg-surface-muted text-text-inverse-subtle mx-auto flex items-center justify-center">
               <MessageSquare className="w-icon-xl h-icon-xl" />
             </div>
             <div>
-              <p className="text-sm font-bold text-stone-800">
+              <p className="text-sm font-bold text-text-strong">
                 {t("messaging.conversationList.aucuneConversationTrouvee")}
               </p>
-              <p className="text-xs text-stone-500 mt-1">
+              <p className="text-xs text-text-tertiary mt-1">
                 {searchQuery
                   ? "Aucun résultat ne correspond à votre recherche."
                   : "Vos échanges avec les acheteurs et vendeurs apparaîtront ici."}
@@ -174,8 +174,8 @@ export const ConversationList: React.FC<ConversationListProps> = ({
                 onClick={() => onSelectConversation(conv.id)}
                 className={`w-full p-3.5 text-left flex gap-3 transition-colors cursor-pointer relative ${
                   isSelected
-                    ? "bg-primary/5 border-l-4 border-primary"
-                    : "hover:bg-stone-50 bg-white"
+                    ? "bg-primary-surface-soft border-l-4 border-primary"
+                    : "hover:bg-surface-soft bg-bg-surface"
                 }`}
               >
                 {/* Counterpart Avatar */}
@@ -186,7 +186,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
                     size="md"
                   />
                   {hasUnread && (
-                    <span className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full ring-2 ring-white" />
+                    <span className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full ring-2 ring-border-on-inverse" />
                   )}
                 </div>
 
@@ -194,11 +194,11 @@ export const ConversationList: React.FC<ConversationListProps> = ({
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-1 mb-0.5">
                     <span
-                      className={`text-xs truncate ${hasUnread ? "font-bold text-stone-950" : "font-bold text-stone-800"}`}
+                      className={`text-xs truncate ${hasUnread ? "font-bold text-text-deep" : "font-bold text-text-strong"}`}
                     >
                       {conv.counterpart.name}
                     </span>
-                    <span className="text-micro text-stone-500 shrink-0 font-medium">
+                    <span className="text-micro text-text-tertiary shrink-0 font-medium">
                       {formatRelativeDate(conv.lastMessageAt)}
                     </span>
                   </div>
@@ -214,13 +214,13 @@ export const ConversationList: React.FC<ConversationListProps> = ({
                   {/* Last Message Preview */}
                   <div className="flex items-center justify-between gap-2">
                     <p
-                      className={`text-xs truncate ${hasUnread ? "font-bold text-stone-900" : "text-stone-500 font-medium"}`}
+                      className={`text-xs truncate ${hasUnread ? "font-bold text-text-main" : "text-text-tertiary font-medium"}`}
                     >
                       {conv.lastMessageText || "Nouvelle conversation"}
                     </p>
 
                     {hasUnread && (
-                      <span className="shrink-0 px-1.5 py-0.5 rounded-full text-micro font-bold bg-primary text-white">
+                      <span className="shrink-0 px-1.5 py-0.5 rounded-full text-micro font-bold bg-primary text-text-inverse">
                         {conv.unreadCount}
                       </span>
                     )}

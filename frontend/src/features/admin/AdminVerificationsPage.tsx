@@ -98,7 +98,7 @@ export const AdminVerificationsPage: React.FC = () => {
 
   return (
     <div className="space-y-5">
-      <section className="rounded-2xl border border-stone-200 bg-bg-surface p-5 shadow-xs sm:p-6">
+      <section className="rounded-2xl border border-border-disabled bg-bg-surface p-5 shadow-xs sm:p-6">
         <div className="flex items-start gap-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-control bg-success-surface text-success">
             <ShieldCheck className="h-icon-lg w-icon-lg" aria-hidden="true" />
@@ -107,7 +107,7 @@ export const AdminVerificationsPage: React.FC = () => {
             <p className="text-xs font-bold uppercase tracking-wider text-success">
               {t("admin.adminVerificationsPage.accesConformiteRestreint")}
             </p>
-            <h1 className="mt-1 text-2xl font-bold text-stone-950">
+            <h1 className="mt-1 text-2xl font-bold text-text-deep">
               {t(
                 "admin.adminVerificationsPage.verificationsReglesEtRevueHumaine",
               )}
@@ -153,32 +153,32 @@ export const AdminVerificationsPage: React.FC = () => {
 
       <TabPanel tab={activeTab} idPrefix="admin-progressive-compliance">
         {activeTab === "queue" ? (
-          <section className="overflow-hidden rounded-2xl border border-stone-200 bg-bg-surface shadow-xs">
-            <div className="border-b border-stone-100 p-4">
-              <h2 className="font-bold text-stone-950">
+          <section className="overflow-hidden rounded-2xl border border-border-disabled bg-bg-surface shadow-xs">
+            <div className="border-b border-border-soft p-4">
+              <h2 className="font-bold text-text-deep">
                 {t(
                   "admin.adminVerificationsPage.dossiersNecessitantUneDecision",
                 )}
               </h2>
-              <p className="mt-1 text-xs text-stone-500">
+              <p className="mt-1 text-xs text-text-tertiary">
                 {t(
                   "admin.adminVerificationsPage.touteDecisionExigeUnMotifEtResteTracable",
                 )}
               </p>
             </div>
             {queue.length === 0 ? (
-              <p className="p-8 text-center text-sm text-stone-500">
+              <p className="p-8 text-center text-sm text-text-tertiary">
                 {t("admin.adminVerificationsPage.aucunDossierEnAttente")}
               </p>
             ) : (
-              <div className="divide-y divide-stone-100">
+              <div className="divide-y divide-border-soft">
                 {queue.map((review) => (
                   <article
                     key={review.id}
                     className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center sm:justify-between"
                   >
                     <div className="flex items-start gap-3">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-control bg-stone-100 text-stone-700">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-control bg-surface-muted text-text-emphasis">
                         {review.dimension === "identity" ? (
                           <FileKey2
                             className="h-icon-lg w-icon-lg"
@@ -192,10 +192,10 @@ export const AdminVerificationsPage: React.FC = () => {
                         )}
                       </div>
                       <div>
-                        <h3 className="text-sm font-bold text-stone-950">
+                        <h3 className="text-sm font-bold text-text-deep">
                           Dossier {review.userId}
                         </h3>
-                        <p className="mt-1 text-xs text-stone-500">
+                        <p className="mt-1 text-xs text-text-tertiary">
                           {labelIdentifier(review.dimension)} ·{" "}
                           {labelIdentifier(review.state)}
                         </p>
@@ -240,24 +240,24 @@ export const AdminVerificationsPage: React.FC = () => {
         ) : null}
 
         {activeTab === "policies" ? (
-          <section className="rounded-2xl border border-stone-200 bg-bg-surface p-4 shadow-xs sm:p-5">
+          <section className="rounded-2xl border border-border-disabled bg-bg-surface p-4 shadow-xs sm:p-5">
             <div className="mb-4 flex items-start gap-3">
               <BookOpenCheck
                 className="mt-0.5 h-icon-lg w-icon-lg text-success"
                 aria-hidden="true"
               />
               <div>
-                <h2 className="font-bold text-stone-950">
+                <h2 className="font-bold text-text-deep">
                   {t("admin.adminVerificationsPage.registreVersionne")}
                 </h2>
-                <p className="mt-1 text-xs text-stone-500">
+                <p className="mt-1 text-xs text-text-tertiary">
                   {t(
                     "admin.adminVerificationsPage.lesModificationsJuridiquesSontPlanifieesSourceesEtAuditeesCoteServeur",
                   )}
                 </p>
               </div>
             </div>
-            <div className="divide-y divide-stone-100">
+            <div className="divide-y divide-border-soft">
               {policies.map((policy) => (
                 <article
                   key={policy.id}
@@ -267,7 +267,7 @@ export const AdminVerificationsPage: React.FC = () => {
                     <h3 className="text-sm font-bold text-text-main">
                       {labelIdentifier(policy.action)}
                     </h3>
-                    <p className="mt-0.5 text-micro font-mono text-stone-500">
+                    <p className="mt-0.5 text-micro font-mono text-text-tertiary">
                       {policy.ruleCode}
                     </p>
                   </div>
@@ -275,7 +275,7 @@ export const AdminVerificationsPage: React.FC = () => {
                     <p className="text-xs text-text-secondary">
                       {policy.description}
                     </p>
-                    <p className="mt-1 text-micro text-stone-500">
+                    <p className="mt-1 text-micro text-text-tertiary">
                       Requis :{" "}
                       {policy.requiredChecks.length
                         ? policy.requiredChecks.map(labelIdentifier).join(", ")
@@ -292,7 +292,7 @@ export const AdminVerificationsPage: React.FC = () => {
                     >
                       {policy.status}
                     </span>
-                    <p className="mt-1 text-micro text-stone-500">
+                    <p className="mt-1 text-micro text-text-tertiary">
                       {policy.policyVersion}
                     </p>
                   </div>
@@ -303,18 +303,18 @@ export const AdminVerificationsPage: React.FC = () => {
         ) : null}
 
         {activeTab === "audit" ? (
-          <section className="overflow-hidden rounded-2xl border border-stone-200 bg-bg-surface shadow-xs">
-            <div className="border-b border-stone-100 p-4">
-              <h2 className="font-bold text-stone-950">
+          <section className="overflow-hidden rounded-2xl border border-border-disabled bg-bg-surface shadow-xs">
+            <div className="border-b border-border-soft p-4">
+              <h2 className="font-bold text-text-deep">
                 {t("admin.adminVerificationsPage.evenementsDeConformite")}
               </h2>
-              <p className="mt-1 text-xs text-stone-500">
+              <p className="mt-1 text-xs text-text-tertiary">
                 {t(
                   "admin.adminVerificationsPage.lesValeursSensiblesEtReponsesBrutesDesPrestatairesSontExclues",
                 )}
               </p>
             </div>
-            <div className="divide-y divide-stone-100">
+            <div className="divide-y divide-border-soft">
               {auditLogs.map((log) => (
                 <article
                   key={log.id}
@@ -325,14 +325,14 @@ export const AdminVerificationsPage: React.FC = () => {
                       {labelIdentifier(log.dimension || "policy")} ·{" "}
                       {labelIdentifier(log.newState || log.eventType)}
                     </p>
-                    <p className="mt-1 text-xs text-stone-500">
+                    <p className="mt-1 text-xs text-text-tertiary">
                       Acteur : {log.actorId || log.actorType}{" "}
                       {t("admin.adminVerificationsPage.referenceUtilisateur")}{" "}
                       {log.userId}
                     </p>
                   </div>
                   <time
-                    className="shrink-0 text-micro text-stone-500"
+                    className="shrink-0 text-micro text-text-tertiary"
                     dateTime={log.occurredAt}
                   >
                     {formatDateTime(log.occurredAt)}

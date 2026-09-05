@@ -18,12 +18,12 @@ export const SOLUTION_LIFECYCLE_PRESENTATION: Record<
   DRAFT: {
     labelKey: "solutions.lifecycle.draft.label",
     descriptionKey: "solutions.lifecycle.draft.description",
-    tone: "text-stone-600 bg-stone-100 border-stone-200",
+    tone: "text-text-supporting bg-surface-muted border-border-disabled",
   },
   INTERNAL: {
     labelKey: "solutions.lifecycle.internal.label",
     descriptionKey: "solutions.lifecycle.internal.description",
-    tone: "text-violet-700 bg-violet-50 border-violet-200",
+    tone: "text-staff-strong bg-staff-surface border-staff-border",
   },
   COMING_SOON: {
     labelKey: "solutions.lifecycle.comingSoon.label",

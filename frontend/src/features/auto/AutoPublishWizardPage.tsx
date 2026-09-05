@@ -1229,7 +1229,7 @@ export const AutoPublishWizardPage: React.FC = () => {
                     className="group w-full"
                   >
                     <span
-                      className={`mx-auto grid h-8 w-8 place-items-center rounded-full border text-xs font-bold ${active ? "border-primary bg-primary text-white" : done ? "border-success bg-success-surface text-success" : "border-border-base bg-bg-surface text-text-muted"}`}
+                      className={`mx-auto grid h-8 w-8 place-items-center rounded-full border text-xs font-bold ${active ? "border-primary bg-primary text-text-inverse" : done ? "border-success bg-success-surface text-success" : "border-border-base bg-bg-surface text-text-muted"}`}
                     >
                       {done ? (
                         <Check className="h-icon-xs w-icon-xs" />

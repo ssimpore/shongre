@@ -171,14 +171,14 @@ export const AdminProvidersPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="bg-bg-surface p-5 rounded-control border border-stone-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-bg-surface p-5 rounded-control border border-border-disabled shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="text-xs font-bold uppercase tracking-wider text-primary">
               {t("admin.adminProvidersPage.administrationSystemeIntegrations")}
             </span>
-            <span className="text-stone-300">•</span>
-            <span className="text-xs font-medium text-stone-500">
+            <span className="text-text-inverse-muted">•</span>
+            <span className="text-xs font-medium text-text-tertiary">
               Control plane v3
             </span>
           </div>
@@ -217,14 +217,14 @@ export const AdminProvidersPage: React.FC = () => {
       )}
 
       {/* Main Tab Navigation Bar */}
-      <div className="bg-bg-surface rounded-control border border-stone-200 shadow-xs p-1.5 flex flex-wrap gap-1">
+      <div className="bg-bg-surface rounded-control border border-border-disabled shadow-xs p-1.5 flex flex-wrap gap-1">
         <button
           type="button"
           onClick={() => setActiveTab("overview")}
           className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all ${
             activeTab === "overview"
               ? "bg-primary text-text-inverse shadow-xs"
-              : "text-text-secondary hover:text-text-main hover:bg-stone-100"
+              : "text-text-secondary hover:text-text-main hover:bg-surface-muted"
           }`}
         >
           <LayoutDashboard className="w-icon-sm h-icon-sm" />
@@ -237,7 +237,7 @@ export const AdminProvidersPage: React.FC = () => {
           className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all ${
             activeTab === "catalog"
               ? "bg-primary text-text-inverse shadow-xs"
-              : "text-text-secondary hover:text-text-main hover:bg-stone-100"
+              : "text-text-secondary hover:text-text-main hover:bg-surface-muted"
           }`}
         >
           <Layers className="w-icon-sm h-icon-sm" />
@@ -253,7 +253,7 @@ export const AdminProvidersPage: React.FC = () => {
           className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all ${
             activeTab === "matrix"
               ? "bg-primary text-text-inverse shadow-xs"
-              : "text-text-secondary hover:text-text-main hover:bg-stone-100"
+              : "text-text-secondary hover:text-text-main hover:bg-surface-muted"
           }`}
         >
           <Globe className="w-icon-sm h-icon-sm" />
@@ -266,7 +266,7 @@ export const AdminProvidersPage: React.FC = () => {
           className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all ${
             activeTab === "routing"
               ? "bg-primary text-text-inverse shadow-xs"
-              : "text-text-secondary hover:text-text-main hover:bg-stone-100"
+              : "text-text-secondary hover:text-text-main hover:bg-surface-muted"
           }`}
         >
           <Sliders className="w-icon-sm h-icon-sm" />
@@ -279,7 +279,7 @@ export const AdminProvidersPage: React.FC = () => {
           className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all ${
             activeTab === "audit"
               ? "bg-primary text-text-inverse shadow-xs"
-              : "text-text-secondary hover:text-text-main hover:bg-stone-100"
+              : "text-text-secondary hover:text-text-main hover:bg-surface-muted"
           }`}
         >
           <Clock className="w-icon-sm h-icon-sm" />
@@ -328,15 +328,15 @@ export const AdminProvidersPage: React.FC = () => {
               )}
             </p>
 
-            <div className="p-3 bg-stone-50 rounded-lg border border-stone-200 text-xs space-y-1">
+            <div className="p-3 bg-surface-soft rounded-lg border border-border-disabled text-xs space-y-1">
               <div>
-                <span className="text-stone-500">Code : </span>
-                <strong className="font-mono text-stone-800">
+                <span className="text-text-tertiary">Code : </span>
+                <strong className="font-mono text-text-strong">
                   {activeTestProvider.code}
                 </strong>
               </div>
               <div>
-                <span className="text-stone-500">
+                <span className="text-text-tertiary">
                   {t("admin.adminProvidersPage.capacitesAnnoncees")}
                 </span>
                 <div className="mt-2 flex flex-wrap gap-2">
@@ -345,7 +345,7 @@ export const AdminProvidersPage: React.FC = () => {
                       key={capability}
                       capability={capability}
                       compact
-                      className="max-w-64 rounded border border-stone-200 bg-bg-surface px-2 py-1 text-stone-800"
+                      className="max-w-64 rounded border border-border-disabled bg-bg-surface px-2 py-1 text-text-strong"
                     />
                   ))}
                 </div>
@@ -356,8 +356,8 @@ export const AdminProvidersPage: React.FC = () => {
               <div
                 className={`p-3 rounded-lg border text-xs font-mono ${
                   testResult.success
-                    ? "bg-emerald-900 text-emerald-100 border-emerald-700"
-                    : "bg-rose-900 text-rose-100 border-rose-700"
+                    ? "bg-success-inverse text-success-on-inverse border-success-strong"
+                    : "bg-critical-inverse text-critical-surface border-critical"
                 }`}
               >
                 <div className="font-bold mb-1">
@@ -370,7 +370,7 @@ export const AdminProvidersPage: React.FC = () => {
               </div>
             )}
 
-            <div className="flex items-center justify-end gap-3 pt-3 border-t border-stone-100">
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-border-soft">
               <Button
                 variant="outline"
                 size="sm"

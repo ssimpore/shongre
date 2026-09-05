@@ -1,4 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
+import { colors } from "@shongre/design-tokens";
+import { brand } from "@shongre/brand";
+import { webBrandAssets } from "@shongre/brand/web";
 import { useEstablishedConsent, usePersona } from "./personas";
 
 function captureBrowserProblems(page: Page): string[] {
@@ -35,11 +38,11 @@ test("official desktop signatures and metadata are served from the curated runti
   const headerWordmark = headerSignature.locator("img").nth(1);
   await expect(headerIcon).toHaveAttribute(
     "src",
-    "/brand/shongre/pwa/icon-maskable-192.png",
+    webBrandAssets.icon.primary.src,
   );
   await expect(headerWordmark).toHaveAttribute(
     "src",
-    "/brand/shongre/logo/wordmark-primary.svg",
+    webBrandAssets.logo.wordmark.primary.src,
   );
   await expect
     .poll(() => headerIcon.evaluate((image) => image.naturalWidth))
@@ -51,9 +54,7 @@ test("official desktop signatures and metadata are served from the curated runti
     await headerIcon.evaluate((image) => image.getBoundingClientRect().width),
   ).toBeGreaterThanOrEqual(36);
   expect(
-    await headerIcon.evaluate(
-      (image) => getComputedStyle(image).borderRadius,
-    ),
+    await headerIcon.evaluate((image) => getComputedStyle(image).borderRadius),
   ).toBe("4px");
   expect(
     await headerWordmark.evaluate(
@@ -100,11 +101,11 @@ test("official desktop signatures and metadata are served from the curated runti
   const footerWordmark = footerSignature.locator("img").nth(1);
   await expect(footerIcon).toHaveAttribute(
     "src",
-    "/brand/shongre/pwa/icon-maskable-192.png",
+    webBrandAssets.icon.primary.src,
   );
   await expect(footerWordmark).toHaveAttribute(
     "src",
-    "/brand/shongre/logo/wordmark-reverse.png",
+    webBrandAssets.logo.wordmark.reverse.src,
   );
   await expect
     .poll(() => footerIcon.evaluate((image) => image.naturalWidth))
@@ -130,27 +131,48 @@ test("official desktop signatures and metadata are served from the curated runti
   );
   await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
     "content",
-    /\/brand\/shongre\/social\/open-graph-light\.png$/,
+    new RegExp(
+      webBrandAssets.social.openGraphLight.src.replace(
+        /[.*+?^${}()|[\]\\]/g,
+        "\\$&",
+      ),
+    ),
   );
   await expect(page.locator('meta[name="twitter:image"]')).toHaveAttribute(
     "content",
-    /\/brand\/shongre\/social\/open-graph-light\.png$/,
+    new RegExp(
+      webBrandAssets.social.openGraphLight.src.replace(
+        /[.*+?^${}()|[\]\\]/g,
+        "\\$&",
+      ),
+    ),
   );
   await expect(page.locator('link[rel="manifest"]')).toHaveAttribute(
     "href",
     "/manifest.webmanifest",
   );
+  await expect(
+    page.locator(
+      'link[rel="preload"][as="image"][href*="/brand/shongre/logo/header-primary-"]',
+    ),
+    "a normal route must not preload the hidden not-found boundary logo",
+  ).toHaveCount(0);
   expect(
     await page.locator('meta[name="theme-color"]').getAttribute("content"),
-  ).toBe("#FF6500");
+  ).toBe(colors.brand.primary);
   for (const size of [16, 32, 48, 64, 96]) {
     await expect(
       page.locator(`link[rel="icon"][sizes="${size}x${size}"]`),
-    ).toHaveAttribute("href", `/favicon-${size}x${size}.png?v=1.0.0`);
+    ).toHaveAttribute(
+      "href",
+      webBrandAssets.favicon.png.find(
+        ({ sizes }) => sizes === `${size}x${size}`,
+      )!.src,
+    );
   }
   await expect(page.locator('link[rel="shortcut icon"]')).toHaveAttribute(
     "href",
-    "/favicon.ico?v=1.0.0",
+    webBrandAssets.favicon.ico.src,
   );
 
   const manifestResponse = await request.get("/manifest.webmanifest");
@@ -158,17 +180,21 @@ test("official desktop signatures and metadata are served from the curated runti
   const manifest = await manifestResponse.json();
   expect(manifest).toMatchObject({
     name: "SHONGRE.",
-    theme_color: "#FF6500",
-    background_color: "#FFFFFF",
+    theme_color: colors.brand.primary,
+    background_color: colors.brand.background,
   });
   expect(manifest.icons).toEqual(
     expect.arrayContaining([
       expect.objectContaining({
-        src: "/brand/shongre/pwa/icon-192.png",
+        src: webBrandAssets.pwa.icons.find(
+          ({ sizes, purpose }) => sizes === "192x192" && purpose === "any",
+        )!.src,
         sizes: "192x192",
       }),
       expect.objectContaining({
-        src: "/brand/shongre/pwa/icon-maskable-512.png",
+        src: webBrandAssets.pwa.icons.find(
+          ({ sizes, purpose }) => sizes === "512x512" && purpose === "maskable",
+        )!.src,
         sizes: "512x512",
         purpose: "maskable",
       }),
@@ -176,14 +202,10 @@ test("official desktop signatures and metadata are served from the curated runti
   );
 
   for (const path of [
-    "/favicon.ico",
-    "/favicon-16x16.png",
-    "/favicon-32x32.png",
-    "/favicon-48x48.png",
-    "/favicon-64x64.png",
-    "/favicon-96x96.png",
-    "/apple-touch-icon.png",
-    "/brand/shongre/social/open-graph-light.png",
+    webBrandAssets.favicon.ico.src,
+    ...webBrandAssets.favicon.png.map(({ src }) => src),
+    webBrandAssets.favicon.appleTouch.src,
+    webBrandAssets.social.openGraphLight.src,
   ]) {
     const response = await request.get(path);
     expect(response.ok(), `${path} is available`).toBe(true);
@@ -193,6 +215,7 @@ test("official desktop signatures and metadata are served from the curated runti
   expect(solutionOpenGraph.headers()["content-type"]).toContain("image/png");
   expect((await solutionOpenGraph.body()).byteLength).toBeGreaterThan(1_000);
   expect(browserProblems).toEqual([]);
+  expect(webBrandAssets.version).toBe(brand.version);
 });
 
 test("mobile header keeps the official signature while the navigation opens", async ({
@@ -227,5 +250,25 @@ test("authentication shell uses the accessible official signature", async ({
   const logo = page.locator('[data-brand-signature="primary"]');
   await expect(logo).toBeVisible();
   await expect(logo).toHaveAttribute("aria-label", "SHONGRE.");
+  expect(browserProblems).toEqual([]);
+});
+
+test("admin inverse chrome keeps the approved standalone icon recognizable", async ({
+  page,
+}) => {
+  const browserProblems = captureBrowserProblems(page);
+  await usePersona(page, "admin");
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/admin", { waitUntil: "networkidle" });
+
+  const icon = page.locator('header [data-brand-icon="primary"]');
+  await expect(icon).toBeVisible();
+  await expect(icon).toHaveAttribute("src", webBrandAssets.icon.primary.src);
+  expect(
+    await icon.evaluate((image) => image.getBoundingClientRect().width),
+  ).toBeGreaterThanOrEqual(28);
+  await expect(
+    page.locator('header [data-brand-icon="mono-white"]'),
+  ).toHaveCount(0);
   expect(browserProblems).toEqual([]);
 });

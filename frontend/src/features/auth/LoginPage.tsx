@@ -129,7 +129,7 @@ export const LoginPage: React.FC = () => {
       {requiresMfa ? (
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-stone-800 mb-1.5">
+            <label className="block text-xs font-semibold text-text-strong mb-1.5">
               {t("auth.loginPage.codeDeSecurite2faOu")}
             </label>
             <input
@@ -139,7 +139,7 @@ export const LoginPage: React.FC = () => {
               placeholder={t("auth.loginPage.ex123456Ou84921049")}
               autoFocus
               required
-              className="w-full px-4 py-3 text-center tracking-widest text-lg font-bold bg-stone-50 border border-stone-300 rounded-control text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 focus:bg-white h-control-touch"
+              className="w-full px-4 py-3 text-center tracking-widest text-lg font-bold bg-surface-soft border border-border-prominent rounded-control text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring focus:bg-bg-surface h-control-touch"
             />
           </div>
 
@@ -162,7 +162,7 @@ export const LoginPage: React.FC = () => {
               setRequiresMfa(false);
               setTempMfaToken(null);
             }}
-            className="w-full text-stone-500"
+            className="w-full text-text-tertiary"
           >
             {t("auth.loginPage.retourALEcranDe")}
           </Button>
@@ -172,7 +172,7 @@ export const LoginPage: React.FC = () => {
           <div>
             <label
               htmlFor="login-email"
-              className="block text-xs font-semibold text-stone-800 mb-1.5"
+              className="block text-xs font-semibold text-text-strong mb-1.5"
             >
               Adresse email <span className="text-primary">*</span>
             </label>
@@ -185,9 +185,9 @@ export const LoginPage: React.FC = () => {
                 placeholder={t("auth.loginPage.votreEmailExempleFr")}
                 required
                 autoComplete="email"
-                className="w-full pl-9 pr-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-semibold text-stone-900 placeholder:text-stone-500 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
+                className="w-full pl-9 pr-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main placeholder:text-text-tertiary focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
               />
-              <Mail className="w-icon-md h-icon-md text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <Mail className="w-icon-md h-icon-md text-text-inverse-subtle absolute left-3 top-1/2 -translate-y-1/2" />
             </div>
           </div>
 
@@ -195,7 +195,7 @@ export const LoginPage: React.FC = () => {
             <div className="flex items-center justify-between mb-1.5">
               <label
                 htmlFor="login-password"
-                className="block text-xs font-semibold text-stone-800"
+                className="block text-xs font-semibold text-text-strong"
               >
                 {t("auth.loginPage.motDePasse")}
                 <span className="text-primary">*</span>
@@ -220,12 +220,12 @@ export const LoginPage: React.FC = () => {
           </div>
 
           <div className="flex items-center justify-between pt-1">
-            <label className="flex items-center gap-2 min-h-6 text-xs font-medium text-stone-700 cursor-pointer select-none">
+            <label className="flex items-center gap-2 min-h-6 text-xs font-medium text-text-emphasis cursor-pointer select-none">
               <input
                 type="checkbox"
                 checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
-                className="w-4 h-4 rounded border-stone-300 text-primary focus:ring-primary"
+                className="w-4 h-4 rounded border-border-prominent text-primary focus:ring-primary"
               />
               <span>{t("auth.loginPage.resterConnecteSurCetAppareil")}</span>
             </label>
@@ -247,12 +247,12 @@ export const LoginPage: React.FC = () => {
       {!requiresMfa ? <SocialLoginButtons returnTo={redirectUrl} /> : null}
 
       {/* Quick Demo Credentials Panel for Testers */}
-      <div className="mt-7 pt-5 border-t border-stone-100">
+      <div className="mt-7 pt-5 border-t border-border-soft">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-micro font-bold text-stone-600 uppercase tracking-wider">
+          <span className="text-micro font-bold text-text-supporting uppercase tracking-wider">
             {t("auth.loginPage.connexionRapideDemo")}
           </span>
-          <span className="text-micro font-medium text-stone-600">
+          <span className="text-micro font-medium text-text-supporting">
             {t("auth.loginPage.1ClicSansMotDe")}
           </span>
         </div>
@@ -263,13 +263,13 @@ export const LoginPage: React.FC = () => {
             onClick={() =>
               handleQuickDemoLogin("buyer_thomas", "thomas.laurent@example.fr")
             }
-            className="min-h-control-touch p-2 rounded-control bg-stone-50 hover:bg-stone-100 border border-stone-200 text-left transition-colors cursor-pointer group"
+            className="min-h-control-touch p-2 rounded-control bg-surface-soft hover:bg-surface-muted border border-border-disabled text-left transition-colors cursor-pointer group"
           >
-            <div className="font-bold text-stone-900 group-hover:text-primary flex items-center gap-1">
+            <div className="font-bold text-text-main group-hover:text-primary flex items-center gap-1">
               <User className="w-icon-sm h-icon-sm text-info shrink-0" />
               <span>Thomas (Particulier)</span>
             </div>
-            <div className="text-micro text-stone-600 truncate">
+            <div className="text-micro text-text-supporting truncate">
               {t("auth.loginPage.acheteurVendeur")}
             </div>
           </button>
@@ -279,13 +279,13 @@ export const LoginPage: React.FC = () => {
             onClick={() =>
               handleQuickDemoLogin("pro_atelier", "contact@atelier-nordique.fr")
             }
-            className="min-h-control-touch p-2 rounded-control bg-stone-50 hover:bg-stone-100 border border-stone-200 text-left transition-colors cursor-pointer group"
+            className="min-h-control-touch p-2 rounded-control bg-surface-soft hover:bg-surface-muted border border-border-disabled text-left transition-colors cursor-pointer group"
           >
-            <div className="font-bold text-stone-900 group-hover:text-primary flex items-center gap-1">
+            <div className="font-bold text-text-main group-hover:text-primary flex items-center gap-1">
               <Briefcase className="w-icon-sm h-icon-sm text-primary shrink-0" />
               <span>Atelier Nordique (Pro)</span>
             </div>
-            <div className="text-micro text-stone-600 truncate">
+            <div className="text-micro text-text-supporting truncate">
               {t("auth.loginPage.siretVitrineVerifiee")}
             </div>
           </button>
@@ -298,13 +298,13 @@ export const LoginPage: React.FC = () => {
                 "sophie.marchand@boutiquedeco.fr",
               )
             }
-            className="min-h-control-touch p-2 rounded-control bg-stone-50 hover:bg-stone-100 border border-stone-200 text-left transition-colors cursor-pointer group"
+            className="min-h-control-touch p-2 rounded-control bg-surface-soft hover:bg-surface-muted border border-border-disabled text-left transition-colors cursor-pointer group"
           >
-            <div className="font-bold text-stone-900 group-hover:text-warning flex items-center gap-1">
+            <div className="font-bold text-text-main group-hover:text-warning flex items-center gap-1">
               <Briefcase className="w-icon-sm h-icon-sm text-warning shrink-0" />
               <span>Sophie (Pro en cours)</span>
             </div>
-            <div className="text-micro text-stone-600 truncate">
+            <div className="text-micro text-text-supporting truncate">
               Dossier Kbis en examen
             </div>
           </button>
@@ -314,13 +314,13 @@ export const LoginPage: React.FC = () => {
             onClick={() =>
               handleQuickDemoLogin("admin_antoine", "antoine.fabre@shongre.fr")
             }
-            className="min-h-control-touch p-2 rounded-control bg-stone-50 hover:bg-stone-100 border border-stone-200 text-left transition-colors cursor-pointer group"
+            className="min-h-control-touch p-2 rounded-control bg-surface-soft hover:bg-surface-muted border border-border-disabled text-left transition-colors cursor-pointer group"
           >
-            <div className="font-bold text-stone-900 group-hover:text-success flex items-center gap-1">
+            <div className="font-bold text-text-main group-hover:text-success flex items-center gap-1">
               <Shield className="w-icon-sm h-icon-sm text-success shrink-0" />
               <span>Antoine (Admin)</span>
             </div>
-            <div className="text-micro text-stone-600 truncate">
+            <div className="text-micro text-text-supporting truncate">
               Administration globale
             </div>
           </button>

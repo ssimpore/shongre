@@ -137,11 +137,11 @@ const GuardShell: React.FC<{
   if (!standalone) return <>{children}</>;
   return (
     <div className="min-h-screen bg-bg-base flex flex-col">
-      <div className="border-b border-border-base bg-white">
+      <div className="border-b border-border-base bg-bg-surface">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center">
           <Link
             to={routes.home()}
-            className="flex items-center font-bold text-stone-900"
+            className="flex items-center font-bold text-text-main"
             aria-label="SHONGRE., accueil"
           >
             <BrandLogo size="compact" priority />
@@ -176,10 +176,10 @@ export const RequirePermission: React.FC<RequirePermissionProps> = ({
           <div className="w-16 h-16 rounded-2xl bg-warning-surface border border-warning-border text-warning flex items-center justify-center mx-auto mb-4">
             <Lock className="w-8 h-8" />
           </div>
-          <h1 className="text-2xl font-bold text-stone-900 mb-2">
+          <h1 className="text-2xl font-bold text-text-main mb-2">
             Authentification requise
           </h1>
-          <p className="text-sm text-stone-600 max-w-md mx-auto mb-6">
+          <p className="text-sm text-text-supporting max-w-md mx-auto mb-6">
             {t("security.requirePermission.vousDevezEtreConnectePour")}
           </p>
           <div className="flex items-center justify-center gap-3">
@@ -210,10 +210,10 @@ export const RequirePermission: React.FC<RequirePermissionProps> = ({
           <div className="w-16 h-16 rounded-2xl bg-danger-surface border border-danger-border text-danger flex items-center justify-center mx-auto mb-4">
             <ShieldAlert className="w-8 h-8" />
           </div>
-          <h1 className="text-2xl font-bold text-stone-900 mb-2">
+          <h1 className="text-2xl font-bold text-text-main mb-2">
             {t("security.requirePermission.compteSuspendu")}
           </h1>
-          <p className="text-sm text-stone-600 max-w-md mx-auto mb-6 leading-relaxed">
+          <p className="text-sm text-text-supporting max-w-md mx-auto mb-6 leading-relaxed">
             {currentUser.suspendedReason
               ? `Votre compte a été restreint par nos équipes : "${currentUser.suspendedReason}".`
               : "Votre compte fait l'objet d'une restriction temporaire pour des raisons de conformité."}
@@ -239,10 +239,10 @@ export const RequirePermission: React.FC<RequirePermissionProps> = ({
             <div className="w-16 h-16 rounded-2xl bg-primary-light border border-primary-border text-primary flex items-center justify-center mx-auto mb-4">
               <Briefcase className="w-8 h-8" />
             </div>
-            <h1 className="text-2xl font-bold text-stone-900 mb-2">
+            <h1 className="text-2xl font-bold text-text-main mb-2">
               {customTitle || "Espace réservé aux Vendeurs Professionnels"}
             </h1>
-            <p className="text-sm text-stone-600 max-w-md mx-auto mb-6 leading-relaxed">
+            <p className="text-sm text-text-supporting max-w-md mx-auto mb-6 leading-relaxed">
               {customMessage ||
                 "Cette fonctionnalité (vitrine officielle, multi-annonces, statistiques avancées) est réservée aux comptes professionnels vérifiés."}
             </p>
@@ -277,10 +277,10 @@ export const RequirePermission: React.FC<RequirePermissionProps> = ({
           <div className="w-16 h-16 rounded-2xl bg-warning-surface border border-warning-border text-warning flex items-center justify-center mx-auto mb-4">
             <AlertTriangle className="w-8 h-8" />
           </div>
-          <h1 className="text-2xl font-bold text-stone-900 mb-2">
+          <h1 className="text-2xl font-bold text-text-main mb-2">
             {customTitle || copy.title}
           </h1>
-          <p className="text-sm text-stone-600 max-w-md mx-auto mb-6 leading-relaxed">
+          <p className="text-sm text-text-supporting max-w-md mx-auto mb-6 leading-relaxed">
             {customMessage || copy.message}
           </p>
           <div className="mx-auto flex w-full max-w-md flex-col items-stretch justify-center gap-3 sm:flex-row sm:items-center">

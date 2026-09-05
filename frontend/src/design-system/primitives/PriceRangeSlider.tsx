@@ -158,10 +158,10 @@ export const PriceRangeSlider: React.FC<PriceRangeSliderProps> = ({
     "pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 h-8 w-full appearance-none bg-transparent " +
     "[&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none " +
     "[&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full " +
-    "[&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-primary " +
+    "[&::-webkit-slider-thumb]:bg-bg-surface [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-primary " +
     "[&::-webkit-slider-thumb]:shadow-sm [&::-webkit-slider-thumb]:cursor-grab " +
     "[&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 " +
-    "[&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-2 " +
+    "[&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-bg-surface [&::-moz-range-thumb]:border-2 " +
     "[&::-moz-range-thumb]:border-primary [&::-moz-range-thumb]:shadow-sm [&::-moz-range-thumb]:cursor-grab " +
     "focus-visible:outline-none [&:focus-visible::-webkit-slider-thumb]:outline-2 " +
     "[&:focus-visible::-webkit-slider-thumb]:outline-offset-2 [&:focus-visible::-webkit-slider-thumb]:outline-primary";

@@ -123,7 +123,7 @@ export function SolutionPreview({
   return (
     <div
       aria-hidden="true"
-      className="overflow-hidden rounded-xl border border-border-base bg-white shadow-xs"
+      className="overflow-hidden rounded-xl border border-border-base bg-bg-surface shadow-xs"
     >
       <div className={`flex ${detail ? "min-h-64" : "min-h-28"}`}>
         <div
@@ -144,7 +144,7 @@ export function SolutionPreview({
               {t(previewTitleKeys[icon])}
             </span>
             {icon !== "pilotage" ? (
-              <span className="rounded bg-primary px-2 py-1 text-micro font-bold text-white">
+              <span className="rounded bg-primary px-2 py-1 text-micro font-bold text-text-inverse">
                 + {t("solutions.preview.new")}
               </span>
             ) : null}

@@ -297,7 +297,7 @@ function BriefContent({
           </section>
           <section
             aria-labelledby="brief-next-step"
-            className="rounded-control border border-primary/20 bg-primary-light p-4"
+            className="rounded-control border border-primary-border bg-primary-light p-4"
           >
             <h4 id="brief-next-step" className="text-xs font-bold text-primary">
               Prochaine action suggérée
@@ -700,7 +700,7 @@ export const ProspectingWorkspacePage: React.FC<
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-control bg-primary text-white">
+              <div className="flex h-9 w-9 items-center justify-center rounded-control bg-primary text-text-inverse">
                 <Target className="h-5 w-5" aria-hidden="true" />
               </div>
               <h1 className="text-xl font-bold tracking-tight text-text-main sm:text-2xl">
@@ -807,7 +807,7 @@ export const ProspectingWorkspacePage: React.FC<
                   }}
                   aria-describedby="prospecting-query-help prospecting-query-count"
                   placeholder="Ex. ateliers automobiles spécialisés en carrosserie à Lyon avec un site professionnel, une expérience de plus de 10 ans et des avis clients positifs"
-                  className="min-h-32 w-full resize-y rounded-control border border-border-hover bg-bg-surface py-4 pl-12 pr-20 text-sm leading-6 text-text-main outline-none transition-colors placeholder:text-text-muted focus:border-primary focus:ring-2 focus:ring-primary/15 sm:min-h-36 sm:text-base"
+                  className="min-h-32 w-full resize-y rounded-control border border-border-hover bg-bg-surface py-4 pl-12 pr-20 text-sm leading-6 text-text-main outline-none transition-colors placeholder:text-text-muted focus:border-primary focus:ring-2 focus:ring-primary-ring sm:min-h-36 sm:text-base"
                 />
                 <span
                   id="prospecting-query-count"

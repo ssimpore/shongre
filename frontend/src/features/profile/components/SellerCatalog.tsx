@@ -194,16 +194,16 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
   // If seller has 0 active listings overall
   if (activeListings.length === 0) {
     return (
-      <div className="bg-white rounded-2xl border border-border-base p-10 sm:p-14 text-center">
-        <div className="w-16 h-16 rounded-2xl bg-bg-base border border-border-base text-stone-400 flex items-center justify-center mx-auto mb-4">
+      <div className="bg-bg-surface rounded-2xl border border-border-base p-10 sm:p-14 text-center">
+        <div className="w-16 h-16 rounded-2xl bg-bg-base border border-border-base text-text-inverse-subtle flex items-center justify-center mx-auto mb-4">
           <PackageOpen className="w-8 h-8" />
         </div>
-        <h3 className="text-lg font-bold text-stone-900 mb-1">
+        <h3 className="text-lg font-bold text-text-main mb-1">
           {isPro
             ? "Aucune annonce disponible en vitrine"
             : "Aucune annonce en ligne"}
         </h3>
-        <p className="text-xs sm:text-sm text-stone-500 max-w-md mx-auto mb-6">
+        <p className="text-xs sm:text-sm text-text-tertiary max-w-md mx-auto mb-6">
           {isPro
             ? `${seller.companyName || seller.name} n'a pas d'articles en vente pour le moment. Revenez bientôt découvrir leurs nouveautés.`
             : `${seller.name} n'a aucune annonce active en ce moment.`}
@@ -229,25 +229,25 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
   return (
     <div className="space-y-4">
       {/* Top Search & Filter Bar */}
-      <div className="bg-white rounded-2xl border border-border-base p-3 sm:p-4 shadow-xs">
+      <div className="bg-bg-surface rounded-2xl border border-border-base p-3 sm:p-4 shadow-xs">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           {/* Internal Catalog Search */}
           <div className="relative flex-1">
-            <Search className="w-icon-md h-icon-md text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <Search className="w-icon-md h-icon-md text-text-inverse-subtle absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={`Rechercher parmi les annonces de ${seller.companyName || seller.name}...`}
               aria-label={`Rechercher parmi les annonces de ${seller.companyName || seller.name}`}
-              className="w-full pl-9 pr-8 py-2 bg-bg-base border border-border-base rounded-control text-xs sm:text-sm text-stone-900 placeholder:text-stone-500 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all h-control-touch"
+              className="w-full pl-9 pr-8 py-2 bg-bg-base border border-border-base rounded-control text-xs sm:text-sm text-text-main placeholder:text-text-tertiary focus:bg-bg-surface focus:outline-hidden focus:ring-2 focus:ring-primary-ring focus:border-primary transition-all h-control-touch"
             />
             {searchQuery && (
               <button
                 type="button"
                 onClick={() => setSearchQuery("")}
                 aria-label={t("profile.sellerCatalog.effacerLaRecherche")}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-500 hover:text-stone-600 p-1"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-tertiary hover:text-text-supporting p-1"
               >
                 <X className="w-icon-sm h-icon-sm" />
               </button>
@@ -263,7 +263,7 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
               className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold border transition-colors cursor-pointer ${
                 isFilterDrawerOpen || minPrice || maxPrice
                   ? "bg-bg-base text-primary border-primary"
-                  : "bg-bg-base text-stone-700 border-border-base hover:bg-bg-subtle"
+                  : "bg-bg-base text-text-emphasis border-border-base hover:bg-bg-subtle"
               }`}
             >
               <SlidersHorizontal className="w-icon-sm h-icon-sm" />
@@ -291,7 +291,7 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
               placement="bottom-right"
               panelWidth="w-48"
               mobileIcon={
-                <ArrowUpDown className="w-icon-sm h-icon-sm text-stone-700" />
+                <ArrowUpDown className="w-icon-sm h-icon-sm text-text-emphasis" />
               }
               headerTitle="Trier par"
               options={[
@@ -309,7 +309,7 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
         {/* Collapsible Price Filter Tray */}
         {isFilterDrawerOpen && (
           <div className="mt-3 pt-3 border-t border-border-subtle flex flex-wrap items-center gap-3 animate-in fade-in duration-fast">
-            <span className="text-xs font-bold text-stone-700">
+            <span className="text-xs font-bold text-text-emphasis">
               {t("profile.sellerCatalog.fourchetteDePrix")}
             </span>
             <div className="flex items-center gap-2">
@@ -321,9 +321,9 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
                 aria-label={t("profile.sellerCatalog.prixMinimum")}
                 min={PRICE_FILTER_INPUT_CONSTRAINTS.minMajor}
                 step={PRICE_FILTER_INPUT_CONSTRAINTS.stepMajor}
-                className="w-24 px-2.5 py-1.5 bg-bg-base border border-border-base rounded-control text-xs focus:bg-white focus:outline-hidden focus:border-primary h-control-touch"
+                className="w-24 px-2.5 py-1.5 bg-bg-base border border-border-base rounded-control text-xs focus:bg-bg-surface focus:outline-hidden focus:border-primary h-control-touch"
               />
-              <span className="text-stone-500 text-xs">—</span>
+              <span className="text-text-tertiary text-xs">—</span>
               <input
                 type="number"
                 value={maxPrice}
@@ -332,7 +332,7 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
                 aria-label={t("profile.sellerCatalog.prixMaximum")}
                 min={PRICE_FILTER_INPUT_CONSTRAINTS.minMajor}
                 step={PRICE_FILTER_INPUT_CONSTRAINTS.stepMajor}
-                className="w-24 px-2.5 py-1.5 bg-bg-base border border-border-base rounded-control text-xs focus:bg-white focus:outline-hidden focus:border-primary h-control-touch"
+                className="w-24 px-2.5 py-1.5 bg-bg-base border border-border-base rounded-control text-xs focus:bg-bg-surface focus:outline-hidden focus:border-primary h-control-touch"
               />
             </div>
             {(minPrice || maxPrice) && (
@@ -342,7 +342,7 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
                   setMinPrice("");
                   setMaxPrice("");
                 }}
-                className="text-xs text-stone-500 hover:text-primary font-semibold underline"
+                className="text-xs text-text-tertiary hover:text-primary font-semibold underline"
               >
                 {t("profile.sellerCatalog.effacerLesPrix")}
               </button>
@@ -361,8 +361,8 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
               }}
               className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer shrink-0 ${
                 selectedCategory === "all"
-                  ? "bg-stone-900 text-white"
-                  : "bg-bg-base text-stone-600 hover:bg-bg-subtle border border-border-base"
+                  ? "bg-surface-inverse text-text-inverse"
+                  : "bg-bg-base text-text-supporting hover:bg-bg-subtle border border-border-base"
               }`}
             >
               Toutes ({activeListings.length})
@@ -377,8 +377,8 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
                 }}
                 className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer shrink-0 ${
                   selectedCategory === cat.slug
-                    ? "bg-stone-900 text-white"
-                    : "bg-bg-base text-stone-600 hover:bg-bg-subtle border border-border-base"
+                    ? "bg-surface-inverse text-text-inverse"
+                    : "bg-bg-base text-text-supporting hover:bg-bg-subtle border border-border-base"
                 }`}
               >
                 {cat.name} ({cat.count})
@@ -390,7 +390,7 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
         {/* Subcategory Facets */}
         {subCategoryFacets.length > 0 && (
           <div className="mt-2 flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1">
-            <span className="text-xs font-semibold text-stone-500 uppercase tracking-wider shrink-0 mr-1">
+            <span className="text-xs font-semibold text-text-tertiary uppercase tracking-wider shrink-0 mr-1">
               {t("profile.sellerCatalog.sousCategories")}
             </span>
             <button
@@ -398,8 +398,8 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
               onClick={() => setSelectedSubCategory("all")}
               className={`px-2.5 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer shrink-0 ${
                 selectedSubCategory === "all"
-                  ? "bg-primary text-white font-semibold"
-                  : "bg-white text-stone-600 hover:bg-stone-100 border border-stone-200"
+                  ? "bg-primary text-text-inverse font-semibold"
+                  : "bg-bg-surface text-text-supporting hover:bg-surface-muted border border-border-disabled"
               }`}
             >
               Toutes
@@ -411,8 +411,8 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
                 onClick={() => setSelectedSubCategory(sub.slug)}
                 className={`px-2.5 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition-colors cursor-pointer shrink-0 ${
                   selectedSubCategory === sub.slug
-                    ? "bg-primary text-white font-semibold"
-                    : "bg-white text-stone-600 hover:bg-stone-100 border border-stone-200"
+                    ? "bg-primary text-text-inverse font-semibold"
+                    : "bg-bg-surface text-text-supporting hover:bg-surface-muted border border-border-disabled"
                 }`}
               >
                 {sub.name} ({sub.count})
@@ -423,9 +423,9 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
       </div>
 
       {/* Active Filter Chips & Result Count */}
-      <div className="flex items-center justify-between text-xs text-stone-500 px-1">
+      <div className="flex items-center justify-between text-xs text-text-tertiary px-1">
         <div>
-          <span className="font-bold text-stone-900">
+          <span className="font-bold text-text-main">
             {filteredListings.length}
           </span>{" "}
           annonce

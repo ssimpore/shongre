@@ -124,7 +124,7 @@ export function SocialLoginButtons(
     <div className="space-y-3">
       <div className="flex items-center gap-3" aria-hidden="true">
         <span className="h-px flex-1 bg-border-subtle" />
-        <span className="text-micro font-semibold uppercase tracking-wide text-stone-500">
+        <span className="text-micro font-semibold uppercase tracking-wide text-text-tertiary">
           {t("auth.social.or")}
         </span>
         <span className="h-px flex-1 bg-border-subtle" />
@@ -136,7 +136,7 @@ export function SocialLoginButtons(
             type="button"
             variant="outline"
             size="md"
-            className="w-full bg-white"
+            className="w-full bg-bg-surface"
             leftIcon={provider.icon}
             isLoading={pending === provider.id}
             disabled={
@@ -154,7 +154,7 @@ export function SocialLoginButtons(
           {error}
         </p>
       ) : null}
-      <p className="text-center text-micro leading-relaxed text-stone-500">
+      <p className="text-center text-micro leading-relaxed text-text-tertiary">
         {t("auth.social.privacy")}{" "}
         <Link className="font-semibold underline" to="/conditions-utilisation">
           CGU

@@ -1,25 +1,43 @@
 #!/usr/bin/env node
 
-import { copyFile, mkdir, readFile, unlink, writeFile } from "node:fs/promises";
+import {
+  access,
+  copyFile,
+  lstat,
+  mkdir,
+  readFile,
+  unlink,
+  writeFile,
+} from "node:fs/promises";
 import path from "node:path";
 import {
   BRAND_VERSION,
+  brandActiveRegistryDestination,
   brandAssetMappings,
   brandDocumentAdapterDestination,
   brandDocumentLogoSource,
+  brandMobileImageRegistryDestination,
+  brandMobileRegistryDestination,
+  brandGeneratedDestinations,
   brandSourceRoot,
   brandTokenAdapterDestination,
   brandTokenSource,
   brandTokenTypesDestination,
+  brandWebRegistryDestination,
   generatedInventoryPath,
-  managedLegacyBrandPaths,
   repositoryRoot,
 } from "./brand-assets.config";
 import {
   absoluteRepositoryPath,
+  canonicalBrandPath,
+  readCanonicalChecksums,
   renderBrandDocumentAdapter,
+  renderBrandActiveRegistry,
+  renderBrandMobileImageRegistry,
+  renderBrandMobileRegistry,
   renderBrandTokenAdapter,
   renderBrandTokenTypes,
+  renderBrandWebRegistry,
   sha256,
   validateCanonicalChecksums,
 } from "./brand-assets.lib";
@@ -51,25 +69,58 @@ async function removeManagedFile(relative: string): Promise<void> {
   }
 }
 
+async function preflightBrandSources(): Promise<void> {
+  const requiredSources = new Set([
+    ...brandAssetMappings.map(({ source }) => source),
+    brandDocumentLogoSource,
+    brandTokenSource,
+  ]);
+  const destinations = new Set<string>();
+  const checksums = await readCanonicalChecksums();
+
+  for (const { destination } of brandAssetMappings) {
+    if (destinations.has(destination)) {
+      throw new Error(`Duplicate runtime brand destination: ${destination}`);
+    }
+    destinations.add(destination);
+    absoluteRepositoryPath(destination);
+  }
+
+  for (const source of requiredSources) {
+    const file = canonicalBrandPath(source);
+    if (!checksums.has(source)) {
+      throw new Error(
+        `Required runtime brand source is not checksummed: ${source}`,
+      );
+    }
+    try {
+      await access(file);
+      if ((await lstat(file)).isSymbolicLink()) {
+        throw new Error(
+          `Canonical brand source must not be a symlink: ${source}`,
+        );
+      }
+    } catch (error) {
+      if ((error as Error).message.includes("must not be a symlink")) {
+        throw error;
+      }
+      throw new Error(`Required runtime brand source is missing: ${source}`);
+    }
+  }
+}
+
 async function main(): Promise<void> {
   await validateCanonicalChecksums();
+  await preflightBrandSources();
 
-  const generated = [
-    ...brandAssetMappings.map(({ destination }) => destination),
-    brandDocumentAdapterDestination,
-    brandTokenAdapterDestination,
-    brandTokenTypesDestination,
-  ].sort();
+  const generated = [...brandGeneratedDestinations].sort();
   const generatedSet = new Set(generated);
 
   for (const relative of await previousGeneratedPaths()) {
     if (!generatedSet.has(relative)) await removeManagedFile(relative);
   }
-  for (const relative of managedLegacyBrandPaths)
-    await removeManagedFile(relative);
-
   for (const mapping of brandAssetMappings) {
-    const source = path.join(brandSourceRoot, mapping.source);
+    const source = canonicalBrandPath(mapping.source);
     const destination = absoluteRepositoryPath(mapping.destination);
     await mkdir(path.dirname(destination), { recursive: true });
     await copyFile(source, destination);
@@ -95,6 +146,36 @@ async function main(): Promise<void> {
   );
   await mkdir(path.dirname(documentDestination), { recursive: true });
   await writeFile(documentDestination, documentAdapter, "utf8");
+
+  const activeRegistry = await renderBrandActiveRegistry();
+  const activeRegistryDestination = absoluteRepositoryPath(
+    brandActiveRegistryDestination,
+  );
+  await mkdir(path.dirname(activeRegistryDestination), { recursive: true });
+  await writeFile(activeRegistryDestination, activeRegistry, "utf8");
+
+  const webRegistry = await renderBrandWebRegistry();
+  const webRegistryDestination = absoluteRepositoryPath(
+    brandWebRegistryDestination,
+  );
+  await mkdir(path.dirname(webRegistryDestination), { recursive: true });
+  await writeFile(webRegistryDestination, webRegistry, "utf8");
+
+  const mobileRegistry = renderBrandMobileRegistry();
+  const mobileRegistryDestination = absoluteRepositoryPath(
+    brandMobileRegistryDestination,
+  );
+  await mkdir(path.dirname(mobileRegistryDestination), { recursive: true });
+  await writeFile(mobileRegistryDestination, mobileRegistry, "utf8");
+
+  const mobileImageRegistry = await renderBrandMobileImageRegistry();
+  const mobileImageRegistryDestination = absoluteRepositoryPath(
+    brandMobileImageRegistryDestination,
+  );
+  await mkdir(path.dirname(mobileImageRegistryDestination), {
+    recursive: true,
+  });
+  await writeFile(mobileImageRegistryDestination, mobileImageRegistry, "utf8");
 
   const inventory = {
     notice:

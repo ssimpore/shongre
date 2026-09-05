@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { resolveMarketContext } from "@shongre/contracts";
+import { webBrandAssets } from "@shongre/brand/web";
 import { metadataForRoute } from "./route-metadata";
 
 const infrastructure = {
@@ -35,7 +36,10 @@ describe("country-aware route metadata", () => {
       siteName: "SHONGRE.",
       images: [
         {
-          url: "https://shongre.fr/brand/shongre/social/open-graph-light.png",
+          url: new URL(
+            webBrandAssets.social.openGraphLight.src,
+            "https://shongre.fr",
+          ).href,
           width: 1200,
           height: 630,
         },
@@ -43,7 +47,10 @@ describe("country-aware route metadata", () => {
     });
     expect(metadata.twitter).toMatchObject({
       card: "summary_large_image",
-      images: ["https://shongre.fr/brand/shongre/social/open-graph-light.png"],
+      images: [
+        new URL(webBrandAssets.social.openGraphLight.src, "https://shongre.fr")
+          .href,
+      ],
     });
   });
 

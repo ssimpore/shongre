@@ -195,7 +195,7 @@ export const AdminFeatureFlagsPage: React.FC = () => {
                     aria-current={
                       selectedKey === entry.definition.key ? "page" : undefined
                     }
-                    className={`w-full p-4 text-left ${selectedKey === entry.definition.key ? "bg-primary/5" : "hover:bg-stone-50"}`}
+                    className={`w-full p-4 text-left ${selectedKey === entry.definition.key ? "bg-primary-surface-soft" : "hover:bg-surface-soft"}`}
                   >
                     <span className="block break-all font-mono text-xs font-bold text-text-main">
                       {entry.definition.key}
@@ -213,7 +213,7 @@ export const AdminFeatureFlagsPage: React.FC = () => {
                           ? "Active par défaut"
                           : "Désactivée"}
                       </Badge>
-                      <span className="text-micro text-stone-500">
+                      <span className="text-micro text-text-tertiary">
                         {entry.rules.length}{" "}
                         {t("admin.adminFeatureFlagsPage.regleS")}
                       </span>
@@ -235,7 +235,7 @@ export const AdminFeatureFlagsPage: React.FC = () => {
                     <p className="font-mono text-sm font-bold text-text-main">
                       {selected.definition.key}
                     </p>
-                    <p className="mt-1 text-micro text-stone-500">
+                    <p className="mt-1 text-micro text-text-tertiary">
                       {t("admin.adminFeatureFlagsPage.miseAJour")}{" "}
                       {new Date(selected.definition.updatedAt).toLocaleString(
                         "fr-FR",
@@ -284,7 +284,7 @@ export const AdminFeatureFlagsPage: React.FC = () => {
                 </FormField>
 
                 <div className="grid gap-4 sm:grid-cols-3">
-                  <label className="text-xs font-semibold text-stone-700">
+                  <label className="text-xs font-semibold text-text-emphasis">
                     Exposition
                     <Select
                       className="mt-1 block w-full"
@@ -302,7 +302,7 @@ export const AdminFeatureFlagsPage: React.FC = () => {
                       <option value="server">Serveur uniquement</option>
                     </Select>
                   </label>
-                  <label className="text-xs font-semibold text-stone-700">
+                  <label className="text-xs font-semibold text-text-emphasis">
                     {t("admin.adminFeatureFlagsPage.cycleDeVie")}
                     <Select
                       className="mt-1 block w-full"
@@ -322,7 +322,7 @@ export const AdminFeatureFlagsPage: React.FC = () => {
                       </option>
                     </Select>
                   </label>
-                  <label className="flex items-center gap-2 self-end rounded-lg border border-border-base px-3 py-2.5 text-xs font-semibold text-stone-700">
+                  <label className="flex items-center gap-2 self-end rounded-lg border border-border-base px-3 py-2.5 text-xs font-semibold text-text-emphasis">
                     <input
                       type="checkbox"
                       checked={draft.defaultEnabled}
@@ -374,7 +374,7 @@ export const AdminFeatureFlagsPage: React.FC = () => {
                 </h2>
                 <div className="mt-3 space-y-2">
                   {selected.rules.length === 0 ? (
-                    <p className="rounded-control bg-stone-50 p-4 text-xs text-text-secondary">
+                    <p className="rounded-control bg-surface-soft p-4 text-xs text-text-secondary">
                       {t(
                         "admin.adminFeatureFlagsPage.aucuneRegleLaValeurParDefautSApplique",
                       )}
@@ -392,7 +392,7 @@ export const AdminFeatureFlagsPage: React.FC = () => {
                             {t("admin.adminFeatureFlagsPage.priorite")}{" "}
                             {rule.priority}
                           </p>
-                          <p className="mt-1 text-micro text-stone-500">
+                          <p className="mt-1 text-micro text-text-tertiary">
                             {rule.reason}
                           </p>
                         </div>
@@ -459,7 +459,7 @@ export const AdminFeatureFlagsPage: React.FC = () => {
                       />
                     </FormField>
                   </div>
-                  <label className="inline-flex items-center gap-2 text-xs font-semibold text-stone-700">
+                  <label className="inline-flex items-center gap-2 text-xs font-semibold text-text-emphasis">
                     <input
                       type="checkbox"
                       checked={newRule.enabled}
@@ -502,7 +502,7 @@ export const AdminFeatureFlagsPage: React.FC = () => {
               </section>
             </div>
           ) : (
-            <div className="rounded-2xl border border-border-base bg-bg-surface p-8 text-center text-sm text-stone-500">
+            <div className="rounded-2xl border border-border-base bg-bg-surface p-8 text-center text-sm text-text-tertiary">
               {t(
                 "admin.adminFeatureFlagsPage.aucuneFonctionnaliteSelectionnee",
               )}

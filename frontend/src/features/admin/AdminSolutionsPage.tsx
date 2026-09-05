@@ -551,7 +551,7 @@ export function AdminSolutionsPage() {
               <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
                 <label className="flex h-control-touch items-center gap-2 rounded-control border border-border-base px-3">
                   <Search
-                    className="h-icon-sm w-icon-sm text-stone-500"
+                    className="h-icon-sm w-icon-sm text-text-tertiary"
                     aria-hidden="true"
                   />
                   <span className="sr-only">
@@ -590,7 +590,7 @@ export function AdminSolutionsPage() {
               aria-label={t("admin.solutions.catalogTableLabel")}
             >
               <table className="w-full min-w-120 text-left text-xs">
-                <thead className="border-b border-border-base bg-bg-subtle text-stone-500">
+                <thead className="border-b border-border-base bg-bg-subtle text-text-tertiary">
                   <tr>
                     <th className="px-4 py-3">Solution</th>
                     <th className="px-3 py-3">
@@ -922,7 +922,7 @@ export function AdminSolutionsPage() {
                   </FormField>
                 </div>
                 <fieldset>
-                  <legend className="text-xs font-bold text-stone-800">
+                  <legend className="text-xs font-bold text-text-strong">
                     {t("admin.adminSolutionsPage.marches")}
                   </legend>
                   <div className="mt-2 flex flex-wrap gap-4">
@@ -1004,7 +1004,7 @@ export function AdminSolutionsPage() {
                 </FormField>
 
                 <fieldset className="space-y-3 rounded-control border border-border-base p-4">
-                  <legend className="px-1 text-xs font-bold text-stone-800">
+                  <legend className="px-1 text-xs font-bold text-text-strong">
                     {t(
                       "admin.adminSolutionsPage.derniereNoteDeVersionFacultatif",
                     )}
@@ -1070,7 +1070,7 @@ export function AdminSolutionsPage() {
                       href={applicationHref("solutions", `/${selected.slug}`)}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex min-h-control-touch items-center gap-2 rounded-control border border-border-base px-4 text-xs font-bold text-stone-800"
+                      className="inline-flex min-h-control-touch items-center gap-2 rounded-control border border-border-base px-4 text-xs font-bold text-text-strong"
                     >
                       <Eye className="h-icon-sm w-icon-sm" aria-hidden="true" />{" "}
                       {t("admin.adminNewsletterPage.apercu")}

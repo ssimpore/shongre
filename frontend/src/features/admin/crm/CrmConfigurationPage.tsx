@@ -69,13 +69,13 @@ export const CrmConfigurationPage: React.FC = () => {
   });
   return (
     <div className="space-y-4 pb-8">
-      <section className="rounded-2xl border border-stone-800 bg-stone-950 p-5 text-text-inverse sm:p-6">
+      <section className="rounded-2xl border border-border-inverse bg-surface-inverse-deep p-5 text-text-inverse sm:p-6">
         <div className="flex items-center gap-3">
-          <span className="inline-flex h-11 w-11 items-center justify-center rounded-control bg-stone-900">
-            <Settings2 className="h-icon-lg w-icon-lg text-violet-300" />
+          <span className="inline-flex h-11 w-11 items-center justify-center rounded-control bg-surface-inverse">
+            <Settings2 className="h-icon-lg w-icon-lg text-staff-on-inverse" />
           </span>
           <div>
-            <p className="text-micro font-bold uppercase tracking-wider text-violet-300">
+            <p className="text-micro font-bold uppercase tracking-wider text-staff-on-inverse">
               CRM · Administration
             </p>
             <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
@@ -94,13 +94,13 @@ export const CrmConfigurationPage: React.FC = () => {
           <Link
             key={to}
             to={to}
-            className="group flex min-h-36 flex-col rounded-2xl border border-border-base bg-bg-surface p-5 shadow-xs transition hover:-translate-y-0.5 hover:border-stone-300 hover:shadow-sm"
+            className="group flex min-h-36 flex-col rounded-2xl border border-border-base bg-bg-surface p-5 shadow-xs transition hover:-translate-y-0.5 hover:border-border-prominent hover:shadow-sm"
           >
             <span className="inline-flex h-9 w-9 items-center justify-center rounded-control bg-primary-light text-primary">
               <Icon className="h-4 w-4" />
             </span>
             <h2 className="mt-4 text-sm font-bold">{title}</h2>
-            <p className="mt-1 flex-1 text-xs leading-relaxed text-stone-500">
+            <p className="mt-1 flex-1 text-xs leading-relaxed text-text-tertiary">
               {description}
             </p>
             <span className="mt-3 inline-flex items-center gap-1 text-micro font-bold text-primary">

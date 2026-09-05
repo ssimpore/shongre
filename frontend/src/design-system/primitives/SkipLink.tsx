@@ -27,7 +27,7 @@ export const SkipLink: React.FC<{ targetId?: string }> = ({
       href={`#${targetId}`}
       className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-tooltip
                  focus:inline-flex focus:items-center focus:h-control-touch focus:px-5
-                 focus:rounded-control focus:bg-stone-900 focus:text-white focus:text-sm
+                 focus:rounded-control focus:bg-surface-inverse focus:text-text-inverse focus:text-sm
                  focus:font-bold focus:shadow-dropdown focus:outline-2 focus:outline-offset-2
                  focus:outline-primary"
     >

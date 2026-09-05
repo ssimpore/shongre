@@ -108,12 +108,33 @@ scripts/ + Makefile    repository-level tooling
   Backend may consume contracts and framework-independent shared schemas, but
   never UI, React Native, application routes, or application components.
 
-- `packages/design-tokens/` is the only token source. A Web/mobile compatibility
-  file may be a thin adapter, not a competing token or component system.
-- `brand/shongre/v<version>/` is the only source for approved SHONGRE. artwork.
-  Run `make brand-sync` to generate the curated Web, mobile, document, and token
-  subset and `make brand-check` to verify checksums and mappings. Never expose
-  the full kit publicly or edit generated runtime copies by hand.
+- The active kit's `08_Design_Tokens/` files are the only editable source for
+  official SHONGRE. palette values. `packages/design-tokens/` is the only
+  application token system: its generated brand adapter feeds the existing
+  semantic tokens. Shongre Orange is defined exactly once in the active kit and
+  all orange UI roles are computed by the private typed derivation recipe;
+  never author a second orange, hover, active, disabled, focus, border, or
+  surface value. Raw colour primitives are private to
+  `packages/design-tokens/src/theme.ts`; application and shared UI code must use
+  typed semantic roles and must never request Tailwind hue/shade ramps, literal
+  HEX/RGB/HSL/OKLCH or named white/black/orange colours, define local colour
+  variables, or expose a raw palette adapter. Official flag/provider artwork
+  colours remain typed non-themeable registries from that same source. A Web/mobile
+  compatibility file may be a thin generated adapter, not a competing token or
+  component system. Run `make tokens-check` after any visual-token change.
+- `brand/shongre/brand.config.json` is the only active-brand selector. Change
+  only `activeVersion`, preferably through
+  `npm run brand:activate -- vX.Y.Z`; the transactional command validates the
+  complete candidate before changing state, synchronizes every adapter, runs
+  the full quality/browser/platform gate, and restores the prior selector and
+  generated files on failure. A compatible brand release must preserve the
+  centrally mapped kit contract and identify its own version in `VERSION.txt`
+  and design tokens. Application code, tests, and documentation must not
+  hardcode an active kit version or bypass the generated registries with a
+  runtime asset path. Run `make brand-sync` after a reviewed manual selector
+  edit and `make brand-check` to verify selection, checksums, mappings, cache
+  keys, generated drift, and approved artwork. Never expose the full kit
+  publicly or edit generated runtime copies by hand.
 - Prefer a modular monolith and narrow platform adapters. Do not introduce
   microservices, micro-frontends, parallel native business UIs, overlapping
   state libraries, or generic abstraction frameworks without measured need and

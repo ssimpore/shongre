@@ -93,7 +93,7 @@ export const NotificationPreferencesPage: React.FC = () => {
           <Skeleton className="h-control-sm w-72 rounded-lg" />
           <Skeleton className="h-4 w-96 max-w-full rounded-lg" />
         </div>
-        <div className="bg-white rounded-2xl border border-border-base p-4 sm:p-6 shadow-xs">
+        <div className="bg-bg-surface rounded-2xl border border-border-base p-4 sm:p-6 shadow-xs">
           <Skeleton className="h-4 w-40 rounded-lg mb-4" />
           <div className="divide-y divide-border-subtle">
             {[...Array(5)].map((_, i) => (
@@ -184,7 +184,7 @@ export const NotificationPreferencesPage: React.FC = () => {
         <div>
           <Link
             to="/compte/notifications"
-            className="text-xs font-bold text-stone-500 hover:text-stone-900 inline-flex items-center gap-1.5 mb-2 transition-colors"
+            className="text-xs font-bold text-text-tertiary hover:text-text-main inline-flex items-center gap-1.5 mb-2 transition-colors"
           >
             <ArrowLeft className="w-icon-sm h-icon-sm" />
             <span>
@@ -193,12 +193,12 @@ export const NotificationPreferencesPage: React.FC = () => {
               )}
             </span>
           </Link>
-          <h1 className="text-xl sm:text-2xl font-bold text-stone-900">
+          <h1 className="text-xl sm:text-2xl font-bold text-text-main">
             {t(
               "notifications.notificationPreferencesPage.preferencesDeNotifications",
             )}
           </h1>
-          <p className="text-xs sm:text-sm text-stone-500 mt-0.5">
+          <p className="text-xs sm:text-sm text-text-tertiary mt-0.5">
             {t(
               "notifications.notificationPreferencesPage.choisissezPrecisementLesAlertesQue",
             )}
@@ -218,21 +218,21 @@ export const NotificationPreferencesPage: React.FC = () => {
       </div>
 
       {/* Matrix Header */}
-      <div className="bg-white rounded-3xl border border-border-base p-6 shadow-xs space-y-6">
-        <div className="hidden sm:grid grid-cols-12 gap-4 pb-3 border-b border-border-base text-xs font-bold text-stone-500 uppercase tracking-wider">
+      <div className="bg-bg-surface rounded-3xl border border-border-base p-6 shadow-xs space-y-6">
+        <div className="hidden sm:grid grid-cols-12 gap-4 pb-3 border-b border-border-base text-xs font-bold text-text-tertiary uppercase tracking-wider">
           <div className="col-span-6">
             {t("notifications.notificationPreferencesPage.categorieDAlerte")}
           </div>
           <div className="col-span-2 text-center flex items-center justify-center gap-1">
-            <Bell className="w-icon-sm h-icon-sm text-stone-500" />
+            <Bell className="w-icon-sm h-icon-sm text-text-tertiary" />
             <span>Application</span>
           </div>
           <div className="col-span-2 text-center flex items-center justify-center gap-1">
-            <Mail className="w-icon-sm h-icon-sm text-stone-500" />
+            <Mail className="w-icon-sm h-icon-sm text-text-tertiary" />
             <span>Email</span>
           </div>
           <div className="col-span-2 text-center flex items-center justify-center gap-1">
-            <Smartphone className="w-icon-sm h-icon-sm text-stone-500" />
+            <Smartphone className="w-icon-sm h-icon-sm text-text-tertiary" />
             <span>Push</span>
           </div>
         </div>
@@ -250,7 +250,7 @@ export const NotificationPreferencesPage: React.FC = () => {
                 {/* Left Description */}
                 <div className="sm:col-span-6 space-y-1">
                   <div className="flex items-center gap-2">
-                    <h2 className="text-sm font-bold text-stone-900">
+                    <h2 className="text-sm font-bold text-text-main">
                       {sec.title}
                     </h2>
                     {sec.isMandatory && (
@@ -260,14 +260,14 @@ export const NotificationPreferencesPage: React.FC = () => {
                       </Badge>
                     )}
                   </div>
-                  <p className="text-xs text-stone-500 leading-relaxed font-medium">
+                  <p className="text-xs text-text-tertiary leading-relaxed font-medium">
                     {sec.description}
                   </p>
                 </div>
 
                 {/* In-App Toggle */}
                 <div className="sm:col-span-2 flex sm:justify-center items-center justify-between">
-                  <span className="sm:hidden text-xs font-semibold text-stone-600">
+                  <span className="sm:hidden text-xs font-semibold text-text-supporting">
                     {t(
                       "notifications.notificationPreferencesPage.surLApplication",
                     )}
@@ -292,7 +292,7 @@ export const NotificationPreferencesPage: React.FC = () => {
 
                 {/* Email Toggle */}
                 <div className="sm:col-span-2 flex sm:justify-center items-center justify-between">
-                  <span className="sm:hidden text-xs font-semibold text-stone-600">
+                  <span className="sm:hidden text-xs font-semibold text-text-supporting">
                     {t("notifications.notificationPreferencesPage.parEmail")}
                   </span>
                   <input
@@ -315,7 +315,7 @@ export const NotificationPreferencesPage: React.FC = () => {
 
                 {/* Push Toggle */}
                 <div className="sm:col-span-2 flex sm:justify-center items-center justify-between">
-                  <span className="sm:hidden text-xs font-semibold text-stone-600">
+                  <span className="sm:hidden text-xs font-semibold text-text-supporting">
                     {t(
                       "notifications.notificationPreferencesPage.surMobilePush",
                     )}

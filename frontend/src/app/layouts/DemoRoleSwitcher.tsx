@@ -59,7 +59,7 @@ const DEMO_PERSONAS: readonly DemoPersona[] = [
     desc: "Navigation publique, recherche, découverte sans compte",
     group: "marketplace",
     Icon: User,
-    iconClassName: "text-stone-400",
+    iconClassName: "text-text-inverse-subtle",
   },
   {
     userKey: "buyer_thomas",
@@ -168,7 +168,7 @@ const DEMO_PERSONAS: readonly DemoPersona[] = [
     group: "staff",
     destination: routes.admin.moderation(),
     Icon: Shield,
-    iconClassName: "text-indigo-600",
+    iconClassName: "text-insight",
   },
   {
     userKey: "trust_nadia",
@@ -188,7 +188,7 @@ const DEMO_PERSONAS: readonly DemoPersona[] = [
     group: "staff",
     destination: routes.admin.verifications(),
     Icon: Shield,
-    iconClassName: "text-violet-600",
+    iconClassName: "text-staff",
   },
   {
     userKey: "finance_marc",
@@ -218,7 +218,7 @@ const DEMO_PERSONAS: readonly DemoPersona[] = [
     group: "staff",
     destination: routes.admin.crm(),
     Icon: BriefcaseBusiness,
-    iconClassName: "text-fuchsia-600",
+    iconClassName: "text-campaign",
   },
   {
     userKey: "admin_antoine",
@@ -238,7 +238,7 @@ const DEMO_PERSONAS: readonly DemoPersona[] = [
     group: "staff",
     destination: routes.admin.roles(),
     Icon: Shield,
-    iconClassName: "text-violet-600",
+    iconClassName: "text-staff",
   },
 ];
 
@@ -269,7 +269,7 @@ const StaffMarketplaceModeIndicator: React.FC = () => {
       data-mode={canUseDemoMarketplace ? "demo" : "read-only"}
       aria-label={accessibleLabel}
       title={`${modeTitle} ${modeDescription}`}
-      className={`inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-control border transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
+      className={`inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-control border transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-on-inverse ${
         canUseDemoMarketplace
           ? "border-warning/60 bg-warning/15 text-warning hover:bg-warning/25"
           : "border-info/60 bg-info/15 text-info hover:bg-info/25"
@@ -313,10 +313,10 @@ const EnvironmentToolbarToggle: React.FC<EnvironmentToolbarToggleProps> = ({
       aria-label={label}
       title={label}
       onClick={onToggle}
-      className={`inline-flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-control motion-interactive focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
+      className={`inline-flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-control motion-interactive focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-border-on-inverse ${
         tone === "demo"
-          ? "text-stone-400 hover:bg-stone-800 hover:text-white"
-          : "text-emerald-200 hover:bg-emerald-900 hover:text-white"
+          ? "text-text-inverse-subtle hover:bg-surface-inverse-hover hover:text-text-inverse"
+          : "text-success-on-inverse-muted hover:bg-success-inverse hover:text-text-inverse"
       }`}
     >
       <span
@@ -393,7 +393,8 @@ const DemoRoleSwitcherContent: React.FC<EnvironmentToolbarContentProps> = ({
         label: t("shell.header.restoringSession"),
         desc: "",
         Icon: LoaderCircle,
-        iconClassName: "animate-spin text-stone-400 motion-reduce:animate-none",
+        iconClassName:
+          "animate-spin text-text-inverse-subtle motion-reduce:animate-none",
       }
     : matchedRole
       ? { ...matchedRole, label: personaLabel(matchedRole) }
@@ -401,7 +402,7 @@ const DemoRoleSwitcherContent: React.FC<EnvironmentToolbarContentProps> = ({
           label: roleLabel(platformRole),
           desc: t("shell.demoRoleSwitcher.roleHorsPersonasDemo"),
           Icon: Shield,
-          iconClassName: "text-stone-400",
+          iconClassName: "text-text-inverse-subtle",
         };
 
   const handlePersonaSwitch = async (persona: DemoPersona) => {
@@ -481,7 +482,7 @@ const DemoRoleSwitcherContent: React.FC<EnvironmentToolbarContentProps> = ({
     <div
       data-environment-toolbar="demo"
       data-collapsed={isCollapsed}
-      className={`relative z-drawer flex items-center border-b border-stone-800 bg-stone-900 pl-semantic-lg pr-semantic-4xl text-xs text-stone-200 motion-layout motion-reduce:transition-none lg:pl-semantic-4xl ${
+      className={`relative z-drawer flex items-center border-b border-border-inverse bg-surface-inverse pl-semantic-lg pr-semantic-4xl text-xs text-text-inverse-faint motion-layout motion-reduce:transition-none lg:pl-semantic-4xl ${
         isCollapsed
           ? "min-h-control-sm py-0"
           : "min-h-environment-toolbar-height py-1.5"
@@ -494,10 +495,10 @@ const DemoRoleSwitcherContent: React.FC<EnvironmentToolbarContentProps> = ({
           aria-hidden={isCollapsed}
           className={`${isCollapsed ? "hidden" : "flex"} min-w-0 shrink-0 items-center gap-2 animate-in fade-in duration-fast`}
         >
-          <span className="inline-flex h-7 shrink-0 items-center rounded bg-primary px-2 py-1 text-micro font-bold uppercase tracking-wider text-white">
+          <span className="inline-flex h-7 shrink-0 items-center rounded bg-primary px-2 py-1 text-micro font-bold uppercase tracking-wider text-text-inverse">
             {t("shell.demoRoleSwitcher.modeDemo")}
           </span>
-          <span className="hidden h-7 items-center whitespace-nowrap text-stone-400 lg:inline-flex">
+          <span className="hidden h-7 items-center whitespace-nowrap text-text-inverse-subtle lg:inline-flex">
             {t("shell.demoRoleSwitcher.testerLesProfilsEtParcours", {
               count: DEMO_PERSONAS.length,
             })}
@@ -525,7 +526,7 @@ const DemoRoleSwitcherContent: React.FC<EnvironmentToolbarContentProps> = ({
                 aria-controls="demo-persona-menu"
                 aria-busy={Boolean(switchingUserKey)}
                 data-auth-restoring={isRestoring || undefined}
-                className="flex h-7 min-w-0 max-w-full items-center gap-2 overflow-hidden whitespace-nowrap rounded-md border border-stone-700 bg-stone-800 px-2.5 py-1 text-white transition-colors hover:bg-stone-700 cursor-pointer"
+                className="flex h-7 min-w-control-target max-w-full items-center gap-2 overflow-hidden whitespace-nowrap rounded-md border border-border-inverse-subtle bg-surface-inverse-hover px-2.5 py-1 text-text-inverse transition-colors hover:bg-surface-inverse-muted cursor-pointer"
               >
                 <currentRoleObj.Icon
                   className={`w-4 h-4 shrink-0 ${currentRoleObj.iconClassName}`}
@@ -535,11 +536,11 @@ const DemoRoleSwitcherContent: React.FC<EnvironmentToolbarContentProps> = ({
                   {currentRoleObj.label.split("(")[0]}
                 </span>
                 {currentUser && (
-                  <span className="hidden min-w-0 truncate text-stone-400 md:inline">
+                  <span className="hidden min-w-0 truncate text-text-inverse-subtle md:inline">
                     ({currentUser.name})
                   </span>
                 )}
-                <ChevronDown className="w-icon-sm h-icon-sm text-stone-400" />
+                <ChevronDown className="w-icon-sm h-icon-sm text-text-inverse-subtle" />
               </button>
 
               {isOpen && (
@@ -551,7 +552,7 @@ const DemoRoleSwitcherContent: React.FC<EnvironmentToolbarContentProps> = ({
                     "shell.demoRoleSwitcher.changerDeRolePourTester",
                   )}
                   onKeyDown={handleMenuKeyDown}
-                  className="absolute right-0 mt-1 w-viewport-popover-max max-w-xs overflow-y-auto overscroll-contain rounded-card border border-border-base bg-bg-surface py-1.5 text-stone-900 shadow-dropdown sm:w-80 z-popover max-h-menu-max animate-in fade-in zoom-in-95 duration-fast"
+                  className="absolute right-0 mt-1 w-viewport-popover-max max-w-xs overflow-y-auto overscroll-contain rounded-card border border-border-base bg-bg-surface py-1.5 text-text-main shadow-dropdown sm:w-80 z-popover max-h-menu-max animate-in fade-in zoom-in-95 duration-fast"
                 >
                   <div className="sticky top-0 z-raised border-b border-border-subtle bg-bg-surface px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-text-muted">
                     {t("shell.demoRoleSwitcher.changerDeRolePourTester")}
@@ -579,10 +580,10 @@ const DemoRoleSwitcherContent: React.FC<EnvironmentToolbarContentProps> = ({
                           aria-busy={isSwitching}
                           disabled={Boolean(switchingUserKey)}
                           onClick={() => void handlePersonaSwitch(persona)}
-                          className={`touch-row w-full items-start gap-2.5 px-3 py-2 text-left transition-colors hover:bg-stone-50 cursor-pointer ${
+                          className={`touch-row w-full items-start gap-2.5 px-3 py-2 text-left transition-colors hover:bg-surface-soft cursor-pointer ${
                             isActive
                               ? "bg-primary-light text-primary"
-                              : "text-stone-800"
+                              : "text-text-strong"
                           } disabled:cursor-wait disabled:opacity-70`}
                         >
                           <persona.Icon
@@ -601,7 +602,7 @@ const DemoRoleSwitcherContent: React.FC<EnvironmentToolbarContentProps> = ({
                                 <Check className="h-icon-sm w-icon-sm shrink-0 text-primary" />
                               ) : null}
                             </div>
-                            <div className="mt-0.5 text-xs font-normal leading-tight text-stone-400">
+                            <div className="mt-0.5 text-xs font-normal leading-tight text-text-inverse-subtle">
                               {personaDescription(persona)}
                             </div>
                           </div>
@@ -610,43 +611,43 @@ const DemoRoleSwitcherContent: React.FC<EnvironmentToolbarContentProps> = ({
                     );
                   })}
 
-                  <div className="border-t border-stone-100 my-1 pt-1">
-                    <div className="px-3 py-1 text-micro font-bold text-stone-400 uppercase tracking-wider">
+                  <div className="border-t border-border-soft my-1 pt-1">
+                    <div className="px-3 py-1 text-micro font-bold text-text-inverse-subtle uppercase tracking-wider">
                       {t("shell.demoRoleSwitcher.accesDirectAuxProfilsPublics")}
                     </div>
                     <div className="grid grid-cols-2 gap-1 px-2 pb-1 text-xs">
                       <Link
                         to={routes.seller.profile("camille-martin")}
                         onClick={() => setIsOpen(false)}
-                        className="p-1 rounded hover:bg-stone-100 font-semibold text-stone-700 truncate"
+                        className="p-1 rounded hover:bg-surface-muted font-semibold text-text-emphasis truncate"
                       >
                         👤 Camille (Particulier)
                       </Link>
                       <Link
                         to={routes.seller.storefront("atelier-nordique")}
                         onClick={() => setIsOpen(false)}
-                        className="p-1 rounded hover:bg-stone-100 font-semibold text-primary truncate"
+                        className="p-1 rounded hover:bg-surface-muted font-semibold text-primary truncate"
                       >
                         🏬 Atelier Nordique (Pro)
                       </Link>
                       <Link
                         to={routes.seller.profile("marion-dupuis")}
                         onClick={() => setIsOpen(false)}
-                        className="p-1 rounded hover:bg-stone-100 text-stone-600 truncate"
+                        className="p-1 rounded hover:bg-surface-muted text-text-supporting truncate"
                       >
                         {t("shell.demoRoleSwitcher.0AnnonceParticulier")}
                       </Link>
                       <Link
                         to={routes.seller.storefront("optique-des-arts")}
                         onClick={() => setIsOpen(false)}
-                        className="p-1 rounded hover:bg-stone-100 text-stone-600 truncate"
+                        className="p-1 rounded hover:bg-surface-muted text-text-supporting truncate"
                       >
                         {t("shell.demoRoleSwitcher.0AnnoncePro")}
                       </Link>
                       <Link
                         to={routes.seller.profile("lucas-bernard")}
                         onClick={() => setIsOpen(false)}
-                        className="p-1 rounded hover:bg-stone-100 text-stone-600 truncate"
+                        className="p-1 rounded hover:bg-surface-muted text-text-supporting truncate"
                       >
                         ⭐ 0 avis (Nouveau)
                       </Link>
@@ -690,7 +691,7 @@ const LiveModeToolbar: React.FC<EnvironmentToolbarContentProps> = ({
     <div
       data-environment-toolbar="live"
       data-collapsed={isCollapsed}
-      className={`relative z-drawer flex items-center border-b border-emerald-950 bg-emerald-950 pl-semantic-lg pr-semantic-4xl text-xs text-emerald-50 motion-layout motion-reduce:transition-none lg:pl-semantic-4xl ${
+      className={`relative z-drawer flex items-center border-b border-success-inverse-deep bg-success-inverse-deep pl-semantic-lg pr-semantic-4xl text-xs text-success-on-inverse-soft motion-layout motion-reduce:transition-none lg:pl-semantic-4xl ${
         isCollapsed
           ? "min-h-control-sm py-0"
           : "min-h-environment-toolbar-height py-1.5"
@@ -703,11 +704,11 @@ const LiveModeToolbar: React.FC<EnvironmentToolbarContentProps> = ({
           aria-hidden={isCollapsed}
           className={`${isCollapsed ? "hidden" : "flex"} min-w-0 shrink-0 items-center gap-2 animate-in fade-in duration-fast`}
         >
-          <span className="inline-flex h-7 shrink-0 items-center gap-1.5 rounded bg-success px-2 py-1 text-micro font-bold uppercase tracking-wider text-white">
+          <span className="inline-flex h-7 shrink-0 items-center gap-1.5 rounded bg-success px-2 py-1 text-micro font-bold uppercase tracking-wider text-text-inverse">
             <Database className="h-icon-xs w-icon-xs" aria-hidden="true" />
             {t("shell.dataMode.modeLive")}
           </span>
-          <span className="hidden h-7 items-center truncate text-emerald-200 lg:inline-flex">
+          <span className="hidden h-7 items-center truncate text-success-on-inverse-muted lg:inline-flex">
             {t("shell.dataMode.liveSummary")}
           </span>
           <DataModeSettingsControl />
@@ -722,7 +723,7 @@ const LiveModeToolbar: React.FC<EnvironmentToolbarContentProps> = ({
             {utility}
             <StaffMarketplaceModeIndicator />
             {currentUser ? (
-              <span className="inline-flex h-7 min-w-0 items-center truncate font-semibold text-white">
+              <span className="inline-flex h-7 min-w-0 items-center truncate font-semibold text-text-inverse">
                 {currentUser.name}
               </span>
             ) : null}

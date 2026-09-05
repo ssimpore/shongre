@@ -165,16 +165,16 @@ export const HelpCenterPage: React.FC = () => {
           <Headphones className="w-icon-sm h-icon-sm" />
           <span>Centre d'aide Shongre</span>
         </div>
-        <h1 className="text-2xl sm:text-4xl font-bold text-stone-900 tracking-tight">
+        <h1 className="text-2xl sm:text-4xl font-bold text-text-main tracking-tight">
           {t("support.helpCenterPage.commentPouvonsNousVousAider")}
         </h1>
-        <p className="text-xs sm:text-sm text-stone-500">
+        <p className="text-xs sm:text-sm text-text-tertiary">
           {t("support.helpCenterPage.retrouvezLesReponsesAuxQuestions")}
         </p>
 
         {/* Search Box */}
         <div className="relative max-w-lg mx-auto pt-2">
-          <Search className="w-icon-lg h-icon-lg text-stone-400 absolute left-4 top-1/2 -translate-y-1/2 mt-1" />
+          <Search className="w-icon-lg h-icon-lg text-text-inverse-subtle absolute left-4 top-1/2 -translate-y-1/2 mt-1" />
           <input
             type="text"
             placeholder={t(
@@ -183,7 +183,7 @@ export const HelpCenterPage: React.FC = () => {
             aria-label={t("support.helpCenterPage.rechercherUneQuestionDansL")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full h-control-lg pl-12 pr-4 text-xs sm:text-sm font-semibold bg-white border border-border-base rounded-control shadow-xs focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none transition-all placeholder:text-text-muted"
+            className="w-full h-control-lg pl-12 pr-4 text-xs sm:text-sm font-semibold bg-bg-surface border border-border-base rounded-control shadow-xs focus:border-primary focus:ring-2 focus:ring-primary-ring focus:outline-none transition-all placeholder:text-text-muted"
           />
         </div>
       </div>
@@ -199,8 +199,8 @@ export const HelpCenterPage: React.FC = () => {
               onClick={() => setSelectedCategory(cat.id)}
               className={`px-4 py-2.5 rounded-2xl text-xs font-semibold shrink-0 transition-all flex items-center gap-2 cursor-pointer ${
                 isActive
-                  ? "bg-stone-900 text-white shadow-xs"
-                  : "bg-white border border-border-base text-stone-700 hover:bg-stone-50 hover:text-stone-950"
+                  ? "bg-surface-inverse text-text-inverse shadow-xs"
+                  : "bg-bg-surface border border-border-base text-text-emphasis hover:bg-surface-soft hover:text-text-deep"
               }`}
             >
               {cat.icon}
@@ -211,13 +211,13 @@ export const HelpCenterPage: React.FC = () => {
       </div>
 
       {/* 3. FAQ Accordion Section */}
-      <div className="bg-white rounded-3xl border border-border-base p-6 sm:p-8 shadow-xs space-y-4">
-        <h2 className="text-base font-bold text-stone-900 mb-2">
+      <div className="bg-bg-surface rounded-3xl border border-border-base p-6 sm:p-8 shadow-xs space-y-4">
+        <h2 className="text-base font-bold text-text-main mb-2">
           {t("support.helpCenterPage.questionsFrequentes")}
         </h2>
 
         {filteredArticles.length === 0 ? (
-          <div className="text-center py-8 text-stone-500 text-xs">
+          <div className="text-center py-8 text-text-tertiary text-xs">
             {t("support.helpCenterPage.aucunArticleNeCorrespondA")}
           </div>
         ) : (
@@ -230,18 +230,18 @@ export const HelpCenterPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setOpenFaqId(isOpen ? null : art.id)}
-                    className="w-full flex items-center justify-between gap-4 min-h-6 text-left font-semibold text-xs sm:text-sm text-stone-900 hover:text-primary transition-colors cursor-pointer"
+                    className="w-full flex items-center justify-between gap-4 min-h-6 text-left font-semibold text-xs sm:text-sm text-text-main hover:text-primary transition-colors cursor-pointer"
                   >
                     <span>{art.question}</span>
                     <ChevronDown
-                      className={`w-icon-md h-icon-md text-stone-400 shrink-0 transition-transform ${
+                      className={`w-icon-md h-icon-md text-text-inverse-subtle shrink-0 transition-transform ${
                         isOpen ? "rotate-180 text-primary" : ""
                       }`}
                     />
                   </button>
 
                   {isOpen && (
-                    <div className="mt-3 space-y-3 text-xs text-stone-600 leading-relaxed pl-1 animate-fadeIn">
+                    <div className="mt-3 space-y-3 text-xs text-text-supporting leading-relaxed pl-1 animate-fadeIn">
                       <p>{art.answer}</p>
                       {art.linkText && art.linkHref && (
                         <Link
@@ -262,13 +262,13 @@ export const HelpCenterPage: React.FC = () => {
       </div>
 
       {/* 4. Bottom Contact Support Callout */}
-      <div className="bg-stone-900 text-white rounded-3xl p-6 sm:p-10 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-md">
+      <div className="bg-surface-inverse text-text-inverse rounded-3xl p-6 sm:p-10 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-md">
         <div className="space-y-1 text-center sm:text-left">
           <h3 className="text-lg sm:text-xl font-bold">
             {t("support.helpCenterPage.vousNAvezPasTrouve")}
           </h3>
           {/* Dark panel: secondary text needs the lighter stone step to stay readable. */}
-          <p className="text-xs sm:text-sm text-stone-400 max-w-md">
+          <p className="text-xs sm:text-sm text-text-inverse-subtle max-w-md">
             {t("support.helpCenterPage.notreEquipeDeSupportClient")}
           </p>
         </div>

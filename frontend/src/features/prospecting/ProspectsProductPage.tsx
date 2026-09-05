@@ -23,7 +23,7 @@ import { ProspectsLandingPreview } from "./components/ProspectsLandingPreview";
 import { applicationHref } from "../../platform/applications/use-application-href";
 
 const primaryCtaClass =
-  "inline-flex min-h-control-lg items-center justify-center gap-2 rounded-control bg-primary px-5 text-sm font-bold text-white shadow-sm transition-colors hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary";
+  "inline-flex min-h-control-lg items-center justify-center gap-2 rounded-control bg-primary px-5 text-sm font-bold text-text-inverse shadow-sm transition-colors hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary";
 
 const secondaryCtaClass =
   "inline-flex min-h-control-lg items-center justify-center gap-2 rounded-control border border-primary bg-bg-surface px-5 text-sm font-bold text-primary transition-colors hover:bg-primary-light focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary";
@@ -192,7 +192,7 @@ export function ProspectsProductPage() {
                 key={number}
                 className="relative flex gap-4 pb-8 md:block md:pb-0"
               >
-                <span className="z-raised relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-micro font-bold text-white shadow-sm">
+                <span className="z-raised relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-micro font-bold text-text-inverse shadow-sm">
                   {number}
                 </span>
                 <div className="md:mt-6">
@@ -377,7 +377,7 @@ export function ProspectsProductPage() {
 
       <section
         aria-labelledby="prospects-compliance"
-        className="bg-stone-950 py-10 text-white sm:py-12"
+        className="bg-surface-inverse-deep py-10 text-text-inverse sm:py-12"
       >
         <Container>
           <div className="mx-auto max-w-3xl text-center">
@@ -387,12 +387,12 @@ export function ProspectsProductPage() {
             >
               L’automatisation reste sous contrôle.
             </h2>
-            <p className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed text-stone-300">
+            <p className="mx-auto mt-3 max-w-2xl text-sm leading-relaxed text-text-inverse-muted">
               Sources autorisées, quotas, suppression, provenance et validation
               humaine font partie du produit.
             </p>
           </div>
-          <div className="mt-7 grid gap-5 sm:grid-cols-3 sm:divide-x sm:divide-stone-700">
+          <div className="mt-7 grid gap-5 sm:grid-cols-3 sm:divide-x sm:divide-border-inverse-subtle">
             {[
               [Ban, "Aucun contact automatique"],
               [ShieldCheck, "Aucun fournisseur activé en démo"],
@@ -408,7 +408,7 @@ export function ProspectsProductPage() {
                     className="h-6 w-6 shrink-0 text-primary-on-dark"
                     aria-hidden="true"
                   />
-                  <span className="text-xs font-semibold leading-relaxed text-stone-200">
+                  <span className="text-xs font-semibold leading-relaxed text-text-inverse-faint">
                     {String(label)}
                   </span>
                 </div>

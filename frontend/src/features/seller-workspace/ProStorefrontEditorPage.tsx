@@ -66,13 +66,13 @@ export const ProStorefrontEditorPage: React.FC = () => {
   return (
     <form
       onSubmit={handleSave}
-      className="bg-white rounded-2xl border border-border-base p-6 sm:p-8 space-y-6 shadow-xs"
+      className="bg-bg-surface rounded-2xl border border-border-base p-6 sm:p-8 space-y-6 shadow-xs"
     >
       <div>
-        <h1 className="text-xl sm:text-2xl font-bold text-stone-900">
+        <h1 className="text-xl sm:text-2xl font-bold text-text-main">
           Personnaliser ma vitrine professionnelle
         </h1>
-        <p className="text-xs sm:text-sm text-stone-500 mt-0.5">
+        <p className="text-xs sm:text-sm text-text-tertiary mt-0.5">
           {t(
             "sellerworkspace.proStorefrontEditorPage.cesInformationsSontAfficheesSur",
           )}
@@ -81,23 +81,23 @@ export const ProStorefrontEditorPage: React.FC = () => {
 
       {/* Banner & Logo simulation */}
       <div className="space-y-3">
-        <label className="text-xs font-semibold text-stone-700 uppercase tracking-wider block">
+        <label className="text-xs font-semibold text-text-emphasis uppercase tracking-wider block">
           {t(
             "sellerworkspace.proStorefrontEditorPage.banniereLogoDeLaBoutique",
           )}
         </label>
-        <div className="relative h-32 rounded-xl bg-gradient-to-r from-stone-800 to-stone-900 flex items-end p-4 border border-border-base">
+        <div className="relative h-32 rounded-xl bg-gradient-to-r from-surface-inverse-hover to-surface-inverse flex items-end p-4 border border-border-base">
           <div className="flex items-center gap-3">
             <Avatar
               src={currentUser?.avatarUrl}
               name={companyName}
               size="lg"
               isVerified={true}
-              className="ring-2 ring-white"
+              className="ring-2 ring-border-on-inverse"
             />
-            <div className="text-white">
+            <div className="text-text-inverse">
               <div className="font-bold text-sm">{companyName}</div>
-              <div className="text-xs text-stone-300">
+              <div className="text-xs text-text-inverse-muted">
                 Boutique officielle Shongre Pro
               </div>
             </div>

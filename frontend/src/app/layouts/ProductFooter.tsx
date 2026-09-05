@@ -18,7 +18,7 @@ interface ProductFooterProps {
 }
 
 const footerLinkClass =
-  "inline-flex min-h-8 items-center text-xs font-semibold text-stone-400 transition-colors hover:text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-on-dark";
+  "inline-flex min-h-8 items-center text-xs font-semibold text-text-inverse-subtle transition-colors hover:text-text-inverse focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-on-dark";
 
 export const ProductFooter: React.FC<ProductFooterProps> = ({
   productId,
@@ -32,21 +32,21 @@ export const ProductFooter: React.FC<ProductFooterProps> = ({
   const showEcosystem = !isProductOnlyAccount(currentUser, productId);
 
   return (
-    <footer className="border-t border-stone-800 bg-stone-950 py-9 text-stone-300">
+    <footer className="border-t border-border-inverse bg-surface-inverse-deep py-9 text-text-inverse-muted">
       <Container>
         <div className="flex flex-col gap-7 lg:flex-row lg:items-start lg:justify-between">
           <div>
             <a
               href={applicationHref(productId, productPath)}
-              className="inline-flex items-center gap-2 text-base font-bold tracking-tight text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-on-dark"
+              className="inline-flex items-center gap-2 text-base font-bold tracking-tight text-text-inverse focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-on-dark"
               aria-label={`SHONGRE. ${productName}`}
             >
               <BrandLogo variant="reverse" size="compact" />
-              <span className="font-semibold text-stone-400">
+              <span className="font-semibold text-text-inverse-subtle">
                 {productName}
               </span>
             </a>
-            <p className="mt-2 max-w-sm text-xs leading-relaxed text-stone-400">
+            <p className="mt-2 max-w-sm text-xs leading-relaxed text-text-inverse-subtle">
               {description}
             </p>
           </div>
@@ -113,7 +113,7 @@ export const ProductFooter: React.FC<ProductFooterProps> = ({
             </nav>
           </div>
         </div>
-        <p className="mt-8 border-t border-stone-800 pt-5 text-micro text-stone-400">
+        <p className="mt-8 border-t border-border-inverse pt-5 text-micro text-text-inverse-subtle">
           © 2026 Shongre SAS. Tous droits réservés.
         </p>
       </Container>

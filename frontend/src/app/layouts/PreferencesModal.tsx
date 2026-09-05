@@ -60,7 +60,7 @@ export const PreferencesModal: React.FC = () => {
       <div className="space-y-4">
         {/* Country / Market Selection */}
         <div className="space-y-1.5">
-          <div className="flex items-center gap-1.5 text-xs font-bold text-stone-800 uppercase tracking-wider">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-text-strong uppercase tracking-wider">
             <Building2 className="w-icon-sm h-icon-sm text-primary" />
             <span>{t("shell.preferencesModal.marchePays")}</span>
           </div>
@@ -81,7 +81,7 @@ export const PreferencesModal: React.FC = () => {
                   className={`flex min-h-control-touch items-center justify-between gap-3 rounded-control border px-3 py-2 text-left motion-interactive cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
                     isSelected
                       ? "border-primary bg-primary-light text-primary font-semibold ring-1 ring-primary"
-                      : "border-border-base bg-bg-surface hover:bg-bg-subtle text-stone-800 font-medium"
+                      : "border-border-base bg-bg-surface hover:bg-bg-subtle text-text-strong font-medium"
                   }`}
                 >
                   <span className="flex min-w-0 flex-1 items-center gap-2 whitespace-nowrap">
@@ -89,7 +89,7 @@ export const PreferencesModal: React.FC = () => {
                     <span className="truncate text-sm">{m.name}</span>
                   </span>
                   <span className="flex shrink-0 items-center gap-2">
-                    <span className="shrink-0 text-micro font-normal text-stone-500">
+                    <span className="shrink-0 text-micro font-normal text-text-tertiary">
                       {m.code}
                     </span>
                     {isSelected ? (
@@ -122,7 +122,7 @@ export const PreferencesModal: React.FC = () => {
 
         {/* Currency Selection */}
         <div className="space-y-1.5">
-          <div className="flex items-center gap-1.5 text-xs font-bold text-stone-800 uppercase tracking-wider">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-text-strong uppercase tracking-wider">
             <Coins className="w-icon-sm h-icon-sm text-primary" />
             <span>{t("shell.preferencesModal.deviseAffichage")}</span>
           </div>
@@ -143,14 +143,14 @@ export const PreferencesModal: React.FC = () => {
                   className={`flex min-h-control-touch items-center justify-between gap-3 rounded-control border px-3 py-2 text-left motion-interactive cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
                     isSelected
                       ? "border-primary bg-primary-light text-primary font-semibold ring-1 ring-primary"
-                      : "border-border-base bg-bg-surface hover:bg-bg-subtle text-stone-800 font-medium"
+                      : "border-border-base bg-bg-surface hover:bg-bg-subtle text-text-strong font-medium"
                   }`}
                 >
                   <span className="flex min-w-0 flex-1 items-baseline gap-2 whitespace-nowrap">
                     <span className="shrink-0 text-sm font-bold">
                       {c.symbol === c.code ? c.code : c.symbol + " " + c.code}
                     </span>
-                    <span className="truncate text-xs font-normal text-stone-500">
+                    <span className="truncate text-xs font-normal text-text-tertiary">
                       {c.label}
                     </span>
                   </span>
@@ -178,7 +178,7 @@ export const PreferencesModal: React.FC = () => {
 
         {/* Language Selection */}
         <div className="space-y-1.5">
-          <div className="flex items-center gap-1.5 text-xs font-bold text-stone-800 uppercase tracking-wider">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-text-strong uppercase tracking-wider">
             <Languages className="w-icon-sm h-icon-sm text-primary" />
             <span>{t("shell.preferencesModal.langueDeLInterface")}</span>
           </div>
@@ -202,10 +202,10 @@ export const PreferencesModal: React.FC = () => {
                   onClick={() => lang.isAvailable && setLocale(lang.code)}
                   className={`flex min-h-control-touch items-center justify-between gap-3 rounded-control border px-3 py-2 text-left motion-interactive focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
                     !lang.isAvailable
-                      ? "border-border-subtle bg-bg-subtle text-stone-400 cursor-not-allowed"
+                      ? "border-border-subtle bg-bg-subtle text-text-inverse-subtle cursor-not-allowed"
                       : isSelected
                         ? "border-primary bg-primary-light text-primary font-semibold ring-1 ring-primary cursor-pointer"
-                        : "border-border-base bg-bg-surface hover:bg-bg-subtle text-stone-800 font-medium cursor-pointer"
+                        : "border-border-base bg-bg-surface hover:bg-bg-subtle text-text-strong font-medium cursor-pointer"
                   }`}
                 >
                   <span className="flex min-w-0 flex-1 items-center gap-2 whitespace-nowrap">
@@ -216,7 +216,7 @@ export const PreferencesModal: React.FC = () => {
                     <span className="truncate text-sm">{lang.nativeName}</span>
                   </span>
                   <span className="flex shrink-0 items-center gap-2">
-                    <span className="shrink-0 text-micro font-normal uppercase text-stone-500">
+                    <span className="shrink-0 text-micro font-normal uppercase text-text-tertiary">
                       {lang.isAvailable
                         ? lang.code.slice(0, 2)
                         : t("shell.preferencesModal.bientot")}

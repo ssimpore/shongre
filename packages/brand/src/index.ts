@@ -1,11 +1,11 @@
 import { colors } from "@shongre/design-tokens";
-
-export { brandDocumentLogoDataUri } from "./document.generated";
+import { activeBrand } from "./active.generated";
 
 export const brand = {
-  name: "SHONGRE.",
-  signature: "SHONGRE.",
-  version: "1.0.0",
+  name: activeBrand.signature,
+  signature: activeBrand.signature,
+  version: activeBrand.version,
+  cacheKey: activeBrand.cacheKey,
   primaryColor: colors.brand.primary,
   inkColor: colors.brand.ink,
   backgroundColor: colors.brand.background,

@@ -168,7 +168,7 @@ export const AdminTrendingPage: React.FC = () => {
 
   if (isLoading || !config) {
     return (
-      <div className="flex min-h-64 items-center justify-center text-sm font-medium text-stone-500">
+      <div className="flex min-h-64 items-center justify-center text-sm font-medium text-text-tertiary">
         <RefreshCw className="mr-2 h-icon-md w-icon-md animate-spin" />
         {t("admin.taxonomyHeader.loading")}
       </div>
@@ -182,7 +182,7 @@ export const AdminTrendingPage: React.FC = () => {
         locale={currentLocale}
       />
 
-      <div className="flex flex-col justify-between gap-4 rounded-control border border-stone-200 bg-bg-surface p-5 shadow-xs sm:flex-row sm:items-end sm:p-6">
+      <div className="flex flex-col justify-between gap-4 rounded-control border border-border-disabled bg-bg-surface p-5 shadow-xs sm:flex-row sm:items-end sm:p-6">
         <div>
           <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary">
             <Flame className="h-icon-md w-icon-md" />{" "}
@@ -191,7 +191,7 @@ export const AdminTrendingPage: React.FC = () => {
           <h2 className="text-2xl font-bold tracking-tight text-text-main">
             {t("admin.adminTrendingPage.enCeMomentSurShongre")}
           </h2>
-          <p className="mt-1 max-w-2xl text-sm leading-relaxed text-stone-500">
+          <p className="mt-1 max-w-2xl text-sm leading-relaxed text-text-tertiary">
             {t(
               "admin.adminTrendingPage.lesThemesSontCalculesAPartirDeLActiviteDu",
             )}
@@ -221,7 +221,7 @@ export const AdminTrendingPage: React.FC = () => {
 
       <div className="grid gap-6 xl:grid-cols-trending-columns">
         <section
-          className="rounded-control border border-stone-200 bg-bg-surface p-5 shadow-xs"
+          className="rounded-control border border-border-disabled bg-bg-surface p-5 shadow-xs"
           aria-labelledby="trending-settings-title"
         >
           <div className="mb-5 flex items-center gap-2">
@@ -345,7 +345,7 @@ export const AdminTrendingPage: React.FC = () => {
               />
             </FormField>
             <div className="grid grid-cols-2 gap-3">
-              <label className="flex items-center gap-2 text-xs font-semibold text-stone-700">
+              <label className="flex items-center gap-2 text-xs font-semibold text-text-emphasis">
                 <input
                   type="checkbox"
                   checked={config.mobileVisible}
@@ -356,7 +356,7 @@ export const AdminTrendingPage: React.FC = () => {
                 />{" "}
                 Mobile visible
               </label>
-              <label className="flex items-center gap-2 text-xs font-semibold text-stone-700">
+              <label className="flex items-center gap-2 text-xs font-semibold text-text-emphasis">
                 <input
                   type="checkbox"
                   checked={config.desktopVisible}
@@ -390,7 +390,7 @@ export const AdminTrendingPage: React.FC = () => {
         </section>
 
         <section
-          className="rounded-control border border-stone-200 bg-bg-surface p-5 shadow-xs"
+          className="rounded-control border border-border-disabled bg-bg-surface p-5 shadow-xs"
           aria-labelledby="trending-preview-title"
         >
           <div className="mb-5 flex items-center justify-between gap-3">
@@ -403,7 +403,7 @@ export const AdminTrendingPage: React.FC = () => {
                 {t("admin.adminTrendingPage.apercuDuMarche")} {marketCode}
               </h2>
             </div>
-            <span className="text-xs font-medium text-stone-500">
+            <span className="text-xs font-medium text-text-tertiary">
               {preview?.topics.length || 0}{" "}
               {t("admin.adminTrendingPage.sousSectionsAffichees")}
             </span>
@@ -417,7 +417,7 @@ export const AdminTrendingPage: React.FC = () => {
               return (
                 <div
                   key={topic.id}
-                  className="rounded-control border border-stone-200 bg-stone-50 p-3"
+                  className="rounded-control border border-border-disabled bg-surface-soft p-3"
                 >
                   <div className="flex items-center gap-3">
                     <span className="w-5 text-center text-xs font-bold text-text-disabled">
@@ -427,7 +427,7 @@ export const AdminTrendingPage: React.FC = () => {
                       <div className="truncate text-sm font-bold text-text-main">
                         {topic.title}
                       </div>
-                      <div className="text-xs text-stone-500">
+                      <div className="text-xs text-text-tertiary">
                         {topic.listings.length}{" "}
                         {t("admin.adminTrendingPage.annoncesTendance")}{" "}
                         {topic.trend.direction === "up"
@@ -444,7 +444,7 @@ export const AdminTrendingPage: React.FC = () => {
                       type="button"
                       onClick={() => void toggleOverride(topicKey, "pin")}
                       aria-label={`${pinned.has(topicKey) ? "Désépingler" : "Épingler"} ${topic.title}`}
-                      className="inline-flex h-control-sm w-control-sm items-center justify-center rounded-pill border border-stone-200 bg-bg-surface text-stone-500 hover:border-primary-border hover:text-primary focus-visible:outline-2 focus-visible:outline-primary"
+                      className="inline-flex h-control-sm w-control-sm items-center justify-center rounded-pill border border-border-disabled bg-bg-surface text-text-tertiary hover:border-primary-border hover:text-primary focus-visible:outline-2 focus-visible:outline-primary"
                     >
                       <Pin
                         className={`h-icon-md w-icon-md ${pinned.has(topicKey) ? "fill-current text-primary" : ""}`}
@@ -454,14 +454,14 @@ export const AdminTrendingPage: React.FC = () => {
                       type="button"
                       onClick={() => void toggleOverride(topicKey, "hide")}
                       aria-label={`${hidden.has(topicKey) ? "Afficher" : "Masquer"} ${topic.title}`}
-                      className="inline-flex h-control-sm w-control-sm items-center justify-center rounded-pill border border-stone-200 bg-bg-surface text-stone-500 hover:border-primary-border hover:text-primary focus-visible:outline-2 focus-visible:outline-primary"
+                      className="inline-flex h-control-sm w-control-sm items-center justify-center rounded-pill border border-border-disabled bg-bg-surface text-text-tertiary hover:border-primary-border hover:text-primary focus-visible:outline-2 focus-visible:outline-primary"
                     >
                       <EyeOff
                         className={`h-icon-md w-icon-md ${hidden.has(topicKey) ? "text-danger" : ""}`}
                       />
                     </button>
                   </div>
-                  <details className="mt-3 border-t border-stone-200 pt-3">
+                  <details className="mt-3 border-t border-border-disabled pt-3">
                     <summary className="cursor-pointer text-xs font-bold text-primary focus-visible:outline-2 focus-visible:outline-primary">
                       {t("admin.adminTrendingPage.editionEditorialeAvancee")}
                     </summary>
@@ -578,14 +578,14 @@ export const AdminTrendingPage: React.FC = () => {
               );
             })}
             {!preview?.topics.length && (
-              <div className="rounded-control border border-dashed border-stone-300 p-8 text-center text-sm text-stone-500">
+              <div className="rounded-control border border-dashed border-border-prominent p-8 text-center text-sm text-text-tertiary">
                 {t(
                   "admin.adminTrendingPage.aucunThemeNeRemplitLesCriteresActuels",
                 )}
               </div>
             )}
           </div>
-          <div className="mt-5 flex flex-wrap gap-2 text-xs text-stone-500">
+          <div className="mt-5 flex flex-wrap gap-2 text-xs text-text-tertiary">
             <span className="inline-flex items-center gap-1">
               <Check className="h-icon-sm w-icon-sm text-success" /> scoring
               dynamique

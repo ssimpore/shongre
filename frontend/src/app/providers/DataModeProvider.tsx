@@ -130,7 +130,7 @@ export const DataModeProvider: React.FC<{ children: React.ReactNode }> = ({
 
   if (availability === "checking") {
     return (
-      <div className="min-h-screen bg-bg-base px-6 py-16 text-stone-900">
+      <div className="min-h-screen bg-bg-base px-6 py-16 text-text-main">
         <div
           role="status"
           className="mx-auto flex max-w-md flex-col items-center rounded-card border border-border-base bg-bg-surface p-8 text-center shadow-xs"
@@ -152,7 +152,7 @@ export const DataModeProvider: React.FC<{ children: React.ReactNode }> = ({
 
   if (availability === "unavailable") {
     return (
-      <div className="min-h-screen bg-bg-base px-6 py-16 text-stone-900">
+      <div className="min-h-screen bg-bg-base px-6 py-16 text-text-main">
         <div
           role="alert"
           className="mx-auto flex max-w-lg flex-col items-center rounded-card border border-danger-border bg-bg-surface p-8 text-center shadow-xs"

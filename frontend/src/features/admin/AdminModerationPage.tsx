@@ -253,8 +253,8 @@ export const AdminModerationPage: React.FC = () => {
           <span className="text-xs font-bold uppercase tracking-wider text-primary">
             {t("admin.adminModerationPage.moderationSecurite")}
           </span>
-          <span className="text-stone-300">•</span>
-          <span className="text-xs text-stone-500 font-medium">
+          <span className="text-text-inverse-muted">•</span>
+          <span className="text-xs text-text-tertiary font-medium">
             {t("admin.adminModerationPage.controleDesContenusEtProfils")}
           </span>
         </div>
@@ -275,7 +275,7 @@ export const AdminModerationPage: React.FC = () => {
             className={`pb-3 border-b-2 transition-colors flex items-center gap-2 cursor-pointer ${
               activeTab === "reports"
                 ? "border-primary text-primary"
-                : "border-transparent text-stone-500 hover:text-stone-800"
+                : "border-transparent text-text-tertiary hover:text-text-strong"
             }`}
           >
             <ShieldAlert className="w-icon-md h-icon-md" />
@@ -293,7 +293,7 @@ export const AdminModerationPage: React.FC = () => {
             className={`pb-3 border-b-2 transition-colors flex items-center gap-2 cursor-pointer ${
               activeTab === "listings"
                 ? "border-primary text-primary"
-                : "border-transparent text-stone-500 hover:text-stone-800"
+                : "border-transparent text-text-tertiary hover:text-text-strong"
             }`}
           >
             <Eye className="w-icon-md h-icon-md" />
@@ -311,7 +311,7 @@ export const AdminModerationPage: React.FC = () => {
             className={`pb-3 border-b-2 transition-colors flex items-center gap-2 cursor-pointer ${
               activeTab === "appeals"
                 ? "border-primary text-primary"
-                : "border-transparent text-stone-500 hover:text-stone-800"
+                : "border-transparent text-text-tertiary hover:text-text-strong"
             }`}
           >
             <Scale className="w-icon-md h-icon-md" />
@@ -334,7 +334,7 @@ export const AdminModerationPage: React.FC = () => {
             className={`pb-3 border-b-2 transition-colors flex items-center gap-2 cursor-pointer ${
               activeTab === "users"
                 ? "border-primary text-primary"
-                : "border-transparent text-stone-500 hover:text-stone-800"
+                : "border-transparent text-text-tertiary hover:text-text-strong"
             }`}
           >
             <Lock className="w-icon-md h-icon-md" />
@@ -349,12 +349,12 @@ export const AdminModerationPage: React.FC = () => {
       {activeTab === "reports" && canReviewReports && (
         <div className="bg-bg-surface rounded-2xl border border-border-base shadow-xs overflow-hidden">
           {reports.filter((r) => r.status !== "resolved").length === 0 ? (
-            <div className="p-12 text-center text-stone-500">
+            <div className="p-12 text-center text-text-tertiary">
               <CheckCircle className="w-10 h-10 text-success mx-auto mb-2" />
-              <div className="text-sm font-bold text-stone-800">
+              <div className="text-sm font-bold text-text-strong">
                 {t("admin.adminModerationPage.aucunSignalementEnAttente")}
               </div>
-              <div className="text-xs text-stone-500 mt-1">
+              <div className="text-xs text-text-tertiary mt-1">
                 {t(
                   "admin.adminModerationPage.laFileDeSignalementsCommunautaires",
                 )}
@@ -377,7 +377,7 @@ export const AdminModerationPage: React.FC = () => {
                         <span className="text-xs font-semibold text-text-main">
                           Cible : {rep.targetUserName || rep.targetUserId}
                         </span>
-                        <span className="text-micro text-stone-500">
+                        <span className="text-micro text-text-tertiary">
                           {new Date(rep.createdAt).toLocaleString()}
                         </span>
                       </div>
@@ -393,7 +393,7 @@ export const AdminModerationPage: React.FC = () => {
                         size="sm"
                         variant="outline"
                         onClick={() => void handleResolveReport(rep.id)}
-                        className="text-xs text-stone-700"
+                        className="text-xs text-text-emphasis"
                       >
                         {t("admin.adminModerationPage.classerSansSuite")}
                       </Button>
@@ -427,7 +427,7 @@ export const AdminModerationPage: React.FC = () => {
               >
                 {t("admin.adminModerationPage.dossiersDeModeration")}
               </h2>
-              <p className="mt-1 text-xs text-stone-500">
+              <p className="mt-1 text-xs text-text-tertiary">
                 {t(
                   "admin.adminModerationPage.historiqueCanoniqueDesSignalementsEtDecisionsAppliquees",
                 )}
@@ -435,7 +435,7 @@ export const AdminModerationPage: React.FC = () => {
             </div>
             <div className="divide-y divide-border-subtle">
               {moderationCases.length === 0 ? (
-                <p className="p-5 text-xs text-stone-500">
+                <p className="p-5 text-xs text-text-tertiary">
                   {t("admin.adminModerationPage.aucunDossierEnregistre")}
                 </p>
               ) : (
@@ -454,7 +454,7 @@ export const AdminModerationPage: React.FC = () => {
                       {labelIdentifier(moderationCase.category)}
                     </p>
                     {moderationCase.resolutionReason && (
-                      <p className="rounded-control bg-bg-base p-3 text-xs text-stone-700">
+                      <p className="rounded-control bg-bg-base p-3 text-xs text-text-emphasis">
                         {moderationCase.resolutionReason}
                       </p>
                     )}
@@ -475,7 +475,7 @@ export const AdminModerationPage: React.FC = () => {
               >
                 {t("admin.adminModerationPage.recoursAExaminer")}
               </h2>
-              <p className="mt-1 text-xs text-stone-500">
+              <p className="mt-1 text-xs text-text-tertiary">
                 {t(
                   "admin.adminModerationPage.leBackendInterditQuUnModerateurReviseSaPropreDecision",
                 )}
@@ -483,7 +483,7 @@ export const AdminModerationPage: React.FC = () => {
             </div>
             <div className="divide-y divide-border-subtle">
               {appeals.length === 0 ? (
-                <p className="p-5 text-xs text-stone-500">
+                <p className="p-5 text-xs text-text-tertiary">
                   {t("admin.adminModerationPage.aucunRecoursEnregistre")}
                 </p>
               ) : (
@@ -508,7 +508,7 @@ export const AdminModerationPage: React.FC = () => {
                         {appeal.reason}
                       </p>
                       {appeal.decisionReason && (
-                        <p className="rounded-control bg-bg-base p-3 text-xs text-stone-700">
+                        <p className="rounded-control bg-bg-base p-3 text-xs text-text-emphasis">
                           {t("admin.adminModerationPage.decision")}{" "}
                           {appeal.decisionReason}
                         </p>
@@ -570,14 +570,14 @@ export const AdminModerationPage: React.FC = () => {
               {t("admin.adminModerationPage.catalogueDAnnoncesShongre")}
               {listings.length} {t("admin.adminModerationPage.auTotal")}
             </span>
-            <span className="text-micro text-stone-500">
+            <span className="text-micro text-text-tertiary">
               {t("admin.adminModerationPage.cliquezSurAuditIaPour")}
             </span>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-stone-50 text-stone-700 font-bold border-b border-border-base">
+              <thead className="bg-surface-soft text-text-emphasis font-bold border-b border-border-base">
                 <tr>
                   <th scope="col" className="p-3.5">
                     {t("admin.adminModerationPage.annonce")}
@@ -614,13 +614,13 @@ export const AdminModerationPage: React.FC = () => {
                           <div className="font-bold text-text-main line-clamp-1">
                             {list.title}
                           </div>
-                          <div className="text-xs text-stone-500">
+                          <div className="text-xs text-text-tertiary">
                             {getListingCategoryLabel(list)} • {list.city}
                           </div>
                         </div>
                       </div>
                     </td>
-                    <td className="p-3.5 font-medium text-stone-800">
+                    <td className="p-3.5 font-medium text-text-strong">
                       {list.sellerName}
                     </td>
                     <td className="p-3.5 font-bold text-text-main">
@@ -643,7 +643,7 @@ export const AdminModerationPage: React.FC = () => {
                           size="sm"
                           variant="outline"
                           onClick={() => handleRunAISafetyAudit(list)}
-                          className="text-xs flex items-center gap-1 text-primary border-primary/30 hover:bg-primary-light"
+                          className="text-xs flex items-center gap-1 text-primary border-primary-border hover:bg-primary-light"
                         >
                           <Sparkles className="w-icon-xs h-icon-xs text-primary" />
                           <span>Audit IA</span>
@@ -705,7 +705,7 @@ export const AdminModerationPage: React.FC = () => {
                         <span>{u.name}</span>
                         <Badge variant="urgent">SUSPENDU</Badge>
                       </div>
-                      <div className="text-xs text-stone-500 mt-0.5">
+                      <div className="text-xs text-text-tertiary mt-0.5">
                         {t("admin.adminModerationPage.motifLegal")}{" "}
                         {u.suspendedReason ||
                           "Mesure conservatoire de sécurité"}
@@ -743,7 +743,7 @@ export const AdminModerationPage: React.FC = () => {
               <div className="font-bold text-xs text-text-main">
                 {selectedListingForAI.title}
               </div>
-              <div className="text-xs text-stone-500 mt-0.5">
+              <div className="text-xs text-text-tertiary mt-0.5">
                 {formatPrice(selectedListingForAI.price, {
                   isFreeDonation: selectedListingForAI.isFreeDonation,
                 })}{" "}
@@ -793,11 +793,11 @@ export const AdminModerationPage: React.FC = () => {
                   </Badge>
                 </div>
 
-                <div className="text-xs text-stone-700 space-y-1">
+                <div className="text-xs text-text-emphasis space-y-1">
                   <span className="font-bold block text-text-main">
                     {t("admin.adminModerationPage.syntheseDeLAgentIa")}
                   </span>
-                  <p className="leading-relaxed bg-stone-50 p-3 rounded-control border border-border-subtle">
+                  <p className="leading-relaxed bg-surface-soft p-3 rounded-control border border-border-subtle">
                     {aiAnalysis.summary}
                   </p>
                 </div>

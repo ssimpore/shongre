@@ -48,13 +48,13 @@ const iconButtonClasses = createVariants({
     },
     variant: {
       primary:
-        "bg-primary text-white hover:-translate-y-0.5 hover:bg-primary-hover active:bg-primary-active shadow-xs hover:shadow-sm",
+        "bg-primary text-text-inverse hover:-translate-y-0.5 hover:bg-primary-hover active:bg-primary-active shadow-xs hover:shadow-sm",
       secondary:
-        "bg-bg-subtle text-text-main hover:bg-bg-muted active:bg-stone-300",
+        "bg-bg-subtle text-text-main hover:bg-bg-muted active:bg-surface-selected",
       outline:
-        "border border-border-base bg-bg-surface text-stone-700 hover:text-stone-950 hover:bg-bg-base hover:border-border-hover",
+        "border border-border-base bg-bg-surface text-text-emphasis hover:text-text-deep hover:bg-bg-base hover:border-border-hover",
       ghost:
-        "bg-transparent text-stone-600 hover:text-stone-950 hover:bg-bg-subtle active:bg-bg-muted",
+        "bg-transparent text-text-supporting hover:text-text-deep hover:bg-bg-subtle active:bg-bg-muted",
       danger:
         "bg-danger-surface text-danger hover:bg-danger-surface hover:text-danger",
     },

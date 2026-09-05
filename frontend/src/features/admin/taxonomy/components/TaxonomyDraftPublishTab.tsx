@@ -89,7 +89,7 @@ export const TaxonomyDraftPublishTab: React.FC<
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-pill bg-amber-400 animate-pulse" />
+              <span className="w-2.5 h-2.5 rounded-pill bg-rating-fill animate-pulse" />
               <h3 className="text-base font-bold text-text-main">
                 {t(
                   "admin.taxonomyDraftPublishTab.brouillonsEnAttenteDePublication",
@@ -97,7 +97,7 @@ export const TaxonomyDraftPublishTab: React.FC<
                 {draftChanges.length})
               </h3>
             </div>
-            <p className="text-xs text-stone-500 mt-1">
+            <p className="text-xs text-text-tertiary mt-1">
               {draftChanges.length > 0
                 ? `${draftChanges.length} modification(s) enregistrée(s) localement. Publiez pour appliquer les changements sur toute la plateforme.`
                 : "Aucune modification en attente. La taxonomie est synchronisée avec la version active."}
@@ -145,7 +145,7 @@ export const TaxonomyDraftPublishTab: React.FC<
         {draftChanges.length > 0 && (
           <div className="space-y-2 pt-3 border-t border-border-subtle">
             <h4 className="text-xs font-bold text-text-main uppercase tracking-wider flex items-center gap-1.5">
-              <FileDiff className="w-icon-sm h-icon-sm text-stone-500" />
+              <FileDiff className="w-icon-sm h-icon-sm text-text-tertiary" />
               <span>
                 {t("admin.taxonomyDraftPublishTab.detailDesChangementsEtages")}
               </span>
@@ -165,7 +165,7 @@ export const TaxonomyDraftPublishTab: React.FC<
                           : change.changeType === "deprecated"
                             ? "bg-danger-surface text-danger"
                             : change.changeType === "moved"
-                              ? "bg-purple-100 text-purple-800"
+                              ? "bg-automation-surface-strong text-automation-emphasis"
                               : "bg-info-surface text-info"
                       }`}
                     >
@@ -174,10 +174,12 @@ export const TaxonomyDraftPublishTab: React.FC<
                     <span className="font-bold text-text-main">
                       {change.nodeLabel}
                     </span>
-                    <span className="text-stone-500">{change.description}</span>
+                    <span className="text-text-tertiary">
+                      {change.description}
+                    </span>
                   </div>
 
-                  <span className="text-micro text-stone-500 shrink-0 tabular-nums">
+                  <span className="text-micro text-text-tertiary shrink-0 tabular-nums">
                     {formatLogTimestamp(change.timestamp)}
                   </span>
                 </div>
@@ -196,7 +198,7 @@ export const TaxonomyDraftPublishTab: React.FC<
               {t("admin.taxonomyDraftPublishTab.historiqueDesVersionsPubliees")}
             </span>
           </h3>
-          <span className="text-xs text-stone-500 font-mono">
+          <span className="text-xs text-text-tertiary font-mono">
             {versions.length} version{versions.length > 1 ? "s" : ""}{" "}
             {t("admin.taxonomyDraftPublishTab.archivee")}
             {versions.length > 1 ? "s" : ""}
@@ -206,7 +208,7 @@ export const TaxonomyDraftPublishTab: React.FC<
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="border-b border-border-subtle text-stone-500 uppercase tracking-wider text-micro">
+              <tr className="border-b border-border-subtle text-text-tertiary uppercase tracking-wider text-micro">
                 <th scope="col" className="py-2.5 px-3">
                   Version
                 </th>
@@ -250,13 +252,13 @@ export const TaxonomyDraftPublishTab: React.FC<
                   <td className="py-3 px-3 font-mono">
                     {ver.changeCount} modif.
                   </td>
-                  <td className="py-3 px-3 text-stone-700 max-w-xs truncate">
+                  <td className="py-3 px-3 text-text-emphasis max-w-xs truncate">
                     {ver.description || "Mise à jour standard"}
                   </td>
                   <td className="py-3 px-3 text-text-secondary">
                     {ver.publishedBy || "Admin"}
                   </td>
-                  <td className="py-3 px-3 text-stone-500 font-mono">
+                  <td className="py-3 px-3 text-text-tertiary font-mono">
                     {ver.publishedAt
                       ? new Date(ver.publishedAt).toLocaleDateString()
                       : "-"}

@@ -243,7 +243,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
 
   return (
     <div className="space-y-4 pb-8">
-      <section className="rounded-2xl border border-stone-800 bg-stone-950 p-5 text-text-inverse shadow-sm sm:p-6">
+      <section className="rounded-2xl border border-border-inverse bg-surface-inverse-deep p-5 text-text-inverse shadow-sm sm:p-6">
         <Link
           to={crmPaths.companies}
           className="inline-flex items-center gap-1 text-micro font-bold uppercase tracking-wider text-text-disabled hover:text-text-inverse"
@@ -252,7 +252,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
         </Link>
         <div className="mt-3 flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
           <div className="flex min-w-0 items-start gap-4">
-            <span className="inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-control border border-stone-700 bg-stone-900 text-lg font-bold">
+            <span className="inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-control border border-border-inverse-subtle bg-surface-inverse text-lg font-bold">
               {account.name.slice(0, 2).toUpperCase()}
             </span>
             <div className="min-w-0">
@@ -261,7 +261,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
                   {account.name}
                 </h1>
                 {account.fitScore !== undefined && (
-                  <span className="inline-flex items-center gap-1 rounded-pill bg-violet-950 px-2 py-1 text-micro font-bold text-violet-300">
+                  <span className="inline-flex items-center gap-1 rounded-pill bg-staff-inverse-deep px-2 py-1 text-micro font-bold text-staff-on-inverse">
                     <Sparkles className="h-icon-xs w-icon-xs" /> Fit{" "}
                     {account.fitScore}
                   </span>
@@ -302,7 +302,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
                   {account.tags.map((tag) => (
                     <span
                       key={tag.toLocaleLowerCase("fr")}
-                      className="rounded-pill border border-stone-700 bg-stone-900 px-2 py-1 text-micro font-bold text-stone-300"
+                      className="rounded-pill border border-border-inverse-subtle bg-surface-inverse px-2 py-1 text-micro font-bold text-text-inverse-muted"
                     >
                       {tag}
                     </span>
@@ -332,7 +332,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
             <Button
               variant="outline"
               size="sm"
-              className="border-stone-700 bg-stone-900 text-text-inverse hover:bg-stone-800"
+              className="border-border-inverse-subtle bg-surface-inverse text-text-inverse hover:bg-surface-inverse-hover"
               onClick={() => setNoteOpen(true)}
             >
               <MessageSquareText className="h-icon-md w-icon-md" /> Note
@@ -340,7 +340,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
             <Button
               variant="outline"
               size="sm"
-              className="border-stone-700 bg-stone-900 text-text-inverse hover:bg-stone-800"
+              className="border-border-inverse-subtle bg-surface-inverse text-text-inverse hover:bg-surface-inverse-hover"
               onClick={() => {
                 setTagDraft(account.tags.join(", "));
                 setTagsOpen(true);
@@ -354,7 +354,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
 
       <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <article className="rounded-2xl border border-border-base bg-bg-surface p-4 shadow-xs">
-          <span className="text-micro font-bold uppercase tracking-wider text-stone-500">
+          <span className="text-micro font-bold uppercase tracking-wider text-text-tertiary">
             Contacts
           </span>
           <strong className="mt-1 block text-2xl font-bold">
@@ -362,7 +362,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
           </strong>
         </article>
         <article className="rounded-2xl border border-border-base bg-bg-surface p-4 shadow-xs">
-          <span className="text-micro font-bold uppercase tracking-wider text-stone-500">
+          <span className="text-micro font-bold uppercase tracking-wider text-text-tertiary">
             {t("admin.crmCompanyDetailPage.opportunitesOuvertes")}
           </span>
           <strong className="mt-1 block text-2xl font-bold">
@@ -370,7 +370,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
           </strong>
         </article>
         <article className="rounded-2xl border border-border-base bg-bg-surface p-4 shadow-xs">
-          <span className="text-micro font-bold uppercase tracking-wider text-stone-500">
+          <span className="text-micro font-bold uppercase tracking-wider text-text-tertiary">
             {t("admin.crmCompanyDetailPage.pipeline")}
           </span>
           <strong className="mt-1 block text-2xl font-bold text-primary">
@@ -378,7 +378,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
           </strong>
         </article>
         <article className="rounded-2xl border border-border-base bg-bg-surface p-4 shadow-xs">
-          <span className="text-micro font-bold uppercase tracking-wider text-stone-500">
+          <span className="text-micro font-bold uppercase tracking-wider text-text-tertiary">
             {t("invoicing.product.previewMarket")}
           </span>
           <strong className="mt-1 block text-2xl font-bold">
@@ -391,7 +391,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
         <div className="flex flex-col gap-2 border-b border-border-subtle px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-violet-50 text-violet-700">
+              <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-staff-surface text-staff-strong">
                 <Boxes className="h-icon-md w-icon-md" />
               </span>
               <h2 className="text-sm font-bold">Intelligence Shongre</h2>
@@ -401,14 +401,14 @@ export const CrmCompanyDetailPage: React.FC = () => {
                 />
               )}
             </div>
-            <p className="mt-1 text-micro text-stone-500">
+            <p className="mt-1 text-micro text-text-tertiary">
               {t(
                 "admin.crmCompanyDetailPage.lectureDesDomainesCanoniquesLeCrmNeModifieNiAnnonces",
               )}
             </p>
           </div>
           {shongre?.lastSynchronizedAt && (
-            <time className="text-micro text-stone-500">
+            <time className="text-micro text-text-tertiary">
               {t("admin.crmCompanyDetailPage.synchroniseLe")}{" "}
               {new Intl.DateTimeFormat(currentLocale, {
                 dateStyle: "medium",
@@ -432,7 +432,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
         ) : (
           <div className="grid gap-0 divide-y divide-border-subtle md:grid-cols-3 md:divide-x md:divide-y-0">
             <article className="p-5">
-              <div className="flex items-center gap-2 text-stone-500">
+              <div className="flex items-center gap-2 text-text-tertiary">
                 <Building2 className="h-icon-md w-icon-md" />
                 <span className="text-micro font-bold uppercase tracking-wider">
                   Profil Pro
@@ -441,11 +441,11 @@ export const CrmCompanyDetailPage: React.FC = () => {
               <strong className="mt-2 block text-sm font-bold">
                 {shongre.organization?.name}
               </strong>
-              <p className="mt-1 text-xs text-stone-500">
+              <p className="mt-1 text-xs text-text-tertiary">
                 {shongre.professional.ownerName} ·{" "}
                 {shongre.organization?.marketCode}
               </p>
-              <p className="mt-3 text-micro text-stone-500">
+              <p className="mt-3 text-micro text-text-tertiary">
                 Email{" "}
                 {shongre.professional.emailVerified ? "vérifié" : "non vérifié"}{" "}
                 {t("admin.crmCompanyDetailPage.telephone")}{" "}
@@ -453,7 +453,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
               </p>
             </article>
             <article className="p-5">
-              <div className="flex items-center gap-2 text-stone-500">
+              <div className="flex items-center gap-2 text-text-tertiary">
                 <Boxes className="h-icon-md w-icon-md" />
                 <span className="text-micro font-bold uppercase tracking-wider">
                   {t("admin.adminMarketsPage.annonces")}
@@ -479,7 +479,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
               </ul>
             </article>
             <article className="p-5">
-              <div className="flex items-center gap-2 text-stone-500">
+              <div className="flex items-center gap-2 text-text-tertiary">
                 <CreditCard className="h-icon-md w-icon-md" />
                 <span className="text-micro font-bold uppercase tracking-wider">
                   Abonnement
@@ -489,12 +489,12 @@ export const CrmCompanyDetailPage: React.FC = () => {
                 {shongre.subscription.status ?? "Aucun abonnement actif"}
               </strong>
               {shongre.subscription.productId && (
-                <p className="mt-1 text-xs text-stone-500">
+                <p className="mt-1 text-xs text-text-tertiary">
                   {shongre.subscription.productId.replaceAll("-", " ")}
                 </p>
               )}
               {shongre.subscription.currentPeriodEndsAt && (
-                <p className="mt-3 text-micro text-stone-500">
+                <p className="mt-3 text-micro text-text-tertiary">
                   {t("admin.crmCompanyDetailPage.periodeJusquAu")}{" "}
                   {new Intl.DateTimeFormat(currentLocale, {
                     dateStyle: "medium",
@@ -505,7 +505,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
           </div>
         )}
         {shongre?.linked && (
-          <div className="flex flex-wrap gap-2 border-t border-border-subtle bg-stone-50 px-5 py-3 text-micro text-stone-500">
+          <div className="flex flex-wrap gap-2 border-t border-border-subtle bg-surface-soft px-5 py-3 text-micro text-text-tertiary">
             {[
               ["Publicité", shongre.advertising.availability],
               ["Leads", shongre.leads.availability],
@@ -516,7 +516,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
             ].map(([label, availability]) => (
               <span
                 key={label}
-                className="rounded-pill border border-stone-200 bg-bg-surface px-2 py-1"
+                className="rounded-pill border border-border-disabled bg-bg-surface px-2 py-1"
               >
                 {label} ·{" "}
                 {availability === "not_connected"
@@ -542,7 +542,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
                 <h2 className="text-sm font-bold">
                   {t("admin.crmOverviewPage.opportunites")}
                 </h2>
-                <p className="text-micro text-stone-500">
+                <p className="text-micro text-text-tertiary">
                   {t("admin.crmCompanyDetailPage.pipelineAssocieACeCompte")}
                 </p>
               </div>
@@ -552,7 +552,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
             </div>
             <div className="divide-y divide-border-subtle px-5">
               {opportunities.length === 0 ? (
-                <p className="py-8 text-center text-xs text-stone-500">
+                <p className="py-8 text-center text-xs text-text-tertiary">
                   {t("admin.crmCompanyDetailPage.aucuneOpportuniteAssociee")}
                 </p>
               ) : (
@@ -577,7 +577,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
                       >
                         {opportunity.name}
                       </Link>
-                      <p className="text-micro text-stone-500">
+                      <p className="text-micro text-text-tertiary">
                         {opportunity.stageName} · {opportunity.probability}%
                       </p>
                     </div>
@@ -599,7 +599,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
                 <h2 className="text-sm font-bold">
                   {t("admin.crmCompanyDetailPage.activiteRecente")}
                 </h2>
-                <p className="text-micro text-stone-500">
+                <p className="text-micro text-text-tertiary">
                   {t("admin.crmCompanyDetailPage.notesEtInteractionsDuCompte")}
                 </p>
               </div>
@@ -613,13 +613,13 @@ export const CrmCompanyDetailPage: React.FC = () => {
             </div>
             <div className="divide-y divide-border-subtle px-5">
               {activities.length === 0 ? (
-                <p className="py-8 text-center text-xs text-stone-500">
+                <p className="py-8 text-center text-xs text-text-tertiary">
                   {t("admin.crmCompanyDetailPage.aucuneActiviteEnregistree")}
                 </p>
               ) : (
                 activities.map((activity) => (
                   <article key={activity.id} className="flex gap-3 py-3">
-                    <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-pill bg-stone-100 text-text-secondary">
+                    <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-pill bg-surface-muted text-text-secondary">
                       <MessageSquareText className="h-icon-sm w-icon-sm" />
                     </span>
                     <div className="min-w-0 flex-1">
@@ -627,7 +627,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
                         <strong className="text-xs font-bold">
                           {activity.title}
                         </strong>
-                        <time className="text-micro text-stone-500">
+                        <time className="text-micro text-text-tertiary">
                           {new Intl.DateTimeFormat(currentLocale, {
                             dateStyle: "medium",
                           }).format(new Date(activity.occurredAt))}
@@ -650,7 +650,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
             <div className="flex items-center justify-between border-b border-border-subtle px-4 py-3.5">
               <div>
                 <h2 className="text-sm font-bold">Contacts</h2>
-                <p className="text-micro text-stone-500">
+                <p className="text-micro text-text-tertiary">
                   {t("admin.crmCompanyDetailPage.personnesLiees")}
                 </p>
               </div>
@@ -658,7 +658,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
             </div>
             <div className="divide-y divide-border-subtle px-4">
               {contacts.length === 0 ? (
-                <p className="py-7 text-center text-xs text-stone-500">
+                <p className="py-7 text-center text-xs text-text-tertiary">
                   {t("admin.crmCompanyDetailPage.aucunContactLie")}
                 </p>
               ) : (
@@ -668,7 +668,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
                     to={crmPaths.contact(contact.id)}
                     className="flex items-center gap-3 py-3 hover:text-primary"
                   >
-                    <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-pill bg-stone-950 text-micro font-bold text-text-inverse">
+                    <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-pill bg-surface-inverse-deep text-micro font-bold text-text-inverse">
                       {contact.firstName[0]}
                       {contact.lastName[0]}
                     </span>
@@ -676,7 +676,7 @@ export const CrmCompanyDetailPage: React.FC = () => {
                       <strong className="block truncate text-xs">
                         {contact.fullName}
                       </strong>
-                      <span className="block truncate text-micro text-stone-500">
+                      <span className="block truncate text-micro text-text-tertiary">
                         {contact.jobTitle ?? contact.email ?? "Contact"}
                       </span>
                     </span>
@@ -701,15 +701,15 @@ export const CrmCompanyDetailPage: React.FC = () => {
                 ["Source", accountSourceLabel],
               ].map(([label, value]) => (
                 <div key={label} className="flex justify-between gap-3 py-2.5">
-                  <dt className="shrink-0 text-stone-500">{label}</dt>
-                  <dd className="min-w-0 break-words text-right font-bold text-stone-800">
+                  <dt className="shrink-0 text-text-tertiary">{label}</dt>
+                  <dd className="min-w-0 break-words text-right font-bold text-text-strong">
                     {value}
                   </dd>
                 </div>
               ))}
             </dl>
             {account.city && (
-              <div className="mt-3 inline-flex items-center gap-1.5 text-micro text-stone-500">
+              <div className="mt-3 inline-flex items-center gap-1.5 text-micro text-text-tertiary">
                 <MapPin className="h-icon-sm w-icon-sm" />{" "}
                 {t(
                   "admin.crmCompanyDetailPage.donneeDeclarativeAucuneGeolocalisationImplicite",

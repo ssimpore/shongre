@@ -82,7 +82,7 @@ export const StaffMfaPage: React.FC = () => {
     return (
       <div
         role="status"
-        className="mx-auto max-w-xl py-16 text-center text-sm text-stone-600"
+        className="mx-auto max-w-xl py-16 text-center text-sm text-text-supporting"
       >
         Vérification de la sécurité du compte…
       </div>
@@ -91,15 +91,15 @@ export const StaffMfaPage: React.FC = () => {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-10 sm:px-6">
-      <div className="rounded-3xl border border-border-base bg-white p-6 shadow-sm sm:p-8">
+      <div className="rounded-3xl border border-border-base bg-bg-surface p-6 shadow-sm sm:p-8">
         <header className="text-center">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-primary-surface text-primary">
             <ShieldCheck className="h-icon-xl w-icon-xl" aria-hidden="true" />
           </div>
-          <h1 className="mt-4 text-2xl font-bold text-stone-950">
+          <h1 className="mt-4 text-2xl font-bold text-text-deep">
             Sécurité de l’espace interne
           </h1>
-          <p className="mx-auto mt-2 max-w-lg text-sm leading-relaxed text-stone-600">
+          <p className="mx-auto mt-2 max-w-lg text-sm leading-relaxed text-text-supporting">
             Les outils Support, Modération, Finance et Administration exigent
             une preuve MFA pour chaque session.
           </p>
@@ -114,7 +114,7 @@ export const StaffMfaPage: React.FC = () => {
         {status?.enabled && status.sessionVerified ? (
           <div className="mt-6 rounded-2xl border border-success-border bg-success-surface p-5 text-center">
             <CheckCircle2 className="mx-auto h-icon-xl w-icon-xl text-success" />
-            <p className="mt-2 text-sm font-bold text-stone-900">
+            <p className="mt-2 text-sm font-bold text-text-main">
               Cette session est vérifiée.
             </p>
             <Button to="/admin" size="sm" className="mt-4">
@@ -160,16 +160,16 @@ export const StaffMfaPage: React.FC = () => {
           </div>
         ) : (
           <div className="mt-6 space-y-5">
-            <section className="rounded-2xl border border-border-base bg-stone-50 p-4">
-              <h2 className="text-sm font-bold text-stone-900">
+            <section className="rounded-2xl border border-border-base bg-surface-soft p-4">
+              <h2 className="text-sm font-bold text-text-main">
                 1. Ajoutez Shongre à votre application
               </h2>
-              <p className="mt-1 text-xs text-stone-600">
+              <p className="mt-1 text-xs text-text-supporting">
                 Saisissez cette clé dans votre gestionnaire TOTP. Elle ne sera
                 plus affichée après l’activation.
               </p>
               <div className="mt-3 flex items-center gap-2">
-                <code className="min-w-0 flex-1 break-all rounded-lg border border-border-base bg-white p-3 text-xs font-bold">
+                <code className="min-w-0 flex-1 break-all rounded-lg border border-border-base bg-bg-surface p-3 text-xs font-bold">
                   {setup.secret}
                 </code>
                 <Button
@@ -193,10 +193,10 @@ export const StaffMfaPage: React.FC = () => {
             </section>
 
             <section className="rounded-2xl border border-warning-border bg-warning-surface p-4">
-              <h2 className="text-sm font-bold text-stone-900">
+              <h2 className="text-sm font-bold text-text-main">
                 2. Conservez vos codes de secours
               </h2>
-              <p className="mt-1 text-xs text-stone-600">
+              <p className="mt-1 text-xs text-text-supporting">
                 Chaque code ne fonctionne qu’une fois. Stockez-les hors de cet
                 appareil avant de continuer.
               </p>
@@ -204,7 +204,7 @@ export const StaffMfaPage: React.FC = () => {
                 {setup.backupCodes.map((backupCode) => (
                   <code
                     key={backupCode}
-                    className="rounded-md bg-white px-2 py-1.5 text-center text-micro font-bold"
+                    className="rounded-md bg-bg-surface px-2 py-1.5 text-center text-micro font-bold"
                   >
                     {backupCode}
                   </code>

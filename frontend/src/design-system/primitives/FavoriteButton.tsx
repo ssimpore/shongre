@@ -91,7 +91,7 @@ export const FavoriteButton: React.FC<FavoriteButtonProps> = ({
   const surface =
     variant === "floating"
       ? "rounded-full bg-bg-surface/90 backdrop-blur-xs shadow-xs text-text-secondary hover:bg-bg-surface"
-      : "rounded-full text-text-muted hover:bg-stone-100";
+      : "rounded-full text-text-muted hover:bg-surface-muted";
 
   return (
     <button

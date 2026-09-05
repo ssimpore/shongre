@@ -24,7 +24,7 @@ Mobile users ───▶ mobile/ ─────┘
 
 Shared product system: packages/design-tokens/, packages/ui/, packages/features/,
 packages/shared/, packages/brand/, and packages/contracts/
-Versioned visual-identity source: brand/shongre/v1.0.0/
+Versioned visual-identity source: brand/shongre/brand.config.json → vX.Y.Z/
 Runtime/deployment tooling:  infrastructure/ + scripts/ + Makefile
 ```
 

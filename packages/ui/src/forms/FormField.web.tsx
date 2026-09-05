@@ -74,7 +74,7 @@ export const FormField: React.FC<FormFieldProps> = ({
       {label && (
         <label
           htmlFor={controlId}
-          className="text-sm font-semibold text-stone-800 flex items-center justify-between"
+          className="text-sm font-semibold text-text-strong flex items-center justify-between"
         >
           <span>
             {label}
@@ -137,7 +137,7 @@ const fieldSizeClasses: Record<ControlSize, string> = {
 const fieldStateClasses = (error?: boolean) =>
   error
     ? "border-danger focus:border-danger focus:ring-2 focus:ring-danger/20"
-    : "border-border-base hover:border-border-hover focus:border-primary focus:ring-2 focus:ring-primary/20";
+    : "border-border-base hover:border-border-hover focus:border-primary focus:ring-2 focus:ring-primary-ring";
 
 /**
  * A width supplied by the caller, which must win over the field default.
@@ -462,7 +462,7 @@ export const Switch: React.FC<SwitchProps> = ({
         onChange={(event) => onChange(event.currentTarget.checked)}
       />
       <span
-        className={`flex h-6 w-11 shrink-0 items-center rounded-full bg-stone-400 p-1 ${CONTROL_MOTION_CLASS} peer-checked:bg-primary peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-focus`}
+        className={`flex h-6 w-11 shrink-0 items-center rounded-full bg-surface-strong p-1 ${CONTROL_MOTION_CLASS} peer-checked:bg-primary peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-focus`}
       >
         <span
           className={`h-icon-md w-icon-md rounded-full bg-bg-surface shadow-sm ${CONTROL_MOTION_CLASS} ${

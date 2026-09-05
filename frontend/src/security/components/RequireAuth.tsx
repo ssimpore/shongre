@@ -19,7 +19,7 @@ export const RequireAuth: React.FC<RequireAuthProps> = ({ children }) => {
   if (isRestoring) {
     return (
       <div
-        className="max-w-xl mx-auto px-4 py-16 text-center text-sm text-stone-600"
+        className="max-w-xl mx-auto px-4 py-16 text-center text-sm text-text-supporting"
         role="status"
         aria-live="polite"
         aria-busy="true"
@@ -35,10 +35,10 @@ export const RequireAuth: React.FC<RequireAuthProps> = ({ children }) => {
         <div className="w-16 h-16 rounded-2xl bg-warning-surface border border-warning-border text-warning flex items-center justify-center mx-auto mb-4">
           <Lock className="w-8 h-8" />
         </div>
-        <h1 className="text-2xl font-bold text-stone-900 mb-2">
+        <h1 className="text-2xl font-bold text-text-main mb-2">
           Authentification requise
         </h1>
-        <p className="text-sm text-stone-600 max-w-md mx-auto mb-6 leading-relaxed">
+        <p className="text-sm text-text-supporting max-w-md mx-auto mb-6 leading-relaxed">
           {t("security.requireAuth.cettePageEstReserveeAux")}
         </p>
 

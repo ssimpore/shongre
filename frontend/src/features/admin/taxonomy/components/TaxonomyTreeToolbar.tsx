@@ -44,13 +44,13 @@ export const TaxonomyTreeToolbar: React.FC<TaxonomyTreeToolbarProps> = ({
             )}
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="w-full h-control-md pl-9 pr-8 bg-bg-base border border-border-base rounded-control text-xs font-semibold focus:outline-hidden focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+            className="w-full h-control-md pl-9 pr-8 bg-bg-base border border-border-base rounded-control text-xs font-semibold focus:outline-hidden focus:ring-2 focus:ring-primary-ring focus:border-primary transition-all"
           />
           {searchQuery && (
             <button
               type="button"
               onClick={() => onSearchChange("")}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-500 hover:text-text-secondary p-0.5"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-tertiary hover:text-text-secondary p-0.5"
             >
               <X className="w-icon-sm h-icon-sm" />
             </button>
@@ -72,7 +72,7 @@ export const TaxonomyTreeToolbar: React.FC<TaxonomyTreeToolbarProps> = ({
       {/* Filter Chips & Expand Controls */}
       <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-border-subtle text-xs">
         <div className="flex flex-wrap items-center gap-2">
-          <div className="flex items-center gap-1.5 text-stone-500 font-semibold text-micro uppercase tracking-wider">
+          <div className="flex items-center gap-1.5 text-text-tertiary font-semibold text-micro uppercase tracking-wider">
             <Filter className="w-icon-xs h-icon-xs" />
             <span>Filtres :</span>
           </div>
@@ -121,14 +121,14 @@ export const TaxonomyTreeToolbar: React.FC<TaxonomyTreeToolbarProps> = ({
           <button
             type="button"
             onClick={onExpandAll}
-            className="px-2 py-1 min-h-6 inline-flex items-center text-micro font-semibold text-stone-500 hover:text-text-main bg-bg-subtle hover:bg-stone-200/60 rounded-md transition-colors"
+            className="px-2 py-1 min-h-6 inline-flex items-center text-micro font-semibold text-text-tertiary hover:text-text-main bg-bg-subtle hover:bg-surface-disabled/60 rounded-md transition-colors"
           >
             {t("admin.taxonomyTreeToolbar.deplierTout")}
           </button>
           <button
             type="button"
             onClick={onCollapseAll}
-            className="px-2 py-1 min-h-6 inline-flex items-center text-micro font-semibold text-stone-500 hover:text-text-main bg-bg-subtle hover:bg-stone-200/60 rounded-md transition-colors"
+            className="px-2 py-1 min-h-6 inline-flex items-center text-micro font-semibold text-text-tertiary hover:text-text-main bg-bg-subtle hover:bg-surface-disabled/60 rounded-md transition-colors"
           >
             {t("admin.taxonomyTreeToolbar.replierTout")}
           </button>

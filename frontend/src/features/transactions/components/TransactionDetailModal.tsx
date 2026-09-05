@@ -163,11 +163,11 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
             </div>
           )}
 
-          <div className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
-            <p className="text-xs font-bold uppercase tracking-wide text-stone-500">
+          <div className="rounded-2xl border border-border-disabled bg-surface-soft p-4">
+            <p className="text-xs font-bold uppercase tracking-wide text-text-tertiary">
               État serveur
             </p>
-            <p className="mt-1 text-sm font-bold text-stone-900">
+            <p className="mt-1 text-sm font-bold text-text-main">
               {statusLabel[tx.status] || "Commande en cours"}
             </p>
           </div>
@@ -177,13 +177,13 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
               src={tx.listingCoverImageUrl || tx.listingPhotoUrl}
               alt=""
               sizes="72px"
-              className="h-20 w-20 rounded-xl border border-stone-200 object-cover"
+              className="h-20 w-20 rounded-xl border border-border-disabled object-cover"
             />
             <div className="min-w-0 flex-1">
-              <h3 className="truncate font-bold text-stone-900">
+              <h3 className="truncate font-bold text-text-main">
                 {tx.listingTitle}
               </h3>
-              <p className="mt-1 text-sm text-stone-500">
+              <p className="mt-1 text-sm text-text-tertiary">
                 {isBuyer
                   ? `Vendeur : ${tx.sellerName}`
                   : `Acheteur : ${tx.buyerName}`}
@@ -201,17 +201,17 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
             ["escrow_funded", "payment_escrowed", "pin_pending"].includes(
               tx.status,
             ) && (
-              <section className="rounded-2xl border border-primary/20 bg-primary/5 p-4">
+              <section className="rounded-2xl border border-primary-border bg-primary-surface-soft p-4">
                 <h4 className="flex items-center gap-2 text-sm font-bold">
                   <KeyRound className="h-icon-md w-icon-md text-primary" /> Code
                   de remise
                 </h4>
                 {handoverCode ? (
                   <div className="mt-3">
-                    <p className="rounded-xl bg-white p-3 text-center font-mono text-2xl font-bold tracking-code">
+                    <p className="rounded-xl bg-bg-surface p-3 text-center font-mono text-2xl font-bold tracking-code">
                       {handoverCode.code}
                     </p>
-                    <p className="mt-2 text-xs text-stone-600">
+                    <p className="mt-2 text-xs text-text-supporting">
                       Expire à{" "}
                       {new Date(handoverCode.expiresAt).toLocaleTimeString(
                         currentLocale,
@@ -237,7 +237,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
           {isSeller &&
             tx.deliveryMethod === "hand_delivery" &&
             tx.status === "pin_pending" && (
-              <section className="space-y-3 rounded-2xl border border-stone-200 p-4">
+              <section className="space-y-3 rounded-2xl border border-border-disabled p-4">
                 <FormField label="Code communiqué par l’acheteur">
                   <Input
                     inputMode="numeric"
@@ -264,7 +264,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
           {isSeller &&
             tx.deliveryMethod !== "hand_delivery" &&
             ["escrow_funded", "payment_escrowed"].includes(tx.status) && (
-              <section className="space-y-3 rounded-2xl border border-stone-200 p-4">
+              <section className="space-y-3 rounded-2xl border border-border-disabled p-4">
                 <FormField label="Transporteur">
                   <Input
                     value={carrierName}
@@ -302,7 +302,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
               </Button>
             )}
 
-          <div className="flex flex-wrap justify-between gap-2 border-t border-stone-100 pt-4">
+          <div className="flex flex-wrap justify-between gap-2 border-t border-border-soft pt-4">
             {isBuyer && ["initiated", "payment_pending"].includes(tx.status) ? (
               <Button
                 variant="outline"

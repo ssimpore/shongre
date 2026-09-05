@@ -143,10 +143,10 @@ export const CrmProductsPage: React.FC = () => {
 
   return (
     <div className="space-y-4 pb-8">
-      <section className="rounded-2xl border border-stone-800 bg-stone-950 p-5 text-text-inverse sm:p-6">
+      <section className="rounded-2xl border border-border-inverse bg-surface-inverse-deep p-5 text-text-inverse sm:p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-micro font-bold uppercase tracking-wider text-violet-300">
+            <p className="text-micro font-bold uppercase tracking-wider text-staff-on-inverse">
               CRM · Catalogue
             </p>
             <h1 className="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">
@@ -163,19 +163,19 @@ export const CrmProductsPage: React.FC = () => {
           </Button>
         </div>
         <div className="mt-5 grid grid-cols-3 gap-2">
-          <div className="rounded-control bg-stone-900 p-3">
+          <div className="rounded-control bg-surface-inverse p-3">
             <span className="text-micro text-text-disabled">Produits</span>
             <strong className="block text-xl font-bold">
               {products.length}
             </strong>
           </div>
-          <div className="rounded-control bg-stone-900 p-3">
+          <div className="rounded-control bg-surface-inverse p-3">
             <span className="text-micro text-text-disabled">Actifs</span>
-            <strong className="block text-xl font-bold text-emerald-300">
+            <strong className="block text-xl font-bold text-success-on-inverse-strong">
               {products.filter((item) => item.isActive).length}
             </strong>
           </div>
-          <div className="rounded-control bg-stone-900 p-3">
+          <div className="rounded-control bg-surface-inverse p-3">
             <span className="text-micro text-text-disabled">
               {t("invoicing.product.previewMarket")}
             </span>
@@ -249,18 +249,18 @@ export const CrmProductsPage: React.FC = () => {
                           {product.name}
                         </strong>
                         <span
-                          className={`rounded-pill px-2 py-0.5 text-micro font-bold ${product.isActive ? "bg-success-surface text-success" : "bg-stone-100 text-stone-500"}`}
+                          className={`rounded-pill px-2 py-0.5 text-micro font-bold ${product.isActive ? "bg-success-surface text-success" : "bg-surface-muted text-text-tertiary"}`}
                         >
                           {product.isActive ? "Actif" : "Inactif"}
                         </span>
                       </div>
-                      <p className="mt-0.5 truncate text-micro text-stone-500">
+                      <p className="mt-0.5 truncate text-micro text-text-tertiary">
                         {product.sku} · {typeLabels[product.productType]}
                       </p>
                     </div>
                   </div>
                   <div>
-                    <span className="block text-micro text-stone-500">
+                    <span className="block text-micro text-text-tertiary">
                       Tarif {price?.marketCode ?? "général"}
                     </span>
                     <strong className="text-sm font-bold">
@@ -271,19 +271,19 @@ export const CrmProductsPage: React.FC = () => {
                           }).format(price.amount.amountMinor / 100)
                         : "Sur devis"}
                     </strong>
-                    <span className="ml-1 text-micro text-stone-500">
+                    <span className="ml-1 text-micro text-text-tertiary">
                       {price?.billingInterval
                         ? intervalLabels[price.billingInterval]
                         : ""}
                     </span>
                   </div>
-                  <div className="text-micro text-stone-500">
+                  <div className="text-micro text-text-tertiary">
                     {product.description ?? "Sans description"}
                   </div>
                   <button
                     type="button"
                     onClick={() => void toggleActive(product)}
-                    className="inline-flex min-h-control-md items-center justify-center gap-1 rounded-control border border-stone-200 px-3 text-micro font-semibold hover:bg-stone-50"
+                    className="inline-flex min-h-control-md items-center justify-center gap-1 rounded-control border border-border-disabled px-3 text-micro font-semibold hover:bg-surface-soft"
                   >
                     {product.isActive ? (
                       <XCircle className="h-icon-sm w-icon-sm" />

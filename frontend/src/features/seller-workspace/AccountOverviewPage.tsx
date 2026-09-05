@@ -176,7 +176,7 @@ export const AccountOverviewPage: React.FC = () => {
       {/* Welcome Banner */}
       <div
         data-account-hero
-        className="rounded-card border border-primary-border bg-gradient-to-r from-bg-surface via-bg-surface to-primary-light/60 p-4 text-text-main shadow-sm"
+        className="rounded-card border border-primary-border bg-gradient-to-r from-bg-surface via-bg-surface to-primary-surface-soft p-4 text-text-main shadow-sm"
       >
         <div className="grid items-center gap-3 lg:grid-cols-content-action">
           <div className="min-w-0 space-y-1.5">
@@ -238,7 +238,7 @@ export const AccountOverviewPage: React.FC = () => {
                   aria-hidden="true"
                 />
               }
-              className="w-full shadow-md shadow-primary/20 sm:w-auto"
+              className="w-full shadow-md shadow-primary-shadow sm:w-auto"
             >
               {t(publishCta.labelKey)}
             </Button>
@@ -251,7 +251,7 @@ export const AccountOverviewPage: React.FC = () => {
         <div className="mb-5 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <Shield className="w-icon-lg h-icon-lg text-success" />
-            <h2 className="font-bold text-sm sm:text-base text-stone-900">
+            <h2 className="font-bold text-sm sm:text-base text-text-main">
               {t(
                 "sellerworkspace.accountOverviewPage.niveauxDeSecuriteVerificationsDu",
               )}
@@ -286,16 +286,16 @@ export const AccountOverviewPage: React.FC = () => {
                   </span>
                 )}
               </div>
-              <h3 className="text-xs font-bold text-stone-900">
+              <h3 className="text-xs font-bold text-text-main">
                 Adresse Email
               </h3>
-              <p className="text-micro text-stone-600 truncate mt-0.5">
+              <p className="text-micro text-text-supporting truncate mt-0.5">
                 {currentUser?.email}
               </p>
             </div>
             <div className="mt-3 border-t border-border-subtle pt-2">
               {isEmailVerified ? (
-                <span className="text-micro text-stone-500 flex items-center gap-1">
+                <span className="text-micro text-text-tertiary flex items-center gap-1">
                   <CheckCircle2 className="w-icon-xs h-icon-xs text-success" />{" "}
                   Notifications actives
                 </span>
@@ -323,15 +323,15 @@ export const AccountOverviewPage: React.FC = () => {
                     label={t("ui.identityStatus.verification.sms")}
                   />
                 ) : (
-                  <span className="inline-flex items-center gap-1 text-micro font-bold text-stone-500 bg-stone-100 px-2 py-0.5 rounded-md">
+                  <span className="inline-flex items-center gap-1 text-micro font-bold text-text-tertiary bg-surface-muted px-2 py-0.5 rounded-md">
                     {t("sellerworkspace.accountOverviewPage.nonVerifie")}
                   </span>
                 )}
               </div>
-              <h3 className="text-xs font-bold text-stone-900">
+              <h3 className="text-xs font-bold text-text-main">
                 {t("sellerworkspace.accountOverviewPage.numeroDeTelephone")}
               </h3>
-              <p className="text-micro text-stone-600 truncate mt-0.5">
+              <p className="text-micro text-text-supporting truncate mt-0.5">
                 {currentUser?.phone || "Non renseigné"}
               </p>
             </div>
@@ -352,7 +352,7 @@ export const AccountOverviewPage: React.FC = () => {
           <div className="flex flex-col justify-between rounded-control border border-border-base bg-bg-subtle/60 p-4">
             <div>
               <div className="flex items-center justify-between mb-2">
-                <div className="w-8 h-8 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center font-bold">
+                <div className="w-8 h-8 rounded-lg bg-automation-surface-strong text-automation-strong flex items-center justify-center font-bold">
                   <KeyRound className="w-icon-md h-icon-md" />
                 </div>
                 {currentUser?.mfaEnabled ? (
@@ -360,15 +360,15 @@ export const AccountOverviewPage: React.FC = () => {
                     <CheckCircle2 className="w-icon-xs h-icon-xs" /> 2FA Actif
                   </span>
                 ) : (
-                  <span className="inline-flex items-center gap-1 text-micro font-bold text-stone-500 bg-stone-100 px-2 py-0.5 rounded-md">
+                  <span className="inline-flex items-center gap-1 text-micro font-bold text-text-tertiary bg-surface-muted px-2 py-0.5 rounded-md">
                     {t("sellerworkspace.accountOverviewPage.desactive")}
                   </span>
                 )}
               </div>
-              <h3 className="text-xs font-bold text-stone-900">
+              <h3 className="text-xs font-bold text-text-main">
                 Double Authentification
               </h3>
-              <p className="text-micro text-stone-600 mt-0.5">
+              <p className="text-micro text-text-supporting mt-0.5">
                 {t(
                   "sellerworkspace.accountOverviewPage.protectionRenforceeGoogleMicrosoftAuth",
                 )}
@@ -398,10 +398,10 @@ export const AccountOverviewPage: React.FC = () => {
           <div className="w-8 h-8 rounded-lg bg-primary-light text-primary flex items-center justify-center mb-2">
             <List className="w-icon-md h-icon-md" />
           </div>
-          <div className="text-2xl font-bold text-stone-900">
+          <div className="text-2xl font-bold text-text-main">
             {activeListings.length}
           </div>
-          <div className="text-xs font-semibold text-stone-500 mt-0.5">
+          <div className="text-xs font-semibold text-text-tertiary mt-0.5">
             {t("sellerworkspace.accountOverviewPage.annoncesActives")}
           </div>
         </Link>
@@ -413,10 +413,10 @@ export const AccountOverviewPage: React.FC = () => {
           <div className="w-8 h-8 rounded-lg bg-info-surface text-info flex items-center justify-center mb-2">
             <MessageSquare className="w-icon-md h-icon-md" />
           </div>
-          <div className="text-2xl font-bold text-stone-900">
+          <div className="text-2xl font-bold text-text-main">
             {unreadMsgCount}
           </div>
-          <div className="text-xs font-semibold text-stone-500 mt-0.5">
+          <div className="text-xs font-semibold text-text-tertiary mt-0.5">
             Nouveau message{unreadMsgCount > 1 ? "s" : ""}
           </div>
         </Link>
@@ -425,11 +425,11 @@ export const AccountOverviewPage: React.FC = () => {
           to="/compte/favoris"
           className="motion-surface block rounded-control border border-border-base bg-bg-surface p-4 shadow-xs hover:border-primary hover:shadow-sm"
         >
-          <div className="w-8 h-8 rounded-lg bg-pink-50 text-pink-600 flex items-center justify-center mb-2">
+          <div className="w-8 h-8 rounded-lg bg-community-surface text-community flex items-center justify-center mb-2">
             <Heart className="w-icon-md h-icon-md" />
           </div>
-          <div className="text-2xl font-bold text-stone-900">{favCount}</div>
-          <div className="text-xs font-semibold text-stone-500 mt-0.5">
+          <div className="text-2xl font-bold text-text-main">{favCount}</div>
+          <div className="text-xs font-semibold text-text-tertiary mt-0.5">
             {t("sellerworkspace.accountOverviewPage.annoncesSauvegardees")}
           </div>
         </Link>
@@ -443,15 +443,15 @@ export const AccountOverviewPage: React.FC = () => {
           onClick={() => setShowBillingModal(true)}
           className="motion-surface group flex cursor-pointer flex-col rounded-control border border-border-base bg-bg-surface p-4 text-left shadow-xs hover:border-primary hover:shadow-sm"
         >
-          <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center mb-2 group-hover:scale-105 transition-transform">
+          <div className="w-8 h-8 rounded-lg bg-insight-surface text-insight flex items-center justify-center mb-2 group-hover:scale-105 transition-transform">
             <FileText className="w-icon-md h-icon-md" />
           </div>
           <div className="mt-auto">
-            <div className="text-sm font-bold text-stone-900 flex items-center gap-1">
+            <div className="text-sm font-bold text-text-main flex items-center gap-1">
               Factures
-              <ChevronRight className="motion-interactive w-icon-sm h-icon-sm text-stone-400 group-hover:translate-x-0.5 group-hover:text-primary" />
+              <ChevronRight className="motion-interactive w-icon-sm h-icon-sm text-text-inverse-subtle group-hover:translate-x-0.5 group-hover:text-primary" />
             </div>
-            <div className="text-xs font-semibold text-stone-500 mt-0.5">
+            <div className="text-xs font-semibold text-text-tertiary mt-0.5">
               {t("sellerworkspace.accountOverviewPage.recusJustificatifs")}
             </div>
           </div>
@@ -462,12 +462,12 @@ export const AccountOverviewPage: React.FC = () => {
       <div className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs sm:p-6">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 className="text-sm sm:text-base font-bold text-stone-900">
+            <h2 className="text-sm sm:text-base font-bold text-text-main">
               {t(
                 "sellerworkspace.accountOverviewPage.coordonneesInformationsDuProfil",
               )}
             </h2>
-            <p className="text-xs text-stone-500">
+            <p className="text-xs text-text-tertiary">
               {t(
                 "sellerworkspace.accountOverviewPage.visiblesSurVosAnnoncesEt",
               )}
@@ -490,7 +490,7 @@ export const AccountOverviewPage: React.FC = () => {
           >
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-stone-800 mb-1">
+                <label className="block text-xs font-semibold text-text-strong mb-1">
                   {t(
                     "sellerworkspace.accountOverviewPage.nomEtPrenomPseudonyme",
                   )}
@@ -500,12 +500,12 @@ export const AccountOverviewPage: React.FC = () => {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
-                  className="h-control-touch w-full rounded-control border border-border-base bg-bg-subtle px-3.5 py-2 text-xs font-semibold text-stone-900 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  className="h-control-touch w-full rounded-control border border-border-base bg-bg-subtle px-3.5 py-2 text-xs font-semibold text-text-main focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary-ring"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-stone-800 mb-1">
+                <label className="block text-xs font-semibold text-text-strong mb-1">
                   {t("sellerworkspace.accountOverviewPage.numeroDeTelephone2")}
                 </label>
                 <input
@@ -513,14 +513,14 @@ export const AccountOverviewPage: React.FC = () => {
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="06 12 34 56 78"
-                  className="h-control-touch w-full rounded-control border border-border-base bg-bg-subtle px-3.5 py-2 text-xs font-semibold text-stone-900 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  className="h-control-touch w-full rounded-control border border-border-base bg-bg-subtle px-3.5 py-2 text-xs font-semibold text-text-main focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary-ring"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-stone-800 mb-1">
+                <label className="block text-xs font-semibold text-text-strong mb-1">
                   Ville
                 </label>
                 <input
@@ -528,12 +528,12 @@ export const AccountOverviewPage: React.FC = () => {
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
                   placeholder="Paris"
-                  className="h-control-touch w-full rounded-control border border-border-base bg-bg-subtle px-3.5 py-2 text-xs font-semibold text-stone-900 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  className="h-control-touch w-full rounded-control border border-border-base bg-bg-subtle px-3.5 py-2 text-xs font-semibold text-text-main focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary-ring"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-stone-800 mb-1">
+                <label className="block text-xs font-semibold text-text-strong mb-1">
                   Code Postal
                 </label>
                 <input
@@ -541,13 +541,13 @@ export const AccountOverviewPage: React.FC = () => {
                   value={postalCode}
                   onChange={(e) => setPostalCode(e.target.value)}
                   placeholder="75011"
-                  className="h-control-touch w-full rounded-control border border-border-base bg-bg-subtle px-3.5 py-2 text-xs font-semibold text-stone-900 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  className="h-control-touch w-full rounded-control border border-border-base bg-bg-subtle px-3.5 py-2 text-xs font-semibold text-text-main focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary-ring"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-stone-800 mb-1">
+              <label className="block text-xs font-semibold text-text-strong mb-1">
                 {t(
                   "sellerworkspace.accountOverviewPage.biographiePresentation",
                 )}
@@ -559,7 +559,7 @@ export const AccountOverviewPage: React.FC = () => {
                 placeholder={t(
                   "sellerworkspace.accountOverviewPage.presentezVousBrievementAuxAutres",
                 )}
-                className="min-h-control-touch w-full rounded-control border border-border-base bg-bg-subtle px-3.5 py-2 text-xs text-stone-900 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                className="min-h-control-touch w-full rounded-control border border-border-base bg-bg-subtle px-3.5 py-2 text-xs text-text-main focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary-ring"
               />
             </div>
 
@@ -587,32 +587,32 @@ export const AccountOverviewPage: React.FC = () => {
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
             <div>
-              <span className="text-stone-500 block mb-0.5 font-medium">
+              <span className="text-text-tertiary block mb-0.5 font-medium">
                 Nom / Pseudo
               </span>
-              <span className="font-bold text-stone-900">{accountName}</span>
+              <span className="font-bold text-text-main">{accountName}</span>
             </div>
             <div>
-              <span className="text-stone-500 block mb-0.5 font-medium">
+              <span className="text-text-tertiary block mb-0.5 font-medium">
                 Email
               </span>
-              <span className="font-bold text-stone-900 truncate block">
+              <span className="font-bold text-text-main truncate block">
                 {currentUser?.email}
               </span>
             </div>
             <div>
-              <span className="text-stone-500 block mb-0.5 font-medium">
+              <span className="text-text-tertiary block mb-0.5 font-medium">
                 {t("sellerworkspace.accountOverviewPage.telephone")}
               </span>
-              <span className="font-bold text-stone-900">
+              <span className="font-bold text-text-main">
                 {currentUser?.phone || "Non renseigné"}
               </span>
             </div>
             <div>
-              <span className="text-stone-500 block mb-0.5 font-medium">
+              <span className="text-text-tertiary block mb-0.5 font-medium">
                 Localisation
               </span>
-              <span className="font-bold text-stone-900">
+              <span className="font-bold text-text-main">
                 {currentUser?.postalCode ? `${currentUser.postalCode} ` : ""}
                 {currentUser?.city || activeMarket.name}
               </span>
@@ -624,7 +624,7 @@ export const AccountOverviewPage: React.FC = () => {
       {/* My Active Listings Widget */}
       <div className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs sm:p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm sm:text-base font-bold text-stone-900">
+          <h2 className="text-sm sm:text-base font-bold text-text-main">
             Mes dernières annonces ({myListings.length})
           </h2>
           <Link
@@ -657,12 +657,12 @@ export const AccountOverviewPage: React.FC = () => {
                     <div className="min-w-0">
                       <Link
                         to={`/annonce/${listing.id}`}
-                        className="font-bold text-xs sm:text-sm text-stone-900 hover:text-primary truncate block"
+                        className="font-bold text-xs sm:text-sm text-text-main hover:text-primary truncate block"
                       >
                         {listing.title}
                       </Link>
-                      <div className="flex items-center gap-2 text-xs text-stone-500 mt-0.5">
-                        <span className="font-bold text-stone-900">
+                      <div className="flex items-center gap-2 text-xs text-text-tertiary mt-0.5">
+                        <span className="font-bold text-text-main">
                           {formatPrice(listing.price, {
                             sourceCurrency: listing.currency,
                           })}
@@ -692,7 +692,7 @@ export const AccountOverviewPage: React.FC = () => {
             })}
           </div>
         ) : (
-          <div className="text-center py-8 text-stone-500 text-xs">
+          <div className="text-center py-8 text-text-tertiary text-xs">
             {t("sellerworkspace.accountOverviewPage.vousNAvezPasEncore")}
           </div>
         )}
@@ -708,12 +708,12 @@ export const AccountOverviewPage: React.FC = () => {
                 "sellerworkspace.accountOverviewPage.passezALaVitesseSuperieure",
               )}
             </div>
-            <h2 className="font-bold text-stone-900 text-sm sm:text-base">
+            <h2 className="font-bold text-text-main text-sm sm:text-base">
               {t(
                 "sellerworkspace.accountOverviewPage.vousVendezRegulierementEnTant",
               )}
             </h2>
-            <p className="text-xs text-stone-600">
+            <p className="text-xs text-text-supporting">
               {t(
                 "sellerworkspace.accountOverviewPage.profitezDUneBoutiqueDediee",
               )}

@@ -79,7 +79,7 @@ export const DROPDOWN_ITEM_CLASSES = {
   active: "bg-bg-subtle ring-1 ring-inset ring-primary-border",
   selected: "bg-primary-light text-primary font-bold",
   unselected:
-    "text-stone-700 hover:bg-bg-subtle hover:text-text-main font-medium",
+    "text-text-emphasis hover:bg-bg-subtle hover:text-text-main font-medium",
   disabled: "text-text-disabled cursor-not-allowed opacity-50",
 };
 
@@ -376,10 +376,12 @@ export function DropdownMenu<T extends string | number = string>({
           aria-controls={isOpen ? listboxId : undefined}
           aria-activedescendant={searchable ? undefined : activeDescendant}
           aria-label={ariaLabel}
-          className={`inline-flex items-center justify-between bg-bg-base hover:bg-bg-subtle border border-border-base text-stone-800 font-semibold ${CONTROL_MOTION_CLASS} cursor-pointer select-none focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-bg-base ${CONTROL_FOCUS_CLASS} ${
+          className={`inline-flex items-center justify-between bg-bg-base hover:bg-bg-subtle border border-border-base text-text-strong font-semibold ${CONTROL_MOTION_CLASS} cursor-pointer select-none focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-bg-base ${CONTROL_FOCUS_CLASS} ${
             fullWidth ? "w-full" : ""
           } ${
-            isOpen ? "border-primary ring-2 ring-primary/20 bg-bg-surface" : ""
+            isOpen
+              ? "border-primary ring-2 ring-primary-ring bg-bg-surface"
+              : ""
           } ${sizeClasses} ${triggerClassName}`}
         >
           <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 truncate">

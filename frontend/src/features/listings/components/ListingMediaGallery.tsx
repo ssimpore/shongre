@@ -105,7 +105,7 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
   if (!hasPhotos) {
     return (
       <div
-        className={`relative bg-stone-100 rounded-2xl border border-border-base aspect-16/10 flex flex-col items-center justify-center text-stone-500 gap-2 ${className}`}
+        className={`relative bg-surface-muted rounded-2xl border border-border-base aspect-16/10 flex flex-col items-center justify-center text-text-tertiary gap-2 ${className}`}
       >
         {overlayActions ? (
           <div
@@ -123,7 +123,7 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
 
   return (
     <div
-      className={`bg-white rounded-2xl border border-border-base overflow-hidden shadow-xs space-y-0 ${className}`}
+      className={`bg-bg-surface rounded-2xl border border-border-base overflow-hidden shadow-xs space-y-0 ${className}`}
       onKeyDown={handleKeyDown}
     >
       <span className="sr-only" role="status" aria-live="polite">
@@ -134,7 +134,7 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
       </span>
       {/* Main Large Viewport with Touch Gestures */}
       <div
-        className={`relative ${viewportAspectClassName} bg-stone-100 flex items-center justify-center overflow-hidden group select-none touch-pan-y`}
+        className={`relative ${viewportAspectClassName} bg-surface-muted flex items-center justify-center overflow-hidden group select-none touch-pan-y`}
         role="group"
         aria-label={t("listings.listingMediaGallery.galleryLabel", {
           total: photoList.length,
@@ -191,7 +191,7 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
                 handlePrev();
               }}
               aria-label={t("listings.listingMediaGallery.photoPrecedente")}
-              className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-control-md rounded-full bg-stone-900/75 hover:bg-stone-900 text-white flex items-center justify-center transition-all opacity-80 group-hover:opacity-100 cursor-pointer shadow-md focus:outline-none focus:ring-2 focus:ring-primary z-raised"
+              className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-control-md rounded-full bg-surface-inverse/75 hover:bg-surface-inverse text-text-inverse flex items-center justify-center transition-all opacity-80 group-hover:opacity-100 cursor-pointer shadow-md focus:outline-none focus:ring-2 focus:ring-primary z-raised"
             >
               <ChevronLeft className="w-icon-lg h-icon-lg" />
             </button>
@@ -202,7 +202,7 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
                 handleNext();
               }}
               aria-label={t("listings.listingMediaGallery.photoSuivante")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-control-md rounded-full bg-stone-900/75 hover:bg-stone-900 text-white flex items-center justify-center transition-all opacity-80 group-hover:opacity-100 cursor-pointer shadow-md focus:outline-none focus:ring-2 focus:ring-primary z-raised"
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-control-md rounded-full bg-surface-inverse/75 hover:bg-surface-inverse text-text-inverse flex items-center justify-center transition-all opacity-80 group-hover:opacity-100 cursor-pointer shadow-md focus:outline-none focus:ring-2 focus:ring-primary z-raised"
             >
               <ChevronRight className="w-icon-lg h-icon-lg" />
             </button>
@@ -218,7 +218,7 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
                 className={`h-1.5 rounded-full transition-all ${
                   safeActiveIndex === idx
                     ? "w-4 bg-primary"
-                    : "w-1.5 bg-white/60"
+                    : "w-1.5 bg-bg-surface/60"
                 }`}
               />
             ))}
@@ -227,7 +227,7 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
 
         {/* Bottom controls bar: Counter & Fullscreen trigger */}
         <div className="absolute bottom-3 inset-x-3 flex items-center justify-between pointer-events-none z-raised">
-          <span className="hidden sm:inline-flex bg-stone-900/80 backdrop-blur-md text-white text-xs px-3 py-1 rounded-full items-center gap-1.5 font-bold shadow-xs">
+          <span className="hidden sm:inline-flex bg-surface-inverse/80 backdrop-blur-md text-text-inverse text-xs px-3 py-1 rounded-full items-center gap-1.5 font-bold shadow-xs">
             <Camera className="w-icon-sm h-icon-sm" />
             <span>
               {safeActiveIndex + 1} / {photoList.length}
@@ -238,7 +238,7 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
             type="button"
             onClick={() => setIsLightboxOpen(true)}
             aria-label={t("listings.listingMediaGallery.agrandirEnPleinEcran")}
-            className="pointer-events-auto ml-auto bg-stone-900/80 hover:bg-stone-900 backdrop-blur-md text-white text-xs p-1.5 rounded-full flex items-center justify-center transition-colors cursor-pointer shadow-xs"
+            className="pointer-events-auto ml-auto bg-surface-inverse/80 hover:bg-surface-inverse backdrop-blur-md text-text-inverse text-xs p-1.5 rounded-full flex items-center justify-center transition-colors cursor-pointer shadow-xs"
           >
             <Maximize2 className="w-icon-md h-icon-md" />
           </button>
@@ -255,9 +255,9 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
               onClick={() => setActiveIndex(idx)}
               aria-label={`Afficher la photo ${idx + 1} sur ${photoList.length}`}
               aria-current={safeActiveIndex === idx ? "true" : undefined}
-              className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border-2 transition-all shrink-0 cursor-pointer bg-stone-100 ${
+              className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border-2 transition-all shrink-0 cursor-pointer bg-surface-muted ${
                 safeActiveIndex === idx
-                  ? "border-primary ring-2 ring-primary/20 scale-95 opacity-100"
+                  ? "border-primary ring-2 ring-primary-ring scale-95 opacity-100"
                   : "border-transparent opacity-60 hover:opacity-100"
               }`}
             >
@@ -281,13 +281,13 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
           aria-modal="true"
           aria-labelledby={lightboxTitleId}
           tabIndex={-1}
-          className="fixed inset-0 z-modal bg-black/95 flex flex-col justify-between p-4 sm:p-6 backdrop-blur-md animate-fade-in"
+          className="fixed inset-0 z-modal bg-surface-overlay-deep/95 flex flex-col justify-between p-4 sm:p-6 backdrop-blur-md animate-fade-in"
         >
           {/* Top bar */}
-          <div className="flex items-center justify-between text-white z-raised">
+          <div className="flex items-center justify-between text-text-inverse z-raised">
             <span
               id={lightboxTitleId}
-              className="text-xs sm:text-sm font-bold text-stone-300"
+              className="text-xs sm:text-sm font-bold text-text-inverse-muted"
             >
               {title} ({safeActiveIndex + 1} / {photoList.length})
             </span>
@@ -295,7 +295,7 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
               type="button"
               onClick={() => setIsLightboxOpen(false)}
               aria-label={t("listings.listingMediaGallery.fermerLePleinEcran")}
-              className="p-2 rounded-full bg-stone-800/80 hover:bg-stone-700 text-white transition-colors cursor-pointer"
+              className="p-2 rounded-full bg-surface-inverse-hover/80 hover:bg-surface-inverse-muted text-text-inverse transition-colors cursor-pointer"
             >
               <X className="w-icon-xl h-icon-xl" />
             </button>
@@ -317,7 +317,7 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
                   type="button"
                   onClick={handlePrev}
                   aria-label={t("listings.listingMediaGallery.photoPrecedente")}
-                  className="absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 w-12 h-control-lg rounded-full bg-stone-800/80 hover:bg-stone-700 text-white flex items-center justify-center transition-colors cursor-pointer shadow-lg"
+                  className="absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 w-12 h-control-lg rounded-full bg-surface-inverse-hover/80 hover:bg-surface-inverse-muted text-text-inverse flex items-center justify-center transition-colors cursor-pointer shadow-lg"
                 >
                   <ChevronLeft className="w-icon-xl h-icon-xl" />
                 </button>
@@ -325,7 +325,7 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
                   type="button"
                   onClick={handleNext}
                   aria-label={t("listings.listingMediaGallery.photoSuivante")}
-                  className="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 w-12 h-control-lg rounded-full bg-stone-800/80 hover:bg-stone-700 text-white flex items-center justify-center transition-colors cursor-pointer shadow-lg"
+                  className="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 w-12 h-control-lg rounded-full bg-surface-inverse-hover/80 hover:bg-surface-inverse-muted text-text-inverse flex items-center justify-center transition-colors cursor-pointer shadow-lg"
                 >
                   <ChevronRight className="w-icon-xl h-icon-xl" />
                 </button>
@@ -343,7 +343,7 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
                   onClick={() => setActiveIndex(idx)}
                   className={`w-14 h-14 rounded-lg overflow-hidden border-2 transition-all shrink-0 cursor-pointer ${
                     safeActiveIndex === idx
-                      ? "border-primary ring-2 ring-primary/40"
+                      ? "border-primary ring-2 ring-primary-ring-strong"
                       : "border-transparent opacity-50 hover:opacity-90"
                   }`}
                 >

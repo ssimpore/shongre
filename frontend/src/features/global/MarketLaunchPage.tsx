@@ -11,7 +11,7 @@ export function MarketLaunchPage({
   gatewayHref: string;
 }) {
   return (
-    <div className="flex min-h-screen flex-col bg-white text-stone-950">
+    <div className="flex min-h-screen flex-col bg-bg-surface text-text-deep">
       <header className="border-b border-border-base">
         <div className="mx-auto flex h-16 w-full max-w-page items-center justify-between px-4 sm:px-6 lg:px-8">
           <a
@@ -32,24 +32,24 @@ export function MarketLaunchPage({
           <h1 className="mt-6 text-3xl font-bold tracking-tight sm:text-5xl">
             {country.launchContent.title}
           </h1>
-          <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-stone-600">
+          <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-text-supporting">
             {country.launchContent.description}
           </p>
           <dl className="mx-auto mt-8 grid max-w-xl grid-cols-2 border-y border-border-base py-5 text-left text-xs sm:grid-cols-4">
             <div>
-              <dt className="text-stone-500">Pays</dt>
+              <dt className="text-text-tertiary">Pays</dt>
               <dd className="mt-1 font-bold">{country.name}</dd>
             </div>
             <div>
-              <dt className="text-stone-500">Langue</dt>
+              <dt className="text-text-tertiary">Langue</dt>
               <dd className="mt-1 font-bold">{country.defaultLocale}</dd>
             </div>
             <div>
-              <dt className="text-stone-500">Devise</dt>
+              <dt className="text-text-tertiary">Devise</dt>
               <dd className="mt-1 font-bold">{country.currency}</dd>
             </div>
             <div>
-              <dt className="text-stone-500">Fuseau</dt>
+              <dt className="text-text-tertiary">Fuseau</dt>
               <dd className="mt-1 font-bold">{country.timezone}</dd>
             </div>
           </dl>

@@ -145,7 +145,7 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({
     >
       <div className="space-y-5">
         {/* Actions bar */}
-        <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-stone-50 rounded-xl border border-border-subtle">
+        <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-surface-soft rounded-xl border border-border-subtle">
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
@@ -174,7 +174,7 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({
               onChange={handleFileUpload}
               className="hidden"
             />
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-stone-900 hover:bg-stone-800 text-white font-bold text-xs transition-colors shadow-xs">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-inverse hover:bg-surface-inverse-hover text-text-inverse font-bold text-xs transition-colors shadow-xs">
               <Upload className="w-icon-sm h-icon-sm" />
               {t("sellerworkspace.bulkImportModal.parcourirUnFichierCsv")}
             </span>
@@ -184,7 +184,7 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({
         {/* CSV preview table */}
         {parsedItems.length > 0 ? (
           <div className="space-y-3">
-            <div className="flex items-center justify-between text-xs text-stone-600 font-bold">
+            <div className="flex items-center justify-between text-xs text-text-supporting font-bold">
               <span>
                 {t("sellerworkspace.bulkImportModal.rowsDetected", {
                   total: parsedItems.length,
@@ -201,19 +201,21 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({
               )}
             </div>
 
-            <div className="max-h-60 overflow-y-auto border border-border-base rounded-xl divide-y divide-border-subtle text-xs bg-white">
+            <div className="max-h-60 overflow-y-auto border border-border-base rounded-xl divide-y divide-border-subtle text-xs bg-bg-surface">
               {parsedItems.map((item, idx) => (
                 <div
                   key={item.id}
                   className={`p-2.5 flex items-center justify-between gap-3 ${
-                    !item.isValid ? "bg-danger-surface/50" : "hover:bg-stone-50"
+                    !item.isValid
+                      ? "bg-danger-surface/50"
+                      : "hover:bg-surface-soft"
                   }`}
                 >
                   <div className="flex items-center gap-2 min-w-0">
-                    <span className="font-mono text-stone-400 text-micro w-4">
+                    <span className="font-mono text-text-inverse-subtle text-micro w-4">
                       #{idx + 1}
                     </span>
-                    <span className="font-bold text-stone-900 truncate max-w-xs">
+                    <span className="font-bold text-text-main truncate max-w-xs">
                       {item.title}
                     </span>
                     <Badge variant="neutral" size="sm">
@@ -224,7 +226,7 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({
                   </div>
 
                   <div className="flex items-center gap-3 shrink-0">
-                    <span className="font-bold text-stone-900">
+                    <span className="font-bold text-text-main">
                       {formatMoney(item.price)}
                     </span>
                     {item.isValid ? (
@@ -242,12 +244,12 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({
             </div>
           </div>
         ) : (
-          <div className="p-8 border-2 border-dashed border-stone-200 rounded-2xl text-center space-y-2 bg-stone-50/50">
-            <FileSpreadsheet className="w-10 h-10 mx-auto text-stone-400" />
-            <h4 className="font-bold text-stone-800 text-sm">
+          <div className="p-8 border-2 border-dashed border-border-disabled rounded-2xl text-center space-y-2 bg-surface-soft/50">
+            <FileSpreadsheet className="w-10 h-10 mx-auto text-text-inverse-subtle" />
+            <h4 className="font-bold text-text-strong text-sm">
               {t("sellerworkspace.bulkImportModal.deposezVotreFichierCsvIci")}
             </h4>
-            <p className="text-xs text-stone-500 max-w-sm mx-auto">
+            <p className="text-xs text-text-tertiary max-w-sm mx-auto">
               {t(
                 "sellerworkspace.bulkImportModal.utilisezNotreModeleAvecSeparateur",
               )}

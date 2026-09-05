@@ -1,30 +1,12 @@
 #!/usr/bin/env node
 /**
- * Guards the semantic status tokens declared in src/index.css.
+ * Enforces the canonical semantic design-token boundary.
  *
- * The design system defines success / warning / danger / info with contrast
- * tuned per surface, and index.css states the rule outright: "Use these instead
- * of reaching into raw emerald/amber/red/sky palettes so the same state always
- * reads the same way across cards, tables and admin."
- *
- * Before this guard existed the codebase used raw palettes 1,230 times against
- * 46 token usages — a 27:1 ratio. "Success" appeared as 26 distinct emerald
- * utilities across 11 shades, and "danger" was split across two hue families
- * (red *and* rose), so the same error state changed colour by screen.
- *
- * What is intentionally still allowed, and why:
- *   - amber/yellow accents (`text-amber-400/500`, `fill-amber-*`, solid amber
- *     fills): these carry star ratings and the boost/premium accent, which are
- *     not warnings. Mapping them to --color-warning would relabel "featured"
- *     as "problem".
- *   - light text shades (100–400) and dark fills (800–950): these sit on
- *     inverted panels where a single token cannot hold contrast.
- *   - indigo / purple: categorical role and state identity, not status.
- *
- * Every allowed palette-shaped utility still has to name an exact colour
- * declared by @shongre/design-tokens. Tailwind's defaults are not an implicit
- * escape hatch: Guard 2c below rejects any shade the canonical package does
- * not own.
+ * Application code may describe meaning (`text-muted`, `surface-inverse`,
+ * `rating-fill`, `staff-surface`) but may never request a hue, shade, literal
+ * colour, or Tailwind default. Raw primitives remain private to
+ * `@shongre/design-tokens`; official flags and external-provider marks are
+ * exposed only through that package's typed artwork registries.
  *
  * Run: node scripts/check-design-tokens.mjs
  */
@@ -44,10 +26,23 @@ import { join, relative } from "path";
  * `@source` directives.
  */
 const ROOTS = ["app", "src", "../packages/ui/src", "../packages/features/src"];
+const COLOR_ASSERTION_ROOTS = [
+  "e2e",
+  "../packages/ui/tests",
+  "../packages/features/tests",
+];
 const THEME_SOURCE = "../packages/design-tokens/dist/tokens.css";
 
 /** Utility+shade combinations that have an exact semantic token equivalent. */
 const BANNED = [
+  {
+    re: /\b(?:[a-z0-9-]+:)*(?:bg|text|border|ring|outline|divide|fill|stroke|shadow|accent|caret|decoration|placeholder|from|via|to)(?:-[trblxyse])?-(?:(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-(?:50|100|200|300|400|500|600|700|800|900|950)|white|black|orange|darkorange|orangered)(?:\/[0-9]+)?\b/,
+    hint: "a semantic role such as text-muted, bg-surface-inverse, border-base, rating-fill, or staff-surface",
+  },
+  {
+    re: /\b(?:[a-z0-9-]+:)*(?:bg|text|border|ring|outline|divide|fill|stroke|shadow|accent|caret|decoration|placeholder|from|via|to)(?:-[trblxyse])?-primary(?:-[a-z0-9-]+)?\/[0-9]+\b/,
+    hint: "an explicit semantic orange surface, border, ring, overlay, or shadow token",
+  },
   {
     re: /\b(?:[a-z-]+:)*bg-(emerald|green|red|rose|amber|yellow|sky|blue)-(?:50|100)\b/,
     hint: "bg-{success|warning|danger|info}-surface",
@@ -252,9 +247,6 @@ const customUtilities = new Set(
   Array.from(appCss.matchAll(/@utility\s+([a-z0-9-]+)/gi), (m) => m[1]),
 );
 
-/** Palette names which Tailwind would otherwise resolve from its own defaults. */
-const TAILWIND_PALETTE =
-  /^(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)(?:-\d{2,3})?$/;
 const COLOR_KEYWORDS = new Set([
   "transparent",
   "current",
@@ -332,18 +324,6 @@ const colorTokens = declaredIn(bothCss, "color");
 const containerTokens = declaredIn(bothCss, "container");
 
 const isColorValue = (v) => colorTokens.has(v) || COLOR_KEYWORDS.has(v);
-
-const RAW_TAILWIND_COLOR_CLASS = new RegExp(
-  `(?:^|[\\s"'\\x60{])(?:[a-z0-9-]+:)*(?:${COLOR_UTILITIES})(?:-[trblxyse])?-((?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-\\d{2,3})(?:/[^\\s"'\\x60]+)?(?=$|[\\s"'\\x60}])`,
-  "g",
-);
-
-function findUnownedTailwindColors(line) {
-  return Array.from(
-    line.matchAll(RAW_TAILWIND_COLOR_CLASS),
-    (match) => match[1],
-  ).filter((token) => TAILWIND_PALETTE.test(token) && !colorTokens.has(token));
-}
 
 /**
  * `bg-*` is shared with gradients, sizing, clipping and repetition, none of
@@ -445,7 +425,27 @@ function walk(dir, out = []) {
 
 const violations = [];
 const undeclared = [];
+const colorSourceViolations = [];
 const ALL_FILES = ROOTS.flatMap((root) => walk(root));
+const COLOR_ASSERTION_FILES = COLOR_ASSERTION_ROOTS.flatMap((root) =>
+  walk(root),
+);
+
+for (const file of COLOR_ASSERTION_FILES) {
+  readFileSync(file, "utf8")
+    .split("\n")
+    .forEach((line, i) => {
+      const match = line.match(BANNED[0].re);
+      if (match) {
+        violations.push({
+          file: relative(".", file),
+          line: i + 1,
+          found: match[0],
+          hint: BANNED[0].hint,
+        });
+      }
+    });
+}
 
 /* ---------------------------------------------------------------------------
    Open Graph image routes are not a web surface.
@@ -558,6 +558,26 @@ if (/@fontsource|font-(?:inter|roboto)|typeface-/.test(frontendPackage)) {
   });
 }
 for (const file of ALL_FILES) {
+  const relativeFile = relative(".", file);
+  const source = readFileSync(file, "utf8");
+  const isTest = /\.(?:test|spec)\.[cm]?[jt]sx?$/.test(file);
+  if (!isTest) {
+    const rawLiteral = source.match(
+      /#[\da-f]{3,8}\b|\b(?:rgba?|hsla?|oklch)\s*\(|\b(?:color|background|backgroundColor|borderColor|outlineColor|fill|stroke)\s*:\s*["']?(?:orange|darkorange|orangered)\b/i,
+    );
+    const rawPaletteApi = source.match(
+      /\b(?:nativePalette\b|palette\s*\[|themeColors\s*\[\s*["'](?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|white|black)|--color-(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|white|black)\b)/,
+    );
+    if (rawLiteral || rawPaletteApi) {
+      const match = rawLiteral ?? rawPaletteApi;
+      const line = source.slice(0, match.index).split("\n").length;
+      colorSourceViolations.push({
+        file: relativeFile,
+        line,
+        found: match[0],
+      });
+    }
+  }
   if (isImageGenerationRoute(file)) continue;
   const lines = readFileSync(file, "utf8").split("\n");
   lines.forEach((line, i) => {
@@ -572,9 +592,6 @@ for (const file of ALL_FILES) {
         });
     }
     for (const token of findUndeclaredTokens(line)) {
-      undeclared.push({ file: relative(".", file), line: i + 1, token });
-    }
-    for (const token of findUnownedTailwindColors(line)) {
       undeclared.push({ file: relative(".", file), line: i + 1, token });
     }
     if (!/\.test\.tsx?$/.test(file) && !file.endsWith(".css"))
@@ -688,6 +705,21 @@ if (contrastFailures.length > 0) {
   console.error("");
 }
 
+if (colorSourceViolations.length > 0) {
+  console.error(
+    `\n✘ design tokens: ${colorSourceViolations.length} raw colour source escape hatch(es).\n`,
+  );
+  console.error(
+    "  Runtime colour values must enter through a typed semantic export from @shongre/design-tokens.\n",
+  );
+  for (const violation of colorSourceViolations.slice(0, 40)) {
+    console.error(
+      `  ${violation.file}:${violation.line}\n      ${violation.found}`,
+    );
+  }
+  console.error("");
+}
+
 if (fontArchitectureViolations.length > 0) {
   console.error(
     `\n✘ design tokens: ${fontArchitectureViolations.length} font architecture violation(s).\n`,
@@ -763,6 +795,7 @@ if (
   violations.length === 0 &&
   undeclared.length === 0 &&
   namespaceMisses.length === 0 &&
+  colorSourceViolations.length === 0 &&
   inlineTypography.length === 0 &&
   fontArchitectureViolations.length === 0 &&
   contrastFailures.length === 0
@@ -778,6 +811,7 @@ if (
   (inlineTypography.length > 0 ||
     fontArchitectureViolations.length > 0 ||
     namespaceMisses.length > 0 ||
+    colorSourceViolations.length > 0 ||
     contrastFailures.length > 0)
 )
   process.exit(1);

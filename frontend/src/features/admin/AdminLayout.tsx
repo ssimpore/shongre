@@ -313,18 +313,18 @@ export const AdminLayout: React.FC = () => {
       <SkipLink />
       <AppScrollRestoration />
       {/* Top Internal Staff Bar */}
-      <header className="bg-stone-900 text-text-inverse sticky top-0 z-header border-b border-stone-800 shadow-sm">
+      <header className="bg-surface-inverse text-text-inverse sticky top-0 z-header border-b border-border-inverse shadow-sm">
         <Container
           width="page"
           className="h-14 flex items-center justify-between gap-3"
         >
           <div className="flex items-center gap-3 min-w-0">
             <Link to="/admin" className="flex items-center gap-2 group min-w-0">
-              <BrandIcon variant="mono-white" size="compact" decorative />
+              <BrandIcon variant="primary" size="compact" decorative />
               <div className="flex flex-col min-w-0">
                 <span className="text-sm font-bold tracking-tight flex items-center gap-1.5 min-w-0">
                   <span className="truncate">Shongre Console</span>
-                  <span className="hidden sm:inline text-micro bg-stone-800 text-stone-300 font-mono px-2 py-1 rounded-sm border border-stone-700 shrink-0">
+                  <span className="hidden sm:inline text-micro bg-surface-inverse-hover text-text-inverse-muted font-mono px-2 py-1 rounded-sm border border-border-inverse-subtle shrink-0">
                     v2.4
                   </span>
                 </span>
@@ -336,8 +336,8 @@ export const AdminLayout: React.FC = () => {
             </span>
 
             {/* Scope pill */}
-            <div className="hidden md:flex items-center gap-1.5 bg-stone-800/80 border border-stone-700 text-stone-300 text-xs px-2.5 py-1 rounded-pill">
-              <Globe className="w-icon-sm h-icon-sm text-sky-400" />
+            <div className="hidden md:flex items-center gap-1.5 bg-surface-inverse-hover/80 border border-border-inverse-subtle text-text-inverse-muted text-xs px-2.5 py-1 rounded-pill">
+              <Globe className="w-icon-sm h-icon-sm text-info-on-inverse" />
               <span>{marketLabel}</span>
             </div>
           </div>
@@ -346,7 +346,7 @@ export const AdminLayout: React.FC = () => {
             <div
               className={`hidden items-center gap-1.5 rounded-control border px-2 py-1 text-micro font-bold uppercase tracking-wide sm:inline-flex ${
                 mode === "demo"
-                  ? "border-primary/40 bg-primary/15 text-orange-100"
+                  ? "border-primary-on-dark-border bg-primary-overlay text-primary-on-inverse-soft"
                   : "border-success-border bg-success-surface text-success"
               }`}
             >
@@ -371,10 +371,10 @@ export const AdminLayout: React.FC = () => {
                 }
                 alt={accountName}
                 sizes="28px"
-                className="w-7 h-7 rounded-pill object-cover border border-stone-700 shrink-0"
+                className="w-7 h-7 rounded-pill object-cover border border-border-inverse-subtle shrink-0"
               />
               <div className="hidden lg:flex flex-col text-right">
-                <span className="text-xs font-bold text-stone-100 leading-tight">
+                <span className="text-xs font-bold text-text-inverse-soft leading-tight">
                   {accountName}
                 </span>
                 <span className="text-micro text-text-disabled font-medium">
@@ -401,7 +401,7 @@ export const AdminLayout: React.FC = () => {
             <Link
               to={routes.home()}
               aria-label={t("admin.adminLayout.retourALaPlaceDe")}
-              className="shrink-0 inline-flex items-center gap-2 h-8 px-3 rounded-control text-xs font-bold bg-stone-800 text-stone-200 border border-stone-700 hover:bg-stone-700 hover:text-text-inverse transition-colors"
+              className="shrink-0 inline-flex items-center gap-2 h-8 px-3 rounded-control text-xs font-bold bg-surface-inverse-hover text-text-inverse-faint border border-border-inverse-subtle hover:bg-surface-inverse-muted hover:text-text-inverse transition-colors"
             >
               <ArrowLeft className="w-icon-sm h-icon-sm" />
               <span className="hidden md:inline">
@@ -438,7 +438,7 @@ export const AdminLayout: React.FC = () => {
                 <LayoutDashboard className="w-icon-md h-icon-md text-primary shrink-0" />
               )}
               <span className="flex flex-col items-start min-w-0">
-                <span className="text-micro font-bold uppercase tracking-wider text-stone-500 leading-none">
+                <span className="text-micro font-bold uppercase tracking-wider text-text-tertiary leading-none">
                   Console
                 </span>
                 <span className="text-xs font-bold text-text-main truncate max-w-full">
@@ -447,7 +447,7 @@ export const AdminLayout: React.FC = () => {
               </span>
             </span>
             <ChevronDown
-              className={`w-icon-md h-icon-md text-stone-500 shrink-0 transition-transform ${
+              className={`w-icon-md h-icon-md text-text-tertiary shrink-0 transition-transform ${
                 isSectionMenuOpen ? "rotate-180" : ""
               }`}
             />
@@ -468,7 +468,7 @@ export const AdminLayout: React.FC = () => {
                     value={navQuery}
                     onChange={(event) => setNavQuery(event.target.value)}
                     placeholder="Rechercher une section"
-                    className="h-control-md w-full rounded-control border border-border-base bg-bg-subtle pl-9 pr-3 text-xs outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                    className="h-control-md w-full rounded-control border border-border-base bg-bg-subtle pl-9 pr-3 text-xs outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring"
                   />
                 </label>
               </div>
@@ -493,7 +493,7 @@ export const AdminLayout: React.FC = () => {
                             `flex items-center gap-2.5 px-3.5 py-2.5 text-xs font-semibold transition-colors ${
                               isActive
                                 ? "bg-primary-light text-primary font-bold"
-                                : "text-stone-700 hover:bg-bg-subtle"
+                                : "text-text-emphasis hover:bg-bg-subtle"
                             }`
                           }
                         >
@@ -528,7 +528,7 @@ export const AdminLayout: React.FC = () => {
                 value={navQuery}
                 onChange={(event) => setNavQuery(event.target.value)}
                 placeholder="Rechercher"
-                className="h-control-md w-full rounded-control border border-border-base bg-bg-subtle pl-9 pr-3 text-xs outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                className="h-control-md w-full rounded-control border border-border-base bg-bg-subtle pl-9 pr-3 text-xs outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring"
               />
             </label>
 
@@ -545,7 +545,7 @@ export const AdminLayout: React.FC = () => {
                         key={`recent-${item.to}`}
                         to={item.to}
                         end={item.end}
-                        className="motion-interactive flex items-center gap-2.5 rounded-control px-3 py-2 text-xs font-medium text-stone-700 hover:bg-bg-subtle hover:text-text-main"
+                        className="motion-interactive flex items-center gap-2.5 rounded-control px-3 py-2 text-xs font-medium text-text-emphasis hover:bg-bg-subtle hover:text-text-main"
                       >
                         <Icon className="h-4 w-4 shrink-0" />
                         <span className="truncate">{item.label}</span>
@@ -575,7 +575,7 @@ export const AdminLayout: React.FC = () => {
                             `motion-interactive flex items-center gap-2.5 rounded-control px-3 py-2.5 text-xs font-medium ${
                               isActive
                                 ? "bg-primary text-text-inverse font-bold shadow-xs"
-                                : "text-stone-700 hover:bg-stone-100 hover:text-text-main"
+                                : "text-text-emphasis hover:bg-surface-muted hover:text-text-main"
                             }`
                           }
                         >
@@ -594,8 +594,8 @@ export const AdminLayout: React.FC = () => {
               )}
             </nav>
 
-            <div className="mt-6 pt-4 border-t border-stone-100 px-3">
-              <div className="text-xs text-stone-500 mb-2">
+            <div className="mt-6 pt-4 border-t border-border-soft px-3">
+              <div className="text-xs text-text-tertiary mb-2">
                 {t("admin.adminLayout.statutDeSession")}
               </div>
               <div className="flex items-center gap-2 text-xs text-success font-semibold bg-success-surface px-2.5 py-1.5 rounded-md border border-success-border">

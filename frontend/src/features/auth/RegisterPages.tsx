@@ -78,7 +78,7 @@ export const RegisterChoicePage: React.FC = () => {
   return (
     // 3.5rem is the FocusedLayout header. The brand mark it already shows is
     // why there is no logo repeated here.
-    <div className="min-h-auth-shell-min flex flex-col justify-center py-10 sm:py-14 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-stone-50/70 via-white to-stone-50/50">
+    <div className="min-h-auth-shell-min flex flex-col justify-center py-10 sm:py-14 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-surface-soft/70 via-bg-surface to-surface-soft/50">
       <div className="w-full max-w-2xl mx-auto">
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-light text-primary text-xs font-bold mb-3">
@@ -86,17 +86,17 @@ export const RegisterChoicePage: React.FC = () => {
             <span>Inscription gratuite</span>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-bold text-stone-900 tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-bold text-text-main tracking-tight">
             {t("auth.registerPages.creerVotreCompteShongre")}
           </h1>
-          <p className="mt-2 text-xs sm:text-sm text-stone-600 max-w-md mx-auto">
+          <p className="mt-2 text-xs sm:text-sm text-text-supporting max-w-md mx-auto">
             {t("auth.registerPages.rejoignezLaCommunauteDeCommerce")}
           </p>
         </div>
 
-        <div className="bg-white rounded-2xl border border-stone-200/90 shadow-xl shadow-stone-200/40 p-6 sm:p-8 space-y-6">
+        <div className="bg-bg-surface rounded-2xl border border-border-disabled/90 shadow-xl shadow-border-disabled/40 p-6 sm:p-8 space-y-6">
           <div>
-            <label className="block text-xs font-semibold text-stone-900 uppercase tracking-wider mb-3">
+            <label className="block text-xs font-semibold text-text-main uppercase tracking-wider mb-3">
               {t("auth.registerPages.1SelectionnezVotreProfilD")}
             </label>
             <AccountTypeSelector
@@ -105,8 +105,8 @@ export const RegisterChoicePage: React.FC = () => {
             />
           </div>
 
-          <div className="pt-4 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-stone-100">
-            <div className="text-xs text-stone-500 text-center sm:text-left">
+          <div className="pt-4 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-border-soft">
+            <div className="text-xs text-text-tertiary text-center sm:text-left">
               Vous avez déjà un compte ?{" "}
               <Link
                 to={routes.auth.login(returnTo)}
@@ -133,10 +133,10 @@ export const RegisterChoicePage: React.FC = () => {
         </div>
 
         {/* FAQ note */}
-        <div className="mt-6 p-4 rounded-xl bg-stone-100/60 border border-stone-200 text-xs text-stone-600 flex items-start gap-3">
+        <div className="mt-6 p-4 rounded-xl bg-surface-muted/60 border border-border-disabled text-xs text-text-supporting flex items-start gap-3">
           <ShieldCheck className="w-icon-lg h-icon-lg text-success shrink-0 mt-0.5" />
           <div>
-            <strong className="text-stone-900">
+            <strong className="text-text-main">
               {t("auth.registerPages.evolutionDeCompteSouple")}
             </strong>{" "}
             Vous commencez en tant que particulier et souhaitez ouvrir une
@@ -245,7 +245,7 @@ export const RegisterIndividualPage: React.FC = () => {
         <div>
           <label
             htmlFor="reg-name"
-            className="block text-xs font-semibold text-stone-800 mb-1.5"
+            className="block text-xs font-semibold text-text-strong mb-1.5"
           >
             {t("auth.registerPages.nomEtPrenomOuPseudonyme")}
             <span className="text-primary">*</span>
@@ -259,16 +259,16 @@ export const RegisterIndividualPage: React.FC = () => {
               placeholder="ex: Thomas Laurent"
               required
               autoComplete="name"
-              className="w-full pl-9 pr-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
+              className="w-full pl-9 pr-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
             />
-            <User className="w-icon-md h-icon-md text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <User className="w-icon-md h-icon-md text-text-inverse-subtle absolute left-3 top-1/2 -translate-y-1/2" />
           </div>
         </div>
 
         <div>
           <label
             htmlFor="reg-email"
-            className="block text-xs font-semibold text-stone-800 mb-1.5"
+            className="block text-xs font-semibold text-text-strong mb-1.5"
           >
             Adresse email <span className="text-primary">*</span>
           </label>
@@ -281,9 +281,9 @@ export const RegisterIndividualPage: React.FC = () => {
               placeholder="thomas.laurent@exemple.fr"
               required
               autoComplete="email"
-              className="w-full pl-9 pr-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
+              className="w-full pl-9 pr-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
             />
-            <Mail className="w-icon-md h-icon-md text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <Mail className="w-icon-md h-icon-md text-text-inverse-subtle absolute left-3 top-1/2 -translate-y-1/2" />
           </div>
         </div>
 
@@ -291,7 +291,7 @@ export const RegisterIndividualPage: React.FC = () => {
           <div>
             <label
               htmlFor="reg-country"
-              className="block text-xs font-semibold text-stone-800 mb-1.5"
+              className="block text-xs font-semibold text-text-strong mb-1.5"
             >
               Pays <span className="text-primary">*</span>
             </label>
@@ -312,7 +312,7 @@ export const RegisterIndividualPage: React.FC = () => {
           <div>
             <label
               htmlFor="reg-code-postal"
-              className="block text-xs font-semibold text-stone-800 mb-1.5"
+              className="block text-xs font-semibold text-text-strong mb-1.5"
             >
               Code Postal <span className="text-primary">*</span>
             </label>
@@ -323,14 +323,14 @@ export const RegisterIndividualPage: React.FC = () => {
               onChange={(e) => setPostalCode(e.target.value)}
               placeholder={market.postalCodePlaceholder}
               required
-              className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
+              className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
             />
           </div>
 
           <div>
             <label
               htmlFor="reg-ville"
-              className="block text-xs font-semibold text-stone-800 mb-1.5"
+              className="block text-xs font-semibold text-text-strong mb-1.5"
             >
               Ville <span className="text-primary">*</span>
             </label>
@@ -341,7 +341,7 @@ export const RegisterIndividualPage: React.FC = () => {
               onChange={(e) => setCity(e.target.value)}
               placeholder="ex: Paris"
               required
-              className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
+              className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
             />
           </div>
         </div>
@@ -358,14 +358,14 @@ export const RegisterIndividualPage: React.FC = () => {
         </div>
 
         {/* Consents */}
-        <div className="space-y-2.5 pt-2 border-t border-stone-100">
-          <label className="flex items-start gap-2 text-xs text-stone-700 cursor-pointer select-none">
+        <div className="space-y-2.5 pt-2 border-t border-border-soft">
+          <label className="flex items-start gap-2 text-xs text-text-emphasis cursor-pointer select-none">
             <input
               type="checkbox"
               checked={termsAccepted}
               onChange={(e) => setTermsAccepted(e.target.checked)}
               required
-              className="w-4 h-4 mt-0.5 rounded border-stone-300 text-primary focus:ring-primary shrink-0"
+              className="w-4 h-4 mt-0.5 rounded border-border-prominent text-primary focus:ring-primary shrink-0"
             />
             <span>
               J'ai lu et j'accepte les{" "}
@@ -388,12 +388,12 @@ export const RegisterIndividualPage: React.FC = () => {
             </span>
           </label>
 
-          <label className="flex items-start gap-2 text-xs text-stone-600 cursor-pointer select-none">
+          <label className="flex items-start gap-2 text-xs text-text-supporting cursor-pointer select-none">
             <input
               type="checkbox"
               checked={marketingConsent}
               onChange={(e) => setMarketingConsent(e.target.checked)}
-              className="w-4 h-4 mt-0.5 rounded border-stone-300 text-primary focus:ring-primary shrink-0"
+              className="w-4 h-4 mt-0.5 rounded border-border-prominent text-primary focus:ring-primary shrink-0"
             />
             <span>{t("auth.registerPages.jeSouhaiteRecevoirParEmail")}</span>
           </label>
@@ -557,10 +557,10 @@ export const RegisterProPage: React.FC = () => {
 
   return (
     // 3.5rem is the FocusedLayout header, which already carries the brand mark.
-    <div className="min-h-auth-shell-min flex flex-col justify-center py-10 sm:py-14 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-stone-50/70 via-white to-stone-50/50">
+    <div className="min-h-auth-shell-min flex flex-col justify-center py-10 sm:py-14 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-surface-soft/70 via-bg-surface to-surface-soft/50">
       <div className="w-full max-w-xl mx-auto">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-stone-900 text-white text-xs font-bold mb-3">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-inverse text-text-inverse text-xs font-bold mb-3">
             <Briefcase className="w-icon-sm h-icon-sm" />
             <span>
               {isFacturationRegistration
@@ -569,12 +569,12 @@ export const RegisterProPage: React.FC = () => {
             </span>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-bold text-stone-900 tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-bold text-text-main tracking-tight">
             {isFacturationRegistration
               ? "Créez votre espace Facturation"
               : t("auth.registerPages.ouvrirUnCompteProfessionnel")}
           </h1>
-          <p className="mt-2 text-xs sm:text-sm text-stone-600 max-w-md mx-auto">
+          <p className="mt-2 text-xs sm:text-sm text-text-supporting max-w-md mx-auto">
             {isFacturationRegistration
               ? "Un compte Shongre partagé, une organisation et uniquement les outils de facturation dont vous avez besoin."
               : t("auth.registerPages.accedezALaVitrineOfficielle")}
@@ -587,18 +587,18 @@ export const RegisterProPage: React.FC = () => {
             className={`flex items-center gap-1.5 ${step === 1 ? "text-primary" : "text-success"}`}
           >
             <span
-              className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${step === 1 ? "bg-primary text-white" : "bg-success-surface text-success"}`}
+              className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${step === 1 ? "bg-primary text-text-inverse" : "bg-success-surface text-success"}`}
             >
               {step > 1 ? <Check className="w-icon-sm h-icon-sm" /> : "1"}
             </span>
             <span>{t("auth.registerPages.identiteDuGerant")}</span>
           </div>
-          <ChevronRight className="w-icon-md h-icon-md text-stone-300" />
+          <ChevronRight className="w-icon-md h-icon-md text-text-inverse-muted" />
           <div
-            className={`flex items-center gap-1.5 ${step === 2 ? "text-stone-950 font-bold" : "text-stone-500"}`}
+            className={`flex items-center gap-1.5 ${step === 2 ? "text-text-deep font-bold" : "text-text-tertiary"}`}
           >
             <span
-              className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${step === 2 ? "bg-stone-900 text-white" : "bg-stone-200 text-stone-600"}`}
+              className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${step === 2 ? "bg-surface-inverse text-text-inverse" : "bg-surface-disabled text-text-supporting"}`}
             >
               2
             </span>
@@ -606,7 +606,7 @@ export const RegisterProPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-stone-200/90 shadow-xl shadow-stone-200/40 p-6 sm:p-8">
+        <div className="bg-bg-surface rounded-2xl border border-border-disabled/90 shadow-xl shadow-border-disabled/40 p-6 sm:p-8">
           {errorMessage && (
             <div className="mb-5 p-3.5 rounded-xl bg-danger-surface border border-danger-border text-xs font-semibold text-danger flex items-start gap-2.5">
               <AlertCircle className="w-icon-md h-icon-md text-danger shrink-0 mt-0.5" />
@@ -620,7 +620,7 @@ export const RegisterProPage: React.FC = () => {
                 <div>
                   <label
                     htmlFor="reg-pro-name"
-                    className="block text-xs font-semibold text-stone-800 mb-1.5"
+                    className="block text-xs font-semibold text-text-strong mb-1.5"
                   >
                     {t("auth.registerPages.nomEtPrenomDuResponsable")}
                     <span className="text-primary">*</span>
@@ -633,16 +633,16 @@ export const RegisterProPage: React.FC = () => {
                       onChange={(e) => setName(e.target.value)}
                       placeholder="ex: Sophie Marchand"
                       required
-                      className="w-full pl-9 pr-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
+                      className="w-full pl-9 pr-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
                     />
-                    <User className="w-icon-md h-icon-md text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <User className="w-icon-md h-icon-md text-text-inverse-subtle absolute left-3 top-1/2 -translate-y-1/2" />
                   </div>
                 </div>
 
                 <div>
                   <label
                     htmlFor="reg-email-professionnel"
-                    className="block text-xs font-semibold text-stone-800 mb-1.5"
+                    className="block text-xs font-semibold text-text-strong mb-1.5"
                   >
                     Email professionnel <span className="text-primary">*</span>
                   </label>
@@ -654,16 +654,16 @@ export const RegisterProPage: React.FC = () => {
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="contact@boutiquedeco.fr"
                       required
-                      className="w-full pl-9 pr-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
+                      className="w-full pl-9 pr-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
                     />
-                    <Mail className="w-icon-md h-icon-md text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <Mail className="w-icon-md h-icon-md text-text-inverse-subtle absolute left-3 top-1/2 -translate-y-1/2" />
                   </div>
                 </div>
 
                 <div>
                   <label
                     htmlFor="reg-telephonecommercial"
-                    className="block text-xs font-semibold text-stone-800 mb-1.5"
+                    className="block text-xs font-semibold text-text-strong mb-1.5"
                   >
                     {t("auth.registerPages.telephoneCommercial")}
                   </label>
@@ -674,9 +674,9 @@ export const RegisterProPage: React.FC = () => {
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder="01 42 68 90 12"
-                      className="w-full pl-9 pr-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
+                      className="w-full pl-9 pr-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
                     />
-                    <Phone className="w-icon-md h-icon-md text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <Phone className="w-icon-md h-icon-md text-text-inverse-subtle absolute left-3 top-1/2 -translate-y-1/2" />
                   </div>
                 </div>
 
@@ -717,7 +717,7 @@ export const RegisterProPage: React.FC = () => {
               <div>
                 <label
                   htmlFor="reg-activite-professionnelle"
-                  className="block text-xs font-semibold text-stone-800 mb-1.5"
+                  className="block text-xs font-semibold text-text-strong mb-1.5"
                 >
                   Activité professionnelle{" "}
                   <span className="text-primary">*</span>
@@ -741,7 +741,7 @@ export const RegisterProPage: React.FC = () => {
                     </option>
                   ))}
                 </Select>
-                <p className="mt-1.5 text-xs text-stone-500">
+                <p className="mt-1.5 text-xs text-text-tertiary">
                   {isFacturationRegistration
                     ? "Ce renseignement adapte la configuration de votre organisation. Il ne vous inscrit à aucun autre produit Shongre."
                     : "Ce choix active uniquement les outils métier correspondant à votre activité. Il pourra être vérifié lors de l'onboarding."}
@@ -752,7 +752,7 @@ export const RegisterProPage: React.FC = () => {
                 <div>
                   <label
                     htmlFor="reg-pays-d-immatriculation"
-                    className="block text-xs font-semibold text-stone-800 mb-1.5"
+                    className="block text-xs font-semibold text-text-strong mb-1.5"
                   >
                     Pays d'immatriculation{" "}
                     <span className="text-primary">*</span>
@@ -774,7 +774,7 @@ export const RegisterProPage: React.FC = () => {
                 <div>
                   <label
                     htmlFor="reg-forme-juridique"
-                    className="block text-xs font-semibold text-stone-800 mb-1.5"
+                    className="block text-xs font-semibold text-text-strong mb-1.5"
                   >
                     Forme juridique <span className="text-primary">*</span>
                   </label>
@@ -796,7 +796,7 @@ export const RegisterProPage: React.FC = () => {
               <div>
                 <label
                   htmlFor="reg-raison-sociale-enseigne-commerciale"
-                  className="block text-xs font-semibold text-stone-800 mb-1.5"
+                  className="block text-xs font-semibold text-text-strong mb-1.5"
                 >
                   Raison sociale / Enseigne commerciale{" "}
                   <span className="text-primary">*</span>
@@ -809,9 +809,9 @@ export const RegisterProPage: React.FC = () => {
                     onChange={(e) => setCompanyName(e.target.value)}
                     placeholder="ex: Atelier Nordique SAS"
                     required
-                    className="w-full pl-9 pr-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
+                    className="w-full pl-9 pr-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
                   />
-                  <Building2 className="w-icon-md h-icon-md text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <Building2 className="w-icon-md h-icon-md text-text-inverse-subtle absolute left-3 top-1/2 -translate-y-1/2" />
                 </div>
               </div>
 
@@ -819,7 +819,7 @@ export const RegisterProPage: React.FC = () => {
                 <div>
                   <label
                     htmlFor="reg-currentmarket-businessidentifierlabel"
-                    className="block text-xs font-semibold text-stone-800 mb-1.5"
+                    className="block text-xs font-semibold text-text-strong mb-1.5"
                   >
                     {currentMarket.businessIdentifierLabel}{" "}
                     <span className="text-primary">*</span>
@@ -833,14 +833,14 @@ export const RegisterProPage: React.FC = () => {
                       currentMarket.businessIdentifierFormatPlaceholder
                     }
                     required
-                    className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
+                    className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
                   />
                 </div>
 
                 <div>
                   <label
                     htmlFor="reg-tva-intracommunautaire"
-                    className="block text-xs font-semibold text-stone-800 mb-1.5"
+                    className="block text-xs font-semibold text-text-strong mb-1.5"
                   >
                     TVA Intracommunautaire
                   </label>
@@ -850,7 +850,7 @@ export const RegisterProPage: React.FC = () => {
                     value={vatNumber}
                     onChange={(e) => setVatNumber(e.target.value)}
                     placeholder={currentMarket.vatNumberFormatPlaceholder}
-                    className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
+                    className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
                   />
                 </div>
               </div>
@@ -858,7 +858,7 @@ export const RegisterProPage: React.FC = () => {
               <div>
                 <label
                   htmlFor="reg-adressedusiegesocialmagasin"
-                  className="block text-xs font-semibold text-stone-800 mb-1.5"
+                  className="block text-xs font-semibold text-text-strong mb-1.5"
                 >
                   {t("auth.registerPages.adresseDuSiegeSocialMagasin")}
                   <span className="text-primary">*</span>
@@ -871,9 +871,9 @@ export const RegisterProPage: React.FC = () => {
                     onChange={(e) => setBusinessAddress(e.target.value)}
                     placeholder={t("auth.registerPages.14RueDesAntiquaires")}
                     required
-                    className="w-full pl-9 pr-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
+                    className="w-full pl-9 pr-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
                   />
-                  <MapPin className="w-icon-md h-icon-md text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <MapPin className="w-icon-md h-icon-md text-text-inverse-subtle absolute left-3 top-1/2 -translate-y-1/2" />
                 </div>
               </div>
 
@@ -881,7 +881,7 @@ export const RegisterProPage: React.FC = () => {
                 <div>
                   <label
                     htmlFor="reg-code-postal-2"
-                    className="block text-xs font-semibold text-stone-800 mb-1.5"
+                    className="block text-xs font-semibold text-text-strong mb-1.5"
                   >
                     Code Postal <span className="text-primary">*</span>
                   </label>
@@ -892,14 +892,14 @@ export const RegisterProPage: React.FC = () => {
                     onChange={(e) => setPostalCode(e.target.value)}
                     placeholder={currentMarket.postalCodePlaceholder}
                     required
-                    className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
+                    className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
                   />
                 </div>
 
                 <div>
                   <label
                     htmlFor="reg-ville-2"
-                    className="block text-xs font-semibold text-stone-800 mb-1.5"
+                    className="block text-xs font-semibold text-text-strong mb-1.5"
                   >
                     Ville <span className="text-primary">*</span>
                   </label>
@@ -910,20 +910,20 @@ export const RegisterProPage: React.FC = () => {
                     onChange={(e) => setCity(e.target.value)}
                     placeholder="Bordeaux"
                     required
-                    className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
+                    className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
                   />
                 </div>
               </div>
 
               {/* Declarations */}
-              <div className="pt-2 border-t border-stone-100">
-                <label className="flex items-start gap-2 text-xs text-stone-700 cursor-pointer select-none">
+              <div className="pt-2 border-t border-border-soft">
+                <label className="flex items-start gap-2 text-xs text-text-emphasis cursor-pointer select-none">
                   <input
                     type="checkbox"
                     checked={termsAccepted}
                     onChange={(e) => setTermsAccepted(e.target.checked)}
                     required
-                    className="w-4 h-4 mt-0.5 rounded border-stone-300 text-primary focus:ring-primary shrink-0"
+                    className="w-4 h-4 mt-0.5 rounded border-border-prominent text-primary focus:ring-primary shrink-0"
                   />
                   <span>
                     Je certifie sur l'honneur l'exactitude des informations
@@ -966,7 +966,7 @@ export const RegisterProPage: React.FC = () => {
             </form>
           )}
 
-          <div className="mt-6 pt-6 border-t border-stone-100 text-center text-xs text-stone-500">
+          <div className="mt-6 pt-6 border-t border-border-soft text-center text-xs text-text-tertiary">
             Vous avez déjà un compte ?{" "}
             <Link
               to={routes.auth.login(returnTo)}

@@ -622,7 +622,7 @@ export const SearchPage: React.FC = () => {
       {
         value: "",
         label: "Toutes les catégories",
-        icon: <Layers className="w-icon-sm h-icon-sm text-stone-500" />,
+        icon: <Layers className="w-icon-sm h-icon-sm text-text-tertiary" />,
       },
       ...TAXONOMY.map((cat) => ({
         value: cat.slug,
@@ -789,7 +789,7 @@ export const SearchPage: React.FC = () => {
       {/* Page heading. The search results are the page's subject, so they need a
           real h1 — it was previously the only top-level route with none. */}
       <div className="mb-3 sm:mb-4">
-        <h1 className="text-lg sm:text-2xl font-bold text-stone-900 tracking-tight">
+        <h1 className="text-lg sm:text-2xl font-bold text-text-main tracking-tight">
           {pageHeading}
         </h1>
         {/* The visible result count lives in the results toolbar, next to the
@@ -803,7 +803,7 @@ export const SearchPage: React.FC = () => {
             toolbar). Staying `sr-only` at every width is what the surrounding
             note already described: one visible count, announced once. */}
         <p
-          className="text-sm text-stone-500 mt-1 sr-only"
+          className="text-sm text-text-tertiary mt-1 sr-only"
           aria-live="polite"
           aria-atomic="true"
         >
@@ -865,7 +865,7 @@ export const SearchPage: React.FC = () => {
         {/* Active Filters Badges */}
         {(query || activeFilterCount > 0) && (
           <div className="flex items-center gap-1.5 flex-wrap pt-3 border-t border-border-subtle mt-3">
-            <span className="text-xs font-bold text-stone-500 uppercase tracking-wider mr-1">
+            <span className="text-xs font-bold text-text-tertiary uppercase tracking-wider mr-1">
               Filtres actifs :
             </span>
 
@@ -989,7 +989,7 @@ export const SearchPage: React.FC = () => {
             <button
               type="button"
               onClick={clearAllFilters}
-              className="text-xs text-stone-500 hover:text-danger font-semibold underline ml-2 cursor-pointer"
+              className="text-xs text-text-tertiary hover:text-danger font-semibold underline ml-2 cursor-pointer"
             >
               {t("search.searchPage.effacerTout")}
             </button>
@@ -1016,7 +1016,7 @@ export const SearchPage: React.FC = () => {
               <div>
                 <label
                   htmlFor="desktop-category-select"
-                  className="text-xs font-semibold text-stone-900 uppercase tracking-wider block mb-2"
+                  className="text-xs font-semibold text-text-main uppercase tracking-wider block mb-2"
                 >
                   {t("search.searchPage.categories2")}
                 </label>
@@ -1028,7 +1028,7 @@ export const SearchPage: React.FC = () => {
                     searchable
                     searchPlaceholder="Rechercher une catégorie…"
                     headerTitle={
-                      <div className="flex items-center gap-1.5 text-stone-600 normal-case font-semibold">
+                      <div className="flex items-center gap-1.5 text-text-supporting normal-case font-semibold">
                         <Layers className="w-icon-sm h-icon-sm text-primary shrink-0" />
                         <span>{t("search.searchPage.categories")}</span>
                       </div>
@@ -1045,7 +1045,7 @@ export const SearchPage: React.FC = () => {
                     <div className="pt-1">
                       <label
                         htmlFor="desktop-subcategory-select"
-                        className="text-micro font-semibold text-stone-600 block mb-1.5"
+                        className="text-micro font-semibold text-text-supporting block mb-1.5"
                       >
                         {t("search.searchPage.sousCategorie")}
                       </label>
@@ -1056,7 +1056,7 @@ export const SearchPage: React.FC = () => {
                         searchable={subcategoryDropdownOptions.length > 5}
                         searchPlaceholder="Rechercher une sous-catégorie…"
                         headerTitle={
-                          <div className="flex items-center gap-1.5 text-stone-600 normal-case font-semibold">
+                          <div className="flex items-center gap-1.5 text-text-supporting normal-case font-semibold">
                             <Tag className="w-icon-sm h-icon-sm text-primary shrink-0" />
                             <span>{t("search.searchPage.sousCategories")}</span>
                           </div>
@@ -1074,7 +1074,7 @@ export const SearchPage: React.FC = () => {
 
               {/* Seller Type */}
               <div>
-                <h2 className="text-xs font-bold text-stone-900 uppercase tracking-wider mb-3">
+                <h2 className="text-xs font-bold text-text-main uppercase tracking-wider mb-3">
                   {t("search.searchPage.typeDeVendeur")}
                 </h2>
                 <div className="space-y-2">
@@ -1085,7 +1085,7 @@ export const SearchPage: React.FC = () => {
                   ].map((s) => (
                     <label
                       key={s.value}
-                      className="flex items-center gap-2 min-h-6 text-xs font-medium text-stone-700 cursor-pointer"
+                      className="flex items-center gap-2 min-h-6 text-xs font-medium text-text-emphasis cursor-pointer"
                     >
                       <input
                         type="radio"
@@ -1104,14 +1104,14 @@ export const SearchPage: React.FC = () => {
                   `filters.conditions`; nothing ever exposed it, so the one facet
                   printed on every card was the one you could not filter by. */}
               <div>
-                <h2 className="text-xs font-bold text-stone-900 uppercase tracking-wider mb-3">
+                <h2 className="text-xs font-bold text-text-main uppercase tracking-wider mb-3">
                   {t("search.searchPage.etat")}
                 </h2>
                 <div className="space-y-2">
                   {CONDITION_FILTER_OPTIONS.map((option) => (
                     <label
                       key={option.value}
-                      className="touch-row gap-2 min-h-6 text-xs font-medium text-stone-700 cursor-pointer"
+                      className="touch-row gap-2 min-h-6 text-xs font-medium text-text-emphasis cursor-pointer"
                     >
                       <input
                         type="checkbox"
@@ -1129,7 +1129,7 @@ export const SearchPage: React.FC = () => {
                   "Appliquer le prix" button that the two number fields needed
                   as a commit point is gone with them. */}
               <div>
-                <h2 className="text-xs font-bold text-stone-900 uppercase tracking-wider mb-3">
+                <h2 className="text-xs font-bold text-text-main uppercase tracking-wider mb-3">
                   {t("search.searchPage.priceInCurrency", {
                     currency: currencySymbol,
                   })}
@@ -1181,10 +1181,10 @@ export const SearchPage: React.FC = () => {
               {dynamicFacets.length > 0 && (
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <h2 className="text-xs font-bold text-stone-900 uppercase tracking-wider">
+                    <h2 className="text-xs font-bold text-text-main uppercase tracking-wider">
                       {t("search.searchPage.filtresSpecifiques")}
                     </h2>
-                    <span className="text-micro bg-stone-100 text-stone-600 px-1.5 py-0.5 rounded font-mono">
+                    <span className="text-micro bg-surface-muted text-text-supporting px-1.5 py-0.5 rounded font-mono">
                       {dynamicFacets.length}
                     </span>
                   </div>
@@ -1203,7 +1203,7 @@ export const SearchPage: React.FC = () => {
                     ) {
                       return (
                         <div key={attr.id} className="space-y-1">
-                          <label className="text-xs font-semibold text-stone-700 block">
+                          <label className="text-xs font-semibold text-text-emphasis block">
                             {attr.label}
                           </label>
                           <DropdownMenu
@@ -1228,7 +1228,7 @@ export const SearchPage: React.FC = () => {
                     if (facet.facetType === "range") {
                       return (
                         <div key={attr.id} className="space-y-1">
-                          <label className="text-xs font-semibold text-stone-700 block">
+                          <label className="text-xs font-semibold text-text-emphasis block">
                             {attr.label} {attr.unit ? `(${attr.unit})` : ""}
                           </label>
                           <div className="grid grid-cols-2 gap-1.5">
@@ -1311,7 +1311,7 @@ export const SearchPage: React.FC = () => {
                 role="status"
                 aria-live="polite"
                 aria-atomic="true"
-                className="text-sm font-bold text-stone-900 shrink-0"
+                className="text-sm font-bold text-text-main shrink-0"
               >
                 {plural(totalCount, "annonce")}
               </span>
@@ -1322,8 +1322,8 @@ export const SearchPage: React.FC = () => {
                 onClick={() => setShowDesktopFilters(!showDesktopFilters)}
                 className={`hidden lg:inline-flex items-center gap-1.5 rounded-control px-2 py-1 text-xs font-semibold uppercase tracking-wider ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer ${
                   showDesktopFilters
-                    ? "bg-bg-base border-border-base text-stone-700 hover:bg-bg-subtle"
-                    : "text-stone-900 hover:text-primary"
+                    ? "bg-bg-base border-border-base text-text-emphasis hover:bg-bg-subtle"
+                    : "text-text-main hover:text-primary"
                 }`}
                 title={
                   showDesktopFilters
@@ -1338,7 +1338,7 @@ export const SearchPage: React.FC = () => {
               >
                 {showDesktopFilters ? (
                   <>
-                    <PanelLeftClose className="w-icon-sm h-icon-sm text-stone-500" />
+                    <PanelLeftClose className="w-icon-sm h-icon-sm text-text-tertiary" />
                     <span>Masquer</span>
                   </>
                 ) : (
@@ -1363,17 +1363,17 @@ export const SearchPage: React.FC = () => {
                 onClick={() => setIsFilterDrawerOpen(true)}
                 className={`lg:hidden flex items-center gap-1.5 h-control-sm px-2.5 sm:px-3 rounded-control text-xs font-semibold ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer shrink-0 ${
                   activeFilterCount > 0
-                    ? "bg-primary text-white shadow-xs"
-                    : "bg-bg-base text-stone-800 border border-border-base hover:bg-bg-subtle"
+                    ? "bg-primary text-text-inverse shadow-xs"
+                    : "bg-bg-base text-text-strong border border-border-base hover:bg-bg-subtle"
                 }`}
                 aria-label={`Ouvrir les filtres de recherche (${activeFilterCount} actifs)`}
               >
                 <SlidersHorizontal
-                  className={`w-icon-sm h-icon-sm ${activeFilterCount > 0 ? "text-white" : "text-primary"}`}
+                  className={`w-icon-sm h-icon-sm ${activeFilterCount > 0 ? "text-text-inverse" : "text-primary"}`}
                 />
                 <span className="hidden sm:inline">Filtres</span>
                 {activeFilterCount > 0 && (
-                  <span className="min-w-4 h-4 px-1 rounded-full bg-white text-primary text-micro font-bold flex items-center justify-center">
+                  <span className="min-w-4 h-4 px-1 rounded-full bg-bg-surface text-primary text-micro font-bold flex items-center justify-center">
                     {activeFilterCount}
                   </span>
                 )}
@@ -1389,7 +1389,7 @@ export const SearchPage: React.FC = () => {
                 size="sm"
                 className="shrink-0"
                 leftIcon={
-                  <Bookmark className="w-icon-sm h-icon-sm text-stone-500" />
+                  <Bookmark className="w-icon-sm h-icon-sm text-text-tertiary" />
                 }
                 title={t("search.searchPage.sauvegarderCetteRecherche")}
                 aria-label={t("search.searchPage.sauvegarderCetteRecherche")}
@@ -1409,7 +1409,7 @@ export const SearchPage: React.FC = () => {
 
               {/* Sort selector at extreme right */}
               <div className="flex items-center gap-1.5 text-xs min-w-0 shrink-0">
-                <span className="text-stone-500 hidden sm:inline shrink-0 font-medium">
+                <span className="text-text-tertiary hidden sm:inline shrink-0 font-medium">
                   {t("search.searchPage.trierPar")}
                 </span>
                 <DropdownMenu
@@ -1421,10 +1421,10 @@ export const SearchPage: React.FC = () => {
                   className="shrink-0"
                   triggerClassName="w-auto"
                   mobileIcon={
-                    <ArrowUpDown className="w-icon-sm h-icon-sm text-stone-700" />
+                    <ArrowUpDown className="w-icon-sm h-icon-sm text-text-emphasis" />
                   }
                   headerTitle={
-                    <div className="flex items-center gap-1.5 text-stone-600 normal-case font-semibold">
+                    <div className="flex items-center gap-1.5 text-text-supporting normal-case font-semibold">
                       <ArrowUpDown className="w-icon-sm h-icon-sm text-primary shrink-0" />
                       <span>{t("search.searchPage.trierPar2")}</span>
                     </div>
@@ -1449,7 +1449,7 @@ export const SearchPage: React.FC = () => {
               {[...Array(12)].map((_, i) => (
                 <ListingCardSkeleton
                   key={i}
-                  className="rounded-card border border-stone-200 bg-white p-2"
+                  className="rounded-card border border-border-disabled bg-bg-surface p-2"
                 />
               ))}
             </ListingGrid>
@@ -1529,7 +1529,7 @@ export const SearchPage: React.FC = () => {
                   type="button"
                   onClick={() => updatePage(page - 1)}
                   disabled={page <= 1}
-                  className={`inline-flex h-control-sm items-center gap-1 rounded-control border border-border-base bg-white px-2.5 text-xs font-semibold text-stone-700 disabled:cursor-not-allowed disabled:opacity-40 ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS}`}
+                  className={`inline-flex h-control-sm items-center gap-1 rounded-control border border-border-base bg-bg-surface px-2.5 text-xs font-semibold text-text-emphasis disabled:cursor-not-allowed disabled:opacity-40 ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS}`}
                   aria-label="Page précédente"
                 >
                   <ChevronLeft className="h-icon-sm w-icon-sm" />
@@ -1541,7 +1541,7 @@ export const SearchPage: React.FC = () => {
                     {index > 0 &&
                       pageNumber - paginationPages[index - 1] > 1 && (
                         <span
-                          className="px-1 text-xs text-stone-400"
+                          className="px-1 text-xs text-text-inverse-subtle"
                           aria-hidden
                         >
                           …
@@ -1554,8 +1554,8 @@ export const SearchPage: React.FC = () => {
                       aria-label={`Page ${pageNumber}`}
                       className={`h-control-sm min-w-8 rounded-control px-2 text-xs font-semibold ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} ${
                         pageNumber === page
-                          ? "bg-primary text-white"
-                          : "border border-border-base bg-white text-stone-700 hover:bg-bg-subtle"
+                          ? "bg-primary text-text-inverse"
+                          : "border border-border-base bg-bg-surface text-text-emphasis hover:bg-bg-subtle"
                       }`}
                     >
                       {pageNumber}
@@ -1567,7 +1567,7 @@ export const SearchPage: React.FC = () => {
                   type="button"
                   onClick={() => updatePage(page + 1)}
                   disabled={page >= totalPages}
-                  className={`inline-flex h-control-sm items-center gap-1 rounded-control border border-border-base bg-white px-2.5 text-xs font-semibold text-stone-700 disabled:cursor-not-allowed disabled:opacity-40 ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS}`}
+                  className={`inline-flex h-control-sm items-center gap-1 rounded-control border border-border-base bg-bg-surface px-2.5 text-xs font-semibold text-text-emphasis disabled:cursor-not-allowed disabled:opacity-40 ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS}`}
                   aria-label="Page suivante"
                 >
                   <span className="hidden sm:inline">Suivante</span>
@@ -1599,7 +1599,7 @@ export const SearchPage: React.FC = () => {
         >
           {/* Category */}
           <div>
-            <label className="text-xs font-semibold text-stone-700 uppercase tracking-wider block mb-2">
+            <label className="text-xs font-semibold text-text-emphasis uppercase tracking-wider block mb-2">
               {t("search.searchPage.categorie")}
             </label>
             <DropdownMenu
@@ -1609,7 +1609,7 @@ export const SearchPage: React.FC = () => {
               searchable
               searchPlaceholder="Rechercher une catégorie…"
               headerTitle={
-                <div className="flex items-center gap-1.5 text-stone-600 normal-case font-semibold">
+                <div className="flex items-center gap-1.5 text-text-supporting normal-case font-semibold">
                   <Layers className="w-icon-sm h-icon-sm text-primary shrink-0" />
                   <span>{t("search.searchPage.categories")}</span>
                 </div>
@@ -1622,7 +1622,7 @@ export const SearchPage: React.FC = () => {
             {/* Subcategory dropdown if active category has children */}
             {subcategoryDropdownOptions.length > 0 && (
               <div className="pt-3">
-                <label className="text-micro font-semibold text-stone-600 block mb-1.5">
+                <label className="text-micro font-semibold text-text-supporting block mb-1.5">
                   {t("search.searchPage.sousCategorie")}
                 </label>
                 <DropdownMenu
@@ -1632,7 +1632,7 @@ export const SearchPage: React.FC = () => {
                   searchable={subcategoryDropdownOptions.length > 5}
                   searchPlaceholder="Rechercher une sous-catégorie…"
                   headerTitle={
-                    <div className="flex items-center gap-1.5 text-stone-600 normal-case font-semibold">
+                    <div className="flex items-center gap-1.5 text-text-supporting normal-case font-semibold">
                       <Tag className="w-icon-sm h-icon-sm text-primary shrink-0" />
                       <span>{t("search.searchPage.sousCategories")}</span>
                     </div>
@@ -1649,7 +1649,7 @@ export const SearchPage: React.FC = () => {
 
           {/* Seller type */}
           <div>
-            <label className="text-xs font-semibold text-stone-700 uppercase tracking-wider block mb-2">
+            <label className="text-xs font-semibold text-text-emphasis uppercase tracking-wider block mb-2">
               {t("search.searchPage.typeDeVendeur")}
             </label>
             <div className="grid grid-cols-3 gap-1.5">
@@ -1664,8 +1664,8 @@ export const SearchPage: React.FC = () => {
                   onClick={() => updateFilter("sellerType", s.value)}
                   className={`h-control-md px-2 text-xs font-semibold rounded-control border text-center ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer ${
                     sellerType === s.value
-                      ? "bg-primary text-white border-primary shadow-xs"
-                      : "bg-white text-stone-700 border-border-base hover:bg-stone-50"
+                      ? "bg-primary text-text-inverse border-primary shadow-xs"
+                      : "bg-bg-surface text-text-emphasis border-border-base hover:bg-surface-soft"
                   }`}
                 >
                   {s.label}
@@ -1676,14 +1676,14 @@ export const SearchPage: React.FC = () => {
 
           {/* Condition */}
           <div>
-            <span className="text-xs font-bold text-stone-700 uppercase tracking-wider block mb-2">
+            <span className="text-xs font-bold text-text-emphasis uppercase tracking-wider block mb-2">
               {t("search.searchPage.etat")}
             </span>
             <div className="grid grid-cols-2 gap-2">
               {CONDITION_FILTER_OPTIONS.map((option) => (
                 <label
                   key={option.value}
-                  className="touch-row gap-2 rounded-control border border-border-subtle px-2 py-1.5 text-xs font-medium text-stone-700 cursor-pointer"
+                  className="touch-row gap-2 rounded-control border border-border-subtle px-2 py-1.5 text-xs font-medium text-text-emphasis cursor-pointer"
                 >
                   <input
                     type="checkbox"
@@ -1699,7 +1699,7 @@ export const SearchPage: React.FC = () => {
 
           {/* Price */}
           <div>
-            <span className="text-xs font-bold text-stone-700 uppercase tracking-wider block mb-2">
+            <span className="text-xs font-bold text-text-emphasis uppercase tracking-wider block mb-2">
               {t("search.searchPage.budgetInCurrency", {
                 currency: currencySymbol,
               })}
@@ -1744,7 +1744,7 @@ export const SearchPage: React.FC = () => {
           {/* Dynamic Facets in Drawer */}
           {dynamicFacets.length > 0 && (
             <div className="space-y-3">
-              <span className="text-xs font-bold text-stone-900 uppercase tracking-wider block">
+              <span className="text-xs font-bold text-text-main uppercase tracking-wider block">
                 {t("search.searchPage.criteresSpecifiques")}
               </span>
               {dynamicFacets.map((facet) => {
@@ -1761,7 +1761,7 @@ export const SearchPage: React.FC = () => {
                 ) {
                   return (
                     <div key={attr.id} className="space-y-1">
-                      <label className="text-xs font-semibold text-stone-700 block">
+                      <label className="text-xs font-semibold text-text-emphasis block">
                         {attr.label}
                       </label>
                       <DropdownMenu
@@ -1783,7 +1783,7 @@ export const SearchPage: React.FC = () => {
                 if (facet.facetType === "range") {
                   return (
                     <div key={attr.id} className="space-y-1">
-                      <label className="text-xs font-semibold text-stone-700 block">
+                      <label className="text-xs font-semibold text-text-emphasis block">
                         {attr.label} {attr.unit ? `(${attr.unit})` : ""}
                       </label>
                       <div className="grid grid-cols-2 gap-2">

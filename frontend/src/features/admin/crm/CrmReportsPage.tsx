@@ -50,8 +50,8 @@ export const CrmReportsPage: React.FC = () => {
     : 0;
   return (
     <div className="space-y-4 pb-8">
-      <section className="rounded-2xl border border-stone-800 bg-stone-950 p-5 text-text-inverse sm:p-6">
-        <p className="text-micro font-bold uppercase tracking-wider text-violet-300">
+      <section className="rounded-2xl border border-border-inverse bg-surface-inverse-deep p-5 text-text-inverse sm:p-6">
+        <p className="text-micro font-bold uppercase tracking-wider text-staff-on-inverse">
           CRM · Analytique
         </p>
         <h1 className="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">
@@ -83,9 +83,9 @@ export const CrmReportsPage: React.FC = () => {
             return (
               <article
                 key={label as string}
-                className="rounded-control bg-stone-900 p-3"
+                className="rounded-control bg-surface-inverse p-3"
               >
-                <MetricIcon className="h-4 w-4 text-violet-300" />
+                <MetricIcon className="h-4 w-4 text-staff-on-inverse" />
                 <span className="mt-2 block text-micro text-text-disabled">
                   {label as string}
                 </span>
@@ -149,7 +149,7 @@ export const CrmReportsPage: React.FC = () => {
                   key={label as string}
                   className="flex justify-between py-3"
                 >
-                  <dt className="text-stone-500">{label as string}</dt>
+                  <dt className="text-text-tertiary">{label as string}</dt>
                   <dd className="font-bold">{value as number}</dd>
                 </div>
               ))}
@@ -159,13 +159,13 @@ export const CrmReportsPage: React.FC = () => {
             <h2 className="text-sm font-bold">
               {t("admin.crmReportsPage.resultats")}
             </h2>
-            <p className="mt-3 text-micro font-bold uppercase tracking-wider text-stone-500">
+            <p className="mt-3 text-micro font-bold uppercase tracking-wider text-text-tertiary">
               {t("admin.crmOverviewPage.revenuGagne")}
             </p>
             <strong className="mt-1 block text-2xl font-bold text-success">
               {format(dashboard.wonRevenueMinor)}
             </strong>
-            <p className="mt-3 text-micro font-bold uppercase tracking-wider text-stone-500">
+            <p className="mt-3 text-micro font-bold uppercase tracking-wider text-text-tertiary">
               Valeur perdue
             </p>
             <strong className="mt-1 block text-2xl font-bold text-danger">

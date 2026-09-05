@@ -14,10 +14,10 @@ export const CrmAutomationsPage: React.FC = () => {
   });
   return (
     <div className="space-y-4 pb-8">
-      <section className="rounded-2xl border border-stone-800 bg-stone-950 p-5 text-text-inverse sm:p-6">
+      <section className="rounded-2xl border border-border-inverse bg-surface-inverse-deep p-5 text-text-inverse sm:p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-micro font-bold uppercase tracking-wider text-violet-300">
+            <p className="text-micro font-bold uppercase tracking-wider text-staff-on-inverse">
               CRM · Orchestration
             </p>
             <h1 className="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">
@@ -83,7 +83,7 @@ export const CrmAutomationsPage: React.FC = () => {
             >
               <CardIcon className="h-5 w-5 text-primary" />
               <h2 className="mt-3 text-sm font-bold">{title as string}</h2>
-              <p className="mt-1 text-xs leading-relaxed text-stone-500">
+              <p className="mt-1 text-xs leading-relaxed text-text-tertiary">
                 {description as string}
               </p>
             </article>
@@ -95,7 +95,7 @@ export const CrmAutomationsPage: React.FC = () => {
           {t("admin.crmAutomationsPage.reglesDActivation")}
         </h2>
         <ol className="mt-3 grid gap-2 text-xs text-text-secondary sm:grid-cols-2">
-          <li className="rounded-control bg-stone-50 p-3">
+          <li className="rounded-control bg-surface-soft p-3">
             <strong className="block text-text-main">
               1. Worker disponible
             </strong>
@@ -103,7 +103,7 @@ export const CrmAutomationsPage: React.FC = () => {
               "admin.crmAutomationsPage.consommationDeLaQueueAvecRetriesBornesEtDeadLetter",
             )}
           </li>
-          <li className="rounded-control bg-stone-50 p-3">
+          <li className="rounded-control bg-surface-soft p-3">
             <strong className="block text-text-main">
               2. Fournisseur explicite
             </strong>
@@ -111,13 +111,13 @@ export const CrmAutomationsPage: React.FC = () => {
               "admin.crmAutomationsPage.aucunEmailOuAppelSansConnexionAutorisee",
             )}
           </li>
-          <li className="rounded-control bg-stone-50 p-3">
+          <li className="rounded-control bg-surface-soft p-3">
             <strong className="block text-text-main">3. Consentement</strong>
             {t(
               "admin.crmAutomationsPage.arretSurOptOutRefusOuStatutNePasContacter",
             )}
           </li>
-          <li className="rounded-control bg-stone-50 p-3">
+          <li className="rounded-control bg-surface-soft p-3">
             <strong className="block text-text-main">
               4. Validation humaine
             </strong>

@@ -32,10 +32,12 @@ const badgeClasses = createVariants({
       md: "text-xs font-bold px-2.5 py-1 gap-1.5",
     },
     variant: {
-      neutral: "bg-stone-100 text-stone-700 border border-stone-200",
+      neutral:
+        "bg-surface-muted text-text-emphasis border border-border-disabled",
       primary:
         "bg-primary-light text-primary border border-primary-border font-bold",
-      inverse: "border border-stone-900 bg-stone-900 text-white",
+      inverse:
+        "border border-border-inverse-strong bg-surface-inverse text-text-inverse",
       urgent:
         "bg-danger-surface text-danger border border-danger-border font-bold",
       deal: "bg-warning-surface text-warning border border-warning-border font-bold",
@@ -44,7 +46,7 @@ const badgeClasses = createVariants({
       success:
         "bg-success-surface text-success border border-success-border font-semibold",
       featured:
-        "bg-primary text-white font-bold uppercase tracking-wider shadow-sm",
+        "bg-primary text-text-inverse font-bold uppercase tracking-wider shadow-sm",
     },
   },
   defaultVariants: { size: "sm", variant: "neutral" },

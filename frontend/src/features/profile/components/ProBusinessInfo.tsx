@@ -25,48 +25,48 @@ export const ProBusinessInfo: React.FC<ProBusinessInfoProps> = ({ seller }) => {
   return (
     <div className="space-y-6">
       {/* Legal & Company Identity Card */}
-      <div className="bg-white rounded-2xl border border-border-base p-5 sm:p-7 shadow-xs">
+      <div className="bg-bg-surface rounded-2xl border border-border-base p-5 sm:p-7 shadow-xs">
         <div className="flex items-center gap-2.5 mb-4 pb-3 border-b border-border-subtle">
           <Building2 className="w-icon-lg h-icon-lg text-primary" />
-          <h3 className="text-base font-bold text-stone-900">
+          <h3 className="text-base font-bold text-text-main">
             {t("profile.proBusinessInfo.mentionsLegalesInformationsEntreprise")}
           </h3>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
           <div className="bg-bg-base p-3 rounded-xl border border-border-base">
-            <span className="text-stone-500 font-medium block text-xs">
+            <span className="text-text-tertiary font-medium block text-xs">
               Raison sociale
             </span>
-            <span className="font-bold text-stone-900 text-xs sm:text-sm">
+            <span className="font-bold text-text-main text-xs sm:text-sm">
               {seller.companyName || seller.name}
             </span>
           </div>
 
           <div className="bg-bg-base p-3 rounded-xl border border-border-base">
-            <span className="text-stone-500 font-medium block text-xs">
+            <span className="text-text-tertiary font-medium block text-xs">
               Forme juridique
             </span>
-            <span className="font-bold text-stone-900 text-xs sm:text-sm">
+            <span className="font-bold text-text-main text-xs sm:text-sm">
               {seller.legalForm || "Entreprise commerciale"}
             </span>
           </div>
 
           <div className="bg-bg-base p-3 rounded-xl border border-border-base">
-            <span className="text-stone-500 font-medium block text-xs">
+            <span className="text-text-tertiary font-medium block text-xs">
               {t("profile.proBusinessInfo.numeroSiret")}
             </span>
-            <span className="font-bold font-mono text-stone-900 text-xs sm:text-sm">
+            <span className="font-bold font-mono text-text-main text-xs sm:text-sm">
               {seller.siret || seller.sirenSiret || "Non renseigné"}
             </span>
           </div>
 
           {seller.vatNumber && (
             <div className="bg-bg-base p-3 rounded-xl border border-border-base">
-              <span className="text-stone-500 font-medium block text-xs">
+              <span className="text-text-tertiary font-medium block text-xs">
                 N° TVA Intracommunautaire
               </span>
-              <span className="font-bold font-mono text-stone-900 text-xs sm:text-sm">
+              <span className="font-bold font-mono text-text-main text-xs sm:text-sm">
                 {seller.vatNumber}
               </span>
             </div>
@@ -74,11 +74,11 @@ export const ProBusinessInfo: React.FC<ProBusinessInfoProps> = ({ seller }) => {
 
           {seller.businessAddress && (
             <div className="bg-bg-base p-3 rounded-xl border border-border-base sm:col-span-2">
-              <span className="text-stone-500 font-medium block text-xs">
+              <span className="text-text-tertiary font-medium block text-xs">
                 {t("profile.proBusinessInfo.adresseDuSiegeBoutique")}
               </span>
-              <span className="font-bold text-stone-900 text-xs sm:text-sm flex items-center gap-1.5 mt-0.5">
-                <MapPin className="w-icon-sm h-icon-sm text-stone-400 shrink-0" />
+              <span className="font-bold text-text-main text-xs sm:text-sm flex items-center gap-1.5 mt-0.5">
+                <MapPin className="w-icon-sm h-icon-sm text-text-inverse-subtle shrink-0" />
                 {seller.businessAddress}
               </span>
             </div>
@@ -86,7 +86,7 @@ export const ProBusinessInfo: React.FC<ProBusinessInfoProps> = ({ seller }) => {
 
           {seller.websiteUrl && (
             <div className="bg-bg-base p-3 rounded-xl border border-border-base">
-              <span className="text-stone-500 font-medium block text-xs">
+              <span className="text-text-tertiary font-medium block text-xs">
                 Site internet officiel
               </span>
               <a
@@ -106,19 +106,19 @@ export const ProBusinessInfo: React.FC<ProBusinessInfoProps> = ({ seller }) => {
       {/* Opening Hours & Services Card */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Hours & Physical Shop */}
-        <div className="bg-white rounded-2xl border border-border-base p-5 sm:p-6 shadow-xs">
+        <div className="bg-bg-surface rounded-2xl border border-border-base p-5 sm:p-6 shadow-xs">
           <div className="flex items-center gap-2 mb-4 pb-3 border-b border-border-subtle">
-            <Clock className="w-icon-md h-icon-md text-stone-700" />
-            <h4 className="text-sm font-bold text-stone-900">
+            <Clock className="w-icon-md h-icon-md text-text-emphasis" />
+            <h4 className="text-sm font-bold text-text-main">
               Horaires & Accueil en boutique
             </h4>
           </div>
 
           {seller.storeOpeningHours ? (
-            <div className="space-y-3 text-xs text-stone-700">
+            <div className="space-y-3 text-xs text-text-emphasis">
               <div className="flex items-center gap-2">
                 <span className="inline-block w-2.5 h-2.5 rounded-full bg-success" />
-                <span className="font-bold text-stone-900">
+                <span className="font-bold text-text-main">
                   Boutique physique ouverte
                 </span>
               </div>
@@ -127,15 +127,15 @@ export const ProBusinessInfo: React.FC<ProBusinessInfoProps> = ({ seller }) => {
               </p>
             </div>
           ) : (
-            <p className="text-xs text-stone-500">
+            <p className="text-xs text-text-tertiary">
               {t("profile.proBusinessInfo.venteExclusiveEnLigneAvec")}
             </p>
           )}
 
           {/* Delivery zones */}
           <div className="mt-4 pt-3 border-t border-border-subtle">
-            <span className="text-xs font-bold text-stone-900 flex items-center gap-1.5 mb-2">
-              <Truck className="w-icon-sm h-icon-sm text-stone-500" />
+            <span className="text-xs font-bold text-text-main flex items-center gap-1.5 mb-2">
+              <Truck className="w-icon-sm h-icon-sm text-text-tertiary" />
               {t("profile.proBusinessInfo.zonesDeLivraisonCouvertes")}
             </span>
             <div className="flex flex-wrap gap-1.5">
@@ -145,7 +145,7 @@ export const ProBusinessInfo: React.FC<ProBusinessInfoProps> = ({ seller }) => {
               ).map((zone) => (
                 <span
                   key={zone}
-                  className="text-xs font-semibold text-stone-700 bg-bg-base px-2.5 py-1 rounded-lg border border-border-base"
+                  className="text-xs font-semibold text-text-emphasis bg-bg-base px-2.5 py-1 rounded-lg border border-border-base"
                 >
                   {zone}
                 </span>
@@ -155,15 +155,15 @@ export const ProBusinessInfo: React.FC<ProBusinessInfoProps> = ({ seller }) => {
         </div>
 
         {/* Guarantees & Commitments */}
-        <div className="bg-white rounded-2xl border border-border-base p-5 sm:p-6 shadow-xs">
+        <div className="bg-bg-surface rounded-2xl border border-border-base p-5 sm:p-6 shadow-xs">
           <div className="flex items-center gap-2 mb-4 pb-3 border-b border-border-subtle">
             <ShieldCheck className="w-icon-md h-icon-md text-success" />
-            <h4 className="text-sm font-bold text-stone-900">
+            <h4 className="text-sm font-bold text-text-main">
               Engagements & Services professionnels
             </h4>
           </div>
 
-          <div className="space-y-2.5 text-xs text-stone-700">
+          <div className="space-y-2.5 text-xs text-text-emphasis">
             {/* Return Policy */}
             <div className="flex items-start gap-2.5 p-2.5 rounded-xl bg-success-surface/50 border border-success-border">
               <RotateCcw className="w-icon-md h-icon-md text-success shrink-0 mt-0.5" />
@@ -181,13 +181,13 @@ export const ProBusinessInfo: React.FC<ProBusinessInfoProps> = ({ seller }) => {
             {/* Custom Services */}
             {seller.services && seller.services.length > 0 ? (
               <div className="space-y-1.5 pt-1">
-                <span className="text-stone-500 font-semibold block text-xs">
+                <span className="text-text-tertiary font-semibold block text-xs">
                   {t("profile.proBusinessInfo.servicesInclusParCeVendeur")}
                 </span>
                 {seller.services.map((srv, idx) => (
                   <div
                     key={idx}
-                    className="flex items-center gap-2 text-stone-800"
+                    className="flex items-center gap-2 text-text-strong"
                   >
                     <CheckCircle2 className="w-icon-sm h-icon-sm text-primary shrink-0" />
                     <span>{srv}</span>
@@ -196,19 +196,19 @@ export const ProBusinessInfo: React.FC<ProBusinessInfoProps> = ({ seller }) => {
               </div>
             ) : (
               <div className="space-y-1.5 pt-1">
-                <div className="flex items-center gap-2 text-stone-800">
+                <div className="flex items-center gap-2 text-text-strong">
                   <CheckCircle2 className="w-icon-sm h-icon-sm text-primary shrink-0" />
                   <span>
                     {t("profile.proBusinessInfo.factureAvecTvaSurDemande")}
                   </span>
                 </div>
-                <div className="flex items-center gap-2 text-stone-800">
+                <div className="flex items-center gap-2 text-text-strong">
                   <CheckCircle2 className="w-icon-sm h-icon-sm text-primary shrink-0" />
                   <span>
                     {t("profile.proBusinessInfo.garantieLegaleDeConformite2")}
                   </span>
                 </div>
-                <div className="flex items-center gap-2 text-stone-800">
+                <div className="flex items-center gap-2 text-text-strong">
                   <CheckCircle2 className="w-icon-sm h-icon-sm text-primary shrink-0" />
                   <span>
                     {t(

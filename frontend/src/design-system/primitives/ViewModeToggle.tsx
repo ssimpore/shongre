@@ -99,7 +99,7 @@ const ViewModeButton: React.FC<ViewModeButtonProps> = ({
       CONTROL_MOTION_CLASS,
       CONTROL_FOCUS_CLASS,
       active
-        ? "rounded-lg bg-primary text-white shadow-xs"
+        ? "rounded-lg bg-primary text-text-inverse shadow-xs"
         : "rounded-sm bg-transparent text-text-secondary hover:text-text-main hover:bg-bg-surface/70",
       size === "md" && "sm:px-2.5",
     )}

@@ -298,28 +298,28 @@ export const AttributeEditModal: React.FC<AttributeEditModalProps> = ({
 
         {/* Behavioral Flags */}
         <div className="p-3 bg-bg-subtle rounded-control border border-border-subtle grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-          <label className="flex items-center gap-2 cursor-pointer font-medium text-stone-800">
+          <label className="flex items-center gap-2 cursor-pointer font-medium text-text-strong">
             <Checkbox
               checked={required}
               onChange={(e) => setRequired(e.target.checked)}
             />
             <span>Obligatoire</span>
           </label>
-          <label className="flex items-center gap-2 cursor-pointer font-medium text-stone-800">
+          <label className="flex items-center gap-2 cursor-pointer font-medium text-text-strong">
             <Checkbox
               checked={filterable}
               onChange={(e) => setFilterable(e.target.checked)}
             />
             <span>Facette filtre</span>
           </label>
-          <label className="flex items-center gap-2 cursor-pointer font-medium text-stone-800">
+          <label className="flex items-center gap-2 cursor-pointer font-medium text-text-strong">
             <Checkbox
               checked={searchable}
               onChange={(e) => setSearchable(e.target.checked)}
             />
             <span>Recherchable</span>
           </label>
-          <label className="flex items-center gap-2 cursor-pointer font-medium text-stone-800">
+          <label className="flex items-center gap-2 cursor-pointer font-medium text-text-strong">
             <Checkbox
               checked={sortable}
               onChange={(e) => setSortable(e.target.checked)}
@@ -349,7 +349,7 @@ export const AttributeEditModal: React.FC<AttributeEditModalProps> = ({
 
             <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
               {options.length === 0 ? (
-                <div className="p-3 text-center text-xs text-stone-500 border border-dashed rounded-control">
+                <div className="p-3 text-center text-xs text-text-tertiary border border-dashed rounded-control">
                   {t("admin.attributeEditModal.aucuneOptionDefinieCliquezSur")}
                 </div>
               ) : (
@@ -381,7 +381,7 @@ export const AttributeEditModal: React.FC<AttributeEditModalProps> = ({
                       size="sm"
                       type="button"
                       onClick={() => handleRemoveOption(idx)}
-                      className="text-stone-500 hover:text-danger p-2"
+                      className="text-text-tertiary hover:text-danger p-2"
                     >
                       <Trash2 className="w-icon-sm h-icon-sm" />
                     </Button>

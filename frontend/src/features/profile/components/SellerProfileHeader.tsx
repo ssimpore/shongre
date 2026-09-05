@@ -136,10 +136,10 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-3xl border border-stone-200/60 overflow-hidden shadow-sm relative">
+    <div className="bg-bg-surface rounded-3xl border border-border-disabled/60 overflow-hidden shadow-sm relative">
       {/* Cover Header for Pro or decorative header for Individual */}
       {isPro ? (
-        <div className="relative h-48 sm:h-64 w-full bg-gradient-to-r from-stone-900 via-stone-800 to-amber-950 overflow-hidden">
+        <div className="relative h-48 sm:h-64 w-full bg-gradient-to-r from-surface-inverse via-surface-inverse-hover to-rating-inverse-deep overflow-hidden">
           {seller.storeBannerUrl ? (
             <Image
               src={seller.storeBannerUrl}
@@ -150,10 +150,10 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center opacity-30">
-              <Building2 className="w-24 h-24 text-white" />
+              <Building2 className="w-24 h-24 text-text-inverse" />
             </div>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/10" />
+          <div className="absolute inset-0 bg-gradient-to-t from-surface-overlay-deep/60 via-transparent to-surface-overlay-deep/10" />
 
           <div className="absolute top-4 right-4 flex items-center gap-2 flex-wrap">
             <ProBadge
@@ -164,9 +164,9 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
           </div>
         </div>
       ) : (
-        <div className="h-28 sm:h-36 bg-gradient-to-r from-stone-50 via-stone-100 to-stone-200 border-b border-stone-200/60 relative">
+        <div className="h-28 sm:h-36 bg-gradient-to-r from-surface-soft via-surface-muted to-surface-disabled border-b border-border-disabled/60 relative">
           <div className="absolute top-4 right-4 flex items-center gap-2">
-            <span className="text-xs font-bold text-stone-500 uppercase tracking-wider bg-white/80 px-3 py-1.5 rounded-full border border-stone-200/60 shadow-sm backdrop-blur-xs">
+            <span className="text-xs font-bold text-text-tertiary uppercase tracking-wider bg-bg-surface/80 px-3 py-1.5 rounded-full border border-border-disabled/60 shadow-sm backdrop-blur-xs">
               Profil Particulier
             </span>
           </div>
@@ -178,7 +178,7 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
           sits on the white surface, at every width.
 
           The whole row used to carry the lift, which put the store name over a
-          near-black gradient while it was still `text-stone-900` — 40px of its
+          near-black gradient while it was still `text-text-main` — 40px of its
           50px height at 390px, so on a phone the shop's own name was the least
           readable thing on its page, with the Pro / Vérifié badges cut by the
           boundary underneath it. Scoping the lift by breakpoint only moved the
@@ -195,13 +195,13 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
                 name={displayName}
                 size="2xl"
                 isVerified={seller.isVerified}
-                className="ring-4 ring-white shadow-md"
+                className="ring-4 ring-border-on-inverse shadow-md"
               />
             </div>
 
             <div className="min-w-0 flex-1 pb-1">
               <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-stone-900 leading-tight">
+                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-text-main leading-tight">
                   {displayName}
                 </h1>
                 {isPro ? (
@@ -211,7 +211,7 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
                     accessibilityLabel={t("ui.identityStatus.pro.account")}
                   />
                 ) : (
-                  <span className="text-xs font-semibold text-stone-500 bg-stone-100 px-2 py-1 rounded-full">
+                  <span className="text-xs font-semibold text-text-tertiary bg-surface-muted px-2 py-1 rounded-full">
                     Particulier
                   </span>
                 )}
@@ -226,37 +226,37 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
               </div>
 
               {/* Sub-header meta row */}
-              <div className="mt-2 flex min-w-0 max-w-full items-center gap-2 overflow-x-auto no-scrollbar whitespace-nowrap text-xs text-stone-600 sm:gap-3 sm:text-sm">
+              <div className="mt-2 flex min-w-0 max-w-full items-center gap-2 overflow-x-auto no-scrollbar whitespace-nowrap text-xs text-text-supporting sm:gap-3 sm:text-sm">
                 {/* Rating trigger */}
                 <button
                   type="button"
                   onClick={() => onTabChange("reviews")}
-                  className="flex shrink-0 items-center gap-1.5 font-semibold text-stone-900 hover:text-primary transition-colors cursor-pointer group"
+                  className="flex shrink-0 items-center gap-1.5 font-semibold text-text-main hover:text-primary transition-colors cursor-pointer group"
                   aria-label={`Note moyenne : ${seller.rating.toFixed(1)} sur 5 basée sur ${seller.reviewCount} avis`}
                 >
-                  <Star className="w-icon-md h-icon-md fill-amber-400 text-amber-400 group-hover:scale-110 transition-transform duration-normal" />
+                  <Star className="w-icon-md h-icon-md fill-rating-fill text-rating-fill group-hover:scale-110 transition-transform duration-normal" />
                   <span>{seller.rating.toFixed(1)}</span>
-                  <span className="font-medium text-stone-500 underline decoration-stone-200 group-hover:decoration-primary/40 underline-offset-4">
+                  <span className="font-medium text-text-tertiary underline decoration-border-disabled group-hover:decoration-primary-border underline-offset-4">
                     ({seller.reviewCount} avis)
                   </span>
                 </button>
 
-                <span className="shrink-0 text-stone-300">•</span>
+                <span className="shrink-0 text-text-inverse-muted">•</span>
 
                 {/* Location */}
-                <span className="flex shrink-0 items-center gap-1.5 text-stone-600">
-                  <MapPin className="h-icon-sm w-icon-sm shrink-0 text-stone-400 sm:h-4 sm:w-4" />
+                <span className="flex shrink-0 items-center gap-1.5 text-text-supporting">
+                  <MapPin className="h-icon-sm w-icon-sm shrink-0 text-text-inverse-subtle sm:h-4 sm:w-4" />
                   {seller.city}{" "}
                   {seller.postalCode
                     ? `(${seller.postalCode.slice(0, 2)})`
                     : ""}
                 </span>
 
-                <span className="shrink-0 text-stone-300">•</span>
+                <span className="shrink-0 text-text-inverse-muted">•</span>
 
                 {/* Seniority */}
-                <span className="flex shrink-0 items-center gap-1.5 text-stone-500">
-                  <Calendar className="h-icon-sm w-icon-sm shrink-0 text-stone-400 sm:h-4 sm:w-4" />
+                <span className="flex shrink-0 items-center gap-1.5 text-text-tertiary">
+                  <Calendar className="h-icon-sm w-icon-sm shrink-0 text-text-inverse-subtle sm:h-4 sm:w-4" />
                   <span className="sm:hidden">Depuis {memberYear}</span>
                   <span className="hidden sm:inline">
                     Membre depuis {memberYear}
@@ -355,13 +355,13 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
 
                   {isMenuOpen && (
                     <div
-                      className="absolute right-0 top-full mt-2 w-64 bg-white rounded-2xl shadow-xl border border-stone-200/60 py-2 z-dropdown animate-in fade-in zoom-in-95 duration-fast"
+                      className="absolute right-0 top-full mt-2 w-64 bg-bg-surface rounded-2xl shadow-xl border border-border-disabled/60 py-2 z-dropdown animate-in fade-in zoom-in-95 duration-fast"
                       onMouseLeave={() => setIsMenuOpen(false)}
                     >
                       <button
                         type="button"
                         onClick={handleFollowToggle}
-                        className="w-full sm:hidden flex items-center gap-3 px-4 py-3 text-sm font-semibold text-stone-700 hover:bg-stone-50 text-left"
+                        className="w-full sm:hidden flex items-center gap-3 px-4 py-3 text-sm font-semibold text-text-emphasis hover:bg-surface-soft text-left"
                       >
                         <Heart
                           className={`w-icon-md h-icon-md ${isFollowing ? "fill-primary text-primary" : ""}`}
@@ -371,12 +371,12 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
                       <button
                         type="button"
                         onClick={handleShare}
-                        className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-stone-700 hover:bg-stone-50 text-left"
+                        className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-text-emphasis hover:bg-surface-soft text-left"
                       >
-                        <Share2 className="w-icon-md h-icon-md text-stone-400" />
+                        <Share2 className="w-icon-md h-icon-md text-text-inverse-subtle" />
                         {t("profile.sellerProfileHeader.partagerCeProfil2")}
                       </button>
-                      <div className="border-t border-stone-100 my-1" />
+                      <div className="border-t border-border-soft my-1" />
                       <button
                         type="button"
                         onClick={() => {
@@ -408,8 +408,8 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
 
         {/* Bio description */}
         {seller.bio && (
-          <div className="border-t border-stone-100 pt-5 mb-5 mt-2">
-            <p className="text-sm text-stone-600 leading-relaxed max-w-4xl whitespace-pre-line font-medium">
+          <div className="border-t border-border-soft pt-5 mb-5 mt-2">
+            <p className="text-sm text-text-supporting leading-relaxed max-w-4xl whitespace-pre-line font-medium">
               {seller.bio}
             </p>
           </div>
@@ -417,10 +417,10 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
 
         {/* Fast Key Metrics Row */}
         <div
-          className={`border-t border-stone-100 grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm text-stone-500 ${!seller.bio ? "mt-4 pt-5" : "pt-5"}`}
+          className={`border-t border-border-soft grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm text-text-tertiary ${!seller.bio ? "mt-4 pt-5" : "pt-5"}`}
         >
-          <div className="bg-stone-50 p-4 rounded-2xl border border-stone-200/60 shadow-2xs">
-            <span className="font-bold block text-stone-900 text-lg mb-0.5">
+          <div className="bg-surface-soft p-4 rounded-2xl border border-border-disabled/60 shadow-2xs">
+            <span className="font-bold block text-text-main text-lg mb-0.5">
               {activeListingsCount}
             </span>
             <span className="text-xs">
@@ -428,8 +428,8 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
             </span>
           </div>
 
-          <div className="bg-stone-50 p-4 rounded-2xl border border-stone-200/60 shadow-2xs">
-            <span className="font-bold block text-stone-900 text-lg mb-0.5">
+          <div className="bg-surface-soft p-4 rounded-2xl border border-border-disabled/60 shadow-2xs">
+            <span className="font-bold block text-text-main text-lg mb-0.5">
               {seller.responseRatePercent}%
             </span>
             <span className="text-xs">
@@ -437,8 +437,8 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
             </span>
           </div>
 
-          <div className="bg-stone-50 p-4 rounded-2xl border border-stone-200/60 shadow-2xs">
-            <span className="font-bold block text-stone-900 text-lg truncate mb-0.5">
+          <div className="bg-surface-soft p-4 rounded-2xl border border-border-disabled/60 shadow-2xs">
+            <span className="font-bold block text-text-main text-lg truncate mb-0.5">
               {seller.responseTimeText || "Rapide"}
             </span>
             <span className="text-xs">
@@ -446,8 +446,8 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
             </span>
           </div>
 
-          <div className="bg-stone-50 p-4 rounded-2xl border border-stone-200/60 shadow-2xs">
-            <span className="font-bold block text-stone-900 text-lg mb-0.5">
+          <div className="bg-surface-soft p-4 rounded-2xl border border-border-disabled/60 shadow-2xs">
+            <span className="font-bold block text-text-main text-lg mb-0.5">
               {seller.rating.toFixed(1)} / 5
             </span>
             <span className="text-xs">{seller.reviewCount} avis clients</span>

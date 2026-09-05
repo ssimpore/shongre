@@ -39,7 +39,7 @@ export const ConversationContextBar: React.FC<ConversationContextBarProps> = ({
   return (
     <div
       data-conversation-context
-      className="flex min-w-0 shrink-0 flex-col items-stretch gap-3 border-b border-border-base bg-stone-50 px-3 py-2.5 text-xs sm:flex-row sm:items-center sm:justify-between sm:px-4"
+      className="flex min-w-0 shrink-0 flex-col items-stretch gap-3 border-b border-border-base bg-surface-soft px-3 py-2.5 text-xs sm:flex-row sm:items-center sm:justify-between sm:px-4"
     >
       {/* Listing Preview */}
       {listingContext && (
@@ -49,10 +49,10 @@ export const ConversationContextBar: React.FC<ConversationContextBarProps> = ({
               src={listingContext.listingPhotoUrl}
               alt={listingContext.listingTitle}
               sizes="40px"
-              className="w-10 h-10 object-cover rounded-lg border border-border-base shrink-0 bg-white"
+              className="w-10 h-10 object-cover rounded-lg border border-border-base shrink-0 bg-bg-surface"
             />
           ) : (
-            <div className="w-10 h-10 rounded-lg bg-stone-200 flex items-center justify-center shrink-0 text-stone-400">
+            <div className="w-10 h-10 rounded-lg bg-surface-disabled flex items-center justify-center shrink-0 text-text-inverse-subtle">
               <Package className="w-icon-lg h-icon-lg" />
             </div>
           )}
@@ -61,7 +61,7 @@ export const ConversationContextBar: React.FC<ConversationContextBarProps> = ({
             <div className="flex min-w-0 items-center gap-2">
               <Link
                 to={`/annonce/${listingContext.listingId}`}
-                className="group flex min-w-0 items-center gap-1 truncate font-bold text-stone-900 transition-colors hover:text-primary"
+                className="group flex min-w-0 items-center gap-1 truncate font-bold text-text-main transition-colors hover:text-primary"
               >
                 <span className="truncate">{listingContext.listingTitle}</span>
                 <ExternalLink className="h-icon-xs w-icon-xs shrink-0 opacity-0 transition-opacity group-hover:opacity-100" />

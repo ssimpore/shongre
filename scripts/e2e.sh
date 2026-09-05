@@ -27,6 +27,10 @@ export SHONGRE_DISABLE_DEV_ASSET_HEADERS=1
 export SHONGRE_E2E_ALLOW_HTTP=1
 export SHONGRE_E2E_ALLOW_LOCAL_HOSTS=1
 export NEXT_TELEMETRY_DISABLED=1
+# The harness builds and serves a production Next artifact while APP_ENV stays
+# `test`. NODE_ENV selects framework mechanics only; leaving the test profile's
+# value here makes Next enter an unsupported hybrid mode during prerendering.
+export NODE_ENV=production
 unset NO_COLOR
 
 # Keep the isolated app underneath Next's detected monorepo tracing root. An

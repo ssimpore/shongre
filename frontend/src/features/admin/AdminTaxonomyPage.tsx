@@ -177,7 +177,7 @@ export const AdminTaxonomyPage: React.FC = () => {
               {t("admin.adminTaxonomyPage.gestionAdministrationDeLaTaxonomie")}
             </h1>
           </div>
-          <p className="text-xs text-stone-500 mt-1.5 max-w-2xl">
+          <p className="text-xs text-text-tertiary mt-1.5 max-w-2xl">
             {t("admin.adminTaxonomyPage.referentielCanoniqueUniquePilotantL")}
           </p>
         </div>
@@ -261,7 +261,7 @@ export const AdminTaxonomyPage: React.FC = () => {
               icon: GitCommit,
               badge:
                 draftChanges.length > 0 ? `${draftChanges.length}` : undefined,
-              badgeClass: "bg-amber-500 text-text-inverse",
+              badgeClass: "bg-rating-strong text-text-inverse",
             },
             {
               id: "import_export",
@@ -286,7 +286,7 @@ export const AdminTaxonomyPage: React.FC = () => {
                 className={`flex items-center gap-2 py-3 px-4 border-b-2 whitespace-nowrap transition-all cursor-pointer ${
                   isActive
                     ? "border-primary text-primary font-semibold bg-bg-surface"
-                    : "border-transparent text-stone-500 hover:text-text-main hover:border-stone-300"
+                    : "border-transparent text-text-tertiary hover:text-text-main hover:border-border-prominent"
                 }`}
               >
                 <Icon className="w-4 h-4" />
@@ -294,7 +294,7 @@ export const AdminTaxonomyPage: React.FC = () => {
                 {tab.badge && (
                   <span
                     className={`text-micro px-1.5 py-0.5 rounded-pill font-bold ${
-                      tab.badgeClass || "bg-stone-200 text-stone-700"
+                      tab.badgeClass || "bg-surface-disabled text-text-emphasis"
                     }`}
                   >
                     {tab.badge}
@@ -351,7 +351,7 @@ export const AdminTaxonomyPage: React.FC = () => {
                 onSelectNode={handleSelectNode}
               />
             ) : (
-              <div className="bg-bg-surface rounded-2xl border border-border-base p-12 text-center text-xs text-stone-500">
+              <div className="bg-bg-surface rounded-2xl border border-border-base p-12 text-center text-xs text-text-tertiary">
                 {t("admin.adminTaxonomyPage.selectionnezUneCategorieDansL")}
               </div>
             )}

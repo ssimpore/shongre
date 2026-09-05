@@ -40,8 +40,8 @@ export const MobileBottomNav: React.FC = () => {
           className={({ isActive }) =>
             `flex min-w-0 flex-col items-center justify-center gap-1 py-1 h-full w-full motion-interactive ${
               isActive
-                ? "text-stone-900"
-                : "text-stone-500 hover:text-stone-700 active:scale-95"
+                ? "text-text-main"
+                : "text-text-tertiary hover:text-text-emphasis active:scale-95"
             }`
           }
         >
@@ -71,8 +71,8 @@ export const MobileBottomNav: React.FC = () => {
           className={({ isActive }) =>
             `flex min-w-0 flex-col items-center justify-center gap-1 py-1 h-full w-full motion-interactive ${
               isActive
-                ? "text-stone-900"
-                : "text-stone-500 hover:text-stone-700 active:scale-95"
+                ? "text-text-main"
+                : "text-text-tertiary hover:text-text-emphasis active:scale-95"
             }`
           }
         >
@@ -110,10 +110,10 @@ export const MobileBottomNav: React.FC = () => {
           {/* Raised by the same token the layout reserves clearance from, so the
               disc can never protrude into space the page believes is free. */}
           <div className="absolute -top-(--mobile-nav-fab-rise) flex flex-col items-center">
-            <div className="w-control-fab h-control-fab rounded-pill bg-stone-900 text-white flex items-center justify-center shadow-lg group-active:scale-95 motion-interactive border-3 border-bg-surface">
+            <div className="w-control-fab h-control-fab rounded-pill bg-surface-inverse text-text-inverse flex items-center justify-center shadow-lg group-active:scale-95 motion-interactive border-3 border-bg-surface">
               <PlusCircle className="w-icon-xl h-icon-xl text-primary" />
             </div>
-            <span className="mt-1 max-w-full truncate text-micro font-bold text-stone-900">
+            <span className="mt-1 max-w-full truncate text-micro font-bold text-text-main">
               {t(publishCta.shortLabelKey)}
             </span>
           </div>
@@ -126,8 +126,8 @@ export const MobileBottomNav: React.FC = () => {
           className={({ isActive }) =>
             `flex min-w-0 flex-col items-center justify-center gap-1 py-1 h-full w-full motion-interactive ${
               isActive
-                ? "text-stone-900"
-                : "text-stone-500 hover:text-stone-700 active:scale-95"
+                ? "text-text-main"
+                : "text-text-tertiary hover:text-text-emphasis active:scale-95"
             }`
           }
         >
@@ -145,7 +145,7 @@ export const MobileBottomNav: React.FC = () => {
                   /* The digit is decorative: the `sr-only` sentence beside it
                      already says the count in words. Announcing both made the
                      item read as "1 1 message non lu Messages". */
-                  <span className="absolute -top-0.5 -right-0.5 min-w-4 h-4 px-1 rounded-full bg-primary text-white text-micro font-bold flex items-center justify-center shadow-xs border-2 border-white">
+                  <span className="absolute -top-0.5 -right-0.5 min-w-4 h-4 px-1 rounded-full bg-primary text-text-inverse text-micro font-bold flex items-center justify-center shadow-xs border-2 border-border-on-inverse">
                     <span aria-hidden="true">{unreadMessagesCount}</span>
                     <span className="sr-only">
                       {" "}
@@ -170,8 +170,8 @@ export const MobileBottomNav: React.FC = () => {
           className={({ isActive }) =>
             `flex min-w-0 flex-col items-center justify-center gap-1 py-1 h-full w-full motion-interactive ${
               isActive
-                ? "text-stone-900"
-                : "text-stone-500 hover:text-stone-700 active:scale-95"
+                ? "text-text-main"
+                : "text-text-tertiary hover:text-text-emphasis active:scale-95"
             }`
           }
         >

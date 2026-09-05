@@ -81,7 +81,7 @@ export const ROLE_DEFINITIONS: Record<PlatformRole, RoleMetadata> = {
     shortLabel: "Visiteur",
     accountType: "individual",
     hierarchyLevel: 0,
-    badgeColor: "bg-stone-100 text-stone-700 border-stone-200",
+    badgeColor: "bg-surface-muted text-text-emphasis border-border-disabled",
     description: "Accès public libre pour la consultation et la recherche.",
     defaultPermissions: permissionsFor("guest"),
     isInternalStaff: false,
@@ -150,7 +150,8 @@ export const ROLE_DEFINITIONS: Record<PlatformRole, RoleMetadata> = {
     shortLabel: "Opérations",
     accountType: "individual",
     hierarchyLevel: 65,
-    badgeColor: "bg-indigo-100 text-indigo-900 border-indigo-300",
+    badgeColor:
+      "bg-insight-surface-strong text-insight-emphasis border-insight-border-strong",
     description: "Suivi opérationnel dans un périmètre explicitement attribué.",
     defaultPermissions: permissionsFor("operations"),
     isInternalStaff: true,
@@ -161,7 +162,8 @@ export const ROLE_DEFINITIONS: Record<PlatformRole, RoleMetadata> = {
     shortLabel: "Finance",
     accountType: "individual",
     hierarchyLevel: 70,
-    badgeColor: "bg-teal-100 text-teal-900 border-teal-300",
+    badgeColor:
+      "bg-connection-surface-strong text-connection-emphasis border-connection-border-strong",
     description: "Transactions, remboursements et rapprochement financier.",
     defaultPermissions: permissionsFor("finance"),
     isInternalStaff: true,
@@ -172,7 +174,8 @@ export const ROLE_DEFINITIONS: Record<PlatformRole, RoleMetadata> = {
     shortLabel: "Commercial",
     accountType: "individual",
     hierarchyLevel: 68,
-    badgeColor: "bg-fuchsia-100 text-fuchsia-900 border-fuchsia-300",
+    badgeColor:
+      "bg-campaign-surface-strong text-campaign-emphasis border-campaign-border-strong",
     description: "Accompagnement des comptes et partenariats autorisés.",
     defaultPermissions: permissionsFor("commercial"),
     isInternalStaff: true,
@@ -183,7 +186,8 @@ export const ROLE_DEFINITIONS: Record<PlatformRole, RoleMetadata> = {
     shortLabel: "Contenu",
     accountType: "individual",
     hierarchyLevel: 62,
-    badgeColor: "bg-violet-100 text-violet-900 border-violet-300",
+    badgeColor:
+      "bg-staff-surface-strong text-staff-inverse border-staff-on-inverse",
     description: "Taxonomie et sélections éditoriales, sans privilège global.",
     defaultPermissions: permissionsFor("content_manager"),
     isInternalStaff: true,
@@ -218,7 +222,8 @@ export const ROLE_DEFINITIONS: Record<PlatformRole, RoleMetadata> = {
     shortLabel: "Propriétaire",
     accountType: "individual",
     hierarchyLevel: 100,
-    badgeColor: "bg-purple-100 text-purple-950 border-purple-400 font-bold",
+    badgeColor:
+      "bg-automation-surface-strong text-automation-inverse-deep border-automation-border-strong font-bold",
     description:
       "Gouvernance critique et permissions, avec droits explicites et auditables.",
     defaultPermissions: permissionsFor("super_admin"),

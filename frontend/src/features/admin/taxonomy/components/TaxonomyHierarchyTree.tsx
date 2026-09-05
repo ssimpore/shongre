@@ -109,8 +109,8 @@ export const TaxonomyHierarchyTree: React.FC<TaxonomyHierarchyTreeProps> = ({
         <div
           className={`group flex items-center justify-between px-2.5 py-1.5 rounded-control text-xs transition-all duration-fast border ${TREE_DEPTH_PADDING[Math.min(depth, TREE_DEPTH_PADDING.length - 1)]} ${
             isSelected
-              ? "bg-primary-light/80 border-primary text-primary font-bold shadow-xs"
-              : "border-transparent text-stone-700 hover:bg-bg-subtle hover:border-border-subtle"
+              ? "bg-primary-surface-soft border-primary text-primary font-bold shadow-xs"
+              : "border-transparent text-text-emphasis hover:bg-bg-subtle hover:border-border-subtle"
           }`}
         >
           {/* Left: Expand, Icon, Labels, Badges */}
@@ -119,7 +119,7 @@ export const TaxonomyHierarchyTree: React.FC<TaxonomyHierarchyTreeProps> = ({
               <button
                 type="button"
                 onClick={(e) => onToggleExpand(node.id, e)}
-                className="p-1 rounded-md text-stone-500 hover:text-stone-700 hover:bg-stone-200/50 transition-colors min-w-6 min-h-6 inline-flex items-center justify-center"
+                className="p-1 rounded-md text-text-tertiary hover:text-text-emphasis hover:bg-surface-disabled/50 transition-colors min-w-6 min-h-6 inline-flex items-center justify-center"
                 /* Named after the node, not the gesture. The tree renders this
                    control on every branch, so a bare "Déplier" produced a dozen
                    identically-named buttons in the accessibility tree with
@@ -167,7 +167,7 @@ export const TaxonomyHierarchyTree: React.FC<TaxonomyHierarchyTreeProps> = ({
 
               {/* Status indicators */}
               {node.status === "draft" && (
-                <span className="shrink-0 text-micro bg-stone-100 text-text-secondary px-1.5 py-0.5 rounded font-bold uppercase">
+                <span className="shrink-0 text-micro bg-surface-muted text-text-secondary px-1.5 py-0.5 rounded font-bold uppercase">
                   Brouillon
                 </span>
               )}
@@ -190,7 +190,7 @@ export const TaxonomyHierarchyTree: React.FC<TaxonomyHierarchyTreeProps> = ({
               <button
                 type="button"
                 onClick={(e) => onReorderNode(node.id, "up", e)}
-                className="p-1 rounded text-stone-500 hover:text-stone-700 hover:bg-stone-200/60 min-w-6 min-h-6 inline-flex items-center justify-center"
+                className="p-1 rounded text-text-tertiary hover:text-text-emphasis hover:bg-surface-disabled/60 min-w-6 min-h-6 inline-flex items-center justify-center"
                 aria-label={t("admin.taxonomyHierarchyTree.monterNode", {
                   name: node.name,
                 })}
@@ -202,7 +202,7 @@ export const TaxonomyHierarchyTree: React.FC<TaxonomyHierarchyTreeProps> = ({
               <button
                 type="button"
                 onClick={(e) => onReorderNode(node.id, "down", e)}
-                className="p-1 rounded text-stone-500 hover:text-stone-700 hover:bg-stone-200/60 min-w-6 min-h-6 inline-flex items-center justify-center"
+                className="p-1 rounded text-text-tertiary hover:text-text-emphasis hover:bg-surface-disabled/60 min-w-6 min-h-6 inline-flex items-center justify-center"
                 aria-label={t("admin.taxonomyHierarchyTree.descendreNode", {
                   name: node.name,
                 })}
@@ -216,7 +216,7 @@ export const TaxonomyHierarchyTree: React.FC<TaxonomyHierarchyTreeProps> = ({
               <button
                 type="button"
                 onClick={(e) => onAddChild(node, e)}
-                className="p-1 rounded text-stone-500 hover:text-primary hover:bg-primary-light min-w-6 min-h-6 inline-flex items-center justify-center"
+                className="p-1 rounded text-text-tertiary hover:text-primary hover:bg-primary-light min-w-6 min-h-6 inline-flex items-center justify-center"
                 aria-label={t(
                   "admin.taxonomyHierarchyTree.ajouterSousRubriqueNode",
                   { name: node.name },
@@ -228,7 +228,7 @@ export const TaxonomyHierarchyTree: React.FC<TaxonomyHierarchyTreeProps> = ({
 
             {/* Child Count */}
             {hasChildren && (
-              <span className="text-micro text-stone-500 font-mono pl-1">
+              <span className="text-micro text-text-tertiary font-mono pl-1">
                 {node.children!.length}
               </span>
             )}
@@ -237,7 +237,7 @@ export const TaxonomyHierarchyTree: React.FC<TaxonomyHierarchyTreeProps> = ({
 
         {/* Recursive Children */}
         {hasChildren && isExpanded && (
-          <div className="space-y-0.5 border-l border-stone-200/60 ml-4 pl-1">
+          <div className="space-y-0.5 border-l border-border-disabled/60 ml-4 pl-1">
             {visibleChildren.map((child, cIdx) =>
               renderNodeRow(child, depth + 1, cIdx, visibleChildren.length),
             )}
@@ -252,12 +252,12 @@ export const TaxonomyHierarchyTree: React.FC<TaxonomyHierarchyTreeProps> = ({
   return (
     <div className="space-y-1 py-1 max-h-175 overflow-y-auto pr-1">
       {filteredRoots.length === 0 ? (
-        <div className="p-8 text-center text-xs text-stone-500 border border-dashed rounded-2xl">
-          <Layers className="w-8 h-8 text-stone-300 mx-auto mb-2" />
+        <div className="p-8 text-center text-xs text-text-tertiary border border-dashed rounded-2xl">
+          <Layers className="w-8 h-8 text-text-inverse-muted mx-auto mb-2" />
           <p className="font-semibold text-text-secondary">
             {t("admin.taxonomyHierarchyTree.aucuneRubriqueNeCorrespondA")}
           </p>
-          <p className="text-micro text-stone-500 mt-1">
+          <p className="text-micro text-text-tertiary mt-1">
             {t(
               "admin.taxonomyHierarchyTree.modifiezVotreRechercheOuReinitialisez",
             )}

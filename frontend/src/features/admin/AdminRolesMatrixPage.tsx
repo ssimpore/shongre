@@ -95,15 +95,15 @@ export const AdminRolesMatrixPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-bg-surface rounded-control border border-stone-200 p-6 shadow-xs">
+      <div className="bg-bg-surface rounded-control border border-border-disabled p-6 shadow-xs">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1">
               <span className="text-xs font-bold uppercase tracking-wider text-primary">
                 Gouvernance RBAC
               </span>
-              <span className="text-stone-300">•</span>
-              <span className="text-xs text-stone-500 font-medium">
+              <span className="text-text-inverse-muted">•</span>
+              <span className="text-xs text-text-tertiary font-medium">
                 {t("admin.adminRolesMatrixPage.controleDAccesBaseSur")}
               </span>
             </div>
@@ -120,8 +120,8 @@ export const AdminRolesMatrixPage: React.FC = () => {
           </div>
 
           {/* Quick Role Switcher Banner */}
-          <div className="bg-stone-50 border border-stone-200 rounded-lg p-3 text-xs flex flex-col gap-1.5 shrink-0">
-            <span className="text-stone-500 font-medium">
+          <div className="bg-surface-soft border border-border-disabled rounded-lg p-3 text-xs flex flex-col gap-1.5 shrink-0">
+            <span className="text-text-tertiary font-medium">
               {t("admin.adminRolesMatrixPage.votreIdentiteActive")}
             </span>
             <div className="flex items-center gap-2">
@@ -137,9 +137,9 @@ export const AdminRolesMatrixPage: React.FC = () => {
       </div>
 
       {/* Role Power Spectrum Cards */}
-      <div className="bg-bg-surface rounded-control border border-stone-200 p-5 shadow-xs">
-        <h2 className="text-xs font-bold uppercase tracking-wider text-stone-500 mb-3 flex items-center gap-2">
-          <ShieldCheck className="w-icon-md h-icon-md text-stone-700" />
+      <div className="bg-bg-surface rounded-control border border-border-disabled p-5 shadow-xs">
+        <h2 className="text-xs font-bold uppercase tracking-wider text-text-tertiary mb-3 flex items-center gap-2">
+          <ShieldCheck className="w-icon-md h-icon-md text-text-emphasis" />
           {t("admin.adminRolesMatrixPage.spectreDElevationDesPrivileges")}
           {roleStats.length} {t("admin.adminRolesMatrixPage.rolesDefinis")}
         </h2>
@@ -152,8 +152,8 @@ export const AdminRolesMatrixPage: React.FC = () => {
                 key={r.role}
                 className={`p-2.5 rounded-lg border text-xs flex flex-col justify-between transition-all ${
                   isCurrent
-                    ? "border-primary bg-orange-50/50 shadow-xs ring-1 ring-primary"
-                    : "border-stone-200 bg-stone-50/50 hover:bg-stone-50"
+                    ? "border-primary bg-primary-surface-faint shadow-xs ring-1 ring-primary"
+                    : "border-border-disabled bg-surface-soft/50 hover:bg-surface-soft"
                 }`}
               >
                 <div>
@@ -164,7 +164,7 @@ export const AdminRolesMatrixPage: React.FC = () => {
                       Niv. {r.hierarchyLevel}
                     </span>
                     {r.isInternalStaff && (
-                      <span className="text-micro bg-stone-800 text-stone-200 font-bold px-1 rounded-xs">
+                      <span className="text-micro bg-surface-inverse-hover text-text-inverse-faint font-bold px-1 rounded-xs">
                         INTERNE
                       </span>
                     )}
@@ -177,9 +177,9 @@ export const AdminRolesMatrixPage: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="mt-2 pt-2 border-t border-stone-200/60 flex items-center justify-between text-micro text-stone-500">
+                <div className="mt-2 pt-2 border-t border-border-disabled/60 flex items-center justify-between text-micro text-text-tertiary">
                   <span>{r.permissionsCount} droits</span>
-                  <span className="font-semibold text-stone-700">
+                  <span className="font-semibold text-text-emphasis">
                     {r.percentageOfAll}%
                   </span>
                 </div>
@@ -190,7 +190,7 @@ export const AdminRolesMatrixPage: React.FC = () => {
       </div>
 
       {/* Filters Bar */}
-      <div className="bg-bg-surface rounded-control border border-stone-200 p-4 shadow-xs flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
+      <div className="bg-bg-surface rounded-control border border-border-disabled p-4 shadow-xs flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
         <div className="flex-1 flex flex-col sm:flex-row gap-3">
           {/* Search Input */}
           <div className="relative flex-1">
@@ -205,7 +205,7 @@ export const AdminRolesMatrixPage: React.FC = () => {
               aria-label={t(
                 "admin.adminRolesMatrixPage.filtrerUnePermissionExListing",
               )}
-              className="w-full pl-9 pr-3 py-2 text-xs border border-stone-200 rounded-control focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary h-control-touch"
+              className="w-full pl-9 pr-3 py-2 text-xs border border-border-disabled rounded-control focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary h-control-touch"
             />
           </div>
 
@@ -242,7 +242,7 @@ export const AdminRolesMatrixPage: React.FC = () => {
         </div>
 
         {/* Sensitive toggle */}
-        <label className="flex items-center gap-2 text-xs font-semibold text-stone-700 cursor-pointer select-none">
+        <label className="flex items-center gap-2 text-xs font-semibold text-text-emphasis cursor-pointer select-none">
           <input
             type="checkbox"
             checked={showSensitiveOnly}
@@ -255,7 +255,7 @@ export const AdminRolesMatrixPage: React.FC = () => {
       </div>
 
       {/* Matrix Table */}
-      <div className="bg-bg-surface rounded-control border border-stone-200 shadow-xs overflow-hidden">
+      <div className="bg-bg-surface rounded-control border border-border-disabled shadow-xs overflow-hidden">
         {/* Focusable so the matrix can be scrolled without a pointer — it is
             far wider than any viewport by design. */}
         <div
@@ -268,10 +268,10 @@ export const AdminRolesMatrixPage: React.FC = () => {
         >
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="bg-stone-900 text-text-inverse font-bold border-b border-stone-800">
+              <tr className="bg-surface-inverse text-text-inverse font-bold border-b border-border-inverse">
                 <th
                   scope="col"
-                  className="p-3 min-w-70 sticky left-0 bg-stone-900 z-raised"
+                  className="p-3 min-w-70 sticky left-0 bg-surface-inverse z-raised"
                 >
                   {t("admin.adminRolesMatrixPage.permissionPerimetre")}
                 </th>
@@ -282,7 +282,7 @@ export const AdminRolesMatrixPage: React.FC = () => {
                     <th
                       scope="col"
                       key={r}
-                      className={`p-2.5 text-center min-w-22.5 border-l border-stone-800 ${
+                      className={`p-2.5 text-center min-w-22.5 border-l border-border-inverse ${
                         isCurrent ? "bg-primary-hover text-text-inverse" : ""
                       }`}
                       title={`${def.title} (niveau ${def.hierarchyLevel})`}
@@ -296,12 +296,12 @@ export const AdminRolesMatrixPage: React.FC = () => {
                 })}
               </tr>
             </thead>
-            <tbody className="divide-y divide-stone-200">
+            <tbody className="divide-y divide-border-disabled">
               {filteredGroups.length === 0 ? (
                 <tr>
                   <td
                     colSpan={ALL_PLATFORM_ROLES.length + 1}
-                    className="p-8 text-center text-stone-500"
+                    className="p-8 text-center text-text-tertiary"
                   >
                     {t(
                       "admin.adminRolesMatrixPage.aucunePermissionNeCorrespondA",
@@ -317,7 +317,7 @@ export const AdminRolesMatrixPage: React.FC = () => {
                       {/* Category Header Row */}
                       <tr
                         onClick={() => toggleCategory(group.category)}
-                        className="bg-stone-100/90 cursor-pointer hover:bg-stone-200/80 transition-colors select-none font-bold text-stone-800"
+                        className="bg-surface-muted/90 cursor-pointer hover:bg-surface-disabled/80 transition-colors select-none font-bold text-text-strong"
                       >
                         <td
                           colSpan={ALL_PLATFORM_ROLES.length + 1}
@@ -325,11 +325,11 @@ export const AdminRolesMatrixPage: React.FC = () => {
                         >
                           <div className="flex items-center gap-2">
                             {isExpanded ? (
-                              <ChevronDown className="w-icon-md h-icon-md text-stone-500" />
+                              <ChevronDown className="w-icon-md h-icon-md text-text-tertiary" />
                             ) : (
-                              <ChevronRight className="w-icon-md h-icon-md text-stone-500" />
+                              <ChevronRight className="w-icon-md h-icon-md text-text-tertiary" />
                             )}
-                            <span className="uppercase text-xs tracking-wider text-stone-700">
+                            <span className="uppercase text-xs tracking-wider text-text-emphasis">
                               {t("admin.adminRolesMatrixPage.categorie")}{" "}
                               {group.category} (
                               {plural(group.rows.length, "permission")})
@@ -344,10 +344,10 @@ export const AdminRolesMatrixPage: React.FC = () => {
                           return (
                             <tr
                               key={row.permission.id}
-                              className="hover:bg-stone-50/80 transition-colors"
+                              className="hover:bg-surface-soft/80 transition-colors"
                             >
                               {/* Permission Info */}
-                              <td className="p-3 sticky left-0 bg-bg-surface hover:bg-stone-50 border-r border-stone-200 z-raised">
+                              <td className="p-3 sticky left-0 bg-bg-surface hover:bg-surface-soft border-r border-border-disabled z-raised">
                                 <div className="flex items-start justify-between gap-2">
                                   <div>
                                     <div
@@ -356,7 +356,7 @@ export const AdminRolesMatrixPage: React.FC = () => {
                                     >
                                       {row.permission.name}
                                     </div>
-                                    <div className="text-micro text-stone-500 mt-0.5">
+                                    <div className="text-micro text-text-tertiary mt-0.5">
                                       {row.permission.description}
                                     </div>
                                   </div>
@@ -380,8 +380,10 @@ export const AdminRolesMatrixPage: React.FC = () => {
                                 return (
                                   <td
                                     key={r}
-                                    className={`p-2.5 text-center border-l border-stone-100 ${
-                                      isCurrent ? "bg-orange-50/40" : ""
+                                    className={`p-2.5 text-center border-l border-border-soft ${
+                                      isCurrent
+                                        ? "bg-primary-surface-faint"
+                                        : ""
                                     }`}
                                   >
                                     {isGranted ? (
@@ -389,7 +391,7 @@ export const AdminRolesMatrixPage: React.FC = () => {
                                         <Check className="w-icon-sm h-icon-sm stroke-3" />
                                       </span>
                                     ) : (
-                                      <span className="inline-flex items-center justify-center w-5 h-5 rounded-pill text-stone-300">
+                                      <span className="inline-flex items-center justify-center w-5 h-5 rounded-pill text-text-inverse-muted">
                                         <X className="w-icon-xs h-icon-xs stroke-2" />
                                       </span>
                                     )}

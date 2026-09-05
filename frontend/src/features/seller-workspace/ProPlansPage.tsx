@@ -554,7 +554,7 @@ export const ProPlansPage: React.FC = () => {
                 onClick={() => setSelectedVertical(vertical.id)}
                 className={`rounded-full border px-4 py-2 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
                   selectedVertical === vertical.id
-                    ? "border-primary bg-primary text-white"
+                    ? "border-primary bg-primary text-text-inverse"
                     : "border-border-base bg-bg-surface text-text-secondary hover:border-primary-border hover:text-text-main"
                 }`}
               >
@@ -585,7 +585,7 @@ export const ProPlansPage: React.FC = () => {
               aria-pressed={interval === "year"}
               className={`rounded-control px-4 py-2 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
                 interval === "year"
-                  ? "bg-primary text-white shadow-xs"
+                  ? "bg-primary text-text-inverse shadow-xs"
                   : "text-text-secondary hover:text-text-main"
               }`}
             >
@@ -749,7 +749,7 @@ export const ProPlansPage: React.FC = () => {
                       }`}
                     >
                       {plan.recommended && (
-                        <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-3 py-1 text-micro font-bold uppercase tracking-wide text-white shadow-xs">
+                        <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-primary px-3 py-1 text-micro font-bold uppercase tracking-wide text-text-inverse shadow-xs">
                           Recommandé
                         </span>
                       )}

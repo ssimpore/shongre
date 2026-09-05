@@ -95,14 +95,14 @@ export const Tabs: React.FC<TabsProps> = ({
                 ? cn(
                     "h-control-sm rounded-control px-3 text-xs sm:px-4",
                     isActive
-                      ? "bg-stone-900 text-white"
+                      ? "bg-surface-inverse text-text-inverse"
                       : "text-text-secondary hover:bg-bg-subtle",
                   )
                 : cn(
                     "relative px-2 pb-3 text-xs sm:px-3 sm:text-sm",
                     isActive
                       ? "font-semibold text-primary"
-                      : "text-stone-600 hover:text-stone-950",
+                      : "text-text-supporting hover:text-text-deep",
                   ),
             )}
           >
@@ -114,7 +114,7 @@ export const Tabs: React.FC<TabsProps> = ({
                   "rounded-full px-1.5 py-0.5 text-micro font-bold",
                   isActive
                     ? isSegmented
-                      ? "bg-white/15 text-white"
+                      ? "bg-bg-surface/15 text-text-inverse"
                       : "bg-primary-light text-primary"
                     : "bg-bg-muted text-text-secondary",
                 )}

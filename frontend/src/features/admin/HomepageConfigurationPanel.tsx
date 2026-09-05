@@ -206,7 +206,7 @@ export const HomepageConfigurationPanel: React.FC<
 
   if (isLoading || !configuration) {
     return (
-      <div className="flex min-h-64 items-center justify-center rounded-control border border-stone-200 bg-bg-surface text-sm font-medium text-stone-500">
+      <div className="flex min-h-64 items-center justify-center rounded-control border border-border-disabled bg-bg-surface text-sm font-medium text-text-tertiary">
         <RefreshCw className="mr-2 h-icon-md w-icon-md animate-spin" />
         {t("admin.homepageConfigurationPanel.chargementDeLaPageDAccueil")}
       </div>
@@ -219,7 +219,7 @@ export const HomepageConfigurationPanel: React.FC<
 
   return (
     <section className="space-y-6" aria-labelledby="homepage-config-title">
-      <div className="flex flex-col justify-between gap-4 rounded-control border border-stone-200 bg-bg-surface p-5 shadow-xs sm:flex-row sm:items-end sm:p-6">
+      <div className="flex flex-col justify-between gap-4 rounded-control border border-border-disabled bg-bg-surface p-5 shadow-xs sm:flex-row sm:items-end sm:p-6">
         <div>
           <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary">
             <LayoutDashboard className="h-icon-md w-icon-md" /> Page d’accueil
@@ -230,7 +230,7 @@ export const HomepageConfigurationPanel: React.FC<
           >
             {t("admin.homepageConfigurationPanel.configurationCentralisee")}
           </h1>
-          <p className="mt-1 max-w-2xl text-sm leading-relaxed text-stone-500">
+          <p className="mt-1 max-w-2xl text-sm leading-relaxed text-text-tertiary">
             {t("invoicing.product.previewMarket")} <strong>{marketCode}</strong>{" "}
             · langue <strong>{locale}</strong>{" "}
             {t("admin.homepageConfigurationPanel.revision")}{" "}
@@ -276,7 +276,7 @@ export const HomepageConfigurationPanel: React.FC<
           {sections.map((section, index) => (
             <article
               key={section.key}
-              className="rounded-control border border-stone-200 bg-bg-surface p-4 shadow-xs sm:p-5"
+              className="rounded-control border border-border-disabled bg-bg-surface p-4 shadow-xs sm:p-5"
               data-testid={`homepage-admin-section-${section.key}`}
             >
               <div className="mb-4 flex flex-wrap items-center gap-3">
@@ -662,7 +662,7 @@ export const HomepageConfigurationPanel: React.FC<
                     </FormField>
                     {(section.settings.offerOverrides || []).length ? (
                       <div className="space-y-2">
-                        <h4 className="text-xs font-bold text-stone-700">
+                        <h4 className="text-xs font-bold text-text-emphasis">
                           {t(
                             "admin.homepageConfigurationPanel.programmationDesOverridesDAnnonces",
                           )}
@@ -670,9 +670,9 @@ export const HomepageConfigurationPanel: React.FC<
                         {section.settings.offerOverrides?.map((override) => (
                           <div
                             key={override.listingId}
-                            className="grid gap-2 rounded-control border border-stone-200 bg-bg-surface p-3 sm:grid-cols-3"
+                            className="grid gap-2 rounded-control border border-border-disabled bg-bg-surface p-3 sm:grid-cols-3"
                           >
-                            <div className="self-center truncate text-xs font-bold text-stone-700">
+                            <div className="self-center truncate text-xs font-bold text-text-emphasis">
                               {override.listingId}
                             </div>
                             <Input
@@ -737,11 +737,11 @@ export const HomepageConfigurationPanel: React.FC<
         </div>
 
         <aside className="min-w-0 space-y-4 2xl:sticky 2xl:top-4 2xl:self-start">
-          <div className="rounded-control border border-stone-200 bg-bg-surface p-5 shadow-xs">
+          <div className="rounded-control border border-border-disabled bg-bg-surface p-5 shadow-xs">
             <h2 className="text-sm font-bold text-text-main">
               {t("admin.homepageConfigurationPanel.apercuDeLaPageComplete")}
             </h2>
-            <p className="mt-1 text-xs leading-relaxed text-stone-500">
+            <p className="mt-1 text-xs leading-relaxed text-text-tertiary">
               {t(
                 "admin.homepageConfigurationPanel.resolutionReelleDuBrouillonPour",
               )}{" "}
@@ -780,7 +780,7 @@ export const HomepageConfigurationPanel: React.FC<
                   return (
                     <li
                       key={section.key}
-                      className="rounded-control border border-stone-200 bg-stone-50 p-3"
+                      className="rounded-control border border-border-disabled bg-surface-soft p-3"
                     >
                       <div className="flex items-start gap-2">
                         <span className="text-xs font-bold text-text-disabled">
@@ -790,7 +790,7 @@ export const HomepageConfigurationPanel: React.FC<
                           <div className="truncate text-sm font-bold text-text-main">
                             {section.title}
                           </div>
-                          <div className="mt-0.5 text-xs text-stone-500">
+                          <div className="mt-0.5 text-xs text-text-tertiary">
                             {section.status}
                             {itemCount ? ` · ${itemCount} élément(s)` : ""}
                           </div>
@@ -800,7 +800,7 @@ export const HomepageConfigurationPanel: React.FC<
                   );
                 })}
               {!preview ? (
-                <li className="rounded-control border border-dashed border-stone-300 p-6 text-center text-sm text-stone-500">
+                <li className="rounded-control border border-dashed border-border-prominent p-6 text-center text-sm text-text-tertiary">
                   {t(
                     "admin.homepageConfigurationPanel.lancezLApercuPourResoudreLeContenu",
                   )}
@@ -808,7 +808,7 @@ export const HomepageConfigurationPanel: React.FC<
               ) : null}
             </ol>
           </div>
-          <div className="rounded-control border border-stone-200 bg-bg-surface p-5 shadow-xs">
+          <div className="rounded-control border border-border-disabled bg-bg-surface p-5 shadow-xs">
             <FormField
               label={t(
                 "admin.homepageConfigurationPanel.motifDeModificationPublication",
@@ -824,7 +824,7 @@ export const HomepageConfigurationPanel: React.FC<
                 )}
               />
             </FormField>
-            <p className="mt-3 text-xs leading-relaxed text-stone-500">
+            <p className="mt-3 text-xs leading-relaxed text-text-tertiary">
               {t(
                 "admin.homepageConfigurationPanel.lesVersionsPublieesSontHistoriseesAvecLActeurLeMarche",
               )}

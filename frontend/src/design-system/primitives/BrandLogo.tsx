@@ -1,3 +1,5 @@
+import { webBrandAssets } from "@shongre/brand/web";
+
 export type BrandLogoVariant =
   "primary" | "reverse" | "mono-ink" | "mono-white" | "mono-orange";
 
@@ -21,78 +23,7 @@ interface ApprovedLogoAsset {
 
 const logoAssets: Partial<
   Record<BrandLogoLayout, Partial<Record<BrandLogoVariant, ApprovedLogoAsset>>>
-> = {
-  horizontal: {
-    primary: {
-      src: "/brand/shongre/logo/header-primary-480.png",
-      srcSet:
-        "/brand/shongre/logo/header-primary-240.png 240w, /brand/shongre/logo/header-primary-480.png 480w, /brand/shongre/logo/header-primary-960.png 960w",
-      width: 480,
-      height: 123,
-    },
-    reverse: {
-      src: "/brand/shongre/logo/header-reverse-480.png",
-      srcSet:
-        "/brand/shongre/logo/header-reverse-240.png 240w, /brand/shongre/logo/header-reverse-480.png 480w, /brand/shongre/logo/header-reverse-960.png 960w",
-      width: 480,
-      height: 123,
-    },
-    "mono-ink": {
-      src: "/brand/shongre/logo/horizontal-mono-ink.png",
-      width: 1956,
-      height: 500,
-    },
-    "mono-white": {
-      src: "/brand/shongre/logo/horizontal-mono-white.png",
-      width: 1956,
-      height: 500,
-    },
-    "mono-orange": {
-      src: "/brand/shongre/logo/horizontal-mono-orange.png",
-      width: 1956,
-      height: 500,
-    },
-  },
-  stacked: {
-    primary: {
-      src: "/brand/shongre/logo/stacked-primary.svg",
-      width: 1197,
-      height: 843,
-    },
-    "mono-ink": {
-      src: "/brand/shongre/logo/stacked-mono-ink.png",
-      width: 1197,
-      height: 843,
-    },
-    "mono-white": {
-      src: "/brand/shongre/logo/stacked-mono-white.png",
-      width: 1197,
-      height: 843,
-    },
-  },
-  wordmark: {
-    primary: {
-      src: "/brand/shongre/logo/wordmark-primary.svg",
-      width: 2024,
-      height: 383,
-    },
-    reverse: {
-      src: "/brand/shongre/logo/wordmark-reverse.png",
-      width: 2024,
-      height: 383,
-    },
-    "mono-ink": {
-      src: "/brand/shongre/logo/wordmark-mono-ink.png",
-      width: 2024,
-      height: 383,
-    },
-    "mono-white": {
-      src: "/brand/shongre/logo/wordmark-mono-white.png",
-      width: 2024,
-      height: 383,
-    },
-  },
-};
+> = webBrandAssets.logo;
 
 const logoSizeClasses: Record<BrandLogoSize, string> = {
   compact: "w-30",
@@ -106,29 +37,13 @@ const logoRenderedSizes: Record<BrandLogoSize, string> = {
   prominent: "192px",
 };
 
-const primaryIconAsset: ApprovedLogoAsset = {
-  src: "/brand/shongre/pwa/icon-maskable-192.png",
-  width: 192,
-  height: 192,
-};
+const primaryIconAsset: ApprovedLogoAsset = webBrandAssets.icon.primary;
 
 const iconAssets: Record<BrandIconVariant, ApprovedLogoAsset> = {
   primary: primaryIconAsset,
-  "mono-ink": {
-    src: "/brand/shongre/icon/mono-ink.svg",
-    width: 1106,
-    height: 1082,
-  },
-  "mono-white": {
-    src: "/brand/shongre/icon/mono-white.svg",
-    width: 1106,
-    height: 1082,
-  },
-  "mono-orange": {
-    src: "/brand/shongre/icon/mono-orange.png",
-    width: 1106,
-    height: 1082,
-  },
+  "mono-ink": webBrandAssets.icon["mono-ink"],
+  "mono-white": webBrandAssets.icon["mono-white"],
+  "mono-orange": webBrandAssets.icon["mono-orange"],
 };
 
 const iconSizeClasses: Record<BrandIconSize, string> = {
@@ -263,7 +178,7 @@ export function BrandHeaderSignature({
         />
         {marketLabel ? (
           <span
-            className={`${marketLabelVisibility === "desktop" ? "hidden lg:block" : "block"} max-w-full truncate text-overline font-semibold uppercase leading-none tracking-wider text-stone-500`}
+            className={`${marketLabelVisibility === "desktop" ? "hidden lg:block" : "block"} max-w-full truncate text-overline font-semibold uppercase leading-none tracking-wider text-text-tertiary`}
             data-brand-market-label
             aria-hidden="true"
           >

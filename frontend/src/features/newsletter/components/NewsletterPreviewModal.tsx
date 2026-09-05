@@ -27,7 +27,7 @@ export const NewsletterPreviewModal: React.FC<NewsletterPreviewModalProps> = ({
       description="Rendu indicatif à partir de la version immuable de la campagne."
     >
       <div className="space-y-4 text-xs">
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-stone-100 p-2">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-surface-muted p-2">
           <div
             className="flex items-center gap-1"
             role="group"
@@ -43,8 +43,8 @@ export const NewsletterPreviewModal: React.FC<NewsletterPreviewModalProps> = ({
                   aria-pressed={viewMode === mode}
                   className={`flex min-h-control-sm items-center gap-1.5 rounded-control px-3 font-semibold transition-colors ${
                     viewMode === mode
-                      ? "bg-white text-stone-900 shadow-xs"
-                      : "text-stone-600 hover:text-stone-900"
+                      ? "bg-bg-surface text-text-main shadow-xs"
+                      : "text-text-supporting hover:text-text-main"
                   }`}
                 >
                   <Icon className="h-3.5 w-3.5" />
@@ -53,33 +53,33 @@ export const NewsletterPreviewModal: React.FC<NewsletterPreviewModalProps> = ({
               );
             })}
           </div>
-          <span className="font-mono text-micro text-stone-500">
+          <span className="font-mono text-micro text-text-tertiary">
             v{campaign.currentVersion} · {campaign.locale}
           </span>
         </div>
 
-        <div className="space-y-1 rounded-xl border border-border-base bg-stone-50 p-3">
+        <div className="space-y-1 rounded-xl border border-border-base bg-surface-soft p-3">
           <p>
-            <strong className="mr-2 text-stone-500">Objet</strong>
+            <strong className="mr-2 text-text-tertiary">Objet</strong>
             {campaign.subject}
           </p>
           {campaign.previewText && (
-            <p className="truncate text-stone-500">
+            <p className="truncate text-text-tertiary">
               <strong className="mr-2">Préheader</strong>
               {campaign.previewText}
             </p>
           )}
         </div>
 
-        <div className="flex justify-center overflow-x-auto rounded-2xl bg-stone-200 p-4">
+        <div className="flex justify-center overflow-x-auto rounded-2xl bg-surface-disabled p-4">
           <article
-            className={`overflow-hidden rounded-2xl border border-stone-300 bg-white text-stone-800 shadow-sm transition-all ${
+            className={`overflow-hidden rounded-2xl border border-border-prominent bg-bg-surface text-text-strong shadow-sm transition-all ${
               viewMode === "mobile" ? "w-full max-w-sm" : "w-full max-w-2xl"
             }`}
           >
-            <header className="flex items-center justify-between bg-stone-950 px-6 py-5 text-white">
+            <header className="flex items-center justify-between bg-surface-inverse-deep px-6 py-5 text-text-inverse">
               <BrandLogo variant="reverse" size="compact" />
-              <span className="text-micro font-bold uppercase tracking-wider text-stone-400">
+              <span className="text-micro font-bold uppercase tracking-wider text-text-inverse-subtle">
                 Marketing
               </span>
             </header>
@@ -89,7 +89,7 @@ export const NewsletterPreviewModal: React.FC<NewsletterPreviewModalProps> = ({
                   return (
                     <h2
                       key={block.id}
-                      className="text-xl font-bold leading-tight text-stone-950"
+                      className="text-xl font-bold leading-tight text-text-deep"
                     >
                       {block.text}
                     </h2>
@@ -98,7 +98,7 @@ export const NewsletterPreviewModal: React.FC<NewsletterPreviewModalProps> = ({
                   return (
                     <p
                       key={block.id}
-                      className="text-sm leading-6 text-stone-700"
+                      className="text-sm leading-6 text-text-emphasis"
                     >
                       {block.text}
                     </p>
@@ -115,7 +115,7 @@ export const NewsletterPreviewModal: React.FC<NewsletterPreviewModalProps> = ({
                 if (block.type === "BUTTON")
                   return (
                     <div key={block.id} className="py-2 text-center">
-                      <span className="inline-flex min-h-control-md items-center rounded-control bg-primary px-5 font-bold text-white">
+                      <span className="inline-flex min-h-control-md items-center rounded-control bg-primary px-5 font-bold text-text-inverse">
                         {block.label}
                       </span>
                     </div>
@@ -144,7 +144,7 @@ export const NewsletterPreviewModal: React.FC<NewsletterPreviewModalProps> = ({
                   return (
                     <p
                       key={block.id}
-                      className="text-center text-micro leading-5 text-stone-500 underline-offset-2"
+                      className="text-center text-micro leading-5 text-text-tertiary underline-offset-2"
                     >
                       {block.text ??
                         (block.type === "UNSUBSCRIBE"
@@ -157,7 +157,7 @@ export const NewsletterPreviewModal: React.FC<NewsletterPreviewModalProps> = ({
                 return null;
               })}
             </div>
-            <footer className="border-t border-stone-200 bg-stone-100 px-6 py-4 text-center text-micro text-stone-500">
+            <footer className="border-t border-border-disabled bg-surface-muted px-6 py-4 text-center text-micro text-text-tertiary">
               Finalité MARKETING · désabonnement immédiat et préférences
               accessibles sans connexion.
             </footer>

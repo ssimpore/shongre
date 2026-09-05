@@ -174,14 +174,14 @@ export const CrmUniversalSearch: React.FC<CrmUniversalSearchProps> = ({
           aria-expanded={isOpen}
           aria-controls={isOpen ? resultsId : undefined}
           aria-busy={isLoading || undefined}
-          className="w-full h-control-md pl-10 pr-9 text-xs bg-stone-50 border border-stone-200 rounded-control placeholder:text-text-muted focus:bg-bg-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+          className="w-full h-control-md pl-10 pr-9 text-xs bg-surface-soft border border-border-disabled rounded-control placeholder:text-text-muted focus:bg-bg-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
         />
         {query && (
           <button
             type="button"
             onClick={clearSearch}
             aria-label={t("admin.crmUniversalSearch.clear")}
-            className="absolute right-2 top-1/2 inline-flex min-h-6 min-w-6 -translate-y-1/2 items-center justify-center rounded-md text-stone-500 transition-colors duration-fast hover:bg-stone-100 hover:text-stone-700"
+            className="absolute right-2 top-1/2 inline-flex min-h-6 min-w-6 -translate-y-1/2 items-center justify-center rounded-md text-text-tertiary transition-colors duration-fast hover:bg-surface-muted hover:text-text-emphasis"
           >
             <X className="w-icon-sm h-icon-sm" />
           </button>
@@ -192,10 +192,10 @@ export const CrmUniversalSearch: React.FC<CrmUniversalSearchProps> = ({
       {isOpen && (
         <div
           id={resultsId}
-          className="absolute left-0 right-0 top-full z-popover mt-1.5 max-h-96 overflow-y-auto overflow-x-hidden rounded-2xl border border-stone-200 bg-bg-surface shadow-dropdown animate-in fade-in"
+          className="absolute left-0 right-0 top-full z-popover mt-1.5 max-h-96 overflow-y-auto overflow-x-hidden rounded-2xl border border-border-disabled bg-bg-surface shadow-dropdown animate-in fade-in"
           aria-live="polite"
         >
-          <div className="p-2 bg-stone-50 text-micro font-bold text-stone-500 uppercase tracking-wider">
+          <div className="p-2 bg-surface-soft text-micro font-bold text-text-tertiary uppercase tracking-wider">
             {isLoading
               ? t("admin.crmUniversalSearch.loading")
               : t("admin.crmUniversalSearch.results", {
@@ -204,12 +204,12 @@ export const CrmUniversalSearch: React.FC<CrmUniversalSearchProps> = ({
           </div>
 
           {!isLoading && hasSearched && results.length === 0 ? (
-            <p className="px-4 py-5 text-center text-xs text-stone-500">
+            <p className="px-4 py-5 text-center text-xs text-text-tertiary">
               {t("admin.crmUniversalSearch.noResults")}
             </p>
           ) : (
             <ul
-              className="divide-y divide-stone-100"
+              className="divide-y divide-border-soft"
               aria-label={t("admin.crmUniversalSearch.resultsList")}
             >
               {results.map((hit) => (
@@ -217,17 +217,17 @@ export const CrmUniversalSearch: React.FC<CrmUniversalSearchProps> = ({
                   <button
                     type="button"
                     onClick={() => handleSelect(hit)}
-                    className="flex w-full items-center justify-between gap-3 p-3 text-left transition-colors duration-fast hover:bg-stone-50 focus-visible:bg-stone-50"
+                    className="flex w-full items-center justify-between gap-3 p-3 text-left transition-colors duration-fast hover:bg-surface-soft focus-visible:bg-surface-soft"
                   >
                     <span className="flex min-w-0 items-center gap-3">
-                      <span className="shrink-0 rounded-control bg-stone-100 p-2">
+                      <span className="shrink-0 rounded-control bg-surface-muted p-2">
                         {getItemIcon(hit.type)}
                       </span>
                       <span className="min-w-0">
                         <span className="block truncate text-xs font-bold text-text-main">
                           {hit.title}
                         </span>
-                        <span className="block truncate text-micro text-stone-500">
+                        <span className="block truncate text-micro text-text-tertiary">
                           {hit.subtitle}
                         </span>
                       </span>

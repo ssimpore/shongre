@@ -34,14 +34,14 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
     danger: {
       icon: <ShieldAlert className="w-icon-xl h-icon-xl text-danger" />,
       btnVariant: "primary" as const,
-      btnClass: "bg-danger hover:bg-danger text-white",
+      btnClass: "bg-danger hover:bg-danger text-text-inverse",
       bgClass: "bg-danger-surface border-danger-border",
     },
     warning: {
       icon: <AlertTriangle className="w-icon-xl h-icon-xl text-warning" />,
       btnVariant: "primary" as const,
       btnClass:
-        "bg-warning hover:bg-warning-hover active:bg-warning-active text-white",
+        "bg-warning hover:bg-warning-hover active:bg-warning-active text-text-inverse",
       bgClass: "bg-warning-surface border-warning-border",
     },
     primary: {
@@ -53,7 +53,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
     success: {
       icon: <CheckCircle2 className="w-icon-xl h-icon-xl text-success" />,
       btnVariant: "primary" as const,
-      btnClass: "bg-success hover:bg-success text-white",
+      btnClass: "bg-success hover:bg-success text-text-inverse",
       bgClass: "bg-success-surface border-success-border",
     },
   }[variant];
@@ -67,7 +67,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
           <div className="shrink-0 mt-0.5 bg-bg-surface p-1.5 rounded-control shadow-xs border border-border-subtle">
             {iconConfig.icon}
           </div>
-          <p className="text-sm text-stone-800 leading-relaxed font-medium">
+          <p className="text-sm text-text-strong leading-relaxed font-medium">
             {message}
           </p>
         </div>

@@ -245,10 +245,10 @@ export const CrmTasksPage: React.FC = () => {
 
   return (
     <div className="space-y-4 pb-8">
-      <section className="rounded-2xl border border-stone-800 bg-stone-950 p-5 text-text-inverse sm:p-6">
+      <section className="rounded-2xl border border-border-inverse bg-surface-inverse-deep p-5 text-text-inverse sm:p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-micro font-bold uppercase tracking-wider text-violet-300">
+            <p className="text-micro font-bold uppercase tracking-wider text-staff-on-inverse">
               {t("admin.crmTasksPage.crmExecution")}
             </p>
             <h1 className="mt-1 text-2xl font-bold tracking-tight sm:text-3xl">
@@ -266,7 +266,7 @@ export const CrmTasksPage: React.FC = () => {
           </Button>
         </div>
         <div className="mt-5 grid grid-cols-3 gap-2">
-          <div className="rounded-control bg-stone-900 p-3">
+          <div className="rounded-control bg-surface-inverse p-3">
             <span className="text-micro text-text-disabled">
               {t("admin.crmTasksPage.aFaire")}
             </span>
@@ -274,17 +274,17 @@ export const CrmTasksPage: React.FC = () => {
               {counts.pending}
             </strong>
           </div>
-          <div className="rounded-control bg-stone-900 p-3">
+          <div className="rounded-control bg-surface-inverse p-3">
             <span className="text-micro text-text-disabled">En retard</span>
-            <strong className="block text-xl font-bold text-red-300">
+            <strong className="block text-xl font-bold text-danger-on-inverse-strong">
               {counts.overdue}
             </strong>
           </div>
-          <div className="rounded-control bg-stone-900 p-3">
+          <div className="rounded-control bg-surface-inverse p-3">
             <span className="text-micro text-text-disabled">
               {t("admin.crmTasksPage.terminees")}
             </span>
-            <strong className="block text-xl font-bold text-emerald-300">
+            <strong className="block text-xl font-bold text-success-on-inverse-strong">
               {counts.completed}
             </strong>
           </div>
@@ -292,11 +292,11 @@ export const CrmTasksPage: React.FC = () => {
       </section>
       <section className="overflow-hidden rounded-2xl border border-border-base bg-bg-surface shadow-xs">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border-subtle px-4 py-3">
-          <div className="inline-flex items-center gap-1 text-micro font-bold uppercase tracking-wider text-stone-500">
+          <div className="inline-flex items-center gap-1 text-micro font-bold uppercase tracking-wider text-text-tertiary">
             <Filter className="h-icon-sm w-icon-sm" /> Vue
           </div>
           <div
-            className="flex rounded-lg bg-stone-100 p-1"
+            className="flex rounded-lg bg-surface-muted p-1"
             role="tablist"
             aria-label={t("admin.crmTasksPage.filtrerLesTaches")}
           >
@@ -307,7 +307,7 @@ export const CrmTasksPage: React.FC = () => {
                 role="tab"
                 aria-selected={filter === value}
                 onClick={() => setFilter(value)}
-                className={`rounded-md px-3 py-1.5 text-micro font-semibold ${filter === value ? "bg-bg-surface text-stone-950 shadow-xs" : "text-stone-500"}`}
+                className={`rounded-md px-3 py-1.5 text-micro font-semibold ${filter === value ? "bg-bg-surface text-text-deep shadow-xs" : "text-text-tertiary"}`}
               >
                 {value === "pending"
                   ? `À faire (${counts.pending})`
@@ -347,7 +347,7 @@ export const CrmTasksPage: React.FC = () => {
               return (
                 <article
                   key={task.id}
-                  className="flex items-center gap-3 px-4 py-3.5 hover:bg-stone-50"
+                  className="flex items-center gap-3 px-4 py-3.5 hover:bg-surface-soft"
                 >
                   <button
                     type="button"
@@ -372,14 +372,14 @@ export const CrmTasksPage: React.FC = () => {
                     >
                       {task.title}
                     </strong>
-                    <p className="mt-0.5 truncate text-micro text-stone-500">
+                    <p className="mt-0.5 truncate text-micro text-text-tertiary">
                       {relationName(task)} · {task.ownerName ?? "Non assignée"}
                     </p>
                   </div>
                   <div className="hidden items-center gap-1.5 text-micro font-bold sm:flex">
                     <CalendarClock className="h-icon-sm w-icon-sm" />
                     <time
-                      className={overdue ? "text-danger" : "text-stone-500"}
+                      className={overdue ? "text-danger" : "text-text-tertiary"}
                     >
                       {new Intl.DateTimeFormat(currentLocale, {
                         dateStyle: "medium",

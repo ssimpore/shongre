@@ -219,16 +219,16 @@ export function AdminCommissionPanel({ catalog }: AdminCommissionPanelProps) {
             key={label}
             className="rounded-lg border border-border-base bg-bg-subtle p-3"
           >
-            <div className="flex items-center gap-2 text-micro font-bold uppercase tracking-wide text-stone-500">
+            <div className="flex items-center gap-2 text-micro font-bold uppercase tracking-wide text-text-tertiary">
               <Icon className="h-4 w-4" aria-hidden="true" />
               {label}
             </div>
-            <div className="mt-1 text-xl font-bold text-stone-950">{value}</div>
+            <div className="mt-1 text-xl font-bold text-text-deep">{value}</div>
           </div>
         ))}
       </div>
 
-      <div className="rounded-lg border border-success-border bg-success-surface p-3 text-xs text-stone-700">
+      <div className="rounded-lg border border-success-border bg-success-surface p-3 text-xs text-text-emphasis">
         <strong>{t("admin.adminCommissionPanel.defautSur")}</strong>{" "}
         {t(
           "admin.adminCommissionPanel.aucuneCommissionNEstPreleveeSansPolitiqueActiveContexteEligible",
@@ -260,17 +260,17 @@ export function AdminCommissionPanel({ catalog }: AdminCommissionPanelProps) {
           className="rounded-lg border border-border-base p-4"
         >
           <div className="mb-4">
-            <h2 className="text-sm font-bold text-stone-950">
+            <h2 className="text-sm font-bold text-text-deep">
               {t("admin.adminCommissionPanel.simulateurDeCommission")}
             </h2>
-            <p className="mt-1 text-micro text-stone-500">
+            <p className="mt-1 text-micro text-text-tertiary">
               {t(
                 "admin.adminCommissionPanel.utiliseExactementLeMemeResolveurQueLeCheckoutEtLa",
               )}
             </p>
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
-            <label className="text-xs font-semibold text-stone-700">
+            <label className="text-xs font-semibold text-text-emphasis">
               Montant
               <Input
                 className="mt-1"
@@ -284,7 +284,7 @@ export function AdminCommissionPanel({ catalog }: AdminCommissionPanelProps) {
                 }
               />
             </label>
-            <label className="text-xs font-semibold text-stone-700">
+            <label className="text-xs font-semibold text-text-emphasis">
               Date effective
               <Input
                 className="mt-1"
@@ -298,7 +298,7 @@ export function AdminCommissionPanel({ catalog }: AdminCommissionPanelProps) {
                 }
               />
             </label>
-            <label className="text-xs font-semibold text-stone-700">
+            <label className="text-xs font-semibold text-text-emphasis">
               {t("admin.adminCommissionPanel.typeVendeur")}
               <Select
                 className="mt-1 w-full"
@@ -316,7 +316,7 @@ export function AdminCommissionPanel({ catalog }: AdminCommissionPanelProps) {
                 <option value="organization">Organisation</option>
               </Select>
             </label>
-            <label className="text-xs font-semibold text-stone-700">
+            <label className="text-xs font-semibold text-text-emphasis">
               Verticale
               <Select
                 className="mt-1 w-full"
@@ -336,7 +336,7 @@ export function AdminCommissionPanel({ catalog }: AdminCommissionPanelProps) {
                 ))}
               </Select>
             </label>
-            <label className="text-xs font-semibold text-stone-700">
+            <label className="text-xs font-semibold text-text-emphasis">
               {t("admin.adminCommissionPanel.categorieIdentifiant")}
               <Input
                 className="mt-1"
@@ -350,7 +350,7 @@ export function AdminCommissionPanel({ catalog }: AdminCommissionPanelProps) {
                 placeholder="Optionnel"
               />
             </label>
-            <label className="text-xs font-semibold text-stone-700">
+            <label className="text-xs font-semibold text-text-emphasis">
               Forfait (identifiant)
               <Input
                 className="mt-1"
@@ -379,11 +379,11 @@ export function AdminCommissionPanel({ catalog }: AdminCommissionPanelProps) {
           className="rounded-lg border border-border-base p-4"
           aria-live="polite"
         >
-          <h2 className="text-sm font-bold text-stone-950">
+          <h2 className="text-sm font-bold text-text-deep">
             {t("admin.adminCommissionPanel.resultat")}
           </h2>
           {!result ? (
-            <p className="mt-3 text-xs text-stone-500">
+            <p className="mt-3 text-xs text-text-tertiary">
               {t(
                 "admin.adminCommissionPanel.renseignezLeContextePourVoirLaPolitiqueLeCalculEt",
               )}
@@ -396,7 +396,7 @@ export function AdminCommissionPanel({ catalog }: AdminCommissionPanelProps) {
                     ? "Commission applicable"
                     : "Aucune commission"}
                 </Badge>
-                <span className="font-mono text-micro text-stone-500">
+                <span className="font-mono text-micro text-text-tertiary">
                   {result.snapshotHash}
                 </span>
               </div>
@@ -410,7 +410,7 @@ export function AdminCommissionPanel({ catalog }: AdminCommissionPanelProps) {
                   ["Net vendeur", result.sellerPayableMinor],
                 ].map(([label, value]) => (
                   <div key={String(label)}>
-                    <dt className="text-stone-500">{label}</dt>
+                    <dt className="text-text-tertiary">{label}</dt>
                     <dd className="font-bold text-text-main">
                       {formatMoneyMinor(Number(value), result.currency)}
                     </dd>
@@ -424,7 +424,7 @@ export function AdminCommissionPanel({ catalog }: AdminCommissionPanelProps) {
                 <div className="mt-1 text-text-secondary">
                   {result.reasonCode}
                 </div>
-                <ul className="mt-2 space-y-1 text-micro text-stone-500">
+                <ul className="mt-2 space-y-1 text-micro text-text-tertiary">
                   {result.explanation
                     .filter((entry) => entry.matched)
                     .map((entry) => (
@@ -443,7 +443,7 @@ export function AdminCommissionPanel({ catalog }: AdminCommissionPanelProps) {
 
       <section>
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-sm font-bold text-stone-950">
+          <h2 className="text-sm font-bold text-text-deep">
             {t("admin.adminCommissionPanel.politiquesDuCataloguePublie")}
           </h2>
           <Button
@@ -465,10 +465,10 @@ export function AdminCommissionPanel({ catalog }: AdminCommissionPanelProps) {
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <h3 className="text-xs font-bold text-stone-950">
+                  <h3 className="text-xs font-bold text-text-deep">
                     {policy.name}
                   </h3>
-                  <p className="mt-1 font-mono text-micro text-stone-500">
+                  <p className="mt-1 font-mono text-micro text-text-tertiary">
                     {policy.code} · v{policy.versionNumber}
                   </p>
                 </div>
@@ -483,16 +483,16 @@ export function AdminCommissionPanel({ catalog }: AdminCommissionPanelProps) {
               </p>
               <dl className="mt-3 grid grid-cols-2 gap-2 text-micro">
                 <div>
-                  <dt className="text-stone-500">Calcul</dt>
-                  <dd className="font-bold text-stone-800">
+                  <dt className="text-text-tertiary">Calcul</dt>
+                  <dd className="font-bold text-text-strong">
                     {modelLabel(policy)}
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-stone-500">
+                  <dt className="text-text-tertiary">
                     {t("admin.adminCommissionPanel.porteeHeritage")}
                   </dt>
-                  <dd className="font-bold text-stone-800">
+                  <dd className="font-bold text-text-strong">
                     {scopeLabel(policy)}
                   </dd>
                 </div>

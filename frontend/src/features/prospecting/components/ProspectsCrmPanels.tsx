@@ -436,7 +436,7 @@ export function ActivityTimeline({
             key={activity.id}
             className="flex items-start gap-3 px-4 py-3"
           >
-            <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-primary/20 bg-primary-light text-primary">
+            <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-primary-border bg-primary-light text-primary">
               <Icon className="h-icon-sm w-icon-sm" aria-hidden="true" />
             </span>
             <div className="min-w-0 flex-1">

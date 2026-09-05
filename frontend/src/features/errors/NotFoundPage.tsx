@@ -52,10 +52,10 @@ export const NotFoundPage: React.FC = () => {
           <AlertCircle className="w-8 h-8" aria-hidden="true" />
         </div>
         <div>
-          <h1 className="text-3xl font-bold text-stone-900">
+          <h1 className="text-3xl font-bold text-text-main">
             Page introuvable
           </h1>
-          <p className="text-xs sm:text-sm text-stone-500 mt-2 leading-relaxed max-w-md mx-auto">
+          <p className="text-xs sm:text-sm text-text-tertiary mt-2 leading-relaxed max-w-md mx-auto">
             {t("errors.notFoundPage.laPageQueVousRecherchez")}
           </p>
         </div>
@@ -82,7 +82,7 @@ export const NotFoundPage: React.FC = () => {
           <div className="flex items-center justify-between gap-3">
             <h2
               id="not-found-categories"
-              className="text-sm font-bold text-stone-900"
+              className="text-sm font-bold text-text-main"
             >
               {t("errors.notFoundPage.explorerLesCategories")}
             </h2>
@@ -100,10 +100,10 @@ export const NotFoundPage: React.FC = () => {
               <li key={cat.id}>
                 <Link
                   to={routes.category(cat.slug)}
-                  className="flex items-center gap-2.5 p-3 rounded-xl bg-white border border-border-base hover:border-primary-border hover:bg-primary-light transition-colors min-h-control-touch"
+                  className="flex items-center gap-2.5 p-3 rounded-xl bg-bg-surface border border-border-base hover:border-primary-border hover:bg-primary-light transition-colors min-h-control-touch"
                 >
                   <CategoryIcon category={cat} size="xs" />
-                  <span className="text-xs font-semibold text-stone-800 truncate">
+                  <span className="text-xs font-semibold text-text-strong truncate">
                     {getTaxonomyLabel(cat, "compact")}
                   </span>
                 </Link>

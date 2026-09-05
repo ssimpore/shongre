@@ -142,7 +142,7 @@ function SolutionsHeader() {
   };
 
   return (
-    <header className="sticky top-0 z-header border-b border-border-base bg-white">
+    <header className="sticky top-0 z-header border-b border-border-base bg-bg-surface">
       <Container className="flex h-16 items-center justify-between gap-4">
         <a
           href={rootHref}
@@ -291,7 +291,7 @@ function SolutionsHeader() {
           </a>
           <a
             href={`${rootHref}#catalogue`}
-            className="inline-flex min-h-control-touch items-center rounded-control bg-primary px-4 text-xs font-bold text-white shadow-sm hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            className="inline-flex min-h-control-touch items-center rounded-control bg-primary px-4 text-xs font-bold text-text-inverse shadow-sm hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           >
             {t("solutions.header.discover")}
           </a>
@@ -329,7 +329,7 @@ function SolutionsHeader() {
       </Container>
       <div
         id="solutions-mobile-menu"
-        className={`${mobileMenuOpen ? "block" : "hidden"} border-t border-border-base bg-white md:hidden`}
+        className={`${mobileMenuOpen ? "block" : "hidden"} border-t border-border-base bg-bg-surface md:hidden`}
       >
         <Container className="flex flex-col divide-y divide-border-subtle py-2">
           <div className="py-2">
@@ -378,9 +378,9 @@ function SolutionsFooter() {
   const { openPreferences } = useConsent();
   const rootHref = applicationHref("solutions");
   const footerClass =
-    "inline-flex min-h-8 items-center text-xs font-semibold text-stone-500 hover:text-primary focus-visible:outline-2 focus-visible:outline-primary";
+    "inline-flex min-h-8 items-center text-xs font-semibold text-text-tertiary hover:text-primary focus-visible:outline-2 focus-visible:outline-primary";
   return (
-    <footer className="border-t border-border-base bg-white py-7">
+    <footer className="border-t border-border-base bg-bg-surface py-7">
       <Container className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
         <a
           href={rootHref}
@@ -427,7 +427,7 @@ function SolutionsFooter() {
 
 export function SolutionsLayout() {
   return (
-    <div className="flex min-h-screen flex-col bg-white text-text-main">
+    <div className="flex min-h-screen flex-col bg-bg-surface text-text-main">
       <SkipLink />
       <AppScrollRestoration />
       <DemoRoleSwitcher utility={<AnalyticsRuntime />} />

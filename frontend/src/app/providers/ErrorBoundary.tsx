@@ -31,7 +31,7 @@ const ErrorFallback: React.FC<{
       role="alert"
       className="min-h-screen bg-bg-base flex items-center justify-center p-4"
     >
-      <div className="max-w-md w-full bg-white rounded-2xl border border-border-base p-6 sm:p-8 shadow-xl text-center space-y-5">
+      <div className="max-w-md w-full bg-bg-surface rounded-2xl border border-border-base p-6 sm:p-8 shadow-xl text-center space-y-5">
         <div className="w-14 h-14 rounded-2xl bg-primary-light text-primary mx-auto flex items-center justify-center">
           <AlertTriangle className="w-7 h-7" />
         </div>

@@ -9,7 +9,6 @@ import {
 import {
   nativeBorders,
   nativeColors,
-  nativePalette,
   nativeRadius,
   nativeSpacing,
 } from "@shongre/design-tokens/native";
@@ -53,8 +52,8 @@ const tones = StyleSheet.create({
     borderColor: nativeColors.border.default,
   },
   inverse: {
-    backgroundColor: nativePalette["stone-900"],
-    borderColor: nativePalette["stone-800"],
+    backgroundColor: nativeColors.surface.inverse,
+    borderColor: nativeColors.border.inverse,
   },
 });
 const paddings = StyleSheet.create({

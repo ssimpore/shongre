@@ -33,7 +33,7 @@ export const ProductLayout: React.FC<ProductLayoutProps> = ({
   workspacePolicyId,
 }) => {
   return (
-    <div className="flex min-h-screen flex-col bg-bg-surface text-stone-900">
+    <div className="flex min-h-screen flex-col bg-bg-surface text-text-main">
       <SkipLink />
       <AppScrollRestoration />
       <EnvironmentHeaderStack utility={<AnalyticsRuntime />}>

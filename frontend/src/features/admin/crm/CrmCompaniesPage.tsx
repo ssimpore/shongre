@@ -51,9 +51,9 @@ const lifecycleTone: Record<CrmAccount["lifecycle"], string> = {
   prospect: "bg-warning-surface text-warning",
   qualified: "bg-primary-light text-primary",
   customer: "bg-success-surface text-success",
-  partner: "bg-violet-50 text-violet-700",
+  partner: "bg-staff-surface text-staff-strong",
   do_not_contact: "bg-danger-surface text-danger",
-  archived: "bg-stone-100 text-text-secondary",
+  archived: "bg-surface-muted text-text-secondary",
 };
 
 export const CrmCompaniesPage: React.FC = () => {
@@ -256,7 +256,7 @@ export const CrmCompaniesPage: React.FC = () => {
 
   return (
     <div className="space-y-4 pb-8">
-      <section className="rounded-2xl border border-stone-800 bg-stone-950 p-5 text-text-inverse shadow-sm sm:p-6">
+      <section className="rounded-2xl border border-border-inverse bg-surface-inverse-deep p-5 text-text-inverse shadow-sm sm:p-6">
         <Link
           to={crmPaths.overview}
           className="inline-flex items-center gap-1 text-micro font-bold uppercase tracking-wider text-text-disabled hover:text-text-inverse"
@@ -295,7 +295,7 @@ export const CrmCompaniesPage: React.FC = () => {
               setSelectedViewId("");
             }}
             placeholder={t("admin.crmCompaniesPage.nomDomaineOuSecteur")}
-            className="h-control-md w-full rounded-control border border-stone-200 bg-stone-50 pl-9 pr-3 text-xs outline-none focus:border-primary focus:ring-2 focus:ring-primary/15"
+            className="h-control-md w-full rounded-control border border-border-disabled bg-surface-soft pl-9 pr-3 text-xs outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring"
           />
         </label>
         <div className="flex min-w-0 items-center gap-2 overflow-x-auto">
@@ -314,7 +314,7 @@ export const CrmCompaniesPage: React.FC = () => {
                 setSelectedViewId("");
               }}
               aria-pressed={lifecycle === value}
-              className={`shrink-0 rounded-lg px-2.5 py-2 text-micro font-semibold transition ${lifecycle === value ? "bg-stone-950 text-text-inverse" : "text-text-secondary hover:bg-stone-100"}`}
+              className={`shrink-0 rounded-lg px-2.5 py-2 text-micro font-semibold transition ${lifecycle === value ? "bg-surface-inverse-deep text-text-inverse" : "text-text-secondary hover:bg-surface-muted"}`}
             >
               {value === "all" ? "Toutes" : lifecycleLabel[value]}
             </button>
@@ -390,10 +390,10 @@ export const CrmCompaniesPage: React.FC = () => {
         ) : filtered.length === 0 ? (
           <div className="p-10 text-center">
             <Building2 className="mx-auto h-8 w-8 text-text-disabled" />
-            <h2 className="mt-3 text-sm font-bold text-stone-800">
+            <h2 className="mt-3 text-sm font-bold text-text-strong">
               {t("admin.crmCompaniesPage.aucuneEntrepriseDansCetteVue")}
             </h2>
-            <p className="mt-1 text-xs text-stone-500">
+            <p className="mt-1 text-xs text-text-tertiary">
               {t(
                 "admin.crmCompaniesPage.modifiezLesFiltresOuCreezUneNouvelleFiche",
               )}
@@ -402,7 +402,7 @@ export const CrmCompaniesPage: React.FC = () => {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-4xl text-left text-xs">
-              <thead className="bg-stone-50 text-micro font-bold uppercase tracking-wider text-stone-500">
+              <thead className="bg-surface-soft text-micro font-bold uppercase tracking-wider text-text-tertiary">
                 <tr>
                   <th className="px-5 py-3">Entreprise</th>
                   <th className="px-4 py-3">
@@ -422,21 +422,21 @@ export const CrmCompaniesPage: React.FC = () => {
                 {filtered.map((account) => (
                   <tr
                     key={account.id}
-                    className="transition hover:bg-stone-50/80"
+                    className="transition hover:bg-surface-soft/80"
                   >
                     <td className="px-5 py-3.5">
                       <div className="flex items-center gap-3">
-                        <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-stone-200 bg-stone-100 font-bold text-stone-700">
+                        <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border-disabled bg-surface-muted font-bold text-text-emphasis">
                           {account.name.slice(0, 2).toUpperCase()}
                         </span>
                         <div className="min-w-0">
                           <Link
                             to={crmPaths.company(account.id)}
-                            className="block truncate font-bold text-stone-950 hover:text-primary"
+                            className="block truncate font-bold text-text-deep hover:text-primary"
                           >
                             {account.name}
                           </Link>
-                          <span className="mt-0.5 block truncate text-micro text-stone-500">
+                          <span className="mt-0.5 block truncate text-micro text-text-tertiary">
                             {account.industry ?? "Secteur non renseigné"}
                             {account.domain && (
                               <>
@@ -472,7 +472,7 @@ export const CrmCompaniesPage: React.FC = () => {
                     </td>
                     <td className="px-4 py-3.5 text-right">
                       {account.fitScore !== undefined ? (
-                        <span className="inline-flex items-center gap-1 font-bold text-violet-700">
+                        <span className="inline-flex items-center gap-1 font-bold text-staff-strong">
                           <Sparkles className="h-icon-sm w-icon-sm" />{" "}
                           {account.fitScore}
                         </span>
@@ -480,7 +480,7 @@ export const CrmCompaniesPage: React.FC = () => {
                         "—"
                       )}
                     </td>
-                    <td className="px-5 py-3.5 text-right text-micro text-stone-500">
+                    <td className="px-5 py-3.5 text-right text-micro text-text-tertiary">
                       {new Intl.DateTimeFormat(currentLocale, {
                         dateStyle: "medium",
                       }).format(new Date(account.updatedAt))}
@@ -491,7 +491,7 @@ export const CrmCompaniesPage: React.FC = () => {
             </table>
           </div>
         )}
-        <div className="flex items-center justify-between border-t border-border-subtle bg-stone-50/60 px-5 py-3 text-micro text-stone-500">
+        <div className="flex items-center justify-between border-t border-border-subtle bg-surface-soft/60 px-5 py-3 text-micro text-text-tertiary">
           <span>
             {filtered.length} {t("admin.crmCompaniesPage.resultat")}
             {filtered.length > 1 ? "s" : ""}
@@ -616,7 +616,7 @@ export const CrmCompaniesPage: React.FC = () => {
               ]}
             />
           </FormField>
-          <p className="rounded-lg bg-stone-50 px-3 py-2 text-micro leading-relaxed text-text-secondary">
+          <p className="rounded-lg bg-surface-soft px-3 py-2 text-micro leading-relaxed text-text-secondary">
             {canManageSharedViews
               ? "Les vues partagées sont visibles dans tout le workspace. Les vues personnelles restent privées à votre compte."
               : "Cette vue restera privée à votre compte."}

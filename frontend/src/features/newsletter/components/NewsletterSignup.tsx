@@ -89,7 +89,7 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
   if (isSuccess) {
     if (variant === "footer") {
       return (
-        <div className="flex items-center gap-2 text-xs text-emerald-400 font-semibold py-1">
+        <div className="flex items-center gap-2 text-xs text-success-on-inverse-vivid font-semibold py-1">
           <CheckCircle2 className="w-icon-md h-icon-md shrink-0" />
           <span>Demande enregistrée — consultez votre messagerie</span>
         </div>
@@ -127,7 +127,7 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
             had typed. Two rows give the field the column's full width. */}
         <div className="flex flex-col gap-2 max-w-sm">
           <div className="relative">
-            <Mail className="w-icon-md h-icon-md text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <Mail className="w-icon-md h-icon-md text-text-inverse-subtle absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="email"
               value={email}
@@ -136,7 +136,7 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
               aria-label={t("newsletter.newsletterSignup.votreAdresseEmail")}
               autoComplete="email"
               disabled={isSubmitting}
-              className="w-full h-control-touch pl-10 pr-3.5 text-xs bg-stone-950/60 border border-stone-700/80 text-white rounded-control placeholder:text-stone-400 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-on-dark/20 transition-colors"
+              className="w-full h-control-touch pl-10 pr-3.5 text-xs bg-surface-inverse-deep/60 border border-border-inverse-subtle/80 text-text-inverse rounded-control placeholder:text-text-inverse-subtle focus:border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-on-dark transition-colors"
             />
           </div>
           <Button
@@ -151,7 +151,9 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
           </Button>
         </div>
         {errorMessage && (
-          <p className="text-micro text-rose-400 font-medium">{errorMessage}</p>
+          <p className="text-micro text-critical-on-inverse-vivid font-medium">
+            {errorMessage}
+          </p>
         )}
       </form>
     );
@@ -160,13 +162,13 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
   // HOMEPAGE / BAND VARIANT
   return (
     <div
-      className={`bg-stone-900 text-white rounded-3xl p-6 sm:p-10 shadow-md relative overflow-hidden ${className}`}
+      className={`bg-surface-inverse text-text-inverse rounded-3xl p-6 sm:p-10 shadow-md relative overflow-hidden ${className}`}
     >
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
         <div className="lg:col-span-6 space-y-2 text-left">
           {/* On the dark band the light-surface primary is unreadable (3.5:1),
               so this uses the inverse-surface brand variant. */}
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/20 text-primary-on-dark text-xs font-bold">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-overlay text-primary-on-dark text-xs font-bold">
             <Mail className="w-icon-sm h-icon-sm" />
             <span>{t("newsletter.newsletterSignup.laSelectionShongre")}</span>
           </div>
@@ -175,7 +177,7 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
             {t("newsletter.newsletterSignup.recevezNosMeilleuresPepitesBons")}
           </h2>
 
-          <p className="text-xs sm:text-sm text-stone-400 leading-relaxed">
+          <p className="text-xs sm:text-sm text-text-inverse-subtle leading-relaxed">
             {t(
               "newsletter.newsletterSignup.chaqueSemaineUneSelectionExclusive",
             )}
@@ -190,7 +192,7 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
           >
             <div className="flex flex-col sm:flex-row gap-2">
               <div className="relative flex-1">
-                <Mail className="w-icon-lg h-icon-lg text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <Mail className="w-icon-lg h-icon-lg text-text-inverse-subtle absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="email"
                   value={email}
@@ -203,7 +205,7 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
                   )}
                   autoComplete="email"
                   disabled={isSubmitting}
-                  className="w-full h-control-lg pl-11 pr-4 text-xs sm:text-sm bg-stone-800 border border-stone-700 text-white rounded-control placeholder:text-stone-400 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-colors"
+                  className="w-full h-control-lg pl-11 pr-4 text-xs sm:text-sm bg-surface-inverse-hover border border-border-inverse-subtle text-text-inverse rounded-control placeholder:text-text-inverse-subtle focus:border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-on-dark transition-colors"
                 />
               </div>
 
@@ -220,12 +222,12 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
             </div>
 
             {showConsentCheckbox && (
-              <label className="flex items-start gap-2 cursor-pointer select-none text-micro text-stone-400 min-h-6">
+              <label className="flex items-start gap-2 cursor-pointer select-none text-micro text-text-inverse-subtle min-h-6">
                 <input
                   type="checkbox"
                   checked={consent}
                   onChange={(e) => setConsent(e.target.checked)}
-                  className="w-4 h-4 shrink-0 rounded text-primary focus:ring-primary border-stone-700 bg-stone-800 mt-0.5"
+                  className="w-4 h-4 shrink-0 rounded text-primary focus:ring-primary border-border-inverse-subtle bg-surface-inverse-hover mt-0.5"
                 />
                 <span>
                   {t("newsletter.newsletterSignup.jAccepteDeRecevoirLa")}
@@ -234,7 +236,7 @@ export const NewsletterSignup: React.FC<NewsletterSignupProps> = ({
             )}
 
             {errorMessage && (
-              <div className="p-2.5 rounded-xl bg-rose-950/60 border border-rose-800 text-rose-300 text-xs font-medium flex items-center gap-2">
+              <div className="p-2.5 rounded-xl bg-critical-inverse-deep/60 border border-critical-border-strong text-critical-on-inverse-strong text-xs font-medium flex items-center gap-2">
                 <AlertCircle className="w-icon-md h-icon-md shrink-0" />
                 <span>{errorMessage}</span>
               </div>

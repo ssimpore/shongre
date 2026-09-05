@@ -67,7 +67,7 @@ export const ProviderImpactModal: React.FC<ProviderImpactModalProps> = ({
         {/* Impact Breakdown */}
         <div className="space-y-4 text-xs">
           {/* Affected Markets */}
-          <div className="bg-stone-50 p-3.5 rounded-lg border border-stone-200 space-y-2">
+          <div className="bg-surface-soft p-3.5 rounded-lg border border-border-disabled space-y-2">
             <span className="font-bold text-text-main flex items-center gap-1.5 uppercase tracking-wider text-micro">
               <Globe className="w-icon-sm h-icon-sm text-info" />
               {t("admin.providerImpactModal.marchesTerritoriauxAffectes")}
@@ -85,7 +85,7 @@ export const ProviderImpactModal: React.FC<ProviderImpactModalProps> = ({
           </div>
 
           {/* Impacted Features */}
-          <div className="bg-stone-50 p-3.5 rounded-lg border border-stone-200 space-y-2">
+          <div className="bg-surface-soft p-3.5 rounded-lg border border-border-disabled space-y-2">
             <span className="font-bold text-text-main flex items-center gap-1.5 uppercase tracking-wider text-micro">
               <Layers className="w-icon-sm h-icon-sm text-primary" />
               {t(
@@ -96,7 +96,7 @@ export const ProviderImpactModal: React.FC<ProviderImpactModalProps> = ({
               {impact.impactedPlatformFeatures.map((f) => (
                 <span
                   key={f}
-                  className="px-2 py-0.5 rounded bg-stone-100 text-stone-700 font-medium border border-stone-200"
+                  className="px-2 py-0.5 rounded bg-surface-muted text-text-emphasis font-medium border border-border-disabled"
                 >
                   {f}
                 </span>
@@ -105,12 +105,12 @@ export const ProviderImpactModal: React.FC<ProviderImpactModalProps> = ({
           </div>
 
           {/* Fallback Availability */}
-          <div className="p-3.5 rounded-lg border flex items-center justify-between bg-stone-50 border-stone-200">
+          <div className="p-3.5 rounded-lg border flex items-center justify-between bg-surface-soft border-border-disabled">
             <div>
               <span className="font-bold text-text-main block">
                 {t("admin.providerImpactModal.disponibiliteDUnPrestataireDe")}
               </span>
-              <span className="text-micro text-stone-500">
+              <span className="text-micro text-text-tertiary">
                 {impact.hasAlternativeFallback
                   ? "Un prestataire secondaire explicite existe. La règle de routage indique séparément si sa bascule automatique est autorisée."
                   : "Aucun secours configuré : la fonctionnalité sera temporairement indisponible pour les acheteurs."}
@@ -129,7 +129,7 @@ export const ProviderImpactModal: React.FC<ProviderImpactModalProps> = ({
         </div>
 
         {/* Actions */}
-        <div className="flex items-center justify-end gap-3 pt-3 border-t border-stone-100">
+        <div className="flex items-center justify-end gap-3 pt-3 border-t border-border-soft">
           <Button
             type="button"
             variant="outline"

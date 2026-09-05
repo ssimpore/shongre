@@ -63,21 +63,21 @@ export const ProviderHealthSimulator: React.FC<
 
   return (
     <div className="space-y-5">
-      <section className="bg-bg-surface p-5 rounded-control border border-stone-200 shadow-xs space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 border-b border-stone-100 pb-4">
+      <section className="bg-bg-surface p-5 rounded-control border border-border-disabled shadow-xs space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 border-b border-border-soft pb-4">
           <div>
             <h4 className="text-sm font-bold text-text-main flex items-center gap-2">
               <Activity className="w-icon-md h-icon-md text-primary" />
               {t("admin.providerHealthSimulator.santeFondeeSurDesPreuves")}
             </h4>
-            <p className="text-xs text-stone-500 mt-1 max-w-2xl">
+            <p className="text-xs text-text-tertiary mt-1 max-w-2xl">
               {t("admin.providerHealthSimulator.laSanteVientDUnProbeLiveOuDUn")}
             </p>
           </div>
           <span
             className={`inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-pill border shrink-0 ${
               isDemo || configuration.health === "unknown"
-                ? "bg-stone-100 text-stone-700 border-stone-200"
+                ? "bg-surface-muted text-text-emphasis border-border-disabled"
                 : configuration.health === "healthy"
                   ? "bg-success-surface text-success border-success-border"
                   : configuration.health === "degraded"
@@ -101,24 +101,24 @@ export const ProviderHealthSimulator: React.FC<
         </div>
 
         <dl className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
-          <div className="rounded-lg bg-stone-50 border border-stone-200 p-3">
-            <dt className="text-stone-500">
+          <div className="rounded-lg bg-surface-soft border border-border-disabled p-3">
+            <dt className="text-text-tertiary">
               {t("admin.providerHealthSimulator.implementation")}
             </dt>
             <dd className="font-bold text-text-main mt-1">
               {implementationLabel}
             </dd>
           </div>
-          <div className="rounded-lg bg-stone-50 border border-stone-200 p-3">
-            <dt className="text-stone-500">
+          <div className="rounded-lg bg-surface-soft border border-border-disabled p-3">
+            <dt className="text-text-tertiary">
               {t("admin.adminFeatureFlagsPage.cycleDeVie")}
             </dt>
             <dd className="font-bold text-text-main mt-1">
               {operational.lifecycle}
             </dd>
           </div>
-          <div className="rounded-lg bg-stone-50 border border-stone-200 p-3">
-            <dt className="text-stone-500">
+          <div className="rounded-lg bg-surface-soft border border-border-disabled p-3">
+            <dt className="text-text-tertiary">
               {t("admin.providerHealthSimulator.capacitesImplementees")}
             </dt>
             <dd className="font-bold text-text-main mt-1">
@@ -126,8 +126,8 @@ export const ProviderHealthSimulator: React.FC<
               {operational.capabilities.length}
             </dd>
           </div>
-          <div className="rounded-lg bg-stone-50 border border-stone-200 p-3">
-            <dt className="text-stone-500">
+          <div className="rounded-lg bg-surface-soft border border-border-disabled p-3">
+            <dt className="text-text-tertiary">
               {t("admin.providerHealthSimulator.dernierePreuve")}
             </dt>
             <dd className="font-bold text-text-main mt-1">
@@ -139,7 +139,7 @@ export const ProviderHealthSimulator: React.FC<
         {operational.blockers.length > 0 && (
           <div className="rounded-lg border border-warning-border bg-warning-surface p-3">
             <p className="text-xs font-bold text-warning">Blocages connus</p>
-            <ul className="mt-2 space-y-1 text-xs text-stone-700 list-disc pl-4">
+            <ul className="mt-2 space-y-1 text-xs text-text-emphasis list-disc pl-4">
               {operational.blockers.map((blocker) => (
                 <li key={blocker}>{blocker}</li>
               ))}
@@ -148,14 +148,14 @@ export const ProviderHealthSimulator: React.FC<
         )}
       </section>
 
-      <section className="bg-bg-surface p-5 rounded-control border border-stone-200 shadow-xs space-y-4">
+      <section className="bg-bg-surface p-5 rounded-control border border-border-disabled shadow-xs space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <h4 className="text-sm font-bold text-text-main flex items-center gap-2">
-              <Terminal className="w-icon-md h-icon-md text-stone-700" />
+              <Terminal className="w-icon-md h-icon-md text-text-emphasis" />
               {t("admin.providerHealthSimulator.testDIntegrationSur")}
             </h4>
-            <p className="text-xs text-stone-500 mt-1">
+            <p className="text-xs text-text-tertiary mt-1">
               {t(
                 "admin.providerHealthSimulator.executeUniquementUnProbeNonDestructifEnregistreCoteBackendAucun",
               )}
@@ -178,7 +178,7 @@ export const ProviderHealthSimulator: React.FC<
             className={`rounded-lg border p-4 ${
               lastTestResult.success
                 ? "border-success-border bg-success-surface"
-                : "border-stone-200 bg-stone-50"
+                : "border-border-disabled bg-surface-soft"
             }`}
             role="status"
           >
@@ -197,7 +197,7 @@ export const ProviderHealthSimulator: React.FC<
                 <p className="text-xs text-text-secondary mt-1">
                   {lastTestResult.message}
                 </p>
-                <p className="text-micro text-stone-500 mt-2 font-mono">
+                <p className="text-micro text-text-tertiary mt-2 font-mono">
                   {lastTestResult.evidence} · {lastTestResult.latencyMs} ms
                 </p>
               </div>

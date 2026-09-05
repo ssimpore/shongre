@@ -296,10 +296,10 @@ export const AdminSupportPage: React.FC = () => {
                       type="button"
                       onClick={() => setSelectedId(item.id)}
                       aria-pressed={active}
-                      className={`w-full p-4 text-left transition-colors ${active ? "bg-primary/5" : "hover:bg-stone-50"}`}
+                      className={`w-full p-4 text-left transition-colors ${active ? "bg-primary-surface-soft" : "hover:bg-surface-soft"}`}
                     >
                       <div className="flex items-center justify-between gap-2">
-                        <span className="font-mono text-micro font-bold text-stone-500">
+                        <span className="font-mono text-micro font-bold text-text-tertiary">
                           {item.reference}
                         </span>
                         <Badge variant={meta.variant} size="sm">
@@ -309,7 +309,7 @@ export const AdminSupportPage: React.FC = () => {
                       <p className="mt-2 line-clamp-1 text-sm font-bold text-text-main">
                         {item.subject}
                       </p>
-                      <div className="mt-1 flex items-center justify-between gap-2 text-micro text-stone-500">
+                      <div className="mt-1 flex items-center justify-between gap-2 text-micro text-text-tertiary">
                         <span>
                           {item.category} · {item.priority}
                         </span>
@@ -328,7 +328,7 @@ export const AdminSupportPage: React.FC = () => {
           aria-labelledby="support-case-title"
         >
           {!selectedCase ? (
-            <div className="flex min-h-64 items-center justify-center text-sm text-stone-500">
+            <div className="flex min-h-64 items-center justify-center text-sm text-text-tertiary">
               {t("admin.adminSupportPage.selectionnezUnDossier")}
             </div>
           ) : (
@@ -336,7 +336,7 @@ export const AdminSupportPage: React.FC = () => {
               <div className="border-b border-border-subtle pb-4">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <span className="font-mono text-xs font-bold text-stone-500">
+                    <span className="font-mono text-xs font-bold text-text-tertiary">
                       {selectedCase.reference}
                     </span>
                     <h2
@@ -362,7 +362,7 @@ export const AdminSupportPage: React.FC = () => {
                     </Button>
                   )}
                 </div>
-                <p className="mt-3 text-sm leading-relaxed text-stone-700">
+                <p className="mt-3 text-sm leading-relaxed text-text-emphasis">
                   {selectedCase.description}
                 </p>
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -428,9 +428,9 @@ export const AdminSupportPage: React.FC = () => {
                   {notes.map((note) => (
                     <article
                       key={note.id}
-                      className={`rounded-control border p-3 ${note.visibility === "internal" ? "border-warning-border bg-warning-surface" : "border-border-base bg-stone-50"}`}
+                      className={`rounded-control border p-3 ${note.visibility === "internal" ? "border-warning-border bg-warning-surface" : "border-border-base bg-surface-soft"}`}
                     >
-                      <div className="flex items-center justify-between gap-2 text-micro font-semibold text-stone-500">
+                      <div className="flex items-center justify-between gap-2 text-micro font-semibold text-text-tertiary">
                         <span>
                           {note.visibility === "internal"
                             ? "Note interne"
@@ -442,7 +442,7 @@ export const AdminSupportPage: React.FC = () => {
                           {formatDate(note.createdAt)}
                         </time>
                       </div>
-                      <p className="mt-1 whitespace-pre-line text-xs leading-relaxed text-stone-800">
+                      <p className="mt-1 whitespace-pre-line text-xs leading-relaxed text-text-strong">
                         {note.body}
                       </p>
                     </article>
@@ -470,7 +470,7 @@ export const AdminSupportPage: React.FC = () => {
                     />
                   </FormField>
                   <div className="flex flex-wrap items-center justify-between gap-3">
-                    <label className="inline-flex items-center gap-2 text-xs font-semibold text-stone-700">
+                    <label className="inline-flex items-center gap-2 text-xs font-semibold text-text-emphasis">
                       <input
                         type="checkbox"
                         checked={internalNote}

@@ -28,10 +28,15 @@ Shared packages never import application folders; backend may consume
   radius, sizing, border, opacity, motion, breakpoint, shadow, and z-index
   values. Its build creates the Web CSS adapter; `src/native.ts` creates numeric
   React Native adapters.
-- `brand/shongre/v1.0.0/` owns the approved, checksummed identity masters.
+- The active brand kit owns the sole Shongre Orange swatch. The internal typed
+  `src/brand-orange.ts` recipe derives all orange interaction and presentation
+  roles; applications can import only the semantic results, never a second
+  orange ramp or derivation helper.
+- `brand/shongre/brand.config.json` selects the approved, checksummed identity
+  masters through its sole `activeVersion` field.
   `make brand-sync` publishes only the curated Web, Expo, and document-runtime
-  subset; `packages/brand` exposes identity metadata and generated document
-  artwork without becoming a second asset source.
+  subset; `packages/brand` exposes identity metadata plus generated Web and
+  document registries without becoming a second asset source.
 - `packages/ui` owns reusable primitives. `.web.tsx` and `.native.tsx` files
   preserve a common public concept while using semantic HTML or React Native
   primitives as appropriate.
@@ -94,12 +99,25 @@ and deep linking remain mobile-specific.
 
 ## One-edit propagation proof
 
-`make tokens-check` builds CSS from the canonical token file and verifies the
-same primary value reaches generated Web CSS and the native adapter consumed by
-the common iOS/Android source. The test is read-only and needs no temporary
-source mutation. `make cross-platform-check` extends the proof through shared
-package tests, Next compilation, Expo type-checking/Doctor, and configured iOS
-and Android compatibility checks.
+`make tokens-check` builds CSS from the canonical token file and verifies every
+exported semantic colour reaches generated Web CSS exactly, while the typed
+semantic adapter feeds the common iOS/Android source and build-time platform
+configuration. It also rejects raw Tailwind palettes, literal colour syntax,
+local CSS colour declarations, raw palette APIs, stale generated CSS, and
+contrast regressions. Official flag and provider artwork colours are typed,
+non-themeable registries from the same source. `make cross-platform-check`
+extends the proof through shared package tests, Next compilation, Expo
+type-checking/Doctor, and configured iOS and Android compatibility checks.
+For Shongre Orange specifically, the token gate checks every semantic binding,
+mutates the canonical input in memory to prove propagation, and the brand gate
+performs pixel-level comparisons of opaque logo/icon artwork while excluding
+antialiased edge blends.
+
+The Web product currently declares `color-scheme: light`. Deliberately dark
+cards, overlays, navigation and media scrims use explicit `surface-inverse-*`,
+`text-inverse-*`, and `border-inverse-*` roles. A future dark theme must map the
+same semantic contract and add browser coverage; it must not reintroduce raw
+neutral ramps or component-level overrides.
 
 Run after changing a shared visual or contract:
 

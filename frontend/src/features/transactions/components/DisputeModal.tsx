@@ -88,7 +88,7 @@ export const DisputeModal: React.FC<DisputeModalProps> = ({
         <div>
           <label
             htmlFor="dispute-reason"
-            className="block font-semibold text-stone-700 mb-2"
+            className="block font-semibold text-text-emphasis mb-2"
           >
             {t("transactions.disputeModal.motifPrincipalDuLitige")}
             <span className="text-danger">*</span>
@@ -109,7 +109,7 @@ export const DisputeModal: React.FC<DisputeModalProps> = ({
         </div>
 
         <div>
-          <label className="block font-semibold text-stone-700 mb-2">
+          <label className="block font-semibold text-text-emphasis mb-2">
             {t("transactions.disputeModal.descriptionDetailleeDesFaits")}
             <span className="text-danger">*</span>
           </label>
@@ -118,7 +118,7 @@ export const DisputeModal: React.FC<DisputeModalProps> = ({
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder={t("transactions.disputeModal.expliquezCeQuiSEst")}
-            className="w-full p-4 bg-white text-stone-900 rounded-control border border-stone-200/60 shadow-inner focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 resize-none font-medium transition-colors min-h-control-touch"
+            className="w-full p-4 bg-bg-surface text-text-main rounded-control border border-border-disabled/60 shadow-inner focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring resize-none font-medium transition-colors min-h-control-touch"
           />
         </div>
 

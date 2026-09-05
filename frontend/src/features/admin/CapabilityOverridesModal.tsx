@@ -239,7 +239,7 @@ export const CapabilityOverridesModal: React.FC<
                 onChange={(event) => setQuery(event.target.value)}
                 aria-label={t("admin.capabilities.searchLabel")}
                 placeholder={t("admin.capabilities.searchPlaceholder")}
-                className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface pl-9 pr-3 text-xs focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface pl-9 pr-3 text-xs focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary-ring"
               />
             </div>
 
@@ -256,7 +256,7 @@ export const CapabilityOverridesModal: React.FC<
                   >
                     <h3
                       id={`capability-group-${groupIndex}`}
-                      className="mb-2 text-xs font-bold uppercase tracking-wide text-stone-700"
+                      className="mb-2 text-xs font-bold uppercase tracking-wide text-text-emphasis"
                     >
                       {category}
                     </h3>
@@ -274,17 +274,17 @@ export const CapabilityOverridesModal: React.FC<
                             <legend className="px-1 text-xs font-bold text-text-main">
                               {capability.label}
                             </legend>
-                            <code className="text-micro text-stone-500">
+                            <code className="text-micro text-text-tertiary">
                               {capability.capability}
                             </code>
                             <div className="mt-2 flex flex-wrap gap-1.5 text-micro">
                               {capability.fromCustomerAccount && (
-                                <span className="rounded-pill bg-stone-100 px-2 py-1 text-stone-700">
+                                <span className="rounded-pill bg-surface-muted px-2 py-1 text-text-emphasis">
                                   {t("admin.capabilities.source.account")}
                                 </span>
                               )}
                               {capability.fromStaffRole && (
-                                <span className="rounded-pill bg-violet-50 px-2 py-1 text-violet-800">
+                                <span className="rounded-pill bg-staff-surface px-2 py-1 text-staff-emphasis">
                                   {t("admin.capabilities.source.staffRole")}
                                 </span>
                               )}
@@ -292,7 +292,7 @@ export const CapabilityOverridesModal: React.FC<
                                 className={`rounded-pill px-2 py-1 font-bold ${
                                   capability.effective
                                     ? "bg-success-surface text-success"
-                                    : "bg-stone-100 text-text-secondary"
+                                    : "bg-surface-muted text-text-secondary"
                                 }`}
                               >
                                 {capability.effective
@@ -319,7 +319,7 @@ export const CapabilityOverridesModal: React.FC<
                                       className={`inline-flex items-center gap-1.5 text-xs ${
                                         grantBlocked
                                           ? "cursor-not-allowed text-text-disabled"
-                                          : "cursor-pointer text-stone-700"
+                                          : "cursor-pointer text-text-emphasis"
                                       }`}
                                     >
                                       <input

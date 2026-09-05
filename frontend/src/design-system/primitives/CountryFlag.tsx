@@ -137,7 +137,7 @@ function FlagArtwork({ countryCode }: { countryCode: string }) {
     default:
       return (
         <>
-          <path fill={themeColors["stone-100"]} d="M0 0h24v18H0z" />
+          <path fill={themeColors["surface-muted"]} d="M0 0h24v18H0z" />
           <circle
             cx="12"
             cy="9"

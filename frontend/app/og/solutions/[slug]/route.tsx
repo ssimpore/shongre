@@ -1,4 +1,6 @@
 import { ImageResponse } from "next/og";
+import { brand } from "@shongre/brand";
+import { webBrandAssets } from "@shongre/brand/web";
 import { themeColors } from "@shongre/design-tokens";
 import { resolveServerApplicationContext } from "../../../../src/platform/applications/server-application-context";
 
@@ -48,7 +50,7 @@ export async function GET(
     });
   }
   const brandLogoUrl = new URL(
-    "/brand/shongre/logo/header-primary-480.png",
+    webBrandAssets.logo.header.primary480.src,
     applicationContext.canonicalOrigin,
   ).href;
 
@@ -68,9 +70,9 @@ export async function GET(
       <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
         <img
           src={brandLogoUrl}
-          alt="SHONGRE."
-          width="240"
-          height="61"
+          alt={brand.name}
+          width={webBrandAssets.logo.header.primary240.width}
+          height={webBrandAssets.logo.header.primary240.height}
           style={{ width: 240, height: 61, objectFit: "contain" }}
         />
         <div style={{ display: "flex", flexDirection: "column" }}>

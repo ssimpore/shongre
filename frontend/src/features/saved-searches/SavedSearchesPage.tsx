@@ -181,10 +181,10 @@ export const SavedSearchesPage: React.FC = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl sm:text-2xl font-bold text-stone-900">
+        <h1 className="text-xl sm:text-2xl font-bold text-text-main">
           Mes recherches sauvegardées ({searches.length})
         </h1>
-        <p className="text-xs sm:text-sm text-stone-500 mt-0.5">
+        <p className="text-xs sm:text-sm text-text-tertiary mt-0.5">
           {t(
             "savedsearches.savedSearchesPage.recevezDesAlertesInstantaneesDes",
           )}
@@ -196,17 +196,17 @@ export const SavedSearchesPage: React.FC = () => {
           {searches.map((search) => (
             <div
               key={search.id}
-              className="bg-white p-4 rounded-xl border border-border-base flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 shadow-xs"
+              className="bg-bg-surface p-4 rounded-xl border border-border-base flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 shadow-xs"
             >
               <div className="flex items-center gap-3.5 min-w-0">
                 <div className="w-10 h-10 rounded-xl bg-primary-light text-primary flex items-center justify-center shrink-0">
                   <Search className="w-icon-lg h-icon-lg" />
                 </div>
                 <div className="min-w-0">
-                  <h2 className="font-bold text-sm text-stone-900 truncate">
+                  <h2 className="font-bold text-sm text-text-main truncate">
                     {search.title}
                   </h2>
-                  <div className="text-xs text-stone-500 flex items-center gap-2 mt-0.5">
+                  <div className="text-xs text-text-tertiary flex items-center gap-2 mt-0.5">
                     <span>
                       {t("watch.savedSearch.created", {
                         date: formatRelativeDate(search.createdAt, locale),
@@ -233,7 +233,7 @@ export const SavedSearchesPage: React.FC = () => {
                   className={`px-3 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer ${
                     search.hasNotifications
                       ? "bg-success-surface text-success border-success-border"
-                      : "bg-stone-50 text-stone-600 border-stone-200"
+                      : "bg-surface-soft text-text-supporting border-border-disabled"
                   }`}
                 >
                   <Bell className="w-icon-sm h-icon-sm" />
@@ -278,7 +278,7 @@ export const SavedSearchesPage: React.FC = () => {
                   variant="ghost"
                   onClick={() => void handleDelete(search.id)}
                   aria-label={`Supprimer la recherche « ${search.title} »`}
-                  className="text-stone-500 hover:text-danger"
+                  className="text-text-tertiary hover:text-danger"
                 >
                   <Trash2 className="w-icon-md h-icon-md" />
                 </Button>
@@ -288,7 +288,7 @@ export const SavedSearchesPage: React.FC = () => {
         </div>
       ) : (
         <EmptyState
-          icon={<Search className="w-10 h-10 text-stone-400" />}
+          icon={<Search className="w-10 h-10 text-text-inverse-subtle" />}
           title={t(
             "savedsearches.savedSearchesPage.aucuneRechercheSauvegardee",
           )}

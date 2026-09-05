@@ -131,7 +131,7 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
   return (
     <div className="space-y-4">
       {/* Search & Filter Toolbar */}
-      <div className="bg-bg-surface p-4 rounded-control border border-stone-200 shadow-xs space-y-3">
+      <div className="bg-bg-surface p-4 rounded-control border border-border-disabled shadow-xs space-y-3">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
           {/* Search bar */}
           <div className="lg:col-span-2 relative">
@@ -143,13 +143,13 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
               )}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 text-xs rounded-control border border-stone-200 focus:outline-hidden focus:ring-2 focus:ring-primary focus:border-transparent bg-stone-50/50 h-control-touch"
+              className="w-full pl-9 pr-3 py-2 text-xs rounded-control border border-border-disabled focus:outline-hidden focus:ring-2 focus:ring-primary focus:border-transparent bg-surface-soft/50 h-control-touch"
             />
             {searchQuery && (
               <button
                 type="button"
                 onClick={() => setSearchQuery("")}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-500 hover:text-text-secondary"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-tertiary hover:text-text-secondary"
               >
                 <X className="w-icon-sm h-icon-sm" />
               </button>
@@ -217,7 +217,7 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
         </div>
 
         {/* Active filter counter & reset */}
-        <div className="flex items-center justify-between pt-2 border-t border-stone-100 text-xs text-stone-500">
+        <div className="flex items-center justify-between pt-2 border-t border-border-soft text-xs text-text-tertiary">
           <span>
             {t("admin.providerCatalogTable.affichageDe")}
             <strong>{filteredProviders.length}</strong>{" "}
@@ -241,10 +241,10 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
       </div>
 
       {/* Provider List Table */}
-      <div className="bg-bg-surface rounded-control border border-stone-200 shadow-xs overflow-hidden">
+      <div className="bg-bg-surface rounded-control border border-border-disabled shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-stone-700">
-            <thead className="bg-stone-50 text-stone-500 uppercase tracking-wider font-semibold border-b border-stone-200">
+          <table className="w-full text-left text-xs text-text-emphasis">
+            <thead className="bg-surface-soft text-text-tertiary uppercase tracking-wider font-semibold border-b border-border-disabled">
               <tr>
                 <th scope="col" className="py-3 px-4">
                   Fournisseur & Code
@@ -266,10 +266,13 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-stone-100 font-medium">
+            <tbody className="divide-y divide-border-soft font-medium">
               {filteredProviders.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-10 text-center text-stone-500">
+                  <td
+                    colSpan={6}
+                    className="py-10 text-center text-text-tertiary"
+                  >
                     {t(
                       "admin.providerCatalogTable.aucunFournisseurNeCorrespondAux",
                     )}
@@ -299,7 +302,7 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
                   return (
                     <tr
                       key={p.id}
-                      className="hover:bg-stone-50/70 transition-colors"
+                      className="hover:bg-surface-soft/70 transition-colors"
                     >
                       {/* Name & Code */}
                       <td className="py-3.5 px-4">
@@ -310,7 +313,7 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
                           >
                             {p.name}
                           </Link>
-                          <span className="text-micro text-stone-500 font-mono">
+                          <span className="text-micro text-text-tertiary font-mono">
                             {p.code}
                           </span>
                         </div>
@@ -344,7 +347,7 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
                                     ? "bg-success-surface text-success border-success-border"
                                     : demoOnly
                                       ? "bg-info-surface text-info border-info-border"
-                                      : "bg-stone-100 text-stone-700 border-stone-200"
+                                      : "bg-surface-muted text-text-emphasis border-border-disabled"
                                 }`}
                               >
                                 <ProviderCapabilityLabel
@@ -356,7 +359,7 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
                           })}
                           {p.capabilities.length > 3 && (
                             <span
-                              className="text-micro text-stone-500 font-medium self-center"
+                              className="text-micro text-text-tertiary font-medium self-center"
                               title={p.capabilities
                                 .slice(3)
                                 .map((cap) => getCapabilityMetadata(cap).name)
@@ -408,7 +411,7 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
                           )}
                           {isActive && health === "degraded" && (
                             <span
-                              className="w-2 h-2 rounded-pill bg-amber-500"
+                              className="w-2 h-2 rounded-pill bg-rating-strong"
                               title={t("admin.providerCatalogTable.degrade")}
                             />
                           )}
@@ -425,7 +428,7 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
                       <td className="py-3.5 px-3">
                         <div className="flex items-center gap-1">
                           {p.supportedMarkets.includes("*") ? (
-                            <span className="text-micro font-bold text-text-secondary bg-stone-100 px-2 py-0.5 rounded">
+                            <span className="text-micro font-bold text-text-secondary bg-surface-muted px-2 py-0.5 rounded">
                               {t("admin.providerCatalogTable.tous")}
                             </span>
                           ) : (
@@ -435,7 +438,7 @@ export const ProviderCatalogTable: React.FC<ProviderCatalogTableProps> = ({
                                 className={`text-micro font-mono px-1.5 py-0.5 rounded border ${
                                   cfg?.marketOverrides?.[m]
                                     ? "bg-info-surface text-info border-info-border font-bold"
-                                    : "bg-stone-100 text-text-secondary border-stone-200"
+                                    : "bg-surface-muted text-text-secondary border-border-disabled"
                                 }`}
                                 title={
                                   cfg?.marketOverrides?.[m]

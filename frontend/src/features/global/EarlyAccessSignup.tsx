@@ -75,14 +75,14 @@ export function EarlyAccessSignup({
       className="mx-auto mt-8 max-w-xl border-y border-border-base py-6 text-left"
     >
       <h2 className="text-base font-bold">Être informé du lancement</h2>
-      <p className="mt-1 text-xs leading-relaxed text-stone-600">
+      <p className="mt-1 text-xs leading-relaxed text-text-supporting">
         Recevez uniquement les informations liées à l’ouverture de ce marché.
       </p>
       <div className="mt-4 flex flex-col gap-2 sm:flex-row">
         <label className="relative flex-1">
           <span className="sr-only">Adresse email</span>
           <Mail
-            className="absolute left-3 top-1/2 h-icon-md w-icon-md -translate-y-1/2 text-stone-500"
+            className="absolute left-3 top-1/2 h-icon-md w-icon-md -translate-y-1/2 text-text-tertiary"
             aria-hidden="true"
           />
           <input
@@ -93,7 +93,7 @@ export function EarlyAccessSignup({
             onChange={(event) => setEmail(event.target.value)}
             placeholder="votre@email.com"
             disabled={isSubmitting}
-            className="h-control-touch w-full rounded-control border border-border-base bg-white pl-10 pr-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+            className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface pl-10 pr-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring"
           />
         </label>
         <Button
@@ -105,7 +105,7 @@ export function EarlyAccessSignup({
           Me prévenir
         </Button>
       </div>
-      <label className="mt-3 flex min-h-6 cursor-pointer items-start gap-2 text-xs leading-relaxed text-stone-600">
+      <label className="mt-3 flex min-h-6 cursor-pointer items-start gap-2 text-xs leading-relaxed text-text-supporting">
         <input
           type="checkbox"
           checked={consent}

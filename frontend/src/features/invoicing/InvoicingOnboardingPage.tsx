@@ -223,7 +223,7 @@ export function InvoicingOnboardingPage() {
         </ol>
 
         {organization && !hasEntity ? (
-          <section className="mt-6 rounded-card border border-primary/20 bg-primary-light p-5 sm:flex sm:items-center sm:justify-between sm:gap-5">
+          <section className="mt-6 rounded-card border border-primary-border bg-primary-light p-5 sm:flex sm:items-center sm:justify-between sm:gap-5">
             <div>
               <h2 className="text-sm font-bold text-text-main">
                 {t("invoicing.onboarding.bootstrapTitle")}
@@ -262,7 +262,7 @@ export function InvoicingOnboardingPage() {
           </div>
           <a
             href={applicationHref("facturation", "/app")}
-            className="mt-4 inline-flex min-h-control-md items-center justify-center gap-2 rounded-control bg-primary px-5 text-sm font-bold text-white sm:mt-0"
+            className="mt-4 inline-flex min-h-control-md items-center justify-center gap-2 rounded-control bg-primary px-5 text-sm font-bold text-text-inverse sm:mt-0"
           >
             Ouvrir Facturation
             <ArrowRight className="h-icon-sm w-icon-sm" aria-hidden="true" />

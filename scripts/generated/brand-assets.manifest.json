@@ -87,7 +87,11 @@
     "mobile/assets/brand/native/ios/AppIcon.appiconset/AppIcon-iPad-83.5@2x.png",
     "mobile/assets/brand/native/ios/AppIcon.appiconset/Contents.json",
     "mobile/assets/brand/splash-logo.png",
+    "mobile/brand-assets.generated.json",
+    "mobile/src/brand-images.generated.ts",
+    "packages/brand/src/active.generated.ts",
     "packages/brand/src/document.generated.ts",
+    "packages/brand/src/web-assets.generated.ts",
     "packages/design-tokens/src/brand.generated.d.ts",
     "packages/design-tokens/src/brand.generated.js"
   ],
@@ -175,8 +179,12 @@
     "mobile/assets/brand/native/ios/AppIcon.appiconset/AppIcon-iPad-83.5@2x.png": "c9e64e234fcb49300c9bc721f0b322f36ac769100ff23ce1d0c3e8791f44f521",
     "mobile/assets/brand/native/ios/AppIcon.appiconset/Contents.json": "983894ee40e9c36d627c2f23ebae64275aa784a936ca9461625145647708bcf5",
     "mobile/assets/brand/splash-logo.png": "41f4f1f6bb44dd32100c20e1f5b26e2ced3261f46c6018f844ebcc49853bf532",
+    "mobile/brand-assets.generated.json": "7970d23d22658d3381c02a6038e7f5edfa89f31c75ba6cfa0dbbf37c7e50aa47",
+    "mobile/src/brand-images.generated.ts": "2224031b8aaa015bb4609c7d0b03260cbd545585daf912514145de319114b462",
+    "packages/brand/src/active.generated.ts": "4fb4c0c8174e437f852c9094fefbb71ad5061075481f908c5f37331a26b5463d",
     "packages/brand/src/document.generated.ts": "285a38d6ab5589a75776edf853b22d104b45c99818742f5f4fc0d6553ba4e65e",
-    "packages/design-tokens/src/brand.generated.d.ts": "6f9161085b2fb910c6032c9700e6fd807d002f14ab27227293585dfad34fcd53",
-    "packages/design-tokens/src/brand.generated.js": "a758d0a4a0c2aa46bd2341d825c6e3f3c879b28ef2ee429090c1eeb0562032a1"
+    "packages/brand/src/web-assets.generated.ts": "dacd4b9bd242b31b75b0da47ee71591a004a36ade0f02cb7b5edc888da9928d5",
+    "packages/design-tokens/src/brand.generated.d.ts": "f731bbc2cd7a5770060d2752d7eda6be1522026c95a5ec65b9a2f4a3af346f3f",
+    "packages/design-tokens/src/brand.generated.js": "82d28b0a1fa6408845927af9f2f5e222debf626c804ab433b7e1a2b3988cf184"
   }
 }

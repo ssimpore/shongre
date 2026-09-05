@@ -49,7 +49,7 @@ export const PriceDisplay: React.FC<PriceDisplayProps> = ({
         </span>
       )}
       {isNegotiable && !isFreeDonation && (
-        <span className="rounded-md border border-stone-200 bg-stone-100 px-2 py-0.5 text-micro font-semibold text-text-secondary">
+        <span className="rounded-md border border-border-disabled bg-surface-muted px-2 py-0.5 text-micro font-semibold text-text-secondary">
           {t("ui.uIComponents.negociable")}
         </span>
       )}
@@ -88,13 +88,16 @@ export const RatingDisplay: React.FC<RatingDisplayProps> = ({
               count: reviewCount,
             })
       }
-      className={cn("inline-flex items-center gap-1 text-stone-800", className)}
+      className={cn(
+        "inline-flex items-center gap-1 text-text-strong",
+        className,
+      )}
     >
       <Star
         aria-hidden="true"
         className={cn(
           size === "sm" ? "h-icon-sm w-icon-sm" : "h-icon-md w-icon-md",
-          "fill-amber-400 text-amber-400",
+          "fill-rating-fill text-rating-fill",
         )}
       />
       <span

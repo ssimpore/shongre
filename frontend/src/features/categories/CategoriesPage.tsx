@@ -59,7 +59,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, priority }) => {
     CATEGORY_VISUALS["dons-et-objets-gratuits"];
 
   return (
-    <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-border-base bg-bg-surface shadow-xs transition duration-normal hover:-translate-y-0.5 hover:border-primary-border hover:shadow-md focus-within:border-primary-border focus-within:ring-2 focus-within:ring-primary/15 motion-reduce:transform-none">
+    <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-border-base bg-bg-surface shadow-xs transition duration-normal hover:-translate-y-0.5 hover:border-primary-border hover:shadow-md focus-within:border-primary-border focus-within:ring-2 focus-within:ring-primary-ring motion-reduce:transform-none">
       <Link
         to={`/categorie/${category.slug}`}
         className="relative block aspect-16/10 overflow-hidden bg-bg-subtle focus-visible:outline-none"
@@ -74,18 +74,18 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, priority }) => {
           sizes={IMAGE_SIZES.card}
           className="h-full w-full object-cover transition duration-slow group-hover:scale-105 motion-reduce:transform-none"
         />
-        <span className="pointer-events-none absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-black/25 to-transparent" />
+        <span className="pointer-events-none absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-surface-overlay-deep/25 to-transparent" />
       </Link>
 
       <div className="flex flex-1 flex-col p-4 sm:p-5">
         <div>
           <Link
             to={`/categorie/${category.slug}`}
-            className="inline-flex rounded-sm text-lg font-bold leading-tight text-stone-950 transition-colors hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            className="inline-flex rounded-sm text-lg font-bold leading-tight text-text-deep transition-colors hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           >
             {categoryLabel}
           </Link>
-          <p className="mt-1 text-xs font-semibold text-stone-500">
+          <p className="mt-1 text-xs font-semibold text-text-tertiary">
             {t("categories.categoriesPage.rubriques", {
               count: subCategories.length,
             })}
@@ -101,7 +101,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, priority }) => {
               <Link
                 key={subCategory.id}
                 to={`/categorie/${category.slug}?subCategory=${subCategory.slug}`}
-                className="inline-flex min-h-7 max-w-full items-center rounded-control border border-border-base bg-bg-base px-2.5 py-1 text-micro font-semibold text-stone-600 transition-colors hover:border-primary-border hover:bg-primary-light hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                className="inline-flex min-h-7 max-w-full items-center rounded-control border border-border-base bg-bg-base px-2.5 py-1 text-micro font-semibold text-text-supporting transition-colors hover:border-primary-border hover:bg-primary-light hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                 title={getTaxonomyLabel(subCategory, "compact")}
               >
                 <span className="truncate">
@@ -110,7 +110,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, priority }) => {
               </Link>
             ))}
             {hiddenSubCategoryCount > 0 && (
-              <span className="inline-flex min-h-7 items-center px-1 text-micro font-bold text-stone-500">
+              <span className="inline-flex min-h-7 items-center px-1 text-micro font-bold text-text-tertiary">
                 {t("categories.categoriesPage.rubriquesSupplementaires", {
                   count: hiddenSubCategoryCount,
                 })}
@@ -122,7 +122,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, priority }) => {
         <div className="mt-auto pt-5">
           <Link
             to={`/categorie/${category.slug}`}
-            className="flex min-h-9 items-center justify-between border-t border-border-subtle pt-3 text-xs font-bold text-stone-800 transition-colors hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            className="flex min-h-9 items-center justify-between border-t border-border-subtle pt-3 text-xs font-bold text-text-strong transition-colors hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           >
             <span>
               {t("categories.categoriesPage.explorerLaCategorie", {
@@ -197,7 +197,7 @@ export const CategoriesPage: React.FC = () => {
               <Heading as="h1" size="display-sm">
                 {t("categories.categoriesPage.toutesNosCategories")}
               </Heading>
-              <p className="max-w-xl text-sm leading-relaxed text-stone-600 sm:text-base">
+              <p className="max-w-xl text-sm leading-relaxed text-text-supporting sm:text-base">
                 {t("categories.categoriesPage.explorezLEnsembleDesCategories")}
               </p>
             </div>
@@ -226,10 +226,10 @@ export const CategoriesPage: React.FC = () => {
       <Container className="mt-7 sm:mt-9">
         <div className="mb-5 flex items-center justify-between gap-4">
           <p
-            className="text-xs font-medium text-stone-500 sm:text-sm"
+            className="text-xs font-medium text-text-tertiary sm:text-sm"
             aria-live="polite"
           >
-            <strong className="font-bold text-stone-700">
+            <strong className="font-bold text-text-emphasis">
               {t("categories.categoriesPage.univers", {
                 count: filteredCategories.length,
               })}

@@ -61,7 +61,8 @@ export const PROVIDER_CATEGORIES: Record<ProviderCategory, CategoryMetadata> = {
     description:
       "Virements bancaires automatisés et transferts instantanés vers les vendeurs.",
     iconName: "Coins",
-    badgeClass: "bg-teal-50 text-teal-700 border-teal-200",
+    badgeClass:
+      "bg-connection-surface text-connection border-connection-border",
     isCore: true,
   },
   DELIVERY: {
@@ -81,7 +82,7 @@ export const PROVIDER_CATEGORIES: Record<ProviderCategory, CategoryMetadata> = {
     description:
       "Connexion sociale Google / Apple, mot de passe sécurisé et validation 2FA/MFA.",
     iconName: "KeyRound",
-    badgeClass: "bg-indigo-50 text-indigo-700 border-indigo-200",
+    badgeClass: "bg-insight-surface text-insight-strong border-insight-border",
     isCore: true,
   },
   EMAIL: {
@@ -91,7 +92,7 @@ export const PROVIDER_CATEGORIES: Record<ProviderCategory, CategoryMetadata> = {
     description:
       "Envoi d'emails de confirmation, alertes sécurisées et campagnes de newsletter.",
     iconName: "Mail",
-    badgeClass: "bg-violet-50 text-violet-700 border-violet-200",
+    badgeClass: "bg-staff-surface text-staff-strong border-staff-border",
     isCore: true,
   },
   SMS: {
@@ -101,7 +102,8 @@ export const PROVIDER_CATEGORIES: Record<ProviderCategory, CategoryMetadata> = {
     description:
       "Envoi de codes de validation SMS et notifications critiques par message.",
     iconName: "Smartphone",
-    badgeClass: "bg-purple-50 text-purple-700 border-purple-200",
+    badgeClass:
+      "bg-automation-surface text-automation-strong border-automation-border",
     isCore: false,
   },
   PUSH: {
@@ -111,7 +113,8 @@ export const PROVIDER_CATEGORIES: Record<ProviderCategory, CategoryMetadata> = {
     description:
       "Alertes en temps réel sur navigateur et applications mobiles (FCM).",
     iconName: "Bell",
-    badgeClass: "bg-pink-50 text-pink-700 border-pink-200",
+    badgeClass:
+      "bg-community-surface text-community-strong border-community-border",
     isCore: false,
   },
   AI: {
@@ -131,7 +134,8 @@ export const PROVIDER_CATEGORIES: Record<ProviderCategory, CategoryMetadata> = {
     description:
       "Recherche plein texte sur la marketplace et prospection web externe pour le CRM.",
     iconName: "Search",
-    badgeClass: "bg-orange-50 text-orange-700 border-orange-200",
+    badgeClass:
+      "bg-primary-surface-soft text-primary-emphasis border-primary-on-inverse-muted",
     isCore: true,
   },
   MAPS: {
@@ -141,7 +145,8 @@ export const PROVIDER_CATEGORIES: Record<ProviderCategory, CategoryMetadata> = {
     description:
       "Affichage des fonds de carte interactifs et tuiles géographiques.",
     iconName: "Map",
-    badgeClass: "bg-lime-50 text-lime-700 border-lime-200",
+    badgeClass:
+      "bg-sustainability-surface text-sustainability border-sustainability-border",
     isCore: true,
   },
   GEOCODING: {
@@ -161,7 +166,8 @@ export const PROVIDER_CATEGORIES: Record<ProviderCategory, CategoryMetadata> = {
     description:
       "Contrôle automatisé des pièces d'identité et prévention de l'usurpation.",
     iconName: "UserCheck",
-    badgeClass: "bg-cyan-50 text-cyan-700 border-cyan-200",
+    badgeClass:
+      "bg-communication-surface text-communication border-communication-border",
     isCore: false,
   },
   BUSINESS_VERIFICATION: {
@@ -181,7 +187,7 @@ export const PROVIDER_CATEGORIES: Record<ProviderCategory, CategoryMetadata> = {
     description:
       "Stockage objet d'images de publications, pièces jointes de litiges et factures.",
     iconName: "HardDrive",
-    badgeClass: "bg-stone-100 text-stone-700 border-stone-200",
+    badgeClass: "bg-surface-muted text-text-emphasis border-border-disabled",
     isCore: true,
   },
   CDN: {
@@ -211,7 +217,8 @@ export const PROVIDER_CATEGORIES: Record<ProviderCategory, CategoryMetadata> = {
     description:
       "Mesure de trafic respectueuse de la vie privée (conforme RGPD / sans cookies tiers).",
     iconName: "BarChart3",
-    badgeClass: "bg-teal-50 text-teal-800 border-teal-300",
+    badgeClass:
+      "bg-connection-surface text-connection-strong border-connection-border-strong",
     isCore: false,
   },
   ERROR_MONITORING: {
@@ -241,7 +248,7 @@ export const PROVIDER_CATEGORIES: Record<ProviderCategory, CategoryMetadata> = {
     description:
       "Protection invisible contre le spam et les bots sur les formulaires sensibles.",
     iconName: "ShieldCheck",
-    badgeClass: "bg-neutral-100 text-neutral-800 border-neutral-300",
+    badgeClass: "bg-surface-muted text-text-strong border-border-prominent",
     isCore: false,
   },
   CRM: {
@@ -251,7 +258,8 @@ export const PROVIDER_CATEGORIES: Record<ProviderCategory, CategoryMetadata> = {
     description:
       "Synchronisation et enrichissement de données entreprises externes.",
     iconName: "Briefcase",
-    badgeClass: "bg-fuchsia-50 text-fuchsia-700 border-fuchsia-200",
+    badgeClass:
+      "bg-campaign-surface text-campaign-strong border-campaign-border",
     isCore: false,
   },
   INVOICING: {
@@ -261,7 +269,7 @@ export const PROVIDER_CATEGORIES: Record<ProviderCategory, CategoryMetadata> = {
     description:
       "Génération de factures Pro et conformité facturation électronique.",
     iconName: "FileText",
-    badgeClass: "bg-slate-100 text-slate-700 border-slate-300",
+    badgeClass: "bg-surface-muted text-text-emphasis border-border-prominent",
     isCore: false,
   },
 };
@@ -781,7 +789,7 @@ export function getCategoryMetadata(
       shortLabel: category,
       description: "",
       iconName: "Cpu",
-      badgeClass: "bg-stone-100 text-stone-700 border-stone-200",
+      badgeClass: "bg-surface-muted text-text-emphasis border-border-disabled",
       isCore: false,
     }
   );

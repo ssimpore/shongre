@@ -147,7 +147,9 @@ export const AddNodeModal: React.FC<AddNodeModalProps> = ({
         {/* Parent & Level Context */}
         <div className="p-3 bg-bg-subtle rounded-control border border-border-subtle flex items-center justify-between text-xs">
           <div className="flex items-center gap-2">
-            <span className="text-stone-500 font-semibold">Niveau cible :</span>
+            <span className="text-text-tertiary font-semibold">
+              Niveau cible :
+            </span>
             <span className="px-2 py-0.5 rounded-pill bg-primary-light text-primary font-bold uppercase text-micro">
               {targetLevel}
             </span>
@@ -188,11 +190,11 @@ export const AddNodeModal: React.FC<AddNodeModalProps> = ({
 
         {/* Live UI Rendering Preview */}
         <div className="p-3 bg-bg-base rounded-control border border-border-base text-xs space-y-1">
-          <div className="text-stone-500 font-bold uppercase tracking-wider text-micro">
+          <div className="text-text-tertiary font-bold uppercase tracking-wider text-micro">
             {t("admin.addNodeModal.apercuDuRenduUi")}
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-stone-500">
+            <span className="text-text-tertiary">
               {t("admin.addNodeModal.renduStandardDetailleSeo")}
             </span>
             <span className="font-bold text-text-main">
@@ -200,7 +202,7 @@ export const AddNodeModal: React.FC<AddNodeModalProps> = ({
             </span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-stone-500">
+            <span className="text-text-tertiary">
               Rendu compact (mobile/filtres) :
             </span>
             <span className="font-bold text-primary">
@@ -267,7 +269,7 @@ export const AddNodeModal: React.FC<AddNodeModalProps> = ({
         </div>
 
         <div className="pt-2">
-          <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-stone-800">
+          <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-text-strong">
             <Checkbox
               checked={publishable}
               onChange={(e) => setPublishable(e.target.checked)}

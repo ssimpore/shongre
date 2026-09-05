@@ -244,7 +244,7 @@ export const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
               variant="ghost"
               size="sm"
               onClick={() => setStep("input")}
-              className="text-stone-500"
+              className="text-text-tertiary"
             >
               {t("auth.phoneVerificationModal.changerDeNumero")}
             </Button>
@@ -254,7 +254,7 @@ export const PhoneVerificationModal: React.FC<PhoneVerificationModalProps> = ({
               size="sm"
               onClick={handleResend}
               disabled={countdown > 0}
-              className={countdown > 0 ? "text-stone-500" : "text-primary"}
+              className={countdown > 0 ? "text-text-tertiary" : "text-primary"}
               leftIcon={<RefreshCw className="w-icon-xs h-icon-xs" />}
             >
               {countdown > 0

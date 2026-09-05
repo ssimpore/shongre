@@ -215,30 +215,30 @@ export const ContactPage: React.FC = () => {
   if (submittedReference) {
     return (
       <div className="max-w-2xl mx-auto px-4 sm:px-6 py-12">
-        <div className="bg-white border border-border-base rounded-3xl p-8 sm:p-12 text-center shadow-xs space-y-6">
+        <div className="bg-bg-surface border border-border-base rounded-3xl p-8 sm:p-12 text-center shadow-xs space-y-6">
           <div className="w-16 h-16 rounded-full bg-success-surface text-success flex items-center justify-center mx-auto">
             <CheckCircle2 className="w-8 h-8" />
           </div>
 
           <div className="space-y-2">
-            <h1 className="text-2xl font-bold text-stone-900">
+            <h1 className="text-2xl font-bold text-text-main">
               Demande d'assistance transmise
             </h1>
-            <p className="text-xs sm:text-sm text-stone-600">
+            <p className="text-xs sm:text-sm text-text-supporting">
               {t("support.contactPage.votreDemandeABienEte")}
             </p>
           </div>
 
-          <div className="p-4 bg-stone-50 border border-stone-200 rounded-2xl max-w-sm mx-auto">
-            <span className="text-micro font-bold uppercase tracking-wider text-stone-500 block mb-0.5">
+          <div className="p-4 bg-surface-soft border border-border-disabled rounded-2xl max-w-sm mx-auto">
+            <span className="text-micro font-bold uppercase tracking-wider text-text-tertiary block mb-0.5">
               {t("support.contactPage.numeroDeDossier")}
             </span>
-            <span className="text-xl font-bold text-stone-900 font-mono tracking-wider">
+            <span className="text-xl font-bold text-text-main font-mono tracking-wider">
               {submittedReference}
             </span>
           </div>
 
-          <div className="text-xs text-stone-500 space-y-1 max-w-md mx-auto">
+          <div className="text-xs text-text-tertiary space-y-1 max-w-md mx-auto">
             <p>
               Un conseiller Shongre étudie votre dossier et vous répondra
               directement dans votre espace client et par email .
@@ -274,17 +274,17 @@ export const ContactPage: React.FC = () => {
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8">
       {/* 1. Page Header */}
       <div className="text-center max-w-xl mx-auto space-y-2">
-        <h1 className="text-2xl sm:text-3xl font-bold text-stone-900 tracking-tight">
+        <h1 className="text-2xl sm:text-3xl font-bold text-text-main tracking-tight">
           {t("support.contactPage.contacterLeSupportShongre")}
         </h1>
-        <p className="text-xs sm:text-sm text-stone-500">
+        <p className="text-xs sm:text-sm text-text-tertiary">
           {t("support.contactPage.selectionnezLeMotifDeVotre")}
         </p>
       </div>
 
       {/* 2. Step 1: Category Selector */}
       <div className="space-y-3">
-        <label className="block text-xs font-semibold uppercase tracking-wider text-stone-700">
+        <label className="block text-xs font-semibold uppercase tracking-wider text-text-emphasis">
           {t("support.contactPage.1QuelEstLeSujet")}
           <span className="text-danger">*</span>
         </label>
@@ -303,15 +303,15 @@ export const ContactPage: React.FC = () => {
                 }}
                 className={`p-4 rounded-2xl border text-left transition-all flex flex-col justify-between cursor-pointer ${
                   isSelected
-                    ? "border-primary bg-primary/5 text-primary ring-2 ring-primary/20 shadow-xs"
-                    : "border-border-base bg-white text-stone-800 hover:border-stone-400 hover:bg-stone-50"
+                    ? "border-primary bg-primary-surface-soft text-primary ring-2 ring-primary-ring shadow-xs"
+                    : "border-border-base bg-bg-surface text-text-strong hover:border-border-strong hover:bg-surface-soft"
                 }`}
               >
                 <div
                   className={`w-9 h-9 rounded-xl flex items-center justify-center mb-3 ${
                     isSelected
-                      ? "bg-primary text-white"
-                      : "bg-stone-100 text-stone-600"
+                      ? "bg-primary text-text-inverse"
+                      : "bg-surface-muted text-text-supporting"
                   }`}
                 >
                   {CATEGORY_ICONS[cat.iconName] || (
@@ -320,10 +320,10 @@ export const ContactPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <h2 className="font-bold text-xs sm:text-sm text-stone-900 leading-tight mb-1">
+                  <h2 className="font-bold text-xs sm:text-sm text-text-main leading-tight mb-1">
                     {cat.label}
                   </h2>
-                  <p className="text-micro text-stone-500 line-clamp-2 leading-relaxed">
+                  <p className="text-micro text-text-tertiary line-clamp-2 leading-relaxed">
                     {cat.description}
                   </p>
                 </div>
@@ -339,7 +339,7 @@ export const ContactPage: React.FC = () => {
       {/* 3. Step 2: Reason Selector & Handoffs */}
       {currentCategoryDef && (
         <div className="space-y-4 pt-2 animate-fadeIn">
-          <label className="block text-xs font-semibold uppercase tracking-wider text-stone-700">
+          <label className="block text-xs font-semibold uppercase tracking-wider text-text-emphasis">
             {t("support.contactPage.2PrecisezVotreSituation")}
             <span className="text-danger">*</span>
           </label>
@@ -355,8 +355,8 @@ export const ContactPage: React.FC = () => {
                   onClick={() => setSelectedReasonId(r.id)}
                   className={`p-3.5 rounded-2xl border text-left transition-all flex items-center justify-between gap-3 cursor-pointer ${
                     isSelected
-                      ? "border-primary bg-primary/5 text-stone-900 font-semibold ring-1 ring-primary/30"
-                      : "border-border-base bg-white text-stone-700 hover:bg-stone-50"
+                      ? "border-primary bg-primary-surface-soft text-text-main font-semibold ring-1 ring-primary-ring-strong"
+                      : "border-border-base bg-bg-surface text-text-emphasis hover:bg-surface-soft"
                   }`}
                 >
                   <span className="text-xs leading-snug">{r.label}</span>
@@ -364,11 +364,11 @@ export const ContactPage: React.FC = () => {
                     className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${
                       isSelected
                         ? "border-primary bg-primary"
-                        : "border-stone-300"
+                        : "border-border-prominent"
                     }`}
                   >
                     {isSelected && (
-                      <div className="w-1.5 h-1.5 rounded-full bg-white" />
+                      <div className="w-1.5 h-1.5 rounded-full bg-bg-surface" />
                     )}
                   </div>
                 </button>
@@ -403,10 +403,10 @@ export const ContactPage: React.FC = () => {
           )}
 
           {currentReasonDef?.isMessagingHandoff && (
-            <div className="p-4 bg-primary/5 border border-primary/20 rounded-2xl flex items-start gap-3 text-stone-800 text-xs">
+            <div className="p-4 bg-primary-surface-soft border border-primary-border rounded-2xl flex items-start gap-3 text-text-strong text-xs">
               <MessageSquare className="w-icon-lg h-icon-lg text-primary shrink-0 mt-0.5" />
               <div className="space-y-2">
-                <p className="font-bold text-stone-900">
+                <p className="font-bold text-text-main">
                   {t("support.contactPage.echangeDirectAvecLeVendeur")}
                 </p>
                 <p className="leading-relaxed">
@@ -427,8 +427,8 @@ export const ContactPage: React.FC = () => {
           {currentReasonDef?.helpTip &&
             !currentReasonDef.isDisputeHandoff &&
             !currentReasonDef.isMessagingHandoff && (
-              <div className="p-3.5 bg-stone-100 border border-stone-200 rounded-2xl text-xs text-stone-700 flex items-start gap-2.5">
-                <HelpCircle className="w-icon-md h-icon-md text-stone-500 shrink-0 mt-0.5" />
+              <div className="p-3.5 bg-surface-muted border border-border-disabled rounded-2xl text-xs text-text-emphasis flex items-start gap-2.5">
+                <HelpCircle className="w-icon-md h-icon-md text-text-tertiary shrink-0 mt-0.5" />
                 <span>
                   <strong>Conseil :</strong> {currentReasonDef.helpTip}
                 </span>
@@ -441,9 +441,9 @@ export const ContactPage: React.FC = () => {
       {selectedCategory && selectedReasonId && (
         <form
           onSubmit={handleSubmit}
-          className="bg-white border border-border-base rounded-3xl p-6 sm:p-8 shadow-xs space-y-6 animate-fadeIn"
+          className="bg-bg-surface border border-border-base rounded-3xl p-6 sm:p-8 shadow-xs space-y-6 animate-fadeIn"
         >
-          <h2 className="text-base font-bold text-stone-900">
+          <h2 className="text-base font-bold text-text-main">
             {t("support.contactPage.3RedigezVotreMessage")}
           </h2>
 
@@ -458,8 +458,8 @@ export const ContactPage: React.FC = () => {
           {/* Support cases are account-owned so their history cannot leak
               between visitors sharing the same device. */}
           {!isAuthenticated && (
-            <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 text-xs text-stone-700">
-              <p className="font-bold text-stone-900">
+            <div className="rounded-2xl border border-primary-border bg-primary-surface-soft p-4 text-xs text-text-emphasis">
+              <p className="font-bold text-text-main">
                 Connectez-vous pour créer et suivre une demande.
               </p>
               <p className="mt-1">

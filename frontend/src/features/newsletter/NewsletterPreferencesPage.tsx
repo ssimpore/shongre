@@ -155,12 +155,12 @@ export const NewsletterPreferencesPage: React.FC = () => {
     <div className="space-y-6">
       {/* 1. Header */}
       <div>
-        <h1 className="text-xl sm:text-2xl font-bold text-stone-900">
+        <h1 className="text-xl sm:text-2xl font-bold text-text-main">
           {t(
             "newsletter.newsletterPreferencesPage.newsletterPreferencesMarketing",
           )}
         </h1>
-        <p className="text-xs sm:text-sm text-stone-500 mt-1">
+        <p className="text-xs sm:text-sm text-text-tertiary mt-1">
           {t(
             "newsletter.newsletterPreferencesPage.gerezVosAbonnementsAuxSelections",
           )}
@@ -168,13 +168,13 @@ export const NewsletterPreferencesPage: React.FC = () => {
       </div>
 
       {/* 2. Subscription Status Banner */}
-      <div className="bg-white border border-border-base rounded-3xl p-5 sm:p-6 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-bg-surface border border-border-base rounded-3xl p-5 sm:p-6 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
           <div
             className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 ${
               isSubscribed
                 ? "bg-success-surface text-success"
-                : "bg-stone-100 text-stone-500"
+                : "bg-surface-muted text-text-tertiary"
             }`}
           >
             <Mail className="w-icon-lg h-icon-lg" />
@@ -185,14 +185,14 @@ export const NewsletterPreferencesPage: React.FC = () => {
               it pushed the page 56px wider than a 320px screen. */}
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-              <span className="min-w-0 max-w-full truncate text-sm font-bold text-stone-900">
+              <span className="min-w-0 max-w-full truncate text-sm font-bold text-text-main">
                 {currentUser?.email}
               </span>
               <Badge variant={statusInfo.variant} size="sm">
                 {statusInfo.label}
               </Badge>
             </div>
-            <p className="text-xs text-stone-500 mt-0.5">
+            <p className="text-xs text-text-tertiary mt-0.5">
               {statusInfo.description}
             </p>
           </div>
@@ -204,7 +204,7 @@ export const NewsletterPreferencesPage: React.FC = () => {
             size="sm"
             onClick={handleUnsubscribe}
             disabled={isSaving}
-            className="text-stone-600 hover:text-stone-900 shrink-0 font-semibold"
+            className="text-text-supporting hover:text-text-main shrink-0 font-semibold"
           >
             {t("newsletter.newsletterPreferencesPage.seDesabonner")}
           </Button>
@@ -222,12 +222,12 @@ export const NewsletterPreferencesPage: React.FC = () => {
       </div>
 
       {/* 3. Topics Customization */}
-      <div className="bg-white border border-border-base rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
+      <div className="bg-bg-surface border border-border-base rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
         <div>
-          <h2 className="text-base font-bold text-stone-900">
+          <h2 className="text-base font-bold text-text-main">
             {t("newsletter.newsletterPreferencesPage.vosThematiquesFavorites")}
           </h2>
-          <p className="text-xs text-stone-500 mt-0.5">
+          <p className="text-xs text-text-tertiary mt-0.5">
             {t(
               "newsletter.newsletterPreferencesPage.cochezLesThematiquesQuiVous",
             )}
@@ -258,10 +258,10 @@ export const NewsletterPreferencesPage: React.FC = () => {
       </div>
 
       {/* 4. Transactional Communication Isolation Notice */}
-      <div className="p-4 bg-stone-50 border border-border-base rounded-2xl flex items-start gap-3 text-xs text-stone-600">
+      <div className="p-4 bg-surface-soft border border-border-base rounded-2xl flex items-start gap-3 text-xs text-text-supporting">
         <ShieldCheck className="w-icon-lg h-icon-lg text-success shrink-0 mt-0.5" />
         <div className="space-y-1">
-          <span className="font-bold text-stone-900 block">
+          <span className="font-bold text-text-main block">
             {t(
               "newsletter.newsletterPreferencesPage.communicationsObligatoiresDeService",
             )}

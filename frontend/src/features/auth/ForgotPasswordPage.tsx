@@ -156,7 +156,7 @@ export const ForgotPasswordPage: React.FC = () => {
           <div>
             <label
               htmlFor="reset-email"
-              className="block text-xs font-semibold text-stone-800 mb-1.5"
+              className="block text-xs font-semibold text-text-strong mb-1.5"
             >
               {t("auth.forgotPasswordPage.adresseEmailDeVotreCompte")}
               <span className="text-primary">*</span>
@@ -170,9 +170,9 @@ export const ForgotPasswordPage: React.FC = () => {
                 placeholder={t("auth.forgotPasswordPage.votreEmailExempleFr")}
                 required
                 autoComplete="email"
-                className="w-full pl-9 pr-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-semibold text-stone-900 placeholder:text-stone-500 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
+                className="w-full pl-9 pr-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main placeholder:text-text-tertiary focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
               />
-              <Mail className="w-icon-md h-icon-md text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <Mail className="w-icon-md h-icon-md text-text-inverse-subtle absolute left-3 top-1/2 -translate-y-1/2" />
             </div>
           </div>
 
@@ -190,7 +190,7 @@ export const ForgotPasswordPage: React.FC = () => {
       ) : (
         <form onSubmit={handleResetPassword} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-stone-800 mb-1.5">
+            <label className="block text-xs font-semibold text-text-strong mb-1.5">
               {t("auth.forgotPasswordPage.jetonDeValidationToken")}
               <span className="text-primary">*</span>
             </label>
@@ -201,9 +201,9 @@ export const ForgotPasswordPage: React.FC = () => {
                 onChange={(e) => setToken(e.target.value)}
                 placeholder={t("auth.forgotPasswordPage.collezLeTokenRecuPar")}
                 required
-                className="w-full pl-9 pr-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-mono text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
+                className="w-full pl-9 pr-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-mono text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
               />
-              <KeyRound className="w-icon-md h-icon-md text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <KeyRound className="w-icon-md h-icon-md text-text-inverse-subtle absolute left-3 top-1/2 -translate-y-1/2" />
             </div>
           </div>
 
@@ -220,7 +220,7 @@ export const ForgotPasswordPage: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-stone-800 mb-1.5">
+            <label className="block text-xs font-semibold text-text-strong mb-1.5">
               {t("auth.forgotPasswordPage.confirmerLeNouveauMotDe")}
               <span className="text-primary">*</span>
             </label>
@@ -231,7 +231,7 @@ export const ForgotPasswordPage: React.FC = () => {
               placeholder="••••••••••••"
               required
               autoComplete="new-password"
-              className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
+              className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
             />
           </div>
 
@@ -251,7 +251,7 @@ export const ForgotPasswordPage: React.FC = () => {
             variant="ghost"
             size="sm"
             onClick={() => setStep("request")}
-            className="w-full text-stone-500"
+            className="w-full text-text-tertiary"
           >
             {t("auth.forgotPasswordPage.renvoyerUnNouvelEmail")}
           </Button>

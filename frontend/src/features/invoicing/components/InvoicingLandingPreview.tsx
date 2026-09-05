@@ -109,7 +109,7 @@ export function InvoicingLandingPreview({
     >
       <div className="flex min-h-control-lg items-center justify-between gap-3 border-b border-border-base bg-bg-subtle px-4">
         <div className="flex items-center gap-2">
-          <span className="flex h-7 w-7 items-center justify-center rounded-control bg-primary text-xs font-bold text-white">
+          <span className="flex h-7 w-7 items-center justify-center rounded-control bg-primary text-xs font-bold text-text-inverse">
             S
           </span>
           <span className="text-xs font-bold text-text-main">

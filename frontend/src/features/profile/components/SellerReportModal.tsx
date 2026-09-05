@@ -78,7 +78,7 @@ export const SellerReportModal: React.FC<SellerReportModalProps> = ({
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-stone-900 mb-2">
+          <label className="block text-xs font-semibold text-text-main mb-2">
             {t("profile.sellerReportModal.motifPrincipalDuSignalement")}
           </label>
           <div className="space-y-1.5">
@@ -87,8 +87,8 @@ export const SellerReportModal: React.FC<SellerReportModalProps> = ({
                 key={r.id}
                 className={`flex items-center gap-3 p-2.5 rounded-xl border text-xs font-medium cursor-pointer transition-colors ${
                   selectedReason === r.id
-                    ? "border-primary bg-bg-base text-stone-950 font-semibold"
-                    : "border-border-base hover:bg-bg-base text-stone-700"
+                    ? "border-primary bg-bg-base text-text-deep font-semibold"
+                    : "border-border-base hover:bg-bg-base text-text-emphasis"
                 }`}
               >
                 <input
@@ -106,7 +106,7 @@ export const SellerReportModal: React.FC<SellerReportModalProps> = ({
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-stone-900 mb-1">
+          <label className="block text-xs font-semibold text-text-main mb-1">
             {t(
               "profile.sellerReportModal.detailsComplementairesFacultatifMaisRecommande",
             )}
@@ -118,7 +118,7 @@ export const SellerReportModal: React.FC<SellerReportModalProps> = ({
               "profile.sellerReportModal.decrivezPrecisementLesFaitsConstates",
             )}
             rows={3}
-            className="w-full p-3 bg-bg-base border border-border-base rounded-control text-xs text-stone-900 focus:bg-white focus:outline-hidden focus:border-primary min-h-control-touch"
+            className="w-full p-3 bg-bg-base border border-border-base rounded-control text-xs text-text-main focus:bg-bg-surface focus:outline-hidden focus:border-primary min-h-control-touch"
           />
         </div>
 

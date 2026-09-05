@@ -106,7 +106,7 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-xs font-semibold text-stone-800 mb-1.5">
+          <label className="block text-xs font-semibold text-text-strong mb-1.5">
             Raison sociale / Nom commercial{" "}
             <span className="text-primary">*</span>
           </label>
@@ -116,13 +116,13 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
             onChange={(e) => setCompanyName(e.target.value)}
             placeholder={t("auth.upgradeToProModal.exAtelierEbenisterieDupont")}
             required
-            className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
+            className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
           />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-semibold text-stone-800 mb-1.5">
+            <label className="block text-xs font-semibold text-text-strong mb-1.5">
               {currentMarket.businessIdentifierLabel}{" "}
               <span className="text-primary">*</span>
             </label>
@@ -132,14 +132,14 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
               onChange={(e) => setSirenSiret(e.target.value)}
               placeholder={currentMarket.businessIdentifierFormatPlaceholder}
               required
-              className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm font-semibold text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
+              className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
             />
           </div>
 
           <div>
             <label
               htmlFor="upgrade-pro-legal-form"
-              className="block text-xs font-semibold text-stone-800 mb-1.5"
+              className="block text-xs font-semibold text-text-strong mb-1.5"
             >
               Statut / Forme juridique <span className="text-primary">*</span>
             </label>
@@ -160,7 +160,7 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-semibold text-stone-800 mb-1.5">
+            <label className="block text-xs font-semibold text-text-strong mb-1.5">
               {t("auth.upgradeToProModal.numeroDeTvaIntracommunautaire")}
             </label>
             <input
@@ -168,12 +168,12 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
               value={vatNumber}
               onChange={(e) => setVatNumber(e.target.value)}
               placeholder={currentMarket.vatNumberFormatPlaceholder}
-              className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
+              className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-stone-800 mb-1.5">
+            <label className="block text-xs font-semibold text-text-strong mb-1.5">
               {t("auth.upgradeToProModal.telephoneProfessionnel")}
             </label>
             <input
@@ -181,13 +181,13 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="01 23 45 67 89"
-              className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
+              className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
             />
           </div>
         </div>
 
         <div>
-          <label className="block text-xs font-semibold text-stone-800 mb-1.5">
+          <label className="block text-xs font-semibold text-text-strong mb-1.5">
             {t("auth.upgradeToProModal.adresseDuSiegeSocialBoutique")}
             <span className="text-primary">*</span>
           </label>
@@ -197,7 +197,7 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
             onChange={(e) => setBusinessAddress(e.target.value)}
             placeholder={t("auth.upgradeToProModal.12RueDuCommerce75011")}
             required
-            className="w-full px-3.5 py-2.5 bg-white border border-stone-200 rounded-control text-sm text-stone-900 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 h-control-touch"
+            className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
           />
         </div>
 

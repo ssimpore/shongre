@@ -194,12 +194,12 @@ export const SellerPublicPage: React.FC = () => {
   if (isLoading) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6 animate-pulse">
-        <div className="h-6 w-48 bg-stone-200 rounded-md" />
-        <div className="h-64 bg-stone-200 rounded-2xl" />
-        <div className="h-24 bg-stone-200 rounded-2xl" />
+        <div className="h-6 w-48 bg-surface-disabled rounded-md" />
+        <div className="h-64 bg-surface-disabled rounded-2xl" />
+        <div className="h-24 bg-surface-disabled rounded-2xl" />
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-72 bg-stone-200 rounded-2xl" />
+            <div key={i} className="h-72 bg-surface-disabled rounded-2xl" />
           ))}
         </div>
       </div>
@@ -217,10 +217,10 @@ export const SellerPublicPage: React.FC = () => {
             this state. Rendered as an H2 it left the route with no H1 at
             all, so the document outline started at level 2 and a screen
             reader jumping by heading found nothing to land on. */}
-        <h1 className="text-2xl font-bold text-stone-900 mb-2">
+        <h1 className="text-2xl font-bold text-text-main mb-2">
           Profil introuvable
         </h1>
-        <p className="text-sm text-stone-500 max-w-md mx-auto mb-6">
+        <p className="text-sm text-text-tertiary max-w-md mx-auto mb-6">
           {t("profile.sellerPublicPage.lUtilisateurOuLaBoutique")}
         </p>
         <div className="flex items-center justify-center gap-3">
@@ -252,10 +252,10 @@ export const SellerPublicPage: React.FC = () => {
         <div className="w-16 h-16 rounded-2xl bg-danger-surface border border-danger-border text-danger flex items-center justify-center mx-auto mb-4">
           <ShieldAlert className="w-8 h-8" />
         </div>
-        <h1 className="text-2xl font-bold text-stone-900 mb-2">
+        <h1 className="text-2xl font-bold text-text-main mb-2">
           Profil temporairement indisponible
         </h1>
-        <p className="text-sm text-stone-600 max-w-md mx-auto mb-6 leading-relaxed">
+        <p className="text-sm text-text-supporting max-w-md mx-auto mb-6 leading-relaxed">
           {t("profile.sellerPublicPage.ceCompteVendeurAEte")}
         </p>
         <Button
@@ -283,30 +283,30 @@ export const SellerPublicPage: React.FC = () => {
         {/* Breadcrumb Navigation */}
         <nav
           aria-label="Fil d'Ariane"
-          className="flex items-center gap-1.5 text-xs text-stone-500"
+          className="flex items-center gap-1.5 text-xs text-text-tertiary"
         >
           <Link
             to={routes.home()}
-            className="hover:text-stone-900 flex items-center gap-1"
+            className="hover:text-text-main flex items-center gap-1"
           >
             <Home className="w-icon-sm h-icon-sm" />
             <span>Accueil</span>
           </Link>
-          <ChevronRight className="w-icon-xs h-icon-xs text-stone-400" />
+          <ChevronRight className="w-icon-xs h-icon-xs text-text-inverse-subtle" />
           {isPro ? (
             <>
-              <Link to="/solutions-pro" className="hover:text-stone-900">
+              <Link to="/solutions-pro" className="hover:text-text-main">
                 Boutiques Pro
               </Link>
-              <ChevronRight className="w-icon-xs h-icon-xs text-stone-400" />
+              <ChevronRight className="w-icon-xs h-icon-xs text-text-inverse-subtle" />
             </>
           ) : (
             <>
-              <span className="text-stone-500">Profils</span>
-              <ChevronRight className="w-icon-xs h-icon-xs text-stone-400" />
+              <span className="text-text-tertiary">Profils</span>
+              <ChevronRight className="w-icon-xs h-icon-xs text-text-inverse-subtle" />
             </>
           )}
-          <span className="text-stone-900 font-bold truncate max-w-50">
+          <span className="text-text-main font-bold truncate max-w-50">
             {displayName}
           </span>
         </nav>

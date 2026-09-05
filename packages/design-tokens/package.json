@@ -5,6 +5,9 @@
   "type": "module",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
+  "imports": {
+    "#brand-orange": "./src/brand-orange.ts"
+  },
   "exports": {
     ".": "./src/index.ts",
     "./config": "./src/config.ts",

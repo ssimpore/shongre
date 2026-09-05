@@ -31,11 +31,11 @@ export const ListingSellerTrustSection: React.FC<
 
   return (
     <div
-      className={`bg-white rounded-3xl border border-stone-200/60 p-6 sm:p-8 space-y-5 shadow-sm ${className}`}
+      className={`bg-bg-surface rounded-3xl border border-border-disabled/60 p-6 sm:p-8 space-y-5 shadow-sm ${className}`}
     >
       {/* Header */}
-      <div className="flex items-center justify-between pb-3 border-b border-stone-100">
-        <h2 className="text-base font-bold text-stone-900">
+      <div className="flex items-center justify-between pb-3 border-b border-border-soft">
+        <h2 className="text-base font-bold text-text-main">
           {t("listings.listingSellerTrustSection.aProposDuVendeur")}
         </h2>
         <Link
@@ -63,7 +63,7 @@ export const ListingSellerTrustSection: React.FC<
           <div className="flex items-center gap-1.5 flex-wrap">
             <Link
               to={profileUrl}
-              className="inline-flex min-h-6 max-w-full items-center truncate text-base font-bold text-stone-900 transition-colors hover:text-primary"
+              className="inline-flex min-h-6 max-w-full items-center truncate text-base font-bold text-text-main transition-colors hover:text-primary"
             >
               {seller.companyName || seller.name}
             </Link>
@@ -81,26 +81,26 @@ export const ListingSellerTrustSection: React.FC<
             )}
           </div>
 
-          <div className="flex items-center gap-2 text-xs text-stone-600 flex-wrap">
+          <div className="flex items-center gap-2 text-xs text-text-supporting flex-wrap">
             <Link
               to={`${profileUrl}?tab=reviews`}
-              className="flex min-h-6 items-center gap-1 font-bold text-stone-900 hover:text-primary"
+              className="flex min-h-6 items-center gap-1 font-bold text-text-main hover:text-primary"
             >
-              <Star className="w-icon-sm h-icon-sm fill-amber-400 text-amber-400" />
+              <Star className="w-icon-sm h-icon-sm fill-rating-fill text-rating-fill" />
               <span>{seller.rating ? seller.rating.toFixed(1) : "5.0"}</span>
-              <span className="font-normal text-stone-500">
+              <span className="font-normal text-text-tertiary">
                 ({seller.reviewCount || 0} avis)
               </span>
             </Link>
             <span>•</span>
-            <span className="flex items-center gap-1 text-stone-500">
-              <MapPin className="w-icon-xs h-icon-xs text-stone-400" />
+            <span className="flex items-center gap-1 text-text-tertiary">
+              <MapPin className="w-icon-xs h-icon-xs text-text-inverse-subtle" />
               {seller.city} ({seller.postalCode})
             </span>
           </div>
 
           {seller.bio && (
-            <p className="text-xs text-stone-600 pt-1 line-clamp-2 leading-relaxed">
+            <p className="text-xs text-text-supporting pt-1 line-clamp-2 leading-relaxed">
               {seller.bio}
             </p>
           )}
@@ -108,9 +108,9 @@ export const ListingSellerTrustSection: React.FC<
       </div>
 
       {/* Trust & Response metrics */}
-      <div className="grid grid-cols-2 gap-2 text-xs text-stone-600 pt-2 border-t border-border-subtle">
+      <div className="grid grid-cols-2 gap-2 text-xs text-text-supporting pt-2 border-t border-border-subtle">
         <div className="flex items-center gap-1.5 min-w-0">
-          <Clock className="w-icon-sm h-icon-sm text-stone-400 shrink-0" />
+          <Clock className="w-icon-sm h-icon-sm text-text-inverse-subtle shrink-0" />
           <span className="truncate">
             Répond {seller.responseTimeText || "en quelques heures"}
           </span>
@@ -126,7 +126,7 @@ export const ListingSellerTrustSection: React.FC<
       {/* Recent Reviews Preview (if any) */}
       {reviews.length > 0 && (
         <div className="pt-3 border-t border-border-subtle space-y-2.5">
-          <div className="text-xs font-bold text-stone-700 uppercase tracking-wider">
+          <div className="text-xs font-bold text-text-emphasis uppercase tracking-wider">
             Derniers avis acheteurs
           </div>
           <div className="space-y-2">
@@ -136,7 +136,7 @@ export const ListingSellerTrustSection: React.FC<
                 className="p-2.5 bg-bg-base/60 rounded-xl border border-border-base text-xs space-y-1"
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-stone-800">
+                  <span className="font-bold text-text-strong">
                     {rev.authorName}
                   </span>
                   <div className="flex items-center gap-0.5">
@@ -145,15 +145,15 @@ export const ListingSellerTrustSection: React.FC<
                         key={i}
                         className={`w-icon-xs h-icon-xs ${
                           i < rev.rating
-                            ? "fill-amber-400 text-amber-400"
-                            : "text-stone-300"
+                            ? "fill-rating-fill text-rating-fill"
+                            : "text-text-inverse-muted"
                         }`}
                       />
                     ))}
                   </div>
                 </div>
                 {rev.comment && (
-                  <p className="text-stone-600 text-micro italic">
+                  <p className="text-text-supporting text-micro italic">
                     « {rev.comment} »
                   </p>
                 )}

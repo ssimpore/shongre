@@ -159,20 +159,20 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
         }">
           <div class="px-2.5 py-1 rounded-full font-bold text-xs shadow-md border flex items-center gap-1 cursor-pointer select-none transition-colors ${
             isSelected
-              ? "bg-primary text-white border-primary-hover ring-3 ring-primary-border"
+              ? "bg-primary text-text-inverse border-primary-hover ring-3 ring-primary-border"
               : isHovered
-                ? "bg-stone-900 text-white border-stone-800"
-                : "bg-white text-stone-900 border-border-base hover:border-stone-400"
+                ? "bg-surface-inverse text-text-inverse border-border-inverse"
+                : "bg-bg-surface text-text-main border-border-base hover:border-border-strong"
           }">
-            ${listing.isBoosted ? '<span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>' : ""}
+            ${listing.isBoosted ? '<span class="w-1.5 h-1.5 rounded-full bg-rating-fill"></span>' : ""}
             <span>${priceText}</span>
           </div>
           <div class="w-2 h-2 bg-current rotate-45 mx-auto -mt-1 ${
             isSelected
               ? "text-primary"
               : isHovered
-                ? "text-stone-900"
-                : "text-white"
+                ? "text-text-main"
+                : "text-text-inverse"
           }"></div>
         </div>
       `;
@@ -248,9 +248,9 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
   return (
     <div className="relative w-full overflow-hidden rounded-2xl border border-border-base bg-bg-base shadow-xs">
       {/* Top Quick Filters Bar */}
-      <div className="bg-white/95 backdrop-blur-sm border-b border-border-base px-4 py-2.5 flex items-center justify-between gap-3 z-sticky shrink-0">
+      <div className="bg-bg-surface/95 backdrop-blur-sm border-b border-border-base px-4 py-2.5 flex items-center justify-between gap-3 z-sticky shrink-0">
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
-          <span className="text-xs font-bold text-stone-500 flex items-center gap-1 shrink-0">
+          <span className="text-xs font-bold text-text-tertiary flex items-center gap-1 shrink-0">
             <Compass className="w-icon-sm h-icon-sm text-primary" />
             Explorer :
           </span>
@@ -258,7 +258,7 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
           <button
             type="button"
             onClick={() => handleFlyToCity("all")}
-            className="px-2.5 py-1 rounded-full text-xs font-semibold bg-stone-100 text-stone-700 hover:bg-stone-200 transition-colors shrink-0"
+            className="px-2.5 py-1 rounded-full text-xs font-semibold bg-surface-muted text-text-emphasis hover:bg-surface-disabled transition-colors shrink-0"
           >
             {activeMarket.name}
           </button>
@@ -270,8 +270,8 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
               onClick={() => handleFlyToCity(city)}
               className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-colors shrink-0 ${
                 selectedCity === city
-                  ? "bg-primary text-white shadow-xs"
-                  : "bg-bg-base text-stone-700 hover:bg-stone-200/80 border border-border-base"
+                  ? "bg-primary text-text-inverse shadow-xs"
+                  : "bg-bg-base text-text-emphasis hover:bg-surface-disabled/80 border border-border-base"
               }`}
             >
               {city}
@@ -285,7 +285,7 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
             type="button"
             onClick={handleFitAll}
             title={t("search.exploreMapView.recadrerSurLesAnnonces")}
-            className="p-1.5 text-xs font-semibold text-stone-600 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 rounded-lg flex items-center gap-1 transition-colors"
+            className="p-1.5 text-xs font-semibold text-text-supporting hover:text-text-main bg-surface-muted hover:bg-surface-disabled rounded-lg flex items-center gap-1 transition-colors"
           >
             <Maximize2 className="w-icon-sm h-icon-sm" />
             <span className="hidden md:inline">Recadrer</span>
@@ -297,7 +297,7 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
               setMapStyle((s) => (s === "positron" ? "osm" : "positron"))
             }
             title={t("search.exploreMapView.changerLeStyleDeCarte")}
-            className="p-1.5 text-xs font-semibold text-stone-600 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 rounded-lg flex items-center gap-1 transition-colors"
+            className="p-1.5 text-xs font-semibold text-text-supporting hover:text-text-main bg-surface-muted hover:bg-surface-disabled rounded-lg flex items-center gap-1 transition-colors"
           >
             <Layers className="w-icon-sm h-icon-sm" />
             <span className="hidden md:inline">
@@ -308,7 +308,7 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
           <button
             type="button"
             onClick={() => setIsSidebarOpen((v) => !v)}
-            className="p-1.5 text-xs font-semibold text-stone-600 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 rounded-lg hidden lg:flex items-center gap-1 transition-colors"
+            className="p-1.5 text-xs font-semibold text-text-supporting hover:text-text-main bg-surface-muted hover:bg-surface-disabled rounded-lg hidden lg:flex items-center gap-1 transition-colors"
           >
             <span>
               {isSidebarOpen ? "Masquer la liste" : "Afficher la liste"}
@@ -323,12 +323,12 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
             Placed before the map in the DOM as well as visually, so tab order
             follows what is on screen rather than jumping the map first. */}
         {isSidebarOpen && (
-          <div className="hidden lg:flex flex-col w-80 xl:w-96 bg-white/95 backdrop-blur-md border-r border-border-base z-sticky shrink-0">
+          <div className="hidden lg:flex flex-col w-80 xl:w-96 bg-bg-surface/95 backdrop-blur-md border-r border-border-base z-sticky shrink-0">
             <div className="p-3 border-b border-border-base flex items-center justify-between">
-              <span className="text-xs font-bold text-stone-800 truncate">
+              <span className="text-xs font-bold text-text-strong truncate">
                 {plural(listings.length, "annonce")} sur la carte
               </span>
-              <span className="text-xs text-stone-500">
+              <span className="text-xs text-text-tertiary">
                 {t("search.exploreMapView.cliquezPourCentrer")}
               </span>
             </div>
@@ -360,8 +360,8 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
                       isSelected
                         ? "bg-primary-light border border-primary-border"
                         : isHovered
-                          ? "bg-stone-50"
-                          : "hover:bg-stone-50"
+                          ? "bg-surface-soft"
+                          : "hover:bg-surface-soft"
                     }`}
                   >
                     <div className="flex gap-2.5 items-center">
@@ -374,19 +374,19 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
                       />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-1">
-                          <span className="text-xs font-bold text-stone-900 truncate">
+                          <span className="text-xs font-bold text-text-main truncate">
                             {item.title}
                           </span>
                         </div>
-                        <div className="text-xs text-stone-500 truncate flex items-center gap-1 mt-0.5">
-                          <MapPin className="w-icon-xs h-icon-xs text-stone-400" />
+                        <div className="text-xs text-text-tertiary truncate flex items-center gap-1 mt-0.5">
+                          <MapPin className="w-icon-xs h-icon-xs text-text-inverse-subtle" />
                           {item.city} ({item.postalCode})
                         </div>
                         <div className="flex items-center justify-between mt-1">
                           <span className="text-xs font-bold text-primary">
                             {formatPrice(item.price)}
                           </span>
-                          <span className="text-micro text-stone-500 font-medium">
+                          <span className="text-micro text-text-tertiary font-medium">
                             {item.sellerName}
                           </span>
                         </div>
@@ -415,7 +415,7 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
                 <button
                   type="button"
                   onClick={() => setActiveListing(null)}
-                  className="order-3 shrink-0 rounded-full p-1 text-stone-500 transition-colors hover:bg-stone-100 hover:text-stone-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                  className="order-3 shrink-0 rounded-full p-1 text-text-tertiary transition-colors hover:bg-surface-muted hover:text-text-emphasis focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
                   aria-label={t(
                     "search.exploreMapView.fermerLaPrevisualisation",
                   )}
@@ -437,7 +437,7 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
 
                   <div className="min-w-0 flex-1">
                     <div className="mb-1 flex min-w-0 items-center gap-1.5">
-                      <span className="truncate text-xs font-semibold text-stone-500">
+                      <span className="truncate text-xs font-semibold text-text-tertiary">
                         {getListingCategoryLabel(activeListing)}
                       </span>
                       {showsVerifiedBadge(activeListing) && (
@@ -450,12 +450,12 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
                       )}
                     </div>
 
-                    <h4 className="line-clamp-1 text-sm font-bold leading-snug text-stone-900">
+                    <h4 className="line-clamp-1 text-sm font-bold leading-snug text-text-main">
                       {activeListing.title}
                     </h4>
 
-                    <div className="mt-1 flex items-center gap-2 text-xs text-stone-500">
-                      <span className="flex min-w-0 items-center gap-0.5 font-medium text-stone-700">
+                    <div className="mt-1 flex items-center gap-2 text-xs text-text-tertiary">
+                      <span className="flex min-w-0 items-center gap-0.5 font-medium text-text-emphasis">
                         <MapPin className="h-icon-xs w-icon-xs shrink-0 text-primary" />
                         <span className="truncate">
                           {activeListing.city} ({activeListing.postalCode})
@@ -492,7 +492,7 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
       {/* Floating status count. Anchored right: the listing panel now occupies
           the left edge, and this badge belongs over the map. */}
       <div className="absolute top-14 right-4 z-sticky pointer-events-none">
-        <div className="bg-stone-900/85 backdrop-blur-sm text-white px-3 py-1.5 rounded-full text-xs font-medium shadow-md flex items-center gap-1.5">
+        <div className="bg-surface-inverse/85 backdrop-blur-sm text-text-inverse px-3 py-1.5 rounded-full text-xs font-medium shadow-md flex items-center gap-1.5">
           <Navigation className="w-icon-sm h-icon-sm text-primary" />
           <span>
             {plural(

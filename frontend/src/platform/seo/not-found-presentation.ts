@@ -1,3 +1,17 @@
+import { brand } from "@shongre/brand";
+import { webBrandAssets } from "@shongre/brand/web";
+import {
+  borders,
+  colors,
+  motion,
+  radius,
+  shadows,
+  sizing,
+  spacing,
+  themeInteraction,
+  typography,
+} from "@shongre/design-tokens";
+
 export interface NotFoundPresentation {
   title: string;
   description: string;
@@ -190,21 +204,10 @@ export function renderNotFoundDocument(
     '<!doctype html><html lang="fr"><head><meta charset="utf-8">' +
     '<meta name="viewport" content="width=device-width, initial-scale=1">' +
     '<meta name="robots" content="noindex, nofollow">' +
-    `<title>${title} | SHONGRE.</title><style>${styles}</style></head>` +
-    '<body><main><section><img class="brand-logo" src="/brand/shongre/logo/header-primary-240.png" width="240" height="61" alt="SHONGRE.">' +
+    `<title>${title} | ${brand.name}</title><style>${styles}</style></head>` +
+    `<body><main><section><img class="brand-logo" src="${webBrandAssets.logo.header.primary240.src}" width="${webBrandAssets.logo.header.primary240.width}" height="${webBrandAssets.logo.header.primary240.height}" alt="${brand.name}">` +
     `<p class="status">Erreur 404</p><h1>${title}</h1>` +
     `<p class="description">${description}</p><a href="${returnHref}">${returnLabel}</a>` +
     "</section></main></body></html>"
   );
 }
-import {
-  borders,
-  colors,
-  motion,
-  radius,
-  shadows,
-  sizing,
-  spacing,
-  themeInteraction,
-  typography,
-} from "@shongre/design-tokens";

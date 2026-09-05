@@ -16,7 +16,9 @@ describe("internal and customer identity badges", () => {
     expect(staff).toContain("Équipe Shongre");
     expect(staff).toContain("Membre actif de l’équipe Shongre");
     expect(staff).toContain("lucide-building-2");
-    expect(staff).toContain("violet");
+    expect(staff).toContain("border-staff-border");
+    expect(staff).toContain("bg-staff-surface");
+    expect(staff).toContain("text-staff-emphasis");
 
     expect(verification).toContain("data-ui-verification-badge");
     expect(verification).toContain("Identité vérifiée");

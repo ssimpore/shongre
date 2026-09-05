@@ -561,7 +561,7 @@ export function InvoicingWorkspacePage() {
                       return (
                         <tr
                           key={invoice.id}
-                          className={`hover:bg-bg-subtle ${selectedInvoice?.id === invoice.id ? "bg-primary-light/40" : ""}`}
+                          className={`hover:bg-bg-subtle ${selectedInvoice?.id === invoice.id ? "bg-primary-surface-faint" : ""}`}
                         >
                           <td className="px-4 py-3 font-bold text-text-main">
                             <button
@@ -696,7 +696,7 @@ export function InvoicingWorkspacePage() {
                   id="invoice-recipient"
                   value={customerPartyId}
                   onChange={(event) => setCustomerPartyId(event.target.value)}
-                  className="h-control-md w-full rounded-control border border-border-base bg-bg-surface px-3 text-xs text-text-main focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15"
+                  className="h-control-md w-full rounded-control border border-border-base bg-bg-surface px-3 text-xs text-text-main focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary-ring"
                 >
                   {parties.map((party) => (
                     <option key={party.id} value={party.id}>
@@ -735,7 +735,7 @@ export function InvoicingWorkspacePage() {
                     maxLength={INVOICING_LINE_DESCRIPTION_MAX_LENGTH}
                     value={description}
                     onChange={(event) => setDescription(event.target.value)}
-                    className="mt-1.5 h-control-md w-full rounded-control border border-border-base px-3 text-xs font-normal text-text-main focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15"
+                    className="mt-1.5 h-control-md w-full rounded-control border border-border-base px-3 text-xs font-normal text-text-main focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary-ring"
                   />
                 </label>
                 <label className="text-micro font-semibold text-text-secondary">
@@ -746,7 +746,7 @@ export function InvoicingWorkspacePage() {
                     pattern="[0-9]+([.,][0-9]{1,6})?"
                     value={quantity}
                     onChange={(event) => setQuantity(event.target.value)}
-                    className="mt-1.5 h-control-md w-full rounded-control border border-border-base px-3 text-xs font-normal text-text-main focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15"
+                    className="mt-1.5 h-control-md w-full rounded-control border border-border-base px-3 text-xs font-normal text-text-main focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary-ring"
                   />
                 </label>
                 <label className="text-micro font-semibold text-text-secondary">
@@ -757,7 +757,7 @@ export function InvoicingWorkspacePage() {
                     pattern="[0-9]+([.,][0-9]{1,2})?"
                     value={unitPrice}
                     onChange={(event) => setUnitPrice(event.target.value)}
-                    className="mt-1.5 h-control-md w-full rounded-control border border-border-base px-3 text-xs font-normal text-text-main focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15"
+                    className="mt-1.5 h-control-md w-full rounded-control border border-border-base px-3 text-xs font-normal text-text-main focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary-ring"
                   />
                 </label>
                 <label className="text-micro font-semibold text-text-secondary">
@@ -767,7 +767,7 @@ export function InvoicingWorkspacePage() {
                     onChange={(event) =>
                       setTaxRateBps(Number(event.target.value))
                     }
-                    className="mt-1.5 h-control-md w-full rounded-control border border-border-base bg-bg-surface px-3 text-xs font-normal text-text-main focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15"
+                    className="mt-1.5 h-control-md w-full rounded-control border border-border-base bg-bg-surface px-3 text-xs font-normal text-text-main focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary-ring"
                   >
                     <option value={2000}>20 %</option>
                     <option value={1000}>10 %</option>

@@ -1,6 +1,7 @@
 import type { ConfigContext, ExpoConfig } from "expo/config";
 import { configColors } from "@shongre/design-tokens/config";
 import { createEnvironmentConfig } from "@shongre/contracts/environment";
+import mobileBrandAssets from "./brand-assets.generated.json";
 
 function required(name: string): string {
   const value = process.env[name];
@@ -38,13 +39,13 @@ export default ({ config }: ConfigContext): ExpoConfig => {
 
   return {
     ...config,
-    name: "SHONGRE.",
+    name: mobileBrandAssets.brandSignature,
     slug: "shongre",
     scheme: "shongre",
     version,
     orientation: "default",
     userInterfaceStyle: "automatic",
-    icon: "./assets/brand/app-icon.png",
+    icon: mobileBrandAssets.expo.appIcon,
     experiments: { typedRoutes: true },
     plugins: [
       "expo-router",
@@ -54,7 +55,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       [
         "expo-splash-screen",
         {
-          image: "./assets/brand/splash-logo.png",
+          image: mobileBrandAssets.expo.splashLogo,
           imageWidth: 200,
           resizeMode: "contain",
           backgroundColor: configColors.surface,
@@ -88,7 +89,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       "./plugins/with-brand-assets",
     ],
     ios: {
-      icon: "./assets/brand/app-icon.png",
+      icon: mobileBrandAssets.expo.appIcon,
       bundleIdentifier,
       buildNumber: required("IOS_BUILD_NUMBER"),
       supportsTablet: true,
@@ -146,13 +147,13 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       },
     },
     android: {
-      icon: "./assets/brand/android/play-store-icon.png",
+      icon: mobileBrandAssets.expo.androidStoreIcon,
       package: androidPackage,
       versionCode: integer("ANDROID_VERSION_CODE"),
       adaptiveIcon: {
-        foregroundImage: "./assets/brand/adaptive-icon-foreground.png",
-        backgroundImage: "./assets/brand/adaptive-icon-background.png",
-        monochromeImage: "./assets/brand/adaptive-icon-monochrome.png",
+        foregroundImage: mobileBrandAssets.expo.adaptiveForeground,
+        backgroundImage: mobileBrandAssets.expo.adaptiveBackground,
+        monochromeImage: mobileBrandAssets.expo.adaptiveMonochrome,
         backgroundColor: configColors.brand,
       },
       allowBackup: false,
@@ -182,9 +183,13 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     web: {
       bundler: "metro",
       output: "single",
-      favicon: "./assets/brand/favicon.png",
+      favicon: mobileBrandAssets.expo.favicon,
     },
     extra: {
+      brand: {
+        version: mobileBrandAssets.brandVersion,
+        cacheKey: mobileBrandAssets.cacheKey,
+      },
       environment: environment.environment,
       environmentId: environment.environmentId,
       eas: process.env.EAS_PROJECT_ID

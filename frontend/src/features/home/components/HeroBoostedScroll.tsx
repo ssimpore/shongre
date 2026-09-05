@@ -296,7 +296,7 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
               <div
                 key={item.id}
                 aria-hidden="true"
-                className="h-full w-full shrink-0 snap-center bg-stone-200"
+                className="h-full w-full shrink-0 snap-center bg-surface-disabled"
               />
             );
           })}
@@ -314,7 +314,7 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
                  vertically centred arrow lands on top of the title overlay —
                  measured overlapping at 375px and on an iPhone 13 — and the
                  rail already swipes. */
-              className="absolute inset-y-0 left-2 z-raised my-auto hidden rounded-full bg-stone-950/60 text-white shadow-sm backdrop-blur-xs hover:bg-stone-950/80 hover:text-white sm:left-3 sm:inline-flex"
+              className="absolute inset-y-0 left-2 z-raised my-auto hidden rounded-full bg-surface-inverse-deep/60 text-text-inverse shadow-sm backdrop-blur-xs hover:bg-surface-inverse-deep/80 hover:text-text-inverse sm:left-3 sm:inline-flex"
             >
               <ChevronLeft className="h-icon-lg w-icon-lg" />
             </IconButton>
@@ -324,7 +324,7 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
               ariaLabel={t("home.heroBoostedScroll.next")}
               aria-controls="hero-boosted-track"
               onClick={() => scrollToIndex(activeIndex + 1)}
-              className="absolute inset-y-0 right-2 z-raised my-auto hidden rounded-full bg-stone-950/60 text-white shadow-sm backdrop-blur-xs hover:bg-stone-950/80 hover:text-white sm:right-3 sm:inline-flex"
+              className="absolute inset-y-0 right-2 z-raised my-auto hidden rounded-full bg-surface-inverse-deep/60 text-text-inverse shadow-sm backdrop-blur-xs hover:bg-surface-inverse-deep/80 hover:text-text-inverse sm:right-3 sm:inline-flex"
             >
               <ChevronRight className="h-icon-lg w-icon-lg" />
             </IconButton>
@@ -339,7 +339,9 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
             <span
               key={item.id}
               className={`h-2 rounded-pill shadow-2xs motion-interactive ${
-                index === activeIndex ? "w-4 bg-primary" : "w-2 bg-white/70"
+                index === activeIndex
+                  ? "w-4 bg-primary"
+                  : "w-2 bg-bg-surface/70"
               }`}
             />
           ))}
@@ -357,7 +359,7 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
             aria-controls="hero-boosted-track"
             aria-pressed={isUserPaused}
             onClick={() => setIsUserPaused((current) => !current)}
-            className="absolute right-16 top-4 z-raised rounded-full bg-stone-950/60 text-white shadow-sm backdrop-blur-xs hover:bg-stone-950/80 hover:text-white"
+            className="absolute right-16 top-4 z-raised rounded-full bg-surface-inverse-deep/60 text-text-inverse shadow-sm backdrop-blur-xs hover:bg-surface-inverse-deep/80 hover:text-text-inverse"
           >
             {isUserPaused ? (
               <Play className="h-icon-sm w-icon-sm" aria-hidden="true" />
@@ -386,7 +388,7 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
     return (
       <article
         key={item.id}
-        className="group relative h-full w-full shrink-0 snap-center overflow-hidden bg-stone-200"
+        className="group relative h-full w-full shrink-0 snap-center overflow-hidden bg-surface-disabled"
         aria-label={`${index + 1} / ${scrollSequence.length}`}
         aria-hidden={!isActive}
         inert={!isActive}
@@ -403,10 +405,10 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
             priority={index === 0}
             className="h-full w-full object-cover transition-transform duration-slow group-hover:scale-105"
           />
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-stone-950/90 via-stone-950/20 to-transparent" />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-surface-inverse-deep/90 via-surface-inverse-deep/20 to-transparent" />
 
-          <div className="absolute inset-x-0 bottom-0 p-4 pb-5 text-white sm:p-5 sm:pb-5 sm:pr-32">
-            <p className="mb-1.5 truncate text-micro font-bold uppercase tracking-wider text-orange-200 sm:text-xs">
+          <div className="absolute inset-x-0 bottom-0 p-4 pb-5 text-text-inverse sm:p-5 sm:pb-5 sm:pr-32">
+            <p className="mb-1.5 truncate text-micro font-bold uppercase tracking-wider text-primary-on-inverse-muted sm:text-xs">
               {getListingCategoryLabel(item) || "Mode & Accessoires"}
             </p>
             <h3
@@ -422,20 +424,20 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
                   {formatPrice(item.price)}
                 </span>
                 {item.originalPrice && item.originalPrice > item.price && (
-                  <span className="text-xs font-medium text-white/70 line-through sm:text-sm">
+                  <span className="text-xs font-medium text-text-inverse/70 line-through sm:text-sm">
                     {formatPrice(item.originalPrice)}
                   </span>
                 )}
               </div>
 
-              <span className="inline-flex items-center gap-1 truncate text-xs font-medium text-white/85 sm:text-sm">
+              <span className="inline-flex items-center gap-1 truncate text-xs font-medium text-text-inverse/85 sm:text-sm">
                 <MapPin className="h-icon-sm w-icon-sm shrink-0" />
                 {item.city || "Lyon 2e"}
               </span>
               {item.deliveryOptions?.some(
                 (o) => o.available && o.type !== "hand_delivery",
               ) && (
-                <span className="inline-flex items-center gap-1 text-xs font-medium text-white/85 sm:text-sm">
+                <span className="inline-flex items-center gap-1 text-xs font-medium text-text-inverse/85 sm:text-sm">
                   <Truck className="h-icon-sm w-icon-sm" />
                   {t("home.heroBoostedScroll.livraison")}
                 </span>

@@ -154,7 +154,7 @@ export function OAuthCallbackPage() {
           className={`mx-auto flex h-14 w-14 items-center justify-center rounded-2xl ${
             view === "success"
               ? "bg-success-surface text-success"
-              : "bg-stone-100 text-stone-600"
+              : "bg-surface-muted text-text-supporting"
           }`}
         >
           {view === "success" ? (
@@ -165,13 +165,13 @@ export function OAuthCallbackPage() {
             <AlertCircle className="h-7 w-7" />
           )}
         </div>
-        <p className="text-sm leading-relaxed text-stone-700">{message}</p>
+        <p className="text-sm leading-relaxed text-text-emphasis">{message}</p>
 
         {view === "email_required" ? (
           <form onSubmit={completeProfile} className="space-y-3 text-left">
             <label
               htmlFor="oauth-email"
-              className="block text-xs font-semibold text-stone-800"
+              className="block text-xs font-semibold text-text-strong"
             >
               {t("auth.callback.emailLabel")}
             </label>
@@ -182,7 +182,7 @@ export function OAuthCallbackPage() {
               autoComplete="email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
-              className="h-control-touch w-full rounded-control border border-stone-200 bg-white px-3.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className="h-control-touch w-full rounded-control border border-border-disabled bg-bg-surface px-3.5 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary-ring"
             />
             {error ? (
               <p role="alert" className="text-xs font-semibold text-danger">

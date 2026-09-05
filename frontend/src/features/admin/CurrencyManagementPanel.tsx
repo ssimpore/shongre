@@ -235,7 +235,7 @@ export const CurrencyManagementPanel: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-2xl border border-primary-border bg-primary-light/40 p-4">
+      <div className="rounded-2xl border border-primary-border bg-primary-surface-faint p-4">
         <div className="flex items-center gap-2">
           <Coins className="h-icon-lg w-icon-lg text-primary" />
           <h2 className="text-base font-bold text-text-main">

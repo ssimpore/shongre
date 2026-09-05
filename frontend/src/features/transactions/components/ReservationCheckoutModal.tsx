@@ -78,7 +78,7 @@ export const ReservationCheckoutModal: React.FC<
       {isDemoComplete ? (
         <div className="space-y-5 py-4 text-center">
           <CheckCircle2 className="mx-auto h-14 w-14 text-success" />
-          <p className="text-sm text-stone-600">
+          <p className="text-sm text-text-supporting">
             Référence : <strong>{orderNumber}</strong>
           </p>
           <Button variant="primary" fullWidth onClick={onClose}>
@@ -87,7 +87,7 @@ export const ReservationCheckoutModal: React.FC<
         </div>
       ) : (
         <div className="space-y-5">
-          <div className="flex items-center gap-4 rounded-2xl border border-stone-200/60 bg-stone-50 p-4">
+          <div className="flex items-center gap-4 rounded-2xl border border-border-disabled/60 bg-surface-soft p-4">
             <Image
               src={listing.coverImageUrl}
               alt={listing.title}
@@ -95,7 +95,7 @@ export const ReservationCheckoutModal: React.FC<
               className="h-16 w-16 shrink-0 rounded-xl object-cover"
             />
             <div className="min-w-0">
-              <h3 className="truncate text-sm font-bold text-stone-900">
+              <h3 className="truncate text-sm font-bold text-text-main">
                 {listing.title}
               </h3>
               <p className="mt-1 text-base font-bold text-primary">
@@ -103,7 +103,7 @@ export const ReservationCheckoutModal: React.FC<
                   sourceCurrency: listing.currency,
                 })}
               </p>
-              <p className="mt-1 text-xs text-stone-500">
+              <p className="mt-1 text-xs text-text-tertiary">
                 Vendeur : {listing.sellerName}
               </p>
             </div>
@@ -117,8 +117,8 @@ export const ReservationCheckoutModal: React.FC<
             />
           </FormField>
 
-          <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4 text-xs text-stone-700">
-            <p className="flex items-center gap-2 font-bold text-stone-900">
+          <div className="rounded-2xl border border-primary-border bg-primary-surface-soft p-4 text-xs text-text-emphasis">
+            <p className="flex items-center gap-2 font-bold text-text-main">
               <ShieldCheck className="h-icon-md w-icon-md text-primary" />
               Acompte défini par le marché
             </p>
@@ -128,7 +128,7 @@ export const ReservationCheckoutModal: React.FC<
             </p>
           </div>
 
-          <div className="flex items-center gap-3 rounded-2xl border border-stone-200 bg-stone-50 p-4 text-xs text-stone-600">
+          <div className="flex items-center gap-3 rounded-2xl border border-border-disabled bg-surface-soft p-4 text-xs text-text-supporting">
             <Lock className="h-icon-lg w-icon-lg shrink-0 text-success" />
             <span>
               Vous serez redirigé vers le paiement hébergé. La réservation ne
@@ -145,7 +145,7 @@ export const ReservationCheckoutModal: React.FC<
             </div>
           )}
 
-          <div className="flex justify-end gap-2 border-t border-stone-100 pt-4">
+          <div className="flex justify-end gap-2 border-t border-border-soft pt-4">
             <Button variant="ghost" onClick={onClose} disabled={isProcessing}>
               Annuler
             </Button>
