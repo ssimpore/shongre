@@ -73,8 +73,12 @@ loading, and error states. `frontend/app/layout.tsx` exposes the `next/font`
 result as `--font-nunito-sans`; the generated design-token adapter owns
 `--font-family-sans` and maps Tailwind's `font-sans` to it. Components inherit
 the family and never load or declare an application font independently. The
-existing mature marketplace router is mounted behind one client boundary during
-the incremental migration. This preserves all routes and allows route metadata
+loading boundary may prioritize its visible compact brand mark, while error and
+not-found boundary artwork stays lazy: Next serializes those hidden boundaries
+with successful route responses, so priority there creates unused image
+preloads on every normal page. The existing mature marketplace router remains
+mounted behind one client boundary during the incremental migration. This
+preserves all routes and allows route metadata
 to be server-rendered now without rewriting the product. New SEO-critical route
 content should move to server components incrementally; do not widen the client
 boundary.

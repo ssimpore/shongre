@@ -172,7 +172,7 @@ export class MarketResolver {
    */
   public getInheritanceMetrics(
     market: Market,
-    baselineMarket?: Market | null,
+    _baselineMarket?: Market | null,
   ): MarketInheritanceMetrics {
     const allPaths = this.countLeafFields(market.configuration);
     const totalFieldsCount = allPaths.length;

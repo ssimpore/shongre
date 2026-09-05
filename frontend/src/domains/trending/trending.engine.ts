@@ -296,7 +296,6 @@ export function deduplicateListings(
 export function toPublicTopics(
   selected: RankedTrendingCandidate[],
   config: TrendingAdminConfig,
-  now = new Date(),
 ): TrendingTopic[] {
   const assignments = deduplicateListings(selected, config.listingsPerTopic);
   return selected

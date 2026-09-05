@@ -94,7 +94,6 @@ describe("SearchAutocomplete component", () => {
       recentSearches: ["iPhone 15"],
       selectedIndex: 0,
       onSelect: vi.fn(),
-      onClose: vi.fn(),
     });
 
     expect(element).toBeDefined();
@@ -112,7 +111,6 @@ describe("SearchAutocomplete component", () => {
       recentSearches: [],
       selectedIndex: -1,
       onSelect: vi.fn(),
-      onClose: vi.fn(),
     });
 
     expect(element).toBeDefined();

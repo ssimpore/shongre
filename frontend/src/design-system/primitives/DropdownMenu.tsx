@@ -90,7 +90,6 @@ export const DROPDOWN_HEADER_TITLE_CLASSES =
 
 export function DropdownMenu<T extends string | number = string>({
   id,
-  label,
   placeholder = "Sélectionner…",
   options,
   value,

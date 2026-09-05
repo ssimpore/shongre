@@ -195,7 +195,7 @@ export class HttpMessagingService implements MessagingServiceContract {
   async makeOffer(
     conversationId: string,
     _senderId: string,
-    senderName: string,
+    _senderName: string,
     amount: number,
   ): Promise<Message> {
     const message = await httpClient.post<BackendMessage>("/messaging/offer", {
@@ -208,7 +208,7 @@ export class HttpMessagingService implements MessagingServiceContract {
   async respondToOffer(
     offerId: string,
     _userId: string,
-    userName: string,
+    _userName: string,
     accept: boolean,
   ): Promise<Message> {
     const message = await httpClient.post<BackendMessage>(

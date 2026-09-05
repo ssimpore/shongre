@@ -28,6 +28,7 @@
     "noEmit": true,
     "strict": true,
     "noUnusedLocals": true,
+    "noUnusedParameters": true,
     "incremental": true,
     "esModuleInterop": true,
     "resolveJsonModule": true

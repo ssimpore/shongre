@@ -133,11 +133,10 @@ class AuthService {
   // -------------------------------------------------------------
   // Rate Limiting & Brute Force Protection
   // -------------------------------------------------------------
-  public checkRateLimit(
-    key: string,
-    maxAttempts = 5,
-    lockDurationMinutes = 15,
-  ): { allowed: boolean; remainingSeconds?: number } {
+  public checkRateLimit(key: string): {
+    allowed: boolean;
+    remainingSeconds?: number;
+  } {
     const limits = this.getStorage<Record<string, RateLimitEntry>>(
       RATE_LIMITS_KEY,
       {},
@@ -350,7 +349,7 @@ class AuthService {
       }));
   }
 
-  public revokeSession(sessionId: string, currentUserId?: string): void {
+  public revokeSession(sessionId: string, _currentUserId?: string): void {
     let sessions = this.getStorage<UserSession[]>(SESSIONS_STORAGE_KEY, []);
     const session = sessions.find((s) => s.id === sessionId);
     sessions = sessions.filter((s) => s.id !== sessionId);
@@ -1053,7 +1052,7 @@ class AuthService {
       };
     }
 
-    const rateLimit = this.checkRateLimit(`resend_email_${email}`, 3, 5);
+    const rateLimit = this.checkRateLimit(`resend_email_${email}`);
     if (!rateLimit.allowed) {
       return {
         success: false,
@@ -1388,7 +1387,7 @@ class AuthService {
 
   public disableMFA(
     userId: string,
-    currentPasswordOrCode: string,
+    _currentPasswordOrCode: string,
   ): { success: boolean; message: string } {
     const user = this.getUserById(userId);
     if (!user) return { success: false, message: "Utilisateur introuvable." };

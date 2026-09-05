@@ -339,9 +339,9 @@ class DemoProviderRepository implements IProviderRepository {
 
   public async setProviderHealth(
     providerId: string,
-    health: ProviderHealthStatus,
-    message?: string,
-    actor?: { id: string; name: string; role: string },
+    _health: ProviderHealthStatus,
+    _message?: string,
+    _actor?: { id: string; name: string; role: string },
   ): Promise<ProviderConfiguration> {
     const provider = this.getProvider(providerId);
     if (!provider) throw new Error(`Prestataire "${providerId}" introuvable.`);

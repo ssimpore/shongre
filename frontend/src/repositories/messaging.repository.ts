@@ -437,7 +437,7 @@ class MockMessagingRepository implements IMessagingRepository {
     );
   }
 
-  async markAsRead(conversationId: string, userId?: string): Promise<void> {
+  async markAsRead(conversationId: string, _userId?: string): Promise<void> {
     const convs = storageService.getConversations();
     const conv = convs.find((c) => c.id === conversationId);
     if (conv) {

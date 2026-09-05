@@ -426,7 +426,7 @@ export class DemoMessagingRepository implements IMessagingRepository {
     };
   }
 
-  async markAsRead(conversationId: string, userId: string): Promise<void> {
+  async markAsRead(conversationId: string, _userId: string): Promise<void> {
     const conv = this.conversations.get(conversationId);
     if (conv) {
       conv.unreadCount = 0;

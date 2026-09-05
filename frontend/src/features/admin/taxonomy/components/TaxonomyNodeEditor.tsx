@@ -530,7 +530,7 @@ export const TaxonomyNodeEditor: React.FC<TaxonomyNodeEditorProps> = ({
         <span className="text-text-tertiary uppercase tracking-wider text-micro mr-1 shrink-0">
           {t("admin.taxonomyNodeEditor.hierarchie")}
         </span>
-        {ancestors.map((a, i) => (
+        {ancestors.map((a) => (
           <React.Fragment key={a.id}>
             <button
               type="button"

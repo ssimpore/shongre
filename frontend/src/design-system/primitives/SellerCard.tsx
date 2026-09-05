@@ -17,15 +17,11 @@ import {
 
 export interface SellerCardProps {
   user: UserProfile;
-  showContactAction?: boolean;
-  onContact?: () => void;
   className?: string;
 }
 
 export const SellerCard: React.FC<SellerCardProps> = ({
   user,
-  showContactAction = false,
-  onContact,
   className = "",
 }) => {
   const { t } = useTranslation();

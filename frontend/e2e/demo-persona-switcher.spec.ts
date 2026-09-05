@@ -152,7 +152,10 @@ async function selectPersona(page: Page, persona: Persona): Promise<void> {
 test("switches all 19 demo personas as real account sessions @serial", async ({
   page,
 }) => {
-  test.setTimeout(120_000);
+  // This deliberately performs 19 real session transitions and route handoffs.
+  // WebKit is materially slower than Chromium when the full production suite
+  // precedes it, so give the exhaustive journey a budget sized for its scope.
+  test.setTimeout(300_000);
   await page.goto(VEHICLE_DETAIL_URL, { waitUntil: "domcontentloaded" });
   await waitForStableLayout(page);
   // Use the control itself rather than re-seeding localStorage after every

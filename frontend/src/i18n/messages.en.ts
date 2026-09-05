@@ -73,7 +73,7 @@ export const messagesEn: MessageCatalogue = {
   "watch.savedSearch.created": "Created {date}",
   "watch.savedSearch.manage": "Manage alert",
   "watch.savedSearch.activate": "Enable an alert",
-  "watch.listing.priceAction": "Price drop alert",
+  "watch.listing.priceAction": "Price alert",
   "watch.listing.priceActive": "Watching price drops",
   "watch.listing.sellerAction": "Follow this seller",
   "watch.listing.sellerActive": "Following seller",

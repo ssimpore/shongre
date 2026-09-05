@@ -26,7 +26,9 @@ export interface IWorkspaceRepository {
 }
 
 export class DemoWorkspaceRepository implements IWorkspaceRepository {
-  async getUserWorkspaceSummary(userId: string): Promise<UserWorkspaceSummary> {
+  async getUserWorkspaceSummary(
+    _userId: string,
+  ): Promise<UserWorkspaceSummary> {
     return {
       activeListingsCount: 3,
       totalViewsCount: 412,
@@ -39,7 +41,7 @@ export class DemoWorkspaceRepository implements IWorkspaceRepository {
     };
   }
 
-  async getProAnalytics(sellerId: string): Promise<{
+  async getProAnalytics(_sellerId: string): Promise<{
     monthlyRevenue: number;
     monthlyViews: number;
     conversionRate: number;

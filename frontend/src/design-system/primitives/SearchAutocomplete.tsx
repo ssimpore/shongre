@@ -39,7 +39,6 @@ export interface SearchAutocompleteProps {
   onSelect: (selection: AutocompleteSelection) => void;
   onClearRecentSearch?: (search: string, e: React.MouseEvent) => void;
   onClearAllRecentSearches?: (e: React.MouseEvent) => void;
-  onClose: () => void;
   idPrefix?: string;
   className?: string;
 }
@@ -87,7 +86,6 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
   onSelect,
   onClearRecentSearch,
   onClearAllRecentSearches,
-  onClose,
   idPrefix = "search-autocomplete",
   className = "",
 }) => {

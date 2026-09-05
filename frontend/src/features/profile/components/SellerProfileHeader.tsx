@@ -34,7 +34,6 @@ import { publicRouteUrl } from "../../../domains/market/market-routing";
 export interface SellerProfileHeaderProps {
   seller: UserProfile;
   activeListingsCount: number;
-  activeTab: "catalog" | "reviews" | "about";
   onTabChange: (tab: "catalog" | "reviews" | "about") => void;
   isOwnProfile: boolean;
   onContactClick: () => void;
@@ -44,7 +43,6 @@ export interface SellerProfileHeaderProps {
 export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
   seller,
   activeListingsCount,
-  activeTab,
   onTabChange,
   isOwnProfile,
   onContactClick,

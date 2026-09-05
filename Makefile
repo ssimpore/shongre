@@ -11,7 +11,7 @@ SHELL := /bin/bash
 	infra infra-start infra-stop infra-restart infra-status infra-health infra-logs infra-config infra-check infra-validate \
 	db-start db-stop db-status db-health db-migrate db-diff migrations-check db-seed monetization-draft-import taxonomy-db-dry-run taxonomy-db-import db-reset db-types db-shell supabase-start supabase-stop supabase-status supabase-reset supabase-migrate supabase-seed supabase-types supabase-link supabase-pull supabase-push \
 	ports check-ports free-app-ports free-ports free-port \
-	lint lint-fix format format-check typecheck test test-unit test-integration test-critical test-e2e test-coverage i18n-check taxonomy-import taxonomy-compile taxonomy-check providers-check analytics-check crm-check marketing-check contracts generate check check-all ci build \
+	lint lint-fix format format-check typecheck test test-unit test-integration test-critical test-e2e test-coverage i18n-check taxonomy-import taxonomy-compile taxonomy-check providers-check analytics-check crm-check marketing-check repository-hygiene-check contracts generate check check-all ci build \
 	clean clean-deps clean-all reset audit outdated \
 	eas-doctor ios-preview-build android-preview-build ios-production-build android-production-build eas-build-ios eas-build-android eas-build-all submit-ios submit-android \
 	privacy-check permissions-check sdk-audit version version-check version-bump-patch version-bump-minor version-bump-major reviewer-access-check association-files deep-links-check mobile-identifiers-check mobile-production-env-check release-content-check ios-sdk-check ios-privacy-check ios-permissions-check ios-entitlements-check ios-signing-check ios-store-check ios-release-check android-sdk-check android-data-safety-check android-permissions-check android-16kb-check android-signing-check android-store-check android-release-check release-check store-check \
@@ -479,7 +479,9 @@ marketing-check: ## Run focused Marketing consent, audience, campaign, RLS, prov
 	@npm run openapi:check
 contracts: contracts-check ## Validate stable public client/backend contracts
 generate: brand-sync tokens-build taxonomy-compile db-types openapi-generate ## Regenerate deterministic brand assets, taxonomy, tokens, database types, and API clients
-check: env env-check env-matrix-check migrations-check release-manifest-check deployment-config-check operations-tooling-check format-check brand-check tokens-check lint typecheck test frontend-build backend-build infra-check secret-scan hostname-check ## Run the deterministic pre-commit and pre-PR gate
+repository-hygiene-check: ## Reject tracked caches, logs, build output, backups, and temporary artifacts
+	@npm run check:repository-hygiene
+check: env env-check env-matrix-check migrations-check release-manifest-check deployment-config-check operations-tooling-check repository-hygiene-check format-check brand-check tokens-check lint typecheck test frontend-build backend-build infra-check secret-scan hostname-check ## Run the deterministic pre-commit and pre-PR gate
 	@npm run check:boundary
 check-all: check test-critical cross-platform-check test-e2e ## Run exhaustive local validation including browsers and critical subsets
 	@npm audit --audit-level=high

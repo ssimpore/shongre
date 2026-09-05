@@ -91,7 +91,7 @@ export const messagesFr = {
   "watch.savedSearch.created": "Créée {date}",
   "watch.savedSearch.manage": "Gérer l’alerte",
   "watch.savedSearch.activate": "Activer une alerte",
-  "watch.listing.priceAction": "Alerte baisse de prix",
+  "watch.listing.priceAction": "Alerte prix",
   "watch.listing.priceActive": "Baisse de prix suivie",
   "watch.listing.sellerAction": "Suivre ce vendeur",
   "watch.listing.sellerActive": "Vendeur suivi",

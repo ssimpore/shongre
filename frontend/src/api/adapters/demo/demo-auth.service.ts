@@ -231,7 +231,7 @@ export class DemoAuthService implements AuthServiceContract {
     return user;
   }
 
-  async verifyPhone(phone: string, code: string): Promise<boolean> {
+  async verifyPhone(_phone: string, code: string): Promise<boolean> {
     await simulateNetworkDelay();
     const user = currentUserOrThrow();
     return (

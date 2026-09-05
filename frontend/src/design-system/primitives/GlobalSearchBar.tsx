@@ -703,7 +703,6 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
           onSelect={handleAutocompleteSelect}
           onClearRecentSearch={handleClearRecentSearch}
           onClearAllRecentSearches={handleClearAllRecentSearches}
-          onClose={() => setIsAutocompleteOpen(false)}
         />
       </div>
     );
@@ -853,7 +852,6 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
           onSelect={handleAutocompleteSelect}
           onClearRecentSearch={handleClearRecentSearch}
           onClearAllRecentSearches={handleClearAllRecentSearches}
-          onClose={() => setIsAutocompleteOpen(false)}
         />
       </div>
     );
@@ -1074,7 +1072,6 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
           onSelect={handleAutocompleteSelect}
           onClearRecentSearch={handleClearRecentSearch}
           onClearAllRecentSearches={handleClearAllRecentSearches}
-          onClose={() => setIsAutocompleteOpen(false)}
         />
       </div>
     );
@@ -1283,7 +1280,6 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
         onSelect={handleAutocompleteSelect}
         onClearRecentSearch={handleClearRecentSearch}
         onClearAllRecentSearches={handleClearAllRecentSearches}
-        onClose={() => setIsAutocompleteOpen(false)}
       />
     </div>
   );

@@ -241,7 +241,7 @@ export class DemoTrendingService implements TrendingServiceContract {
       ...config,
       maxTopics: Math.min(query.limit || config.maxTopics, config.maxTopics),
     });
-    const topics = toPublicTopics(selected, config, now).map((topic) => ({
+    const topics = toPublicTopics(selected, config).map((topic) => ({
       ...topic,
       trend: { direction: topic.trend.direction },
     }));

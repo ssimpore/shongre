@@ -512,7 +512,7 @@ test.describe("watch subscriptions", () => {
     await waitForStableLayout(page);
 
     const priceAlert = page.getByRole("button", {
-      name: "Alerte baisse de prix",
+      name: "Alerte prix",
     });
     await expect(priceAlert).toBeVisible();
     await priceAlert.click();

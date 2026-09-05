@@ -1262,7 +1262,6 @@ export const ProspectingWorkspacePage: React.FC<
           <CompaniesPanel
             accounts={controller.accounts}
             opportunities={controller.opportunities}
-            locale={controller.currentLocale}
             onNavigate={controller.setView}
           />
         )}

@@ -539,7 +539,7 @@ export class DemoDigitalProductsStore implements DigitalProductStore {
   }
 
   async createAssetUpload(
-    ownerUserId: string,
+    _ownerUserId: string,
     input: DigitalAssetUploadInput,
     policy: DigitalMarketPolicy,
   ) {

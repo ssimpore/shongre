@@ -3,6 +3,7 @@
   "compilerOptions": {
     "strict": true,
     "noUnusedLocals": true,
+    "noUnusedParameters": true,
     "allowImportingTsExtensions": true,
     "ignoreDeprecations": "6.0",
     "baseUrl": ".",

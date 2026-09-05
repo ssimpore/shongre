@@ -34,9 +34,6 @@ optional approaches.
   before proposing a replacement. Preserve unrelated and uncommitted user work.
 - Improve incrementally. Reuse and consolidate working systems; do not rewrite
   Shongre or introduce a second architecture to avoid understanding the first.
-- Verify that code is unused before deleting it. Migrate every consumer and run
-  the relevant checks before removing a route, component, schema, migration,
-  package, compatibility adapter, feature flag, or generated artifact.
 - When asked to implement or improve something, complete the safe in-scope
   implementation and verification; do not stop at an audit unless the user asks
   for analysis only.
@@ -47,6 +44,31 @@ optional approaches.
 - Keep comments focused on rationale. Keep task notes, incidents, completed bug
   stories, retrieved policy snapshots, and progress reports in canonical docs,
   issues, or Git history rather than in this file.
+
+### Clean repository after every task
+
+- After every repository modification, agents must inspect the complete
+  task-affected scope and leave it clean. Remove code made dead or unreachable
+  by the task, including unused imports, exports, variables, parameters,
+  functions, types, components, hooks, styles, assets, files, dependencies,
+  feature flags, compatibility layers, commented-out implementations,
+  temporary scripts, debug statements, stale generated output, and obsolete
+  documentation. Cleanup is part of completion, not optional follow-up work.
+- Migrate every consumer before deletion. Prove that a candidate is obsolete
+  with repository-wide reference searches and the relevant compiler, linter,
+  dependency, route, test, and build evidence. Update affected tests and
+  documentation at the same time. Prefer existing shared primitives over new
+  duplicates, and never add speculative abstractions, fallback paths, parallel
+  implementations, or compatibility code for hypothetical future use.
+- Cleanup authority is limited to the task's change scope. Never delete
+  unrelated code or user-owned changes, intentional public APIs, required
+  generated files, migrations, fixtures, tests, or platform assets merely
+  because static analysis reports them as unused. Intentionally retained items
+  must have a concrete compatibility, ownership, generation, or platform reason
+  recorded in the final report.
+- Never commit caches, logs, build outputs, backups, scratch files, temporary
+  files, or other disposable artifacts. Before completion, inspect `git status`
+  and the complete final diff so only intentional task-related changes remain.
 
 Treat maintenance of this file as part of every implementation:
 
@@ -655,9 +677,11 @@ France-only happy path is insufficient for market-sensitive work.
   independent work, batch related data, virtualize/bound large lists, and
   lazy-load genuinely heavy maps, charts, editors, provider UI, and analytics.
 - Images need stable dimensions/aspect ratios, responsive sources, appropriate
-  formats and lazy loading; use priority only for true LCP images. Image pixel
-  budgets must account for device pixel ratio. Keep font files/weights minimal
-  and respect licensing.
+  formats and lazy loading; use priority only for true LCP images. Artwork in
+  App Router error and not-found boundaries must remain lazy because Next
+  serializes those hidden boundaries with successful routes and would otherwise
+  preload unused assets. Image pixel budgets must account for device pixel
+  ratio. Keep font files/weights minimal and respect licensing.
 - State should remain local unless it is truly global, such as session, market,
   locale, demo scenario, or global notifications. URL-owned state must support
   refresh, sharing, bookmarking, and back/forward navigation.
@@ -857,11 +881,13 @@ France-only happy path is insufficient for market-sensitive work.
   the representative country matrix; marketing, CRM, provider, analytics,
   database, mobile, store, and infrastructure changes require their focused
   canonical Make targets.
-- Normal completion uses the applicable subset of format, lint, typecheck, unit,
-  integration, E2E, migration/RLS, and production-build checks. `make check` is
-  the deterministic repository gate; `make test-critical` covers critical
-  marketplace/security behavior; use `make check-all` for E2E,
-  cross-platform, or complete workflow changes.
+- Normal completion updates affected tests and documentation, then runs the
+  applicable formatter, linter, type checker, configured unused-code and
+  dependency detector, repository-hygiene check, unit/integration/E2E and
+  migration/RLS tests, and production build. `make check` is the deterministic
+  repository gate; `make test-critical` covers critical marketplace/security
+  behavior; use `make check-all` for E2E, cross-platform, or complete workflow
+  changes.
 - Browser E2E runs against the repository's isolated Webpack production build,
   not the interactive development server. Keep bounded concurrency and isolate
   multi-route/persona sweeps according to existing test-runner conventions.
@@ -872,10 +898,13 @@ France-only happy path is insufficient for market-sensitive work.
 - Do not report an unexecuted command as passing. Fix failures introduced by the
   change. If a proven unrelated pre-existing failure blocks a check, report it
   explicitly and run every other applicable check.
-- Before finishing, inspect the diff for unrelated changes, dead imports,
-  orphaned code/routes, stale generated output, missing translations/fixtures,
-  security or market regressions, console errors, accessibility regressions, and
-  documentation drift.
+- Before finishing, use repository-wide searches to verify removed and migrated
+  references, then inspect `git status` and the complete diff for unrelated
+  changes, dead imports, orphaned code/routes, stale generated output, missing
+  translations/fixtures, disposable artifacts, security or market regressions,
+  console errors, accessibility regressions, and documentation drift. Every
+  final task report must state what was cleaned, which validations passed, and
+  any intentionally retained item with its justification.
 
 ## Canonical documentation
 

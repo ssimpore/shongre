@@ -47,6 +47,7 @@ describe("official SHONGRE. brand primitives", () => {
     expect(markup).toContain("data-brand-market-label");
     expect(markup).toContain("hidden lg:block");
     expect(markup).toContain("France");
+    expect(markup).toContain("h-9");
     expect(markup).toContain("w-9");
     expect(markup).toContain("w-24");
 

@@ -17,9 +17,9 @@ export type MarketStatus =
 type SettingSource = "LOCAL" | "PLATFORM_DEFAULT";
 
 type DeepPartial<T> = {
-  [P in keyof T]?: T[P] extends (infer U)[]
+  [P in keyof T]?: T[P] extends unknown[]
     ? T[P]
-    : T[P] extends readonly (infer U)[]
+    : T[P] extends readonly unknown[]
       ? T[P]
       : T[P] extends object
         ? DeepPartial<T[P]>

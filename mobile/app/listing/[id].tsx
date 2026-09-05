@@ -358,11 +358,7 @@ export default function ListingDetailScreen() {
         variant="secondary"
       />
       <Button
-        label={
-          activePriceWatchId
-            ? "Désactiver l’alerte prix"
-            : "Alerte baisse de prix"
-        }
+        label={activePriceWatchId ? "Désactiver l’alerte prix" : "Alerte prix"}
         onPress={() => void togglePriceWatch()}
         disabled={engagementBusy}
         variant="secondary"

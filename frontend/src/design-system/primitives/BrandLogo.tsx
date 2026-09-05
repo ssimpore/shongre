@@ -57,8 +57,8 @@ const headerSignatureSizeClasses: Record<
   BrandHeaderSignatureSize,
   { icon: string; wordmark: string }
 > = {
-  compact: { icon: "w-9", wordmark: "w-24" },
-  standard: { icon: "w-11", wordmark: "w-30" },
+  compact: { icon: "h-9 w-9", wordmark: "w-24" },
+  standard: { icon: "h-11 w-11", wordmark: "w-30" },
 };
 
 interface AccessibleBrandImageProps {
@@ -157,7 +157,7 @@ export function BrandHeaderSignature({
         src={primaryIconAsset.src}
         width={primaryIconAsset.width}
         height={primaryIconAsset.height}
-        className={`${sizeClasses.icon} block h-auto shrink-0 rounded-sm object-contain`}
+        className={`${sizeClasses.icon} block shrink-0 rounded-sm object-contain`}
         alt=""
         aria-hidden="true"
         loading={priority ? "eager" : "lazy"}

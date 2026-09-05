@@ -31,6 +31,7 @@
     "test:backend:watch": "npm run test:watch --workspace=backend",
     "benchmark:backend": "npm run benchmark --workspace=backend",
     "check:boundary": "node backend/scripts/maintenance/check-boundary.js",
+    "check:repository-hygiene": "node --test scripts/check-repository-hygiene.test.mjs && node scripts/check-repository-hygiene.mjs",
     "check:frontend": "npm run check --workspace=frontend",
     "check:backend": "npm run lint --workspace=backend && npm run test --workspace=backend && npm run build --workspace=backend && npm run benchmark --workspace=backend && npm run check:boundary",
     "check": "make check",

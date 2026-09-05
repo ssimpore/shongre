@@ -775,12 +775,8 @@ export function UnifiedOverviewPanel(props: SharedPanelProps) {
 export function CompaniesPanel({
   accounts,
   opportunities,
-  locale,
   onNavigate,
-}: Pick<
-  SharedPanelProps,
-  "accounts" | "opportunities" | "locale" | "onNavigate"
->) {
+}: Pick<SharedPanelProps, "accounts" | "opportunities" | "onNavigate">) {
   if (!accounts.length) {
     return (
       <EmptyState

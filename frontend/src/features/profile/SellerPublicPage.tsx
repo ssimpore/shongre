@@ -315,7 +315,6 @@ export const SellerPublicPage: React.FC = () => {
         <SellerProfileHeader
           seller={seller}
           activeListingsCount={activeListingsCount}
-          activeTab={activeTab}
           onTabChange={handleTabChange}
           isOwnProfile={isOwnProfile}
           onContactClick={handleContactClick}

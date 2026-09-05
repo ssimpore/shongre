@@ -574,7 +574,7 @@ export class PostgresMarketingOperationsRepository implements IMarketingOperatio
       calculatedAt: new Date().toISOString(),
     };
   }
-  async usage(tenantId: string, marketCode: string): Promise<MarketingUsage> {
+  async usage(tenantId: string, _marketCode: string): Promise<MarketingUsage> {
     const start = new Date();
     start.setUTCDate(1);
     start.setUTCHours(0, 0, 0, 0);
