@@ -14,15 +14,25 @@ test.describe("Admin-managed homepage discovery", () => {
     const collections = page.getByTestId("home-collection-explorer");
     await expect(discovery).toBeVisible();
     await expect(discovery.getByRole("tab")).toHaveText([
-      "En ce moment sur Shongre",
-      "Meilleures offres",
       "Annonces récentes",
+      "Tendances du moment",
+      "Meilleures offres",
     ]);
 
     const panel = discovery.getByRole("tabpanel");
+    const orderedTabs = discovery.getByRole("tab");
+    await expect(orderedTabs.nth(1)).toHaveAttribute("aria-selected", "true");
     const trendingCount = await panel.locator("article").count();
     expect(trendingCount).toBeGreaterThan(0);
     expect(trendingCount).toBeLessThanOrEqual(8);
+
+    await orderedTabs.nth(1).focus();
+    await orderedTabs.nth(1).press("ArrowLeft");
+    await expect(orderedTabs.nth(0)).toBeFocused();
+    await expect(orderedTabs.nth(0)).toHaveAttribute("aria-selected", "true");
+    await orderedTabs.nth(0).press("ArrowRight");
+    await expect(orderedTabs.nth(1)).toBeFocused();
+    await expect(orderedTabs.nth(1)).toHaveAttribute("aria-selected", "true");
 
     await discovery.getByRole("tab", { name: "Meilleures offres" }).click();
     await expect(panel.locator("article")).toHaveCount(6);
@@ -33,7 +43,9 @@ test.describe("Admin-managed homepage discovery", () => {
     await expect(
       collections.getByRole("link", { name: /^Explorer la collection / }),
     ).toHaveCount(5);
-    await expect(discovery.getByRole("link", { name: "Voir tout" })).toBeVisible();
+    await expect(
+      discovery.getByRole("link", { name: "Voir tout" }),
+    ).toBeVisible();
     await expect(
       collections.getByRole("link", {
         name: "Voir toutes les collections",

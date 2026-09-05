@@ -220,9 +220,9 @@ export function createDefaultHomepageConfiguration(input: {
   const order: HomepageSectionType[] = [
     "hero",
     "recent_searches",
+    "recent_listings",
     "trending",
     "deals",
-    "recent_listings",
     "collections",
     "pro_cta",
   ];

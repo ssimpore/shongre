@@ -46,7 +46,7 @@ test.describe("Homepage administration", () => {
       name: "Meilleures offres",
     });
     const trendingTab = discoverySection.getByRole("tab", {
-      name: "En ce moment sur Shongre",
+      name: "Tendances du moment",
     });
     await expect(dealsTab).toBeVisible();
     await expect(trendingTab).toBeVisible();

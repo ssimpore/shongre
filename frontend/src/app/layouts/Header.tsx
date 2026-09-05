@@ -384,16 +384,14 @@ export const Header: React.FC = () => {
   const [mobileCategories, setMobileCategories] = useState<
     TaxonomyHeaderCategoryItem[]
   >([]);
-  const [isHeaderSearchExpanded, setIsHeaderSearchExpanded] = useState(false);
-  // Set when the drawer is opened via the search button rather than the burger,
-  // so the field takes focus instead of the user having to tap it again.
+  const [isHeaderSearchActive, setIsHeaderSearchActive] = useState(false);
 
   const accountMenuRef = useRef<HTMLDivElement>(null);
 
   // Close mobile menu whenever route changes
   useEffect(() => {
     setIsMobileMenuOpen(false);
-    setIsHeaderSearchExpanded(false);
+    setIsHeaderSearchActive(false);
   }, [location.pathname]);
 
   useEffect(() => {
@@ -473,14 +471,8 @@ export const Header: React.FC = () => {
     ? 0
     : storageService.getUnreadMessageCount(currentUser?.id);
   const publishCta = usePublishCta();
-  const handleHeaderQueryChange = useCallback((query: string) => {
-    setIsHeaderSearchExpanded(query.trim().length > 0);
-  }, []);
   const handleHeaderSearchFocus = useCallback(() => {
-    setIsHeaderSearchExpanded(true);
-  }, []);
-  const handleHeaderSearchClear = useCallback(() => {
-    setIsHeaderSearchExpanded(false);
+    setIsHeaderSearchActive(true);
   }, []);
   const handleHeaderSearchBlur = useCallback(
     (event: React.FocusEvent<HTMLDivElement>) => {
@@ -491,7 +483,7 @@ export const Header: React.FC = () => {
       )
         return;
 
-      setIsHeaderSearchExpanded(false);
+      setIsHeaderSearchActive(false);
     },
     [],
   );
@@ -544,17 +536,15 @@ export const Header: React.FC = () => {
           <div
             data-header-search-shell
             onBlurCapture={handleHeaderSearchBlur}
-            className={`flex-1 min-w-0 hidden md:block motion-layout ${isHeaderSearchExpanded ? "max-w-none" : "max-w-xl xl:max-w-2xl"}`}
+            className={`flex-1 min-w-0 hidden md:block motion-layout ${isHeaderSearchActive ? "max-w-none" : "max-w-xl xl:max-w-2xl"}`}
           >
             {!isSearchRoute && (
               <GlobalSearchBar
                 variant="header"
                 idPrefix="header-desktop"
                 showCategory={true}
-                showLocation={true}
-                onQueryChange={handleHeaderQueryChange}
+                showLocation={isHeaderSearchActive}
                 onFocus={handleHeaderSearchFocus}
-                onClearQuery={handleHeaderSearchClear}
               />
             )}
           </div>
@@ -569,14 +559,14 @@ export const Header: React.FC = () => {
             {/* Publish CTA Button (Desktop & Tablet only - hidden on mobile) */}
             <div
               data-header-publish-cta
-              aria-hidden={isHeaderSearchExpanded}
-              className={`shrink-0 overflow-hidden motion-layout ${isHeaderSearchExpanded ? "max-w-0 opacity-0 pointer-events-none" : "max-w-56 opacity-100"}`}
+              aria-hidden={isHeaderSearchActive}
+              className={`shrink-0 overflow-hidden motion-layout ${isHeaderSearchActive ? "max-w-0 opacity-0 pointer-events-none" : "max-w-56 opacity-100"}`}
             >
               <Button
                 to={publishCta.to}
                 data-marketplace-action="listing.publish"
                 aria-label={t(publishCta.labelKey)}
-                tabIndex={isHeaderSearchExpanded ? -1 : undefined}
+                tabIndex={isHeaderSearchActive ? -1 : undefined}
                 variant="pro"
                 size="compact"
                 leftIcon={

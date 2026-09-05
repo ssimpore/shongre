@@ -71,7 +71,9 @@ export const HomeDiscoveryTabsSection: React.FC<{
     [sections],
   );
   const [selectedType, setSelectedType] = useState<DiscoveryType>(
-    tabs[0]?.type ?? "trending",
+    tabs.some((tab) => tab.type === "trending")
+      ? "trending"
+      : (tabs[0]?.type ?? "trending"),
   );
   const active = tabs.find((tab) => tab.type === selectedType) ?? tabs[0];
 
@@ -148,7 +150,9 @@ export const HomeDiscoveryTabsSection: React.FC<{
                   : "text-text-secondary hover:bg-bg-surface hover:text-text-primary"
               }`}
             >
-              {tab.section.title}
+              {tab.type === "trending"
+                ? t("home.trendingNow.topics")
+                : tab.section.title}
             </button>
           );
         })}

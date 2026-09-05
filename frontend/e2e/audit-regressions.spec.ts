@@ -40,6 +40,57 @@ test.describe("header search field", () => {
       ).toBeGreaterThanOrEqual(MIN_USABLE_WIDTH);
     });
   }
+
+  test("reveals location while the search input is active", async ({
+    page,
+  }) => {
+    await usePersona(page, "guest");
+    await page.setViewportSize({ width: 1408, height: 900 });
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await waitForStableLayout(page);
+
+    const query = page.locator("#header-desktop-header-query-input");
+    const location = page.locator("#header-desktop-header-location-button");
+
+    await expect(query).toBeVisible();
+    await expect(location).toHaveCount(0);
+
+    await query.focus();
+    await expect(query).toBeFocused();
+    await expect(location).toBeVisible();
+    await expect(location).toHaveAccessibleName(/localisation/i);
+    const locationLabel = location.locator("span").last();
+    await expect(locationLabel).toHaveText("Toute la France");
+    expect(
+      await locationLabel.evaluate(
+        (label) => label.scrollWidth <= label.clientWidth,
+      ),
+      "the active header location label must not be visually truncated",
+    ).toBe(true);
+
+    await query.fill("vélo");
+    await expect(location).toBeVisible();
+
+    await page
+      .getByRole("link", { name: /SHONGRE.*accueil/i })
+      .first()
+      .focus();
+    await expect(location).toHaveCount(0);
+
+    await query.focus();
+    await expect(location).toBeVisible();
+
+    await page.getByRole("button", { name: /effacer le texte/i }).click();
+    await expect(query).toHaveValue("");
+    await expect(query).toBeFocused();
+    await expect(location).toBeVisible();
+
+    await page
+      .getByRole("link", { name: /SHONGRE.*accueil/i })
+      .first()
+      .focus();
+    await expect(location).toHaveCount(0);
+  });
 });
 
 test.describe("homepage hero rail", () => {

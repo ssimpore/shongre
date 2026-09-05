@@ -61,12 +61,8 @@ export interface GlobalSearchBarProps {
   idPrefix?: string;
   autoFocus?: boolean;
   onSearch?: (criteria: GlobalSearchCriteria) => void;
-  /** Notifies a shell when the field contains text, without coupling it to search state. */
-  onQueryChange?: (query: string) => void;
   /** Notifies a shell when the header field becomes the active interaction. */
   onFocus?: () => void;
-  /** Notifies a shell after the clear action restores an empty field. */
-  onClearQuery?: () => void;
   /** When true (default: true if no onSearch or when onSearch completes), navigates to /recherche */
   navigateOnSubmit?: boolean;
   /** Callback triggered when search is submitted (e.g. to close a mobile drawer) */
@@ -87,9 +83,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
   idPrefix = "global-search",
   autoFocus = false,
   onSearch,
-  onQueryChange,
   onFocus,
-  onClearQuery,
   navigateOnSubmit = true,
   onSubmitComplete,
 }) => {
@@ -283,12 +277,10 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
 
   const handleClearQuery = () => {
     setQuery("");
-    onQueryChange?.("");
     setSelectedIndex(-1);
     if (searchInputRef.current) {
       searchInputRef.current.focus();
     }
-    onClearQuery?.();
   };
 
   const executeSearch = (customCriteria?: Partial<GlobalSearchCriteria>) => {
@@ -354,7 +346,6 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
   const handleAutocompleteSelect = (selection: AutocompleteSelection) => {
     if (selection.query !== undefined) {
       setQuery(selection.query);
-      onQueryChange?.(selection.query);
     }
     if (selection.categorySlug !== undefined) {
       setSelectedCategorySlug(selection.categorySlug);
@@ -636,7 +627,6 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
               onChange={(e) => {
                 const nextQuery = e.target.value;
                 setQuery(nextQuery);
-                onQueryChange?.(nextQuery);
                 setSelectedIndex(-1);
                 setIsAutocompleteOpen(true);
               }}
@@ -660,8 +650,10 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
             )}
           </div>
 
-          {/* Location Trigger Button (desktop only — see the category note above) */}
-          {showLocation && (
+          {/* The header shell controls when this contextual field is active:
+              hidden at rest for keyword space, visible as soon as focus enters
+              the search, and kept mounted while focus moves within the form. */}
+          {showLocation ? (
             <LocationSelector
               id={`${idPrefix}-header-location-button`}
               variant="header"
@@ -672,7 +664,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                 setRadiusKm(value.radiusKm);
               }}
             />
-          )}
+          ) : null}
 
           {/* Submit Button */}
           <button

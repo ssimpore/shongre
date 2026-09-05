@@ -309,10 +309,47 @@ test.describe("compact footer", () => {
       await expect(
         legal.getByRole("button", { name: /gestion des cookies/i }),
       ).toBeVisible();
-      await expect(legal.getByRole("link")).toHaveCount(4);
+      await expect(legal.getByRole("link")).toHaveCount(5);
       await expectNoHorizontalOverflow(page, `footer @ ${viewport.name}`);
     });
   }
+
+  test("separates identity and legal links from copyright controls on desktop", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await usePersona(page, "guest");
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await waitForStableLayout(page);
+
+    const footer = page.locator("footer");
+    await footer.scrollIntoViewIfNeeded();
+    const primaryRow = footer.locator("[data-footer-primary-row]");
+    const secondaryRow = footer.locator("[data-footer-secondary-row]");
+    const language = footer.locator("#footer-lang-button");
+
+    await expect(primaryRow).toBeVisible();
+    await expect(secondaryRow).toBeVisible();
+    await expect(
+      primaryRow.getByText("Marché France", { exact: true }),
+    ).toBeVisible();
+    await expect(secondaryRow.getByText(/Tous droits réservés/)).toBeVisible();
+    await expect(language).toBeVisible();
+
+    const geometry = await Promise.all([
+      primaryRow.boundingBox(),
+      secondaryRow.boundingBox(),
+      language.boundingBox(),
+    ]);
+    expect(geometry.every(Boolean)).toBe(true);
+    expect(geometry[0]!.y + geometry[0]!.height).toBeLessThanOrEqual(
+      geometry[1]!.y,
+    );
+    expect(geometry[2]!.x).toBeGreaterThan(
+      geometry[1]!.x + geometry[1]!.width / 2,
+    );
+    await expectNoHorizontalOverflow(page, "desktop footer legal rows");
+  });
 });
 
 /**

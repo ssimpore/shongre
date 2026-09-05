@@ -443,48 +443,63 @@ export const Footer: React.FC = () => {
           </section>
         </div>
 
-        <div className="flex flex-col gap-4 pt-1 text-xs text-text-inverse-subtle md:flex-row md:items-center md:justify-between">
-          <div className="flex flex-wrap items-center gap-4">
-            <Link
-              to={routes.home()}
-              aria-label="SHONGRE., accueil"
-              className="rounded-control focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-on-dark"
-            >
-              <BrandHeaderSignature variant="reverse" decorative />
-            </Link>
+        <div className="pt-1 text-xs text-text-inverse-subtle">
+          <div
+            data-footer-primary-row
+            className="flex flex-col gap-5 border-b border-border-inverse/60 pb-5 lg:flex-row lg:items-center lg:justify-between lg:gap-8"
+          >
+            <div className="flex flex-wrap items-center gap-4 sm:gap-5">
+              <Link
+                to={routes.home()}
+                aria-label="SHONGRE., accueil"
+                className="rounded-control focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-on-dark"
+              >
+                <BrandHeaderSignature variant="reverse" decorative />
+              </Link>
+              <span
+                className="hidden h-10 w-px bg-border-inverse-subtle sm:block"
+                aria-hidden="true"
+              />
+              <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
+                <CountryFlag countryCode={activeMarket.code} size="sm" />
+                {t("footer.marketLabel", { market: activeMarket.name })}
+              </span>
+            </div>
+
+            <nav aria-label={t("footer.legalHeading")}>
+              <ul className="flex flex-wrap items-center gap-x-5 gap-y-1 lg:justify-end">
+                {LEGAL_LINKS.map(({ to, labelKey }) => (
+                  <li key={to}>
+                    <Link
+                      to={to}
+                      className="inline-flex min-h-6 items-center py-1 transition-colors hover:text-text-inverse"
+                    >
+                      {t(labelKey)}
+                    </Link>
+                  </li>
+                ))}
+                <li>
+                  <button
+                    type="button"
+                    onClick={openPreferences}
+                    className="inline-flex min-h-6 cursor-pointer items-center py-1 transition-colors hover:text-text-inverse"
+                  >
+                    {t("footer.cookies")}
+                  </button>
+                </li>
+              </ul>
+            </nav>
+          </div>
+
+          <div
+            data-footer-secondary-row
+            className="flex flex-col gap-4 pt-5 sm:flex-row sm:items-center sm:justify-between"
+          >
             <span>
               {t("footer.copyright", { year: new Date().getFullYear() })}
             </span>
-            <span className="inline-flex items-center gap-1.5">
-              <CountryFlag countryCode={activeMarket.code} size="sm" />
-              {t("footer.marketLabel", { market: activeMarket.name })}
-            </span>
             <LanguageSelector variant="footer" idPrefix="footer-lang" />
           </div>
-
-          <nav aria-label={t("footer.legalHeading")}>
-            <ul className="flex flex-wrap items-center gap-x-5 gap-y-1">
-              {LEGAL_LINKS.map(({ to, labelKey }) => (
-                <li key={to}>
-                  <Link
-                    to={to}
-                    className="inline-flex min-h-6 items-center py-1 transition-colors hover:text-text-inverse"
-                  >
-                    {t(labelKey)}
-                  </Link>
-                </li>
-              ))}
-              <li>
-                <button
-                  type="button"
-                  onClick={openPreferences}
-                  className="inline-flex min-h-6 cursor-pointer items-center py-1 transition-colors hover:text-text-inverse"
-                >
-                  {t("footer.cookies")}
-                </button>
-              </li>
-            </ul>
-          </nav>
         </div>
       </Container>
     </footer>

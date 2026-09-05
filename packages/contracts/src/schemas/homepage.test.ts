@@ -6,7 +6,7 @@ import {
 } from "./homepage";
 
 describe("homepage configuration contract", () => {
-  it("creates the controlled default order with trends after recent searches and deals next", () => {
+  it("creates the controlled default order with recent listings before trends and deals", () => {
     const configuration = createDefaultHomepageConfiguration({
       marketCode: "FR",
       locale: "fr-FR",
@@ -16,9 +16,9 @@ describe("homepage configuration contract", () => {
     expect(configuration.sections.map((section) => section.key)).toEqual([
       "hero",
       "recent_searches",
+      "recent_listings",
       "trending",
       "deals",
-      "recent_listings",
       "collections",
       "pro_cta",
     ]);
