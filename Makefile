@@ -3,13 +3,13 @@ SHELL := /bin/bash
 
 .PHONY: help setup doctor info env-info env env-init env-check env-local env-test env-preview env-development env-staging env-production install reinstall \
 	dev demo dev-web dev-staging staging dev-mobile dev-all start stop stop-all restart status health smoke logs \
-	web frontend web-dev frontend-dev frontend-start frontend-build frontend-lint frontend-typecheck frontend-test frontend-test-e2e frontend-check frontend-clean frontend-logs seo-check seo-audit \
+	frontend frontend-start frontend-build frontend-lint frontend-typecheck frontend-test frontend-test-e2e frontend-check frontend-clean frontend-logs seo-check seo-audit \
 	backend backend-dev backend-start worker worker-dev worker-start backend-build backend-lint backend-typecheck backend-test backend-check backend-health backend-logs worker-logs \
 	contracts-lint contracts-typecheck contracts-test contracts-check openapi-lint openapi-generate openapi-check openapi-docs openapi-breaking-check \
 	brand-sync brand-check brand-activate brand-activation-check tokens-check tokens-build ui-check ui-test ui-lint ui-typecheck ui-build shared-check cross-platform-check \
 	mobile mobile-dev mobile-start mobile-stop mobile-status mobile-health mobile-web expo expo-start expo-clear expo-doctor ios ios-run ios-open ios-clean android android-run android-open android-clean mobile-prebuild mobile-prebuild-clean mobile-lint mobile-typecheck mobile-test mobile-dead-code mobile-check \
-	infra infra-start infra-stop infra-restart infra-status infra-health infra-logs infra-config infra-check infra-validate \
-	db-start db-stop db-status db-health db-migrate db-diff migrations-check db-seed monetization-draft-import taxonomy-db-dry-run taxonomy-db-import db-reset db-types db-shell supabase-start supabase-stop supabase-status supabase-reset supabase-migrate supabase-seed supabase-types supabase-link supabase-pull supabase-push \
+	infra-check supabase-up supabase-down supabase-status supabase-health supabase-logs supabase-config \
+	db-migrate db-diff migrations-check db-seed monetization-draft-import taxonomy-db-dry-run taxonomy-db-import db-reset db-types db-shell supabase-link supabase-pull supabase-push \
 	ports check-ports free-app-ports free-ports free-port \
 	lint lint-fix format format-check typecheck test test-unit test-integration test-critical test-e2e test-coverage i18n-check taxonomy-import taxonomy-compile taxonomy-check providers-check analytics-check crm-check marketing-check repository-hygiene-check contracts generate check check-all ci build \
 	clean clean-deps clean-all reset audit outdated \
@@ -88,7 +88,7 @@ doctor: ## Diagnose tools, versions, configuration, ports, and optional platform
 info env-info: env-check ## Print resolved non-secret environment, URL, provider, and indexing modes
 	@source scripts/env.sh && printf 'Environment       %s (%s)\nFrance frontend   %s\nIntl frontend     %s\nAPI               %s%s\nSupabase          %s\nStorage           %s\nPayments          %s\nEmail             %s\nAI                %s\nAnalytics         %s\nSEO indexing      %s\nData modes        web=%s backend=%s/%s mobile=%s\n' "$$APP_ENV" "$$ENVIRONMENT_ID" "$$PUBLIC_FR_URL" "$$PUBLIC_INTL_URL" "$$API_URL" "$$API_PREFIX" "$${SUPABASE_PROJECT_REF:-local}" "$$STORAGE_ENVIRONMENT_ID" "$$PAYMENT_MODE" "$$EMAIL_MODE" "$$AI_MODE" "$$ANALYTICS_MODE" "$$( [[ "$$APP_ENV" == production ]] && echo enabled || echo disabled )" "$$NEXT_PUBLIC_DATA_MODE" "$$BACKEND_DATA_MODE" "$$DATABASE_INFRA_MODE" "$$EXPO_PUBLIC_DATA_MODE"
 
-install: ## Install the npm workspace using its committed lockfile
+install: ## Install frontend, backend, mobile, and shared workspace dependencies
 	@npm install
 
 reinstall: clean-deps install
@@ -108,21 +108,20 @@ dev-all: ## Run backend, worker, Web, and one Expo Metro server
 	@scripts/dev.sh all
 start: dev
 
-frontend: frontend-dev ## Run only the standalone Web application
-web web-dev frontend-dev:
-	@scripts/service.sh foreground frontend auto -- npm run dev --workspace=frontend
+frontend: ## Run the deterministic demo UI at the configured local Web origin
+	@NEXT_PUBLIC_DATA_MODE=demo scripts/service.sh foreground frontend auto -- npm run dev --workspace=frontend
 
 frontend-start:
 	@scripts/service.sh foreground frontend auto -- npm run preview --workspace=frontend
 
-backend: backend-dev ## Run only the backend API
+backend: backend-dev ## Run the database-backed API at the configured local origin
 backend-dev:
 	@scripts/service.sh foreground backend auto -- npm run dev --workspace=backend
 
 backend-start: backend-build
 	@scripts/service.sh foreground backend auto -- npm run start --workspace=backend
 
-worker: worker-dev ## Run only the backend scheduled worker
+worker: worker-dev ## Run the database-backed queue worker
 worker-dev:
 	@scripts/service.sh foreground worker none -- npm run dev:worker --workspace=backend
 worker-start: backend-build
@@ -330,25 +329,21 @@ mobile-runtime-resolution-check:
 mobile-check: mobile-lint mobile-typecheck mobile-test mobile-dead-code mobile-runtime-resolution-check expo-doctor mobile-production-env-check ## Validate Expo source, types, tests, reachability, runtime resolution, and configuration
 
 ##@ Infrastructure & database
-infra: infra-start
-infra-start: ## Start required local Supabase services in database mode
-	@scripts/infra.sh start
-infra-stop: ## Stop the local Supabase stack
-	@scripts/infra.sh stop
-infra-restart: infra-stop infra-start
-infra-status: ## Show local Supabase status
-	@scripts/infra.sh status
-db-status supabase-status: infra-status
-infra-health: ## Require configured local infrastructure to be healthy
-	@scripts/infra.sh health
-db-health: infra-health
-infra-logs:
-	@scripts/infra.sh logs
-infra-config:
-	@scripts/infra.sh config
 infra-check: ## Validate Dockerfiles, manifests, runbooks, and generated config
 	@scripts/infra.sh check
-infra-validate: infra-check
+	@node --test scripts/local-development-contract.test.mjs
+supabase-up: ## Start the repository-owned local Supabase stack
+	@scripts/supabase.sh up
+supabase-down: ## Stop the repository-owned local Supabase stack
+	@scripts/supabase.sh down
+supabase-status: ## Show local Supabase service endpoints and status
+	@scripts/supabase.sh status
+supabase-health: ## Require the local Supabase stack to be healthy
+	@scripts/supabase.sh health
+supabase-logs: ## Show local Supabase endpoints and log guidance
+	@scripts/supabase.sh logs
+supabase-config: ## Render ignored local Supabase configuration from the root environment
+	@scripts/supabase.sh config
 docker-config: ## Render and validate the canonical Compose topology
 	@scripts/compose.sh config
 docker-build: ## Build both environment-agnostic runtime images locally
@@ -399,13 +394,10 @@ secret-scan:
 	@node scripts/scan-tracked-secrets.mjs
 hostname-check: ## Reject environment-specific hostnames in runtime source
 	@node scripts/check-runtime-hostnames.mjs
-db-start supabase-start: infra-start
-db-stop supabase-stop: infra-stop
 db-migrate: ## Apply ordered migrations to the explicitly configured database
 	@scripts/database.sh migrate
 db-diff: ## Print a local schema diff without mutating a hosted environment
 	@scripts/database.sh diff
-supabase-migrate: db-migrate
 migrations-check: ## Validate migration ordering and contents without connecting to a database
 	@scripts/database.sh check
 db-seed: ## Load deterministic seed data into a proven local development database
@@ -416,21 +408,18 @@ taxonomy-db-dry-run: taxonomy-compile ## Diff the v4 import against a proven loc
 	@scripts/database.sh taxonomy-dry-run
 taxonomy-db-import: taxonomy-compile ## Idempotently import v4 into a proven local database
 	@scripts/database.sh taxonomy-import
-supabase-seed: db-seed
 db-types: ## Regenerate canonical database types from local or explicitly linked Supabase
 	@source scripts/env.sh && npm run db:types --workspace=backend
-supabase-types: db-types
 db-reset: ## Reconstruct only the proven local Supabase development database
 	@scripts/database.sh reset
-supabase-reset: db-reset
 db-shell: ## Open psql only against a proven local development database
 	@scripts/database.sh shell
 supabase-link:
-	@source scripts/env.sh && [[ -n "$${SUPABASE_PROJECT_REF:-}" ]] || { echo 'SUPABASE_PROJECT_REF is required'; exit 1; }; supabase link --workdir backend --project-ref "$$SUPABASE_PROJECT_REF"
+	@source scripts/env.sh && scripts/render-supabase-config.sh && [[ -n "$${SUPABASE_PROJECT_REF:-}" ]] || { echo 'SUPABASE_PROJECT_REF is required'; exit 1; }; supabase link --workdir backend --project-ref "$$SUPABASE_PROJECT_REF"
 supabase-pull:
-	@supabase db pull --workdir backend
+	@source scripts/env.sh && scripts/render-supabase-config.sh && supabase db pull --workdir backend
 supabase-push:
-	@supabase db push --workdir backend
+	@source scripts/env.sh && scripts/render-supabase-config.sh && supabase db push --workdir backend
 
 ##@ Diagnostics
 ports: ## Show configured ports, availability, and listener ownership

@@ -94,7 +94,8 @@ change—there are currently no exceptions.
 
 Compose has no `ports` in hosted topology. Verify on the host with
 `docker compose -f compose.yaml --profile tunnel ps`; any host listener for
-3000, 4000 or 2000 is an incident. `compose.local.yaml` binds development ports
+the configured application ports or the connector metrics port is an incident.
+`compose.local.yaml` binds development ports
 to `127.0.0.1` only.
 
 ## Rollback

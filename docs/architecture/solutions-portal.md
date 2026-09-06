@@ -173,7 +173,7 @@ the canonical specification.
 
 Root `compose.yaml` is unchanged: no origin ports are published and the existing
 remote-managed Cloudflare Tunnel remains the only hosted ingress. Operators add
-public-hostname mappings to `frontend:3000` outside application deployment.
+public-hostname mappings to `frontend:${FRONTEND_PORT}` outside application deployment.
 Releases build one frontend digest per main commit and promote that exact digest
 through DEV, STAGING, and PRODUCTION. Runtime origin changes do not rebuild the
 image and must not create DNS, Tunnel, token, database, or deployment pipelines.

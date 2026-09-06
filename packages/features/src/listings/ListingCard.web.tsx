@@ -250,7 +250,7 @@ export function ListingCard({
               .map((characteristic, index) => (
                 <span
                   key={`${index}:${characteristic}`}
-                  className="inline-flex min-h-control-sm min-w-0 flex-1 items-center justify-center gap-1.5 rounded-control border border-border-subtle bg-bg-subtle px-2 text-micro font-medium text-text-secondary"
+                  className="inline-flex min-h-control-sm min-w-0 flex-1 items-center justify-center gap-semantic-xs rounded-control border border-border-subtle bg-bg-subtle px-semantic-xs text-micro font-medium text-text-secondary"
                   title={characteristic}
                 >
                   <SemanticIcon

@@ -50,7 +50,6 @@ LABEL org.opencontainers.image.created=$BUILD_DATE \
 
 ENV NODE_ENV=production
 ENV BACKEND_HOST=0.0.0.0
-ENV BACKEND_PORT=4000
 
 RUN --mount=type=cache,target=/root/.npm \
     apk upgrade --no-cache \
@@ -67,10 +66,9 @@ COPY --from=builder --chown=node:node /app/backend/supabase/migrations ./backend
 RUN find /app -type f -name '*.map' -delete
 
 WORKDIR /app/backend
-EXPOSE 4000
 
 HEALTHCHECK --interval=15s --timeout=5s --start-period=20s --retries=4 \
-  CMD node -e "fetch('http://127.0.0.1:4000/readyz').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
+  CMD node -e "fetch('http://127.0.0.1:' + process.env.BACKEND_PORT + '/readyz').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
 
 USER node
 

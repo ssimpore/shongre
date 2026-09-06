@@ -804,6 +804,8 @@
    information panel. Reserve their token-sized row below the card metadata so
    long locations and dates truncate without colliding with the controls. */
 .listing-card-hero-horizontal .listing-card-list-content {
+  gap: var(--spacing-semantic-xs);
+  padding: var(--spacing-semantic-sm) var(--spacing-semantic-md);
   padding-bottom: calc(var(--spacing-control-sm) + var(--spacing-semantic-lg));
 }
 
@@ -818,8 +820,9 @@
 
 @variant lg {
   .listing-card-hero-horizontal {
-    height: 100%;
-    max-height: none;
+    height: var(--spacing-listing-card-hero-height);
+    min-height: var(--spacing-listing-card-hero-height);
+    max-height: var(--spacing-listing-card-hero-height);
   }
 
   .listing-card-hero-horizontal .listing-card-list-image,
@@ -833,8 +836,9 @@
      card used by results and rails. Every dimension resolves from shared
      spacing/control tokens so the rows keep a stable rhythm as copy varies. */
   .listing-card-hero-horizontal .listing-card-list-content {
-    gap: calc(var(--spacing-base) * 2);
-    padding: calc(var(--spacing-base) * 4);
+    justify-content: space-between;
+    gap: var(--spacing-semantic-sm);
+    padding: var(--spacing-semantic-lg);
     padding-bottom: calc(
       var(--spacing-control-sm) + var(--spacing-semantic-lg)
     );
@@ -842,6 +846,7 @@
 
   .listing-card-hero-horizontal .listing-card-hero-characteristics {
     min-height: var(--spacing-control-sm);
+    margin-right: calc(var(--spacing-control-lg) + var(--spacing-semantic-sm));
   }
 
   .listing-card-hero-horizontal .listing-card-hero-seller {

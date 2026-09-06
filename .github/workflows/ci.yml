@@ -192,36 +192,40 @@ jobs:
             'test -f dist/migrate.js && test -d supabase/migrations && command -v psql >/dev/null'
       - name: Smoke test both runtime entrypoints
         run: |
-          api_id=$(docker run -d -p 4000:4000 \
+          source scripts/env.sh
+          staging_frontend_port="$((FRONTEND_PORT + 1))"
+          api_id=$(docker run -d -p "$BACKEND_PORT:$BACKEND_PORT" \
             -e NODE_ENV=development \
             -e APP_ENV=local \
             -e ENVIRONMENT_ID=shongre-local \
             -e API_ENVIRONMENT_ID=shongre-local \
             -e SUPABASE_ENVIRONMENT_ID=shongre-local \
             -e STORAGE_ENVIRONMENT_ID=shongre-local \
-            -e PUBLIC_FR_URL=http://127.0.0.1:3000 \
-            -e PUBLIC_INTL_URL=http://127.0.0.1:3000 \
-            -e API_URL=http://127.0.0.1:4000 \
+            -e PUBLIC_FR_URL="$PUBLIC_FR_URL" \
+            -e PUBLIC_INTL_URL="$PUBLIC_INTL_URL" \
+            -e API_URL="$API_URL" \
             -e PAYMENT_MODE=test \
             -e EMAIL_MODE=console \
             -e AI_MODE=mock \
             -e ANALYTICS_MODE=off \
             -e BACKEND_HOST=0.0.0.0 \
-            -e BACKEND_PORT=4000 \
+            -e BACKEND_PORT="$BACKEND_PORT" \
             -e BACKEND_DATA_MODE=demo \
             shongre-backend:local)
-          web_dev_id=$(docker run -d -p 3000:3000 \
+          web_dev_id=$(docker run -d -p "$FRONTEND_PORT:$FRONTEND_PORT" \
             -e APP_ENV=development \
             -e ENVIRONMENT_ID=shongre-development \
+            -e FRONTEND_PORT="$FRONTEND_PORT" \
             -e PUBLIC_FR_URL=https://dev.shongre.invalid \
             -e PUBLIC_INTL_URL=https://dev-intl.shongre.invalid \
             -e API_URL=https://api-dev.shongre.invalid \
             -e NEXT_PUBLIC_DATA_MODE=demo \
             -e NEXT_PUBLIC_ENABLE_MOCK_STORAGE=true \
             shongre-frontend:local)
-          web_staging_id=$(docker run -d -p 3001:3000 \
+          web_staging_id=$(docker run -d -p "$staging_frontend_port:$FRONTEND_PORT" \
             -e APP_ENV=staging \
             -e ENVIRONMENT_ID=shongre-staging \
+            -e FRONTEND_PORT="$FRONTEND_PORT" \
             -e PUBLIC_FR_URL=https://staging.shongre.invalid \
             -e PUBLIC_INTL_URL=https://staging-intl.shongre.invalid \
             -e API_URL=https://api-staging.shongre.invalid \
@@ -235,29 +239,29 @@ jobs:
             -e API_ENVIRONMENT_ID=shongre-local \
             -e SUPABASE_ENVIRONMENT_ID=shongre-local \
             -e STORAGE_ENVIRONMENT_ID=shongre-local \
-            -e PUBLIC_FR_URL=http://127.0.0.1:3000 \
-            -e PUBLIC_INTL_URL=http://127.0.0.1:3000 \
-            -e API_URL=http://127.0.0.1:4000 \
+            -e PUBLIC_FR_URL="$PUBLIC_FR_URL" \
+            -e PUBLIC_INTL_URL="$PUBLIC_INTL_URL" \
+            -e API_URL="$API_URL" \
             -e PAYMENT_MODE=test \
             -e EMAIL_MODE=console \
             -e AI_MODE=mock \
             -e ANALYTICS_MODE=off \
             -e BACKEND_HOST=0.0.0.0 \
-            -e BACKEND_PORT=4000 \
+            -e BACKEND_PORT="$BACKEND_PORT" \
             -e BACKEND_DATA_MODE=demo \
             shongre-backend:local node dist/worker.js)
           trap 'docker rm -f "$api_id" "$web_dev_id" "$web_staging_id" "$worker_id" >/dev/null' EXIT
           for _ in $(seq 1 30); do
-            if curl --fail --silent http://127.0.0.1:4000/livez >/dev/null && \
-               curl --fail --silent http://127.0.0.1:3000/healthz >/dev/null && \
-               curl --fail --silent http://127.0.0.1:3001/healthz >/dev/null; then
+            if curl --fail --silent "$API_URL/livez" >/dev/null && \
+               curl --fail --silent "$PUBLIC_FR_URL/healthz" >/dev/null && \
+               curl --fail --silent "http://127.0.0.1:$staging_frontend_port/healthz" >/dev/null; then
               break
             fi
             sleep 1
           done
-          curl --fail --silent http://127.0.0.1:4000/livez >/dev/null
-          curl --fail --silent http://127.0.0.1:3000/healthz >/dev/null
-          curl --fail --silent http://127.0.0.1:3001/healthz >/dev/null
+          curl --fail --silent "$API_URL/livez" >/dev/null
+          curl --fail --silent "$PUBLIC_FR_URL/healthz" >/dev/null
+          curl --fail --silent "http://127.0.0.1:$staging_frontend_port/healthz" >/dev/null
           docker inspect --format='{{.State.Running}}' "$worker_id" | grep -qx true
 
   web-e2e:

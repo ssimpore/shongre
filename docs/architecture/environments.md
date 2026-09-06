@@ -236,8 +236,8 @@ or corruption and reconcile external payment state afterward.
 ## DNS, CDN, and TLS actions
 
 Three persistent remote-managed Cloudflare Tunnels route the France and
-international Web hosts to `frontend:3000` and each flat API host to
-`backend:4000`. The Docker hosts expose none of those ports. Bind edge TLS for
+international Web hosts to `frontend:${FRONTEND_PORT}` and each flat API host
+to `backend:${BACKEND_PORT}`. The Docker hosts expose none of those ports. Bind edge TLS for
 every explicit hostname; configure WAF, rate limits and host-aware cache keys.
 Do not cache one domain's redirects, canonicals or HTML under another host key.
 
@@ -291,9 +291,11 @@ make test-e2e
 make openapi-check
 
 # Local database only
+make supabase-up
 make db-migrate
 make db-reset
 make db-seed
+make supabase-down
 
 # Protected remote operations
 make deploy-dev

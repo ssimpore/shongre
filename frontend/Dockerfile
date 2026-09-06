@@ -50,7 +50,6 @@ LABEL org.opencontainers.image.created=$BUILD_DATE \
 
 ENV NODE_ENV=production
 ENV HOSTNAME=0.0.0.0
-ENV PORT=3000
 
 WORKDIR /app/frontend
 
@@ -68,11 +67,9 @@ COPY --chown=node:node frontend/scripts/validate-runtime-config.mjs ./scripts/va
 
 RUN find /app -type f -name '*.map' -delete
 
-EXPOSE 3000
-
 HEALTHCHECK --interval=15s --timeout=5s --start-period=20s --retries=4 \
-  CMD node -e "fetch('http://127.0.0.1:3000/healthz').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
+  CMD node -e "fetch('http://127.0.0.1:' + process.env.FRONTEND_PORT + '/healthz').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
 
 USER node
 
-CMD ["sh", "-c", "node scripts/validate-runtime-config.mjs && exec node server.js"]
+CMD ["sh", "-c", "node scripts/validate-runtime-config.mjs && PORT=\"$FRONTEND_PORT\" exec node server.js"]

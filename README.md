@@ -63,11 +63,19 @@ Run `make doctor` for an evidence-based local tool report. Missing optional nati
 ## First setup
 
 ```bash
-make setup
-make dev
+make env           # create the ignored local environment if needed
+make install       # install every workspace
+make supabase-up   # start local Supabase
+make db-migrate    # apply ordered migrations
+make db-seed       # load deterministic local data
 ```
 
-`make setup` creates an ignored `.env.local` from `.env.example`, installs the npm workspace, renders local Supabase configuration, and runs diagnostics. Keep staging secrets in `.env.staging.local`, production secrets in the deployment secret store (or `.env.production.local` for an explicit local production check), and never commit those local files.
+Run `make env` first if `.env.local` does not exist. `make setup` remains the
+one-command machine bootstrap: it creates the ignored local environment,
+installs the npm workspace, renders local Supabase configuration, and runs
+diagnostics. Keep staging secrets in `.env.staging.local`, production secrets in
+the deployment secret store (or `.env.production.local` for an explicit local
+production check), and never commit those local files.
 
 The complete everyday workflow is intentionally small:
 
@@ -109,9 +117,9 @@ make staging      # same stack using hosted staging configuration
 make dev-mobile   # backend API + scheduled worker + one Expo Metro server
 make dev-all      # backend API + scheduled worker + web + Expo Metro
 
-make frontend     # standalone demo Web, backend stopped
-make backend      # backend API only
-make worker       # scheduled worker only
+make frontend     # demo UI at PUBLIC_FR_URL
+make backend      # database-backed API at API_URL
+make worker       # database-backed queue worker
 
 make ios
 make android
@@ -124,10 +132,15 @@ make logs
 make stop-all
 ```
 
-With `BACKEND_DATA_MODE=database` and `DATABASE_INFRA_MODE=local` in the ignored
-`.env.local`, `make dev` starts local Supabase, imports its generated local
-credentials from `.runtime/supabase.env`, applies pending migrations, and then
-starts the application services. Docker must be installed and running first.
+Local development defaults to `BACKEND_DATA_MODE=database` and
+`DATABASE_INFRA_MODE=local`. `make supabase-up` starts the repository-owned
+Supabase stack and writes generated credentials to ignored
+`.runtime/supabase.env`; `make backend` and `make worker` require that stack and
+load those credentials automatically. `make dev` additionally starts Supabase,
+applies pending migrations, and launches the complete application stack. Docker
+must be installed and running first. `make frontend` always forces the
+deterministic client demo adapter, so it remains usable with the API and
+Supabase stopped.
 
 Processes launched through the root tooling are recorded under ignored `.runtime/`. Port collision handling prints the owning PID/command and only terminates a process whose tracked PID belongs to this repository. It never runs a broad `killall`, pattern kill, or blind SIGKILL.
 
@@ -150,20 +163,23 @@ Use `make ports` to see configured values and current owners. `make free-port PO
 | Mobile         | `EXPO_PUBLIC_DATA_MODE=demo`  | `EXPO_PUBLIC_DATA_MODE=api` + `EXPO_PUBLIC_API_URL` |
 | Backend        | `BACKEND_DATA_MODE=demo`      | `BACKEND_DATA_MODE=database`                        |
 
-Demo is the default. There is no silent fallback to Supabase or production HTTP. Production mobile configuration is separately validated from local public Expo values.
+Demo is the default client mode; the local backend defaults to database mode.
+There is no silent fallback between demo, Supabase, or production HTTP.
+Production mobile configuration is separately validated from local public Expo
+values.
 
 ## Database and infrastructure
 
 ```bash
-make infra-start
-make infra-status
-make infra-health
+make supabase-up
+make supabase-status
+make supabase-health
 make migrations-check
 make db-migrate
 make db-seed
 make db-reset
 make db-types
-make infra-stop
+make supabase-down
 ```
 
 Schema changes belong in `backend/supabase/migrations/`. `make migrations-check` validates ordering and contents without connecting to PostgreSQL. Destructive database and demo-seed commands require `APP_ENV=local` and prove that the target host and database name are local; `make db-reset` additionally invokes only the local `backend/supabase` workdir. The generated `backend/supabase/config.toml` is ignored; edit its checked-in template and environment values instead.
@@ -337,14 +353,14 @@ npm install
 npm run dev
 
 # France
-open http://127.0.0.1:3000/
+open "$PUBLIC_FR_URL/"
 # Global gateway (the .localhost name resolves to loopback on modern browsers)
-open http://global.localhost:3000/
+open "http://global.localhost:${FRONTEND_PORT}/"
 # Country paths
-open http://127.0.0.1:3000/be/
-open http://127.0.0.1:3000/ch/
-open http://127.0.0.1:3000/sn/
-open http://127.0.0.1:3000/bf/
+open "$PUBLIC_INTL_URL/be/"
+open "$PUBLIC_INTL_URL/ch/"
+open "$PUBLIC_INTL_URL/sn/"
+open "$PUBLIC_INTL_URL/bf/"
 ```
 
 The frontend remains fully standalone in `NEXT_PUBLIC_DATA_MODE=demo`; these

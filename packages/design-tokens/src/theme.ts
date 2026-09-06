@@ -552,6 +552,10 @@ export const themeSpacing = {
   "listing-card-list-image-sm": "9rem",
   "listing-card-list-image-md": "11rem",
   "listing-card-list-image-lg": "13rem",
+  /* The homepage feature rail is intentionally taller than a search-result
+     row. A fixed token prevents its intrinsic grid height from changing as
+     category-specific decision fields and seller metadata rotate. */
+  "listing-card-hero-height": "18.5rem",
   "collection-card": "9.6875rem",
   "collection-card-wide": "11.875rem",
   "recent-search-card": "17rem",

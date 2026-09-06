@@ -64,7 +64,7 @@ local_database_url() {
 
   if ! command -v supabase >/dev/null 2>&1 || ! supabase status --workdir "$SHONGRE_ROOT/backend" >/dev/null 2>&1; then
     shongre_fail "no local database is configured or running"
-    shongre_info "run make infra-start, or set DATABASE_URL to an explicit loopback development database"
+    shongre_info "run make supabase-up, or set DATABASE_URL to an explicit loopback development database"
     exit 1
   fi
   if ! is_loopback_host "$SUPABASE_HOST"; then

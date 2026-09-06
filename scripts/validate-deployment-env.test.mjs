@@ -13,6 +13,7 @@ const environmentId = "shongre-staging";
 
 const frontend = `APP_ENV=${environment}
 ENVIRONMENT_ID=${environmentId}
+FRONTEND_PORT=3000
 PUBLIC_FR_URL=https://staging.shongre.example
 PUBLIC_INTL_URL=https://staging-intl.shongre.example
 API_URL=https://api-staging.shongre.example
@@ -31,6 +32,7 @@ API_ENVIRONMENT_ID=${environmentId}
 DATABASE_ENVIRONMENT_ID=${environmentId}
 SUPABASE_ENVIRONMENT_ID=${environmentId}
 STORAGE_ENVIRONMENT_ID=${environmentId}
+BACKEND_PORT=4000
 NODE_ENV=production
 BACKEND_DATA_MODE=database
 DATABASE_INFRA_MODE=hosted
@@ -132,6 +134,13 @@ try {
   run(1);
 
   writePrivate(frontendPath, frontend);
+  writePrivate(
+    backendPath,
+    backend.replace("BACKEND_PORT=4000", "BACKEND_PORT=invalid"),
+  );
+  run(1);
+
+  writePrivate(backendPath, backend);
   writePrivate(
     backendPath,
     backend.replace(

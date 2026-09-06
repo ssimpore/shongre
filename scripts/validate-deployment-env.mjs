@@ -29,6 +29,16 @@ function requireValue(entries, key, expected, label) {
   }
 }
 
+function requirePort(entries, key, label) {
+  requireValue(entries, key, undefined, label);
+  const value = entries.get(key);
+  if (!/^\d+$/.test(value) || Number(value) < 1 || Number(value) > 65535) {
+    throw new Error(
+      `[Deploy Config] ${label} ${key} must be an integer from 1 to 65535.`,
+    );
+  }
+}
+
 const frontend = parseEnvFile(frontendPath, "frontend env");
 const backend = parseEnvFile(backendPath, "backend env");
 assertPrivateFile(tunnelTokenPath, "Tunnel token");
@@ -57,6 +67,8 @@ for (const key of [
 ]) {
   requireValue(frontend, key, undefined, "frontend env");
 }
+requirePort(frontend, "FRONTEND_PORT", "frontend env");
+requirePort(backend, "BACKEND_PORT", "backend env");
 requireValue(
   frontend,
   "NEXT_PUBLIC_ENABLE_AI_FEATURES",

@@ -158,6 +158,106 @@ test.describe("boosted listings hero rail", () => {
     ).toBeVisible();
   });
 
+  test("keeps every category on one fixed, evenly distributed hero footprint", async ({
+    page,
+  }) => {
+    await usePersona(page, "guest");
+    await page.setViewportSize({ width: 1408, height: 701 });
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await waitForStableLayout(page);
+    await page
+      .getByRole("button", { name: "Mettre le carrousel en pause" })
+      .click();
+
+    const rail = page.locator("#hero-boosted-track");
+    const total = await page
+      .locator('[data-hero-carousel-indicators="true"] > span')
+      .count();
+    const measurements: Array<{
+      height: number;
+      contentScrollHeight: number;
+      contentClientHeight: number;
+      categoryTop: number;
+      sellerBottom: number;
+    }> = [];
+
+    for (let index = 0; index < total; index += 1) {
+      await rail.evaluate((element, targetIndex) => {
+        element.scrollLeft = element.clientWidth * targetIndex;
+      }, index);
+      const card = rail
+        .locator(
+          `[data-hero-listing-slide="true"][aria-label="${index + 1} / ${total}"]`,
+        )
+        .locator('[data-listing-card="true"]');
+      await expect(card).toBeVisible();
+      measurements.push(
+        await card.evaluate((element) => {
+          const cardBox = element.getBoundingClientRect();
+          const content = element.querySelector<HTMLElement>(
+            '[data-listing-card-content="true"]',
+          )!;
+          const category = element.querySelector<HTMLElement>(
+            '[data-listing-card-category-row="true"]',
+          )!;
+          const seller = element.querySelector<HTMLElement>(
+            '[data-listing-card-seller-identity="true"]',
+          )!;
+          return {
+            height: cardBox.height,
+            contentScrollHeight: content.scrollHeight,
+            contentClientHeight: content.clientHeight,
+            categoryTop: category.getBoundingClientRect().top - cardBox.top,
+            sellerBottom: seller.getBoundingClientRect().bottom - cardBox.top,
+          };
+        }),
+      );
+    }
+
+    const tokenHeight = await page.evaluate(() => {
+      const probe = document.createElement("div");
+      probe.style.height = "var(--spacing-listing-card-hero-height)";
+      document.body.appendChild(probe);
+      const height = probe.getBoundingClientRect().height;
+      probe.remove();
+      return height;
+    });
+    const heights = measurements.map(({ height }) => height);
+    const nextButton = page.getByRole("button", { name: "Annonce suivante" });
+    const activeCharacteristics = rail
+      .locator(
+        '[data-hero-listing-slide="true"][aria-hidden="false"] [data-listing-card-characteristics="true"]',
+      )
+      .first();
+
+    expect(tokenHeight).toBeGreaterThan(0);
+    expect(Math.max(...heights) - Math.min(...heights)).toBeLessThan(1);
+    for (const measurement of measurements) {
+      expect(measurement.height).toBeCloseTo(tokenHeight, 0);
+      expect(measurement.contentScrollHeight).toBeLessThanOrEqual(
+        measurement.contentClientHeight,
+      );
+      expect(measurement.categoryTop).toBeCloseTo(
+        measurements[0]!.categoryTop,
+        0,
+      );
+      expect(measurement.sellerBottom).toBeCloseTo(
+        measurements[0]!.sellerBottom,
+        0,
+      );
+    }
+
+    const [nextBox, characteristicsBox] = await Promise.all([
+      nextButton.boundingBox(),
+      activeCharacteristics.boundingBox(),
+    ]);
+    expect(nextBox).not.toBeNull();
+    expect(characteristicsBox).not.toBeNull();
+    expect(
+      characteristicsBox!.x + characteristicsBox!.width,
+    ).toBeLessThanOrEqual(nextBox!.x);
+  });
+
   test("fills the hero rail with real listing media when image-rich inventory is available", async ({
     page,
   }) => {

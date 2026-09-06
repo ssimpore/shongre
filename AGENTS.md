@@ -209,6 +209,15 @@ component → hook/controller → service contract → demo or HTTP adapter
 - `demo` is the default client mode. Web and mobile must remain fully usable and
   testable with the backend, Supabase, Stripe CLI, KYC providers, and production
   services stopped.
+- Local development uses the repository-owned Supabase stack for the backend and
+  worker while `make frontend` remains an explicitly standalone demo UI. The
+  canonical local sequence is `make install`, `make supabase-up`,
+  `make db-migrate`, `make db-seed`, then `make backend` and/or `make worker`;
+  generated local credentials remain ignored under `.runtime/`. The default
+  local Web and API origins and ports come only from `.env.example`; runtime
+  source, Make recipes, and package scripts must not duplicate them. Do not
+  reintroduce `infra-*`, `db-start`, or legacy `supabase-start` aliases for
+  local Supabase lifecycle operations.
 - Do not connect a client task to the real backend or a live provider unless the
   task explicitly authorizes it. Existing HTTP adapters may remain behind the
   service registry and generated OpenAPI types.

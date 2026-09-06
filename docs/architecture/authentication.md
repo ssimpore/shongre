@@ -160,7 +160,7 @@ OAuth consent screen and its support/developer contacts, add only the
 application**. Add these exact authorized redirect URIs (only to the matching
 environmental client):
 
-- local: `http://127.0.0.1:4000/api/v1/auth/oauth/google/callback`
+- local: `${API_URL}/api/v1/auth/oauth/google/callback`
 - staging: `https://api.staging.shongre.com/api/v1/auth/oauth/google/callback`
 - production: `https://api.shongre.com/api/v1/auth/oauth/google/callback`
 
@@ -199,7 +199,7 @@ In Meta for Developers, create an environment-specific consumer app, add the
 strict redirect URI matching enabled, and enter the appropriate exact valid
 OAuth redirect URI:
 
-- local: `http://127.0.0.1:4000/api/v1/auth/oauth/facebook/callback`
+- local: `${API_URL}/api/v1/auth/oauth/facebook/callback`
 - staging: `https://api.staging.shongre.com/api/v1/auth/oauth/facebook/callback`
 - production: `https://api.shongre.com/api/v1/auth/oauth/facebook/callback`
 

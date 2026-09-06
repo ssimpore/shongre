@@ -36,7 +36,7 @@ if [[ "$BACKEND_DATA_MODE" == "database" && "$DATABASE_INFRA_MODE" == "hosted" ]
 elif command -v supabase >/dev/null 2>&1 && supabase status --workdir "$SHONGRE_ROOT/backend" >/dev/null 2>&1; then
   printf 'RUNNING\n'
 elif [[ "$BACKEND_DATA_MODE" == "database" ]]; then
-  printf 'UNAVAILABLE (run make infra-start)\n'
+  printf 'UNAVAILABLE (run make supabase-up)\n'
   failed=1
 else
   printf 'NOT APPLICABLE in %s mode\n' "$BACKEND_DATA_MODE"

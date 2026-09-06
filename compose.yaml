@@ -24,8 +24,6 @@ services:
       IMAGE_REFERENCE: ${FRONTEND_IMAGE:-shongre-frontend:local}
     image: ${FRONTEND_IMAGE:-shongre-frontend:local}
     pull_policy: ${SHONGRE_PULL_POLICY:-missing}
-    expose:
-      - "3000"
     tmpfs:
       - /tmp:size=64m,mode=1777
       - /app/frontend/.next/cache:size=128m,uid=1000,gid=1000,mode=0750
@@ -43,8 +41,6 @@ services:
       IMAGE_REFERENCE: ${BACKEND_IMAGE:-shongre-backend:local}
     image: ${BACKEND_IMAGE:-shongre-backend:local}
     pull_policy: ${SHONGRE_PULL_POLICY:-missing}
-    expose:
-      - "4000"
 
   worker:
     <<: *application

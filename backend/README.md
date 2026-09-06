@@ -91,12 +91,12 @@ All schema changes are additive, ordered SQL files under
 `backend/supabase/migrations/`.
 
 ```bash
-make infra-start
+make supabase-up
 make migrations-check
 make db-migrate
 make db-seed
 make db-types
-make infra-stop
+make supabase-down
 ```
 
 `make migrations-check` always validates every migration file name, uniqueness

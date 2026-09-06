@@ -207,7 +207,7 @@ function runCheck() {
 switch (command) {
   case "dev":
   case "start": {
-    const child = spawn("make", ["frontend-dev"], {
+    const child = spawn("make", ["frontend"], {
       cwd: projectRoot,
       stdio: "inherit",
       env: process.env,

@@ -1,29 +1,29 @@
 # Cloudflare Tunnel production contract
 
 Cloudflare Tunnel is Shongre's only hosted public ingress. The Docker hosts do
-not publish frontend port 3000, backend port 4000, or cloudflared metrics port 2000. Containers can reach dependencies outbound on the project-scoped bridge;
+not publish `FRONTEND_PORT`, `BACKEND_PORT`, or the cloudflared metrics port. Containers can reach dependencies outbound on the project-scoped bridge;
 Cloudflare connectors establish outbound-only edge sessions.
 
 ## Persistent remote-managed Tunnels
 
 Create these once in Cloudflare Zero Trust, never during an application release:
 
-| Environment | Tunnel name          | Public hostname          | Private service        |
-| ----------- | -------------------- | ------------------------ | ---------------------- |
-| DEV         | `shongre-dev`        | `dev.shongre.fr`         | `http://frontend:3000` |
-| DEV         | `shongre-dev`        | `dev.shongre.com`        | `http://frontend:3000` |
-| DEV         | `shongre-dev`        | `api-dev.shongre.fr`     | `http://backend:4000`  |
-| STAGING     | `shongre-staging`    | `staging.shongre.fr`     | `http://frontend:3000` |
-| STAGING     | `shongre-staging`    | `staging.shongre.com`    | `http://frontend:3000` |
-| STAGING     | `shongre-staging`    | `api-staging.shongre.fr` | `http://backend:4000`  |
-| PRODUCTION  | `shongre-production` | `shongre.fr`             | `http://frontend:3000` |
-| PRODUCTION  | `shongre-production` | `www.shongre.fr`         | `http://frontend:3000` |
-| PRODUCTION  | `shongre-production` | `shongre.com`            | `http://frontend:3000` |
-| PRODUCTION  | `shongre-production` | `www.shongre.com`        | `http://frontend:3000` |
-| PRODUCTION  | `shongre-production` | `api.shongre.fr`         | `http://backend:4000`  |
-| PRODUCTION  | `shongre-production` | `solutions.shongre.fr`   | `http://frontend:3000` |
-| PRODUCTION  | `shongre-production` | `prospects.shongre.fr`   | `http://frontend:3000` |
-| PRODUCTION  | `shongre-production` | `facturation.shongre.fr` | `http://frontend:3000` |
+| Environment | Tunnel name          | Public hostname          | Private service                    |
+| ----------- | -------------------- | ------------------------ | ---------------------------------- |
+| DEV         | `shongre-dev`        | `dev.shongre.fr`         | `http://frontend:${FRONTEND_PORT}` |
+| DEV         | `shongre-dev`        | `dev.shongre.com`        | `http://frontend:${FRONTEND_PORT}` |
+| DEV         | `shongre-dev`        | `api-dev.shongre.fr`     | `http://backend:${BACKEND_PORT}`   |
+| STAGING     | `shongre-staging`    | `staging.shongre.fr`     | `http://frontend:${FRONTEND_PORT}` |
+| STAGING     | `shongre-staging`    | `staging.shongre.com`    | `http://frontend:${FRONTEND_PORT}` |
+| STAGING     | `shongre-staging`    | `api-staging.shongre.fr` | `http://backend:${BACKEND_PORT}`   |
+| PRODUCTION  | `shongre-production` | `shongre.fr`             | `http://frontend:${FRONTEND_PORT}` |
+| PRODUCTION  | `shongre-production` | `www.shongre.fr`         | `http://frontend:${FRONTEND_PORT}` |
+| PRODUCTION  | `shongre-production` | `shongre.com`            | `http://frontend:${FRONTEND_PORT}` |
+| PRODUCTION  | `shongre-production` | `www.shongre.com`        | `http://frontend:${FRONTEND_PORT}` |
+| PRODUCTION  | `shongre-production` | `api.shongre.fr`         | `http://backend:${BACKEND_PORT}`   |
+| PRODUCTION  | `shongre-production` | `solutions.shongre.fr`   | `http://frontend:${FRONTEND_PORT}` |
+| PRODUCTION  | `shongre-production` | `prospects.shongre.fr`   | `http://frontend:${FRONTEND_PORT}` |
+| PRODUCTION  | `shongre-production` | `facturation.shongre.fr` | `http://frontend:${FRONTEND_PORT}` |
 
 Cloudflare creates the proxied DNS routes for these hostnames. Keep access to
 the dashboard restricted and audited. Do not give an application host a broad
@@ -31,7 +31,7 @@ Cloudflare API token; normal deployment changes only image digests.
 
 The three product hostnames above are operator-managed mappings to the existing
 frontend service. Application releases must not create them, recreate the
-Tunnel, or publish port 3000. Configure equivalent environment-specific names
+Tunnel, or publish the configured frontend port. Configure equivalent environment-specific names
 for DEV/STAGING and inject their origins with `SHONGRE_SOLUTIONS_ORIGIN`,
 `SHONGRE_PROSPECTS_ORIGIN`, and `SHONGRE_FACTURATION_ORIGIN` at runtime.
 

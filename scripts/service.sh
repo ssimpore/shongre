@@ -24,6 +24,22 @@ fi
 uses_port=1
 [[ "$port" == "none" ]] && uses_port=0
 
+load_local_database_runtime() {
+  [[ "$service_name" == "backend" || "$service_name" == "worker" ]] || return 0
+  [[ "$BACKEND_DATA_MODE" == "database" && "$DATABASE_INFRA_MODE" == "local" ]] || return 0
+
+  if ! command -v supabase >/dev/null 2>&1 || \
+    ! supabase status --workdir "$SHONGRE_ROOT/backend" >/dev/null 2>&1; then
+    shongre_fail "local Supabase is required for $service_name; run make supabase-up"
+    exit 1
+  fi
+
+  "$SHONGRE_ROOT/scripts/sync-local-supabase-env.sh" >/dev/null
+  set -a
+  source "$SHONGRE_ROOT/.runtime/supabase.env"
+  set +a
+}
+
 stop_service() {
   if [[ ! -f "$pid_file" ]]; then
     shongre_info "$service_name is not tracked"
@@ -46,6 +62,7 @@ stop_service() {
 case "$action" in
   foreground)
     [[ $# -gt 0 ]] || { shongre_fail "no command supplied for $service_name"; exit 2; }
+    load_local_database_runtime
     if [[ -f "$pid_file" ]] && shongre_pid_is_running "$(tr -dc '0-9' < "$pid_file")"; then
       shongre_info "stopping the existing tracked $service_name process tree"
       stop_service
@@ -73,6 +90,7 @@ case "$action" in
     ;;
   start)
     [[ $# -gt 0 ]] || { shongre_fail "no command supplied for $service_name"; exit 2; }
+    load_local_database_runtime
     if [[ -f "$pid_file" ]] && shongre_pid_is_running "$(tr -dc '0-9' < "$pid_file")"; then
       tracked_pid="$(tr -dc '0-9' < "$pid_file")"
       if ! shongre_pid_belongs_to_project "$tracked_pid" "$service_name"; then

@@ -66,7 +66,7 @@ require_infrastructure_when_configured() {
   if command -v supabase >/dev/null 2>&1 && supabase status --workdir "$SHONGRE_ROOT/backend" >/dev/null 2>&1; then
     shongre_pass "local Supabase services"
   else
-    shongre_fail "local Supabase is required in database mode; run make infra-start"
+    shongre_fail "local Supabase is required in database mode; run make supabase-up"
     failed=1
   fi
 }

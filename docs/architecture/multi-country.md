@@ -195,9 +195,10 @@ application configuration alone cannot prove that ingress guarantee. Both
 domain cache keys must vary on `Host`; redirects must not be cached as another
 host's page. Reverse proxy `/api/v1/*` to the one backend deployment.
 
-Local France remains `http://127.0.0.1:3000/`. Use `/be`, `/ch`, `/sn`, `/bf`
-for country paths and `http://global.localhost:3000/` for the gateway. The
-frontend is expected to work with the backend stopped in demo mode.
+Local France uses `PUBLIC_FR_URL`. Use `PUBLIC_INTL_URL` with `/be`, `/ch`,
+`/sn`, or `/bf` for country paths and the configured `FRONTEND_PORT` on
+`global.localhost` for the gateway. The frontend is expected to work with the
+backend stopped in demo mode.
 
 ## Administration, rollout and rollback
 

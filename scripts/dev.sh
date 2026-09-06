@@ -59,8 +59,8 @@ case "$mode" in
 esac
 
 if [[ "$BACKEND_DATA_MODE" == "database" && "$DATABASE_INFRA_MODE" == "local" ]]; then
-  shongre_info "database mode selected; ensuring local infrastructure"
-  "$SHONGRE_ROOT/scripts/infra.sh" start
+  shongre_info "database mode selected; ensuring local Supabase"
+  "$SHONGRE_ROOT/scripts/supabase.sh" up
   # The CLI creates local API credentials when the stack starts. Import the
   # generated, ignored runtime file for the backend and worker started below.
   set -a

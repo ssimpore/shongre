@@ -231,7 +231,7 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
     return isLoading ? (
       <div
         data-home-boosted-surface="true"
-        className="skeleton-shimmer h-listing-card-list-height w-full rounded-listing-card bg-bg-muted lg:h-full"
+        className="skeleton-shimmer h-listing-card-list-height w-full rounded-listing-card bg-bg-muted lg:h-listing-card-hero-height"
         aria-hidden="true"
       />
     ) : null;
@@ -254,7 +254,7 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
 
       <div
         data-home-boosted-surface="true"
-        className="relative isolate h-listing-card-list-height rounded-listing-card lg:h-full"
+        className="relative isolate h-listing-card-list-height rounded-listing-card lg:h-listing-card-hero-height"
       >
         <div
           id="hero-boosted-track"

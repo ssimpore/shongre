@@ -86,8 +86,8 @@ done
   --scale "frontend=$frontend_replicas" \
   --scale "cloudflared=${CLOUDFLARED_REPLICAS:-2}" \
   backend worker frontend cloudflared
-"${compose[@]}" exec -T frontend node -e "fetch('http://127.0.0.1:3000/healthz').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
-"${compose[@]}" exec -T backend node -e "fetch('http://127.0.0.1:4000/readyz').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
+"${compose[@]}" exec -T frontend node -e "fetch('http://127.0.0.1:' + process.env.FRONTEND_PORT + '/healthz').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
+"${compose[@]}" exec -T backend node -e "fetch('http://127.0.0.1:' + process.env.BACKEND_PORT + '/readyz').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
 COMPOSE_PROJECT_NAME="$COMPOSE_PROJECT_NAME" SHONGRE_ENV="$environment" \
   SHONGRE_RUNTIME_ENV_FILE="$SHONGRE_RUNTIME_ENV_FILE" \
   SHONGRE_FRONTEND_ENV_FILE="$SHONGRE_FRONTEND_ENV_FILE" \

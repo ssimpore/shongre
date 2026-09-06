@@ -32,8 +32,8 @@ case "$action" in
     "${compose[@]}" ps
     ;;
   health)
-    "${compose[@]}" exec -T frontend node -e "fetch('http://127.0.0.1:3000/healthz').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
-    "${compose[@]}" exec -T backend node -e "fetch('http://127.0.0.1:4000/readyz').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
+    "${compose[@]}" exec -T frontend node -e "fetch('http://127.0.0.1:' + process.env.FRONTEND_PORT + '/healthz').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
+    "${compose[@]}" exec -T backend node -e "fetch('http://127.0.0.1:' + process.env.BACKEND_PORT + '/readyz').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
     shongre_pass "frontend and backend containers are healthy"
     ;;
   logs)
