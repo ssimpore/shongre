@@ -71,8 +71,8 @@ status and release gates are documented in
 
 ### 2.1 Central Configuration (`BACKEND_DATA_MODE`)
 
-- `BACKEND_DATA_MODE=demo` (Default): Domain services consume `Demo*Repository` implementations backed by deterministic in-memory collections.
-- `BACKEND_DATA_MODE=database`: Domain services consume `Postgres*Repository` implementations querying PostgreSQL tables via Supabase clients with typed schema rows.
+- `BACKEND_DATA_MODE=demo` (explicit demo/test only): Domain services consume `Demo*Repository` implementations backed by deterministic in-memory collections.
+- `BACKEND_DATA_MODE=database` (canonical local and hosted runtime): Domain services consume `Postgres*Repository` implementations querying PostgreSQL tables via Supabase clients with typed schema rows.
 
 ### 2.2 Repository Container (`src/infrastructure/database/repositories/`)
 

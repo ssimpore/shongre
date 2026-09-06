@@ -2,6 +2,7 @@ import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { format } from "prettier";
 
 const currentFile = fileURLToPath(import.meta.url);
 const currentDirectory = path.dirname(currentFile);
@@ -11,7 +12,7 @@ const typesOutputPath = path.resolve(
 );
 const checkOnly = process.argv.includes("--check");
 
-function generateTypes(): void {
+async function generateTypes(): Promise<void> {
   const databaseUrl = process.env.DATABASE_URL;
   const projectReference = process.env.SUPABASE_PROJECT_REF;
   const args = ["gen", "types", "typescript"];
@@ -26,6 +27,7 @@ function generateTypes(): void {
   const result = spawnSync("supabase", args, {
     encoding: "utf8",
     env: process.env,
+    maxBuffer: 20 * 1024 * 1024,
   });
   if (result.error)
     throw new Error(
@@ -42,7 +44,7 @@ function generateTypes(): void {
       "Supabase CLI did not return a valid Database type definition.",
     );
   }
-  const generated = `${result.stdout.trimEnd()}\n`;
+  const generated = await format(result.stdout, { parser: "typescript" });
 
   if (checkOnly) {
     const current = fs.readFileSync(typesOutputPath, "utf8");
@@ -61,7 +63,7 @@ function generateTypes(): void {
 }
 
 try {
-  generateTypes();
+  await generateTypes();
 } catch (error: unknown) {
   const message =
     error instanceof Error ? error.message : "Unknown type generation error.";

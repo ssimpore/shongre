@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 
 import type { DataMode } from "../../api/client/api-client.config";
+import { apiClientConfig } from "../../api/client/api-client.config";
 import { LiveModeError } from "../../api/client/data-mode.service";
 import { Button } from "../../design-system/primitives/Button";
 import { Modal } from "../../design-system/primitives/Modal";
@@ -39,6 +40,10 @@ export const DataModeSettingsControl: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [pendingMode, setPendingMode] = useState<DataMode>(mode);
   const [error, setError] = useState("");
+
+  // Environment configuration is authoritative for every connected build.
+  // The selector exists only inside an explicitly launched demo frontend.
+  if (apiClientConfig.dataMode === "api") return null;
 
   const environment = getPublicRuntimeConfig().appEnvironment;
   const localRecovery = allowsLocalDataModeRecovery(mode, environment);

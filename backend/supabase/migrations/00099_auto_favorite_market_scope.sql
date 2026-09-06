@@ -2,6 +2,8 @@
 -- table/RPC available to draining backend instances; new callers use only the
 -- scoped table and read RPC introduced here.
 
+BEGIN;
+
 -- Install lifecycle cleanup before the quarantine snapshot. This closes the
 -- window in which a concurrent vehicle deletion could otherwise leave a newly
 -- inserted polymorphic review record without an owning resource.
@@ -277,3 +279,5 @@ GRANT EXECUTE ON FUNCTION public.toggle_auto_vehicle_favorite(UUID, UUID)
 
 COMMENT ON TABLE public.auto_vehicle_market_favorites IS
   'Authoritative automotive favorites partitioned by action market.';
+
+COMMIT;

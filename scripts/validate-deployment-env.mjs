@@ -39,6 +39,57 @@ function requirePort(entries, key, label) {
   }
 }
 
+function requireMinimumLength(entries, key, minimum, label) {
+  requireValue(entries, key, undefined, label);
+  if (entries.get(key).length < minimum) {
+    throw new Error(
+      `[Deploy Config] ${label} ${key} must contain at least ${minimum} characters.`,
+    );
+  }
+}
+
+function requireBase64Bytes(entries, key, byteLength, label) {
+  requireValue(entries, key, undefined, label);
+  const value = entries.get(key);
+  const isBase64 =
+    /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(
+      value,
+    );
+  if (!isBase64 || Buffer.from(value, "base64").length !== byteLength) {
+    throw new Error(
+      `[Deploy Config] ${label} ${key} must be a valid ${byteLength}-byte base64 value.`,
+    );
+  }
+}
+
+function requireCredentialFreeHttpsUrl(entries, key, label) {
+  requireValue(entries, key, undefined, label);
+  const candidate = new URL(entries.get(key));
+  if (
+    candidate.protocol !== "https:" ||
+    candidate.username ||
+    candidate.password ||
+    ["localhost", "127.0.0.1", "0.0.0.0"].includes(candidate.hostname)
+  ) {
+    throw new Error(
+      `[Deploy Config] ${label} ${key} must be a remote credential-free HTTPS URL.`,
+    );
+  }
+}
+
+function requireRemotePostgresUrl(entries, key, label) {
+  requireValue(entries, key, undefined, label);
+  const candidate = new URL(entries.get(key));
+  if (
+    !["postgres:", "postgresql:"].includes(candidate.protocol) ||
+    ["localhost", "127.0.0.1", "0.0.0.0"].includes(candidate.hostname)
+  ) {
+    throw new Error(
+      `[Deploy Config] ${label} ${key} must target a remote PostgreSQL database.`,
+    );
+  }
+}
+
 const frontend = parseEnvFile(frontendPath, "frontend env");
 const backend = parseEnvFile(backendPath, "backend env");
 assertPrivateFile(tunnelTokenPath, "Tunnel token");
@@ -75,6 +126,58 @@ requireValue(
   "false",
   "frontend env",
 );
+
+if (["development", "staging", "production"].includes(expectedEnvironment)) {
+  requireValue(frontend, "NEXT_PUBLIC_DATA_MODE", "api", "frontend env");
+  requireValue(
+    frontend,
+    "NEXT_PUBLIC_ENABLE_MOCK_STORAGE",
+    "false",
+    "frontend env",
+  );
+  requireValue(backend, "BACKEND_DATA_MODE", "database", "backend env");
+  requireValue(backend, "DATABASE_INFRA_MODE", "hosted", "backend env");
+  for (const key of [
+    "DATABASE_URL",
+    "SUPABASE_PROJECT_REF",
+    "EXPECTED_SUPABASE_PROJECT_REF",
+    "SUPABASE_URL",
+    "SUPABASE_ANON_KEY",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "JWT_SECRET",
+    "MFA_ENCRYPTION_KEY",
+    "HANDOVER_PIN_PEPPER",
+    "PROVIDER_CREDENTIAL_ENCRYPTION_KEY_BASE64",
+    "PROVIDER_CREDENTIAL_KEY_VERSION",
+    "DIGITAL_FULFILLMENT_ENCRYPTION_KEY_BASE64",
+    "DIGITAL_FULFILLMENT_KEY_VERSION",
+  ]) {
+    requireValue(backend, key, undefined, "backend env");
+  }
+  for (const key of [
+    "JWT_SECRET",
+    "MFA_ENCRYPTION_KEY",
+    "HANDOVER_PIN_PEPPER",
+  ]) {
+    requireMinimumLength(backend, key, 32, "backend env");
+  }
+  for (const key of [
+    "PROVIDER_CREDENTIAL_ENCRYPTION_KEY_BASE64",
+    "DIGITAL_FULFILLMENT_ENCRYPTION_KEY_BASE64",
+  ]) {
+    requireBase64Bytes(backend, key, 32, "backend env");
+  }
+  requireRemotePostgresUrl(backend, "DATABASE_URL", "backend env");
+  requireCredentialFreeHttpsUrl(backend, "SUPABASE_URL", "backend env");
+  if (
+    backend.get("SUPABASE_PROJECT_REF") !==
+    backend.get("EXPECTED_SUPABASE_PROJECT_REF")
+  ) {
+    throw new Error(
+      "[Deploy Config] backend env Supabase project reference is not the expected target.",
+    );
+  }
+}
 
 const modes = {
   staging: {
@@ -157,23 +260,12 @@ if (expectedModes) {
     requireValue(backend, key, expected, "backend env");
   }
   for (const key of [
-    "DATABASE_URL",
-    "SUPABASE_PROJECT_REF",
-    "EXPECTED_SUPABASE_PROJECT_REF",
-    "SUPABASE_URL",
-    "SUPABASE_ANON_KEY",
-    "SUPABASE_SERVICE_ROLE_KEY",
-    "JWT_SECRET",
-    "MFA_ENCRYPTION_KEY",
-    "PROVIDER_CREDENTIAL_ENCRYPTION_KEY_BASE64",
-    "PROVIDER_CREDENTIAL_KEY_VERSION",
     "AUTH_EMAIL_DELIVERY_URL",
     "AUTH_EMAIL_DELIVERY_TOKEN",
     "STRIPE_SECRET_KEY",
     "STRIPE_WEBHOOK_SECRET",
     "STRIPE_CONNECT_WEBHOOK_SECRET",
     "COMPLIANCE_WEBHOOK_SECRET",
-    "HANDOVER_PIN_PEPPER",
     "KYC_PROVIDER_BASE_URL",
     "KYC_PROVIDER_API_TOKEN",
     "BUSINESS_REGISTRY_API_URL",
@@ -185,6 +277,7 @@ if (expectedModes) {
   ]) {
     requireValue(backend, key, undefined, "backend env");
   }
+  requireCredentialFreeHttpsUrl(backend, "MALWARE_SCAN_URL", "backend env");
   requireValue(
     frontend,
     "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY",
@@ -207,14 +300,6 @@ if (expectedModes) {
   ) {
     throw new Error(
       `[Deploy Config] frontend env Stripe key has the wrong mode for ${expectedEnvironment}.`,
-    );
-  }
-  if (
-    backend.get("SUPABASE_PROJECT_REF") !==
-    backend.get("EXPECTED_SUPABASE_PROJECT_REF")
-  ) {
-    throw new Error(
-      "[Deploy Config] backend env Supabase project reference is not the expected target.",
     );
   }
   if (

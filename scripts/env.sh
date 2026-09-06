@@ -140,7 +140,14 @@ if [[ "$SHONGRE_ENV" == "local" ]]; then
   export PUBLIC_INTL_URL="${PUBLIC_INTL_URL:-http://${FRONTEND_HOST}:${FRONTEND_PORT}}"
   export API_URL="${API_URL:-http://${BACKEND_HOST}:${BACKEND_PORT}}"
 fi
-export NEXT_PUBLIC_DATA_MODE="${NEXT_PUBLIC_DATA_MODE:-demo}"
+if [[ "$SHONGRE_ENV" == "local" ]]; then
+  default_client_data_mode=api
+  default_mock_storage=false
+else
+  default_client_data_mode=demo
+  default_mock_storage=true
+fi
+export NEXT_PUBLIC_DATA_MODE="${NEXT_PUBLIC_DATA_MODE:-$default_client_data_mode}"
 export DATABASE_INFRA_MODE="${DATABASE_INFRA_MODE:-local}"
 export NEXT_PUBLIC_APP_ENV="${NEXT_PUBLIC_APP_ENV:-${APP_ENV:-}}"
 export NEXT_PUBLIC_ENVIRONMENT_ID="${NEXT_PUBLIC_ENVIRONMENT_ID:-${ENVIRONMENT_ID:-}}"
@@ -155,7 +162,7 @@ export NEXT_PUBLIC_DEFAULT_COUNTRY_CODE="${NEXT_PUBLIC_DEFAULT_COUNTRY_CODE:-FR}
 export NEXT_PUBLIC_DEFAULT_CURRENCY="${NEXT_PUBLIC_DEFAULT_CURRENCY:-EUR}"
 export NEXT_PUBLIC_DEFAULT_LOCALE="${NEXT_PUBLIC_DEFAULT_LOCALE:-fr-FR}"
 export NEXT_PUBLIC_ENABLE_AI_FEATURES="${NEXT_PUBLIC_ENABLE_AI_FEATURES:-false}"
-export NEXT_PUBLIC_ENABLE_MOCK_STORAGE="${NEXT_PUBLIC_ENABLE_MOCK_STORAGE:-true}"
+export NEXT_PUBLIC_ENABLE_MOCK_STORAGE="${NEXT_PUBLIC_ENABLE_MOCK_STORAGE:-$default_mock_storage}"
 if [[ -z "${SUPABASE_URL:-}" && -n "${SUPABASE_HOST:-}" && -n "${SUPABASE_API_PORT:-}" ]]; then
   export SUPABASE_URL="http://${SUPABASE_HOST}:${SUPABASE_API_PORT}"
 fi

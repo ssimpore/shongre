@@ -86,11 +86,11 @@ Frontend (future production mode)
 
 The HTTP adapters shown above already exist behind the service registry and now
 receive `MarketContext` explicitly. Market-bound frontend hooks keep components
-away from headers and market policy. Demo remains the default data mode; it is
-asynchronous, deterministic and partitioned by account plus market, and this
-work does not switch a client to the backend or a live provider.
+away from headers and market policy. Demo remains an explicit deterministic
+mode partitioned by account plus market, while canonical local development uses
+the HTTP adapters and repository-owned Supabase.
 
-Commercial data is represented in minor currency units and bound to immutable configuration, product and price versions. Paid operations reject stale or incomplete catalog evidence. The backend remains authoritative for checkout, lifecycle, quota and entitlement decisions. The frontend remains fully operable with the backend stopped, as required by the current demo-mode boundary.
+Commercial data is represented in minor currency units and bound to immutable configuration, product and price versions. Paid operations reject stale or incomplete catalog evidence. The backend remains authoritative for checkout, lifecycle, quota and entitlement decisions. The frontend remains fully operable through the explicit demo command with the backend stopped.
 
 ## Active plan catalog
 

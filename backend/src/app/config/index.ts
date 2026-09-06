@@ -7,6 +7,8 @@ import {
   isProduction,
   type AiEnvironmentMode,
   type AnalyticsEnvironmentMode,
+  type BackendDataMode,
+  type DatabaseInfrastructureMode,
   type EmailEnvironmentMode,
   type EnvironmentConfig,
   type PaymentEnvironmentMode,
@@ -26,7 +28,6 @@ dotenv.config({ path: resolve(process.cwd(), "backend/.env") });
 dotenv.config({ path: resolve(process.cwd(), "../.env.local") });
 dotenv.config({ path: resolve(process.cwd(), "../.env") });
 
-export type BackendDataMode = "demo" | "database";
 type PaymentProviderMode = "demo" | "stripe";
 type KYCProviderMode = "demo" | "stripe" | "live";
 type BusinessRegistryProviderMode = "demo" | "siret";
@@ -40,6 +41,7 @@ export interface AppConfig {
   release: string;
   nodeEnv: string;
   dataMode: BackendDataMode;
+  databaseInfrastructureMode: DatabaseInfrastructureMode;
   host: string;
   port: number;
   frontendUrl: string;
@@ -96,7 +98,6 @@ export interface AppConfig {
   supabaseUrl: string;
   supabaseAnonKey: string;
   supabaseServiceRoleKey: string;
-  databaseUrl?: string;
   jwtSecret: string;
   mfaEncryptionKey: string;
   providerCredentialEncryptionKeyBase64: string;
@@ -204,37 +205,47 @@ function resolveEnumValue<const T extends readonly string[]>(
  * Deliberately a fixed, obviously-fake string rather than a random value
  * generated at boot: a per-process random secret would silently invalidate
  * every session on restart and make the failure look like a bug elsewhere.
- * Production refuses to start with this value — see resolveJwtSecret.
+ * Managed runtimes refuse to start with this value — see resolveJwtSecret.
  */
 const INSECURE_DEV_JWT_SECRET =
   "shongre-insecure-development-signing-key-do-not-use-in-production";
 
 const MIN_JWT_SECRET_LENGTH = 32;
+const MANAGED_RUNTIME_ENVIRONMENTS = new Set([
+  "development",
+  "staging",
+  "production",
+]);
+
+function requiresManagedRuntimeSecrets(
+  environment: EnvironmentConfig,
+): boolean {
+  return MANAGED_RUNTIME_ENVIRONMENTS.has(environment.environment);
+}
 
 /**
- * Resolves the token signing secret, failing fast when production is
- * misconfigured. An unset or too-short secret in production means every
- * session token on the platform is forgeable, so booting anyway is worse
- * than not booting at all.
+ * Resolves the token signing secret, failing fast when a managed runtime is
+ * misconfigured. An unset or too-short secret means every session token on the
+ * platform is forgeable, so booting anyway is worse than not booting at all.
  */
 function resolveJwtSecret(environment: EnvironmentConfig): string {
   const secret = process.env.JWT_SECRET;
-  const production = isProduction(environment.environment);
+  const managedRuntime = requiresManagedRuntimeSecrets(environment);
 
   if (!secret) {
-    if (production) {
+    if (managedRuntime) {
       throw new Error(
-        "[Config Error] JWT_SECRET is required in production. Set it to a random value of at least " +
+        `[Config Error] JWT_SECRET is required in ${environment.environment}. Set it to a random value of at least ` +
           `${MIN_JWT_SECRET_LENGTH} characters.`,
       );
     }
     return INSECURE_DEV_JWT_SECRET;
   }
 
-  if (production) {
+  if (managedRuntime) {
     if (secret.length < MIN_JWT_SECRET_LENGTH) {
       throw new Error(
-        `[Config Error] JWT_SECRET must be at least ${MIN_JWT_SECRET_LENGTH} characters in production.`,
+        `[Config Error] JWT_SECRET must be at least ${MIN_JWT_SECRET_LENGTH} characters in ${environment.environment}.`,
       );
     }
     if (
@@ -242,7 +253,7 @@ function resolveJwtSecret(environment: EnvironmentConfig): string {
       secret.includes("change-in-production")
     ) {
       throw new Error(
-        "[Config Error] JWT_SECRET is still set to a placeholder value in production.",
+        `[Config Error] JWT_SECRET is still set to a placeholder value in ${environment.environment}.`,
       );
     }
   }
@@ -267,6 +278,16 @@ function envList(name: string): string[] {
     .filter(Boolean);
 }
 
+const STANDARD_BASE64 =
+  /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/;
+
+function isBase64Bytes(value: string, byteLength: number): boolean {
+  return (
+    STANDARD_BASE64.test(value) &&
+    Buffer.from(value, "base64").length === byteLength
+  );
+}
+
 function base64KeyRing(name: string): Record<string, string> {
   const raw = process.env[name];
   if (!raw) return {};
@@ -284,7 +305,7 @@ function base64KeyRing(name: string): Record<string, string> {
     if (
       !version.trim() ||
       typeof encoded !== "string" ||
-      Buffer.from(encoded, "base64").length !== 32
+      !isBase64Bytes(encoded, 32)
     ) {
       throw new Error(
         `[Config Error] ${name} contains an invalid AES-256 key.`,
@@ -293,6 +314,60 @@ function base64KeyRing(name: string): Record<string, string> {
     result[version] = encoded;
   }
   return result;
+}
+
+function validateManagedRuntimeConfiguration(candidate: AppConfig): void {
+  if (!requiresManagedRuntimeSecrets(candidate.environment)) return;
+
+  const missing: string[] = [];
+  const required = (name: string, minimumLength = 1) => {
+    const value = process.env[name] || "";
+    if (value.length < minimumLength) missing.push(name);
+    return value;
+  };
+
+  const supabaseUrl = required("SUPABASE_URL");
+  if (supabaseUrl) {
+    try {
+      const parsed = new URL(supabaseUrl);
+      if (
+        parsed.protocol !== "https:" ||
+        parsed.username ||
+        parsed.password ||
+        ["localhost", "127.0.0.1", "0.0.0.0"].includes(parsed.hostname)
+      ) {
+        missing.push("SUPABASE_URL (remote credential-free HTTPS URL)");
+      }
+    } catch {
+      missing.push("SUPABASE_URL (absolute HTTPS URL)");
+    }
+  }
+  required("SUPABASE_ANON_KEY", 16);
+  required("SUPABASE_SERVICE_ROLE_KEY", 32);
+  const projectRef = required("SUPABASE_PROJECT_REF");
+  const expectedProjectRef = required("EXPECTED_SUPABASE_PROJECT_REF");
+  if (projectRef && expectedProjectRef && projectRef !== expectedProjectRef) {
+    missing.push("SUPABASE_PROJECT_REF (expected project mismatch)");
+  }
+  required("MFA_ENCRYPTION_KEY", 32);
+  required("HANDOVER_PIN_PEPPER", 32);
+  for (const name of [
+    "PROVIDER_CREDENTIAL_ENCRYPTION_KEY_BASE64",
+    "DIGITAL_FULFILLMENT_ENCRYPTION_KEY_BASE64",
+  ]) {
+    const value = required(name);
+    if (value && !isBase64Bytes(value, 32)) {
+      missing.push(`${name} (valid 32-byte base64 value)`);
+    }
+  }
+  required("PROVIDER_CREDENTIAL_KEY_VERSION");
+  required("DIGITAL_FULFILLMENT_KEY_VERSION");
+
+  if (missing.length > 0) {
+    throw new Error(
+      `[Config Error] ${candidate.environment.environment} managed runtime configuration is incomplete: ${[...new Set(missing)].join(", ")}.`,
+    );
+  }
 }
 
 function positiveInteger(name: string, fallback: number): number {
@@ -463,7 +538,10 @@ function validateProductionRuntimeConfiguration(candidate: AppConfig): void {
       return;
     }
     try {
-      if (new URL(value).protocol !== "https:") missing.push(`${name} (HTTPS)`);
+      const parsed = new URL(value);
+      if (parsed.protocol !== "https:" || parsed.username || parsed.password) {
+        missing.push(`${name} (credential-free HTTPS URL)`);
+      }
     } catch {
       missing.push(`${name} (absolute HTTPS URL)`);
     }
@@ -521,8 +599,7 @@ function validateProductionRuntimeConfiguration(candidate: AppConfig): void {
     missing.push("MFA_ENCRYPTION_KEY (at least 32 characters)");
   if (
     !process.env.PROVIDER_CREDENTIAL_ENCRYPTION_KEY_BASE64 ||
-    Buffer.from(candidate.providerCredentialEncryptionKeyBase64, "base64")
-      .length !== 32
+    !isBase64Bytes(candidate.providerCredentialEncryptionKeyBase64, 32)
   ) {
     missing.push(
       "PROVIDER_CREDENTIAL_ENCRYPTION_KEY_BASE64 (32 bytes, base64)",
@@ -532,8 +609,7 @@ function validateProductionRuntimeConfiguration(candidate: AppConfig): void {
     missing.push("PROVIDER_CREDENTIAL_KEY_VERSION");
   if (
     !process.env.DIGITAL_FULFILLMENT_ENCRYPTION_KEY_BASE64 ||
-    Buffer.from(candidate.digitalFulfillmentEncryptionKeyBase64, "base64")
-      .length !== 32
+    !isBase64Bytes(candidate.digitalFulfillmentEncryptionKeyBase64, 32)
   ) {
     missing.push(
       "DIGITAL_FULFILLMENT_ENCRYPTION_KEY_BASE64 (32 bytes, base64)",
@@ -664,6 +740,11 @@ const candidateConfig: AppConfig = {
     "unreleased",
   nodeEnv,
   dataMode: resolveDataMode(),
+  databaseInfrastructureMode: resolveEnumValue(
+    "DATABASE_INFRA_MODE",
+    ["local", "hosted"] as const,
+    "local",
+  ),
   host: requiredRuntimeValue("BACKEND_HOST"),
   port: requiredRuntimePort(),
   frontendUrl: environment.urls.franceApp.origin,
@@ -853,7 +934,6 @@ const candidateConfig: AppConfig = {
   supabaseAnonKey: process.env.SUPABASE_ANON_KEY || "dummy-anon-key",
   supabaseServiceRoleKey:
     process.env.SUPABASE_SERVICE_ROLE_KEY || "dummy-service-role-key",
-  databaseUrl: process.env.DATABASE_URL,
   jwtSecret: resolveJwtSecret(environment),
   mfaEncryptionKey:
     process.env.MFA_ENCRYPTION_KEY ||
@@ -1054,14 +1134,18 @@ if (
 
 validateSocialProviderConfiguration(candidateConfig);
 validateProductionAuthConfiguration(candidateConfig);
+validateManagedRuntimeConfiguration(candidateConfig);
 validateProductionRuntimeConfiguration(candidateConfig);
 validateCorsConfiguration(candidateConfig);
 validateProviderCredentialModes(candidateConfig);
 assertEnvironmentSafety({
   config: candidateConfig.environment,
   apiEnvironmentId: requiredRuntimeValue("API_ENVIRONMENT_ID"),
+  databaseEnvironmentId: requiredRuntimeValue("DATABASE_ENVIRONMENT_ID"),
   supabaseEnvironmentId: requiredRuntimeValue("SUPABASE_ENVIRONMENT_ID"),
   storageEnvironmentId: requiredRuntimeValue("STORAGE_ENVIRONMENT_ID"),
+  backendDataMode: candidateConfig.dataMode,
+  databaseInfrastructureMode: candidateConfig.databaseInfrastructureMode,
   paymentMode: candidateConfig.paymentMode,
   emailMode: candidateConfig.emailMode,
   aiMode: candidateConfig.aiMode,

@@ -886,13 +886,12 @@ with deterministic asynchronous demo adapters and HTTP adapters. UI components
 never contain fake backend logic, provider conditions, legal thresholds, tax
 rules, plan names, or data-mode branches.
 
-The current repository rule remains: normal frontend execution defaults to demo
-mode and works with the backend stopped. Implement the production-shaped HTTP
-adapter, but do not silently switch the default or contact production. If a live
-Invoice frontend is required while `AGENTS.md` still forbids the connection, stop
-at the cutover gate and request the explicit repository-policy change. Only set
-or release API mode when `LIVE_FRONTEND_CUTOVER_AUTHORIZED=true` and all cutover
-tests pass.
+The current repository rule is that canonical local development uses API mode
+against the database-backed local stack, while `make frontend` remains the
+explicit backend-free demo surface. Implement the production-shaped HTTP
+adapter without contacting production or falling back across modes. Shared
+environment release still requires all cutover tests and protected deployment
+approval.
 
 Support deterministic demo personas and scenarios for guest, Invoice-only owner,
 Shongre pro owner/employee, accountant/delegate, billing manager, viewer, support,

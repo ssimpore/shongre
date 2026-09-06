@@ -82,6 +82,8 @@ describe("public runtime configuration", () => {
     vi.stubEnv("PUBLIC_FR_URL", "https://shongre.fr");
     vi.stubEnv("PUBLIC_INTL_URL", "https://shongre.com");
     vi.stubEnv("API_URL", "https://api.shongre.com");
+    vi.stubEnv("NEXT_PUBLIC_DATA_MODE", "api");
+    vi.stubEnv("NEXT_PUBLIC_ENABLE_MOCK_STORAGE", "false");
     vi.stubEnv("SHONGRE_MARKETPLACE_ORIGIN", "https://shongre.fr");
     vi.stubEnv("SHONGRE_SOLUTIONS_ORIGIN", "https://solutions.shongre.com");
     vi.stubEnv("SHONGRE_PROSPECTS_ORIGIN", "https://prospects.shongre.com");
@@ -93,7 +95,7 @@ describe("public runtime configuration", () => {
       environmentId: "shongre-production",
       franceUrl: "https://shongre.fr",
       internationalUrl: "https://shongre.com",
-      apiBaseUrl: "",
+      apiBaseUrl: "https://api.shongre.com/api/v1",
     });
   });
 });

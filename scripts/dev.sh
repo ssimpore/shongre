@@ -67,6 +67,7 @@ if [[ "$BACKEND_DATA_MODE" == "database" && "$DATABASE_INFRA_MODE" == "local" ]]
   source "$SHONGRE_ROOT/.runtime/supabase.env"
   set +a
   "$SHONGRE_ROOT/scripts/database.sh" migrate
+  "$SHONGRE_ROOT/scripts/database.sh" seed
 elif [[ "$BACKEND_DATA_MODE" == "database" ]]; then
   shongre_info "hosted database mode selected; local Supabase will not be started"
 fi
@@ -89,9 +90,6 @@ for service_name in "${selected_services[@]}"; do
 done
 
 shongre_info "development stack is ready; press Ctrl+C to stop only services started by this session"
-[[ " ${selected_services[*]} " != *" frontend "* ]] || printf 'Shongre Web:  http://%s:%s\n' "$FRONTEND_HOST" "$FRONTEND_PORT"
-printf 'Shongre API:  http://%s:%s%s\nReadiness:    http://%s:%s/readyz\n' "$BACKEND_HOST" "$BACKEND_PORT" "$API_PREFIX" "$BACKEND_HOST" "$BACKEND_PORT"
-[[ " ${selected_services[*]} " != *" metro "* ]] || printf 'Expo Metro:   http://%s:%s\n' "$EXPO_HOST" "$EXPO_METRO_PORT"
 "$SHONGRE_ROOT/scripts/status.sh"
 while true; do
   sleep 2

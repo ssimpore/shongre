@@ -16,6 +16,9 @@ describe("taxonomy header navigation migration", () => {
     expect(migration).toContain("PRIMARY KEY (market_code, category_id)");
     expect(migration).toContain("UNIQUE (market_code, display_order)");
     expect(migration).toContain("CHECK (display_order >= 0)");
+    expect(migration).toContain("default_items.market_code");
+    expect(migration).toContain("default_items.category_id");
+    expect(migration).toContain("default_items.display_order");
   });
 
   it("keeps direct table access deny-by-default and the mutation backend-only", () => {

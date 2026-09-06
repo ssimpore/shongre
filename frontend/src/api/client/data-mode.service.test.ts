@@ -56,6 +56,26 @@ describe("DataModeService", () => {
     ).toBe("api");
   });
 
+  it("ignores and removes a stale Demo preference in an API build", () => {
+    const storage = new MemoryStorage();
+    storage.setItem(DATA_MODE_STORAGE_KEY, "demo");
+    const service = new DataModeService({ storage, defaultMode: "api" });
+
+    expect(service.getActiveMode()).toBe("api");
+    expect(storage.getItem(DATA_MODE_STORAGE_KEY)).toBeNull();
+  });
+
+  it("prevents an API build from selecting Demo mode", async () => {
+    const storage = new MemoryStorage();
+    const service = new DataModeService({ storage, defaultMode: "api" });
+
+    await expect(service.selectMode("demo")).rejects.toMatchObject({
+      code: "DATA_MODE_LOCKED",
+    });
+    expect(service.getActiveMode()).toBe("api");
+    expect(storage.getItem(DATA_MODE_STORAGE_KEY)).toBeNull();
+  });
+
   it("invokes the runtime fetcher with the global receiver", async () => {
     const fetcher = vi.fn(function (this: typeof globalThis) {
       if (this !== globalThis) {

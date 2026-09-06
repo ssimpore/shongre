@@ -148,7 +148,7 @@ async function resolveUncached(
       };
     }
     try {
-      const vehicle = await autoService.getVehicle(slug);
+      const vehicle = await autoService.getVehicle(slug, countryCode);
       if (!vehicle.marketCodes.includes(countryCode)) {
         return {
           status: "not_found",
@@ -184,7 +184,7 @@ async function resolveUncached(
       };
     }
     try {
-      const property = await realEstateService.getProperty(slug);
+      const property = await realEstateService.getProperty(slug, countryCode);
       if (!property.marketCodes.includes(countryCode)) {
         return {
           status: "not_found",
@@ -220,7 +220,7 @@ async function resolveUncached(
       };
     }
     try {
-      const result = await coursesService.getTutorProfile(slug);
+      const result = await coursesService.getTutorProfile(slug, countryCode);
       const hasPublicOffer = result.offers.some(
         (offer) =>
           offer.status === "published" &&

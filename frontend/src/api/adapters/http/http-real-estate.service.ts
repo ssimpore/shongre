@@ -42,14 +42,16 @@ export class HttpRealEstateService implements RealEstateServiceContract {
   searchProperties(query: PropertySearchQuery) {
     return httpClient.post<PropertySearchResult>("/real-estate/search", query);
   }
-  getProperty(idOrSlug: string) {
+  getProperty(idOrSlug: string, marketCode: string) {
     return httpClient.get<PropertyPublic>(
       `/real-estate/properties/${encodeURIComponent(idOrSlug)}`,
+      { headers: { "X-Shongre-Market": marketCode } },
     );
   }
-  getComparableProperties(propertyId: string) {
+  getComparableProperties(propertyId: string, marketCode: string) {
     return httpClient.get<PropertyPublic[]>(
       `/real-estate/properties/${encodeURIComponent(propertyId)}/comparables`,
+      { headers: { "X-Shongre-Market": marketCode } },
     );
   }
   getRecentlyViewed(_accountId: string) {

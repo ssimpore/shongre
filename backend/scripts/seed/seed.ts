@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { runPsqlFile } from "../database/psql.js";
+import { seedLocalDevelopmentData } from "./local-development-data.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -41,6 +42,10 @@ async function runSeed() {
 
   runPsqlFile(databaseUrl, seedSqlPath);
   console.log("Canonical reference data applied in one transaction.");
+  const summary = await seedLocalDevelopmentData();
+  console.log(
+    `Local development scenario applied: ${summary.profiles} profiles, ${summary.genericListings} marketplace listings, ${summary.vehicles} vehicles, ${summary.properties} properties, ${summary.tutors} tutors, ${summary.courseOffers} course offers, ${summary.jobs} jobs, and ${summary.publicStorageObjects} public Storage objects.`,
+  );
 }
 
 runSeed().catch((err) => {

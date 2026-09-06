@@ -45,4 +45,11 @@ describe("provider control-plane migration", () => {
       "provider operational evidence and audit records are immutable",
     );
   });
+
+  it("links operator evidence to the canonical profile identity", () => {
+    expect(migration.match(/REFERENCES public\.profiles\(id\)/g)).toHaveLength(
+      4,
+    );
+    expect(migration).not.toContain("public.users");
+  });
 });

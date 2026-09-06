@@ -108,7 +108,7 @@ function runInfo() {
     `  • .env file   : ${hasEnv ? `${colors.green}Detected${colors.reset}` : `${colors.yellow}Missing; run make env-init${colors.reset}`}`,
   );
   console.log(
-    `  • Data mode   : ${colors.green}${process.env.NEXT_PUBLIC_DATA_MODE || "demo"}${colors.reset} (frontend runs on local adapters)`,
+    `  • Data mode   : ${colors.green}${process.env.NEXT_PUBLIC_DATA_MODE || "not configured"}${colors.reset}`,
   );
   // AI runs behind the service contract now, so the browser holds no provider
   // key to report on — credentials belong to backend/ when the HTTP adapter lands.

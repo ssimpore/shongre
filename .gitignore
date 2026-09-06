@@ -47,6 +47,8 @@ mobile/.env.*.local
 # Root orchestration state and generated local infrastructure configuration
 .runtime/
 backend/supabase/config.toml
+backend/supabase/.branches/
+backend/supabase/.temp/
 frontend/public/.well-known/apple-app-site-association
 frontend/public/.well-known/assetlinks.json
 

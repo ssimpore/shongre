@@ -1,4 +1,6 @@
 import { createHash } from "node:crypto";
+import path from "node:path";
+import { pathToFileURL } from "node:url";
 import { BASELINE_MONETIZATION_CATALOG } from "@shongre/contracts/monetization-catalog";
 import { monetizationCatalogSchema } from "@shongre/contracts/monetization";
 import { getSupabaseAdminClient } from "../../src/infrastructure/supabase/supabase-client.js";
@@ -15,7 +17,7 @@ function stableValue(value: unknown): unknown {
   return value;
 }
 
-async function importBaseline() {
+export async function importBaselineCommercialCatalog() {
   const catalog = monetizationCatalogSchema.parse(
     BASELINE_MONETIZATION_CATALOG,
   );
@@ -35,7 +37,13 @@ async function importBaseline() {
   );
 }
 
-importBaseline().catch((error) => {
-  console.error("Commercial catalog import failed:", error);
-  process.exitCode = 1;
-});
+const isDirectExecution =
+  process.argv[1] &&
+  import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href;
+
+if (isDirectExecution) {
+  importBaselineCommercialCatalog().catch((error) => {
+    console.error("Commercial catalog import failed:", error);
+    process.exitCode = 1;
+  });
+}

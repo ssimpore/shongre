@@ -22,6 +22,31 @@ require_cli() {
   }
 }
 
+require_docker_capacity() {
+  local available_kib minimum_kib=5242880
+  available_kib="$(df -Pk "$SHONGRE_ROOT" | awk 'END { print $4 }')"
+  if [[ "$available_kib" =~ ^[0-9]+$ ]] && (( available_kib < minimum_kib )); then
+    shongre_fail "local Supabase requires at least 5 GiB of free disk space; only $((available_kib / 1024)) MiB is available"
+    shongre_info "free disk space, restart Docker Desktop, then run make dev again"
+    exit 1
+  fi
+}
+
+require_docker_daemon() {
+  if ! node --input-type=module -e '
+    import { spawnSync } from "node:child_process";
+    const result = spawnSync("docker", ["info"], {
+      stdio: "ignore",
+      timeout: 10_000,
+    });
+    process.exit(result.status === 0 ? 0 : 1);
+  '; then
+    shongre_fail "Docker daemon is unavailable or did not respond within 10 seconds"
+    shongre_info "restart Docker Desktop and verify that its data store is writable"
+    exit 1
+  fi
+}
+
 case "$action" in
   up)
     require_local_supabase
@@ -30,12 +55,13 @@ case "$action" in
       shongre_fail "Docker is required for local Supabase"
       exit 1
     }
-    docker info >/dev/null 2>&1 || {
-      shongre_fail "Docker daemon is unavailable; start Docker and retry"
-      exit 1
-    }
+    require_docker_capacity
+    require_docker_daemon
     "$SHONGRE_ROOT/scripts/render-supabase-config.sh"
-    supabase start --workdir "$SHONGRE_ROOT/backend"
+    # Supabase prints generated API and S3 credentials on successful startup.
+    # Keep those values in the ignored runtime env file instead of terminal
+    # logs; stderr remains visible for actionable startup failures.
+    supabase start --workdir "$SHONGRE_ROOT/backend" >/dev/null
     "$SHONGRE_ROOT/scripts/sync-local-supabase-env.sh"
     shongre_pass "local Supabase is ready"
     ;;
@@ -49,7 +75,13 @@ case "$action" in
   status)
     require_local_supabase
     require_cli
-    supabase status --workdir "$SHONGRE_ROOT/backend"
+    if supabase status --workdir "$SHONGRE_ROOT/backend" >/dev/null 2>&1; then
+      shongre_pass "local Supabase services"
+      "$SHONGRE_ROOT/scripts/service-urls.sh"
+    else
+      shongre_fail "local Supabase is not healthy; run make supabase-up"
+      exit 1
+    fi
     ;;
   health)
     require_local_supabase
@@ -65,7 +97,11 @@ case "$action" in
     require_local_supabase
     require_cli
     shongre_info "Supabase service endpoints"
-    supabase status --workdir "$SHONGRE_ROOT/backend"
+    if ! supabase status --workdir "$SHONGRE_ROOT/backend" >/dev/null 2>&1; then
+      shongre_fail "local Supabase is not healthy; run make supabase-up"
+      exit 1
+    fi
+    "$SHONGRE_ROOT/scripts/service-urls.sh"
     shongre_info "use Docker Desktop for individual local Supabase container logs"
     ;;
   config)

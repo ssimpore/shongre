@@ -101,7 +101,7 @@ production:   exported variable > .env.production.local > .env.production > .env
 The generic `.env.local` is intentionally not loaded into staging or production. All host ports and runtime URLs come from the selected configuration. `scripts/env.sh` derives local URLs when appropriate; Make targets and package scripts do not own competing port values.
 
 ```bash
-make env-local                    # validate local demo mode
+make env-local                    # validate local Supabase defaults
 make env-test                     # validate deterministic test isolation
 make env-development              # validate hosted development resources
 make env-staging                  # validate hosted staging credentials
@@ -109,10 +109,17 @@ SHONGRE_ENV=production make env-info # inspect non-secret production resolution
 make production-config-check      # fail closed until every live secret exists
 ```
 
+The shared `development`, `staging`, and `production` profiles are connected
+environments: Web/mobile must use API adapters, mock storage is disabled, and
+the backend must use the dedicated hosted Supabase project. Deterministic demo
+mode remains available through the explicit local `make frontend` command.
+The command-scoped `make demo` target also runs the complete local stack with
+deterministic backend and client adapters, without requiring Supabase.
+
 ## Development
 
 ```bash
-make dev          # backend API + scheduled worker + web
+make dev          # restart seeded local Supabase + API + worker + connected web
 make staging      # same stack using hosted staging configuration
 make dev-mobile   # backend API + scheduled worker + one Expo Metro server
 make dev-all      # backend API + scheduled worker + web + Expo Metro
@@ -126,6 +133,7 @@ make android
 make mobile-web
 
 make status
+make urls         # print all configured service endpoints without credentials
 make health       # fails unless the complete Web stack is healthy
 make smoke        # health plus anonymous listings request
 make logs
@@ -136,11 +144,16 @@ Local development defaults to `BACKEND_DATA_MODE=database` and
 `DATABASE_INFRA_MODE=local`. `make supabase-up` starts the repository-owned
 Supabase stack and writes generated credentials to ignored
 `.runtime/supabase.env`; `make backend` and `make worker` require that stack and
-load those credentials automatically. `make dev` additionally starts Supabase,
-applies pending migrations, and launches the complete application stack. Docker
-must be installed and running first. `make frontend` always forces the
-deterministic client demo adapter, so it remains usable with the API and
-Supabase stopped.
+load those credentials automatically. `make dev` is the one-command connected
+local workflow: it stops tracked Shongre application processes, forces Web API
+and backend database modes with mock storage disabled, starts Supabase, applies
+pending migrations, loads the deterministic idempotent seed, and launches the
+API, worker, and Web app.
+Docker must be installed and running first, its data store must be writable, and
+the host must have at least 5 GiB free. The startup preflight fails with an
+actionable error instead of waiting indefinitely for an unhealthy daemon.
+`make frontend` always forces the deterministic client demo adapter, so it
+remains usable with the API and Supabase stopped.
 
 Processes launched through the root tooling are recorded under ignored `.runtime/`. Port collision handling prints the owning PID/command and only terminates a process whose tracked PID belongs to this repository. It never runs a broad `killall`, pattern kill, or blind SIGKILL.
 
@@ -163,10 +176,16 @@ Use `make ports` to see configured values and current owners. `make free-port PO
 | Mobile         | `EXPO_PUBLIC_DATA_MODE=demo`  | `EXPO_PUBLIC_DATA_MODE=api` + `EXPO_PUBLIC_API_URL` |
 | Backend        | `BACKEND_DATA_MODE=demo`      | `BACKEND_DATA_MODE=database`                        |
 
-Demo is the default client mode; the local backend defaults to database mode.
-There is no silent fallback between demo, Supabase, or production HTTP.
-Production mobile configuration is separately validated from local public Expo
-values.
+Canonical local development uses connected Web/mobile API adapters, a
+database-backed backend, and mock storage disabled. Demo is available only
+through explicit demo/test commands. Connected builds ignore stale browser demo
+preferences, and there is no silent fallback between demo, Supabase, or hosted
+HTTP. Production mobile configuration is separately validated from local public
+Expo values.
+
+Runtime repositories use the Supabase Data API and its managed PostgREST
+connection pool. The server-only `DATABASE_URL` is reserved for migrations,
+type generation, drift checks, and other administrative database tooling.
 
 ## Database and infrastructure
 
@@ -181,6 +200,14 @@ make db-reset
 make db-types
 make supabase-down
 ```
+
+`make db-seed` installs the reviewed commercial baseline plus a repeatable,
+production-shaped local scenario: synthetic customer and professional profiles,
+marketplace listings, vehicles, properties, tutors, course offers, jobs, and
+their public media in Supabase Storage. Re-running it updates the same stable
+records instead of creating duplicates. It never copies production identities,
+payments, messages, KYC/KYB documents, or provider credentials; private Storage
+buckets therefore remain empty until a local workflow creates safe test data.
 
 Schema changes belong in `backend/supabase/migrations/`. `make migrations-check` validates ordering and contents without connecting to PostgreSQL. Destructive database and demo-seed commands require `APP_ENV=local` and prove that the target host and database name are local; `make db-reset` additionally invokes only the local `backend/supabase` workdir. The generated `backend/supabase/config.toml` is ignored; edit its checked-in template and environment values instead.
 

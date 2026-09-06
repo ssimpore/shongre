@@ -10,6 +10,17 @@ const migration = readFileSync(
 );
 
 describe("Education and Employment favorite market scope migration", () => {
+  it("publishes both locked compatibility transitions atomically", () => {
+    expect(migration).toContain("BEGIN;");
+    expect(migration).toContain(
+      "LOCK TABLE public.course_tutor_favorites IN SHARE MODE;",
+    );
+    expect(migration).toContain(
+      "LOCK TABLE public.employment_saved_jobs IN SHARE MODE;",
+    );
+    expect(migration).toContain("COMMIT;");
+  });
+
   it("partitions both resources by account and market", () => {
     expect(migration).toContain(
       "PRIMARY KEY (user_id, tutor_profile_id, market_code)",

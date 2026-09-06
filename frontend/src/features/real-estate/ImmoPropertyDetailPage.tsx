@@ -109,7 +109,7 @@ export const ImmoPropertyDetailPage: React.FC = () => {
   useEffect(() => {
     setLoading(true);
     services.realEstate
-      .getProperty(slug)
+      .getProperty(slug, activeMarket.code)
       .then(async (result) => {
         setProperty(result);
         await services.realEstate.markRecentlyViewed(
@@ -117,12 +117,15 @@ export const ImmoPropertyDetailPage: React.FC = () => {
           result.id,
         );
         setComparables(
-          await services.realEstate.getComparableProperties(result.id),
+          await services.realEstate.getComparableProperties(
+            result.id,
+            activeMarket.code,
+          ),
         );
       })
       .catch(() => setError(true))
       .finally(() => setLoading(false));
-  }, [slug, currentUser?.id]);
+  }, [activeMarket.code, currentUser?.id, slug]);
 
   usePageMeta({
     title: property?.title || "Bien immobilier",

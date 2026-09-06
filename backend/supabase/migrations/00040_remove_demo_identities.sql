@@ -2,6 +2,21 @@
 -- reference data. Production must never ship those predictable accounts. The
 -- exact id/email predicates deliberately fail closed and cannot match a real
 -- account that merely shares a display name.
+BEGIN;
+
+-- Migration 00031 projected the legacy verification flags into normalized
+-- evidence rows. Remove only evidence owned by the exact historical fixtures
+-- before deleting profiles protected by the RESTRICT foreign key.
+DELETE FROM public.compliance_verification_records verification
+USING public.profiles profile
+WHERE verification.user_id = profile.id
+  AND (profile.id, profile.email) IN (
+    ('00000000-0000-0000-0000-000000000001'::uuid, 'thomas.laurent@example.fr'),
+    ('00000000-0000-0000-0000-000000000002'::uuid, 'camille.martin@example.fr'),
+    ('00000000-0000-0000-0000-000000000003'::uuid, 'lucas.bernard@example.fr'),
+    ('00000000-0000-0000-0000-000000000004'::uuid, 'admin@shongre.com')
+  );
+
 DELETE FROM public.profiles
 WHERE (id, email) IN (
   ('00000000-0000-0000-0000-000000000001'::uuid, 'thomas.laurent@example.fr'),
@@ -26,3 +41,5 @@ BEGIN
   END IF;
 END;
 $$;
+
+COMMIT;

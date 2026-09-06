@@ -57,7 +57,11 @@ INSERT INTO public.taxonomy_header_categories (
     is_active,
     display_order
 )
-SELECT market_code, category_id, TRUE, display_order
+SELECT
+    default_items.market_code,
+    default_items.category_id,
+    TRUE,
+    default_items.display_order
 FROM (VALUES
     ('FR', 'real_estate', 0),
     ('FR', 'vehicles', 1),

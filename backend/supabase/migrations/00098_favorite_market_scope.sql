@@ -3,6 +3,8 @@
 -- writes the scoped table only. A later contract migration may retire the
 -- compatibility table after every caller has moved to the scoped RPCs.
 
+BEGIN;
+
 CREATE TABLE IF NOT EXISTS public.favorite_market_scope_review (
   favorite_kind TEXT NOT NULL CHECK (
     favorite_kind IN ('listing', 'auto_vehicle')
@@ -306,3 +308,5 @@ COMMENT ON TABLE public.listing_market_favorites IS
   'Authoritative account favorites partitioned by the market in which the action occurred.';
 COMMENT ON TABLE public.favorite_market_scope_review IS
   'Private quarantine for legacy favorites whose action market cannot be proven; rows require explicit operator review before restoration.';
+
+COMMIT;

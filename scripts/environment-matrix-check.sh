@@ -28,6 +28,16 @@ validate_profile() (
     export SUPABASE_SERVICE_ROLE_KEY=matrix-validation-server-value
   fi
 
+  if [[ "$profile" == "development" || "$profile" == "staging" || "$profile" == "production" ]]; then
+    export JWT_SECRET=matrix-validation-jwt-secret-123456789
+    export MFA_ENCRYPTION_KEY=matrix-validation-mfa-secret-123456789
+    export PROVIDER_CREDENTIAL_ENCRYPTION_KEY_BASE64=YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWE=
+    export PROVIDER_CREDENTIAL_KEY_VERSION=matrix-v1
+    export DIGITAL_FULFILLMENT_ENCRYPTION_KEY_BASE64=YmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmI=
+    export DIGITAL_FULFILLMENT_KEY_VERSION=matrix-v1
+    export HANDOVER_PIN_PEPPER=matrix-handover-pin-pepper-value-123456
+  fi
+
   if [[ "$profile" == "staging" || "$profile" == "production" ]]; then
     export NEXT_PUBLIC_DATA_MODE=api
     export NEXT_PUBLIC_ENABLE_MOCK_STORAGE=false
@@ -35,10 +45,6 @@ validate_profile() (
     export SHONGRE_SOLUTIONS_ORIGIN="https://solutions-${profile}.shongre.invalid"
     export SHONGRE_PROSPECTS_ORIGIN="https://prospects-${profile}.shongre.invalid"
     export SHONGRE_FACTURATION_ORIGIN="https://facturation-${profile}.shongre.invalid"
-    export JWT_SECRET=matrix-validation-jwt-secret-123456789
-    export MFA_ENCRYPTION_KEY=matrix-validation-mfa-secret-123456789
-    export PROVIDER_CREDENTIAL_ENCRYPTION_KEY_BASE64=YWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWE=
-    export PROVIDER_CREDENTIAL_KEY_VERSION=matrix-v1
     export AUTH_EMAIL_DELIVERY_URL=https://email.shongre.invalid/send
     export AUTH_EMAIL_DELIVERY_TOKEN=matrix-email-token
     export PAYMENT_PROVIDER=stripe
@@ -48,13 +54,15 @@ validate_profile() (
     export STRIPE_WEBHOOK_SECRET=whsec_matrix
     export STRIPE_CONNECT_WEBHOOK_SECRET=whsec_connect_matrix
     export COMPLIANCE_WEBHOOK_SECRET=matrix-compliance
-    export HANDOVER_PIN_PEPPER=matrix-handover
     export KYC_PROVIDER_BASE_URL=https://identity.shongre.invalid
     export KYC_PROVIDER_API_TOKEN=matrix-identity
     export BUSINESS_REGISTRY_API_URL=https://registry.shongre.invalid
     export BUSINESS_REGISTRY_API_TOKEN=matrix-registry
     export GEMINI_API_KEY=matrix-gemini
     export GEMINI_MODEL=gemini-matrix
+    export MALWARE_SCAN_MODE=http
+    export MALWARE_SCAN_URL=https://scanner.shongre.invalid/scan
+    export MALWARE_SCAN_TOKEN=matrix-malware-scanner-token
     export ENABLE_SOCIAL_AUTH=false
     export ENABLE_ACCOUNT_LINKING=false
     export ENABLE_GOOGLE_AUTH=false
@@ -79,4 +87,29 @@ for profile in local test preview development staging production; do
   validate_profile "$profile"
 done
 
-printf 'All six environment profiles passed isolated configuration validation.\n'
+if SHONGRE_EXPLICIT_DEMO=true NEXT_PUBLIC_DATA_MODE=demo NEXT_PUBLIC_ENABLE_MOCK_STORAGE=true BACKEND_DATA_MODE=demo EXPO_PUBLIC_DATA_MODE=demo validate_profile local >/dev/null 2>&1; then
+  :
+else
+  printf 'Local unexpectedly rejected the complete explicit deterministic demo contract.\n' >&2
+  exit 1
+fi
+
+if BACKEND_DATA_MODE=demo validate_profile local >/dev/null 2>&1; then
+  printf 'Local unexpectedly accepted backend demo mode without an explicit demo command.\n' >&2
+  exit 1
+fi
+
+if NEXT_PUBLIC_DATA_MODE=demo validate_profile development >/dev/null 2>&1; then
+  printf 'Development unexpectedly accepted demo Web data mode.\n' >&2
+  exit 1
+fi
+if DATABASE_INFRA_MODE=local validate_profile staging >/dev/null 2>&1; then
+  printf 'Staging unexpectedly accepted local database infrastructure.\n' >&2
+  exit 1
+fi
+if BACKEND_DATA_MODE=demo validate_profile production >/dev/null 2>&1; then
+  printf 'Production unexpectedly accepted demo backend data mode.\n' >&2
+  exit 1
+fi
+
+printf 'All six environment profiles passed isolated configuration and fail-closed mode validation.\n'

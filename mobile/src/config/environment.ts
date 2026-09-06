@@ -11,7 +11,10 @@ function required(name: string, value: string | undefined): string {
 }
 
 function resolveDataMode(): MobileDataMode {
-  const value = process.env.EXPO_PUBLIC_DATA_MODE || "demo";
+  const value = required(
+    "EXPO_PUBLIC_DATA_MODE",
+    process.env.EXPO_PUBLIC_DATA_MODE,
+  );
   if (value !== "demo" && value !== "api") {
     throw new Error(`[Mobile Config] Invalid EXPO_PUBLIC_DATA_MODE=${value}.`);
   }

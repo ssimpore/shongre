@@ -118,8 +118,11 @@ export interface RealEstateServiceContract {
   getCatalog(marketCode: string): Promise<RealEstateCatalog>;
   getAdminOverview(marketCode: string): Promise<RealEstateAdminOverview>;
   searchProperties(query: PropertySearchQuery): Promise<PropertySearchResult>;
-  getProperty(idOrSlug: string): Promise<PropertyPublic>;
-  getComparableProperties(propertyId: string): Promise<PropertyPublic[]>;
+  getProperty(idOrSlug: string, marketCode: string): Promise<PropertyPublic>;
+  getComparableProperties(
+    propertyId: string,
+    marketCode: string,
+  ): Promise<PropertyPublic[]>;
   getRecentlyViewed(accountId: string): Promise<PropertyPublic[]>;
   markRecentlyViewed(accountId: string, propertyId: string): Promise<void>;
   getOrCreateDraft(

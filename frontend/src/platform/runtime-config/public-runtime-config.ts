@@ -77,10 +77,23 @@ function nodeFallback(): PublicRuntimeConfig {
     (preferServerRuntime ? serverAppEnvironment : publicAppEnvironment) ||
     serverAppEnvironment ||
     (nodeEnvironmentValue("NODE_ENV") === "test" ? "test" : "local");
-  const dataMode = nodeEnvironmentValue("NEXT_PUBLIC_DATA_MODE") || "demo";
+  const configuredDataMode = nodeEnvironmentValue("NEXT_PUBLIC_DATA_MODE");
+  const dataMode =
+    configuredDataMode || (appEnvironment === "test" ? "demo" : "");
   if (dataMode !== "demo" && dataMode !== "api") {
     throw new Error(
-      `[Runtime Config] Invalid data mode "${dataMode}". Expected demo or api.`,
+      "[Runtime Config] NEXT_PUBLIC_DATA_MODE must be explicitly set to demo or api.",
+    );
+  }
+
+  const configuredMockStorage = nodeEnvironmentValue(
+    "NEXT_PUBLIC_ENABLE_MOCK_STORAGE",
+  );
+  const mockStorageValue =
+    configuredMockStorage || (appEnvironment === "test" ? "true" : "");
+  if (mockStorageValue !== "true" && mockStorageValue !== "false") {
+    throw new Error(
+      "[Runtime Config] NEXT_PUBLIC_ENABLE_MOCK_STORAGE must be explicitly set to true or false.",
     );
   }
 
@@ -134,8 +147,7 @@ function nodeFallback(): PublicRuntimeConfig {
     internationalUrl,
     apiBaseUrl,
     dataMode,
-    mockStorageEnabled:
-      nodeEnvironmentValue("NEXT_PUBLIC_ENABLE_MOCK_STORAGE") !== "false",
+    mockStorageEnabled: mockStorageValue === "true",
     stripePublishableKey: nodeEnvironmentValue(
       "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY",
     ),

@@ -3,6 +3,8 @@
 -- instances drain. Legacy rows did not record their action market, so every
 -- row is quarantined and scoped truth starts only from explicit new writes.
 
+BEGIN;
+
 ALTER TABLE public.favorite_market_scope_review
   DROP CONSTRAINT IF EXISTS favorite_market_scope_review_favorite_kind_check;
 ALTER TABLE public.favorite_market_scope_review
@@ -650,3 +652,5 @@ COMMENT ON TABLE public.course_tutor_market_favorites IS
   'Authoritative Education tutor favorites partitioned by account and action market.';
 COMMENT ON TABLE public.employment_job_market_favorites IS
   'Authoritative Employment saved jobs partitioned by account and action market.';
+
+COMMIT;

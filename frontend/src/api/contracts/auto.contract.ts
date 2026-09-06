@@ -92,7 +92,7 @@ export interface AutoServiceContract {
   getCatalog(marketCode: string): Promise<AutoCatalog>;
   getAdminOverview(marketCode: string): Promise<AutoAdminOverview>;
   searchVehicles(query: VehicleSearchQuery): Promise<VehicleSearchResponse>;
-  getVehicle(idOrSlug: string): Promise<VehiclePublic>;
+  getVehicle(idOrSlug: string, marketCode: string): Promise<VehiclePublic>;
   getOrCreateDraft(
     ownerUserId: string,
     marketCode: string,

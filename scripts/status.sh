@@ -42,6 +42,8 @@ else
   printf 'NOT APPLICABLE in %s mode\n' "$BACKEND_DATA_MODE"
 fi
 
+"$SHONGRE_ROOT/scripts/service-urls.sh"
+
 printf 'Cloudflare Tunnel: '
 if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
   connector_count="$(docker ps \

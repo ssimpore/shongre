@@ -52,7 +52,7 @@ frontend/
 │   │   ├── contracts/            # UI-facing service and view-model interfaces
 │   │   ├── adapters/demo/        # Deterministic simulation adapters (Promise<T>)
 │   │   ├── adapters/http/        # Complete HTTP client adapters targeting /api/v1/*
-│   │   ├── client/               # Service registry & DATA_MODE toggle
+│   │   ├── client/               # Environment-selected service registry
 │   │   └── errors/               # Normalized AppError and localized messages
 │   │
 │   ├── app/                      # Router, root layouts, top-level providers
@@ -75,7 +75,8 @@ Initialize the repository environment from the root:
 
 ```bash
 make env
-make frontend
+make dev       # connected API + local Supabase
+make frontend  # explicit standalone demo UI
 ```
 
 The data mode is configured centrally in `src/api/client/api-client.config.ts`.
@@ -101,17 +102,20 @@ source kit remains private to the repository; see
 [`docs/architecture/brand-assets.md`](../docs/architecture/brand-assets.md).
 
 ```env
-# Central Data Mode: "demo" (default) | "api"
-NEXT_PUBLIC_DATA_MODE=demo
+# Canonical local/hosted mode. Explicit demo commands override this per process.
+NEXT_PUBLIC_DATA_MODE=api
 
 # Backend API Endpoint (Used when NEXT_PUBLIC_DATA_MODE=api)
 NEXT_PUBLIC_API_URL=<environment-defined API origin and prefix>
 ```
 
-### Switching Modes
+### Selecting Modes
 
-- **Demo Mode**: `NEXT_PUBLIC_DATA_MODE=demo` — runs entirely in-browser, no backend required.
-- **API Mode**: `NEXT_PUBLIC_DATA_MODE=api` — calls backend REST API over HTTP with request IDs and token transport.
+- **Demo Mode**: `make frontend` — explicitly selects deterministic browser adapters; no backend is required.
+- **API Mode**: `make dev` — calls the backend REST API over HTTP with request IDs and token transport, using local Supabase for persistence.
+
+The process environment is authoritative. Connected builds cannot be switched
+to demo mode from browser storage or the UI.
 
 ---
 

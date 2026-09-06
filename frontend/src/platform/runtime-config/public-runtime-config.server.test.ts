@@ -22,6 +22,19 @@ function configureProductionRuntime(): void {
   for (const [name, value] of Object.entries(values)) vi.stubEnv(name, value);
 }
 
+function configureLocalRuntime(): void {
+  const values = {
+    APP_ENV: "local",
+    ENVIRONMENT_ID: "shongre-local",
+    PUBLIC_FR_URL: "http://127.0.0.1:3000",
+    PUBLIC_INTL_URL: "http://127.0.0.1:3000",
+    API_URL: "http://127.0.0.1:4000",
+    NEXT_PUBLIC_DATA_MODE: "api",
+    NEXT_PUBLIC_ENABLE_MOCK_STORAGE: "false",
+  } as const;
+  for (const [name, value] of Object.entries(values)) vi.stubEnv(name, value);
+}
+
 describe("server public runtime configuration", () => {
   afterEach(() => vi.unstubAllEnvs());
 
@@ -34,6 +47,40 @@ describe("server public runtime configuration", () => {
       mockStorageEnabled: false,
       stripePublishableKey: "pk_live_TestOnly123",
       apiBaseUrl: "https://api.shongre.fr/api/v1",
+    });
+  });
+
+  it("accepts the connected local API configuration", () => {
+    configureLocalRuntime();
+
+    expect(createPublicRuntimeConfig()).toMatchObject({
+      appEnvironment: "local",
+      dataMode: "api",
+      mockStorageEnabled: false,
+      apiBaseUrl: "http://127.0.0.1:4000/api/v1",
+    });
+  });
+
+  it("rejects an implicit local Demo configuration", () => {
+    configureLocalRuntime();
+    vi.stubEnv("NEXT_PUBLIC_DATA_MODE", "demo");
+    vi.stubEnv("NEXT_PUBLIC_ENABLE_MOCK_STORAGE", "true");
+
+    expect(() => createPublicRuntimeConfig()).toThrow(
+      /Connected local.*NEXT_PUBLIC_DATA_MODE=api.*NEXT_PUBLIC_ENABLE_MOCK_STORAGE=false/,
+    );
+  });
+
+  it("accepts Demo only when the local command marks it explicit", () => {
+    configureLocalRuntime();
+    vi.stubEnv("SHONGRE_EXPLICIT_DEMO", "true");
+    vi.stubEnv("NEXT_PUBLIC_DATA_MODE", "demo");
+    vi.stubEnv("NEXT_PUBLIC_ENABLE_MOCK_STORAGE", "true");
+
+    expect(createPublicRuntimeConfig()).toMatchObject({
+      appEnvironment: "local",
+      dataMode: "demo",
+      mockStorageEnabled: true,
     });
   });
 

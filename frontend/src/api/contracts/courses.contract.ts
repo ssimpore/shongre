@@ -82,6 +82,7 @@ export interface CoursesServiceContract {
   searchTutors(query: TutorSearchQuery): Promise<TutorSearchResponse>;
   getTutorProfile(
     idOrSlug: string,
+    marketCode: string,
   ): Promise<{ tutor: TutorPublicProfile; offers: CoursePublicOffer[] }>;
   saveTutorProfile(profile: TutorProfileDraft): Promise<TutorProfile>;
   createCourseOffer(offer: CourseOfferDraft): Promise<CourseOffer>;

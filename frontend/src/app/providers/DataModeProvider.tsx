@@ -48,8 +48,8 @@ function liveErrorMessage(error: unknown): string {
 export const DataModeProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  // Runtime preferences live in browser storage. Boot from the build-time
-  // configuration so server and client markup agree, then restore below.
+  // Boot from the environment-selected configuration so server and client
+  // markup agree. API builds reject browser overrides in DataModeService.
   const [mode, setMode] = useState<DataMode>(apiClientConfig.dataMode);
   const [availability, setAvailability] = useState<LiveAvailability>(
     apiClientConfig.dataMode === "api" ? "checking" : "ready",

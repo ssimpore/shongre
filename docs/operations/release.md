@@ -33,6 +33,9 @@ process production data or money.
    origin; a skipped or error-state Solutions catalog fails certification.
 5. Load production secrets from the secret manager and run
    `make production-release-check`. Never paste values into tickets or logs.
+   This gate requires independent 32-byte keys for provider credentials and
+   digital fulfillment, plus the reviewed malware-scanner binding; a missing or
+   malformed key must stop promotion before the backend is restarted.
 
 Useful evidence commands are `make performance-smoke`,
 `make observability-evidence`, and

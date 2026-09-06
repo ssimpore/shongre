@@ -159,15 +159,15 @@ SET public_payload = jsonb_set(
 WHERE public_payload->>'canonicalPath' LIKE '/cours/%';
 
 UPDATE public.listings
-SET public_payload = jsonb_set(
-      public_payload,
+SET attributes = jsonb_set(
+      attributes,
       '{canonicalPath}',
-      to_jsonb(regexp_replace(public_payload->>'canonicalPath', '^/cours', '/education')),
+      to_jsonb(regexp_replace(attributes->>'canonicalPath', '^/cours', '/education')),
       TRUE
     ),
     updated_at = NOW()
 WHERE vertical_type = 'tutoring'
-  AND public_payload->>'canonicalPath' LIKE '/cours/%';
+  AND attributes->>'canonicalPath' LIKE '/cours/%';
 
 -- Keep future course discovery projections on the canonical public URL.
 CREATE OR REPLACE FUNCTION public.sync_course_discovery_listing()
@@ -249,7 +249,7 @@ $$;
 -- Historical evidence stays unchanged; reports collapse its old dimension.
 CREATE OR REPLACE VIEW public.monetization_vertical_subscription_metrics AS
 SELECT
-  CASE WHEN subscription.vertical_id = 'cours' THEN 'education' ELSE subscription.vertical_id END AS vertical_id,
+  (CASE WHEN subscription.vertical_id = 'cours' THEN 'education' ELSE subscription.vertical_id END)::VARCHAR(30) AS vertical_id,
   regexp_replace(subscription.family_id, '^vertical\.cours', 'vertical.education')::VARCHAR(120) AS family_id,
   COALESCE(price.currency,'EUR') AS currency,
   COALESCE(source_quote.market_code,'FR') AS market_code,
@@ -276,9 +276,9 @@ GROUP BY 1,2,3,4;
 
 CREATE OR REPLACE VIEW public.finance_vertical_revenue_attribution AS
 SELECT
-  CASE WHEN profile.vertical_id = 'cours' THEN 'education' ELSE COALESCE(profile.vertical_id,'general') END AS vertical_id,
+  (CASE WHEN profile.vertical_id = 'cours' THEN 'education' ELSE COALESCE(profile.vertical_id,'general') END)::VARCHAR AS vertical_id,
   regexp_replace(profile.family_id, '^vertical\.cours', 'vertical.education')::VARCHAR(120) AS family_id,
-  CASE WHEN profile.finance_category = 'courses_subscription' THEN 'education_subscription' ELSE profile.finance_category END AS finance_category,
+  (CASE WHEN profile.finance_category = 'courses_subscription' THEN 'education_subscription' ELSE profile.finance_category END)::VARCHAR(40) AS finance_category,
   transaction.market_code,transaction.currency,
   date_trunc('month',transaction.occurred_at) AS revenue_month,
   SUM(CASE WHEN ledger.side = 'credit' THEN ledger.amount_minor ELSE -ledger.amount_minor END)::BIGINT AS net_revenue_minor

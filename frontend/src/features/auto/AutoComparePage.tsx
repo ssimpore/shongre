@@ -23,11 +23,12 @@ import {
 
 export const AutoComparePage: React.FC = () => {
   const { t } = useTranslation();
-  const { currentLocale, convertMoney } = useMarketLocation();
+  const { activeMarket, currentLocale, convertMoney } = useMarketLocation();
   const [params, setParams] = useSearchParams();
   const [vehicles, setVehicles] = useState<VehiclePublic[]>([]);
   const [loading, setLoading] = useState(true);
-  const ids = (params.get("ids") || "").split(",").filter(Boolean).slice(0, 4);
+  const idsParam = params.get("ids") || "";
+  const ids = idsParam.split(",").filter(Boolean).slice(0, 4);
 
   usePageMeta({
     title: "Comparer des véhicules",
@@ -38,10 +39,12 @@ export const AutoComparePage: React.FC = () => {
   });
   useEffect(() => {
     setLoading(true);
-    Promise.all(ids.map((id) => services.auto.getVehicle(id)))
+    Promise.all(
+      ids.map((id) => services.auto.getVehicle(id, activeMarket.code)),
+    )
       .then(setVehicles)
       .finally(() => setLoading(false));
-  }, [params.get("ids")]);
+  }, [activeMarket.code, idsParam]);
   const remove = (id: string) => {
     const next = ids.filter((value) => value !== id);
     setParams(next.length ? { ids: next.join(",") } : {});

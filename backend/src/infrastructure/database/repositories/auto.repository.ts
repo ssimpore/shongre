@@ -1670,17 +1670,17 @@ export class PostgresAutoRepository implements IAutoRepository {
   }
   async getVehicle(idOrSlug: string, marketCode?: string) {
     const db = this.db();
-    let result = await db
+    const column =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+        idOrSlug,
+      )
+        ? "id"
+        : "slug";
+    const result = await db
       .from("auto_vehicles")
       .select("listing_id,private_payload")
-      .eq("id", idOrSlug)
+      .eq(column, idOrSlug)
       .maybeSingle();
-    if (!result.data && !result.error)
-      result = await db
-        .from("auto_vehicles")
-        .select("listing_id,private_payload")
-        .eq("slug", idOrSlug)
-        .maybeSingle();
     if (result.error) throw result.error;
     if (!result.data) return null;
 

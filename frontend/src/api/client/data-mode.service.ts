@@ -17,7 +17,7 @@ interface DataModeServiceOptions {
 }
 
 export type LiveModeErrorCode =
-  "LIVE_API_NOT_CONFIGURED" | "LIVE_API_UNAVAILABLE";
+  "LIVE_API_NOT_CONFIGURED" | "LIVE_API_UNAVAILABLE" | "DATA_MODE_LOCKED";
 
 export class LiveModeError extends Error {
   constructor(
@@ -68,11 +68,12 @@ export function resolveLiveReadinessUrl(apiBaseUrl: string): string {
 }
 
 /**
- * Owns the browser's data-source selection.
+ * Owns the browser's data-source selection for explicit demo builds.
  *
- * The build configuration remains the fallback, while the versioned local
- * preference is the only runtime override. Service adapters consume this
- * value centrally; pages never branch on data mode.
+ * API build configuration is authoritative and rejects runtime downgrade to
+ * demo. An explicit demo build may retain its versioned local preference.
+ * Service adapters consume this value centrally; pages never branch on data
+ * mode.
  */
 export class DataModeService {
   private readonly storage: DataModeStorage | null;
@@ -92,12 +93,25 @@ export class DataModeService {
   }
 
   getActiveMode(): DataMode {
+    const configuredMode = this.defaultMode ?? apiClientConfig.dataMode;
+
+    // Connected builds are authoritative. In particular, a stale browser
+    // preference from an earlier demo session must never replace the HTTP
+    // adapters selected by the environment.
+    if (configuredMode === "api") {
+      if (this.storage?.getItem(DATA_MODE_STORAGE_KEY) !== null) {
+        this.storage?.removeItem(DATA_MODE_STORAGE_KEY);
+      }
+      this.selectedMode = "api";
+      return "api";
+    }
+
     if (this.selectedMode) return this.selectedMode;
 
     const persisted = this.storage?.getItem(DATA_MODE_STORAGE_KEY);
     if (persisted === "demo" || persisted === "api") return persisted;
     if (persisted) this.storage?.removeItem(DATA_MODE_STORAGE_KEY);
-    return this.defaultMode ?? apiClientConfig.dataMode;
+    return configuredMode;
   }
 
   isLiveConfigured(): boolean {
@@ -153,6 +167,13 @@ export class DataModeService {
   }
 
   async selectMode(nextMode: DataMode): Promise<void> {
+    const configuredMode = this.defaultMode ?? apiClientConfig.dataMode;
+    if (configuredMode === "api" && nextMode !== "api") {
+      throw new LiveModeError(
+        "DATA_MODE_LOCKED",
+        "This frontend build is locked to its configured API data source.",
+      );
+    }
     if (nextMode === "api") await this.assertLiveAvailable();
 
     this.storage?.setItem(DATA_MODE_STORAGE_KEY, nextMode);

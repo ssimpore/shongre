@@ -10,6 +10,14 @@ const migration = readFileSync(
 );
 
 describe("automotive favorite market scope migration", () => {
+  it("publishes its locked compatibility transition atomically", () => {
+    expect(migration).toContain("BEGIN;");
+    expect(migration).toContain(
+      "LOCK TABLE public.auto_vehicle_favorites IN SHARE MODE;",
+    );
+    expect(migration).toContain("COMMIT;");
+  });
+
   it("partitions favorites by account, vehicle and validated action market", () => {
     expect(migration).toContain(
       "PRIMARY KEY (user_id, vehicle_id, market_code)",

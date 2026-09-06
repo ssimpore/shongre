@@ -63,6 +63,10 @@ const valid = {
     "base64",
   ),
   PROVIDER_CREDENTIAL_KEY_VERSION: "production-v1",
+  DIGITAL_FULFILLMENT_ENCRYPTION_KEY_BASE64: Buffer.alloc(32, 8).toString(
+    "base64",
+  ),
+  DIGITAL_FULFILLMENT_KEY_VERSION: "production-v1",
   AUTH_EMAIL_DELIVERY_URL: "https://email.shongre.invalid/send",
   AUTH_EMAIL_DELIVERY_TOKEN: "ci-email-delivery-token-12345",
   STRIPE_SECRET_KEY: "sk_live_CIOnly123",
@@ -107,5 +111,6 @@ run({ STRIPE_SECRET_KEY: "sk_test_wrong_mode" }, 1);
 run({ NEXT_PUBLIC_DATA_MODE: "demo" }, 1);
 run({ NEXT_PUBLIC_ENABLE_MOCK_STORAGE: "true" }, 1);
 run({ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: "pk_test_wrong_mode" }, 1);
+run({ DIGITAL_FULFILLMENT_ENCRYPTION_KEY_BASE64: "not-a-32-byte-key" }, 1);
 run({ SHONGRE_FACTURATION_ORIGIN: "https://solutions.shongre.invalid" }, 1);
 console.log("Production configuration and launch-scope invariants passed.");

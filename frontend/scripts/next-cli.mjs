@@ -19,7 +19,11 @@ for (const envPath of [
   }
 }
 
-process.env.NEXT_PUBLIC_DATA_MODE ??= "demo";
+if (!process.env.NEXT_PUBLIC_DATA_MODE) {
+  throw new Error(
+    "NEXT_PUBLIC_DATA_MODE is required. Use `make dev` for API mode or `make frontend` for the explicit demo UI.",
+  );
+}
 process.env.NEXT_PUBLIC_APP_ENV ??= process.env.APP_ENV;
 process.env.NEXT_PUBLIC_ENVIRONMENT_ID ??= process.env.ENVIRONMENT_ID;
 process.env.NEXT_PUBLIC_FR_URL ??= process.env.PUBLIC_FR_URL;

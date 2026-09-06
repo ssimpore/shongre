@@ -54,12 +54,23 @@ match exactly.
 | Analytics           | off                        | test                     | test                 | development          | staging                  | production                   |
 | Search indexing     | disabled                   | disabled                 | disabled             | disabled             | disabled                 | enabled                      |
 | Real customers      | no                         | no                       | no                   | no                   | no                       | yes                          |
-| Web data mode       | demo                       | demo                     | demo or isolated API | demo or isolated API | API                      | API                          |
-| Web mock storage    | enabled                    | enabled                  | explicit             | explicit             | disabled                 | disabled                     |
+| Web data mode       | API                        | demo                     | demo or isolated API | API                  | API                      | API                          |
+| Web mock storage    | disabled                   | enabled                  | explicit             | disabled             | disabled                 | disabled                     |
 
 The table describes deployment intent. Executable enforcement comes from the
 typed safety module, environment validator, startup checks, and protected
 deployment workflow.
+
+Local is the only developer environment allowed to bind the backend to local
+database infrastructure. Test uses an isolated local/ephemeral database or the
+deterministic backend adapter. Preview and every shared environment use hosted,
+environment-owned infrastructure. Canonical local development, development,
+staging, and production always run both clients in API mode with mock storage
+disabled; the standalone demo surface remains the explicit local
+`make frontend` workflow.
+Shared development, staging, and production runtimes also require their own JWT,
+MFA, handover, provider-credential, and digital-fulfillment keys at startup;
+fixed local development keys are never accepted there.
 
 ## URL and country routing
 
@@ -143,6 +154,12 @@ material are server-only. BYOK credentials remain encrypted and tenant-scoped;
 they are never promoted between environments automatically. CI runs both the
 tracked-secret scanner and the frontend/backend boundary scanner.
 
+Application repositories reach PostgreSQL through the Supabase Data API, whose
+managed PostgREST layer owns runtime connection pooling. `DATABASE_URL` is a
+server-only direct administrative connection used by the migrator and database
+tooling; it is not loaded into Web/mobile bundles or used to open a connection
+per request.
+
 ## Supabase, migrations, seeds, and Storage
 
 Local uses Supabase Local. Development, staging, and production require
@@ -157,10 +174,13 @@ forward fixes; rollback reverts immutable application images while keeping
 compatible expanded schema.
 
 Reference configuration belongs in migrations or reviewed configuration
-records. Deterministic demo users/content use the seed command. Seed and reset
-commands require `APP_ENV=local` plus a proven local database target. They
-refuse hosted and production targets even when an operator sets a permissive
-flag.
+records. The seed command installs the reviewed commercial baseline and a
+deterministic, production-shaped local scenario in PostgreSQL and public
+Storage. Its identities and content are synthetic; production customer data,
+payments, messages, private documents, and provider credentials are never seed
+inputs. Seed and reset commands require `APP_ENV=local` plus a proven local
+database target. They refuse hosted and production targets even when an
+operator sets a permissive flag.
 
 Storage uses environment-local Supabase Storage. Public listing derivatives and
 avatars are separate from upload staging/quarantine. KYC/KYB and other sensitive
@@ -188,6 +208,9 @@ Provider implementations are shared. Configuration selects provider and mode:
 
 Webhook event stores and idempotency keys are environment-local. Signing
 secrets are never shared across development, staging, and production.
+Structured backend logs always include `APP_ENV` and `ENVIRONMENT_ID`; known
+credential fields, bearer tokens, configured secrets, and nested errors are
+redacted before serialization.
 
 ## CI/CD and artifact promotion
 
@@ -275,7 +298,7 @@ Before enabling a target, operators must:
 ```bash
 # Local setup and diagnostics
 make setup
-make dev
+make dev # restart, migrate, seed, and run the connected local Web stack
 make env-info
 make doctor
 make status

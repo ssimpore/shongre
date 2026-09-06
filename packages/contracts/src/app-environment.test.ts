@@ -6,6 +6,15 @@ import {
   parseAppEnvironment,
 } from "./app-environment";
 
+const dataModesFor = (environment: (typeof APP_ENVIRONMENTS)[number]) => ({
+  backendDataMode:
+    environment === "test" ? ("demo" as const) : ("database" as const),
+  databaseInfrastructureMode:
+    environment === "local" || environment === "test"
+      ? ("local" as const)
+      : ("hosted" as const),
+});
+
 const configFor = (environment: (typeof APP_ENVIRONMENTS)[number]) =>
   createEnvironmentConfig({
     appEnvironment: environment,
@@ -64,6 +73,7 @@ describe("environment safety", () => {
     expect(() =>
       assertEnvironmentSafety({
         config: configFor("development"),
+        ...dataModesFor("development"),
         apiEnvironmentId: "shongre-production",
         supabaseEnvironmentId: "shongre-production",
         storageEnvironmentId: "shongre-production",
@@ -79,6 +89,7 @@ describe("environment safety", () => {
     expect(() =>
       assertEnvironmentSafety({
         config: configFor("staging"),
+        ...dataModesFor("staging"),
         supabaseProjectRef: "production-project-ref",
         expectedSupabaseProjectRef: "staging-project-ref",
         paymentMode: "test",
@@ -93,6 +104,7 @@ describe("environment safety", () => {
     expect(() =>
       assertEnvironmentSafety({
         config: configFor("preview"),
+        ...dataModesFor("preview"),
         storageEnvironmentId: "shongre-production",
         paymentMode: "test",
         emailMode: "sandbox",
@@ -106,6 +118,7 @@ describe("environment safety", () => {
     expect(() =>
       assertEnvironmentSafety({
         config: configFor("test"),
+        ...dataModesFor("test"),
         paymentMode: "live",
         emailMode: "console",
         aiMode: "mock",
@@ -118,6 +131,7 @@ describe("environment safety", () => {
     expect(() =>
       assertEnvironmentSafety({
         config: configFor("production"),
+        ...dataModesFor("production"),
         apiEnvironmentId: "shongre-staging",
         paymentMode: "live",
         emailMode: "live",
@@ -131,6 +145,7 @@ describe("environment safety", () => {
     expect(() =>
       assertEnvironmentSafety({
         config: configFor("production"),
+        ...dataModesFor("production"),
         apiEnvironmentId: "shongre-production",
         supabaseEnvironmentId: "shongre-production",
         storageEnvironmentId: "shongre-production",
@@ -140,5 +155,47 @@ describe("environment safety", () => {
         analyticsMode: "production",
       }),
     ).not.toThrow();
+  });
+
+  it("rejects a shared development runtime using local database infrastructure", () => {
+    expect(() =>
+      assertEnvironmentSafety({
+        config: configFor("development"),
+        backendDataMode: "database",
+        databaseInfrastructureMode: "local",
+        paymentMode: "test",
+        emailMode: "sandbox",
+        aiMode: "development",
+        analyticsMode: "development",
+      }),
+    ).toThrow(/databaseInfrastructureMode/);
+  });
+
+  it("accepts the explicit local deterministic backend demo", () => {
+    expect(() =>
+      assertEnvironmentSafety({
+        config: configFor("local"),
+        backendDataMode: "demo",
+        databaseInfrastructureMode: "local",
+        paymentMode: "test",
+        emailMode: "console",
+        aiMode: "mock",
+        analyticsMode: "off",
+      }),
+    ).not.toThrow();
+  });
+
+  it("rejects a mismatched database fingerprint", () => {
+    expect(() =>
+      assertEnvironmentSafety({
+        config: configFor("staging"),
+        ...dataModesFor("staging"),
+        databaseEnvironmentId: "shongre-production",
+        paymentMode: "test",
+        emailMode: "sandbox",
+        aiMode: "staging",
+        analyticsMode: "staging",
+      }),
+    ).toThrow(/DATABASE_ENVIRONMENT_ID/);
   });
 });

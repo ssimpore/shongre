@@ -25,9 +25,11 @@ page
   -> deterministic tenant-keyed demo adapters
 ```
 
-Standalone local runtime defaults to `NEXT_PUBLIC_DATA_MODE=demo`, so the workspace works with
-the backend, Supabase, AI providers and enrichment providers stopped. Explicit
-`api` mode is mandatory in hosted staging and production and selects the live `HttpCrmProspectingService`, which calls only the
+The explicit `make frontend` demo runtime uses
+`NEXT_PUBLIC_DATA_MODE=demo`, so the workspace works with the backend,
+Supabase, AI providers and enrichment providers stopped. Canonical local
+development and hosted development, staging, and production use `api` mode and
+select the live `HttpCrmProspectingService`, which calls only the
 canonical `/api/v1/crm/prospecting/*` OpenAPI operations and validates response
 payloads before returning them to the UI. API failures never fall back to demo.
 

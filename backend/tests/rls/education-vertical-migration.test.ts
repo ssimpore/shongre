@@ -64,12 +64,23 @@ describe("Education vertical migration safeguards", () => {
     expect(migration.match(/THEN 'education'/g)?.length).toBeGreaterThanOrEqual(
       3,
     );
+    expect(migration).toContain(
+      "ELSE subscription.vertical_id END)::VARCHAR(30) AS vertical_id",
+    );
+    expect(migration).toContain(
+      "ELSE COALESCE(profile.vertical_id,'general') END)::VARCHAR AS vertical_id",
+    );
+    expect(migration).toContain("END)::VARCHAR(40) AS finance_category");
   });
 
   it("moves discovery canonicals while retaining the tutoring and course identities", () => {
     expect(migration).toContain("WHERE type = 'tutoring'");
     expect(migration).toContain("'/education/professeur/' || tutor.slug");
     expect(migration).toContain("UPDATE public.course_offers");
+    expect(migration).toMatch(/UPDATE public\.listings\s+SET attributes =/);
+    expect(migration).not.toMatch(
+      /UPDATE public\.listings\s+SET public_payload =/,
+    );
     expect(migration).not.toMatch(/RENAME (?:TABLE|COLUMN).*course/i);
   });
 });

@@ -1,7 +1,7 @@
 .DEFAULT_GOAL := help
 SHELL := /bin/bash
 
-.PHONY: help setup doctor info env-info env env-init env-check env-local env-test env-preview env-development env-staging env-production install reinstall \
+.PHONY: help setup doctor info env-info urls env env-init env-check env-local env-test env-preview env-development env-staging env-production install reinstall \
 	dev demo dev-web dev-staging staging dev-mobile dev-all start stop stop-all restart status health smoke logs \
 	frontend frontend-start frontend-build frontend-lint frontend-typecheck frontend-test frontend-test-e2e frontend-check frontend-clean frontend-logs seo-check seo-audit \
 	backend backend-dev backend-start worker worker-dev worker-start backend-build backend-lint backend-typecheck backend-test backend-check backend-health backend-logs worker-logs \
@@ -88,15 +88,20 @@ doctor: ## Diagnose tools, versions, configuration, ports, and optional platform
 info env-info: env-check ## Print resolved non-secret environment, URL, provider, and indexing modes
 	@source scripts/env.sh && printf 'Environment       %s (%s)\nFrance frontend   %s\nIntl frontend     %s\nAPI               %s%s\nSupabase          %s\nStorage           %s\nPayments          %s\nEmail             %s\nAI                %s\nAnalytics         %s\nSEO indexing      %s\nData modes        web=%s backend=%s/%s mobile=%s\n' "$$APP_ENV" "$$ENVIRONMENT_ID" "$$PUBLIC_FR_URL" "$$PUBLIC_INTL_URL" "$$API_URL" "$$API_PREFIX" "$${SUPABASE_PROJECT_REF:-local}" "$$STORAGE_ENVIRONMENT_ID" "$$PAYMENT_MODE" "$$EMAIL_MODE" "$$AI_MODE" "$$ANALYTICS_MODE" "$$( [[ "$$APP_ENV" == production ]] && echo enabled || echo disabled )" "$$NEXT_PUBLIC_DATA_MODE" "$$BACKEND_DATA_MODE" "$$DATABASE_INFRA_MODE" "$$EXPO_PUBLIC_DATA_MODE"
 
+urls: env-check ## Print every configured local service URL without credentials
+	@scripts/service-urls.sh
+
 install: ## Install frontend, backend, mobile, and shared workspace dependencies
 	@npm install
 
 reinstall: clean-deps install
 
 ##@ Development
-dev: dev-web ## Run backend, worker, and Web with tracked cleanup
+dev: ## Restart the complete Supabase-backed local Web stack
+	@$(MAKE) stop-all
+	@NEXT_PUBLIC_DATA_MODE=api NEXT_PUBLIC_ENABLE_MOCK_STORAGE=false BACKEND_DATA_MODE=database DATABASE_INFRA_MODE=local EXPO_PUBLIC_DATA_MODE=api scripts/dev.sh web
 demo: ## Run the complete Web stack with command-scoped deterministic demo modes
-	@NEXT_PUBLIC_DATA_MODE=demo BACKEND_DATA_MODE=demo EXPO_PUBLIC_DATA_MODE=demo scripts/dev.sh web
+	@SHONGRE_EXPLICIT_DEMO=true NEXT_PUBLIC_DATA_MODE=demo NEXT_PUBLIC_ENABLE_MOCK_STORAGE=true BACKEND_DATA_MODE=demo DATABASE_INFRA_MODE=local EXPO_PUBLIC_DATA_MODE=demo scripts/dev.sh web
 dev-web:
 	@scripts/dev.sh web
 dev-staging: ## Run the Web stack with .env.staging and .env.staging.local
@@ -109,7 +114,7 @@ dev-all: ## Run backend, worker, Web, and one Expo Metro server
 start: dev
 
 frontend: ## Run the deterministic demo UI at the configured local Web origin
-	@NEXT_PUBLIC_DATA_MODE=demo scripts/service.sh foreground frontend auto -- npm run dev --workspace=frontend
+	@SHONGRE_EXPLICIT_DEMO=true NEXT_PUBLIC_DATA_MODE=demo NEXT_PUBLIC_ENABLE_MOCK_STORAGE=true scripts/service.sh foreground frontend auto -- npm run dev --workspace=frontend
 
 frontend-start:
 	@scripts/service.sh foreground frontend auto -- npm run preview --workspace=frontend
@@ -140,7 +145,7 @@ stop-all: ## Stop only tracked Shongre application processes
 	@source scripts/env.sh && scripts/service.sh stop worker none || true
 	@source scripts/env.sh && scripts/service.sh stop metro "$$EXPO_METRO_PORT" || true
 
-restart: stop-all dev
+restart: dev
 
 status: ## Show Git, environment, tracked services, ports, and infrastructure state
 	@scripts/status.sh

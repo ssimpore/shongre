@@ -1,4 +1,5 @@
-import { BackendDataMode, config } from "../../../app/config/index.js";
+import type { BackendDataMode } from "@shongre/contracts/environment";
+import { config } from "../../../app/config/index.js";
 import {
   IUserRepository,
   DemoUserRepository,

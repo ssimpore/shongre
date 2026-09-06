@@ -30,15 +30,20 @@ export function createPublicRuntimeConfig(): PublicRuntimeConfig {
     publicInternationalUrl: process.env.PUBLIC_INTL_URL,
     apiUrl: process.env.API_URL,
   });
-  const dataMode = process.env.NEXT_PUBLIC_DATA_MODE ?? "demo";
+  const dataMode = process.env.NEXT_PUBLIC_DATA_MODE;
   if (dataMode !== "demo" && dataMode !== "api") {
     throw new Error(
       `[Web Config] NEXT_PUBLIC_DATA_MODE must be demo or api, received "${dataMode}".`,
     );
   }
 
-  const mockStorageEnabled =
-    process.env.NEXT_PUBLIC_ENABLE_MOCK_STORAGE !== "false";
+  const mockStorageValue = process.env.NEXT_PUBLIC_ENABLE_MOCK_STORAGE;
+  if (mockStorageValue !== "true" && mockStorageValue !== "false") {
+    throw new Error(
+      "[Web Config] NEXT_PUBLIC_ENABLE_MOCK_STORAGE must be true or false.",
+    );
+  }
+  const mockStorageEnabled = mockStorageValue === "true";
   const stripePublishableKey =
     process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? "";
   const analyticsMode = (process.env.ANALYTICS_MODE ?? "off") as
@@ -50,6 +55,23 @@ export function createPublicRuntimeConfig(): PublicRuntimeConfig {
   ) {
     throw new Error(`[Web Config] Invalid ANALYTICS_MODE "${analyticsMode}".`);
   }
+  const connectedEnvironment =
+    environment.environment === "development" ||
+    environment.environment === "staging" ||
+    environment.environment === "production" ||
+    (environment.environment === "local" &&
+      process.env.SHONGRE_EXPLICIT_DEMO !== "true");
+  if (connectedEnvironment) {
+    const errors: string[] = [];
+    if (dataMode !== "api") errors.push("NEXT_PUBLIC_DATA_MODE=api");
+    if (mockStorageEnabled)
+      errors.push("NEXT_PUBLIC_ENABLE_MOCK_STORAGE=false");
+    if (errors.length > 0) {
+      throw new Error(
+        `[Web Config] Connected ${environment.environment} runtime configuration is unsafe: ${errors.join(", ")}.`,
+      );
+    }
+  }
   if (!isProduction(environment.environment)) {
     if (stripePublishableKey.startsWith("pk_live_")) {
       throw new Error(
@@ -58,9 +80,6 @@ export function createPublicRuntimeConfig(): PublicRuntimeConfig {
     }
   } else {
     const errors: string[] = [];
-    if (dataMode !== "api") errors.push("NEXT_PUBLIC_DATA_MODE=api");
-    if (mockStorageEnabled)
-      errors.push("NEXT_PUBLIC_ENABLE_MOCK_STORAGE=false");
     if (!/^pk_live_[A-Za-z0-9]+$/.test(stripePublishableKey)) {
       errors.push(
         "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY must be a live publishable key",

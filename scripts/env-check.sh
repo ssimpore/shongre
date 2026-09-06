@@ -62,6 +62,67 @@ case "${SEO_GPTBOT_TRAINING_POLICY:-deny}" in
   *) shongre_fail "SEO_GPTBOT_TRAINING_POLICY must be allow or deny"; failed=1 ;;
 esac
 
+case "${SHONGRE_EXPLICIT_DEMO:-false}" in
+  true|false) ;;
+  *) shongre_fail "SHONGRE_EXPLICIT_DEMO must be true or false"; failed=1 ;;
+esac
+
+case "$APP_ENV" in
+  local)
+    expected_backend_data_mode=database
+    expected_database_infra_mode=local
+    ;;
+  test)
+    expected_backend_data_mode=demo
+    expected_database_infra_mode=local
+    ;;
+  preview|development|staging|production)
+    expected_backend_data_mode=database
+    expected_database_infra_mode=hosted
+    ;;
+esac
+backend_data_mode_matches=false
+if [[ "$APP_ENV" == "local" && "${SHONGRE_EXPLICIT_DEMO:-false}" == "true" && "$BACKEND_DATA_MODE" == "demo" ]]; then
+  backend_data_mode_matches=true
+elif [[ "$BACKEND_DATA_MODE" == "$expected_backend_data_mode" ]]; then
+  backend_data_mode_matches=true
+fi
+if [[ "$backend_data_mode_matches" != true ]]; then
+  shongre_fail "BACKEND_DATA_MODE must be $expected_backend_data_mode for APP_ENV=$APP_ENV"
+  failed=1
+fi
+if [[ "$DATABASE_INFRA_MODE" != "$expected_database_infra_mode" ]]; then
+  shongre_fail "DATABASE_INFRA_MODE must be $expected_database_infra_mode for APP_ENV=$APP_ENV"
+  failed=1
+fi
+if [[ "$APP_ENV" == "local" && "${SHONGRE_EXPLICIT_DEMO:-false}" == "true" ]]; then
+  for pair in \
+    "NEXT_PUBLIC_DATA_MODE:demo" \
+    "NEXT_PUBLIC_ENABLE_MOCK_STORAGE:true" \
+    "BACKEND_DATA_MODE:demo" \
+    "EXPO_PUBLIC_DATA_MODE:demo"; do
+    name="${pair%%:*}"
+    expected="${pair#*:}"
+    if [[ "${!name:-}" != "$expected" ]]; then
+      shongre_fail "$name must be $expected for the explicit local demo stack"
+      failed=1
+    fi
+  done
+elif [[ "$APP_ENV" == "local" || "$APP_ENV" == "development" || "$APP_ENV" == "staging" || "$APP_ENV" == "production" ]]; then
+  for pair in \
+    "NEXT_PUBLIC_DATA_MODE:api" \
+    "NEXT_PUBLIC_ENABLE_MOCK_STORAGE:false" \
+    "BACKEND_DATA_MODE:database" \
+    "EXPO_PUBLIC_DATA_MODE:api"; do
+    name="${pair%%:*}"
+    expected="${pair#*:}"
+    if [[ "${!name:-}" != "$expected" ]]; then
+      shongre_fail "$name must be $expected for the connected $APP_ENV environment"
+      failed=1
+    fi
+  done
+fi
+
 case "$SHONGRE_ENV:$APP_ENV" in
   local:local|test:test|preview:preview|development:development|staging:staging|production:production) ;;
   *)
@@ -77,6 +138,40 @@ if [[ "$BACKEND_DATA_MODE" == "database" && "$DATABASE_INFRA_MODE" == "hosted" ]
       failed=1
     fi
   done
+fi
+
+if [[ "$APP_ENV" == "development" || "$APP_ENV" == "staging" || "$APP_ENV" == "production" ]]; then
+  for key in \
+    JWT_SECRET MFA_ENCRYPTION_KEY HANDOVER_PIN_PEPPER \
+    PROVIDER_CREDENTIAL_ENCRYPTION_KEY_BASE64 PROVIDER_CREDENTIAL_KEY_VERSION \
+    DIGITAL_FULFILLMENT_ENCRYPTION_KEY_BASE64 DIGITAL_FULFILLMENT_KEY_VERSION; do
+    if [[ -z "${!key:-}" ]]; then
+      shongre_fail "$key is required for the managed $APP_ENV runtime"
+      failed=1
+    fi
+  done
+  for key in JWT_SECRET MFA_ENCRYPTION_KEY HANDOVER_PIN_PEPPER; do
+    value="${!key:-}"
+    if (( ${#value} < 32 )); then
+      shongre_fail "$key must contain at least 32 characters in $APP_ENV"
+      failed=1
+    fi
+  done
+  if ! PROVIDER_CREDENTIAL_ENCRYPTION_KEY_BASE64="${PROVIDER_CREDENTIAL_ENCRYPTION_KEY_BASE64:-}" DIGITAL_FULFILLMENT_ENCRYPTION_KEY_BASE64="${DIGITAL_FULFILLMENT_ENCRYPTION_KEY_BASE64:-}" node --input-type=module -e '
+    const base64 = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/;
+    for (const name of [
+      "PROVIDER_CREDENTIAL_ENCRYPTION_KEY_BASE64",
+      "DIGITAL_FULFILLMENT_ENCRYPTION_KEY_BASE64",
+    ]) {
+      const value = process.env[name] || "";
+      if (!base64.test(value) || Buffer.from(value, "base64").length !== 32) {
+        throw new Error(`${name} must be valid base64 that decodes to exactly 32 bytes`);
+      }
+    }
+  '; then
+    shongre_fail "backend encryption keys must be valid 32-byte base64 values in $APP_ENV"
+    failed=1
+  fi
 fi
 
 for fingerprint in API_ENVIRONMENT_ID DATABASE_ENVIRONMENT_ID SUPABASE_ENVIRONMENT_ID STORAGE_ENVIRONMENT_ID NEXT_PUBLIC_ENVIRONMENT_ID EXPO_PUBLIC_ENVIRONMENT_ID; do
@@ -115,8 +210,7 @@ done
 
 if [[ "$APP_ENV" == "staging" || "$APP_ENV" == "production" ]]; then
   for pair in \
-    "NEXT_PUBLIC_DATA_MODE:api" \
-    "NEXT_PUBLIC_ENABLE_MOCK_STORAGE:false" \
+    "MALWARE_SCAN_MODE:http" \
     "PAYMENT_PROVIDER:stripe" \
     "KYC_PROVIDER:stripe" \
     "BUSINESS_REGISTRY_PROVIDER:siret" \
@@ -143,16 +237,24 @@ if [[ "$APP_ENV" == "staging" || "$APP_ENV" == "production" ]]; then
     fi
   done
   for key in \
-    JWT_SECRET MFA_ENCRYPTION_KEY PROVIDER_CREDENTIAL_ENCRYPTION_KEY_BASE64 PROVIDER_CREDENTIAL_KEY_VERSION \
     AUTH_EMAIL_DELIVERY_URL AUTH_EMAIL_DELIVERY_TOKEN STRIPE_SECRET_KEY STRIPE_WEBHOOK_SECRET \
     STRIPE_CONNECT_WEBHOOK_SECRET NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY COMPLIANCE_WEBHOOK_SECRET HANDOVER_PIN_PEPPER \
     KYC_PROVIDER_BASE_URL KYC_PROVIDER_API_TOKEN BUSINESS_REGISTRY_API_URL BUSINESS_REGISTRY_API_TOKEN \
-    GEMINI_API_KEY GEMINI_MODEL; do
+    GEMINI_API_KEY GEMINI_MODEL MALWARE_SCAN_URL MALWARE_SCAN_TOKEN; do
     if [[ -z "${!key:-}" ]]; then
       shongre_fail "$key is required for $APP_ENV provider certification"
       failed=1
     fi
   done
+  if ! MALWARE_SCAN_URL="${MALWARE_SCAN_URL:-}" node --input-type=module -e '
+    const url = new URL(process.env.MALWARE_SCAN_URL);
+    if (url.protocol !== "https:" || url.username || url.password) {
+      throw new Error("MALWARE_SCAN_URL must be a credential-free HTTPS URL");
+    }
+  '; then
+    shongre_fail "MALWARE_SCAN_URL must be a credential-free HTTPS URL in $APP_ENV"
+    failed=1
+  fi
   stripe_secret_prefix="sk_test_"
   stripe_public_prefix="pk_test_"
   if [[ "$APP_ENV" == "production" ]]; then

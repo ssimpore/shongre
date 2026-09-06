@@ -1,6 +1,12 @@
 # Shongre Auto — launch gates and operations
 
-The demo frontend remains independent of the backend. `NEXT_PUBLIC_DATA_MODE=demo`, `BACKEND_DATA_MODE=demo`, and `PAYMENT_PROVIDER=demo` are the safe local defaults in `.env.example`. Hosted staging and production require API/database mode and must pass every gate below; changing a browser variable never authorizes real payments, partner routing, or public uploads.
+The explicit demo frontend remains independent of the backend. Canonical local
+development uses Web/mobile API mode, a database backend, repository-owned
+Supabase, and demo provider integrations; `make demo` or `make frontend` are the
+only local commands that select deterministic data adapters. Hosted staging and
+production require API/database mode and must pass every gate below; changing a
+browser value never authorizes real payments, partner routing, or public
+uploads.
 
 ## Base vertical launch
 

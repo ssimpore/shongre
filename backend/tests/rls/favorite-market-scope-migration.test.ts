@@ -10,6 +10,12 @@ const migration = readFileSync(
 );
 
 describe("favorite market scope migration", () => {
+  it("publishes its locked compatibility transition atomically", () => {
+    expect(migration).toContain("BEGIN;");
+    expect(migration).toContain("LOCK TABLE public.favorites IN SHARE MODE;");
+    expect(migration).toContain("COMMIT;");
+  });
+
   it("creates an authoritative account, listing and action-market relation", () => {
     expect(migration).toContain(
       "PRIMARY KEY (user_id, listing_id, market_code)",

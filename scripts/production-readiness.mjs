@@ -56,6 +56,17 @@ function required(name, minimumLength = 1) {
   return candidate;
 }
 
+const standardBase64 =
+  /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/;
+
+function exactBase64Bytes(name, candidate, byteLength) {
+  check(
+    standardBase64.test(candidate) &&
+      Buffer.from(candidate, "base64").length === byteLength,
+    `${name} must be valid base64 that decodes to ${byteLength} bytes`,
+  );
+}
+
 function httpsUrl(name) {
   const candidate = required(name);
   try {
@@ -249,15 +260,22 @@ const providerCredentialKey = required(
   "PROVIDER_CREDENTIAL_ENCRYPTION_KEY_BASE64",
   40,
 );
-try {
-  check(
-    Buffer.from(providerCredentialKey, "base64").length === 32,
-    "PROVIDER_CREDENTIAL_ENCRYPTION_KEY_BASE64 must decode to 32 bytes",
-  );
-} catch {
-  fail("PROVIDER_CREDENTIAL_ENCRYPTION_KEY_BASE64 must be valid base64");
-}
+exactBase64Bytes(
+  "PROVIDER_CREDENTIAL_ENCRYPTION_KEY_BASE64",
+  providerCredentialKey,
+  32,
+);
 required("PROVIDER_CREDENTIAL_KEY_VERSION");
+const digitalFulfillmentKey = required(
+  "DIGITAL_FULFILLMENT_ENCRYPTION_KEY_BASE64",
+  40,
+);
+exactBase64Bytes(
+  "DIGITAL_FULFILLMENT_ENCRYPTION_KEY_BASE64",
+  digitalFulfillmentKey,
+  32,
+);
+required("DIGITAL_FULFILLMENT_KEY_VERSION");
 required("AUTH_EMAIL_DELIVERY_TOKEN", 24);
 required("COMPLIANCE_WEBHOOK_SECRET", 32);
 required("HANDOVER_PIN_PEPPER", 32);

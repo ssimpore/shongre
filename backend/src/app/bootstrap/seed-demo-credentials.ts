@@ -5,15 +5,9 @@ import {
 import { hashPassword } from "../../shared/auth/password.js";
 import { logger } from "../../infrastructure/logging/logger.js";
 import { config } from "../config/index.js";
+import { DEMO_ACCOUNT_PASSWORD } from "./demo-account-password.js";
 
-/**
- * The shared password for the seeded demo personas.
- *
- * Overridable so a shared staging environment does not run on a password
- * documented in the repository.
- */
-export const DEMO_ACCOUNT_PASSWORD =
-  process.env.DEMO_ACCOUNT_PASSWORD || "ShongreDemo2024!";
+export { DEMO_ACCOUNT_PASSWORD } from "./demo-account-password.js";
 
 /**
  * Gives the canonical demo personas a real password hash.

@@ -29,6 +29,7 @@ import {
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useRegionalFormatters } from "../../hooks/useRegionalFormatters";
 import { useTranslation } from "../../i18n/I18nProvider";
+import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 
 function VerificationRow({ label, status }: { label: string; status: string }) {
   const { t } = useTranslation();
@@ -56,6 +57,7 @@ function VerificationRow({ label, status }: { label: string; status: string }) {
 export const CourseTutorProfilePage: React.FC = () => {
   const { t } = useTranslation();
   const { formatMoney } = useRegionalFormatters();
+  const { activeMarket } = useMarketLocation();
   const { slug = "" } = useParams<{ slug: string }>();
   const [tutor, setTutor] = useState<TutorPublicProfile | null>(null);
   const [offers, setOffers] = useState<CoursePublicOffer[]>([]);
@@ -65,14 +67,14 @@ export const CourseTutorProfilePage: React.FC = () => {
   useEffect(() => {
     setIsLoading(true);
     services.courses
-      .getTutorProfile(slug)
+      .getTutorProfile(slug, activeMarket.code)
       .then((result) => {
         setTutor(result.tutor);
         setOffers(result.offers);
       })
       .catch(() => setError(true))
       .finally(() => setIsLoading(false));
-  }, [slug]);
+  }, [activeMarket.code, slug]);
 
   const canonicalPath = `/education/professeur/${slug}`;
   usePageMeta({

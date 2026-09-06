@@ -21,11 +21,13 @@ import {
   courseLeadSchema,
   courseMarketConfigSchema,
   courseOfferSchema,
+  coursePublicOfferSchema,
   courseOrganizationSchema,
   coursePlanSchema,
   courseSubjectSchema,
   learnerRequestSchema,
   tutorProfileSchema,
+  tutorPublicProfileSchema,
 } from "@shongre/contracts/courses";
 import { randomUUID } from "node:crypto";
 import { getSupabaseAdminClient } from "../../supabase/supabase-client.js";
@@ -396,7 +398,7 @@ const makeProfile = (
   ...input,
 });
 
-const DEMO_TUTOR_PROFILES: TutorProfile[] = [
+export const DEMO_TUTOR_PROFILES: TutorProfile[] = [
   makeProfile({
     id: "tutor_thomas",
     userId: "user_tutor_thomas",
@@ -591,7 +593,7 @@ const makeOffer = (tutor: TutorProfile, index: number): CourseOffer => ({
   publishedAt: "2026-05-12T08:00:00.000Z",
 });
 
-const DEMO_COURSE_OFFERS = DEMO_TUTOR_PROFILES.map(makeOffer);
+export const DEMO_COURSE_OFFERS = DEMO_TUTOR_PROFILES.map(makeOffer);
 
 const DEMO_LEARNER_REQUESTS: LearnerRequest[] = [
   {
@@ -1610,7 +1612,7 @@ export class PostgresCoursesRepository implements ICoursesRepository {
     }
 
     const parsedRows = rows.map((row) => {
-      const offer = toPublicOffer(courseOfferSchema.parse(row.offer_payload));
+      const offer = coursePublicOfferSchema.parse(row.offer_payload);
       const offerIdMatches =
         typeof row.offer_id === "string" && row.offer_id === offer.id;
       const rowMarketMatches = row.market_code === marketCode;
@@ -1626,7 +1628,7 @@ export class PostgresCoursesRepository implements ICoursesRepository {
       parsedRows.map(({ listingId }) => ({ listingId, marketCode })),
     );
     const items = parsedRows.map(({ row, offer, listingId }) => ({
-      tutor: toPublicTutor(tutorProfileSchema.parse(row.tutor_payload)),
+      tutor: tutorPublicProfileSchema.parse(row.tutor_payload),
       offer: {
         ...offer,
         // The trigger-owned column, not the JSON payload, is the authoritative
@@ -1662,17 +1664,17 @@ export class PostgresCoursesRepository implements ICoursesRepository {
 
   async getTutorProfile(idOrSlug: string): Promise<TutorProfile | null> {
     const supabase = getSupabaseAdminClient() as any;
-    let { data, error } = await supabase
+    const column =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+        idOrSlug,
+      )
+        ? "id"
+        : "slug";
+    const { data, error } = await supabase
       .from("course_tutor_profiles")
       .select("private_payload")
-      .eq("id", idOrSlug)
+      .eq(column, idOrSlug)
       .maybeSingle();
-    if (!data && !error)
-      ({ data, error } = await supabase
-        .from("course_tutor_profiles")
-        .select("private_payload")
-        .eq("slug", idOrSlug)
-        .maybeSingle());
     if (error) throw error;
     return data ? tutorProfileSchema.parse(data.private_payload) : null;
   }

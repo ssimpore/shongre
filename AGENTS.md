@@ -186,6 +186,17 @@ scripts/ + Makefile    repository-level tooling
   environment rather than relying on table prefixes or schemas for isolation.
 - Data modes and provider modes must be explicit and fail closed. Never silently
   switch between demo, database, sandbox, or live behavior.
+- Local is the only developer profile whose backend may use local database
+  infrastructure. Preview, development, staging, and production use isolated
+  hosted infrastructure; development, staging, and production Web/mobile
+  clients must use API mode with mock storage disabled. `make frontend` remains
+  the explicit standalone local demo surface, and `make demo` may select the
+  deterministic backend adapter for its command-scoped local stack.
+- Development, staging, and production runtime secrets must be injected by the
+  environment-specific secret store. Their startup and host deployment
+  preflights must reject missing/short authentication secrets, local database
+  endpoints, mismatched Supabase project references, and malformed encryption
+  keys; fixed local development keys are not valid in shared environments.
 - Tests, preview, development, and staging must never receive production data,
   live-provider secrets, or production indexing behavior. Preview must not own
   production webhooks, campaigns, queues, or cron.
@@ -206,13 +217,20 @@ Web and mobile use the same boundary:
 component → hook/controller → service contract → demo or HTTP adapter
 ```
 
-- `demo` is the default client mode. Web and mobile must remain fully usable and
-  testable with the backend, Supabase, Stripe CLI, KYC providers, and production
-  services stopped.
+- Canonical local development uses API-mode Web/mobile clients and a
+  database-mode backend backed by repository-owned Supabase. Demo adapters must
+  remain fully usable and testable with backend infrastructure stopped, but may
+  be selected only by explicit demo/test commands; connected builds must ignore
+  browser-persisted demo preferences and never expose a runtime path back to
+  demo mode.
 - Local development uses the repository-owned Supabase stack for the backend and
   worker while `make frontend` remains an explicitly standalone demo UI. The
   canonical local sequence is `make install`, `make supabase-up`,
   `make db-migrate`, `make db-seed`, then `make backend` and/or `make worker`;
+  `make dev` performs that connected Web sequence in one command, first stopping
+  tracked application processes and then forcing Web/mobile API and backend
+  database mode with mock storage disabled, migrating, idempotently seeding, and
+  launching the API, worker, and Web app;
   generated local credentials remain ignored under `.runtime/`. The default
   local Web and API origins and ports come only from `.env.example`; runtime
   source, Make recipes, and package scripts must not duplicate them. Do not
@@ -947,6 +965,10 @@ France-only happy path is insufficient for market-sensitive work.
   backup/restore evidence, storage restore checks, alerting, and incident
   runbooks aligned with changed operational behavior. Do not weaken security or
   privacy controls to make a health or performance test pass.
+- Structured backend logs must include the environment fingerprint and redact
+  known secret fields, configured credentials, bearer tokens, and nested error
+  values before serialization. Log context must never override the canonical
+  timestamp, level, scope, message, or environment fields.
 
 ## Testing and definition of done
 

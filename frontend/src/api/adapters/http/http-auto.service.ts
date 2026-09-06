@@ -34,9 +34,10 @@ export class HttpAutoService implements AutoServiceContract {
   searchVehicles(query: VehicleSearchQuery) {
     return httpClient.post<VehicleSearchResponse>("/auto/search", query);
   }
-  getVehicle(idOrSlug: string) {
+  getVehicle(idOrSlug: string, marketCode: string) {
     return httpClient.get<VehiclePublic>(
       `/auto/vehicles/${encodeURIComponent(idOrSlug)}`,
+      { headers: { "X-Shongre-Market": marketCode } },
     );
   }
   getOrCreateDraft(

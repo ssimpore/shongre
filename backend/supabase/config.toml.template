@@ -31,10 +31,16 @@ enabled = true
 port = {{SUPABASE_STUDIO_PORT}}
 api_url = "http://{{SUPABASE_HOST}}:{{SUPABASE_API_PORT}}"
 
+# Logflare and Vector are optional local telemetry. The complete application
+# stack fits the supported 4 GiB Docker VM only when these are disabled.
+[analytics]
+enabled = false
+
 [local_smtp]
 enabled = true
 port = {{SUPABASE_INBUCKET_PORT}}
 smtp_port = {{SUPABASE_SMTP_PORT}}
+# Supabase Analytics owns its default 54327 host port.
 pop3_port = {{SUPABASE_POP3_PORT}}
 
 [storage]

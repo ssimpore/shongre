@@ -48,11 +48,13 @@ export class HttpCoursesService implements CoursesServiceContract {
     return httpClient.post(`${EDUCATION_API_BASE}/search`, query);
   }
 
-  getTutorProfile(idOrSlug: string) {
+  getTutorProfile(idOrSlug: string, marketCode: string) {
     return httpClient.get<{
       tutor: TutorPublicProfile;
       offers: CoursePublicOffer[];
-    }>(`${EDUCATION_API_BASE}/tutors/${encodeURIComponent(idOrSlug)}`);
+    }>(`${EDUCATION_API_BASE}/tutors/${encodeURIComponent(idOrSlug)}`, {
+      headers: { "X-Shongre-Market": marketCode },
+    });
   }
 
   saveTutorProfile(profile: TutorProfileDraft): Promise<TutorProfile> {

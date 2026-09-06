@@ -57,10 +57,12 @@ EXPECTED_SUPABASE_PROJECT_REF=staging-ref
 SUPABASE_URL=https://staging-ref.supabase.co
 SUPABASE_ANON_KEY=ci-anon
 SUPABASE_SERVICE_ROLE_KEY=ci-service-role
-JWT_SECRET=ci-jwt-secret
-MFA_ENCRYPTION_KEY=ci-mfa-key
-PROVIDER_CREDENTIAL_ENCRYPTION_KEY_BASE64=Y2ktcHJvdmlkZXIta2V5
+JWT_SECRET=ci-jwt-secret-value-at-least-32-characters
+MFA_ENCRYPTION_KEY=ci-mfa-key-value-at-least-32-characters
+PROVIDER_CREDENTIAL_ENCRYPTION_KEY_BASE64=BwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwc=
 PROVIDER_CREDENTIAL_KEY_VERSION=staging-v1
+DIGITAL_FULFILLMENT_ENCRYPTION_KEY_BASE64=CAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg=
+DIGITAL_FULFILLMENT_KEY_VERSION=staging-v1
 AUTH_EMAIL_DELIVERY_URL=https://email.example/send
 AUTH_EMAIL_DELIVERY_TOKEN=ci-email-token
 EMAIL_RECIPIENT_ALLOWLIST=release-tester@example.com
@@ -68,7 +70,7 @@ STRIPE_SECRET_KEY=sk_test_ci
 STRIPE_WEBHOOK_SECRET=whsec_ci
 STRIPE_CONNECT_WEBHOOK_SECRET=whsec_connect_ci
 COMPLIANCE_WEBHOOK_SECRET=ci-compliance
-HANDOVER_PIN_PEPPER=ci-handover
+HANDOVER_PIN_PEPPER=ci-handover-pin-pepper-at-least-32-characters
 KYC_PROVIDER_BASE_URL=https://identity.example
 KYC_PROVIDER_API_TOKEN=ci-identity
 BUSINESS_REGISTRY_API_URL=https://registry.example
@@ -146,6 +148,43 @@ try {
     backend.replace(
       `DATABASE_ENVIRONMENT_ID=${environmentId}`,
       "DATABASE_ENVIRONMENT_ID=shongre-production",
+    ),
+  );
+  run(1);
+
+  writePrivate(backendPath, backend);
+  writePrivate(
+    backendPath,
+    backend.replace(
+      "DIGITAL_FULFILLMENT_ENCRYPTION_KEY_BASE64=CAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg=",
+      "DIGITAL_FULFILLMENT_ENCRYPTION_KEY_BASE64=not-a-32-byte-key",
+    ),
+  );
+  run(1);
+
+  writePrivate(
+    backendPath,
+    backend.replace(
+      "DATABASE_URL=postgresql://ci:ci@db.example/shongre",
+      "DATABASE_URL=postgresql://ci:ci@localhost/shongre",
+    ),
+  );
+  run(1);
+
+  writePrivate(
+    backendPath,
+    backend.replace(
+      "SUPABASE_URL=https://staging-ref.supabase.co",
+      "SUPABASE_URL=https://localhost",
+    ),
+  );
+  run(1);
+
+  writePrivate(
+    backendPath,
+    backend.replace(
+      "JWT_SECRET=ci-jwt-secret-value-at-least-32-characters",
+      "JWT_SECRET=too-short",
     ),
   );
   run(1);

@@ -39,12 +39,17 @@ export type AiEnvironmentMode =
   "mock" | "development" | "staging" | "production";
 export type AnalyticsEnvironmentMode =
   "off" | "test" | "development" | "staging" | "production";
+export type BackendDataMode = "demo" | "database";
+export type DatabaseInfrastructureMode = "local" | "hosted";
 
 export interface EnvironmentSafetyInput {
   config: EnvironmentConfig;
   apiEnvironmentId?: string;
+  databaseEnvironmentId?: string;
   supabaseEnvironmentId?: string;
   storageEnvironmentId?: string;
+  backendDataMode: BackendDataMode;
+  databaseInfrastructureMode: DatabaseInfrastructureMode;
   paymentMode: PaymentEnvironmentMode;
   emailMode: EmailEnvironmentMode;
   aiMode: AiEnvironmentMode;
@@ -97,6 +102,41 @@ export const ENVIRONMENT_PROVIDER_MODES: Readonly<
     emailMode: "live",
     aiMode: "production",
     analyticsMode: "production",
+  },
+});
+
+export const ENVIRONMENT_DATABASE_MODES: Readonly<
+  Record<
+    AppEnvironment,
+    {
+      backendDataModes: readonly BackendDataMode[];
+      databaseInfrastructureMode: DatabaseInfrastructureMode;
+    }
+  >
+> = Object.freeze({
+  local: {
+    backendDataModes: ["database", "demo"],
+    databaseInfrastructureMode: "local",
+  },
+  test: {
+    backendDataModes: ["demo"],
+    databaseInfrastructureMode: "local",
+  },
+  preview: {
+    backendDataModes: ["database"],
+    databaseInfrastructureMode: "hosted",
+  },
+  development: {
+    backendDataModes: ["database"],
+    databaseInfrastructureMode: "hosted",
+  },
+  staging: {
+    backendDataModes: ["database"],
+    databaseInfrastructureMode: "hosted",
+  },
+  production: {
+    backendDataModes: ["database"],
+    databaseInfrastructureMode: "hosted",
   },
 });
 
@@ -224,6 +264,11 @@ export function assertEnvironmentSafety(input: EnvironmentSafetyInput): void {
   );
   requireMatchingFingerprint(
     config.environmentId,
+    input.databaseEnvironmentId,
+    "DATABASE_ENVIRONMENT_ID",
+  );
+  requireMatchingFingerprint(
+    config.environmentId,
     input.supabaseEnvironmentId,
     "SUPABASE_ENVIRONMENT_ID",
   );
@@ -239,6 +284,21 @@ export function assertEnvironmentSafety(input: EnvironmentSafetyInput): void {
   ) {
     throw new Error(
       "[Environment Safety] SUPABASE_PROJECT_REF does not match EXPECTED_SUPABASE_PROJECT_REF.",
+    );
+  }
+
+  const expectedDatabaseModes = ENVIRONMENT_DATABASE_MODES[config.environment];
+  if (!expectedDatabaseModes.backendDataModes.includes(input.backendDataMode)) {
+    throw new Error(
+      `[Environment Safety] backendDataMode must be ${expectedDatabaseModes.backendDataModes.join(" or ")} for ${config.environment}.`,
+    );
+  }
+  if (
+    input.databaseInfrastructureMode !==
+    expectedDatabaseModes.databaseInfrastructureMode
+  ) {
+    throw new Error(
+      `[Environment Safety] databaseInfrastructureMode must be ${expectedDatabaseModes.databaseInfrastructureMode} for ${config.environment}.`,
     );
   }
 

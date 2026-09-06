@@ -63,9 +63,9 @@ evidence.
 
 <!-- capability-inventory:start -->
 
-Current generated repository inventory: 512 OpenAPI operations across 452
-paths, including 507 runtime routes, and 100 ordered migrations through
-`00100_listing_market_promotion_provenance.sql`. There are 385 non-E2E test source files.
+Current generated repository inventory: 516 OpenAPI operations across 456
+paths, including 511 runtime routes, and 102 ordered migrations through
+`00102_delivery_request_favorites.sql`. There are 401 non-E2E test source files.
 <!-- capability-inventory:end -->
 
 Statuses in this ledger are intentionally stricter than feature-development

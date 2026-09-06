@@ -1,6 +1,9 @@
 # Shongre Immo — launch checklist
 
-Standalone local development defaults to `NEXT_PUBLIC_DATA_MODE=demo`. Hosted staging and production require `api` mode, mock storage disabled, and every technical, legal, provider, and operational gate below; the existence of an HTTP adapter alone is not launch evidence.
+Canonical local development and hosted staging/production use `api` mode with
+mock storage disabled; standalone demo data is selected only by explicit demo
+commands. Every technical, legal, provider, and operational gate below still
+applies; the existence of an HTTP adapter alone is not launch evidence.
 
 ## Technical gates
 

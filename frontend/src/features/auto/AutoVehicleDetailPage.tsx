@@ -101,7 +101,7 @@ export const AutoVehicleDetailPage: React.FC = () => {
     setLoading(true);
     setError(false);
     services.auto
-      .getVehicle(slug)
+      .getVehicle(slug, activeMarket.code)
       .then(async (result) => {
         const similarResult = await services.auto.searchVehicles({
           marketCode: activeMarket.code,

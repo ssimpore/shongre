@@ -1889,10 +1889,16 @@ export class PostgresRealEstateRepository extends DemoRealEstateRepository {
   }
 
   override async getProperty(idOrSlug: string, marketCode?: string) {
+    const column =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+        idOrSlug,
+      )
+        ? "id"
+        : "slug";
     const { data, error } = await this.db()
       .from("real_estate_properties")
       .select("*, real_estate_media(*), real_estate_private_documents(*)")
-      .or(`id.eq.${idOrSlug},slug.eq.${idOrSlug}`)
+      .eq(column, idOrSlug)
       .maybeSingle();
     if (error) throw error;
     if (!data) return null;
