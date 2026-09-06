@@ -4,14 +4,16 @@
 
 - Contract version: `1.0.0`
 - API base path: `/api/v1`
-- Operations: **516**
-- Specification SHA-256: `6cc014bdf88b78f1`
+- Operations: **519**
+- Specification SHA-256: `5daedaee61e9eb31`
 
 ## account
 
 | Method | Path | Operation ID | Access | Permission | Success |
 | --- | --- | --- | --- | --- | --- |
 | `POST` | `/account/delete` | `postAccountDelete` | `permission` | `marketplace.customer.access` | `200` |
+| `GET` | `/account/listings` | `getAccountListings` | `permission` | `marketplace.customer.access` | `200` |
+| `POST` | `/account/upgrade-to-professional` | `postAccountUpgradeToProfessional` | `permission` | `marketplace.customer.access` | `200` |
 
 ## admin-audit-logs
 
@@ -498,6 +500,7 @@
 | Method | Path | Operation ID | Access | Permission | Success |
 | --- | --- | --- | --- | --- | --- |
 | `PUT` | `/listings/{id}/favorite` | `putListingsByIdFavorite` | `permission` | `favorite.manage.own` | `200` |
+| `POST` | `/listings/{id}/mark-sold` | `postListingsByIdMarkSold` | `permission` | `listing.update.own` | `200` |
 | `DELETE` | `/listings/{id}` | `deleteListingsById` | `permission` | `listing.delete.own` | `200` |
 | `GET` | `/listings/{id}` | `getListingsById` | `public` | — | `200` |
 | `PUT` | `/listings/{id}` | `putListingsById` | `permission` | `listing.update.own` | `200` |

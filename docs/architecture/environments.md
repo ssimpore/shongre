@@ -176,11 +176,15 @@ compatible expanded schema.
 Reference configuration belongs in migrations or reviewed configuration
 records. The seed command installs the reviewed commercial baseline and a
 deterministic, production-shaped local scenario in PostgreSQL and public
-Storage. Its identities and content are synthetic; production customer data,
-payments, messages, private documents, and provider credentials are never seed
-inputs. Seed and reset commands require `APP_ENV=local` plus a proven local
-database target. They refuse hosted and production targets even when an
-operator sets a permissive flag.
+Storage. Every synthetic profile is provisioned in local Supabase Auth and
+linked through `profiles.auth_user_id`; password hashes are not duplicated in a
+public-schema credential table. Account and Staff roles remain authoritative in
+`profiles` and `staff_memberships`, not Auth metadata. Its identities and
+content are synthetic; production customer data, payments, messages, private
+documents, and provider credentials are never seed inputs. Seed and reset
+commands require `APP_ENV=local` plus a proven local database target. They
+refuse hosted and production targets even when an operator sets a permissive
+flag.
 
 Storage uses environment-local Supabase Storage. Public listing derivatives and
 avatars are separate from upload staging/quarantine. KYC/KYB and other sensitive

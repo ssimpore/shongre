@@ -46,6 +46,30 @@ export interface RegisterProfessionalInput {
   requestedProduct?: ShongreProductId;
 }
 
+export type AuthProfileUpdate = Partial<
+  Pick<
+    UserProfile,
+    | "name"
+    | "avatarUrl"
+    | "phone"
+    | "city"
+    | "postalCode"
+    | "department"
+    | "region"
+    | "country"
+    | "bio"
+  >
+>;
+
+export interface ProfessionalAccountUpgradeInput {
+  companyName: string;
+  sirenSiret: string;
+  legalForm: string;
+  vatNumber?: string;
+  businessAddress: string;
+  phone?: string;
+}
+
 export interface ConnectedAccountView {
   provider: AuthProviderId;
   connected: boolean;
@@ -120,6 +144,10 @@ export interface AuthServiceContract {
   disableMfa(code: string): Promise<void>;
   registerIndividual(input: RegisterIndividualInput): Promise<AuthResult>;
   registerProfessional(input: RegisterProfessionalInput): Promise<AuthResult>;
+  updateProfile(updates: AuthProfileUpdate): Promise<UserProfile>;
+  upgradeToProfessional(
+    input: ProfessionalAccountUpgradeInput,
+  ): Promise<AuthResult>;
   logout(): Promise<void>;
   logoutAll(keepCurrent?: boolean): Promise<void>;
   switchRole(role: UserRole): Promise<UserProfile | null>;

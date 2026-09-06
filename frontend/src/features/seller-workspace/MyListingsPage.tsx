@@ -10,12 +10,10 @@ import {
   Upload,
   Globe,
 } from "lucide-react";
-import { listingRepository } from "../../repositories/listing.repository";
 import { Listing } from "../../types";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { useToast } from "../../app/providers/ToastProvider";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
-import { marketService } from "../../domains/market/market.service";
 import { formatRelativeDate } from "../../utilities/formatters";
 import { Button } from "../../design-system/primitives/Button";
 import { Badge } from "../../design-system/primitives/Badge";
@@ -32,6 +30,7 @@ import { resolveListingPhotoUrl } from "../../domains/listing/listing-media";
 import type { ListingBoostOption } from "../../configuration/plans.config";
 import { useMarketPromotions } from "../../domains/monetization/useMarketPromotions";
 import { useRegionalFormatters } from "../../hooks/useRegionalFormatters";
+import { services } from "../../api/client/service-registry";
 
 const BOOST_STYLES: Record<
   ListingBoostOption["id"],
@@ -68,6 +67,22 @@ const BOOST_STYLES: Record<
   },
 };
 
+const LISTING_STATUS_PRESENTATION = {
+  active: { label: "En ligne", variant: "success" },
+  draft: { label: "Brouillon", variant: "neutral" },
+  pending_review: { label: "En vérification", variant: "warning" },
+  reserved: { label: "Réservée", variant: "primary" },
+  sold: { label: "Vendue", variant: "neutral" },
+  expired: { label: "Expirée", variant: "neutral" },
+  archived: { label: "Archivée", variant: "neutral" },
+} as const satisfies Record<
+  Listing["status"],
+  {
+    label: string;
+    variant: "neutral" | "primary" | "warning" | "success";
+  }
+>;
+
 export const MyListingsPage: React.FC = () => {
   const { t } = useTranslation();
   const marketPromotions = useMarketPromotions();
@@ -95,11 +110,6 @@ export const MyListingsPage: React.FC = () => {
   >("idle");
   const [activatingBoostId, setActivatingBoostId] = useState<string>();
   const promotionSequence = useRef(0);
-  const [marketsModalListing, setMarketsModalListing] =
-    useState<Listing | null>(null);
-  const [selectedMarketsInModal, setSelectedMarketsInModal] = useState<
-    string[]
-  >([]);
   const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
   const [myListings, setMyListings] = useState<Listing[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -112,10 +122,14 @@ export const MyListingsPage: React.FC = () => {
     }
     setIsLoading(true);
     try {
-      const items = await listingRepository.getListingsBySeller(currentUser.id);
-      setMyListings(items || []);
+      const result = await services.listings.getOwnListings(
+        currentUser.id,
+        activeMarket.code,
+      );
+      setMyListings(result.listings);
     } catch {
       setMyListings([]);
+      toast.error("Vos annonces n’ont pas pu être chargées.");
     } finally {
       setIsLoading(false);
     }
@@ -123,7 +137,7 @@ export const MyListingsPage: React.FC = () => {
 
   useEffect(() => {
     fetchListings();
-  }, [currentUser?.id]);
+  }, [currentUser?.id, activeMarket.code]);
 
   const filteredListings = myListings.filter((l) => {
     if (activeTab === "all") return true;
@@ -133,15 +147,31 @@ export const MyListingsPage: React.FC = () => {
   });
 
   const handleMarkAsSold = async (listingId: string) => {
-    await listingRepository.updateListingStatus(listingId, "sold");
-    toast.success("L'annonce a été marquée comme vendue.");
-    await fetchListings();
+    try {
+      await services.listings.markListingSold(listingId);
+      toast.success("L'annonce a été marquée comme vendue.");
+      await fetchListings();
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "L’annonce n’a pas pu être marquée comme vendue.",
+      );
+    }
   };
 
   const handleDeleteListing = async (listingId: string) => {
-    await listingRepository.deleteListing(listingId);
-    toast.info("L'annonce a été supprimée.");
-    await fetchListings();
+    try {
+      await services.listings.deleteListing(listingId);
+      toast.info("L'annonce a été supprimée.");
+      await fetchListings();
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "L’annonce n’a pas pu être supprimée.",
+      );
+    }
   };
 
   const openBoostModal = async (listing: Listing) => {
@@ -275,33 +305,28 @@ export const MyListingsPage: React.FC = () => {
       ? listing.marketCodes
       : [listing.marketCode || activeMarket.code];
 
-  const renderListingStatus = (listing: Listing) => (
-    <div className="flex flex-wrap items-center gap-1.5">
-      <Badge
-        variant={listing.status === "active" ? "success" : "neutral"}
-        size="sm"
-      >
-        {listing.status === "active" ? "En ligne" : "Vendu"}
-      </Badge>
-      {listing.isBoosted && (
-        <Badge variant="featured" size="sm">
-          Vedette
+  const renderListingStatus = (listing: Listing) => {
+    const presentation = LISTING_STATUS_PRESENTATION[listing.status];
+    return (
+      <div className="flex flex-wrap items-center gap-1.5">
+        <Badge variant={presentation.variant} size="sm">
+          {presentation.label}
         </Badge>
-      )}
-    </div>
-  );
+        {listing.isBoosted && (
+          <Badge variant="featured" size="sm">
+            Vedette
+          </Badge>
+        )}
+      </div>
+    );
+  };
 
-  const renderMarketsButton = (listing: Listing) => {
+  const renderMarkets = (listing: Listing) => {
     const markets = getListingMarkets(listing);
     return (
-      <button
-        type="button"
-        onClick={() => {
-          setMarketsModalListing(listing);
-          setSelectedMarketsInModal(markets);
-        }}
+      <div
         className="inline-flex min-h-control-sm items-center gap-1.5 rounded-control border border-border-base bg-bg-surface px-2.5 py-1 text-xs font-semibold text-text-emphasis motion-interactive hover:bg-bg-subtle"
-        title={t("sellerworkspace.myListingsPage.gererLesPaysDePublication")}
+        title="Marchés de publication actifs"
       >
         <Globe
           className="h-icon-sm w-icon-sm text-primary"
@@ -311,7 +336,7 @@ export const MyListingsPage: React.FC = () => {
         <span className="text-micro font-normal text-text-tertiary">
           ({markets.length})
         </span>
-      </button>
+      </div>
     );
   };
 
@@ -422,7 +447,7 @@ export const MyListingsPage: React.FC = () => {
       </dl>
 
       <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-border-subtle pt-3">
-        {renderMarketsButton(listing)}
+        {renderMarkets(listing)}
         {renderListingActions(listing, true)}
       </div>
     </article>
@@ -565,7 +590,7 @@ export const MyListingsPage: React.FC = () => {
                 {
                   id: "Marches",
                   header: "Marchés",
-                  cell: renderMarketsButton,
+                  cell: renderMarkets,
                 },
                 {
                   id: "Prix",
@@ -670,98 +695,6 @@ export const MyListingsPage: React.FC = () => {
                   </button>
                 );
               })}
-            </div>
-          </div>
-        </Modal>
-      )}
-
-      {/* Markets Management Modal */}
-      {marketsModalListing && (
-        <Modal
-          isOpen={true}
-          onClose={() => setMarketsModalListing(null)}
-          title={`Marchés de diffusion : ${marketsModalListing.title}`}
-          maxWidth="md"
-        >
-          <div className="space-y-4">
-            <p className="text-xs sm:text-sm text-text-supporting">
-              {t(
-                "sellerworkspace.myListingsPage.selectionnezLesPaysEuropeensDans",
-              )}
-            </p>
-
-            <div className="space-y-2">
-              {marketService.getMarkets().map((m) => {
-                const isChecked = selectedMarketsInModal.includes(m.code);
-                return (
-                  <label
-                    key={m.code}
-                    className="flex items-center justify-between p-3 rounded-xl border border-border-base hover:bg-bg-subtle cursor-pointer transition-colors"
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="text-lg">{m.flag}</span>
-                      <div>
-                        <span className="font-bold text-sm text-text-main">
-                          {m.name}
-                        </span>
-                        <span className="text-xs text-text-tertiary block">
-                          Devise : {m.currency}
-                        </span>
-                      </div>
-                    </div>
-                    <input
-                      type="checkbox"
-                      checked={isChecked}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setSelectedMarketsInModal([
-                            ...selectedMarketsInModal,
-                            m.code,
-                          ]);
-                        } else {
-                          if (selectedMarketsInModal.length > 1) {
-                            setSelectedMarketsInModal(
-                              selectedMarketsInModal.filter(
-                                (c) => c !== m.code,
-                              ),
-                            );
-                          } else {
-                            toast.warning(
-                              "Au moins un marché doit être sélectionné.",
-                            );
-                          }
-                        }
-                      }}
-                      className="rounded text-primary focus:ring-primary h-4 w-4"
-                    />
-                  </label>
-                );
-              })}
-            </div>
-
-            <div className="flex justify-end gap-2 pt-2 border-t border-border-subtle">
-              <Button
-                variant="ghost"
-                onClick={() => setMarketsModalListing(null)}
-              >
-                Annuler
-              </Button>
-              <Button
-                variant="primary"
-                onClick={async () => {
-                  await listingRepository.updateListingMarkets(
-                    marketsModalListing.id,
-                    selectedMarketsInModal,
-                  );
-                  toast.success(
-                    "Marchés de publication mis à jour avec succès.",
-                  );
-                  setMarketsModalListing(null);
-                  await fetchListings();
-                }}
-              >
-                {t("sellerworkspace.myListingsPage.enregistrerLesMarches")}
-              </Button>
             </div>
           </div>
         </Modal>

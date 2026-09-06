@@ -36,19 +36,18 @@ import {
 import { useAuth } from "../providers/AuthProvider";
 import { useNotifications } from "../providers/NotificationProvider";
 import { Avatar, Badge, Container } from "../../design-system";
-import { storageService } from "../../services/storage.service";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { useAuthorization } from "../../security/useAuthorization";
-import { useMarketLocation } from "../providers/MarketLocationProvider";
 import { useFavorites } from "../providers/FavoritesProvider";
+import { useWorkspaceSummary } from "../providers/WorkspaceSummaryProvider";
 
 export const AccountLayout: React.FC = () => {
   const { t } = useTranslation();
   const { currentUser, logout } = useAuth();
   const { unreadCount: unreadNotifCount } = useNotifications();
   const { canAccessRoute } = useAuthorization();
-  const { activeMarket } = useMarketLocation();
   const { count: favoriteCount } = useFavorites();
+  const { summary: workspaceSummary } = useWorkspaceSummary();
   const navigate = useNavigate();
   const location = useLocation();
   const isMessagingRoute = location.pathname.startsWith("/compte/messages");
@@ -61,17 +60,10 @@ export const AccountLayout: React.FC = () => {
     "Mon Compte"
   ).replace(/\s+\([^)]*\)\s*$/, "");
 
-  // Every badge here must be scoped to the signed-in user — see
-  // storageService.getUnreadMessageCount for why.
-  const unreadMsgCount = storageService.getUnreadMessageCount(currentUser?.id);
+  const unreadMsgCount = workspaceSummary?.unreadMessagesCount ?? 0;
   const favCount = currentUser ? favoriteCount : 0;
-  const savedSearchCount = currentUser
-    ? storageService.getSavedSearches(currentUser.id, activeMarket.code).length
-    : 0;
-  const myListingsCount = currentUser
-    ? storageService.getListings().filter((l) => l.sellerId === currentUser.id)
-        .length
-    : 0;
+  const savedSearchCount = workspaceSummary?.savedSearchesCount ?? 0;
+  const myListingsCount = workspaceSummary?.totalListingsCount ?? 0;
 
   const navItems = [
     {

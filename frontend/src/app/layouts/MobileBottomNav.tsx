@@ -2,23 +2,22 @@ import { routes } from "../../configuration/routes";
 import React from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { Home, Search, PlusCircle, MessageSquare, User } from "lucide-react";
-import { storageService } from "../../services/storage.service";
-import { useAuth } from "../providers/AuthProvider";
 import { usePublishCta } from "../../security/usePublishCta";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { Icon } from "../../design-system";
 import { useStaffMarketplaceAccess } from "../../security/useStaffMarketplaceAccess";
+import { useWorkspaceSummary } from "../providers/WorkspaceSummaryProvider";
 
 export const MobileBottomNav: React.FC = () => {
   const location = useLocation();
-  const { currentUser } = useAuth();
   const publishCta = usePublishCta();
   const { t } = useTranslation();
   const { isStaff } = useStaffMarketplaceAccess();
+  const { summary: workspaceSummary } = useWorkspaceSummary();
 
   const unreadMessagesCount = isStaff
     ? 0
-    : storageService.getUnreadMessageCount(currentUser?.id);
+    : (workspaceSummary?.unreadMessagesCount ?? 0);
 
   // Hide bottom bar on fullscreen wizards / creation tunnels for maximum screen ergonomics
   if (location.pathname.startsWith("/deposer")) {

@@ -1,13 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import {
-  Mail,
-  ArrowRight,
-  ShieldAlert,
-  User,
-  Briefcase,
-  Shield,
-} from "lucide-react";
+import { Mail, ArrowRight, ShieldAlert } from "lucide-react";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { useToast } from "../../app/providers/ToastProvider";
 import { Button } from "../../design-system/primitives/Button";
@@ -31,7 +24,7 @@ export const LoginPage: React.FC = () => {
 
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { login, loginWithMFA, switchDemoUser } = useAuth();
+  const { login, loginWithMFA } = useAuth();
   const toast = useToast();
 
   const redirectUrl = resolveSafeReturn(
@@ -87,19 +80,6 @@ export const LoginPage: React.FC = () => {
       }
     } catch (err: any) {
       setErrorMessage(err.message || "Une erreur inattendue est survenue.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleQuickDemoLogin = async (userKey: string, demoEmail: string) => {
-    setEmail(demoEmail);
-    setPassword("Shongre2026!");
-    setIsLoading(true);
-    try {
-      await switchDemoUser(userKey);
-      toast.success(`Connecté avec succès en tant que profil démo.`);
-      navigate(redirectUrl);
     } finally {
       setIsLoading(false);
     }
@@ -245,87 +225,6 @@ export const LoginPage: React.FC = () => {
       )}
 
       {!requiresMfa ? <SocialLoginButtons returnTo={redirectUrl} /> : null}
-
-      {/* Quick Demo Credentials Panel for Testers */}
-      <div className="mt-7 pt-5 border-t border-border-soft">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-micro font-bold text-text-supporting uppercase tracking-wider">
-            {t("auth.loginPage.connexionRapideDemo")}
-          </span>
-          <span className="text-micro font-medium text-text-supporting">
-            {t("auth.loginPage.1ClicSansMotDe")}
-          </span>
-        </div>
-
-        <div className="grid grid-cols-2 gap-1.5 text-xs">
-          <button
-            type="button"
-            onClick={() =>
-              handleQuickDemoLogin("buyer_thomas", "thomas.laurent@example.fr")
-            }
-            className="min-h-control-touch p-2 rounded-control bg-surface-soft hover:bg-surface-muted border border-border-disabled text-left transition-colors cursor-pointer group"
-          >
-            <div className="font-bold text-text-main group-hover:text-primary flex items-center gap-1">
-              <User className="w-icon-sm h-icon-sm text-info shrink-0" />
-              <span>Thomas (Particulier)</span>
-            </div>
-            <div className="text-micro text-text-supporting truncate">
-              {t("auth.loginPage.acheteurVendeur")}
-            </div>
-          </button>
-
-          <button
-            type="button"
-            onClick={() =>
-              handleQuickDemoLogin("pro_atelier", "contact@atelier-nordique.fr")
-            }
-            className="min-h-control-touch p-2 rounded-control bg-surface-soft hover:bg-surface-muted border border-border-disabled text-left transition-colors cursor-pointer group"
-          >
-            <div className="font-bold text-text-main group-hover:text-primary flex items-center gap-1">
-              <Briefcase className="w-icon-sm h-icon-sm text-primary shrink-0" />
-              <span>Atelier Nordique (Pro)</span>
-            </div>
-            <div className="text-micro text-text-supporting truncate">
-              {t("auth.loginPage.siretVitrineVerifiee")}
-            </div>
-          </button>
-
-          <button
-            type="button"
-            onClick={() =>
-              handleQuickDemoLogin(
-                "pro_pending_sophie",
-                "sophie.marchand@boutiquedeco.fr",
-              )
-            }
-            className="min-h-control-touch p-2 rounded-control bg-surface-soft hover:bg-surface-muted border border-border-disabled text-left transition-colors cursor-pointer group"
-          >
-            <div className="font-bold text-text-main group-hover:text-warning flex items-center gap-1">
-              <Briefcase className="w-icon-sm h-icon-sm text-warning shrink-0" />
-              <span>Sophie (Pro en cours)</span>
-            </div>
-            <div className="text-micro text-text-supporting truncate">
-              Dossier Kbis en examen
-            </div>
-          </button>
-
-          <button
-            type="button"
-            onClick={() =>
-              handleQuickDemoLogin("admin_antoine", "antoine.fabre@shongre.fr")
-            }
-            className="min-h-control-touch p-2 rounded-control bg-surface-soft hover:bg-surface-muted border border-border-disabled text-left transition-colors cursor-pointer group"
-          >
-            <div className="font-bold text-text-main group-hover:text-success flex items-center gap-1">
-              <Shield className="w-icon-sm h-icon-sm text-success shrink-0" />
-              <span>Antoine (Admin)</span>
-            </div>
-            <div className="text-micro text-text-supporting truncate">
-              Administration globale
-            </div>
-          </button>
-        </div>
-      </div>
     </AuthLayout>
   );
 };

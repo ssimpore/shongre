@@ -26,40 +26,23 @@ export const ProStorefrontEditorPage: React.FC = () => {
   const { currentUser, updateProfile } = useAuth();
   const toast = useToast();
 
-  const [companyName, setCompanyName] = useState(
-    currentUser?.companyName || "Atelier Nordique SAS",
-  );
-  const [siret, setSiret] = useState(
-    currentUser?.sirenSiret || currentUser?.siret || "842 194 883 00019",
-  );
-  const [bio, setBio] = useState(
-    currentUser?.bio ||
-      "Spécialiste du mobilier scandinave et vintage certifié.",
-  );
-  const [address, setAddress] = useState("14 rue du Faubourg Saint-Antoine");
-  const [city, setCity] = useState(currentUser?.city || "Paris");
-  const [postalCode, setPostalCode] = useState(
-    currentUser?.postalCode || "75011",
-  );
-  const [phone, setPhone] = useState(currentUser?.phone || "01 42 68 90 12");
-  const [website, setWebsite] = useState(
-    currentUser?.websiteUrl || "https://atelier-nordique.fr",
-  );
+  const companyName = currentUser?.companyName || "";
+  const siret = currentUser?.sirenSiret || currentUser?.siret || "";
+  const [bio, setBio] = useState(currentUser?.bio || "");
+  const [city, setCity] = useState(currentUser?.city || "");
+  const [postalCode, setPostalCode] = useState(currentUser?.postalCode || "");
+  const [phone, setPhone] = useState(currentUser?.phone || "");
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     await updateProfile({
-      companyName,
-      sirenSiret: siret,
-      siret: siret,
       bio,
       city,
       postalCode,
       phone,
-      websiteUrl: website,
     });
     toast.success(
-      "Les informations de votre vitrine pro ont été enregistrées.",
+      "La présentation et les coordonnées de votre profil ont été enregistrées.",
     );
   };
 
@@ -109,7 +92,8 @@ export const ProStorefrontEditorPage: React.FC = () => {
         <FormField label="Raison sociale / Nom commercial" required>
           <Input
             value={companyName}
-            onChange={(e) => setCompanyName(e.target.value)}
+            readOnly
+            placeholder="Non renseigné"
             leftIcon={<Building2 className="w-icon-md h-icon-md" />}
           />
         </FormField>
@@ -119,9 +103,9 @@ export const ProStorefrontEditorPage: React.FC = () => {
             "sellerworkspace.proStorefrontEditorPage.numeroSiret14Chiffres",
           )}
           required
-          hint="Vérifié au répertoire SIRENE INSEE"
+          hint="Les données légales vérifiées se modifient depuis le parcours de vérification."
         >
-          <Input value={siret} onChange={(e) => setSiret(e.target.value)} />
+          <Input value={siret} readOnly placeholder="Non renseigné" />
         </FormField>
       </div>
 
@@ -139,11 +123,7 @@ export const ProStorefrontEditorPage: React.FC = () => {
         />
       </FormField>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <FormField label="Adresse physique" required>
-          <Input value={address} onChange={(e) => setAddress(e.target.value)} />
-        </FormField>
-
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <FormField label="Code Postal" required>
           <Input
             value={postalCode}
@@ -160,32 +140,20 @@ export const ProStorefrontEditorPage: React.FC = () => {
         </FormField>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <FormField
-          label={t(
-            "sellerworkspace.proStorefrontEditorPage.telephoneCommercial",
-          )}
-        >
-          <Input
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            leftIcon={<Phone className="w-icon-md h-icon-md" />}
-          />
-        </FormField>
-
-        <FormField label="Site internet officiel">
-          <Input
-            value={website}
-            onChange={(e) => setWebsite(e.target.value)}
-            leftIcon={<Globe className="w-icon-md h-icon-md" />}
-          />
-        </FormField>
-      </div>
+      <FormField
+        label={t("sellerworkspace.proStorefrontEditorPage.telephoneCommercial")}
+      >
+        <Input
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          leftIcon={<Phone className="w-icon-md h-icon-md" />}
+        />
+      </FormField>
 
       <div className="pt-4 border-t border-border-subtle flex items-center justify-between gap-3 flex-wrap">
         <Link
           to={routes.seller.storefront(
-            currentUser?.storeSlug || "atelier-nordique",
+            currentUser?.storeSlug || currentUser?.id || "",
           )}
           target="_blank"
           rel="noopener noreferrer"

@@ -41,6 +41,10 @@ import {
   type SessionView,
 } from "./session.service.js";
 import { authEmailSender, type AuthEmailSender } from "./auth-email.sender.js";
+import {
+  createPasswordIdentityProvider,
+  type PasswordIdentityProvider,
+} from "./password-identity.provider.js";
 
 export interface SocialAuthStartInput {
   provider: string;
@@ -117,13 +121,19 @@ function invalidCallback(): AppError {
 }
 
 export class SocialAuthService {
+  private readonly passwordIdentity: PasswordIdentityProvider;
+
   constructor(
     private readonly users: IUserRepository = repositories.users,
     private readonly auth: IAuthRepository = authRepository,
     private readonly providerClient: OAuthProviderClient = oauthProviderClient,
     private readonly sessions: SessionService = sessionService,
     private readonly emailSender: AuthEmailSender = authEmailSender,
-  ) {}
+    passwordIdentity?: PasswordIdentityProvider,
+  ) {
+    this.passwordIdentity =
+      passwordIdentity ?? createPasswordIdentityProvider(users);
+  }
 
   availability(): Record<SocialProvider, boolean> & { linking: boolean } {
     return {
@@ -411,18 +421,21 @@ export class SocialAuthService {
     userId: string,
     currentSessionId?: string,
   ): Promise<AuthSecurityOverview> {
-    const [identities, sessions, credential] = await Promise.all([
+    const [identities, sessions, user] = await Promise.all([
       this.auth.listIdentities(userId),
       this.sessions.list(userId, currentSessionId),
-      this.users.findCredentialByUserId(userId),
+      this.users.findById(userId),
     ]);
+    const hasPassword = user
+      ? await this.passwordIdentity.hasPassword(user)
+      : false;
     const methods: ConnectedAccountView[] = (
       ["password", "google", "apple", "facebook"] as AuthProvider[]
     ).map((provider) => {
       const identity = identities.find(
         (candidate) => candidate.provider === provider,
       );
-      const passwordConnected = provider === "password" && Boolean(credential);
+      const passwordConnected = provider === "password" && hasPassword;
       return {
         provider,
         connected: passwordConnected || Boolean(identity),
@@ -451,15 +464,18 @@ export class SocialAuthService {
         code: "VALIDATION_ERROR",
         message: "Fournisseur non pris en charge.",
       });
-    const [identities, credential, recent] = await Promise.all([
+    const [identities, user, recent] = await Promise.all([
       this.auth.listIdentities(userId),
-      this.users.findCredentialByUserId(userId),
+      this.users.findById(userId),
       this.sessions.hasRecentAuthentication(sessionId),
     ]);
+    const hasPassword = user
+      ? await this.passwordIdentity.hasPassword(user)
+      : false;
     const decision = evaluateUnlinkRequest({
       provider,
       linkedProviders: identities.map((identity) => identity.provider),
-      hasPassword: Boolean(credential),
+      hasPassword,
       hasRecentAuthentication: recent,
     });
     if (decision.decision === "rejected") {
@@ -726,8 +742,8 @@ export class SocialAuthService {
   }
 
   private async snapshot(user: UserProfile): Promise<AccountSnapshot> {
-    const [credential, identities] = await Promise.all([
-      this.users.findCredentialByUserId(user.id),
+    const [hasPassword, identities] = await Promise.all([
+      this.passwordIdentity.hasPassword(user),
       this.auth.listIdentities(user.id),
     ]);
     return {
@@ -735,7 +751,7 @@ export class SocialAuthService {
       email: user.email,
       status: user.status as AccountSnapshot["status"],
       isEmailVerified: user.isEmailVerified,
-      hasPassword: Boolean(credential),
+      hasPassword,
       linkedProviders: identities.map((identity) => identity.provider),
     };
   }

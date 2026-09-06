@@ -24,9 +24,7 @@ import {
 import { useAuth } from "../../app/providers/AuthProvider";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useFavorites } from "../../app/providers/FavoritesProvider";
-import { listingRepository } from "../../repositories/listing.repository";
-import { messagingRepository } from "../../repositories/messaging.repository";
-import { storageService } from "../../services/storage.service";
+import { useWorkspaceSummary } from "../../app/providers/WorkspaceSummaryProvider";
 import { Button } from "../../design-system/primitives/Button";
 import { Badge } from "../../design-system/primitives/Badge";
 import { useToast } from "../../app/providers/ToastProvider";
@@ -34,7 +32,6 @@ import { PhoneVerificationModal } from "../auth/components/PhoneVerificationModa
 import { UpgradeToProModal } from "../auth/components/UpgradeToProModal";
 import { BillingHistoryModal } from "./components/BillingHistoryModal";
 import { Image } from "../../design-system/primitives/Image";
-import { Listing } from "../../types";
 import { usePublishCta } from "../../security/usePublishCta";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { usePageMeta } from "../../hooks/usePageMeta";
@@ -98,44 +95,11 @@ export const AccountOverviewPage: React.FC = () => {
   const [bio, setBio] = useState(currentUser?.bio || "");
   const [isSaving, setIsSaving] = useState(false);
 
-  const [myListings, setMyListings] = useState<Listing[]>([]);
   const { count: favoriteCount } = useFavorites();
-  const [, setSavedSearchCount] = useState(0);
-  const [unreadMsgCount, setUnreadMsgCount] = useState(0);
-
-  useEffect(() => {
-    if (!currentUser?.id) return;
-
-    listingRepository
-      .getListingsBySeller(currentUser.id)
-      .then((items) => {
-        setMyListings(items || []);
-      })
-      .catch(() => {
-        setMyListings([]);
-      });
-
-    try {
-      setSavedSearchCount(
-        storageService.getSavedSearches(currentUser.id, activeMarket.code)
-          .length,
-      );
-    } catch {
-      setSavedSearchCount(0);
-    }
-
-    messagingRepository
-      .getUserConversations(currentUser.id)
-      .then((convs) => {
-        const unread = convs.reduce((acc, c) => acc + (c.unreadCount || 0), 0);
-        setUnreadMsgCount(unread);
-      })
-      .catch(() => {
-        setUnreadMsgCount(0);
-      });
-  }, [activeMarket.code, currentUser?.id]);
-
-  const activeListings = myListings.filter((l) => l.status === "active");
+  const { summary: workspaceSummary } = useWorkspaceSummary();
+  const myListings = workspaceSummary?.recentListings ?? [];
+  const activeListingsCount = workspaceSummary?.activeListingsCount ?? 0;
+  const unreadMsgCount = workspaceSummary?.unreadMessagesCount ?? 0;
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -386,7 +350,7 @@ export const AccountOverviewPage: React.FC = () => {
             <List className="w-icon-md h-icon-md" />
           </div>
           <div className="text-2xl font-bold text-text-main">
-            {activeListings.length}
+            {activeListingsCount}
           </div>
           <div className="text-xs font-semibold text-text-tertiary mt-0.5">
             {t("sellerworkspace.accountOverviewPage.annoncesActives")}
@@ -614,7 +578,7 @@ export const AccountOverviewPage: React.FC = () => {
       <div className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs sm:p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-sm sm:text-base font-bold text-text-main">
-            Mes dernières annonces ({myListings.length})
+            Mes dernières annonces ({workspaceSummary?.totalListingsCount ?? 0})
           </h2>
           <Link
             to="/compte/annonces"

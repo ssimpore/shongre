@@ -246,3 +246,36 @@ describe("HTTP favorite market boundary", () => {
     );
   });
 });
+
+describe("HTTP seller listing workspace", () => {
+  it("loads only the signed-in account collection for the explicit market", async () => {
+    const get = vi.spyOn(httpClient, "get").mockResolvedValue({
+      listings: [backendListing],
+      total: 1,
+    });
+    const service = new HttpListingsService();
+
+    const result = await service.getOwnListings("ignored-client-user-id", "FR");
+
+    expect(result.total).toBe(1);
+    expect(result.listings[0]?.id).toBe(backendListing.id);
+    expect(get).toHaveBeenCalledWith("/account/listings", {
+      headers: { "X-Shongre-Market": "FR" },
+    });
+  });
+
+  it("marks a listing sold through the authenticated owner endpoint", async () => {
+    const post = vi.spyOn(httpClient, "post").mockResolvedValue({
+      ...backendListing,
+      status: "sold",
+    });
+    const service = new HttpListingsService();
+
+    const result = await service.markListingSold(backendListing.id);
+
+    expect(result.status).toBe("sold");
+    expect(post).toHaveBeenCalledWith(
+      `/listings/${backendListing.id}/mark-sold`,
+    );
+  });
+});

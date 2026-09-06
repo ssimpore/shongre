@@ -45,3 +45,23 @@ export const userProfileUpdateSchema = z
     message: "Au moins un champ de profil modifiable est requis.",
   });
 export type UserProfileUpdate = z.infer<typeof userProfileUpdateSchema>;
+
+/**
+ * Self-service transition from an Individual account to a Professional one.
+ * Verification state and product entitlements are intentionally absent: the
+ * backend creates the legal organization in a pending/unverified state and no
+ * client can grant itself a badge, plan, or privileged capability.
+ */
+export const professionalAccountUpgradeSchema = z
+  .object({
+    companyName: z.string().trim().min(1).max(255),
+    businessIdentifier: z.string().trim().min(4).max(40),
+    legalForm: z.string().trim().min(1).max(100),
+    vatNumber: z.string().trim().max(30).optional(),
+    businessAddress: z.string().trim().min(1).max(500),
+    phone: z.string().trim().min(8).max(32).optional(),
+  })
+  .strict();
+export type ProfessionalAccountUpgrade = z.infer<
+  typeof professionalAccountUpgradeSchema
+>;

@@ -309,6 +309,20 @@ export class ListingsService {
     return this.listingRepo.findById(id);
   }
 
+  async getOwnedListings(
+    userId: string,
+    marketCode: string,
+  ): Promise<{ listings: PublicListing[]; total: number }> {
+    const result = await this.listingRepo.findOwnedBySeller(
+      userId,
+      requireMarketCode(marketCode),
+    );
+    return {
+      listings: result.items.map(toPublicListing),
+      total: result.total,
+    };
+  }
+
   async getListingById(
     id: string,
     marketCode: string,
@@ -1155,6 +1169,25 @@ export class ListingsService {
     const success = await this.listingRepo.delete(id);
     logger.info("Listing deleted", { listingId: id });
     return success;
+  }
+
+  async markListingSold(id: string): Promise<PublicListing> {
+    const listing = await this.listingRepo.findById(id);
+    if (!listing) {
+      throw new AppError({
+        code: "NOT_FOUND",
+        message: "Annonce introuvable.",
+      });
+    }
+    if (!["published", "reserved"].includes(listing.status)) {
+      throw new AppError({
+        code: "CONFLICT",
+        message: "Seule une annonce publiée ou réservée peut être vendue.",
+      });
+    }
+    const sold = await this.listingRepo.update(id, { status: "sold" });
+    logger.info("Listing marked sold", { listingId: id });
+    return toPublicListing(sold);
   }
 
   // userId is required rather than defaulted. These previously fell back to

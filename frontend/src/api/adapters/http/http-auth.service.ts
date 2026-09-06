@@ -4,6 +4,8 @@ import {
   type LoginCredentials,
   type RegisterIndividualInput,
   type RegisterProfessionalInput,
+  type AuthProfileUpdate,
+  type ProfessionalAccountUpgradeInput,
   type SocialAuthProvider,
   type SocialAuthStartInput,
   type MfaStatusView,
@@ -168,6 +170,42 @@ export class HttpAuthService implements AuthServiceContract {
         success: false,
         errorMessage:
           error instanceof Error ? error.message : "Inscription impossible.",
+      };
+    }
+  }
+
+  async updateProfile(updates: AuthProfileUpdate): Promise<UserProfile> {
+    const currentUser = await this.getCurrentUser();
+    if (!currentUser) throw new Error("Vous devez être connecté.");
+    return httpClient.put<UserProfile>(
+      `/users/${encodeURIComponent(currentUser.id)}`,
+      updates,
+    );
+  }
+
+  async upgradeToProfessional(
+    input: ProfessionalAccountUpgradeInput,
+  ): Promise<AuthResult> {
+    try {
+      const user = await httpClient.post<UserProfile>(
+        "/account/upgrade-to-professional",
+        {
+          companyName: input.companyName,
+          businessIdentifier: input.sirenSiret,
+          legalForm: input.legalForm,
+          vatNumber: input.vatNumber,
+          businessAddress: input.businessAddress,
+          phone: input.phone,
+        },
+      );
+      return { success: true, user };
+    } catch (error) {
+      return {
+        success: false,
+        errorMessage:
+          error instanceof Error
+            ? error.message
+            : "La mise à niveau Professionnelle a échoué.",
       };
     }
   }

@@ -2091,6 +2091,148 @@
         }
       }
     },
+    "/account/listings": {
+      "get": {
+        "operationId": "getAccountListings",
+        "tags": ["account", "listings"],
+        "summary": "List the signed-in seller's listings in the active market",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/MarketContext"
+          },
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The caller-owned listing projections in the requested market.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicListingCollection"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketplace.customer.access",
+        "x-shongre-deny-staff-marketplace": true
+      }
+    },
+    "/account/upgrade-to-professional": {
+      "post": {
+        "operationId": "postAccountUpgradeToProfessional",
+        "tags": ["account"],
+        "summary": "Upgrade the signed-in Individual account to Professional",
+        "description": "Atomically creates the account's unverified legal organization and changes the customer account family. This does not grant verification, a subscription, or a product entitlement.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProfessionalAccountUpgradeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The updated private account projection.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JsonValue"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketplace.customer.access",
+        "x-shongre-deny-staff-marketplace": true
+      }
+    },
     "/admin/audit-logs": {
       "get": {
         "operationId": "getAdminAuditLogs",
@@ -25326,6 +25468,79 @@
         "x-shongre-permission": "listing.update.own"
       }
     },
+    "/listings/{id}/mark-sold": {
+      "post": {
+        "operationId": "postListingsByIdMarkSold",
+        "tags": ["listings"],
+        "summary": "Mark a caller-owned published or reserved listing as sold",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The updated listing projection.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicListing"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "listing.update.own",
+        "x-shongre-deny-staff-marketplace": true
+      }
+    },
     "/listings/{id}/favorite": {
       "put": {
         "operationId": "putListingsByIdFavorite",
@@ -37082,6 +37297,9 @@
         "description": "Implemented by backend/src/api/v1/router.ts:2404.",
         "parameters": [
           {
+            "$ref": "#/components/parameters/MarketContext"
+          },
+          {
             "name": "userId",
             "in": "path",
             "required": true,
@@ -37105,7 +37323,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/JsonValue"
+                  "$ref": "#/components/schemas/UserWorkspaceSummary"
                 }
               }
             }
@@ -38643,6 +38861,47 @@
           "bio": {
             "type": "string",
             "maxLength": 2000
+          }
+        }
+      },
+      "ProfessionalAccountUpgradeRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "companyName",
+          "businessIdentifier",
+          "legalForm",
+          "businessAddress"
+        ],
+        "properties": {
+          "companyName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "businessIdentifier": {
+            "type": "string",
+            "minLength": 4,
+            "maxLength": 40
+          },
+          "legalForm": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "vatNumber": {
+            "type": "string",
+            "maxLength": 30
+          },
+          "businessAddress": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "phone": {
+            "type": "string",
+            "minLength": 8,
+            "maxLength": 32
           }
         }
       },
@@ -43421,6 +43680,68 @@
           "rankingVersion": {
             "type": "string",
             "minLength": 1
+          }
+        }
+      },
+      "UserWorkspaceSummary": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "totalListingsCount",
+          "activeListingsCount",
+          "savedSearchesCount",
+          "totalViewsCount",
+          "totalFavoritesCount",
+          "unreadMessagesCount",
+          "pendingTransactionsCount",
+          "totalEarningsAmount",
+          "recentListings",
+          "recentPurchases"
+        ],
+        "properties": {
+          "totalListingsCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "activeListingsCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "savedSearchesCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "totalViewsCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "totalFavoritesCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "unreadMessagesCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "pendingTransactionsCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "totalEarningsAmount": {
+            "type": "number",
+            "minimum": 0
+          },
+          "recentListings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicListing"
+            }
+          },
+          "recentPurchases": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/JsonValue"
+            }
           }
         }
       },

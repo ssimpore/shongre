@@ -59,6 +59,10 @@ function isEffectiveMarketPromotion(
 
 export interface IListingRepository {
   findById(id: string): Promise<Listing | null>;
+  findOwnedBySeller(
+    sellerId: string,
+    marketCode: string,
+  ): Promise<{ items: Listing[]; total: number }>;
   findPublicById(id: string, marketCode: string): Promise<Listing | null>;
   findPublicByIds(
     ids: readonly string[],
@@ -367,6 +371,29 @@ export class DemoListingRepository implements IListingRepository {
     return primaryPublication
       ? projectMarketPublication(item, primaryPublication)
       : { ...item };
+  }
+
+  async findOwnedBySeller(
+    sellerId: string,
+    marketCode: string,
+  ): Promise<{ items: Listing[]; total: number }> {
+    const requestedMarketCode = requireMarketCode(marketCode);
+    const items = Array.from(this.listings.values())
+      .filter(
+        (listing) =>
+          listing.sellerId === sellerId &&
+          (listing.marketCode === requestedMarketCode ||
+            listing.marketPublications?.some(
+              (publication) => publication.marketCode === requestedMarketCode,
+            )),
+      )
+      .sort(
+        (left, right) =>
+          new Date(right.updatedAt).getTime() -
+          new Date(left.updatedAt).getTime(),
+      )
+      .map((listing) => ({ ...listing }));
+    return { items, total: items.length };
   }
 
   async findPublicById(
@@ -949,6 +976,35 @@ export class PostgresListingRepository implements IListingRepository {
       return this.mapRowToListing(data);
     } catch (error) {
       databaseFailure("listings.findById", error);
+    }
+  }
+
+  async findOwnedBySeller(
+    sellerId: string,
+    marketCode: string,
+  ): Promise<{ items: Listing[]; total: number }> {
+    const requestedMarketCode = requireMarketCode(marketCode);
+    try {
+      const supabase = getSupabaseAdminClient();
+      const { data, count, error } = await (supabase as any)
+        .from("listings")
+        .select(
+          `${PostgresListingRepository.LISTING_PROJECTION}, listing_media(url, sort_order), listing_market_publications!inner(${PostgresListingRepository.MARKET_PUBLICATION_PROJECTION}), profiles:seller_id(${PostgresListingRepository.SELLER_PROJECTION}), publisher_organization:publisher_organization_id(status)`,
+          { count: "exact" },
+        )
+        .eq("seller_id", sellerId)
+        .eq("listing_market_publications.market_code", requestedMarketCode)
+        .order("updated_at", { ascending: false })
+        .limit(500);
+      if (error || !data) databaseFailure("listings.findOwnedBySeller", error);
+      return {
+        items: data.map((row: any) =>
+          this.mapRowToListing(row, requestedMarketCode),
+        ),
+        total: count || 0,
+      };
+    } catch (error) {
+      databaseFailure("listings.findOwnedBySeller", error);
     }
   }
 

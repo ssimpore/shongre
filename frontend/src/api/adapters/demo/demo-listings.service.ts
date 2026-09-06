@@ -93,6 +93,23 @@ export class DemoListingsService implements ListingsServiceContract {
     return (await filterDemoDeliveryDiscoveryListings([listing]))[0] ?? null;
   }
 
+  async getOwnListings(userId: string, marketCode: string) {
+    await simulateNetworkDelay();
+    requireDemoCapability("marketplace.customer.access");
+    const listings = (await listingRepository.getListingsBySeller(userId))
+      .filter(
+        (listing) =>
+          listing.marketCode === marketCode ||
+          listing.marketCodes?.includes(marketCode),
+      )
+      .sort(
+        (left, right) =>
+          new Date(right.updatedAt).getTime() -
+          new Date(left.updatedAt).getTime(),
+      );
+    return { listings, total: listings.length };
+  }
+
   async getPublicListingsByIds(
     listingIds: readonly string[],
     marketCode: string,
@@ -381,6 +398,12 @@ export class DemoListingsService implements ListingsServiceContract {
     const updated = await listingRepository.updateListing(id, updates);
     if (!updated) throw new Error(`Listing with ID ${id} not found.`);
     return updated;
+  }
+
+  async markListingSold(id: string): Promise<Listing> {
+    await simulateNetworkDelay();
+    requireDemoCapability("listing.update.own");
+    return listingRepository.updateListingStatus(id, "sold");
   }
 
   async deleteListing(id: string): Promise<boolean> {

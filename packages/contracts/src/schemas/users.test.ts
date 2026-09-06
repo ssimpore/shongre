@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { userProfileUpdateSchema } from "./users";
+import {
+  professionalAccountUpgradeSchema,
+  userProfileUpdateSchema,
+} from "./users";
 
 describe("userProfileUpdateSchema", () => {
   it("accepts and normalizes self-service profile fields", () => {
@@ -21,5 +24,34 @@ describe("userProfileUpdateSchema", () => {
 
   it("rejects an empty update", () => {
     expect(() => userProfileUpdateSchema.parse({})).toThrow();
+  });
+});
+
+describe("professionalAccountUpgradeSchema", () => {
+  it("accepts legal organization input without privileged account fields", () => {
+    expect(
+      professionalAccountUpgradeSchema.parse({
+        companyName: "  Atelier Exemple  ",
+        businessIdentifier: "81234567800012",
+        legalForm: "SAS",
+        businessAddress: "1 rue du Marché",
+      }),
+    ).toMatchObject({
+      companyName: "Atelier Exemple",
+      businessIdentifier: "81234567800012",
+    });
+  });
+
+  it("rejects attempts to self-assign verification or a Staff role", () => {
+    expect(() =>
+      professionalAccountUpgradeSchema.parse({
+        companyName: "Atelier Exemple",
+        businessIdentifier: "81234567800012",
+        legalForm: "SAS",
+        businessAddress: "1 rue du Marché",
+        isBusinessVerified: true,
+        staffRole: "admin",
+      }),
+    ).toThrow();
   });
 });

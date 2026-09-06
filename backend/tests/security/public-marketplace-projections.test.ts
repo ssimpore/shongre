@@ -184,6 +184,47 @@ describe("public marketplace projections", () => {
     expect(collection.listings[0]).not.toHaveProperty("subscriptionId");
   });
 
+  it("returns every caller-owned listing status within the requested market", async () => {
+    const published = listing();
+    const draft = listing("draft");
+    const otherMarket = {
+      ...listing("sold"),
+      id: "listing-other-market",
+      marketCode: "BE",
+      marketCodes: ["BE"],
+      marketPublications: [
+        {
+          ...listing().marketPublications![0],
+          marketCode: "BE",
+        },
+      ],
+    };
+    const service = new ListingsService(
+      new DemoListingRepository({ published, draft, otherMarket }),
+      new DemoAIProvider(),
+    );
+
+    const collection = await service.getOwnedListings(seller.id, "FR");
+
+    expect(collection.total).toBe(2);
+    expect(collection.listings.map(({ id }) => id).sort()).toEqual([
+      "listing-draft",
+      "listing-published",
+    ]);
+  });
+
+  it("allows only published or reserved listings to transition to sold", async () => {
+    const repository = new DemoListingRepository({ published: listing() });
+    const service = new ListingsService(repository, new DemoAIProvider());
+
+    await expect(
+      service.markListingSold("listing-published"),
+    ).resolves.toMatchObject({ id: "listing-published", status: "sold" });
+    await expect(
+      service.markListingSold("listing-published"),
+    ).rejects.toMatchObject({ code: "CONFLICT" });
+  });
+
   it("omits an unavailable favorite id when no public card can be returned", async () => {
     const visible = { ...listing(), id: "listing-visible" };
     const laterArchived = { ...listing(), id: "listing-later-archived" };

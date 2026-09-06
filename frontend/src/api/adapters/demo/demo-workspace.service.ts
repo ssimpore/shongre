@@ -28,6 +28,11 @@ export class DemoWorkspaceService implements WorkspaceServiceContract {
     requireDemoCapability("marketplace.customer.access");
     await simulateNetworkDelay();
     const listings = await listingRepository.getListingsBySeller(userId);
+    const marketListings = listings.filter(
+      (listing) =>
+        listing.marketCode === marketCode ||
+        listing.marketCodes?.includes(marketCode),
+    );
     const purchases = await transactionRepository.getPurchases(userId);
     const sales = await transactionRepository.getSales(userId);
     const conversations =
@@ -41,7 +46,7 @@ export class DemoWorkspaceService implements WorkspaceServiceContract {
       marketCode,
     );
 
-    const totalViews = listings.reduce(
+    const totalViews = marketListings.reduce(
       (sum, l) => sum + (l.viewsCount || 0),
       0,
     );
@@ -50,7 +55,11 @@ export class DemoWorkspaceService implements WorkspaceServiceContract {
       .reduce((sum, s) => sum + s.amount, 0);
 
     return {
-      activeListingsCount: listings.filter((l) => l.status === "active").length,
+      totalListingsCount: marketListings.length,
+      activeListingsCount: marketListings.filter((l) => l.status === "active")
+        .length,
+      savedSearchesCount: storageService.getSavedSearches(userId, marketCode)
+        .length,
       totalViewsCount: totalViews,
       totalFavoritesCount: favorites.length,
       unreadMessagesCount: conversations.reduce(
@@ -61,7 +70,7 @@ export class DemoWorkspaceService implements WorkspaceServiceContract {
         (t) => t.status === "payment_escrowed" || t.status === "escrow_secured",
       ).length,
       totalEarningsAmount: totalEarnings,
-      recentListings: listings.slice(0, 5),
+      recentListings: marketListings.slice(0, 5),
       recentPurchases: purchases.slice(0, 5),
     };
   }

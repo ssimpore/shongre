@@ -39,7 +39,6 @@ import {
   PostgresRealEstateRepository,
 } from "../../src/infrastructure/database/repositories/real-estate.repository.js";
 import { getSupabaseAdminClient } from "../../src/infrastructure/supabase/supabase-client.js";
-import { hashPassword } from "../../src/shared/auth/password.js";
 import { DEMO_ACCOUNT_PASSWORD } from "../../src/app/bootstrap/demo-account-password.js";
 import { trendingService } from "../../src/modules/trending/trending.service.js";
 import { importBaselineCommercialCatalog } from "../monetization/import-baseline.js";
@@ -74,6 +73,111 @@ interface LegacyDemoFixture {
   notifications: Array<Record<string, any>>;
   savedSearches: Array<Record<string, any>>;
   reviews: Array<Record<string, any>>;
+}
+
+interface LocalSeedProfileRow {
+  id: string;
+  email: string;
+  name: string;
+  account_type: "individual" | "professional";
+  primary_role: string;
+  is_email_verified: boolean;
+}
+
+async function syncLocalSupabaseAuthUsers(
+  profiles: readonly LocalSeedProfileRow[],
+  seeds: readonly Record<string, any>[],
+): Promise<void> {
+  const client = getSupabaseAdminClient();
+  const listed = await client.auth.admin.listUsers({ page: 1, perPage: 1_000 });
+  if (listed.error) throw listed.error;
+
+  const expectedEmails = new Set(profiles.map((profile) => profile.email));
+  const existingByEmail = new Map(
+    listed.data.users
+      .filter((user) => user.email)
+      .map((user) => [user.email!.toLowerCase(), user]),
+  );
+
+  for (const existing of listed.data.users) {
+    if (
+      existing.app_metadata?.shongre_local_seed === true &&
+      existing.email &&
+      !expectedEmails.has(existing.email.toLowerCase())
+    ) {
+      const removed = await client.auth.admin.deleteUser(existing.id);
+      if (removed.error) throw removed.error;
+    }
+  }
+
+  for (const profile of profiles) {
+    const seed = seeds.find(
+      (candidate) => profileId(candidate.legacyId) === profile.id,
+    );
+    const appMetadata = {
+      shongre_local_seed: true,
+      shongre_password_enabled: true,
+      shongre_profile_id: profile.id,
+      shongre_email_verified: profile.is_email_verified,
+      shongre_account_type: profile.account_type,
+      shongre_primary_role: profile.primary_role,
+      shongre_staff_status: seed?.staffStatus ?? "none",
+      shongre_staff_role: seed?.staffRole ?? null,
+    };
+    const existing = existingByEmail.get(profile.email);
+    const result = existing
+      ? await client.auth.admin.updateUserById(existing.id, {
+          password: DEMO_ACCOUNT_PASSWORD,
+          email_confirm: profile.is_email_verified,
+          user_metadata: { name: profile.name },
+          app_metadata: { ...existing.app_metadata, ...appMetadata },
+        })
+      : await client.auth.admin.createUser({
+          email: profile.email,
+          password: DEMO_ACCOUNT_PASSWORD,
+          email_confirm: profile.is_email_verified,
+          user_metadata: { name: profile.name },
+          app_metadata: appMetadata,
+        });
+    if (result.error || !result.data.user) {
+      throw result.error ?? new Error(`Auth user missing for ${profile.id}`);
+    }
+    const linked = await client
+      .from("profiles")
+      .update({
+        auth_user_id: result.data.user.id,
+        updated_at: FIXED_CREATED_AT,
+      })
+      .eq("id", profile.id);
+    if (linked.error) throw linked.error;
+
+    const identity = await (
+      client.from("user_identities" as any) as any
+    ).upsert(
+      {
+        user_id: profile.id,
+        provider: "password",
+        provider_subject: result.data.user.id,
+        provider_email: profile.email,
+        provider_email_verified: profile.is_email_verified,
+        provider_display_name: profile.name,
+        is_private_relay: false,
+        updated_at: FIXED_CREATED_AT,
+      },
+      { onConflict: "user_id,provider" },
+    );
+    if (identity.error) throw identity.error;
+  }
+
+  const removedCredentials = await (
+    client.from("user_credentials" as any) as any
+  )
+    .delete()
+    .in(
+      "user_id",
+      profiles.map((profile) => profile.id),
+    );
+  if (removedCredentials.error) throw removedCredentials.error;
 }
 
 interface DemoMediaManifest {
@@ -605,16 +709,6 @@ async function seedProfiles(
   const profileResult = await client.from("profiles").upsert(profiles);
   if (profileResult.error) throw profileResult.error;
 
-  const credentialHash = await hashPassword(DEMO_ACCOUNT_PASSWORD);
-  const credentialResult = await client.from("user_credentials").upsert(
-    profiles.map((profile) => ({
-      user_id: profile.id,
-      password_hash: credentialHash,
-      updated_at: FIXED_CREATED_AT,
-    })),
-  );
-  if (credentialResult.error) throw credentialResult.error;
-
   const staffSeeds = seeds.filter(
     (seed) => seed.staffStatus && seed.staffStatus !== "none" && seed.staffRole,
   );
@@ -683,6 +777,8 @@ COMMIT;`,
       if (result.error) throw result.error;
     }
   }
+
+  await syncLocalSupabaseAuthUsers(profiles, seeds);
 }
 
 async function seedOrganizations(): Promise<{

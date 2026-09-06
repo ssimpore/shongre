@@ -29,7 +29,7 @@ import {
   isAccountLimited,
 } from "../../domains/user/user.domain";
 import { analyticsService } from "../../services/analytics.service";
-import type { EditableUserProfile } from "../../repositories/user.repository";
+import type { AuthProfileUpdate } from "../../api/contracts/auth.contract";
 
 interface AuthContextType {
   currentUser: UserProfile | null;
@@ -90,7 +90,7 @@ interface AuthContextType {
   refreshUser: () => Promise<void>;
   switchRole: (role: UserRole) => Promise<void>;
   switchDemoUser: (userKey: string) => Promise<void>;
-  updateProfile: (updates: Partial<EditableUserProfile>) => Promise<void>;
+  updateProfile: (updates: AuthProfileUpdate) => Promise<void>;
   can: (
     permission: Permission,
     resource?: ResourceOwnershipContext | any,
@@ -291,12 +291,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         errorMessage: "Vous devez être connecté pour effectuer cette action.",
       };
     }
-    const { authService: demoProfileUpgradeService } =
-      await import("../../domains/auth/auth.service");
-    const result = await demoProfileUpgradeService.upgradeIndividualToPro(
-      currentUser.id,
-      proData,
-    );
+    const result = await services.auth.upgradeToProfessional(proData);
     if (result.success && result.user) {
       setCurrentUser(result.user);
     }
@@ -315,11 +310,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     announceAuthChange(user ? "login" : "logout");
   };
 
-  const updateProfile = async (updates: Partial<EditableUserProfile>) => {
+  const updateProfile = async (updates: AuthProfileUpdate) => {
     if (!currentUser) return;
-    const { userRepository } =
-      await import("../../repositories/user.repository");
-    const updated = await userRepository.updateProfile(currentUser.id, updates);
+    const updated = await services.auth.updateProfile(updates);
     setCurrentUser(updated);
   };
 

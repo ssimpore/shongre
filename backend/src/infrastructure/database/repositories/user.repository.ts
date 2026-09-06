@@ -13,6 +13,7 @@ import {
   type StaffRole,
   type StaffStatus,
 } from "@shongre/contracts/access-control";
+import type { ProfessionalAccountUpgrade } from "@shongre/contracts";
 import { AppError } from "../../../shared/errors/app-error.js";
 
 /**
@@ -32,8 +33,14 @@ export interface IUserRepository {
   findById(id: string): Promise<UserProfile | null>;
   findPublicById(id: string): Promise<PublicSellerProfile | null>;
   findByEmail(email: string): Promise<UserProfile | null>;
+  findAuthUserId(userId: string): Promise<string | null>;
+  linkAuthUserId(userId: string, authUserId: string): Promise<void>;
   save(user: UserProfile): Promise<UserProfile>;
   update(id: string, updates: Partial<UserProfile>): Promise<UserProfile>;
+  upgradeToProfessional(
+    userId: string,
+    input: ProfessionalAccountUpgrade,
+  ): Promise<UserProfile>;
   updateStaffAccess(input: {
     userId: string;
     status: Exclude<StaffStatus, "none">;
@@ -302,6 +309,16 @@ export class DemoUserRepository implements IUserRepository {
     return null;
   }
 
+  async findAuthUserId(userId: string): Promise<string | null> {
+    return this.users.has(userId) ? userId : null;
+  }
+
+  async linkAuthUserId(userId: string, _authUserId: string): Promise<void> {
+    if (!this.users.has(userId)) {
+      throw new Error(`User with id ${userId} not found in Demo repository`);
+    }
+  }
+
   async save(user: UserProfile): Promise<UserProfile> {
     this.users.set(user.id, { ...user });
     return { ...user };
@@ -317,6 +334,28 @@ export class DemoUserRepository implements IUserRepository {
     }
     const updated = { ...existing, ...updates };
     this.users.set(id, updated);
+    return { ...updated };
+  }
+
+  async upgradeToProfessional(
+    userId: string,
+    input: ProfessionalAccountUpgrade,
+  ): Promise<UserProfile> {
+    const existing = this.users.get(userId);
+    if (!existing) {
+      throw new Error(`User with id ${userId} not found in Demo repository`);
+    }
+    const updated: UserProfile = {
+      ...existing,
+      accountType: "professional",
+      primaryRole: "pro_seller",
+      role: "pro_seller",
+      sellerType: "pro",
+      professionalVertical: existing.professionalVertical ?? "generic",
+      isBusinessVerified: false,
+      phone: input.phone ?? existing.phone,
+    };
+    this.users.set(userId, updated);
     return { ...updated };
   }
 
@@ -552,6 +591,33 @@ export class PostgresUserRepository implements IUserRepository {
     }
   }
 
+  async findAuthUserId(userId: string): Promise<string | null> {
+    try {
+      const supabase = getSupabaseAdminClient();
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("auth_user_id")
+        .eq("id", userId)
+        .maybeSingle();
+      if (error) databaseFailure("users.findAuthUserId", error);
+      return data?.auth_user_id ?? null;
+    } catch (error) {
+      databaseFailure("users.findAuthUserId", error);
+    }
+  }
+
+  async linkAuthUserId(userId: string, authUserId: string): Promise<void> {
+    const supabase = getSupabaseAdminClient();
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        auth_user_id: authUserId,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", userId);
+    if (error) databaseFailure("users.linkAuthUserId", error);
+  }
+
   async save(user: UserProfile): Promise<UserProfile> {
     const supabase = getSupabaseAdminClient();
     const payload = {
@@ -643,7 +709,60 @@ export class PostgresUserRepository implements IUserRepository {
     if (error || !data) {
       databaseFailure("users.update", error);
     }
-    return this.findById(data.id) as Promise<UserProfile>;
+    const updated = await this.findById(data.id);
+    if (!updated) {
+      databaseFailure("users.update", new Error("Updated profile disappeared"));
+    }
+    if (
+      updates.accountType !== undefined ||
+      updates.primaryRole !== undefined ||
+      updates.role !== undefined
+    ) {
+      await this.syncAuthRoleMetadata(updated);
+    }
+    return updated;
+  }
+
+  async upgradeToProfessional(
+    userId: string,
+    input: ProfessionalAccountUpgrade,
+  ): Promise<UserProfile> {
+    const supabase = getSupabaseAdminClient();
+    const { data, error } = await supabase.rpc(
+      "upgrade_account_to_professional",
+      {
+        p_user_id: userId,
+        p_company_name: input.companyName,
+        p_business_identifier: input.businessIdentifier,
+        p_legal_form: input.legalForm,
+        p_vat_number: (input.vatNumber ?? null) as unknown as string,
+        p_business_address: input.businessAddress,
+        p_phone: (input.phone ?? null) as unknown as string,
+      },
+    );
+    if (error?.code === "P0002") {
+      throw new AppError({ code: "NOT_FOUND", message: "Compte introuvable." });
+    }
+    if (error?.code === "42501") {
+      throw new AppError({
+        code: "FORBIDDEN",
+        message: "Ce compte ne peut pas devenir un compte Professionnel.",
+      });
+    }
+    if (error?.code === "22023") {
+      throw new AppError({
+        code: "CONFLICT",
+        message:
+          "Complétez votre adresse et vérifiez les informations de l’entreprise.",
+      });
+    }
+    if (error || !data?.length) {
+      databaseFailure("users.upgradeToProfessional", error);
+    }
+
+    const upgraded = this.mapRowToUserProfile(data[0]);
+    await this.syncAuthRoleMetadata(upgraded);
+    return upgraded;
   }
 
   async updateStaffAccess(input: {
@@ -686,6 +805,7 @@ export class PostgresUserRepository implements IUserRepository {
         "users.updateStaffAccess",
         new Error("Staff target disappeared"),
       );
+    await this.syncAuthRoleMetadata(updated);
     return updated;
   }
 
@@ -774,6 +894,28 @@ export class PostgresUserRepository implements IUserRepository {
       .in("user_id", [...userIds]) as any);
     if (error) databaseFailure("users.findStaffMemberships", error);
     return new Map((data || []).map((row: any) => [row.user_id, row]));
+  }
+
+  private async syncAuthRoleMetadata(user: UserProfile): Promise<void> {
+    const authUserId = await this.findAuthUserId(user.id);
+    if (!authUserId) return;
+    const admin = getSupabaseAdminClient();
+    const current = await admin.auth.admin.getUserById(authUserId);
+    if (current.error || !current.data.user) {
+      databaseFailure("users.syncAuthRoleMetadata", current.error);
+    }
+    const synchronized = await admin.auth.admin.updateUserById(authUserId, {
+      app_metadata: {
+        ...current.data.user.app_metadata,
+        shongre_account_type: user.accountType,
+        shongre_primary_role: user.primaryRole || user.role,
+        shongre_staff_status: user.staffStatus ?? "none",
+        shongre_staff_role: user.staffRole ?? null,
+      },
+    });
+    if (synchronized.error) {
+      databaseFailure("users.syncAuthRoleMetadata", synchronized.error);
+    }
   }
 
   async findCredentialByUserId(userId: string): Promise<UserCredential | null> {

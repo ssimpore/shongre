@@ -44,7 +44,6 @@ import { useMarketLocation } from "../providers/MarketLocationProvider";
 import { useFavorites } from "../providers/FavoritesProvider";
 import { getTaxonomyLabel } from "../../domains/taxonomy/taxonomy.labels";
 import { services } from "../../api/client/service-registry";
-import { storageService } from "../../services/storage.service";
 import { usePublishCta } from "../../security/usePublishCta";
 import { Badge } from "../../design-system/primitives/Badge";
 import { Avatar } from "../../design-system/primitives/Badge";
@@ -70,6 +69,7 @@ import {
   type HeaderAccountMenuItem,
   type HeaderAccountMenuItemId,
 } from "./account-menu.model";
+import { useWorkspaceSummary } from "../providers/WorkspaceSummaryProvider";
 
 const HeaderCategoryNav = lazy(() =>
   import("./HeaderCategoryNav").then((module) => ({
@@ -211,6 +211,7 @@ export const Header: React.FC = () => {
             : null;
   const { activeMarket, currentLocale, effectiveConfig, marketContext } =
     useMarketLocation();
+  const { summary: workspaceSummary } = useWorkspaceSummary();
 
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -451,11 +452,7 @@ export const Header: React.FC = () => {
   );
 
   const { count: favCount } = useFavorites();
-  const listingCount = currentUser
-    ? storageService
-        .getListings()
-        .filter((listing) => listing.sellerId === currentUser.id).length
-    : 0;
+  const listingCount = workspaceSummary?.totalListingsCount ?? 0;
   const accountMenuItems = currentUser
     ? resolveHeaderAccountMenuItems({
         user: currentUser,
@@ -468,7 +465,7 @@ export const Header: React.FC = () => {
     : [];
   const unreadMessagesCount = isStaffIdentity
     ? 0
-    : storageService.getUnreadMessageCount(currentUser?.id);
+    : (workspaceSummary?.unreadMessagesCount ?? 0);
   const publishCta = usePublishCta();
   const handleHeaderSearchFocus = useCallback(() => {
     setIsHeaderSearchActive(true);

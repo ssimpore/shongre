@@ -13,9 +13,7 @@ import { IKYCProvider, providers } from "../../integrations/providers/index.js";
 import { logger } from "../../infrastructure/logging/logger.js";
 import { config } from "../../app/config/index.js";
 import {
-  hashPassword,
-  verifyPassword,
-  simulatePasswordVerification,
+  assertPasswordAcceptable,
   WeakPasswordError,
 } from "../../shared/auth/password.js";
 import {
@@ -56,6 +54,10 @@ import {
   hashMfaBackupCode,
   verifyTotp,
 } from "./mfa.service.js";
+import {
+  createPasswordIdentityProvider,
+  type PasswordIdentityProvider,
+} from "./password-identity.provider.js";
 
 export interface LoginCredentials {
   email: string;
@@ -124,6 +126,8 @@ function invalidCredentials(): AppError {
 }
 
 export class AuthService {
+  private readonly passwordIdentity: PasswordIdentityProvider;
+
   constructor(
     private userRepo: IUserRepository = repositories.users,
     private kyc: IKYCProvider = providers.kyc,
@@ -131,7 +135,11 @@ export class AuthService {
     private authRepo: IAuthRepository = authRepository,
     private emailSender: AuthEmailSender = authEmailSender,
     private organizationProvisioner: OrganizationProvisioningRepository = organizationProvisioningRepository,
-  ) {}
+    passwordIdentity?: PasswordIdentityProvider,
+  ) {
+    this.passwordIdentity =
+      passwordIdentity ?? createPasswordIdentityProvider(userRepo);
+  }
 
   /**
    * Resolves the caller from a bearer token.
@@ -359,27 +367,14 @@ export class AuthService {
     }
 
     const user = await this.userRepo.findByEmail(email);
-    if (!user) {
-      // Spend comparable CPU to a real verification so that a missing account
-      // and a wrong password are not distinguishable by response time.
-      await simulatePasswordVerification();
-      await this.authRepo.recordSecurityEvent({
-        eventType: "login_failed",
-        provider: "password",
-        failureReason: "invalid_credentials",
-        ipPrefix: metadata.ipPrefix,
-      });
-      throw invalidCredentials();
-    }
-
-    const credential = await this.userRepo.findCredentialByUserId(user.id);
-    const passwordMatches = await verifyPassword(
+    const passwordMatches = await this.passwordIdentity.authenticate(
+      user,
+      email,
       password,
-      credential?.passwordHash,
     );
-    if (!passwordMatches) {
+    if (!user || !passwordMatches) {
       await this.authRepo.recordSecurityEvent({
-        userId: user.id,
+        userId: user?.id,
         eventType: "login_failed",
         provider: "password",
         failureReason: "invalid_credentials",
@@ -735,9 +730,8 @@ export class AuthService {
       });
     }
 
-    let passwordHash: string;
     try {
-      passwordHash = await hashPassword(password);
+      assertPasswordAcceptable(password);
     } catch (err) {
       if (err instanceof WeakPasswordError) {
         throw new AppError({ code: "VALIDATION_ERROR", message: err.message });
@@ -830,7 +824,16 @@ export class AuthService {
     };
 
     const saved = await this.userRepo.save(newUser);
-    await this.userRepo.saveCredential({ userId: saved.id, passwordHash });
+    let passwordSubject: string;
+    try {
+      passwordSubject = await this.passwordIdentity.provision(saved, password);
+    } catch (error) {
+      await this.userRepo.anonymize(
+        saved.id,
+        "Password identity provisioning failed",
+      );
+      throw error;
+    }
 
     if (input.productIntent === "facturation") {
       await this.organizationProvisioner.ensureOwnedOrganization({
@@ -858,7 +861,7 @@ export class AuthService {
       await this.authRepo.linkIdentity({
         userId: saved.id,
         provider: "password",
-        providerSubject: saved.id,
+        providerSubject: passwordSubject,
         providerEmail: saved.email,
         providerEmailVerified: saved.isEmailVerified,
         providerDisplayName: saved.name,
@@ -1001,6 +1004,7 @@ export class AuthService {
       });
     }
 
+    await this.passwordIdentity.confirmEmail(user);
     await this.userRepo.update(user.id, {
       isEmailVerified: true,
       status: user.status === "pending_verification" ? "active" : user.status,
@@ -1113,9 +1117,15 @@ export class AuthService {
         code: "VALIDATION_ERROR",
         message: "Lien de réinitialisation invalide ou expiré.",
       });
-    let passwordHash: string;
+    const user = await this.userRepo.findById(action.userId);
+    if (!user) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Lien de réinitialisation invalide ou expiré.",
+      });
+    }
     try {
-      passwordHash = await hashPassword(newPassword);
+      await this.passwordIdentity.setPassword(user, newPassword);
     } catch (error) {
       if (error instanceof WeakPasswordError)
         throw new AppError({
@@ -1124,7 +1134,6 @@ export class AuthService {
         });
       throw error;
     }
-    await this.userRepo.saveCredential({ userId: action.userId, passwordHash });
     await this.sessions.revokeAll(action.userId, undefined, "password_reset");
     await this.authRepo.recordSecurityEvent({
       userId: action.userId,
@@ -1196,10 +1205,15 @@ export class AuthService {
   ): Promise<{ reauthenticated: true }> {
     if (!principal.userId || !principal.sessionId)
       throw new AppError({ code: "UNAUTHENTICATED", message: "Non connecté" });
-    const credential = await this.userRepo.findCredentialByUserId(
-      principal.userId,
-    );
-    if (!(await verifyPassword(password || "", credential?.passwordHash)))
+    const user = await this.userRepo.findById(principal.userId);
+    if (
+      !user ||
+      !(await this.passwordIdentity.authenticate(
+        user,
+        user.email,
+        password || "",
+      ))
+    )
       throw invalidCredentials();
     await this.sessions.markReauthenticated(principal.sessionId);
     await this.authRepo.recordSecurityEvent({
@@ -1216,9 +1230,10 @@ export class AuthService {
     newPassword: string,
   ): Promise<void> {
     await this.reauthenticate(principal, currentPassword);
-    let passwordHash: string;
+    const user = await this.userRepo.findById(principal.userId!);
+    if (!user) throw invalidCredentials();
     try {
-      passwordHash = await hashPassword(newPassword);
+      await this.passwordIdentity.setPassword(user, newPassword);
     } catch (error) {
       if (error instanceof WeakPasswordError)
         throw new AppError({
@@ -1227,10 +1242,6 @@ export class AuthService {
         });
       throw error;
     }
-    await this.userRepo.saveCredential({
-      userId: principal.userId,
-      passwordHash,
-    });
     await this.sessions.revokeAll(
       principal.userId,
       principal.sessionId,
@@ -1254,15 +1265,16 @@ export class AuthService {
         message: "Confirmez votre identité avant d’ajouter un mot de passe.",
       });
     }
-    if (await this.userRepo.findCredentialByUserId(principal.userId)) {
+    const user = await this.userRepo.findById(principal.userId);
+    if (!user) throw invalidCredentials();
+    if (await this.passwordIdentity.hasPassword(user)) {
       throw new AppError({
         code: "CONFLICT",
         message: "Un mot de passe est déjà défini.",
       });
     }
-    let passwordHash: string;
     try {
-      passwordHash = await hashPassword(newPassword);
+      await this.passwordIdentity.setPassword(user, newPassword);
     } catch (error) {
       if (error instanceof WeakPasswordError)
         throw new AppError({
@@ -1271,19 +1283,17 @@ export class AuthService {
         });
       throw error;
     }
-    await this.userRepo.saveCredential({
-      userId: principal.userId,
-      passwordHash,
-    });
     const existingPasswordIdentity = (
       await this.authRepo.listIdentities(principal.userId)
     ).some((identity) => identity.provider === "password");
     if (!existingPasswordIdentity) {
-      const user = await this.userRepo.findById(principal.userId);
+      const providerSubject =
+        (await this.userRepo.findAuthUserId(principal.userId)) ??
+        principal.userId;
       await this.authRepo.linkIdentity({
         userId: principal.userId,
         provider: "password",
-        providerSubject: principal.userId,
+        providerSubject,
         providerEmail: user?.email || null,
         providerEmailVerified: Boolean(user?.isEmailVerified),
         providerDisplayName: user?.name || null,

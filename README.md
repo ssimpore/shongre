@@ -208,8 +208,12 @@ make supabase-down
 production-shaped local scenario: synthetic customer and professional profiles,
 marketplace listings, vehicles, properties, tutors, course offers, jobs, and
 the standalone demo's conversations, messages, transactions, notifications,
-saved searches, reviews, and public media in Supabase Storage. Re-running it
-updates the same stable records instead of creating duplicates. Run
+saved searches, reviews, and public media in Supabase Storage. It also creates
+one Supabase Auth identity per synthetic profile, links
+`profiles.auth_user_id`, and assigns account and Staff roles through the same
+database tables used by the backend; it does not keep database-mode passwords
+in `public.user_credentials`. Re-running it updates the same stable records
+instead of creating duplicates. Run
 `make local-fixtures-check` to detect drift or `make local-fixtures-sync` after
 an intentional demo-fixture change. The scenario never copies production
 identities, real payments, KYC/KYB documents, or provider credentials; private

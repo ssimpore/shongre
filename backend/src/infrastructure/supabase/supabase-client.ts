@@ -33,6 +33,34 @@ export function getSupabaseAnonClient(): SupabaseClient<Database> {
   return anonClientInstance;
 }
 
+/**
+ * Returns an isolated, non-persisting Auth client for one credential check.
+ *
+ * A singleton Auth client would retain the last signed-in Supabase session in
+ * memory and could mix identities across concurrent backend requests. Shongre
+ * owns its application sessions, so the Supabase session is deliberately
+ * discarded with this client after the password has been verified.
+ */
+export function createSupabasePasswordAuthClient(): SupabaseClient<Database> {
+  const url = config.supabaseUrl;
+  const anonKey = config.supabaseAnonKey;
+
+  if (!url || !anonKey) {
+    throw new Error(
+      "SUPABASE_URL and SUPABASE_ANON_KEY are required when password authentication is used.",
+    );
+  }
+
+  return createClient<Database>(url, anonKey, {
+    auth: {
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+      persistSession: false,
+    },
+    global: { fetch: fetchWithDatabaseTimeout },
+  });
+}
+
 export function getSupabaseAdminClient(): SupabaseClient<Database> {
   const url = config.supabaseUrl;
   const serviceRoleKey = config.supabaseServiceRoleKey;

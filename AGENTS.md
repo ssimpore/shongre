@@ -377,6 +377,12 @@ component → hook/controller → service contract → demo or HTTP adapter
 - Web authentication uses Shongre-owned HttpOnly cookies; native authentication
   uses Shongre bearer tokens stored in Keychain/Keystore through SecureStore.
   Provider authorization/access/refresh credentials remain backend-only.
+- In database mode, Supabase Auth owns email/password identities and password
+  verification. `profiles.auth_user_id` links that identity to the Shongre
+  account; account type, Staff membership, role, and effective capabilities
+  remain server-authoritative PostgreSQL state and must never be trusted from
+  client-selected or JWT metadata. Shongre continues to own Web HttpOnly and
+  native bearer application sessions after the Supabase credential check.
 - Identity is per-request state from the verified principal. Never accept the
   acting user, sender, seller, or account from a caller-selected path/body when
   it can be derived from the route handler's `principal`.

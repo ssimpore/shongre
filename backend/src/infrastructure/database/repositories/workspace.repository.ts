@@ -5,7 +5,9 @@ import { PostgresListingRepository } from "./listing.repository.js";
 import { PostgresOrderRepository } from "./order.repository.js";
 
 export interface UserWorkspaceSummary {
+  totalListingsCount: number;
   activeListingsCount: number;
+  savedSearchesCount: number;
   totalViewsCount: number;
   totalFavoritesCount: number;
   unreadMessagesCount: number;
@@ -16,7 +18,10 @@ export interface UserWorkspaceSummary {
 }
 
 export interface IWorkspaceRepository {
-  getUserWorkspaceSummary(userId: string): Promise<UserWorkspaceSummary>;
+  getUserWorkspaceSummary(
+    userId: string,
+    marketCode: string,
+  ): Promise<UserWorkspaceSummary>;
   getProAnalytics(sellerId: string): Promise<{
     monthlyRevenue: number;
     monthlyViews: number;
@@ -28,9 +33,12 @@ export interface IWorkspaceRepository {
 export class DemoWorkspaceRepository implements IWorkspaceRepository {
   async getUserWorkspaceSummary(
     _userId: string,
+    _marketCode: string,
   ): Promise<UserWorkspaceSummary> {
     return {
+      totalListingsCount: 3,
       activeListingsCount: 3,
+      savedSearchesCount: 2,
       totalViewsCount: 412,
       totalFavoritesCount: 28,
       unreadMessagesCount: 2,
@@ -60,11 +68,16 @@ export class PostgresWorkspaceRepository implements IWorkspaceRepository {
   private readonly listingRepository = new PostgresListingRepository();
   private readonly orderRepository = new PostgresOrderRepository();
 
-  async getUserWorkspaceSummary(userId: string): Promise<UserWorkspaceSummary> {
+  async getUserWorkspaceSummary(
+    userId: string,
+    marketCode: string,
+  ): Promise<UserWorkspaceSummary> {
     try {
       const supabase = getSupabaseAdminClient();
       const [
+        allListingsRes,
         listingsRes,
+        savedSearchesRes,
         ordersRes,
         unreadRes,
         recentListingResult,
@@ -73,9 +86,28 @@ export class PostgresWorkspaceRepository implements IWorkspaceRepository {
       ] = await Promise.all([
         supabase
           .from("listings")
-          .select("view_count, favorite_count", { count: "exact" })
+          .select("id, listing_market_publications!inner(market_code)", {
+            count: "exact",
+            head: true,
+          })
           .eq("seller_id", userId)
-          .eq("status", "published"),
+          .eq("listing_market_publications.market_code", marketCode),
+        supabase
+          .from("listings")
+          .select(
+            "view_count, favorite_count, listing_market_publications!inner(market_code)",
+            { count: "exact" },
+          )
+          .eq("seller_id", userId)
+          .eq("status", "published")
+          .eq("listing_market_publications.market_code", marketCode)
+          .eq("listing_market_publications.status", "active")
+          .eq("listing_market_publications.compliance_state", "approved"),
+        supabase
+          .from("saved_searches")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", userId)
+          .eq("market_code", marketCode),
         supabase
           .from("orders")
           .select("id", { count: "exact", head: true })
@@ -89,13 +121,25 @@ export class PostgresWorkspaceRepository implements IWorkspaceRepository {
         (supabase as any).rpc("get_unread_message_count", {
           p_user_id: userId,
         }),
-        this.listingRepository.search({ sellerId: userId, page: 1, limit: 5 }),
+        this.listingRepository.search({
+          sellerId: userId,
+          marketCode,
+          page: 1,
+          limit: 5,
+        }),
         this.orderRepository.getPurchases(userId),
         this.orderRepository.getSales(userId),
       ]);
 
+      if (allListingsRes.error)
+        databaseFailure("workspace.getAllListingsCount", allListingsRes.error);
       if (listingsRes.error)
         databaseFailure("workspace.getListingsSummary", listingsRes.error);
+      if (savedSearchesRes.error)
+        databaseFailure(
+          "workspace.getSavedSearchesCount",
+          savedSearchesRes.error,
+        );
       if (ordersRes.error)
         databaseFailure("workspace.getPendingOrders", ordersRes.error);
       if (unreadRes.error)
@@ -107,7 +151,9 @@ export class PostgresWorkspaceRepository implements IWorkspaceRepository {
       );
 
       return {
+        totalListingsCount: allListingsRes.count ?? 0,
         activeListingsCount: listingsRes.count ?? 0,
+        savedSearchesCount: savedSearchesRes.count ?? 0,
         totalViewsCount: listingRows.reduce(
           (sum, listing) => sum + Number(listing.view_count || 0),
           0,

@@ -24,6 +24,43 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/account/listings": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** List the signed-in seller's listings in the active market */
+        readonly get: operations["getAccountListings"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/account/upgrade-to-professional": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /**
+         * Upgrade the signed-in Individual account to Professional
+         * @description Atomically creates the account's unverified legal organization and changes the customer account family. This does not grant verification, a subscription, or a product entitlement.
+         */
+        readonly post: operations["postAccountUpgradeToProfessional"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/admin/audit-logs": {
         readonly parameters: {
             readonly query?: never;
@@ -5634,6 +5671,23 @@ export interface paths {
          */
         readonly put: operations["putListingsByIdFavorite"];
         readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/listings/{id}/mark-sold": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** Mark a caller-owned published or reserved listing as sold */
+        readonly post: operations["postListingsByIdMarkSold"];
         readonly delete?: never;
         readonly options?: never;
         readonly head?: never;
@@ -11788,6 +11842,14 @@ export interface components {
             readonly startsWhen: "paid_subscription_starts" | "customer_accepts_contract" | "migration_is_accepted";
             readonly status: components["schemas"]["CommercialConfigurationStatus"];
         };
+        readonly ProfessionalAccountUpgradeRequest: {
+            readonly businessAddress: string;
+            readonly businessIdentifier: string;
+            readonly companyName: string;
+            readonly legalForm: string;
+            readonly phone?: string;
+            readonly vatNumber?: string;
+        };
         readonly ProfessionalCatalogPresentation: {
             readonly addonProductIds: readonly string[];
             readonly catalog: components["schemas"]["ProfessionalCatalogSnapshot"];
@@ -12858,6 +12920,18 @@ export interface components {
             readonly postalCode?: string;
             readonly region?: string;
         };
+        readonly UserWorkspaceSummary: {
+            readonly activeListingsCount: number;
+            readonly pendingTransactionsCount: number;
+            readonly recentListings: readonly components["schemas"]["PublicListing"][];
+            readonly recentPurchases: readonly components["schemas"]["JsonValue"][];
+            readonly savedSearchesCount: number;
+            readonly totalEarningsAmount: number;
+            readonly totalFavoritesCount: number;
+            readonly totalListingsCount: number;
+            readonly totalViewsCount: number;
+            readonly unreadMessagesCount: number;
+        };
         readonly WatchChannels: {
             readonly email: boolean;
             readonly inApp: boolean;
@@ -13034,6 +13108,76 @@ export interface operations {
                     readonly "application/json": {
                         readonly items: readonly components["schemas"]["CrmPipeline"][];
                     };
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getAccountListings: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description The caller-owned listing projections in the requested market. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["PublicListingCollection"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly postAccountUpgradeToProfessional: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["ProfessionalAccountUpgradeRequest"];
+            };
+        };
+        readonly responses: {
+            /** @description The updated private account projection. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
                 };
             };
             readonly 400: components["responses"]["BadRequest"];
@@ -24788,6 +24932,40 @@ export interface operations {
             readonly 500: components["responses"]["InternalError"];
         };
     };
+    readonly postListingsByIdMarkSold: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path: {
+                readonly id: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description The updated listing projection. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["PublicListing"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
     readonly postListingsBulkimportParse: {
         readonly parameters: {
             readonly query?: never;
@@ -31419,9 +31597,11 @@ export interface operations {
     readonly getWorkspaceSummaryByUserId: {
         readonly parameters: {
             readonly query?: never;
-            readonly header?: {
+            readonly header: {
                 /** @description Caller correlation id. The server returns the accepted or generated value. */
                 readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
             };
             readonly path: {
                 readonly userId: string;
@@ -31437,7 +31617,7 @@ export interface operations {
                     readonly [name: string]: unknown;
                 };
                 content: {
-                    readonly "application/json": components["schemas"]["JsonValue"];
+                    readonly "application/json": components["schemas"]["UserWorkspaceSummary"];
                 };
             };
             readonly 400: components["responses"]["BadRequest"];

@@ -49,6 +49,10 @@ export interface ListingsServiceContract {
     filter?: SearchFilters,
   ): Promise<{ listings: Listing[]; total: number }>;
   getListingById(id: string): Promise<Listing | null>;
+  getOwnListings(
+    userId: string,
+    marketCode: string,
+  ): Promise<{ listings: Listing[]; total: number }>;
   /** Public, market-scoped card projections used for guest-owned local sets. */
   getPublicListingsByIds(
     listingIds: readonly string[],
@@ -80,6 +84,7 @@ export interface ListingsServiceContract {
   ): Promise<BulkListingImportRow[]>;
   publishBulkListings(input: PublishBulkListingsInput): Promise<Listing[]>;
   updateListing(id: string, updates: Partial<Listing>): Promise<Listing>;
+  markListingSold(id: string): Promise<Listing>;
   deleteListing(id: string): Promise<boolean>;
   setFavorite(
     listingId: string,

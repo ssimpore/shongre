@@ -1228,6 +1228,23 @@ export class ApiV1Router {
           body?.reason,
         ),
     );
+    this.addRoute(
+      "POST",
+      "/account/upgrade-to-professional",
+      permission("marketplace.customer.access"),
+      async ({ principal, body }) =>
+        usersService.upgradeOwnAccount(principal.userId, body),
+    );
+    this.addRoute(
+      "GET",
+      "/account/listings",
+      permission("marketplace.customer.access"),
+      async ({ principal, marketCode }) =>
+        listingsService.getOwnedListings(
+          principal.userId,
+          requireApiRequestMarket(marketCode),
+        ),
+    );
 
     // --------------------------------------------------------------------------
     // LISTINGS & SEARCH ROUTES
@@ -1464,6 +1481,15 @@ export class ApiV1Router {
         await this.assertListingOwnership(principal, params.id);
         const success = await listingsService.deleteListing(params.id);
         return { success };
+      },
+    );
+    this.addRoute(
+      "POST",
+      "/listings/:id/mark-sold",
+      permission("listing.update.own"),
+      async ({ principal, params }) => {
+        await this.assertListingOwnership(principal, params.id);
+        return listingsService.markListingSold(params.id);
       },
     );
     this.addRoute(
@@ -5309,9 +5335,10 @@ export class ApiV1Router {
       "GET",
       "/workspace/summary/:userId",
       permission("marketplace.customer.access"),
-      async ({ principal, params }) =>
+      async ({ principal, params, marketCode }) =>
         workspaceService.getUserWorkspaceSummary(
           resolveOwnerId(principal, params.userId),
+          requireApiRequestMarket(marketCode),
         ),
     );
     this.addRoute(

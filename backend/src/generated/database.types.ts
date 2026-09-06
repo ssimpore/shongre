@@ -35290,6 +35290,59 @@ export type Database = {
           isSetofReturn: true;
         };
       };
+      upgrade_account_to_professional: {
+        Args: {
+          p_business_address: string;
+          p_business_identifier: string;
+          p_company_name: string;
+          p_legal_form: string;
+          p_phone: string;
+          p_user_id: string;
+          p_vat_number: string;
+        };
+        Returns: {
+          account_family: string;
+          account_type: Database["public"]["Enums"]["account_type"];
+          auth_user_id: string | null;
+          avatar_url: string | null;
+          bio: string | null;
+          capability_override_version: number;
+          city: string | null;
+          country: string;
+          created_at: string;
+          custom_permissions: string[];
+          department: string | null;
+          email: string;
+          id: string;
+          is_business_verified: boolean;
+          is_email_verified: boolean;
+          is_identity_verified: boolean;
+          is_phone_verified: boolean;
+          is_verified: boolean;
+          name: string;
+          phone: string | null;
+          postal_code: string | null;
+          preferred_market_code: string | null;
+          primary_role: Database["public"]["Enums"]["platform_role"];
+          professional_vertical: string | null;
+          rating: number;
+          region: string | null;
+          response_rate_percent: number;
+          response_time_text: string | null;
+          review_count: number;
+          revoked_permissions: string[];
+          slug: string;
+          staff_role: string | null;
+          status: Database["public"]["Enums"]["account_status"];
+          updated_at: string;
+        }[];
+        SetofOptions: {
+          from: "*";
+          to: "profiles";
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
       upsert_currency_definition: {
         Args: {
           p_actor_id: string;

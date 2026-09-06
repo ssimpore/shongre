@@ -4,6 +4,8 @@ import {
   type LoginCredentials,
   type RegisterIndividualInput,
   type RegisterProfessionalInput,
+  type AuthProfileUpdate,
+  type ProfessionalAccountUpgradeInput,
   type SocialAuthStartInput,
   type SocialAuthProvider,
   type MfaSetupView,
@@ -182,6 +184,20 @@ export class DemoAuthService implements AuthServiceContract {
   async logout(): Promise<void> {
     await simulateNetworkDelay();
     demoEngine.logout();
+  }
+
+  async updateProfile(updates: AuthProfileUpdate): Promise<UserProfile> {
+    await simulateNetworkDelay();
+    const user = currentUserOrThrow();
+    return userRepository.updateProfile(user.id, updates);
+  }
+
+  async upgradeToProfessional(
+    input: ProfessionalAccountUpgradeInput,
+  ): Promise<AuthResult> {
+    await simulateNetworkDelay();
+    const user = currentUserOrThrow();
+    return demoEngine.upgradeIndividualToPro(user.id, input);
   }
 
   async logoutAll(keepCurrent = false): Promise<void> {

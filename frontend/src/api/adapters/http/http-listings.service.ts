@@ -35,6 +35,10 @@ type BackendFavoriteCollection =
   operations["getFavorites"]["responses"][200]["content"]["application/json"];
 type BackendFavoriteStateResult =
   operations["putListingsByIdFavorite"]["responses"][200]["content"]["application/json"];
+type BackendOwnedListingCollection =
+  operations["getAccountListings"]["responses"][200]["content"]["application/json"];
+type BackendSoldListing =
+  operations["postListingsByIdMarkSold"]["responses"][200]["content"]["application/json"];
 
 const PUBLIC_LISTING_CARD_BATCH_SIZE = 100;
 
@@ -271,6 +275,14 @@ export class HttpListingsService implements ListingsServiceContract {
     }
   }
 
+  async getOwnListings(_userId: string, marketCode: string) {
+    const result = await httpClient.get<BackendOwnedListingCollection>(
+      "/account/listings",
+      { headers: { "X-Shongre-Market": marketCode } },
+    );
+    return { ...result, listings: result.listings.map(mapBackendListing) };
+  }
+
   async getPublicListingsByIds(
     listingIds: readonly string[],
     marketCode: string,
@@ -407,6 +419,13 @@ export class HttpListingsService implements ListingsServiceContract {
       postalCode: updates.postalCode,
       attributes: updates.attributes,
     });
+    return mapBackendListing(listing);
+  }
+
+  async markListingSold(id: string): Promise<Listing> {
+    const listing = await httpClient.post<BackendSoldListing>(
+      `/listings/${id}/mark-sold`,
+    );
     return mapBackendListing(listing);
   }
 

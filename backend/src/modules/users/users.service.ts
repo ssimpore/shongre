@@ -8,8 +8,11 @@ import type {
   IOrderRepository,
   IAdminRepository,
 } from "../../infrastructure/database/repositories/index.js";
-import { verifyPassword } from "../../shared/auth/password.js";
 import { accountDeletionRequestSchema } from "@shongre/contracts/account";
+import {
+  professionalAccountUpgradeSchema,
+  type ProfessionalAccountUpgrade,
+} from "@shongre/contracts";
 import {
   authRepository,
   type IAuthRepository,
@@ -17,15 +20,25 @@ import {
 import type { AuthProvider } from "../../shared/auth/identity.js";
 import { analyticsService } from "../analytics/analytics.service.js";
 import type { DeliveryRepository } from "../../infrastructure/database/repositories/delivery.repository.js";
+import {
+  createPasswordIdentityProvider,
+  type PasswordIdentityProvider,
+} from "../auth/password-identity.provider.js";
 
 export class UsersService {
+  private readonly passwordIdentity: PasswordIdentityProvider;
+
   constructor(
     private userRepo: IUserRepository = repositories.users,
     private orderRepo: IOrderRepository = repositories.orders,
     private adminRepo: IAdminRepository = repositories.admin,
     private authRepo: IAuthRepository = authRepository,
     private deliveryRepo: DeliveryRepository = repositories.delivery,
-  ) {}
+    passwordIdentity?: PasswordIdentityProvider,
+  ) {
+    this.passwordIdentity =
+      passwordIdentity ?? createPasswordIdentityProvider(userRepo);
+  }
 
   async getUserById(id: string): Promise<UserProfile | null> {
     return this.userRepo.findById(id);
@@ -49,6 +62,33 @@ export class UsersService {
     return this.userRepo.update(id, updates);
   }
 
+  async upgradeOwnAccount(
+    userId: string,
+    input: ProfessionalAccountUpgrade,
+  ): Promise<UserProfile> {
+    const parsed = professionalAccountUpgradeSchema.safeParse(input);
+    if (!parsed.success) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message:
+          parsed.error.issues[0]?.message ??
+          "Les informations professionnelles sont invalides.",
+      });
+    }
+    const upgraded = await this.userRepo.upgradeToProfessional(
+      userId,
+      parsed.data,
+    );
+    await this.authRepo.recordSecurityEvent({
+      userId,
+      eventType: "account_type_upgraded_to_pro",
+      metadata: {
+        professionalVertical: upgraded.professionalVertical ?? null,
+      },
+    });
+    return upgraded;
+  }
+
   async deleteOwnAccount(
     userId: string,
     password: string,
@@ -67,8 +107,13 @@ export class UsersService {
     if (!user || user.status !== "active") {
       throw new AppError({ code: "NOT_FOUND", message: "Compte introuvable." });
     }
-    const credential = await this.userRepo.findCredentialByUserId(userId);
-    if (!(await verifyPassword(request.password, credential?.passwordHash))) {
+    if (
+      !(await this.passwordIdentity.authenticate(
+        user,
+        user.email,
+        request.password,
+      ))
+    ) {
       throw new AppError({
         code: "UNAUTHENTICATED",
         message: "Le mot de passe de confirmation est incorrect.",
@@ -110,6 +155,7 @@ export class UsersService {
     reason?: string,
   ): Promise<void> {
     const userId = user.id;
+    const authUserId = await this.userRepo.findAuthUserId(userId);
     const [purchases, sales] = await Promise.all([
       this.orderRepo.getPurchases(userId),
       this.orderRepo.getSales(userId),
@@ -140,6 +186,7 @@ export class UsersService {
     }
     await analyticsService.anonymizeSubject(userId);
     await this.userRepo.anonymize(userId, reason);
+    await this.passwordIdentity.deleteAuthUser(authUserId);
     await Promise.all([
       this.authRepo.revokeSessions(userId, "account_deleted"),
       this.authRepo.deleteIdentities(userId),

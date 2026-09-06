@@ -12,8 +12,11 @@ export class WorkspaceService {
     private workspaceRepo: IWorkspaceRepository = repositories.workspace,
   ) {}
 
-  async getUserWorkspaceSummary(userId: string): Promise<UserWorkspaceSummary> {
-    return this.workspaceRepo.getUserWorkspaceSummary(userId);
+  async getUserWorkspaceSummary(
+    userId: string,
+    marketCode: string,
+  ): Promise<UserWorkspaceSummary> {
+    return this.workspaceRepo.getUserWorkspaceSummary(userId, marketCode);
   }
 
   async getProAnalytics(sellerId: string): Promise<{
