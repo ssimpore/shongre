@@ -29,14 +29,12 @@ import { ConfirmModal } from "../../design-system/primitives/ConfirmModal";
 import { marketService } from "../../domains/market/market.service";
 import { MarketStatus } from "../../domains/market/market.types";
 import { plural } from "../../utilities/formatters";
-import {
-  getTaxonomyLabel,
-  taxonomyService,
-} from "../../domains/taxonomy/taxonomy.service";
+import { getTaxonomyLabel } from "../../domains/taxonomy/taxonomy.service";
 import { CategoryIcon } from "../../design-system/primitives/CategoryIcon";
 import { useToast } from "../../app/providers/ToastProvider";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { usePageMeta } from "../../hooks/usePageMeta";
+import { useRootTaxonomyCategories } from "../../hooks/useRootTaxonomyCategories";
 import {
   normalizeRecentSearchesLimit,
   normalizePriceFilterStops,
@@ -75,7 +73,9 @@ type DomainTab =
   | "features";
 
 export const AdminMarketsPage: React.FC = () => {
-  const { t } = useTranslation();
+  const { locale, t } = useTranslation();
+  const { categories: rootTaxonomyCategories } =
+    useRootTaxonomyCategories(locale);
   const baselineMarket = marketService.getDefaultMarket();
   usePageMeta({
     title: t("meta.adminMarkets.title"),
@@ -1048,7 +1048,7 @@ export const AdminMarketsPage: React.FC = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {taxonomyService.getRootCategories().map((rootCat) => {
+                  {rootTaxonomyCategories.map((rootCat) => {
                     const isRootEnabled =
                       marketService.isCategoryEnabledInMarket(
                         selectedMarket.code,
@@ -1120,14 +1120,14 @@ export const AdminMarketsPage: React.FC = () => {
                         </div>
 
                         {/* Subcategories list */}
-                        {rootCat.children && rootCat.children.length > 0 && (
+                        {rootCat.subCategories.length > 0 && (
                           <div className="pt-3 space-y-1.5">
                             <div className="text-micro font-bold text-text-tertiary uppercase tracking-wider">
                               {t("admin.adminMarketsPage.sousCategories")}
-                              {rootCat.children.length})
+                              {rootCat.subCategories.length})
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-                              {rootCat.children.map((sub) => {
+                              {rootCat.subCategories.map((sub) => {
                                 const isSubEnabled =
                                   isRootEnabled &&
                                   marketService.isCategoryEnabledInMarket(

@@ -41,6 +41,7 @@ function contentSecurityPolicy(environment: EnvironmentConfig): string {
     "https://m.stripe.network",
   ];
   const scriptSources = ["'self'", "'unsafe-inline'", "https://js.stripe.com"];
+  const imageSources = ["'self'", "blob:", "data:", "https:"];
   const configuredAnalyticsOrigins = [
     process.env.NEXT_PUBLIC_POSTHOG_HOST,
     process.env.NEXT_PUBLIC_MATOMO_URL,
@@ -68,13 +69,14 @@ function contentSecurityPolicy(environment: EnvironmentConfig): string {
   }
   if (localDevelopment) {
     connectSources.push("http:", "ws:", "wss:");
+    imageSources.push("http:");
   }
 
   const directives = [
     "default-src 'self'",
     `script-src ${scriptSources.join(" ")}${localDevelopment ? " 'unsafe-eval'" : ""}`,
     "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' blob: data: https:",
+    `img-src ${imageSources.join(" ")}`,
     "font-src 'self' data:",
     `connect-src ${connectSources.join(" ")}`,
     "frame-src https://js.stripe.com https://hooks.stripe.com",

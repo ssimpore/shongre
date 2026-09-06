@@ -7,6 +7,10 @@ const injected: PublicRuntimeConfig = {
   franceUrl: "https://staging.shongre.fr/",
   internationalUrl: "https://staging.shongre.com/",
   apiBaseUrl: "https://api-staging.shongre.fr/api/v1",
+  publicMediaAssetBaseUrl:
+    "https://storage-staging.shongre.invalid/listing-media/editorial",
+  publicCategoryMediaBaseUrl:
+    "https://storage-staging.shongre.invalid/listing-media/categories",
   dataMode: "api",
   mockStorageEnabled: false,
   stripePublishableKey: "pk_test_staging",
@@ -73,6 +77,28 @@ describe("public runtime configuration", () => {
     vi.stubGlobal("window", {});
     const { getPublicRuntimeConfig } = await import("./public-runtime-config");
     expect(() => getPublicRuntimeConfig()).toThrow(/was not injected/);
+  });
+
+  it("uses environment-owned copies of legacy demo media in API mode", async () => {
+    vi.stubGlobal("window", { __SHONGRE_RUNTIME_CONFIG__: injected });
+    const { resolveOwnedPublicMediaUrl } =
+      await import("./public-runtime-config");
+    expect(
+      resolveOwnedPublicMediaUrl(
+        "https://images.unsplash.com/photo-example?auto=format&w=640",
+      ),
+    ).toBe(
+      "https://storage-staging.shongre.invalid/listing-media/editorial/photo-example.jpg",
+    );
+  });
+
+  it("uses environment-owned category media in API mode", async () => {
+    vi.stubGlobal("window", { __SHONGRE_RUNTIME_CONFIG__: injected });
+    const { resolveCategoryPublicMediaUrl } =
+      await import("./public-runtime-config");
+    expect(resolveCategoryPublicMediaUrl("vehicules")).toBe(
+      "https://storage-staging.shongre.invalid/listing-media/categories/vehicules.jpg",
+    );
   });
 
   it("uses validated runtime-only server origins while rendering client components on the server", async () => {

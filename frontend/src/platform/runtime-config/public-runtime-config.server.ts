@@ -44,6 +44,9 @@ export function createPublicRuntimeConfig(): PublicRuntimeConfig {
     );
   }
   const mockStorageEnabled = mockStorageValue === "true";
+  const publicMediaAssetBaseUrl = process.env.PUBLIC_MEDIA_ASSET_BASE_URL ?? "";
+  const publicCategoryMediaBaseUrl =
+    process.env.PUBLIC_CATEGORY_MEDIA_BASE_URL ?? "";
   const stripePublishableKey =
     process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? "";
   const analyticsMode = (process.env.ANALYTICS_MODE ?? "off") as
@@ -66,6 +69,10 @@ export function createPublicRuntimeConfig(): PublicRuntimeConfig {
     if (dataMode !== "api") errors.push("NEXT_PUBLIC_DATA_MODE=api");
     if (mockStorageEnabled)
       errors.push("NEXT_PUBLIC_ENABLE_MOCK_STORAGE=false");
+    if (!publicMediaAssetBaseUrl)
+      errors.push("PUBLIC_MEDIA_ASSET_BASE_URL is required");
+    if (!publicCategoryMediaBaseUrl)
+      errors.push("PUBLIC_CATEGORY_MEDIA_BASE_URL is required");
     if (errors.length > 0) {
       throw new Error(
         `[Web Config] Connected ${environment.environment} runtime configuration is unsafe: ${errors.join(", ")}.`,
@@ -110,6 +117,8 @@ export function createPublicRuntimeConfig(): PublicRuntimeConfig {
     franceUrl: environment.urls.franceApp.toString(),
     internationalUrl: environment.urls.internationalApp.toString(),
     apiBaseUrl: apiBaseUrl(environment.urls.api),
+    publicMediaAssetBaseUrl,
+    publicCategoryMediaBaseUrl,
     dataMode,
     mockStorageEnabled,
     stripePublishableKey,

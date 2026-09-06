@@ -232,6 +232,13 @@ operations-tooling-check: ## Test release evidence, hosted load, storage restore
 	@npx tsx scripts/verify-observability.test.mjs
 	@node scripts/check-runtime-hostnames.test.mjs
 	@npx tsx scripts/check-performance-contract.mjs
+	@npm run local-fixtures:check
+
+local-fixtures-sync: ## Refresh the versioned local database scenario and its media assets
+	@npm run local-fixtures:sync
+
+local-fixtures-check: ## Reject drift between the standalone demo and local database scenario
+	@npm run local-fixtures:check
 
 capability-inventory-check: ## Reject stale generated counts in the capability matrix
 	@node scripts/update-capability-inventory.mjs --check

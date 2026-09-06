@@ -230,7 +230,15 @@ component → hook/controller → service contract → demo or HTTP adapter
   `make dev` performs that connected Web sequence in one command, first stopping
   tracked application processes and then forcing Web/mobile API and backend
   database mode with mock storage disabled, migrating, idempotently seeding, and
-  launching the API, worker, and Web app;
+  launching the API, worker, and Web app. The local seed mirrors the versioned
+  standalone demo snapshot into production-shaped tables, imports the complete
+  generated taxonomy v4 projection and market availability, restores the
+  database-owned header order, and copies every demo media source into local
+  public Supabase Storage. In connected mode, category collections,
+  navigation, filters, and category media must come through the API/runtime
+  Storage configuration without a static client fallback. Intentional fixture
+  changes must run `make local-fixtures-sync`, while CI and completion checks
+  run `make local-fixtures-check`;
   generated local credentials remain ignored under `.runtime/`. The default
   local Web and API origins and ports come only from `.env.example`; runtime
   source, Make recipes, and package scripts must not duplicate them. Do not

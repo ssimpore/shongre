@@ -14,6 +14,31 @@ import type {
   TaxonomyV4ResolvedSchema,
   TaxonomyV4TreeResponse,
 } from "@shongre/contracts";
+import type { components } from "@shongre/contracts/openapi";
+
+type BackendCategory = components["schemas"]["TaxonomyLegacyCategory"];
+
+function mapBackendCategory(category: BackendCategory): Category {
+  return {
+    id: category.id,
+    slug: category.slug,
+    name: category.name,
+    label: category.name,
+    shortLabel: category.shortLabel,
+    iconName: category.iconName ?? "Package",
+    description: category.name,
+    subCategories: (category.subcategories ?? []).map((child) => ({
+      id: child.id,
+      slug: child.slug,
+      name: child.name,
+      label: child.name,
+      shortLabel: child.shortLabel,
+      parentSlug: category.slug,
+      iconName: child.iconName,
+      attributesSchema: [],
+    })),
+  };
+}
 
 export class HttpTaxonomyService implements TaxonomyServiceContract {
   private marketHeaders(marketContext: MarketContext) {
@@ -23,7 +48,9 @@ export class HttpTaxonomyService implements TaxonomyServiceContract {
   }
 
   async getRootCategories(): Promise<Category[]> {
-    return httpClient.get<Category[]>("/taxonomy/root");
+    const categories =
+      await httpClient.get<BackendCategory[]>("/taxonomy/root");
+    return categories.map(mapBackendCategory);
   }
 
   async getNodeById(id: string): Promise<TaxonomyNode | null> {

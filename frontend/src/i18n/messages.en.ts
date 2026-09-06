@@ -743,6 +743,10 @@ export const messagesEn: MessageCatalogue = {
   "categories.categoriesPage.voirToutesLesAnnonces": "See all listings",
   "categories.categoriesPage.voirTout": "See all",
   "categories.categoriesPage.aucuneCategorieTrouvee": "No category found",
+  "categories.categoriesPage.catalogueIndisponible":
+    "Categories are temporarily unavailable",
+  "categories.categoriesPage.catalogueIndisponibleDescription":
+    "The catalog could not be loaded from the Shongre API.",
   "collections.collectionsPage.chercherUneThematique": "Find a theme…",
   "collections.collectionsPage.annoncesDeLaCollection":
     "Listings in this collection",

@@ -61,6 +61,7 @@ export const taxonomyAttributeVisibilitySchema = z.enum([
   "public",
   "seller_only",
   "moderator_only",
+  "private",
 ]);
 
 export const taxonomyAttributeOptionSchema = z.object({
@@ -327,6 +328,7 @@ export const taxonomyV4UiComponentSchema = z.enum([
   "location_autocomplete",
   "postal_code_input",
   "address_autocomplete",
+  "address_input",
   "hidden_geo",
   "radius_input",
   "image_uploader",

@@ -86,6 +86,7 @@ export const TAXONOMY_CONTROL_REGISTRY = {
   country_select: control("autocomplete", { supportsRemoteOptions: true }),
   location_autocomplete: control("location", { supportsRemoteOptions: true }),
   postal_code_input: control("text"),
+  address_input: control("location"),
   address_autocomplete: control("location", { supportsRemoteOptions: true }),
   hidden_geo: control("hidden"),
   radius_input: control("number"),

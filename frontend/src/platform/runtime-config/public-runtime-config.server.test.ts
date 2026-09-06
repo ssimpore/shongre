@@ -13,6 +13,10 @@ function configureProductionRuntime(): void {
     API_URL: "https://api.shongre.fr",
     NEXT_PUBLIC_DATA_MODE: "api",
     NEXT_PUBLIC_ENABLE_MOCK_STORAGE: "false",
+    PUBLIC_MEDIA_ASSET_BASE_URL:
+      "https://storage.shongre.invalid/listing-media/editorial",
+    PUBLIC_CATEGORY_MEDIA_BASE_URL:
+      "https://storage.shongre.invalid/listing-media/categories",
     NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: "pk_live_TestOnly123",
     SHONGRE_MARKETPLACE_ORIGIN: "https://marketplace.shongre.invalid",
     SHONGRE_SOLUTIONS_ORIGIN: "https://solutions.shongre.invalid",
@@ -31,6 +35,10 @@ function configureLocalRuntime(): void {
     API_URL: "http://127.0.0.1:4000",
     NEXT_PUBLIC_DATA_MODE: "api",
     NEXT_PUBLIC_ENABLE_MOCK_STORAGE: "false",
+    PUBLIC_MEDIA_ASSET_BASE_URL:
+      "http://127.0.0.1:54321/storage/v1/object/public/listing-media/local-seed/demo-library",
+    PUBLIC_CATEGORY_MEDIA_BASE_URL:
+      "http://127.0.0.1:54321/storage/v1/object/public/listing-media/local-seed/categories",
   } as const;
   for (const [name, value] of Object.entries(values)) vi.stubEnv(name, value);
 }
@@ -68,6 +76,15 @@ describe("server public runtime configuration", () => {
 
     expect(() => createPublicRuntimeConfig()).toThrow(
       /Connected local.*NEXT_PUBLIC_DATA_MODE=api.*NEXT_PUBLIC_ENABLE_MOCK_STORAGE=false/,
+    );
+  });
+
+  it("rejects connected Web configuration without owned media prefixes", () => {
+    configureLocalRuntime();
+    vi.stubEnv("PUBLIC_CATEGORY_MEDIA_BASE_URL", "");
+
+    expect(() => createPublicRuntimeConfig()).toThrow(
+      /PUBLIC_CATEGORY_MEDIA_BASE_URL is required/,
     );
   });
 

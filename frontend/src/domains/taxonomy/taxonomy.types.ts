@@ -59,7 +59,8 @@ export type AttributeDataType =
 type TaxonomyAttributeFieldRole =
   "required" | "recommended" | "optional" | "computed" | "system";
 
-type TaxonomyAttributeVisibility = "public" | "seller_only" | "moderator_only";
+type TaxonomyAttributeVisibility =
+  "public" | "seller_only" | "moderator_only" | "private";
 
 export interface AttributeOption {
   value: string;

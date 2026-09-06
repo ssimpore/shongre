@@ -70,7 +70,6 @@ import {
   type HeaderAccountMenuItem,
   type HeaderAccountMenuItemId,
 } from "./account-menu.model";
-import { DEFAULT_HEADER_CATEGORIES } from "../../domains/taxonomy/taxonomy-header.defaults";
 
 const HeaderCategoryNav = lazy(() =>
   import("./HeaderCategoryNav").then((module) => ({
@@ -810,7 +809,6 @@ export const Header: React.FC = () => {
                 currentPath={location.pathname}
                 marketContext={marketContext}
                 marketCode={activeMarket.code}
-                initialCategories={DEFAULT_HEADER_CATEGORIES}
                 disabledCategorySlugs={
                   effectiveConfig.taxonomy?.disabledCategorySlugs
                 }

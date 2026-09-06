@@ -1,15 +1,12 @@
 import { routes } from "../../configuration/routes";
-import React, { useEffect, useState } from "react";
+import React from "react";
 
 import { AlertCircle, Home, Search, ArrowRight } from "lucide-react";
 import { Button } from "../../design-system/primitives/Button";
 import { CategoryIcon } from "../../design-system/primitives/CategoryIcon";
-import {
-  getTaxonomyLabel,
-  taxonomyService,
-} from "../../domains/taxonomy/taxonomy.service";
-import { TaxonomyNode } from "../../domains/taxonomy/taxonomy.types";
+import { getTaxonomyLabel } from "../../domains/taxonomy/taxonomy.service";
 import { usePageMeta } from "../../hooks/usePageMeta";
+import { useRootTaxonomyCategories } from "../../hooks/useRootTaxonomyCategories";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { Link } from "react-router-dom";
 
@@ -26,7 +23,7 @@ import { Link } from "react-router-dom";
  * page cannot drift from the catalogue it points into.
  */
 export const NotFoundPage: React.FC = () => {
-  const { t } = useTranslation();
+  const { locale, t } = useTranslation();
   usePageMeta({
     title: "Page introuvable",
     description:
@@ -34,16 +31,8 @@ export const NotFoundPage: React.FC = () => {
     noIndex: true,
   });
 
-  const [categories, setCategories] = useState<TaxonomyNode[]>([]);
-
-  useEffect(() => {
-    try {
-      setCategories(taxonomyService.getRootCategories().slice(0, 8));
-    } catch {
-      // A 404 that throws is worse than a 404 with fewer options on it.
-      setCategories([]);
-    }
-  }, []);
+  const { categories: rootCategories } = useRootTaxonomyCategories(locale);
+  const categories = rootCategories.slice(0, 8);
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-16 sm:py-20 space-y-10">

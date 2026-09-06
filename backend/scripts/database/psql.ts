@@ -49,6 +49,14 @@ export function runPsql(databaseUrl: string, sql: string): string {
   return executePsql(databaseUrl, ["-qAt"], sql);
 }
 
-export function runPsqlFile(databaseUrl: string, filePath: string): void {
-  executePsql(databaseUrl, ["--single-transaction", "--file", filePath]);
+export function runPsqlFile(
+  databaseUrl: string,
+  filePath: string,
+  options: { singleTransaction?: boolean } = {},
+): string {
+  const args =
+    options.singleTransaction === false
+      ? ["-qAt"]
+      : ["-qAt", "--single-transaction"];
+  return executePsql(databaseUrl, [...args, "--file", filePath]);
 }

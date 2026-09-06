@@ -298,7 +298,7 @@ export class PostgresCrmShongreIntegrationRepository implements ICrmShongreInteg
         p_permanent_failure: input.permanentFailure ?? false,
         p_error_code: input.errorCode ?? "",
         p_error_message: input.errorMessage ?? "",
-        p_retry_at: input.retryAt,
+        p_retry_at: input.retryAt ?? null,
       } as any,
     );
     if (error) databaseFailure("crmShongre.complete", error);

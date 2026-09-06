@@ -40,6 +40,8 @@
     "brand:sync": "tsx scripts/sync-brand-assets.ts",
     "brand:check": "tsx scripts/check-brand-assets.ts",
     "brand:activate": "tsx scripts/activate-brand.ts",
+    "local-fixtures:sync": "tsx scripts/sync-local-development-fixtures.ts --download",
+    "local-fixtures:check": "tsx scripts/sync-local-development-fixtures.ts --check",
     "ui:check": "make ui-check",
     "cross-platform:check": "make cross-platform-check",
     "openapi:lint": "redocly lint backend/openapi/openapi.json --format=stylish --max-problems=1000",

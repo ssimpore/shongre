@@ -23,13 +23,9 @@ import type {
 } from "../../api/contracts/search.contract";
 import { services } from "../../api/client/service-registry";
 import { Listing, SearchFilters, ListingCondition } from "../../types";
-import { TAXONOMY } from "../../domains/taxonomy/taxonomy.data";
-import {
-  taxonomyService,
-  getTaxonomyLabel,
-} from "../../domains/taxonomy/taxonomy.service";
-import { TaxonomyMigration } from "../../domains/taxonomy/taxonomy.migration";
+import { getTaxonomyLabel } from "../../domains/taxonomy/taxonomy.service";
 import { usePageMeta } from "../../hooks/usePageMeta";
+import { useRootTaxonomyCategories } from "../../hooks/useRootTaxonomyCategories";
 import { ListingCard } from "../../design-system/primitives/ListingCard";
 import { Button } from "../../design-system/primitives/Button";
 import { Input, Checkbox } from "../../design-system/primitives/FormField";
@@ -117,6 +113,9 @@ export const SearchPage: React.FC = () => {
   const toast = useToast();
   const { currentUser } = useAuth();
   const publicRouteData = usePublicRouteData();
+  const { categories: taxonomyCategories } = useRootTaxonomyCategories(
+    `${activeMarket.code}:${currentLocale}`,
+  );
   const initialData =
     publicRouteData?.kind === "listing_search" ? publicRouteData : null;
   const initialDataPending = useRef(Boolean(initialData));
@@ -426,9 +425,7 @@ export const SearchPage: React.FC = () => {
       );
       return;
     }
-    const categoryId = TaxonomyMigration.resolveCanonicalNode(
-      subCategorySlug || categorySlug,
-    )?.id;
+    const categoryId = activeSubCat?.id ?? activeCategory?.id;
     if (
       !query &&
       !categoryId &&
@@ -502,17 +499,13 @@ export const SearchPage: React.FC = () => {
     }
   };
 
-  const activeCanonicalNode = TaxonomyMigration.resolveCanonicalNode(
-    subCategorySlug || categorySlug,
-  );
-  const activeCategory = TAXONOMY.find(
+  const activeCategory = taxonomyCategories.find(
     (c) => c.slug === categorySlug || c.id === categorySlug,
   );
-  const activeSubCat = activeCategory?.subCategories.find(
+  const activeSubCat = activeCategory?.subCategories?.find(
     (s) => s.slug === subCategorySlug || s.id === subCategorySlug,
   );
-  const activeNodeId =
-    activeCanonicalNode?.id || activeSubCat?.id || activeCategory?.id;
+  const activeNodeId = activeSubCat?.id || activeCategory?.id;
 
   // A search is useful on the home page only if it can be resumed with the
   // same criteria. Store the structured URL after every meaningful search or
@@ -584,8 +577,29 @@ export const SearchPage: React.FC = () => {
     userLocation.city,
   ]);
 
-  const dynamicFacets = useMemo(() => {
-    return taxonomyService.resolveSearchFilters(activeNodeId);
+  const [dynamicFacets, setDynamicFacets] = useState<
+    Awaited<ReturnType<typeof services.taxonomy.resolveSearchFilters>>
+  >([]);
+
+  useEffect(() => {
+    let active = true;
+    if (!activeNodeId) {
+      setDynamicFacets([]);
+      return () => {
+        active = false;
+      };
+    }
+    void services.taxonomy
+      .resolveSearchFilters(activeNodeId)
+      .then((facets) => {
+        if (active) setDynamicFacets(facets);
+      })
+      .catch(() => {
+        if (active) setDynamicFacets([]);
+      });
+    return () => {
+      active = false;
+    };
   }, [activeNodeId]);
 
   const dynamicFacetDropdownOptions = useMemo(() => {
@@ -635,23 +649,18 @@ export const SearchPage: React.FC = () => {
         label: "Toutes les catégories",
         icon: <Layers className="w-icon-sm h-icon-sm text-text-tertiary" />,
       },
-      ...TAXONOMY.map((cat) => ({
+      ...taxonomyCategories.map((cat) => ({
         value: cat.slug,
         label: getTaxonomyLabel(cat, "compact"),
         icon: <CategoryIcon category={cat} size="xs" />,
         sublabel: `${cat.subCategories.length} sous-catégories`,
       })),
     ],
-    [],
+    [taxonomyCategories],
   );
 
   const subcategoryDropdownOptions: DropdownOption[] = useMemo(() => {
-    const activeNode = categorySlug
-      ? TaxonomyMigration.resolveCanonicalNode(categorySlug)
-      : undefined;
-    const children = activeNode
-      ? taxonomyService.getChildren(activeNode.id)
-      : [];
+    const children = activeCategory?.subCategories ?? [];
     if (children.length === 0) return [];
     return [
       { value: "", label: "Toutes les sous-catégories" },
@@ -660,7 +669,7 @@ export const SearchPage: React.FC = () => {
         label: getTaxonomyLabel(sub, "compact"),
       })),
     ];
-  }, [categorySlug]);
+  }, [activeCategory?.subCategories]);
 
   const sortDropdownOptions: DropdownOption[] = [
     { value: "date_desc", label: "Plus récentes" },
@@ -743,13 +752,14 @@ export const SearchPage: React.FC = () => {
    */
   const pageHeading = useMemo(() => {
     if (query) return `Recherche : ${query}`;
-    if (activeCanonicalNode) {
-      return getTaxonomyLabel(activeCanonicalNode, {
+    const selectedCategory = activeSubCat ?? activeCategory;
+    if (selectedCategory) {
+      return getTaxonomyLabel(selectedCategory, {
         locale: currentLocale,
       });
     }
     return "Toutes les annonces";
-  }, [activeCanonicalNode, currentLocale, query]);
+  }, [activeCategory, activeSubCat, currentLocale, query]);
 
   const searchMeta = useMemo(() => {
     if (!marketContext) {

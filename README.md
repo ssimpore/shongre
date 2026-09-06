@@ -147,8 +147,11 @@ Supabase stack and writes generated credentials to ignored
 load those credentials automatically. `make dev` is the one-command connected
 local workflow: it stops tracked Shongre application processes, forces Web API
 and backend database modes with mock storage disabled, starts Supabase, applies
-pending migrations, loads the deterministic idempotent seed, and launches the
-API, worker, and Web app.
+pending migrations, loads the deterministic idempotent seed (including taxonomy
+v4, market availability, header navigation, accounts, listings, and owned
+Storage media), and launches the API, worker, and Web app. Connected category
+navigation and filters are therefore database-backed; `make frontend` is the
+only standalone surface that uses the compiled demo taxonomy adapter.
 Docker must be installed and running first, its data store must be writable, and
 the host must have at least 5 GiB free. The startup preflight fails with an
 actionable error instead of waiting indefinitely for an unhealthy daemon.
@@ -204,10 +207,14 @@ make supabase-down
 `make db-seed` installs the reviewed commercial baseline plus a repeatable,
 production-shaped local scenario: synthetic customer and professional profiles,
 marketplace listings, vehicles, properties, tutors, course offers, jobs, and
-their public media in Supabase Storage. Re-running it updates the same stable
-records instead of creating duplicates. It never copies production identities,
-payments, messages, KYC/KYB documents, or provider credentials; private Storage
-buckets therefore remain empty until a local workflow creates safe test data.
+the standalone demo's conversations, messages, transactions, notifications,
+saved searches, reviews, and public media in Supabase Storage. Re-running it
+updates the same stable records instead of creating duplicates. Run
+`make local-fixtures-check` to detect drift or `make local-fixtures-sync` after
+an intentional demo-fixture change. The scenario never copies production
+identities, real payments, KYC/KYB documents, or provider credentials; private
+Storage buckets therefore remain empty until a local workflow creates safe test
+data.
 
 Schema changes belong in `backend/supabase/migrations/`. `make migrations-check` validates ordering and contents without connecting to PostgreSQL. Destructive database and demo-seed commands require `APP_ENV=local` and prove that the target host and database name are local; `make db-reset` additionally invokes only the local `backend/supabase` workdir. The generated `backend/supabase/config.toml` is ignored; edit its checked-in template and environment values instead.
 

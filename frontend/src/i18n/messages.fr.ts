@@ -820,6 +820,10 @@ export const messagesFr = {
   "categories.categoriesPage.voirTout": "Voir tout",
   "categories.categoriesPage.aucuneCategorieTrouvee":
     "Aucune catégorie trouvée",
+  "categories.categoriesPage.catalogueIndisponible":
+    "Catégories momentanément indisponibles",
+  "categories.categoriesPage.catalogueIndisponibleDescription":
+    "Le catalogue n’a pas pu être chargé depuis l’API Shongre.",
 
   // --- collections.collectionsPage ---
   "collections.collectionsPage.chercherUneThematique":

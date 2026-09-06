@@ -122,9 +122,11 @@ not an empty control or a false publication blocker.
 Migration `backend/supabase/migrations/00078_taxonomy_v4.sql` is expand-only.
 Generated local seed SQL uses deterministic upserts, deprecates stale categories,
 disables stale listing types/options, and expires stale bindings. It never
-deletes listings, truncates tables, or deletes taxonomy rows. Local import still
-requires `APP_ENV=local`, a proven loopback database target, and explicit local
-approval:
+deletes listings, truncates tables, or deletes taxonomy rows. The guarded
+`make db-seed` path (and therefore `make dev`) applies this generated projection
+before local scenario data and restores market-scoped header navigation. The
+explicit commands remain available for inspecting or repairing only a proven
+loopback database target:
 
 ```bash
 make taxonomy-db-dry-run

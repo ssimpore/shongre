@@ -166,6 +166,12 @@ export NEXT_PUBLIC_ENABLE_MOCK_STORAGE="${NEXT_PUBLIC_ENABLE_MOCK_STORAGE:-$defa
 if [[ -z "${SUPABASE_URL:-}" && -n "${SUPABASE_HOST:-}" && -n "${SUPABASE_API_PORT:-}" ]]; then
   export SUPABASE_URL="http://${SUPABASE_HOST}:${SUPABASE_API_PORT}"
 fi
+if [[ -z "${PUBLIC_MEDIA_ASSET_BASE_URL:-}" && "${APP_ENV:-}" == "local" && -n "${SUPABASE_URL:-}" ]]; then
+  export PUBLIC_MEDIA_ASSET_BASE_URL="${SUPABASE_URL%/}/storage/v1/object/public/listing-media/local-seed/demo-library"
+fi
+if [[ -z "${PUBLIC_CATEGORY_MEDIA_BASE_URL:-}" && "${APP_ENV:-}" == "local" && -n "${SUPABASE_URL:-}" ]]; then
+  export PUBLIC_CATEGORY_MEDIA_BASE_URL="${SUPABASE_URL%/}/storage/v1/object/public/listing-media/local-seed/categories"
+fi
 export EXPO_PUBLIC_APP_ENV="${EXPO_PUBLIC_APP_ENV:-${APP_ENV:-}}"
 export EXPO_PUBLIC_ENVIRONMENT_ID="${EXPO_PUBLIC_ENVIRONMENT_ID:-${ENVIRONMENT_ID:-}}"
 export EXPO_PUBLIC_API_URL="${EXPO_PUBLIC_API_URL:-${API_URL:-}${API_PREFIX:-/api/v1}}"

@@ -78,6 +78,7 @@ function localizedHeaderCategoryLabel(
 const CATEGORY_MENU_ID = "header-category-mega-menu";
 const OVERVIEW_MENU_KEY = "autres";
 const EMPTY_DISABLED_CATEGORY_KEYS: readonly string[] = [];
+const EMPTY_HEADER_CATEGORIES: readonly TaxonomyHeaderCategoryItem[] = [];
 const categoryTriggerId = (slug: string) => `header-category-trigger-${slug}`;
 
 const getDedicatedRootDestination = (slug: string): string | undefined => {
@@ -386,7 +387,7 @@ const CategoryOverviewMenu: React.FC<CategoryOverviewMenuProps> = ({
 export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
   activeCategorySlug,
   currentPath,
-  initialCategories = [],
+  initialCategories = EMPTY_HEADER_CATEGORIES,
   marketContext,
   marketCode,
   disabledCategorySlugs = EMPTY_DISABLED_CATEGORY_KEYS,
@@ -403,6 +404,8 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const suppressNextFocusOpenRef = useRef(false);
   const loadingMenuKeysRef = useRef(new Set<string>());
+  const marketContextRef = useRef(marketContext);
+  marketContextRef.current = marketContext;
   const headerConfigurationRequestRef = useRef<{
     scope: string;
     promise: Promise<TaxonomyHeaderCategoryItem[]>;
@@ -416,6 +419,13 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
     [...initialCategories].sort(
       (left, right) => left.displayOrder - right.displayOrder,
     ),
+  );
+  const fallbackHeaderCategories = useMemo(
+    () =>
+      [...initialCategories].sort(
+        (left, right) => left.displayOrder - right.displayOrder,
+      ),
+    [initialCategories],
   );
   const [overviewRoots, setOverviewRoots] = useState<TaxonomyNode[]>([]);
   const [activeMenuSlug, setActiveMenuSlug] = useState<string | null>(null);
@@ -482,7 +492,7 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
     if (existing?.scope === headerConfigurationScope) return existing.promise;
 
     const promise = services.taxonomy
-      .getHeaderNavigation(marketContext)
+      .getHeaderNavigation(marketContextRef.current)
       .then((configuration) =>
         [...configuration.items].sort(
           (left, right) => left.displayOrder - right.displayOrder,
@@ -500,15 +510,14 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
         }
         return items;
       })
-      // The public-safe fallback remains usable if the adapter is unavailable.
-      .catch(() => headerCategories);
+      .catch(() => fallbackHeaderCategories);
 
     headerConfigurationRequestRef.current = {
       scope: headerConfigurationScope,
       promise,
     };
     return promise;
-  }, [headerCategories, headerConfigurationScope, marketContext]);
+  }, [fallbackHeaderCategories, headerConfigurationScope]);
 
   const loadMenuContent = useCallback(
     async (menuKey: string) => {
@@ -607,16 +616,16 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
   );
 
   useEffect(() => {
-    setHeaderCategories(
-      [...initialCategories].sort(
-        (left, right) => left.displayOrder - right.displayOrder,
-      ),
-    );
+    setHeaderCategories(fallbackHeaderCategories);
     setBranchesBySlug(new Map());
     setOverviewRoots([]);
     loadingMenuKeysRef.current.clear();
     headerConfigurationRequestRef.current = null;
-  }, [headerConfigurationScope, initialCategories]);
+  }, [fallbackHeaderCategories, headerConfigurationScope]);
+
+  useEffect(() => {
+    void loadHeaderConfiguration();
+  }, [loadHeaderConfiguration]);
 
   useEffect(() => {
     const rail = scrollContainerRef.current;

@@ -13,6 +13,8 @@ export interface PublicRuntimeConfig {
   franceUrl: string;
   internationalUrl: string;
   apiBaseUrl: string;
+  publicMediaAssetBaseUrl: string;
+  publicCategoryMediaBaseUrl: string;
   dataMode: PublicDataMode;
   mockStorageEnabled: boolean;
   stripePublishableKey: string;
@@ -146,6 +148,12 @@ function nodeFallback(): PublicRuntimeConfig {
     franceUrl,
     internationalUrl,
     apiBaseUrl,
+    publicMediaAssetBaseUrl: nodeEnvironmentValue(
+      "PUBLIC_MEDIA_ASSET_BASE_URL",
+    ),
+    publicCategoryMediaBaseUrl: nodeEnvironmentValue(
+      "PUBLIC_CATEGORY_MEDIA_BASE_URL",
+    ),
     dataMode,
     mockStorageEnabled: mockStorageValue === "true",
     stripePublishableKey: nodeEnvironmentValue(
@@ -217,4 +225,40 @@ export function getPublicRuntimeConfig(): PublicRuntimeConfig {
     return config;
   }
   return nodeFallback();
+}
+
+/** Replace legacy external demo imagery with the environment-owned copy. */
+export function resolveOwnedPublicMediaUrl(value: string): string {
+  let source: URL;
+  try {
+    source = new URL(value);
+  } catch {
+    return value;
+  }
+  const photoId = source.pathname.slice(1);
+  const validPhotoId =
+    source.hostname === "images.unsplash.com" &&
+    photoId.startsWith("photo-") &&
+    [...photoId].every((character) =>
+      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-".includes(
+        character,
+      ),
+    );
+  if (!validPhotoId) return value;
+  const runtime = getPublicRuntimeConfig();
+  if (runtime.dataMode !== "api" || !runtime.publicMediaAssetBaseUrl) {
+    return value;
+  }
+  return `${runtime.publicMediaAssetBaseUrl.replace(/\/$/, "")}/${photoId}.jpg`;
+}
+
+export function resolveCategoryPublicMediaUrl(slug: string): string {
+  const normalizedSlug = slug.trim().toLocaleLowerCase("fr-FR");
+  if (!/^[a-z0-9-]+$/.test(normalizedSlug)) return "";
+  const runtime = getPublicRuntimeConfig();
+  if (runtime.dataMode === "api") {
+    if (!runtime.publicCategoryMediaBaseUrl) return "";
+    return `${runtime.publicCategoryMediaBaseUrl.replace(/\/$/, "")}/${normalizedSlug}.jpg`;
+  }
+  return `/images/categories/${normalizedSlug}.jpg`;
 }

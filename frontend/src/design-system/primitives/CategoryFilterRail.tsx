@@ -1,6 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight, LayoutGrid, X } from "lucide-react";
-import { TAXONOMY } from "../../domains/taxonomy/taxonomy.data";
 import { getTaxonomyLabel } from "../../domains/taxonomy/taxonomy.service";
 import { CategoryIcon } from "./CategoryIcon";
 import { Category } from "../../types";
@@ -14,6 +13,8 @@ import {
 import { themeInteraction } from "@shongre/design-tokens";
 
 export interface CategoryFilterRailProps {
+  /** Categories supplied by the owning taxonomy hook/service. */
+  categories?: readonly Category[];
   /** Currently selected top-level category slug, or undefined for "all" */
   selectedCategorySlug?: string;
   /** Callback fired when category is toggled or selected. Passing undefined resets to all. */
@@ -34,11 +35,14 @@ export interface CategoryFilterRailProps {
   idPrefix?: string;
 }
 
+const EMPTY_CATEGORIES: readonly Category[] = [];
+
 /**
  * Horizontal scrollable rail of category filter chips allowing users to quickly
  * browse and toggle between marketplace categories.
  */
 export const CategoryFilterRail: React.FC<CategoryFilterRailProps> = ({
+  categories = EMPTY_CATEGORIES,
   selectedCategorySlug,
   onSelectCategory,
   onSelectAll,
@@ -135,7 +139,7 @@ export const CategoryFilterRail: React.FC<CategoryFilterRailProps> = ({
     }
   };
 
-  const activeCategory = TAXONOMY.find(
+  const activeCategory = categories.find(
     (c) => c.slug === selectedCategorySlug || c.id === selectedCategorySlug,
   );
   const subCategories = activeCategory?.subCategories || [];
@@ -197,7 +201,7 @@ export const CategoryFilterRail: React.FC<CategoryFilterRailProps> = ({
           )}
 
           {/* Canonical Category Chips */}
-          {TAXONOMY.map((cat: Category) => {
+          {categories.map((cat: Category) => {
             const isSelected =
               selectedCategorySlug === cat.slug ||
               selectedCategorySlug === cat.id;

@@ -30,7 +30,6 @@ import {
   UserPlus,
 } from "lucide-react";
 import { routes } from "../../configuration/routes";
-import { listingRepository } from "../../repositories/listing.repository";
 import { userRepository } from "../../repositories/user.repository";
 import { services } from "../../api/client/service-registry";
 import { Listing, UserProfile, Transaction } from "../../types";
@@ -243,43 +242,48 @@ export const ListingDetailPage: React.FC = () => {
       return;
     }
     setIsLoading(true);
-    listingRepository.getListingById(id).then((item) => {
-      if (item) {
-        setListing(item);
+    services.listings
+      .getListingById(id)
+      .then((item) => {
+        if (item) {
+          setListing(item);
 
-        /* Viewing a listing is what makes it recently viewed. The storage layer
+          /* Viewing a listing is what makes it recently viewed. The storage layer
            has always known how to record this — deduplicating, newest first,
            capped at ten — but nothing ever called it, so the history it handed
            back was the seeded fixture and never the visitor's own browsing. */
-        storageService.addRecentlyViewed(item.id);
-        if (trackedListingId.current !== item.id) {
-          trackedListingId.current = item.id;
-          analyticsService.track("listing_viewed", {
-            listingId: item.id,
-            sellerId: item.sellerId,
-            categoryId: item.categorySlug,
+          storageService.addRecentlyViewed(item.id);
+          if (trackedListingId.current !== item.id) {
+            trackedListingId.current = item.id;
+            analyticsService.track("listing_viewed", {
+              listingId: item.id,
+              sellerId: item.sellerId,
+              categoryId: item.categorySlug,
+            });
+          }
+
+          userRepository.getUserById(item.sellerId).then((sellerUser) => {
+            if (sellerUser) setSeller(sellerUser);
           });
+
+          // Load similar listings by category
+          services.listings
+            .getListings({
+              marketCode: countryCode,
+              categorySlug: item.subCategorySlug || item.categorySlug,
+              limit: PAGE_SIZES.similarListings,
+            })
+            .then((res) => {
+              setSimilarListings(
+                res.listings.filter((l) => l.id !== item.id).slice(0, 4),
+              );
+            })
+            .catch(() => setSimilarListings([]));
         }
-
-        userRepository.getUserById(item.sellerId).then((sellerUser) => {
-          if (sellerUser) setSeller(sellerUser);
-        });
-
-        // Load similar listings by category
-        listingRepository
-          .getListings({
-            categorySlug: item.categorySlug,
-            limit: PAGE_SIZES.similarListings,
-          })
-          .then((res) => {
-            setSimilarListings(
-              res.listings.filter((l) => l.id !== item.id).slice(0, 4),
-            );
-          });
-      }
-      setIsLoading(false);
-    });
-  }, [id, initialData]);
+      })
+      .catch(() => setListing(null))
+      .finally(() => setIsLoading(false));
+  }, [countryCode, id, initialData]);
 
   // 2. Taxonomy & Market resolution
   const taxonomyNode = useMemo(() => {

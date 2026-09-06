@@ -1,7 +1,8 @@
-import { readFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
-import { runPsql, runPsqlFile } from "../database/psql.js";
+import { tmpdir } from "node:os";
+import { runPsqlFile } from "../database/psql.js";
 
 const directory = dirname(fileURLToPath(import.meta.url));
 const seedPath = resolve(
@@ -80,15 +81,25 @@ function diffSql(): string {
 }
 
 function inspectDiff(): string {
-  return runPsql(
-    databaseUrl,
-    `BEGIN;
-     ${snapshotSql("taxonomy_before")}
-     ${statements}
-     ${snapshotSql("taxonomy_after")}
-     ${diffSql()}
-     ROLLBACK;`,
-  );
+  const workDirectory = mkdtempSync(resolve(tmpdir(), "shongre-taxonomy-"));
+  const inspectionPath = resolve(workDirectory, "inspect.sql");
+  try {
+    writeFileSync(
+      inspectionPath,
+      `BEGIN;
+       ${snapshotSql("taxonomy_before")}
+       ${statements}
+       ${snapshotSql("taxonomy_after")}
+       ${diffSql()}
+       ROLLBACK;`,
+      "utf8",
+    );
+    return runPsqlFile(databaseUrl, inspectionPath, {
+      singleTransaction: false,
+    });
+  } finally {
+    rmSync(workDirectory, { recursive: true, force: true });
+  }
 }
 
 const before = inspectDiff();

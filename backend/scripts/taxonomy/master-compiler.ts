@@ -2461,6 +2461,19 @@ function generateSeedSql(source: NormalizedSource): string {
       `INSERT INTO public.taxonomy_option_parent_links (option_id, parent_option_id) VALUES (${sqlLiteral(link.optionId)}, ${sqlLiteral(link.parentOptionId)}) ON CONFLICT DO NOTHING;`,
     );
   }
+  lines.push(
+    "",
+    "-- Retire legacy rows that still own a canonical v4 slug before inserting the reviewed identity.",
+  );
+  for (const category of source.categories) {
+    lines.push(
+      `UPDATE public.categories SET slug = LEFT(slug, 72) || '--legacy-' || LEFT(md5(id), 8), is_active = FALSE, status = 'deprecated', updated_at = NOW() WHERE slug = ${sqlLiteral(category.slug)} AND id <> ${sqlLiteral(category.id)};`,
+    );
+  }
+  lines.push(
+    `UPDATE public.categories SET is_active = FALSE, status = 'deprecated', updated_at = NOW() WHERE id NOT IN (${sqlIdList(source.categories.map((category) => category.id))}) AND (is_active = TRUE OR status <> 'deprecated');`,
+  );
+  lines.push("");
   for (const category of source.categories) {
     lines.push(
       `INSERT INTO public.categories (id, code, slug, name, short_label, parent_id, icon_name, sort_order, is_active, labels, short_labels, level, publishable, status, seller_eligibility, active_market_codes, seo_config, source_key) VALUES (${sqlLiteral(category.id)}, ${sqlLiteral(category.sourceKey)}, ${sqlLiteral(category.slug)}, ${sqlLiteral(category.labels["fr-FR"])}, ${sqlLiteral(category.shortLabels["fr-FR"])}, ${sqlNullable(category.parentId)}, ${sqlLiteral(category.iconName)}, ${category.sortOrder}, ${category.status === "active"}, ${jsonLiteral(category.labels)}, ${jsonLiteral(category.shortLabels)}, ${sqlLiteral(category.level === 0 ? "category" : category.level === 1 ? "subcategory" : "type")}, ${category.publishable}, ${sqlLiteral(category.status)}, ${jsonLiteral(category.sellerEligibility)}, ARRAY[${category.marketAvailability

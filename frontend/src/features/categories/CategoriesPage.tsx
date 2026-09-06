@@ -2,10 +2,11 @@ import React, { useMemo, useState } from "react";
 import { IMAGE_SIZES } from "@shongre/shared";
 import { Link } from "react-router-dom";
 import { ChevronRight, Search } from "lucide-react";
-import { TAXONOMY } from "../../domains/taxonomy/taxonomy.data";
 import { getTaxonomyLabel } from "../../domains/taxonomy/taxonomy.service";
 import { usePageMeta } from "../../hooks/usePageMeta";
+import { useRootTaxonomyCategories } from "../../hooks/useRootTaxonomyCategories";
 import { useTranslation } from "../../i18n/I18nProvider";
+import { resolveCategoryPublicMediaUrl } from "../../platform/runtime-config/public-runtime-config";
 import type { Category } from "../../types";
 import {
   Breadcrumbs,
@@ -15,30 +16,8 @@ import {
   Heading,
   Input,
   Image,
+  Skeleton,
 } from "../../design-system";
-
-const CATEGORY_VISUALS: Record<string, string> = {
-  vehicules: "/images/categories/vehicules.jpg",
-  immobilier: "/images/categories/immobilier.jpg",
-  emploi: "/images/categories/emploi.jpg",
-  services: "/images/categories/services.jpg",
-  "maison-jardin": "/images/categories/maison-jardin.jpg",
-  "multimedia-electronique": "/images/categories/multimedia-electronique.jpg",
-  "mode-accessoires": "/images/categories/mode-accessoires.jpg",
-  "bebe-puericulture-enfants":
-    "/images/categories/bebe-puericulture-enfants.jpg",
-  "loisirs-culture": "/images/categories/loisirs-culture.jpg",
-  "sports-plein-air": "/images/categories/sports-plein-air.jpg",
-  "animaux-accessoires": "/images/categories/animaux-accessoires.jpg",
-  "materiel-professionnel": "/images/categories/materiel-professionnel.jpg",
-  "materiel-agricole-espaces-verts":
-    "/images/categories/materiel-agricole-espaces-verts.jpg",
-  "energie-solaire-transition":
-    "/images/categories/energie-solaire-transition.jpg",
-  "informatique-pro-serveurs":
-    "/images/categories/informatique-pro-serveurs.jpg",
-  "dons-et-objets-gratuits": "/images/categories/dons-et-objets-gratuits.jpg",
-};
 
 interface CategoryCardProps {
   category: Category;
@@ -54,9 +33,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, priority }) => {
     subCategories.length - visibleSubCategories.length,
     0,
   );
-  const visualSrc =
-    CATEGORY_VISUALS[category.slug] ??
-    CATEGORY_VISUALS["dons-et-objets-gratuits"];
+  const visualSrc = resolveCategoryPublicMediaUrl(category.slug);
 
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-border-base bg-bg-surface shadow-xs transition duration-normal hover:-translate-y-0.5 hover:border-primary-border hover:shadow-md focus-within:border-primary-border focus-within:ring-2 focus-within:ring-primary-ring motion-reduce:transform-none">
@@ -141,7 +118,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, priority }) => {
 };
 
 export const CategoriesPage: React.FC = () => {
-  const { t } = useTranslation();
+  const { locale, t } = useTranslation();
   usePageMeta({
     title: "Toutes les catégories d'annonces",
     description:
@@ -150,12 +127,18 @@ export const CategoriesPage: React.FC = () => {
   });
 
   const [searchQuery, setSearchQuery] = useState("");
+  const {
+    categories,
+    error: categoriesError,
+    isLoading: categoriesLoading,
+    reload: reloadCategories,
+  } = useRootTaxonomyCategories(locale);
 
   const filteredCategories = useMemo(() => {
-    if (!searchQuery.trim()) return TAXONOMY;
+    if (!searchQuery.trim()) return categories;
     const normalizedQuery = searchQuery.toLocaleLowerCase().trim();
 
-    return TAXONOMY.filter((category) => {
+    return categories.filter((category) => {
       const matchesCategory =
         category.name.toLocaleLowerCase().includes(normalizedQuery) ||
         getTaxonomyLabel(category, "compact")
@@ -175,7 +158,7 @@ export const CategoriesPage: React.FC = () => {
 
       return matchesCategory || matchesSubCategory;
     });
-  }, [searchQuery]);
+  }, [categories, searchQuery]);
 
   return (
     <div className="min-h-screen bg-bg-base pb-20">
@@ -258,7 +241,30 @@ export const CategoriesPage: React.FC = () => {
           </Link>
         </div>
 
-        {filteredCategories.length > 0 ? (
+        {categoriesLoading ? (
+          <div
+            className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4"
+            aria-busy="true"
+          >
+            {Array.from({ length: 8 }, (_, index) => (
+              <Skeleton key={index} className="aspect-4/3 rounded-2xl" />
+            ))}
+          </div>
+        ) : categoriesError ? (
+          <EmptyState
+            icon={<Search aria-hidden="true" className="h-icon-xl w-icon-xl" />}
+            title={t("categories.categoriesPage.catalogueIndisponible")}
+            description={t(
+              "categories.categoriesPage.catalogueIndisponibleDescription",
+            )}
+            action={
+              <Button variant="pro" size="sm" onClick={reloadCategories}>
+                {t("common.retry")}
+              </Button>
+            }
+            className="mx-auto max-w-md"
+          />
+        ) : filteredCategories.length > 0 ? (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
             {filteredCategories.map((category, index) => (
               <CategoryCard

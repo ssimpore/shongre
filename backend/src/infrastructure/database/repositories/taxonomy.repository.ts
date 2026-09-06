@@ -430,6 +430,8 @@ export class PostgresTaxonomyRepository implements ITaxonomyRepository {
       const { data, error } = await supabase
         .from("categories")
         .select("*")
+        .eq("is_active", true)
+        .eq("status", "active")
         .order("sort_order", { ascending: true });
       if (error || !data) databaseFailure("taxonomy.getRootCategories", error);
       const roots = data.filter((category: any) => !category.parent_id);

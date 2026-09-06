@@ -234,7 +234,14 @@ ON CONFLICT (id, vertical_type, market_code) DO UPDATE SET
 -- Optional deterministic property fixture. It is inserted only when the base
 -- seed already contains a profile, so the file also works in catalogue-only DBs.
 WITH owner AS (
-  SELECT id FROM public.profiles ORDER BY created_at LIMIT 1
+  SELECT profile.id
+  FROM public.profiles profile
+  LEFT JOIN public.staff_memberships staff
+    ON staff.user_id = profile.id
+  WHERE staff.user_id IS NULL
+    AND profile.status = 'active'
+  ORDER BY profile.created_at, profile.id
+  LIMIT 1
 )
 INSERT INTO public.real_estate_properties (
   created_by_user_id, owner_user_id, market_code, slug, schema_version, property_type,

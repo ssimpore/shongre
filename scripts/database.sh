@@ -121,12 +121,13 @@ case "$action" in
   taxonomy-dry-run|taxonomy-import)
     require_local
     resolved_database_url="$(local_database_url)"
-    taxonomy_args=()
     if [[ "$action" == "taxonomy-dry-run" ]]; then
-      taxonomy_args+=(--dry-run)
+      DATABASE_URL="$resolved_database_url" TAXONOMY_IMPORT_APPROVAL=local \
+        npm run taxonomy:import:local --workspace=backend -- --dry-run
+    else
+      DATABASE_URL="$resolved_database_url" TAXONOMY_IMPORT_APPROVAL=local \
+        npm run taxonomy:import:local --workspace=backend
     fi
-    DATABASE_URL="$resolved_database_url" TAXONOMY_IMPORT_APPROVAL=local \
-      npm run taxonomy:import:local --workspace=backend -- "${taxonomy_args[@]}"
     ;;
   reset)
     require_local

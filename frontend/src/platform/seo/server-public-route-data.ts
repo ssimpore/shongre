@@ -6,7 +6,7 @@ import { userRepository } from "../../repositories/user.repository";
 import { createServiceRegistry } from "../../api/client/service-registry";
 import { apiClientConfig } from "../../api/client/api-client.config";
 import { collectionService } from "../../domains/collection/collection.service";
-import type { SearchFilters, UserProfile } from "../../types";
+import type { Listing, SearchFilters, UserProfile } from "../../types";
 import { employmentSearchQuerySchema } from "@shongre/contracts/employment";
 import type {
   PublicRouteDataResolution,
@@ -16,10 +16,69 @@ import { listingIsPublishedInMarket } from "./public-route-data";
 import { COUNTRY_REGISTRY } from "@shongre/contracts";
 
 const serverServices = createServiceRegistry(apiClientConfig.dataMode);
+const listingsService = serverServices.listings;
 const employmentService = serverServices.employment;
 const autoService = serverServices.auto;
 const coursesService = serverServices.courses;
 const realEstateService = serverServices.realEstate;
+
+interface ServerListingCollection {
+  listings: Listing[];
+  total: number;
+  page: number;
+  totalPages: number;
+}
+
+async function getServerListings(
+  filters: SearchFilters,
+): Promise<ServerListingCollection> {
+  if (apiClientConfig.dataMode === "demo") {
+    return listingRepository.getListings(filters);
+  }
+  const result = await listingsService.getListings(filters);
+  const page = Math.max(1, filters.page || 1);
+  const limit = Math.max(1, filters.limit || PAGE_SIZES.marketplaceSearch);
+  return {
+    ...result,
+    page,
+    totalPages: Math.max(1, Math.ceil(result.total / limit)),
+  };
+}
+
+async function getServerListingById(
+  id: string,
+  countryCode: string,
+): Promise<Listing | null> {
+  if (apiClientConfig.dataMode === "demo") {
+    return listingRepository.getListingById(id);
+  }
+  const listings = await listingsService.getPublicListingsByIds(
+    [id],
+    countryCode,
+  );
+  return listings[0] || null;
+}
+
+async function getServerSimilarListings(
+  listing: Listing,
+  countryCode: string,
+): Promise<Listing[]> {
+  if (apiClientConfig.dataMode === "demo") {
+    return listingRepository.getSimilarListings(
+      listing.id,
+      listing.categorySlug,
+    );
+  }
+  const result = await getServerListings({
+    marketCode: countryCode,
+    categorySlug: listing.subCategorySlug || listing.categorySlug,
+    page: 1,
+    limit: PAGE_SIZES.similarListings + 1,
+  });
+  return result.listings
+    .filter((candidate) => candidate.id !== listing.id)
+    .slice(0, PAGE_SIZES.similarListings);
+}
 
 function decoded(value: string): string | null {
   try {
@@ -82,13 +141,13 @@ async function resolveUncached(
   const listingMatch = pathname.match(/^\/annonce\/([^/]+)$/);
   if (listingMatch) {
     const id = decoded(listingMatch[1]);
-    const listing = id ? await listingRepository.getListingById(id) : null;
+    const listing = id ? await getServerListingById(id, countryCode) : null;
     if (!listing || !listingIsPublishedInMarket(listing, countryCode)) {
       return { status: "not_found", data: null, resourceType: "listing" };
     }
     const [seller, similarListings] = await Promise.all([
       userRepository.getUserById(listing.sellerId),
-      listingRepository.getSimilarListings(listing.id, listing.categorySlug),
+      getServerSimilarListings(listing, countryCode),
     ]);
     return {
       status: "found",
@@ -291,7 +350,7 @@ async function resolveUncached(
       sortBy: "date_desc",
     };
     const [result, marketInventory] = await Promise.all([
-      listingRepository.getListings(filters),
+      getServerListings(filters),
       Promise.all(
         COUNTRY_REGISTRY.filter(
           (country) =>
@@ -301,7 +360,7 @@ async function resolveUncached(
             ["active", "beta"].includes(country.launchStatus),
         ).map(async (country) => ({
           countryCode: country.code,
-          result: await listingRepository.getListings({
+          result: await getServerListings({
             ...filters,
             marketCode: country.code,
             limit: 1,
@@ -333,7 +392,7 @@ async function resolveUncached(
       return { status: "not_found", data: null, resourceType: "collection" };
     }
     const [inventory, marketCollections] = await Promise.all([
-      listingRepository.getListings({
+      getServerListings({
         marketCode: countryCode,
         limit: 1_000,
       }),
@@ -345,7 +404,7 @@ async function resolveUncached(
             country.seo.indexable &&
             ["active", "beta"].includes(country.launchStatus),
         ).map(async (country) => {
-          const candidateInventory = await listingRepository.getListings({
+          const candidateInventory = await getServerListings({
             marketCode: country.code,
             limit: 1_000,
           });
@@ -383,7 +442,7 @@ async function resolveUncached(
 export const resolveServerPublicRouteData = cache(resolveUncached);
 
 export async function listServerPublicSitemapData(countryCode: string) {
-  const inventory = await listingRepository.getListings({
+  const inventory = await getServerListings({
     marketCode: countryCode,
     limit: 50_000,
   });

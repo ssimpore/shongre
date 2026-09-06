@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { ImageOff } from "lucide-react";
 import { buildResponsiveFallbackUrl, buildSrcSet } from "@shongre/shared";
+import { resolveOwnedPublicMediaUrl } from "../../platform/runtime-config/public-runtime-config";
 
 export interface ImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   /** Required: pass `''` only for images that are purely decorative. */
@@ -64,6 +65,8 @@ export const Image: React.FC<ImageProps> = ({
   src,
   ...props
 }) => {
+  const ownedSrc =
+    typeof src === "string" ? resolveOwnedPublicMediaUrl(src) : src;
   const [hasFailed, setHasFailed] = useState(false);
   const [hasArrived, setHasArrived] = useState(false);
   const [isUsingFallback, setIsUsingFallback] = useState(false);
@@ -76,10 +79,10 @@ export const Image: React.FC<ImageProps> = ({
     setHasFailed(false);
     setHasArrived(false);
     setIsUsingFallback(false);
-  }, [fallbackSrc, src]);
+  }, [fallbackSrc, ownedSrc]);
 
-  const isFallbackSource = !src || isUsingFallback;
-  const resolvedSrc = isFallbackSource ? fallbackSrc : src;
+  const isFallbackSource = !ownedSrc || isUsingFallback;
+  const resolvedSrc = isFallbackSource ? fallbackSrc : ownedSrc;
 
   if (hasFailed || !resolvedSrc) {
     return (

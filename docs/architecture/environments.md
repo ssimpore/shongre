@@ -187,7 +187,11 @@ avatars are separate from upload staging/quarantine. KYC/KYB and other sensitive
 documents stay private behind RLS and signed, short-lived access. The
 `STORAGE_ENVIRONMENT_ID` startup check prevents a lower environment from using a
 production storage binding. Bucket names describe data purpose, not deployment
-environment; isolation is provided by separate Supabase projects.
+environment; isolation is provided by separate Supabase projects. Connected Web
+runtimes receive public editorial and category-card prefixes through
+`PUBLIC_MEDIA_ASSET_BASE_URL` and `PUBLIC_CATEGORY_MEDIA_BASE_URL`; these values
+contain no credentials and must point at the current environment's public
+Storage project.
 
 ## Provider safety
 
@@ -318,6 +322,7 @@ make supabase-up
 make db-migrate
 make db-reset
 make db-seed
+make local-fixtures-check
 make supabase-down
 
 # Protected remote operations

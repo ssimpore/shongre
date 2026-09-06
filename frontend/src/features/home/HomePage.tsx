@@ -139,13 +139,17 @@ export const HomePage: React.FC = () => {
   useEffect(() => {
     let cancelled = false;
     setFailed(false);
+    const wholeMarketLocation =
+      location.postalCode === "" &&
+      location.radiusKm === 0 &&
+      location.city === `Toute la ${activeMarket.name}`;
     void services.homepage
       .getHomepage({
         marketCode: activeMarket.code,
         locale: currentLocale,
         country: activeMarket.code,
         region: location.region,
-        city: location.city,
+        city: wholeMarketLocation ? undefined : location.city,
       })
       .then((next) => {
         if (!cancelled) setExperience(next);
