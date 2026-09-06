@@ -1,14 +1,17 @@
 import type {
   HomepageOfferOverride,
   HomepageSectionSettings,
+  ResolvedHomepageSection,
   ResolvedHomepageConfiguration,
 } from "@shongre/contracts/homepage";
+import { isTaxonomyV4DescendantOf } from "@shongre/contracts/taxonomy-v4-identity";
 import type { Listing } from "../../types";
 import type {
   HomepageDealItem,
   HomepageExperience,
   HomepageQuery,
   HomepageSectionView,
+  HomepageUniverseGroup,
 } from "./homepage.types";
 import type { TrendingSectionResponse } from "../trending/trending.types";
 import { majorToMinorAmount } from "@shongre/shared";
@@ -30,6 +33,45 @@ function listingBelongsToMarket(listing: Listing, marketCode: string): boolean {
     listing.marketCodes?.some((code) => code.toUpperCase() === normalized) ===
       true
   );
+}
+
+export function selectHomepageUniverseGroups(
+  listings: Listing[],
+  section: ResolvedHomepageSection,
+  marketCode: string,
+  includeSuppressed = false,
+): HomepageUniverseGroup[] {
+  const eligible = listings.filter(
+    (listing) =>
+      listing.status === "active" &&
+      listingBelongsToMarket(listing, marketCode),
+  );
+  const groups = (section.settings.universeSubsections || [])
+    .filter(
+      (subsection) =>
+        subsection.enabled && subsection.marketCodes.includes(marketCode),
+    )
+    .sort((left, right) => left.order - right.order)
+    .slice(0, section.maxItems)
+    .map((subsection): HomepageUniverseGroup => {
+      const matching = eligible.filter((listing) =>
+        isTaxonomyV4DescendantOf(
+          listing.subCategorySlug || listing.categorySlug,
+          subsection.categoryId,
+        ),
+      );
+      const suppressed = matching.length < subsection.minimumListingCount;
+      return {
+        ...subsection,
+        status: matching.length ? "ready" : "empty",
+        eligibleListingCount: matching.length,
+        suppressed,
+        listings: suppressed ? [] : matching.slice(0, subsection.maxItems),
+      };
+    });
+  return includeSuppressed
+    ? groups
+    : groups.filter((group) => !group.suppressed);
 }
 
 export function selectHomepageDeals(

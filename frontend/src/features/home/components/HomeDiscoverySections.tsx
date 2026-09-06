@@ -15,6 +15,7 @@ import { routes } from "../../../configuration/routes";
 import { useTranslation } from "../../../i18n/I18nProvider";
 import { HomeSectionAction } from "./HomeSectionAction";
 import { HomeSectionHeading } from "./HomeSectionHeading";
+import { homepageVisibilityClass } from "../../../domains/homepage/homepage.presentation";
 
 type DiscoveryType = "trending" | "deals" | "recent_listings";
 
@@ -50,7 +51,7 @@ function destinationFor(type: DiscoveryType): string {
   return "/recherche?sortBy=popularite";
 }
 
-const HomeDiscoverySection: React.FC<{
+export const HomeDiscoverySection: React.FC<{
   content: DiscoverySectionContent;
   onRetry: () => void;
 }> = ({ content, onRetry }) => {
@@ -64,7 +65,7 @@ const HomeDiscoverySection: React.FC<{
       aria-labelledby={headingId}
       data-testid={`home-discovery-${type}`}
       data-home-discovery-type={type}
-      className="[contain-intrinsic-size:auto_28rem] [content-visibility:auto]"
+      className={`[contain-intrinsic-size:auto_28rem] [content-visibility:auto] ${homepageVisibilityClass(section)}`}
     >
       <div className="mb-4 flex items-end justify-between gap-3 sm:mb-5">
         <div className="min-w-0">

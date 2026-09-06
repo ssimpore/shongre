@@ -1,21 +1,7 @@
-import React, {
-  Suspense,
-  lazy,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import {
-  createDefaultHomepageConfiguration,
-  resolveHomepageConfiguration,
-} from "@shongre/contracts/homepage";
+import React, { Suspense, lazy, useEffect, useMemo, useState } from "react";
 import { services } from "../../api/client/service-registry";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
-import type {
-  HomepageExperience,
-  HomepageSectionView,
-} from "../../domains/homepage/homepage.types";
+import type { HomepageExperience } from "../../domains/homepage/homepage.types";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import {
   pageMetaForPolicy,
@@ -26,6 +12,9 @@ import { getPublicRuntimeConfig } from "../../platform/runtime-config/public-run
 import { socialProfilesFromExternalLinks } from "../../platform/seo/discovery-structured-data";
 import { HomeHeroSection } from "./components/HomeHeroSection";
 import { HomeRecentSearches } from "./components/HomeRecentSearches";
+import { Button, Container, StatePanel } from "../../design-system";
+import { RefreshCw } from "lucide-react";
+import { useTranslation } from "../../i18n/I18nProvider";
 
 const HomeBelowFold = lazy(() =>
   import("./components/HomeBelowFold").then((module) => ({
@@ -33,84 +22,8 @@ const HomeBelowFold = lazy(() =>
   })),
 );
 
-const DeferredHomeContent: React.FC<React.PropsWithChildren> = ({
-  children,
-}) => {
-  const anchorRef = useRef<HTMLDivElement>(null);
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    const anchor = anchorRef.current;
-    if (!anchor || isVisible) return;
-    if (!("IntersectionObserver" in window)) {
-      setIsVisible(true);
-      return;
-    }
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry.isIntersecting) return;
-        setIsVisible(true);
-        observer.disconnect();
-      },
-      // Start the below-fold chunk before a phone reaches the end of the hero.
-      // The previous 400px margin left a narrow blank loading shelf at 320–390px
-      // once the hero gained its full touch-target spacing.
-      { rootMargin: "600px 0px" },
-    );
-    observer.observe(anchor);
-    return () => observer.disconnect();
-  }, [isVisible]);
-
-  return (
-    <div ref={anchorRef} data-testid="home-deferred-content">
-      {isVisible ? (
-        children
-      ) : (
-        <div className="mx-auto min-h-64 max-w-page px-4" aria-hidden="true" />
-      )}
-    </div>
-  );
-};
-
-const contentSection = (type: HomepageSectionView["type"]) =>
-  type === "trending" || type === "deals" || type === "recent_listings";
-
-function fallbackExperience(input: {
-  marketCode: string;
-  locale: string;
-  failed: boolean;
-}): HomepageExperience {
-  const timestamp = "2026-01-01T00:00:00.000Z";
-  const resolved = resolveHomepageConfiguration(
-    createDefaultHomepageConfiguration({
-      marketCode: input.marketCode,
-      locale: input.locale,
-      now: timestamp,
-    }),
-    new Date(timestamp),
-  );
-  return {
-    ...resolved,
-    sections: resolved.sections.map((section) => ({
-      ...section,
-      status: contentSection(section.type)
-        ? input.failed
-          ? "error"
-          : "loading"
-        : "ready",
-      errorCode:
-        input.failed && section.type === "trending"
-          ? "TRENDING_UNAVAILABLE"
-          : input.failed && section.type === "deals"
-            ? "DEALS_UNAVAILABLE"
-            : input.failed && section.type === "recent_listings"
-              ? "LISTINGS_UNAVAILABLE"
-              : undefined,
-    })),
-  };
-}
-
 export const HomePage: React.FC = () => {
+  const { t } = useTranslation();
   const { activeMarket, currentLocale, location, marketContext } =
     useMarketLocation();
   const [experience, setExperience] = useState<HomepageExperience | null>(null);
@@ -138,6 +51,7 @@ export const HomePage: React.FC = () => {
 
   useEffect(() => {
     let cancelled = false;
+    setExperience(null);
     setFailed(false);
     const wholeMarketLocation =
       location.postalCode === "" &&
@@ -175,38 +89,57 @@ export const HomePage: React.FC = () => {
     experience?.marketCode === activeMarket.code &&
     experience.locale === currentLocale
       ? experience
-      : fallbackExperience({
-          marketCode: activeMarket.code,
-          locale: currentLocale,
-          failed,
-        });
-  const hero = visibleExperience.sections.find(
-    (section) => section.type === "hero",
-  );
-  const recentSearches = visibleExperience.sections.find(
-    (section) => section.type === "recent_searches",
-  );
-
+      : null;
+  if (!visibleExperience) {
+    return (
+      <Container className="py-12 sm:py-20">
+        {failed ? (
+          <StatePanel
+            variant="offline"
+            title={t("home.homePage.configurationUnavailableTitle")}
+            description={t("home.homePage.configurationUnavailableDescription")}
+            action={
+              <Button
+                type="button"
+                size="sm"
+                onClick={() => setAttempt((current) => current + 1)}
+                leftIcon={<RefreshCw className="h-icon-md w-icon-md" />}
+              >
+                {t("common.retry")}
+              </Button>
+            }
+          />
+        ) : (
+          <div
+            className="min-h-96 animate-pulse rounded-listing-card border border-border-base bg-bg-subtle"
+            role="status"
+            aria-label={t("home.homePage.loadingConfiguration")}
+          />
+        )}
+      </Container>
+    );
+  }
   return (
     <div className="space-y-8 pb-16 sm:space-y-12">
-      {hero ? <HomeHeroSection section={hero} /> : null}
-      {recentSearches ? (
-        <HomeRecentSearches
-          title={recentSearches.title}
-          maxItems={recentSearches.maxItems}
-        />
-      ) : null}
-      <DeferredHomeContent>
-        <Suspense
-          fallback={<div className="mx-auto min-h-64 max-w-page px-4" />}
-        >
-          <HomeBelowFold
-            sections={visibleExperience.sections}
-            marketCode={activeMarket.code}
-            onRetry={() => setAttempt((current) => current + 1)}
-          />
-        </Suspense>
-      </DeferredHomeContent>
+      {visibleExperience.sections.map((section) => {
+        if (section.type === "hero") {
+          return <HomeHeroSection key={section.key} section={section} />;
+        }
+        if (section.type === "recent_searches") {
+          return <HomeRecentSearches key={section.key} section={section} />;
+        }
+        return (
+          <Suspense
+            key={section.key}
+            fallback={<div className="mx-auto min-h-64 max-w-page px-4" />}
+          >
+            <HomeBelowFold
+              sections={[section]}
+              onRetry={() => setAttempt((current) => current + 1)}
+            />
+          </Suspense>
+        );
+      })}
     </div>
   );
 };

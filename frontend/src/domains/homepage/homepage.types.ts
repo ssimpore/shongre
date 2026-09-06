@@ -1,6 +1,7 @@
 import type {
   HomepageConfiguration,
   HomepageOfferType,
+  HomepageUniverseSubsection,
   ResolvedHomepageConfiguration,
   ResolvedHomepageSection,
 } from "@shongre/contracts/homepage";
@@ -37,11 +38,22 @@ type HomepageSectionLoadStatus = "loading" | "ready" | "empty" | "error";
 
 export interface HomepageSectionView extends ResolvedHomepageSection {
   status: HomepageSectionLoadStatus;
+  eligibleListingCount?: number;
+  suppressed?: boolean;
+  suppressionReason?: "BELOW_MINIMUM_LISTINGS";
   errorCode?:
     "TRENDING_UNAVAILABLE" | "DEALS_UNAVAILABLE" | "LISTINGS_UNAVAILABLE";
   trending?: TrendingSectionResponse;
   deals?: HomepageDealItem[];
   listings?: Listing[];
+  universeGroups?: HomepageUniverseGroup[];
+}
+
+export interface HomepageUniverseGroup extends HomepageUniverseSubsection {
+  status: "ready" | "empty";
+  eligibleListingCount: number;
+  suppressed: boolean;
+  listings: Listing[];
 }
 
 export interface HomepageExperience extends Omit<

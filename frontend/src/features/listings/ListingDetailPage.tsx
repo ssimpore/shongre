@@ -832,7 +832,7 @@ export const ListingDetailPage: React.FC = () => {
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <Breadcrumbs items={breadcrumbItems} />
 
-        <div className="flex items-center gap-2">
+        <div className="ml-auto flex items-center gap-2">
           <button
             type="button"
             onClick={handleShare}

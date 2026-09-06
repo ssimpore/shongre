@@ -10822,6 +10822,119 @@ export interface components {
             readonly isFavorite: boolean;
         };
         readonly FulfillmentType: "PHYSICAL" | components["schemas"]["DigitalFulfillmentType"];
+        readonly HomepageConfiguration: {
+            readonly changeReason?: string;
+            readonly id: string;
+            readonly locale: string;
+            readonly marketCode: string;
+            /** Format: date-time */
+            readonly publishedAt?: string;
+            readonly revision: number;
+            readonly sections: readonly components["schemas"]["HomepageSectionConfiguration"][];
+            /** @enum {string} */
+            readonly state: "draft" | "published" | "archived";
+            /** Format: date-time */
+            readonly updatedAt: string;
+        };
+        readonly HomepageExperience: {
+            /** Format: date-time */
+            readonly generatedAt: string;
+            readonly id: string;
+            readonly locale: string;
+            readonly marketCode: string;
+            readonly revision: number;
+            readonly sections: readonly components["schemas"]["HomepageSectionView"][];
+        };
+        readonly HomepageSectionConfiguration: {
+            readonly desktopVisible: boolean;
+            readonly enabled: boolean;
+            /** Format: date-time */
+            readonly endsAt?: string;
+            /** @enum {string} */
+            readonly key: "hero" | "recent_searches" | "trending" | "deals" | "recent_listings" | "universe_explorer" | "collections" | "pro_cta";
+            readonly maxItems: number;
+            readonly minimumListingCount: number;
+            readonly mobileVisible: boolean;
+            readonly order: number;
+            readonly settings: components["schemas"]["HomepageSectionSettings"];
+            /** Format: date-time */
+            readonly startsAt?: string;
+            readonly subtitleByLocale: {
+                readonly [key: string]: string;
+            };
+            readonly titleByLocale: {
+                readonly [key: string]: string;
+            };
+            /** @enum {string} */
+            readonly type: "hero" | "recent_searches" | "trending" | "deals" | "recent_listings" | "universe_explorer" | "collections" | "pro_cta";
+        };
+        readonly HomepageSectionSettings: {
+            readonly allowedMarkets?: readonly string[];
+            readonly collectionSlugs?: readonly string[];
+            readonly eligibleOfferTypes?: readonly ("verified_price_reduction" | "marketplace_deal" | "time_limited_promotion" | "professional_discount")[];
+            readonly includeProfessionalSellers?: boolean;
+            readonly minimumDiscountBps?: number;
+            readonly offerOverrides?: readonly components["schemas"]["JsonValue"][];
+            readonly previewEmptyState?: boolean;
+            /** @enum {string} */
+            readonly selectionMode?: "automatic" | "manual" | "hybrid";
+            readonly taxonomyBranches?: readonly string[];
+            readonly universeSubsections?: readonly components["schemas"]["HomepageUniverseSubsectionConfiguration"][];
+        };
+        readonly HomepageSectionView: {
+            readonly deals?: readonly components["schemas"]["JsonValue"][];
+            readonly desktopVisible: boolean;
+            readonly eligibleListingCount?: number;
+            readonly enabled: boolean;
+            /** @enum {string} */
+            readonly errorCode?: "TRENDING_UNAVAILABLE" | "DEALS_UNAVAILABLE" | "LISTINGS_UNAVAILABLE";
+            /** @enum {string} */
+            readonly key: "hero" | "recent_searches" | "trending" | "deals" | "recent_listings" | "universe_explorer" | "collections" | "pro_cta";
+            readonly listings?: readonly components["schemas"]["PublicListing"][];
+            readonly maxItems: number;
+            readonly minimumListingCount: number;
+            readonly mobileVisible: boolean;
+            readonly order: number;
+            readonly settings: components["schemas"]["HomepageSectionSettings"];
+            /** @enum {string} */
+            readonly status: "ready" | "empty" | "error";
+            readonly subtitle?: string;
+            readonly suppressed?: boolean;
+            /** @enum {string} */
+            readonly suppressionReason?: "BELOW_MINIMUM_LISTINGS";
+            readonly title: string;
+            readonly trending?: components["schemas"]["JsonValue"];
+            /** @enum {string} */
+            readonly type: "hero" | "recent_searches" | "trending" | "deals" | "recent_listings" | "universe_explorer" | "collections" | "pro_cta";
+            readonly universeGroups?: readonly components["schemas"]["HomepageUniverseGroup"][];
+        } & {
+            readonly [key: string]: unknown;
+        };
+        readonly HomepageUniverseGroup: {
+            readonly categoryId: string;
+            readonly desktopVisible: boolean;
+            readonly eligibleListingCount: number;
+            readonly enabled: boolean;
+            readonly listings: readonly components["schemas"]["PublicListing"][];
+            readonly marketCodes: readonly string[];
+            readonly maxItems: number;
+            readonly minimumListingCount: number;
+            readonly mobileVisible: boolean;
+            readonly order: number;
+            /** @enum {string} */
+            readonly status: "ready" | "empty";
+            readonly suppressed: boolean;
+        };
+        readonly HomepageUniverseSubsectionConfiguration: {
+            readonly categoryId: string;
+            readonly desktopVisible: boolean;
+            readonly enabled: boolean;
+            readonly marketCodes: readonly string[];
+            readonly maxItems: number;
+            readonly minimumListingCount: number;
+            readonly mobileVisible: boolean;
+            readonly order: number;
+        };
         readonly InvoicingDocument: {
             readonly complianceRulesetVersion: string;
             readonly content: string;
@@ -14745,7 +14858,7 @@ export interface operations {
                     readonly [name: string]: unknown;
                 };
                 content: {
-                    readonly "application/json": components["schemas"]["JsonValue"];
+                    readonly "application/json": components["schemas"]["HomepageConfiguration"];
                 };
             };
             readonly 400: components["responses"]["BadRequest"];
@@ -14773,7 +14886,7 @@ export interface operations {
             readonly content: {
                 readonly "application/json": {
                     readonly changeReason: string;
-                    readonly configuration: components["schemas"]["JsonValue"];
+                    readonly configuration: components["schemas"]["HomepageConfiguration"];
                 };
             };
         };
@@ -14784,7 +14897,7 @@ export interface operations {
                     readonly [name: string]: unknown;
                 };
                 content: {
-                    readonly "application/json": components["schemas"]["JsonValue"];
+                    readonly "application/json": components["schemas"]["HomepageConfiguration"];
                 };
             };
             readonly 400: components["responses"]["BadRequest"];
@@ -14814,7 +14927,7 @@ export interface operations {
         readonly requestBody: {
             readonly content: {
                 readonly "application/json": {
-                    readonly configuration: components["schemas"]["JsonValue"];
+                    readonly configuration: components["schemas"]["HomepageConfiguration"];
                 };
             };
         };
@@ -14825,7 +14938,7 @@ export interface operations {
                     readonly [name: string]: unknown;
                 };
                 content: {
-                    readonly "application/json": components["schemas"]["JsonValue"];
+                    readonly "application/json": components["schemas"]["HomepageExperience"];
                 };
             };
             readonly 400: components["responses"]["BadRequest"];
@@ -14865,7 +14978,7 @@ export interface operations {
                     readonly [name: string]: unknown;
                 };
                 content: {
-                    readonly "application/json": components["schemas"]["JsonValue"];
+                    readonly "application/json": components["schemas"]["HomepageConfiguration"];
                 };
             };
             readonly 400: components["responses"]["BadRequest"];
@@ -24125,7 +24238,7 @@ export interface operations {
                     readonly [name: string]: unknown;
                 };
                 content: {
-                    readonly "application/json": components["schemas"]["JsonValue"];
+                    readonly "application/json": components["schemas"]["HomepageExperience"];
                 };
             };
             readonly 400: components["responses"]["BadRequest"];

@@ -5,6 +5,7 @@ import type { CourseOffer, TutorProfile } from "@shongre/contracts/courses";
 import type { VehiclePrivate } from "@shongre/contracts/auto";
 import type { PropertyPrivate } from "@shongre/contracts/real-estate";
 import { resolveTaxonomyV4Identity } from "@shongre/contracts/taxonomy-v4-identity";
+import { createDefaultHomepageConfiguration } from "@shongre/contracts/homepage";
 import {
   EMPLOYMENT_DEMO_JOBS,
   type JobPostingDetail,
@@ -359,6 +360,33 @@ function extensionForMediaUrl(value: string | undefined): string {
 }
 
 const profileId = (legacyId: string) => localSeedUuid("profile", legacyId);
+
+async function ensureLocalHomepageConfiguration(): Promise<void> {
+  const client = getSupabaseAdminClient() as any;
+  const { data, error } = await client
+    .from("homepage_configuration_revisions")
+    .select("id")
+    .eq("market_code", "FR")
+    .eq("locale", "fr-FR")
+    .eq("state", "published")
+    .maybeSingle();
+  if (error) throw error;
+  if (data) return;
+
+  const configuration = createDefaultHomepageConfiguration({
+    marketCode: "FR",
+    locale: "fr-FR",
+    state: "published",
+    now: FIXED_CREATED_AT,
+  });
+  const result = await client.rpc("save_homepage_configuration_revision", {
+    p_configuration: configuration,
+    p_actor_id: profileId("user_super_admin_alex"),
+    p_change_reason: "Configuration initiale du développement local",
+    p_publish: true,
+  });
+  if (result.error) throw result.error;
+}
 const organizationId = (legacyId: string) =>
   localSeedUuid("organization", legacyId);
 const listingId = (legacyId: string) => localSeedUuid("listing", legacyId);
@@ -1802,6 +1830,7 @@ export async function seedLocalDevelopmentData(): Promise<LocalDevelopmentSeedSu
   await seedEmployment(media.employerLogoUrl);
   await seedMarketplaceAccountScenario(media.demoMediaUrls);
   const trendingTopics = await seedTrendingCache();
+  await ensureLocalHomepageConfiguration();
 
   const profileCount = allSeedProfiles().length;
   const messageCount = Object.values(marketplaceFixture.messages).reduce(

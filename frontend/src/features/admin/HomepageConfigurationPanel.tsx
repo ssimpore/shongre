@@ -21,6 +21,7 @@ import { services } from "../../api/client/service-registry";
 import type { HomepageExperience } from "../../domains/homepage/homepage.types";
 import { useToast } from "../../app/providers/ToastProvider";
 import { Button } from "../../design-system/primitives/Button";
+import { StatePanel } from "../../design-system/primitives/StatePanel";
 import {
   Checkbox,
   FormField,
@@ -29,6 +30,8 @@ import {
   Textarea,
 } from "../../design-system/primitives/FormField";
 import { useTranslation } from "../../i18n/I18nProvider";
+import { taxonomyService } from "../../domains/taxonomy/taxonomy.service";
+import { collectionService } from "../../domains/collection/collection.service";
 
 const SECTION_LABELS: Record<HomepageSectionType, string> = {
   hero: "En-tête et recherche",
@@ -36,6 +39,7 @@ const SECTION_LABELS: Record<HomepageSectionType, string> = {
   trending: "En tendence",
   deals: "Meilleures offres",
   recent_listings: "Annonces récentes",
+  universe_explorer: "Explorer par univers",
   collections: "Collections du moment",
   pro_cta: "Bloc Professionnels",
 };
@@ -46,6 +50,17 @@ const OFFER_LABELS = {
   time_limited_promotion: "Promotion limitée",
   professional_discount: "Remise professionnelle",
 } as const;
+
+const ROOT_CATEGORIES = taxonomyService.getRootCategories();
+const AVAILABLE_COLLECTIONS = collectionService.getCollections("all");
+const THRESHOLD_SECTION_TYPES = new Set<HomepageSectionType>([
+  "recent_searches",
+  "trending",
+  "deals",
+  "recent_listings",
+  "universe_explorer",
+  "collections",
+]);
 
 const toLocalDateTime = (value?: string) => (value ? value.slice(0, 16) : "");
 const toIsoDateTime = (value: string) =>
@@ -131,6 +146,44 @@ export const HomepageConfigurationPanel: React.FC<
     });
   };
 
+  const updateUniverseSubsections = (
+    key: HomepageSectionType,
+    update: (
+      subsections: NonNullable<
+        HomepageSectionConfiguration["settings"]["universeSubsections"]
+      >,
+    ) => NonNullable<
+      HomepageSectionConfiguration["settings"]["universeSubsections"]
+    >,
+  ) => {
+    replaceSection(key, (current) => ({
+      ...current,
+      settings: {
+        ...current.settings,
+        universeSubsections: update(
+          current.settings.universeSubsections || [],
+        ).map((subsection, order) => ({ ...subsection, order })),
+      },
+    }));
+  };
+
+  const reorderCollection = (
+    key: HomepageSectionType,
+    index: number,
+    direction: -1 | 1,
+  ) => {
+    replaceSection(key, (current) => {
+      const next = [...(current.settings.collectionSlugs || [])];
+      const destination = index + direction;
+      if (destination < 0 || destination >= next.length) return current;
+      [next[index], next[destination]] = [next[destination]!, next[index]!];
+      return {
+        ...current,
+        settings: { ...current.settings, collectionSlugs: next },
+      };
+    });
+  };
+
   const validate = () => {
     if (!configuration) return null;
     const parsed = homepageConfigurationSchema.safeParse(configuration);
@@ -204,12 +257,32 @@ export const HomepageConfigurationPanel: React.FC<
     }
   };
 
-  if (isLoading || !configuration) {
+  if (isLoading) {
     return (
       <div className="flex min-h-64 items-center justify-center rounded-control border border-border-disabled bg-bg-surface text-sm font-medium text-text-tertiary">
         <RefreshCw className="mr-2 h-icon-md w-icon-md animate-spin" />
         {t("admin.homepageConfigurationPanel.chargementDeLaPageDAccueil")}
       </div>
+    );
+  }
+
+  if (!configuration) {
+    return (
+      <StatePanel
+        variant="offline"
+        title={t("home.homePage.configurationUnavailableTitle")}
+        description={t("home.homePage.configurationUnavailableDescription")}
+        action={
+          <Button
+            type="button"
+            size="sm"
+            onClick={() => void load()}
+            leftIcon={<RefreshCw className="h-icon-md w-icon-md" />}
+          >
+            {t("common.retry")}
+          </Button>
+        }
+      />
     );
   }
 
@@ -355,6 +428,26 @@ export const HomepageConfigurationPanel: React.FC<
                     }
                   />
                 </FormField>
+                {THRESHOLD_SECTION_TYPES.has(section.type) ? (
+                  <FormField
+                    label={t(
+                      "admin.homepageConfigurationPanel.nombreMinimalDAnnoncesEligibles",
+                    )}
+                  >
+                    <Input
+                      type="number"
+                      min={HOMEPAGE_ADMIN_CONSTRAINTS.minimumListingCount.min}
+                      max={HOMEPAGE_ADMIN_CONSTRAINTS.minimumListingCount.max}
+                      value={section.minimumListingCount}
+                      onChange={(event) =>
+                        replaceSection(section.key, (current) => ({
+                          ...current,
+                          minimumListingCount: Number(event.target.value),
+                        }))
+                      }
+                    />
+                  </FormField>
+                ) : null}
                 <FormField
                   label={`Sous-titre (${locale})`}
                   className="sm:col-span-2"
@@ -423,6 +516,416 @@ export const HomepageConfigurationPanel: React.FC<
                     }
                   />
                 </div>
+                {section.type === "universe_explorer" ? (
+                  <div className="space-y-4 rounded-control border border-primary-border bg-primary-light p-4 sm:col-span-2">
+                    <div>
+                      <h3 className="text-xs font-bold uppercase tracking-wide text-primary">
+                        {t(
+                          "admin.homepageConfigurationPanel.categoriesDeLExplorateur",
+                        )}
+                      </h3>
+                      <p className="mt-1 text-xs text-text-tertiary">
+                        {t(
+                          "admin.homepageConfigurationPanel.categoriesDeLExplorateurDescription",
+                        )}
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-4">
+                      {ROOT_CATEGORIES.map((category) => {
+                        const subsections =
+                          section.settings.universeSubsections || [];
+                        const selected = subsections.some(
+                          (item) => item.categoryId === category.id,
+                        );
+                        return (
+                          <Checkbox
+                            key={category.id}
+                            label={taxonomyService.getLabel(category, {
+                              locale,
+                            })}
+                            checked={selected}
+                            disabled={selected && subsections.length === 1}
+                            onChange={(event) =>
+                              updateUniverseSubsections(
+                                section.key,
+                                (current) =>
+                                  event.target.checked
+                                    ? [
+                                        ...current,
+                                        {
+                                          categoryId: category.id,
+                                          enabled: true,
+                                          order: current.length,
+                                          maxItems: 8,
+                                          minimumListingCount: 1,
+                                          mobileVisible: true,
+                                          desktopVisible: true,
+                                          marketCodes: [marketCode],
+                                        },
+                                      ]
+                                    : current.filter(
+                                        (item) =>
+                                          item.categoryId !== category.id,
+                                      ),
+                              )
+                            }
+                          />
+                        );
+                      })}
+                    </div>
+                    <div className="space-y-3">
+                      {[...(section.settings.universeSubsections || [])]
+                        .sort((left, right) => left.order - right.order)
+                        .map((subsection, subsectionIndex, ordered) => {
+                          const category = taxonomyService.getNode(
+                            subsection.categoryId,
+                          );
+                          return (
+                            <div
+                              key={subsection.categoryId}
+                              className="rounded-control border border-border-base bg-bg-surface p-3"
+                              data-testid={`homepage-universe-subsection-${subsection.categoryId}`}
+                            >
+                              <div className="mb-3 flex flex-wrap items-center gap-2">
+                                <strong className="min-w-0 flex-1 text-sm text-text-main">
+                                  {taxonomyService.getLabel(category, {
+                                    locale,
+                                  }) || subsection.categoryId}
+                                </strong>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  disabled={subsectionIndex === 0}
+                                  aria-label={`Monter ${subsection.categoryId}`}
+                                  onClick={() =>
+                                    updateUniverseSubsections(
+                                      section.key,
+                                      () => {
+                                        const next = [...ordered];
+                                        [
+                                          next[subsectionIndex - 1],
+                                          next[subsectionIndex],
+                                        ] = [
+                                          next[subsectionIndex]!,
+                                          next[subsectionIndex - 1]!,
+                                        ];
+                                        return next;
+                                      },
+                                    )
+                                  }
+                                  leftIcon={
+                                    <ArrowUp className="h-icon-sm w-icon-sm" />
+                                  }
+                                >
+                                  Monter
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  disabled={
+                                    subsectionIndex === ordered.length - 1
+                                  }
+                                  aria-label={`Descendre ${subsection.categoryId}`}
+                                  onClick={() =>
+                                    updateUniverseSubsections(
+                                      section.key,
+                                      () => {
+                                        const next = [...ordered];
+                                        [
+                                          next[subsectionIndex],
+                                          next[subsectionIndex + 1],
+                                        ] = [
+                                          next[subsectionIndex + 1]!,
+                                          next[subsectionIndex]!,
+                                        ];
+                                        return next;
+                                      },
+                                    )
+                                  }
+                                  leftIcon={
+                                    <ArrowDown className="h-icon-sm w-icon-sm" />
+                                  }
+                                >
+                                  Descendre
+                                </Button>
+                              </div>
+                              <div className="grid gap-3 sm:grid-cols-3">
+                                <FormField
+                                  label={t(
+                                    "admin.homepageConfigurationPanel.nombreMaximalDAnnonces",
+                                  )}
+                                >
+                                  <Input
+                                    type="number"
+                                    min={
+                                      HOMEPAGE_ADMIN_CONSTRAINTS.itemCount.min
+                                    }
+                                    max={
+                                      HOMEPAGE_ADMIN_CONSTRAINTS.itemCount.max
+                                    }
+                                    value={subsection.maxItems}
+                                    onChange={(event) =>
+                                      updateUniverseSubsections(
+                                        section.key,
+                                        (current) =>
+                                          current.map((item) =>
+                                            item.categoryId ===
+                                            subsection.categoryId
+                                              ? {
+                                                  ...item,
+                                                  maxItems: Number(
+                                                    event.target.value,
+                                                  ),
+                                                }
+                                              : item,
+                                          ),
+                                      )
+                                    }
+                                  />
+                                </FormField>
+                                <FormField
+                                  label={t(
+                                    "admin.homepageConfigurationPanel.nombreMinimalDAnnoncesEligibles",
+                                  )}
+                                >
+                                  <Input
+                                    type="number"
+                                    min={
+                                      HOMEPAGE_ADMIN_CONSTRAINTS
+                                        .minimumListingCount.min
+                                    }
+                                    max={
+                                      HOMEPAGE_ADMIN_CONSTRAINTS
+                                        .minimumListingCount.max
+                                    }
+                                    value={subsection.minimumListingCount}
+                                    onChange={(event) =>
+                                      updateUniverseSubsections(
+                                        section.key,
+                                        (current) =>
+                                          current.map((item) =>
+                                            item.categoryId ===
+                                            subsection.categoryId
+                                              ? {
+                                                  ...item,
+                                                  minimumListingCount: Number(
+                                                    event.target.value,
+                                                  ),
+                                                }
+                                              : item,
+                                          ),
+                                      )
+                                    }
+                                  />
+                                </FormField>
+                                <FormField
+                                  label={t(
+                                    "admin.homepageConfigurationPanel.marchesCibles",
+                                  )}
+                                >
+                                  <Input
+                                    value={subsection.marketCodes.join(", ")}
+                                    onChange={(event) =>
+                                      updateUniverseSubsections(
+                                        section.key,
+                                        (current) =>
+                                          current.map((item) =>
+                                            item.categoryId ===
+                                            subsection.categoryId
+                                              ? {
+                                                  ...item,
+                                                  marketCodes: Array.from(
+                                                    new Set([
+                                                      marketCode,
+                                                      ...event.target.value
+                                                        .split(",")
+                                                        .map((value) =>
+                                                          value
+                                                            .trim()
+                                                            .toUpperCase(),
+                                                        )
+                                                        .filter(Boolean),
+                                                    ]),
+                                                  ),
+                                                }
+                                              : item,
+                                          ),
+                                      )
+                                    }
+                                  />
+                                </FormField>
+                              </div>
+                              <div className="mt-3 flex flex-wrap gap-4">
+                                <Checkbox
+                                  label={t(
+                                    "admin.homepageConfigurationPanel.sousSectionActive",
+                                  )}
+                                  checked={subsection.enabled}
+                                  onChange={(event) =>
+                                    updateUniverseSubsections(
+                                      section.key,
+                                      (current) =>
+                                        current.map((item) =>
+                                          item.categoryId ===
+                                          subsection.categoryId
+                                            ? {
+                                                ...item,
+                                                enabled: event.target.checked,
+                                              }
+                                            : item,
+                                        ),
+                                    )
+                                  }
+                                />
+                                <Checkbox
+                                  label={t(
+                                    "admin.homepageConfigurationPanel.visibleSurMobile",
+                                  )}
+                                  checked={subsection.mobileVisible}
+                                  onChange={(event) =>
+                                    updateUniverseSubsections(
+                                      section.key,
+                                      (current) =>
+                                        current.map((item) =>
+                                          item.categoryId ===
+                                          subsection.categoryId
+                                            ? {
+                                                ...item,
+                                                mobileVisible:
+                                                  event.target.checked,
+                                              }
+                                            : item,
+                                        ),
+                                    )
+                                  }
+                                />
+                                <Checkbox
+                                  label={t(
+                                    "admin.homepageConfigurationPanel.visibleSurDesktop",
+                                  )}
+                                  checked={subsection.desktopVisible}
+                                  onChange={(event) =>
+                                    updateUniverseSubsections(
+                                      section.key,
+                                      (current) =>
+                                        current.map((item) =>
+                                          item.categoryId ===
+                                          subsection.categoryId
+                                            ? {
+                                                ...item,
+                                                desktopVisible:
+                                                  event.target.checked,
+                                              }
+                                            : item,
+                                        ),
+                                    )
+                                  }
+                                />
+                              </div>
+                            </div>
+                          );
+                        })}
+                    </div>
+                  </div>
+                ) : null}
+                {section.type === "collections" ? (
+                  <div className="space-y-3 rounded-control border border-border-base bg-bg-subtle p-4 sm:col-span-2">
+                    <h3 className="text-xs font-bold uppercase tracking-wide text-text-emphasis">
+                      {t(
+                        "admin.homepageConfigurationPanel.collectionsAffichees",
+                      )}
+                    </h3>
+                    <div className="flex flex-wrap gap-4">
+                      {AVAILABLE_COLLECTIONS.map((collection) => (
+                        <Checkbox
+                          key={collection.slug}
+                          label={collection.title}
+                          checked={(
+                            section.settings.collectionSlugs || []
+                          ).includes(collection.slug)}
+                          onChange={(event) =>
+                            replaceSection(section.key, (current) => {
+                              const selected =
+                                current.settings.collectionSlugs || [];
+                              return {
+                                ...current,
+                                settings: {
+                                  ...current.settings,
+                                  collectionSlugs: event.target.checked
+                                    ? [...selected, collection.slug]
+                                    : selected.filter(
+                                        (slug) => slug !== collection.slug,
+                                      ),
+                                },
+                              };
+                            })
+                          }
+                        />
+                      ))}
+                    </div>
+                    <div className="space-y-2">
+                      {(section.settings.collectionSlugs || []).map(
+                        (slug, collectionIndex, ordered) => {
+                          const collection =
+                            collectionService.getCollection(slug);
+                          return (
+                            <div
+                              key={slug}
+                              data-testid={`homepage-collection-selection-${slug}`}
+                              className="flex items-center gap-2 rounded-control border border-border-base bg-bg-surface p-2"
+                            >
+                              <span className="min-w-0 flex-1 truncate text-sm font-semibold text-text-main">
+                                {collection?.title || slug}
+                              </span>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                disabled={collectionIndex === 0}
+                                aria-label={`Monter ${collection?.title || slug}`}
+                                onClick={() =>
+                                  reorderCollection(
+                                    section.key,
+                                    collectionIndex,
+                                    -1,
+                                  )
+                                }
+                                leftIcon={
+                                  <ArrowUp className="h-icon-sm w-icon-sm" />
+                                }
+                              >
+                                Monter
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                disabled={
+                                  collectionIndex === ordered.length - 1
+                                }
+                                aria-label={`Descendre ${collection?.title || slug}`}
+                                onClick={() =>
+                                  reorderCollection(
+                                    section.key,
+                                    collectionIndex,
+                                    1,
+                                  )
+                                }
+                                leftIcon={
+                                  <ArrowDown className="h-icon-sm w-icon-sm" />
+                                }
+                              >
+                                Descendre
+                              </Button>
+                            </div>
+                          );
+                        },
+                      )}
+                    </div>
+                  </div>
+                ) : null}
                 {section.type === "deals" ? (
                   <div className="space-y-3 rounded-control border border-primary-border bg-primary-light p-4 sm:col-span-2">
                     <h3 className="text-xs font-bold uppercase tracking-wide text-primary">
@@ -775,6 +1278,16 @@ export const HomepageConfigurationPanel: React.FC<
                   const itemCount =
                     section.deals?.length ||
                     section.listings?.length ||
+                    section.universeGroups
+                      ?.filter((group) =>
+                        previewViewport === "mobile"
+                          ? group.mobileVisible
+                          : group.desktopVisible,
+                      )
+                      .reduce(
+                        (total, group) => total + group.listings.length,
+                        0,
+                      ) ||
                     section.trending?.topics.length ||
                     0;
                   return (
@@ -792,6 +1305,9 @@ export const HomepageConfigurationPanel: React.FC<
                           </div>
                           <div className="mt-0.5 text-xs text-text-tertiary">
                             {section.status}
+                            {section.suppressed
+                              ? " · masquée par le seuil minimum"
+                              : ""}
                             {itemCount ? ` · ${itemCount} élément(s)` : ""}
                           </div>
                         </div>

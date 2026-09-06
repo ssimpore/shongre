@@ -30,11 +30,19 @@ type BackendHomepageExperience = Omit<HomepageExperience, "sections"> & {
   sections: Array<
     Omit<
       HomepageExperience["sections"][number],
-      "trending" | "deals" | "listings"
+      "trending" | "deals" | "listings" | "universeGroups"
     > & {
       trending?: BackendTrendingSection;
       deals?: BackendHomepageDealItem[];
       listings?: BackendListing[];
+      universeGroups?: Array<
+        Omit<
+          NonNullable<
+            HomepageExperience["sections"][number]["universeGroups"]
+          >[number],
+          "listings"
+        > & { listings: BackendListing[] }
+      >;
     }
   >;
 };
@@ -55,6 +63,10 @@ function mapExperience(
     sections: response.sections.map((section) => ({
       ...section,
       listings: section.listings?.map(mapBackendListing),
+      universeGroups: section.universeGroups?.map((group) => ({
+        ...group,
+        listings: group.listings.map(mapBackendListing),
+      })),
       deals: section.deals?.map((item) => ({
         ...item,
         listing: mapBackendListing(item.listing),

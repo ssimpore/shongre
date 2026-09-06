@@ -704,6 +704,14 @@ France-only happy path is insufficient for market-sensitive work.
   ownership tests.
 - Admin surfaces must express domain capabilities rather than bypass services as
   raw table editors. Sensitive actions retain authorization and audit evidence.
+- Homepage discovery composition is a revisioned, market-scoped database
+  configuration exposed only through the homepage backend service and OpenAPI
+  contract. Section visibility and order, universe category rails, collection
+  selection, schedules, viewport targeting, and minimum eligible-listing
+  thresholds must never be hardcoded in homepage components. Public resolution
+  omits content below its published thresholds; authorized previews may expose
+  suppressed-state metadata, and drafts affect live discovery only after an
+  explicit audited publication.
 
 ## UI, accessibility, and performance
 

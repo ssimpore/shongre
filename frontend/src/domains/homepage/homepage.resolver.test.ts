@@ -1,7 +1,14 @@
 import { describe, expect, it } from "vitest";
-import type { HomepageSectionSettings } from "@shongre/contracts/homepage";
+import {
+  createDefaultHomepageConfiguration,
+  resolveHomepageConfiguration,
+  type HomepageSectionSettings,
+} from "@shongre/contracts/homepage";
 import type { Listing } from "../../types";
-import { selectHomepageDeals } from "./homepage.resolver";
+import {
+  selectHomepageDeals,
+  selectHomepageUniverseGroups,
+} from "./homepage.resolver";
 
 function listing(id: string, input: Partial<Listing> = {}): Listing {
   return {
@@ -121,5 +128,52 @@ describe("homepage deal resolution", () => {
         6,
       ).map((item) => item.listing.id),
     ).toEqual(["one", "two"]);
+  });
+});
+
+describe("homepage universe resolution", () => {
+  it("uses configured category order and suppresses groups below their minimum", () => {
+    const section = resolveHomepageConfiguration(
+      createDefaultHomepageConfiguration({
+        marketCode: "FR",
+        locale: "fr-FR",
+      }),
+    ).sections.find((candidate) => candidate.type === "universe_explorer");
+    if (!section) throw new Error("Expected universe explorer section");
+    const thresholded = {
+      ...section,
+      settings: {
+        ...section.settings,
+        universeSubsections: section.settings.universeSubsections?.map(
+          (subsection) => ({
+            ...subsection,
+            minimumListingCount: subsection.categoryId === "fashion" ? 2 : 1,
+          }),
+        ),
+      },
+    };
+    const groups = selectHomepageUniverseGroups(
+      [
+        listing("home", {
+          categorySlug: "maison-jardin",
+          subCategorySlug: "ameublement",
+        }),
+        listing("vehicle", {
+          categorySlug: "vehicules",
+          subCategorySlug: "voitures",
+        }),
+        listing("fashion", {
+          categorySlug: "mode",
+          subCategorySlug: "vetements",
+        }),
+      ],
+      thresholded,
+      "FR",
+    );
+
+    expect(groups.map((group) => group.categoryId)).toEqual([
+      "home_garden",
+      "vehicles",
+    ]);
   });
 });

@@ -4,8 +4,13 @@ import {
   type HomepageConfiguration,
   type HomepageOfferOverride,
   type HomepageSectionSettings,
+  type HomepageUniverseSubsection,
   type ResolvedHomepageSection,
 } from "@shongre/contracts/homepage";
+import {
+  isTaxonomyV4DescendantOf,
+  resolveTaxonomyV4Identity,
+} from "@shongre/contracts/taxonomy-v4-identity";
 import { majorToMinorAmount } from "@shongre/shared";
 import type {
   IHomepageRepository,
@@ -50,11 +55,22 @@ export interface HomepageDealItem {
 
 export interface HomepageSectionView extends ResolvedHomepageSection {
   status: "ready" | "empty" | "error";
+  eligibleListingCount?: number;
+  suppressed?: boolean;
+  suppressionReason?: "BELOW_MINIMUM_LISTINGS";
   errorCode?:
     "TRENDING_UNAVAILABLE" | "DEALS_UNAVAILABLE" | "LISTINGS_UNAVAILABLE";
   trending?: TrendingSectionResponse;
   deals?: HomepageDealItem[];
   listings?: PublicListing[];
+  universeGroups?: HomepageUniverseGroup[];
+}
+
+export interface HomepageUniverseGroup extends HomepageUniverseSubsection {
+  status: "ready" | "empty";
+  eligibleListingCount: number;
+  suppressed: boolean;
+  listings: PublicListing[];
 }
 
 const normalizeScope = (query: HomepageQuery): HomepageQuery => {
@@ -81,6 +97,47 @@ const listingBelongsToMarket = (listing: Listing, marketCode: string) => {
     listing.marketCode.toUpperCase() === marketCode ||
     listing.marketCodes?.some((code) => code.toUpperCase() === marketCode)
   );
+};
+
+const listingBelongsToCategory = (listing: Listing, categoryId: string) =>
+  isTaxonomyV4DescendantOf(listing.categoryId, categoryId);
+
+function validateConfiguration(
+  input: HomepageConfiguration,
+): HomepageConfiguration {
+  const configuration = homepageConfigurationSchema.parse(input);
+  for (const section of configuration.sections) {
+    if (section.type !== "universe_explorer") continue;
+    for (const subsection of section.settings.universeSubsections || []) {
+      const category = resolveTaxonomyV4Identity(subsection.categoryId);
+      if (!category || category.parentId) {
+        throw new AppError({
+          code: "VALIDATION_ERROR",
+          message:
+            "Chaque sous-section d’univers doit cibler une catégorie racine active.",
+        });
+      }
+      if (!subsection.marketCodes.includes(configuration.marketCode)) {
+        throw new AppError({
+          code: "VALIDATION_ERROR",
+          message:
+            "Une sous-section d’univers doit inclure le marché de sa configuration.",
+        });
+      }
+    }
+  }
+  return configuration;
+}
+
+const thresholdMetadata = (eligibleListingCount: number, minimum: number) => {
+  const suppressed = eligibleListingCount < minimum;
+  return {
+    eligibleListingCount,
+    suppressed,
+    suppressionReason: suppressed
+      ? ("BELOW_MINIMUM_LISTINGS" as const)
+      : undefined,
+  };
 };
 
 export function selectHomepageDeals(
@@ -216,9 +273,7 @@ export class HomepageService {
     actorId: string;
     changeReason: string;
   }): Promise<HomepageConfiguration> {
-    const configuration = homepageConfigurationSchema.parse(
-      input.configuration,
-    );
+    const configuration = validateConfiguration(input.configuration);
     if (configuration.state !== "draft") {
       throw new AppError({
         code: "VALIDATION_ERROR",
@@ -247,10 +302,7 @@ export class HomepageService {
   }
 
   async preview(configuration: HomepageConfiguration, query: HomepageQuery) {
-    return this.resolve(
-      homepageConfigurationSchema.parse(configuration),
-      query,
-    );
+    return this.resolve(validateConfiguration(configuration), query, true);
   }
 
   async getPublished(query: HomepageQuery) {
@@ -264,6 +316,7 @@ export class HomepageService {
   private async resolve(
     configuration: HomepageConfiguration,
     input: HomepageQuery,
+    includeSuppressed = false,
   ) {
     const query = normalizeScope(input);
     if (
@@ -280,7 +333,7 @@ export class HomepageService {
       query.now || new Date(),
     );
     const needsListings = resolved.sections.some((section) =>
-      ["deals", "recent_listings"].includes(section.type),
+      ["deals", "recent_listings", "universe_explorer"].includes(section.type),
     );
     const listingPromise = needsListings
       ? this.listingRepo.search({
@@ -314,42 +367,132 @@ export class HomepageService {
               city: query.city,
               limit: section.maxItems,
             });
+            const topics = trending.topics.filter(
+              (topic) => topic.listings.length >= section.minimumListingCount,
+            );
+            const eligibleListingCount = new Set(
+              topics.flatMap((topic) =>
+                topic.listings.map((listing) => listing.id),
+              ),
+            ).size;
+            const threshold = thresholdMetadata(
+              eligibleListingCount,
+              section.minimumListingCount,
+            );
             return {
               ...section,
               status:
-                trending.enabled && trending.topics.length ? "ready" : "empty",
-              trending,
+                trending.enabled && topics.length && !threshold.suppressed
+                  ? "ready"
+                  : "empty",
+              ...threshold,
+              trending: { ...trending, topics },
             };
           }
           if (section.type === "deals") {
             if (listingsUnavailable) throw new Error("Listings unavailable");
-            const deals = selectHomepageDeals(
+            const eligibleDeals = selectHomepageDeals(
               listings.items,
               query.marketCode,
               section.settings,
-              section.maxItems,
+              Math.max(section.maxItems, section.minimumListingCount),
               query.now,
+            );
+            const threshold = thresholdMetadata(
+              eligibleDeals.length,
+              section.minimumListingCount,
             );
             return {
               ...section,
-              status: deals.length ? "ready" : "empty",
-              deals,
+              status:
+                eligibleDeals.length && !threshold.suppressed
+                  ? "ready"
+                  : "empty",
+              ...threshold,
+              deals: threshold.suppressed
+                ? []
+                : eligibleDeals.slice(0, section.maxItems),
             };
           }
           if (section.type === "recent_listings") {
             if (listingsUnavailable) throw new Error("Listings unavailable");
-            const recent = listings.items
-              .filter(
-                (listing) =>
-                  listing.status === "published" &&
-                  listingBelongsToMarket(listing, query.marketCode),
-              )
-              .slice(0, section.maxItems)
-              .map(toPublicListing);
+            const eligible = listings.items.filter(
+              (listing) =>
+                listing.status === "published" &&
+                listingBelongsToMarket(listing, query.marketCode),
+            );
+            const threshold = thresholdMetadata(
+              eligible.length,
+              section.minimumListingCount,
+            );
             return {
               ...section,
-              status: recent.length ? "ready" : "empty",
-              listings: recent,
+              status:
+                eligible.length && !threshold.suppressed ? "ready" : "empty",
+              ...threshold,
+              listings: threshold.suppressed
+                ? []
+                : eligible.slice(0, section.maxItems).map(toPublicListing),
+            };
+          }
+          if (section.type === "universe_explorer") {
+            if (listingsUnavailable) throw new Error("Listings unavailable");
+            const eligible = listings.items.filter(
+              (listing) =>
+                listing.status === "published" &&
+                listingBelongsToMarket(listing, query.marketCode),
+            );
+            const allGroups = (section.settings.universeSubsections || [])
+              .filter(
+                (subsection) =>
+                  subsection.enabled &&
+                  subsection.marketCodes.includes(query.marketCode),
+              )
+              .sort((left, right) => left.order - right.order)
+              .slice(0, section.maxItems)
+              .map((subsection): HomepageUniverseGroup => {
+                const matching = eligible.filter((listing) =>
+                  listingBelongsToCategory(listing, subsection.categoryId),
+                );
+                const suppressed =
+                  matching.length < subsection.minimumListingCount;
+                return {
+                  ...subsection,
+                  status: matching.length ? "ready" : "empty",
+                  eligibleListingCount: matching.length,
+                  suppressed,
+                  listings: suppressed
+                    ? []
+                    : matching
+                        .slice(0, subsection.maxItems)
+                        .map(toPublicListing),
+                };
+              });
+            const universeGroups = includeSuppressed
+              ? allGroups
+              : allGroups.filter((group) => !group.suppressed);
+            const eligibleListingCount = allGroups.reduce(
+              (total, group) => total + group.eligibleListingCount,
+              0,
+            );
+            const threshold = thresholdMetadata(
+              eligibleListingCount,
+              section.minimumListingCount,
+            );
+            const hasEligibleGroup = allGroups.some(
+              (group) => !group.suppressed,
+            );
+            const suppressed = threshold.suppressed || !hasEligibleGroup;
+            return {
+              ...section,
+              status:
+                hasEligibleGroup && !threshold.suppressed ? "ready" : "empty",
+              ...threshold,
+              suppressed,
+              suppressionReason: suppressed
+                ? "BELOW_MINIMUM_LISTINGS"
+                : undefined,
+              universeGroups,
             };
           }
           return { ...section, status: "ready" };
@@ -367,7 +510,12 @@ export class HomepageService {
         }
       }),
     );
-    return { ...resolved, sections };
+    return {
+      ...resolved,
+      sections: includeSuppressed
+        ? sections
+        : sections.filter((section) => !section.suppressed),
+    };
   }
 }
 

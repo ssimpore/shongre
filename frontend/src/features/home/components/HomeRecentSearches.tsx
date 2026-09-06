@@ -13,15 +13,15 @@ import { HomeSectionHeading } from "./HomeSectionHeading";
 import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
 import { normalizeRecentSearchesLimit } from "../../../domains/market/market.constants";
 import { getRecentSearchTitle } from "../../../domains/taxonomy/taxonomy.display";
+import type { HomepageSectionView } from "../../../domains/homepage/homepage.types";
+import { homepageVisibilityClass } from "../../../domains/homepage/homepage.presentation";
 
 interface HomeRecentSearchesProps {
-  title?: string;
-  maxItems?: number;
+  section: HomepageSectionView;
 }
 
 export const HomeRecentSearches: React.FC<HomeRecentSearchesProps> = ({
-  title,
-  maxItems,
+  section,
 }) => {
   const { t } = useTranslation();
   const { effectiveConfig } = useMarketLocation();
@@ -57,26 +57,30 @@ export const HomeRecentSearches: React.FC<HomeRecentSearchesProps> = ({
     setRecentSearches(storageService.getRecentSearchItems());
   };
 
+  if (recentSearches.length < section.minimumListingCount) {
+    return null;
+  }
+
   const visibleRecentSearches = recentSearches.slice(
     0,
     Math.min(
-      maxItems ?? Number.MAX_SAFE_INTEGER,
+      section.maxItems,
       normalizeRecentSearchesLimit(
         effectiveConfig.features.recentSearchesLimit,
       ),
     ),
   );
 
-  if (visibleRecentSearches.length === 0) {
-    return null;
-  }
-
   return (
-    <Container as="section" aria-labelledby="home-recent-searches-title">
+    <Container
+      as="section"
+      aria-labelledby="home-recent-searches-title"
+      className={homepageVisibilityClass(section)}
+    >
       {/* Section Header */}
       <div className="mb-3 sm:mb-4">
         <HomeSectionHeading id="home-recent-searches-title">
-          {title || t("home.homeRecentSearches.recherchesRecentes")}
+          {section.title || t("home.homeRecentSearches.recherchesRecentes")}
         </HomeSectionHeading>
       </div>
 

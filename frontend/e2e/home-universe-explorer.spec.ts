@@ -24,9 +24,9 @@ test.describe("Homepage universe explorer", () => {
       explorer.getByText("Trouvez rapidement ce qui vous intéresse"),
     ).toBeVisible();
 
-    const home = explorer.locator('[data-home-universe-group="maison-jardin"]');
-    const vehicles = explorer.locator('[data-home-universe-group="vehicules"]');
-    const fashion = explorer.locator('[data-home-universe-group="mode"]');
+    const home = explorer.locator('[data-home-universe-group="home_garden"]');
+    const vehicles = explorer.locator('[data-home-universe-group="vehicles"]');
+    const fashion = explorer.locator('[data-home-universe-group="fashion"]');
     await expect(explorer.locator("[data-home-universe-group]")).toHaveCount(3);
     await expect(
       home.getByRole("heading", { name: "Maison & Jardin" }),
@@ -144,7 +144,7 @@ test.describe("Homepage universe explorer", () => {
     await waitForStableLayout(page);
 
     const explorer = page.getByTestId("home-universe-explorer");
-    const vehicles = explorer.locator('[data-home-universe-group="vehicules"]');
+    const vehicles = explorer.locator('[data-home-universe-group="vehicles"]');
     await vehicles.scrollIntoViewIfNeeded();
     await expect(vehicles.locator("[data-listing-card]")).toHaveCount(6);
 

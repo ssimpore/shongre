@@ -1,104 +1,77 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
-import { taxonomyService } from "../../../domains/taxonomy/taxonomy.service";
+import {
+  createDefaultHomepageConfiguration,
+  resolveHomepageConfiguration,
+} from "@shongre/contracts/homepage";
+import type { HomepageSectionView } from "../../../domains/homepage/homepage.types";
 import type { Listing } from "../../../types";
-import type { HomeUniverseListingGroup } from "../useHomeUniverseListings";
-import { HomeUniverseExplorerContent } from "./HomeUniverseExplorer";
+import { HomeUniverseExplorer } from "./HomeUniverseExplorer";
 
 vi.mock("../../../design-system/primitives/ListingCard", () => ({
-  ListingCard: ({
-    listing,
-    variant,
-  }: {
-    listing: Listing;
-    variant: string;
-  }) => (
-    <article data-listing-card="true" data-listing-card-variant={variant}>
-      <a href={`/annonce/${listing.id}`}>{listing.title}</a>
-    </article>
+  ListingCard: ({ listing }: { listing: Listing }) => (
+    <article data-listing-card="true">{listing.title}</article>
   ),
 }));
 
-const listing = (id: string, title: string): Listing =>
-  ({ id, title }) as Listing;
-
-function readyGroup(
-  rootSlug: string,
-  listings: Listing[],
-): HomeUniverseListingGroup {
-  const root = taxonomyService.getNodeBySlug(rootSlug);
-  if (!root) throw new Error(`Unknown test taxonomy root: ${rootSlug}`);
-  return { root, status: "ready", listings };
+function universeSection(): HomepageSectionView {
+  const section = resolveHomepageConfiguration(
+    createDefaultHomepageConfiguration({
+      marketCode: "FR",
+      locale: "fr-FR",
+      now: "2026-09-01T00:00:00.000Z",
+    }),
+    new Date("2026-09-01T00:00:00.000Z"),
+  ).sections.find((candidate) => candidate.type === "universe_explorer");
+  if (!section) throw new Error("Expected universe section");
+  return {
+    ...section,
+    status: "ready",
+    universeGroups: [
+      {
+        ...section.settings.universeSubsections![0]!,
+        status: "ready",
+        eligibleListingCount: 1,
+        suppressed: false,
+        listings: [{ id: "home-1", title: "Table ronde en teck" } as Listing],
+      },
+      {
+        ...section.settings.universeSubsections![1]!,
+        status: "ready",
+        eligibleListingCount: 1,
+        suppressed: false,
+        listings: [{ id: "vehicle-1", title: "Peugeot 208" } as Listing],
+      },
+    ],
+  };
 }
 
 describe("HomeUniverseExplorer", () => {
-  it("renders corresponding showcase listings for every configured universe", () => {
-    const groups = [
-      readyGroup("maison-jardin", [
-        listing("home-1", "Table ronde en teck"),
-        listing("home-2", "Machine à café"),
-      ]),
-      readyGroup("vehicules", [listing("vehicle-1", "Peugeot 208")]),
-      readyGroup("mode", [listing("fashion-1", "Manteau en laine")]),
-    ];
-
+  it("renders only the database-resolved, ordered universe groups", () => {
     const markup = renderToStaticMarkup(
       <MemoryRouter>
-        <HomeUniverseExplorerContent groups={groups} onRetry={() => {}} />
+        <HomeUniverseExplorer section={universeSection()} onRetry={() => {}} />
       </MemoryRouter>,
     );
 
     expect(markup).toContain("Explorez par univers");
-    expect(markup).toContain("Trouvez rapidement ce qui vous intéresse");
-    expect(markup.match(/data-home-universe-group=/g)).toHaveLength(3);
-    expect(markup.match(/data-listing-card="true"/g)).toHaveLength(4);
-    expect(markup.match(/data-listing-card-variant="showcase"/g)).toHaveLength(
-      4,
-    );
-
-    expect(markup).toContain(">Maison &amp; Jardin<");
-    expect(markup).toContain(">Véhicules<");
-    expect(markup).toContain(">Mode<");
-    expect(markup).toContain(">Table ronde en teck<");
-    expect(markup).toContain(">Peugeot 208<");
-    expect(markup).toContain(">Manteau en laine<");
-
-    expect(markup).toContain('href="/categorie/maison-jardin"');
-    expect(markup).toContain('href="/categorie/vehicules"');
-    expect(markup).toContain('href="/categorie/mode"');
-    expect(markup).toContain('href="/annonce/home-1"');
-    expect(markup).not.toContain("data-home-universe-item");
-    expect(markup).not.toContain("home-universe-sprite");
+    expect(markup.match(/data-home-universe-group=/g)).toHaveLength(2);
+    expect(markup).toContain('data-home-universe-group="home_garden"');
+    expect(markup).toContain('data-home-universe-group="vehicles"');
+    expect(markup).not.toContain('data-home-universe-group="fashion"');
+    expect(markup).toContain("Table ronde en teck");
+    expect(markup).toContain("Peugeot 208");
   });
 
-  it("keeps each universe available while its listings load, fail, or are empty", () => {
-    const home = taxonomyService.getNodeBySlug("maison-jardin");
-    const vehicles = taxonomyService.getNodeBySlug("vehicules");
-    const fashion = taxonomyService.getNodeBySlug("mode");
-    if (!home || !vehicles || !fashion) {
-      throw new Error("Expected homepage taxonomy roots to be available");
-    }
-
+  it("renders a retry state when the backend cannot resolve listing data", () => {
+    const section = { ...universeSection(), status: "error" as const };
     const markup = renderToStaticMarkup(
       <MemoryRouter>
-        <HomeUniverseExplorerContent
-          groups={[
-            { root: home, status: "empty", listings: [] },
-            { root: vehicles, status: "error", listings: [] },
-            { root: fashion, status: "loading", listings: [] },
-          ]}
-          onRetry={() => {}}
-        />
+        <HomeUniverseExplorer section={section} onRetry={() => {}} />
       </MemoryRouter>,
-    );
-
-    expect(markup).toContain("Aucune annonce disponible");
-    expect(markup).toContain(
-      "De nouvelles annonces seront bientôt proposées dans cet univers.",
     );
     expect(markup).toContain("Une erreur est survenue");
     expect(markup).toContain("Réessayer");
-    expect(markup.match(/listing-card-showcase-skeleton/g)).toHaveLength(6);
   });
 });

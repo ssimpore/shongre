@@ -4,13 +4,18 @@ import { Container } from "../../../design-system";
 import { Button } from "../../../design-system/primitives/Button";
 import { useTranslation } from "../../../i18n/I18nProvider";
 import { HomeSectionHeading } from "./HomeSectionHeading";
+import { homepageVisibilityClass } from "../../../domains/homepage/homepage.presentation";
 
 export const HomeProCtaSection: React.FC<{ section: HomepageSectionView }> = ({
   section,
 }) => {
   const { t } = useTranslation();
   return (
-    <Container as="section" aria-labelledby="home-pro-title">
+    <Container
+      as="section"
+      aria-labelledby="home-pro-title"
+      className={homepageVisibilityClass(section)}
+    >
       <div className="flex flex-col items-center justify-between gap-6 rounded-card border border-border-base bg-bg-surface p-6 shadow-sm sm:p-10 md:flex-row">
         <div className="max-w-xl space-y-2">
           <HomeSectionHeading id="home-pro-title">

@@ -11,46 +11,35 @@ import { ScrollRail } from "../../../design-system/primitives/ScrollRail";
 import { useTranslation } from "../../../i18n/I18nProvider";
 import { HomeSectionHeading } from "./HomeSectionHeading";
 import { HomeSectionAction } from "./HomeSectionAction";
-
-const HOME_COLLECTION_SLUGS = [
-  "pepites-semaine",
-  "vintage-retro",
-  "maison-cocooning",
-  "mobilite-urbaine",
-  "reconditionne",
-] as const;
-
-const HOME_COLLECTIONS: readonly Collection[] = HOME_COLLECTION_SLUGS.flatMap(
-  (slug) => {
-    const collection = collectionService.getCollection(slug);
-    return collection ? [collection] : [];
-  },
-);
+import type { HomepageSectionView } from "../../../domains/homepage/homepage.types";
+import { homepageVisibilityClass } from "../../../domains/homepage/homepage.presentation";
 
 interface HomeCollectionExplorerProps {
-  title?: string;
-  subtitle?: string;
-  maxItems?: number;
+  section: HomepageSectionView;
 }
 
 export const HomeCollectionExplorer: React.FC<HomeCollectionExplorerProps> = ({
-  title,
-  subtitle,
-  maxItems,
+  section,
 }) => {
   const { t } = useTranslation();
   const heading =
-    title || t("home.homeCollectionsSection.nosCollectionsDuMoment");
-  const collections =
-    maxItems === undefined
-      ? HOME_COLLECTIONS
-      : HOME_COLLECTIONS.slice(0, maxItems);
+    section.title || t("home.homeCollectionsSection.nosCollectionsDuMoment");
+  const eligibleCollections: Collection[] = (
+    section.settings.collectionSlugs || []
+  ).flatMap((slug) => {
+    const collection = collectionService.getCollection(slug);
+    return collection ? [collection] : [];
+  });
+
+  if (eligibleCollections.length < section.minimumListingCount) return null;
+  const collections = eligibleCollections.slice(0, section.maxItems);
 
   return (
     <Container
       as="section"
       aria-labelledby="home-collection-explorer-title"
       data-testid="home-collection-explorer"
+      className={homepageVisibilityClass(section)}
     >
       <div className="mb-5 flex items-end justify-between gap-3 sm:mb-6">
         <div className="min-w-0">
@@ -58,7 +47,7 @@ export const HomeCollectionExplorer: React.FC<HomeCollectionExplorerProps> = ({
             {heading}
           </HomeSectionHeading>
           <p className="mt-1 hidden text-sm font-medium text-text-secondary sm:block">
-            {subtitle ||
+            {section.subtitle ||
               t(
                 "home.homeCollectionsSection.desSelectionsThematiquesPrepareesPour",
               )}

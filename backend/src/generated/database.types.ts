@@ -18162,6 +18162,7 @@ export type Database = {
           ends_at: string | null;
           id: string;
           max_items: number;
+          minimum_listing_count: number;
           mobile_visible: boolean;
           revision_id: string;
           section_key: string;
@@ -18179,6 +18180,7 @@ export type Database = {
           ends_at?: string | null;
           id?: string;
           max_items: number;
+          minimum_listing_count?: number;
           mobile_visible?: boolean;
           revision_id: string;
           section_key: string;
@@ -18196,6 +18198,7 @@ export type Database = {
           ends_at?: string | null;
           id?: string;
           max_items?: number;
+          minimum_listing_count?: number;
           mobile_visible?: boolean;
           revision_id?: string;
           section_key?: string;
@@ -18212,6 +18215,90 @@ export type Database = {
             columns: ["revision_id"];
             isOneToOne: false;
             referencedRelation: "homepage_configuration_revisions";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      homepage_universe_subsection_markets: {
+        Row: {
+          market_code: string;
+          subsection_id: string;
+        };
+        Insert: {
+          market_code: string;
+          subsection_id: string;
+        };
+        Update: {
+          market_code?: string;
+          subsection_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "homepage_universe_subsection_markets_market_code_fkey";
+            columns: ["market_code"];
+            isOneToOne: false;
+            referencedRelation: "markets";
+            referencedColumns: ["code"];
+          },
+          {
+            foreignKeyName: "homepage_universe_subsection_markets_subsection_id_fkey";
+            columns: ["subsection_id"];
+            isOneToOne: false;
+            referencedRelation: "homepage_universe_subsections";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      homepage_universe_subsections: {
+        Row: {
+          category_id: string;
+          created_at: string;
+          desktop_visible: boolean;
+          enabled: boolean;
+          id: string;
+          max_items: number;
+          minimum_listing_count: number;
+          mobile_visible: boolean;
+          section_id: string;
+          sort_order: number;
+        };
+        Insert: {
+          category_id: string;
+          created_at?: string;
+          desktop_visible?: boolean;
+          enabled?: boolean;
+          id?: string;
+          max_items: number;
+          minimum_listing_count?: number;
+          mobile_visible?: boolean;
+          section_id: string;
+          sort_order: number;
+        };
+        Update: {
+          category_id?: string;
+          created_at?: string;
+          desktop_visible?: boolean;
+          enabled?: boolean;
+          id?: string;
+          max_items?: number;
+          minimum_listing_count?: number;
+          mobile_visible?: boolean;
+          section_id?: string;
+          sort_order?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "homepage_universe_subsections_category_id_fkey";
+            columns: ["category_id"];
+            isOneToOne: false;
+            referencedRelation: "categories";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "homepage_universe_subsections_section_id_fkey";
+            columns: ["section_id"];
+            isOneToOne: false;
+            referencedRelation: "homepage_sections";
             referencedColumns: ["id"];
           },
         ];

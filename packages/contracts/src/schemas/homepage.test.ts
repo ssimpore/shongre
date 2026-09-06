@@ -19,6 +19,7 @@ describe("homepage configuration contract", () => {
       "recent_listings",
       "trending",
       "deals",
+      "universe_explorer",
       "collections",
       "pro_cta",
     ]);
@@ -31,6 +32,18 @@ describe("homepage configuration contract", () => {
     expect(
       configuration.sections.find((item) => item.key === "deals"),
     ).toMatchObject({ maxItems: 6 });
+    expect(
+      configuration.sections.find((item) => item.key === "universe_explorer"),
+    ).toMatchObject({
+      minimumListingCount: 1,
+      settings: {
+        universeSubsections: [
+          expect.objectContaining({ categoryId: "home_garden", order: 0 }),
+          expect.objectContaining({ categoryId: "vehicles", order: 1 }),
+          expect.objectContaining({ categoryId: "fashion", order: 2 }),
+        ],
+      },
+    });
   });
 
   it("rejects duplicate sections and resolves schedules and localized copy", () => {
@@ -62,5 +75,67 @@ describe("homepage configuration contract", () => {
     expect(resolved.sections.some((section) => section.key === "deals")).toBe(
       false,
     );
+  });
+
+  it("rejects duplicate universe category rails and invalid thresholds", () => {
+    const base = createDefaultHomepageConfiguration({
+      marketCode: "FR",
+      locale: "fr-FR",
+    });
+    const invalid = {
+      ...base,
+      sections: base.sections.map((section) =>
+        section.type === "universe_explorer"
+          ? {
+              ...section,
+              minimumListingCount: -1,
+              settings: {
+                ...section.settings,
+                universeSubsections: [
+                  section.settings.universeSubsections![0]!,
+                  {
+                    ...section.settings.universeSubsections![0]!,
+                    order: 1,
+                  },
+                ],
+              },
+            }
+          : section,
+      ),
+    };
+
+    expect(homepageConfigurationSchema.safeParse(invalid).success).toBe(false);
+    expect(
+      homepageConfigurationSchema.safeParse({
+        ...base,
+        sections: base.sections.map((section, index) =>
+          index === 1
+            ? { ...section, order: base.sections[0]!.order }
+            : section,
+        ),
+      }).success,
+    ).toBe(false);
+    expect(
+      homepageConfigurationSchema.safeParse({
+        ...base,
+        sections: base.sections.map((section) =>
+          section.type === "universe_explorer"
+            ? {
+                ...section,
+                settings: {
+                  ...section.settings,
+                  universeSubsections:
+                    section.settings.universeSubsections!.map(
+                      (subsection, index) =>
+                        index === 0
+                          ? { ...subsection, marketCodes: ["FR", "FR"] }
+                          : subsection,
+                    ),
+                },
+              }
+            : section,
+        ),
+      }).success,
+    ).toBe(false);
   });
 });

@@ -14,10 +14,14 @@ test.describe("Homepage administration", () => {
     await expect(page.getByText(/Marché FR · langue fr-FR/)).toBeVisible();
     await expect(
       page.locator('[data-testid^="homepage-admin-section-"]'),
-    ).toHaveCount(7);
+    ).toHaveCount(8);
 
     const trending = page.getByTestId("homepage-admin-section-trending");
     const deals = page.getByTestId("homepage-admin-section-deals");
+    const universe = page.getByTestId(
+      "homepage-admin-section-universe_explorer",
+    );
+    const collections = page.getByTestId("homepage-admin-section-collections");
     await expect(trending).toBeVisible();
     await expect(
       deals.getByText("Règles d’éligibilité des offres"),
@@ -25,6 +29,23 @@ test.describe("Homepage administration", () => {
     await expect(deals.getByLabel("Nombre maximal d’éléments")).toHaveValue(
       "6",
     );
+    await expect(
+      universe.getByText("Catégories de l’explorateur"),
+    ).toBeVisible();
+    await expect(
+      universe.getByTestId("homepage-universe-subsection-home_garden"),
+    ).toBeVisible();
+    await expect(
+      universe.getByRole("button", { name: "Descendre home_garden" }),
+    ).toBeVisible();
+    await expect(
+      collections.getByTestId("homepage-collection-selection-pepites-semaine"),
+    ).toBeVisible();
+    await expect(
+      collections.getByRole("button", {
+        name: /Descendre Pépites de la semaine/,
+      }),
+    ).toBeVisible();
 
     await trending.getByRole("button", { name: /Descendre/ }).click();
     await page.getByRole("button", { name: "Aperçu", exact: true }).click();

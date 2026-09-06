@@ -7,6 +7,7 @@ import { PublishCtaButton } from "../../../design-system/primitives/PublishCtaBu
 import { useTranslation } from "../../../i18n/I18nProvider";
 import { HeroBoostedScroll } from "./HeroBoostedScroll";
 import { GlobalSearchBar } from "../../../design-system/primitives/GlobalSearchBar";
+import { homepageVisibilityClass } from "../../../domains/homepage/homepage.presentation";
 
 export const HomeHeroSection: React.FC<{ section: HomepageSectionView }> = ({
   section,
@@ -15,7 +16,7 @@ export const HomeHeroSection: React.FC<{ section: HomepageSectionView }> = ({
   return (
     <section
       data-home-hero="true"
-      className="relative overflow-hidden bg-bg-base py-3 sm:py-5"
+      className={`relative overflow-hidden bg-bg-base py-3 sm:py-5 ${homepageVisibilityClass(section)}`}
     >
       <Container className="relative z-raised">
         <div

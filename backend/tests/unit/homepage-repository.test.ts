@@ -16,7 +16,7 @@ function queryResult(data: unknown) {
   query.eq = vi.fn(() => query);
   query.order = vi.fn(() => query);
   query.limit = vi.fn(() => query);
-  query.in = vi.fn(() => Promise.resolve({ data, error: null }));
+  query.in = vi.fn(() => query);
   query.maybeSingle = vi.fn(() => Promise.resolve({ data, error: null }));
   query.then = vi.fn((resolve, reject) =>
     Promise.resolve({ data, error: null }).then(resolve, reject),
@@ -48,6 +48,7 @@ describe("PostgresHomepageRepository", () => {
         title_by_locale: { "fr-FR": "Meilleures offres" },
         subtitle_by_locale: { "fr-FR": "Offres du moment" },
         max_items: 6,
+        minimum_listing_count: 1,
         mobile_visible: true,
         desktop_visible: true,
         starts_at: "2026-09-06T20:00:00+00:00",
@@ -84,6 +85,7 @@ describe("PostgresHomepageRepository", () => {
         if (table === "homepage_sections") return sections;
         if (table === "homepage_offer_overrides") return overrides;
         if (table === "homepage_offer_rules") return rules;
+        if (table === "homepage_universe_subsections") return queryResult([]);
         throw new Error(`Unexpected table: ${table}`);
       }),
     });
@@ -105,5 +107,15 @@ describe("PostgresHomepageRepository", () => {
       startsAt: "2026-09-06T20:00:00.000Z",
       endsAt: "2026-09-07T20:00:00.000Z",
     });
+  });
+
+  it("fails closed when no homepage revision is published", async () => {
+    mocks.getSupabaseAdminClient.mockReturnValue({
+      from: vi.fn(() => queryResult(null)),
+    });
+
+    await expect(
+      new PostgresHomepageRepository().getPublished("FR", "fr-FR"),
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
   });
 });

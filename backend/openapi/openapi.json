@@ -6441,7 +6441,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/JsonValue"
+                  "$ref": "#/components/schemas/HomepageConfiguration"
                 }
               }
             }
@@ -6506,7 +6506,7 @@
                 "required": ["configuration", "changeReason"],
                 "properties": {
                   "configuration": {
-                    "$ref": "#/components/schemas/JsonValue"
+                    "$ref": "#/components/schemas/HomepageConfiguration"
                   },
                   "changeReason": {
                     "type": "string",
@@ -6524,7 +6524,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/JsonValue"
+                  "$ref": "#/components/schemas/HomepageConfiguration"
                 }
               }
             }
@@ -6610,7 +6610,7 @@
                 "required": ["configuration"],
                 "properties": {
                   "configuration": {
-                    "$ref": "#/components/schemas/JsonValue"
+                    "$ref": "#/components/schemas/HomepageConfiguration"
                   }
                 }
               }
@@ -6623,7 +6623,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/JsonValue"
+                  "$ref": "#/components/schemas/HomepageExperience"
                 }
               }
             }
@@ -6714,7 +6714,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/JsonValue"
+                  "$ref": "#/components/schemas/HomepageConfiguration"
                 }
               }
             }
@@ -24755,7 +24755,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/JsonValue"
+                  "$ref": "#/components/schemas/HomepageExperience"
                 }
               }
             }
@@ -38814,6 +38814,363 @@
       }
     },
     "schemas": {
+      "HomepageUniverseSubsectionConfiguration": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "categoryId",
+          "enabled",
+          "order",
+          "maxItems",
+          "minimumListingCount",
+          "mobileVisible",
+          "desktopVisible",
+          "marketCodes"
+        ],
+        "properties": {
+          "categoryId": {
+            "type": "string",
+            "pattern": "^[a-z0-9_]+(?:\\.[a-z0-9_]+)*$",
+            "maxLength": 100
+          },
+          "enabled": { "type": "boolean" },
+          "order": { "type": "integer", "minimum": 0, "maximum": 100 },
+          "maxItems": { "type": "integer", "minimum": 1, "maximum": 24 },
+          "minimumListingCount": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000
+          },
+          "mobileVisible": { "type": "boolean" },
+          "desktopVisible": { "type": "boolean" },
+          "marketCodes": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 32,
+            "uniqueItems": true,
+            "items": { "type": "string", "pattern": "^[A-Z]{2}$" }
+          }
+        }
+      },
+      "HomepageSectionSettings": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "selectionMode": {
+            "type": "string",
+            "enum": ["automatic", "manual", "hybrid"]
+          },
+          "eligibleOfferTypes": {
+            "type": "array",
+            "maxItems": 4,
+            "items": {
+              "type": "string",
+              "enum": [
+                "verified_price_reduction",
+                "marketplace_deal",
+                "time_limited_promotion",
+                "professional_discount"
+              ]
+            }
+          },
+          "allowedMarkets": {
+            "type": "array",
+            "maxItems": 32,
+            "items": { "type": "string", "pattern": "^[A-Z]{2}$" }
+          },
+          "taxonomyBranches": {
+            "type": "array",
+            "maxItems": 100,
+            "items": { "type": "string", "minLength": 1, "maxLength": 160 }
+          },
+          "minimumDiscountBps": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9000
+          },
+          "includeProfessionalSellers": { "type": "boolean" },
+          "previewEmptyState": { "type": "boolean" },
+          "offerOverrides": {
+            "type": "array",
+            "maxItems": 200,
+            "items": { "$ref": "#/components/schemas/JsonValue" }
+          },
+          "universeSubsections": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 24,
+            "items": {
+              "$ref": "#/components/schemas/HomepageUniverseSubsectionConfiguration"
+            }
+          },
+          "collectionSlugs": {
+            "type": "array",
+            "maxItems": 24,
+            "uniqueItems": true,
+            "items": { "type": "string", "minLength": 1, "maxLength": 160 }
+          }
+        }
+      },
+      "HomepageSectionConfiguration": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "key",
+          "type",
+          "enabled",
+          "order",
+          "titleByLocale",
+          "subtitleByLocale",
+          "maxItems",
+          "minimumListingCount",
+          "mobileVisible",
+          "desktopVisible",
+          "settings"
+        ],
+        "properties": {
+          "key": {
+            "type": "string",
+            "enum": [
+              "hero",
+              "recent_searches",
+              "trending",
+              "deals",
+              "recent_listings",
+              "universe_explorer",
+              "collections",
+              "pro_cta"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "hero",
+              "recent_searches",
+              "trending",
+              "deals",
+              "recent_listings",
+              "universe_explorer",
+              "collections",
+              "pro_cta"
+            ]
+          },
+          "enabled": { "type": "boolean" },
+          "order": { "type": "integer", "minimum": 0, "maximum": 20 },
+          "titleByLocale": {
+            "type": "object",
+            "additionalProperties": { "type": "string", "maxLength": 240 }
+          },
+          "subtitleByLocale": {
+            "type": "object",
+            "additionalProperties": { "type": "string", "maxLength": 240 }
+          },
+          "maxItems": { "type": "integer", "minimum": 1, "maximum": 24 },
+          "minimumListingCount": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000
+          },
+          "mobileVisible": { "type": "boolean" },
+          "desktopVisible": { "type": "boolean" },
+          "startsAt": { "type": "string", "format": "date-time" },
+          "endsAt": { "type": "string", "format": "date-time" },
+          "settings": { "$ref": "#/components/schemas/HomepageSectionSettings" }
+        }
+      },
+      "HomepageConfiguration": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "marketCode",
+          "locale",
+          "revision",
+          "state",
+          "sections",
+          "updatedAt"
+        ],
+        "properties": {
+          "id": { "type": "string", "minLength": 1, "maxLength": 160 },
+          "marketCode": { "type": "string", "pattern": "^[A-Z]{2}$" },
+          "locale": { "type": "string", "minLength": 2, "maxLength": 32 },
+          "revision": { "type": "integer", "minimum": 1 },
+          "state": {
+            "type": "string",
+            "enum": ["draft", "published", "archived"]
+          },
+          "sections": {
+            "type": "array",
+            "maxItems": 8,
+            "items": {
+              "$ref": "#/components/schemas/HomepageSectionConfiguration"
+            }
+          },
+          "updatedAt": { "type": "string", "format": "date-time" },
+          "publishedAt": { "type": "string", "format": "date-time" },
+          "changeReason": { "type": "string", "minLength": 3, "maxLength": 500 }
+        }
+      },
+      "HomepageUniverseGroup": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "categoryId",
+          "enabled",
+          "order",
+          "maxItems",
+          "minimumListingCount",
+          "mobileVisible",
+          "desktopVisible",
+          "marketCodes",
+          "status",
+          "eligibleListingCount",
+          "suppressed",
+          "listings"
+        ],
+        "properties": {
+          "categoryId": {
+            "type": "string",
+            "pattern": "^[a-z0-9_]+(?:\\.[a-z0-9_]+)*$",
+            "maxLength": 100
+          },
+          "enabled": { "type": "boolean" },
+          "order": { "type": "integer", "minimum": 0, "maximum": 100 },
+          "maxItems": { "type": "integer", "minimum": 1, "maximum": 24 },
+          "minimumListingCount": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000
+          },
+          "mobileVisible": { "type": "boolean" },
+          "desktopVisible": { "type": "boolean" },
+          "marketCodes": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 32,
+            "uniqueItems": true,
+            "items": { "type": "string", "pattern": "^[A-Z]{2}$" }
+          },
+          "status": { "type": "string", "enum": ["ready", "empty"] },
+          "eligibleListingCount": { "type": "integer", "minimum": 0 },
+          "suppressed": { "type": "boolean" },
+          "listings": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/PublicListing" }
+          }
+        }
+      },
+      "HomepageSectionView": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": [
+          "key",
+          "type",
+          "enabled",
+          "order",
+          "maxItems",
+          "minimumListingCount",
+          "mobileVisible",
+          "desktopVisible",
+          "settings",
+          "title",
+          "status"
+        ],
+        "properties": {
+          "key": {
+            "type": "string",
+            "enum": [
+              "hero",
+              "recent_searches",
+              "trending",
+              "deals",
+              "recent_listings",
+              "universe_explorer",
+              "collections",
+              "pro_cta"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "hero",
+              "recent_searches",
+              "trending",
+              "deals",
+              "recent_listings",
+              "universe_explorer",
+              "collections",
+              "pro_cta"
+            ]
+          },
+          "enabled": { "type": "boolean" },
+          "order": { "type": "integer" },
+          "maxItems": { "type": "integer", "minimum": 1, "maximum": 24 },
+          "minimumListingCount": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000
+          },
+          "mobileVisible": { "type": "boolean" },
+          "desktopVisible": { "type": "boolean" },
+          "settings": {
+            "$ref": "#/components/schemas/HomepageSectionSettings"
+          },
+          "title": { "type": "string" },
+          "subtitle": { "type": "string" },
+          "status": { "type": "string", "enum": ["ready", "empty", "error"] },
+          "eligibleListingCount": { "type": "integer", "minimum": 0 },
+          "suppressed": { "type": "boolean" },
+          "suppressionReason": {
+            "type": "string",
+            "enum": ["BELOW_MINIMUM_LISTINGS"]
+          },
+          "errorCode": {
+            "type": "string",
+            "enum": [
+              "TRENDING_UNAVAILABLE",
+              "DEALS_UNAVAILABLE",
+              "LISTINGS_UNAVAILABLE"
+            ]
+          },
+          "trending": { "$ref": "#/components/schemas/JsonValue" },
+          "deals": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/JsonValue" }
+          },
+          "listings": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/PublicListing" }
+          },
+          "universeGroups": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/HomepageUniverseGroup" }
+          }
+        }
+      },
+      "HomepageExperience": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "marketCode",
+          "locale",
+          "revision",
+          "generatedAt",
+          "sections"
+        ],
+        "properties": {
+          "id": { "type": "string" },
+          "marketCode": { "type": "string", "pattern": "^[A-Z]{2}$" },
+          "locale": { "type": "string" },
+          "revision": { "type": "integer", "minimum": 1 },
+          "generatedAt": { "type": "string", "format": "date-time" },
+          "sections": {
+            "type": "array",
+            "maxItems": 8,
+            "items": { "$ref": "#/components/schemas/HomepageSectionView" }
+          }
+        }
+      },
       "UserProfileUpdateRequest": {
         "type": "object",
         "additionalProperties": false,

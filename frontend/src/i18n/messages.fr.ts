@@ -5351,6 +5351,23 @@ export const messagesFr = {
   "admin.homepageConfigurationPanel.revision": "· révision",
   "admin.homepageConfigurationPanel.nombreMaximalDElements":
     "Nombre maximal d’éléments",
+  "admin.homepageConfigurationPanel.nombreMaximalDAnnonces":
+    "Nombre maximal d’annonces",
+  "admin.homepageConfigurationPanel.nombreMinimalDAnnoncesEligibles":
+    "Nombre minimal d’annonces éligibles",
+  "admin.homepageConfigurationPanel.categoriesDeLExplorateur":
+    "Catégories de l’explorateur",
+  "admin.homepageConfigurationPanel.categoriesDeLExplorateurDescription":
+    "Sélectionnez les univers, leur ordre, leur seuil, leur visibilité et leurs marchés cibles.",
+  "admin.homepageConfigurationPanel.marchesCibles": "Marchés cibles",
+  "admin.homepageConfigurationPanel.sousSectionActive": "Sous-section active",
+  "admin.homepageConfigurationPanel.collectionsAffichees":
+    "Collections affichées",
+  "home.homePage.configurationUnavailableTitle":
+    "La page d’accueil est momentanément indisponible",
+  "home.homePage.configurationUnavailableDescription":
+    "La configuration publiée n’a pas pu être chargée. Réessayez sans afficher de contenu incomplet.",
+  "home.homePage.loadingConfiguration": "Chargement de la page d’accueil",
   "admin.homepageConfigurationPanel.visibleSurMobile": "Visible sur mobile",
   "admin.homepageConfigurationPanel.visibleSurDesktop": "Visible sur desktop",
   "admin.homepageConfigurationPanel.reglesDEligibiliteDesOffres":

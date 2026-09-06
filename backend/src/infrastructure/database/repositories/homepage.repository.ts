@@ -5,6 +5,7 @@ import {
   type HomepageOfferOverride,
   type HomepageSectionConfiguration,
 } from "@shongre/contracts/homepage";
+import { AppError } from "../../../shared/errors/app-error.js";
 import { getSupabaseAdminClient } from "../../supabase/supabase-client.js";
 import { databaseFailure } from "./repository-error.js";
 
@@ -144,11 +145,29 @@ interface HomepageSectionRow {
   title_by_locale: Record<string, string>;
   subtitle_by_locale: Record<string, string>;
   max_items: number;
+  minimum_listing_count: number;
   mobile_visible: boolean;
   desktop_visible: boolean;
   starts_at?: string | null;
   ends_at?: string | null;
   settings: HomepageSectionConfiguration["settings"];
+}
+
+interface HomepageUniverseSubsectionRow {
+  id: string;
+  section_id: string;
+  category_id: string;
+  enabled: boolean;
+  sort_order: number;
+  max_items: number;
+  minimum_listing_count: number;
+  mobile_visible: boolean;
+  desktop_visible: boolean;
+}
+
+interface HomepageUniverseSubsectionMarketRow {
+  subsection_id: string;
+  market_code: string;
 }
 
 function normalizeDatabaseTimestamp(value?: string | null) {
@@ -169,24 +188,82 @@ async function hydrateConfiguration(
   const sectionIds = (sectionRows || []).map(
     (row: HomepageSectionRow) => row.id,
   );
-  const { data: offerRows, error: offerError } = sectionIds.length
-    ? await supabase
-        .from("homepage_offer_overrides")
-        .select("*")
-        .in("section_id", sectionIds)
-    : { data: [], error: null };
+  const [offerResult, ruleResult, universeResult] = sectionIds.length
+    ? await Promise.all([
+        supabase
+          .from("homepage_offer_overrides")
+          .select("*")
+          .in("section_id", sectionIds),
+        supabase
+          .from("homepage_offer_rules")
+          .select("*")
+          .in("section_id", sectionIds),
+        supabase
+          .from("homepage_universe_subsections")
+          .select("*")
+          .in("section_id", sectionIds)
+          .order("sort_order", { ascending: true }),
+      ])
+    : [
+        { data: [], error: null },
+        { data: [], error: null },
+        { data: [], error: null },
+      ];
+  const { data: offerRows, error: offerError } = offerResult;
   if (offerError) databaseFailure("homepage.getOfferOverrides", offerError);
-  const { data: ruleRows, error: ruleError } = sectionIds.length
-    ? await supabase
-        .from("homepage_offer_rules")
-        .select("*")
-        .in("section_id", sectionIds)
-    : { data: [], error: null };
+  const { data: ruleRows, error: ruleError } = ruleResult;
   if (ruleError) databaseFailure("homepage.getOfferRules", ruleError);
+  const { data: universeRows, error: universeError } = universeResult;
+  if (universeError)
+    databaseFailure("homepage.getUniverseSubsections", universeError);
+
+  const universeSubsectionIds = (universeRows || []).map(
+    (row: HomepageUniverseSubsectionRow) => row.id,
+  );
+  const { data: universeMarketRows, error: universeMarketError } =
+    universeSubsectionIds.length
+      ? await supabase
+          .from("homepage_universe_subsection_markets")
+          .select("subsection_id, market_code")
+          .in("subsection_id", universeSubsectionIds)
+      : { data: [], error: null };
+  if (universeMarketError)
+    databaseFailure(
+      "homepage.getUniverseSubsectionMarkets",
+      universeMarketError,
+    );
   const rulesBySection = new Map<string, any>(
     (ruleRows || []).map((row: any) => [row.section_id, row]),
   );
   const offersBySection = new Map<string, HomepageOfferOverride[]>();
+  const marketsByUniverseSubsection = new Map<string, string[]>();
+  for (const row of universeMarketRows || []) {
+    const typed = row as HomepageUniverseSubsectionMarketRow;
+    const marketCodes =
+      marketsByUniverseSubsection.get(typed.subsection_id) || [];
+    marketCodes.push(typed.market_code);
+    marketsByUniverseSubsection.set(typed.subsection_id, marketCodes);
+  }
+  const universeSubsectionsBySection = new Map<
+    string,
+    NonNullable<HomepageSectionConfiguration["settings"]["universeSubsections"]>
+  >();
+  for (const row of universeRows || []) {
+    const typed = row as HomepageUniverseSubsectionRow;
+    const subsections =
+      universeSubsectionsBySection.get(typed.section_id) || [];
+    subsections.push({
+      categoryId: typed.category_id,
+      enabled: typed.enabled,
+      order: Number(typed.sort_order),
+      maxItems: Number(typed.max_items),
+      minimumListingCount: Number(typed.minimum_listing_count),
+      mobileVisible: typed.mobile_visible,
+      desktopVisible: typed.desktop_visible,
+      marketCodes: marketsByUniverseSubsection.get(typed.id) || [],
+    });
+    universeSubsectionsBySection.set(typed.section_id, subsections);
+  }
   for (const row of offerRows || []) {
     const offers = offersBySection.get(row.section_id) || [];
     offers.push({
@@ -214,6 +291,7 @@ async function hydrateConfiguration(
       titleByLocale: row.title_by_locale || {},
       subtitleByLocale: row.subtitle_by_locale || {},
       maxItems: Number(row.max_items),
+      minimumListingCount: Number(row.minimum_listing_count),
       mobileVisible: row.mobile_visible,
       desktopVisible: row.desktop_visible,
       startsAt: normalizeDatabaseTimestamp(row.starts_at),
@@ -222,20 +300,25 @@ async function hydrateConfiguration(
         const rule = rulesBySection.get(row.id);
         return {
           ...(row.settings || {}),
-          ...(row.section_type === "deals" && rule
+          ...(row.section_type === "universe_explorer"
             ? {
-                selectionMode: rule.selection_mode,
-                eligibleOfferTypes: rule.eligible_offer_types || [],
-                allowedMarkets: rule.allowed_markets || [],
-                taxonomyBranches: rule.taxonomy_branches || [],
-                minimumDiscountBps: Number(rule.minimum_discount_bps),
-                includeProfessionalSellers: rule.include_professional_sellers,
-                previewEmptyState: rule.preview_empty_state,
-                offerOverrides: offersBySection.get(row.id) || [],
+                universeSubsections:
+                  universeSubsectionsBySection.get(row.id) || [],
               }
-            : row.section_type === "deals"
-              ? { offerOverrides: offersBySection.get(row.id) || [] }
-              : {}),
+            : row.section_type === "deals" && rule
+              ? {
+                  selectionMode: rule.selection_mode,
+                  eligibleOfferTypes: rule.eligible_offer_types || [],
+                  allowedMarkets: rule.allowed_markets || [],
+                  taxonomyBranches: rule.taxonomy_branches || [],
+                  minimumDiscountBps: Number(rule.minimum_discount_bps),
+                  includeProfessionalSellers: rule.include_professional_sellers,
+                  previewEmptyState: rule.preview_empty_state,
+                  offerOverrides: offersBySection.get(row.id) || [],
+                }
+              : row.section_type === "deals"
+                ? { offerOverrides: offersBySection.get(row.id) || [] }
+                : {}),
         };
       })(),
     })),
@@ -273,24 +356,28 @@ export class PostgresHomepageRepository implements IHomepageRepository {
     marketCode: string,
     locale: string,
   ): Promise<HomepageConfiguration> {
-    return (
-      (await this.getLatest(marketCode, locale, "draft")) ||
-      draftFromPublished(await this.getPublished(marketCode, locale))
-    );
+    const draft = await this.getLatest(marketCode, locale, "draft");
+    if (draft) return draft;
+    const published = await this.getLatest(marketCode, locale, "published");
+    return published
+      ? draftFromPublished(published)
+      : createDefaultHomepageConfiguration({
+          marketCode: marketCode.toUpperCase(),
+          locale,
+          state: "draft",
+        });
   }
 
   async getPublished(
     marketCode: string,
     locale: string,
   ): Promise<HomepageConfiguration> {
-    return (
-      (await this.getLatest(marketCode, locale, "published")) ||
-      createDefaultHomepageConfiguration({
-        marketCode: marketCode.toUpperCase(),
-        locale,
-        state: "published",
-      })
-    );
+    const published = await this.getLatest(marketCode, locale, "published");
+    if (published) return published;
+    throw new AppError({
+      code: "NOT_FOUND",
+      message: "Aucune configuration de page d’accueil n’est publiée.",
+    });
   }
 
   async saveDraft(

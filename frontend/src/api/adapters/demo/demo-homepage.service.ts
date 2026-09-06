@@ -21,6 +21,7 @@ import {
 import {
   sanitizeTrendingForMarket,
   selectHomepageDeals,
+  selectHomepageUniverseGroups,
   toHomepageExperience,
 } from "../../../domains/homepage/homepage.resolver";
 import { demoListingsService } from "./demo-listings.service";
@@ -74,7 +75,19 @@ function sectionError(
 async function resolveSection(
   section: ResolvedHomepageSection,
   query: HomepageQuery,
+  includeSuppressed: boolean,
 ): Promise<Partial<HomepageSectionView>> {
+  const threshold = (eligibleListingCount: number) => {
+    const suppressed = eligibleListingCount < section.minimumListingCount;
+    return {
+      eligibleListingCount,
+      suppressed,
+      suppressionReason: suppressed
+        ? ("BELOW_MINIMUM_LISTINGS" as const)
+        : undefined,
+    };
+  };
+
   if (section.type === "trending") {
     const response = sanitizeTrendingForMarket(
       await demoTrendingService.getTrending({
@@ -89,9 +102,20 @@ async function resolveSection(
       query,
       8,
     );
+    const topics = response.topics.filter(
+      (topic) => topic.listings.length >= section.minimumListingCount,
+    );
+    const metadata = threshold(
+      new Set(topics.flatMap((topic) => topic.listings.map(({ id }) => id)))
+        .size,
+    );
     return {
-      status: response.enabled && response.topics.length ? "ready" : "empty",
-      trending: response,
+      status:
+        response.enabled && topics.length && !metadata.suppressed
+          ? "ready"
+          : "empty",
+      ...metadata,
+      trending: { ...response, topics },
     };
   }
 
@@ -105,21 +129,56 @@ async function resolveSection(
       listings,
       query.marketCode,
       section.settings,
-      section.maxItems,
+      Math.max(section.maxItems, section.minimumListingCount),
       query.now,
     );
-    return { status: deals.length ? "ready" : "empty", deals };
+    const metadata = threshold(deals.length);
+    return {
+      status: deals.length && !metadata.suppressed ? "ready" : "empty",
+      ...metadata,
+      deals: metadata.suppressed ? [] : deals.slice(0, section.maxItems),
+    };
   }
 
   if (section.type === "recent_listings") {
     const { listings } = await demoListingsService.getListings({
       marketCode: query.marketCode,
-      limit: section.maxItems,
+      limit: Math.max(section.maxItems, section.minimumListingCount),
       sortBy: "date_desc",
     });
+    const metadata = threshold(listings.length);
     return {
-      status: listings.length ? "ready" : "empty",
+      status: listings.length && !metadata.suppressed ? "ready" : "empty",
+      ...metadata,
+      listings: metadata.suppressed ? [] : listings.slice(0, section.maxItems),
+    };
+  }
+
+  if (section.type === "universe_explorer") {
+    const { listings } = await demoListingsService.getListings({
+      marketCode: query.marketCode,
+      limit: 1_000,
+      sortBy: "date_desc",
+    });
+    const allGroups = selectHomepageUniverseGroups(
       listings,
+      section,
+      query.marketCode,
+      true,
+    );
+    const metadata = threshold(
+      allGroups.reduce((total, group) => total + group.eligibleListingCount, 0),
+    );
+    const hasEligibleGroup = allGroups.some((group) => !group.suppressed);
+    const suppressed = metadata.suppressed || !hasEligibleGroup;
+    return {
+      status: hasEligibleGroup && !metadata.suppressed ? "ready" : "empty",
+      ...metadata,
+      suppressed,
+      suppressionReason: suppressed ? "BELOW_MINIMUM_LISTINGS" : undefined,
+      universeGroups: includeSuppressed
+        ? allGroups
+        : allGroups.filter((group) => !group.suppressed),
     };
   }
 
@@ -129,6 +188,7 @@ async function resolveSection(
 async function buildHomepage(
   configuration: HomepageConfiguration,
   query: HomepageQuery,
+  includeSuppressed = false,
 ): Promise<HomepageExperience> {
   if (
     configuration.marketCode !== query.marketCode.toUpperCase() ||
@@ -143,7 +203,10 @@ async function buildHomepage(
   const results = await Promise.allSettled(
     resolved.sections.map(
       async (section) =>
-        [section.key, await resolveSection(section, query)] as const,
+        [
+          section.key,
+          await resolveSection(section, query, includeSuppressed),
+        ] as const,
     ),
   );
   const content = new Map<string, Partial<HomepageSectionView>>();
@@ -153,7 +216,13 @@ async function buildHomepage(
     if (result.status === "fulfilled") content.set(...result.value);
     else content.set(section.key, sectionError(section));
   });
-  return toHomepageExperience(resolved, content);
+  const experience = toHomepageExperience(resolved, content);
+  return includeSuppressed
+    ? experience
+    : {
+        ...experience,
+        sections: experience.sections.filter((section) => !section.suppressed),
+      };
 }
 
 export class DemoHomepageService implements HomepageServiceContract {
@@ -190,7 +259,7 @@ export class DemoHomepageService implements HomepageServiceContract {
     query: HomepageQuery,
   ): Promise<HomepageExperience> {
     assertHomepageAdministrator(query.marketCode);
-    return buildHomepage(configuration, query);
+    return buildHomepage(configuration, query, true);
   }
 
   async publishHomepage(

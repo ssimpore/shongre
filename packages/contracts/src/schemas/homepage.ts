@@ -6,6 +6,7 @@ export const HOMEPAGE_SECTION_TYPES = [
   "trending",
   "deals",
   "recent_listings",
+  "universe_explorer",
   "collections",
   "pro_cta",
 ] as const;
@@ -33,6 +34,8 @@ export const HOMEPAGE_ADMIN_CONSTRAINTS = {
   sectionCount: HOMEPAGE_SECTION_TYPES.length,
   sectionOrder: { min: 0, max: 20 },
   itemCount: { min: 1, max: 24 },
+  minimumListingCount: { min: 0, max: 1_000 },
+  universeSubsectionCount: { min: 1, max: 24 },
   title: { maxLength: 120 },
   subtitle: { maxLength: 240 },
   discountBps: { min: 0, max: 9_000 },
@@ -57,6 +60,41 @@ export const homepageOfferOverrideSchema = z
 
 export type HomepageOfferOverride = z.infer<typeof homepageOfferOverrideSchema>;
 
+export const homepageUniverseSubsectionSchema = z
+  .object({
+    categoryId: z
+      .string()
+      .min(1)
+      .max(100)
+      .regex(/^[a-z0-9_]+(?:\.[a-z0-9_]+)*$/),
+    enabled: z.boolean(),
+    order: z.number().int().min(0).max(100),
+    maxItems: z
+      .number()
+      .int()
+      .min(HOMEPAGE_ADMIN_CONSTRAINTS.itemCount.min)
+      .max(HOMEPAGE_ADMIN_CONSTRAINTS.itemCount.max),
+    minimumListingCount: z
+      .number()
+      .int()
+      .min(HOMEPAGE_ADMIN_CONSTRAINTS.minimumListingCount.min)
+      .max(HOMEPAGE_ADMIN_CONSTRAINTS.minimumListingCount.max),
+    mobileVisible: z.boolean(),
+    desktopVisible: z.boolean(),
+    marketCodes: z
+      .array(z.string().regex(/^[A-Z]{2}$/))
+      .min(1)
+      .max(32)
+      .refine((values) => new Set(values).size === values.length, {
+        message: "Universe subsection markets must be unique.",
+      }),
+  })
+  .strict();
+
+export type HomepageUniverseSubsection = z.infer<
+  typeof homepageUniverseSubsectionSchema
+>;
+
 export const homepageSectionSettingsSchema = z
   .object({
     selectionMode: z.enum(HOMEPAGE_SELECTION_MODES).optional(),
@@ -75,6 +113,18 @@ export const homepageSectionSettingsSchema = z
     includeProfessionalSellers: z.boolean().optional(),
     previewEmptyState: z.boolean().optional(),
     offerOverrides: z.array(homepageOfferOverrideSchema).max(200).optional(),
+    universeSubsections: z
+      .array(homepageUniverseSubsectionSchema)
+      .min(HOMEPAGE_ADMIN_CONSTRAINTS.universeSubsectionCount.min)
+      .max(HOMEPAGE_ADMIN_CONSTRAINTS.universeSubsectionCount.max)
+      .optional(),
+    collectionSlugs: z
+      .array(z.string().min(1).max(160))
+      .max(24)
+      .refine((values) => new Set(values).size === values.length, {
+        message: "Homepage collection selections must be unique.",
+      })
+      .optional(),
   })
   .strict();
 
@@ -99,6 +149,11 @@ export const homepageSectionConfigurationSchema = z
       .int()
       .min(HOMEPAGE_ADMIN_CONSTRAINTS.itemCount.min)
       .max(HOMEPAGE_ADMIN_CONSTRAINTS.itemCount.max),
+    minimumListingCount: z
+      .number()
+      .int()
+      .min(HOMEPAGE_ADMIN_CONSTRAINTS.minimumListingCount.min)
+      .max(HOMEPAGE_ADMIN_CONSTRAINTS.minimumListingCount.max),
     mobileVisible: z.boolean(),
     desktopVisible: z.boolean(),
     startsAt: z.string().datetime().optional(),
@@ -119,7 +174,37 @@ export const homepageSectionConfigurationSchema = z
       message: "Homepage section startsAt must be earlier than endsAt.",
       path: ["endsAt"],
     },
-  );
+  )
+  .superRefine((section, context) => {
+    const subsections = section.settings.universeSubsections ?? [];
+    if (section.type === "universe_explorer" && subsections.length === 0) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "The universe explorer requires at least one subsection.",
+        path: ["settings", "universeSubsections"],
+      });
+    }
+    const categoryIds = new Set<string>();
+    const orders = new Set<number>();
+    subsections.forEach((subsection, index) => {
+      if (categoryIds.has(subsection.categoryId)) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Universe subsection categories must be unique.",
+          path: ["settings", "universeSubsections", index, "categoryId"],
+        });
+      }
+      if (orders.has(subsection.order)) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Universe subsection order values must be unique.",
+          path: ["settings", "universeSubsections", index, "order"],
+        });
+      }
+      categoryIds.add(subsection.categoryId);
+      orders.add(subsection.order);
+    });
+  });
 
 export type HomepageSectionConfiguration = z.infer<
   typeof homepageSectionConfigurationSchema
@@ -146,6 +231,7 @@ export const homepageConfigurationSchema = z
   .strict()
   .superRefine((configuration, context) => {
     const keys = new Set<HomepageSectionType>();
+    const orders = new Set<number>();
     for (const [index, section] of configuration.sections.entries()) {
       if (keys.has(section.key)) {
         context.addIssue({
@@ -154,7 +240,15 @@ export const homepageConfigurationSchema = z
           path: ["sections", index, "key"],
         });
       }
+      if (orders.has(section.order)) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Homepage section order values must be unique.",
+          path: ["sections", index, "order"],
+        });
+      }
       keys.add(section.key);
+      orders.add(section.order);
     }
   });
 
@@ -183,6 +277,7 @@ const DEFAULT_TITLES: Record<HomepageSectionType, string> = {
   trending: "En tendence",
   deals: "Meilleures offres",
   recent_listings: "Annonces récentes",
+  universe_explorer: "Explorez par univers",
   collections: "Collections du moment",
   pro_cta: "Vous êtes commerçant, artisan ou professionnel ?",
 };
@@ -192,6 +287,7 @@ const DEFAULT_SUBTITLES: Partial<Record<HomepageSectionType, string>> = {
   trending: "Découvrez ce qui attire le plus les acheteurs en ce moment.",
   deals: "Des réductions et offres actives sélectionnées pour votre marché.",
   recent_listings: "Les dernières offres publiées près de chez vous.",
+  universe_explorer: "Trouvez rapidement ce qui vous intéresse",
   collections:
     "Des sélections thématiques préparées pour dénicher des pépites uniques, durables et vérifiées.",
   pro_cta:
@@ -204,6 +300,7 @@ const DEFAULT_MAX_ITEMS: Record<HomepageSectionType, number> = {
   trending: 4,
   deals: 6,
   recent_listings: 12,
+  universe_explorer: 3,
   collections: 5,
   pro_cta: 1,
 };
@@ -223,6 +320,7 @@ export function createDefaultHomepageConfiguration(input: {
     "recent_listings",
     "trending",
     "deals",
+    "universe_explorer",
     "collections",
     "pro_cta",
   ];
@@ -236,23 +334,56 @@ export function createDefaultHomepageConfiguration(input: {
       [input.locale]: DEFAULT_SUBTITLES[type] ?? "",
     },
     maxItems: DEFAULT_MAX_ITEMS[type],
+    minimumListingCount: [
+      "trending",
+      "deals",
+      "recent_listings",
+      "universe_explorer",
+    ].includes(type)
+      ? 1
+      : 0,
     mobileVisible: true,
     desktopVisible: true,
     settings:
-      type === "trending"
-        ? { selectionMode: "hybrid" }
-        : type === "deals"
+      type === "universe_explorer"
+        ? {
+            universeSubsections: ["home_garden", "vehicles", "fashion"].map(
+              (categoryId, subsectionOrder) => ({
+                categoryId,
+                enabled: true,
+                order: subsectionOrder,
+                maxItems: 8,
+                minimumListingCount: 1,
+                mobileVisible: true,
+                desktopVisible: true,
+                marketCodes: [marketCode],
+              }),
+            ),
+          }
+        : type === "collections"
           ? {
-              selectionMode: "hybrid",
-              eligibleOfferTypes: [...HOMEPAGE_OFFER_TYPES],
-              allowedMarkets: [marketCode],
-              taxonomyBranches: [],
-              minimumDiscountBps: 500,
-              includeProfessionalSellers: true,
-              previewEmptyState: false,
-              offerOverrides: [],
+              collectionSlugs: [
+                "pepites-semaine",
+                "vintage-retro",
+                "maison-cocooning",
+                "mobilite-urbaine",
+                "reconditionne",
+              ],
             }
-          : {},
+          : type === "trending"
+            ? { selectionMode: "hybrid" }
+            : type === "deals"
+              ? {
+                  selectionMode: "hybrid",
+                  eligibleOfferTypes: [...HOMEPAGE_OFFER_TYPES],
+                  allowedMarkets: [marketCode],
+                  taxonomyBranches: [],
+                  minimumDiscountBps: 500,
+                  includeProfessionalSellers: true,
+                  previewEmptyState: false,
+                  offerOverrides: [],
+                }
+              : {},
   }));
 
   return homepageConfigurationSchema.parse({
