@@ -41,25 +41,22 @@ test.describe("Homepage administration", () => {
     ).toBeVisible();
 
     await page.goto("/", { waitUntil: "domcontentloaded" });
-    const discoverySection = page.getByTestId("home-discovery");
-    const dealsTab = discoverySection.getByRole("tab", {
-      name: "Meilleures offres",
-    });
-    const trendingTab = discoverySection.getByRole("tab", {
-      name: "Tendances du moment",
-    });
-    await expect(dealsTab).toBeVisible();
-    await expect(trendingTab).toBeVisible();
+    const dealsSection = page.getByTestId("home-discovery-deals");
+    const trendingSection = page.getByTestId("home-discovery-trending");
+    await expect(dealsSection).toBeVisible();
+    await trendingSection.scrollIntoViewIfNeeded();
+    await expect(trendingSection).toBeVisible();
+    await expect(page.getByRole("tab")).toHaveCount(0);
     await expect
       .poll(async () =>
-        dealsTab.evaluate(
+        dealsSection.evaluate(
           (deals, trends) =>
             Boolean(
               trends &&
               deals.compareDocumentPosition(trends) &
                 Node.DOCUMENT_POSITION_FOLLOWING,
             ),
-          await trendingTab.elementHandle(),
+          await trendingSection.elementHandle(),
         ),
       )
       .toBe(true);

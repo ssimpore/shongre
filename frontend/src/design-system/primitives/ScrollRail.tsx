@@ -34,6 +34,16 @@ export interface ScrollRailProps {
    * which is the harness to trust for this.
    */
   snap?: boolean;
+  /** Visual treatment for directional controls on light or image-led rails. */
+  controlTone?: "inverse" | "surface";
+  /** Reports scroll affordance and normalized progress for adjacent indicators. */
+  onStateChange?: (state: ScrollRailState) => void;
+}
+
+export interface ScrollRailState {
+  canScrollLeft: boolean;
+  canScrollRight: boolean;
+  progress: number;
 }
 
 /**
@@ -58,6 +68,8 @@ export const ScrollRail: React.FC<ScrollRailProps> = ({
   label = "contenu",
   snap = false,
   controlClassName = "top-1/2",
+  controlTone = "inverse",
+  onStateChange,
 }) => {
   const { t } = useTranslation();
   const trackRef = useRef<HTMLDivElement>(null);
@@ -68,11 +80,22 @@ export const ScrollRail: React.FC<ScrollRailProps> = ({
     if (!el) return;
     const max = el.scrollWidth - el.clientWidth;
     const tolerance = themeInteraction.scrollBoundaryTolerancePx;
-    setOverflow({
+    const nextOverflow = {
       left: el.scrollLeft > tolerance,
       right: max > tolerance && el.scrollLeft < max - tolerance,
+    };
+    setOverflow((current) =>
+      current.left === nextOverflow.left && current.right === nextOverflow.right
+        ? current
+        : nextOverflow,
+    );
+    onStateChange?.({
+      canScrollLeft: nextOverflow.left,
+      canScrollRight: nextOverflow.right,
+      progress:
+        max > tolerance ? Math.min(1, Math.max(0, el.scrollLeft / max)) : 0,
     });
-  }, []);
+  }, [onStateChange]);
 
   useEffect(() => {
     const el = trackRef.current;
@@ -102,6 +125,10 @@ export const ScrollRail: React.FC<ScrollRailProps> = ({
       behavior: "smooth",
     });
   };
+  const controlToneClass =
+    controlTone === "surface"
+      ? "rounded-pill bg-bg-surface text-primary border border-border-base shadow-md hover:bg-primary-light hover:border-primary-border hover:text-primary-hover"
+      : "rounded-pill bg-surface-inverse text-text-inverse border border-border-inverse-strong shadow-lg hover:bg-primary hover:border-primary hover:text-text-inverse";
 
   return (
     <div className="scroll-rail-shell relative w-full max-w-full min-w-0">
@@ -132,7 +159,7 @@ export const ScrollRail: React.FC<ScrollRailProps> = ({
           type="button"
           onClick={() => nudge(-1)}
           aria-label={t("common.scrollRailLeft", { label })}
-          className={`absolute left-1 -translate-y-1/2 ${RAIL_CONTROL_CLASS} rounded-pill bg-surface-inverse text-text-inverse border border-border-inverse-strong shadow-lg hover:bg-primary hover:border-primary hover:text-text-inverse flex items-center justify-center ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer active:scale-95 z-sticky ${controlClassName}`}
+          className={`absolute left-1 -translate-y-1/2 ${RAIL_CONTROL_CLASS} ${controlToneClass} flex items-center justify-center ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer active:scale-95 z-sticky ${controlClassName}`}
         >
           <ChevronLeft className={RAIL_CONTROL_ICON_CLASS} />
         </button>
@@ -143,7 +170,7 @@ export const ScrollRail: React.FC<ScrollRailProps> = ({
           type="button"
           onClick={() => nudge(1)}
           aria-label={t("common.scrollRailRight", { label })}
-          className={`absolute right-1 -translate-y-1/2 ${RAIL_CONTROL_CLASS} rounded-pill bg-surface-inverse text-text-inverse border border-border-inverse-strong shadow-lg hover:bg-primary hover:border-primary hover:text-text-inverse flex items-center justify-center ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer active:scale-95 z-sticky ${controlClassName}`}
+          className={`absolute right-1 -translate-y-1/2 ${RAIL_CONTROL_CLASS} ${controlToneClass} flex items-center justify-center ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer active:scale-95 z-sticky ${controlClassName}`}
         >
           <ChevronRight className={RAIL_CONTROL_ICON_CLASS} />
         </button>

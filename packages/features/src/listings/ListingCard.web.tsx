@@ -52,9 +52,9 @@ function ListingMeta({ city, published }: { city: string; published: string }) {
   return (
     <span
       data-listing-card-meta="true"
-      className="flex min-w-0 items-start gap-2"
+      className="flex min-w-0 items-center gap-2"
     >
-      <span className="inline-flex min-w-0 flex-1 items-start gap-1">
+      <span className="inline-flex min-w-0 flex-1 items-center gap-1">
         <SemanticIcon
           name="map-pin"
           size="xs"
@@ -152,13 +152,13 @@ export function ListingCard({
         {(listing.photoCount ?? 0) > 1 || listing.deliveryAvailable ? (
           <div
             data-listing-card-media-meta="true"
-            className={`absolute flex min-w-0 items-end justify-between gap-2 ${showcase ? "inset-x-3 bottom-3" : "inset-x-2 bottom-2"}`}
+            className={`absolute flex min-w-0 items-end justify-between gap-2 ${showcase ? "inset-x-3 bottom-3" : "inset-x-2.5 bottom-2.5"}`}
           >
             {(listing.photoCount ?? 0) > 1 ? (
               <span
                 data-listing-card-photo-count="true"
                 aria-label={`${listing.photoCount} photos`}
-                className="inline-flex shrink-0 items-center gap-1 rounded-control bg-overlay-scrim px-2 py-1 text-micro text-text-inverse backdrop-blur-xs"
+                className="inline-flex shrink-0 items-center gap-1.5 rounded-pill bg-overlay-scrim px-2.5 py-1 text-micro font-semibold text-text-inverse shadow-sm backdrop-blur-xs"
               >
                 <SemanticIcon name="camera" size="xs" />
                 {listing.photoCount}
@@ -169,7 +169,7 @@ export function ListingCard({
                 data-listing-card-delivery-overlay="true"
                 aria-label="Livraison disponible"
                 title="Livraison disponible"
-                className="ml-auto inline-flex min-w-0 items-center gap-1 truncate rounded-control bg-overlay-scrim px-2 py-1 text-micro font-semibold text-text-inverse backdrop-blur-xs"
+                className="ml-auto inline-flex min-w-0 items-center gap-1.5 truncate rounded-pill bg-overlay-scrim px-2.5 py-1 text-micro font-semibold text-text-inverse shadow-sm backdrop-blur-xs"
               >
                 <SemanticIcon name="truck" size="xs" />
                 Livraison
@@ -185,7 +185,7 @@ export function ListingCard({
         {listing.categoryLabel || hasSellerRating ? (
           <div
             data-listing-card-category-row="true"
-            className="mb-1.5 flex min-w-0 items-center justify-between gap-2 text-micro text-text-muted"
+            className="mb-1.5 flex min-w-0 items-center justify-between gap-2 text-micro font-medium text-text-muted"
           >
             <span className="flex min-w-0 items-center gap-1.5 overflow-hidden">
               {listing.categoryLabel ? (
@@ -196,8 +196,9 @@ export function ListingCard({
             </span>
             {hasSellerRating ? (
               <span
+                data-listing-card-rating="true"
                 aria-label={`Note ${listing.seller?.rating?.toFixed(1)} sur 5, ${listing.seller?.reviewCount ?? 0} avis`}
-                className="inline-flex shrink-0 items-center gap-1 rounded-control border border-border-base bg-bg-base px-2 py-1 font-semibold text-text-secondary"
+                className="inline-flex shrink-0 items-center gap-1 rounded-pill border border-border-base bg-bg-base px-2 py-1 font-semibold text-text-secondary shadow-2xs"
               >
                 <SemanticIcon
                   name="star"
@@ -206,7 +207,7 @@ export function ListingCard({
                 />
                 {listing.seller?.rating?.toFixed(1)}
                 {(listing.seller?.reviewCount ?? 0) > 0 ? (
-                  <span className="hidden sm:inline font-normal text-text-muted">
+                  <span className="font-normal text-text-muted">
                     ({listing.seller?.reviewCount})
                   </span>
                 ) : null}
@@ -216,40 +217,48 @@ export function ListingCard({
         ) : null}
         <h3
           title={listing.title}
-          className={`line-clamp-2 text-card-title font-semibold text-text-main group-hover:text-primary ${horizontal ? "" : "min-h-control-md"}`}
+          className={`line-clamp-2 text-card-title font-bold text-text-main group-hover:text-primary ${horizontal ? "" : "min-h-control-md"}`}
         >
           {listing.title}
         </h3>
-        <div
-          data-listing-card-price="true"
-          className="mt-1 flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5"
-        >
-          <Text
-            as="span"
-            size="body-lg"
-            weight="bold"
-            className="min-w-0 break-words"
-          >
-            {price}
-          </Text>
-          {originalPrice ? (
+        <div data-listing-card-price="true" className="mt-1 min-w-0">
+          <span className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5">
+            <Text
+              as="span"
+              size="body-lg"
+              weight="bold"
+              data-listing-card-current-price="true"
+              className="min-w-0 break-words tracking-tight"
+            >
+              {price}
+            </Text>
+            {originalPrice ? (
+              <Text
+                as="span"
+                size="caption"
+                tone="muted"
+                data-listing-card-original-price="true"
+                className="line-through decoration-current"
+              >
+                {originalPrice}
+              </Text>
+            ) : null}
+          </span>
+          {listing.isNegotiable ? (
             <Text
               as="span"
               size="caption"
               tone="muted"
-              className="line-through"
+              data-listing-card-negotiable="true"
+              className="mt-0.5 block"
             >
-              {originalPrice}
-            </Text>
-          ) : null}
-          {listing.isNegotiable ? (
-            <Text as="span" size="caption" tone="muted">
               Négociable
             </Text>
           ) : null}
         </div>
         {characteristics.length ? (
           <ul
+            data-listing-card-characteristics="true"
             className={`mt-2 flex min-w-0 gap-1.5 overflow-hidden ${horizontal ? "flex-nowrap" : "flex-wrap"}`}
             aria-label="Caractéristiques principales"
           >
@@ -257,7 +266,7 @@ export function ListingCard({
               <li
                 key={`${characteristic.icon}:${characteristic.label}`}
                 data-listing-card-characteristic-icon={characteristic.icon}
-                className="inline-flex min-w-0 max-w-full items-center gap-1.5 overflow-hidden rounded-control bg-bg-muted px-2 py-1 text-micro font-medium text-text-secondary"
+                className="inline-flex min-w-0 max-w-full items-center gap-1.5 overflow-hidden rounded-pill bg-bg-muted px-2 py-1 text-micro font-medium text-text-secondary"
               >
                 <SemanticIcon
                   name={characteristic.icon}
@@ -271,7 +280,7 @@ export function ListingCard({
         ) : null}
         <div
           data-listing-card-footer="true"
-          className="mt-auto min-w-0 border-t border-border-subtle pt-2 text-micro text-text-muted sm:pt-1"
+          className="mt-auto min-w-0 border-t border-border-base pt-2 text-micro text-text-muted sm:pt-1"
         >
           {sellerName ? (
             <div className="listing-card-seller-grid grid min-w-0 items-center gap-x-2 gap-y-px">
@@ -296,7 +305,7 @@ export function ListingCard({
                   <span
                     data-listing-card-seller-name="true"
                     title={sellerName}
-                    className="min-w-0 truncate font-semibold text-text-secondary"
+                    className="min-w-0 truncate font-bold text-text-main"
                   >
                     {sellerName}
                   </span>
@@ -325,7 +334,7 @@ export function ListingCard({
     <Card
       as="article"
       padding="none"
-      elevation="xs"
+      elevation="sm"
       data-listing-card="true"
       data-listing-card-variant={variant}
       className={`group listing-card-shell surface-interactive relative overflow-hidden ${horizontal ? "listing-card-list flex" : `${showcase ? "listing-card-showcase" : "listing-card-standard"} flex h-full flex-col`} ${className ?? ""}`}
@@ -345,7 +354,7 @@ export function ListingCard({
       {badges.length || quickAction || onFavoriteToggle ? (
         <div
           data-listing-card-top-overlay="true"
-          className="pointer-events-none absolute inset-x-2 top-2 flex min-w-0 items-start justify-between gap-2"
+          className="pointer-events-none absolute inset-x-2.5 top-2.5 flex min-w-0 items-start justify-between gap-2"
         >
           {badges.length ? (
             <div
@@ -356,7 +365,7 @@ export function ListingCard({
                 <Badge
                   key={badge.tone}
                   variant={badge.tone === "featured" ? "featured" : "urgent"}
-                  className="listing-card-promotion-badge max-w-full min-w-0 text-overline"
+                  className="listing-card-promotion-badge max-w-full min-w-0 rounded-pill py-1 text-micro font-semibold shadow-sm"
                 >
                   <span className="truncate">{badge.label}</span>
                 </Badge>
@@ -378,7 +387,7 @@ export function ListingCard({
                   onClick={toggle}
                   aria-label={favoriteLabel}
                   aria-pressed={isFavorite}
-                  className="flex h-control-sm w-control-sm items-center justify-center rounded-pill bg-bg-surface/95 text-primary shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                  className="flex h-control-sm w-control-sm items-center justify-center rounded-pill border border-border-subtle bg-bg-surface/95 text-primary shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                 >
                   <SemanticIcon
                     name="heart"

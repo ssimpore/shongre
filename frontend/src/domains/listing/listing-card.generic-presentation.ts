@@ -16,6 +16,10 @@ const VALUE_LABELS: Record<string, { fr: string; en: string }> = {
   house: { fr: "Maison", en: "House" },
   permanent: { fr: "CDI", en: "Permanent" },
   fixed_term: { fr: "CDD", en: "Fixed-term" },
+  temporary: { fr: "Intérim", en: "Temporary" },
+  apprenticeship: { fr: "Alternance", en: "Apprenticeship" },
+  internship: { fr: "Stage", en: "Internship" },
+  seasonal: { fr: "Saisonnier", en: "Seasonal" },
   petrol: { fr: "Essence", en: "Petrol" },
   essence: { fr: "Essence", en: "Petrol" },
   diesel: { fr: "Diesel", en: "Diesel" },
@@ -24,6 +28,8 @@ const VALUE_LABELS: Record<string, { fr: string; en: string }> = {
   automatic: { fr: "Automatique", en: "Automatic" },
   manual: { fr: "Manuelle", en: "Manual" },
   remote: { fr: "Télétravail", en: "Remote" },
+  fully_remote: { fr: "Télétravail", en: "Remote" },
+  onsite: { fr: "Sur site", en: "On-site" },
   hybrid_work: { fr: "Hybride", en: "Hybrid" },
 };
 

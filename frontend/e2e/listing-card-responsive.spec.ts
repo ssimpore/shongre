@@ -209,6 +209,161 @@ test.describe("canonical listing cards", () => {
     ).toHaveCount(0);
   });
 
+  test("keeps the reference card hierarchy polished inside the existing footprint", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1408, height: 795 });
+    await usePersona(page, "individual_buyer");
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await waitForStableLayout(page);
+    await page.getByTestId("home-deferred-content").scrollIntoViewIfNeeded();
+
+    const card = page
+      .getByTestId("home-discovery-trending")
+      .locator('[data-listing-card="true"]', {
+        hasText: "Machine à Café Espresso avec Broyeur",
+      })
+      .first();
+    await card.scrollIntoViewIfNeeded();
+    await expect(card).toBeVisible();
+
+    const geometry = await card.evaluate((element) => {
+      const describeNode = (node: HTMLElement | null) => {
+        if (!node || node.getClientRects().length === 0) return null;
+        const rect = node.getBoundingClientRect();
+        const style = getComputedStyle(node);
+        return {
+          left: rect.left,
+          right: rect.right,
+          top: rect.top,
+          bottom: rect.bottom,
+          width: rect.width,
+          height: rect.height,
+          borderRadius: Number.parseFloat(style.borderRadius),
+          fontSize: Number.parseFloat(style.fontSize),
+          fontWeight: Number.parseInt(style.fontWeight, 10),
+        };
+      };
+      const rectFor = (selector: string) =>
+        describeNode(element.querySelector<HTMLElement>(selector));
+      const cardRect = element.getBoundingClientRect();
+      const media = rectFor('[data-listing-card-media="true"]');
+      const promotion = describeNode(
+        document.querySelector<HTMLElement>(
+          '[data-listing-card-promotion="true"] > span',
+        ),
+      );
+      const favorite = rectFor('[data-marketplace-action="favorite.manage"]');
+      const photoCount = describeNode(
+        element
+          .closest("section")
+          ?.querySelector<HTMLElement>(
+            '[data-listing-card-photo-count="true"]',
+          ) ?? null,
+      );
+      const category = rectFor(
+        '[data-listing-card-category-row="true"] > span:first-child',
+      );
+      const rating = rectFor('[data-listing-card-rating="true"]');
+      const title = rectFor("h3");
+      const currentPrice = rectFor('[data-listing-card-current-price="true"]');
+      const originalPrice = rectFor(
+        '[data-listing-card-original-price="true"]',
+      );
+      const negotiable = rectFor('[data-listing-card-negotiable="true"]');
+      const characteristics = rectFor(
+        '[data-listing-card-characteristics="true"]',
+      );
+      const characteristic = rectFor(
+        '[data-listing-card-characteristics="true"] > li:first-child',
+      );
+      const footerNode = element.querySelector<HTMLElement>(
+        '[data-listing-card-footer="true"]',
+      );
+      const footer = rectFor('[data-listing-card-footer="true"]');
+      const seller = rectFor('[data-listing-card-seller="true"]');
+      const sellerName = rectFor('[data-listing-card-seller-name="true"]');
+      const sellerMeta = rectFor('[data-listing-card-meta="true"]');
+      const footerStyle = footerNode ? getComputedStyle(footerNode) : null;
+
+      const isPill = (item: ReturnType<typeof rectFor>, tolerance = 1) =>
+        Boolean(
+          item &&
+          item.borderRadius >=
+            Math.min(item.width, item.height) / 2 - tolerance,
+        );
+
+      return {
+        card: { width: cardRect.width, height: cardRect.height },
+        overlaysStayInsideMedia: Boolean(
+          media &&
+          favorite &&
+          favorite.right <= media.right &&
+          favorite.top >= media.top &&
+          favorite.left >= media.left &&
+          favorite.bottom <= media.bottom,
+        ),
+        polishedOverlayShapes:
+          isPill(promotion) && isPill(favorite) && isPill(photoCount),
+        categoryAndRatingAligned: Boolean(
+          category &&
+          rating &&
+          Math.abs(
+            (category.top + category.bottom) / 2 -
+              (rating.top + rating.bottom) / 2,
+          ) <= 1,
+        ),
+        priceIsStrongest: Boolean(
+          currentPrice &&
+          title &&
+          currentPrice.fontSize > title.fontSize &&
+          currentPrice.fontWeight >= 700,
+        ),
+        pricesShareBaseline: Boolean(
+          currentPrice &&
+          originalPrice &&
+          Math.abs(currentPrice.bottom - originalPrice.bottom) <= 5,
+        ),
+        negotiableBelowPrice: Boolean(
+          currentPrice && negotiable && negotiable.top >= currentPrice.bottom,
+        ),
+        polishedCharacteristicShape: isPill(characteristic),
+        footerHasDivider: Boolean(
+          footerStyle &&
+          footerStyle.borderTopStyle === "solid" &&
+          Number.parseFloat(footerStyle.borderTopWidth) > 0,
+        ),
+        footerFollowsCharacteristics: Boolean(
+          footer && characteristics && footer.top >= characteristics.bottom,
+        ),
+        sellerAreaAligned: Boolean(
+          footer &&
+          seller &&
+          sellerName &&
+          sellerMeta &&
+          seller.top >= footer.top &&
+          sellerMeta.top >= seller.bottom - 1 &&
+          sellerName.fontWeight >= 700,
+        ),
+      };
+    });
+
+    expect(geometry.card.width).toBeCloseTo(208, 0);
+    expect(geometry.card.height).toBeGreaterThanOrEqual(368);
+    expect(geometry.card.height).toBeLessThanOrEqual(397);
+    expect(geometry.overlaysStayInsideMedia).toBe(true);
+    expect(geometry.polishedOverlayShapes).toBe(true);
+    expect(geometry.categoryAndRatingAligned).toBe(true);
+    expect(geometry.priceIsStrongest).toBe(true);
+    expect(geometry.pricesShareBaseline).toBe(true);
+    expect(geometry.negotiableBelowPrice).toBe(true);
+    expect(geometry.polishedCharacteristicShape).toBe(true);
+    expect(geometry.footerHasDivider).toBe(true);
+    expect(geometry.footerFollowsCharacteristics).toBe(true);
+    expect(geometry.sellerAreaAligned).toBe(true);
+    await expectNoHorizontalOverflow(page, "polished homepage listing card");
+  });
+
   test("keeps long seller and location labels on one ellipsized line", async ({
     page,
   }) => {
@@ -478,13 +633,9 @@ test.describe("canonical listing cards", () => {
     await page.setViewportSize({ width: 1408, height: 701 });
     await openAsGuest(page, "/");
 
-    const recentTab = page.getByRole("tab", { name: "Annonces récentes" });
-    await recentTab.click();
-    await expect(recentTab).toHaveAttribute("aria-selected", "true");
-
-    const visibleCards = page.locator(
-      '#home-discovery-panel [data-listing-card="true"]',
-    );
+    const recentSection = page.getByTestId("home-discovery-recent_listings");
+    await recentSection.scrollIntoViewIfNeeded();
+    const visibleCards = recentSection.locator('[data-listing-card="true"]');
     await expect(visibleCards.first()).toBeVisible();
     const characteristicCounts = await visibleCards.evaluateAll((cards) =>
       cards.map(
@@ -504,7 +655,7 @@ test.describe("canonical listing cards", () => {
       employmentCard.locator(
         'ul[aria-label="Caractéristiques principales"] > li',
       ),
-    ).toHaveText(["Seasonal", "Onsite"]);
+    ).toHaveText(["Saisonnier", "Sur site"]);
 
     const propertyCard = visibleCards
       .filter({ hasText: "Appartement lumineux avec balcon" })
@@ -564,19 +715,14 @@ test.describe("canonical listing cards", () => {
     await page.goto("/", { waitUntil: "domcontentloaded" });
     await waitForStableLayout(page);
     await page.getByTestId("home-deferred-content").scrollIntoViewIfNeeded();
-    const discovery = page.getByTestId("home-discovery");
-    await expect(discovery).toBeVisible();
-
-    const tabs = discovery.locator(
-      '[role="tab"][aria-controls="home-discovery-panel"]',
-    );
-    const tabCount = await tabs.count();
-    for (let index = 0; index < tabCount; index += 1) {
-      const tab = tabs.nth(index);
-      await tab.click();
-      await expect(tab).toHaveAttribute("aria-selected", "true");
-      const visibleCharacteristics = discovery.locator(
-        "#home-discovery-panel [data-listing-card-characteristic-icon]:visible",
+    const discoverySections = page.locator("[data-home-discovery-type]");
+    await expect(discoverySections).toHaveCount(3);
+    for (let index = 0; index < 3; index += 1) {
+      const section = discoverySections.nth(index);
+      await section.scrollIntoViewIfNeeded();
+      await expect(section).toBeVisible();
+      const visibleCharacteristics = section.locator(
+        "[data-listing-card-characteristic-icon]:visible",
       );
       const characteristicCount = await visibleCharacteristics.count();
       expect(characteristicCount).toBeGreaterThan(0);
@@ -588,14 +734,14 @@ test.describe("canonical listing cards", () => {
     }
   });
 
-  test("homepage discovery fits five complete compact cards in a desktop row", async ({
+  test("homepage discovery fits five complete showcase cards in a desktop row", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 1408, height: 900 });
     await openAsGuest(page, "/");
 
     const discoveryRails = page.locator(".listing-rail-track").filter({
-      has: page.locator('[data-listing-card-variant="grid"]'),
+      has: page.locator('[data-listing-card-variant="showcase"]'),
     });
     let denseRailIndex = -1;
     await expect

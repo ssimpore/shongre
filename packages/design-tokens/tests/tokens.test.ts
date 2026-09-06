@@ -171,7 +171,9 @@ describe("canonical design tokens", () => {
   it("keeps listing cards compact through semantic shared tokens", () => {
     expect(themeSpacing["listing-card"]).toBe("13rem");
     expect(themeSpacing["environment-toolbar-height"]).toBe("3.5rem");
-    expect(radius["listing-card"]).toBe("0.875rem");
+    expect(radius["listing-card"]).toBe("0.625rem");
+    expect(radius["listing-card"]).toBe(radius.control);
+    expect(nativeRadius.listingCard).toBe(nativeRadius.control);
   });
 
   it("owns one Web application font family and caps the weight hierarchy", () => {

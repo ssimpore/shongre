@@ -843,7 +843,6 @@ export const messagesFr = {
   "home.homePage.tousLesProfessionnels": "Tous les professionnels",
   "home.trendingNow.kicker": "Ce qui bouge",
   "home.trendingNow.explorerTout": "Tout explorer",
-  "home.trendingNow.topics": "Tendances du moment",
   "home.trendingNow.topicsAnnouncement_one": "{count} tendance mise à jour",
   "home.trendingNow.topicsAnnouncement_other": "{count} tendances mises à jour",
   "home.trendingNow.voirTout": "Voir tout",
@@ -871,6 +870,16 @@ export const messagesFr = {
   "home.homeCollectionsSection.voirTout": "Voir tout",
   "home.homeCollectionsSection.explorerLaCollection":
     "Explorer la collection {name}",
+
+  // --- home.homeUniverseExplorer ---
+  "home.homeUniverseExplorer.title": "Explorez par univers",
+  "home.homeUniverseExplorer.subtitle":
+    "Trouvez rapidement ce qui vous intéresse",
+  "home.homeUniverseExplorer.seeAll": "Voir tout",
+  "home.homeUniverseExplorer.railLabel": "annonces {category}",
+  "home.homeUniverseExplorer.emptyTitle": "Aucune annonce disponible",
+  "home.homeUniverseExplorer.emptyDescription":
+    "De nouvelles annonces seront bientôt proposées dans cet univers.",
 
   // --- legal.legalPages ---
   "legal.legalPages.conditionsGeneralesDUtilisationCgu":
@@ -3154,7 +3163,6 @@ export const messagesFr = {
   "home.homePage.decouvrirLesForfaitsPro": "Découvrir les forfaits Pro",
   "home.homePage.creerMonComptePro": "Créer mon compte Pro",
   "home.homepageTrending.viewAllListings": "Voir toutes les annonces",
-  "home.discovery.tabsLabel": "Sélections d’annonces",
   "home.homepageTrending.emptyTitle": "Aucune tendance disponible",
   "home.homepageTrending.emptyDescription":
     "Ce marché ne dispose pas encore d’assez d’annonces actives pour proposer des tendances utiles.",

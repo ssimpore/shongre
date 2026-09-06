@@ -84,7 +84,7 @@ export const HomeCollectionExplorer: React.FC<HomeCollectionExplorerProps> = ({
                 "home.homeCollectionsSection.explorerLaCollection",
                 { name: collection.title },
               )}
-              className="group relative h-48 w-64 shrink-0 snap-start overflow-hidden rounded-card border border-border-base bg-bg-subtle shadow-xs motion-surface hover:-translate-y-0.5 hover:border-primary-border hover:shadow-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus lg:min-w-0 lg:flex-1"
+              className="group relative h-48 w-64 shrink-0 snap-start overflow-hidden rounded-control border border-border-base bg-bg-subtle shadow-xs motion-surface hover:-translate-y-0.5 hover:border-primary-border hover:shadow-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus lg:min-w-0 lg:flex-1"
             >
               <Image
                 src={collection.coverImageUrl}

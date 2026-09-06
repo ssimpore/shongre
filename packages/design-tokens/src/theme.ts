@@ -401,7 +401,7 @@ export const themeRadii = {
   control: "0.625rem",
   "2xl": "0.875rem",
   "3xl": "1.125rem",
-  "listing-card": "0.875rem",
+  "listing-card": "0.625rem",
   card: "1.25rem",
   overlay: "1.75rem",
   pill: "9999px",

@@ -1,58 +1,70 @@
 import { test, expect } from "@playwright/test";
-import { usePersona } from "./personas";
+import { useEstablishedConsent, usePersona } from "./personas";
 import { expectNoHorizontalOverflow, waitForStableLayout } from "./overflow";
 
 test.describe("Admin-managed homepage discovery", () => {
-  test("renders configured discovery tabs before collections", async ({
+  test("renders each configured discovery feed as its own section", async ({
     page,
   }) => {
     await usePersona(page, "guest");
     await page.goto("/", { waitUntil: "domcontentloaded" });
     await waitForStableLayout(page);
 
-    const discovery = page.getByTestId("home-discovery");
+    const recent = page.getByTestId("home-discovery-recent_listings");
+    const trending = page.getByTestId("home-discovery-trending");
+    const deals = page.getByTestId("home-discovery-deals");
+    const discoverySections = page.locator("[data-home-discovery-type]");
     const collections = page.getByTestId("home-collection-explorer");
-    await expect(discovery).toBeVisible();
-    await expect(discovery.getByRole("tab")).toHaveText([
-      "Annonces récentes",
-      "Tendances du moment",
-      "Meilleures offres",
-    ]);
 
-    const panel = discovery.getByRole("tabpanel");
-    const orderedTabs = discovery.getByRole("tab");
-    await expect(orderedTabs.nth(1)).toHaveAttribute("aria-selected", "true");
-    const trendingCount = await panel.locator("article").count();
+    await expect(discoverySections).toHaveCount(3);
+    expect(
+      await discoverySections.evaluateAll((elements) =>
+        elements.map((element) =>
+          element.getAttribute("data-home-discovery-type"),
+        ),
+      ),
+    ).toEqual(["recent_listings", "trending", "deals"]);
+    await expect(page.getByRole("tab")).toHaveCount(0);
+
+    await expect(recent).toBeVisible();
+    await expect(
+      recent.getByRole("heading", { name: "Annonces récentes" }),
+    ).toBeVisible();
+    await expect(recent.locator("article")).toHaveCount(12);
+
+    await trending.scrollIntoViewIfNeeded();
+    await expect(trending).toBeVisible();
+    await expect(
+      trending.getByRole("heading", { name: "En Tendence" }),
+    ).toBeVisible();
+    const trendingCount = await trending.locator("article").count();
     expect(trendingCount).toBeGreaterThan(0);
     expect(trendingCount).toBeLessThanOrEqual(8);
 
-    await orderedTabs.nth(1).focus();
-    await orderedTabs.nth(1).press("ArrowLeft");
-    await expect(orderedTabs.nth(0)).toBeFocused();
-    await expect(orderedTabs.nth(0)).toHaveAttribute("aria-selected", "true");
-    await orderedTabs.nth(0).press("ArrowRight");
-    await expect(orderedTabs.nth(1)).toBeFocused();
-    await expect(orderedTabs.nth(1)).toHaveAttribute("aria-selected", "true");
+    await deals.scrollIntoViewIfNeeded();
+    await expect(deals).toBeVisible();
+    await expect(
+      deals.getByRole("heading", { name: "Meilleures offres" }),
+    ).toBeVisible();
+    await expect(deals.locator("article")).toHaveCount(6);
 
-    await discovery.getByRole("tab", { name: "Meilleures offres" }).click();
-    await expect(panel.locator("article")).toHaveCount(6);
-    await discovery.getByRole("tab", { name: "Annonces récentes" }).click();
-    await expect(panel.locator("article")).toHaveCount(12);
+    for (const section of [recent, trending, deals]) {
+      await expect(
+        section.getByRole("link", { name: "Voir tout" }),
+      ).toBeVisible();
+    }
 
     await expect(collections).toBeVisible();
     await expect(
       collections.getByRole("link", { name: /^Explorer la collection / }),
     ).toHaveCount(5);
     await expect(
-      discovery.getByRole("link", { name: "Voir tout" }),
-    ).toBeVisible();
-    await expect(
       collections.getByRole("link", {
         name: "Voir toutes les collections",
       }),
     ).toBeVisible();
 
-    const collectionsFollowDiscovery = await discovery.evaluate(
+    const collectionsFollowDiscovery = await deals.evaluate(
       (discoverySection, collectionsSection) =>
         Boolean(
           collectionsSection &&
@@ -63,6 +75,98 @@ test.describe("Admin-managed homepage discovery", () => {
     );
 
     expect(collectionsFollowDiscovery).toBe(true);
+  });
+
+  test("keeps every homepage discovery listing on one shared card footprint", async ({
+    page,
+  }) => {
+    await useEstablishedConsent(page);
+    await usePersona(page, "guest");
+
+    for (const viewport of [
+      { width: 1408, height: 900 },
+      { width: 390, height: 844 },
+    ]) {
+      await page.setViewportSize(viewport);
+      await page.goto("/", { waitUntil: "domcontentloaded" });
+      await waitForStableLayout(page);
+
+      const sections = page.locator("[data-home-discovery-type]");
+      await expect(sections).toHaveCount(3);
+
+      const cardGeometry: Array<{
+        height: number;
+        contained: boolean;
+        characteristicsHeight: number | null;
+        characteristicsContained: boolean;
+      }> = [];
+
+      for (let sectionIndex = 0; sectionIndex < 3; sectionIndex += 1) {
+        const section = sections.nth(sectionIndex);
+        await section.scrollIntoViewIfNeeded();
+        const cards = section.locator('[data-listing-card="true"]');
+        await expect(cards.first()).toBeVisible();
+        expect(
+          await cards.evaluateAll((elements) =>
+            elements.every(
+              (element) =>
+                element.getAttribute("data-listing-card-variant") ===
+                "showcase",
+            ),
+          ),
+        ).toBe(true);
+        cardGeometry.push(
+          ...(await cards.evaluateAll((elements) =>
+            elements.map((element) => {
+              const link = element.querySelector<HTMLElement>(":scope > a");
+              const characteristics = element.querySelector<HTMLElement>(
+                '[data-listing-card-characteristics="true"]',
+              );
+              const characteristicLabels = Array.from(
+                element.querySelectorAll<HTMLElement>(
+                  "[data-listing-card-characteristic-icon] > span",
+                ),
+              );
+              return {
+                height: element.getBoundingClientRect().height,
+                contained: Boolean(
+                  link &&
+                  element.scrollHeight <= element.clientHeight + 1 &&
+                  link.scrollHeight <= link.clientHeight + 1,
+                ),
+                characteristicsHeight:
+                  characteristics?.getBoundingClientRect().height ?? null,
+                characteristicsContained: characteristicLabels.every(
+                  (label) => label.scrollWidth <= label.clientWidth + 1,
+                ),
+              };
+            }),
+          )),
+        );
+      }
+
+      expect(cardGeometry.length).toBeGreaterThan(3);
+      expect(cardGeometry.every(({ contained }) => contained)).toBe(true);
+      expect(
+        cardGeometry.every(
+          ({ characteristicsContained }) => characteristicsContained,
+        ),
+      ).toBe(true);
+      expect(
+        cardGeometry.every(
+          ({ characteristicsHeight }) =>
+            characteristicsHeight === null || characteristicsHeight <= 25,
+        ),
+      ).toBe(true);
+      expect(
+        Math.max(...cardGeometry.map(({ height }) => height)) -
+          Math.min(...cardGeometry.map(({ height }) => height)),
+      ).toBeLessThanOrEqual(1);
+      await expectNoHorizontalOverflow(
+        page,
+        `homepage discovery cards at ${viewport.width}px`,
+      );
+    }
   });
 
   test("opens a collection from the homepage discovery rail", async ({

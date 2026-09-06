@@ -665,11 +665,14 @@
   overflow: hidden;
 }
 
-/* Homepage discovery uses the same card anatomy at a slightly wider editorial
-   width. It is intentionally compact enough for the whole card to be visible
-   in an ordinary viewport. */
+/* Homepage discovery uses one fixed editorial footprint across its independent
+   rails. The denser vertical rhythm and single characteristic row keep long
+   employment copy contained without letting one distant card stretch a whole
+   section. */
 .listing-card-showcase {
+  height: var(--spacing-listing-card-showcase-height);
   min-height: var(--spacing-listing-card-showcase-height);
+  max-height: var(--spacing-listing-card-showcase-height);
 }
 
 .listing-card-showcase-skeleton {
@@ -685,6 +688,14 @@
   min-height: 0;
 }
 
+.listing-card-showcase [data-listing-card-content="true"] {
+  padding-block: calc(var(--spacing-base) * 2);
+}
+
+.listing-card-showcase [data-listing-card-characteristic-icon] {
+  padding-inline: calc(var(--spacing-base) * 1.5);
+}
+
 .listing-card-showcase-skeleton > :first-child {
   aspect-ratio: var(--aspect-media);
 }
@@ -694,7 +705,7 @@
 }
 
 .listing-card-promotion-badge {
-  padding-inline: var(--spacing-base);
+  padding-inline: calc(var(--spacing-base) * 2);
   letter-spacing: normal;
 }
 

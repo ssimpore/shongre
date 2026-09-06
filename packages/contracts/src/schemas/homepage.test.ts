@@ -24,7 +24,10 @@ describe("homepage configuration contract", () => {
     ]);
     expect(
       configuration.sections.find((item) => item.key === "trending"),
-    ).toMatchObject({ maxItems: 4 });
+    ).toMatchObject({
+      maxItems: 4,
+      titleByLocale: { "fr-FR": "En Tendence" },
+    });
     expect(
       configuration.sections.find((item) => item.key === "deals"),
     ).toMatchObject({ maxItems: 6 });

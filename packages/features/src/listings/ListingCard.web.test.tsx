@@ -73,7 +73,10 @@ describe("canonical web listing card", () => {
     expect(html).toContain('data-listing-card-footer="true"');
     expect(html).toContain('data-listing-card-content="true"');
     expect(html).toContain('data-listing-card-category-row="true"');
+    expect(html).not.toContain('data-listing-card-rating="true"');
     expect(html).toContain('data-listing-card-price="true"');
+    expect(html).toContain('data-listing-card-current-price="true"');
+    expect(html).toContain('data-listing-card-characteristics="true"');
     expect(html).toContain('data-listing-card-seller="true"');
     expect(html).toContain('data-listing-card-seller-avatar="true"');
     expect(html).toContain('data-listing-card-meta="true"');
@@ -98,12 +101,43 @@ describe("canonical web listing card", () => {
     expect(html).toContain('data-listing-card-seller-name="true"');
     expect(html).toContain('data-listing-card-location="true"');
     expect(html).toContain("inline-flex min-w-0 max-w-full items-center gap-1");
-    expect(html).toContain(
-      "min-w-0 truncate font-semibold text-text-secondary",
-    );
+    expect(html).toContain("min-w-0 truncate font-bold text-text-main");
     expect(html).toContain("min-w-0 flex-1 truncate");
     expect(html).not.toContain("absolute left-0 top-2 hidden sm:block");
-    expect(html).toContain("min-w-0 break-words");
+    expect(html).toContain("min-w-0 break-words tracking-tight");
+  });
+
+  it("groups price hierarchy and rating metadata without changing the card content", () => {
+    const html = renderToStaticMarkup(
+      <ListingCard
+        listing={{
+          ...baseListing,
+          originalPrice: { amountMinor: 149_000, currency: "EUR" },
+          isNegotiable: true,
+          seller: {
+            ...baseListing.seller!,
+            rating: 4.9,
+            reviewCount: 14,
+          },
+        }}
+        href="/annonce/listing-card-test"
+        locale="fr-FR"
+        identityLabels={identityLabels}
+      />,
+    );
+
+    expect(html).toContain('data-listing-card-rating="true"');
+    expect(html).toContain('data-listing-card-current-price="true"');
+    expect(html).toContain('data-listing-card-original-price="true"');
+    expect(html).toContain('data-listing-card-negotiable="true"');
+    expect(html).toContain("(14)");
+    expect(html).not.toContain("hidden sm:inline font-normal text-text-muted");
+    expect(html.indexOf('data-listing-card-current-price="true"')).toBeLessThan(
+      html.indexOf('data-listing-card-original-price="true"'),
+    );
+    expect(
+      html.indexOf('data-listing-card-original-price="true"'),
+    ).toBeLessThan(html.indexOf('data-listing-card-negotiable="true"'));
   });
 
   it("uses the canonical verification icon only for verified individual sellers", () => {

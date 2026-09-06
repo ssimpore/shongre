@@ -198,6 +198,7 @@ export const HomePage: React.FC = () => {
         >
           <HomeBelowFold
             sections={visibleExperience.sections}
+            marketCode={activeMarket.code}
             onRetry={() => setAttempt((current) => current + 1)}
           />
         </Suspense>

@@ -759,7 +759,6 @@ export const messagesEn: MessageCatalogue = {
   "home.homePage.tousLesProfessionnels": "All professionals",
   "home.trendingNow.kicker": "What's moving",
   "home.trendingNow.explorerTout": "Explore all",
-  "home.trendingNow.topics": "Trending topics",
   "home.trendingNow.topicsAnnouncement_one": "{count} trend updated",
   "home.trendingNow.topicsAnnouncement_other": "{count} trends updated",
   "home.trendingNow.voirTout": "See all",
@@ -781,6 +780,15 @@ export const messagesEn: MessageCatalogue = {
   "home.homeCollectionsSection.voirTout": "See all",
   "home.homeCollectionsSection.explorerLaCollection":
     "Explore the {name} collection",
+
+  // --- home.homeUniverseExplorer ---
+  "home.homeUniverseExplorer.title": "Explore by universe",
+  "home.homeUniverseExplorer.subtitle": "Quickly find what interests you",
+  "home.homeUniverseExplorer.seeAll": "View all",
+  "home.homeUniverseExplorer.railLabel": "{category} listings",
+  "home.homeUniverseExplorer.emptyTitle": "No listings available",
+  "home.homeUniverseExplorer.emptyDescription":
+    "New listings will be added to this universe soon.",
   "legal.legalPages.conditionsGeneralesDUtilisationCgu": "Terms of Use",
   "legal.legalPages.derniereMiseAJourFevrier": "Last updated: February 2026",
   "legal.legalPages.1ObjetDeLaPlateforme": "1. Purpose of the platform",
@@ -2658,7 +2666,6 @@ export const messagesEn: MessageCatalogue = {
   "home.homePage.decouvrirLesForfaitsPro": "Explore the Pro plans",
   "home.homePage.creerMonComptePro": "Create my Pro account",
   "home.homepageTrending.viewAllListings": "View all listings",
-  "home.discovery.tabsLabel": "Listing selections",
   "home.homepageTrending.emptyTitle": "No trends available",
   "home.homepageTrending.emptyDescription":
     "This market does not yet have enough active listings to provide useful trends.",

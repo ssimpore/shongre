@@ -66,4 +66,40 @@ describe("generic listing card presentation", () => {
       { icon: "tag", label: "Artisan" },
     ]);
   });
+
+  it("localizes canonical employment values into compact card labels", () => {
+    const characteristics = (
+      contractType: string,
+      remoteWork: string,
+      locale: string,
+    ) =>
+      getGenericListingCardCharacteristics(
+        {
+          categorySlug: "jobs",
+          subCategorySlug: "jobs.offers",
+          attributes: {
+            contract_type: contractType,
+            remote_work: remoteWork,
+          },
+        },
+        locale,
+      );
+
+    expect(characteristics("apprenticeship", "onsite", "fr-FR")).toEqual([
+      "Alternance",
+      "Sur site",
+    ]);
+    expect(characteristics("seasonal", "fully_remote", "fr-FR")).toEqual([
+      "Saisonnier",
+      "Télétravail",
+    ]);
+    expect(characteristics("temporary", "hybrid", "fr-FR")).toEqual([
+      "Intérim",
+      "Hybride",
+    ]);
+    expect(characteristics("internship", "onsite", "en-GB")).toEqual([
+      "Internship",
+      "On-site",
+    ]);
+  });
 });
