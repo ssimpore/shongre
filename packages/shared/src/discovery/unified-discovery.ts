@@ -446,9 +446,18 @@ function promotionIsActive(document: DiscoveryDocument, now: Date): boolean {
   const promotion = document.promotion;
   if (!promotion?.type || promotion.state !== "active") return false;
   if (!SEARCH_PLACEMENTS.has(promotion.type)) return false;
-  if (promotion.startsAt && new Date(promotion.startsAt) > now) return false;
-  if (promotion.endsAt && new Date(promotion.endsAt) <= now) return false;
-  return Boolean(promotion.sourceId && promotion.source);
+  const startsAt = Date.parse(promotion.startsAt ?? "");
+  const endsAt = Date.parse(promotion.endsAt ?? "");
+  const nowTime = now.getTime();
+  return Boolean(
+    promotion.sourceId?.trim() &&
+    promotion.source &&
+    Number.isFinite(startsAt) &&
+    Number.isFinite(endsAt) &&
+    startsAt < endsAt &&
+    startsAt <= nowTime &&
+    endsAt > nowTime,
+  );
 }
 
 function sponsoredRelevance(item: DiscoveryRankedItem): number {

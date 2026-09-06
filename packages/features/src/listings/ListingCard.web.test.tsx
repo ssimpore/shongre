@@ -1,33 +1,49 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import type { ListingCardView } from "@shongre/contracts";
-import { ListingCard } from "./ListingCard.web";
+import { ListingCard, type ListingCardLabels } from "./ListingCard.web";
 
 const baseListing: ListingCardView = {
   id: "listing-card-test",
-  title:
-    "Appartement meublé avec un titre volontairement très long proche de Jean Macé",
-  price: { amountMinor: 129_000, currency: "EUR" },
+  title: "Canapé trois places avec un titre volontairement très long",
+  price: { amountMinor: 25_000, currency: "EUR" },
+  priceKind: "amount",
   imageUrl: "https://example.test/listing.jpg",
-  city: "Lyon 7e · Jean Macé avec une localisation longue",
+  city: "Lyon 3e",
   marketCode: "FR",
-  categoryLabel: "Immobilier",
+  categoryLabel: "Maison",
+  brandLabel: "IKEA",
   conditionLabel: "Bon état",
-  characteristics: ["Appartement", "68 m²", "3 pièces", "Balcon", "Bon état"],
-  characteristicIcons: ["home", "ruler", "layout-grid", "tag", "tag"],
-  publishedAt: "2026-08-24T12:00:00.000Z",
-  photoCount: 4,
-  deliveryAvailable: true,
+  characteristics: ["Velours", "Trois places"],
+  publishedAt: "2026-09-02T12:00:00.000Z",
   seller: {
     id: "agency",
-    name: "Agence Canopée avec un nom très long",
+    name: "Agence Canopée",
     sellerType: "pro",
-    avatarUrl: "https://example.test/seller-avatar.jpg",
-    isIdentityVerified: true,
+    isIdentityVerified: false,
     isBusinessVerified: true,
+    rating: 4.8,
+    reviewCount: 32,
   },
   isUrgent: false,
   isFeatured: true,
+  promotion: {
+    state: "active",
+    type: "featured",
+    marketCode: "FR",
+    source: "purchase",
+    sourceId: "listing-card-test-promotion",
+    startsAt: "2020-01-01T00:00:00.000Z",
+    endsAt: "2100-01-01T00:00:00.000Z",
+  },
+};
+
+const labels: ListingCardLabels = {
+  boosted: "Boosté",
+  free: "Gratuit",
+  onRequest: "Prix sur demande",
+  imageUnavailable: "Image indisponible",
+  rating: (rating, count) => `Note ${rating} sur 5, ${count} avis`,
 };
 
 const identityLabels = {
@@ -36,193 +52,267 @@ const identityLabels = {
   verified: "Profil vérifié",
 };
 
+function renderCard(listing: ListingCardView = baseListing) {
+  return renderToStaticMarkup(
+    <ListingCard
+      listing={listing}
+      href="/annonce/listing-card-test"
+      locale="fr-FR"
+      labels={labels}
+      identityLabels={identityLabels}
+      favoriteAction={<button type="button" aria-label="Retirer des favoris" />}
+    />,
+  );
+}
+
 describe("canonical web listing card", () => {
-  it("keeps long essential content in one accessible shared anatomy", () => {
+  it("renders the compact shared anatomy in the specified order", () => {
+    const dateNow = vi
+      .spyOn(Date, "now")
+      .mockReturnValue(new Date("2026-09-02T14:00:00.000Z").getTime());
+    const html = renderCard();
+    dateNow.mockRestore();
+
+    const category = html.indexOf('data-listing-card-category-row="true"');
+    const price = html.indexOf('data-listing-card-price-row="true"');
+    const title = html.indexOf('data-listing-card-title="true"');
+    const meta = html.indexOf('data-listing-card-meta="true"');
+
+    expect(category).toBeGreaterThan(-1);
+    expect(category).toBeLessThan(price);
+    expect(price).toBeLessThan(title);
+    expect(title).toBeLessThan(meta);
+    expect(html).toContain("Maison");
+    expect(html).toContain("IKEA");
+    expect(html).toContain("250 €");
+    expect(html).toContain(">Pro<");
+    expect(html).toContain("4,8");
+    expect(html).toContain("(32)");
+    expect(html).toContain("Lyon 3e");
+    expect(html).toContain("il y a 2 h");
+    expect(html).toMatch(/aria-label="[^"]*il y a 2 h/);
+    expect(html).toContain("Boosté");
+    expect(html).toContain("lucide-zap");
+    expect(html).toContain("lucide-star");
+    expect(html).toContain("fill-primary text-primary");
+    expect(html).toContain('aria-label="Retirer des favoris"');
+    expect(html).toContain("listing-card-media");
+    expect(html).toContain("focus-within:ring-inset");
+  });
+
+  it("omits every old secondary zone and never exposes seller identity copy", () => {
+    const html = renderCard();
+
+    expect(html).not.toContain("Agence Canopée");
+    expect(html).not.toContain('data-listing-card-characteristics="true"');
+    expect(html).not.toContain('data-listing-card-photo-count="true"');
+    expect(html).not.toContain('data-listing-card-delivery-overlay="true"');
+    expect(html).not.toContain('data-listing-card-seller-avatar="true"');
+    expect(html).not.toContain('data-listing-card-original-price="true"');
+    expect(html).not.toContain('data-listing-card-negotiable="true"');
+  });
+
+  it("shows a brand separator only when a real brand exists", () => {
+    const withBrand = renderCard();
+    const withoutBrand = renderCard({ ...baseListing, brandLabel: undefined });
+
+    expect(withBrand).toMatch(/Maison[\s\S]*?·[\s\S]*?IKEA/);
+    expect(withoutBrand).not.toMatch(/Maison[\s\S]*?·[\s\S]*?IKEA/);
+    expect(withoutBrand).not.toContain("IKEA");
+  });
+
+  it("localizes a real rating independently from professional status", () => {
+    const html = renderCard({
+      ...baseListing,
+      seller: {
+        id: "individual",
+        name: "Camille",
+        sellerType: "individual",
+        isIdentityVerified: false,
+        isBusinessVerified: false,
+        rating: 4.86,
+        reviewCount: 1_234,
+      },
+    });
+
+    expect(html).not.toContain('data-ui-pro-badge="true"');
+    expect(html).toContain('data-listing-card-rating="true"');
+    expect(html).toContain("4,9");
+    expect(html).toContain("1 234");
+    expect(html.match(/lucide-star/g)).toHaveLength(1);
+  });
+
+  it("compacts a long visual review count while retaining its accessible value", () => {
+    const html = renderCard({
+      ...baseListing,
+      seller: {
+        ...baseListing.seller!,
+        reviewCount: 12_345_678,
+      },
+    });
+
+    expect(html).toContain('aria-label="Note 4,8 sur 5, 12 345 678 avis"');
+    expect(html).toContain("(12,3 M)");
+    expect(html).toContain("min-w-0 shrink items-center");
+  });
+
+  it("shows Pro from the authoritative publisher plane without a public seller profile", () => {
+    const html = renderCard({
+      ...baseListing,
+      publisherType: "professional",
+      seller: undefined,
+    });
+
+    expect(html).toContain('data-ui-pro-badge="true"');
+    expect(html).not.toContain('data-listing-card-rating="true"');
+  });
+
+  it("hides rating when the seller has no reviews without inventing a score", () => {
+    const html = renderCard({
+      ...baseListing,
+      seller: {
+        ...baseListing.seller!,
+        rating: 5,
+        reviewCount: 0,
+      },
+    });
+
+    expect(html).toContain('data-ui-pro-badge="true"');
+    expect(html).not.toContain('data-listing-card-rating="true"');
+    expect(html).not.toContain("5,0");
+  });
+
+  it("shows a real zero rating when reviews exist", () => {
+    const html = renderCard({
+      ...baseListing,
+      seller: {
+        ...baseListing.seller!,
+        rating: 0,
+        reviewCount: 2,
+      },
+    });
+
+    expect(html).toContain('data-listing-card-rating="true"');
+    expect(html).toContain("0,0");
+    expect(html).toContain("(2)");
+  });
+
+  it.each([
+    ["free", "Gratuit"],
+    ["on_request", "Prix sur demande"],
+    ["amount", "250 €"],
+  ] as const)("renders the %s price state", (priceKind, expected) => {
+    expect(
+      renderCard({
+        ...baseListing,
+        priceKind,
+        price: priceKind === "amount" ? baseListing.price : undefined,
+      }),
+    ).toContain(expected);
+  });
+
+  it("renders no price for a genuinely unpriced category", () => {
+    const html = renderCard({
+      ...baseListing,
+      priceKind: "unpriced",
+      price: undefined,
+    });
+    expect(html).toContain('data-listing-card-price-row="true"');
+    expect(html).not.toContain('data-listing-card-current-price="true"');
+    expect(html).not.toContain("0 €");
+  });
+
+  it("preserves a real category-specific label when an amount is undisclosed", () => {
+    const html = renderCard({
+      ...baseListing,
+      priceKind: "unpriced",
+      price: undefined,
+      priceLabel: "Rémunération non communiquée",
+    });
+
+    expect(html).toContain('data-listing-card-current-price="true"');
+    expect(html).toContain("Rémunération non communiquée");
+    expect(html).not.toContain("0 €");
+  });
+
+  it("uses a neutral reserved fallback when the listing has no image", () => {
+    const html = renderCard({ ...baseListing, imageUrl: undefined });
+    expect(html).toContain('aria-label="Image indisponible"');
+    expect(html).toContain("lucide-image-off");
+  });
+
+  it("omits publication metadata when no real publication date exists", () => {
+    const { publishedAt: _publishedAt, ...withoutPublishedAt } = baseListing;
+    const html = renderCard(withoutPublishedAt);
+
+    expect(html).toContain("Lyon 3e");
+    expect(html).not.toContain("il y a");
+    expect(html).not.toContain("Invalid");
+  });
+
+  it("keeps list mode on the same content primitive", () => {
     const html = renderToStaticMarkup(
       <ListingCard
         listing={baseListing}
         href="/annonce/listing-card-test"
-        locale="fr-FR"
-        isFavorite
-        favoriteLabel="Retirer des favoris"
-        onFavoriteToggle={vi.fn()}
-        identityLabels={identityLabels}
-      />,
-    );
-
-    expect(html).toContain('data-listing-card="true"');
-    expect(html).toContain('data-listing-card-variant="grid"');
-    expect(html).toContain("listing-card-shell");
-    expect(html).toContain("line-clamp-2");
-    expect(html).toContain("min-h-control-md");
-    expect(html).toContain("Sponsorisé");
-    expect(html).not.toContain("À la une");
-    expect(html).toContain("Appartement");
-    expect(html).toContain("68 m²");
-    expect(html).toContain('data-listing-card-characteristic-icon="home"');
-    expect(html).toContain('data-listing-card-characteristic-icon="ruler"');
-    expect(html).toContain("lucide-house");
-    expect(html).toContain("lucide-ruler");
-    expect(html).not.toContain("3 pièces");
-    expect(html).not.toContain(">Bon état<");
-    expect(html).not.toContain("Balcon");
-    expect(html).toContain('aria-label="Retirer des favoris"');
-    expect(html).toContain('aria-pressed="true"');
-    expect(html).toContain("focus-visible:outline-2");
-    expect(html).toContain("Agence Canopée avec un nom très long");
-    expect(html).toContain('data-listing-card-footer="true"');
-    expect(html).toContain('data-listing-card-content="true"');
-    expect(html).toContain('data-listing-card-category-row="true"');
-    expect(html).not.toContain('data-listing-card-rating="true"');
-    expect(html).toContain('data-listing-card-price="true"');
-    expect(html).toContain('data-listing-card-current-price="true"');
-    expect(html).toContain('data-listing-card-characteristics="true"');
-    expect(html).toContain('data-listing-card-seller="true"');
-    expect(html).toContain('data-listing-card-seller-avatar="true"');
-    expect(html).toContain('data-listing-card-meta="true"');
-    expect(html).not.toContain('data-ui-verified-icon="true"');
-    expect(html).toContain('data-ui-pro-badge="true"');
-    expect(html).toContain(">Pro<");
-    expect(html).toContain('data-listing-card-top-overlay="true"');
-    expect(html).toContain('data-listing-card-promotion="true"');
-    expect(html).toContain('data-listing-card-actions="true"');
-    expect(html).toContain('data-listing-card-media-meta="true"');
-    expect(html).toContain('data-listing-card-photo-count="true"');
-    expect(html).toContain('data-listing-card-delivery-overlay="true"');
-    expect(html).toContain('src="https://example.test/seller-avatar.jpg"');
-    expect(html).toContain('title="Agence Canopée avec un nom très long"');
-    expect(html.indexOf('data-listing-card-seller="true"')).toBeGreaterThan(
-      html.indexOf("Caractéristiques principales"),
-    );
-    expect(
-      html.indexOf('data-listing-card-delivery-overlay="true"'),
-    ).toBeLessThan(html.indexOf('data-listing-card-footer="true"'));
-    expect(html).toContain("listing-card-seller-grid");
-    expect(html).toContain('data-listing-card-seller-name="true"');
-    expect(html).toContain('data-listing-card-location="true"');
-    expect(html).toContain("inline-flex min-w-0 max-w-full items-center gap-1");
-    expect(html).toContain("min-w-0 truncate font-bold text-text-main");
-    expect(html).toContain("min-w-0 flex-1 truncate");
-    expect(html).not.toContain("absolute left-0 top-2 hidden sm:block");
-    expect(html).toContain("min-w-0 break-words tracking-tight");
-  });
-
-  it("groups price hierarchy and rating metadata without changing the card content", () => {
-    const html = renderToStaticMarkup(
-      <ListingCard
-        listing={{
-          ...baseListing,
-          originalPrice: { amountMinor: 149_000, currency: "EUR" },
-          isNegotiable: true,
-          seller: {
-            ...baseListing.seller!,
-            rating: 4.9,
-            reviewCount: 14,
-          },
-        }}
-        href="/annonce/listing-card-test"
-        locale="fr-FR"
-        identityLabels={identityLabels}
-      />,
-    );
-
-    expect(html).toContain('data-listing-card-rating="true"');
-    expect(html).toContain('data-listing-card-current-price="true"');
-    expect(html).toContain('data-listing-card-original-price="true"');
-    expect(html).toContain('data-listing-card-negotiable="true"');
-    expect(html).toContain("(14)");
-    expect(html).not.toContain("hidden sm:inline font-normal text-text-muted");
-    expect(html.indexOf('data-listing-card-current-price="true"')).toBeLessThan(
-      html.indexOf('data-listing-card-original-price="true"'),
-    );
-    expect(
-      html.indexOf('data-listing-card-original-price="true"'),
-    ).toBeLessThan(html.indexOf('data-listing-card-negotiable="true"'));
-  });
-
-  it("uses the canonical verification icon only for verified individual sellers", () => {
-    const html = renderToStaticMarkup(
-      <ListingCard
-        listing={{
-          ...baseListing,
-          seller: {
-            ...baseListing.seller!,
-            sellerType: "individual",
-            isBusinessVerified: false,
-          },
-        }}
-        href="/annonce/listing-card-test"
-        identityLabels={identityLabels}
-      />,
-    );
-
-    expect(html).toContain('data-ui-verified-icon="true"');
-    expect(html).toContain("lucide-badge-check");
-    expect(html).toContain("text-text-inverse h-icon-sm w-icon-sm");
-    expect(html).toContain("h-full w-full fill-success");
-    expect(html).not.toContain(">Pro<");
-  });
-
-  it("uses category price labels and collapses absent optional rows", () => {
-    const html = renderToStaticMarkup(
-      <ListingCard
-        listing={{
-          ...baseListing,
-          priceLabel: "1 290 € / mois",
-          conditionLabel: "",
-          characteristics: [],
-          seller: undefined,
-          categoryLabel: undefined,
-          photoCount: 0,
-          isFeatured: false,
-        }}
-        href="/annonce/listing-card-test"
-        locale="fr-FR"
-        identityLabels={identityLabels}
-      />,
-    );
-
-    expect(html).toContain("1 290 € / mois");
-    expect(html).not.toContain("Caractéristiques principales");
-    expect(html).not.toContain("photos");
-    expect(html).not.toContain("aria-pressed");
-  });
-
-  it("uses a compact publication age without relative direction copy", () => {
-    const dateNow = vi
-      .spyOn(Date, "now")
-      .mockReturnValue(new Date("2026-09-02T10:00:00.000Z").getTime());
-    const html = renderToStaticMarkup(
-      <ListingCard
-        listing={{
-          ...baseListing,
-          publishedAt: "2026-08-12T10:00:00.000Z",
-        }}
-        href="/annonce/listing-card-test"
-        locale="fr-FR"
-        identityLabels={identityLabels}
-      />,
-    );
-    dateNow.mockRestore();
-
-    expect(html).toContain("3 sem.");
-    expect(html).not.toContain("il y a");
-  });
-
-  it("limits horizontal result cards to two decision attributes", () => {
-    const html = renderToStaticMarkup(
-      <ListingCard
-        listing={{ ...baseListing, isFeatured: false }}
-        href="/annonce/listing-card-test"
         variant="list"
+        labels={labels}
         identityLabels={identityLabels}
       />,
     );
-
     expect(html).toContain('data-listing-card-variant="list"');
     expect(html).toContain("listing-card-list-link");
-    expect(html).toContain("Appartement");
-    expect(html).toContain("68 m²");
-    expect(html).not.toContain("3 pièces");
+    expect(html).toContain("listing-card-list-overlay");
+    expect(html).toContain('data-listing-card-price-row="true"');
+  });
+
+  it("adds real decision fields and seller identity only in hero mode", () => {
+    const html = renderToStaticMarkup(
+      <ListingCard
+        listing={{
+          ...baseListing,
+          characteristicIcons: ["layers", "layout-grid"],
+          seller: {
+            ...baseListing.seller!,
+            responseTimeLabel: "Répond généralement sous 2 h",
+          },
+        }}
+        href="/annonce/listing-card-test"
+        variant="hero"
+        labels={labels}
+        identityLabels={identityLabels}
+      />,
+    );
+
+    expect(html).toContain('data-listing-card-variant="hero"');
+    expect(html).toContain('data-listing-card-characteristics="true"');
+    expect(html).toContain("Velours");
+    expect(html).toContain("Trois places");
+    expect(html).toContain('data-listing-card-seller-identity="true"');
+    expect(html).toContain('data-listing-card-seller-avatar="true"');
+    expect(html).toContain("Agence Canopée");
+    expect(html).toContain("Répond généralement sous 2 h");
+    expect(html).toContain("Profil vérifié");
+  });
+
+  it("renders a static preview without navigation or favorite mutation", () => {
+    const html = renderToStaticMarkup(
+      <ListingCard
+        listing={baseListing}
+        href="/annonce/preview"
+        interactive={false}
+        labels={labels}
+        identityLabels={identityLabels}
+        favoriteAction={
+          <button type="button" aria-label="Ajouter aux favoris" />
+        }
+      />,
+    );
+
+    expect(html).not.toContain("<a ");
+    expect(html).not.toContain("Ajouter aux favoris");
+    expect(html).not.toContain('data-listing-card-actions="true"');
+    expect(html).toContain('role="group"');
+    expect(html).toContain(baseListing.title);
   });
 });

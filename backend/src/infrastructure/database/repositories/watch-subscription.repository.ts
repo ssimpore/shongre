@@ -2,8 +2,8 @@ import type {
   CreateWatchSubscriptionInput,
   UpdateWatchSubscriptionInput,
   WatchSubscription,
-  WatchSearchFilter,
 } from "@shongre/contracts/watch-subscriptions";
+import { watchSubscriptionSchema } from "@shongre/contracts/watch-subscriptions";
 import type { Database } from "../../../generated/database.types.js";
 import { getSupabaseAdminClient } from "../../supabase/supabase-client.js";
 import { databaseFailure } from "./repository-error.js";
@@ -71,35 +71,40 @@ export interface IWatchSubscriptionRepository {
   markNotified(subscriptionId: string, occurredAt: string): Promise<void>;
 }
 
-const mapSubscription = (row: SubscriptionRow): OwnedWatchSubscription => ({
-  id: row.id,
-  userId: row.user_id,
-  marketCode: row.market_code,
-  targetType: row.target_type,
-  targetId: row.target_key,
-  title: row.title,
-  frequency: row.frequency,
-  channels: {
-    inApp: row.in_app_enabled,
-    email: row.email_enabled,
-    push: row.push_enabled,
-  },
-  status: row.status,
-  ...(Object.keys((row.search_filter || {}) as object).length
-    ? { searchFilter: row.search_filter as WatchSearchFilter }
-    : {}),
-  ...(row.baseline_price_minor !== null && row.currency
-    ? {
-        baselinePrice: {
-          amountMinor: row.baseline_price_minor,
-          currency: row.currency,
-        },
-      }
-    : {}),
-  ...(row.last_notified_at ? { lastNotifiedAt: row.last_notified_at } : {}),
-  createdAt: row.created_at,
-  updatedAt: row.updated_at,
-});
+const mapSubscription = (row: SubscriptionRow): OwnedWatchSubscription => {
+  const hasSearchFilter =
+    row.search_filter !== null &&
+    typeof row.search_filter === "object" &&
+    !Array.isArray(row.search_filter) &&
+    Object.keys(row.search_filter).length > 0;
+  const subscription = watchSubscriptionSchema.parse({
+    id: row.id,
+    marketCode: row.market_code,
+    targetType: row.target_type,
+    targetId: row.target_key,
+    title: row.title,
+    frequency: row.frequency,
+    channels: {
+      inApp: row.in_app_enabled,
+      email: row.email_enabled,
+      push: row.push_enabled,
+    },
+    status: row.status,
+    ...(hasSearchFilter ? { searchFilter: row.search_filter } : {}),
+    ...(row.baseline_price_minor !== null && row.currency
+      ? {
+          baselinePrice: {
+            amountMinor: row.baseline_price_minor,
+            currency: row.currency,
+          },
+        }
+      : {}),
+    ...(row.last_notified_at ? { lastNotifiedAt: row.last_notified_at } : {}),
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  });
+  return { ...subscription, userId: row.user_id };
+};
 
 const withoutOwner = ({
   userId: _userId,
@@ -375,8 +380,8 @@ export class PostgresWatchSubscriptionRepository implements IWatchSubscriptionRe
       p_event_id: input.eventId,
       p_worker_id: input.workerId,
       p_success: input.success,
-      p_error_code: input.errorCode || null,
-      p_retry_at: input.retryAt || null,
+      p_error_code: input.errorCode,
+      p_retry_at: input.retryAt,
     });
     if (error) databaseFailure("watchSubscriptions.completeEvent", error);
   }
@@ -435,8 +440,8 @@ export class PostgresWatchSubscriptionRepository implements IWatchSubscriptionRe
       p_match_id: input.matchId,
       p_worker_id: input.workerId,
       p_success: input.success,
-      p_error_code: input.errorCode || null,
-      p_retry_at: input.retryAt || null,
+      p_error_code: input.errorCode,
+      p_retry_at: input.retryAt,
     });
     if (error) databaseFailure("watchSubscriptions.completeMatch", error);
   }

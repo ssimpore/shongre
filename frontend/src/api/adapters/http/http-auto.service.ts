@@ -112,18 +112,26 @@ export class HttpAutoService implements AutoServiceContract {
       { type, fileName, idempotencyKey },
     );
   }
-  async getFavoriteVehicleIds(_accountId: string): Promise<string[]> {
+  async getFavoriteVehicleIds(
+    _accountId: string,
+    marketCode: string,
+  ): Promise<string[]> {
     const result = await httpClient.get<{ vehicleIds: string[] }>(
       "/auto/favorites",
+      { headers: { "X-Shongre-Market": marketCode } },
     );
     return result.vehicleIds;
   }
-  async toggleFavoriteVehicle(
+  async setFavoriteVehicle(
     _accountId: string,
     vehicleId: string,
+    marketCode: string,
+    isFavorite: boolean,
   ): Promise<boolean> {
-    const result = await httpClient.post<{ isFavorite: boolean }>(
+    const result = await httpClient.put<{ isFavorite: boolean }>(
       `/auto/vehicles/${encodeURIComponent(vehicleId)}/favorite`,
+      { isFavorite },
+      { headers: { "X-Shongre-Market": marketCode } },
     );
     return result.isFavorite;
   }

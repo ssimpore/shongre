@@ -88,5 +88,12 @@ describe("employment contracts", () => {
       publisherUserId: "user_employment_clara",
       organizationId: "organization-technova",
     });
+    expect(
+      jobPostingDetailSchema.parse(reactJob).resolvedPromotion,
+    ).toMatchObject({
+      marketCode: "FR",
+      state: "active",
+      type: "featured",
+    });
   });
 });

@@ -2874,6 +2874,7 @@ export const PublishWizard: React.FC = () => {
                 {t("publishing.publishWizard.apercuDansLesResultatsDe")}
               </div>
               <ListingCard
+                interactive={false}
                 listing={{
                   id: "preview",
                   title: draft.title || "Titre de l'annonce",
@@ -2896,9 +2897,9 @@ export const PublishWizard: React.FC = () => {
                   sellerId: currentUser?.id || "demo",
                   sellerName: currentUser?.name || "Vendeur Shongre",
                   sellerType: isProSeller(currentUser) ? "pro" : "individual",
-                  sellerRating: 5.0,
-                  sellerReviewCount: 12,
-                  sellerIsVerified: true,
+                  sellerRating: currentUser?.rating ?? 0,
+                  sellerReviewCount: currentUser?.reviewCount ?? 0,
+                  sellerIsVerified: currentUser?.isVerified ?? false,
                   sellerCity: draft.location.city,
                   sellerPostalCode: draft.location.postalCode,
                   city: draft.location.city,

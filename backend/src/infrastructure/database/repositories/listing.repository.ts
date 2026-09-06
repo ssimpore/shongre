@@ -14,10 +14,56 @@ import {
 } from "@shongre/shared";
 import { getCountryConfig } from "@shongre/contracts";
 import { logger } from "../../logging/logger.js";
+import { retryDatabaseSerializationFailure } from "../serialization-retry.js";
+
+const FEATURED_PROMOTION_TYPES = new Set([
+  "featured",
+  "top_placement",
+  "sponsored_search",
+  "homepage_spotlight",
+  "category_spotlight",
+  "local_spotlight",
+  "seller_spotlight",
+]);
+
+function isEffectiveMarketPromotion(
+  publication: ListingMarketPublication | undefined,
+): publication is ListingMarketPublication & {
+  promotionState: "active";
+  promotionType: NonNullable<Listing["promotionType"]>;
+  promotionSource: NonNullable<Listing["promotionSource"]>;
+  promotionSourceId: string;
+  promotionStartAt: string;
+  promotionEndAt: string;
+} {
+  if (
+    publication?.promotionState !== "active" ||
+    !publication.promotionType ||
+    !publication.promotionSource ||
+    !publication.promotionSourceId?.trim() ||
+    !publication.promotionStartAt ||
+    !publication.promotionEndAt
+  ) {
+    return false;
+  }
+  const now = Date.now();
+  const startsAt = new Date(publication.promotionStartAt).getTime();
+  const endsAt = new Date(publication.promotionEndAt).getTime();
+  return (
+    Number.isFinite(startsAt) &&
+    Number.isFinite(endsAt) &&
+    startsAt <= now &&
+    endsAt > now
+  );
+}
 
 export interface IListingRepository {
   findById(id: string): Promise<Listing | null>;
   findPublicById(id: string, marketCode: string): Promise<Listing | null>;
+  findPublicByIds(
+    ids: readonly string[],
+    marketCode: string,
+  ): Promise<Listing[]>;
   search(filter: SearchFilters): Promise<{
     items: Listing[];
     total: number;
@@ -27,8 +73,13 @@ export interface IListingRepository {
   save(listing: Listing): Promise<Listing>;
   update(id: string, updates: Partial<Listing>): Promise<Listing>;
   delete(id: string): Promise<boolean>;
-  toggleFavorite(userId: string, listingId: string): Promise<boolean>;
-  getFavorites(userId: string): Promise<string[]>;
+  setFavorite(
+    userId: string,
+    listingId: string,
+    marketCode: string,
+    isFavorite: boolean,
+  ): Promise<boolean>;
+  getFavorites(userId: string, marketCode: string): Promise<string[]>;
   createDraft(userId: string, marketCode: string): Promise<any>;
   saveDraft(draft: any, userId: string, marketCode: string): Promise<void>;
   getDraft(userId: string, marketCode: string): Promise<any | null>;
@@ -188,9 +239,107 @@ export const CANONICAL_DEMO_LISTINGS: Record<string, Listing> = {
   },
 };
 
+function projectMarketPublication(
+  listing: Listing,
+  publication: ListingMarketPublication,
+  restrictToPublication = false,
+): Listing {
+  const usesUnambiguousLegacyPromotion = Boolean(
+    publication.promotionState === undefined &&
+    listing.marketPublications?.length === 1 &&
+    listing.marketCode === publication.marketCode,
+  );
+  const scopedPublication: ListingMarketPublication =
+    usesUnambiguousLegacyPromotion
+      ? {
+          ...publication,
+          promotionState:
+            listing.promotionState === "active" ? "active" : "inactive",
+          promotionType: listing.promotionType,
+          promotionSource: listing.promotionSource,
+          promotionSourceId: listing.promotionSourceId,
+          promotionLabel: listing.promotionLabel,
+          promotionStartAt: listing.promotionStartAt,
+          promotionEndAt: listing.promotionEndAt,
+          promotedAt: listing.promotedAt,
+        }
+      : publication;
+  const hasEffectivePromotion = isEffectiveMarketPromotion(scopedPublication);
+  const legacyInactiveLifecycle =
+    usesUnambiguousLegacyPromotion && listing.promotionState !== "active"
+      ? listing.promotionState
+      : undefined;
+  const effectivePublication: ListingMarketPublication = {
+    ...scopedPublication,
+    promotionState: hasEffectivePromotion ? "active" : "inactive",
+    promotionType: hasEffectivePromotion
+      ? scopedPublication.promotionType
+      : undefined,
+    promotionSource: hasEffectivePromotion
+      ? scopedPublication.promotionSource
+      : undefined,
+    promotionSourceId: hasEffectivePromotion
+      ? scopedPublication.promotionSourceId
+      : undefined,
+    promotionLabel: hasEffectivePromotion
+      ? scopedPublication.promotionLabel
+      : undefined,
+    promotionStartAt: hasEffectivePromotion
+      ? scopedPublication.promotionStartAt
+      : undefined,
+    promotionEndAt: hasEffectivePromotion
+      ? scopedPublication.promotionEndAt
+      : undefined,
+    promotedAt: hasEffectivePromotion
+      ? scopedPublication.promotedAt
+      : undefined,
+  };
+  return {
+    ...listing,
+    marketCode: publication.marketCode,
+    marketPublications: restrictToPublication
+      ? [effectivePublication]
+      : listing.marketPublications,
+    price: minorToMajorAmount(publication.priceMinor, publication.currency),
+    currency: publication.currency,
+    publishedAt: publication.publishedAt,
+    organicFreshnessAt: publication.sortDate,
+    isUrgent:
+      hasEffectivePromotion &&
+      scopedPublication.promotionType === "urgent_badge",
+    isFeatured:
+      hasEffectivePromotion &&
+      FEATURED_PROMOTION_TYPES.has(scopedPublication.promotionType),
+    promotionState: hasEffectivePromotion
+      ? "active"
+      : legacyInactiveLifecycle || "inactive",
+    promotionType: hasEffectivePromotion
+      ? scopedPublication.promotionType
+      : undefined,
+    promotionSource: hasEffectivePromotion
+      ? scopedPublication.promotionSource
+      : undefined,
+    promotionSourceId: hasEffectivePromotion
+      ? scopedPublication.promotionSourceId
+      : undefined,
+    promotionLabel: hasEffectivePromotion
+      ? scopedPublication.promotionLabel
+      : undefined,
+    promotionStartAt: hasEffectivePromotion
+      ? scopedPublication.promotionStartAt
+      : undefined,
+    promotionEndAt: hasEffectivePromotion
+      ? scopedPublication.promotionEndAt
+      : undefined,
+    promotedAt: hasEffectivePromotion
+      ? scopedPublication.promotedAt
+      : undefined,
+  };
+}
+
 export class DemoListingRepository implements IListingRepository {
   private listings: Map<string, Listing> = new Map();
-  private favorites: Map<string, Set<string>> = new Map(); // userId -> Set of listingIds
+  private favorites: Map<string, Set<string>> = new Map(); // userId:marketCode -> listing ids
   private drafts: Map<string, any> = new Map(); // userId -> draft
 
   constructor(
@@ -206,12 +355,18 @@ export class DemoListingRepository implements IListingRepository {
     Object.values(initialListings).forEach((l) =>
       this.listings.set(l.id, { ...l }),
     );
-    this.favorites.set("user_thomas", new Set(["list_1"]));
+    this.favorites.set("user_thomas:FR", new Set(["list_1"]));
   }
 
   async findById(id: string): Promise<Listing | null> {
     const item = this.listings.get(id);
-    return item ? { ...item } : null;
+    if (!item) return null;
+    const primaryPublication = item.marketPublications?.find(
+      (publication) => publication.isPrimary,
+    );
+    return primaryPublication
+      ? projectMarketPublication(item, primaryPublication)
+      : { ...item };
   }
 
   async findPublicById(
@@ -231,18 +386,18 @@ export class DemoListingRepository implements IListingRepository {
     if (item.marketPublications?.length && !publication) return null;
     if (!publication && item.marketCode !== requestedMarketCode) return null;
     return publication
-      ? {
-          ...item,
-          marketCode: requestedMarketCode,
-          price: minorToMajorAmount(
-            publication.priceMinor,
-            publication.currency,
-          ),
-          currency: publication.currency,
-          publishedAt: publication.publishedAt ?? item.publishedAt,
-          organicFreshnessAt: publication.sortDate,
-        }
+      ? projectMarketPublication(item, publication, true)
       : item;
+  }
+
+  async findPublicByIds(
+    ids: readonly string[],
+    marketCode: string,
+  ): Promise<Listing[]> {
+    const listings = await Promise.all(
+      [...new Set(ids)].map((id) => this.findPublicById(id, marketCode)),
+    );
+    return listings.filter((listing): listing is Listing => Boolean(listing));
   }
 
   async search(filters: SearchFilters): Promise<{
@@ -268,17 +423,7 @@ export class DemoListingRepository implements IListingRepository {
         if (!publication && listing.marketCode !== marketCode) return [];
         return [
           publication
-            ? {
-                ...listing,
-                marketCode,
-                price: minorToMajorAmount(
-                  publication.priceMinor,
-                  publication.currency,
-                ),
-                currency: publication.currency,
-                publishedAt: publication.publishedAt ?? listing.publishedAt,
-                organicFreshnessAt: publication.sortDate,
-              }
+            ? projectMarketPublication(listing, publication, true)
             : listing,
         ];
       });
@@ -360,24 +505,39 @@ export class DemoListingRepository implements IListingRepository {
     return this.listings.delete(id);
   }
 
-  async toggleFavorite(userId: string, listingId: string): Promise<boolean> {
-    let userFavs = this.favorites.get(userId);
+  async setFavorite(
+    userId: string,
+    listingId: string,
+    marketCode: string,
+    isFavorite: boolean,
+  ): Promise<boolean> {
+    const normalizedMarketCode = requireMarketCode(marketCode);
+    const listing = await this.findPublicById(listingId, normalizedMarketCode);
+    if (!listing) {
+      throw new AppError({
+        code: "NOT_FOUND",
+        message: "Annonce introuvable.",
+      });
+    }
+    const scopeKey = `${userId}:${normalizedMarketCode}`;
+    let userFavs = this.favorites.get(scopeKey);
     if (!userFavs) {
       userFavs = new Set();
-      this.favorites.set(userId, userFavs);
+      this.favorites.set(scopeKey, userFavs);
     }
-    if (userFavs.has(listingId)) {
+    if (!isFavorite) {
       userFavs.delete(listingId);
       return false;
-    } else {
-      userFavs.add(listingId);
-      return true;
     }
+    userFavs.add(listingId);
+    return true;
   }
 
-  async getFavorites(userId: string): Promise<string[]> {
-    const userFavs = this.favorites.get(userId);
-    return userFavs ? Array.from(userFavs) : ["list_1"];
+  async getFavorites(userId: string, marketCode: string): Promise<string[]> {
+    const userFavs = this.favorites.get(
+      `${userId}:${requireMarketCode(marketCode)}`,
+    );
+    return userFavs ? Array.from(userFavs) : [];
   }
 
   async createDraft(userId: string, marketCode: string): Promise<any> {
@@ -482,7 +642,7 @@ export class PostgresListingRepository implements IListingRepository {
     "id, slug, email, name, account_type, account_family, primary_role, status, avatar_url, city, postal_code, country, bio, is_verified, is_identity_verified, is_phone_verified, is_email_verified, is_business_verified, rating, review_count, response_rate_percent, response_time_text, created_at";
 
   private static readonly MARKET_PUBLICATION_PROJECTION =
-    "market_code, status, is_primary, price_minor, currency, localized_content, available_services, compliance_state, published_at, sort_date";
+    "market_code, status, is_primary, price_minor, currency, localized_content, available_services, compliance_state, published_at, sort_date, promotion_state, promotion_type, promotion_source, promotion_source_id, promotion_label, promotion_start_at, promotion_end_at, promoted_at";
 
   private toMarketPublicationRows(listing: Listing, listingId: string) {
     const defaultStatus: ListingMarketPublication["status"] =
@@ -558,6 +718,14 @@ export class PostgresListingRepository implements IListingRepository {
           complianceState: publication.compliance_state,
           publishedAt: publication.published_at || undefined,
           sortDate: publication.sort_date,
+          promotionState: publication.promotion_state || "inactive",
+          promotionType: publication.promotion_type || undefined,
+          promotionSource: publication.promotion_source || undefined,
+          promotionSourceId: publication.promotion_source_id || undefined,
+          promotionLabel: publication.promotion_label || undefined,
+          promotionStartAt: publication.promotion_start_at || undefined,
+          promotionEndAt: publication.promotion_end_at || undefined,
+          promotedAt: publication.promoted_at || undefined,
         }))
       : [];
     const effectivePublication = requestedMarketCode
@@ -565,6 +733,38 @@ export class PostgresListingRepository implements IListingRepository {
           (publication) => publication.marketCode === requestedMarketCode,
         )
       : marketPublications.find((publication) => publication.isPrimary);
+    const hasEffectivePromotion =
+      isEffectiveMarketPromotion(effectivePublication);
+    const effectiveMarketPublications: ListingMarketPublication[] =
+      requestedMarketCode && effectivePublication
+        ? [
+            {
+              ...effectivePublication,
+              promotionState: hasEffectivePromotion ? "active" : "inactive",
+              promotionType: hasEffectivePromotion
+                ? effectivePublication.promotionType
+                : undefined,
+              promotionSource: hasEffectivePromotion
+                ? effectivePublication.promotionSource
+                : undefined,
+              promotionSourceId: hasEffectivePromotion
+                ? effectivePublication.promotionSourceId
+                : undefined,
+              promotionLabel: hasEffectivePromotion
+                ? effectivePublication.promotionLabel
+                : undefined,
+              promotionStartAt: hasEffectivePromotion
+                ? effectivePublication.promotionStartAt
+                : undefined,
+              promotionEndAt: hasEffectivePromotion
+                ? effectivePublication.promotionEndAt
+                : undefined,
+              promotedAt: hasEffectivePromotion
+                ? effectivePublication.promotedAt
+                : undefined,
+            },
+          ]
+        : marketPublications;
     return {
       id: row.id,
       sellerId: row.seller_id,
@@ -637,7 +837,7 @@ export class PostgresListingRepository implements IListingRepository {
       marketCodes: marketPublications.map(
         (publication) => publication.marketCode,
       ),
-      marketPublications,
+      marketPublications: effectiveMarketPublications,
       city: row.city,
       postalCode: row.postal_code,
       department: row.department || undefined,
@@ -663,24 +863,61 @@ export class PostgresListingRepository implements IListingRepository {
         : Array.isArray(row.images)
           ? row.images
           : [],
-      isUrgent: Boolean(row.is_urgent),
-      isFeatured: Boolean(row.is_featured),
+      isUrgent: effectivePublication
+        ? hasEffectivePromotion &&
+          effectivePublication.promotionType === "urgent_badge"
+        : Boolean(row.is_urgent),
+      isFeatured: effectivePublication
+        ? hasEffectivePromotion &&
+          FEATURED_PROMOTION_TYPES.has(effectivePublication.promotionType)
+        : Boolean(row.is_featured),
       urgentExpiresAt: row.urgent_expires_at || undefined,
       featuredExpiresAt: row.featured_expires_at || undefined,
       bumpedAt: row.bumped_at || undefined,
-      promotionState: row.promotion_state || undefined,
-      promotionType: row.promotion_type || undefined,
-      promotionSource: row.promotion_source || undefined,
-      promotionSourceId: row.promotion_source_id || undefined,
-      promotionLabel: row.promotion_label || undefined,
-      promotionStartAt: row.promotion_start_at || undefined,
-      promotionEndAt: row.promotion_end_at || undefined,
-      publishedAt:
-        effectivePublication?.publishedAt || row.published_at || row.created_at,
+      promotionState: effectivePublication
+        ? hasEffectivePromotion
+          ? "active"
+          : "inactive"
+        : row.promotion_state || undefined,
+      promotionType: effectivePublication
+        ? hasEffectivePromotion
+          ? effectivePublication.promotionType
+          : undefined
+        : row.promotion_type || undefined,
+      promotionSource: effectivePublication
+        ? hasEffectivePromotion
+          ? effectivePublication.promotionSource
+          : undefined
+        : row.promotion_source || undefined,
+      promotionSourceId: effectivePublication
+        ? hasEffectivePromotion
+          ? effectivePublication.promotionSourceId
+          : undefined
+        : row.promotion_source_id || undefined,
+      promotionLabel: effectivePublication
+        ? hasEffectivePromotion
+          ? effectivePublication.promotionLabel
+          : undefined
+        : row.promotion_label || undefined,
+      promotionStartAt: effectivePublication
+        ? hasEffectivePromotion
+          ? effectivePublication.promotionStartAt
+          : undefined
+        : row.promotion_start_at || undefined,
+      promotionEndAt: effectivePublication
+        ? hasEffectivePromotion
+          ? effectivePublication.promotionEndAt
+          : undefined
+        : row.promotion_end_at || undefined,
+      publishedAt: effectivePublication?.publishedAt || row.published_at,
       materiallyUpdatedAt: row.materially_updated_at || undefined,
       organicFreshnessAt:
         row.organic_freshness_at || row.published_at || row.created_at,
-      promotedAt: row.promoted_at || undefined,
+      promotedAt: effectivePublication
+        ? hasEffectivePromotion
+          ? effectivePublication.promotedAt
+          : undefined
+        : row.promoted_at || undefined,
       externalStockId: row.external_stock_id || undefined,
       duplicateGroupId: row.duplicate_group_id || undefined,
       viewCount: Number(row.view_count || 0),
@@ -745,6 +982,53 @@ export class PostgresListingRepository implements IListingRepository {
       return listing;
     } catch (error) {
       databaseFailure("listings.findPublicById", error);
+    }
+  }
+
+  async findPublicByIds(
+    ids: readonly string[],
+    marketCode: string,
+  ): Promise<Listing[]> {
+    const orderedIds = [...new Set(ids.filter(Boolean))];
+    if (orderedIds.length === 0) return [];
+
+    const requestedMarketCode = requireMarketCode(marketCode);
+    const rows: any[] = [];
+    const batchSize = 100;
+    try {
+      const supabase = getSupabaseAdminClient();
+      for (let offset = 0; offset < orderedIds.length; offset += batchSize) {
+        const batch = orderedIds.slice(offset, offset + batchSize);
+        const { data, error } = await (supabase as any)
+          .from("listings")
+          .select(
+            `${PostgresListingRepository.LISTING_PROJECTION}, listing_media(url, sort_order), listing_market_publications!inner(${PostgresListingRepository.MARKET_PUBLICATION_PROJECTION}), profiles:seller_id(${PostgresListingRepository.SELLER_PROJECTION}), publisher_organization:publisher_organization_id(status)`,
+          )
+          .in("id", batch)
+          .eq("listing_market_publications.market_code", requestedMarketCode)
+          .eq("listing_market_publications.status", "active")
+          .eq("listing_market_publications.compliance_state", "approved")
+          .in("status", ["published", "reserved", "sold"] as any);
+        if (error || !data) databaseFailure("listings.findPublicByIds", error);
+        rows.push(...data);
+      }
+
+      const listingsById = new Map(
+        rows
+          .map((row) => this.mapRowToListing(row, requestedMarketCode))
+          .filter(
+            (listing) =>
+              listing.publisherStatus !== "suspended" &&
+              listing.seller?.status === "active",
+          )
+          .map((listing) => [listing.id, listing] as const),
+      );
+      return orderedIds.flatMap((id) => {
+        const listing = listingsById.get(id);
+        return listing ? [listing] : [];
+      });
+    } catch (error) {
+      databaseFailure("listings.findPublicByIds", error);
     }
   }
 
@@ -959,18 +1243,24 @@ export class PostgresListingRepository implements IListingRepository {
       expires_at: listing.expiresAt,
     };
 
-    const { data, error } = await (supabase
-      .from("listings")
-      .upsert(payload as any)
-      .select("id")
-      .single() as any);
+    const { data, error } = await retryDatabaseSerializationFailure<any>(
+      () =>
+        supabase
+          .from("listings")
+          .upsert(payload as any)
+          .select("id")
+          .single() as any,
+    );
     if (error || !data) {
       databaseFailure("listings.save", error);
     }
     const publicationRows = this.toMarketPublicationRows(listing, data.id);
-    const { error: publicationError } = await (supabase as any)
-      .from("listing_market_publications")
-      .upsert(publicationRows, { onConflict: "listing_id,market_code" });
+    const { error: publicationError } =
+      await retryDatabaseSerializationFailure<any>(() =>
+        (supabase as any)
+          .from("listing_market_publications")
+          .upsert(publicationRows, { onConflict: "listing_id,market_code" }),
+      );
     if (publicationError)
       databaseFailure("listings.saveMarketPublications", publicationError);
     const persisted = await this.findById(data.id);
@@ -1030,11 +1320,14 @@ export class PostgresListingRepository implements IListingRepository {
     if (updates.organicFreshnessAt !== undefined)
       payload.organic_freshness_at = updates.organicFreshnessAt;
 
-    const { data, error } = await ((supabase.from("listings") as any)
-      .update(payload)
-      .eq("id", id)
-      .select("id,currency")
-      .single() as any);
+    const { data, error } = await retryDatabaseSerializationFailure<any>(
+      () =>
+        (supabase.from("listings") as any)
+          .update(payload)
+          .eq("id", id)
+          .select("id,currency")
+          .single() as any,
+    );
     if (error || !data) {
       databaseFailure("listings.update", error);
     }
@@ -1058,28 +1351,40 @@ export class PostgresListingRepository implements IListingRepository {
 
   async delete(id: string): Promise<boolean> {
     const supabase = getSupabaseAdminClient();
-    const { error } = await supabase.from("listings").delete().eq("id", id);
+    const { error } = await retryDatabaseSerializationFailure(() =>
+      supabase.from("listings").delete().eq("id", id),
+    );
     if (error) databaseFailure("listings.delete", error);
     return !error;
   }
 
-  async toggleFavorite(userId: string, listingId: string): Promise<boolean> {
+  async setFavorite(
+    userId: string,
+    listingId: string,
+    marketCode: string,
+    isFavorite: boolean,
+  ): Promise<boolean> {
     const supabase = getSupabaseAdminClient();
-    const { data, error } = await (supabase as any).rpc("toggle_favorite", {
+    const { data, error } = await (supabase as any).rpc("set_favorite", {
       p_user_id: userId,
       p_listing_id: listingId,
+      p_market_code: requireMarketCode(marketCode),
+      p_is_favorite: isFavorite,
     });
-    if (error) databaseFailure("listings.toggleFavorite", error);
+    if (error) databaseFailure("listings.setFavorite", error);
     return Boolean(data);
   }
 
-  async getFavorites(userId: string): Promise<string[]> {
+  async getFavorites(userId: string, marketCode: string): Promise<string[]> {
     try {
       const supabase = getSupabaseAdminClient();
-      const { data, error } = await supabase
-        .from("favorites")
-        .select("listing_id")
-        .eq("user_id", userId);
+      const { data, error } = await (supabase as any).rpc(
+        "list_favorite_listing_ids",
+        {
+          p_user_id: userId,
+          p_market_code: requireMarketCode(marketCode),
+        },
+      );
       if (error || !data) databaseFailure("listings.getFavorites", error);
       return data.map((f: any) => f.listing_id);
     } catch (error) {

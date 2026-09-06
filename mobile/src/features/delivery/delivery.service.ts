@@ -25,6 +25,17 @@ export interface MobileDeliveryActor {
 export interface MobileDeliveryService {
   availability(marketCode: string): Promise<DeliveryFeatureAvailability>;
   search(input: DeliverySearchInput): Promise<DeliveryPublicRequest[]>;
+  getPublicRequest(
+    requestId: string,
+    marketCode: string,
+  ): Promise<DeliveryPublicRequest>;
+  getFavoriteRequestIds(userId: string, marketCode: string): Promise<string[]>;
+  setFavoriteRequest(
+    userId: string,
+    requestId: string,
+    marketCode: string,
+    isFavorite: boolean,
+  ): Promise<boolean>;
   getCourierProfile(
     actor: MobileDeliveryActor,
     marketCode: string,
@@ -158,6 +169,7 @@ export class DemoMobileDeliveryService implements MobileDeliveryService {
   private readonly owners = new Map([[DEMO_REQUEST_ID, DEMO_REQUESTER_ID]]);
   private readonly profiles = new Map<string, DeliveryCourierProfile>();
   private readonly applicationOwners = new Map<string, string>();
+  private readonly favoriteRequestIds = new Map<string, Set<string>>();
 
   async availability(marketCode: string) {
     const enabled = marketCode === "FR";
@@ -183,6 +195,47 @@ export class DemoMobileDeliveryService implements MobileDeliveryService {
       )
       .slice(0, input.limit)
       .map((request) => structuredClone(publicRequest(request)));
+  }
+
+  async getPublicRequest(requestId: string, marketCode: string) {
+    const request = this.requests.get(requestId);
+    if (
+      !request ||
+      request.marketCode !== marketCode ||
+      request.status !== "open" ||
+      !request.publishedAt ||
+      request.expiresAt <= DEMO_NOW
+    ) {
+      throw new Error("DELIVERY_REQUEST_NOT_OPEN");
+    }
+    return structuredClone(publicRequest(request));
+  }
+
+  async getFavoriteRequestIds(userId: string, marketCode: string) {
+    return [
+      ...(this.favoriteRequestIds.get(
+        `${userId}:${marketCode.toUpperCase()}`,
+      ) ?? []),
+    ];
+  }
+
+  async setFavoriteRequest(
+    userId: string,
+    requestId: string,
+    marketCode: string,
+    isFavorite: boolean,
+  ) {
+    const scopeKey = `${userId}:${marketCode.toUpperCase()}`;
+    const requestIds =
+      this.favoriteRequestIds.get(scopeKey) ?? new Set<string>();
+    if (isFavorite) {
+      await this.getPublicRequest(requestId, marketCode);
+      requestIds.add(requestId);
+    } else {
+      requestIds.delete(requestId);
+    }
+    this.favoriteRequestIds.set(scopeKey, requestIds);
+    return requestIds.has(requestId);
   }
 
   async getCourierProfile(actor: MobileDeliveryActor, marketCode: string) {
@@ -444,6 +497,34 @@ class HttpMobileDeliveryService implements MobileDeliveryService {
       input.marketCode,
     );
     return result.items;
+  }
+  getPublicRequest(requestId: string, marketCode: string) {
+    return apiRequest<DeliveryPublicRequest>(
+      `/delivery/requests/${encodeURIComponent(requestId)}?marketCode=${encodeURIComponent(marketCode)}`,
+      {},
+      marketCode,
+    );
+  }
+  async getFavoriteRequestIds(_userId: string, marketCode: string) {
+    const result = await apiRequest<{ requestIds: string[] }>(
+      "/delivery/favorites",
+      {},
+      marketCode,
+    );
+    return result.requestIds;
+  }
+  async setFavoriteRequest(
+    _userId: string,
+    requestId: string,
+    marketCode: string,
+    isFavorite: boolean,
+  ) {
+    const result = await apiRequest<{ isFavorite: boolean }>(
+      `/delivery/requests/${encodeURIComponent(requestId)}/favorite`,
+      { method: "PUT", body: JSON.stringify({ isFavorite }) },
+      marketCode,
+    );
+    return result.isFavorite;
   }
   getCourierProfile(_actor: MobileDeliveryActor, marketCode: string) {
     return apiRequest<DeliveryCourierProfile | null>(

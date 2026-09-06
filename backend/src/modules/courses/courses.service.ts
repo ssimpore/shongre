@@ -385,13 +385,40 @@ export class CoursesService {
     return { profile, offer };
   }
 
-  getSavedTutorIds(userId: string) {
-    return this.courseRepo.getSavedTutorIds(userId);
+  getSavedTutorIds(userId: string, marketCode: string) {
+    return this.courseRepo.getSavedTutorIds(
+      userId,
+      requireMarketCode(marketCode),
+    );
   }
 
-  async toggleSavedTutor(userId: string, tutorProfileId: string) {
-    await this.getTutorPublicProfile(tutorProfileId);
-    return this.courseRepo.toggleSavedTutor(userId, tutorProfileId);
+  async setSavedTutor(
+    userId: string,
+    tutorProfileId: string,
+    marketCode: string,
+    isFavorite: boolean,
+  ) {
+    const normalizedMarket = requireMarketCode(marketCode);
+    if (isFavorite) {
+      const profile = await this.getTutorPublicProfile(tutorProfileId);
+      if (
+        profile.tutor.serviceArea?.marketCode !== normalizedMarket ||
+        !profile.offers.some((offer) =>
+          offer.marketCodes.includes(normalizedMarket),
+        )
+      ) {
+        throw new AppError({
+          code: "NOT_FOUND",
+          message: "Professeur introuvable sur ce marché.",
+        });
+      }
+    }
+    return this.courseRepo.setSavedTutor(
+      userId,
+      tutorProfileId,
+      normalizedMarket,
+      isFavorite,
+    );
   }
 
   async searchTutors(input: unknown): Promise<TutorSearchResponse> {

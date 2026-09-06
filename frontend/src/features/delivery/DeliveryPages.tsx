@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { ArrowRight, Box, Flag, MapPin, Truck } from "lucide-react";
+import { Flag, Truck } from "lucide-react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import type {
   DeliveryApplication,
@@ -35,6 +35,8 @@ import {
   Modal,
   Select,
   Skeleton,
+  ListingCardSkeleton,
+  ListingGrid,
   StatePanel,
   Textarea,
 } from "../../design-system";
@@ -43,7 +45,13 @@ import { useTranslation } from "../../i18n/I18nProvider";
 import { deliveryCatalogueFr } from "../../i18n/delivery.catalogue.fr";
 import type { MessageKey } from "../../i18n/messages.fr";
 import { ConfirmModal } from "../../design-system/primitives/ConfirmModal";
+import { useStaffMarketplaceAccess } from "../../security/useStaffMarketplaceAccess";
+import { DeliveryRequestCard } from "./components/DeliveryRequestCard";
 import { useDeliveryAvailability } from "./useDeliveryAvailability";
+import {
+  resolveDeliveryFavoriteAccountId,
+  useDeliveryRequestFavorites,
+} from "./useDeliveryRequestFavorites";
 
 const VEHICLE_TYPES: DeliveryVehicleType[] = [
   "bicycle",
@@ -109,79 +117,15 @@ function DeliveryHeader({ compact = false }: { compact?: boolean }) {
 }
 
 function LoadingCards() {
+  const { t } = useTranslation(deliveryCatalogueFr);
   return (
-    <div className="grid gap-4 md:grid-cols-2" aria-busy="true">
-      {[1, 2, 3, 4].map((key) => (
-        <Skeleton key={key} className="h-52 w-full rounded-card" />
-      ))}
-    </div>
-  );
-}
-
-function RequestCard({ request }: { request: DeliveryPublicRequest }) {
-  const { t, locale } = useTranslation(deliveryCatalogueFr);
-  const { formatPrice } = useMarketLocation();
-  const pickupDate = new Intl.DateTimeFormat(locale, {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(request.pickupWindow.startsAt));
-  return (
-    <Card as="article" elevation="xs" className="flex h-full flex-col gap-4">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <Badge variant="primary">{t("delivery.status.open")}</Badge>
-          <h2 className="mt-2 text-base font-bold text-text-main sm:text-lg">
-            {request.title}
-          </h2>
-        </div>
-        {request.budget && (
-          <span className="shrink-0 text-base font-bold text-primary">
-            {formatPrice(request.budget.amountMinor / 100, {
-              sourceCurrency: request.budget.currency,
-            })}
-          </span>
-        )}
-      </div>
-      <p className="line-clamp-2 text-sm leading-relaxed text-text-secondary">
-        {request.description}
-      </p>
-      <div className="space-y-2 text-sm text-text-secondary">
-        <p className="flex items-center gap-2">
-          <MapPin
-            className="h-icon-md w-icon-md text-primary"
-            aria-hidden="true"
-          />
-          {t("delivery.route", {
-            pickup: `${request.pickupLocality.city} ${request.pickupLocality.postalCode}`,
-            dropoff: `${request.dropoffLocality.city} ${request.dropoffLocality.postalCode}`,
-          })}
-        </p>
-        <p className="flex items-center gap-2">
-          <Box
-            className="h-icon-md w-icon-md text-primary"
-            aria-hidden="true"
-          />
-          {request.package.type} ·{" "}
-          {request.package.approximateWeightGrams / 1_000} kg
-        </p>
-        <p>{pickupDate}</p>
-      </div>
-      <div className="mt-auto flex items-center justify-between gap-3 border-t border-border-base pt-4">
-        <span className="text-xs text-text-muted">
-          {t("delivery.applications", { count: request.applicationCount })}
-        </span>
-        <Button
-          to={routes.delivery.request(request.id)}
-          variant="secondary"
-          size="compact"
-          rightIcon={
-            <ArrowRight className="h-icon-sm w-icon-sm" aria-hidden="true" />
-          }
-        >
-          {t("delivery.viewRequest")}
-        </Button>
-      </div>
-    </Card>
+    <section aria-busy="true" aria-label={t("common.loading")}>
+      <ListingGrid fluid>
+        {[1, 2, 3, 4].map((key) => (
+          <ListingCardSkeleton key={key} />
+        ))}
+      </ListingGrid>
+    </section>
   );
 }
 
@@ -189,12 +133,24 @@ export function DeliveryMarketplacePage() {
   const { t } = useTranslation(deliveryCatalogueFr);
   const { activeMarket } = useMarketLocation();
   const { currentUser } = useAuth();
+  const navigate = useNavigate();
+  const toast = useToast();
+  const { isReadOnly: isReadOnlyStaff } = useStaffMarketplaceAccess();
   const vehicles = vehicleOptions(t);
   const availability = useDeliveryAvailability();
   const [requests, setRequests] = useState<DeliveryPublicRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [pickupPostalCode, setPickupPostalCode] = useState("");
   const [vehicleType, setVehicleType] = useState<DeliveryVehicleType | "">("");
+  const {
+    favoriteIds,
+    loadState: favoriteLoadState,
+    refresh: refreshFavorites,
+    toggleFavorite,
+  } = useDeliveryRequestFavorites(
+    resolveDeliveryFavoriteAccountId(currentUser?.id, isReadOnlyStaff),
+    activeMarket.code,
+  );
   usePageMeta({
     title: t("delivery.meta.title"),
     description: t("delivery.meta.description"),
@@ -223,6 +179,21 @@ export function DeliveryMarketplacePage() {
     if (availability.state === "disabled" || availability.state === "error")
       setLoading(false);
   }, [availability.state, search]);
+
+  const handleFavorite = async (request: DeliveryPublicRequest) => {
+    if (!currentUser) {
+      navigate(
+        routes.auth.login(
+          `${window.location.pathname}${window.location.search}`,
+        ),
+      );
+      return;
+    }
+    const active = await toggleFavorite(request.id);
+    toast.success(
+      active ? "Demande ajoutée aux favoris." : "Demande retirée des favoris.",
+    );
+  };
 
   return (
     <Container width="page" className="space-y-8 py-8 sm:py-10">
@@ -308,10 +279,21 @@ export function DeliveryMarketplacePage() {
           {loading || availability.state === "loading" ? (
             <LoadingCards />
           ) : requests.length ? (
-            <section className="grid gap-4 md:grid-cols-2" aria-live="polite">
-              {requests.map((request) => (
-                <RequestCard key={request.id} request={request} />
-              ))}
+            <section aria-live="polite">
+              <ListingGrid fluid>
+                {requests.map((request) => (
+                  <DeliveryRequestCard
+                    key={request.id}
+                    request={request}
+                    isFavorite={favoriteIds.has(request.id)}
+                    favoriteLoadState={favoriteLoadState}
+                    onFavorite={isReadOnlyStaff ? undefined : handleFavorite}
+                    onFavoriteRetry={
+                      isReadOnlyStaff ? undefined : refreshFavorites
+                    }
+                  />
+                ))}
+              </ListingGrid>
             </section>
           ) : (
             <StatePanel

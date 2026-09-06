@@ -56,6 +56,22 @@ export function formatMoney(money: Money, locale?: string): string {
   }).format(minorToMajorAmount(money.amountMinor, money.currency, locale));
 }
 
+/**
+ * Compact marketplace formatting: preserve meaningful minor units while
+ * omitting an all-zero decimal suffix that consumes scarce card width.
+ */
+export function formatCompactMoney(money: Money, locale?: string): string {
+  const fractionDigits = getCurrencyMinorUnitDigits(money.currency, locale);
+  const divisor = 10 ** fractionDigits;
+  const hasFraction = money.amountMinor % divisor !== 0;
+  return new Intl.NumberFormat(locale, {
+    style: "currency",
+    currency: money.currency,
+    minimumFractionDigits: hasFraction ? fractionDigits : 0,
+    maximumFractionDigits: fractionDigits,
+  }).format(minorToMajorAmount(money.amountMinor, money.currency, locale));
+}
+
 /** Adapter for legacy view models that still carry major currency units. */
 export function formatMajorMoney(
   amount: number,

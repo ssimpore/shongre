@@ -1,6 +1,6 @@
 import { PAGE_SIZES } from "../../configuration/pagination.config";
-import React, { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   ArrowUpDown,
   BookOpen,
@@ -21,14 +21,16 @@ import { services } from "../../api/client/service-registry";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useToast } from "../../app/providers/ToastProvider";
+import { routes } from "../../configuration/routes";
 import {
   Button,
   Container,
   Drawer,
   DropdownMenu,
   FilterPanel,
+  ListingCardSkeleton,
+  ListingGrid,
   LocationSelector,
-  Skeleton,
   StatePanel,
 } from "../../design-system";
 import type {
@@ -302,7 +304,9 @@ const CourseFilters: React.FC<CourseFiltersProps> = ({
 export const CoursesSearchPage: React.FC = () => {
   const { t } = useTranslation();
   const [params, setParams] = useSearchParams();
-  const { currentUser } = useAuth();
+  const navigate = useNavigate();
+  const { currentUser, isRestoring } = useAuth();
+  const currentUserId = currentUser?.id;
   const { activeMarket } = useMarketLocation();
   const { formatMoney } = useRegionalFormatters();
   const toast = useToast();
@@ -313,7 +317,15 @@ export const CoursesSearchPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [comparedIds, setComparedIds] = useState<string[]>([]);
-  const [savedIds, setSavedIds] = useState<string[]>([]);
+  const savedScope = `${currentUserId || "guest"}:${activeMarket.code}`;
+  const [savedState, setSavedState] = useState<{
+    scope: string;
+    ids: string[];
+    loadState: "loading" | "ready" | "error";
+  }>(() => ({ scope: "", ids: [], loadState: "loading" }));
+  const savedIds = savedState.scope === savedScope ? savedState.ids : [];
+  const savedLoadState =
+    savedState.scope === savedScope ? savedState.loadState : "loading";
 
   const freeText = params.get("query") || "";
   usePageMeta({
@@ -333,12 +345,39 @@ export const CoursesSearchPage: React.FC = () => {
       );
   }, [activeMarket.code]);
 
+  const loadSavedTutors = useCallback(async () => {
+    const scope = savedScope;
+    setSavedState((current) => ({
+      scope,
+      ids: current.scope === scope ? current.ids : [],
+      loadState: "loading",
+    }));
+    if (isRestoring) return;
+    if (!currentUserId) {
+      setSavedState({ scope, ids: [], loadState: "ready" });
+      return;
+    }
+    try {
+      const ids = await services.courses.getSavedTutorIds(
+        currentUserId,
+        activeMarket.code,
+      );
+      setSavedState((current) =>
+        current.scope === scope
+          ? { scope, ids: Array.from(new Set(ids)), loadState: "ready" }
+          : current,
+      );
+    } catch (reason) {
+      setSavedState((current) =>
+        current.scope === scope ? { ...current, loadState: "error" } : current,
+      );
+      throw reason;
+    }
+  }, [activeMarket.code, currentUserId, isRestoring, savedScope]);
+
   useEffect(() => {
-    services.courses
-      .getSavedTutorIds(currentUser?.id || "guest")
-      .then(setSavedIds)
-      .catch(() => setSavedIds([]));
-  }, [currentUser?.id]);
+    void loadSavedTutors().catch(() => undefined);
+  }, [loadSavedTutors]);
 
   const query = useMemo<TutorSearchQuery>(
     () => ({
@@ -424,15 +463,32 @@ export const CoursesSearchPage: React.FC = () => {
   };
 
   const toggleSaved = async (id: string) => {
-    try {
-      const isSaved = await services.courses.toggleSavedTutor(
-        currentUser?.id || "guest",
-        id,
+    if (savedLoadState !== "ready") return;
+    if (!currentUserId) {
+      const queryString = params.toString();
+      navigate(
+        routes.auth.login(
+          `${routes.courses.search()}${queryString ? `?${queryString}` : ""}`,
+        ),
       );
-      setSavedIds((current) =>
-        isSaved
-          ? Array.from(new Set([...current, id]))
-          : current.filter((item) => item !== id),
+      return;
+    }
+    try {
+      const isSaved = await services.courses.setSavedTutor(
+        currentUserId,
+        id,
+        activeMarket.code,
+        !savedIds.includes(id),
+      );
+      setSavedState((current) =>
+        current.scope === savedScope
+          ? {
+              ...current,
+              ids: isSaved
+                ? Array.from(new Set([...current.ids, id]))
+                : current.ids.filter((item) => item !== id),
+            }
+          : current,
       );
       toast.success(
         isSaved ? "Professeur sauvegardé." : "Professeur retiré des favoris.",
@@ -584,10 +640,12 @@ export const CoursesSearchPage: React.FC = () => {
           </div>
 
           {isLoading ? (
-            <div className="space-y-3" aria-label="Chargement des professeurs">
-              {[0, 1, 2].map((index) => (
-                <Skeleton key={index} className="h-64 w-full rounded-card" />
-              ))}
+            <div aria-label="Chargement des professeurs" aria-busy="true">
+              <ListingGrid fluid>
+                {[0, 1, 2].map((index) => (
+                  <ListingCardSkeleton key={index} />
+                ))}
+              </ListingGrid>
             </div>
           ) : error ? (
             <StatePanel
@@ -612,18 +670,22 @@ export const CoursesSearchPage: React.FC = () => {
               }
             />
           ) : (
-            <div className="space-y-3">
-              {items.map((item) => (
-                <CourseTutorCard
-                  key={item.offer.id}
-                  item={item}
-                  isCompared={comparedIds.includes(item.tutor.id)}
-                  isSaved={savedIds.includes(item.tutor.id)}
-                  onToggleCompare={toggleCompare}
-                  onToggleSaved={toggleSaved}
-                />
-              ))}
-              <section className="flex flex-col items-start justify-between gap-4 rounded-card border border-primary-border bg-primary-light p-5 sm:flex-row sm:items-center">
+            <>
+              <ListingGrid fluid>
+                {items.map((item) => (
+                  <CourseTutorCard
+                    key={item.offer.id}
+                    item={item}
+                    isCompared={comparedIds.includes(item.tutor.id)}
+                    isSaved={savedIds.includes(item.tutor.id)}
+                    favoriteLoadState={savedLoadState}
+                    onToggleCompare={toggleCompare}
+                    onToggleSaved={toggleSaved}
+                    onFavoriteRetry={loadSavedTutors}
+                  />
+                ))}
+              </ListingGrid>
+              <section className="mt-4 flex flex-col items-start justify-between gap-4 rounded-card border border-primary-border bg-primary-light p-5 sm:flex-row sm:items-center">
                 <div>
                   <h2 className="text-sm font-bold text-text-main">
                     Vous ne trouvez pas le professeur idéal ?
@@ -638,7 +700,7 @@ export const CoursesSearchPage: React.FC = () => {
                   Décrire mon besoin
                 </Button>
               </section>
-            </div>
+            </>
           )}
         </div>
 

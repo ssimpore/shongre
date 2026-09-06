@@ -246,9 +246,15 @@ Every domain is classified before implementation:
 Listings are `MULTI_MARKET_SHARED`. `listings` owns content, seller, origin and
 lifecycle. `listing_market_publications` owns `{market, status, isPrimary,
 priceMinor, currency, localizedContent, availableServices, complianceState,
-publishedAt, sortDate}`. The `(listing_id, market_code)` key prevents duplicate
-country copies and the partial unique index permits at most one declared primary;
-the application write boundary requires exactly one. Discovery joins this relation with `status=active` and
+publishedAt, sortDate}` plus the effective promotion snapshot for that market.
+`listing_promotions.market_code` references the exact publication that was
+purchased or granted; ambiguous legacy promotion evidence fails closed instead
+of inheriting the primary or France market. Favorites retain the same market key
+through the client store, API and database, so favoriting a multi-market listing
+in one publication never mutates another. The `(listing_id, market_code)` key
+prevents duplicate country copies and the partial unique index permits at most
+one declared primary; the application write boundary requires exactly one.
+Discovery joins this relation with `status=active` and
 `compliance_state=approved`; it never falls back to `listings.market_code` for a
 different requested country.
 

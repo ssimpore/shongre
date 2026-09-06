@@ -1,47 +1,93 @@
 import type { VehiclePrivate } from "@shongre/contracts/auto";
-import type { CourseOffer, TutorProfile } from "@shongre/contracts/courses";
+import type {
+  CourseOffer,
+  TutorProfile,
+  TutorPublicProfile,
+} from "@shongre/contracts/courses";
 import type { JobPostingDetail } from "@shongre/contracts/employment";
 import {
   DELIVERY_TAXONOMY_CATEGORY_ID,
+  deliveryDiscoveryListingId,
   type DeliveryPublicRequest,
 } from "@shongre/contracts/delivery";
 import type { PropertyPrivate } from "@shongre/contracts/real-estate";
-import { getCountryConfig } from "@shongre/contracts";
+import {
+  getCountryConfig,
+  isActiveMarketResolvedListingPromotion,
+  type MarketResolvedListingPromotion,
+} from "@shongre/contracts";
+import { minorToMajorAmount } from "@shongre/shared/money";
 import type { Listing, ListingCondition, ListingStatus } from "../../types";
-import { webBrandAssets } from "@shongre/brand/web";
 import { DEFAULT_MARKET_CURRENCY } from "../../configuration/market-baseline";
 
 export type DiscoveryVertical =
   "automotive" | "delivery" | "employment" | "real_estate" | "tutoring";
 
-const EMPLOYMENT_FALLBACK_IMAGE =
-  "https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&w=960&q=82";
-const COURSE_FALLBACK_IMAGE =
-  "https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=960&q=82";
-const AUTO_FALLBACK_IMAGE =
-  "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=960&q=82";
-const IMMO_FALLBACK_IMAGE =
-  "https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=960&q=82";
+function resolvedPromotionFields(
+  promotion: MarketResolvedListingPromotion | undefined,
+  marketCode: string | undefined,
+): Partial<Listing> {
+  if (!isActiveMarketResolvedListingPromotion(promotion, marketCode)) return {};
+  const boostType: Listing["boostType"] =
+    promotion.type === "urgent_badge"
+      ? "urgent"
+      : promotion.type === "search_bump" || promotion.type === "top_placement"
+        ? "top_of_list"
+        : promotion.type.includes("spotlight")
+          ? "spotlight"
+          : "highlight";
+  return {
+    isBoosted: true,
+    boostType,
+    boostExpiresAt: promotion.endsAt,
+    promotionState: promotion.state,
+    promotionType: promotion.type,
+    promotionSource: promotion.source,
+    promotionSourceId: promotion.sourceId,
+    promotionLabel: promotion.label,
+    promotionStartAt: promotion.startsAt,
+    promotionEndAt: promotion.endsAt,
+    promotedAt: promotion.promotedAt,
+  };
+}
+
+function resolveProjectionMarketCode(
+  marketCodes: readonly string[],
+  requestedMarketCode: string | undefined,
+  entityLabel: string,
+): string {
+  if (requestedMarketCode) {
+    const normalizedMarket = requestedMarketCode.toUpperCase();
+    if (!marketCodes.includes(normalizedMarket))
+      throw new Error(
+        `${entityLabel} is not published in market ${normalizedMarket}`,
+      );
+    return normalizedMarket;
+  }
+  if (marketCodes.length === 1 && marketCodes[0]) return marketCodes[0];
+  throw new Error(
+    `${entityLabel} requires an explicit market for a multi-market projection`,
+  );
+}
 
 export function projectDeliveryRequest(
   request: DeliveryPublicRequest,
+  requestedMarketCode?: string,
 ): Listing {
-  const publishedAt = request.publishedAt || request.expiresAt;
-  const country = getCountryConfig(request.marketCode);
-  if (!country)
-    throw new Error(`Unsupported delivery market: ${request.marketCode}`);
+  const marketCode = resolveProjectionMarketCode(
+    [request.marketCode],
+    requestedMarketCode,
+    `Delivery request ${request.id}`,
+  );
+  const lifecycleReference = request.publishedAt || request.expiresAt;
+  const country = getCountryConfig(marketCode);
+  if (!country) throw new Error(`Unsupported delivery market: ${marketCode}`);
   const currency = request.budget?.currency || country.currency;
-  const photo = {
-    id: `delivery_${request.id}_brand`,
-    url: webBrandAssets.icon.primary.src,
-    isCover: true,
-    alt: "",
-  };
   return {
-    id: `delivery_${request.id}`,
+    id: deliveryDiscoveryListingId(request.id),
     title: request.title,
     description: request.description,
-    price: (request.budget?.amountMinor || 0) / 100,
+    price: minorToMajorAmount(request.budget?.amountMinor ?? 0, currency),
     currency,
     pricePresentation: {
       kind: "service_rate",
@@ -76,8 +122,8 @@ export function projectDeliveryRequest(
     postalCode: request.pickupLocality.postalCode,
     department: "",
     region: "",
-    photos: [photo],
-    coverImageUrl: photo.url,
+    photos: [],
+    coverImageUrl: "",
     deliveryOptions: [],
     isOnlinePaymentAvailable: false,
     isReservable: false,
@@ -102,16 +148,16 @@ export function projectDeliveryRequest(
       applicationCount: request.applicationCount,
     },
     status: request.status === "open" ? "active" : "archived",
-    createdAt: publishedAt,
-    updatedAt: publishedAt,
+    createdAt: lifecycleReference,
+    updatedAt: lifecycleReference,
     expiresAt: request.expiresAt,
     viewsCount: 0,
     favoritesCount: 0,
     contactCount: 0,
-    publishedAt,
-    organicFreshnessAt: publishedAt,
-    marketCode: request.marketCode,
-    marketCodes: [request.marketCode],
+    publishedAt: request.publishedAt,
+    organicFreshnessAt: lifecycleReference,
+    marketCode,
+    marketCodes: [marketCode],
   };
 }
 
@@ -243,14 +289,8 @@ function audienceLevels(levelIds: string[]): string[] {
   return Array.from(levels);
 }
 
-function photos(
-  id: string,
-  title: string,
-  urls: string[],
-  fallback: string,
-): Listing["photos"] {
-  const resolved = urls.length ? urls : [fallback];
-  return resolved.map((url, index) => ({
+function photos(id: string, title: string, urls: string[]): Listing["photos"] {
+  return urls.map((url, index) => ({
     id: `${id}-photo-${index + 1}`,
     url,
     isCover: index === 0,
@@ -282,26 +322,28 @@ function autoCondition(
   return "for_parts";
 }
 
-export function projectAutoVehicle(vehicle: VehiclePrivate): Listing {
+export function projectAutoVehicle(
+  vehicle: VehiclePrivate,
+  requestedMarketCode?: string,
+): Listing {
   const listingId = `listing_auto_${vehicle.id}`;
   const location = locationParts(vehicle.locationLabel);
-  const media = photos(
-    listingId,
-    vehicle.title,
-    vehicle.mediaUrls,
-    AUTO_FALLBACK_IMAGE,
-  );
+  const media = photos(listingId, vehicle.title, vehicle.mediaUrls);
   const professional = vehicle.seller.type === "dealer";
-  const isUrgent = vehicle.promotionLabels.includes("urgent");
-  const isFeatured = vehicle.promotionLabels.some((label) =>
-    ["featured", "sponsored"].includes(label),
+  const marketCode = resolveProjectionMarketCode(
+    vehicle.marketCodes,
+    requestedMarketCode,
+    `Vehicle ${vehicle.id}`,
   );
 
   return {
     id: listingId,
     title: vehicle.title,
     description: vehicle.description,
-    price: vehicle.price.amountMinor / 100,
+    price: minorToMajorAmount(
+      vehicle.price.amountMinor,
+      vehicle.price.currency,
+    ),
     currency: vehicle.price.currency,
     isNegotiable: Boolean(vehicle.priceNegotiable),
     isFreeDonation: false,
@@ -341,8 +383,8 @@ export function projectAutoVehicle(vehicle: VehiclePrivate): Listing {
       : undefined,
     publisherOrganizationLogoUrl: vehicle.seller.logoUrl,
     sellerAvatarUrl: vehicle.seller.logoUrl,
-    sellerRating: 0,
-    sellerReviewCount: 0,
+    sellerRating: vehicle.seller.rating ?? 0,
+    sellerReviewCount: vehicle.seller.reviewCount ?? 0,
     sellerIsVerified:
       vehicle.seller.verifiedBusiness ||
       vehicle.trust.sellerIdentity === "verified",
@@ -353,7 +395,7 @@ export function projectAutoVehicle(vehicle: VehiclePrivate): Listing {
     department: "",
     region: "",
     photos: media,
-    coverImageUrl: media[0].url,
+    coverImageUrl: media[0]?.url || "",
     deliveryOptions: [{ type: "hand_delivery", available: true, price: 0 }],
     isOnlinePaymentAvailable: false,
     attributes: {
@@ -411,9 +453,8 @@ export function projectAutoVehicle(vehicle: VehiclePrivate): Listing {
     viewsCount: 0,
     favoritesCount: 0,
     contactCount: 0,
-    isBoosted: isUrgent || isFeatured || undefined,
-    boostType: isUrgent ? "urgent" : isFeatured ? "highlight" : undefined,
-    marketCode: vehicle.marketCodes[0],
+    ...resolvedPromotionFields(vehicle.resolvedPromotion, marketCode),
+    marketCode,
     marketCodes: vehicle.marketCodes,
     externalStockId: vehicle.stockReference,
   };
@@ -428,13 +469,17 @@ function employmentStatus(job: JobPostingDetail): ListingStatus {
 }
 
 export function projectEmploymentJob(job: JobPostingDetail): Listing {
+  if (!job.publishedAt) {
+    throw new Error(
+      "Une offre d’emploi doit avoir une date de publication fiable avant son indexation publique.",
+    );
+  }
   const listingId = `listing_employment_${job.id}`;
   const professional = Boolean(job.employer.organizationId);
   const media = photos(
     listingId,
     job.title,
     job.employer.logoUrl ? [job.employer.logoUrl] : [],
-    EMPLOYMENT_FALLBACK_IMAGE,
   );
   const salary = job.salary?.minimum || job.salary?.maximum;
   const contractCode = idSuffix(job.contractTypeId);
@@ -453,7 +498,7 @@ export function projectEmploymentJob(job: JobPostingDetail): Listing {
     ]
       .filter(Boolean)
       .join(" · "),
-    price: salary ? salary.amountMinor / 100 : 0,
+    price: salary ? minorToMajorAmount(salary.amountMinor, salary.currency) : 0,
     currency: salaryCurrency,
     pricePresentation: {
       kind: "salary",
@@ -515,7 +560,7 @@ export function projectEmploymentJob(job: JobPostingDetail): Listing {
     latitude: job.primaryLocation.latitude,
     longitude: job.primaryLocation.longitude,
     photos: media,
-    coverImageUrl: media[0].url,
+    coverImageUrl: media[0]?.url || "",
     deliveryOptions: [],
     isOnlinePaymentAvailable: false,
     attributes: {
@@ -541,7 +586,7 @@ export function projectEmploymentJob(job: JobPostingDetail): Listing {
       ),
       salary_annual_keur:
         salaryFrequency === "year" && salary
-          ? salary.amountMinor / 100_000
+          ? minorToMajorAmount(salary.amountMinor, salary.currency) / 1_000
           : undefined,
       engagement_duration: mapFacetValue(contractCode, EMPLOYMENT_DURATION),
       start_date: job.desiredStartDate,
@@ -561,19 +606,19 @@ export function projectEmploymentJob(job: JobPostingDetail): Listing {
     viewsCount: 0,
     favoritesCount: 0,
     contactCount: 0,
-    isBoosted: job.isUrgent || job.isFeatured || job.isSponsored || undefined,
-    boostType: job.isUrgent
-      ? "urgent"
-      : job.isFeatured || job.isSponsored
-        ? "highlight"
-        : undefined,
+    ...resolvedPromotionFields(job.resolvedPromotion, job.marketCode),
     marketCode: job.marketCode,
     marketCodes: [job.marketCode],
   };
 }
 
-function courseStatus(tutor: TutorProfile, offer: CourseOffer): ListingStatus {
-  if (offer.status === "published" && tutor.moderationStatus === "approved")
+function courseStatus(
+  tutor: TutorProfile | TutorPublicProfile,
+  offer: CourseOffer,
+): ListingStatus {
+  const moderationStatus =
+    "moderationStatus" in tutor ? tutor.moderationStatus : "approved";
+  if (offer.status === "published" && moderationStatus === "approved")
     return "active";
   if (offer.status === "pending_review") return "pending_review";
   if (offer.status === "draft") return "draft";
@@ -581,32 +626,43 @@ function courseStatus(tutor: TutorProfile, offer: CourseOffer): ListingStatus {
 }
 
 export function projectCourseOffer(
-  tutor: TutorProfile,
+  tutor: TutorProfile | TutorPublicProfile,
   offer: CourseOffer,
   subjectLabel = "Éducation & Formation",
+  requestedMarketCode?: string,
+  resolvedPromotion?: MarketResolvedListingPromotion,
 ): Listing {
+  const marketCode = resolveProjectionMarketCode(
+    offer.marketCodes,
+    requestedMarketCode,
+    `Course offer ${offer.id}`,
+  );
+  const country = getCountryConfig(marketCode);
+  if (!country) throw new Error(`Unsupported course market: ${marketCode}`);
   const listingId = offer.listingId || `listing_course_${offer.id}`;
   const activePrices = offer.pricingOptions
     .filter((option) => option.isActive)
     .sort((a, b) => a.price.amountMinor - b.price.amountMinor);
-  const price = activePrices[0]?.price || {
-    amountMinor: 0,
-    currency: DEFAULT_MARKET_CURRENCY,
-  };
+  const activePrice = activePrices[0];
+  const price = activePrice?.price;
   const imageUrls = [tutor.avatarUrl, ...tutor.mediaUrls].filter(
     (url): url is string => Boolean(url),
   );
-  const media = photos(
-    listingId,
-    offer.title,
-    imageUrls,
-    COURSE_FALLBACK_IMAGE,
-  );
+  const media = photos(listingId, offer.title, imageUrls);
   const professional = Boolean(tutor.organizationId);
+  const serviceArea =
+    offer.serviceArea?.marketCode === marketCode
+      ? offer.serviceArea
+      : tutor.serviceArea?.marketCode === marketCode
+        ? tutor.serviceArea
+        : undefined;
+  const supportsOnline = offer.deliveryModes.some(
+    (mode) => mode === "online" || mode === "hybrid",
+  );
   const city =
-    offer.serviceArea?.publicLocationLabel ||
-    tutor.serviceArea?.publicLocationLabel ||
-    "En ligne";
+    serviceArea?.publicLocationLabel ||
+    serviceArea?.cityLabel ||
+    (supportsOnline ? "En ligne" : country.name);
   const deliveryMode = offer.deliveryModes.map((mode) =>
     mode === "online" ? "remote" : "in_person",
   );
@@ -615,8 +671,18 @@ export function projectCourseOffer(
     id: listingId,
     title: offer.title,
     description: offer.description,
-    price: price.amountMinor / 100,
-    currency: price.currency,
+    price: price ? minorToMajorAmount(price.amountMinor, price.currency) : 0,
+    currency: price?.currency || country.currency,
+    pricePresentation: price
+      ? {
+          kind: "service_rate",
+          visibility: "public",
+          minimumAmountMinor: price.amountMinor,
+          maximumAmountMinor: price.amountMinor,
+          currency: price.currency,
+          period: activePrice?.type === "hourly" ? "hour" : "total",
+        }
+      : undefined,
     isNegotiable: false,
     isFreeDonation: false,
     categorySlug: "education",
@@ -628,7 +694,7 @@ export function projectCourseOffer(
     sellerName: tutor.displayName,
     sellerType: professional ? "pro" : "individual",
     publisherType: professional ? "professional" : "private",
-    publisherUserId: tutor.userId,
+    publisherUserId: "userId" in tutor ? tutor.userId : undefined,
     publisherOrganizationId: tutor.organizationId,
     publisherVerificationStatus:
       tutor.verifications.business === "verified"
@@ -644,14 +710,14 @@ export function projectCourseOffer(
     sellerRating: tutor.rating || 0,
     sellerReviewCount: tutor.reviewCount,
     sellerIsVerified: tutor.verifications.identity === "verified",
-    sellerCity: tutor.serviceArea?.cityLabel || city,
+    sellerCity: serviceArea?.cityLabel || city,
     sellerPostalCode: "00000",
     city,
     postalCode: "00000",
     department: "",
-    region: tutor.serviceArea?.region || "",
+    region: serviceArea?.region || "",
     photos: media,
-    coverImageUrl: media[0].url,
+    coverImageUrl: media[0]?.url || "",
     deliveryOptions: [{ type: "hand_delivery", available: true, price: 0 }],
     isOnlinePaymentAvailable: false,
     attributes: {
@@ -663,12 +729,20 @@ export function projectCourseOffer(
       subjectId: offer.subjectId,
       levelIds: offer.levelIds,
       deliveryModes: offer.deliveryModes,
+      price_type:
+        activePrice?.type === "trial" && price?.amountMinor === 0
+          ? "free"
+          : activePrice
+            ? undefined
+            : "unpriced",
       billing_mode:
-        activePrices[0]?.type === "hourly"
+        activePrice?.type === "hourly"
           ? "hourly"
-          : activePrices[0]?.type === "trial"
+          : activePrice?.type === "trial"
             ? "free_first"
-            : "flat_rate",
+            : activePrice
+              ? "flat_rate"
+              : undefined,
       location_mode:
         offer.deliveryModes.length > 1
           ? "flexible"
@@ -677,9 +751,8 @@ export function projectCourseOffer(
             : "provider_premises",
       audience_level: audienceLevels(offer.levelIds),
       delivery_mode: Array.from(new Set(deliveryMode)),
-      travel_radius_km:
-        offer.serviceArea?.radiusKm || tutor.serviceArea?.radiusKm,
-      session_duration_minutes: activePrices[0]?.durationMinutes,
+      travel_radius_km: serviceArea?.radiusKm,
+      session_duration_minutes: activePrice?.durationMinutes,
       languages: offer.languages,
       availability: offer.availabilitySummary,
       trialLessonAvailable: offer.trialLessonAvailable,
@@ -694,7 +767,8 @@ export function projectCourseOffer(
     viewsCount: 0,
     favoritesCount: 0,
     contactCount: 0,
-    marketCode: offer.marketCodes[0],
+    ...resolvedPromotionFields(resolvedPromotion, marketCode),
+    marketCode,
     marketCodes: offer.marketCodes,
   };
 }
@@ -722,14 +796,21 @@ function propertyCondition(
   return "fair";
 }
 
-export function projectRealEstateProperty(property: PropertyPrivate): Listing {
+export function projectRealEstateProperty(
+  property: PropertyPrivate,
+  requestedMarketCode?: string,
+): Listing {
   const media = photos(
     property.listingId,
     property.title,
     property.media.photos,
-    IMMO_FALLBACK_IMAGE,
   );
   const professional = property.seller.type !== "owner";
+  const marketCode = resolveProjectionMarketCode(
+    property.marketCodes,
+    requestedMarketCode,
+    `Property ${property.id}`,
+  );
   const verified = property.seller.verificationLabels.length > 0;
   const amenities = property.characteristics.amenities.map(
     (amenity) => facetSlug(amenity) || amenity,
@@ -757,7 +838,10 @@ export function projectRealEstateProperty(property: PropertyPrivate): Listing {
     id: property.listingId,
     title: property.title,
     description: property.description,
-    price: property.financials.price.amountMinor / 100,
+    price: minorToMajorAmount(
+      property.financials.price.amountMinor,
+      property.financials.price.currency,
+    ),
     currency: property.financials.price.currency,
     isNegotiable: property.financials.isNegotiable,
     isFreeDonation: false,
@@ -796,9 +880,10 @@ export function projectRealEstateProperty(property: PropertyPrivate): Listing {
       : undefined,
     publisherOrganizationLogoUrl: property.seller.logoUrl,
     sellerAvatarUrl: property.seller.logoUrl,
-    sellerRating: 0,
-    sellerReviewCount: 0,
+    sellerRating: property.seller.rating ?? 0,
+    sellerReviewCount: property.seller.reviewCount ?? 0,
     sellerIsVerified: verified,
+    sellerResponseTimeLabel: property.seller.responseTimeLabel,
     sellerCity: property.address.city,
     sellerPostalCode: property.address.postalCode,
     city: property.address.publicLabel,
@@ -808,7 +893,7 @@ export function projectRealEstateProperty(property: PropertyPrivate): Listing {
     latitude: property.address.latitude,
     longitude: property.address.longitude,
     photos: media,
-    coverImageUrl: media[0].url,
+    coverImageUrl: media[0]?.url || "",
     deliveryOptions: [{ type: "hand_delivery", available: true, price: 0 }],
     isOnlinePaymentAvailable: false,
     isReservable: false,
@@ -841,7 +926,10 @@ export function projectRealEstateProperty(property: PropertyPrivate): Listing {
       garden: outdoorSpace.includes("garden"),
       monthly_rent:
         property.financials.period === "month"
-          ? property.financials.price.amountMinor / 100
+          ? minorToMajorAmount(
+              property.financials.price.amountMinor,
+              property.financials.price.currency,
+            )
           : undefined,
       availability_date: property.characteristics.availabilityDate,
       total_floors: property.characteristics.floorCount,
@@ -859,15 +947,8 @@ export function projectRealEstateProperty(property: PropertyPrivate): Listing {
     viewsCount: 0,
     favoritesCount: 0,
     contactCount: 0,
-    isBoosted:
-      property.promotion.featured || property.promotion.urgent || undefined,
-    boostType: property.promotion.urgent
-      ? "urgent"
-      : property.promotion.featured || property.promotion.sponsored
-        ? "highlight"
-        : undefined,
-    boostExpiresAt: property.promotion.endsAt,
-    marketCode: property.marketCodes[0],
+    ...resolvedPromotionFields(property.resolvedPromotion, marketCode),
+    marketCode,
     marketCodes: property.marketCodes,
   };
 }

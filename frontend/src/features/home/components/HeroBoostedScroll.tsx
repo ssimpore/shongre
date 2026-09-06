@@ -1,27 +1,19 @@
 import { PAGE_SIZES } from "../../../configuration/pagination.config";
-import { IMAGE_SIZES } from "@shongre/shared";
-import { isProSeller } from "../../../domains/user/user.domain";
+import { getListingPromotionBadges } from "@shongre/features";
 import React, { useState, useEffect, useMemo, useRef } from "react";
-import { Link } from "react-router-dom";
-import {
-  ChevronLeft,
-  ChevronRight,
-  MapPin,
-  Pause,
-  Play,
-  Truck,
-} from "lucide-react";
-import { Listing } from "../../../types";
-import { FavoriteButton } from "../../../design-system/primitives/FavoriteButton";
+import { ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
+import type { Listing } from "../../../types";
 import { IconButton } from "../../../design-system/primitives/IconButton";
-import { Badge } from "../../../design-system/primitives/Badge";
 import { services } from "../../../api/client/service-registry";
-import { Image } from "../../../design-system/primitives/Image";
 import { useMediaQuery } from "../../../hooks/useMediaQuery";
 import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
 import { useTranslation } from "../../../i18n/I18nProvider";
-import { getListingCategoryLabel } from "../../../domains/taxonomy/taxonomy.display";
 import { useFavorites } from "../../../app/providers/FavoritesProvider";
+import { ListingCardViewCard } from "../../../design-system/primitives/ListingCard";
+import {
+  getGenericListingCardHref,
+  projectGenericListingCardView,
+} from "../../../domains/listing/listing-card.generic-presentation";
 
 const MAX_FEATURED_LISTINGS = 8;
 const STEP_MS = 4500;
@@ -67,18 +59,18 @@ function scrollRailTo(rail: HTMLElement, left: number, smooth: boolean): void {
   rail.addEventListener("scrollend", done, { once: true });
 }
 
-function getListingPhotoUrl(photo: any): string {
-  if (typeof photo === "string") return photo;
-  if (photo && typeof photo.url === "string") return photo.url;
-  return "https://images.unsplash.com/photo-1584438784894-089d6a62b8fa?w=400&auto=format&fit=crop&q=80";
-}
-
 export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
   onListingClick,
 }) => {
   const { t } = useTranslation();
-  const { activeMarket, formatPrice } = useMarketLocation();
-  const { favoriteIds: favorites, toggleFavorite } = useFavorites();
+  const { activeMarket, currentLocale, convertMoney } = useMarketLocation();
+  const {
+    canModifyFavorites,
+    favoriteIds: favorites,
+    favoriteLoadState,
+    refreshFavorites,
+    toggleFavorite,
+  } = useFavorites();
   const [isInteractionPaused, setIsInteractionPaused] = useState(false);
   const [isUserPaused, setIsUserPaused] = useState(false);
   const [allListings, setAllListings] = useState<Listing[]>([]);
@@ -96,6 +88,7 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
   useEffect(() => {
     let active = true;
     setIsLoading(true);
+    setAllListings([]);
     services.listings
       .getListings({
         marketCode: activeMarket.code,
@@ -115,40 +108,44 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
     };
   }, [activeMarket.code]);
 
-  // Load and sort listings: give explicit priority to the Sézane coat (list-105) and De'Longhi espresso (list-109)
-  const promotedListings = useMemo(() => {
-    const active = allListings.filter((l) => l && l.status === "active");
-
-    const sorted = [...active].sort((a, b) => {
-      const getPriority = (item: Listing) => {
-        if (item.id === "list-105") return 100;
-        if (item.id === "list-109") return 90;
-        return (
-          (item?.isBoosted ? 10 : 0) +
-          (isProSeller(item) ? 5 : 0) +
-          (item?.originalPrice ? 2 : 0)
-        );
-      };
-      return getPriority(b) - getPriority(a);
-    });
-
-    return sorted;
-  }, [allListings]);
-
   const scrollSequence = useMemo(() => {
-    const fallbackList = allListings
-      .filter((l) => l && l.status === "active")
-      .slice(0, 8);
-    const list = promotedListings.length > 0 ? promotedListings : fallbackList;
-    return list.slice(0, MAX_FEATURED_LISTINGS);
-  }, [promotedListings, allListings]);
-  const isFeaturedListing = (listing: Listing): boolean => {
-    if (listing.discovery?.isSponsored) return true;
-    if (listing.promotionState === "active") {
-      return listing.promotionType !== "urgent_badge";
+    const projected = allListings
+      .filter((listing) => listing?.status === "active")
+      .map((listing) => ({
+        listing,
+        card: projectGenericListingCardView(
+          listing,
+          currentLocale,
+          activeMarket.code,
+          undefined,
+          convertMoney,
+        ),
+      }));
+    /* The hero is an editorial, image-led surface. Listings without media keep
+       their shared-card fallback everywhere else, but they should not displace
+       a real listing photo here when image-rich inventory is available. */
+    const candidatesWithMedia = projected.filter(({ card }) =>
+      Boolean(card.imageUrl),
+    );
+    const candidates = candidatesWithMedia.length
+      ? candidatesWithMedia
+      : projected;
+    const promoted: typeof candidates = [];
+    const organic: typeof candidates = [];
+    for (const candidate of candidates) {
+      const target = getListingPromotionBadges(candidate.card).length
+        ? promoted
+        : organic;
+      target.push(candidate);
     }
-    return Boolean(listing.isBoosted && listing.boostType !== "urgent");
-  };
+
+    // The service order remains authoritative inside each group. The Hero only
+    // lifts listings carrying the shared market-resolved promotion projection;
+    // legacy `isBoosted` flags, seller type, discounts and fixture ids are not
+    // ranking evidence.
+    return [...promoted, ...organic].slice(0, MAX_FEATURED_LISTINGS);
+  }, [activeMarket.code, allListings, convertMoney, currentLocale]);
+  const favoriteSet = useMemo(() => new Set(favorites), [favorites]);
 
   const prefersReducedMotion = useMediaQuery(
     "(prefers-reduced-motion: reduce)",
@@ -228,22 +225,13 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
     setActiveIndex(Math.min(Math.max(nextIndex, 0), scrollSequence.length - 1));
   };
 
-  const handleToggleFavorite = async (
-    e: React.MouseEvent,
-    listingId: string,
-  ) => {
-    e.preventDefault();
-    e.stopPropagation();
-    await toggleFavorite(listingId);
-  };
-
   /* A newly opened market may have no eligible featured listing. Collapsing
      the gallery avoids leaving an empty media well beside the hero copy. */
   if (scrollSequence.length === 0) {
     return isLoading ? (
       <div
         data-home-boosted-surface="true"
-        className="skeleton-shimmer aspect-video w-full rounded-card bg-bg-muted"
+        className="skeleton-shimmer h-listing-card-list-height w-full rounded-listing-card bg-bg-muted lg:h-full"
         aria-hidden="true"
       />
     ) : null;
@@ -251,6 +239,7 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
 
   return (
     <section
+      data-home-boosted-carousel="true"
       className="relative flex w-full max-w-full flex-1 flex-col justify-between"
       aria-label={t("home.heroBoostedScroll.carouselLabel")}
       aria-roledescription="carrousel"
@@ -265,12 +254,12 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
 
       <div
         data-home-boosted-surface="true"
-        className="relative isolate overflow-hidden rounded-card border border-border-base shadow-md"
+        className="relative isolate h-listing-card-list-height rounded-listing-card lg:h-full"
       >
         <div
           id="hero-boosted-track"
           ref={railRef}
-          className="relative z-base flex aspect-video w-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain scrollbar-none"
+          className="relative z-base flex h-full w-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain scrollbar-none"
           aria-label={t("home.heroBoostedScroll.carouselLabel")}
           tabIndex={0}
           onScroll={handleScroll}
@@ -286,17 +275,45 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
             }
           }}
         >
-          {scrollSequence.map((item, index) => {
+          {scrollSequence.map(({ listing, card }, index) => {
             const distance = Math.abs(index - activeIndex);
             const isAdjacent =
               distance <= 1 || distance === scrollSequence.length - 1;
             return isAdjacent ? (
-              renderItemCard(item, index, isFeaturedListing(item))
+              <div
+                key={listing.id}
+                data-hero-listing-slide="true"
+                role="group"
+                aria-roledescription="diapositive"
+                aria-label={`${index + 1} / ${scrollSequence.length}`}
+                aria-hidden={index !== activeIndex}
+                inert={index !== activeIndex}
+                className="flex h-full w-full shrink-0 snap-center items-center justify-center"
+              >
+                <ListingCardViewCard
+                  listing={card}
+                  href={getGenericListingCardHref(listing)}
+                  variant="hero"
+                  className="listing-card-hero-horizontal mx-auto"
+                  imagePriority={index === 0}
+                  isFavorite={favoriteSet.has(listing.id)}
+                  favoriteLoadState={favoriteLoadState}
+                  onFavoriteToggle={
+                    canModifyFavorites
+                      ? () => toggleFavorite(listing.id)
+                      : undefined
+                  }
+                  onFavoriteRetry={
+                    canModifyFavorites ? refreshFavorites : undefined
+                  }
+                  onNavigate={() => onListingClick?.(listing)}
+                />
+              </div>
             ) : (
               <div
-                key={item.id}
+                key={listing.id}
                 aria-hidden="true"
-                className="h-full w-full shrink-0 snap-center bg-surface-disabled"
+                className="h-full w-full shrink-0 snap-center"
               />
             );
           })}
@@ -331,43 +348,46 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
           </>
         )}
 
-        <div
-          className="absolute bottom-3 right-4 z-raised flex items-center gap-1.5"
-          aria-hidden="true"
-        >
-          {scrollSequence.map((item, index) => (
-            <span
-              key={item.id}
-              className={`h-2 rounded-pill shadow-2xs motion-interactive ${
-                index === activeIndex
-                  ? "w-4 bg-primary"
-                  : "w-2 bg-bg-surface/70"
-              }`}
-            />
-          ))}
-        </div>
+        <div className="absolute bottom-3 right-4 z-raised flex items-center gap-3">
+          {scrollSequence.length > 1 ? (
+            <IconButton
+              variant="secondary"
+              size="sm"
+              ariaLabel={t(
+                isUserPaused
+                  ? "home.heroBoostedScroll.play"
+                  : "home.heroBoostedScroll.pause",
+              )}
+              aria-controls="hero-boosted-track"
+              aria-pressed={isUserPaused}
+              onClick={() => setIsUserPaused((current) => !current)}
+              className="shrink-0 rounded-full shadow-sm"
+            >
+              {isUserPaused ? (
+                <Play className="h-icon-sm w-icon-sm" aria-hidden="true" />
+              ) : (
+                <Pause className="h-icon-sm w-icon-sm" aria-hidden="true" />
+              )}
+            </IconButton>
+          ) : null}
 
-        {scrollSequence.length > 1 ? (
-          <IconButton
-            variant="ghost"
-            size="sm"
-            ariaLabel={t(
-              isUserPaused
-                ? "home.heroBoostedScroll.play"
-                : "home.heroBoostedScroll.pause",
-            )}
-            aria-controls="hero-boosted-track"
-            aria-pressed={isUserPaused}
-            onClick={() => setIsUserPaused((current) => !current)}
-            className="absolute right-16 top-4 z-raised rounded-full bg-surface-inverse-deep/60 text-text-inverse shadow-sm backdrop-blur-xs hover:bg-surface-inverse-deep/80 hover:text-text-inverse"
+          <div
+            data-hero-carousel-indicators="true"
+            className="hidden items-center gap-1.5 sm:flex"
+            aria-hidden="true"
           >
-            {isUserPaused ? (
-              <Play className="h-icon-sm w-icon-sm" aria-hidden="true" />
-            ) : (
-              <Pause className="h-icon-sm w-icon-sm" aria-hidden="true" />
-            )}
-          </IconButton>
-        ) : null}
+            {scrollSequence.map(({ listing }, index) => (
+              <span
+                key={listing.id}
+                className={`h-2 rounded-pill shadow-2xs motion-interactive ${
+                  index === activeIndex
+                    ? "w-4 bg-primary"
+                    : "w-2 bg-border-base"
+                }`}
+              />
+            ))}
+          </div>
+        </div>
       </div>
 
       <span className="sr-only" aria-live="polite">
@@ -375,96 +395,4 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
       </span>
     </section>
   );
-
-  function renderItemCard(
-    item: Listing,
-    index: number,
-    showFeaturedBadge: boolean,
-  ) {
-    const isFav = favorites.includes(item.id);
-    const isActive = index === activeIndex;
-    const photoUrl = getListingPhotoUrl(item.coverImageUrl || item.photos?.[0]);
-
-    return (
-      <article
-        key={item.id}
-        className="group relative h-full w-full shrink-0 snap-center overflow-hidden bg-surface-disabled"
-        aria-label={`${index + 1} / ${scrollSequence.length}`}
-        aria-hidden={!isActive}
-        inert={!isActive}
-      >
-        <Link
-          to={`/annonce/${item.id}`}
-          onClick={() => onListingClick?.(item)}
-          className="absolute inset-0 block focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-focus"
-        >
-          <Image
-            src={photoUrl}
-            alt={item.title}
-            sizes={IMAGE_SIZES.gallery}
-            priority={index === 0}
-            className="h-full w-full object-cover transition-transform duration-slow group-hover:scale-105"
-          />
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-surface-inverse-deep/90 via-surface-inverse-deep/20 to-transparent" />
-
-          <div className="absolute inset-x-0 bottom-0 p-4 pb-5 text-text-inverse sm:p-5 sm:pb-5 sm:pr-32">
-            <p className="mb-1.5 truncate text-micro font-bold uppercase tracking-wider text-primary-on-inverse-muted sm:text-xs">
-              {getListingCategoryLabel(item) || "Mode & Accessoires"}
-            </p>
-            <h3
-              title={item.title}
-              className="line-clamp-2 text-base font-semibold leading-snug sm:text-lg"
-            >
-              {item.title}
-            </h3>
-
-            <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1">
-              <div className="flex items-baseline gap-1.5">
-                <span className="text-base font-bold sm:text-lg">
-                  {formatPrice(item.price)}
-                </span>
-                {item.originalPrice && item.originalPrice > item.price && (
-                  <span className="text-xs font-medium text-text-inverse/70 line-through sm:text-sm">
-                    {formatPrice(item.originalPrice)}
-                  </span>
-                )}
-              </div>
-
-              <span className="inline-flex items-center gap-1 truncate text-xs font-medium text-text-inverse/85 sm:text-sm">
-                <MapPin className="h-icon-sm w-icon-sm shrink-0" />
-                {item.city || "Lyon 2e"}
-              </span>
-              {item.deliveryOptions?.some(
-                (o) => o.available && o.type !== "hand_delivery",
-              ) && (
-                <span className="inline-flex items-center gap-1 text-xs font-medium text-text-inverse/85 sm:text-sm">
-                  <Truck className="h-icon-sm w-icon-sm" />
-                  {t("home.heroBoostedScroll.livraison")}
-                </span>
-              )}
-            </div>
-          </div>
-        </Link>
-
-        {showFeaturedBadge && (
-          <Badge
-            variant="featured"
-            size="sm"
-            icon
-            className="pointer-events-none absolute left-4 top-4 z-raised px-1.5 shadow-sm"
-          >
-            <span className="sr-only">{t("ui.listingCard.annonceALaUne")}</span>
-          </Badge>
-        )}
-
-        <FavoriteButton
-          isFavorite={isFav}
-          onToggle={(e) => handleToggleFavorite(e, item.id)}
-          size="lg"
-          variant="floating"
-          className="absolute right-4 top-4 z-raised"
-        />
-      </article>
-    );
-  }
 };

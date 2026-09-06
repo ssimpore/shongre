@@ -118,4 +118,47 @@ describe("CollectionService", () => {
     expect(results.some((l) => l.id === "1")).toBe(true);
     expect(results.some((l) => l.id === "2")).toBe(false);
   });
+
+  it("keeps only proven, current promotions for the requested market", () => {
+    const collection = collectionService.getCollection("vedettes")!;
+    const startsAt = new Date(Date.now() - 60_000).toISOString();
+    const endsAt = new Date(Date.now() + 60_000).toISOString();
+    const promoted = {
+      id: "promoted-fr",
+      title: "Annonce mise en avant",
+      price: 100,
+      status: "active",
+      marketCode: "FR",
+      promotionState: "active",
+      promotionType: "featured",
+      promotionSource: "purchase",
+      promotionSourceId: "opaque-proof",
+      promotionStartAt: startsAt,
+      promotionEndAt: endsAt,
+    } as Listing;
+
+    const results = collectionService.filterListingsForCollection(
+      collection,
+      [
+        promoted,
+        {
+          ...promoted,
+          id: "legacy",
+          promotionState: undefined,
+          isBoosted: true,
+        },
+        { ...promoted, id: "wrong-market", marketCode: "BE" },
+        { ...promoted, id: "missing-proof", promotionSourceId: undefined },
+        {
+          ...promoted,
+          id: "expired",
+          promotionStartAt: new Date(Date.now() - 120_000).toISOString(),
+          promotionEndAt: new Date(Date.now() - 60_000).toISOString(),
+        },
+      ],
+      { marketCode: "FR" },
+    );
+
+    expect(results.map((listing) => listing.id)).toEqual(["promoted-fr"]);
+  });
 });

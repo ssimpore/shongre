@@ -2,82 +2,57 @@ import { expect, test, type Locator, type Page } from "@playwright/test";
 import { expectNoHorizontalOverflow, waitForStableLayout } from "./overflow";
 import { useEstablishedConsent, usePersona } from "./personas";
 
-const REQUESTED_WIDTHS = [
-  320, 375, 390, 430, 768, 1024, 1280, 1408, 1440, 1536,
-];
+const REQUESTED_WIDTHS = [320, 375, 390, 430, 768, 1024, 1408, 1440];
 
 async function expectCardContentContained(card: Locator, label: string) {
   await card.scrollIntoViewIfNeeded();
-  await expect(card, `${label}: card should be visible`).toBeVisible();
+  await expect(card, `${label}: visible card`).toBeVisible();
   const geometry = await card.evaluate((element) => {
     const rect = element.getBoundingClientRect();
-    const interactiveElements = Array.from(
-      element.querySelectorAll<HTMLElement>("a, button"),
-    )
-      .filter((item) => item.getClientRects().length > 0)
-      .map((item) => {
-        const itemRect = item.getBoundingClientRect();
-        return {
-          left: itemRect.left,
-          right: itemRect.right,
-          top: itemRect.top,
-          bottom: itemRect.bottom,
-        };
-      });
+    const media = element
+      .querySelector<HTMLElement>('[data-listing-card-media="true"]')
+      ?.getBoundingClientRect();
     return {
       variant: element.getAttribute("data-listing-card-variant"),
       viewportWidth: window.innerWidth,
       width: rect.width,
       height: rect.height,
-      clientWidth: element.clientWidth,
       scrollWidth: element.scrollWidth,
-      clientHeight: element.clientHeight,
+      clientWidth: element.clientWidth,
       scrollHeight: element.scrollHeight,
-      rect: {
-        left: rect.left,
-        right: rect.right,
-        top: rect.top,
-        bottom: rect.bottom,
-      },
-      interactiveElements,
+      clientHeight: element.clientHeight,
+      mediaRatio: media ? media.width / media.height : 0,
+      controlsContained: Array.from(
+        element.querySelectorAll<HTMLElement>("a, button"),
+      )
+        .filter((control) => control.getClientRects().length > 0)
+        .every((control) => {
+          const controlRect = control.getBoundingClientRect();
+          return (
+            controlRect.left >= rect.left - 1 &&
+            controlRect.right <= rect.right + 1 &&
+            controlRect.top >= rect.top - 1 &&
+            controlRect.bottom <= rect.bottom + 1
+          );
+        }),
     };
   });
 
   expect(
     geometry.scrollWidth,
-    `${label}: card has horizontally clipped content`,
+    `${label}: horizontal card clipping`,
   ).toBeLessThanOrEqual(geometry.clientWidth + 1);
   expect(
     geometry.scrollHeight,
-    `${label}: card has vertically clipped content`,
+    `${label}: vertical card clipping`,
   ).toBeLessThanOrEqual(geometry.clientHeight + 1);
-  expect(
-    geometry.width,
-    `${label}: card is wider than its responsive limit`,
-  ).toBeLessThanOrEqual(
+  expect(geometry.width, `${label}: width`).toBeLessThanOrEqual(
     geometry.variant === "list" ? geometry.viewportWidth : 304,
   );
-  expect(
-    geometry.height,
-    `${label}: card is unexpectedly tall`,
-  ).toBeLessThanOrEqual(520);
-  for (const control of geometry.interactiveElements) {
-    expect(
-      control.left,
-      `${label}: control escapes the left edge`,
-    ).toBeGreaterThanOrEqual(geometry.rect.left - 1);
-    expect(
-      control.right,
-      `${label}: control escapes the right edge`,
-    ).toBeLessThanOrEqual(geometry.rect.right + 1);
-    expect(
-      control.top,
-      `${label}: control escapes the top edge`,
-    ).toBeGreaterThanOrEqual(geometry.rect.top - 1);
-    expect(
-      control.bottom,
-      `${label}: control escapes the bottom edge`,
-    ).toBeLessThanOrEqual(geometry.rect.bottom + 1);
+  expect(geometry.height, `${label}: height`).toBeLessThanOrEqual(520);
+  expect(geometry.controlsContained, `${label}: controls`).toBe(true);
+  if (geometry.variant !== "list" && geometry.width <= 210) {
+    expect(geometry.mediaRatio, `${label}: portrait media`).toBeCloseTo(0.8, 1);
   }
 }
 
@@ -107,703 +82,218 @@ test.describe("canonical listing cards", () => {
     });
   }
 
-  test("keeps the seller identity complete in the compact card footer", async ({
+  test("uses the exact compact hierarchy and only real optional facts", async ({
     page,
   }) => {
-    await page.setViewportSize({ width: 1408, height: 701 });
-    await usePersona(page, "individual_buyer");
-    await page.goto("/", { waitUntil: "domcontentloaded" });
-    await waitForStableLayout(page);
+    await page.setViewportSize({ width: 1408, height: 900 });
+    await openAsGuest(page, "/recherche");
 
-    const card = page
-      .locator('[data-listing-card="true"]', { hasText: "Thomas Laurent" })
+    const branded = page
+      .locator('[data-listing-card="true"]', {
+        has: page.locator('a[href="/annonce/list-113"]'),
+      })
       .first();
-    await card.scrollIntoViewIfNeeded();
-    await expect(card).toBeVisible();
-    const geometry = await card.evaluate((element) => {
-      const cardRect = element.getBoundingClientRect();
-      const titleRect = element.querySelector("h3")?.getBoundingClientRect();
-      const sellerRow = element.querySelector<HTMLElement>(
-        '[data-listing-card-seller="true"]',
-      );
-      const sellerName = sellerRow?.querySelector<HTMLElement>(
-        '[title="Thomas Laurent"]',
-      );
-      const sellerVerified = sellerRow?.querySelector<HTMLElement>(
-        '[data-ui-verified-icon="true"]',
-      );
-      const sellerRect = sellerRow?.getBoundingClientRect();
-      const sellerNameTextRect = (() => {
-        const textNode = sellerName?.firstChild;
-        if (!textNode) return undefined;
-        const range = document.createRange();
-        range.selectNodeContents(textNode);
-        return range.getBoundingClientRect();
-      })();
-      const sellerVerifiedRect = sellerVerified?.getBoundingClientRect();
-      const sellerAvatar = Array.from(
-        element.querySelectorAll<HTMLElement>(
-          '[data-listing-card-seller-avatar="true"]',
-        ),
-      ).find((avatar) => avatar.getClientRects().length > 0);
-      const sellerAvatarRect = sellerAvatar?.getBoundingClientRect();
-      const sellerAvatarImage = sellerAvatar?.querySelector("img");
-      const footerRect = element
-        .querySelector<HTMLElement>('[data-listing-card-footer="true"]')
-        ?.getBoundingClientRect();
+    await branded.scrollIntoViewIfNeeded();
+    await expect(branded).toBeVisible();
+    await expect(
+      branded.locator('[data-listing-card-category-row="true"]'),
+    ).toHaveText("Bébé & Famille·Cybex");
+    await expect(branded.locator('[data-ui-pro-badge="true"]')).toHaveCount(0);
+    await expect(
+      branded.locator('[data-listing-card-rating="true"]'),
+    ).toContainText("5,0");
+    await expect(branded.locator("svg.lucide-star")).toHaveCount(1);
 
-      return {
-        card: { width: cardRect.width, height: cardRect.height },
-        sellerBelowTitle: Boolean(
-          sellerRect && titleRect && sellerRect.top > titleRect.bottom,
-        ),
-        sellerFullyVisible: Boolean(
-          sellerName && sellerName.scrollWidth <= sellerName.clientWidth + 1,
-        ),
-        sellerAvatarVisible: Boolean(
-          sellerAvatarRect?.width && sellerAvatarRect.height,
-        ),
-        sellerAvatarHasPhoto: Boolean(sellerAvatarImage?.getAttribute("src")),
-        verifiedFollowsName: Boolean(
-          sellerNameTextRect &&
-          sellerVerifiedRect &&
-          sellerVerifiedRect.left >= sellerNameTextRect.right &&
-          sellerVerifiedRect.left - sellerNameTextRect.right <= 8,
-        ),
-        footerContained: Boolean(
-          footerRect && footerRect.bottom <= cardRect.bottom + 1,
-        ),
-      };
+    const order = await branded.evaluate((element) => {
+      const top = (selector: string) =>
+        element.querySelector<HTMLElement>(selector)?.getBoundingClientRect()
+          .top ?? -1;
+      return [
+        top('[data-listing-card-category-row="true"]'),
+        top('[data-listing-card-price-row="true"]'),
+        top('[data-listing-card-title="true"]'),
+        top('[data-listing-card-meta="true"]'),
+      ];
     });
+    expect(
+      order.every((value, index) => index === 0 || value > order[index - 1]!),
+    ).toBe(true);
 
-    expect(geometry.card.width).toBeCloseTo(208, 0);
-    expect(geometry.card.height).toBeGreaterThanOrEqual(368);
-    expect(geometry.card.height).toBeLessThanOrEqual(397);
-    expect(geometry.sellerBelowTitle).toBe(true);
-    expect(geometry.sellerFullyVisible).toBe(true);
-    expect(geometry.sellerAvatarVisible).toBe(true);
-    expect(geometry.sellerAvatarHasPhoto).toBe(true);
-    expect(geometry.verifiedFollowsName).toBe(true);
-    expect(geometry.footerContained).toBe(true);
-
-    const verificationIcon = card
-      .locator('[data-listing-card-seller="true"]')
-      .locator('[data-ui-verified-icon="true"]');
-    await expect(verificationIcon.locator("svg")).toHaveClass(
-      /lucide-badge-check/,
-    );
-
-    const professionalCard = page
-      .locator('[data-listing-card="true"]', { hasText: "Atelier Nordique" })
+    const professional = page
+      .locator('[data-listing-card="true"]', {
+        has: page.locator('a[href="/annonce/list-115"]'),
+      })
       .first();
-    await professionalCard.scrollIntoViewIfNeeded();
-    const proBadge = professionalCard.locator('[data-ui-pro-badge="true"]');
-    await expect(proBadge).toBeVisible();
-    await expect(proBadge).toHaveText("Pro");
-    await expect(proBadge).toHaveAttribute(
-      "aria-label",
-      "Vendeur professionnel",
+    await professional.scrollIntoViewIfNeeded();
+    await expect(professional.locator('[data-ui-pro-badge="true"]')).toHaveText(
+      "Pro",
     );
     await expect(
-      professionalCard.locator('[data-ui-verified-icon="true"]'),
+      professional.locator('[data-listing-card-rating="true"]'),
+    ).toBeVisible();
+
+    const withoutReviews = page
+      .locator('[data-listing-card="true"]', {
+        has: page.locator(
+          'a[href="/emploi/offre/auxiliaire-de-vie-a-temps-partiel-job-private-care-lyon"]',
+        ),
+      })
+      .first();
+    await withoutReviews.scrollIntoViewIfNeeded();
+    await expect(
+      withoutReviews.locator('[data-ui-pro-badge="true"]'),
+    ).toHaveCount(0);
+    await expect(
+      withoutReviews.locator('[data-listing-card-rating="true"]'),
+    ).toHaveCount(0);
+
+    for (const selector of [
+      '[data-listing-card-characteristics="true"]',
+      '[data-listing-card-photo-count="true"]',
+      '[data-listing-card-delivery-overlay="true"]',
+      '[data-listing-card-seller-avatar="true"]',
+      '[data-listing-card-original-price="true"]',
+      '[data-listing-card-negotiable="true"]',
+    ]) {
+      await expect(page.locator(selector)).toHaveCount(0);
+    }
+  });
+
+  test("shows the single Boosté indicator only on promoted results", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1408, height: 900 });
+    await openAsGuest(page, "/recherche");
+
+    const promoted = page
+      .locator('[data-listing-card="true"]')
+      .filter({ has: page.locator('[data-listing-card-promotion="true"]') })
+      .first();
+    await promoted.scrollIntoViewIfNeeded();
+    await expect(
+      promoted.locator('[data-listing-card-promotion="true"]'),
+    ).toHaveText("Boosté");
+    await expect(promoted.locator("svg.lucide-zap")).toHaveCount(1);
+
+    const standard = page
+      .locator('[data-listing-card="true"]', {
+        has: page.locator('a[href="/annonce/list-113"]'),
+      })
+      .first();
+    await standard.scrollIntoViewIfNeeded();
+    await expect(
+      standard.locator('[data-listing-card-promotion="true"]'),
     ).toHaveCount(0);
   });
 
-  test("keeps the reference card hierarchy polished inside the existing footprint", async ({
+  test("keeps the favourite independent from listing navigation", async ({
     page,
   }) => {
-    await page.setViewportSize({ width: 1408, height: 795 });
+    await page.setViewportSize({ width: 1024, height: 900 });
     await usePersona(page, "individual_buyer");
-    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await page.goto("/recherche", { waitUntil: "domcontentloaded" });
     await waitForStableLayout(page);
-    await page.getByTestId("home-deferred-content").scrollIntoViewIfNeeded();
 
     const card = page
-      .getByTestId("home-discovery-trending")
       .locator('[data-listing-card="true"]', {
-        hasText: "Machine à Café Espresso avec Broyeur",
+        has: page.locator('a[href="/annonce/list-113"]'),
       })
       .first();
     await card.scrollIntoViewIfNeeded();
-    await expect(card).toBeVisible();
+    const favorite = card.locator(
+      '[data-marketplace-action="favorite.manage"]',
+    );
+    await expect(favorite).toBeVisible();
+    const originalUrl = page.url();
+    const previousState = await favorite.getAttribute("aria-pressed");
+    await favorite.click();
+    await expect(page).toHaveURL(originalUrl);
+    await expect(favorite).toHaveAttribute(
+      "aria-pressed",
+      previousState === "true" ? "false" : "true",
+    );
+    await expect(favorite).toHaveAttribute(
+      "aria-label",
+      new RegExp(
+        `^${previousState === "true" ? "Ajouter aux favoris" : "Retirer des favoris"} .+`,
+      ),
+    );
 
-    const geometry = await card.evaluate((element) => {
-      const describeNode = (node: HTMLElement | null) => {
-        if (!node || node.getClientRects().length === 0) return null;
-        const rect = node.getBoundingClientRect();
-        const style = getComputedStyle(node);
-        return {
-          left: rect.left,
-          right: rect.right,
-          top: rect.top,
-          bottom: rect.bottom,
-          width: rect.width,
-          height: rect.height,
-          borderRadius: Number.parseFloat(style.borderRadius),
-          fontSize: Number.parseFloat(style.fontSize),
-          fontWeight: Number.parseInt(style.fontWeight, 10),
-        };
-      };
-      const rectFor = (selector: string) =>
-        describeNode(element.querySelector<HTMLElement>(selector));
-      const cardRect = element.getBoundingClientRect();
-      const media = rectFor('[data-listing-card-media="true"]');
-      const promotion = describeNode(
-        document.querySelector<HTMLElement>(
-          '[data-listing-card-promotion="true"] > span',
-        ),
-      );
-      const favorite = rectFor('[data-marketplace-action="favorite.manage"]');
-      const photoCount = describeNode(
-        element
-          .closest("section")
-          ?.querySelector<HTMLElement>(
-            '[data-listing-card-photo-count="true"]',
-          ) ?? null,
-      );
-      const category = rectFor(
-        '[data-listing-card-category-row="true"] > span:first-child',
-      );
-      const rating = rectFor('[data-listing-card-rating="true"]');
-      const title = rectFor("h3");
-      const currentPrice = rectFor('[data-listing-card-current-price="true"]');
-      const originalPrice = rectFor(
-        '[data-listing-card-original-price="true"]',
-      );
-      const negotiable = rectFor('[data-listing-card-negotiable="true"]');
-      const characteristics = rectFor(
-        '[data-listing-card-characteristics="true"]',
-      );
-      const characteristic = rectFor(
-        '[data-listing-card-characteristics="true"] > li:first-child',
-      );
-      const footerNode = element.querySelector<HTMLElement>(
-        '[data-listing-card-footer="true"]',
-      );
-      const footer = rectFor('[data-listing-card-footer="true"]');
-      const seller = rectFor('[data-listing-card-seller="true"]');
-      const sellerName = rectFor('[data-listing-card-seller-name="true"]');
-      const sellerMeta = rectFor('[data-listing-card-meta="true"]');
-      const footerStyle = footerNode ? getComputedStyle(footerNode) : null;
-
-      const isPill = (item: ReturnType<typeof rectFor>, tolerance = 1) =>
-        Boolean(
-          item &&
-          item.borderRadius >=
-            Math.min(item.width, item.height) / 2 - tolerance,
-        );
-
-      return {
-        card: { width: cardRect.width, height: cardRect.height },
-        overlaysStayInsideMedia: Boolean(
-          media &&
-          favorite &&
-          favorite.right <= media.right &&
-          favorite.top >= media.top &&
-          favorite.left >= media.left &&
-          favorite.bottom <= media.bottom,
-        ),
-        polishedOverlayShapes:
-          isPill(promotion) && isPill(favorite) && isPill(photoCount),
-        categoryAndRatingAligned: Boolean(
-          category &&
-          rating &&
-          Math.abs(
-            (category.top + category.bottom) / 2 -
-              (rating.top + rating.bottom) / 2,
-          ) <= 1,
-        ),
-        priceIsStrongest: Boolean(
-          currentPrice &&
-          title &&
-          currentPrice.fontSize > title.fontSize &&
-          currentPrice.fontWeight >= 700,
-        ),
-        pricesShareBaseline: Boolean(
-          currentPrice &&
-          originalPrice &&
-          Math.abs(currentPrice.bottom - originalPrice.bottom) <= 5,
-        ),
-        negotiableBelowPrice: Boolean(
-          currentPrice && negotiable && negotiable.top >= currentPrice.bottom,
-        ),
-        polishedCharacteristicShape: isPill(characteristic),
-        footerHasDivider: Boolean(
-          footerStyle &&
-          footerStyle.borderTopStyle === "solid" &&
-          Number.parseFloat(footerStyle.borderTopWidth) > 0,
-        ),
-        footerFollowsCharacteristics: Boolean(
-          footer && characteristics && footer.top >= characteristics.bottom,
-        ),
-        sellerAreaAligned: Boolean(
-          footer &&
-          seller &&
-          sellerName &&
-          sellerMeta &&
-          seller.top >= footer.top &&
-          sellerMeta.top >= seller.bottom - 1 &&
-          sellerName.fontWeight >= 700,
-        ),
-      };
-    });
-
-    expect(geometry.card.width).toBeCloseTo(208, 0);
-    expect(geometry.card.height).toBeGreaterThanOrEqual(368);
-    expect(geometry.card.height).toBeLessThanOrEqual(397);
-    expect(geometry.overlaysStayInsideMedia).toBe(true);
-    expect(geometry.polishedOverlayShapes).toBe(true);
-    expect(geometry.categoryAndRatingAligned).toBe(true);
-    expect(geometry.priceIsStrongest).toBe(true);
-    expect(geometry.pricesShareBaseline).toBe(true);
-    expect(geometry.negotiableBelowPrice).toBe(true);
-    expect(geometry.polishedCharacteristicShape).toBe(true);
-    expect(geometry.footerHasDivider).toBe(true);
-    expect(geometry.footerFollowsCharacteristics).toBe(true);
-    expect(geometry.sellerAreaAligned).toBe(true);
-    await expectNoHorizontalOverflow(page, "polished homepage listing card");
+    await card.locator('a[href="/annonce/list-113"]').focus();
+    await expect(card.locator('a[href="/annonce/list-113"]')).toBeFocused();
+    await card.locator('a[href="/annonce/list-113"]').press("Enter");
+    await expect(page).toHaveURL(/\/annonce\/list-113$/);
   });
 
-  test("keeps long seller and location labels on one ellipsized line", async ({
+  test("truncates long fields without shrinking the shared typography", async ({
     page,
   }) => {
-    await page.setViewportSize({ width: 1408, height: 701 });
-    await usePersona(page, "individual_buyer");
-    await page.goto("/", { waitUntil: "domcontentloaded" });
-    await waitForStableLayout(page);
-
-    const sellerName = page
-      .locator('[data-listing-card-seller-name="true"]', {
-        hasText: "Atelier Nordique SAS",
+    await page.setViewportSize({ width: 1408, height: 900 });
+    await openAsGuest(page, "/recherche");
+    const card = page
+      .locator('[data-listing-card="true"]', {
+        has: page.locator('a[href="/annonce/list-113"]'),
       })
       .first();
-    const location = page
-      .locator('[data-listing-card-location="true"]', {
-        hasText: "Lyon 3e · Montchat",
-      })
-      .first();
-    await sellerName.scrollIntoViewIfNeeded();
-    await expect(sellerName).toBeVisible();
-    await expect(location).toBeVisible();
+    await card.scrollIntoViewIfNeeded();
 
-    const readTruncation = (target: Locator) =>
-      target.evaluate((element) => {
-        const rect = element.getBoundingClientRect();
-        const style = getComputedStyle(element);
+    for (const target of [
+      card.locator('[data-listing-card-title="true"]'),
+      card.locator('[data-listing-card-location="true"]'),
+    ]) {
+      const style = await target.evaluate((element) => {
+        const computed = getComputedStyle(element);
         return {
-          oneLine: rect.height <= Number.parseFloat(style.lineHeight) + 1,
-          overflow: style.overflow,
-          textOverflow: style.textOverflow,
-          whiteSpace: style.whiteSpace,
-          isTruncated: element.scrollWidth > element.clientWidth,
+          overflow: computed.overflow,
+          textOverflow: computed.textOverflow,
+          whiteSpace: computed.whiteSpace,
+          fontSize: Number.parseFloat(computed.fontSize),
         };
       });
-
-    for (const target of [sellerName, location]) {
-      expect(await readTruncation(target)).toEqual({
-        oneLine: true,
+      expect(style).toMatchObject({
         overflow: "hidden",
         textOverflow: "ellipsis",
         whiteSpace: "nowrap",
-        isTruncated: true,
       });
-    }
-    await expect(sellerName).toHaveAttribute("title", "Atelier Nordique SAS");
-    await expect(location).toHaveAttribute("title", "Lyon 3e · Montchat");
-    await expectNoHorizontalOverflow(page, "single-line listing metadata");
-  });
-
-  test("keeps promoted-card overlays, rail controls and content zones visibly separated", async ({
-    page,
-  }) => {
-    await page.setViewportSize({ width: 1408, height: 701 });
-    await usePersona(page, "individual_buyer");
-    await page.goto("/", { waitUntil: "domcontentloaded" });
-    await waitForStableLayout(page);
-
-    const card = page
-      .locator('[data-listing-card="true"]')
-      .filter({
-        has: page.locator('[data-listing-card-promotion="true"]'),
-      })
-      .first();
-    await expect(card).toBeAttached();
-    await card.evaluate((element) => {
-      const rect = element.getBoundingClientRect();
-      window.scrollTo({
-        top: window.scrollY + rect.top - (window.innerHeight - rect.height) / 2,
-      });
-    });
-    await expect(card).toBeVisible();
-
-    const geometry = await card.evaluate((element) => {
-      const rectFor = (selector: string) => {
-        const node = element.querySelector<HTMLElement>(selector);
-        if (!node || node.getClientRects().length === 0) return null;
-        const rect = node.getBoundingClientRect();
-        return {
-          left: rect.left,
-          right: rect.right,
-          top: rect.top,
-          bottom: rect.bottom,
-          clientWidth: node.clientWidth,
-          scrollWidth: node.scrollWidth,
-        };
-      };
-      const media = rectFor('[data-listing-card-media="true"]');
-      const promotion = rectFor('[data-listing-card-promotion="true"] > span');
-      const promotionText = rectFor(
-        '[data-listing-card-promotion="true"] > span > span',
-      );
-      const actions = rectFor('[data-listing-card-actions="true"]');
-      const railShell = element.closest<HTMLElement>(".scroll-rail-shell");
-      const visibleRailControl = railShell
-        ? Array.from(
-            railShell.querySelectorAll<HTMLElement>(".listing-rail-control"),
-          ).find((control) => control.getClientRects().length > 0)
-        : undefined;
-      const railControlRect = visibleRailControl?.getBoundingClientRect();
-      const cardRect = element.getBoundingClientRect();
-      const orderedContent = [
-        '[data-listing-card-category-row="true"]',
-        "h3",
-        '[data-listing-card-price="true"]',
-        'ul[aria-label="Caractéristiques principales"]',
-        '[data-listing-card-footer="true"]',
-      ]
-        .map(rectFor)
-        .filter((rect): rect is NonNullable<typeof rect> => Boolean(rect));
-
-      return {
-        promotionFits: Boolean(
-          promotionText &&
-          promotionText.scrollWidth <= promotionText.clientWidth + 1,
-        ),
-        overlayColumnsSeparated: Boolean(
-          promotion && actions && promotion.right + 7 <= actions.left,
-        ),
-        overlaysStayOnMedia: Boolean(
-          media &&
-          promotion &&
-          actions &&
-          promotion.left >= media.left &&
-          actions.right <= media.right &&
-          promotion.top >= media.top &&
-          actions.bottom <= media.bottom,
-        ),
-        railControlCenteredOnCard: Boolean(
-          railControlRect &&
-          Math.abs(
-            (railControlRect.top + railControlRect.bottom) / 2 -
-              (cardRect.top + cardRect.bottom) / 2,
-          ) <= 8,
-        ),
-        contentZonesSeparated: orderedContent.every(
-          (rect, index) =>
-            index === 0 ||
-            rect.top >= (orderedContent[index - 1]?.bottom ?? rect.top) - 0.5,
-        ),
-      };
-    });
-
-    expect(geometry.promotionFits).toBe(true);
-    expect(geometry.overlayColumnsSeparated).toBe(true);
-    expect(geometry.overlaysStayOnMedia).toBe(true);
-    expect(geometry.railControlCenteredOnCard).toBe(true);
-    expect(geometry.contentZonesSeparated).toBe(true);
-
-    const railShell = card.locator(
-      "xpath=ancestor::div[contains(concat(' ', normalize-space(@class), ' '), ' scroll-rail-shell ')]",
-    );
-    const track = railShell.locator(":scope > div").first();
-    const rightControl = railShell.getByRole("button", {
-      name: /vers la droite$/,
-    });
-    const initialScrollLeft = await track.evaluate((element) =>
-      Math.round(element.scrollLeft),
-    );
-    await rightControl.click();
-    await expect
-      .poll(() => track.evaluate((element) => Math.round(element.scrollLeft)))
-      .toBeGreaterThan(initialScrollLeft);
-    await expect(
-      railShell.getByRole("button", { name: /vers la gauche$/ }),
-    ).toBeVisible();
-
-    await page.setViewportSize({ width: 390, height: 844 });
-    await expect(page.locator(".listing-rail-control:visible")).toHaveCount(0);
-  });
-
-  test("places delivery at the image bottom-right and keeps it out of the footer", async ({
-    page,
-  }) => {
-    await page.setViewportSize({ width: 1408, height: 701 });
-    await openAsGuest(page, "/");
-
-    const card = page
-      .locator('[data-listing-card="true"]', {
-        hasText: "Machine à Café Espresso avec Broyeur",
-      })
-      .first();
-    await card.scrollIntoViewIfNeeded();
-    await expect(card).toBeVisible();
-    const delivery = card.locator(
-      '[data-listing-card-delivery-overlay="true"]',
-    );
-    await expect(delivery).toBeVisible();
-    await expect(delivery).toHaveText(/Livraison/);
-    await expect(
-      card.locator(
-        '[data-listing-card-footer="true"] [data-listing-card-delivery-overlay="true"]',
-      ),
-    ).toHaveCount(0);
-
-    const geometry = await card.evaluate((element) => {
-      const media = element
-        .querySelector<HTMLElement>('[data-listing-card-media="true"]')
-        ?.getBoundingClientRect();
-      const deliveryOverlay = element
-        .querySelector<HTMLElement>(
-          '[data-listing-card-delivery-overlay="true"]',
-        )
-        ?.getBoundingClientRect();
-      const favorite = element
-        .querySelector<HTMLElement>(
-          '[data-marketplace-action="favorite.manage"]',
-        )
-        ?.getBoundingClientRect();
-
-      return {
-        insideMedia: Boolean(
-          media &&
-          deliveryOverlay &&
-          deliveryOverlay.left >= media.left &&
-          deliveryOverlay.right <= media.right &&
-          deliveryOverlay.top >= media.top &&
-          deliveryOverlay.bottom <= media.bottom,
-        ),
-        alignedBottomRight: Boolean(
-          media &&
-          deliveryOverlay &&
-          media.right - deliveryOverlay.right <= 13 &&
-          media.bottom - deliveryOverlay.bottom <= 13,
-        ),
-        clearOfFavorite: Boolean(
-          deliveryOverlay && favorite && deliveryOverlay.top > favorite.bottom,
-        ),
-      };
-    });
-
-    expect(geometry.insideMedia).toBe(true);
-    expect(geometry.alignedBottomRight).toBe(true);
-    expect(geometry.clearOfFavorite).toBe(true);
-  });
-
-  test("keeps condition on the listing detail instead of the compact card", async ({
-    page,
-  }) => {
-    await page.setViewportSize({ width: 1408, height: 701 });
-    await openAsGuest(page, "/");
-
-    const card = page
-      .locator('[data-listing-card="true"]', {
-        hasText: "Machine à Café Espresso avec Broyeur",
-      })
-      .first();
-    await card.scrollIntoViewIfNeeded();
-    await expect(card).toBeVisible();
-    await expect(card.getByText("Très bon état", { exact: true })).toHaveCount(
-      0,
-    );
-
-    await card.locator('a[href="/annonce/list-109"]').click();
-    await expect(page).toHaveURL(/\/annonce\/list-109$/);
-    const conditionDetail = page
-      .getByText("État général", { exact: true })
-      .locator("..");
-    await expect(conditionDetail).toBeVisible();
-    await expect(
-      conditionDetail.getByText("Très bon état", { exact: true }),
-    ).toBeVisible();
-  });
-
-  test("shows two category-prioritized characteristics and preserves full details", async ({
-    page,
-  }) => {
-    await page.setViewportSize({ width: 1408, height: 701 });
-    await openAsGuest(page, "/");
-
-    const recentSection = page.getByTestId("home-discovery-recent_listings");
-    await recentSection.scrollIntoViewIfNeeded();
-    const visibleCards = recentSection.locator('[data-listing-card="true"]');
-    await expect(visibleCards.first()).toBeVisible();
-    const characteristicCounts = await visibleCards.evaluateAll((cards) =>
-      cards.map(
-        (card) =>
-          card.querySelectorAll(
-            'ul[aria-label="Caractéristiques principales"] > li',
-          ).length,
-      ),
-    );
-    expect(characteristicCounts.length).toBeGreaterThan(3);
-    expect(characteristicCounts.every((count) => count <= 2)).toBe(true);
-
-    const employmentCard = visibleCards
-      .filter({ hasText: "Équipier·ère polyvalent·e saisonnier" })
-      .first();
-    await expect(
-      employmentCard.locator(
-        'ul[aria-label="Caractéristiques principales"] > li',
-      ),
-    ).toHaveText(["Saisonnier", "Sur site"]);
-
-    const propertyCard = visibleCards
-      .filter({ hasText: "Appartement lumineux avec balcon" })
-      .first();
-    await expect(
-      propertyCard.locator(
-        'ul[aria-label="Caractéristiques principales"] > li',
-      ),
-    ).toHaveText(["Appartement", "92 m²"]);
-
-    await propertyCard
-      .locator('a[href="/immo/bien/appartement-lumineux-lyon-montchat"]')
-      .click();
-    await expect(page).toHaveURL(
-      /\/immo\/bien\/appartement-lumineux-lyon-montchat$/,
-    );
-    await expect(
-      page.getByText("Surface", { exact: true }).locator(".."),
-    ).toContainText("92 m²");
-    await expect(
-      page.getByText("Pièces", { exact: true }).locator(".."),
-    ).toContainText("4");
-    await expect(
-      page.getByText("Chambres", { exact: true }).locator(".."),
-    ).toContainText("3");
-  });
-
-  test("renders shared semantic icons across category and homepage cards", async ({
-    page,
-  }) => {
-    await page.setViewportSize({ width: 1408, height: 701 });
-    await usePersona(page, "individual_buyer");
-    await page.goto("/auto", { waitUntil: "domcontentloaded" });
-    await waitForStableLayout(page);
-
-    const vehicleCard = page
-      .locator('[data-listing-card="true"]', {
-        hasText: "Peugeot 3008 BlueHDi 130 S&S BVM6 Allure",
-      })
-      .first();
-    await vehicleCard.scrollIntoViewIfNeeded();
-    await expect(vehicleCard).toBeVisible();
-
-    const year = vehicleCard.locator(
-      '[data-listing-card-characteristic-icon="calendar"]',
-      { hasText: "2019" },
-    );
-    const mileage = vehicleCard.locator(
-      '[data-listing-card-characteristic-icon="gauge"]',
-      { hasText: /84[\s\u202f]500 km/u },
-    );
-    await expect(year).toBeVisible();
-    await expect(year.locator("svg")).toHaveClass(/lucide-calendar/);
-    await expect(mileage).toBeVisible();
-    await expect(mileage.locator("svg")).toHaveClass(/lucide-gauge/);
-
-    await page.goto("/", { waitUntil: "domcontentloaded" });
-    await waitForStableLayout(page);
-    await page.getByTestId("home-deferred-content").scrollIntoViewIfNeeded();
-    const discoverySections = page.locator("[data-home-discovery-type]");
-    await expect(discoverySections).toHaveCount(3);
-    for (let index = 0; index < 3; index += 1) {
-      const section = discoverySections.nth(index);
-      await section.scrollIntoViewIfNeeded();
-      await expect(section).toBeVisible();
-      const visibleCharacteristics = section.locator(
-        "[data-listing-card-characteristic-icon]:visible",
-      );
-      const characteristicCount = await visibleCharacteristics.count();
-      expect(characteristicCount).toBeGreaterThan(0);
-      for (let item = 0; item < characteristicCount; item += 1) {
-        await expect(
-          visibleCharacteristics.nth(item).locator("svg"),
-        ).toHaveCount(1);
-      }
+      expect(style.fontSize).toBeGreaterThanOrEqual(11);
     }
   });
 
-  test("homepage discovery fits five complete showcase cards in a desktop row", async ({
+  test("homepage discovery fits five complete token-width cards", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 1408, height: 900 });
     await openAsGuest(page, "/");
+    const rail = page
+      .locator(".listing-rail-track")
+      .filter({ has: page.locator('[data-listing-card-variant="showcase"]') })
+      .first();
+    await rail.scrollIntoViewIfNeeded();
+    await expect(rail).toBeVisible();
 
-    const discoveryRails = page.locator(".listing-rail-track").filter({
-      has: page.locator('[data-listing-card-variant="showcase"]'),
-    });
-    let denseRailIndex = -1;
-    await expect
-      .poll(
-        async () => {
-          denseRailIndex = await discoveryRails.evaluateAll((rails) =>
-            rails.findIndex(
-              (rail) =>
-                rail.querySelectorAll(":scope > .listing-rail-cell").length >=
-                5,
-            ),
-          );
-          return denseRailIndex;
-        },
-        {
-          message:
-            "homepage should expose a discovery rail with at least five listings",
-        },
-      )
-      .toBeGreaterThanOrEqual(0);
-    const denseRail = discoveryRails.nth(denseRailIndex);
-    await expect(denseRail).toBeVisible();
-    const geometry = await denseRail.evaluate((rail) => {
-      const viewport = rail.parentElement;
-      const viewportRect = viewport?.getBoundingClientRect();
+    const geometry = await rail.evaluate((element) => {
+      const viewport = element.parentElement?.getBoundingClientRect();
       const cards = Array.from(
-        rail.querySelectorAll<HTMLElement>(":scope > .listing-rail-cell"),
-      ).map((card) => {
-        const rect = card.getBoundingClientRect();
-        return {
-          left: rect.left,
-          right: rect.right,
-          width: rect.width,
-          radius: Number.parseFloat(
-            getComputedStyle(
-              card.querySelector<HTMLElement>('[data-listing-card="true"]') ??
-                card,
-            ).borderRadius,
-          ),
-        };
-      });
+        element.querySelectorAll<HTMLElement>(":scope > .listing-rail-cell"),
+      ).map((item) => item.getBoundingClientRect());
       return {
-        completeCards: viewportRect
+        complete: viewport
           ? cards.filter(
               (card) =>
-                card.left >= viewportRect.left - 1 &&
-                card.right <= viewportRect.right + 1,
+                card.left >= viewport.left - 1 &&
+                card.right <= viewport.right + 1,
             ).length
           : 0,
-        cards,
+        firstWidth: cards[0]?.width,
+        firstHeight: cards[0]?.height,
       };
     });
-
-    expect(
-      geometry.completeCards,
-      `homepage rail geometry: ${JSON.stringify(geometry)}`,
-    ).toBeGreaterThanOrEqual(5);
-    expect(geometry.cards[0]?.width).toBeLessThanOrEqual(209);
-    expect(geometry.cards[0]?.radius).toBeLessThanOrEqual(14);
+    expect(geometry.complete).toBeGreaterThanOrEqual(5);
+    expect(geometry.firstWidth).toBeCloseTo(208, 0);
+    expect(geometry.firstHeight).toBeCloseTo(368, 0);
   });
 
-  test("structured category searches reuse the canonical card at phone, tablet, and desktop widths", async ({
+  test("structured searches reuse the primitive at phone, tablet and desktop widths", async ({
     page,
   }) => {
     test.setTimeout(90_000);
@@ -818,18 +308,13 @@ test.describe("canonical listing cards", () => {
       for (const category of categories) {
         await test.step(`${category.consumer} @ ${width}px`, async () => {
           await openAsGuest(page, category.path);
-          const consumer = page.locator(
-            `[data-listing-card-consumer="${category.consumer}"]`,
-          );
-          await expect(consumer.first()).toBeVisible();
-          const card = consumer
-            .locator(
-              ':scope > [data-listing-card="true"][data-listing-card-variant="list"]',
-            )
-            .first();
+          const card = page
+            .locator(`[data-listing-card-consumer="${category.consumer}"]`)
+            .first()
+            .locator(':scope > [data-listing-card="true"]');
           await expect(card).toHaveAttribute(
             "data-listing-card-variant",
-            "list",
+            "grid",
           );
           await expectCardContentContained(
             card,

@@ -13,13 +13,40 @@ import { useAuth } from "./AuthProvider";
 import { analyticsService } from "../../services/analytics.service";
 import { ForbiddenError } from "../../security/authorization.service";
 import { useStaffMarketplaceAccess } from "../../security/useStaffMarketplaceAccess";
+import { useMarketLocation } from "./MarketLocationProvider";
+import { useTranslation } from "../../i18n/I18nProvider";
+import type { Listing } from "../../types";
+import { deliveryRequestIdFromDiscoveryListingId } from "@shongre/contracts/delivery";
+import {
+  FavoritesStateUnavailableError,
+  beginFavoriteListingsLoad,
+  beginFavoritesLoad,
+  clearFavoritesWithReconciliation,
+  completeFavoriteListingsLoad,
+  completeFavoritesLoad,
+  failFavoritesLoad,
+  readFavoriteMembership,
+  reconcileLocalFavoriteCollection,
+  reconcileFavoriteListingMutation,
+  requireFavoritesReady,
+  type FavoriteListingsSnapshot,
+  type FavoritesLoadState,
+  type FavoritesSnapshot,
+} from "./favorites.state";
 
 interface FavoritesContextValue {
   /** Ids of every listing the current user has saved. */
   favoriteIds: string[];
+  /** Public card projections returned with the scoped favorite collection. */
+  favoriteListings: Listing[];
+  /** False after an add or failed/in-flight read until the batch is refreshed. */
+  favoriteListingsComplete: boolean;
   count: number;
   isLoading: boolean;
+  favoriteLoadState: FavoritesLoadState;
+  favoritesError: string | null;
   isFavorite: (listingId: string) => boolean;
+  refreshFavorites: () => Promise<void>;
   /** Returns the resulting state, so callers can react without re-reading. */
   toggleFavorite: (listingId: string) => Promise<boolean>;
   clearFavorites: () => Promise<void>;
@@ -32,6 +59,8 @@ const FavoritesContext = createContext<FavoritesContextValue | undefined>(
 );
 
 const GUEST_FAVORITES_KEY = "guest";
+const EMPTY_FAVORITE_IDS: string[] = [];
+const EMPTY_FAVORITE_LISTINGS: Listing[] = [];
 
 /**
  * One source of truth for saved listings.
@@ -48,12 +77,222 @@ const GUEST_FAVORITES_KEY = "guest";
 export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [favoritesState, setFavoritesState] = useState<FavoritesSnapshot>(
+    () => ({
+      scopeKey: "",
+      ids: EMPTY_FAVORITE_IDS,
+      loadState: "loading",
+    }),
+  );
+  const [favoriteListingsState, setFavoriteListingsState] =
+    useState<FavoriteListingsSnapshot>(() => ({
+      scopeKey: "",
+      listings: EMPTY_FAVORITE_LISTINGS,
+      isComplete: false,
+    }));
   const { currentUser, isRestoring } = useAuth();
   const identity = currentUser?.id ?? null;
+  const { activeMarket } = useMarketLocation();
+  const marketCode = activeMarket.code;
+  const scopeKey = `${identity ?? GUEST_FAVORITES_KEY}::${marketCode}`;
+  const currentScopeRef = useRef(scopeKey);
+  const favoritesStateRef = useRef(favoritesState);
+  const inFlightLoadsRef = useRef(new Map<string, Promise<void>>());
+  const mergeGuestScopesRef = useRef(new Set<string>());
+  const pendingTogglesRef = useRef(new Map<string, Promise<boolean>>());
+  const inFlightClearsRef = useRef(new Map<string, Promise<void>>());
   const { isReadOnly: isReadOnlyStaff } = useStaffMarketplaceAccess();
+  const { t } = useTranslation();
   const previousIdentity = useRef<string | null | undefined>(undefined);
+
+  useEffect(() => {
+    currentScopeRef.current = scopeKey;
+  }, [scopeKey]);
+  useEffect(() => {
+    favoritesStateRef.current = favoritesState;
+  }, [favoritesState]);
+
+  const applySnapshot = useCallback(
+    (targetScope: string, next: FavoritesSnapshot) => {
+      if (currentScopeRef.current !== targetScope) return;
+      favoritesStateRef.current = next;
+      setFavoritesState(next);
+    },
+    [],
+  );
+
+  const applyFavoriteListingsSnapshot = useCallback(
+    (targetScope: string, next: FavoriteListingsSnapshot) => {
+      if (currentScopeRef.current !== targetScope) return;
+      setFavoriteListingsState(next);
+    },
+    [],
+  );
+
+  const refreshFavorites = useCallback(async (): Promise<void> => {
+    const targetScope = scopeKey;
+    const targetIdentity = identity;
+    const targetMarket = marketCode;
+    if (isRestoring) {
+      throw new FavoritesStateUnavailableError();
+    }
+
+    const existing = inFlightLoadsRef.current.get(targetScope);
+    if (existing) return existing;
+
+    applySnapshot(
+      targetScope,
+      beginFavoritesLoad(favoritesStateRef.current, targetScope),
+    );
+    setFavoriteListingsState((current) =>
+      currentScopeRef.current === targetScope
+        ? beginFavoriteListingsLoad(current, targetScope)
+        : current,
+    );
+
+    const request = (async () => {
+      try {
+        if (isReadOnlyStaff) {
+          applySnapshot(targetScope, completeFavoritesLoad(targetScope, []));
+          applyFavoriteListingsSnapshot(
+            targetScope,
+            completeFavoriteListingsLoad(targetScope, [], [], targetMarket),
+          );
+          return;
+        }
+
+        if (!targetIdentity) {
+          const guestIds = storageService.getFavorites(
+            GUEST_FAVORITES_KEY,
+            targetMarket,
+          );
+          const guestListings = await services.listings.getPublicListingsByIds(
+            guestIds,
+            targetMarket,
+          );
+          const guestCollection = reconcileLocalFavoriteCollection(
+            targetScope,
+            guestIds,
+            guestListings,
+            targetMarket,
+          );
+          // A browser-local favorite has no durable server relationship to
+          // preserve. Once a successful public batch proves that it is no
+          // longer visible in this market, remove the stale local membership.
+          for (const listingId of guestCollection.unavailableIds) {
+            storageService.toggleFavorite(
+              listingId,
+              GUEST_FAVORITES_KEY,
+              targetMarket,
+            );
+          }
+          applySnapshot(targetScope, guestCollection.favorites);
+          applyFavoriteListingsSnapshot(targetScope, guestCollection.listings);
+          return;
+        }
+
+        let collection =
+          await services.listings.getFavoriteCollection(targetMarket);
+        if (mergeGuestScopesRef.current.has(targetScope)) {
+          const guestIds = storageService.getFavorites(
+            GUEST_FAVORITES_KEY,
+            targetMarket,
+          );
+          const publicGuestListings =
+            await services.listings.getPublicListingsByIds(
+              guestIds,
+              targetMarket,
+            );
+          const guestCollection = reconcileLocalFavoriteCollection(
+            targetScope,
+            guestIds,
+            publicGuestListings,
+            targetMarket,
+          );
+          const visibleGuestIds = guestCollection.favorites.ids;
+          const missingGuestIds = visibleGuestIds.filter(
+            (id) => !collection.listingIds.includes(id),
+          );
+          const migratedIds = await Promise.all(
+            missingGuestIds.map(async (listingId) => ({
+              listingId,
+              confirmed: await services.listings.setFavorite(
+                listingId,
+                targetMarket,
+                true,
+              ),
+            })),
+          );
+          if (migratedIds.some(({ confirmed }) => !confirmed)) {
+            throw new Error("Guest favorite migration was not confirmed.");
+          }
+          if (migratedIds.length > 0) {
+            collection =
+              await services.listings.getFavoriteCollection(targetMarket);
+          }
+
+          // Clear only after every adapter write is confirmed. A partial failure
+          // keeps the guest bucket intact so a later retry can reconcile it.
+          for (const listingId of guestIds) {
+            storageService.toggleFavorite(
+              listingId,
+              GUEST_FAVORITES_KEY,
+              targetMarket,
+            );
+          }
+          mergeGuestScopesRef.current.delete(targetScope);
+        }
+
+        applySnapshot(
+          targetScope,
+          completeFavoritesLoad(targetScope, collection.listingIds),
+        );
+        applyFavoriteListingsSnapshot(
+          targetScope,
+          completeFavoriteListingsLoad(
+            targetScope,
+            collection.listingIds,
+            collection.listings,
+            targetMarket,
+          ),
+        );
+      } catch {
+        applySnapshot(
+          targetScope,
+          failFavoritesLoad(favoritesStateRef.current, targetScope),
+        );
+        setFavoriteListingsState((current) =>
+          currentScopeRef.current === targetScope
+            ? beginFavoriteListingsLoad(current, targetScope)
+            : current,
+        );
+        throw new FavoritesStateUnavailableError();
+      }
+    })();
+
+    inFlightLoadsRef.current.set(targetScope, request);
+    void request.then(
+      () => {
+        if (inFlightLoadsRef.current.get(targetScope) === request) {
+          inFlightLoadsRef.current.delete(targetScope);
+        }
+      },
+      () => {
+        if (inFlightLoadsRef.current.get(targetScope) === request) {
+          inFlightLoadsRef.current.delete(targetScope);
+        }
+      },
+    );
+    return request;
+  }, [
+    applySnapshot,
+    applyFavoriteListingsSnapshot,
+    identity,
+    isReadOnlyStaff,
+    isRestoring,
+    marketCode,
+    scopeKey,
+  ]);
 
   /**
    * The set is reloaded whenever the signed-in account changes, not just on
@@ -66,15 +305,7 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({
    * saves a listing and *then* creates an account still has it afterwards.
    */
   useEffect(() => {
-    let cancelled = false;
     if (isRestoring) return () => undefined;
-
-    if (isReadOnlyStaff) {
-      previousIdentity.current = identity;
-      setFavoriteIds([]);
-      setIsLoading(false);
-      return () => undefined;
-    }
 
     // Only an observed signed-out -> signed-in transition merges. Merging on
     // mount instead would hand whoever is already signed in on a shared device
@@ -84,52 +315,45 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({
       !previousIdentity.current &&
       Boolean(identity);
     previousIdentity.current = identity;
+    if (signingIn && !isReadOnlyStaff) {
+      mergeGuestScopesRef.current.add(scopeKey);
+    }
 
-    const loadFavorites = async () => {
-      setIsLoading(true);
-      try {
-        if (!identity) {
-          setFavoriteIds(storageService.getFavorites(GUEST_FAVORITES_KEY));
-          return;
-        }
+    void refreshFavorites().catch(() => undefined);
+    return () => undefined;
+  }, [identity, isReadOnlyStaff, isRestoring, refreshFavorites, scopeKey]);
 
-        let ids = await services.listings.getFavorites();
-
-        if (signingIn) {
-          const guestIds = storageService.getFavorites(GUEST_FAVORITES_KEY);
-          const missingGuestIds = guestIds.filter((id) => !ids.includes(id));
-          const migratedIds = await Promise.all(
-            missingGuestIds.map(async (listingId) => ({
-              listingId,
-              confirmed: await services.listings.toggleFavorite(listingId),
-            })),
-          );
-          ids = [
-            ...ids,
-            ...migratedIds
-              .filter(({ confirmed }) => confirmed)
-              .map(({ listingId }) => listingId),
-          ];
-          // Clear only after every remote/demo adapter write succeeds. If a
-          // write fails, the guest bucket remains available for a later retry.
-          for (const listingId of guestIds) {
-            storageService.toggleFavorite(listingId, GUEST_FAVORITES_KEY);
-          }
-        }
-
-        if (!cancelled) setFavoriteIds(ids);
-      } catch {
-        if (!cancelled) setFavoriteIds([]);
-      } finally {
-        if (!cancelled) setIsLoading(false);
-      }
-    };
-
-    void loadFavorites();
-    return () => {
-      cancelled = true;
-    };
-  }, [identity, isRestoring, isReadOnlyStaff]);
+  const visibleSnapshot: FavoritesSnapshot =
+    favoritesState.scopeKey === scopeKey
+      ? favoritesState
+      : { scopeKey, ids: EMPTY_FAVORITE_IDS, loadState: "loading" };
+  const favoriteLoadState: FavoritesLoadState = isRestoring
+    ? "loading"
+    : isReadOnlyStaff
+      ? "ready"
+      : visibleSnapshot.loadState;
+  // The ids may be a stale display cache while loading/error, but they are
+  // never used as mutation authority: toggle/clear re-check the snapshot state.
+  const favoriteIds = isReadOnlyStaff
+    ? EMPTY_FAVORITE_IDS
+    : visibleSnapshot.ids;
+  const visibleFavoriteListingsState: FavoriteListingsSnapshot =
+    favoriteListingsState.scopeKey === scopeKey
+      ? favoriteListingsState
+      : {
+          scopeKey,
+          listings: EMPTY_FAVORITE_LISTINGS,
+          isComplete: false,
+        };
+  const favoriteListings = useMemo(() => {
+    if (isReadOnlyStaff) return EMPTY_FAVORITE_LISTINGS;
+    const favoriteIdSet = new Set(favoriteIds);
+    return visibleFavoriteListingsState.listings.filter((listing) =>
+      favoriteIdSet.has(listing.id),
+    );
+  }, [favoriteIds, isReadOnlyStaff, visibleFavoriteListingsState.listings]);
+  const favoriteListingsComplete =
+    isReadOnlyStaff || visibleFavoriteListingsState.isComplete;
 
   const isFavorite = useCallback(
     (listingId: string) => !isReadOnlyStaff && favoriteIds.includes(listingId),
@@ -144,42 +368,132 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({
         );
       }
 
-      // Optimistic: a heart that waits on a round trip feels broken. The service
-      // result is authoritative and reconciles the set immediately after.
-      let optimistic = false;
-      setFavoriteIds((previous) => {
-        optimistic = !previous.includes(listingId);
-        return optimistic
-          ? [...previous, listingId]
-          : previous.filter((id) => id !== listingId);
-      });
-
-      try {
-        const confirmed = identity
-          ? await services.listings.toggleFavorite(listingId)
-          : storageService.toggleFavorite(listingId, GUEST_FAVORITES_KEY);
-        setFavoriteIds((previous) => {
-          const without = previous.filter((id) => id !== listingId);
-          return confirmed ? [...without, listingId] : without;
-        });
-        analyticsService.track(
-          confirmed ? "listing_favorited" : "listing_unfavorited",
-          { listingId },
-        );
-        return confirmed;
-      } catch {
-        // Put the set back the way it was rather than leaving a lie on screen.
-        setFavoriteIds((previous) =>
-          optimistic
-            ? previous.filter((id) => id !== listingId)
-            : [...previous, listingId],
-        );
-        throw new Error(
-          "Impossible de mettre à jour vos favoris pour le moment.",
+      const targetScope = scopeKey;
+      const clearing = inFlightClearsRef.current.get(targetScope);
+      if (clearing) {
+        await clearing;
+        throw new FavoritesStateUnavailableError(
+          t("ui.listingCard.favorisRecharges"),
         );
       }
+      const pendingKey = `${targetScope}::${listingId}`;
+      const existing = pendingTogglesRef.current.get(pendingKey);
+      if (existing) return existing;
+
+      let currentFavorite: boolean;
+      try {
+        currentFavorite = readFavoriteMembership(
+          favoritesStateRef.current,
+          targetScope,
+          listingId,
+        );
+      } catch {
+        // A click from a stale render is a retry-only action. Loading the
+        // authoritative set first prevents an empty fallback from turning a
+        // real server favorite off (or vice versa).
+        await refreshFavorites();
+        throw new FavoritesStateUnavailableError(
+          t("ui.listingCard.favorisRecharges"),
+        );
+      }
+
+      // Optimistic: a heart that waits on a round trip feels broken. The service
+      // result is authoritative and reconciles the set immediately after.
+      const optimistic = !currentFavorite;
+      const previousSnapshot = favoritesStateRef.current;
+      const previousIds = previousSnapshot.ids;
+      applySnapshot(targetScope, {
+        scopeKey: targetScope,
+        ids: optimistic
+          ? [...previousIds, listingId]
+          : previousIds.filter((id) => id !== listingId),
+        loadState: "ready",
+      });
+
+      const operation = (async () => {
+        try {
+          const deliveryRequestId =
+            deliveryRequestIdFromDiscoveryListingId(listingId);
+          const confirmed = identity
+            ? deliveryRequestId
+              ? await services.delivery.setFavoriteRequest(
+                  identity,
+                  deliveryRequestId,
+                  marketCode,
+                  optimistic,
+                )
+              : await services.listings.setFavorite(
+                  listingId,
+                  marketCode,
+                  optimistic,
+                )
+            : deliveryRequestId
+              ? (() => {
+                  throw new Error("AUTH_REQUIRED");
+                })()
+              : storageService.toggleFavorite(
+                  listingId,
+                  GUEST_FAVORITES_KEY,
+                  marketCode,
+                );
+          const latest = favoritesStateRef.current;
+          if (
+            currentScopeRef.current === targetScope &&
+            latest.scopeKey === targetScope
+          ) {
+            const without = latest.ids.filter((id) => id !== listingId);
+            applySnapshot(targetScope, {
+              scopeKey: targetScope,
+              ids: confirmed ? [...without, listingId] : without,
+              loadState: "ready",
+            });
+            setFavoriteListingsState((current) =>
+              reconcileFavoriteListingMutation(
+                current,
+                targetScope,
+                listingId,
+                confirmed,
+              ),
+            );
+          }
+          analyticsService.track(
+            confirmed ? "listing_favorited" : "listing_unfavorited",
+            { listingId, marketCode },
+          );
+          return confirmed;
+        } catch {
+          // Put the set back the way it was rather than leaving a lie on screen.
+          const latest = favoritesStateRef.current;
+          if (
+            currentScopeRef.current === targetScope &&
+            latest.scopeKey === targetScope
+          ) {
+            const without = latest.ids.filter((id) => id !== listingId);
+            applySnapshot(targetScope, {
+              scopeKey: targetScope,
+              ids: currentFavorite ? [...without, listingId] : without,
+              loadState: "ready",
+            });
+          }
+          throw new Error(t("ui.listingCard.favoriErreur"));
+        }
+      })();
+      pendingTogglesRef.current.set(pendingKey, operation);
+      void operation.then(
+        () => pendingTogglesRef.current.delete(pendingKey),
+        () => pendingTogglesRef.current.delete(pendingKey),
+      );
+      return operation;
     },
-    [identity, isReadOnlyStaff],
+    [
+      applySnapshot,
+      identity,
+      isReadOnlyStaff,
+      marketCode,
+      refreshFavorites,
+      scopeKey,
+      t,
+    ],
   );
 
   const clearFavorites = useCallback(async () => {
@@ -189,41 +503,123 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({
       );
     }
 
-    const previous = favoriteIds;
-    setFavoriteIds([]);
-    try {
-      if (identity) {
-        await Promise.all(
-          previous.map((id) => services.listings.toggleFavorite(id)),
+    const targetScope = scopeKey;
+    const existingClear = inFlightClearsRef.current.get(targetScope);
+    if (existingClear) return existingClear;
+
+    const operation = (async () => {
+      const pendingForScope = [...pendingTogglesRef.current.entries()]
+        .filter(([key]) => key.startsWith(`${targetScope}::`))
+        .map(([, pending]) => pending);
+      if (pendingForScope.length > 0) {
+        await Promise.allSettled(pendingForScope);
+        try {
+          await refreshFavorites();
+        } catch {
+          throw new Error(t("ui.listingCard.favorisViderErreur"));
+        }
+      }
+
+      let previous: string[];
+      try {
+        previous = requireFavoritesReady(
+          favoritesStateRef.current,
+          targetScope,
         );
-      } else {
-        previous.forEach((id) =>
-          storageService.toggleFavorite(id, GUEST_FAVORITES_KEY),
+      } catch {
+        await refreshFavorites();
+        throw new FavoritesStateUnavailableError(
+          t("ui.listingCard.favorisRechargesAvantVider"),
         );
       }
-    } catch {
-      setFavoriteIds(previous);
-      throw new Error("Impossible de vider vos favoris pour le moment.");
-    }
-  }, [favoriteIds, identity, isReadOnlyStaff]);
+
+      applySnapshot(
+        targetScope,
+        beginFavoritesLoad(favoritesStateRef.current, targetScope),
+      );
+      const remaining = await clearFavoritesWithReconciliation(
+        previous,
+        async (listingId) => {
+          const deliveryRequestId =
+            deliveryRequestIdFromDiscoveryListingId(listingId);
+          if (identity && deliveryRequestId) {
+            return services.delivery.setFavoriteRequest(
+              identity,
+              deliveryRequestId,
+              marketCode,
+              false,
+            );
+          }
+          return identity
+            ? services.listings.setFavorite(listingId, marketCode, false)
+            : storageService.toggleFavorite(
+                listingId,
+                GUEST_FAVORITES_KEY,
+                marketCode,
+              );
+        },
+        async () => {
+          // A set-state response can be lost after the server commits. Never
+          // restore the old local array after a partial failure: this scoped
+          // read is the only trustworthy post-clear state.
+          try {
+            await refreshFavorites();
+          } catch {
+            throw new Error(t("ui.listingCard.favorisViderErreur"));
+          }
+          return requireFavoritesReady(favoritesStateRef.current, targetScope);
+        },
+      );
+      if (remaining.length > 0) {
+        throw new Error(t("ui.listingCard.favorisViderErreur"));
+      }
+    })();
+
+    inFlightClearsRef.current.set(targetScope, operation);
+    void operation.then(
+      () => inFlightClearsRef.current.delete(targetScope),
+      () => inFlightClearsRef.current.delete(targetScope),
+    );
+    return operation;
+  }, [
+    applySnapshot,
+    identity,
+    isReadOnlyStaff,
+    marketCode,
+    refreshFavorites,
+    scopeKey,
+    t,
+  ]);
 
   const value = useMemo<FavoritesContextValue>(
     () => ({
-      favoriteIds: isReadOnlyStaff ? [] : favoriteIds,
+      favoriteIds: isReadOnlyStaff ? EMPTY_FAVORITE_IDS : favoriteIds,
+      favoriteListings,
+      favoriteListingsComplete,
       count: isReadOnlyStaff ? 0 : favoriteIds.length,
-      isLoading: isReadOnlyStaff ? false : isLoading,
+      isLoading: favoriteLoadState === "loading",
+      favoriteLoadState,
+      favoritesError:
+        favoriteLoadState === "error"
+          ? t("ui.listingCard.favorisChargementErreur")
+          : null,
       isFavorite,
+      refreshFavorites,
       toggleFavorite,
       clearFavorites,
       canModifyFavorites: !isReadOnlyStaff,
     }),
     [
       favoriteIds,
-      isLoading,
+      favoriteListings,
+      favoriteListingsComplete,
       isFavorite,
+      favoriteLoadState,
+      refreshFavorites,
       toggleFavorite,
       clearFavorites,
       isReadOnlyStaff,
+      t,
     ],
   );
 

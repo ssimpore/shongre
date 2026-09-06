@@ -5,8 +5,6 @@ import {
   EntitlementLimitError,
 } from "../security/authorization.service";
 import { auditService } from "../security/audit.service";
-import { CANONICAL_TAXONOMY_IDENTITIES } from "@shongre/contracts/taxonomy-catalog";
-import { resolveCanonicalTaxonomyIdentity } from "../domains/taxonomy/taxonomy.identity";
 import {
   expandSearchQuery,
   searchTextIncludes,
@@ -14,6 +12,7 @@ import {
 import { demoVerticalDiscoveryStore } from "../domains/discovery/demo-vertical-discovery.store";
 import { DEFAULT_MARKET_CODE } from "../configuration/market-baseline";
 import { getCountryConfig } from "@shongre/contracts";
+import { majorToMinorAmount } from "@shongre/shared/money";
 
 export interface IListingRepository {
   getListings(filters?: SearchFilters): Promise<{
@@ -48,7 +47,6 @@ export interface IListingRepository {
     reason?: string,
   ): Promise<Listing | boolean>;
   deleteListing(id: string): Promise<boolean>;
-  getFeaturedListings(): Promise<Listing[]>;
   getDealsListings(): Promise<Listing[]>;
   getListingsBySeller(sellerId: string): Promise<Listing[]>;
   getSimilarListings(
@@ -56,8 +54,6 @@ export interface IListingRepository {
     categorySlug: string,
   ): Promise<Listing[]>;
   incrementViews(listingId: string): Promise<void>;
-  toggleFavorite(listingId: string): Promise<boolean>;
-  getFavorites(): Promise<Listing[]>;
   decrementStock(listingId: string, quantity: number): Promise<Listing>;
 }
 
@@ -83,36 +79,72 @@ function matchesFacetValue(actual: unknown, criterion: unknown): boolean {
   return String(actual) === requested;
 }
 
-function taxonomyIdentityAndDescendantIds(value: string): Set<string> {
-  const identity = resolveCanonicalTaxonomyIdentity(value);
-  if (!identity) return new Set();
+type ListingMarketPublication = NonNullable<
+  Listing["marketPublications"]
+>[number];
 
-  const parentById = new Map(
-    CANONICAL_TAXONOMY_IDENTITIES.map((candidate) => [
-      candidate.id,
-      candidate.parentId,
-    ]),
-  );
-  const containsIdentity = (candidateId: string) => {
-    let currentId: string | undefined = candidateId;
-    while (currentId) {
-      if (currentId === identity.id) return true;
-      currentId = parentById.get(currentId);
-    }
-    return false;
+/**
+ * Projects the market-owned commercial fields before filtering and sorting.
+ * The generic demo inventory stores one listing with several publication
+ * records; returning the root price here would make the same result display and
+ * sort differently from the selected market's authoritative publication.
+ */
+function projectMarketPublication(
+  listing: Listing,
+  publication: ListingMarketPublication,
+): Listing {
+  const hasCustomPrice =
+    typeof publication.customPrice === "number" &&
+    Number.isFinite(publication.customPrice) &&
+    publication.customPrice >= 0;
+  const price = hasCustomPrice ? publication.customPrice! : listing.price;
+  const currency = (
+    publication.currency ||
+    listing.currency ||
+    getCountryConfig(publication.marketCode)?.currency
+  )?.toUpperCase();
+  const pricePresentation = listing.pricePresentation
+    ? {
+        ...listing.pricePresentation,
+        currency: currency || listing.pricePresentation.currency,
+        ...(hasCustomPrice &&
+        listing.pricePresentation.visibility === "public" &&
+        currency
+          ? {
+              minimumAmountMinor: majorToMinorAmount(price, currency),
+              maximumAmountMinor: majorToMinorAmount(price, currency),
+            }
+          : {}),
+      }
+    : undefined;
+
+  return {
+    ...listing,
+    price,
+    currency,
+    pricePresentation,
+    marketCode: publication.marketCode.toUpperCase(),
+    // A publication date belongs to this market publication. Leaving it absent
+    // is more accurate than borrowing the listing creation or another market's
+    // publication date.
+    publishedAt: publication.publishedAt,
   };
-
-  return new Set(
-    CANONICAL_TAXONOMY_IDENTITIES.filter((candidate) =>
-      containsIdentity(candidate.id),
-    ).map((candidate) => candidate.id),
-  );
 }
 
 class MockListingRepository implements IListingRepository {
-  private getCanonicalInventory(): Listing[] {
-    const listingsById = new Map(
-      storageService.getListings().map((listing) => [listing.id, listing]),
+  private async getCanonicalInventory(): Promise<Listing[]> {
+    // Legacy browser snapshots need the full alias graph, but application
+    // chrome only needs raw storage. Defer the generated taxonomy until a
+    // listing service is actually asked for inventory.
+    const { normalizeListingTaxonomyIdentity } =
+      await import("../domains/taxonomy/taxonomy.identity");
+    const listingsById = new Map<string, Listing>(
+      storageService
+        .getListings()
+        .map((listing) => [
+          listing.id,
+          { ...listing, ...normalizeListingTaxonomyIdentity(listing) },
+        ]),
     );
 
     // Specialized verticals are authoritative when a stale browser-local
@@ -130,7 +162,7 @@ class MockListingRepository implements IListingRepository {
     page: number;
     totalPages: number;
   }> {
-    let list = this.getCanonicalInventory().filter(
+    let list = (await this.getCanonicalInventory()).filter(
       (listing) => listing.status === "active",
     );
 
@@ -161,29 +193,35 @@ class MockListingRepository implements IListingRepository {
       filters.marketCode !== "*"
     ) {
       const mCode = filters.marketCode.toUpperCase();
-      list = list.filter((item) => {
+      list = list.flatMap((item) => {
         // 1. Check marketPublications if present
         if (item.marketPublications && item.marketPublications.length > 0) {
-          return item.marketPublications.some(
+          const publication = item.marketPublications.find(
             (p) =>
               p.marketCode.toUpperCase() === mCode && p.status === "active",
           );
+          return publication
+            ? [projectMarketPublication(item, publication)]
+            : [];
         }
         // 2. Check marketCodes array
         if (item.marketCodes && item.marketCodes.length > 0) {
-          return item.marketCodes.some((code) => code.toUpperCase() === mCode);
+          return item.marketCodes.some((code) => code.toUpperCase() === mCode)
+            ? [item]
+            : [];
         }
         // Legacy rows are usable only when they carry an explicit primary market.
-        return item.marketCode?.toUpperCase() === mCode;
+        return item.marketCode?.toUpperCase() === mCode ? [item] : [];
       });
     }
 
     // Category with taxonomy normalization and alias resolution
     if (filters.categorySlug && filters.categorySlug !== "all") {
+      const { isTaxonomyV4DescendantOf, resolveCanonicalTaxonomyIdentity } =
+        await import("../domains/taxonomy/taxonomy.identity");
       const catSlugOrId = filters.categorySlug.toLowerCase();
       const requestedCategoryId =
         resolveCanonicalTaxonomyIdentity(catSlugOrId)?.id || catSlugOrId;
-      const matchedNodeIds = taxonomyIdentityAndDescendantIds(catSlugOrId);
 
       list = list.filter((item) => {
         const itemCat = (item.categorySlug || "").toLowerCase();
@@ -191,8 +229,9 @@ class MockListingRepository implements IListingRepository {
         const itemNode =
           resolveCanonicalTaxonomyIdentity(itemSubCat) ||
           resolveCanonicalTaxonomyIdentity(itemCat);
-        if (itemNode && matchedNodeIds.size > 0)
-          return matchedNodeIds.has(itemNode.id);
+        if (itemNode && isTaxonomyV4DescendantOf(itemNode.id, catSlugOrId)) {
+          return true;
+        }
         return (
           itemCat === catSlugOrId ||
           itemSubCat === catSlugOrId ||
@@ -204,16 +243,18 @@ class MockListingRepository implements IListingRepository {
 
     // Subcategory with alias normalization
     if (filters.subCategorySlug) {
+      const { isTaxonomyV4DescendantOf, resolveCanonicalTaxonomyIdentity } =
+        await import("../domains/taxonomy/taxonomy.identity");
       const subSlugOrId = filters.subCategorySlug.toLowerCase();
       const requestedSubCategoryId =
         resolveCanonicalTaxonomyIdentity(subSlugOrId)?.id || subSlugOrId;
-      const matchedNodeIds = taxonomyIdentityAndDescendantIds(subSlugOrId);
 
       list = list.filter((item) => {
         const itemSubCat = (item.subCategorySlug || "").toLowerCase();
         const itemNode = resolveCanonicalTaxonomyIdentity(itemSubCat);
-        if (itemNode && matchedNodeIds.size > 0)
-          return matchedNodeIds.has(itemNode.id);
+        if (itemNode && isTaxonomyV4DescendantOf(itemNode.id, subSlugOrId)) {
+          return true;
+        }
         return (
           itemSubCat === subSlugOrId ||
           itemSubCat.startsWith(`${requestedSubCategoryId}.`)
@@ -396,7 +437,7 @@ class MockListingRepository implements IListingRepository {
   }
 
   async getListingById(id: string): Promise<Listing | null> {
-    const list = this.getCanonicalInventory();
+    const list = await this.getCanonicalInventory();
     return list.find((l) => l.id === id) || null;
   }
 
@@ -544,23 +585,8 @@ class MockListingRepository implements IListingRepository {
     return true;
   }
 
-  async getFeaturedListings(): Promise<Listing[]> {
-    const list = this.getCanonicalInventory().filter(
-      (listing) => listing.status === "active",
-    );
-    return list
-      .filter(
-        (listing) =>
-          listing.promotionState === "active" ||
-          (listing.isBoosted &&
-            (!listing.boostExpiresAt ||
-              new Date(listing.boostExpiresAt).getTime() > Date.now())),
-      )
-      .slice(0, 6);
-  }
-
   async getDealsListings(): Promise<Listing[]> {
-    const list = this.getCanonicalInventory().filter(
+    const list = (await this.getCanonicalInventory()).filter(
       (listing) => listing.status === "active",
     );
     return list
@@ -569,7 +595,7 @@ class MockListingRepository implements IListingRepository {
   }
 
   async getListingsBySeller(sellerId: string): Promise<Listing[]> {
-    return this.getCanonicalInventory().filter(
+    return (await this.getCanonicalInventory()).filter(
       (listing) => listing.sellerId === sellerId,
     );
   }
@@ -578,7 +604,7 @@ class MockListingRepository implements IListingRepository {
     listingId: string,
     categorySlug: string,
   ): Promise<Listing[]> {
-    return this.getCanonicalInventory()
+    return (await this.getCanonicalInventory())
       .filter(
         (l) =>
           l.id !== listingId &&
@@ -596,29 +622,6 @@ class MockListingRepository implements IListingRepository {
         storageService.saveListing(listing);
       }
     }
-  }
-
-  async toggleFavorite(listingId: string): Promise<boolean> {
-    const currentUser = storageService.getCurrentUser();
-    authorizationService.assertCan(currentUser, "favorite.manage.own");
-    const isFav = storageService.toggleFavorite(listingId);
-    const listing = await this.getListingById(listingId);
-    if (listing) {
-      listing.favoritesCount = Math.max(
-        0,
-        listing.favoritesCount + (isFav ? 1 : -1),
-      );
-      if (!demoVerticalDiscoveryStore.hasListing(listingId)) {
-        storageService.saveListing(listing);
-      }
-    }
-    return isFav;
-  }
-
-  async getFavorites(): Promise<Listing[]> {
-    const favIds = storageService.getFavorites();
-    const all = this.getCanonicalInventory();
-    return all.filter((l) => favIds.includes(l.id));
   }
 
   async updateListingMarkets(

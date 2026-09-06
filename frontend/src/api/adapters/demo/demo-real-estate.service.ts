@@ -16,6 +16,7 @@ import {
 import { applyMonetizationToRealEstateCatalog } from "@shongre/contracts/vertical-monetization-adapters";
 import { BASELINE_MONETIZATION_CATALOG } from "@shongre/contracts/monetization-catalog";
 import type { VerticalCheckout } from "@shongre/contracts/vertical";
+import { isActiveMarketResolvedListingPromotion } from "@shongre/contracts";
 import { simulateNetworkDelay } from "../../client/api-client.config";
 import type {
   PropertyLeadDraft,
@@ -300,8 +301,12 @@ export class DemoRealEstateService implements RealEstateServiceContract {
         );
       if (query.sort === "promoted") {
         const promoted = (property: PropertyPrivate) =>
-          Number(property.promotion.featured) +
-          Number(property.promotion.sponsored);
+          Number(
+            isActiveMarketResolvedListingPromotion(
+              property.resolvedPromotion,
+              query.marketCode,
+            ),
+          );
         const promotionOrder = promoted(b) - promoted(a);
         if (promotionOrder) return promotionOrder;
       }

@@ -1,5 +1,6 @@
 import { logger } from "../../infrastructure/logging/logger.js";
 import { getSupabaseAdminClient } from "../../infrastructure/supabase/supabase-client.js";
+import { retryDatabaseSerializationFailure } from "../../infrastructure/database/serialization-retry.js";
 
 export class LifecycleWorker {
   async runExpiredListingsCleanup(): Promise<number> {
@@ -7,12 +8,15 @@ export class LifecycleWorker {
       const supabase = getSupabaseAdminClient() as any;
       const now = new Date().toISOString();
 
-      const { data } = await supabase
-        .from("listings")
-        .update({ status: "archived", updated_at: now })
-        .eq("status", "published")
-        .lt("expires_at", now)
-        .select("id");
+      const { data, error } = await retryDatabaseSerializationFailure<any>(() =>
+        supabase
+          .from("listings")
+          .update({ status: "archived", updated_at: now })
+          .eq("status", "published")
+          .lt("expires_at", now)
+          .select("id"),
+      );
+      if (error) throw error;
 
       const count = data?.length || 0;
       if (count > 0) {

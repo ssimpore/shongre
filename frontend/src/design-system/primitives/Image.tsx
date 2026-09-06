@@ -7,6 +7,8 @@ export interface ImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   alt: string;
   /** Optional owned asset to render when `src` is absent or fails to load. */
   fallbackSrc?: string;
+  /** Localized label announced only for the visual fallback. */
+  fallbackLabel?: string;
   /** Icon size used by the fallback placeholder. */
   fallbackIconClassName?: string;
   /**
@@ -50,6 +52,7 @@ export const Image: React.FC<ImageProps> = ({
   alt,
   className = "",
   fallbackIconClassName = "w-5 h-5",
+  fallbackLabel,
   fallbackSrc,
   loading,
   referrerPolicy = "no-referrer",
@@ -82,7 +85,7 @@ export const Image: React.FC<ImageProps> = ({
     return (
       <div
         role="img"
-        aria-label={alt || "Image indisponible"}
+        aria-label={fallbackLabel || alt || "Image indisponible"}
         className={`flex items-center justify-center bg-bg-subtle text-text-muted ${className}`}
       >
         <ImageOff className={fallbackIconClassName} aria-hidden="true" />

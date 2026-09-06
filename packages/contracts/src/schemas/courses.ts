@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { marketResolvedListingPromotionSchema } from "./discovery";
 import { marketCodeSchema, moneySchema } from "./primitives";
 
 export const COURSE_CONSTRAINTS = {
@@ -374,6 +375,7 @@ export const tutorSearchItemSchema = z.object({
   distanceKm: z.number().nonnegative().optional(),
   relevanceReasons: z.array(z.string()),
   isSaved: z.boolean(),
+  resolvedPromotion: marketResolvedListingPromotionSchema.optional(),
 });
 export type TutorSearchItem = z.infer<typeof tutorSearchItemSchema>;
 

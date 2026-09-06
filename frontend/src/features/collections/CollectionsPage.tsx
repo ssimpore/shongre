@@ -211,6 +211,7 @@ export const CollectionsPage: React.FC = () => {
         const matched = collectionService.filterListingsForCollection(
           selectedCollection,
           fetched,
+          { marketCode: activeMarket.code },
         );
         setListingState({
           collectionId: selectedCollection.id,
@@ -677,10 +678,7 @@ export const CollectionsPage: React.FC = () => {
                   )}
                 >
                   {Array.from({ length: 8 }).map((_, idx) => (
-                    <ListingCardSkeleton
-                      key={idx}
-                      className="rounded-2xl border border-border-base bg-bg-surface p-3"
-                    />
+                    <ListingCardSkeleton key={idx} />
                   ))}
                 </ListingRail>
               ) : loadError ? (

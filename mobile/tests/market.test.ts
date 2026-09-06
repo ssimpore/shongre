@@ -71,6 +71,6 @@ describe("mobile market context", () => {
     expect(france.every((listing) => listing.marketCode === "FR")).toBe(true);
     expect(belgium.every((listing) => listing.marketCode === "BE")).toBe(true);
     expect(switzerland).toHaveLength(1);
-    expect(switzerland[0]?.price.currency).toBe("CHF");
+    expect(switzerland[0]?.price?.currency).toBe("CHF");
   });
 });

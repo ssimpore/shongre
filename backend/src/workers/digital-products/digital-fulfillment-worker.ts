@@ -220,8 +220,8 @@ export class DigitalFulfillmentWorker {
         p_event_id: eventId,
         p_worker_id: this.workerId,
         p_success: success,
-        p_error_code: errorCode ?? null,
-        p_retry_at: retryAt ?? null,
+        p_error_code: errorCode,
+        p_retry_at: retryAt,
       },
     );
     if (error || !data) throw new Error("DIGITAL_OUTBOX_COMPLETION_FAILED");

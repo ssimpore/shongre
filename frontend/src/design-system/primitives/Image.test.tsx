@@ -28,4 +28,13 @@ describe("Image", () => {
     expect(html).toContain('src="https://images.example.test/employer.png"');
     expect(html).not.toContain('src="/images/categories/emploi.jpg"');
   });
+
+  it("announces a localized neutral fallback without giving the photo duplicate alt text", () => {
+    const html = renderToStaticMarkup(
+      <Image src={undefined} alt="" fallbackLabel="Visuel indisponible" />,
+    );
+
+    expect(html).toContain('role="img"');
+    expect(html).toContain('aria-label="Visuel indisponible"');
+  });
 });

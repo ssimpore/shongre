@@ -13,6 +13,8 @@ export const publicUserSchema = z.object({
   organizationLogoUrl: z.string().url().optional(),
   branchName: z.string().min(1).optional(),
   isBusinessVerified: z.boolean().default(false),
+  /** Public, aggregate seller responsiveness copy supplied by the owning domain. */
+  responseTimeLabel: z.string().trim().min(1).max(160).optional(),
 });
 export type PublicUser = z.infer<typeof publicUserSchema>;
 

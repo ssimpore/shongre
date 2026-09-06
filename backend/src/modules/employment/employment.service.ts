@@ -161,10 +161,14 @@ export class EmploymentService {
     return result;
   }
 
-  async getPublicJob(idOrSlug: string) {
-    const job = await this.repo.getJob(idOrSlug);
+  async getPublicJob(idOrSlug: string, marketCode?: string) {
+    const normalizedMarket = marketCode
+      ? requireMarketCode(marketCode)
+      : undefined;
+    const job = await this.repo.getJob(idOrSlug, normalizedMarket);
     if (
       !job ||
+      (normalizedMarket && job.marketCode !== normalizedMarket) ||
       job.lifecycle !== "published" ||
       Date.parse(job.expiresAt) <= Date.now()
     )
@@ -794,8 +798,20 @@ export class EmploymentService {
     };
   }
 
-  async getOwnCandidateWorkspace(userId: string) {
-    const workspace = await this.repo.getCandidateWorkspace(userId);
+  async getOwnCandidateWorkspace(userId: string, marketCode?: string) {
+    const profile = marketCode
+      ? null
+      : await this.repo.getCandidateProfileForUser(userId);
+    if (!marketCode && !profile)
+      throw new AppError({
+        code: "NOT_FOUND",
+        message: "Espace candidat introuvable.",
+      });
+    const resolvedMarket = requireMarketCode(marketCode || profile?.marketCode);
+    const workspace = await this.repo.getCandidateWorkspace(
+      userId,
+      resolvedMarket,
+    );
     if (!workspace)
       throw new AppError({
         code: "NOT_FOUND",
@@ -871,7 +887,10 @@ export class EmploymentService {
         code: "VALIDATION_ERROR",
         message: "Cette offre utilise un autre mode de candidature.",
       });
-    const workspace = await this.repo.getCandidateWorkspace(userId);
+    const workspace = await this.repo.getCandidateWorkspace(
+      userId,
+      job.marketCode,
+    );
     if (!workspace)
       throw new AppError({
         code: "NOT_FOUND",
@@ -1044,17 +1063,37 @@ export class EmploymentService {
     return saved;
   }
 
-  async toggleSavedJob(userId: string, jobId: string) {
-    const workspace = await this.getOwnCandidateWorkspace(userId);
-    await this.getPublicJob(jobId);
-    const saved = await this.repo.toggleSavedJob(workspace.profile.id, jobId);
+  async getSavedJobIds(userId: string, marketCode: string) {
+    return this.repo.getSavedJobIds(userId, requireMarketCode(marketCode));
+  }
+
+  async setSavedJob(
+    userId: string,
+    jobId: string,
+    marketCode: string,
+    isFavorite: boolean,
+  ) {
+    const normalizedMarket = requireMarketCode(marketCode);
+    const candidate = await this.repo.getCandidateProfileForUser(userId);
+    if (!candidate)
+      throw new AppError({
+        code: "NOT_FOUND",
+        message: "Créez votre profil candidat avant d’enregistrer une offre.",
+      });
+    if (isFavorite) await this.getPublicJob(jobId, normalizedMarket);
+    const saved = await this.repo.setSavedJob(
+      userId,
+      jobId,
+      normalizedMarket,
+      isFavorite,
+    );
     await this.repo.trackAnalyticsEvent({
       eventName: "job_saved",
-      marketCode: workspace.profile.marketCode,
+      marketCode: normalizedMarket,
       jobId,
       dimensions: { saved },
     });
-    return { saved };
+    return saved;
   }
 
   async reportJob(userId: string, jobId: string, input: unknown) {

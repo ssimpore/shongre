@@ -18,6 +18,8 @@ export interface ProBadgeProps extends Omit<
 > {
   /** Localized expanded name for the intentionally compact visible label. */
   accessibilityLabel: string;
+  /** Listing cards use the soft brand treatment; other identity surfaces stay inverse. */
+  tone?: "inverse" | "primary";
 }
 
 export interface VerifiedIconProps {

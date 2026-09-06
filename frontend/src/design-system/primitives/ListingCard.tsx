@@ -1,37 +1,33 @@
 import type { ReactNode } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ListingCard as SharedListingCard } from "@shongre/features/listings/web";
 import type { ListingCardView, Money } from "@shongre/contracts";
-import {
-  IMAGE_SIZES,
-  formatMoney as formatSharedMoney,
-  majorToMinorAmount,
-} from "@shongre/shared";
+import { deliveryRequestIdFromDiscoveryListingId } from "@shongre/contracts/delivery";
+import { IMAGE_SIZES, formatMoney as formatSharedMoney } from "@shongre/shared";
 import type { Listing } from "../../types";
 import { useFavorites } from "../../app/providers/FavoritesProvider";
+import { useToast } from "../../app/providers/ToastProvider";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { Image } from "./Image";
-import { getListingCategoryLabel } from "../../domains/taxonomy/taxonomy.display";
 import {
-  getGenericListingCardCharacteristicPresentation,
-  getGenericListingConditionLabel,
+  getGenericListingCardHref,
+  projectGenericListingCardView,
 } from "../../domains/listing/listing-card.generic-presentation";
-import {
-  DEFAULT_MARKET_CODE,
-  DEFAULT_MARKET_CURRENCY,
-} from "../../configuration/market-baseline";
-import { formatListingPricePresentation } from "../../domains/listing/listing-price.presentation";
-import { Badge } from "./Badge";
+import { FavoriteButton } from "./FavoriteButton";
+import { useAuth } from "../../app/providers/AuthProvider";
+import { routes } from "../../configuration/routes";
 
 export interface ListingCardProps {
   listing: Listing;
   variant?: ListingCardVariant;
   className?: string;
-  pricing?: { currentPrice: Money; originalPrice?: Money };
+  pricing?: { currentPrice: Money };
+  /** Static result preview: preserves anatomy without navigation or mutation. */
+  interactive?: boolean;
 }
 
-type ListingCardVariant = "grid" | "list" | "compact" | "showcase";
+type ListingCardVariant = "grid" | "list" | "compact" | "showcase" | "hero";
 
 /**
  * Web adapter for category services that already return a `ListingCardView`.
@@ -45,102 +41,14 @@ export interface ListingCardViewCardProps {
   className?: string;
   image?: ReactNode;
   imageFit?: "cover" | "contain";
+  imagePriority?: boolean;
   isFavorite?: boolean;
+  favoriteLoadState?: "loading" | "ready" | "error";
   favoriteLabel?: string;
-  onFavoriteToggle?: () => void;
-  quickAction?: ReactNode;
-}
-
-function toListingCardView(
-  listing: Listing,
-  locale: string,
-  pricing?: ListingCardProps["pricing"],
-  convertMoney?: ReturnType<typeof useMarketLocation>["convertMoney"],
-): ListingCardView {
-  const currency = listing.currency ?? DEFAULT_MARKET_CURRENCY;
-  const characteristicPresentation =
-    getGenericListingCardCharacteristicPresentation(listing, locale);
-  return {
-    id: listing.id,
-    title: listing.title,
-    price: pricing?.currentPrice ?? {
-      amountMinor: majorToMinorAmount(listing.price, currency),
-      currency,
-    },
-    priceLabel: pricing
-      ? undefined
-      : formatListingPricePresentation(
-          listing.pricePresentation,
-          locale,
-          convertMoney,
-        ),
-    originalPrice:
-      pricing?.originalPrice ??
-      (listing.originalPrice
-        ? {
-            amountMinor: majorToMinorAmount(listing.originalPrice, currency),
-            currency,
-          }
-        : undefined),
-    imageUrl: listing.coverImageUrl || undefined,
-    city: listing.city,
-    marketCode: listing.marketCode ?? DEFAULT_MARKET_CODE,
-    categoryLabel: getListingCategoryLabel(listing),
-    conditionLabel: getGenericListingConditionLabel(listing.condition, locale),
-    characteristics: characteristicPresentation.map(
-      (characteristic) => characteristic.label,
-    ),
-    characteristicIcons: characteristicPresentation.map(
-      (characteristic) => characteristic.icon,
-    ),
-    publishedAt: listing.createdAt,
-    photoCount: listing.photos.length,
-    deliveryAvailable: listing.deliveryOptions.some(
-      (option) => option.available && option.type !== "hand_delivery",
-    ),
-    fulfillmentTypes: listing.fulfillmentTypes,
-    requiresPhysicalDelivery: listing.requiresPhysicalDelivery,
-    productVersion: listing.productVersion,
-    onlinePaymentAvailable: listing.isOnlinePaymentAvailable,
-    isNegotiable: listing.isNegotiable,
-    isFreeDonation: listing.isFreeDonation,
-    seller: {
-      id: listing.sellerId,
-      name: listing.sellerName,
-      sellerType: listing.sellerType,
-      avatarUrl: listing.sellerAvatarUrl,
-      city: listing.sellerCity,
-      isIdentityVerified: listing.sellerIsVerified,
-      rating: listing.sellerRating,
-      reviewCount: listing.sellerReviewCount,
-      organizationName: listing.publisherOrganizationName,
-      organizationLogoUrl: listing.publisherOrganizationLogoUrl,
-      branchName: listing.publisherBranchName,
-      isBusinessVerified:
-        listing.publisherVerificationStatus === "business_verified",
-    },
-    isUrgent:
-      listing.promotionState === "active"
-        ? listing.promotionType === "urgent_badge"
-        : listing.boostType === "urgent",
-    isFeatured: Boolean(
-      listing.promotionState === "active"
-        ? listing.promotionType && listing.promotionType !== "urgent_badge"
-        : listing.isBoosted && listing.boostType !== "urgent",
-    ),
-    promotion: listing.promotionType
-      ? {
-          state: listing.promotionState || "inactive",
-          type: listing.promotionType,
-          source: listing.promotionSource,
-          sourceId: listing.promotionSourceId,
-          startsAt: listing.promotionStartAt,
-          endsAt: listing.promotionEndAt,
-          label: listing.promotionLabel,
-        }
-      : undefined,
-    discovery: listing.discovery,
-  };
+  onFavoriteToggle?: () => void | Promise<unknown>;
+  onFavoriteRetry?: () => void | Promise<unknown>;
+  onNavigate?: () => void;
+  interactive?: boolean;
 }
 
 export function ListingCardViewCard({
@@ -150,24 +58,27 @@ export function ListingCardViewCard({
   className,
   image,
   imageFit = "cover",
+  imagePriority = false,
   isFavorite,
+  favoriteLoadState = "ready",
   favoriteLabel,
   onFavoriteToggle,
-  quickAction,
+  onFavoriteRetry,
+  onNavigate,
+  interactive = true,
 }: ListingCardViewCardProps) {
   const { t } = useTranslation();
+  const toast = useToast();
   const { currentLocale, convertMoney } = useMarketLocation();
-  const priceProjection = convertMoney(listing.price);
-  const originalPriceProjection = listing.originalPrice
-    ? convertMoney(listing.originalPrice)
+  const priceProjection = listing.price
+    ? convertMoney(listing.price)
     : undefined;
   const displayedListing: ListingCardView = {
     ...listing,
-    price: priceProjection.display,
-    originalPrice: originalPriceProjection?.display,
+    price: priceProjection?.display,
     priceLabel:
       listing.priceLabel ||
-      (priceProjection.estimated
+      (priceProjection?.estimated
         ? `≈ ${formatSharedMoney(priceProjection.display, currentLocale)}`
         : undefined),
   };
@@ -179,13 +90,16 @@ export function ListingCardViewCard({
       locale={currentLocale}
       variant={variant}
       className={`w-full ${className ?? ""}`}
+      interactive={interactive}
       image={
         image ?? (
           <Image
             src={listing.imageUrl}
             alt=""
+            fallbackLabel={t("ui.listingCard.imageUnavailable")}
+            priority={imagePriority}
             sizes={
-              variant === "list"
+              variant === "list" || variant === "hero"
                 ? IMAGE_SIZES.thumbnail
                 : variant === "compact"
                   ? IMAGE_SIZES.compact
@@ -199,22 +113,76 @@ export function ListingCardViewCard({
           />
         )
       }
-      isFavorite={isFavorite}
-      favoriteLabel={favoriteLabel}
+      favoriteAction={
+        onFavoriteToggle || onFavoriteRetry ? (
+          <FavoriteButton
+            isFavorite={Boolean(isFavorite)}
+            interactionState={favoriteLoadState}
+            label={`${
+              favoriteLoadState === "loading"
+                ? t("ui.listingCard.favorisChargement")
+                : favoriteLoadState === "error"
+                  ? t("ui.listingCard.favorisReessayer")
+                  : favoriteLabel ||
+                    t(
+                      isFavorite
+                        ? "ui.listingCard.retirerDesFavoris"
+                        : "ui.listingCard.ajouterAuxFavoris",
+                    )
+            } : ${listing.title}`}
+            variant="floating"
+            size="md"
+            onToggle={async (event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              if (!onFavoriteToggle) return;
+              try {
+                await onFavoriteToggle();
+              } catch {
+                toast.error(t("ui.listingCard.favoriErreur"));
+              }
+            }}
+            onRetry={
+              onFavoriteRetry
+                ? async (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    try {
+                      await onFavoriteRetry();
+                    } catch {
+                      toast.error(t("ui.listingCard.favorisChargementErreur"));
+                    }
+                  }
+                : undefined
+            }
+          />
+        ) : undefined
+      }
+      labels={{
+        boosted: t("ui.listingCard.boosted"),
+        free: t("ui.listingCard.free"),
+        onRequest: t("ui.listingCard.onRequest"),
+        imageUnavailable: t("ui.listingCard.imageUnavailable"),
+        rating: (rating, count) =>
+          t("ui.listingCard.noteAvis", { rating }).replace("{count}", count),
+      }}
       identityLabels={{
         pro: t("ui.identityStatus.pro.short"),
         proAccessibility: t("ui.identityStatus.pro.seller"),
         verified: t("ui.identityStatus.verification.profile"),
       }}
-      onFavoriteToggle={onFavoriteToggle}
-      quickAction={quickAction}
       renderLink={({
         href: to,
         className: linkClassName,
         ariaLabel,
         children,
       }) => (
-        <Link to={to} className={linkClassName} aria-label={ariaLabel}>
+        <Link
+          to={to}
+          className={linkClassName}
+          aria-label={ariaLabel}
+          onClick={onNavigate}
+        >
           {children as ReactNode}
         </Link>
       )}
@@ -227,46 +195,51 @@ export function ListingCard({
   variant = "grid",
   className,
   pricing,
+  interactive = true,
 }: ListingCardProps) {
   const { t } = useTranslation();
-  const { currentLocale, convertMoney } = useMarketLocation();
-  const { isFavorite, toggleFavorite } = useFavorites();
-  const configuredPath = listing.attributes?.canonicalPath;
-  const href =
-    typeof configuredPath === "string" && configuredPath.startsWith("/")
-      ? configuredPath
-      : `/annonce/${listing.id}`;
-  const isDigital =
-    listing.requiresPhysicalDelivery === false ||
-    listing.fulfillmentTypes?.some((type) => type !== "PHYSICAL");
-
+  const { activeMarket, currentLocale, convertMoney } = useMarketLocation();
+  const { currentUser } = useAuth();
+  const navigate = useNavigate();
+  const {
+    canModifyFavorites,
+    favoriteLoadState,
+    isFavorite,
+    refreshFavorites,
+    toggleFavorite,
+  } = useFavorites();
+  const href = getGenericListingCardHref(listing);
+  const deliveryRequestId = deliveryRequestIdFromDiscoveryListingId(listing.id);
+  const projectedListing = projectGenericListingCardView(
+    listing,
+    currentLocale,
+    activeMarket.code,
+    pricing,
+    convertMoney,
+  );
   return (
     <ListingCardViewCard
-      listing={toListingCardView(listing, currentLocale, pricing, convertMoney)}
+      listing={projectedListing}
       href={href}
       variant={variant}
       className={className}
-      image={
-        <Image
-          src={listing.coverImageUrl}
-          alt=""
-          sizes={
-            variant === "list"
-              ? IMAGE_SIZES.thumbnail
-              : variant === "compact"
-                ? IMAGE_SIZES.compact
-                : IMAGE_SIZES.card
-          }
-          className="h-full w-full object-cover motion-surface group-hover:scale-105"
-        />
-      }
+      interactive={interactive}
       isFavorite={isFavorite(listing.id)}
-      favoriteLabel={t("ui.listingCard.ajouterAuxFavoris")}
-      onFavoriteToggle={() => void toggleFavorite(listing.id)}
-      quickAction={
-        isDigital ? (
-          <Badge variant="primary">{t("digital.common.title")}</Badge>
-        ) : undefined
+      favoriteLoadState={favoriteLoadState}
+      favoriteLabel={t(
+        isFavorite(listing.id)
+          ? "ui.listingCard.retirerDesFavoris"
+          : "ui.listingCard.ajouterAuxFavoris",
+      )}
+      onFavoriteToggle={
+        interactive && canModifyFavorites
+          ? deliveryRequestId && !currentUser
+            ? () => navigate(routes.auth.login(href))
+            : () => toggleFavorite(listing.id)
+          : undefined
+      }
+      onFavoriteRetry={
+        interactive && canModifyFavorites ? refreshFavorites : undefined
       }
     />
   );

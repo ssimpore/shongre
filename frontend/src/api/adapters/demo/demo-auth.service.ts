@@ -199,7 +199,12 @@ export class DemoAuthService implements AuthServiceContract {
     if (role === "guest") return null;
     if (!user)
       throw new Error("Ce rôle de démonstration n’est pas disponible.");
-    if (!isStaffSeparatedSubject(user)) storageService.mergeGuestFavorites();
+    if (!isStaffSeparatedSubject(user)) {
+      storageService.mergeGuestFavorites(
+        undefined,
+        storageService.getActiveMarketCode(),
+      );
+    }
     return user;
   }
 
@@ -226,7 +231,10 @@ export class DemoAuthService implements AuthServiceContract {
     );
     storageService.setCurrentUserKey(userKey);
     if (!isStaffSeparatedSubject(user)) {
-      storageService.mergeGuestFavorites(userKey);
+      storageService.mergeGuestFavorites(
+        userKey,
+        storageService.getActiveMarketCode(),
+      );
     }
     return user;
   }

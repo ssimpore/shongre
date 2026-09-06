@@ -42,10 +42,11 @@ function generateTypes(): void {
       "Supabase CLI did not return a valid Database type definition.",
     );
   }
+  const generated = `${result.stdout.trimEnd()}\n`;
 
   if (checkOnly) {
     const current = fs.readFileSync(typesOutputPath, "utf8");
-    if (current !== result.stdout) {
+    if (current !== generated) {
       throw new Error(
         "Generated database types are stale. Run npm run db:types --workspace=backend against the migrated schema.",
       );
@@ -55,7 +56,7 @@ function generateTypes(): void {
   }
 
   fs.mkdirSync(path.dirname(typesOutputPath), { recursive: true });
-  fs.writeFileSync(typesOutputPath, result.stdout, "utf8");
+  fs.writeFileSync(typesOutputPath, generated, "utf8");
   console.log(`Generated database types at ${typesOutputPath}.`);
 }
 

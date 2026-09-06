@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { marketCodeSchema, moneySchema } from "./primitives";
+import { marketResolvedListingPromotionSchema } from "./discovery";
 import {
   verticalActivationSchema,
   verticalAddOnSchema,
@@ -325,6 +326,7 @@ export const propertyPrivateSchema = z.object({
   media: propertyMediaSchema,
   seller: propertySellerSchema,
   promotion: propertyPromotionSchema,
+  resolvedPromotion: marketResolvedListingPromotionSchema.optional(),
   customAttributes: z.record(z.string(), z.unknown()),
   moderationStatus: z.enum(["draft", "pending", "approved", "rejected"]),
   moderationReason: z.string().optional(),

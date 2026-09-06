@@ -28,6 +28,29 @@ export class HttpDeliveryService implements DeliveryServiceContract {
       { params: { marketCode } },
     );
   }
+  async getFavoriteRequestIds(
+    _actor: Parameters<DeliveryServiceContract["getFavoriteRequestIds"]>[0],
+    marketCode: string,
+  ) {
+    const result = await httpClient.get<{ requestIds: string[] }>(
+      "/delivery/favorites",
+      { headers: { "X-Shongre-Market": marketCode } },
+    );
+    return result.requestIds;
+  }
+  async setFavoriteRequest(
+    _actor: Parameters<DeliveryServiceContract["setFavoriteRequest"]>[0],
+    requestId: string,
+    marketCode: string,
+    isFavorite: boolean,
+  ) {
+    const result = await httpClient.put<{ isFavorite: boolean }>(
+      `/delivery/requests/${encodeURIComponent(requestId)}/favorite`,
+      { isFavorite },
+      { headers: { "X-Shongre-Market": marketCode } },
+    );
+    return result.isFavorite;
+  }
   getCourierProfile(
     _actor: Parameters<DeliveryServiceContract["getCourierProfile"]>[0],
     marketCode: string,

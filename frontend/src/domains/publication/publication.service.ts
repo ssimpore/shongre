@@ -568,7 +568,7 @@ export class PublicationService {
       sellerName: user.name || (isPro ? "Boutique Pro" : "Vendeur"),
       sellerType: isPro ? "pro" : "individual",
       sellerAvatarUrl: user.avatarUrl,
-      sellerRating: user.rating || 5.0,
+      sellerRating: user.rating ?? 0,
       sellerReviewCount: user.reviewCount || 0,
       sellerIsVerified: user.isVerified || false,
       sellerCity: draft.location.city,
@@ -588,9 +588,9 @@ export class PublicationService {
         isCover: idx === 0 || p.isCover,
         alt: p.alt || draft.title,
       })),
-      coverImageUrl:
-        draft.photos[0]?.url ||
-        "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800",
+      // Photo-optional categories intentionally keep media absent so the
+      // shared listing-card primitive renders its neutral reserved fallback.
+      coverImageUrl: draft.photos[0]?.url || "",
       deliveryOptions,
       isOnlinePaymentAvailable: draft.transaction.allowDirectPurchase,
       isReservable: draft.transaction.allowReservation,
@@ -598,6 +598,7 @@ export class PublicationService {
       attributes: sanitizedAttributes,
       status: "active",
       createdAt: now,
+      publishedAt: now,
       updatedAt: now,
       expiresAt,
       viewsCount: 0,

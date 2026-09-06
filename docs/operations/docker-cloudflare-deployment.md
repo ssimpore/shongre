@@ -69,6 +69,18 @@ activation and rollback runbook.
    manual approval before its dedicated runner migrates/deploys the same
    digests.
 
+Market-scoped favorites use an expand-phase compatibility mirror, but the
+database lock cannot revoke an old RPC body that has already started executing.
+Before applying the scoped-favorite migrations, put favorite mutations in
+maintenance, stop every old backend instance and job capable of calling a
+legacy favorite RPC, and verify that their in-flight database work has drained.
+Apply the migrations, deploy the new readers/writers, verify scoped counts per
+market, and only then reopen favorite mutations. The new readers deliberately
+omit every quarantined legacy row because its action market cannot be proven;
+record the reviewed recovery decision for that quarantine. Retire legacy
+tables/RPCs only in a later contract migration after confirming no old caller
+remains.
+
 ## Vulnerability policy
 
 Trivy is the single container/IaC scanner. Any `CRITICAL` or `HIGH` finding,

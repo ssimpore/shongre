@@ -1,5 +1,6 @@
 import type { Money, MoneyConversionProjection } from "@shongre/contracts";
 import {
+  formatCompactMoney,
   getCurrencyMinorUnitDigits,
   minorToMajorAmount,
 } from "@shongre/shared";
@@ -83,6 +84,7 @@ export function formatProjectedMoney(
     locale?: string;
     currencyDisplay?: "symbol" | "code";
     convertMoney?: MoneyDisplayConverter;
+    compact?: boolean;
   } = {},
 ): string {
   const projection = options.convertMoney
@@ -93,7 +95,9 @@ export function formatProjectedMoney(
         converted: false,
         estimated: false,
       };
-  const formatted = formatMoney(projection.display, options);
+  const formatted = options.compact
+    ? formatCompactMoney(projection.display, options.locale)
+    : formatMoney(projection.display, options);
   return projection.estimated ? `≈ ${formatted}` : formatted;
 }
 

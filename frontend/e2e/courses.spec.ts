@@ -27,15 +27,17 @@ test.describe("Shongre Education", () => {
     await expect(page.getByRole("heading", { level: 1 })).toContainText(
       "professeur",
     );
-    const cards = page.getByRole("article");
-    await expect(cards.first()).toBeVisible();
+    const cards = page.locator('[data-listing-card-consumer="courses"]');
+    await expect(
+      cards.first().locator('[data-listing-card="true"]'),
+    ).toBeVisible();
 
     await page.getByRole("button", { name: "Matière", exact: true }).click();
     await page
       .getByRole("option", { name: "Mathématiques", exact: true })
       .click();
     await expect(page).toHaveURL(/subject=subject_mathematics/);
-    await expect(cards.first()).toContainText("Mathématiques");
+    await expect(cards.first()).toContainText(/mathématiques/i);
 
     const locationSelector = page.locator(
       "#education-location-selector-desktop",
@@ -88,6 +90,51 @@ test.describe("Shongre Education", () => {
         blockingImpacts.has(violation.impact || ""),
       ),
     ).toEqual([]);
+  });
+
+  test("guest favorites keep the listing link separate and request authentication", async ({
+    page,
+  }) => {
+    await usePersona(page, "guest");
+    await page.goto("/education", { waitUntil: "domcontentloaded" });
+    await waitForStableLayout(page);
+
+    const firstCard = page
+      .locator('[data-listing-card-consumer="courses"]')
+      .first();
+    const listingHref = await firstCard
+      .locator('[data-listing-card="true"] a')
+      .getAttribute("href");
+    const favorite = firstCard.getByRole("button", {
+      name: /Ajouter aux favoris/i,
+    });
+    await expect(favorite).toBeEnabled();
+    await favorite.click();
+
+    await expect(page).toHaveURL(/\/connexion\?redirect=%2Feducation$/);
+    expect(listingHref).toMatch(/^\/education\/professeur\//);
+  });
+
+  test("authenticated favorites update independently without opening the listing", async ({
+    page,
+  }) => {
+    await usePersona(page, "individual_buyer");
+    await page.goto("/education", { waitUntil: "domcontentloaded" });
+    await waitForStableLayout(page);
+
+    const favorite = page
+      .locator('[data-listing-card-consumer="courses"]')
+      .first()
+      .getByRole("button", { name: /favoris/i });
+    await expect(favorite).toBeEnabled();
+    const before = await favorite.getAttribute("aria-pressed");
+    await favorite.click();
+
+    await expect(favorite).toHaveAttribute(
+      "aria-pressed",
+      before === "true" ? "false" : "true",
+    );
+    await expect(page).toHaveURL(/\/education$/);
   });
 
   test("mobile filters fit the viewport and expose a named dialog", async ({

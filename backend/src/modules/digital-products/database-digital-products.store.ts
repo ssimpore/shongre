@@ -8,8 +8,16 @@ import type {
   DigitalProvisioningTask,
   DigitalSellerProfile,
 } from "@shongre/contracts/digital-products";
-import { digitalMarketPolicySchema } from "@shongre/contracts/digital-products";
+import {
+  digitalAccessGrantSchema,
+  digitalAssetProjectionSchema,
+  digitalFulfillmentVersionInputSchema,
+  digitalMarketPolicySchema,
+  digitalSellerProfileSchema,
+} from "@shongre/contracts/digital-products";
+import { z } from "zod";
 import type { Database, Json } from "../../generated/database.types.js";
+import { retryDatabaseSerializationFailure } from "../../infrastructure/database/serialization-retry.js";
 import { getSupabaseAdminClient } from "../../infrastructure/supabase/supabase-client.js";
 import {
   storageService,
@@ -36,6 +44,21 @@ type SecretRow =
   Database["public"]["Tables"]["digital_access_secret_versions"]["Row"];
 type FulfillmentRow =
   Database["public"]["Tables"]["digital_fulfillment_versions"]["Row"];
+
+const digitalFulfillmentVersionStatusSchema = z.enum([
+  "DRAFT",
+  "PROCESSING",
+  "READY",
+  "PUBLISHED",
+  "RETIRED",
+  "SUSPENDED",
+]);
+const digitalModerationStatusSchema = z.enum([
+  "PENDING",
+  "APPROVED",
+  "REJECTED",
+  "NOT_REQUIRED",
+]);
 
 function bytea(buffer: Buffer): string {
   return `\\x${buffer.toString("hex")}`;
@@ -108,7 +131,7 @@ function mapPolicy(row: PolicyRow): DigitalMarketPolicy {
 }
 
 function mapAsset(row: AssetRow): DigitalAssetProjection {
-  return {
+  return digitalAssetProjectionSchema.parse({
     id: row.id,
     listingId: row.listing_id,
     version: row.version,
@@ -119,7 +142,7 @@ function mapAsset(row: AssetRow): DigitalAssetProjection {
     scanStatus: row.malware_scan_status,
     createdAt: row.created_at,
     readyAt: row.ready_at,
-  };
+  });
 }
 
 function secretEnvelope(
@@ -140,18 +163,10 @@ function mapFulfillment(
   assetIds: string[] = [],
   batchIds: string[] = [],
 ): DigitalFulfillmentVersionRecord {
-  return {
-    id: row.id,
-    listingId: row.listing_id,
-    sellerId: row.seller_id,
-    marketCode: row.market_code,
-    policyId: row.policy_id,
-    policyVersion: row.policy_version,
-    version: row.version,
+  const fulfillment = digitalFulfillmentVersionInputSchema.parse({
+    fulfillmentTypes: row.fulfillment_types,
+    primaryFulfillmentType: row.primary_fulfillment_type,
     productVersion: row.product_version,
-    fulfillmentTypes: row.fulfillment_types as DigitalFulfillmentType[],
-    primaryFulfillmentType:
-      row.primary_fulfillment_type as DigitalFulfillmentType,
     buyerFacingDescription: row.buyer_facing_description,
     compatibility: row.compatibility,
     requirements: row.requirements,
@@ -160,15 +175,26 @@ function mapFulfillment(
     privateAssetVersionIds: assetIds,
     accessSecretVersionId: row.access_secret_version_id ?? undefined,
     credentialBatchIds: batchIds,
-    credentialAllocationMode:
-      row.credential_allocation_mode as DigitalFulfillmentVersionRecord["credentialAllocationMode"],
-    credentialKinds: row.credential_kinds as CredentialKind[],
+    credentialAllocationMode: row.credential_allocation_mode ?? undefined,
+    credentialKinds: row.credential_kinds,
     provisioningTimeHours: row.provisioning_time_hours ?? undefined,
     entitlementDurationDays: row.entitlement_duration_days,
     downloadLimit: row.download_limit ?? undefined,
     revealLimit: row.reveal_limit ?? undefined,
-    status: row.status,
-    moderationStatus: row.moderation_status,
+  });
+  return {
+    ...fulfillment,
+    id: row.id,
+    listingId: row.listing_id,
+    sellerId: row.seller_id,
+    marketCode: row.market_code,
+    policyId: row.policy_id,
+    policyVersion: row.policy_version,
+    version: row.version,
+    status: digitalFulfillmentVersionStatusSchema.parse(row.status),
+    moderationStatus: digitalModerationStatusSchema.parse(
+      row.moderation_status,
+    ),
     createdAt: row.created_at,
     publishedAt: row.published_at,
   };
@@ -279,15 +305,14 @@ export class DatabaseDigitalProductsStore implements DigitalProductStore {
         error,
       );
     return data
-      ? {
+      ? digitalSellerProfileSchema.parse({
           sellerId: data.seller_id,
           marketCode: data.market_code,
           policyVersion: data.policy_version,
-          fulfillmentTypes:
-            data.fulfillment_types as DigitalSellerProfile["fulfillmentTypes"],
+          fulfillmentTypes: data.fulfillment_types,
           acceptedAt: data.accepted_at,
           status: data.status,
-        }
+        })
       : null;
   }
 
@@ -742,18 +767,21 @@ export class DatabaseDigitalProductsStore implements DigitalProductStore {
           );
         if (batchLinkError) throw batchLinkError;
       }
-      const { error: listingUpdateError } = await supabase
-        .from("listings")
-        .update({
-          fulfillment_model: input.primaryFulfillmentType,
-          digital_fulfillment_version_id: created.id,
-          product_version: input.productVersion,
-          allowed_delivery: ["digital"],
-          shipping_cost: 0,
-          status: pendingModeration ? "draft" : "published",
-        })
-        .eq("id", listingId)
-        .eq("seller_id", ownerUserId);
+      const { error: listingUpdateError } =
+        await retryDatabaseSerializationFailure(() =>
+          supabase
+            .from("listings")
+            .update({
+              fulfillment_model: input.primaryFulfillmentType,
+              digital_fulfillment_version_id: created.id,
+              product_version: input.productVersion,
+              allowed_delivery: ["digital"],
+              shipping_cost: 0,
+              status: pendingModeration ? "draft" : "published",
+            })
+            .eq("id", listingId)
+            .eq("seller_id", ownerUserId),
+        );
       if (listingUpdateError) throw listingUpdateError;
     } catch (linkError) {
       await supabase
@@ -1082,7 +1110,8 @@ export class DatabaseDigitalProductsStore implements DigitalProductStore {
         p_buyer_id: input.buyerId,
         p_market_code: input.marketCode,
         p_action: input.action,
-        p_asset_id: input.assetId ?? null,
+        // postgres-meta does not expose nullability for required RPC arguments.
+        p_asset_id: (input.assetId ?? null) as unknown as string,
         p_request_id: input.requestId,
       },
     );
@@ -1481,15 +1510,23 @@ export class DatabaseDigitalProductsStore implements DigitalProductStore {
         message: "Version de remise à modérer introuvable.",
       });
     if (approved) {
-      await supabase
-        .from("listings")
-        .update({
-          status: "published",
-          published_at: now,
-          digital_fulfillment_version_id: data.id,
-        })
-        .eq("id", data.listing_id)
-        .eq("status", "draft");
+      const { error: listingError } = await retryDatabaseSerializationFailure(
+        () =>
+          supabase
+            .from("listings")
+            .update({
+              status: "published",
+              published_at: now,
+              digital_fulfillment_version_id: data.id,
+            })
+            .eq("id", data.listing_id)
+            .eq("status", "draft"),
+      );
+      if (listingError)
+        throw this.databaseError(
+          "Impossible de publier l’annonce numérique.",
+          listingError,
+        );
     }
     await supabase.from("digital_access_audit_events").insert({
       market_code: data.market_code,
@@ -1708,7 +1745,7 @@ export class DatabaseDigitalProductsStore implements DigitalProductStore {
       entitlementId: row.entitlement_id,
       buyerId: row.buyer_id,
       assetId: row.asset_id,
-      action: row.action,
+      action: digitalAccessGrantSchema.shape.action.parse(row.action),
       expiresAt: row.expires_at,
       consumedAt: row.consumed_at,
     };

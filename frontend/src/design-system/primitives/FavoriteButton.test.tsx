@@ -60,5 +60,25 @@ describe("FavoriteButton", () => {
     expect(render({ isFavorite: true })).toContain('aria-pressed="true"');
     expect(render({ isFavorite: true })).toContain("Retirer des favoris");
     expect(render({ isFavorite: false })).toContain("Ajouter aux favoris");
+    expect(render({ isFavorite: true, label: "Remove favorite" })).toContain(
+      'aria-label="Remove favorite"',
+    );
+  });
+
+  it("does not expose an unknown load state as an actionable empty favorite", () => {
+    const loading = render({ interactionState: "loading" });
+    const failed = render({
+      interactionState: "error",
+      onRetry: vi.fn(),
+    });
+
+    expect(loading).toContain("Chargement des favoris");
+    expect(loading).toContain('aria-busy="true"');
+    expect(loading).toContain("disabled");
+    expect(loading).not.toContain("aria-pressed");
+    expect(failed).toContain("Réessayer le chargement des favoris");
+    expect(failed).toContain("lucide-refresh-cw");
+    expect(failed).not.toContain("aria-pressed");
+    expect(failed).not.toContain(' disabled=""');
   });
 });

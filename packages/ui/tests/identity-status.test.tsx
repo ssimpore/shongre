@@ -50,21 +50,32 @@ describe("canonical identity status components", () => {
     expect(html).toContain('data-ui-verified-icon="true"');
   });
 
-  it("keeps the compact professional marker inside the typed size system", () => {
-    const html = renderToStaticMarkup(
+  it("keeps the professional marker inverse by default and supports the card tone", () => {
+    const defaultHtml = renderToStaticMarkup(
       <ProBadge
         label="Pro"
         accessibilityLabel="Compte professionnel"
         size="xs"
       />,
     );
+    const cardHtml = renderToStaticMarkup(
+      <ProBadge
+        label="Pro"
+        accessibilityLabel="Compte professionnel"
+        size="xs"
+        tone="primary"
+      />,
+    );
 
-    expect(html).toContain('data-ui-pro-badge="true"');
-    expect(html).toContain('role="img"');
-    expect(html).toContain('aria-label="Compte professionnel"');
-    expect(html).toContain("bg-surface-inverse");
-    expect(html).toContain("text-overline");
-    expect(html).toContain("tracking-wide");
+    expect(defaultHtml).toContain('data-ui-pro-badge="true"');
+    expect(defaultHtml).toContain('role="img"');
+    expect(defaultHtml).toContain('aria-label="Compte professionnel"');
+    expect(defaultHtml).toContain("bg-surface-inverse");
+    expect(defaultHtml).toContain("text-text-inverse");
+    expect(cardHtml).toContain("bg-primary-light");
+    expect(cardHtml).toContain("text-primary");
+    expect(cardHtml).toContain("text-overline");
+    expect(cardHtml).not.toContain("uppercase");
   });
 
   it("keeps every public size on the canonical token-backed scale", () => {

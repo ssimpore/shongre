@@ -6,6 +6,7 @@ import { DemoDiscoveryConfigurationRepository } from "../../src/infrastructure/d
 import {
   UnifiedDiscoveryService,
   deliveryRequestToDiscoveryListing,
+  toDiscoveryDocument,
 } from "../../src/modules/discovery/discovery.service.js";
 import type { Listing } from "../../src/shared/types/index.js";
 
@@ -114,6 +115,19 @@ describe("UnifiedDiscoveryService", () => {
     expect(privateOnly.items.map((item) => item.id)).toEqual(["private"]);
   });
 
+  it("converts legacy discovery prices with the currency minor-unit exponent", () => {
+    const document = toDiscoveryDocument(
+      listing("xof-listing", "user-sn", "private", {
+        price: 12_500,
+        currency: "XOF",
+        marketCode: "SN",
+        country: "SN",
+      }),
+    );
+
+    expect(document.priceMinor).toBe(12_500);
+  });
+
   it("adds only gated public-safe delivery projections to Services discovery", async () => {
     const request = {
       id: "418711cb-aee0-4fa3-a102-8ec6ea2a2cb8",
@@ -157,6 +171,25 @@ describe("UnifiedDiscoveryService", () => {
     );
     expect(JSON.stringify(projection)).not.toContain("sourceOrderId");
     expect(JSON.stringify(projection)).not.toContain("street");
+    expect(
+      deliveryRequestToDiscoveryListing({
+        ...request,
+        marketCode: "SN",
+        budget: { amountMinor: 4_500, currency: "XOF" },
+      }).price,
+    ).toBe(4_500);
+    expect(
+      deliveryRequestToDiscoveryListing({
+        ...request,
+        publishedAt: undefined,
+      }).publishedAt,
+    ).toBeUndefined();
+    expect(
+      deliveryRequestToDiscoveryListing({
+        ...request,
+        budget: undefined,
+      }).attributes.price_type,
+    ).toBe("on_request");
 
     const service = new UnifiedDiscoveryService(
       new DemoListingRepository({}),

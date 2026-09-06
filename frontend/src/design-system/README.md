@@ -78,8 +78,12 @@ that merely rename a `div`.
   (`xs` at rest, `md` on hover). `overlay-scrim` is the one scrim behind small
   white text on a photo — media counters, gallery controls — and is deliberately
   dark in either theme, so it must not be written as a neutral-ramp shade.
-- Media aspect ratios are named: `aspect-media` is the listing-card photo well,
-  shared by the card and its loading skeleton so the two cannot drift.
+- Listing-card media uses the shared `listing-card-media-height` dimension so
+  fluid columns cannot crowd out its four information rows. At the canonical
+  card width this remains near the named `aspect-listingCard` portrait ratio;
+  native compact cards consume that ratio directly. Single-column phone grids
+  cap the card at `listing-card-mobile-max` instead of stretching it with wider
+  handsets.
 - Stacking uses `z-raised`, `z-sticky`, `z-dropdown`, `z-popover`, `z-header`,
   `z-drawer`, `z-modal`, `z-toast`, and `z-tooltip`. Numeric z-index is forbidden.
 - Responsive behavior follows the explicit `sm`, `md`, `lg`, `xl`, and `2xl`

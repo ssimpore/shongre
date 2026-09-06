@@ -13,7 +13,7 @@ const createService = () => {
 };
 
 describe("Shongre Education course domain service", () => {
-  it("persists only non-sensitive workflow criteria and account-scoped favorites", async () => {
+  it("persists only non-sensitive workflow criteria and account-market favorites", async () => {
     const { service } = createService();
     await service.saveWorkflowDraft("user_learner", "FR", "learner_request", {
       subjectId: "subject_mathematics",
@@ -30,12 +30,22 @@ describe("Shongre Education course domain service", () => {
     expect(draft).not.toHaveProperty("paymentSecret");
 
     await expect(
-      service.toggleSavedTutor("user_learner", "tutor_sophie"),
+      service.setSavedTutor("user_learner", "tutor_sophie", "FR", true),
     ).resolves.toBe(true);
-    expect(await service.getSavedTutorIds("user_learner")).toEqual([
+    await expect(
+      service.setSavedTutor("user_learner", "tutor_sophie", "FR", true),
+    ).resolves.toBe(true);
+    expect(await service.getSavedTutorIds("user_learner", "FR")).toEqual([
       "tutor_sophie",
     ]);
-    expect(await service.getSavedTutorIds("another_learner")).toEqual([]);
+    expect(await service.getSavedTutorIds("user_learner", "BE")).toEqual([]);
+    expect(await service.getSavedTutorIds("another_learner", "FR")).toEqual([]);
+    await expect(
+      service.setSavedTutor("user_learner", "tutor_sophie", "BE", true),
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
+    await expect(
+      service.setSavedTutor("user_learner", "missing-tutor", "BE", false),
+    ).resolves.toBe(false);
   });
 
   it("projects Education plan prices from the active commercial version", async () => {
@@ -69,6 +79,25 @@ describe("Shongre Education course domain service", () => {
     expect(catalog.config.featureFlags.bookingEnabled).toBe(false);
     expect(catalog.config.featureFlags.paymentsEnabled).toBe(false);
     expect(catalog.config.featureFlags.payoutsEnabled).toBe(false);
+  });
+
+  it("fails closed outside the configured Education market", async () => {
+    const { repository } = createService();
+
+    await expect(repository.getCatalog("BE")).resolves.toMatchObject({
+      config: { marketCode: "BE", isEnabled: false },
+      subjects: [],
+      levels: [],
+      plans: [],
+      addOns: [],
+    });
+    await expect(
+      repository.searchTutors({ marketCode: "BE" }),
+    ).resolves.toEqual({
+      items: [],
+      total: 0,
+      pageInfo: { hasNextPage: false },
+    });
   });
 
   it("requires a guardian and explicit consent context for every minor request", async () => {
@@ -158,6 +187,40 @@ describe("Shongre Education course domain service", () => {
 
     const search = await service.searchTutors({ marketCode: "FR", limit: 5 });
     expect(search.items[0].tutor).not.toHaveProperty("userId");
+  });
+
+  it("exposes only explicit exact-listing promotion proof in tutor search", async () => {
+    const { repository, service } = createService();
+    const initial = await service.searchTutors({ marketCode: "FR", limit: 20 });
+    const thomas = initial.items.find(
+      (item) => item.tutor.id === "tutor_thomas",
+    );
+    expect(thomas?.resolvedPromotion).toMatchObject({
+      state: "active",
+      marketCode: "FR",
+      source: "subscription_credit",
+      sourceId: "demo:courses:course_offer_tutor_thomas:sponsored",
+      startsAt: "2026-08-01T00:00:00.000Z",
+      endsAt: "2026-12-31T23:59:59.000Z",
+    });
+
+    const [offer] = await repository.getCourseOffers("tutor_thomas");
+    await repository.saveCourseOffer({
+      ...offer,
+      listingId: "listing_course_tutor_thomas_replaced",
+    });
+    const afterMappingChange = await service.searchTutors({
+      marketCode: "FR",
+      limit: 20,
+    });
+    expect(
+      afterMappingChange.items.find((item) => item.tutor.id === "tutor_thomas")
+        ?.resolvedPromotion,
+    ).toBeUndefined();
+    expect(
+      afterMappingChange.items.find((item) => item.tutor.id === "tutor_thomas")
+        ?.tutor.isFeatured,
+    ).toBe(true);
   });
 
   it("refuses an unsafe payment switch combination", async () => {

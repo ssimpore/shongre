@@ -12086,6 +12086,9 @@
         "parameters": [
           {
             "$ref": "#/components/parameters/RequestId"
+          },
+          {
+            "$ref": "#/components/parameters/MarketContext"
           }
         ],
         "responses": {
@@ -12099,7 +12102,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/JsonValue"
+                  "$ref": "#/components/schemas/AutoFavoriteCollection"
                 }
               }
             }
@@ -12139,7 +12142,8 @@
         ],
         "x-shongre-access": "permission",
         "x-shongre-permission": "favorite.manage.own",
-        "x-shongre-source": "backend/src/api/v1/router.ts"
+        "x-shongre-source": "backend/src/api/v1/router.ts",
+        "x-shongre-deny-staff-marketplace": true
       }
     },
     "/auto/leads": {
@@ -12221,6 +12225,9 @@
         "parameters": [
           {
             "$ref": "#/components/parameters/RequestId"
+          },
+          {
+            "$ref": "#/components/parameters/MarketContext"
           }
         ],
         "responses": {
@@ -12234,7 +12241,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/JsonValue"
+                  "$ref": "#/components/schemas/AutoVehicleSearchResponse"
                 }
               }
             }
@@ -12377,6 +12384,9 @@
           },
           {
             "$ref": "#/components/parameters/RequestId"
+          },
+          {
+            "$ref": "#/components/parameters/MarketContext"
           }
         ],
         "responses": {
@@ -12390,7 +12400,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/JsonValue"
+                  "$ref": "#/components/schemas/AutoVehiclePublic"
                 }
               }
             }
@@ -12427,10 +12437,10 @@
       }
     },
     "/auto/vehicles/{id}/favorite": {
-      "post": {
-        "operationId": "postAutoVehiclesByIdFavorite",
+      "put": {
+        "operationId": "putAutoVehiclesByIdFavorite",
         "tags": ["auto"],
-        "summary": "POST /auto/vehicles/:id/favorite",
+        "summary": "Set the caller's vehicle favorite state",
         "description": "Implemented by backend/src/api/v1/router.ts.",
         "parameters": [
           {
@@ -12444,8 +12454,21 @@
           },
           {
             "$ref": "#/components/parameters/RequestId"
+          },
+          {
+            "$ref": "#/components/parameters/MarketContext"
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FavoriteSetRequest"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful response.",
@@ -12457,7 +12480,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/JsonValue"
+                  "$ref": "#/components/schemas/FavoriteStateResult"
                 }
               }
             }
@@ -12498,18 +12521,7 @@
         "x-shongre-access": "permission",
         "x-shongre-permission": "favorite.manage.own",
         "x-shongre-source": "backend/src/api/v1/router.ts",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {},
-                "additionalProperties": true
-              }
-            }
-          }
-        }
+        "x-shongre-deny-staff-marketplace": true
       }
     },
     "/business-rules/catalog": {
@@ -19553,6 +19565,9 @@
         "parameters": [
           {
             "$ref": "#/components/parameters/RequestId"
+          },
+          {
+            "$ref": "#/components/parameters/MarketContext"
           }
         ],
         "responses": {
@@ -19566,7 +19581,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/JsonValue"
+                  "$ref": "#/components/schemas/EducationFavoriteCollection"
                 }
               }
             }
@@ -19606,7 +19621,8 @@
         ],
         "x-shongre-access": "permission",
         "x-shongre-permission": "favorite.manage.own",
-        "x-shongre-source": "backend/src/api/v1/router.ts"
+        "x-shongre-source": "backend/src/api/v1/router.ts",
+        "x-shongre-deny-staff-marketplace": true
       }
     },
     "/education/leads/{leadId}": {
@@ -20404,10 +20420,10 @@
       }
     },
     "/education/tutors/{id}/favorite": {
-      "post": {
-        "operationId": "postEducationTutorsByIdFavorite",
+      "put": {
+        "operationId": "putEducationTutorsByIdFavorite",
         "tags": ["education"],
-        "summary": "POST /education/tutors/:id/favorite",
+        "summary": "Set the caller's tutor favorite state",
         "description": "Implemented by backend/src/api/v1/router.ts.",
         "parameters": [
           {
@@ -20421,6 +20437,9 @@
           },
           {
             "$ref": "#/components/parameters/RequestId"
+          },
+          {
+            "$ref": "#/components/parameters/MarketContext"
           }
         ],
         "responses": {
@@ -20434,7 +20453,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/JsonValue"
+                  "$ref": "#/components/schemas/FavoriteStateResult"
                 }
               }
             }
@@ -20475,14 +20494,13 @@
         "x-shongre-access": "permission",
         "x-shongre-permission": "favorite.manage.own",
         "x-shongre-source": "backend/src/api/v1/router.ts",
+        "x-shongre-deny-staff-marketplace": true,
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "properties": {},
-                "additionalProperties": true
+                "$ref": "#/components/schemas/FavoriteSetRequest"
               }
             }
           }
@@ -21741,6 +21759,9 @@
         "parameters": [
           {
             "$ref": "#/components/parameters/RequestId"
+          },
+          {
+            "$ref": "#/components/parameters/MarketContext"
           }
         ],
         "responses": {
@@ -21794,7 +21815,8 @@
         ],
         "x-shongre-access": "permission",
         "x-shongre-source": "backend/src/api/v1/router.ts:1261",
-        "x-shongre-permission": "employment.candidate.manage.own"
+        "x-shongre-permission": "employment.candidate.manage.own",
+        "x-shongre-deny-staff-marketplace": true
       }
     },
     "/employment/catalog": {
@@ -23123,6 +23145,75 @@
         "x-shongre-permission": "employment.recruiter.manage.own"
       }
     },
+    "/employment/favorites": {
+      "get": {
+        "operationId": "getEmploymentFavorites",
+        "tags": ["employment"],
+        "summary": "List the caller's saved jobs for the resolved market",
+        "description": "Implemented by backend/src/api/v1/router.ts.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RequestId"
+          },
+          {
+            "$ref": "#/components/parameters/MarketContext"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmploymentFavoriteCollection"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "permission",
+        "x-shongre-source": "backend/src/api/v1/router.ts",
+        "x-shongre-permission": "employment.candidate.manage.own",
+        "x-shongre-deny-staff-marketplace": true
+      }
+    },
     "/employment/jobs/{id}": {
       "get": {
         "operationId": "getEmploymentJobsById",
@@ -23141,6 +23232,9 @@
           },
           {
             "$ref": "#/components/parameters/RequestId"
+          },
+          {
+            "$ref": "#/components/parameters/MarketContext"
           }
         ],
         "responses": {
@@ -23154,7 +23248,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/JsonValue"
+                  "$ref": "#/components/schemas/EmploymentJobPostingDetail"
                 }
               }
             }
@@ -23363,10 +23457,10 @@
       }
     },
     "/employment/jobs/{id}/save": {
-      "post": {
-        "operationId": "postEmploymentJobsByIdSave",
+      "put": {
+        "operationId": "putEmploymentJobsByIdSave",
         "tags": ["employment"],
-        "summary": "POST /employment/jobs/:id/save",
+        "summary": "Set the caller's saved-job state",
         "description": "Implemented by backend/src/api/v1/router.ts:1289.",
         "parameters": [
           {
@@ -23380,8 +23474,21 @@
           },
           {
             "$ref": "#/components/parameters/RequestId"
+          },
+          {
+            "$ref": "#/components/parameters/MarketContext"
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FavoriteSetRequest"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful response.",
@@ -23393,7 +23500,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/JsonValue"
+                  "$ref": "#/components/schemas/FavoriteStateResult"
                 }
               }
             }
@@ -23433,7 +23540,8 @@
         ],
         "x-shongre-access": "permission",
         "x-shongre-source": "backend/src/api/v1/router.ts:1289",
-        "x-shongre-permission": "employment.candidate.manage.own"
+        "x-shongre-permission": "employment.candidate.manage.own",
+        "x-shongre-deny-staff-marketplace": true
       }
     },
     "/employment/jobs/{id}/similar": {
@@ -23577,6 +23685,9 @@
         "parameters": [
           {
             "$ref": "#/components/parameters/RequestId"
+          },
+          {
+            "$ref": "#/components/parameters/MarketContext"
           }
         ],
         "responses": {
@@ -23590,7 +23701,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/JsonValue"
+                  "$ref": "#/components/schemas/EmploymentSearchResult"
                 }
               }
             }
@@ -23647,6 +23758,9 @@
         "parameters": [
           {
             "$ref": "#/components/parameters/RequestId"
+          },
+          {
+            "$ref": "#/components/parameters/MarketContext"
           }
         ],
         "responses": {
@@ -23660,7 +23774,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/JsonValue"
+                  "$ref": "#/components/schemas/FavoriteCollection"
                 }
               }
             }
@@ -23700,7 +23814,8 @@
         ],
         "x-shongre-access": "permission",
         "x-shongre-source": "backend/src/api/v1/router.ts:688",
-        "x-shongre-permission": "favorite.manage.own"
+        "x-shongre-permission": "favorite.manage.own",
+        "x-shongre-deny-staff-marketplace": true
       }
     },
     "/feature-flags/{key}": {
@@ -24871,7 +24986,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/JsonValue"
+                  "$ref": "#/components/schemas/PublicListingCollection"
                 }
               }
             }
@@ -24905,6 +25020,77 @@
         "x-shongre-access": "public",
         "x-shongre-deny-staff-marketplace": false,
         "x-shongre-source": "backend/src/api/v1/router.ts:544"
+      }
+    },
+    "/listings/cards": {
+      "post": {
+        "operationId": "postListingsCards",
+        "tags": ["listings"],
+        "summary": "Hydrate a bounded set of public listing cards",
+        "description": "Returns only listings visible in the resolved marketplace. Used to hydrate browser-local guest favorites without an N+1 read.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/MarketContext"
+          },
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublicListingCardsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Public listing cards visible in the resolved market.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicListingCollection"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [],
+        "x-shongre-access": "public",
+        "x-shongre-deny-staff-marketplace": false,
+        "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
     "/listings/{id}": {
@@ -25013,7 +25199,14 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/JsonValue"
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/PublicListing"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
                 }
               }
             }
@@ -25134,10 +25327,10 @@
       }
     },
     "/listings/{id}/favorite": {
-      "post": {
-        "operationId": "postListingsByIdFavorite",
+      "put": {
+        "operationId": "putListingsByIdFavorite",
         "tags": ["listings"],
-        "summary": "POST /listings/:id/favorite",
+        "summary": "Set the caller's listing favorite state",
         "description": "Implemented by backend/src/api/v1/router.ts:676.",
         "parameters": [
           {
@@ -25151,8 +25344,21 @@
           },
           {
             "$ref": "#/components/parameters/RequestId"
+          },
+          {
+            "$ref": "#/components/parameters/MarketContext"
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FavoriteSetRequest"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful response.",
@@ -25164,7 +25370,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/JsonValue"
+                  "$ref": "#/components/schemas/FavoriteStateResult"
                 }
               }
             }
@@ -25204,7 +25410,8 @@
         ],
         "x-shongre-access": "permission",
         "x-shongre-source": "backend/src/api/v1/router.ts:676",
-        "x-shongre-permission": "favorite.manage.own"
+        "x-shongre-permission": "favorite.manage.own",
+        "x-shongre-deny-staff-marketplace": true
       }
     },
     "/listings/bulk-import/parse": {
@@ -25532,7 +25739,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/JsonValue"
+                  "$ref": "#/components/schemas/PublicListingSearchResult"
                 }
               }
             }
@@ -32978,6 +33185,9 @@
           },
           {
             "$ref": "#/components/parameters/RequestId"
+          },
+          {
+            "$ref": "#/components/parameters/MarketContext"
           }
         ],
         "responses": {
@@ -32991,7 +33201,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/JsonValue"
+                  "$ref": "#/components/schemas/RealEstatePropertyPublic"
                 }
               }
             }
@@ -33330,6 +33540,9 @@
         "parameters": [
           {
             "$ref": "#/components/parameters/RequestId"
+          },
+          {
+            "$ref": "#/components/parameters/MarketContext"
           }
         ],
         "responses": {
@@ -33343,7 +33556,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/JsonValue"
+                  "$ref": "#/components/schemas/RealEstatePropertySearchResult"
                 }
               }
             }
@@ -36990,6 +37203,69 @@
         "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
+    "/delivery/favorites": {
+      "get": {
+        "operationId": "getDeliveryFavorites",
+        "tags": ["delivery"],
+        "summary": "List the caller's saved delivery requests in one market",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/MarketContext"
+          },
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeliveryFavoriteCollection"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "favorite.manage.own",
+        "x-shongre-deny-staff-marketplace": true,
+        "x-shongre-source": "backend/src/api/v1/router.ts"
+      }
+    },
     "/delivery/requests": {
       "get": {
         "operationId": "getDeliveryRequests",
@@ -37209,6 +37485,88 @@
         "security": [],
         "x-shongre-access": "public",
         "x-shongre-deny-staff-marketplace": false,
+        "x-shongre-source": "backend/src/api/v1/router.ts"
+      }
+    },
+    "/delivery/requests/{requestId}/favorite": {
+      "put": {
+        "operationId": "putDeliveryRequestFavorite",
+        "tags": ["delivery"],
+        "summary": "Set the caller's delivery request favorite state",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/MarketContext"
+          },
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FavoriteSetRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FavoriteStateResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "favorite.manage.own",
+        "x-shongre-deny-staff-marketplace": true,
         "x-shongre-source": "backend/src/api/v1/router.ts"
       }
     },
@@ -41645,6 +42003,1183 @@
           }
         }
       },
+      "AutoFavoriteCollection": {
+        "type": "object",
+        "description": "Vehicle identifiers saved by the caller in the resolved market.",
+        "additionalProperties": false,
+        "required": ["vehicleIds"],
+        "properties": {
+          "vehicleIds": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      },
+      "EducationFavoriteCollection": {
+        "type": "object",
+        "description": "Tutor identifiers saved by the caller in the resolved market.",
+        "additionalProperties": false,
+        "required": ["tutorProfileIds"],
+        "properties": {
+          "tutorProfileIds": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      },
+      "EmploymentFavoriteCollection": {
+        "type": "object",
+        "description": "Job identifiers saved by the caller in the resolved market.",
+        "additionalProperties": false,
+        "required": ["jobIds"],
+        "properties": {
+          "jobIds": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      },
+      "FavoriteCollection": {
+        "type": "object",
+        "description": "Listing identifiers and their public card projections saved by the caller in the resolved market.",
+        "additionalProperties": false,
+        "required": ["listingIds", "listings"],
+        "properties": {
+          "listingIds": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "listings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicListing"
+            }
+          }
+        }
+      },
+      "FavoriteSetRequest": {
+        "type": "object",
+        "description": "The exact favorite state the caller wants; retries are idempotent.",
+        "additionalProperties": false,
+        "required": ["isFavorite"],
+        "properties": {
+          "isFavorite": {
+            "type": "boolean"
+          }
+        }
+      },
+      "FavoriteStateResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["isFavorite"],
+        "properties": {
+          "isFavorite": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ListingPromotionSource": {
+        "type": "string",
+        "enum": ["purchase", "subscription_credit", "admin_grant"]
+      },
+      "MarketResolvedListingPromotion": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "state",
+          "type",
+          "startsAt",
+          "endsAt",
+          "source",
+          "sourceId",
+          "marketCode"
+        ],
+        "properties": {
+          "state": {
+            "type": "string",
+            "enum": [
+              "inactive",
+              "scheduled",
+              "active",
+              "expired",
+              "cancelled",
+              "refunded",
+              "failed"
+            ]
+          },
+          "type": { "$ref": "#/components/schemas/ListingPromotionType" },
+          "startsAt": { "type": "string", "format": "date-time" },
+          "endsAt": { "type": "string", "format": "date-time" },
+          "promotedAt": { "type": "string", "format": "date-time" },
+          "source": { "$ref": "#/components/schemas/ListingPromotionSource" },
+          "sourceId": { "type": "string", "minLength": 1 },
+          "label": { "type": "string", "minLength": 1 },
+          "marketCode": { "$ref": "#/components/schemas/MarketCode" }
+        }
+      },
+      "AutoVehicleTechnical": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "modelYear",
+          "mileage",
+          "mileageUnit",
+          "fuelType",
+          "transmission"
+        ],
+        "properties": {
+          "bodyType": { "type": "string" },
+          "modelYear": { "type": "integer", "minimum": 1880, "maximum": 2200 },
+          "firstRegistrationDate": { "type": "string" },
+          "mileage": { "type": "integer", "minimum": 0 },
+          "mileageUnit": { "type": "string", "enum": ["km", "mi", "hours"] },
+          "fuelType": {
+            "type": "string",
+            "enum": [
+              "petrol",
+              "diesel",
+              "electric",
+              "hybrid",
+              "plug_in_hybrid",
+              "lpg",
+              "hydrogen",
+              "other"
+            ]
+          },
+          "transmission": {
+            "type": "string",
+            "enum": ["manual", "automatic", "semi_automatic", "other"]
+          },
+          "powerKw": { "type": "integer", "minimum": 0 },
+          "powerHp": { "type": "integer", "minimum": 0 },
+          "fiscalPower": { "type": "integer", "minimum": 0 },
+          "batteryCapacityKwh": { "type": "number", "minimum": 0 },
+          "electricRangeKm": { "type": "integer", "minimum": 0 },
+          "chargingPowerKw": { "type": "number", "minimum": 0 },
+          "exteriorColor": { "type": "string" },
+          "interiorColor": { "type": "string" },
+          "doors": { "type": "integer", "minimum": 0 },
+          "seats": { "type": "integer", "minimum": 0 },
+          "co2GramsPerKm": { "type": "integer", "minimum": 0 },
+          "critAirClass": { "type": "string" }
+        }
+      },
+      "AutoVehicleHistory": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "condition",
+          "accidentStatus",
+          "maintenanceBookStatus",
+          "inspectionStatus"
+        ],
+        "properties": {
+          "condition": {
+            "type": "string",
+            "enum": ["new", "excellent", "good", "fair", "damaged", "for_parts"]
+          },
+          "accidentStatus": {
+            "type": "string",
+            "enum": ["none_declared", "repaired", "known_damage", "unknown"]
+          },
+          "previousOwnerCount": { "type": "integer", "minimum": 0 },
+          "maintenanceBookStatus": {
+            "type": "string",
+            "enum": ["complete", "partial", "none", "unknown"]
+          },
+          "inspectionStatus": {
+            "type": "string",
+            "enum": [
+              "not_applicable",
+              "valid",
+              "due_soon",
+              "expired",
+              "unknown"
+            ]
+          },
+          "inspectionValidUntil": { "type": "string" },
+          "warrantyMonths": { "type": "integer", "minimum": 0 },
+          "warrantyLabel": { "type": "string" }
+        }
+      },
+      "AutoVehicleDocument": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "type", "status", "publicLabel", "updatedAt"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "type": {
+            "type": "string",
+            "enum": [
+              "registration_certificate",
+              "roadworthiness_inspection",
+              "histovec_or_non_pledge",
+              "transfer_document",
+              "maintenance_invoice",
+              "warranty",
+              "other"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "missing",
+              "uploaded_private",
+              "pending_review",
+              "verified",
+              "rejected",
+              "expired"
+            ]
+          },
+          "publicLabel": { "type": "string" },
+          "expiresAt": { "type": "string" },
+          "updatedAt": { "type": "string" }
+        }
+      },
+      "AutoVehicleTrust": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "sellerIdentity",
+          "professionalBusiness",
+          "vinOnFile",
+          "documents",
+          "historyReportStatus",
+          "publicBadges"
+        ],
+        "properties": {
+          "sellerIdentity": {
+            "type": "string",
+            "enum": ["not_submitted", "pending", "verified", "rejected"]
+          },
+          "professionalBusiness": {
+            "type": "string",
+            "enum": [
+              "not_applicable",
+              "not_submitted",
+              "pending",
+              "verified",
+              "rejected"
+            ]
+          },
+          "vinOnFile": { "type": "boolean" },
+          "documents": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/AutoVehicleDocument" }
+          },
+          "historyReportStatus": {
+            "type": "string",
+            "enum": ["unavailable", "declared", "uploaded_private", "verified"]
+          },
+          "publicBadges": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "AutoVehicleSellerSummary": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "type",
+          "displayName",
+          "slug",
+          "locationLabel",
+          "memberSinceYear",
+          "verifiedBusiness"
+        ],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "type": { "type": "string", "enum": ["individual", "dealer"] },
+          "displayName": { "type": "string", "minLength": 1 },
+          "slug": { "type": "string", "minLength": 1 },
+          "logoUrl": { "type": "string", "format": "uri" },
+          "locationLabel": { "type": "string" },
+          "responseTimeMinutes": { "type": "integer", "minimum": 0 },
+          "rating": { "type": "number", "minimum": 0, "maximum": 5 },
+          "reviewCount": { "type": "integer", "minimum": 0 },
+          "memberSinceYear": {
+            "type": "integer",
+            "minimum": 2000,
+            "maximum": 2200
+          },
+          "verifiedBusiness": { "type": "boolean" }
+        }
+      },
+      "AutoPriceEstimate": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["band", "sampleSize", "generatedAt", "disclaimer"],
+        "properties": {
+          "band": {
+            "type": "string",
+            "enum": [
+              "below_market",
+              "within_market",
+              "above_market",
+              "insufficient_data"
+            ]
+          },
+          "low": { "$ref": "#/components/schemas/MonetizationMoney" },
+          "high": { "$ref": "#/components/schemas/MonetizationMoney" },
+          "sampleSize": { "type": "integer", "minimum": 0 },
+          "generatedAt": { "type": "string" },
+          "disclaimer": { "type": "string" }
+        }
+      },
+      "AutoVehiclePublic": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "schemaVersion",
+          "vertical",
+          "slug",
+          "vehicleType",
+          "lifecycle",
+          "marketCodes",
+          "title",
+          "description",
+          "makeLabel",
+          "modelLabel",
+          "technical",
+          "history",
+          "price",
+          "priceIncludesTax",
+          "locationLabel",
+          "seller",
+          "mediaUrls",
+          "equipment",
+          "dynamicAttributes",
+          "trust",
+          "promotionLabels",
+          "isFavorite",
+          "publishedAt",
+          "sortDate",
+          "updatedAt"
+        ],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "schemaVersion": { "type": "number", "const": 1 },
+          "vertical": { "type": "string", "const": "automotive" },
+          "slug": { "type": "string", "minLength": 1 },
+          "vehicleType": {
+            "type": "string",
+            "enum": [
+              "car",
+              "motorcycle",
+              "utility",
+              "truck",
+              "motorhome",
+              "boat",
+              "agricultural",
+              "construction",
+              "parts",
+              "other"
+            ]
+          },
+          "lifecycle": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "pending_review",
+              "published",
+              "reserved",
+              "sold",
+              "expired",
+              "suspended",
+              "rejected",
+              "archived"
+            ]
+          },
+          "marketCodes": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/MarketCode" },
+            "minItems": 1
+          },
+          "title": { "type": "string", "minLength": 3 },
+          "description": { "type": "string" },
+          "makeId": { "type": "string" },
+          "makeLabel": { "type": "string", "minLength": 1 },
+          "modelId": { "type": "string" },
+          "modelLabel": { "type": "string", "minLength": 1 },
+          "generationLabel": { "type": "string" },
+          "trimLabel": { "type": "string" },
+          "technical": { "$ref": "#/components/schemas/AutoVehicleTechnical" },
+          "history": { "$ref": "#/components/schemas/AutoVehicleHistory" },
+          "price": { "$ref": "#/components/schemas/MonetizationMoney" },
+          "priceIncludesTax": { "type": "boolean" },
+          "priceNegotiable": { "type": "boolean" },
+          "financingAvailable": { "type": "boolean" },
+          "financingMonthlyEstimate": {
+            "$ref": "#/components/schemas/MonetizationMoney"
+          },
+          "financingDisclaimer": { "type": "string" },
+          "locationLabel": { "type": "string" },
+          "seller": { "$ref": "#/components/schemas/AutoVehicleSellerSummary" },
+          "mediaUrls": {
+            "type": "array",
+            "items": { "type": "string", "format": "uri" }
+          },
+          "equipment": { "type": "array", "items": { "type": "string" } },
+          "dynamicAttributes": {
+            "type": "object",
+            "additionalProperties": {
+              "oneOf": [
+                { "type": "string" },
+                { "type": "number" },
+                { "type": "boolean" },
+                { "type": "array", "items": { "type": "string" } }
+              ]
+            }
+          },
+          "trust": { "$ref": "#/components/schemas/AutoVehicleTrust" },
+          "priceEstimate": { "$ref": "#/components/schemas/AutoPriceEstimate" },
+          "promotionLabels": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["urgent", "featured", "sponsored", "bumped"]
+            }
+          },
+          "resolvedPromotion": {
+            "$ref": "#/components/schemas/MarketResolvedListingPromotion"
+          },
+          "isFavorite": { "type": "boolean" },
+          "publishedAt": { "type": "string" },
+          "sortDate": { "type": "string" },
+          "updatedAt": { "type": "string" }
+        }
+      },
+      "AutoVehicleSearchResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["items", "total", "pageInfo"],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/AutoVehiclePublic" }
+          },
+          "total": { "type": "integer", "minimum": 0 },
+          "pageInfo": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["hasNextPage"],
+            "properties": {
+              "hasNextPage": { "type": "boolean" },
+              "nextCursor": { "type": "string" }
+            }
+          }
+        }
+      },
+      "RealEstatePropertyFinancials": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["price", "period", "feesPaidBy", "isNegotiable"],
+        "properties": {
+          "price": { "$ref": "#/components/schemas/MonetizationMoney" },
+          "charges": { "$ref": "#/components/schemas/MonetizationMoney" },
+          "agencyFees": { "$ref": "#/components/schemas/MonetizationMoney" },
+          "deposit": { "$ref": "#/components/schemas/MonetizationMoney" },
+          "pricePerSquareMeter": {
+            "$ref": "#/components/schemas/MonetizationMoney"
+          },
+          "period": {
+            "type": "string",
+            "enum": ["total", "month", "week", "night"]
+          },
+          "feesPaidBy": {
+            "type": "string",
+            "enum": [
+              "seller",
+              "buyer",
+              "owner",
+              "tenant",
+              "shared",
+              "not_applicable"
+            ]
+          },
+          "isNegotiable": { "type": "boolean" }
+        }
+      },
+      "RealEstatePropertyCharacteristics": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "livingAreaSquareMeters",
+          "rooms",
+          "bedrooms",
+          "bathrooms",
+          "condition",
+          "amenities",
+          "accessibilityFeatures"
+        ],
+        "properties": {
+          "livingAreaSquareMeters": { "type": "number", "exclusiveMinimum": 0 },
+          "landAreaSquareMeters": { "type": "number", "minimum": 0 },
+          "rooms": { "type": "integer", "minimum": 0 },
+          "bedrooms": { "type": "integer", "minimum": 0 },
+          "bathrooms": { "type": "integer", "minimum": 0 },
+          "floor": { "type": "integer" },
+          "floorCount": { "type": "integer", "minimum": 0 },
+          "hasLift": { "type": "boolean" },
+          "isFurnished": { "type": "boolean" },
+          "constructionYear": {
+            "type": "integer",
+            "minimum": 1000,
+            "maximum": 2200
+          },
+          "condition": {
+            "type": "string",
+            "enum": [
+              "new",
+              "excellent",
+              "good",
+              "renovation_needed",
+              "to_renovate"
+            ]
+          },
+          "heatingType": { "type": "string" },
+          "energyType": { "type": "string" },
+          "amenities": { "type": "array", "items": { "type": "string" } },
+          "accessibilityFeatures": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "availabilityDate": { "type": "string" }
+        }
+      },
+      "RealEstatePropertyEnergy": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "dpeClass": {
+            "type": "string",
+            "enum": ["A", "B", "C", "D", "E", "F", "G"]
+          },
+          "gesClass": {
+            "type": "string",
+            "enum": ["A", "B", "C", "D", "E", "F", "G"]
+          },
+          "diagnosticDate": { "type": "string" },
+          "consumptionKwhPerSquareMeterYear": {
+            "type": "number",
+            "minimum": 0
+          },
+          "emissionsKgCo2PerSquareMeterYear": {
+            "type": "number",
+            "minimum": 0
+          },
+          "warningCode": { "type": "string" },
+          "warningText": { "type": "string" }
+        }
+      },
+      "RealEstatePropertyRegulatory": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "coOwnershipApplicable",
+          "coOwnershipProcedureStatus",
+          "riskInformationStatus",
+          "ownershipDeclared",
+          "legalNotices"
+        ],
+        "properties": {
+          "coOwnershipApplicable": { "type": "boolean" },
+          "coOwnershipLots": { "type": "integer", "exclusiveMinimum": 0 },
+          "annualCoOwnershipCharges": {
+            "$ref": "#/components/schemas/MonetizationMoney"
+          },
+          "coOwnershipProcedureStatus": {
+            "type": "string",
+            "enum": ["none", "in_progress", "unknown", "not_applicable"]
+          },
+          "riskInformationUrl": { "type": "string", "format": "uri" },
+          "riskInformationStatus": {
+            "type": "string",
+            "enum": ["available", "pending", "not_applicable"]
+          },
+          "professionalRegistrationLabel": { "type": "string" },
+          "ownershipDeclared": { "type": "boolean" },
+          "legalNotices": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "RealEstatePropertyMedia": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["photos", "floorPlans"],
+        "properties": {
+          "photos": {
+            "type": "array",
+            "items": { "type": "string", "format": "uri" }
+          },
+          "floorPlans": {
+            "type": "array",
+            "items": { "type": "string", "format": "uri" }
+          },
+          "videoUrl": { "type": "string", "format": "uri" },
+          "virtualTourUrl": { "type": "string", "format": "uri" }
+        }
+      },
+      "RealEstatePropertySeller": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["type", "id", "displayName", "verificationLabels"],
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["owner", "agency", "developer", "property_manager"]
+          },
+          "id": { "type": "string", "minLength": 1 },
+          "displayName": { "type": "string", "minLength": 1 },
+          "slug": { "type": "string" },
+          "logoUrl": { "type": "string", "format": "uri" },
+          "publicPhone": { "type": "string" },
+          "verificationLabels": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "responseTimeLabel": { "type": "string" },
+          "professionalIdentity": { "type": "string" },
+          "rating": { "type": "number", "minimum": 0, "maximum": 5 },
+          "reviewCount": { "type": "integer", "minimum": 0 }
+        }
+      },
+      "RealEstatePropertyPromotion": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["urgent", "featured", "sponsored"],
+        "properties": {
+          "urgent": { "type": "boolean" },
+          "featured": { "type": "boolean" },
+          "sponsored": { "type": "boolean" },
+          "bumpedAt": { "type": "string" },
+          "endsAt": { "type": "string" }
+        }
+      },
+      "RealEstatePropertyPublic": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "listingId",
+          "slug",
+          "schemaVersion",
+          "marketCodes",
+          "propertyType",
+          "transactionType",
+          "lifecycle",
+          "title",
+          "description",
+          "financials",
+          "characteristics",
+          "energy",
+          "regulatory",
+          "address",
+          "media",
+          "seller",
+          "promotion",
+          "customAttributes",
+          "sortDate",
+          "isFavorite"
+        ],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "listingId": { "type": "string", "minLength": 1 },
+          "slug": { "type": "string", "minLength": 1 },
+          "schemaVersion": { "type": "integer", "exclusiveMinimum": 0 },
+          "marketCodes": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/MarketCode" },
+            "minItems": 1
+          },
+          "propertyType": {
+            "type": "string",
+            "enum": [
+              "apartment",
+              "house",
+              "land",
+              "parking_garage",
+              "commercial",
+              "office",
+              "building",
+              "new_development",
+              "holiday_rental",
+              "room_shared",
+              "other"
+            ]
+          },
+          "transactionType": {
+            "type": "string",
+            "enum": [
+              "sale",
+              "long_term_rental",
+              "seasonal_rental",
+              "shared_accommodation",
+              "life_annuity",
+              "other"
+            ]
+          },
+          "lifecycle": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "pending_review",
+              "published",
+              "reserved",
+              "sold",
+              "expired",
+              "suspended",
+              "rejected",
+              "removed",
+              "archived"
+            ]
+          },
+          "title": { "type": "string", "minLength": 1 },
+          "description": { "type": "string", "minLength": 1 },
+          "financials": {
+            "$ref": "#/components/schemas/RealEstatePropertyFinancials"
+          },
+          "characteristics": {
+            "$ref": "#/components/schemas/RealEstatePropertyCharacteristics"
+          },
+          "energy": { "$ref": "#/components/schemas/RealEstatePropertyEnergy" },
+          "regulatory": {
+            "$ref": "#/components/schemas/RealEstatePropertyRegulatory"
+          },
+          "address": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "city",
+              "postalCode",
+              "countryCode",
+              "latitude",
+              "longitude",
+              "precision",
+              "publicLabel"
+            ],
+            "properties": {
+              "city": { "type": "string", "minLength": 1 },
+              "postalCode": { "type": "string", "minLength": 1 },
+              "administrativeArea": { "type": "string" },
+              "countryCode": { "$ref": "#/components/schemas/MarketCode" },
+              "latitude": { "type": "number", "minimum": -90, "maximum": 90 },
+              "longitude": {
+                "type": "number",
+                "minimum": -180,
+                "maximum": 180
+              },
+              "precision": {
+                "type": "string",
+                "enum": ["exact", "street", "district", "city"]
+              },
+              "publicLabel": { "type": "string", "minLength": 1 }
+            }
+          },
+          "media": { "$ref": "#/components/schemas/RealEstatePropertyMedia" },
+          "seller": { "$ref": "#/components/schemas/RealEstatePropertySeller" },
+          "promotion": {
+            "$ref": "#/components/schemas/RealEstatePropertyPromotion"
+          },
+          "resolvedPromotion": {
+            "$ref": "#/components/schemas/MarketResolvedListingPromotion"
+          },
+          "customAttributes": { "type": "object", "additionalProperties": {} },
+          "publishedAt": { "type": "string" },
+          "sortDate": { "type": "string" },
+          "isFavorite": { "type": "boolean" },
+          "recentlyViewedAt": { "type": "string" }
+        }
+      },
+      "RealEstatePropertySearchResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["items", "total", "pageInfo"],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/RealEstatePropertyPublic" }
+          },
+          "total": { "type": "integer", "minimum": 0 },
+          "pageInfo": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["hasNextPage"],
+            "properties": {
+              "hasNextPage": { "type": "boolean" },
+              "nextCursor": { "type": "string" }
+            }
+          }
+        }
+      },
+      "EmploymentEmployerSummary": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "name",
+          "slug",
+          "employerTypeId",
+          "verificationLevel",
+          "isPubliclyVerified"
+        ],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "publisherUserId": { "type": "string", "minLength": 1 },
+          "organizationId": { "type": "string" },
+          "branchId": { "type": "string" },
+          "name": { "type": "string", "minLength": 1 },
+          "slug": { "type": "string", "minLength": 1 },
+          "employerTypeId": { "type": "string", "minLength": 1 },
+          "logoUrl": { "type": "string", "format": "uri" },
+          "rating": { "type": "number", "minimum": 0, "maximum": 5 },
+          "reviewCount": { "type": "integer", "minimum": 0 },
+          "locationLabel": { "type": "string", "minLength": 1 },
+          "description": { "type": "string" },
+          "verificationLevel": {
+            "type": "string",
+            "enum": [
+              "self_declared",
+              "domain_verified",
+              "document_submitted",
+              "manually_verified",
+              "provider_verified",
+              "expired",
+              "rejected"
+            ]
+          },
+          "verificationExpiresAt": { "type": "string" },
+          "isPubliclyVerified": { "type": "boolean" }
+        }
+      },
+      "EmploymentLocation": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "label",
+          "city",
+          "countryCode",
+          "isPrimary",
+          "isPublic"
+        ],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "label": { "type": "string", "minLength": 1 },
+          "city": { "type": "string", "minLength": 1 },
+          "postalCode": { "type": "string" },
+          "countryCode": { "type": "string", "minLength": 2, "maxLength": 2 },
+          "latitude": { "type": "number" },
+          "longitude": { "type": "number" },
+          "isPrimary": { "type": "boolean" },
+          "isPublic": { "type": "boolean" }
+        }
+      },
+      "EmploymentSalaryRange": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["frequencyId", "presentationId", "isPublic"],
+        "properties": {
+          "minimum": { "$ref": "#/components/schemas/MonetizationMoney" },
+          "maximum": { "$ref": "#/components/schemas/MonetizationMoney" },
+          "frequencyId": { "type": "string", "minLength": 1 },
+          "presentationId": { "type": "string", "minLength": 1 },
+          "isPublic": { "type": "boolean" },
+          "bonusDescription": { "type": "string" }
+        }
+      },
+      "EmploymentScreeningQuestion": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "questionTypeId",
+          "label",
+          "isRequired",
+          "options",
+          "disqualifyingAnswerIds"
+        ],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "questionTypeId": { "type": "string", "minLength": 1 },
+          "label": { "type": "string", "minLength": 1 },
+          "helpText": { "type": "string" },
+          "isRequired": { "type": "boolean" },
+          "options": { "type": "array", "items": { "type": "string" } },
+          "disqualifyingAnswerIds": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      },
+      "EmploymentJobPostingCard": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "slug",
+          "schemaVersion",
+          "title",
+          "employer",
+          "professionId",
+          "professionLabel",
+          "industryId",
+          "industryLabel",
+          "contractTypeId",
+          "contractTypeLabel",
+          "workingArrangementId",
+          "workingArrangementLabel",
+          "workingTimeId",
+          "primaryLocation",
+          "expiresAt",
+          "isUrgent",
+          "isFeatured",
+          "isSponsored",
+          "saved"
+        ],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "slug": { "type": "string", "minLength": 1 },
+          "schemaVersion": { "type": "integer", "exclusiveMinimum": 0 },
+          "title": { "type": "string", "minLength": 1 },
+          "employer": {
+            "$ref": "#/components/schemas/EmploymentEmployerSummary"
+          },
+          "professionId": { "type": "string", "minLength": 1 },
+          "professionLabel": { "type": "string", "minLength": 1 },
+          "specializationId": { "type": "string" },
+          "specializationLabel": { "type": "string" },
+          "industryId": { "type": "string", "minLength": 1 },
+          "industryLabel": { "type": "string", "minLength": 1 },
+          "contractTypeId": { "type": "string", "minLength": 1 },
+          "contractTypeLabel": { "type": "string", "minLength": 1 },
+          "workingArrangementId": { "type": "string", "minLength": 1 },
+          "workingArrangementLabel": { "type": "string", "minLength": 1 },
+          "workingTimeId": { "type": "string", "minLength": 1 },
+          "primaryLocation": {
+            "$ref": "#/components/schemas/EmploymentLocation"
+          },
+          "salary": { "$ref": "#/components/schemas/EmploymentSalaryRange" },
+          "publishedAt": { "type": "string" },
+          "expiresAt": { "type": "string" },
+          "applicationDeadline": { "type": "string" },
+          "isUrgent": { "type": "boolean" },
+          "isFeatured": { "type": "boolean" },
+          "isSponsored": { "type": "boolean" },
+          "resolvedPromotion": {
+            "$ref": "#/components/schemas/MarketResolvedListingPromotion"
+          },
+          "saved": { "type": "boolean" }
+        }
+      },
+      "EmploymentJobPostingDetail": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "slug",
+          "schemaVersion",
+          "title",
+          "employer",
+          "professionId",
+          "professionLabel",
+          "industryId",
+          "industryLabel",
+          "contractTypeId",
+          "contractTypeLabel",
+          "workingArrangementId",
+          "workingArrangementLabel",
+          "workingTimeId",
+          "primaryLocation",
+          "expiresAt",
+          "isUrgent",
+          "isFeatured",
+          "isSponsored",
+          "saved",
+          "lifecycle",
+          "marketCode",
+          "positionsCount",
+          "responsibilities",
+          "requiredSkillIds",
+          "requiredSkills",
+          "preferredSkillIds",
+          "preferredSkills",
+          "certifications",
+          "languages",
+          "workScheduleIds",
+          "additionalLocations",
+          "benefits",
+          "recruitmentProcess",
+          "applicationMethod",
+          "contactPreferences",
+          "screeningQuestions",
+          "safetyNotice",
+          "candidateFeeRequired"
+        ],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "slug": { "type": "string", "minLength": 1 },
+          "schemaVersion": { "type": "integer", "exclusiveMinimum": 0 },
+          "title": { "type": "string", "minLength": 1 },
+          "employer": {
+            "$ref": "#/components/schemas/EmploymentEmployerSummary"
+          },
+          "professionId": { "type": "string", "minLength": 1 },
+          "professionLabel": { "type": "string", "minLength": 1 },
+          "specializationId": { "type": "string" },
+          "specializationLabel": { "type": "string" },
+          "industryId": { "type": "string", "minLength": 1 },
+          "industryLabel": { "type": "string", "minLength": 1 },
+          "contractTypeId": { "type": "string", "minLength": 1 },
+          "contractTypeLabel": { "type": "string", "minLength": 1 },
+          "workingArrangementId": { "type": "string", "minLength": 1 },
+          "workingArrangementLabel": { "type": "string", "minLength": 1 },
+          "workingTimeId": { "type": "string", "minLength": 1 },
+          "primaryLocation": {
+            "$ref": "#/components/schemas/EmploymentLocation"
+          },
+          "salary": { "$ref": "#/components/schemas/EmploymentSalaryRange" },
+          "publishedAt": { "type": "string" },
+          "expiresAt": { "type": "string" },
+          "applicationDeadline": { "type": "string" },
+          "isUrgent": { "type": "boolean" },
+          "isFeatured": { "type": "boolean" },
+          "isSponsored": { "type": "boolean" },
+          "resolvedPromotion": {
+            "$ref": "#/components/schemas/MarketResolvedListingPromotion"
+          },
+          "saved": { "type": "boolean" },
+          "lifecycle": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "pending_review",
+              "published",
+              "closed",
+              "expired",
+              "suspended",
+              "rejected",
+              "archived"
+            ]
+          },
+          "marketCode": { "$ref": "#/components/schemas/MarketCode" },
+          "reference": { "type": "string" },
+          "positionsCount": { "type": "integer", "exclusiveMinimum": 0 },
+          "contractDuration": { "type": "string" },
+          "responsibilities": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 },
+            "minItems": 1
+          },
+          "requiredSkillIds": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "requiredSkills": { "type": "array", "items": { "type": "string" } },
+          "preferredSkillIds": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "preferredSkills": { "type": "array", "items": { "type": "string" } },
+          "requiredExperienceId": { "type": "string" },
+          "educationLevelId": { "type": "string" },
+          "qualificationSummary": { "type": "string" },
+          "certifications": { "type": "array", "items": { "type": "string" } },
+          "languages": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["languageId", "levelId", "label"],
+              "properties": {
+                "languageId": { "type": "string" },
+                "levelId": { "type": "string" },
+                "label": { "type": "string" }
+              }
+            }
+          },
+          "weeklyHours": { "type": "number", "exclusiveMinimum": 0 },
+          "workScheduleIds": { "type": "array", "items": { "type": "string" } },
+          "travelRequirementId": { "type": "string" },
+          "additionalLocations": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/EmploymentLocation" }
+          },
+          "accessibilityInformation": { "type": "string" },
+          "benefits": { "type": "array", "items": { "type": "string" } },
+          "trialPeriodInformation": { "type": "string" },
+          "desiredStartDate": { "type": "string" },
+          "recruitmentProcess": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "employerDescription": { "type": "string" },
+          "applicationMethod": {
+            "type": "string",
+            "enum": ["shongre", "external", "contact_recruiter"]
+          },
+          "externalApplicationUrl": { "type": "string", "format": "uri" },
+          "contactPreferences": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "screeningQuestions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EmploymentScreeningQuestion"
+            }
+          },
+          "safetyNotice": { "type": "string", "minLength": 1 },
+          "candidateFeeRequired": { "type": "boolean", "const": false }
+        }
+      },
+      "EmploymentSearchResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "pageInfo",
+          "total",
+          "organicResultCount",
+          "recommendationFactors"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/EmploymentJobPostingCard" }
+          },
+          "pageInfo": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["hasNextPage"],
+            "properties": {
+              "hasNextPage": { "type": "boolean" },
+              "nextCursor": { "type": "string" }
+            }
+          },
+          "total": { "type": "integer", "minimum": 0 },
+          "organicResultCount": { "type": "integer", "minimum": 0 },
+          "recommendationFactors": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      },
       "JsonValue": {
         "description": "A JSON-compatible payload whose domain representation is mapped by the owning service adapter.",
         "oneOf": [
@@ -41669,6 +43204,617 @@
             "additionalProperties": true
           }
         ]
+      },
+      "PublicSellerProfile": {
+        "type": "object",
+        "description": "Public seller facts safe for marketplace discovery. Authentication, contact and Staff fields are excluded.",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "slug",
+          "name",
+          "accountType",
+          "sellerType",
+          "country",
+          "isVerified",
+          "isBusinessVerified",
+          "rating",
+          "reviewCount",
+          "responseRatePercent"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "slug": {
+            "type": "string",
+            "minLength": 1
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "accountType": {
+            "type": "string",
+            "enum": ["individual", "professional"]
+          },
+          "sellerType": {
+            "type": "string",
+            "enum": ["individual", "pro"]
+          },
+          "avatarUrl": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "country": {
+            "$ref": "#/components/schemas/MarketCode"
+          },
+          "bio": {
+            "type": "string"
+          },
+          "isVerified": {
+            "type": "boolean"
+          },
+          "isBusinessVerified": {
+            "type": "boolean"
+          },
+          "rating": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 5
+          },
+          "reviewCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "responseRatePercent": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "responseTimeText": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ListingMarketPublication": {
+        "type": "object",
+        "description": "Market-scoped availability and price evidence retained on a public listing.",
+        "additionalProperties": false,
+        "required": [
+          "marketCode",
+          "status",
+          "isPrimary",
+          "priceMinor",
+          "currency",
+          "complianceState",
+          "sortDate"
+        ],
+        "properties": {
+          "marketCode": {
+            "$ref": "#/components/schemas/MarketCode"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "pending_review",
+              "active",
+              "paused",
+              "suspended",
+              "rejected",
+              "expired"
+            ]
+          },
+          "isPrimary": {
+            "type": "boolean"
+          },
+          "priceMinor": {
+            "type": "integer"
+          },
+          "currency": {
+            "type": "string",
+            "pattern": "^[A-Z]{3}$"
+          },
+          "localizedContent": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/JsonValue"
+            }
+          },
+          "availableServices": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/JsonValue"
+            }
+          },
+          "complianceState": {
+            "type": "string",
+            "enum": ["pending", "approved", "restricted", "rejected"]
+          },
+          "publishedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "sortDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "promotionState": {
+            "type": "string",
+            "enum": ["inactive", "active"]
+          },
+          "promotionType": {
+            "$ref": "#/components/schemas/ListingPromotionType"
+          },
+          "promotionLabel": {
+            "type": "string",
+            "minLength": 1
+          },
+          "promotionStartAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "promotionEndAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "promotedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ListingPromotionType": {
+        "type": "string",
+        "enum": [
+          "urgent_badge",
+          "search_bump",
+          "featured",
+          "top_placement",
+          "sponsored_search",
+          "homepage_spotlight",
+          "category_spotlight",
+          "local_spotlight",
+          "seller_spotlight"
+        ]
+      },
+      "ListingDiscoveryPresentation": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["isSponsored", "placementReason", "rankingVersion"],
+        "properties": {
+          "isSponsored": {
+            "type": "boolean"
+          },
+          "promotionType": {
+            "$ref": "#/components/schemas/ListingPromotionType"
+          },
+          "promotionLabel": {
+            "type": "string",
+            "minLength": 1
+          },
+          "promotionImpressionId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "organicPositionContext": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "placementReason": {
+            "type": "string",
+            "enum": [
+              "organic_relevance",
+              "organic_freshness",
+              "organic_price",
+              "sponsored_relevant"
+            ]
+          },
+          "rankingVersion": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "PublicListing": {
+        "type": "object",
+        "description": "Public marketplace listing projection after private seller, entitlement, provider and risk fields are removed.",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "sellerId",
+          "categoryId",
+          "title",
+          "description",
+          "price",
+          "currency",
+          "status",
+          "condition",
+          "marketCode",
+          "city",
+          "postalCode",
+          "country",
+          "allowedDelivery",
+          "images",
+          "viewCount",
+          "favoriteCount",
+          "attributes",
+          "createdAt",
+          "updatedAt",
+          "expiresAt",
+          "fulfillmentTypes",
+          "requiresPhysicalDelivery"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "sellerId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "storeId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "publisherType": {
+            "type": "string",
+            "enum": ["private", "professional"]
+          },
+          "publisherUserId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "publisherOrganizationId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "publisherBranchId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "publisherVerificationStatus": {
+            "type": "string",
+            "enum": [
+              "unverified",
+              "email_verified",
+              "phone_verified",
+              "identity_verified",
+              "business_verified",
+              "suspended"
+            ]
+          },
+          "seller": {
+            "$ref": "#/components/schemas/PublicSellerProfile"
+          },
+          "categoryId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "listingTypeId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "listingIntent": {
+            "$ref": "#/components/schemas/TaxonomyV4ListingIntent"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": {
+            "type": "string"
+          },
+          "price": {
+            "type": "number",
+            "description": "Legacy major-unit listing amount. Client adapters convert this value to integer minor units at their transport boundary."
+          },
+          "originalPrice": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string",
+            "pattern": "^[A-Z]{3}$"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "published",
+              "reserved",
+              "sold",
+              "archived",
+              "rejected",
+              "flagged"
+            ]
+          },
+          "condition": {
+            "type": "string"
+          },
+          "brand": {
+            "type": "string"
+          },
+          "model": {
+            "type": "string"
+          },
+          "marketCode": {
+            "$ref": "#/components/schemas/MarketCode"
+          },
+          "marketCodes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MarketCode"
+            }
+          },
+          "marketPublications": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ListingMarketPublication"
+            }
+          },
+          "city": {
+            "type": "string"
+          },
+          "postalCode": {
+            "type": "string"
+          },
+          "department": {
+            "type": "string"
+          },
+          "region": {
+            "type": "string"
+          },
+          "country": {
+            "$ref": "#/components/schemas/MarketCode"
+          },
+          "latitude": {
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90
+          },
+          "longitude": {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180
+          },
+          "allowedDelivery": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "hand_delivery",
+                "relay_point",
+                "home_delivery",
+                "cocolis",
+                "express",
+                "digital"
+              ]
+            }
+          },
+          "shippingCost": {
+            "type": "number"
+          },
+          "fulfillmentModel": {
+            "$ref": "#/components/schemas/FulfillmentType"
+          },
+          "productVersion": {
+            "type": "string"
+          },
+          "images": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "isUrgent": {
+            "type": "boolean"
+          },
+          "isFeatured": {
+            "type": "boolean"
+          },
+          "urgentExpiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "featuredExpiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "bumpedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "promotionState": {
+            "type": "string",
+            "enum": [
+              "inactive",
+              "scheduled",
+              "active",
+              "expired",
+              "cancelled",
+              "refunded",
+              "failed"
+            ]
+          },
+          "promotionType": {
+            "$ref": "#/components/schemas/ListingPromotionType"
+          },
+          "promotionSource": {
+            "$ref": "#/components/schemas/ListingPromotionSource",
+            "description": "Verified promotion evidence kind for the resolved market publication."
+          },
+          "promotionSourceId": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Opaque public proof identifier; never an order, entitlement, or administrator grant identifier."
+          },
+          "promotionLabel": {
+            "type": "string",
+            "minLength": 1
+          },
+          "promotionStartAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "promotionEndAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "publishedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "materiallyUpdatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "organicFreshnessAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "promotedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "discovery": {
+            "$ref": "#/components/schemas/ListingDiscoveryPresentation"
+          },
+          "viewCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "favoriteCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "attributes": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/JsonValue"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "fulfillmentTypes": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "$ref": "#/components/schemas/FulfillmentType"
+            }
+          },
+          "requiresPhysicalDelivery": {
+            "type": "boolean"
+          }
+        }
+      },
+      "PublicListingCardsRequest": {
+        "type": "object",
+        "description": "A bounded set of unique listing identifiers to hydrate in the resolved market.",
+        "additionalProperties": false,
+        "required": ["listingIds"],
+        "properties": {
+          "listingIds": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 100,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        }
+      },
+      "PublicListingCollection": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["listings", "total"],
+        "properties": {
+          "listings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicListing"
+            }
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      },
+      "PublicListingSearchResult": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "items",
+          "total",
+          "page",
+          "totalPages",
+          "pageInfo",
+          "requestId",
+          "rankingVersion"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicListing"
+            }
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "totalPages": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "pageInfo": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["hasNextPage"],
+            "properties": {
+              "hasNextPage": {
+                "type": "boolean"
+              },
+              "nextCursor": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          },
+          "requestId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "rankingVersion": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
       },
       "TaxonomyV4LocalizedLabels": {
         "type": "object",
@@ -51221,6 +53367,22 @@
                 "feature_flag_disabled",
                 "operational_readiness_incomplete"
               ]
+            }
+          }
+        }
+      },
+      "DeliveryFavoriteCollection": {
+        "type": "object",
+        "description": "Delivery request identifiers saved by the caller in the resolved market.",
+        "additionalProperties": false,
+        "required": ["requestIds"],
+        "properties": {
+          "requestIds": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "format": "uuid"
             }
           }
         }

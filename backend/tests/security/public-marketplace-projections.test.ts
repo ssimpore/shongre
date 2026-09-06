@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   DemoListingRepository,
   type IListingRepository,
@@ -45,6 +45,25 @@ const listing = (status: Listing["status"] = "published"): Listing => ({
   status,
   condition: "tres-bon-etat",
   marketCode: "FR",
+  marketCodes: ["FR"],
+  marketPublications: [
+    {
+      marketCode: "FR",
+      status: "active",
+      isPrimary: true,
+      priceMinor: 25_000,
+      currency: "EUR",
+      complianceState: "approved",
+      sortDate: "2026-01-01T00:00:00.000Z",
+      publishedAt: "2026-01-01T00:00:00.000Z",
+      promotionState: "active",
+      promotionType: "featured",
+      promotionSource: "purchase",
+      promotionSourceId: "private-purchase",
+      promotionStartAt: "2026-01-01T00:00:00.000Z",
+      promotionEndAt: "2099-01-01T00:00:00.000Z",
+    },
+  ],
   city: "Lyon",
   postalCode: "69002",
   country: "FR",
@@ -114,12 +133,74 @@ describe("public marketplace projections", () => {
     expect(result).not.toHaveProperty("subscriptionId");
     expect(result).not.toHaveProperty("entitlementSnapshot");
     expect(result).not.toHaveProperty("externalStockId");
+    expect(result?.marketPublications?.[0]).not.toHaveProperty(
+      "promotionSource",
+    );
+    expect(result?.marketPublications?.[0]).not.toHaveProperty(
+      "promotionSourceId",
+    );
+    expect(result?.promotionSource).toBe("purchase");
+    expect(result?.promotionSourceId).toMatch(/^promotion_[a-f0-9]{64}$/);
+    expect(result?.promotionSourceId).not.toContain("private-purchase");
     expect(result?.seller).not.toHaveProperty("email");
     expect(result?.seller).not.toHaveProperty("phone");
     expect(result?.seller).not.toHaveProperty("staffStatus");
     expect(result?.seller).not.toHaveProperty("staffRole");
     expect(result?.seller).not.toHaveProperty("customPermissions");
     expect(result?.attributes).toEqual({ frameSize: "M" });
+  });
+
+  it("returns favorite card projections in one exact market collection", async () => {
+    const repository = new DemoListingRepository({ published: listing() });
+    const service = new ListingsService(repository, new DemoAIProvider());
+    await service.setFavorite("listing-published", "buyer-safe", "FR", true);
+
+    const collection = await service.getFavoriteCollection("buyer-safe", "FR");
+
+    expect(collection.listingIds).toEqual(["listing-published"]);
+    expect(collection.listings).toMatchObject([
+      { id: "listing-published", marketCode: "FR" },
+    ]);
+    expect(collection.listings[0]).not.toHaveProperty("subscriptionId");
+  });
+
+  it("hydrates a public card set through one market-scoped repository batch", async () => {
+    const visible = { ...listing(), id: "listing-visible" };
+    const repository = new DemoListingRepository({ visible });
+    const findPublicByIds = vi.spyOn(repository, "findPublicByIds");
+    const service = new ListingsService(repository, new DemoAIProvider());
+
+    const collection = await service.getPublicListingCards(
+      [visible.id, "missing"],
+      "FR",
+    );
+
+    expect(findPublicByIds).toHaveBeenCalledOnce();
+    expect(findPublicByIds).toHaveBeenCalledWith([visible.id, "missing"], "FR");
+    expect(collection).toMatchObject({
+      total: 1,
+      listings: [{ id: visible.id, marketCode: "FR" }],
+    });
+    expect(collection.listings[0]).not.toHaveProperty("subscriptionId");
+  });
+
+  it("omits an unavailable favorite id when no public card can be returned", async () => {
+    const visible = { ...listing(), id: "listing-visible" };
+    const laterArchived = { ...listing(), id: "listing-later-archived" };
+    const repository = new DemoListingRepository({
+      visible,
+      laterArchived,
+    });
+    const service = new ListingsService(repository, new DemoAIProvider());
+
+    await service.setFavorite(visible.id, "buyer-safe", "FR", true);
+    await service.setFavorite(laterArchived.id, "buyer-safe", "FR", true);
+    await repository.update(laterArchived.id, { status: "archived" });
+
+    const collection = await service.getFavoriteCollection("buyer-safe", "FR");
+
+    expect(collection.listingIds).toEqual([visible.id]);
+    expect(collection.listings.map((item) => item.id)).toEqual([visible.id]);
   });
 
   it.each(["draft", "flagged", "rejected", "archived"] as const)(
@@ -144,7 +225,7 @@ describe("public marketplace projections", () => {
     await expect(
       service.updateSellerListing("listing-published", {
         status: "published",
-        isFeatured: true,
+        isFeatured: false,
         viewCount: 10_000,
       }),
     ).rejects.toMatchObject({
@@ -155,7 +236,7 @@ describe("public marketplace projections", () => {
     });
 
     const unchanged = await repository.findById("listing-published");
-    expect(unchanged?.isFeatured).toBeUndefined();
+    expect(unchanged?.isFeatured).toBe(true);
     expect(unchanged?.viewCount).toBe(0);
   });
 });

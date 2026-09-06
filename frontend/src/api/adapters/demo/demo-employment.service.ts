@@ -36,6 +36,7 @@ import {
 import { BASELINE_MONETIZATION_CATALOG } from "@shongre/contracts/monetization-catalog";
 import { applyMonetizationToEmploymentCatalog } from "@shongre/contracts/vertical-monetization-adapters";
 import type { VerticalCheckout } from "@shongre/contracts/vertical";
+import { isActiveMarketResolvedListingPromotion } from "@shongre/contracts";
 import { simulateNetworkDelay } from "../../client/api-client.config";
 import type {
   EmploymentApplicationDraft,
@@ -160,6 +161,14 @@ export class DemoEmploymentService implements EmploymentServiceContract {
   );
   private candidateWorkspaces = new Map<string, CandidateWorkspace>([
     ["user_thomas", clone(EMPLOYMENT_DEMO_CANDIDATE_WORKSPACE)],
+  ]);
+  private savedJobIds = new Map<string, Set<string>>([
+    [
+      `user_thomas:${EMPLOYMENT_DEMO_CANDIDATE_WORKSPACE.profile.marketCode}`,
+      new Set(
+        EMPLOYMENT_DEMO_CANDIDATE_WORKSPACE.savedJobs.map((job) => job.id),
+      ),
+    ],
   ]);
   private recruiterWorkspace = clone(EMPLOYMENT_DEMO_RECRUITER_WORKSPACE);
   private notes = new Map(
@@ -383,7 +392,10 @@ export class DemoEmploymentService implements EmploymentServiceContract {
         )
       )
         return false;
-      if (query.publishedSince && job.publishedAt < query.publishedSince)
+      if (
+        query.publishedSince &&
+        (!job.publishedAt || job.publishedAt < query.publishedSince)
+      )
         return false;
       if (query.verifiedEmployerOnly && !job.employer.isPubliclyVerified)
         return false;
@@ -413,15 +425,25 @@ export class DemoEmploymentService implements EmploymentServiceContract {
         );
       if (query.sort === "promoted") {
         const placement =
-          Number(b.isFeatured || b.isSponsored) -
-          Number(a.isFeatured || a.isSponsored);
+          Number(
+            isActiveMarketResolvedListingPromotion(
+              b.resolvedPromotion,
+              query.marketCode,
+            ),
+          ) -
+          Number(
+            isActiveMarketResolvedListingPromotion(
+              a.resolvedPromotion,
+              query.marketCode,
+            ),
+          );
         if (placement) return placement;
       }
       if (query.sort === "relevance") {
         const score = relevanceScore(b, query) - relevanceScore(a, query);
         if (score) return score;
       }
-      return b.publishedAt.localeCompare(a.publishedAt);
+      return (b.publishedAt ?? "").localeCompare(a.publishedAt ?? "");
     });
     const offset = Number(query.cursor || 0);
     return {
@@ -430,7 +452,13 @@ export class DemoEmploymentService implements EmploymentServiceContract {
         .map(asCard)
         .map(clone),
       total: jobs.length,
-      organicResultCount: jobs.filter((job) => !job.isSponsored).length,
+      organicResultCount: jobs.filter(
+        (job) =>
+          !isActiveMarketResolvedListingPromotion(
+            job.resolvedPromotion,
+            query.marketCode,
+          ),
+      ).length,
       recommendationFactors: [
         "profession",
         "compétences",
@@ -447,23 +475,25 @@ export class DemoEmploymentService implements EmploymentServiceContract {
     };
   }
 
-  async getJob(idOrSlug: string) {
+  async getJob(idOrSlug: string, marketCode?: string) {
     requireDemoCapability("employment.read");
     await simulateNetworkDelay();
     const job =
       this.jobs.get(idOrSlug) ||
       Array.from(this.jobs.values()).find((item) => item.slug === idOrSlug);
-    if (!job) throw fail("NOT_FOUND", "Offre d’emploi introuvable.");
+    if (!job || (marketCode && job.marketCode !== marketCode))
+      throw fail("NOT_FOUND", "Offre d’emploi introuvable.");
     return clone(job);
   }
 
-  async getSimilarJobs(idOrSlug: string) {
+  async getSimilarJobs(idOrSlug: string, marketCode?: string) {
     requireDemoCapability("employment.read");
-    const job = await this.getJob(idOrSlug);
+    const job = await this.getJob(idOrSlug, marketCode);
     return Array.from(this.jobs.values())
       .filter(
         (item) =>
           item.id !== job.id &&
+          (!marketCode || item.marketCode === marketCode) &&
           (item.professionId === job.professionId ||
             item.industryId === job.industryId),
       )
@@ -751,12 +781,17 @@ export class DemoEmploymentService implements EmploymentServiceContract {
     );
   }
 
-  async getCandidateWorkspace() {
+  async getCandidateWorkspace(marketCode: string) {
     requireDemoCapability("employment.candidate.manage.own");
     await simulateNetworkDelay();
     const workspace = this.currentCandidateWorkspace();
+    const scopeKey = `${workspace.profile.userId}:${marketCode.toUpperCase()}`;
     return clone({
       ...workspace,
+      savedJobs: Array.from(this.savedJobIds.get(scopeKey) || [])
+        .map((id) => this.jobs.get(id))
+        .filter((job): job is JobPostingDetail => Boolean(job))
+        .map(asCard),
       applications: Array.from(this.applications.values())
         .filter(
           (application) => application.candidateId === workspace.profile.id,
@@ -909,14 +944,47 @@ export class DemoEmploymentService implements EmploymentServiceContract {
     return clone(updated);
   }
 
-  async toggleSavedJob(jobId: string) {
+  async getSavedJobIds(accountId: string, marketCode: string) {
     requireDemoCapability("employment.candidate.manage.own");
     await simulateNetworkDelay();
-    const workspace = this.currentCandidateWorkspace();
-    const index = workspace.savedJobs.findIndex((job) => job.id === jobId);
-    if (index >= 0) workspace.savedJobs.splice(index, 1);
-    else workspace.savedJobs.push(asCard(await this.getJob(jobId)));
-    return { saved: index < 0 };
+    if (this.currentUser().id !== accountId) {
+      throw fail("FORBIDDEN", "Ces favoris appartiennent à un autre compte.");
+    }
+    return Array.from(
+      this.savedJobIds.get(`${accountId}:${marketCode.toUpperCase()}`) || [],
+    );
+  }
+
+  async setSavedJob(
+    accountId: string,
+    jobId: string,
+    marketCode: string,
+    isFavorite: boolean,
+  ) {
+    requireDemoCapability("employment.candidate.manage.own");
+    await simulateNetworkDelay();
+    if (this.currentUser().id !== accountId) {
+      throw fail("FORBIDDEN", "Ces favoris appartiennent à un autre compte.");
+    }
+    this.currentCandidateWorkspace();
+    const normalizedMarket = marketCode.toUpperCase();
+    if (isFavorite) {
+      const job = this.jobs.get(jobId);
+      if (
+        !job ||
+        job.marketCode !== normalizedMarket ||
+        job.lifecycle !== "published" ||
+        Date.parse(job.expiresAt) <= Date.now()
+      ) {
+        throw fail("NOT_FOUND", "Offre d’emploi indisponible sur ce marché.");
+      }
+    }
+    const scopeKey = `${accountId}:${normalizedMarket}`;
+    const bucket = this.savedJobIds.get(scopeKey) || new Set<string>();
+    if (isFavorite) bucket.add(jobId);
+    else bucket.delete(jobId);
+    this.savedJobIds.set(scopeKey, bucket);
+    return bucket.has(jobId);
   }
 
   async reportJob(

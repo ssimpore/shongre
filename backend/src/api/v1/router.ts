@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { ZodError } from "zod";
 import {
   getCountryConfig,
+  publicListingCardsRequestSchema,
   taxonomyV4ListingIntentSchema,
   userProfileUpdateSchema,
 } from "@shongre/contracts";
@@ -59,6 +60,8 @@ import {
   digitalProductsService,
 } from "../../modules/index.js";
 import { AppError } from "../../shared/errors/app-error.js";
+import { toPublicListing } from "../../shared/public-projections.js";
+import { deliveryRequestToDiscoveryListing } from "../../modules/discovery/discovery.service.js";
 import { logger } from "../../infrastructure/logging/logger.js";
 import { captureServerException } from "../../infrastructure/observability/sentry.js";
 import { storageService } from "../../infrastructure/storage/storage-service.js";
@@ -1239,6 +1242,20 @@ export class ApiV1Router {
       return listingsService.getListings(params as any);
     });
     this.addRoute(
+      "POST",
+      "/listings/cards",
+      PUBLIC,
+      async ({ body, marketCode }) => {
+        const resolved = requireApiRequestMarket(marketCode);
+        requireOpenMarketplace(resolved);
+        const input = publicListingCardsRequestSchema.parse(body);
+        return listingsService.getPublicListingCards(
+          input.listingIds,
+          resolved,
+        );
+      },
+    );
+    this.addRoute(
       "GET",
       "/listings/:id",
       PUBLIC,
@@ -1450,13 +1467,20 @@ export class ApiV1Router {
       },
     );
     this.addRoute(
-      "POST",
+      "PUT",
       "/listings/:id/favorite",
       permission("favorite.manage.own"),
-      async ({ principal, params }) => {
-        const isFavorite = await listingsService.toggleFavorite(
+      async ({ principal, params, marketCode, body }) => {
+        if (typeof body?.isFavorite !== "boolean")
+          throw new AppError({
+            code: "VALIDATION_ERROR",
+            message: "L’état favori demandé est invalide.",
+          });
+        const isFavorite = await listingsService.setFavorite(
           params.id,
           principal.userId,
+          requireApiRequestMarket(marketCode),
+          body.isFavorite,
         );
         return { isFavorite };
       },
@@ -1465,9 +1489,28 @@ export class ApiV1Router {
       "GET",
       "/favorites",
       permission("favorite.manage.own"),
-      async ({ principal }) => {
-        const listingIds = await listingsService.getFavorites(principal.userId);
-        return { listingIds };
+      async ({ principal, marketCode }) => {
+        const resolvedMarket = requireApiRequestMarket(marketCode);
+        const [listingCollection, deliveryRequests] = await Promise.all([
+          listingsService.getFavoriteCollection(
+            principal.userId,
+            resolvedMarket,
+          ),
+          deliveryService.getFavoritePublicRequests(
+            principal,
+            requireApiMarketContext(marketCode),
+          ),
+        ]);
+        const deliveryListings = deliveryRequests.map((request) =>
+          toPublicListing(deliveryRequestToDiscoveryListing(request)),
+        );
+        return {
+          listingIds: [
+            ...listingCollection.listingIds,
+            ...deliveryListings.map((listing) => listing.id),
+          ],
+          listings: [...listingCollection.listings, ...deliveryListings],
+        };
       },
     );
 
@@ -1641,22 +1684,32 @@ export class ApiV1Router {
       "GET",
       "/favorites",
       permission("favorite.manage.own"),
-      async ({ principal }) => ({
+      async ({ principal, marketCode }) => ({
         tutorProfileIds: await coursesService.getSavedTutorIds(
           principal.userId,
+          requireApiRequestMarket(marketCode),
         ),
       }),
     );
     this.addEducationRoute(
-      "POST",
+      "PUT",
       "/tutors/:id/favorite",
       permission("favorite.manage.own"),
-      async ({ principal, params }) => ({
-        isFavorite: await coursesService.toggleSavedTutor(
-          principal.userId,
-          params.id,
-        ),
-      }),
+      async ({ principal, params, marketCode, body }) => {
+        if (typeof body?.isFavorite !== "boolean")
+          throw new AppError({
+            code: "VALIDATION_ERROR",
+            message: "L’état favori demandé est invalide.",
+          });
+        return {
+          isFavorite: await coursesService.setSavedTutor(
+            principal.userId,
+            params.id,
+            requireApiRequestMarket(marketCode),
+            body.isFavorite,
+          ),
+        };
+      },
     );
     this.addEducationRoute(
       "GET",
@@ -1907,7 +1960,10 @@ export class ApiV1Router {
       PUBLIC,
       async ({ params, marketCode }) => {
         const resolvedMarketCode = requireOpenApiRequestMarket(marketCode);
-        const vehicle = await autoService.getPublicVehicle(params.id);
+        const vehicle = await autoService.getPublicVehicle(
+          params.id,
+          resolvedMarketCode,
+        );
         if (!vehicle.marketCodes.includes(resolvedMarketCode))
           throw new AppError({
             code: "NOT_FOUND",
@@ -1920,20 +1976,32 @@ export class ApiV1Router {
       "GET",
       "/auto/favorites",
       permission("favorite.manage.own"),
-      async ({ principal }) => ({
-        vehicleIds: await autoService.getFavoriteVehicleIds(principal.userId),
+      async ({ principal, marketCode }) => ({
+        vehicleIds: await autoService.getFavoriteVehicleIds(
+          principal.userId,
+          requireApiRequestMarket(marketCode),
+        ),
       }),
     );
     this.addRoute(
-      "POST",
+      "PUT",
       "/auto/vehicles/:id/favorite",
       permission("favorite.manage.own"),
-      async ({ principal, params }) => ({
-        isFavorite: await autoService.toggleFavoriteVehicle(
-          principal.userId,
-          params.id,
-        ),
-      }),
+      async ({ principal, params, marketCode, body }) => {
+        if (typeof body?.isFavorite !== "boolean")
+          throw new AppError({
+            code: "VALIDATION_ERROR",
+            message: "L’état favori demandé est invalide.",
+          });
+        return {
+          isFavorite: await autoService.setFavoriteVehicle(
+            principal.userId,
+            params.id,
+            requireApiRequestMarket(marketCode),
+            body.isFavorite,
+          ),
+        };
+      },
     );
     this.addRoute(
       "POST",
@@ -2089,7 +2157,10 @@ export class ApiV1Router {
       PUBLIC,
       async ({ params, marketCode }) => {
         const resolvedMarketCode = requireOpenApiRequestMarket(marketCode);
-        const property = await realEstateService.getPublicProperty(params.id);
+        const property = await realEstateService.getPublicProperty(
+          params.id,
+          resolvedMarketCode,
+        );
         if (!property.marketCodes.includes(resolvedMarketCode))
           throw new AppError({
             code: "NOT_FOUND",
@@ -2104,7 +2175,10 @@ export class ApiV1Router {
       PUBLIC,
       async ({ params, marketCode }) => {
         const resolvedMarketCode = requireOpenApiRequestMarket(marketCode);
-        const property = await realEstateService.getPublicProperty(params.id);
+        const property = await realEstateService.getPublicProperty(
+          params.id,
+          resolvedMarketCode,
+        );
         if (!property.marketCodes.includes(resolvedMarketCode))
           throw new AppError({
             code: "NOT_FOUND",
@@ -2325,7 +2399,10 @@ export class ApiV1Router {
       PUBLIC,
       async ({ params, marketCode }) => {
         const resolvedMarketCode = requireOpenApiRequestMarket(marketCode);
-        const job = await employmentService.getPublicJob(params.id);
+        const job = await employmentService.getPublicJob(
+          params.id,
+          resolvedMarketCode,
+        );
         if (job.marketCode !== resolvedMarketCode)
           throw new AppError({
             code: "NOT_FOUND",
@@ -2340,7 +2417,10 @@ export class ApiV1Router {
       PUBLIC,
       async ({ params, marketCode }) => {
         const resolvedMarketCode = requireOpenApiRequestMarket(marketCode);
-        const job = await employmentService.getPublicJob(params.id);
+        const job = await employmentService.getPublicJob(
+          params.id,
+          resolvedMarketCode,
+        );
         if (job.marketCode !== resolvedMarketCode)
           throw new AppError({
             code: "NOT_FOUND",
@@ -2414,8 +2494,11 @@ export class ApiV1Router {
       "GET",
       "/employment/candidate/workspace",
       permission("employment.candidate.manage.own"),
-      async ({ principal }) =>
-        employmentService.getOwnCandidateWorkspace(principal.userId),
+      async ({ principal, marketCode }) =>
+        employmentService.getOwnCandidateWorkspace(
+          principal.userId,
+          requireApiRequestMarket(marketCode),
+        ),
     );
     this.addRoute(
       "PUT",
@@ -2439,11 +2522,35 @@ export class ApiV1Router {
         employmentService.withdrawOwnApplication(principal.userId, params.id),
     );
     this.addRoute(
-      "POST",
+      "GET",
+      "/employment/favorites",
+      permission("employment.candidate.manage.own"),
+      async ({ principal, marketCode }) => ({
+        jobIds: await employmentService.getSavedJobIds(
+          principal.userId,
+          requireApiRequestMarket(marketCode),
+        ),
+      }),
+    );
+    this.addRoute(
+      "PUT",
       "/employment/jobs/:id/save",
       permission("employment.candidate.manage.own"),
-      async ({ principal, params }) =>
-        employmentService.toggleSavedJob(principal.userId, params.id),
+      async ({ principal, params, marketCode, body }) => {
+        if (typeof body?.isFavorite !== "boolean")
+          throw new AppError({
+            code: "VALIDATION_ERROR",
+            message: "L’état favori demandé est invalide.",
+          });
+        return {
+          isFavorite: await employmentService.setSavedJob(
+            principal.userId,
+            params.id,
+            requireApiRequestMarket(marketCode),
+            body.isFavorite,
+          ),
+        };
+      },
     );
     this.addRoute(
       "POST",
@@ -2864,6 +2971,37 @@ export class ApiV1Router {
           requireApiMarketContext(marketCode),
           params.requestId,
         ),
+    );
+    this.addRoute(
+      "GET",
+      "/delivery/favorites",
+      permission("favorite.manage.own"),
+      async ({ principal, marketCode }) => ({
+        requestIds: await deliveryService.getFavoriteRequestIds(
+          principal,
+          requireApiMarketContext(marketCode),
+        ),
+      }),
+    );
+    this.addRoute(
+      "PUT",
+      "/delivery/requests/:requestId/favorite",
+      permission("favorite.manage.own"),
+      async ({ principal, params, marketCode, body }) => {
+        if (typeof body?.isFavorite !== "boolean")
+          throw new AppError({
+            code: "VALIDATION_ERROR",
+            message: "L’état favori demandé est invalide.",
+          });
+        return {
+          isFavorite: await deliveryService.setFavoriteRequest(
+            principal,
+            requireApiMarketContext(marketCode),
+            params.requestId,
+            body.isFavorite,
+          ),
+        };
+      },
     );
     this.addRoute(
       "POST",

@@ -1,5 +1,5 @@
 import type { DiscoveryDocument } from "@shongre/shared";
-import type { PromotionPlacementType } from "@shongre/contracts";
+import { majorToMinorAmount } from "@shongre/shared/money";
 import type { Listing } from "../../types";
 import {
   DEFAULT_MARKET_CODE,
@@ -19,37 +19,7 @@ function promotionFor(listing: Listing): DiscoveryDocument["promotion"] {
       label: listing.promotionLabel,
     };
   }
-  if (!listing.isBoosted || !listing.boostType) return undefined;
-  const promotionTypes = {
-    urgent: "urgent_badge",
-    top_of_list: "search_bump",
-    highlight: "featured",
-    gallery_boost: "featured",
-    spotlight: "sponsored_search",
-  } as const satisfies Record<
-    Listing["boostType"] & string,
-    PromotionPlacementType
-  >;
-  const type: PromotionPlacementType = promotionTypes[listing.boostType];
-  return {
-    state:
-      !listing.boostExpiresAt || new Date(listing.boostExpiresAt) > new Date()
-        ? "active"
-        : "expired",
-    type,
-    source: "admin_grant",
-    sourceId: `demo-grant:${listing.id}:${listing.boostType}`,
-    startsAt: listing.promotedAt || listing.updatedAt,
-    endsAt: listing.boostExpiresAt || listing.expiresAt,
-    label:
-      listing.boostType === "urgent"
-        ? "Urgent"
-        : listing.boostType === "top_of_list"
-          ? "Remonté"
-          : listing.boostType === "spotlight"
-            ? "Sponsorisé"
-            : "À la une",
-  };
+  return undefined;
 }
 
 export function toDemoDiscoveryDocument(listing: Listing): DiscoveryDocument {
@@ -75,6 +45,7 @@ export function toDemoDiscoveryDocument(listing: Listing): DiscoveryDocument {
       ].filter((value): value is string => Boolean(value)),
     ),
   );
+  const currency = listing.currency || DEFAULT_MARKET_CURRENCY;
   return {
     id: listing.id,
     publisherId:
@@ -90,8 +61,8 @@ export function toDemoDiscoveryDocument(listing: Listing): DiscoveryDocument {
     title: listing.title,
     description: listing.description,
     searchableAttributes: attributeValues,
-    priceMinor: Math.round(listing.price * 100),
-    currency: listing.currency || DEFAULT_MARKET_CURRENCY,
+    priceMinor: majorToMinorAmount(listing.price, currency),
+    currency,
     city: listing.city,
     status: listing.status,
     availability:
@@ -106,7 +77,7 @@ export function toDemoDiscoveryDocument(listing: Listing): DiscoveryDocument {
       listing.status === "pending_review" ? "pending" : "approved",
     publisherStatus: "active",
     createdAt: listing.createdAt,
-    publishedAt: listing.publishedAt || listing.createdAt,
+    publishedAt: listing.publishedAt,
     materiallyUpdatedAt: listing.materiallyUpdatedAt,
     organicFreshnessAt:
       listing.organicFreshnessAt || listing.publishedAt || listing.createdAt,

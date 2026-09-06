@@ -4,6 +4,8 @@ import type {
   DigitalAssetProjection,
   DigitalMarketPolicy,
 } from "@shongre/contracts/digital-products";
+import { digitalAssetProjectionSchema } from "@shongre/contracts/digital-products";
+import type { Database } from "../../generated/database.types.js";
 import { getSupabaseAdminClient } from "../supabase/supabase-client.js";
 import { AppError } from "../../shared/errors/app-error.js";
 import { config } from "../../app/config/index.js";
@@ -16,6 +18,8 @@ const PRIVATE_DOCUMENT_TYPES = new Set([
   ...LISTING_MEDIA_TYPES,
   "application/pdf",
 ]);
+
+type DigitalAssetRow = Database["public"]["Tables"]["digital_assets"]["Row"];
 
 const extensionFor = (contentType: string) =>
   contentType === "image/jpeg"
@@ -143,8 +147,10 @@ export class StorageService {
         p_asset_id: assetId,
         p_owner_user_id: ownerUserId,
         p_market_code: policy.marketCode,
-        p_listing_id: input.listingId ?? null,
-        p_replaces_asset_id: input.replacesAssetId ?? null,
+        // postgres-meta does not expose nullability for required RPC arguments.
+        p_listing_id: (input.listingId ?? null) as unknown as string,
+        p_replaces_asset_id: (input.replacesAssetId ??
+          null) as unknown as string,
         p_staging_path: stagingPath,
         p_file_name: fileName,
         p_extension: extension,
@@ -373,22 +379,10 @@ export class StorageService {
     };
   }
 
-  private digitalAssetProjection(asset: {
-    id: string;
-    listing_id: string | null;
-    version: number;
-    safe_file_name: string;
-    declared_content_type: string;
-    declared_size_bytes: number;
-    actual_size_bytes: number | null;
-    status: DigitalAssetProjection["status"];
-    malware_scan_status: string;
-    created_at: string;
-    ready_at: string | null;
-  }): DigitalAssetProjection {
-    const scanStatus =
-      asset.malware_scan_status as DigitalAssetProjection["scanStatus"];
-    return {
+  private digitalAssetProjection(
+    asset: DigitalAssetRow,
+  ): DigitalAssetProjection {
+    return digitalAssetProjectionSchema.parse({
       id: asset.id,
       listingId: asset.listing_id,
       version: asset.version,
@@ -396,10 +390,10 @@ export class StorageService {
       contentType: asset.declared_content_type,
       sizeBytes: Number(asset.actual_size_bytes ?? asset.declared_size_bytes),
       status: asset.status,
-      scanStatus,
+      scanStatus: asset.malware_scan_status,
       createdAt: asset.created_at,
       readyAt: asset.ready_at,
-    };
+    });
   }
 
   async assertOwnedPrivateDocumentKeys(

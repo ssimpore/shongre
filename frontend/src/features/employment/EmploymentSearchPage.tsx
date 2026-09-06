@@ -1,5 +1,5 @@
 import { PAGE_SIZES } from "../../configuration/pagination.config";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Bell,
   BriefcaseBusiness,
@@ -12,7 +12,7 @@ import type {
   EmploymentSearchQuery,
   JobPostingCard,
 } from "@shongre/contracts/employment";
-import { useParams, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { services } from "../../api/client/service-registry";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
@@ -24,6 +24,8 @@ import {
   DropdownMenu,
   FilterPanel,
   Input,
+  ListingCardSkeleton,
+  ListingGrid,
   ListingRail,
   LocationSelector,
   Skeleton,
@@ -36,12 +38,17 @@ import type {
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { storageService } from "../../services/storage.service";
+import { routes } from "../../configuration/routes";
 import { JobCard } from "./components/JobCard";
 import { usePublicRouteData } from "../../app/providers/PublicRouteDataProvider";
 import {
   pageMetaForPolicy,
   resolveSeoPolicy,
 } from "../../platform/seo/seo-policy";
+import {
+  employmentRecentJobsStorageKey,
+  selectRecentEmploymentJobs,
+} from "./employment-recent-jobs";
 
 const csv = (value: string | null) => (value || "").split(",").filter(Boolean);
 
@@ -224,6 +231,7 @@ export const EmploymentSearchPage: React.FC = () => {
   const { currentUser } = useAuth();
   const { activeMarket, marketContext } = useMarketLocation();
   const toast = useToast();
+  const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const { professionSlug, sectorSlug, locationSlug } = useParams<{
     professionSlug?: string;
@@ -248,15 +256,65 @@ export const EmploymentSearchPage: React.FC = () => {
   const [error, setError] = useState(false);
   const [mobileFilters, setMobileFilters] = useState(false);
   const [savingAlert, setSavingAlert] = useState(false);
-  const [recentJobs, setRecentJobs] = useState<JobPostingCard[]>([]);
+  const [recentJobIds, setRecentJobIds] = useState<string[]>([]);
+  const accountId = currentUser?.id;
+  const savedScope = `${accountId || "guest"}:${activeMarket.code}`;
+  const [savedState, setSavedState] = useState<{
+    scope: string;
+    ids: string[];
+    loadState: "loading" | "ready" | "error";
+  }>(() => ({ scope: "", ids: [], loadState: "loading" }));
+  const savedJobIds = useMemo(
+    () => new Set(savedState.scope === savedScope ? savedState.ids : []),
+    [savedScope, savedState],
+  );
+  const savedJobsLoadState =
+    savedState.scope === savedScope ? savedState.loadState : "loading";
 
   useEffect(() => {
-    const recentKey = `shongre_employment_recent_jobs:${currentUser?.id || "guest"}`;
-    const ids = storageService.get<string[]>(recentKey, []).slice(0, 4);
-    Promise.all(
-      ids.map((id) => services.employment.getJob(id).catch(() => null)),
-    ).then((jobs) => setRecentJobs(jobs.filter((job) => job !== null)));
-  }, [currentUser?.id]);
+    const recentKey = employmentRecentJobsStorageKey(
+      currentUser?.id,
+      activeMarket.code,
+    );
+    setRecentJobIds(storageService.get<string[]>(recentKey, []).slice(0, 4));
+  }, [activeMarket.code, currentUser?.id]);
+  const recentJobs = useMemo(
+    () => selectRecentEmploymentJobs(recentJobIds, items),
+    [items, recentJobIds],
+  );
+
+  const loadSavedJobs = useCallback(async () => {
+    const scope = savedScope;
+    setSavedState((current) => ({
+      scope,
+      ids: current.scope === scope ? current.ids : [],
+      loadState: "loading",
+    }));
+    if (!accountId) {
+      setSavedState({ scope, ids: [], loadState: "ready" });
+      return;
+    }
+    try {
+      const ids = await services.employment.getSavedJobIds(
+        accountId,
+        activeMarket.code,
+      );
+      setSavedState((current) =>
+        current.scope === scope
+          ? { scope, ids: Array.from(new Set(ids)), loadState: "ready" }
+          : current,
+      );
+    } catch (reason) {
+      setSavedState((current) =>
+        current.scope === scope ? { ...current, loadState: "error" } : current,
+      );
+      throw reason;
+    }
+  }, [accountId, activeMarket.code, savedScope]);
+
+  useEffect(() => {
+    void loadSavedJobs().catch(() => undefined);
+  }, [loadSavedJobs]);
 
   const query = useMemo<EmploymentSearchQuery>(
     () => ({
@@ -431,18 +489,37 @@ export const EmploymentSearchPage: React.FC = () => {
   };
 
   const save = async (job: JobPostingCard) => {
-    try {
-      const result = await services.employment.toggleSavedJob(job.id);
-      setItems((current) =>
-        current.map((item) =>
-          item.id === job.id ? { ...item, saved: result.saved } : item,
+    if (savedJobsLoadState !== "ready") return;
+    if (!currentUser) {
+      navigate(
+        routes.auth.login(
+          `${window.location.pathname}${window.location.search}`,
         ),
       );
+      return;
+    }
+    try {
+      const isSaved = await services.employment.setSavedJob(
+        currentUser.id,
+        job.id,
+        activeMarket.code,
+        !savedJobIds.has(job.id),
+      );
+      setSavedState((current) =>
+        current.scope === savedScope
+          ? {
+              ...current,
+              ids: isSaved
+                ? Array.from(new Set([...current.ids, job.id]))
+                : current.ids.filter((id) => id !== job.id),
+            }
+          : current,
+      );
       toast.success(
-        result.saved ? "Offre enregistrée" : "Offre retirée des favoris",
+        isSaved ? "Offre enregistrée" : "Offre retirée des favoris",
       );
     } catch {
-      toast.info("Connectez-vous pour enregistrer cette offre.");
+      toast.error(t("ui.listingCard.favoriErreur"));
     }
   };
 
@@ -543,7 +620,15 @@ export const EmploymentSearchPage: React.FC = () => {
             </h2>
             <ListingRail label={recentlyViewedLabel} className="mt-3">
               {recentJobs.map((job) => (
-                <JobCard key={job.id} job={job} catalog={catalog} compact />
+                <JobCard
+                  key={job.id}
+                  job={{ ...job, saved: savedJobIds.has(job.id) }}
+                  catalog={catalog}
+                  onSave={save}
+                  favoriteLoadState={savedJobsLoadState}
+                  onFavoriteRetry={loadSavedJobs}
+                  compact
+                />
               ))}
             </ListingRail>
           </section>
@@ -624,15 +709,15 @@ export const EmploymentSearchPage: React.FC = () => {
               <Skeleton className="h-96" />
             )}
           </aside>
-          <section
-            aria-live="polite"
-            aria-busy={loading}
-            className="min-w-0 space-y-3"
-          >
+          <section aria-live="polite" aria-busy={loading} className="min-w-0">
             {loading ? (
-              Array.from({ length: 5 }, (_, index) => (
-                <Skeleton key={index} className="h-52 rounded-card" />
-              ))
+              <ListingGrid fluid>
+                {Array.from({ length: 6 }, (_, index) => (
+                  <div key={index} className="min-w-0">
+                    <ListingCardSkeleton />
+                  </div>
+                ))}
+              </ListingGrid>
             ) : error ? (
               <StatePanel
                 variant="error"
@@ -643,14 +728,18 @@ export const EmploymentSearchPage: React.FC = () => {
                 }
               />
             ) : items.length ? (
-              items.map((job) => (
-                <JobCard
-                  key={job.id}
-                  job={job}
-                  catalog={catalog}
-                  onSave={save}
-                />
-              ))
+              <ListingGrid fluid>
+                {items.map((job) => (
+                  <JobCard
+                    key={job.id}
+                    job={{ ...job, saved: savedJobIds.has(job.id) }}
+                    catalog={catalog}
+                    onSave={save}
+                    favoriteLoadState={savedJobsLoadState}
+                    onFavoriteRetry={loadSavedJobs}
+                  />
+                ))}
+              </ListingGrid>
             ) : (
               <StatePanel
                 variant="notFound"

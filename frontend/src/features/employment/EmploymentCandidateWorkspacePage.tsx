@@ -1,4 +1,10 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   BellOff,
   BellRing,
@@ -21,6 +27,7 @@ import type {
   JobPostingCard,
 } from "@shongre/contracts/employment";
 import { services } from "../../api/client/service-registry";
+import { useAuth } from "../../app/providers/AuthProvider";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useToast } from "../../app/providers/ToastProvider";
 import {
@@ -29,6 +36,7 @@ import {
   Checkbox,
   FormField,
   Input,
+  ListingGrid,
   Select,
   Skeleton,
   StatePanel,
@@ -68,7 +76,9 @@ const profileRecordText = (records: Array<Record<string, unknown>>) =>
 
 export const EmploymentCandidateWorkspacePage: React.FC = () => {
   const toast = useToast();
+  const { currentUser } = useAuth();
   const { activeMarket, currentLocale } = useMarketLocation();
+  const loadRequestId = useRef(0);
   const [workspace, setWorkspace] = useState<CandidateWorkspace | null>(null);
   const [catalog, setCatalog] = useState<EmploymentCatalog | null>(null);
   const [jobs, setJobs] = useState<Record<string, JobPostingCard>>({});
@@ -90,30 +100,44 @@ export const EmploymentCandidateWorkspacePage: React.FC = () => {
     noIndex: true,
   });
 
-  const load = () =>
-    Promise.all([
-      services.employment.getCandidateWorkspace(),
-      services.employment.getCatalog(activeMarket.code),
-    ])
-      .then(async ([next, nextCatalog]) => {
+  const load = useCallback(async () => {
+    const requestId = ++loadRequestId.current;
+    setError(undefined);
+    setWorkspace(null);
+    setCatalog(null);
+    setJobs({});
+    try {
+      const [next, nextCatalog] = await Promise.all([
+        services.employment.getCandidateWorkspace(activeMarket.code),
+        services.employment.getCatalog(activeMarket.code),
+      ]);
+      if (requestId !== loadRequestId.current) return;
+      const entries = await Promise.all(
+        Array.from(new Set(next.applications.map((item) => item.jobId))).map(
+          async (id) =>
+            [
+              id,
+              await services.employment.getJob(id, activeMarket.code),
+            ] as const,
+        ),
+      );
+      if (requestId === loadRequestId.current) {
         setWorkspace(next);
         setCatalog(nextCatalog);
         setProfileDraft(next.profile);
         setTalentConsent(Boolean(next.profile.recruiterSearchConsentId));
-        const entries = await Promise.all(
-          Array.from(new Set(next.applications.map((item) => item.jobId))).map(
-            async (id) => [id, await services.employment.getJob(id)] as const,
-          ),
-        );
         setJobs(Object.fromEntries(entries));
-      })
-      .catch((cause) =>
+      }
+    } catch (cause) {
+      if (requestId === loadRequestId.current) {
         setError(
           cause instanceof Error
             ? cause.message
             : "Espace candidat indisponible.",
-        ),
-      );
+        );
+      }
+    }
+  }, [activeMarket.code]);
 
   const toggleProfileId = (
     field: "skillIds" | "desiredProfessionIds" | "desiredContractTypeIds",
@@ -133,7 +157,7 @@ export const EmploymentCandidateWorkspacePage: React.FC = () => {
 
   useEffect(() => {
     void load();
-  }, [activeMarket.code]);
+  }, [load]);
 
   const saveProfile = async () => {
     if (!profileDraft) return;
@@ -274,6 +298,33 @@ export const EmploymentCandidateWorkspacePage: React.FC = () => {
       toast.error(
         cause instanceof Error ? cause.message : "Réponse non enregistrée.",
       );
+    }
+  };
+
+  const toggleSavedJob = async (job: JobPostingCard) => {
+    if (!currentUser) return;
+    try {
+      const isSaved = await services.employment.setSavedJob(
+        currentUser.id,
+        job.id,
+        activeMarket.code,
+        !job.saved,
+      );
+      setWorkspace((current) =>
+        current
+          ? {
+              ...current,
+              savedJobs: isSaved
+                ? current.savedJobs.map((item) =>
+                    item.id === job.id ? { ...item, saved: true } : item,
+                  )
+                : current.savedJobs.filter((item) => item.id !== job.id),
+            }
+          : current,
+      );
+      toast.success(isSaved ? "Offre enregistrée" : "Offre retirée");
+    } catch {
+      toast.error("L’offre n’a pas pu être retirée des favoris.");
     }
   };
 
@@ -782,11 +833,18 @@ export const EmploymentCandidateWorkspacePage: React.FC = () => {
       {tab === "saved" && (
         <section>
           <h2 className="text-lg font-bold">Offres sauvegardées</h2>
-          <div className="mt-3 grid gap-4 xl:grid-cols-2">
+          <ListingGrid className="mt-3">
             {workspace.savedJobs.map((job) => (
-              <JobCard key={job.id} job={job} compact />
+              <JobCard
+                key={job.id}
+                job={job}
+                catalog={catalog}
+                onSave={toggleSavedJob}
+                favoriteLoadState="ready"
+                compact
+              />
             ))}
-          </div>
+          </ListingGrid>
         </section>
       )}
 

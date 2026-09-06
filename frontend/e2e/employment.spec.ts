@@ -24,7 +24,7 @@ test.describe("Shongre Emploi journeys", () => {
     await seedConsent(page);
     await page.addInitScript(() => {
       window.localStorage.setItem(
-        "shongre_employment_recent_jobs:user_thomas",
+        "shongre_employment_recent_jobs:user_thomas:FR",
         JSON.stringify([
           "job-product-intern-bordeaux",
           "job-react-lyon",
@@ -61,10 +61,10 @@ test.describe("Shongre Emploi journeys", () => {
     await expect(employmentCards).toHaveCount(12);
     await expect(
       employmentCards.locator('img[src$="/images/categories/emploi.jpg"]'),
-    ).toHaveCount(12);
-    await expect(
-      page.getByRole("img", { name: "Image indisponible" }),
     ).toHaveCount(0);
+    await expect(
+      employmentCards.getByRole("img", { name: "Image indisponible" }),
+    ).toHaveCount(12);
 
     const desktopContract = await recentTrack.evaluate((track) => {
       const root = getComputedStyle(document.documentElement);

@@ -6,8 +6,16 @@ import {
 import { httpClient } from "./http-client";
 
 export class HttpWorkspaceService implements WorkspaceServiceContract {
-  async getUserWorkspaceSummary(userId: string): Promise<UserWorkspaceSummary> {
-    return httpClient.get<UserWorkspaceSummary>(`/workspace/summary/${userId}`);
+  async getUserWorkspaceSummary(
+    userId: string,
+    marketCode: string,
+  ): Promise<UserWorkspaceSummary> {
+    return httpClient.get<UserWorkspaceSummary>(
+      `/workspace/summary/${userId}`,
+      {
+        headers: { "X-Shongre-Market": marketCode },
+      },
+    );
   }
 
   async getProAnalytics(sellerId: string): Promise<ProAnalyticsSnapshot> {

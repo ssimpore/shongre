@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { getSupabaseAdminClient } from "../../supabase/supabase-client.js";
 import type { IUserRepository } from "./user.repository.js";
 import { databaseFailure } from "./repository-error.js";
@@ -37,6 +38,25 @@ export interface IPublisherRepository {
   ): Promise<PublisherMembership | null>;
   findBranch(id: string): Promise<PublisherBranch | null>;
 }
+
+const publisherOrganizationStatusSchema = z.enum([
+  "active",
+  "suspended",
+  "deleted",
+]);
+const publisherMembershipRoleSchema = z.enum([
+  "owner",
+  "admin",
+  "manager",
+  "seller",
+  "support",
+]);
+const publisherMembershipStatusSchema = z.enum([
+  "active",
+  "invited",
+  "suspended",
+  "revoked",
+]);
 
 export class DemoPublisherRepository implements IPublisherRepository {
   constructor(private readonly users: IUserRepository) {}
@@ -105,7 +125,7 @@ export class PostgresPublisherRepository implements IPublisherRepository {
       id: data.id,
       ownerUserId: data.owner_id,
       displayName: data.trade_name || data.legal_name,
-      status: data.status,
+      status: publisherOrganizationStatusSchema.parse(data.status),
       isVerified: Boolean(data.is_verified),
     };
   }
@@ -129,7 +149,7 @@ export class PostgresPublisherRepository implements IPublisherRepository {
         id: owned.data.id,
         ownerUserId: owned.data.owner_id,
         displayName: owned.data.trade_name || owned.data.legal_name,
-        status: owned.data.status,
+        status: publisherOrganizationStatusSchema.parse(owned.data.status),
         isVerified: Boolean(owned.data.is_verified),
       };
     }
@@ -174,8 +194,8 @@ export class PostgresPublisherRepository implements IPublisherRepository {
     return {
       organizationId: data.organization_id,
       userId: data.user_id,
-      role: data.role,
-      status: data.status,
+      role: publisherMembershipRoleSchema.parse(data.role),
+      status: publisherMembershipStatusSchema.parse(data.status),
       branchIds: data.branch_ids || [],
       permissions: data.permissions || [],
     };
@@ -193,7 +213,7 @@ export class PostgresPublisherRepository implements IPublisherRepository {
       id: data.id,
       organizationId: data.organization_id,
       name: data.name,
-      status: data.status,
+      status: publisherOrganizationStatusSchema.parse(data.status),
     };
   }
 }

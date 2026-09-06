@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
   getCompactTaxonomyLabelBySlug,
-  getListingCategoryLabel,
   getListingSubCategoryLabel,
   getRecentSearchTitle,
 } from "./taxonomy.display";
+import { getListingCategoryLabel } from "./listing-category.display";
 
 describe("taxonomy display labels", () => {
   it("uses the compact alias for category and subcategory presentation", () => {

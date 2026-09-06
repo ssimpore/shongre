@@ -1,6 +1,6 @@
 import { PAGE_SIZES } from "../../configuration/pagination.config";
 import React, { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   BatteryCharging,
   CalendarDays,
@@ -18,6 +18,8 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import type { AutoLead, VehiclePublic } from "@shongre/contracts/auto";
+import { isActiveMarketResolvedListingPromotion } from "@shongre/contracts";
+import { useListingPromotionRefresh } from "@shongre/features/listings/web";
 import { VerificationBadge } from "@shongre/ui/web";
 import { services } from "../../api/client/service-registry";
 import { useAuth } from "../../app/providers/AuthProvider";
@@ -50,6 +52,7 @@ import {
   transmissionLabels,
 } from "./auto-format";
 import { useTranslation } from "../../i18n/I18nProvider";
+import { useAutoVehicleFavorites } from "./useAutoVehicleFavorites";
 
 type LeadFormState = {
   contactName: string;
@@ -63,6 +66,7 @@ type LeadFormState = {
 export const AutoVehicleDetailPage: React.FC = () => {
   const { t } = useTranslation();
   const { slug = "" } = useParams<{ slug: string }>();
+  const navigate = useNavigate();
   const { currentUser } = useAuth();
   const { activeMarket, currentLocale, convertMoney } = useMarketLocation();
   const toast = useToast();
@@ -72,6 +76,12 @@ export const AutoVehicleDetailPage: React.FC = () => {
   const [error, setError] = useState(false);
   const [leadOpen, setLeadOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const {
+    favoriteIds,
+    loadState: favoriteLoadState,
+    refresh: refreshFavorites,
+    toggleFavorite: toggleFavoriteVehicle,
+  } = useAutoVehicleFavorites(currentUser?.id, activeMarket.code);
   const [lead, setLead] = useState<LeadFormState>({
     contactName: "",
     contactEmail: "",
@@ -80,26 +90,40 @@ export const AutoVehicleDetailPage: React.FC = () => {
     message: "Bonjour, ce véhicule est-il toujours disponible ?",
     marketingConsent: false,
   });
+  useListingPromotionRefresh(vehicle?.resolvedPromotion);
+  const hasActivePromotion = isActiveMarketResolvedListingPromotion(
+    vehicle?.resolvedPromotion,
+    activeMarket.code,
+  );
 
   useEffect(() => {
+    let cancelled = false;
     setLoading(true);
     setError(false);
     services.auto
       .getVehicle(slug)
-      .then((result) => {
-        setVehicle(result);
-        return services.auto.searchVehicles({
-          marketCode: result.marketCodes[0] || activeMarket.code,
+      .then(async (result) => {
+        const similarResult = await services.auto.searchVehicles({
+          marketCode: activeMarket.code,
           makeIds: result.makeId ? [result.makeId] : undefined,
           sort: "relevance",
           limit: PAGE_SIZES.similarVerticalListings,
         });
+        if (cancelled) return;
+        setVehicle(result);
+        setSimilar(
+          similarResult.items.filter((row) => row.slug !== slug).slice(0, 3),
+        );
       })
-      .then((result) =>
-        setSimilar(result.items.filter((row) => row.slug !== slug).slice(0, 3)),
-      )
-      .catch(() => setError(true))
-      .finally(() => setLoading(false));
+      .catch(() => {
+        if (!cancelled) setError(true);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [activeMarket.code, slug]);
 
   usePageMeta({
@@ -139,7 +163,7 @@ export const AutoVehicleDetailPage: React.FC = () => {
 
   const sendLead = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!vehicle) return;
+    if (!vehicle || favoriteLoadState !== "ready") return;
     setSubmitting(true);
     try {
       await services.auto.submitLead({
@@ -158,12 +182,30 @@ export const AutoVehicleDetailPage: React.FC = () => {
 
   const toggleFavorite = async () => {
     if (!vehicle) return;
+    if (!currentUser) {
+      navigate(routes.auth.login(window.location.pathname));
+      return;
+    }
     try {
-      const isFavorite = await services.auto.toggleFavoriteVehicle(
-        currentUser?.id || "guest",
-        vehicle.id,
+      const isFavorite = await toggleFavoriteVehicle(vehicle.id);
+      toast.success(
+        isFavorite
+          ? "Véhicule ajouté aux favoris."
+          : "Véhicule retiré des favoris.",
       );
-      setVehicle({ ...vehicle, isFavorite });
+    } catch {
+      toast.error("Les favoris sont temporairement indisponibles.");
+    }
+  };
+
+  const toggleSimilarFavorite = async (target: VehiclePublic) => {
+    if (!currentUser) {
+      navigate(routes.auth.login(window.location.pathname));
+      return;
+    }
+    if (favoriteLoadState !== "ready") return;
+    try {
+      const isFavorite = await toggleFavoriteVehicle(target.id);
       toast.success(
         isFavorite
           ? "Véhicule ajouté aux favoris."
@@ -264,8 +306,19 @@ export const AutoVehicleDetailPage: React.FC = () => {
                 overlayActions={
                   <>
                     <FavoriteButton
-                      isFavorite={vehicle.isFavorite}
+                      isFavorite={favoriteIds.has(vehicle.id)}
                       onToggle={toggleFavorite}
+                      onRetry={refreshFavorites}
+                      interactionState={favoriteLoadState}
+                      label={t(
+                        favoriteLoadState === "loading"
+                          ? "ui.listingCard.favorisChargement"
+                          : favoriteLoadState === "error"
+                            ? "ui.listingCard.favorisReessayer"
+                            : favoriteIds.has(vehicle.id)
+                              ? "ui.listingCard.retirerDesFavoris"
+                              : "ui.listingCard.ajouterAuxFavoris",
+                      )}
                       size="md"
                       variant="floating"
                     />
@@ -286,8 +339,8 @@ export const AutoVehicleDetailPage: React.FC = () => {
                 <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
                   <div>
                     <div className="mb-2 flex flex-wrap gap-2">
-                      {vehicle.promotionLabels.includes("sponsored") && (
-                        <Badge>Sponsorisé</Badge>
+                      {hasActivePromotion && (
+                        <Badge>{t("ui.listingCard.boosted")}</Badge>
                       )}
                       {vehicle.trust.publicBadges.map((badge) => (
                         <Badge key={badge} variant="success">
@@ -477,7 +530,15 @@ export const AutoVehicleDetailPage: React.FC = () => {
                 </div>
                 <ListingRail label="véhicules similaires">
                   {similar.map((row) => (
-                    <AutoVehicleCard key={row.id} vehicle={row} compact />
+                    <AutoVehicleCard
+                      key={row.id}
+                      vehicle={row}
+                      isFavorite={favoriteIds.has(row.id)}
+                      favoriteLoadState={favoriteLoadState}
+                      onFavorite={toggleSimilarFavorite}
+                      onFavoriteRetry={refreshFavorites}
+                      compact
+                    />
                   ))}
                 </ListingRail>
               </section>

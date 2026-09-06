@@ -33,6 +33,11 @@ import type {
 import { verticalCheckoutSchema } from "@shongre/contracts/vertical";
 import { CANONICAL_TAXONOMY_IDS } from "@shongre/contracts/taxonomy-catalog";
 import { getSupabaseAdminClient } from "../../supabase/supabase-client.js";
+import type { MarketResolvedListingPromotion } from "@shongre/contracts/discovery";
+import {
+  getMarketResolvedPromotion,
+  loadMarketResolvedPromotions,
+} from "./market-promotion.projection.js";
 
 const NOW = "2026-08-22T10:00:00.000Z";
 const clone = <T>(value: T): T => structuredClone(value);
@@ -832,7 +837,10 @@ export interface IRealEstateRepository {
     includeInactive?: boolean,
   ): Promise<RealEstateCatalog>;
   search(query: PropertySearchQuery): Promise<PropertySearchResult>;
-  getProperty(idOrSlug: string): Promise<PropertyPrivate | null>;
+  getProperty(
+    idOrSlug: string,
+    marketCode?: string,
+  ): Promise<PropertyPrivate | null>;
   getRecentlyViewed(accountId: string): Promise<PropertyPrivate[]>;
   markRecentlyViewed(accountId: string, propertyId: string): Promise<void>;
   saveProperty(property: PropertyPrivate): Promise<PropertyPrivate>;
@@ -1587,7 +1595,10 @@ export class PostgresRealEstateRepository extends DemoRealEstateRepository {
       : { longitude: 0, latitude: 0 };
   }
 
-  private mapProperty(row: any): PropertyPrivate {
+  private mapProperty(
+    row: any,
+    resolvedPromotion?: MarketResolvedListingPromotion,
+  ): PropertyPrivate {
     const contract = row.custom_attributes?._contract || {};
     const location = this.point(row.location_point);
     const media = (row.real_estate_media || []).sort(
@@ -1694,6 +1705,7 @@ export class PostgresRealEstateRepository extends DemoRealEstateRepository {
         featured: row.is_featured,
         sponsored: row.is_sponsored,
       },
+      resolvedPromotion,
       customAttributes,
       moderationStatus: row.moderation_status,
       moderationReason: row.moderation_reason ?? undefined,
@@ -1716,6 +1728,36 @@ export class PostgresRealEstateRepository extends DemoRealEstateRepository {
       publishedAt: row.published_at ?? undefined,
       sortDate: row.sort_date,
     });
+  }
+
+  private async hydrateProperties(
+    rows: any[],
+    requestedMarketCode?: string,
+  ): Promise<PropertyPrivate[]> {
+    const normalizedRequestedMarket = requestedMarketCode?.toUpperCase();
+    const scopes = rows.map((row) => ({
+      listingId: row.listing_id,
+      marketCode:
+        normalizedRequestedMarket === String(row.market_code).toUpperCase()
+          ? normalizedRequestedMarket
+          : normalizedRequestedMarket
+            ? undefined
+            : row.market_code,
+    }));
+    const promotions = await loadMarketResolvedPromotions(
+      () => this.db(),
+      scopes,
+    );
+    return rows.map((row, index) =>
+      this.mapProperty(
+        row,
+        getMarketResolvedPromotion(
+          promotions,
+          scopes[index]?.listingId,
+          scopes[index]?.marketCode,
+        ),
+      ),
+    );
   }
 
   override async search(query: PropertySearchQuery) {
@@ -1744,9 +1786,9 @@ export class PostgresRealEstateRepository extends DemoRealEstateRepository {
           pageInfo: { hasNextPage: false },
         };
     }
-    let builder = this.db()
-      .from("real_estate_properties")
-      .select("*, real_estate_media(*)", { count: "exact" })
+    let builder = (this.db() as any)
+      .from("real_estate_properties_public_search")
+      .select("id", { count: "exact" })
       .eq("market_code", query.marketCode)
       .eq("lifecycle", "published")
       .eq("moderation_status", "approved");
@@ -1795,9 +1837,7 @@ export class PostgresRealEstateRepository extends DemoRealEstateRepository {
     builder =
       query.sort === "promoted"
         ? builder
-            .order("is_sponsored", { ascending: false })
-            .order("is_featured", { ascending: false })
-            .order("is_urgent", { ascending: false })
+            .order("effective_promotion_rank", { ascending: false })
             .order("sort_date", { ascending: false })
         : query.sort === "price_asc"
           ? builder.order("price_minor", { ascending: true })
@@ -1811,29 +1851,52 @@ export class PostgresRealEstateRepository extends DemoRealEstateRepository {
       offset + query.limit - 1,
     );
     if (error) throw error;
-    const rows = (data || []).map((row: any) => this.mapProperty(row));
+    const orderedIds = (data || []).map((row: { id: string }) => row.id);
+    if (!orderedIds.length) {
+      return {
+        items: [],
+        total: count || 0,
+        pageInfo: { hasNextPage: false },
+      };
+    }
+    const details = await this.db()
+      .from("real_estate_properties")
+      .select("*, real_estate_media(*)")
+      .in("id", orderedIds);
+    if (details.error) throw details.error;
+    const hydrated = await this.hydrateProperties(
+      details.data || [],
+      query.marketCode,
+    );
+    const byId = new Map(hydrated.map((property) => [property.id, property]));
+    const rows = orderedIds
+      .map((id: string) => byId.get(id))
+      .filter(
+        (property: PropertyPrivate | undefined): property is PropertyPrivate =>
+          Boolean(property),
+      );
     const total = count || 0;
+    const consumed = orderedIds.length;
     return {
       items: rows.map(toPublic),
       total,
       pageInfo: {
-        hasNextPage: offset + rows.length < total,
+        hasNextPage: offset + consumed < total,
         nextCursor:
-          offset + rows.length < total
-            ? String(offset + rows.length)
-            : undefined,
+          offset + consumed < total ? String(offset + consumed) : undefined,
       },
     };
   }
 
-  override async getProperty(idOrSlug: string) {
+  override async getProperty(idOrSlug: string, marketCode?: string) {
     const { data, error } = await this.db()
       .from("real_estate_properties")
       .select("*, real_estate_media(*), real_estate_private_documents(*)")
       .or(`id.eq.${idOrSlug},slug.eq.${idOrSlug}`)
       .maybeSingle();
     if (error) throw error;
-    return data ? this.mapProperty(data) : null;
+    if (!data) return null;
+    return (await this.hydrateProperties([data], marketCode))[0] || null;
   }
 
   override async getRecentlyViewed(accountId: string) {
@@ -1844,10 +1907,20 @@ export class PostgresRealEstateRepository extends DemoRealEstateRepository {
       .order("viewed_at", { ascending: false })
       .limit(20);
     if (error) throw error;
-    const rows = await Promise.all(
-      (data || []).map((row: any) => this.getProperty(row.property_id)),
+    const propertyIds: string[] = (data || []).map((row: any) =>
+      String(row.property_id),
     );
-    return rows.filter((row): row is PropertyPrivate => Boolean(row));
+    if (!propertyIds.length) return [];
+    const properties = await this.db()
+      .from("real_estate_properties")
+      .select("*, real_estate_media(*), real_estate_private_documents(*)")
+      .in("id", propertyIds);
+    if (properties.error) throw properties.error;
+    const hydrated = await this.hydrateProperties(properties.data || []);
+    const byId = new Map(hydrated.map((property) => [property.id, property]));
+    return propertyIds
+      .map((id: string) => byId.get(id))
+      .filter((property): property is PropertyPrivate => Boolean(property));
   }
 
   override async markRecentlyViewed(accountId: string, propertyId: string) {
@@ -2312,8 +2385,9 @@ export class PostgresRealEstateRepository extends DemoRealEstateRepository {
           .order("updated_at", { ascending: false })
       : { data: [], error: null };
     if (checkouts.error) throw checkouts.error;
-    const propertyRows: PropertyPrivate[] = (properties.data || []).map(
-      (row: any) => this.mapProperty(row),
+    const propertyRows: PropertyPrivate[] = await this.hydrateProperties(
+      properties.data || [],
+      agency.data.market_code,
     );
     const leadRows: PropertyLead[] = (leads.data || []).map((row: any) =>
       this.mapLead(row),

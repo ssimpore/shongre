@@ -40,6 +40,7 @@ import { storageService } from "../../services/storage.service";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { useAuthorization } from "../../security/useAuthorization";
 import { useMarketLocation } from "../providers/MarketLocationProvider";
+import { useFavorites } from "../providers/FavoritesProvider";
 
 export const AccountLayout: React.FC = () => {
   const { t } = useTranslation();
@@ -47,6 +48,7 @@ export const AccountLayout: React.FC = () => {
   const { unreadCount: unreadNotifCount } = useNotifications();
   const { canAccessRoute } = useAuthorization();
   const { activeMarket } = useMarketLocation();
+  const { count: favoriteCount } = useFavorites();
   const navigate = useNavigate();
   const location = useLocation();
   const isMessagingRoute = location.pathname.startsWith("/compte/messages");
@@ -62,7 +64,7 @@ export const AccountLayout: React.FC = () => {
   // Every badge here must be scoped to the signed-in user — see
   // storageService.getUnreadMessageCount for why.
   const unreadMsgCount = storageService.getUnreadMessageCount(currentUser?.id);
-  const favCount = currentUser ? storageService.getFavorites().length : 0;
+  const favCount = currentUser ? favoriteCount : 0;
   const savedSearchCount = currentUser
     ? storageService.getSavedSearches(currentUser.id, activeMarket.code).length
     : 0;

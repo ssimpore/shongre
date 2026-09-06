@@ -148,7 +148,7 @@ export class DemoAutoService implements AutoServiceContract {
   private leads = new Map(AUTO_DEMO_LEADS.map((row) => [row.id, clone(row)]));
   private drafts = new Map<string, VehicleDraft>();
   private favorites = new Map<string, Set<string>>([
-    ["user_thomas", new Set(["vehicle_3008_petrol"])],
+    ["user_thomas:FR", new Set(["vehicle_3008_petrol"])],
   ]);
   private sequence = 1;
 
@@ -450,21 +450,30 @@ export class DemoAutoService implements AutoServiceContract {
     });
   }
 
-  async getFavoriteVehicleIds(accountId: string) {
+  async getFavoriteVehicleIds(accountId: string, marketCode: string) {
     requireDemoCapability("favorite.manage.own");
     await simulateNetworkDelay();
-    return Array.from(this.favorites.get(accountId) || []);
+    return Array.from(this.favorites.get(`${accountId}:${marketCode}`) || []);
   }
 
-  async toggleFavoriteVehicle(accountId: string, vehicleId: string) {
+  async setFavoriteVehicle(
+    accountId: string,
+    vehicleId: string,
+    marketCode: string,
+    isFavorite: boolean,
+  ) {
     requireDemoCapability("favorite.manage.own");
     await simulateNetworkDelay();
-    const bucket = this.favorites.get(accountId) || new Set<string>();
-    const next = !bucket.has(vehicleId);
-    if (next) bucket.add(vehicleId);
+    const vehicle = this.vehicles.get(vehicleId);
+    if (!vehicle || !vehicle.marketCodes.includes(marketCode)) {
+      throw new Error("Véhicule indisponible sur ce marché.");
+    }
+    const scopeKey = `${accountId}:${marketCode}`;
+    const bucket = this.favorites.get(scopeKey) || new Set<string>();
+    if (isFavorite) bucket.add(vehicleId);
     else bucket.delete(vehicleId);
-    this.favorites.set(accountId, bucket);
-    return next;
+    this.favorites.set(scopeKey, bucket);
+    return isFavorite;
   }
 
   async updateMarketConfig(

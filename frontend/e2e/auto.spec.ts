@@ -29,7 +29,7 @@ test.describe("Shongre Auto", () => {
     await expect(
       page.getByRole("heading", { level: 1, name: "Voitures d’occasion" }),
     ).toBeVisible();
-    const cards = page.getByRole("article");
+    const cards = page.locator('[data-listing-card-consumer="auto"]');
     await expect(cards).toHaveCount(4);
     await page.getByRole("button", { name: "Marque", exact: true }).click();
     await page.getByRole("option", { name: "Peugeot", exact: true }).click();
@@ -38,10 +38,12 @@ test.describe("Shongre Auto", () => {
 
     await cards
       .nth(0)
+      .locator("..")
       .getByRole("button", { name: /ajouter .+ à la comparaison/i })
       .click();
     await cards
       .nth(1)
+      .locator("..")
       .getByRole("button", { name: /ajouter .+ à la comparaison/i })
       .click();
     const compareLink = page.getByRole("link", {
@@ -123,6 +125,9 @@ test.describe("Shongre Auto", () => {
       waitUntil: "domcontentloaded",
     });
     await waitForStableLayout(page);
+
+    await expect(page.getByText("Boosté", { exact: true })).toBeVisible();
+    await expect(page.getByText("Sponsorisé", { exact: true })).toHaveCount(0);
 
     const sellerLink = page.getByRole("link", {
       name: "Visiter la boutique de Auto Select Lyon",

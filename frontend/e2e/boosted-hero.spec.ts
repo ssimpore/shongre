@@ -1,15 +1,20 @@
 import { expect, test } from "@playwright/test";
-import { usePersona } from "./personas";
+import { useEstablishedConsent, usePersona } from "./personas";
 import { expectNoHorizontalOverflow, waitForStableLayout } from "./overflow";
 
 test.describe("boosted listings hero rail", () => {
-  test("uses the shared card radius for both persistent hero surfaces", async ({
+  test.beforeEach(async ({ page }) => {
+    await useEstablishedConsent(page);
+  });
+
+  test("uses the listing-card radius token for every hero card surface", async ({
     page,
   }) => {
     await usePersona(page, "guest");
 
     for (const viewport of [
       { width: 1408, height: 701 },
+      { width: 768, height: 900 },
       { width: 390, height: 844 },
     ]) {
       await page.setViewportSize(viewport);
@@ -18,8 +23,14 @@ test.describe("boosted listings hero rail", () => {
 
       const heroSurface = page.locator('[data-home-hero-surface="true"]');
       const boostedSurface = page.locator('[data-home-boosted-surface="true"]');
-      await expect(heroSurface).toHaveClass(/rounded-card/);
-      await expect(boostedSurface).toHaveClass(/rounded-card/);
+      const listingCard = page
+        .locator(
+          '#hero-boosted-track [data-hero-listing-slide="true"][aria-hidden="false"]',
+        )
+        .locator('[data-listing-card="true"]');
+      await expect(heroSurface).toHaveClass(/rounded-listing-card/);
+      await expect(boostedSurface).toHaveClass(/rounded-listing-card/);
+      await expect(listingCard).toBeVisible();
 
       const radii = await page.evaluate(() => {
         const hero = document.querySelector<HTMLElement>(
@@ -28,27 +39,177 @@ test.describe("boosted listings hero rail", () => {
         const boosted = document.querySelector<HTMLElement>(
           '[data-home-boosted-surface="true"]',
         );
+        const listing = document.querySelector<HTMLElement>(
+          '#hero-boosted-track [data-listing-card="true"]',
+        );
         const tokenProbe = document.createElement("div");
-        tokenProbe.style.borderRadius = "var(--radius-card)";
+        tokenProbe.style.borderRadius = "var(--radius-listing-card)";
         document.body.appendChild(tokenProbe);
-        const cardToken = getComputedStyle(tokenProbe).borderRadius;
+        const listingCardToken = getComputedStyle(tokenProbe).borderRadius;
         tokenProbe.remove();
 
         return {
-          cardToken,
+          listingCardToken,
           hero: hero ? getComputedStyle(hero).borderRadius : null,
           boosted: boosted ? getComputedStyle(boosted).borderRadius : null,
+          listing: listing ? getComputedStyle(listing).borderRadius : null,
         };
       });
 
-      expect(radii.cardToken).not.toBe("");
-      expect(radii.hero).toBe(radii.cardToken);
-      expect(radii.boosted).toBe(radii.cardToken);
+      expect(radii.listingCardToken).not.toBe("");
+      expect(radii.hero).toBe(radii.listingCardToken);
+      expect(radii.boosted).toBe(radii.listingCardToken);
+      expect(radii.listing).toBe(radii.listingCardToken);
       await expectNoHorizontalOverflow(
         page,
         `tokenized hero surfaces at ${viewport.width}px`,
       );
     }
+  });
+
+  test("renders the shared hero listing horizontally and fills its desktop column", async ({
+    page,
+  }) => {
+    await usePersona(page, "guest");
+
+    for (const viewport of [
+      { width: 1408, height: 701 },
+      { width: 768, height: 900 },
+      { width: 390, height: 844 },
+    ]) {
+      await page.setViewportSize(viewport);
+      await page.goto("/", { waitUntil: "domcontentloaded" });
+      await waitForStableLayout(page);
+
+      const card = page
+        .locator(
+          '#hero-boosted-track [data-hero-listing-slide="true"][aria-hidden="false"]',
+        )
+        .locator('[data-listing-card="true"]');
+      const carousel = page.locator('[data-home-boosted-carousel="true"]');
+      const media = card.locator('[data-listing-card-media="true"]');
+      const content = card.locator('[data-listing-card-content="true"]');
+
+      await expect(card).toHaveAttribute("data-listing-card-variant", "hero");
+      await expect(card).toBeVisible();
+      await expect(media).toBeVisible();
+      await expect(content).toBeVisible();
+
+      const geometry = await Promise.all([
+        card.boundingBox(),
+        carousel.boundingBox(),
+        media.boundingBox(),
+        content.boundingBox(),
+      ]);
+      const [cardBox, carouselBox, mediaBox, contentBox] = geometry;
+      expect(cardBox).not.toBeNull();
+      expect(carouselBox).not.toBeNull();
+      expect(mediaBox).not.toBeNull();
+      expect(contentBox).not.toBeNull();
+      expect(cardBox!.width).toBeGreaterThan(cardBox!.height);
+      expect(mediaBox!.x + mediaBox!.width).toBeLessThanOrEqual(
+        contentBox!.x + 1,
+      );
+      expect(Math.abs(mediaBox!.height - contentBox!.height)).toBeLessThan(2);
+      if (viewport.width >= 1024) {
+        expect(cardBox!.height).toBeGreaterThan(250);
+        expect(Math.abs(cardBox!.height - carouselBox!.height)).toBeLessThan(2);
+      }
+      if (viewport.width >= 768) {
+        expect(contentBox!.width).toBeGreaterThan(240);
+      }
+      await expectNoHorizontalOverflow(
+        page,
+        `horizontal hero listing at ${viewport.width}px`,
+      );
+    }
+  });
+
+  test("shows real decision attributes and seller identity in the desktop hero", async ({
+    page,
+  }) => {
+    await usePersona(page, "guest");
+    await page.setViewportSize({ width: 1408, height: 701 });
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await waitForStableLayout(page);
+    await page
+      .getByRole("button", { name: "Mettre le carrousel en pause" })
+      .click();
+
+    const card = page
+      .locator(
+        '#hero-boosted-track [data-hero-listing-slide="true"][aria-hidden="false"]',
+      )
+      .locator('[data-listing-card="true"]');
+    const characteristics = card.locator(
+      '[data-listing-card-characteristics="true"]',
+    );
+    const seller = card.locator('[data-listing-card-seller-identity="true"]');
+
+    await expect(characteristics).toBeVisible();
+    await expect(characteristics).toContainText("4 pièces");
+    await expect(characteristics).toContainText("92 m²");
+    await expect(characteristics).toContainText("DPE B");
+    await expect(seller).toBeVisible();
+    await expect(seller).toContainText("Agence Canopée");
+    await expect(seller).toContainText("Répond généralement sous 2 h");
+    await expect(
+      card.locator('[data-listing-card-seller-avatar="true"]'),
+    ).toBeVisible();
+  });
+
+  test("fills the hero rail with real listing media when image-rich inventory is available", async ({
+    page,
+  }) => {
+    await usePersona(page, "guest");
+    await page.setViewportSize({ width: 1408, height: 701 });
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await waitForStableLayout(page);
+
+    const rail = page.locator("#hero-boosted-track");
+    const indicators = page.locator(
+      '[data-hero-carousel-indicators="true"] > span',
+    );
+    const total = await indicators.count();
+    expect(total).toBeGreaterThan(0);
+
+    await page
+      .getByRole("button", { name: "Mettre le carrousel en pause" })
+      .click();
+
+    for (let index = 0; index < total; index += 1) {
+      await rail.evaluate((element, targetIndex) => {
+        element.scrollLeft = element.clientWidth * targetIndex;
+      }, index);
+
+      const activeSlide = rail.locator(
+        `[data-hero-listing-slide="true"][aria-label="${index + 1} / ${total}"]`,
+      );
+      await expect(activeSlide).toHaveAttribute("aria-hidden", "false");
+      const image = activeSlide.locator('[data-listing-card-media="true"] img');
+      await expect(image).toBeVisible();
+      await expect
+        .poll(() =>
+          image.evaluate(
+            (element) =>
+              element instanceof HTMLImageElement &&
+              element.complete &&
+              element.naturalWidth > 0,
+          ),
+        )
+        .toBe(true);
+    }
+
+    const firstImage = rail
+      .locator(
+        `[data-hero-listing-slide="true"][aria-label="1 / ${total}"] [data-listing-card-media="true"] img`,
+      )
+      .first();
+    await expect(firstImage).toHaveAttribute(
+      "src",
+      /\/images\/immo\/appartement-lyon\.webp/,
+    );
+    await expectNoHorizontalOverflow(page, "media-rich hero rail");
   });
 
   test("keeps pause and favorite controls visible, separate, and independently clickable", async ({
@@ -76,18 +237,56 @@ test.describe("boosted listings hero rail", () => {
       ).toBeVisible();
 
       const favorite = page
-        .locator('#hero-boosted-track article[aria-hidden="false"]')
+        .locator(
+          '#hero-boosted-track [data-hero-listing-slide="true"][aria-hidden="false"]',
+        )
         .locator('button[data-marketplace-action="favorite.manage"]');
+      const activeCard = page
+        .locator(
+          '#hero-boosted-track [data-hero-listing-slide="true"][aria-hidden="false"]',
+        )
+        .locator('[data-listing-card="true"]');
+      const media = activeCard.locator('[data-listing-card-media="true"]');
+      const metadata = activeCard.locator('[data-listing-card-meta="true"]');
+      const indicators = page.locator('[data-hero-carousel-indicators="true"]');
       await expect(favorite).toBeVisible();
 
       const favoriteBox = await favorite.boundingBox();
+      const mediaBox = await media.boundingBox();
+      const metadataBox = await metadata.boundingBox();
       expect(favoriteBox).not.toBeNull();
+      expect(mediaBox).not.toBeNull();
+      expect(metadataBox).not.toBeNull();
+      expect(pauseBox!.x).toBeGreaterThanOrEqual(
+        mediaBox!.x + mediaBox!.width - 1,
+      );
       const overlaps =
         pauseBox!.x < favoriteBox!.x + favoriteBox!.width &&
         pauseBox!.x + pauseBox!.width > favoriteBox!.x &&
         pauseBox!.y < favoriteBox!.y + favoriteBox!.height &&
         pauseBox!.y + pauseBox!.height > favoriteBox!.y;
       expect(overlaps).toBe(false);
+
+      const overlapsMetadata =
+        pauseBox!.x < metadataBox!.x + metadataBox!.width &&
+        pauseBox!.x + pauseBox!.width > metadataBox!.x &&
+        pauseBox!.y < metadataBox!.y + metadataBox!.height &&
+        pauseBox!.y + pauseBox!.height > metadataBox!.y;
+      expect(overlapsMetadata).toBe(false);
+
+      if (viewport.width >= 640) {
+        const indicatorsBox = await indicators.boundingBox();
+        expect(indicatorsBox).not.toBeNull();
+        expect(indicatorsBox!.x).toBeGreaterThanOrEqual(
+          mediaBox!.x + mediaBox!.width - 1,
+        );
+        const indicatorsOverlapMetadata =
+          indicatorsBox!.x < metadataBox!.x + metadataBox!.width &&
+          indicatorsBox!.x + indicatorsBox!.width > metadataBox!.x &&
+          indicatorsBox!.y < metadataBox!.y + metadataBox!.height &&
+          indicatorsBox!.y + indicatorsBox!.height > metadataBox!.y;
+        expect(indicatorsOverlapMetadata).toBe(false);
+      }
 
       const favoriteIsTopTarget = await favorite.evaluate((button) => {
         const box = button.getBoundingClientRect();
@@ -105,10 +304,24 @@ test.describe("boosted listings hero rail", () => {
       const wasFavorite = await favorite.getAttribute("aria-pressed");
       await favorite.click();
       await expect(favorite).not.toHaveAttribute("aria-pressed", wasFavorite!);
+      await expect(page).toHaveURL(/\/$/);
+
+      const listingLink = page
+        .locator(
+          '#hero-boosted-track [data-hero-listing-slide="true"][aria-hidden="false"]',
+        )
+        .locator('[data-listing-card="true"] > a');
+      await expect(listingLink).toHaveCount(1);
+      const href = await listingLink.getAttribute("href");
+      expect(href).toMatch(/^\/(?!\/).+/);
+      await listingLink.click();
+      await expect(page).toHaveURL(
+        new RegExp(`${href!.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`),
+      );
     }
   });
 
-  test("marks boosted listings with the shared featured icon", async ({
+  test("marks a market-resolved promotion with the canonical Boosté badge", async ({
     page,
   }) => {
     await usePersona(page, "guest");
@@ -121,12 +334,17 @@ test.describe("boosted listings hero rail", () => {
     await page
       .getByRole("button", { name: "Mettre le carrousel en pause" })
       .click();
-    await page.getByRole("button", { name: "Annonce suivante" }).click();
-    await page.waitForTimeout(800);
-    await page.getByRole("button", { name: "Annonce suivante" }).click();
-    const targetListing = rail.locator('article[aria-hidden="false"]');
+    const targetListing = rail.locator(
+      '[data-hero-listing-slide="true"][aria-hidden="false"]',
+    );
     await expect(
-      targetListing.locator(".sr-only", { hasText: "Annonce à la une" }),
+      targetListing.locator('[data-listing-card="true"]'),
+    ).toHaveCount(1);
+    await expect(
+      targetListing.locator('[data-listing-card-promotion="true"]'),
+    ).toContainText("Boosté");
+    await expect(
+      targetListing.locator('[data-listing-card-promotion="true"] .lucide-zap'),
     ).toBeAttached();
     await expectNoHorizontalOverflow(page, "boosted hero rail");
   });
@@ -143,14 +361,12 @@ test.describe("boosted listings hero rail", () => {
     await page
       .getByRole("button", { name: "Mettre le carrousel en pause" })
       .click();
-    await rail.focus();
-    await rail.press("ArrowRight");
-    await page.waitForTimeout(800);
-    await rail.press("ArrowRight");
-    const targetListing = rail.locator('article[aria-hidden="false"]');
+    const targetListing = rail.locator(
+      '[data-hero-listing-slide="true"][aria-hidden="false"]',
+    );
     await expect(
-      targetListing.locator(".sr-only", { hasText: "Annonce à la une" }),
-    ).toBeAttached();
+      targetListing.locator('[data-listing-card-promotion="true"]'),
+    ).toContainText("Boosté");
     await expectNoHorizontalOverflow(page, "mobile boosted hero rail");
   });
 

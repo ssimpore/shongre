@@ -528,16 +528,23 @@ export const themeSpacing = {
   /* Shared compact width for listing cards in rails and desktop grids. Five
      cards plus four standard gaps fit a 69rem discovery row. */
   "listing-card": "13rem",
+  /* A one-column phone grid may use the available guttered width, but the card
+     must remain the same compact object rather than stretching with every
+     larger handset. */
+  "listing-card-mobile-max": "19rem",
   /* Dense result grids may compress standard cards slightly so an available
      listing can use an otherwise empty desktop column. The card component and
      height remain shared with homepage rails. */
   "listing-card-grid-min": "12.5rem",
-  /* Minimum card rhythm; real content may grow, and stretched grid/rail items
-     keep neighbours aligned without clipping missing or long metadata. */
+  /* One compact card rhythm shared by grids and discovery rails. Essential
+     single-line values truncate within this footprint so neighbours align. */
   "listing-card-height": "23rem",
-  /* Homepage discovery keeps a slightly taller editorial rhythm while sharing
-     the canonical card width with every other listing rail. */
-  "listing-card-showcase-height": "24rem",
+  /* A near-4:5 well at the 13rem canonical width. Keeping one media height for
+     fluid and mobile cards reserves the same complete four-row body everywhere. */
+  "listing-card-media-height": "16rem",
+  /* Kept as a semantic compatibility token for existing showcase shells. A
+     showcase is now the same card, not a taller second anatomy. */
+  "listing-card-showcase-height": "23rem",
   /* Horizontal result cards share one footprint. The image steps up with the
      available viewport so list mode remains useful on desktop without
      squeezing the copy column on phones. */
@@ -679,12 +686,12 @@ export const themeGridTemplates = {
 /**
  * Media aspect ratios.
  *
- * `media` is the listing-card photo well. It was written as `aspect-[4/3]` in
- * both the card and its loading skeleton, which meant the placeholder and the
- * real card were two independent literals that had to be kept equal by hand.
+ * `media` is the general responsive media well. `listingCard` is the portrait
+ * photo used by narrow marketplace cards and their loading skeletons.
  */
 export const themeAspect = {
   brandLogo: "240 / 61",
+  listingCard: "4 / 5",
   media: "4 / 3",
   square: "1 / 1",
   video: "16 / 9",

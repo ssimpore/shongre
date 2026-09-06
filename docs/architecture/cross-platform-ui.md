@@ -41,7 +41,14 @@ Shared packages never import application folders; backend may consume
   preserve a common public concept while using semantic HTML or React Native
   primitives as appropriate.
 - `packages/features` owns reusable feature presentation and interaction rules.
-  Listing cards are the first migrated vertical slice.
+  Listing cards are the first migrated vertical slice. Their shared projection
+  carries category, optional brand, semantic price state, seller type/rating,
+  market-resolved promotion and media facts; Web injects routing and the
+  canonical favourite control while native injects its platform interaction.
+  Expo resolves favourite membership once in `FavoritesProvider`, scoped by
+  authenticated account and market; cards only consume that cache, guest
+  actions open login, and the favourites screen filters one market listing load
+  instead of fetching every card individually.
 - `packages/contracts` owns runtime Zod DTO schemas by domain.
 - `packages/shared` owns framework-free formatting, presentation, and validation.
 

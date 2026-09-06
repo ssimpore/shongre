@@ -130,7 +130,6 @@ const HomeDiscoverySection: React.FC<{
                   deal
                     ? {
                         currentPrice: deal.offer.currentPrice,
-                        originalPrice: deal.offer.originalPrice,
                       }
                     : undefined
                 }

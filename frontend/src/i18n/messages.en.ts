@@ -585,6 +585,21 @@ export const messagesEn: MessageCatalogue = {
   "ui.listingCard.noteAvis": "Rated {rating} out of 5, {count} reviews",
   "ui.listingCard.nombrePhotos": "{count} photos",
   "ui.listingCard.ajouterAuxFavoris": "Add to favorites",
+  "ui.listingCard.retirerDesFavoris": "Remove from favorites",
+  "ui.listingCard.favoriErreur": "Favorites cannot be updated right now.",
+  "ui.listingCard.favorisChargement": "Loading favorites",
+  "ui.listingCard.favorisReessayer": "Retry loading favorites",
+  "ui.listingCard.favorisChargementErreur":
+    "Favorites cannot be loaded right now.",
+  "ui.listingCard.favorisRecharges":
+    "Favorites were reloaded. Check the heart before trying again.",
+  "ui.listingCard.favorisRechargesAvantVider":
+    "Favorites were reloaded. Check them before clearing the list.",
+  "ui.listingCard.favorisViderErreur": "Favorites cannot be cleared right now.",
+  "ui.listingCard.boosted": "Boosted",
+  "ui.listingCard.free": "Free",
+  "ui.listingCard.onRequest": "Price on request",
+  "ui.listingCard.imageUnavailable": "Image unavailable",
   "ui.noResultsFound.conseilsPourTrouverVotreBonheur":
     "Tips for finding what you want:",
   "ui.noResultsFound.title": "No listings found",
@@ -748,6 +763,7 @@ export const messagesEn: MessageCatalogue = {
   "collections.collectionsPage.loadErrorDescription":
     "The listings in this collection could not be loaded. Please try again shortly.",
   "favorites.favoritesPage.aucunFavoriPourLeMoment": "No favourites yet",
+  "favorites.favoritesPage.chargementImpossibleTitle": "Favorites unavailable",
   "favorites.favoritesPage.cliquezSurLeCUr":
     "Tap the heart on a listing to save it and find it again here.",
   "home.homePage.ceMarcheVientDOuvrir":

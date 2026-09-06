@@ -66,13 +66,14 @@ describe("Listing & Order Lifecycle", () => {
         description:
           "Excellent état, vendu avec sa boîte et deux coques de protection.",
         price: 1850,
+        priceModel: "fixed",
         categoryId: "electronics.smartphones.phones",
         marketCode: "FR",
         condition: "tres-bon-etat",
         city: "Lyon",
         postalCode: "69002",
         images: ["https://images.example.test/xperia.jpg"],
-        attributes: { listing_intent: "sell", price_type: "fixed" },
+        attributes: { listing_intent: "sell" },
       },
       "user_camille",
     );
@@ -81,6 +82,80 @@ describe("Listing & Order Lifecycle", () => {
     expect(published.status).toBe("published");
     expect(published).not.toHaveProperty("safetyRiskScore");
     expect(published.price).toBe(1850);
+    expect(published.attributes?.price_type).toBe("fixed");
+  });
+
+  it("rejects an unknown price type instead of publishing ambiguous card data", async () => {
+    await expect(
+      listingsService.publishListing(
+        {
+          title: "Téléphone avec modèle de prix invalide",
+          description:
+            "Annonce qui ne doit jamais atteindre la projection publique.",
+          price: 250,
+          categoryId: "electronics.smartphones.phones",
+          marketCode: "FR",
+          condition: "bon-etat",
+          city: "Lyon",
+          postalCode: "69002",
+          attributes: { price_type: "guess_the_price" },
+        },
+        "user_camille",
+      ),
+    ).rejects.toMatchObject({ code: "VALIDATION_ERROR" });
+  });
+
+  it.each([
+    ["free", 250],
+    ["on_request", 250],
+    ["unpriced", 250],
+    ["fixed", 0],
+  ] as const)(
+    "rejects a %s model with an incoherent public amount",
+    async (priceModel, price) => {
+      await expect(
+        listingsService.publishListing(
+          {
+            title: "Annonce avec prix incohérent",
+            description:
+              "Cette annonce valide la cohérence entre le modèle et le montant.",
+            price,
+            priceModel,
+            categoryId: "electronics.smartphones.phones",
+            marketCode: "FR",
+            condition: "bon-etat",
+            city: "Lyon",
+            postalCode: "69002",
+          },
+          "user_camille",
+        ),
+      ).rejects.toMatchObject({ code: "VALIDATION_ERROR" });
+    },
+  );
+
+  it("accepts a category without a public price only when it is explicit", async () => {
+    const listing = await listingsService.publishListing(
+      {
+        title: "Mission avec tarif sur demande",
+        description:
+          "Le montant sera établi après qualification précise de la demande.",
+        priceModel: "on_request",
+        categoryId: "services.local_services.digital_it",
+        marketCode: "FR",
+        condition: "non-applicable",
+        city: "Lyon",
+        postalCode: "69002",
+        attributes: {
+          service_type: "digital_it",
+          service_price_model: "on_request",
+          availability_schedule: ["Sur rendez-vous"],
+        },
+      },
+      "user_camille",
+    );
+
+    expect(listing.price).toBe(0);
+    expect(listing.attributes?.price_type).toBe("on_request");
   });
 
   it("fails closed when one selected market has no commercial publication policy", async () => {

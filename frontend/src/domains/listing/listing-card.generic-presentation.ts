@@ -1,15 +1,64 @@
-import type { ListingCharacteristicIcon } from "@shongre/contracts";
-import type { Listing, ListingCondition } from "../../types";
+import type {
+  ListingCharacteristicIcon,
+  ListingCardView,
+  Money,
+  MoneyConversionProjection,
+} from "@shongre/contracts";
+import { getTaxonomyV4CardBrandLabel } from "@shongre/contracts/taxonomy-v4-card";
+import type { Listing } from "../../types";
+import { getListingCategoryLabel } from "../taxonomy/listing-category.display";
+import { resolveListingPhotoUrl } from "./listing-media";
+import { resolveGenericListingPrice } from "./listing-price.presentation";
 
-const CONDITION_LABELS: Record<ListingCondition, { fr: string; en: string }> = {
-  new_with_tag: { fr: "Neuf avec étiquette", en: "New with tags" },
-  new_without_tag: { fr: "Neuf sans étiquette", en: "New without tags" },
-  very_good: { fr: "Très bon état", en: "Very good condition" },
-  good: { fr: "Bon état", en: "Good condition" },
-  fair: { fr: "État satisfaisant", en: "Fair condition" },
-  for_parts: { fr: "Pour pièces / Réparation", en: "For parts or repair" },
-  not_applicable: { fr: "", en: "" },
+export interface GenericListingCardPricing {
+  currentPrice: Money;
+}
+
+const CARD_ATTRIBUTE_GROUPS: Record<string, readonly (readonly string[])[]> = {
+  vehicles: [["model_year", "year"], ["mileage"], ["fuel_type", "fuel"]],
+  vehicules: [["model_year", "year"], ["mileage"], ["fuel_type", "fuel"]],
+  real_estate: [
+    ["rooms"],
+    ["living_area", "livingAreaSquareMeters"],
+    ["dpe_class", "dpeClass"],
+  ],
+  immobilier: [
+    ["rooms"],
+    ["living_area", "livingAreaSquareMeters"],
+    ["dpe_class", "dpeClass"],
+  ],
+  jobs: [
+    ["contractType", "contract_type"],
+    ["workingArrangement", "working_arrangement", "remote_work"],
+    ["profession", "professionLabel"],
+  ],
+  emploi: [
+    ["contractType", "contract_type"],
+    ["workingArrangement", "working_arrangement", "remote_work"],
+    ["profession", "professionLabel"],
+  ],
+  education: [
+    ["subject", "serviceType", "service_type"],
+    ["deliveryModes", "delivery_mode"],
+    ["audience_level", "level"],
+  ],
+  animaux: [["petType", "pet_type"], ["material"], ["size"]],
+  electronics: [["storage", "storage_capacity_gb"], ["model"], ["color"]],
+  electronique: [["storage", "storage_capacity_gb"], ["model"], ["color"]],
+  fashion: [["size"], ["clothing_category", "clothingCategory"], ["material"]],
+  mode: [["size"], ["clothing_category", "clothingCategory"], ["material"]],
+  home_garden: [["furniture_type"], ["material"], ["dimensions_width"]],
+  maison: [["furniture_type"], ["material"], ["dimensions_width"]],
+  "maison-deco": [["furniture_type"], ["material"], ["dimensions_width"]],
 };
+
+const INTERNAL_ATTRIBUTE_KEYS = new Set([
+  "canonicalPath",
+  "verticalEntityId",
+  "verticalSchemaVersion",
+  "verticalType",
+  "price_type",
+]);
 
 const VALUE_LABELS: Record<string, { fr: string; en: string }> = {
   apartment: { fr: "Appartement", en: "Apartment" },
@@ -20,6 +69,11 @@ const VALUE_LABELS: Record<string, { fr: string; en: string }> = {
   apprenticeship: { fr: "Alternance", en: "Apprenticeship" },
   internship: { fr: "Stage", en: "Internship" },
   seasonal: { fr: "Saisonnier", en: "Seasonal" },
+  online: { fr: "En ligne", en: "Online" },
+  in_person: { fr: "En présentiel", en: "In person" },
+  children: { fr: "Enfants", en: "Children" },
+  teenagers: { fr: "Adolescents", en: "Teenagers" },
+  adults: { fr: "Adultes", en: "Adults" },
   petrol: { fr: "Essence", en: "Petrol" },
   essence: { fr: "Essence", en: "Petrol" },
   diesel: { fr: "Diesel", en: "Diesel" },
@@ -33,86 +87,50 @@ const VALUE_LABELS: Record<string, { fr: string; en: string }> = {
   hybrid_work: { fr: "Hybride", en: "Hybrid" },
 };
 
-const CARD_ATTRIBUTE_GROUPS: Record<string, readonly (readonly string[])[]> = {
-  vehicles: [
-    ["model_year", "year"],
-    ["mileage"],
-    ["fuel_type", "fuel"],
-    ["transmission", "gearbox"],
-  ],
-  vehicules: [
-    ["model_year", "year"],
-    ["mileage"],
-    ["fuel_type", "fuel"],
-    ["transmission", "gearbox"],
-  ],
-  real_estate: [
-    ["property_type", "propertyType"],
-    ["living_area", "livingAreaSquareMeters"],
-    ["rooms"],
-  ],
-  immobilier: [
-    ["property_type", "propertyType"],
-    ["living_area", "livingAreaSquareMeters"],
-    ["rooms"],
-  ],
-  jobs: [
-    ["contract_type", "contractType"],
-    ["working_arrangement", "remote_work"],
-    ["profession", "professionLabel"],
-  ],
-  emploi: [
-    ["contract_type", "contractType"],
-    ["working_arrangement", "remote_work"],
-    ["profession", "professionLabel"],
-  ],
-  electronics: [["brand"], ["model"], ["storage", "storage_capacity_gb"]],
-  electronique: [["brand"], ["model"], ["storage", "storage_capacity_gb"]],
-  fashion: [["size"], ["brand"], ["clothing_category"]],
-  mode: [["size"], ["brand"], ["clothing_category"]],
-  home_garden: [["furniture_type"], ["material"], ["brand"]],
-  maison: [["furniture_type"], ["material"], ["brand"]],
-  "maison-deco": [["furniture_type"], ["material"], ["brand"]],
-};
-
-const INTERNAL_ATTRIBUTE_KEYS = new Set([
-  "canonicalPath",
-  "verticalEntityId",
-  "verticalSchemaVersion",
-  "verticalType",
-]);
-
 const ATTRIBUTE_ICON_BY_KEY: Readonly<
   Record<string, ListingCharacteristicIcon>
 > = {
-  brand: "tag",
+  audience_level: "book-open",
   clothing_category: "shirt",
+  clothingCategory: "shirt",
+  color: "tag",
   contract_type: "briefcase",
   contractType: "briefcase",
+  delivery_mode: "laptop",
+  deliveryModes: "laptop",
+  dimensions_width: "ruler",
+  dpe_class: "home",
+  dpeClass: "home",
   fuel: "fuel",
   fuel_type: "fuel",
   furniture_type: "home",
-  gearbox: "layers",
-  land_area: "ruler",
   living_area: "ruler",
   livingAreaSquareMeters: "ruler",
   material: "layers",
   mileage: "gauge",
   model: "tag",
   model_year: "calendar",
+  pet_type: "tag",
+  petType: "tag",
   profession: "briefcase",
   professionLabel: "briefcase",
-  property_type: "home",
-  propertyType: "home",
   remote_work: "laptop",
   rooms: "layout-grid",
+  service_type: "book-open",
+  serviceType: "book-open",
   size: "ruler",
   storage: "database",
   storage_capacity_gb: "database",
-  transmission: "layers",
+  subject: "book-open",
   working_arrangement: "laptop",
+  workingArrangement: "laptop",
   year: "calendar",
 };
+
+export interface GenericListingCardCharacteristic {
+  icon: ListingCharacteristicIcon;
+  label: string;
+}
 
 function characteristicIconForKey(key: string): ListingCharacteristicIcon {
   const known = ATTRIBUTE_ICON_BY_KEY[key];
@@ -132,11 +150,6 @@ function characteristicIconForKey(key: string): ListingCharacteristicIcon {
   if (/(?:material|composition|type|category)/u.test(normalized))
     return "layers";
   return "tag";
-}
-
-export interface GenericListingCardCharacteristic {
-  icon: ListingCharacteristicIcon;
-  label: string;
 }
 
 function humanize(value: string, language: "fr" | "en"): string {
@@ -180,7 +193,10 @@ function formatAttribute(
   }
   if (["living_area", "livingAreaSquareMeters", "land_area"].includes(key)) {
     const numeric = Number(value);
-    return `${Number.isFinite(numeric) ? new Intl.NumberFormat(locale).format(numeric) : String(value)} m²`;
+    const formatted = Number.isFinite(numeric)
+      ? new Intl.NumberFormat(locale).format(numeric)
+      : String(value);
+    return `${formatted} m²`;
   }
   if (key === "rooms") {
     const numeric = Number(value);
@@ -188,6 +204,7 @@ function formatAttribute(
       ? `${value} pièce${numeric > 1 ? "s" : ""}`
       : `${value} room${numeric === 1 ? "" : "s"}`;
   }
+  if (["dpe_class", "dpeClass"].includes(key)) return `DPE ${String(value)}`;
   if (key === "storage_capacity_gb") {
     return `${new Intl.NumberFormat(locale).format(Number(value))} ${language === "fr" ? "Go" : "GB"}`;
   }
@@ -199,32 +216,11 @@ function formatAttribute(
   return humanize(String(value), language);
 }
 
-export function getGenericListingConditionLabel(
-  condition: ListingCondition,
-  locale: string,
-): string {
-  const language = locale.toLocaleLowerCase().startsWith("en") ? "en" : "fr";
-  return CONDITION_LABELS[condition]?.[language] ?? "";
-}
-
 /**
- * Small card projection for generic listing DTOs.
- *
- * Full taxonomy metadata is reserved for forms, filters and detail views. A
- * homepage card needs only a small ordered set of stable decision values, so
- * importing the compressed taxonomy catalogue here would make every market
- * landing page pay the publication-engine cost before a user asks for it. The
- * shared card applies the cross-platform two-chip display limit.
+ * Project up to three real decision attributes for detail-rich card variants.
+ * Explicit category groups avoid leaking internal projection metadata, while
+ * the bounded fallback lets newly introduced taxonomy families degrade safely.
  */
-export function getGenericListingCardCharacteristics(
-  listing: Pick<Listing, "attributes" | "categorySlug" | "subCategorySlug">,
-  locale: string,
-): string[] {
-  return getGenericListingCardCharacteristicPresentation(listing, locale).map(
-    (characteristic) => characteristic.label,
-  );
-}
-
 export function getGenericListingCardCharacteristicPresentation(
   listing: Pick<Listing, "attributes" | "categorySlug" | "subCategorySlug">,
   locale: string,
@@ -256,4 +252,166 @@ export function getGenericListingCardCharacteristicPresentation(
         index,
     )
     .slice(0, 3);
+}
+
+/**
+ * Preserve the owning vertical's canonical route without accepting a
+ * protocol-relative or otherwise external destination from listing data.
+ */
+export function getGenericListingCardHref(
+  listing: Pick<Listing, "id"> & Partial<Pick<Listing, "attributes">>,
+): string {
+  const configuredPath = listing.attributes?.canonicalPath;
+  return typeof configuredPath === "string" &&
+    configuredPath.startsWith("/") &&
+    !configuredPath.startsWith("//")
+    ? configuredPath
+    : `/annonce/${listing.id}`;
+}
+
+/**
+ * Return only a publisher-provided brand. The compact card never guesses one
+ * from its title, model, seller, or category.
+ */
+export function getGenericListingBrandLabel(
+  listing: Pick<Listing, "attributes">,
+  locale = "fr-FR",
+): string | undefined {
+  const brand = listing.attributes?.brand;
+  if (typeof brand !== "string" || !brand.trim()) return undefined;
+  return getTaxonomyV4CardBrandLabel(brand, locale) || brand.trim();
+}
+
+/**
+ * A generic promotion is safe to use only on the exact market projection and
+ * while every piece of authoritative provenance and schedule evidence exists.
+ * Legacy `isBoosted` / `boostType` flags are deliberately ignored.
+ */
+export function hasActiveGenericListingPromotion(
+  listing: Pick<
+    Listing,
+    | "marketCode"
+    | "promotionState"
+    | "promotionType"
+    | "promotionSource"
+    | "promotionSourceId"
+    | "promotionStartAt"
+    | "promotionEndAt"
+  >,
+  requestedMarketCode: string | undefined,
+  now = Date.now(),
+): boolean {
+  if (
+    !requestedMarketCode ||
+    listing.marketCode?.toUpperCase() !== requestedMarketCode.toUpperCase() ||
+    listing.promotionState !== "active" ||
+    !listing.promotionType ||
+    !listing.promotionSource ||
+    !listing.promotionSourceId?.trim()
+  ) {
+    return false;
+  }
+
+  const startsAt = Date.parse(listing.promotionStartAt ?? "");
+  const endsAt = Date.parse(listing.promotionEndAt ?? "");
+  return (
+    Number.isFinite(startsAt) &&
+    Number.isFinite(endsAt) &&
+    startsAt <= now &&
+    endsAt > now
+  );
+}
+
+/** Pure generic-listing projection shared by cards, map markers and details. */
+export function projectGenericListingCardView(
+  listing: Listing,
+  locale: string,
+  requestedMarketCode: string,
+  pricing?: GenericListingCardPricing,
+  convertMoney?: (money: Money) => MoneyConversionProjection,
+): ListingCardView {
+  const listingMarketCode = listing.marketCode ?? requestedMarketCode;
+  const isRequestedMarket =
+    listingMarketCode.toUpperCase() === requestedMarketCode.toUpperCase();
+  const currency = listing.currency ?? listing.pricePresentation?.currency;
+  const price = pricing
+    ? { kind: "amount" as const, money: pricing.currentPrice }
+    : resolveGenericListingPrice(
+        {
+          price: listing.price,
+          currency,
+          isFreeDonation: listing.isFreeDonation,
+          priceType: listing.attributes?.price_type,
+          pricePresentation: listing.pricePresentation,
+        },
+        locale,
+        convertMoney,
+      );
+  const hasActivePromotion = hasActiveGenericListingPromotion(
+    listing,
+    requestedMarketCode,
+  );
+  const promotion: ListingCardView["promotion"] = hasActivePromotion
+    ? {
+        state: "active",
+        type: listing.promotionType!,
+        marketCode: listingMarketCode,
+        source: listing.promotionSource!,
+        sourceId: listing.promotionSourceId!,
+        startsAt: listing.promotionStartAt!,
+        endsAt: listing.promotionEndAt!,
+        promotedAt: listing.promotedAt,
+        label: listing.promotionLabel,
+      }
+    : undefined;
+  const brandLabel = getGenericListingBrandLabel(listing, locale);
+  const characteristicPresentation =
+    getGenericListingCardCharacteristicPresentation(listing, locale).filter(
+      ({ label }) =>
+        !brandLabel ||
+        label.toLocaleLowerCase(locale) !==
+          brandLabel.toLocaleLowerCase(locale),
+    );
+
+  return {
+    id: listing.id,
+    title: listing.title,
+    price: price.kind === "amount" ? price.money : undefined,
+    priceLabel: pricing ? undefined : price.label,
+    priceKind: price.kind,
+    imageUrl: resolveListingPhotoUrl(
+      listing.coverImageUrl || listing.photos?.[0],
+    ),
+    city: listing.city,
+    marketCode: listingMarketCode,
+    categoryLabel: getListingCategoryLabel(listing, locale),
+    brandLabel,
+    conditionLabel: "",
+    publisherType:
+      listing.publisherType ??
+      (listing.sellerType === "pro" ? "professional" : "private"),
+    characteristics: characteristicPresentation.map(({ label }) => label),
+    characteristicIcons: characteristicPresentation.map(({ icon }) => icon),
+    publishedAt: listing.publishedAt,
+    seller: {
+      id: listing.sellerId,
+      name: listing.sellerName,
+      sellerType: listing.sellerType,
+      avatarUrl: listing.sellerAvatarUrl,
+      city: listing.sellerCity,
+      isIdentityVerified: listing.sellerIsVerified,
+      rating: listing.sellerRating,
+      reviewCount: listing.sellerReviewCount,
+      organizationName: listing.publisherOrganizationName,
+      organizationLogoUrl: listing.publisherOrganizationLogoUrl,
+      branchName: listing.publisherBranchName,
+      isBusinessVerified:
+        listing.publisherVerificationStatus === "business_verified",
+      responseTimeLabel: listing.sellerResponseTimeLabel,
+    },
+    isUrgent: promotion?.type === "urgent_badge",
+    isFeatured: Boolean(promotion && promotion.type !== "urgent_badge"),
+    promotion,
+    discovery: isRequestedMarket ? listing.discovery : undefined,
+  };
 }

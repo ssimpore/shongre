@@ -36,6 +36,7 @@ import {
   DEMO_COURSE_ORGANIZATION_WORKSPACE,
   DEMO_LEARNER_REQUESTS,
   DEMO_TUTORS,
+  resolveDemoCoursePromotion,
 } from "../../../mocks/coursesDemoData";
 import { demoVerticalDiscoveryStore } from "../../../domains/discovery/demo-vertical-discovery.store";
 import { storageService } from "../../../services/storage.service";
@@ -77,6 +78,27 @@ const slugify = (value: string) =>
     .replace(/^-|-$/g, "");
 
 const clone = <T>(value: T): T => structuredClone(value);
+
+function catalogForMarket(
+  catalog: CourseCatalog,
+  marketCode: string,
+): CourseCatalog {
+  const normalizedMarket =
+    marketCode.toUpperCase() as CourseMarketConfig["marketCode"];
+  if (normalizedMarket === catalog.config.marketCode) return clone(catalog);
+  return {
+    ...clone(catalog),
+    config: {
+      ...catalog.config,
+      marketCode: normalizedMarket,
+      isEnabled: false,
+    },
+    subjects: [],
+    levels: [],
+    plans: [],
+    addOns: [],
+  };
+}
 
 function fromPrice(offer: CourseOffer) {
   return (
@@ -132,7 +154,7 @@ export class DemoCoursesService implements CoursesServiceContract {
     DEMO_COURSE_LEADS.map((lead) => [lead.id, clone(lead)]),
   );
   private savedTutors = new Map<string, Set<string>>([
-    ["user_thomas", new Set(["tutor_ines"])],
+    ["user_thomas:FR", new Set(["tutor_ines"])],
   ]);
   private organizationWorkspace = clone(DEMO_COURSE_ORGANIZATION_WORKSPACE);
   private sequence = 1;
@@ -381,13 +403,7 @@ export class DemoCoursesService implements CoursesServiceContract {
     await simulateNetworkDelay();
     const catalog = clone(
       applyMonetizationToCourseCatalog(
-        {
-          ...this.catalog,
-          config: {
-            ...this.catalog.config,
-            marketCode: marketCode.toUpperCase(),
-          },
-        },
+        catalogForMarket(this.catalog, marketCode),
         BASELINE_MONETIZATION_CATALOG,
       ),
     );
@@ -405,13 +421,7 @@ export class DemoCoursesService implements CoursesServiceContract {
     await simulateNetworkDelay();
     return clone(
       applyMonetizationToCourseCatalog(
-        {
-          ...this.catalog,
-          config: {
-            ...this.catalog.config,
-            marketCode: marketCode.toUpperCase(),
-          },
-        },
+        catalogForMarket(this.catalog, marketCode),
         BASELINE_MONETIZATION_CATALOG,
       ),
     );
@@ -422,6 +432,7 @@ export class DemoCoursesService implements CoursesServiceContract {
     await simulateNetworkDelay();
     let pairs = Array.from(this.offers.values())
       .filter((offer) => offer.status === "published")
+      .filter((offer) => offer.marketCodes.includes(query.marketCode))
       .map((offer) => ({ offer, tutor: this.tutors.get(offer.tutorProfileId) }))
       .filter((pair): pair is { offer: CourseOffer; tutor: TutorProfile } =>
         Boolean(pair.tutor),
@@ -528,6 +539,7 @@ export class DemoCoursesService implements CoursesServiceContract {
             : "Identité non vérifiée",
         ],
         isSaved: false,
+        resolvedPromotion: resolveDemoCoursePromotion(offer, query.marketCode),
       }));
     return {
       items,
@@ -795,19 +807,48 @@ export class DemoCoursesService implements CoursesServiceContract {
     return clone(updated);
   }
 
-  async getSavedTutorIds(accountId: string): Promise<string[]> {
+  async getSavedTutorIds(
+    accountId: string,
+    marketCode: string,
+  ): Promise<string[]> {
     requireDemoCapability("favorite.manage.own");
     await simulateNetworkDelay();
-    return Array.from(this.savedTutors.get(accountId) || []);
+    return Array.from(
+      this.savedTutors.get(`${accountId}:${marketCode.toUpperCase()}`) || [],
+    );
   }
 
-  async toggleSavedTutor(accountId: string, tutorProfileId: string) {
+  async setSavedTutor(
+    accountId: string,
+    tutorProfileId: string,
+    marketCode: string,
+    isFavorite: boolean,
+  ) {
     requireDemoCapability("favorite.manage.own");
     await simulateNetworkDelay();
-    const saved = this.savedTutors.get(accountId) || new Set<string>();
-    if (saved.has(tutorProfileId)) saved.delete(tutorProfileId);
-    else saved.add(tutorProfileId);
-    this.savedTutors.set(accountId, saved);
+    const normalizedMarket = marketCode.toUpperCase();
+    if (isFavorite) {
+      const tutor = this.tutors.get(tutorProfileId);
+      const hasActiveOffer = Array.from(this.offers.values()).some(
+        (offer) =>
+          offer.tutorProfileId === tutorProfileId &&
+          offer.status === "published" &&
+          offer.marketCodes.includes(normalizedMarket),
+      );
+      if (
+        !tutor ||
+        tutor.moderationStatus !== "approved" ||
+        tutor.serviceArea?.marketCode !== normalizedMarket ||
+        !hasActiveOffer
+      ) {
+        throw new Error("Professeur indisponible sur ce marché.");
+      }
+    }
+    const scopeKey = `${accountId}:${normalizedMarket}`;
+    const saved = this.savedTutors.get(scopeKey) || new Set<string>();
+    if (isFavorite) saved.add(tutorProfileId);
+    else saved.delete(tutorProfileId);
+    this.savedTutors.set(scopeKey, saved);
     return saved.has(tutorProfileId);
   }
 

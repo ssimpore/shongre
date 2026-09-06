@@ -200,19 +200,27 @@ export class HttpCoursesService implements CoursesServiceContract {
     );
   }
 
-  async getSavedTutorIds(_accountId: string): Promise<string[]> {
+  async getSavedTutorIds(
+    _accountId: string,
+    marketCode: string,
+  ): Promise<string[]> {
     const result = await httpClient.get<{ tutorProfileIds: string[] }>(
       `${EDUCATION_API_BASE}/favorites`,
+      { headers: { "X-Shongre-Market": marketCode } },
     );
     return result.tutorProfileIds;
   }
 
-  async toggleSavedTutor(
+  async setSavedTutor(
     _accountId: string,
     tutorProfileId: string,
+    marketCode: string,
+    isFavorite: boolean,
   ): Promise<boolean> {
-    const result = await httpClient.post<{ isFavorite: boolean }>(
+    const result = await httpClient.put<{ isFavorite: boolean }>(
       `${EDUCATION_API_BASE}/tutors/${encodeURIComponent(tutorProfileId)}/favorite`,
+      { isFavorite },
+      { headers: { "X-Shongre-Market": marketCode } },
     );
     return result.isFavorite;
   }

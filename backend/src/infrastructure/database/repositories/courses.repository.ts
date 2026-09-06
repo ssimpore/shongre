@@ -30,11 +30,86 @@ import {
 import { randomUUID } from "node:crypto";
 import { getSupabaseAdminClient } from "../../supabase/supabase-client.js";
 import { requireMarketCode } from "../../../shared/market/market-code.js";
-import { getCountryConfig } from "@shongre/contracts";
+import {
+  getCountryConfig,
+  isActiveMarketResolvedListingPromotion,
+  type MarketResolvedListingPromotion,
+} from "@shongre/contracts";
+import {
+  getMarketResolvedPromotion,
+  loadMarketResolvedPromotions,
+} from "./market-promotion.projection.js";
 
 const NOW = "2026-08-22T10:00:00.000Z";
 
+const DEMO_COURSE_PROMOTION_PROOFS: Readonly<
+  Record<
+    string,
+    {
+      listingId: string;
+      promotion: MarketResolvedListingPromotion;
+    }
+  >
+> = {
+  course_offer_tutor_thomas: {
+    listingId: "listing_course_tutor_thomas",
+    promotion: {
+      state: "active",
+      type: "sponsored_search",
+      marketCode: "FR",
+      source: "subscription_credit",
+      sourceId: "demo:courses:course_offer_tutor_thomas:sponsored",
+      label: "Sponsorisé",
+      startsAt: "2026-08-01T00:00:00.000Z",
+      endsAt: "2026-12-31T23:59:59.000Z",
+      promotedAt: "2026-08-01T00:00:00.000Z",
+    },
+  },
+};
+
 const clone = <T>(value: T): T => structuredClone(value);
+
+function catalogForMarket(
+  catalog: CourseCatalog,
+  marketCode: string,
+): CourseCatalog {
+  const normalizedMarketCode = requireMarketCode(marketCode);
+  const cloned = clone(catalog);
+  if (normalizedMarketCode === cloned.config.marketCode) return cloned;
+
+  return {
+    ...cloned,
+    config: {
+      ...cloned.config,
+      marketCode: normalizedMarketCode,
+      isEnabled: false,
+    },
+    subjects: [],
+    levels: [],
+    plans: [],
+    addOns: [],
+  };
+}
+
+function resolveDemoCoursePromotion(
+  offer: CourseOffer,
+  marketCode: string,
+): MarketResolvedListingPromotion | undefined {
+  const proof = DEMO_COURSE_PROMOTION_PROOFS[offer.id];
+  if (
+    !proof ||
+    !offer.listingId ||
+    proof.listingId !== offer.listingId ||
+    !offer.marketCodes.includes(marketCode) ||
+    !isActiveMarketResolvedListingPromotion(
+      proof.promotion,
+      marketCode,
+      Date.parse(NOW),
+    )
+  )
+    return undefined;
+  return clone(proof.promotion);
+}
 
 export type CourseWorkflowDraftKind = "tutor_onboarding" | "learner_request";
 
@@ -756,8 +831,13 @@ export interface ICoursesRepository {
     marketCode: string,
     kind: CourseWorkflowDraftKind,
   ): Promise<void>;
-  getSavedTutorIds(userId: string): Promise<string[]>;
-  toggleSavedTutor(userId: string, tutorProfileId: string): Promise<boolean>;
+  getSavedTutorIds(userId: string, marketCode: string): Promise<string[]>;
+  setSavedTutor(
+    userId: string,
+    tutorProfileId: string,
+    marketCode: string,
+    isFavorite: boolean,
+  ): Promise<boolean>;
 }
 
 function matchesTutor(
@@ -881,6 +961,7 @@ function toPublicOffer(offer: CourseOffer): CoursePublicOffer {
 function toSearchItem(
   tutor: TutorProfile,
   offer: CourseOffer,
+  marketCode = offer.marketCodes[0],
 ): TutorSearchItem {
   const subject = SUBJECTS.find((item) => item.id === offer.subjectId);
   const fromPrice = offer.pricingOptions
@@ -909,6 +990,9 @@ function toSearchItem(
         : "Identité non vérifiée",
     ],
     isSaved: false,
+    resolvedPromotion: marketCode
+      ? resolveDemoCoursePromotion(offer, marketCode)
+      : undefined,
   };
 }
 
@@ -948,10 +1032,7 @@ export class DemoCoursesRepository implements ICoursesRepository {
     marketCode: string,
     includeInactive = false,
   ): Promise<CourseCatalog> {
-    const catalog = clone({
-      ...this.catalog,
-      config: { ...this.catalog.config, marketCode: marketCode.toUpperCase() },
-    });
+    const catalog = catalogForMarket(this.catalog, marketCode);
     if (includeInactive) return catalog;
     return {
       ...catalog,
@@ -985,14 +1066,38 @@ export class DemoCoursesRepository implements ICoursesRepository {
   ) {
     this.workflowDrafts.delete(`${userId}:${marketCode}:${kind}`);
   }
-  async getSavedTutorIds(userId: string) {
-    return Array.from(this.savedTutorIds.get(userId) || []);
+  async getSavedTutorIds(userId: string, marketCode: string) {
+    const scopeKey = `${userId}:${requireMarketCode(marketCode)}`;
+    return Array.from(this.savedTutorIds.get(scopeKey) || []);
   }
-  async toggleSavedTutor(userId: string, tutorProfileId: string) {
-    const favorites = this.savedTutorIds.get(userId) || new Set<string>();
-    if (favorites.has(tutorProfileId)) favorites.delete(tutorProfileId);
-    else favorites.add(tutorProfileId);
-    this.savedTutorIds.set(userId, favorites);
+  async setSavedTutor(
+    userId: string,
+    tutorProfileId: string,
+    marketCode: string,
+    isFavorite: boolean,
+  ) {
+    const normalizedMarket = requireMarketCode(marketCode);
+    if (isFavorite) {
+      const tutor = await this.getTutorProfile(tutorProfileId);
+      const offers = tutor ? await this.getCourseOffers(tutorProfileId) : [];
+      if (
+        !tutor ||
+        tutor.moderationStatus !== "approved" ||
+        tutor.serviceArea?.marketCode !== normalizedMarket ||
+        !offers.some(
+          (offer) =>
+            offer.status === "published" &&
+            offer.marketCodes.includes(normalizedMarket),
+        )
+      ) {
+        throw new Error("Professeur indisponible sur ce marché.");
+      }
+    }
+    const scopeKey = `${userId}:${normalizedMarket}`;
+    const favorites = this.savedTutorIds.get(scopeKey) || new Set<string>();
+    if (isFavorite) favorites.add(tutorProfileId);
+    else favorites.delete(tutorProfileId);
+    this.savedTutorIds.set(scopeKey, favorites);
     return favorites.has(tutorProfileId);
   }
 
@@ -1030,6 +1135,7 @@ export class DemoCoursesRepository implements ICoursesRepository {
   async searchTutors(query: TutorSearchQuery): Promise<TutorSearchResponse> {
     let matched = Array.from(this.offers.values())
       .filter((offer) => offer.status === "published")
+      .filter((offer) => offer.marketCodes.includes(query.marketCode))
       .map((offer) => ({ offer, tutor: this.tutors.get(offer.tutorProfileId) }))
       .filter((pair): pair is { offer: CourseOffer; tutor: TutorProfile } =>
         Boolean(pair.tutor),
@@ -1062,7 +1168,9 @@ export class DemoCoursesRepository implements ICoursesRepository {
     const offset = query.cursor ? Math.max(0, Number(query.cursor) || 0) : 0;
     const page = matched.slice(offset, offset + limit);
     return {
-      items: page.map(({ tutor, offer }) => toSearchItem(tutor, offer)),
+      items: page.map(({ tutor, offer }) =>
+        toSearchItem(tutor, offer, query.marketCode),
+      ),
       total: matched.length,
       pageInfo: {
         hasNextPage: offset + limit < matched.length,
@@ -1324,19 +1432,31 @@ export class PostgresCoursesRepository implements ICoursesRepository {
       .eq("draft_kind", kind);
     if (error) throw error;
   }
-  async getSavedTutorIds(userId: string) {
-    const { data, error } = await (getSupabaseAdminClient() as any)
-      .from("course_tutor_favorites")
-      .select("tutor_profile_id")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false });
+  async getSavedTutorIds(userId: string, marketCode: string) {
+    const { data, error } = await (getSupabaseAdminClient() as any).rpc(
+      "list_saved_course_tutor_ids",
+      {
+        p_user_id: userId,
+        p_market_code: requireMarketCode(marketCode),
+      },
+    );
     if (error) throw error;
     return (data || []).map((row: any) => String(row.tutor_profile_id));
   }
-  async toggleSavedTutor(userId: string, tutorProfileId: string) {
+  async setSavedTutor(
+    userId: string,
+    tutorProfileId: string,
+    marketCode: string,
+    isFavorite: boolean,
+  ) {
     const { data, error } = await (getSupabaseAdminClient() as any).rpc(
-      "toggle_course_tutor_favorite",
-      { p_user_id: userId, p_tutor_profile_id: tutorProfileId },
+      "set_course_tutor_favorite",
+      {
+        p_user_id: userId,
+        p_tutor_profile_id: tutorProfileId,
+        p_market_code: requireMarketCode(marketCode),
+        p_is_favorite: isFavorite,
+      },
     );
     if (error) throw error;
     return Boolean(data);
@@ -1427,12 +1547,14 @@ export class PostgresCoursesRepository implements ICoursesRepository {
 
   async searchTutors(query: TutorSearchQuery): Promise<TutorSearchResponse> {
     const supabase = getSupabaseAdminClient() as any;
+    const marketCode = requireMarketCode(query.marketCode);
     const limit = Math.min(50, query.limit || 20);
     const offset = query.cursor ? Math.max(0, Number(query.cursor) || 0) : 0;
     let request = supabase
       .from("course_tutor_search_view")
       .select("*", { count: "exact" })
-      .contains("market_codes", [query.marketCode])
+      .contains("market_codes", [marketCode])
+      .eq("market_code", marketCode)
       .eq("offer_status", "published");
     if (query.subjectId) request = request.eq("subject_id", query.subjectId);
     if (query.levelIds?.length)
@@ -1460,9 +1582,57 @@ export class PostgresCoursesRepository implements ICoursesRepository {
       .range(offset, offset + limit - 1);
     const { data, count, error } = await request;
     if (error) throw error;
-    const items = (data || []).map((row: any) => ({
+    const rows = (data || []) as any[];
+    const requestedOfferIds = new Set(
+      rows.flatMap((row) =>
+        typeof row.offer_id === "string" && row.offer_id ? [row.offer_id] : [],
+      ),
+    );
+    const listingIdByOfferId = new Map<string, string>();
+    if (requestedOfferIds.size) {
+      const { data: offerRows, error: offerError } = await supabase
+        .from("course_offers")
+        .select("id,listing_id,market_code")
+        .eq("market_code", marketCode)
+        .in("id", Array.from(requestedOfferIds));
+      if (offerError) throw offerError;
+      for (const offerRow of offerRows || []) {
+        if (
+          typeof offerRow.id !== "string" ||
+          !requestedOfferIds.has(offerRow.id) ||
+          offerRow.market_code !== marketCode ||
+          typeof offerRow.listing_id !== "string" ||
+          !offerRow.listing_id
+        )
+          continue;
+        listingIdByOfferId.set(offerRow.id, offerRow.listing_id);
+      }
+    }
+
+    const parsedRows = rows.map((row) => {
+      const offer = toPublicOffer(courseOfferSchema.parse(row.offer_payload));
+      const offerIdMatches =
+        typeof row.offer_id === "string" && row.offer_id === offer.id;
+      const rowMarketMatches = row.market_code === marketCode;
+      const offerMarketMatches = offer.marketCodes.includes(marketCode);
+      const listingId =
+        offerIdMatches && rowMarketMatches && offerMarketMatches
+          ? listingIdByOfferId.get(offer.id)
+          : undefined;
+      return { row, offer, listingId };
+    });
+    const promotions = await loadMarketResolvedPromotions(
+      () => supabase,
+      parsedRows.map(({ listingId }) => ({ listingId, marketCode })),
+    );
+    const items = parsedRows.map(({ row, offer, listingId }) => ({
       tutor: toPublicTutor(tutorProfileSchema.parse(row.tutor_payload)),
-      offer: toPublicOffer(courseOfferSchema.parse(row.offer_payload)),
+      offer: {
+        ...offer,
+        // The trigger-owned column, not the JSON payload, is the authoritative
+        // offer-to-listing association used by both the card and its proof.
+        listingId,
+      },
       subjectLabel: row.subject_label,
       levelLabels: row.level_labels || [],
       fromPrice: {
@@ -1473,6 +1643,11 @@ export class PostgresCoursesRepository implements ICoursesRepository {
         row.distance_km === null ? undefined : Number(row.distance_km),
       relevanceReasons: row.relevance_reasons || [],
       isSaved: false,
+      resolvedPromotion: getMarketResolvedPromotion(
+        promotions,
+        listingId,
+        marketCode,
+      ),
     }));
     const total = count || 0;
     return {
@@ -1625,11 +1800,15 @@ export class PostgresCoursesRepository implements ICoursesRepository {
 
   async saveCourseOffer(offer: CourseOffer): Promise<CourseOffer> {
     const parsed = courseOfferSchema.parse(offer);
-    const hourly = parsed.pricingOptions.find((item) => item.type === "hourly");
+    const activePrice = parsed.pricingOptions
+      .filter((item) => item.isActive)
+      .sort(
+        (left, right) => left.price.amountMinor - right.price.amountMinor,
+      )[0]?.price;
     const supabase = getSupabaseAdminClient() as any;
     const marketCode = requireMarketCode(parsed.marketCodes[0]);
     const marketCurrency = getCountryConfig(marketCode)!.currency;
-    if (hourly && hourly.price.currency !== marketCurrency)
+    if (activePrice && activePrice.currency !== marketCurrency)
       throw new Error("Course offer currency does not match its market");
     const { error } = await supabase.from("course_offers").upsert({
       id: parsed.id,
@@ -1645,8 +1824,8 @@ export class PostgresCoursesRepository implements ICoursesRepository {
       status: parsed.status,
       capacity_status: parsed.capacityStatus,
       trial_lesson_available: parsed.trialLessonAvailable,
-      from_price_minor: hourly?.price.amountMinor || 0,
-      currency: hourly?.price.currency || marketCurrency,
+      from_price_minor: activePrice?.amountMinor || 0,
+      currency: activePrice?.currency || marketCurrency,
       public_payload: toPublicOffer(parsed),
       private_payload: parsed,
       published_at: parsed.publishedAt,

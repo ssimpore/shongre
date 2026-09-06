@@ -21,7 +21,10 @@ const DEMO_WEEKLY_ANALYTICS = [
 ];
 
 export class DemoWorkspaceService implements WorkspaceServiceContract {
-  async getUserWorkspaceSummary(userId: string): Promise<UserWorkspaceSummary> {
+  async getUserWorkspaceSummary(
+    userId: string,
+    marketCode: string,
+  ): Promise<UserWorkspaceSummary> {
     requireDemoCapability("marketplace.customer.access");
     await simulateNetworkDelay();
     const listings = await listingRepository.getListingsBySeller(userId);
@@ -29,7 +32,14 @@ export class DemoWorkspaceService implements WorkspaceServiceContract {
     const sales = await transactionRepository.getSales(userId);
     const conversations =
       await messagingRepository.getUserConversations(userId);
-    const favorites = storageService.getFavorites();
+    const favoriteAccountKey =
+      Object.entries(storageService.getUsers()).find(
+        ([, candidate]) => candidate.id === userId,
+      )?.[0] ?? userId;
+    const favorites = storageService.getFavorites(
+      favoriteAccountKey,
+      marketCode,
+    );
 
     const totalViews = listings.reduce(
       (sum, l) => sum + (l.viewsCount || 0),

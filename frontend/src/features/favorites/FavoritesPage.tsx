@@ -1,15 +1,16 @@
 import { routes } from "../../configuration/routes";
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { Heart, Trash2, ArrowRight } from "lucide-react";
 
-import { Listing } from "../../types";
-import { services } from "../../api/client/service-registry";
 import { useFavorites } from "../../app/providers/FavoritesProvider";
 import { useToast } from "../../app/providers/ToastProvider";
 import { ListingCard } from "../../design-system/primitives/ListingCard";
-import { ListingRail } from "../../design-system/primitives/ListingRail";
 import { Button } from "../../design-system/primitives/Button";
-import { EmptyState, Skeleton } from "../../design-system";
+import {
+  EmptyState,
+  ListingCardSkeleton,
+  ListingGrid,
+} from "../../design-system";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { usePageMeta } from "../../hooks/usePageMeta";
 
@@ -24,34 +25,25 @@ export const FavoritesPage: React.FC = () => {
 
   const {
     favoriteIds,
+    favoriteListings,
+    favoriteListingsComplete,
     clearFavorites,
+    favoriteLoadState,
+    favoritesError,
     isLoading: isLoadingIds,
+    refreshFavorites,
   } = useFavorites();
   const toast = useToast();
-  const [listings, setListings] = useState<Listing[]>([]);
-  const [isLoadingListings, setIsLoadingListings] = useState(true);
 
   useEffect(() => {
-    let cancelled = false;
-    services.listings
-      .getListings()
-      .then((result) => {
-        if (!cancelled) setListings(result.listings);
-      })
-      .finally(() => {
-        if (!cancelled) setIsLoadingListings(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+    if (favoriteLoadState === "ready" && !favoriteListingsComplete) {
+      void refreshFavorites().catch(() => undefined);
+    }
+  }, [favoriteListingsComplete, favoriteLoadState, refreshFavorites]);
 
-  // Derived from the shared favourite set, so un-hearting a card removes it
-  // here without this page tracking its own copy of the truth.
-  const favoriteListings = listings.filter((listing) =>
-    favoriteIds.includes(listing.id),
-  );
-  const isLoading = isLoadingIds || isLoadingListings;
+  const isLoading =
+    isLoadingIds ||
+    Boolean(favoriteLoadState === "ready" && !favoriteListingsComplete);
 
   const handleClearAll = async () => {
     try {
@@ -63,36 +55,63 @@ export const FavoritesPage: React.FC = () => {
     }
   };
 
+  const handleFavoriteRetry = async () => {
+    try {
+      await refreshFavorites();
+    } catch {
+      toast.error(t("ui.listingCard.favorisChargementErreur"));
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold text-text-main">
-            Mes annonces favorites ({favoriteListings.length})
+            Mes annonces favorites (
+            {favoriteLoadState === "ready" ? favoriteIds.length : 0})
           </h1>
           <p className="text-xs sm:text-sm text-text-tertiary mt-0.5">
             {t("favorites.favoritesPage.retrouvezLesAnnoncesQueVous")}
           </p>
         </div>
 
-        {favoriteListings.length > 0 && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleClearAll}
-            leftIcon={<Trash2 className="w-icon-sm h-icon-sm" />}
-          >
-            {t("favorites.favoritesPage.viderLesFavoris")}
-          </Button>
-        )}
+        {favoriteLoadState === "ready" &&
+          favoriteListingsComplete &&
+          favoriteIds.length > 0 && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleClearAll}
+              leftIcon={<Trash2 className="w-icon-sm h-icon-sm" />}
+            >
+              {t("favorites.favoritesPage.viderLesFavoris")}
+            </Button>
+          )}
       </div>
 
       {isLoading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <ListingGrid fluid>
           {[0, 1, 2, 3, 4, 5].map((i) => (
-            <Skeleton key={i} className="h-72 rounded-2xl" />
+            <ListingCardSkeleton key={i} />
           ))}
-        </div>
+        </ListingGrid>
+      ) : favoriteLoadState === "error" ? (
+        <EmptyState
+          icon={<Heart className="w-10 h-10 text-text-inverse-subtle" />}
+          title={t("favorites.favoritesPage.chargementImpossibleTitle")}
+          description={
+            favoritesError ?? t("ui.listingCard.favorisChargementErreur")
+          }
+          action={
+            <Button
+              variant="primary"
+              onClick={() => void handleFavoriteRetry()}
+            >
+              {t("ui.listingCard.favorisReessayer")}
+            </Button>
+          }
+        />
       ) : favoriteListings.length > 0 ? (
         // Card titles are h3, so the grid gets its own section heading instead of
         // jumping from the page h1.
@@ -100,13 +119,11 @@ export const FavoritesPage: React.FC = () => {
           <h2 id="favorites-grid-heading" className="sr-only">
             {t("favorites.favoritesPage.annoncesSauvegardees")}
           </h2>
-          <ListingRail
-            label={t("favorites.favoritesPage.annoncesSauvegardees")}
-          >
+          <ListingGrid fluid>
             {favoriteListings.map((listing) => (
               <ListingCard key={listing.id} listing={listing} />
             ))}
-          </ListingRail>
+          </ListingGrid>
         </section>
       ) : (
         <EmptyState

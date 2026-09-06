@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { marketCodeSchema, moneySchema } from "./primitives";
+import { marketResolvedListingPromotionSchema } from "./discovery";
 
 /** Public, versioned contracts for the specialized automotive vertical. */
 export const AUTO_SCHEMA_VERSION = 1 as const;
@@ -412,6 +413,7 @@ export const vehiclePublicSchema = z.object({
   promotionLabels: z.array(
     z.enum(["urgent", "featured", "sponsored", "bumped"]),
   ),
+  resolvedPromotion: marketResolvedListingPromotionSchema.optional(),
   isFavorite: z.boolean(),
   publishedAt: z.string(),
   sortDate: z.string(),

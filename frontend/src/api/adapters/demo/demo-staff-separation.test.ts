@@ -108,7 +108,7 @@ describe("demo Staff/customer marketplace separation", () => {
       demoListingsService.createListingDraft(),
     ).rejects.toMatchObject({ code: "FORBIDDEN" });
     await expect(
-      demoListingsService.toggleFavorite("listing-demo"),
+      demoListingsService.setFavorite("listing-demo", "FR", true),
     ).rejects.toMatchObject({ code: "FORBIDDEN" });
     await expect(
       demoMessagingService.getComposerOptions({

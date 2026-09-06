@@ -6,16 +6,17 @@ export function ProBadge({
   label,
   size = "sm",
   accessibilityLabel,
+  tone = "inverse",
 }: ProBadgeProps) {
   return (
     <Badge
-      variant="inverse"
+      variant={tone}
       size={size}
       data-ui-pro-badge="true"
       role="img"
       aria-label={accessibilityLabel}
       title={accessibilityLabel}
-      className="shrink-0 font-bold uppercase tracking-wide"
+      className="shrink-0 font-bold"
     >
       {label}
     </Badge>

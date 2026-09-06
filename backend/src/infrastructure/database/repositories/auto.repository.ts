@@ -23,10 +23,16 @@ import {
   autoPlanSchema,
   vehicleDraftSchema,
   vehiclePrivateSchema,
+  vehiclePublicSchema,
   vehicleSearchQuerySchema,
   vehicleTypeConfigSchema,
 } from "@shongre/contracts/auto";
 import { getSupabaseAdminClient } from "../../supabase/supabase-client.js";
+import { requireMarketCode } from "../../../shared/market/market-code.js";
+import {
+  getMarketResolvedPromotion,
+  loadMarketResolvedPromotions,
+} from "./market-promotion.projection.js";
 
 const NOW = "2026-08-22T10:00:00.000Z";
 const clone = <T>(value: T): T => structuredClone(value);
@@ -477,7 +483,6 @@ export const DEMO_AUTO_VEHICLES: VehiclePrivate[] = [
       co2GramsPerKm: 112,
       critAirClass: "2",
     },
-    promotionLabels: ["sponsored"],
   }),
   makeVehicle({
     id: "vehicle_3008_petrol",
@@ -821,9 +826,17 @@ export interface IAutoRepository {
     marketCode: string,
   ): Promise<VehicleTypeConfig>;
   search(query: VehicleSearchQuery): Promise<VehicleSearchResponse>;
-  getVehicle(idOrSlug: string): Promise<VehiclePrivate | null>;
-  getFavoriteVehicleIds(userId: string): Promise<string[]>;
-  toggleFavoriteVehicle(userId: string, vehicleId: string): Promise<boolean>;
+  getVehicle(
+    idOrSlug: string,
+    marketCode?: string,
+  ): Promise<VehiclePrivate | null>;
+  getFavoriteVehicleIds(userId: string, marketCode: string): Promise<string[]>;
+  setFavoriteVehicle(
+    userId: string,
+    vehicleId: string,
+    marketCode: string,
+    isFavorite: boolean,
+  ): Promise<boolean>;
   saveVehicle(vehicle: VehiclePrivate): Promise<VehiclePrivate>;
   hasDuplicateIdentity(identity: {
     vinHash?: string;
@@ -1116,14 +1129,27 @@ export class DemoAutoRepository implements IAutoRepository {
       Array.from(this.vehicles.values()).find((row) => row.slug === idOrSlug);
     return value ? clone(value) : null;
   }
-  async getFavoriteVehicleIds(userId: string) {
-    return Array.from(this.favoriteVehicleIds.get(userId) || []);
+  async getFavoriteVehicleIds(userId: string, marketCode: string) {
+    const scopeKey = `${userId}:${requireMarketCode(marketCode)}`;
+    return Array.from(this.favoriteVehicleIds.get(scopeKey) || []);
   }
-  async toggleFavoriteVehicle(userId: string, vehicleId: string) {
-    const favorites = this.favoriteVehicleIds.get(userId) || new Set<string>();
-    if (favorites.has(vehicleId)) favorites.delete(vehicleId);
-    else favorites.add(vehicleId);
-    this.favoriteVehicleIds.set(userId, favorites);
+  async setFavoriteVehicle(
+    userId: string,
+    vehicleId: string,
+    marketCode: string,
+    isFavorite: boolean,
+  ) {
+    const normalizedMarket = requireMarketCode(marketCode);
+    const vehicle = await this.getVehicle(vehicleId);
+    if (!vehicle?.marketCodes.includes(normalizedMarket)) {
+      throw new Error("Véhicule indisponible sur ce marché.");
+    }
+    const scopeKey = `${userId}:${normalizedMarket}`;
+    const favorites =
+      this.favoriteVehicleIds.get(scopeKey) || new Set<string>();
+    if (isFavorite) favorites.add(vehicleId);
+    else favorites.delete(vehicleId);
+    this.favoriteVehicleIds.set(scopeKey, favorites);
     return favorites.has(vehicleId);
   }
   async saveVehicle(vehicle: VehiclePrivate) {
@@ -1391,6 +1417,30 @@ export class PostgresAutoRepository implements IAutoRepository {
   private db() {
     return getSupabaseAdminClient() as any;
   }
+
+  private async hydratePublicVehicles(
+    rows: any[],
+    marketCode: string,
+  ): Promise<VehiclePublic[]> {
+    const normalizedMarket = requireMarketCode(marketCode);
+    const promotions = await loadMarketResolvedPromotions(
+      () => this.db(),
+      rows.map((row) => ({
+        listingId: row.listing_id,
+        marketCode: normalizedMarket,
+      })),
+    );
+    return rows.map((row) =>
+      vehiclePublicSchema.parse({
+        ...row.public_payload,
+        resolvedPromotion: getMarketResolvedPromotion(
+          promotions,
+          row.listing_id,
+          normalizedMarket,
+        ),
+      }),
+    );
+  }
   async getCatalog(
     marketCode: string,
     includeInactive = false,
@@ -1549,7 +1599,7 @@ export class PostgresAutoRepository implements IAutoRepository {
     const query = vehicleSearchQuerySchema.parse(input);
     let q = this.db()
       .from("auto_vehicles")
-      .select("public_payload", { count: "exact" })
+      .select("listing_id,public_payload", { count: "exact" })
       .eq("lifecycle", "published")
       .eq("moderation_status", "approved")
       .contains("market_codes", [query.marketCode]);
@@ -1607,7 +1657,7 @@ export class PostgresAutoRepository implements IAutoRepository {
     if (error) throw error;
     const total = count || 0;
     return {
-      items: (data || []).map((r: any) => r.public_payload),
+      items: await this.hydratePublicVehicles(data || [], query.marketCode),
       total,
       pageInfo: {
         hasNextPage: offset + query.limit < total,
@@ -1618,38 +1668,66 @@ export class PostgresAutoRepository implements IAutoRepository {
       },
     };
   }
-  async getVehicle(idOrSlug: string) {
+  async getVehicle(idOrSlug: string, marketCode?: string) {
     const db = this.db();
     let result = await db
       .from("auto_vehicles")
-      .select("private_payload")
+      .select("listing_id,private_payload")
       .eq("id", idOrSlug)
       .maybeSingle();
     if (!result.data && !result.error)
       result = await db
         .from("auto_vehicles")
-        .select("private_payload")
+        .select("listing_id,private_payload")
         .eq("slug", idOrSlug)
         .maybeSingle();
     if (result.error) throw result.error;
-    return result.data
-      ? vehiclePrivateSchema.parse(result.data.private_payload)
-      : null;
+    if (!result.data) return null;
+
+    const vehicle = vehiclePrivateSchema.parse(result.data.private_payload);
+    const resolvedMarket = marketCode
+      ? requireMarketCode(marketCode)
+      : vehicle.marketCodes.length === 1
+        ? requireMarketCode(vehicle.marketCodes[0])
+        : undefined;
+    const promotions = await loadMarketResolvedPromotions(
+      () => this.db(),
+      resolvedMarket && vehicle.marketCodes.includes(resolvedMarket)
+        ? [{ listingId: result.data.listing_id, marketCode: resolvedMarket }]
+        : [],
+    );
+    return vehiclePrivateSchema.parse({
+      ...vehicle,
+      resolvedPromotion: getMarketResolvedPromotion(
+        promotions,
+        result.data.listing_id,
+        resolvedMarket,
+      ),
+    });
   }
-  async getFavoriteVehicleIds(userId: string) {
-    const { data, error } = await this.db()
-      .from("auto_vehicle_favorites")
-      .select("vehicle_id")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false });
+  async getFavoriteVehicleIds(userId: string, marketCode: string) {
+    const { data, error } = await (this.db() as any).rpc(
+      "list_favorite_auto_vehicle_ids",
+      {
+        p_user_id: userId,
+        p_market_code: requireMarketCode(marketCode),
+      },
+    );
     if (error) throw error;
     return (data || []).map((row: any) => String(row.vehicle_id));
   }
-  async toggleFavoriteVehicle(userId: string, vehicleId: string) {
-    const { data, error } = await this.db().rpc(
-      "toggle_auto_vehicle_favorite",
-      { p_user_id: userId, p_vehicle_id: vehicleId },
-    );
+  async setFavoriteVehicle(
+    userId: string,
+    vehicleId: string,
+    marketCode: string,
+    isFavorite: boolean,
+  ) {
+    const { data, error } = await this.db().rpc("set_auto_vehicle_favorite", {
+      p_user_id: userId,
+      p_vehicle_id: vehicleId,
+      p_market_code: requireMarketCode(marketCode),
+      p_is_favorite: isFavorite,
+    });
     if (error) throw error;
     return Boolean(data);
   }

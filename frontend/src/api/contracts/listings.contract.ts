@@ -38,11 +38,22 @@ export interface PublishBulkListingsInput {
   rows: BulkListingImportRow[];
 }
 
+export interface FavoriteListingCollection {
+  listingIds: string[];
+  /** Public projections visible in the exact requested market. */
+  listings: Listing[];
+}
+
 export interface ListingsServiceContract {
   getListings(
     filter?: SearchFilters,
   ): Promise<{ listings: Listing[]; total: number }>;
   getListingById(id: string): Promise<Listing | null>;
+  /** Public, market-scoped card projections used for guest-owned local sets. */
+  getPublicListingsByIds(
+    listingIds: readonly string[],
+    marketCode: string,
+  ): Promise<Listing[]>;
   searchListings(params: SearchFilters): Promise<{
     items: Listing[];
     total: number;
@@ -70,6 +81,10 @@ export interface ListingsServiceContract {
   publishBulkListings(input: PublishBulkListingsInput): Promise<Listing[]>;
   updateListing(id: string, updates: Partial<Listing>): Promise<Listing>;
   deleteListing(id: string): Promise<boolean>;
-  toggleFavorite(listingId: string): Promise<boolean>;
-  getFavorites(): Promise<string[]>;
+  setFavorite(
+    listingId: string,
+    marketCode: string,
+    isFavorite: boolean,
+  ): Promise<boolean>;
+  getFavoriteCollection(marketCode: string): Promise<FavoriteListingCollection>;
 }

@@ -127,8 +127,8 @@ export class RealEstateService {
     return result;
   }
 
-  async getPublicProperty(idOrSlug: string) {
-    const property = await this.repo.getProperty(idOrSlug);
+  async getPublicProperty(idOrSlug: string, marketCode?: string) {
+    const property = await this.repo.getProperty(idOrSlug, marketCode);
     if (
       !property ||
       property.lifecycle !== "published" ||

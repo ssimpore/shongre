@@ -25,10 +25,8 @@ import { useToast } from "../../app/providers/ToastProvider";
 import { Image } from "../../design-system/primitives/Image";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { digitalMessagesFr } from "../../i18n/digital.catalogue.fr";
-import {
-  getListingCategoryLabel,
-  getListingSubCategoryLabel,
-} from "../../domains/taxonomy/taxonomy.display";
+import { getListingCategoryLabel } from "../../domains/taxonomy/listing-category.display";
+import { getListingSubCategoryLabel } from "../../domains/taxonomy/taxonomy.display";
 import { services } from "../../api/client/service-registry";
 import type { DirectPurchaseQuote } from "../../api/contracts/orders.contract";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";

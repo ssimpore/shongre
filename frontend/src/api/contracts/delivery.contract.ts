@@ -26,6 +26,16 @@ export interface DeliveryServiceContract {
     requestId: string,
     marketCode: string,
   ): Promise<DeliveryPublicRequest>;
+  getFavoriteRequestIds(
+    accountId: string,
+    marketCode: string,
+  ): Promise<string[]>;
+  setFavoriteRequest(
+    accountId: string,
+    requestId: string,
+    marketCode: string,
+    isFavorite: boolean,
+  ): Promise<boolean>;
   getCourierProfile(
     actor: DeliveryActor,
     marketCode: string,

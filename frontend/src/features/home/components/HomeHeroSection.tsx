@@ -21,9 +21,9 @@ export const HomeHeroSection: React.FC<{ section: HomepageSectionView }> = ({
       <Container className="relative z-raised">
         <div
           data-home-hero-surface="true"
-          className="rounded-card border border-border-base bg-bg-surface px-5 py-7 shadow-sm sm:p-8 lg:p-10"
+          className="rounded-listing-card border border-border-base bg-bg-surface px-5 py-7 shadow-sm sm:p-8 lg:p-10"
         >
-          <div className="grid w-full grid-cols-1 items-stretch gap-8 md:grid-cols-2 md:gap-10 xl:gap-12">
+          <div className="grid w-full grid-cols-1 items-stretch gap-8 lg:grid-cols-2 lg:gap-10 xl:gap-12">
             <div className="flex min-w-0 w-full flex-col justify-between text-left">
               <div className="flex flex-col items-start gap-5">
                 <div

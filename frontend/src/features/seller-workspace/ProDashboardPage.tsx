@@ -25,14 +25,9 @@ import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { ProgressBar } from "../../design-system/primitives/ProgressBar";
 import { StatePanel } from "../../design-system/primitives/StatePanel";
 import { useRegionalFormatters } from "../../hooks/useRegionalFormatters";
+import { resolveListingPhotoUrl } from "../../domains/listing/listing-media";
 
 type AnalyticsLoadState = "loading" | "success" | "error";
-
-function getPhotoUrl(photo: any): string {
-  if (typeof photo === "string") return photo;
-  if (photo && typeof photo.url === "string") return photo.url;
-  return "https://images.unsplash.com/photo-1584438784894-089d6a62b8fa?w=400&auto=format&fit=crop&q=80";
-}
 
 export const ProDashboardPage: React.FC = () => {
   const { t, locale } = useTranslation();
@@ -378,7 +373,7 @@ export const ProDashboardPage: React.FC = () => {
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       <Image
-                        src={getPhotoUrl(
+                        src={resolveListingPhotoUrl(
                           listing.coverImageUrl || listing.photos?.[0],
                         )}
                         alt=""

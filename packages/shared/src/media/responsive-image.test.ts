@@ -99,7 +99,7 @@ describe("buildSizedImageUrl", () => {
 describe("buildResponsiveFallbackUrl", () => {
   it("uses bounded fallbacks for canonical media slots", () => {
     expect(buildResponsiveFallbackUrl(UNSPLASH, IMAGE_SIZES.card)).toContain(
-      "w=320",
+      "w=640",
     );
     expect(buildResponsiveFallbackUrl(UNSPLASH, IMAGE_SIZES.gallery)).toContain(
       "w=640",
@@ -117,5 +117,11 @@ describe("IMAGE_SIZES", () => {
       expect(value.trim().length).toBeGreaterThan(0);
       expect(value).toMatch(/px|vw/);
     });
+  });
+
+  it("matches a full-width mobile card and the fixed desktop rail width", () => {
+    expect(IMAGE_SIZES.card).toContain("calc(100vw - 2rem)");
+    expect(IMAGE_SIZES.card).toMatch(/208px$/);
+    expect(IMAGE_SIZES.compact).toBe("208px");
   });
 });

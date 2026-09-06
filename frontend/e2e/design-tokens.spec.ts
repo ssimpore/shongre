@@ -409,10 +409,23 @@ test.describe("design-token runtime contracts @serial", () => {
           .trim(),
         cards: cards.map((card) => ({
           height: card.getBoundingClientRect().height,
-          imageWidth:
-            card
+          ...(() => {
+            const image = card
               .querySelector<HTMLElement>(".listing-card-list-image")
-              ?.getBoundingClientRect().width ?? null,
+              ?.getBoundingClientRect();
+            const overlay = card
+              .querySelector<HTMLElement>(".listing-card-list-overlay")
+              ?.getBoundingClientRect();
+            const actions = card
+              .querySelector<HTMLElement>('[data-listing-card-actions="true"]')
+              ?.getBoundingClientRect();
+            return {
+              imageWidth: image?.width ?? null,
+              imageRight: image?.right ?? null,
+              overlayRight: overlay?.right ?? null,
+              actionsRight: actions?.right ?? null,
+            };
+          })(),
         })),
       };
     });
@@ -427,6 +440,14 @@ test.describe("design-token runtime contracts @serial", () => {
     expect(new Set(desktop.cards.map((card) => card.imageWidth)).size).toBe(1);
     expect(desktop.cards[0]?.height).toBeCloseTo(200, 0);
     expect(desktop.cards[0]?.imageWidth).toBeCloseTo(208, 0);
+    for (const card of desktop.cards) {
+      expect(card.overlayRight).not.toBeNull();
+      expect(card.imageRight).not.toBeNull();
+      expect(card.actionsRight).not.toBeNull();
+      expect(card.overlayRight!).toBeCloseTo(card.imageRight!, 0);
+      expect(card.actionsRight!).toBeLessThan(card.imageRight!);
+      expect(card.imageRight! - card.actionsRight!).toBeLessThan(16);
+    }
 
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(route, { waitUntil: "domcontentloaded" });
@@ -458,34 +479,29 @@ test.describe("design-token runtime contracts @serial", () => {
     await expectNoHorizontalOverflow(page, "listing list cards");
   });
 
-  test("keeps listing metadata contained and limits ellipsis to named fields", async ({
-    page,
-  }) => {
+  test("keeps compact listing metadata contained", async ({ page }) => {
     await page.goto("/recherche", { waitUntil: "domcontentloaded" });
     await waitForStableLayout(page);
-    await expect(
-      page.locator("article.min-w-0 .border-t").first(),
-    ).toBeVisible();
+    const metadataRows = page.locator('[data-listing-card-meta="true"]');
+    await expect(metadataRows.first()).toBeVisible();
 
-    const metadata = await page
-      .locator("article.min-w-0 .border-t")
-      .evaluateAll((rows) =>
-        rows.map((row) => ({
-          text: row.textContent?.trim() ?? "",
-          overflow: row.scrollWidth > row.clientWidth,
-          overflowingDescendants: [...row.querySelectorAll("span")]
-            .filter((span) => span.scrollWidth > span.clientWidth)
-            .map((span) => ({
-              text: span.textContent?.trim() ?? "",
-              isNamedTruncationField: span.matches(
-                '[data-listing-card-seller-name="true"], [data-listing-card-location="true"]',
-              ),
-              overflow: getComputedStyle(span).overflow,
-              textOverflow: getComputedStyle(span).textOverflow,
-              whiteSpace: getComputedStyle(span).whiteSpace,
-            })),
-        })),
-      );
+    const metadata = await metadataRows.evaluateAll((rows) =>
+      rows.map((row) => ({
+        text: row.textContent?.trim() ?? "",
+        overflow: row.scrollWidth > row.clientWidth,
+        overflowingDescendants: [...row.querySelectorAll("span")]
+          .filter((span) => span.scrollWidth > span.clientWidth)
+          .map((span) => ({
+            text: span.textContent?.trim() ?? "",
+            isNamedTruncationField: span.matches(
+              '[data-listing-card-location="true"]',
+            ),
+            overflow: getComputedStyle(span).overflow,
+            textOverflow: getComputedStyle(span).textOverflow,
+            whiteSpace: getComputedStyle(span).whiteSpace,
+          })),
+      })),
+    );
 
     expect(
       metadata.length,
@@ -504,13 +520,10 @@ test.describe("design-token runtime contracts @serial", () => {
           ),
       ),
     ).toBe(true);
-    expect(
-      metadata.some((row) => row.overflowingDescendants.length > 0),
-      "expected at least one long seller or location label to use ellipsis",
-    ).toBe(true);
-    expect(
-      await page.locator("article.min-w-0 .border-t .lucide-calendar").count(),
-    ).toBeGreaterThan(0);
+    await expect(
+      page.locator('[data-listing-card-location="true"]').first(),
+    ).toBeVisible();
+    await expect(page.locator(".lucide-calendar")).toHaveCount(0);
   });
 
   test("fits the active view toggle corner to its segmented container", async ({
@@ -744,19 +757,19 @@ test.describe("design-token runtime contracts @serial", () => {
       );
       const title = card?.querySelector<HTMLElement>("h3");
       const price = card?.querySelector<HTMLElement>(
-        '[data-listing-card-price="true"] > span:first-child',
+        '[data-listing-card-current-price="true"]',
       );
-      const seller = card?.querySelector<HTMLElement>(
-        '[data-listing-card-seller="true"] [title]',
+      const category = card?.querySelector<HTMLElement>(
+        '[data-listing-card-category-row="true"]',
       );
       return {
         title: title ? getComputedStyle(title).fontWeight : null,
         price: price ? getComputedStyle(price).fontWeight : null,
-        seller: seller ? getComputedStyle(seller).fontWeight : null,
+        category: category ? getComputedStyle(category).fontWeight : null,
       };
     });
 
-    expect(hierarchy).toEqual({ title: "600", price: "700", seller: "600" });
+    expect(hierarchy).toEqual({ title: "700", price: "700", category: "500" });
   });
 
   for (const [chunkIndex, routes] of ROUTE_TYPOGRAPHY_AUDIT_CHUNKS.entries()) {

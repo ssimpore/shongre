@@ -16,10 +16,10 @@ import {
   nativeTypography,
 } from "@shongre/design-tokens/native";
 import { useAuth } from "@/features/auth/AuthProvider";
+import { useFavorites } from "@/features/favorites/FavoritesProvider";
 import { listingsService } from "@/features/listings/listings.service";
 import { moderationService } from "@/features/moderation/moderation.service";
 import { messagingService } from "@/features/messaging/messaging.service";
-import { favoritesService } from "@/features/favorites/favorites.service";
 import { watchSubscriptionsService } from "@/features/watch-subscriptions/watch-subscriptions.service";
 import { formatMoney } from "@/utils/format";
 import { useMarket } from "@/features/market/MarketProvider";
@@ -29,12 +29,18 @@ export default function ListingDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { user } = useAuth();
+  const {
+    isFavorite,
+    isPending: isFavoritePending,
+    loadState: favoritesLoadState,
+    retry: retryFavorites,
+    toggleFavorite,
+  } = useFavorites();
   const { activeMarket } = useMarket();
   const [listing, setListing] = useState<ListingCardView | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [startingConversation, setStartingConversation] = useState(false);
-  const [isFavorite, setIsFavorite] = useState(false);
   const [priceWatchId, setPriceWatchId] = useState<string | null>(null);
   const [sellerWatchId, setSellerWatchId] = useState<string | null>(null);
   const [loadedEngagementKey, setLoadedEngagementKey] = useState("");
@@ -61,13 +67,10 @@ export default function ListingDetailScreen() {
   useEffect(() => {
     if (!user || !id) return;
     let active = true;
-    Promise.all([
-      favoritesService.list(user.id, activeMarket.code),
-      watchSubscriptionsService.list(user.id, activeMarket.code),
-    ])
-      .then(([favoriteIds, watches]) => {
+    watchSubscriptionsService
+      .list(user.id, activeMarket.code)
+      .then((watches) => {
         if (!active) return;
-        setIsFavorite(favoriteIds.includes(id));
         setPriceWatchId(
           watches.find(
             (item) =>
@@ -97,7 +100,7 @@ export default function ListingDetailScreen() {
   const currentEngagementKey =
     user && id ? `${user.id}::${activeMarket.code}::${id}` : "";
   const hasLoadedEngagement = loadedEngagementKey === currentEngagementKey;
-  const favoriteActive = hasLoadedEngagement && isFavorite;
+  const favoriteActive = isFavorite(id);
   const activePriceWatchId = hasLoadedEngagement ? priceWatchId : null;
   const activeSellerWatchId = hasLoadedEngagement ? sellerWatchId : null;
 
@@ -183,25 +186,8 @@ export default function ListingDetailScreen() {
     }
   };
 
-  const toggleFavorite = async () => {
-    if (!listing || !requireLogin() || !user) return;
-    setEngagementBusy(true);
-    try {
-      setIsFavorite(
-        await favoritesService.toggle(user.id, activeMarket.code, listing.id),
-      );
-    } catch (reason) {
-      Alert.alert(
-        "Favori indisponible",
-        reason instanceof Error ? reason.message : "Réessayez plus tard.",
-      );
-    } finally {
-      setEngagementBusy(false);
-    }
-  };
-
   const togglePriceWatch = async () => {
-    if (!listing || !requireLogin() || !user) return;
+    if (!listing?.price || !requireLogin() || !user) return;
     setEngagementBusy(true);
     try {
       if (activePriceWatchId) {
@@ -306,7 +292,15 @@ export default function ListingDetailScreen() {
         <Text accessibilityRole="header" style={styles.heading}>
           {listing.title}
         </Text>
-        <Text style={styles.price}>{formatMoney(listing.price)}</Text>
+        {listing.priceKind === "free" ? (
+          <Text style={styles.price}>{messagesFr["ui.listingCard.free"]}</Text>
+        ) : listing.priceKind === "on_request" ? (
+          <Text style={styles.price}>
+            {messagesFr["ui.listingCard.onRequest"]}
+          </Text>
+        ) : listing.price ? (
+          <Text style={styles.price}>{formatMoney(listing.price)}</Text>
+        ) : null}
         <Text style={styles.muted}>
           {listing.requiresPhysicalDelivery === false
             ? `${listing.conditionLabel} · Aucune livraison physique`
@@ -352,9 +346,24 @@ export default function ListingDetailScreen() {
         disabled={startingConversation}
       />
       <Button
-        label={favoriteActive ? "Retirer des favoris" : "Ajouter aux favoris"}
-        onPress={() => void toggleFavorite()}
-        disabled={engagementBusy}
+        label={
+          favoritesLoadState === "loading"
+            ? messagesFr["ui.favorites.loading"]
+            : favoritesLoadState === "error"
+              ? messagesFr["ui.favorites.retry"]
+              : favoriteActive
+                ? messagesFr["ui.favorites.remove"]
+                : messagesFr["ui.favorites.add"]
+        }
+        onPress={() =>
+          void (favoritesLoadState === "error"
+            ? retryFavorites()
+            : toggleFavorite(listing.id))
+        }
+        disabled={
+          favoritesLoadState === "loading" || isFavoritePending(listing.id)
+        }
+        loading={favoritesLoadState === "loading"}
         variant="secondary"
       />
       <Button

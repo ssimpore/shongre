@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { VehiclePublic } from "@shongre/contracts/auto";
 import type { JobPostingCard } from "@shongre/contracts/employment";
 import type { PropertyPublic } from "@shongre/contracts/real-estate";
@@ -11,7 +11,16 @@ import {
 } from "./listing-card.presentation";
 
 describe("structured category listing-card presentation", () => {
-  it("selects property type, area and room count without placeholders", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-09-06T12:00:00.000Z"));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("projects real property price, seller and promotion data", () => {
     const property = {
       id: "property-1",
       title: "Appartement lumineux",
@@ -37,22 +46,44 @@ describe("structured category listing-card presentation", () => {
         displayName: "Agence Canopée",
         type: "agency",
         verificationLabels: ["Entreprise vérifiée"],
+        rating: 4.9,
+        reviewCount: 28,
       },
-      promotion: { urgent: false, featured: true, sponsored: true },
+      promotion: {
+        urgent: false,
+        featured: true,
+        sponsored: true,
+        bumpedAt: "2026-08-20T10:00:00Z",
+        endsAt: "2027-08-20T10:00:00Z",
+      },
+      resolvedPromotion: {
+        state: "active",
+        type: "sponsored_search",
+        marketCode: "FR",
+        source: "purchase",
+        sourceId: "property-promotion",
+        startsAt: "2026-08-20T10:00:00Z",
+        endsAt: "2027-08-20T10:00:00Z",
+      },
       publishedAt: "2026-08-20T10:00:00Z",
       sortDate: "2026-08-20T10:00:00Z",
     } as unknown as PropertyPublic;
 
-    const card = presentPropertyListingCard(property, "fr-FR");
+    const card = presentPropertyListingCard(property, "fr-FR", "FR");
 
     expect(card.priceLabel).toContain("/ mois");
-    expect(card.conditionLabel).toBe("Bon état");
-    expect(card.characteristics).toEqual(["Appartement", "68 m²", "3 pièces"]);
-    expect(card.characteristicIcons).toEqual(["home", "ruler", "layout-grid"]);
+    expect(card.categoryLabel).toBe("Immobilier");
+    expect(card.characteristics).toEqual([]);
     expect(card.seller?.sellerType).toBe("pro");
+    expect(card.seller?.rating).toBe(4.9);
+    expect(card.seller?.reviewCount).toBe(28);
+    expect(card.promotion).toMatchObject({
+      state: "active",
+      type: "sponsored_search",
+    });
   });
 
-  it("collapses unavailable property metadata instead of filling space", () => {
+  it("does not invent unavailable property seller data", () => {
     const property = {
       id: "land-1",
       title: "Terrain",
@@ -83,9 +114,11 @@ describe("structured category listing-card presentation", () => {
       sortDate: "2026-08-20T10:00:00Z",
     } as unknown as PropertyPublic;
 
-    expect(
-      presentPropertyListingCard(property, "fr-FR").characteristics,
-    ).toEqual(["Terrain"]);
+    const card = presentPropertyListingCard(property, "fr-FR", "FR");
+    expect(card.characteristics).toEqual([]);
+    expect(card.seller?.rating).toBeUndefined();
+    expect(card.seller?.reviewCount).toBeUndefined();
+    expect(card.publishedAt).toBeUndefined();
   });
 
   it("projects a listing into the selected currency without changing its source money", () => {
@@ -120,7 +153,7 @@ describe("structured category listing-card presentation", () => {
       sortDate: "2026-08-20T10:00:00Z",
     } as unknown as PropertyPublic;
 
-    const card = presentPropertyListingCard(property, "fr-BE", (money) =>
+    const card = presentPropertyListingCard(property, "fr-BE", "BE", (money) =>
       convertMoney(
         money,
         "CHF",
@@ -135,10 +168,11 @@ describe("structured category listing-card presentation", () => {
     expect(sourcePrice).toEqual({ amountMinor: 129_000, currency: "EUR" });
   });
 
-  it("selects vehicle year, mileage and fuel", () => {
+  it("projects the vehicle universe and real make without card-only extras", () => {
     const vehicle = {
       id: "vehicle-1",
       title: "Peugeot 3008",
+      makeLabel: "Peugeot",
       price: { amountMinor: 2_490_000, currency: "EUR" },
       technical: {
         modelYear: 2022,
@@ -154,31 +188,52 @@ describe("structured category listing-card presentation", () => {
         displayName: "Auto Shongre",
         type: "dealer",
         locationLabel: "Lyon",
+        rating: 4.8,
+        reviewCount: 64,
         verifiedBusiness: true,
       },
       trust: { sellerIdentity: "verified" },
       mediaUrls: ["https://example.test/vehicle.jpg"],
       promotionLabels: ["urgent"],
+      resolvedPromotion: {
+        state: "active",
+        type: "urgent_badge",
+        marketCode: "FR",
+        source: "purchase",
+        sourceId: "vehicle-promotion",
+        startsAt: "2026-09-01T10:00:00Z",
+        endsAt: "2026-09-30T10:00:00Z",
+      },
       publishedAt: "2026-08-20T10:00:00Z",
       priceNegotiable: true,
     } as unknown as VehiclePublic;
 
-    const card = presentVehicleListingCard(vehicle, "fr-FR");
-    expect(card.characteristics[0]).toBe("2022");
-    expect(card.characteristics[1]?.replace(/\s/gu, " ")).toBe("42 000 km");
-    expect(card.characteristics[2]).toBe("Hybride");
-    expect(card.characteristicIcons).toEqual(["calendar", "gauge", "fuel"]);
-    expect(card.conditionLabel).toBe("Excellent état");
+    const card = presentVehicleListingCard(vehicle, "fr-FR", "FR");
+    expect(card.categoryLabel).toBe("Véhicules");
+    expect(card.characteristics).toEqual([]);
+    expect(card.brandLabel).toBe("Peugeot");
+    expect(card.seller?.rating).toBe(4.8);
+    expect(card.seller?.reviewCount).toBe(64);
     expect(card.isUrgent).toBe(true);
+    expect(card.promotion).toMatchObject({
+      state: "active",
+      type: "urgent_badge",
+    });
+    expect(
+      presentVehicleListingCard(vehicle, "en-US", "FR").categoryLabel,
+    ).toBe("Vehicles");
   });
 
-  it("presents job salary ranges and the three useful employment fields", () => {
+  it("presents the real job salary range and employer reputation", () => {
     const job = {
       id: "job-1",
       title: "Développeur front-end",
       employer: {
         id: "employer",
+        organizationId: "organization-studio-canopee",
         name: "Studio Canopée",
+        rating: 4.7,
+        reviewCount: 18,
         isPubliclyVerified: true,
       },
       contractTypeLabel: "CDI",
@@ -195,6 +250,15 @@ describe("structured category listing-card presentation", () => {
       isUrgent: false,
       isFeatured: false,
       isSponsored: true,
+      resolvedPromotion: {
+        state: "active",
+        type: "sponsored_search",
+        marketCode: "FR",
+        source: "subscription_credit",
+        sourceId: "job-promotion",
+        startsAt: "2026-09-01T10:00:00Z",
+        endsAt: "2026-09-30T10:00:00Z",
+      },
     } as unknown as JobPostingCard;
 
     const card = presentEmploymentListingCard(
@@ -204,22 +268,167 @@ describe("structured category listing-card presentation", () => {
       } as never,
       "fr-FR",
       "FR",
-      "EUR",
     );
     expect(card.priceLabel?.replace(/\s/gu, " ")).toContain(
-      "4 000,00 € – 5 000,00 €",
+      "4 000 € – 5 000 €",
     );
     expect(card.priceLabel).toContain("par mois");
-    expect(card.characteristics).toEqual([
-      "CDI",
-      "Hybride",
-      "Développement Web",
-    ]);
-    expect(card.characteristicIcons).toEqual([
-      "briefcase",
-      "laptop",
-      "briefcase",
-    ]);
-    expect(card.conditionLabel).toBe("");
+    expect(card.categoryLabel).toBe("Emploi");
+    expect(card.characteristics).toEqual([]);
+    expect(card.seller?.sellerType).toBe("pro");
+    expect(card.seller?.rating).toBe(4.7);
+    expect(card.seller?.reviewCount).toBe(18);
+    expect(card.promotion).toMatchObject({
+      state: "active",
+      type: "sponsored_search",
+    });
+
+    const unpriced = presentEmploymentListingCard(
+      { ...job, salary: undefined } as JobPostingCard,
+      null,
+      "fr-FR",
+      "FR",
+    );
+    expect(unpriced.priceKind).toBe("unpriced");
+    expect(unpriced.price).toBeUndefined();
+
+    const individualEmployer = presentEmploymentListingCard(
+      {
+        ...job,
+        employer: { ...job.employer, organizationId: undefined },
+      } as JobPostingCard,
+      null,
+      "fr-FR",
+      "FR",
+    );
+    expect(individualEmployer.seller?.sellerType).toBe("individual");
+
+    expect(
+      presentEmploymentListingCard(job, null, "en-US", "FR").priceLabel,
+    ).toContain("per month");
+  });
+
+  it.each([
+    [
+      "inactive state",
+      {
+        state: "inactive",
+        type: "featured",
+        marketCode: "FR",
+        source: "purchase",
+        sourceId: "inactive-promotion",
+        startsAt: "2026-09-01T00:00:00.000Z",
+        endsAt: "2026-09-30T00:00:00.000Z",
+      },
+    ],
+    [
+      "expired schedule",
+      {
+        state: "active",
+        type: "featured",
+        marketCode: "FR",
+        source: "purchase",
+        sourceId: "expired-promotion",
+        startsAt: "2026-08-01T00:00:00.000Z",
+        endsAt: "2026-09-01T00:00:00.000Z",
+      },
+    ],
+    [
+      "market mismatch",
+      {
+        state: "active",
+        type: "featured",
+        marketCode: "BE",
+        source: "purchase",
+        sourceId: "wrong-market-promotion",
+        startsAt: "2026-09-01T00:00:00.000Z",
+        endsAt: "2026-09-30T00:00:00.000Z",
+      },
+    ],
+  ] as const)("rejects a %s promotion projection", (_label, promotion) => {
+    const vehicle = {
+      id: "vehicle-promotion",
+      title: "Véhicule de test",
+      makeLabel: "Peugeot",
+      price: { amountMinor: 2_490_000, currency: "EUR" },
+      locationLabel: "Lyon",
+      marketCodes: ["FR"],
+      seller: {
+        id: "dealer",
+        displayName: "Auto Shongre",
+        type: "dealer",
+        locationLabel: "Lyon",
+        verifiedBusiness: true,
+      },
+      trust: { sellerIdentity: "verified" },
+      mediaUrls: [],
+      promotionLabels: ["featured"],
+      resolvedPromotion: promotion,
+      publishedAt: "2026-08-20T10:00:00Z",
+    } as unknown as VehiclePublic;
+
+    const card = presentVehicleListingCard(vehicle, "fr-FR", "FR");
+    expect(card.promotion).toBeUndefined();
+    expect(card.isFeatured).toBe(false);
+  });
+
+  it("rejects an active promotion without authoritative provenance", () => {
+    const vehicle = {
+      id: "vehicle-unproven-promotion",
+      title: "Véhicule de test",
+      makeLabel: "Peugeot",
+      price: { amountMinor: 2_490_000, currency: "EUR" },
+      locationLabel: "Lyon",
+      marketCodes: ["FR"],
+      seller: {
+        id: "dealer",
+        displayName: "Auto Shongre",
+        type: "dealer",
+        locationLabel: "Lyon",
+        verifiedBusiness: true,
+      },
+      trust: { sellerIdentity: "verified" },
+      mediaUrls: [],
+      promotionLabels: ["featured"],
+      resolvedPromotion: {
+        state: "active",
+        type: "featured",
+        marketCode: "FR",
+        startsAt: "2026-09-01T00:00:00.000Z",
+        endsAt: "2026-09-30T00:00:00.000Z",
+      },
+      publishedAt: "2026-08-20T10:00:00Z",
+    } as unknown as VehiclePublic;
+
+    expect(
+      presentVehicleListingCard(vehicle, "fr-FR", "FR").promotion,
+    ).toBeUndefined();
+  });
+
+  it("never derives a card promotion from structured legacy flags alone", () => {
+    const vehicle = {
+      id: "vehicle-legacy-promotion",
+      title: "Véhicule de test",
+      makeLabel: "Peugeot",
+      price: { amountMinor: 2_490_000, currency: "EUR" },
+      locationLabel: "Lyon",
+      marketCodes: ["FR"],
+      seller: {
+        id: "dealer",
+        displayName: "Auto Shongre",
+        type: "dealer",
+        locationLabel: "Lyon",
+        verifiedBusiness: true,
+      },
+      trust: { sellerIdentity: "verified" },
+      mediaUrls: [],
+      promotionLabels: ["urgent", "featured"],
+      publishedAt: "2026-08-20T10:00:00Z",
+    } as unknown as VehiclePublic;
+
+    const card = presentVehicleListingCard(vehicle, "fr-FR", "FR");
+    expect(card.promotion).toBeUndefined();
+    expect(card.isUrgent).toBe(false);
+    expect(card.isFeatured).toBe(false);
   });
 });

@@ -4,16 +4,18 @@ import {
   MarketScopedSearchFilters,
 } from "../../contracts/search.contract";
 import { httpClient } from "./http-client";
-import {
-  mapBackendListing,
-  type BackendListing,
-} from "./http-listings.service";
+import { mapBackendListing } from "./http-listings.service";
+import type { operations } from "@shongre/contracts/openapi";
+
+type BackendSearchResponse =
+  operations["postListingsSearch"]["responses"][200]["content"]["application/json"];
 
 export class HttpSearchService implements SearchServiceContract {
   async search(params: MarketScopedSearchFilters): Promise<SearchResponse> {
-    const result = await httpClient.post<
-      Omit<SearchResponse, "items"> & { items: BackendListing[] }
-    >("/listings/search", params);
+    const result = await httpClient.post<BackendSearchResponse>(
+      "/listings/search",
+      params,
+    );
     return { ...result, items: result.items.map(mapBackendListing) };
   }
 

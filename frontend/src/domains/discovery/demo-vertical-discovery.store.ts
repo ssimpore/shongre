@@ -9,6 +9,7 @@ import {
   DEMO_COURSE_CATALOG,
   DEMO_COURSE_OFFERS,
   DEMO_TUTORS,
+  resolveDemoCoursePromotion,
 } from "../../mocks/coursesDemoData";
 import { IMMO_DEMO_PROPERTIES } from "../../mocks/realEstateDemoData";
 import type { Listing } from "../../types";
@@ -101,7 +102,15 @@ class DemoVerticalDiscoveryStore {
     return this.upsert(
       "tutoring",
       offer.id,
-      projectCourseOffer(tutor, offer, subjectLabel),
+      projectCourseOffer(
+        tutor,
+        offer,
+        subjectLabel,
+        offer.marketCodes[0],
+        offer.marketCodes[0]
+          ? resolveDemoCoursePromotion(offer, offer.marketCodes[0])
+          : undefined,
+      ),
     );
   }
 

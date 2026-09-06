@@ -15,6 +15,10 @@ import { demoFeatureFlagService } from "./demo-feature-flag.service";
 import { simulateNetworkDelay } from "../../client/api-client.config";
 import { demoVerticalDiscoveryStore } from "../../../domains/discovery/demo-vertical-discovery.store";
 import { requireDemoCapability } from "./demo-authorization";
+import {
+  DemoDeliveryFavoritesStore,
+  demoDeliveryFavoritesStore,
+} from "./demo-delivery-favorites.store";
 
 const REQUEST_ID = "418711cb-aee0-4fa3-a102-8ec6ea2a2cb8";
 const REQUESTER_ID = "user_thomas";
@@ -104,7 +108,7 @@ export class DemoDeliveryService implements DeliveryServiceContract {
   private readonly profiles = new Map<string, DeliveryCourierProfile>();
   private readonly applicationOwners = new Map<string, string>();
 
-  constructor() {
+  constructor(private readonly favorites = new DemoDeliveryFavoritesStore()) {
     this.requests.forEach((request) =>
       demoVerticalDiscoveryStore.syncDeliveryRequest(publicRequest(request)),
     );
@@ -155,6 +159,33 @@ export class DemoDeliveryService implements DeliveryServiceContract {
     )
       throw new Error("DELIVERY_REQUEST_NOT_OPEN");
     return clone(publicRequest(request));
+  }
+  async getFavoriteRequestIds(accountId: string, marketCode: string) {
+    await simulateNetworkDelay();
+    requireDemoCapability("favorite.manage.own");
+    return this.favorites.list(accountId, marketCode);
+  }
+  async setFavoriteRequest(
+    accountId: string,
+    requestId: string,
+    marketCode: string,
+    isFavorite: boolean,
+  ) {
+    await simulateNetworkDelay();
+    requireDemoCapability("favorite.manage.own");
+    if (isFavorite) {
+      const request = this.requests.get(requestId);
+      if (
+        !request ||
+        request.marketCode !== marketCode ||
+        request.status !== "open" ||
+        !request.publishedAt ||
+        request.expiresAt <= "2026-09-05T12:00:00.000Z"
+      ) {
+        throw new Error("DELIVERY_REQUEST_NOT_OPEN");
+      }
+    }
+    return this.favorites.set(accountId, requestId, marketCode, isFavorite);
   }
   async getCourierProfile(actor: DeliveryActor, marketCode: string) {
     await simulateNetworkDelay();
@@ -439,4 +470,6 @@ export class DemoDeliveryService implements DeliveryServiceContract {
   }
 }
 
-export const demoDeliveryService = new DemoDeliveryService();
+export const demoDeliveryService = new DemoDeliveryService(
+  demoDeliveryFavoritesStore,
+);

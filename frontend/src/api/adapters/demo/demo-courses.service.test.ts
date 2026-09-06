@@ -26,6 +26,30 @@ describe("DemoCoursesService", () => {
     expect(
       first.items.every((item) => Number.isInteger(item.fromPrice.amountMinor)),
     ).toBe(true);
+    expect(
+      first.items.find((item) => item.tutor.id === "tutor_thomas")
+        ?.resolvedPromotion,
+    ).toMatchObject({
+      state: "active",
+      marketCode: "FR",
+      source: "subscription_credit",
+      sourceId: "demo:courses:course_offer_tutor_thomas:sponsored",
+    });
+  });
+
+  it("fails closed instead of copying the France catalog into another market", async () => {
+    const service = new DemoCoursesService();
+
+    await expect(service.getCatalog("BE")).resolves.toMatchObject({
+      config: { marketCode: "BE", isEnabled: false },
+      subjects: [],
+      levels: [],
+      plans: [],
+      addOns: [],
+    });
+    await expect(
+      service.searchTutors({ marketCode: "BE" }),
+    ).resolves.toMatchObject({ items: [], total: 0 });
   });
 
   it("does not apply a rating filter to profiles without enough verified reviews", async () => {
@@ -43,15 +67,32 @@ describe("DemoCoursesService", () => {
     ).toBe(true);
   });
 
-  it("keeps saved tutors isolated by account", async () => {
+  it("keeps desired tutor favorite state isolated by account and market", async () => {
     const service = new DemoCoursesService();
-    await service.toggleSavedTutor("account_a", "tutor_thomas");
-    expect(await service.getSavedTutorIds("account_a")).toContain(
+    await expect(
+      service.setSavedTutor("account_a", "tutor_thomas", "FR", true),
+    ).resolves.toBe(true);
+    await expect(
+      service.setSavedTutor("account_a", "tutor_thomas", "FR", true),
+    ).resolves.toBe(true);
+    expect(await service.getSavedTutorIds("account_a", "FR")).toContain(
       "tutor_thomas",
     );
-    expect(await service.getSavedTutorIds("account_b")).not.toContain(
+    expect(await service.getSavedTutorIds("account_a", "BE")).not.toContain(
       "tutor_thomas",
     );
+    expect(await service.getSavedTutorIds("account_b", "FR")).not.toContain(
+      "tutor_thomas",
+    );
+    await expect(
+      service.setSavedTutor("account_a", "tutor_thomas", "BE", true),
+    ).rejects.toThrow(/indisponible/i);
+    await expect(
+      service.setSavedTutor("account_a", "missing-tutor", "BE", false),
+    ).resolves.toBe(false);
+    await expect(
+      service.setSavedTutor("account_a", "tutor_thomas", "FR", false),
+    ).resolves.toBe(false);
   });
 
   it("requires guardian details for a minor", async () => {

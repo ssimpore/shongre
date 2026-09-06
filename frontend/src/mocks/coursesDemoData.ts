@@ -6,6 +6,10 @@ import type {
   LearnerRequest,
   TutorProfile,
 } from "@shongre/contracts/courses";
+import {
+  isActiveMarketResolvedListingPromotion,
+  type MarketResolvedListingPromotion,
+} from "@shongre/contracts";
 
 export const DEMO_COURSE_CATALOG: CourseCatalog = {
   config: {
@@ -476,6 +480,48 @@ export const DEMO_COURSE_OFFERS: CourseOffer[] = DEMO_TUTORS.map(
     publishedAt: "2026-05-12T08:00:00.000Z",
   }),
 );
+
+const DEMO_COURSE_PROMOTION_PROOFS: Readonly<
+  Record<
+    string,
+    {
+      listingId: string;
+      promotion: MarketResolvedListingPromotion;
+    }
+  >
+> = {
+  course_offer_tutor_thomas: {
+    listingId: "listing_course_tutor_thomas",
+    promotion: {
+      state: "active",
+      type: "sponsored_search",
+      marketCode: "FR",
+      source: "subscription_credit",
+      sourceId: "demo:courses:course_offer_tutor_thomas:sponsored",
+      label: "Sponsorisé",
+      startsAt: "2026-08-01T00:00:00.000Z",
+      endsAt: "2026-12-31T23:59:59.000Z",
+      promotedAt: "2026-08-01T00:00:00.000Z",
+    },
+  },
+};
+
+export function resolveDemoCoursePromotion(
+  offer: CourseOffer,
+  marketCode: string,
+  now = Date.parse("2026-09-06T12:00:00.000Z"),
+): MarketResolvedListingPromotion | undefined {
+  const proof = DEMO_COURSE_PROMOTION_PROOFS[offer.id];
+  if (
+    !proof ||
+    !offer.listingId ||
+    proof.listingId !== offer.listingId ||
+    !offer.marketCodes.includes(marketCode) ||
+    !isActiveMarketResolvedListingPromotion(proof.promotion, marketCode, now)
+  )
+    return undefined;
+  return structuredClone(proof.promotion);
+}
 
 export const DEMO_LEARNER_REQUESTS: LearnerRequest[] = [
   {

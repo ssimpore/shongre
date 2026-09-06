@@ -68,8 +68,11 @@ export interface PublicationDraftInput {
     | "on_request"
     | "hourly"
     | "daily"
+    | "weekly"
     | "monthly"
-    | "rent_plus_charges";
+    | "total"
+    | "rent_plus_charges"
+    | "unpriced";
   categoryId?: string;
   listingTypeId?: string;
   intent?: TaxonomyV4ListingIntent;
@@ -98,6 +101,38 @@ export interface PublicationDraftInput {
   externalStockId?: string;
   fulfillmentTypes?: FulfillmentType[];
   digitalFulfillment?: DigitalFulfillmentVersionInput;
+}
+
+const LISTING_PRICE_TYPES = [
+  "fixed",
+  "negotiable",
+  "free",
+  "on_request",
+  "hourly",
+  "daily",
+  "weekly",
+  "monthly",
+  "total",
+  "rent_plus_charges",
+  "unpriced",
+] as const;
+type ListingPriceType = (typeof LISTING_PRICE_TYPES)[number];
+const LISTING_PRICE_TYPE_SET = new Set<string>(LISTING_PRICE_TYPES);
+
+function resolveListingPriceType(
+  draft: PublicationDraftInput,
+): ListingPriceType {
+  const candidate =
+    draft.priceModel ??
+    draft.attributes?.price_type ??
+    (draft.price === undefined ? "unpriced" : "fixed");
+  if (typeof candidate !== "string" || !LISTING_PRICE_TYPE_SET.has(candidate)) {
+    throw new AppError({
+      code: "VALIDATION_ERROR",
+      message: "Le modèle de prix de l’annonce est invalide.",
+    });
+  }
+  return candidate as ListingPriceType;
 }
 
 const SENSITIVE_DRAFT_ATTRIBUTE =
@@ -205,6 +240,7 @@ type ManagedTaxonomyDefinition = {
 
 function applicationManagedTaxonomyAttributes(
   draft: PublicationDraftInput,
+  priceType: ListingPriceType,
   definitions: ManagedTaxonomyDefinition[],
   market: { countryCode: string; currency: string },
   sellerType: "individual" | "professional",
@@ -228,7 +264,7 @@ function applicationManagedTaxonomyAttributes(
         ? undefined
         : Math.round(draft.price * 10 ** getCurrencyMinorUnitDigits(currency)),
     currency,
-    price_type: draft.attributes?.price_type ?? draft.priceModel ?? "fixed",
+    price_type: priceType,
     condition,
     country: market.countryCode,
     postal_code: draft.postalCode,
@@ -282,6 +318,20 @@ export class ListingsService {
       requireMarketCode(marketCode),
     );
     return listing ? toPublicListing(listing) : null;
+  }
+
+  async getPublicListingCards(
+    listingIds: readonly string[],
+    marketCode: string,
+  ): Promise<{ listings: PublicListing[]; total: number }> {
+    const listings = await this.listingRepo.findPublicByIds(
+      listingIds,
+      requireMarketCode(marketCode),
+    );
+    return {
+      listings: listings.map(toPublicListing),
+      total: listings.length,
+    };
   }
 
   async searchListings(params: SearchFilters) {
@@ -483,27 +533,38 @@ export class ListingsService {
       });
     }
 
-    const taxonomyNode = await taxonomyService.getNodeById(draft.categoryId);
-    const acceptsUndisclosedAmount =
-      taxonomyNode?.listingFamily === "job" ||
-      draft.priceModel === "on_request";
-    if (draft.price === undefined && !acceptsUndisclosedAmount) {
-      throw new AppError({
-        code: "VALIDATION_ERROR",
-        message: "Un prix ou un tarif est obligatoire pour cette catégorie.",
-      });
-    }
-    const effectivePrice = draft.price ?? 0;
-
+    const priceType = resolveListingPriceType(draft);
+    const numericPrice =
+      draft.price === undefined ? undefined : Number(draft.price);
     if (
-      !Number.isFinite(Number(effectivePrice)) ||
-      Number(effectivePrice) < 0
+      numericPrice !== undefined &&
+      (!Number.isFinite(numericPrice) || numericPrice < 0)
     ) {
       throw new AppError({
         code: "VALIDATION_ERROR",
         message: "Le prix doit être un montant positif ou nul.",
       });
     }
+    const amountIsHidden =
+      priceType === "on_request" || priceType === "unpriced";
+    if (
+      (priceType === "free" || amountIsHidden) &&
+      numericPrice !== undefined &&
+      numericPrice !== 0
+    ) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Ce modèle de prix ne peut pas masquer un montant renseigné.",
+      });
+    }
+    const amountIsRequired = priceType !== "free" && !amountIsHidden;
+    if (amountIsRequired && (numericPrice === undefined || numericPrice <= 0)) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Un prix ou un tarif positif est obligatoire pour ce modèle.",
+      });
+    }
+    const effectivePrice = numericPrice ?? 0;
 
     const marketCode = requireMarketCode(draft.marketCode);
     const primaryMarket = await this.markets.getEffective(marketCode);
@@ -580,6 +641,7 @@ export class ListingsService {
           : undefined;
         const managedAttributes = applicationManagedTaxonomyAttributes(
           draft,
+          priceType,
           resolvedTaxonomy.attributes.map(({ definition }) => definition),
           {
             countryCode: taxonomyContext.marketContext.countryCode!,
@@ -624,6 +686,7 @@ export class ListingsService {
       );
       const managedAttributes = applicationManagedTaxonomyAttributes(
         draft,
+        priceType,
         definitions,
         { countryCode: marketCode, currency: primaryMarket.currency },
         "individual",
@@ -888,7 +951,13 @@ export class ListingsService {
       viewCount: 0,
       favoriteCount: 0,
       safetyRiskScore: safety.riskScore,
-      attributes: draft.attributes || {},
+      attributes: {
+        ...(draft.attributes || {}),
+        // Keep the authoritative pricing intent in the public-safe listing
+        // projection. A zero amount alone cannot distinguish a donation, an
+        // on-request price, or a category where no price is published.
+        price_type: priceType,
+      },
       externalStockId: draft.externalStockId,
       createdAt,
       publishedAt: createdAt,
@@ -1091,12 +1160,39 @@ export class ListingsService {
   // userId is required rather than defaulted. These previously fell back to
   // 'user_thomas', so any call that forgot to pass an identity silently read
   // and mutated one specific demo account's favourites.
-  async toggleFavorite(listingId: string, userId: string): Promise<boolean> {
-    return this.listingRepo.toggleFavorite(userId, listingId);
+  async setFavorite(
+    listingId: string,
+    userId: string,
+    marketCode: string,
+    isFavorite: boolean,
+  ): Promise<boolean> {
+    return this.listingRepo.setFavorite(
+      userId,
+      listingId,
+      marketCode,
+      isFavorite,
+    );
   }
 
-  async getFavorites(userId: string): Promise<string[]> {
-    return this.listingRepo.getFavorites(userId);
+  async getFavoriteCollection(
+    userId: string,
+    marketCode: string,
+  ): Promise<{
+    listingIds: string[];
+    listings: PublicListing[];
+  }> {
+    const listingIds = await this.listingRepo.getFavorites(userId, marketCode);
+    const listings = await this.listingRepo.findPublicByIds(
+      listingIds,
+      marketCode,
+    );
+    return {
+      // A favorite may outlive publication. Keep that durable relationship in
+      // storage so it can reappear after republication, but expose only ids for
+      // which this same response can provide a public card projection.
+      listingIds: listings.map((listing) => listing.id),
+      listings: listings.map(toPublicListing),
+    };
   }
 }
 

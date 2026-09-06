@@ -8,6 +8,7 @@ import type {
   RecruiterNote,
   RecruiterWorkspace,
 } from "../schemas/employment";
+import type { MarketResolvedListingPromotion } from "../schemas/discovery";
 import { EMPLOYMENT_DEFAULT_PIPELINE_STAGES } from "./employment-catalog";
 
 export const EMPLOYMENT_DEMO_NOW = "2026-08-22T10:00:00.000Z";
@@ -92,6 +93,7 @@ type JobSeed = {
   urgent?: boolean;
   featured?: boolean;
   sponsored?: boolean;
+  resolvedPromotion?: MarketResolvedListingPromotion;
   responsibilities: string[];
   requiredSkills: string[];
   preferredSkills?: string[];
@@ -162,6 +164,7 @@ const makeJob = (seed: JobSeed): JobPostingDetail => ({
   isUrgent: Boolean(seed.urgent),
   isFeatured: Boolean(seed.featured),
   isSponsored: Boolean(seed.sponsored),
+  resolvedPromotion: seed.resolvedPromotion,
   saved: seed.id === "job-react-lyon",
   lifecycle: "published",
   marketCode: "FR",
@@ -239,6 +242,15 @@ export const EMPLOYMENT_DEMO_JOBS: JobPostingDetail[] = [
     salary: [4_500_000, 5_500_000, "year"],
     daysAgo: 1,
     featured: true,
+    resolvedPromotion: {
+      state: "active",
+      type: "featured",
+      marketCode: "FR",
+      startsAt: "2026-08-21T10:00:00.000Z",
+      endsAt: "2026-10-21T10:00:00.000Z",
+      source: "purchase",
+      sourceId: "demo:employment:job-react-lyon:featured",
+    },
     responsibilities: [
       "Concevoir des interfaces accessibles",
       "Faire évoluer le design system",
@@ -349,6 +361,15 @@ export const EMPLOYMENT_DEMO_JOBS: JobPostingDetail[] = [
     salary: [1_250, 1_450, "hour"],
     daysAgo: 0,
     urgent: true,
+    resolvedPromotion: {
+      state: "active",
+      type: "urgent_badge",
+      marketCode: "FR",
+      startsAt: "2026-08-22T10:00:00.000Z",
+      endsAt: "2026-09-22T10:00:00.000Z",
+      source: "purchase",
+      sourceId: "demo:employment:job-seasonal-nice:urgent",
+    },
     responsibilities: [
       "Préparer l’ouverture",
       "Accueillir les visiteurs",
@@ -370,6 +391,15 @@ export const EMPLOYMENT_DEMO_JOBS: JobPostingDetail[] = [
     salary: [55_000, 70_000, "hour"],
     daysAgo: 4,
     sponsored: true,
+    resolvedPromotion: {
+      state: "active",
+      type: "sponsored_search",
+      marketCode: "FR",
+      startsAt: "2026-08-18T10:00:00.000Z",
+      endsAt: "2026-10-18T10:00:00.000Z",
+      source: "subscription_credit",
+      sourceId: "demo:employment:job-freelance-remote:sponsored",
+    },
     responsibilities: [
       "Cadrer une refonte de parcours",
       "Animer des ateliers",
@@ -412,6 +442,15 @@ export const EMPLOYMENT_DEMO_JOBS: JobPostingDetail[] = [
     salary: [1_320, 1_480, "hour"],
     daysAgo: 1,
     urgent: true,
+    resolvedPromotion: {
+      state: "active",
+      type: "urgent_badge",
+      marketCode: "FR",
+      startsAt: "2026-08-21T10:00:00.000Z",
+      endsAt: "2026-09-21T10:00:00.000Z",
+      source: "purchase",
+      sourceId: "demo:employment:job-temp-warehouse-lyon:urgent",
+    },
     responsibilities: [
       "Préparer les commandes",
       "Contrôler les expéditions",

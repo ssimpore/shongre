@@ -293,6 +293,72 @@ export class DeliveryService {
     return publicRequest(request);
   }
 
+  async getFavoriteRequestIds(principal: Principal, context: MarketContext) {
+    this.requireFavoriteCapability(principal, context);
+    return this.repository.getFavoriteRequestIds(
+      principal.userId,
+      this.requireMarket(context),
+    );
+  }
+
+  async getFavoritePublicRequests(
+    principal: Principal,
+    context: MarketContext,
+  ) {
+    this.requireFavoriteCapability(principal, context);
+    const availability = await this.availability(principal, context);
+    if (!availability.enabled) return [];
+    const marketCode = this.requireMarket(context);
+    const requestIds = await this.repository.getFavoriteRequestIds(
+      principal.userId,
+      marketCode,
+    );
+    return this.repository.getPublicRequestsByIds(requestIds, marketCode);
+  }
+
+  async setFavoriteRequest(
+    principal: Principal,
+    context: MarketContext,
+    requestId: string,
+    isFavorite: boolean,
+  ) {
+    this.requireFavoriteCapability(principal, context);
+    if (isFavorite) {
+      await this.requireEnabled(principal, context);
+      const request = await this.requireRequest(requestId);
+      this.assertSameMarket(request, context);
+      if (
+        request.status !== "open" ||
+        !request.publishedAt ||
+        request.expiresAt <= new Date().toISOString()
+      ) {
+        throw new AppError({
+          code: "NOT_FOUND",
+          message: "Demande introuvable.",
+        });
+      }
+    }
+    try {
+      return await this.repository.setFavoriteRequest(
+        principal.userId,
+        requestId,
+        this.requireMarket(context),
+        isFavorite,
+      );
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        error.message === "DELIVERY_REQUEST_NOT_OPEN"
+      ) {
+        throw new AppError({
+          code: "NOT_FOUND",
+          message: "Demande introuvable.",
+        });
+      }
+      deliveryError(error, "DELIVERY_APPLICATION_CONFLICT");
+    }
+  }
+
   async listOwnRequests(principal: Principal, context: MarketContext) {
     this.requireCapability(principal, "delivery.request.manage.own", context);
     return this.repository.listOwnRequests(
@@ -661,6 +727,21 @@ export class DeliveryService {
         marketCodes: [marketCode],
         featureFlags: [DELIVERY_FEATURE_FLAG_KEY],
       },
+    );
+  }
+
+  private requireFavoriteCapability(
+    principal: Principal,
+    context: MarketContext,
+  ) {
+    const marketCode = this.requireMarket(context);
+    return requireAuthorization(
+      principal,
+      {
+        capability: "favorite.manage.own",
+        market: { code: marketCode, enabled: true },
+      },
+      { marketCodes: [marketCode] },
     );
   }
 

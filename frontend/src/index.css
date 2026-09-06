@@ -647,12 +647,16 @@
   }
 }
 
-/* Cards have a compact minimum rhythm but can grow for translated or unusually
-   long essential content. Grid and rail parents stretch siblings to the same
-   row height, so missing attributes collapse without leaving an artificial
-   fixed-height void and present attributes are never clipped. */
+/* Every vertical listing card owns one compact footprint. Essential values are
+   single-line and safely truncated, so grids and rails stay aligned without a
+   second category-specific height. */
 .listing-card-standard {
+  width: min(100%, var(--spacing-listing-card-mobile-max));
+  max-width: var(--spacing-listing-card-mobile-max);
+  height: var(--spacing-listing-card-height);
   min-height: var(--spacing-listing-card-height);
+  max-height: var(--spacing-listing-card-height);
+  margin-inline: auto;
 }
 
 .listing-card-shell,
@@ -665,10 +669,16 @@
   overflow: hidden;
 }
 
-/* Homepage discovery uses one fixed editorial footprint across its independent
-   rails. The denser vertical rhythm and single characteristic row keep long
-   employment copy contained without letting one distant card stretch a whole
-   section. */
+/* One token-backed media height keeps the four essential information rows
+   visible even when a fluid grid gives the compact card a little more width.
+   The canonical 13rem card remains near the dedicated 4:5 portrait ratio;
+   wider phone cards reveal more of the crop without changing total height. */
+.listing-card-media,
+.listing-card-skeleton > :first-child {
+  height: var(--spacing-listing-card-media-height);
+}
+
+/* Showcase is a context variant of the same primitive and footprint. */
 .listing-card-showcase {
   height: var(--spacing-listing-card-showcase-height);
   min-height: var(--spacing-listing-card-showcase-height);
@@ -686,22 +696,6 @@
 .listing-card-showcase > a {
   height: 100%;
   min-height: 0;
-}
-
-.listing-card-showcase [data-listing-card-content="true"] {
-  padding-block: calc(var(--spacing-base) * 2);
-}
-
-.listing-card-showcase [data-listing-card-characteristic-icon] {
-  padding-inline: calc(var(--spacing-base) * 1.5);
-}
-
-.listing-card-showcase-skeleton > :first-child {
-  aspect-ratio: var(--aspect-media);
-}
-
-.listing-card-seller-grid {
-  grid-template-columns: auto minmax(0, 1fr);
 }
 
 .listing-card-promotion-badge {
@@ -753,6 +747,16 @@
     aspect-ratio: auto;
     flex-basis: var(--spacing-listing-card-list-image-md);
   }
+
+  /* The favourite remains a sibling of the listing link (interactive controls
+     must never be nested), so list mode positions its shared overlay against
+     the token-sized media well. This keeps both top actions visually on the
+     photo instead of sending the favourite to the far edge of the result row. */
+  .listing-card-list-overlay {
+    left: 0;
+    right: auto;
+    width: var(--spacing-listing-card-list-image-md);
+  }
 }
 
 @variant lg {
@@ -760,6 +764,88 @@
     width: var(--spacing-listing-card-list-image-lg);
     min-width: var(--spacing-listing-card-list-image-lg);
     flex-basis: var(--spacing-listing-card-list-image-lg);
+  }
+
+  .listing-card-list-overlay {
+    width: var(--spacing-listing-card-list-image-lg);
+  }
+}
+
+/* The hero explicitly presents its featured listing as a landscape preview at
+   every breakpoint. Search results keep the shared phone stack above; this
+   narrow context modifier only supplies the token-backed row geometry that the
+   generic list variant already uses from `sm` upward. */
+.listing-card-hero-horizontal {
+  height: var(--spacing-listing-card-list-height);
+  max-height: var(--spacing-listing-card-list-height);
+}
+
+.listing-card-hero-horizontal > a,
+.listing-card-hero-horizontal .listing-card-list-link {
+  height: 100%;
+  flex-direction: row;
+}
+
+.listing-card-hero-horizontal .listing-card-list-image {
+  width: var(--spacing-listing-card-list-image-sm);
+  min-width: var(--spacing-listing-card-list-image-sm);
+  height: 100%;
+  aspect-ratio: auto;
+  flex-basis: var(--spacing-listing-card-list-image-sm);
+}
+
+.listing-card-hero-horizontal .listing-card-list-overlay {
+  left: 0;
+  right: auto;
+  width: var(--spacing-listing-card-list-image-sm);
+}
+
+/* The hero's carousel controls share a footer at the bottom-right of the
+   information panel. Reserve their token-sized row below the card metadata so
+   long locations and dates truncate without colliding with the controls. */
+.listing-card-hero-horizontal .listing-card-list-content {
+  padding-bottom: calc(var(--spacing-control-sm) + var(--spacing-semantic-lg));
+}
+
+@variant sm {
+  .listing-card-hero-horizontal .listing-card-list-image,
+  .listing-card-hero-horizontal .listing-card-list-overlay {
+    width: var(--spacing-listing-card-list-image-md);
+    min-width: var(--spacing-listing-card-list-image-md);
+    flex-basis: var(--spacing-listing-card-list-image-md);
+  }
+}
+
+@variant lg {
+  .listing-card-hero-horizontal {
+    height: 100%;
+    max-height: none;
+  }
+
+  .listing-card-hero-horizontal .listing-card-list-image,
+  .listing-card-hero-horizontal .listing-card-list-overlay {
+    width: var(--spacing-listing-card-list-image-lg);
+    min-width: var(--spacing-listing-card-list-image-lg);
+    flex-basis: var(--spacing-listing-card-list-image-lg);
+  }
+
+  /* Hero mode restores the richer decision layer without changing the compact
+     card used by results and rails. Every dimension resolves from shared
+     spacing/control tokens so the rows keep a stable rhythm as copy varies. */
+  .listing-card-hero-horizontal .listing-card-list-content {
+    gap: calc(var(--spacing-base) * 2);
+    padding: calc(var(--spacing-base) * 4);
+    padding-bottom: calc(
+      var(--spacing-control-sm) + var(--spacing-semantic-lg)
+    );
+  }
+
+  .listing-card-hero-horizontal .listing-card-hero-characteristics {
+    min-height: var(--spacing-control-sm);
+  }
+
+  .listing-card-hero-horizontal .listing-card-hero-seller {
+    min-height: var(--spacing-control-sm);
   }
 }
 

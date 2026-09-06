@@ -1,7 +1,7 @@
 import { PAGE_SIZES } from "../../configuration/pagination.config";
 import { IMAGE_SIZES } from "@shongre/shared";
 import React, { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   Bell,
   CarFront,
@@ -25,6 +25,8 @@ import {
   DropdownMenu,
   FilterPanel,
   LocationSelector,
+  ListingCardSkeleton,
+  ListingGrid,
   Skeleton,
   StatePanel,
   Image,
@@ -41,6 +43,8 @@ import { formatCurrencySymbol } from "../../utilities/formatters";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { CANONICAL_TAXONOMY_IDS } from "@shongre/contracts/taxonomy-catalog";
+import { routes } from "../../configuration/routes";
+import { useAutoVehicleFavorites } from "./useAutoVehicleFavorites";
 
 const split = (value: string | null) =>
   (value || "").split(",").filter(Boolean);
@@ -418,6 +422,7 @@ const AutoFilters: React.FC<FiltersProps> = ({
 export const AutoSearchPage: React.FC = () => {
   const { t } = useTranslation();
   const [params, setParams] = useSearchParams();
+  const navigate = useNavigate();
   const { currentUser } = useAuth();
   const { activeMarket, currentLocale, convertMoney } = useMarketLocation();
   const toast = useToast();
@@ -428,6 +433,13 @@ export const AutoSearchPage: React.FC = () => {
   const [error, setError] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
   const [compared, setCompared] = useState<VehiclePublic[]>([]);
+  const currentUserId = currentUser?.id;
+  const {
+    favoriteIds: favoriteVehicleIds,
+    loadState: favoriteLoadState,
+    refresh: loadFavoriteVehicleIds,
+    toggleFavorite: toggleFavoriteVehicle,
+  } = useAutoVehicleFavorites(currentUserId, activeMarket.code);
 
   const update = (key: string, value?: string) => {
     setParams(
@@ -539,17 +551,27 @@ export const AutoSearchPage: React.FC = () => {
       .then(setCatalog)
       .catch(() => setError(true));
   }, [activeMarket.code]);
+
   useEffect(() => {
+    let cancelled = false;
     setLoading(true);
     setError(false);
     services.auto
       .searchVehicles(query)
       .then((result) => {
+        if (cancelled) return;
         setVehicles(result.items);
         setTotal(result.total);
       })
-      .catch(() => setError(true))
-      .finally(() => setLoading(false));
+      .catch(() => {
+        if (!cancelled) setError(true);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [query]);
 
   const toggleCompare = (vehicle: VehiclePublic) => {
@@ -566,15 +588,19 @@ export const AutoSearchPage: React.FC = () => {
     });
   };
   const favorite = async (vehicle: VehiclePublic) => {
-    const active = await services.auto.toggleFavoriteVehicle(
-      currentUser?.id || "guest",
-      vehicle.id,
-    );
-    setVehicles((rows) =>
-      rows.map((row) =>
-        row.id === vehicle.id ? { ...row, isFavorite: active } : row,
-      ),
-    );
+    if (!currentUserId) {
+      navigate(
+        routes.auth.login(
+          `${window.location.pathname}${window.location.search}`,
+        ),
+      );
+      return;
+    }
+    if (favoriteLoadState !== "ready") {
+      await loadFavoriteVehicleIds();
+      return;
+    }
+    const active = await toggleFavoriteVehicle(vehicle.id);
     toast.success(
       active ? "Véhicule ajouté aux favoris." : "Véhicule retiré des favoris.",
     );
@@ -747,11 +773,14 @@ export const AutoSearchPage: React.FC = () => {
             </div>
           </div>
           {loading ? (
-            <div className="space-y-3">
-              {[0, 1, 2].map((row) => (
-                <Skeleton key={row} className="h-64 rounded-card" />
+            <ListingGrid fluid>
+              {Array.from({ length: 6 }, (_, index) => (
+                <div key={index} className="flex min-w-0 flex-col gap-2">
+                  <ListingCardSkeleton />
+                  <Skeleton shape="control" className="w-full" />
+                </div>
               ))}
-            </div>
+            </ListingGrid>
           ) : error ? (
             <StatePanel
               variant="error"
@@ -768,17 +797,43 @@ export const AutoSearchPage: React.FC = () => {
               description="Élargissez le prix, l’année ou l’énergie pour voir davantage de résultats."
             />
           ) : (
-            <div className="space-y-3">
-              {vehicles.map((vehicle) => (
-                <AutoVehicleCard
-                  key={vehicle.id}
-                  vehicle={vehicle}
-                  compared={compared.some((row) => row.id === vehicle.id)}
-                  onCompare={toggleCompare}
-                  onFavorite={favorite}
-                />
-              ))}
-            </div>
+            <ListingGrid fluid>
+              {vehicles.map((vehicle) => {
+                const isCompared = compared.some(
+                  (row) => row.id === vehicle.id,
+                );
+                return (
+                  <div key={vehicle.id} className="flex min-w-0 flex-col gap-2">
+                    <AutoVehicleCard
+                      vehicle={vehicle}
+                      isFavorite={favoriteVehicleIds.has(vehicle.id)}
+                      favoriteLoadState={favoriteLoadState}
+                      onFavorite={favorite}
+                      onFavoriteRetry={loadFavoriteVehicleIds}
+                    />
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={isCompared ? "primary" : "secondary"}
+                      fullWidth
+                      aria-pressed={isCompared}
+                      aria-label={`${isCompared ? "Retirer" : "Ajouter"} ${
+                        vehicle.title
+                      } ${isCompared ? "de" : "à"} la comparaison`}
+                      leftIcon={
+                        <GitCompareArrows
+                          className="h-icon-sm w-icon-sm"
+                          aria-hidden="true"
+                        />
+                      }
+                      onClick={() => toggleCompare(vehicle)}
+                    >
+                      {isCompared ? "Retirer du comparateur" : "Comparer"}
+                    </Button>
+                  </div>
+                );
+              })}
+            </ListingGrid>
           )}
         </div>
         {compared.length > 0 && (

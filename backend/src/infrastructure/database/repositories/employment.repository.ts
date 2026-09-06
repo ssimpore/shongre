@@ -50,6 +50,11 @@ import {
 } from "@shongre/contracts/employment-demo";
 import { getSupabaseAdminClient } from "../../supabase/supabase-client.js";
 import { createHash, randomUUID } from "node:crypto";
+import {
+  getMarketResolvedPromotion,
+  loadMarketResolvedPromotions,
+} from "./market-promotion.projection.js";
+import { isActiveMarketResolvedListingPromotion } from "@shongre/contracts";
 
 const clone = <T>(value: T): T => structuredClone(value);
 
@@ -101,7 +106,10 @@ export interface EmploymentRepository {
     includeInactive?: boolean,
   ): Promise<EmploymentCatalog>;
   search(query: EmploymentSearchQuery): Promise<EmploymentSearchResult>;
-  getJob(idOrSlug: string): Promise<JobPostingDetail | null>;
+  getJob(
+    idOrSlug: string,
+    marketCode?: string,
+  ): Promise<JobPostingDetail | null>;
   saveJob(
     job: JobPostingDetail,
     actorUserId?: string,
@@ -133,7 +141,10 @@ export interface EmploymentRepository {
   getCandidateProfileForUser(userId: string): Promise<CandidateProfile | null>;
   getCandidateProfile(id: string): Promise<CandidateProfile | null>;
   saveCandidateProfile(profile: CandidateProfile): Promise<CandidateProfile>;
-  getCandidateWorkspace(userId: string): Promise<CandidateWorkspace | null>;
+  getCandidateWorkspace(
+    userId: string,
+    marketCode: string,
+  ): Promise<CandidateWorkspace | null>;
   getConsentRecord(id: string): Promise<ConsentRecord | null>;
   saveConsentRecord(consent: ConsentRecord): Promise<ConsentRecord>;
   getApplication(id: string): Promise<EmploymentApplication | null>;
@@ -164,7 +175,13 @@ export interface EmploymentRepository {
     job: EmploymentImport,
     actorUserId?: string,
   ): Promise<EmploymentImport>;
-  toggleSavedJob(candidateId: string, jobId: string): Promise<boolean>;
+  getSavedJobIds(userId: string, marketCode: string): Promise<string[]>;
+  setSavedJob(
+    userId: string,
+    jobId: string,
+    marketCode: string,
+    isFavorite: boolean,
+  ): Promise<boolean>;
   saveJobAlert(alert: JobAlert): Promise<JobAlert>;
   deleteJobAlert(candidateId: string, alertId: string): Promise<boolean>;
   saveDataSubjectRequest(
@@ -282,7 +299,10 @@ const matches = (query: EmploymentSearchQuery, job: JobPostingDetail) => {
     )
   )
     return false;
-  if (query.publishedSince && job.publishedAt < query.publishedSince)
+  if (
+    query.publishedSince &&
+    (!job.publishedAt || job.publishedAt < query.publishedSince)
+  )
     return false;
   if (query.verifiedEmployerOnly && !job.employer.isPubliclyVerified)
     return false;
@@ -403,7 +423,7 @@ export class DemoEmploymentRepository implements EmploymentRepository {
   protected recruiterWorkspace = clone(EMPLOYMENT_DEMO_RECRUITER_WORKSPACE);
   protected savedJobs = new Map<string, Set<string>>([
     [
-      "candidate-thomas",
+      `user_thomas:${EMPLOYMENT_DEMO_CANDIDATE_WORKSPACE.profile.marketCode}`,
       new Set(
         EMPLOYMENT_DEMO_CANDIDATE_WORKSPACE.savedJobs.map((job) => job.id),
       ),
@@ -492,24 +512,38 @@ export class DemoEmploymentRepository implements EmploymentRepository {
           distanceKm(locationOrigin, b.primaryLocation)
         );
       if (query.sort === "newest")
-        return b.publishedAt.localeCompare(a.publishedAt);
+        return (b.publishedAt ?? "").localeCompare(a.publishedAt ?? "");
       if (query.sort === "promoted") {
         const placement =
-          Number(b.isFeatured) +
-          Number(b.isSponsored) -
-          Number(a.isFeatured) -
-          Number(a.isSponsored);
+          Number(
+            isActiveMarketResolvedListingPromotion(
+              b.resolvedPromotion,
+              query.marketCode,
+            ),
+          ) -
+          Number(
+            isActiveMarketResolvedListingPromotion(
+              a.resolvedPromotion,
+              query.marketCode,
+            ),
+          );
         if (placement) return placement;
       }
       const score = relevance(query, b) - relevance(query, a);
-      return score || b.publishedAt.localeCompare(a.publishedAt);
+      return score || (b.publishedAt ?? "").localeCompare(a.publishedAt ?? "");
     });
     const offset = Number(query.cursor || 0);
     const items = rows.slice(offset, offset + query.limit).map(card);
     return {
       items,
       total: rows.length,
-      organicResultCount: rows.filter((job) => !job.isSponsored).length,
+      organicResultCount: rows.filter(
+        (job) =>
+          !isActiveMarketResolvedListingPromotion(
+            job.resolvedPromotion,
+            query.marketCode,
+          ),
+      ).length,
       recommendationFactors: [
         "profession",
         "compétences",
@@ -526,7 +560,7 @@ export class DemoEmploymentRepository implements EmploymentRepository {
     };
   }
 
-  async getJob(idOrSlug: string) {
+  async getJob(idOrSlug: string, _marketCode?: string) {
     const job =
       this.jobs.get(idOrSlug) ||
       Array.from(this.jobs.values()).find((item) => item.slug === idOrSlug);
@@ -610,9 +644,10 @@ export class DemoEmploymentRepository implements EmploymentRepository {
     this.candidateWorkspaces.set(parsed.userId, workspace);
     return clone(parsed);
   }
-  async getCandidateWorkspace(userId: string) {
+  async getCandidateWorkspace(userId: string, marketCode: string) {
     const workspace = this.candidateWorkspaces.get(userId);
     if (!workspace) return null;
+    const normalizedMarket = requireMarketCode(marketCode);
     const applications = Array.from(this.applications.values())
       .filter((item) => item.candidateId === workspace.profile.id)
       .map(({ screeningAnswers: _answers, ...item }) => clone(item));
@@ -625,7 +660,9 @@ export class DemoEmploymentRepository implements EmploymentRepository {
       interviews: Array.from(this.interviews.values()).filter((interview) =>
         applications.some((item) => item.id === interview.applicationId),
       ),
-      savedJobs: Array.from(this.savedJobs.get(workspace.profile.id) || [])
+      savedJobs: Array.from(
+        this.savedJobs.get(`${userId}:${normalizedMarket}`) || [],
+      )
         .map((id) => this.jobs.get(id))
         .filter((job): job is JobPostingDetail => Boolean(job))
         .map(card),
@@ -782,11 +819,37 @@ export class DemoEmploymentRepository implements EmploymentRepository {
     this.imports.set(parsed.id, clone(parsed));
     return clone(parsed);
   }
-  async toggleSavedJob(candidateId: string, jobId: string) {
-    const bucket = this.savedJobs.get(candidateId) || new Set<string>();
-    if (bucket.has(jobId)) bucket.delete(jobId);
-    else bucket.add(jobId);
-    this.savedJobs.set(candidateId, bucket);
+  async getSavedJobIds(userId: string, marketCode: string) {
+    return Array.from(
+      this.savedJobs.get(`${userId}:${requireMarketCode(marketCode)}`) || [],
+    );
+  }
+  async setSavedJob(
+    userId: string,
+    jobId: string,
+    marketCode: string,
+    isFavorite: boolean,
+  ) {
+    const normalizedMarket = requireMarketCode(marketCode);
+    if (!this.candidateWorkspaces.has(userId)) {
+      throw new Error("Profil candidat introuvable.");
+    }
+    if (isFavorite) {
+      const job = await this.getJob(jobId, normalizedMarket);
+      if (
+        !job ||
+        job.marketCode !== normalizedMarket ||
+        job.lifecycle !== "published" ||
+        Date.parse(job.expiresAt) <= Date.now()
+      ) {
+        throw new Error("Offre d’emploi indisponible sur ce marché.");
+      }
+    }
+    const scopeKey = `${userId}:${normalizedMarket}`;
+    const bucket = this.savedJobs.get(scopeKey) || new Set<string>();
+    if (isFavorite) bucket.add(jobId);
+    else bucket.delete(jobId);
+    this.savedJobs.set(scopeKey, bucket);
     return bucket.has(jobId);
   }
   async saveJobAlert(alert: JobAlert) {
@@ -917,7 +980,10 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
     return getSupabaseAdminClient() as any;
   }
 
-  private async hydrateJobs(rows: any[]): Promise<JobPostingDetail[]> {
+  private async hydrateJobs(
+    rows: any[],
+    requestedMarketCode?: string,
+  ): Promise<JobPostingDetail[]> {
     if (!rows.length) return [];
     const dictionaryIds = new Set<string>();
     for (const row of rows) {
@@ -949,13 +1015,28 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
         entry.label,
       ]),
     );
-    return rows.map((row) => {
+    const normalizedRequestedMarket = requestedMarketCode?.toUpperCase();
+    const promotionScopes = rows.map((row) => ({
+      listingId: row.generic_listing_id,
+      marketCode:
+        normalizedRequestedMarket === String(row.market_code).toUpperCase()
+          ? normalizedRequestedMarket
+          : normalizedRequestedMarket
+            ? undefined
+            : row.market_code,
+    }));
+    const promotions = await loadMarketResolvedPromotions(
+      () => this.db(),
+      promotionScopes,
+    );
+    return rows.map((row, index) => {
       const employer = Array.isArray(row.employer)
         ? row.employer[0]
         : row.employer;
       const employerOwner = Array.isArray(employer?.owner)
         ? employer.owner[0]
         : employer?.owner;
+      const isOrganizationEmployer = Boolean(employer?.organization_id);
       const employerReviewCount = Number(employerOwner?.review_count || 0);
       const locations = [...(row.locations || [])].sort(
         (a: any, b: any) => Number(b.is_primary) - Number(a.is_primary),
@@ -995,11 +1076,15 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
           description: employer.description || undefined,
           logoUrl: employer.logo_url || undefined,
           rating:
-            employerReviewCount > 0 && employerOwner?.rating != null
+            !isOrganizationEmployer &&
+            employerReviewCount > 0 &&
+            employerOwner?.rating != null
               ? Number(employerOwner.rating)
               : undefined,
           reviewCount:
-            employerReviewCount > 0 ? employerReviewCount : undefined,
+            !isOrganizationEmployer && employerReviewCount > 0
+              ? employerReviewCount
+              : undefined,
           locationLabel: employerOwner?.city || undefined,
           websiteUrl: employer.website_url || undefined,
           verificationLevel: employer.verification_level,
@@ -1056,12 +1141,17 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
                 isPublic: row.salary_is_public,
                 bonusDescription: row.salary_bonus_description || undefined,
               },
-        publishedAt: row.published_at || row.created_at,
+        publishedAt: row.published_at ?? undefined,
         expiresAt: row.expires_at,
         applicationDeadline: row.application_deadline || undefined,
         isUrgent: row.is_urgent,
         isFeatured: row.is_featured,
         isSponsored: row.is_sponsored,
+        resolvedPromotion: getMarketResolvedPromotion(
+          promotions,
+          promotionScopes[index]?.listingId,
+          promotionScopes[index]?.marketCode,
+        ),
         saved: false,
         lifecycle: row.lifecycle,
         marketCode: row.market_code,
@@ -1138,7 +1228,7 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
     return "*, employer:employment_employer_profiles!employment_jobs_employer_id_fkey(*, owner:profiles!employment_employer_profiles_owner_user_id_fkey(rating,review_count,city)), locations:employment_job_locations(*), skills:employment_job_skills(*), languages:employment_job_languages(*), questions:employment_screening_questions(*)";
   }
 
-  override async getJob(idOrSlug: string) {
+  override async getJob(idOrSlug: string, marketCode?: string) {
     const column =
       /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
         idOrSlug,
@@ -1152,7 +1242,7 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
       .maybeSingle();
     if (error) throw error;
     if (!data) return null;
-    return (await this.hydrateJobs([data]))[0];
+    return (await this.hydrateJobs([data], marketCode))[0];
   }
 
   override async search(
@@ -1282,9 +1372,9 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
       if (result.error) throw result.error;
       jobIds = (result.data || []).map((row: any) => row.id);
     }
-    let statement = this.db()
-      .from("employment_jobs")
-      .select("id,is_sponsored", { count: "exact" })
+    let statement = (this.db() as any)
+      .from("employment_jobs_public_search")
+      .select("id,effective_promotion_rank", { count: "exact" })
       .eq("market_code", query.marketCode)
       .eq("lifecycle", "published")
       .eq("moderation_status", "approved")
@@ -1350,8 +1440,7 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
       });
     else if (query.sort === "promoted")
       statement = statement
-        .order("is_featured", { ascending: false })
-        .order("is_sponsored", { ascending: false })
+        .order("effective_promotion_rank", { ascending: false })
         .order("published_at", { ascending: false });
     else statement = statement.order("published_at", { ascending: false });
     const offset = Number(query.cursor || 0);
@@ -1378,7 +1467,10 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
       .select(this.jobSelect())
       .in("id", orderedIds);
     if (detailsResult.error) throw detailsResult.error;
-    const hydrated = await this.hydrateJobs(detailsResult.data || []);
+    const hydrated = await this.hydrateJobs(
+      detailsResult.data || [],
+      query.marketCode,
+    );
     const byId = new Map(hydrated.map((job) => [job.id, job]));
     const jobs = orderedIds
       .map((id) => byId.get(id))
@@ -1391,7 +1483,7 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
       );
     const total = result.count || 0;
     const sponsoredOnPage = (result.data || []).filter(
-      (row: any) => row.is_sponsored,
+      (row: any) => Number(row.effective_promotion_rank) > 0,
     ).length;
     return {
       items: jobs.map(card),
@@ -2000,9 +2092,10 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
     return saved;
   }
 
-  override async getCandidateWorkspace(userId: string) {
+  override async getCandidateWorkspace(userId: string, marketCode: string) {
     const profile = await this.getCandidateProfileForUser(userId);
     if (!profile) return null;
+    const normalizedMarket = requireMarketCode(marketCode);
     const [documents, savedRows, applications, consents, alerts] =
       await Promise.all([
         this.db()
@@ -2012,12 +2105,10 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
           .is("deleted_at", null)
           .order("created_at", { ascending: false })
           .limit(50),
-        this.db()
-          .from("employment_saved_jobs")
-          .select("job_id")
-          .eq("candidate_id", profile.id)
-          .order("created_at", { ascending: false })
-          .limit(200),
+        (this.db() as any).rpc("list_saved_employment_job_ids", {
+          p_user_id: userId,
+          p_market_code: normalizedMarket,
+        }),
         this.db()
           .from("employment_applications")
           .select(this.applicationSelect())
@@ -2047,7 +2138,10 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
         .select(this.jobSelect())
         .in("id", savedIds);
       if (result.error) throw result.error;
-      const hydrated = await this.hydrateJobs(result.data || []);
+      const hydrated = await this.hydrateJobs(
+        result.data || [],
+        normalizedMarket,
+      );
       const byId = new Map(hydrated.map((job) => [job.id, job]));
       savedJobs = savedIds
         .map((id: string) => byId.get(id))
@@ -2135,28 +2229,35 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
     };
   }
 
-  override async toggleSavedJob(candidateId: string, jobId: string) {
-    const existing = await this.db()
-      .from("employment_saved_jobs")
-      .select("job_id")
-      .eq("candidate_id", candidateId)
-      .eq("job_id", jobId)
-      .maybeSingle();
-    if (existing.error) throw existing.error;
-    if (existing.data) {
-      const removed = await this.db()
-        .from("employment_saved_jobs")
-        .delete()
-        .eq("candidate_id", candidateId)
-        .eq("job_id", jobId);
-      if (removed.error) throw removed.error;
-      return false;
-    }
-    const added = await this.db()
-      .from("employment_saved_jobs")
-      .insert({ candidate_id: candidateId, job_id: jobId });
-    if (added.error) throw added.error;
-    return true;
+  override async getSavedJobIds(userId: string, marketCode: string) {
+    const { data, error } = await (this.db() as any).rpc(
+      "list_saved_employment_job_ids",
+      {
+        p_user_id: userId,
+        p_market_code: requireMarketCode(marketCode),
+      },
+    );
+    if (error) throw error;
+    return (data || []).map((row: any) => String(row.job_id));
+  }
+
+  override async setSavedJob(
+    userId: string,
+    jobId: string,
+    marketCode: string,
+    isFavorite: boolean,
+  ) {
+    const { data, error } = await (this.db() as any).rpc(
+      "set_employment_job_favorite",
+      {
+        p_user_id: userId,
+        p_job_id: jobId,
+        p_market_code: requireMarketCode(marketCode),
+        p_is_favorite: isFavorite,
+      },
+    );
+    if (error) throw error;
+    return Boolean(data);
   }
 
   override async saveJobAlert(alert: JobAlert) {

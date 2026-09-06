@@ -66,8 +66,8 @@ export class AutoService {
     return this.repo.search(query);
   }
 
-  async getPublicVehicle(idOrSlug: string) {
-    const vehicle = await this.repo.getVehicle(idOrSlug);
+  async getPublicVehicle(idOrSlug: string, marketCode?: string) {
+    const vehicle = await this.repo.getVehicle(idOrSlug, marketCode);
     if (
       !vehicle ||
       vehicle.lifecycle !== "published" ||
@@ -97,13 +97,33 @@ export class AutoService {
     return publicVehicle;
   }
 
-  getFavoriteVehicleIds(userId: string) {
-    return this.repo.getFavoriteVehicleIds(userId);
+  getFavoriteVehicleIds(userId: string, marketCode: string) {
+    return this.repo.getFavoriteVehicleIds(
+      userId,
+      requireMarketCode(marketCode),
+    );
   }
 
-  async toggleFavoriteVehicle(userId: string, vehicleId: string) {
-    await this.getPublicVehicle(vehicleId);
-    return this.repo.toggleFavoriteVehicle(userId, vehicleId);
+  async setFavoriteVehicle(
+    userId: string,
+    vehicleId: string,
+    marketCode: string,
+    isFavorite: boolean,
+  ) {
+    const normalizedMarket = requireMarketCode(marketCode);
+    const vehicle = await this.getPublicVehicle(vehicleId, normalizedMarket);
+    if (!vehicle.marketCodes.includes(normalizedMarket)) {
+      throw new AppError({
+        code: "NOT_FOUND",
+        message: "Véhicule introuvable sur ce marché.",
+      });
+    }
+    return this.repo.setFavoriteVehicle(
+      userId,
+      vehicleId,
+      normalizedMarket,
+      isFavorite,
+    );
   }
 
   async getOrCreateOwnDraft(userId: string, marketCode: string) {

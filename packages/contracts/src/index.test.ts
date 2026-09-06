@@ -81,6 +81,7 @@ describe("shared public contracts", () => {
         price: { amountMinor: 45000, currency: "EUR" },
         city: "Paris",
         marketCode: "FR",
+        categoryLabel: "Sports",
         conditionLabel: "Bon état",
         publishedAt: "2026-08-21T10:00:00Z",
         seller: {
@@ -93,6 +94,91 @@ describe("shared public contracts", () => {
     ).toBe(true);
   });
 
+  it("preserves optional brand and semantic price data on listing cards", () => {
+    const listing = {
+      id: "listing-sofa",
+      title: "Canapé trois places",
+      city: "Lyon",
+      marketCode: "FR",
+      categoryLabel: "Maison",
+      brandLabel: "IKEA",
+      priceKind: "on_request",
+      conditionLabel: "Bon état",
+      publishedAt: "2026-08-21T10:00:00Z",
+    };
+
+    expect(listingCardSchema.safeParse(listing).success).toBe(true);
+    expect(
+      listingCardSchema.safeParse({ ...listing, brandLabel: "" }).success,
+    ).toBe(false);
+    expect(
+      listingCardSchema.safeParse({ ...listing, priceKind: "zero" }).success,
+    ).toBe(false);
+    expect(
+      listingCardSchema.safeParse({ ...listing, priceKind: undefined }).success,
+    ).toBe(false);
+    const { publishedAt: _publishedAt, ...withoutPublishedAt } = listing;
+    expect(listingCardSchema.safeParse(withoutPublishedAt).success).toBe(true);
+    expect(
+      listingCardSchema.safeParse({
+        ...listing,
+        priceKind: "amount",
+        price: { amountMinor: 25_000, currency: "EUR" },
+      }).success,
+    ).toBe(true);
+    expect(
+      listingCardSchema.safeParse({
+        ...listing,
+        priceKind: "free",
+        price: { amountMinor: 25_000, currency: "EUR" },
+      }).success,
+    ).toBe(false);
+    expect(
+      listingCardSchema.safeParse({
+        ...listing,
+        priceKind: "unpriced",
+        price: { amountMinor: 0, currency: "EUR" },
+      }).success,
+    ).toBe(false);
+  });
+
+  it("requires complete exact-market promotion proof on listing cards", () => {
+    const listing = {
+      id: "listing-promoted",
+      title: "Canapé",
+      price: { amountMinor: 25_000, currency: "EUR" },
+      priceKind: "amount" as const,
+      city: "Lyon",
+      marketCode: "FR",
+      categoryLabel: "Maison",
+      conditionLabel: "Bon état",
+      promotion: {
+        state: "active" as const,
+        type: "featured" as const,
+        marketCode: "FR",
+        source: "purchase" as const,
+        sourceId: "opaque-promotion-proof",
+        startsAt: "2026-09-01T00:00:00.000Z",
+        endsAt: "2026-10-01T00:00:00.000Z",
+      },
+    };
+
+    expect(listingCardSchema.safeParse(listing).success).toBe(true);
+    expect(
+      listingCardSchema.safeParse({
+        ...listing,
+        promotion: { ...listing.promotion, marketCode: "BE" },
+      }).success,
+    ).toBe(false);
+    const { sourceId: _sourceId, ...withoutSourceId } = listing.promotion;
+    expect(
+      listingCardSchema.safeParse({
+        ...listing,
+        promotion: withoutSourceId,
+      }).success,
+    ).toBe(false);
+  });
+
   it("accepts only shared semantic icons for listing characteristics", () => {
     const listing = {
       id: "listing-vehicle",
@@ -100,6 +186,7 @@ describe("shared public contracts", () => {
       price: { amountMinor: 2_490_000, currency: "EUR" },
       city: "Lyon",
       marketCode: "FR",
+      categoryLabel: "Véhicules",
       conditionLabel: "Occasion",
       characteristics: ["2019", "84 500 km"],
       publishedAt: "2026-08-21T10:00:00Z",

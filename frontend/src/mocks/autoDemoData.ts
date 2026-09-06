@@ -704,6 +704,15 @@ export const AUTO_DEMO_PRIVATE_VEHICLES: VehiclePrivate[] = [
       critAirClass: "2",
     },
     promotionLabels: ["sponsored"],
+    resolvedPromotion: {
+      state: "active",
+      type: "sponsored_search",
+      marketCode: "FR",
+      startsAt: "2026-08-12T08:00:00.000Z",
+      endsAt: "2026-10-12T08:00:00.000Z",
+      source: "subscription_credit",
+      sourceId: "demo:auto:vehicle_3008_diesel:sponsored",
+    },
     publishedAt: "2026-08-12T08:00:00.000Z",
   }),
   vehicle({

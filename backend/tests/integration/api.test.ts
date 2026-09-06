@@ -705,7 +705,12 @@ describe("API v1 Endpoints Integration", () => {
   it("keeps employment candidate and recruiter workspaces permission-scoped", async () => {
     const candidateResponse = await fetch(
       `${baseUrl}/api/v1/employment/candidate/workspace`,
-      { headers: auth(buyerToken) },
+      {
+        headers: {
+          ...auth(buyerToken),
+          "X-Shongre-Market": "FR",
+        },
+      },
     );
     expect(candidateResponse.status).toBe(200);
     const candidate = await candidateResponse.json();
@@ -738,6 +743,173 @@ describe("API v1 Endpoints Integration", () => {
       { headers: auth(adminToken) },
     );
     expect(adminResponse.status).toBe(200);
+  });
+
+  it("sets Education and Employment favorites idempotently per account market", async () => {
+    const marketAuth = (marketCode: string) => ({
+      ...auth(buyerToken),
+      "X-Shongre-Market": marketCode,
+    });
+    const setFavorite = (
+      path: string,
+      marketCode: string,
+      isFavorite: boolean,
+    ) =>
+      fetch(`${baseUrl}/api/v1${path}`, {
+        method: "PUT",
+        headers: marketAuth(marketCode),
+        body: JSON.stringify({ isFavorite }),
+      });
+
+    const firstTutorSave = await setFavorite(
+      "/education/tutors/tutor_sophie/favorite",
+      "FR",
+      true,
+    );
+    const replayTutorSave = await setFavorite(
+      "/education/tutors/tutor_sophie/favorite",
+      "FR",
+      true,
+    );
+    expect(firstTutorSave.status).toBe(200);
+    expect(replayTutorSave.status).toBe(200);
+    expect(await replayTutorSave.json()).toEqual({ isFavorite: true });
+
+    const [frTutors, beTutors, rejectedBeTutor, removedMissingTutor] =
+      await Promise.all([
+        fetch(`${baseUrl}/api/v1/education/favorites`, {
+          headers: marketAuth("FR"),
+        }),
+        fetch(`${baseUrl}/api/v1/education/favorites`, {
+          headers: marketAuth("BE"),
+        }),
+        setFavorite("/education/tutors/tutor_sophie/favorite", "BE", true),
+        setFavorite("/education/tutors/missing-tutor/favorite", "BE", false),
+      ]);
+    expect((await frTutors.json()).tutorProfileIds).toContain("tutor_sophie");
+    expect(await beTutors.json()).toEqual({ tutorProfileIds: [] });
+    expect(rejectedBeTutor.status).toBe(404);
+    expect(await removedMissingTutor.json()).toEqual({ isFavorite: false });
+
+    const firstJobSave = await setFavorite(
+      "/employment/jobs/job-seasonal-nice/save",
+      "FR",
+      true,
+    );
+    const replayJobSave = await setFavorite(
+      "/employment/jobs/job-seasonal-nice/save",
+      "FR",
+      true,
+    );
+    expect(firstJobSave.status).toBe(200);
+    expect(await replayJobSave.json()).toEqual({ isFavorite: true });
+
+    const [frJobs, beJobs, rejectedBeJob, removedMissingJob] =
+      await Promise.all([
+        fetch(`${baseUrl}/api/v1/employment/favorites`, {
+          headers: marketAuth("FR"),
+        }),
+        fetch(`${baseUrl}/api/v1/employment/favorites`, {
+          headers: marketAuth("BE"),
+        }),
+        setFavorite("/employment/jobs/job-seasonal-nice/save", "BE", true),
+        setFavorite("/employment/jobs/missing-job/save", "BE", false),
+      ]);
+    expect((await frJobs.json()).jobIds).toContain("job-seasonal-nice");
+    expect(await beJobs.json()).toEqual({ jobIds: [] });
+    expect(rejectedBeJob.status).toBe(404);
+    expect(await removedMissingJob.json()).toEqual({ isFavorite: false });
+  });
+
+  it("projects delivery favorites through the unified favorite collection", async () => {
+    const headers = {
+      ...auth(buyerToken),
+      "X-Shongre-Market": "FR",
+    };
+    const requestResponse = await fetch(`${baseUrl}/api/v1/delivery/requests`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        marketCode: "FR",
+        origin: "standalone",
+        title: "Livrer une bibliothèque démontée",
+        description:
+          "Transport local de plusieurs panneaux emballés avec précaution.",
+        pickup: {
+          street: "12 rue des Lilas",
+          city: "Paris",
+          postalCode: "75011",
+          contactName: "Thomas",
+          contactPhone: "+33600000000",
+        },
+        dropoff: {
+          street: "8 rue Victor-Hugo",
+          city: "Boulogne-Billancourt",
+          postalCode: "92100",
+          contactName: "Thomas",
+          contactPhone: "+33600000000",
+        },
+        pickupWindow: {
+          startsAt: "2027-02-15T09:00:00.000Z",
+          endsAt: "2027-02-15T11:00:00.000Z",
+        },
+        deliveryWindow: {
+          startsAt: "2027-02-15T12:00:00.000Z",
+          endsAt: "2027-02-15T16:00:00.000Z",
+        },
+        package: {
+          type: "Meuble démonté",
+          count: 4,
+          approximateWeightGrams: 42_000,
+          handlingRequirements: ["Fragile"],
+          requiredVehicleType: "van",
+          loadingAssistanceRequired: true,
+        },
+        budget: { amountMinor: 6_500, currency: "EUR" },
+        expiresAt: "2027-02-14T20:00:00.000Z",
+        idempotencyKey: "integration-delivery-favorite-card-v1",
+      }),
+    });
+    expect(requestResponse.status).toBe(201);
+    const request = await requestResponse.json();
+    const publishResponse = await fetch(
+      `${baseUrl}/api/v1/delivery/requests/${request.id}/publish`,
+      {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ marketCode: "FR" }),
+      },
+    );
+    expect(publishResponse.status).toBe(200);
+
+    const favoriteResponse = await fetch(
+      `${baseUrl}/api/v1/delivery/requests/${request.id}/favorite`,
+      {
+        method: "PUT",
+        headers,
+        body: JSON.stringify({ isFavorite: true }),
+      },
+    );
+    expect(await favoriteResponse.json()).toEqual({ isFavorite: true });
+
+    const collectionResponse = await fetch(`${baseUrl}/api/v1/favorites`, {
+      headers,
+    });
+    expect(collectionResponse.status).toBe(200);
+    const collection = await collectionResponse.json();
+    const projectionId = `delivery_${request.id}`;
+    expect(collection.listingIds).toContain(projectionId);
+    expect(
+      collection.listings.find((listing: any) => listing.id === projectionId),
+    ).toMatchObject({
+      marketCode: "FR",
+      title: "Livrer une bibliothèque démontée",
+      attributes: {
+        verticalType: "delivery",
+        verticalEntityId: request.id,
+        price_type: "fixed",
+      },
+    });
   });
 
   // ---------------------------------------------------------------------------

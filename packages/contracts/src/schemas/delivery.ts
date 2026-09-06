@@ -106,6 +106,27 @@ export const deliveryRequestOriginSchema = z.enum(DELIVERY_REQUEST_ORIGINS);
 export const deliveryVehicleTypeSchema = z.enum(DELIVERY_VEHICLE_TYPES);
 
 const deliveryIdSchema = z.string().uuid();
+export const DELIVERY_DISCOVERY_LISTING_ID_PREFIX = "delivery_" as const;
+
+/** Stable identity used when a delivery request participates in unified listing
+ * discovery. The domain UUID remains recoverable so navigation and favorite
+ * mutations never target the synthetic listing projection. */
+export function deliveryDiscoveryListingId(requestId: string): string {
+  return `${DELIVERY_DISCOVERY_LISTING_ID_PREFIX}${deliveryIdSchema.parse(requestId)}`;
+}
+
+export function deliveryRequestIdFromDiscoveryListingId(
+  listingId: string,
+): string | undefined {
+  if (!listingId.startsWith(DELIVERY_DISCOVERY_LISTING_ID_PREFIX)) {
+    return undefined;
+  }
+  const parsed = deliveryIdSchema.safeParse(
+    listingId.slice(DELIVERY_DISCOVERY_LISTING_ID_PREFIX.length),
+  );
+  return parsed.success ? parsed.data : undefined;
+}
+
 const deliveryTimestampSchema = z.string().datetime();
 const deliveryLocalitySchema = z.object({
   city: z.string().trim().min(1).max(120),

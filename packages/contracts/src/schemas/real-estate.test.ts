@@ -67,6 +67,15 @@ const property = {
     reviewCount: 7,
   },
   promotion: { urgent: false, featured: false, sponsored: false },
+  resolvedPromotion: {
+    state: "active",
+    type: "featured",
+    marketCode: "FR",
+    source: "purchase",
+    sourceId: "immo-test-promotion",
+    startsAt: "2026-08-21T10:00:00.000Z",
+    endsAt: "2026-09-21T10:00:00.000Z",
+  },
   customAttributes: {},
   moderationStatus: "approved",
   documents: [
@@ -107,6 +116,11 @@ describe("Shongre Immo contracts", () => {
     expect(publicProperty.seller).toMatchObject({
       rating: 4.9,
       reviewCount: 7,
+    });
+    expect(publicProperty.resolvedPromotion).toMatchObject({
+      marketCode: "FR",
+      state: "active",
+      type: "featured",
     });
   });
 

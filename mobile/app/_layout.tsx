@@ -11,6 +11,7 @@ import { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { AuthProvider, useAuth } from "@/features/auth/AuthProvider";
+import { FavoritesProvider } from "@/features/favorites/FavoritesProvider";
 import { MarketProvider, useMarket } from "@/features/market/MarketProvider";
 import { mobileColors as colors } from "@shongre/design-tokens/native";
 import { resolveDeliveryNotificationRoute } from "@/services/notifications/notification-deep-link";
@@ -58,51 +59,53 @@ export default function RootLayout() {
       <SafeAreaProvider>
         <MarketProvider>
           <AuthProvider>
-            <NotificationDeepLinkBridge />
-            <StatusBar style="dark" />
-            <Stack
-              screenOptions={{
-                headerStyle: { backgroundColor: colors.surface },
-                headerTintColor: colors.text,
-                headerBackTitle: "Retour",
-                contentStyle: { backgroundColor: colors.background },
-              }}
-            >
-              <Stack.Screen name="index" options={{ headerShown: false }} />
-              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-              <Stack.Screen
-                name="auth/login"
-                options={{ title: "Connexion", presentation: "modal" }}
-              />
-              <Stack.Screen
-                name="listing/[id]"
-                options={{ title: "Annonce" }}
-              />
-              <Stack.Screen
-                name="settings/index"
-                options={{ title: "Réglages" }}
-              />
-              <Stack.Screen
-                name="settings/delete-account"
-                options={{ title: "Supprimer mon compte" }}
-              />
-              <Stack.Screen
-                name="account/billing"
-                options={{ title: "Facturation" }}
-              />
-              <Stack.Screen
-                name="account/digital-purchases"
-                options={{ title: "Achats numériques" }}
-              />
-              <Stack.Screen
-                name="account/digital-selling"
-                options={{ title: "Vente numérique" }}
-              />
-              <Stack.Screen
-                name="account/delivery"
-                options={{ title: "Livraison & coursier" }}
-              />
-            </Stack>
+            <FavoritesProvider>
+              <NotificationDeepLinkBridge />
+              <StatusBar style="dark" />
+              <Stack
+                screenOptions={{
+                  headerStyle: { backgroundColor: colors.surface },
+                  headerTintColor: colors.text,
+                  headerBackTitle: "Retour",
+                  contentStyle: { backgroundColor: colors.background },
+                }}
+              >
+                <Stack.Screen name="index" options={{ headerShown: false }} />
+                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                <Stack.Screen
+                  name="auth/login"
+                  options={{ title: "Connexion", presentation: "modal" }}
+                />
+                <Stack.Screen
+                  name="listing/[id]"
+                  options={{ title: "Annonce" }}
+                />
+                <Stack.Screen
+                  name="settings/index"
+                  options={{ title: "Réglages" }}
+                />
+                <Stack.Screen
+                  name="settings/delete-account"
+                  options={{ title: "Supprimer mon compte" }}
+                />
+                <Stack.Screen
+                  name="account/billing"
+                  options={{ title: "Facturation" }}
+                />
+                <Stack.Screen
+                  name="account/digital-purchases"
+                  options={{ title: "Achats numériques" }}
+                />
+                <Stack.Screen
+                  name="account/digital-selling"
+                  options={{ title: "Vente numérique" }}
+                />
+                <Stack.Screen
+                  name="account/delivery"
+                  options={{ title: "Livraison & coursier" }}
+                />
+              </Stack>
+            </FavoritesProvider>
           </AuthProvider>
         </MarketProvider>
       </SafeAreaProvider>

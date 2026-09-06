@@ -38,14 +38,16 @@ export class HttpEmploymentService implements EmploymentServiceContract {
   searchJobs(query: EmploymentSearchQuery) {
     return httpClient.post<EmploymentSearchResult>("/employment/search", query);
   }
-  getJob(idOrSlug: string) {
+  getJob(idOrSlug: string, marketCode?: string) {
     return httpClient.get<JobPostingDetail>(
       `/employment/jobs/${encodeURIComponent(idOrSlug)}`,
+      marketCode ? { headers: { "X-Shongre-Market": marketCode } } : undefined,
     );
   }
-  getSimilarJobs(idOrSlug: string) {
+  getSimilarJobs(idOrSlug: string, marketCode?: string) {
     return httpClient.get<JobPostingCard[]>(
       `/employment/jobs/${encodeURIComponent(idOrSlug)}/similar`,
+      marketCode ? { headers: { "X-Shongre-Market": marketCode } } : undefined,
     );
   }
   getOrCreateDraft(
@@ -117,9 +119,10 @@ export class HttpEmploymentService implements EmploymentServiceContract {
     );
     return result.flags;
   }
-  getCandidateWorkspace() {
+  getCandidateWorkspace(marketCode: string) {
     return httpClient.get<CandidateWorkspace>(
       "/employment/candidate/workspace",
+      { headers: { "X-Shongre-Market": marketCode } },
     );
   }
   saveCandidateProfile(profile: CandidateProfile) {
@@ -139,10 +142,28 @@ export class HttpEmploymentService implements EmploymentServiceContract {
       `/employment/applications/${encodeURIComponent(applicationId)}/withdraw`,
     );
   }
-  toggleSavedJob(jobId: string) {
-    return httpClient.post<{ saved: boolean }>(
-      `/employment/jobs/${encodeURIComponent(jobId)}/save`,
+  async getSavedJobIds(
+    _accountId: string,
+    marketCode: string,
+  ): Promise<string[]> {
+    const result = await httpClient.get<{ jobIds: string[] }>(
+      "/employment/favorites",
+      { headers: { "X-Shongre-Market": marketCode } },
     );
+    return result.jobIds;
+  }
+  async setSavedJob(
+    _accountId: string,
+    jobId: string,
+    marketCode: string,
+    isFavorite: boolean,
+  ): Promise<boolean> {
+    const result = await httpClient.put<{ isFavorite: boolean }>(
+      `/employment/jobs/${encodeURIComponent(jobId)}/save`,
+      { isFavorite },
+      { headers: { "X-Shongre-Market": marketCode } },
+    );
+    return result.isFavorite;
   }
   reportJob(
     jobId: string,

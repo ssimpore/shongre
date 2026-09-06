@@ -63,6 +63,15 @@ export type PromotionPlacementType = z.infer<
   typeof promotionPlacementTypeSchema
 >;
 
+export const listingPromotionSourceSchema = z.enum([
+  "purchase",
+  "subscription_credit",
+  "admin_grant",
+]);
+export type ListingPromotionSource = z.infer<
+  typeof listingPromotionSourceSchema
+>;
+
 export const listingPromotionStateSchema = z.object({
   state: z.enum([
     "inactive",
@@ -77,11 +86,61 @@ export const listingPromotionStateSchema = z.object({
   startsAt: z.string().datetime().optional(),
   endsAt: z.string().datetime().optional(),
   promotedAt: z.string().datetime().optional(),
-  source: z.enum(["purchase", "subscription_credit", "admin_grant"]).optional(),
+  source: listingPromotionSourceSchema.optional(),
   sourceId: z.string().min(1).optional(),
   label: z.string().min(1).optional(),
 });
 export type ListingPromotionState = z.infer<typeof listingPromotionStateSchema>;
+
+/**
+ * Promotion state already resolved for one marketplace publication. Structured
+ * vertical records carry this projection so clients can verify the requested
+ * market and schedule without deriving paid placement from legacy flags.
+ */
+export const marketResolvedListingPromotionSchema = listingPromotionStateSchema
+  .extend({
+    marketCode: marketCodeSchema,
+    type: promotionPlacementTypeSchema,
+    source: listingPromotionSourceSchema,
+    /** Opaque projection proof. Backend adapters must never expose the source
+     * order, entitlement or administrator reference through this field. */
+    sourceId: z.string().trim().min(1),
+    startsAt: z.string().datetime(),
+    endsAt: z.string().datetime(),
+  })
+  .superRefine((promotion, context) => {
+    if (Date.parse(promotion.startsAt) >= Date.parse(promotion.endsAt)) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["endsAt"],
+        message: "A resolved promotion must end after it starts.",
+      });
+    }
+  });
+export type MarketResolvedListingPromotion = z.infer<
+  typeof marketResolvedListingPromotionSchema
+>;
+
+/** A market projection is display/ranking eligible only inside its proven
+ * schedule for the exact requested market. */
+export function isActiveMarketResolvedListingPromotion(
+  promotion: MarketResolvedListingPromotion | undefined,
+  marketCode: string | undefined,
+  now = Date.now(),
+): promotion is MarketResolvedListingPromotion {
+  if (!promotion || promotion.marketCode !== marketCode) return false;
+  const startsAt = Date.parse(promotion.startsAt);
+  const endsAt = Date.parse(promotion.endsAt);
+  return (
+    promotion.state === "active" &&
+    typeof promotion.sourceId === "string" &&
+    Boolean(promotion.sourceId.trim()) &&
+    Number.isFinite(startsAt) &&
+    Number.isFinite(endsAt) &&
+    startsAt <= now &&
+    endsAt > now
+  );
+}
 
 export const discoveryReasonSchema = z.enum([
   "organic_relevance",

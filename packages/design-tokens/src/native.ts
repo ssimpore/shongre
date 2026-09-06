@@ -105,6 +105,7 @@ export const nativeBorders = {
 } as const;
 export const nativeAspect = {
   brandLogo: aspectToNumber(themeAspect.brandLogo),
+  listingCard: aspectToNumber(themeAspect.listingCard),
   media: aspectToNumber(themeAspect.media),
   square: aspectToNumber(themeAspect.square),
   video: aspectToNumber(themeAspect.video),

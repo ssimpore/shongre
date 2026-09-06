@@ -25,7 +25,7 @@ import { Image } from "../../design-system/primitives/Image";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { deliveryCatalogueFr } from "../../i18n/delivery.catalogue.fr";
 import { usePageMeta } from "../../hooks/usePageMeta";
-import { getListingCategoryLabel } from "../../domains/taxonomy/taxonomy.display";
+import { getListingCategoryLabel } from "../../domains/taxonomy/listing-category.display";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { labelIdentifier } from "../../utilities/identifier-label";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";

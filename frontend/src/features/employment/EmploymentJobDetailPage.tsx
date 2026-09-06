@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   BriefcaseBusiness,
@@ -24,6 +24,8 @@ import type {
   JobPostingDetail,
 } from "@shongre/contracts/employment";
 import { EMPLOYMENT_TEXT_LIMITS } from "@shongre/contracts/employment";
+import { isActiveMarketResolvedListingPromotion } from "@shongre/contracts";
+import { useListingPromotionRefresh } from "@shongre/features/listings/web";
 import { VerificationBadge } from "@shongre/ui/web";
 import { services } from "../../api/client/service-registry";
 import { useAuth } from "../../app/providers/AuthProvider";
@@ -35,6 +37,7 @@ import {
   Button,
   Container,
   FormField,
+  ListingGrid,
   Modal,
   SellerIdentityLink,
   Select,
@@ -54,6 +57,7 @@ import {
   structuredDataForPolicy,
 } from "../../platform/seo/seo-policy";
 import { useTranslation } from "../../i18n/I18nProvider";
+import { employmentRecentJobsStorageKey } from "./employment-recent-jobs";
 
 export const EmploymentJobDetailPage: React.FC = () => {
   const { t } = useTranslation();
@@ -84,39 +88,110 @@ export const EmploymentJobDetailPage: React.FC = () => {
     useState<EmploymentJobReport["reason"]>("fraud");
   const [reportDetails, setReportDetails] = useState("");
   const [reporting, setReporting] = useState(false);
+  const [favoritePendingIds, setFavoritePendingIds] = useState<string[]>([]);
+  const accountId = currentUser?.id;
+  const favoriteScope = `${accountId || "guest"}:${activeMarket.code}`;
+  const [favoriteState, setFavoriteState] = useState<{
+    scope: string;
+    ids: string[];
+    loadState: "loading" | "ready" | "error";
+  }>(() => ({ scope: "", ids: [], loadState: "loading" }));
+  const favoriteIds = useMemo(
+    () =>
+      new Set(favoriteState.scope === favoriteScope ? favoriteState.ids : []),
+    [favoriteScope, favoriteState],
+  );
+  const favoriteLoadState =
+    favoriteState.scope === favoriteScope ? favoriteState.loadState : "loading";
+
+  useListingPromotionRefresh(job?.resolvedPromotion);
+  const hasActivePromotion = isActiveMarketResolvedListingPromotion(
+    job?.resolvedPromotion,
+    activeMarket.code,
+  );
+
+  const loadFavoriteIds = useCallback(async () => {
+    const scope = favoriteScope;
+    setFavoriteState((current) => ({
+      scope,
+      ids: current.scope === scope ? current.ids : [],
+      loadState: "loading",
+    }));
+    if (!accountId) {
+      setFavoriteState({ scope, ids: [], loadState: "ready" });
+      return;
+    }
+    try {
+      const ids = await services.employment.getSavedJobIds(
+        accountId,
+        activeMarket.code,
+      );
+      setFavoriteState((current) =>
+        current.scope === scope
+          ? { scope, ids: Array.from(new Set(ids)), loadState: "ready" }
+          : current,
+      );
+    } catch (cause) {
+      setFavoriteState((current) =>
+        current.scope === scope ? { ...current, loadState: "error" } : current,
+      );
+      throw cause;
+    }
+  }, [accountId, activeMarket.code, favoriteScope]);
 
   useEffect(() => {
-    if (initialData) {
+    void loadFavoriteIds().catch(() => undefined);
+  }, [loadFavoriteIds]);
+
+  useEffect(() => {
+    const marketCode = activeMarket.code;
+    const rememberRecentJob = (result: JobPostingDetail) => {
+      const recentKey = employmentRecentJobsStorageKey(
+        currentUser?.id,
+        marketCode,
+      );
+      const recent = storageService.get<string[]>(recentKey, []);
+      storageService.set(
+        recentKey,
+        [result.id, ...recent.filter((id) => id !== result.id)].slice(0, 12),
+      );
+    };
+    if (initialData?.job.marketCode === marketCode) {
+      setJob(initialData.job);
+      setCatalog(initialData.catalog);
+      setSimilar(initialData.similarJobs);
+      setError(false);
       setLoading(false);
+      rememberRecentJob(initialData.job);
       return;
     }
     let active = true;
+    setJob(null);
+    setCatalog(null);
+    setSimilar([]);
     setLoading(true);
     setError(false);
     services.employment
-      .getJob(slug)
+      .getJob(slug, marketCode)
       .then(async (result) => {
         const [nextCatalog, nextSimilar] = await Promise.all([
-          services.employment.getCatalog(result.marketCode),
-          services.employment.getSimilarJobs(result.id),
+          services.employment.getCatalog(marketCode),
+          services.employment.getSimilarJobs(result.id, marketCode),
         ]);
         if (!active) return;
+        if (result.marketCode !== marketCode)
+          throw new Error("Offre d’emploi introuvable sur ce marché.");
         setJob(result);
         setCatalog(nextCatalog);
         setSimilar(nextSimilar);
-        const recentKey = `shongre_employment_recent_jobs:${currentUser?.id || "guest"}`;
-        const recent = storageService.get<string[]>(recentKey, []);
-        storageService.set(
-          recentKey,
-          [result.id, ...recent.filter((id) => id !== result.id)].slice(0, 12),
-        );
+        rememberRecentJob(result);
       })
       .catch(() => active && setError(true))
       .finally(() => active && setLoading(false));
     return () => {
       active = false;
     };
-  }, [currentUser?.id, initialData, slug]);
+  }, [activeMarket.code, currentUser?.id, initialData, slug]);
 
   const pageMeta = React.useMemo(() => {
     if (!job || !catalog || !marketContext) {
@@ -190,10 +265,45 @@ export const EmploymentJobDetailPage: React.FC = () => {
     navigate(`/emploi/offre/${job.slug}/postuler`);
   };
 
-  const save = async () => {
-    const result = await services.employment.toggleSavedJob(job.id);
-    setJob({ ...job, saved: result.saved });
-    toast.success(result.saved ? "Offre enregistrée" : "Offre retirée");
+  const setFavorite = async (targetId: string) => {
+    if (favoriteLoadState !== "ready" || favoritePendingIds.includes(targetId))
+      return;
+    if (!currentUser) {
+      navigate(routes.auth.login(window.location.pathname));
+      return;
+    }
+    setFavoritePendingIds((current) => [...current, targetId]);
+    try {
+      const isFavorite = await services.employment.setSavedJob(
+        currentUser.id,
+        targetId,
+        activeMarket.code,
+        !favoriteIds.has(targetId),
+      );
+      setFavoriteState((current) =>
+        current.scope === favoriteScope
+          ? {
+              ...current,
+              ids: isFavorite
+                ? Array.from(new Set([...current.ids, targetId]))
+                : current.ids.filter((id) => id !== targetId),
+            }
+          : current,
+      );
+      toast.success(isFavorite ? "Offre enregistrée" : "Offre retirée");
+    } catch {
+      toast.error(t("ui.listingCard.favoriErreur"));
+    } finally {
+      setFavoritePendingIds((current) =>
+        current.filter((id) => id !== targetId),
+      );
+    }
+  };
+
+  const save = () => setFavorite(job.id);
+
+  const saveSimilar = async (target: JobPostingCard) => {
+    await setFavorite(target.id);
   };
 
   const share = async () => {
@@ -252,17 +362,20 @@ export const EmploymentJobDetailPage: React.FC = () => {
             <section className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs sm:p-7">
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div className="min-w-0">
-                  <div className="mb-3 flex flex-wrap gap-2">
-                    {job.isUrgent ? (
-                      <Badge variant="warning">Recrutement urgent</Badge>
-                    ) : null}
-                    {job.isFeatured ? (
-                      <Badge variant="primary">À la une</Badge>
-                    ) : null}
-                    {job.isSponsored ? (
-                      <Badge>Placement sponsorisé</Badge>
-                    ) : null}
-                  </div>
+                  {hasActivePromotion ? (
+                    <div className="mb-3 flex flex-wrap gap-2">
+                      <Badge
+                        data-testid="employment-job-promotion"
+                        variant={
+                          job.resolvedPromotion?.type === "urgent_badge"
+                            ? "warning"
+                            : "primary"
+                        }
+                      >
+                        {t("ui.listingCard.boosted")}
+                      </Badge>
+                    </div>
+                  ) : null}
                   <h1 className="text-2xl font-bold text-text-main sm:text-3xl">
                     {job.title}
                   </h1>
@@ -292,14 +405,28 @@ export const EmploymentJobDetailPage: React.FC = () => {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={save}
+                    onClick={
+                      favoriteLoadState === "error"
+                        ? () => void loadFavoriteIds().catch(() => undefined)
+                        : save
+                    }
+                    disabled={
+                      favoriteLoadState === "loading" ||
+                      favoritePendingIds.includes(job.id)
+                    }
                     leftIcon={
                       <Heart
-                        className={`h-icon-sm w-icon-sm ${job.saved ? "fill-primary" : ""}`}
+                        className={`h-icon-sm w-icon-sm ${favoriteIds.has(job.id) ? "fill-primary" : ""}`}
                       />
                     }
                   >
-                    {job.saved ? "Enregistrée" : "Enregistrer"}
+                    {favoriteLoadState === "error"
+                      ? "Réessayer"
+                      : favoriteLoadState === "loading"
+                        ? "Chargement…"
+                        : favoriteIds.has(job.id)
+                          ? "Enregistrée"
+                          : "Enregistrer"}
                   </Button>
                   <Button
                     variant="outline"
@@ -349,11 +476,13 @@ export const EmploymentJobDetailPage: React.FC = () => {
                 {formatSalary(job.salary, catalog, currentLocale, convertMoney)}
               </p>
               <div className="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-xs text-text-secondary">
-                <span className="inline-flex items-center gap-1.5">
-                  <CalendarDays className="h-icon-xs w-icon-xs" />
-                  Publiée le{" "}
-                  {formatEmploymentDate(job.publishedAt, currentLocale)}
-                </span>
+                {job.publishedAt ? (
+                  <span className="inline-flex items-center gap-1.5">
+                    <CalendarDays className="h-icon-xs w-icon-xs" />
+                    Publiée le{" "}
+                    {formatEmploymentDate(job.publishedAt, currentLocale)}
+                  </span>
+                ) : null}
                 <span className="inline-flex items-center gap-1.5">
                   <CalendarDays className="h-icon-xs w-icon-xs" />
                   Expire le {formatEmploymentDate(job.expiresAt, currentLocale)}
@@ -521,11 +650,19 @@ export const EmploymentJobDetailPage: React.FC = () => {
             <h2 className="text-xl font-bold text-text-main">
               Offres similaires
             </h2>
-            <div className="mt-4 grid gap-4 lg:grid-cols-3">
+            <ListingGrid className="mt-4">
               {similar.map((item) => (
-                <JobCard key={item.id} job={item} catalog={catalog} compact />
+                <JobCard
+                  key={item.id}
+                  job={{ ...item, saved: favoriteIds.has(item.id) }}
+                  catalog={catalog}
+                  onSave={saveSimilar}
+                  favoriteLoadState={favoriteLoadState}
+                  onFavoriteRetry={loadFavoriteIds}
+                  compact
+                />
               ))}
-            </div>
+            </ListingGrid>
           </section>
         ) : null}
         <Modal

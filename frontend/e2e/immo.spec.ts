@@ -93,6 +93,7 @@ test.describe("Shongre Immo", () => {
       "Appartement lumineux",
     );
     await expect(page.getByText("Contacter l’annonceur")).toBeVisible();
+    await expect(page.getByTestId("immo-property-promotion")).toHaveCount(0);
     const body = page.locator("body");
     await expect(body).not.toContainText(
       /Adresse privée|documents-private|riskSignals|Montchat, Lyon 3e/,

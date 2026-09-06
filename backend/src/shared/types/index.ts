@@ -116,6 +116,14 @@ export interface ListingMarketPublication {
   complianceState: "pending" | "approved" | "restricted" | "rejected";
   publishedAt?: string;
   sortDate: string;
+  promotionState?: "inactive" | "active";
+  promotionType?: Listing["promotionType"];
+  promotionSource?: Listing["promotionSource"];
+  promotionSourceId?: string;
+  promotionLabel?: string;
+  promotionStartAt?: string;
+  promotionEndAt?: string;
+  promotedAt?: string;
 }
 
 export interface Listing {
@@ -211,6 +219,11 @@ export interface Listing {
   expiresAt: string;
 }
 
+export type PublicListingMarketPublication = Omit<
+  ListingMarketPublication,
+  "promotionSource" | "promotionSourceId"
+>;
+
 export type PublicListing = Omit<
   Listing,
   | "seller"
@@ -224,8 +237,13 @@ export type PublicListing = Omit<
   | "duplicateGroupId"
   | "safetyRiskScore"
   | "digitalFulfillmentVersionId"
+  | "marketPublications"
 > & {
   seller?: PublicSellerProfile;
+  /** Backend-resolved source kind plus a one-way public proof identifier. */
+  promotionSource?: Listing["promotionSource"];
+  promotionSourceId?: string;
+  marketPublications?: PublicListingMarketPublication[];
   fulfillmentTypes: import("@shongre/contracts/digital-products").FulfillmentType[];
   requiresPhysicalDelivery: boolean;
 };

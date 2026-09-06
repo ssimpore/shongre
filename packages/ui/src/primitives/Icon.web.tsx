@@ -13,6 +13,7 @@ import {
   Gauge,
   Heart,
   Home,
+  ImageOff,
   Laptop,
   Layers3,
   LayoutGrid,
@@ -20,6 +21,7 @@ import {
   Menu,
   MessageCircle,
   Plus,
+  RefreshCw,
   Ruler,
   Search,
   Settings,
@@ -30,6 +32,7 @@ import {
   Truck,
   User,
   X,
+  Zap,
 } from "lucide-react";
 import type { ComponentType } from "react";
 import { iconStrokeWidths } from "@shongre/design-tokens";
@@ -50,6 +53,7 @@ export type IconName =
   | "gauge"
   | "heart"
   | "home"
+  | "image-off"
   | "laptop"
   | "layers"
   | "layout-grid"
@@ -57,6 +61,7 @@ export type IconName =
   | "menu"
   | "message"
   | "plus"
+  | "refresh"
   | "ruler"
   | "search"
   | "settings"
@@ -66,7 +71,8 @@ export type IconName =
   | "tag"
   | "truck"
   | "user"
-  | "x";
+  | "x"
+  | "zap";
 export interface SemanticIconProps {
   name: IconName;
   size?: "xs" | "sm" | "md" | "lg" | "nav" | "xl";
@@ -97,6 +103,7 @@ const icons: Record<
   gauge: Gauge,
   heart: Heart,
   home: Home,
+  "image-off": ImageOff,
   laptop: Laptop,
   layers: Layers3,
   "layout-grid": LayoutGrid,
@@ -104,6 +111,7 @@ const icons: Record<
   menu: Menu,
   message: MessageCircle,
   plus: Plus,
+  refresh: RefreshCw,
   ruler: Ruler,
   search: Search,
   settings: Settings,
@@ -114,6 +122,7 @@ const icons: Record<
   truck: Truck,
   user: User,
   x: X,
+  zap: Zap,
 };
 const iconSizes = {
   xs: "h-icon-xs w-icon-xs",

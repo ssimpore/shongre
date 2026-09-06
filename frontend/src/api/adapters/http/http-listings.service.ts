@@ -6,62 +6,37 @@ import {
   PublishBulkListingsInput,
 } from "../../contracts/listings.contract";
 import { httpClient } from "./http-client";
-import { Listing, ListingStatus, SearchFilters } from "../../../types";
+import {
+  Listing,
+  ListingPricePresentation,
+  ListingStatus,
+  SearchFilters,
+} from "../../../types";
 import { PublicationDraftState } from "../../../domains/publication/publication.types";
-import { toTaxonomyV4ItemCondition } from "@shongre/contracts";
+import {
+  publicListingCardsRequestSchema,
+  toTaxonomyV4ItemCondition,
+} from "@shongre/contracts";
+import type { components, operations } from "@shongre/contracts/openapi";
 import { getTaxonomyV4PublicBundle } from "@shongre/contracts/taxonomy-v4-public";
+import { majorToMinorAmount } from "@shongre/shared/money";
+import { AppError } from "../../errors/app-error";
 
-export type BackendListing = {
-  id: string;
-  sellerId: string;
-  seller?: {
-    name?: string;
-    accountType?: "individual" | "professional";
-    avatarUrl?: string;
-    city?: string;
-    rating?: number;
-    reviewCount?: number;
-    isVerified?: boolean;
-    isBusinessVerified?: boolean;
-  };
-  categoryId: string;
-  title: string;
-  description: string;
-  price: number;
-  originalPrice?: number;
-  currency: string;
-  status: string;
-  condition: Listing["condition"];
-  marketCode: string;
-  city: string;
-  postalCode: string;
-  department?: string;
-  region?: string;
-  country: string;
-  latitude?: number;
-  longitude?: number;
-  allowedDelivery: Listing["deliveryOptions"][number]["type"][];
-  shippingCost?: number;
-  fulfillmentTypes?: import("@shongre/contracts/digital-products").FulfillmentType[];
-  requiresPhysicalDelivery?: boolean;
-  productVersion?: string;
-  images: string[];
-  attributes: Record<string, unknown>;
-  isUrgent?: boolean;
-  isFeatured?: boolean;
-  promotionState?: Listing["promotionState"];
-  promotionType?: Listing["promotionType"];
-  promotionLabel?: string;
-  promotionStartAt?: string;
-  promotionEndAt?: string;
-  publishedAt?: string;
-  bumpedAt?: string;
-  viewCount: number;
-  favoriteCount: number;
-  createdAt: string;
-  updatedAt: string;
-  expiresAt: string;
-};
+export type BackendListing = components["schemas"]["PublicListing"];
+type BackendListingCollection =
+  operations["getListings"]["responses"][200]["content"]["application/json"];
+type BackendListingDetail =
+  operations["getListingsById"]["responses"][200]["content"]["application/json"];
+type BackendListingCardsResult =
+  operations["postListingsCards"]["responses"][200]["content"]["application/json"];
+type BackendListingSearchResult =
+  operations["postListingsSearch"]["responses"][200]["content"]["application/json"];
+type BackendFavoriteCollection =
+  operations["getFavorites"]["responses"][200]["content"]["application/json"];
+type BackendFavoriteStateResult =
+  operations["putListingsByIdFavorite"]["responses"][200]["content"]["application/json"];
+
+const PUBLIC_LISTING_CARD_BATCH_SIZE = 100;
 
 const frontendStatus = (status: string): ListingStatus =>
   status === "published"
@@ -70,10 +45,65 @@ const frontendStatus = (status: string): ListingStatus =>
         ? status
         : "pending_review") as ListingStatus);
 
+const RECURRING_PRICE_PERIODS = {
+  hourly: "hour",
+  daily: "day",
+  weekly: "week",
+  monthly: "month",
+  rent_plus_charges: "month",
+  total: "total",
+} as const satisfies Record<
+  string,
+  NonNullable<ListingPricePresentation["period"]>
+>;
+
+function mapPricePresentation(
+  listing: BackendListing,
+  priceType: unknown,
+): ListingPricePresentation | undefined {
+  if (priceType === "on_request") {
+    return {
+      kind: "price",
+      visibility: "undisclosed",
+      currency: listing.currency,
+    };
+  }
+  if (
+    typeof priceType !== "string" ||
+    !(priceType in RECURRING_PRICE_PERIODS)
+  ) {
+    return undefined;
+  }
+  const amountMinor = majorToMinorAmount(listing.price, listing.currency);
+  return {
+    kind: priceType === "rent_plus_charges" ? "rent" : "service_rate",
+    visibility: "public",
+    minimumAmountMinor: amountMinor,
+    maximumAmountMinor: amountMinor,
+    currency: listing.currency,
+    period:
+      RECURRING_PRICE_PERIODS[
+        priceType as keyof typeof RECURRING_PRICE_PERIODS
+      ],
+  };
+}
+
 export const mapBackendListing = (listing: BackendListing): Listing => {
-  const sellerType =
-    listing.seller?.accountType === "professional" ? "pro" : "individual";
+  const sellerType = listing.publisherType
+    ? listing.publisherType === "professional"
+      ? "pro"
+      : "individual"
+    : listing.seller?.accountType === "professional"
+      ? "pro"
+      : "individual";
   const categoryParts = listing.categoryId.split(".");
+  const priceType = listing.attributes?.price_type;
+  const attributes = {
+    ...(listing.attributes ?? {}),
+    ...(typeof listing.brand === "string" && listing.brand.trim()
+      ? { brand: listing.brand }
+      : {}),
+  };
   return {
     id: listing.id,
     title: listing.title,
@@ -82,18 +112,20 @@ export const mapBackendListing = (listing: BackendListing): Listing => {
     originalPrice: listing.originalPrice,
     currency: listing.currency,
     isNegotiable: false,
-    isFreeDonation: listing.price === 0,
-    fulfillmentTypes: listing.fulfillmentTypes,
+    isFreeDonation: priceType === "free",
+    pricePresentation: mapPricePresentation(listing, priceType),
+    fulfillmentTypes: [...(listing.fulfillmentTypes ?? [])],
     requiresPhysicalDelivery: listing.requiresPhysicalDelivery,
     productVersion: listing.productVersion,
     categorySlug: categoryParts[0] || listing.categoryId,
     subCategorySlug: listing.categoryId,
     categoryLabel: categoryParts[0] || "Annonce",
     subCategoryLabel: categoryParts.at(-1) || "Annonce",
-    condition: listing.condition,
+    condition: listing.condition as Listing["condition"],
     sellerId: listing.sellerId,
     sellerName: listing.seller?.name || "Vendeur",
     sellerType,
+    publisherType: listing.publisherType,
     sellerAvatarUrl: listing.seller?.avatarUrl,
     sellerRating: Number(listing.seller?.rating || 0),
     sellerReviewCount: Number(listing.seller?.reviewCount || 0),
@@ -123,8 +155,11 @@ export const mapBackendListing = (listing: BackendListing): Listing => {
         available: true,
         price: type === "hand_delivery" ? 0 : listing.shippingCost,
       })),
-    isOnlinePaymentAvailable: true,
-    attributes: listing.attributes ?? {},
+    // The public listing contract does not expose an authoritative payment
+    // capability yet. Fail closed instead of advertising buyer protection for
+    // every HTTP result.
+    isOnlinePaymentAvailable: false,
+    attributes,
     status: frontendStatus(listing.status),
     viewsCount: listing.viewCount,
     viewCount: listing.viewCount,
@@ -133,9 +168,12 @@ export const mapBackendListing = (listing: BackendListing): Listing => {
     isBoosted: Boolean(listing.isUrgent || listing.isFeatured),
     promotionState: listing.promotionState,
     promotionType: listing.promotionType,
+    promotionSource: listing.promotionSource,
+    promotionSourceId: listing.promotionSourceId,
     promotionLabel: listing.promotionLabel,
     promotionStartAt: listing.promotionStartAt,
     promotionEndAt: listing.promotionEndAt,
+    discovery: listing.discovery,
     publishedAt: listing.publishedAt,
     marketCode: listing.marketCode,
     marketCodes: [listing.marketCode],
@@ -215,29 +253,64 @@ export const publicationPayload = (draft: PublicationDraftState) => {
 
 export class HttpListingsService implements ListingsServiceContract {
   async getListings(filter?: SearchFilters) {
-    const result = await httpClient.get<{
-      listings: BackendListing[];
-      total: number;
-    }>("/listings", {
+    const result = await httpClient.get<BackendListingCollection>("/listings", {
       params: filter as Record<string, string | number | boolean | undefined>,
     });
     return { ...result, listings: result.listings.map(mapBackendListing) };
   }
 
   async getListingById(id: string): Promise<Listing | null> {
-    const listing = await httpClient.get<BackendListing | null>(
-      `/listings/${id}`,
+    try {
+      const listing = await httpClient.get<BackendListingDetail>(
+        `/listings/${id}`,
+      );
+      return listing ? mapBackendListing(listing) : null;
+    } catch (error) {
+      if (error instanceof AppError && error.code === "NOT_FOUND") return null;
+      throw error;
+    }
+  }
+
+  async getPublicListingsByIds(
+    listingIds: readonly string[],
+    marketCode: string,
+  ): Promise<Listing[]> {
+    // Browser-local demo or stale data must not make a production UUID batch
+    // fail as a whole. Invalid identifiers are simply not public projections.
+    const uniqueIds = [...new Set(listingIds)].filter(
+      (listingId) =>
+        publicListingCardsRequestSchema.safeParse({
+          listingIds: [listingId],
+        }).success,
     );
-    return listing ? mapBackendListing(listing) : null;
+    const batches = Array.from(
+      { length: Math.ceil(uniqueIds.length / PUBLIC_LISTING_CARD_BATCH_SIZE) },
+      (_, index) =>
+        uniqueIds.slice(
+          index * PUBLIC_LISTING_CARD_BATCH_SIZE,
+          (index + 1) * PUBLIC_LISTING_CARD_BATCH_SIZE,
+        ),
+    );
+    const results = await Promise.all(
+      batches.map((batch) =>
+        httpClient.post<BackendListingCardsResult>(
+          "/listings/cards",
+          { listingIds: batch },
+          { headers: { "X-Shongre-Market": marketCode } },
+        ),
+      ),
+    );
+    return results.flatMap((result) => result.listings.map(mapBackendListing));
   }
 
   async searchListings(params: SearchFilters) {
-    const result = await httpClient.post<{
-      items: BackendListing[];
-      total: number;
-      page: number;
-      totalPages: number;
-    }>("/listings/search", params);
+    const result = await httpClient.post<BackendListingSearchResult>(
+      "/listings/search",
+      params,
+      params.marketCode
+        ? { headers: { "X-Shongre-Market": params.marketCode } }
+        : undefined,
+    );
     return { ...result, items: result.items.map(mapBackendListing) };
   }
 
@@ -342,16 +415,28 @@ export class HttpListingsService implements ListingsServiceContract {
     return true;
   }
 
-  async toggleFavorite(listingId: string): Promise<boolean> {
-    const result = await httpClient.post<{ isFavorite: boolean }>(
+  async setFavorite(
+    listingId: string,
+    marketCode: string,
+    isFavorite: boolean,
+  ): Promise<boolean> {
+    const result = await httpClient.put<BackendFavoriteStateResult>(
       `/listings/${listingId}/favorite`,
+      { isFavorite },
+      { headers: { "X-Shongre-Market": marketCode } },
     );
     return result.isFavorite;
   }
 
-  async getFavorites(): Promise<string[]> {
-    const result = await httpClient.get<{ listingIds: string[] }>("/favorites");
-    return result.listingIds;
+  async getFavoriteCollection(marketCode: string) {
+    const result = await httpClient.get<BackendFavoriteCollection>(
+      "/favorites",
+      { headers: { "X-Shongre-Market": marketCode } },
+    );
+    return {
+      listingIds: [...result.listingIds],
+      listings: result.listings.map(mapBackendListing),
+    };
   }
 }
 

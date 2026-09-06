@@ -4,8 +4,8 @@
 
 - Contract version: `1.0.0`
 - API base path: `/api/v1`
-- Operations: **512**
-- Specification SHA-256: `c347436348cd9822`
+- Operations: **516**
+- Specification SHA-256: `6cc014bdf88b78f1`
 
 ## account
 
@@ -238,7 +238,7 @@
 | `GET` | `/auto/favorites` | `getAutoFavorites` | `permission` | `favorite.manage.own` | `200` |
 | `POST` | `/auto/leads` | `postAutoLeads` | `public` | — | `200` |
 | `POST` | `/auto/search` | `postAutoSearch` | `public` | — | `200` |
-| `POST` | `/auto/vehicles/{id}/favorite` | `postAutoVehiclesByIdFavorite` | `permission` | `favorite.manage.own` | `200` |
+| `PUT` | `/auto/vehicles/{id}/favorite` | `putAutoVehiclesByIdFavorite` | `permission` | `favorite.manage.own` | `200` |
 | `GET` | `/auto/vehicles/{id}` | `getAutoVehiclesById` | `public` | — | `200` |
 | `POST` | `/auto/vehicles` | `postAutoVehicles` | `permission` | `auto.vehicle.manage.own` | `200` |
 
@@ -316,11 +316,13 @@
 | `GET` | `/delivery/availability` | `getDeliveryAvailability` | `public` | — | `200` |
 | `GET` | `/delivery/courier/profile` | `getDeliveryCourierProfile` | `permission` | `delivery.courier.manage.own` | `200` |
 | `PUT` | `/delivery/courier/profile` | `putDeliveryCourierProfile` | `permission` | `delivery.courier.manage.own` | `200` |
+| `GET` | `/delivery/favorites` | `getDeliveryFavorites` | `permission` | `favorite.manage.own` | `200` |
 | `GET` | `/delivery/me/applications` | `getOwnDeliveryApplications` | `permission` | `delivery.application.manage.own` | `200` |
 | `GET` | `/delivery/me/requests/{requestId}` | `getOwnDeliveryRequest` | `permission` | `delivery.read` | `200` |
 | `GET` | `/delivery/me/requests` | `getOwnDeliveryRequests` | `permission` | `delivery.request.manage.own` | `200` |
 | `POST` | `/delivery/requests/{requestId}/applications/{applicationId}/accept` | `postDeliveryApplicationAccept` | `permission` | `delivery.request.manage.own` | `200` |
 | `POST` | `/delivery/requests/{requestId}/applications` | `postDeliveryApplication` | `permission` | `delivery.application.manage.own` | `201` |
+| `PUT` | `/delivery/requests/{requestId}/favorite` | `putDeliveryRequestFavorite` | `permission` | `favorite.manage.own` | `200` |
 | `POST` | `/delivery/requests/{requestId}/publish` | `postDeliveryRequestPublish` | `permission` | `delivery.request.manage.own` | `200` |
 | `POST` | `/delivery/requests/{requestId}/transition` | `postDeliveryRequestTransition` | `permission` | `delivery.read` | `200` |
 | `GET` | `/delivery/requests/{requestId}` | `getDeliveryRequest` | `public` | — | `200` |
@@ -383,7 +385,7 @@
 | `POST` | `/education/organizations/{organizationId}/members` | `postEducationOrganizationsByOrganizationIdMembers` | `permission` | `course.organization.manage.own` | `200` |
 | `GET` | `/education/organizations/{organizationId}/workspace` | `getEducationOrganizationsByOrganizationIdWorkspace` | `permission` | `course.organization.manage.own` | `200` |
 | `POST` | `/education/search` | `postEducationSearch` | `public` | — | `200` |
-| `POST` | `/education/tutors/{id}/favorite` | `postEducationTutorsByIdFavorite` | `permission` | `favorite.manage.own` | `200` |
+| `PUT` | `/education/tutors/{id}/favorite` | `putEducationTutorsByIdFavorite` | `permission` | `favorite.manage.own` | `200` |
 | `GET` | `/education/tutors/{id}` | `getEducationTutorsById` | `public` | — | `200` |
 | `PUT` | `/education/tutors/{id}` | `putEducationTutorsById` | `permission` | `course.profile.manage.own` | `200` |
 | `DELETE` | `/education/workflow-drafts/learner-request` | `deleteEducationWorkflowdraftsLearnerrequest` | `permission` | `course.request.create` | `200` |
@@ -425,9 +427,10 @@
 | `POST` | `/employment/employers/{employerId}/imports` | `postEmploymentEmployersByEmployerIdImports` | `permission` | `employment.import.own` | `200` |
 | `POST` | `/employment/employers/{employerId}/jobs/{jobId}/duplicate` | `postEmploymentEmployersByEmployerIdJobsByJobIdDuplicate` | `permission` | `employment.recruiter.manage.own` | `200` |
 | `GET` | `/employment/employers/{employerId}/workspace` | `getEmploymentEmployersByEmployerIdWorkspace` | `permission` | `employment.recruiter.manage.own` | `200` |
+| `GET` | `/employment/favorites` | `getEmploymentFavorites` | `permission` | `employment.candidate.manage.own` | `200` |
 | `POST` | `/employment/jobs/{id}/applications` | `postEmploymentJobsByIdApplications` | `permission` | `employment.candidate.manage.own` | `200` |
 | `POST` | `/employment/jobs/{id}/report` | `postEmploymentJobsByIdReport` | `permission` | `employment.candidate.manage.own` | `200` |
-| `POST` | `/employment/jobs/{id}/save` | `postEmploymentJobsByIdSave` | `permission` | `employment.candidate.manage.own` | `200` |
+| `PUT` | `/employment/jobs/{id}/save` | `putEmploymentJobsByIdSave` | `permission` | `employment.candidate.manage.own` | `200` |
 | `GET` | `/employment/jobs/{id}/similar` | `getEmploymentJobsByIdSimilar` | `public` | — | `200` |
 | `GET` | `/employment/jobs/{id}` | `getEmploymentJobsById` | `public` | — | `200` |
 | `GET` | `/employment/recruiter/employers` | `getEmploymentRecruiterEmployers` | `permission` | `employment.recruiter.manage.own` | `200` |
@@ -494,13 +497,14 @@
 
 | Method | Path | Operation ID | Access | Permission | Success |
 | --- | --- | --- | --- | --- | --- |
-| `POST` | `/listings/{id}/favorite` | `postListingsByIdFavorite` | `permission` | `favorite.manage.own` | `200` |
+| `PUT` | `/listings/{id}/favorite` | `putListingsByIdFavorite` | `permission` | `favorite.manage.own` | `200` |
 | `DELETE` | `/listings/{id}` | `deleteListingsById` | `permission` | `listing.delete.own` | `200` |
 | `GET` | `/listings/{id}` | `getListingsById` | `public` | — | `200` |
 | `PUT` | `/listings/{id}` | `putListingsById` | `permission` | `listing.update.own` | `200` |
 | `POST` | `/listings/bulk-import/parse` | `postListingsBulkimportParse` | `permission` | `listing.create` | `200` |
 | `POST` | `/listings/bulk-import/publish` | `postListingsBulkimportPublish` | `permission` | `listing.publish` | `200` |
 | `GET` | `/listings/bulk-import/template` | `getListingsBulkimportTemplate` | `permission` | `listing.create` | `200` |
+| `POST` | `/listings/cards` | `postListingsCards` | `public` | — | `200` |
 | `POST` | `/listings/publish` | `postListingsPublish` | `permission` | `listing.publish` | `200` |
 | `POST` | `/listings/search` | `postListingsSearch` | `public` | — | `200` |
 | `GET` | `/listings` | `getListings` | `public` | — | `200` |

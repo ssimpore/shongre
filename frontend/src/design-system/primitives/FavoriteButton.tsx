@@ -1,5 +1,5 @@
-import React from "react";
-import { Heart } from "lucide-react";
+import React, { useRef, useState } from "react";
+import { Heart, LoaderCircle, RefreshCw } from "lucide-react";
 import {
   CONTROL_FOCUS_CLASS,
   CONTROL_MOTION_CLASS,
@@ -10,7 +10,11 @@ type FavoriteButtonVariant = "bare" | "floating";
 
 export interface FavoriteButtonProps {
   isFavorite: boolean;
-  onToggle: (e: React.MouseEvent) => void;
+  onToggle: (e: React.MouseEvent) => void | Promise<unknown>;
+  onRetry?: (e: React.MouseEvent) => void | Promise<unknown>;
+  interactionState?: "loading" | "ready" | "error";
+  /** Localized state label; defaults keep standalone legacy callers accessible. */
+  label?: string;
   /** Visual size. The hit area stays at 44px regardless — see below. */
   size?: FavoriteButtonSize;
   /** `floating` sits on top of media and carries its own surface. */
@@ -83,11 +87,19 @@ const POSITIONED_BY_CALLER = /(?:^|\s)(?:absolute|fixed|sticky|static)(?:\s|$)/;
 export const FavoriteButton: React.FC<FavoriteButtonProps> = ({
   isFavorite,
   onToggle,
+  onRetry,
+  interactionState = "ready",
+  label,
   size = "md",
   variant = "bare",
   className = "",
 }) => {
+  const pendingRef = useRef(false);
+  const [isPending, setIsPending] = useState(false);
   const position = POSITIONED_BY_CALLER.test(className) ? "" : "relative";
+  const retrying = interactionState === "error";
+  const busy = isPending || interactionState === "loading";
+  const disabled = busy || (retrying && !onRetry);
   const surface =
     variant === "floating"
       ? "rounded-full bg-bg-surface/90 backdrop-blur-xs shadow-xs text-text-secondary hover:bg-bg-surface"
@@ -97,14 +109,47 @@ export const FavoriteButton: React.FC<FavoriteButtonProps> = ({
     <button
       type="button"
       data-marketplace-action="favorite.manage"
-      onClick={onToggle}
-      aria-pressed={isFavorite}
-      aria-label={isFavorite ? "Retirer des favoris" : "Ajouter aux favoris"}
-      className={`${position} flex items-center justify-center shrink-0 ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} hover:text-primary active:scale-90 cursor-pointer ${BOX[size]} ${TOUCH_EXPANSION} ${surface} ${className}`}
+      onClick={(event) => {
+        if (pendingRef.current || disabled) return;
+        const result = retrying ? onRetry?.(event) : onToggle(event);
+        if (!result || typeof result.then !== "function") return;
+        pendingRef.current = true;
+        setIsPending(true);
+        void Promise.resolve(result).then(
+          () => {
+            pendingRef.current = false;
+            setIsPending(false);
+          },
+          () => {
+            pendingRef.current = false;
+            setIsPending(false);
+          },
+        );
+      }}
+      disabled={disabled}
+      aria-busy={busy || undefined}
+      aria-pressed={interactionState === "ready" ? isFavorite : undefined}
+      aria-label={
+        label ??
+        (interactionState === "loading"
+          ? "Chargement des favoris"
+          : retrying
+            ? "Réessayer le chargement des favoris"
+            : isFavorite
+              ? "Retirer des favoris"
+              : "Ajouter aux favoris")
+      }
+      className={`${position} flex items-center justify-center shrink-0 ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} hover:text-primary active:scale-90 cursor-pointer disabled:cursor-wait disabled:opacity-disabled ${BOX[size]} ${TOUCH_EXPANSION} ${surface} ${className}`}
     >
-      <Heart
-        className={`${ICON[size]} ${isFavorite ? "fill-primary text-primary" : ""}`}
-      />
+      {interactionState === "loading" ? (
+        <LoaderCircle className={`${ICON[size]} animate-spin`} />
+      ) : retrying ? (
+        <RefreshCw className={`${ICON[size]} text-danger`} />
+      ) : (
+        <Heart
+          className={`${ICON[size]} ${isFavorite ? "fill-primary text-primary" : ""}`}
+        />
+      )}
     </button>
   );
 };

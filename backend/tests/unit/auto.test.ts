@@ -64,14 +64,15 @@ describe("Shongre Auto domain service", () => {
     const first = await service.getOrCreateOwnDraft("seller_a", "fr");
     const second = await service.getOrCreateOwnDraft("seller_a", "FR");
     expect(second.id).toBe(first.id);
-    expect(await service.getFavoriteVehicleIds("buyer_a")).toEqual([]);
+    expect(await service.getFavoriteVehicleIds("buyer_a", "FR")).toEqual([]);
     await expect(
-      service.toggleFavoriteVehicle("buyer_a", "vehicle_3008_petrol"),
+      service.setFavoriteVehicle("buyer_a", "vehicle_3008_petrol", "FR", true),
     ).resolves.toBe(true);
-    expect(await service.getFavoriteVehicleIds("buyer_a")).toEqual([
+    expect(await service.getFavoriteVehicleIds("buyer_a", "FR")).toEqual([
       "vehicle_3008_petrol",
     ]);
-    expect(await service.getFavoriteVehicleIds("buyer_b")).toEqual([]);
+    expect(await service.getFavoriteVehicleIds("buyer_a", "BE")).toEqual([]);
+    expect(await service.getFavoriteVehicleIds("buyer_b", "FR")).toEqual([]);
   });
 
   it("projects Auto prices from the active commercial version", async () => {

@@ -1,29 +1,17 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import L from "leaflet";
-import { VerificationBadge } from "@shongre/ui/web";
 import "leaflet/dist/leaflet.css";
-import { routes } from "../../configuration/routes";
-import {
-  MapPin,
-  Layers,
-  Maximize2,
-  X,
-  ExternalLink,
-  Navigation,
-  Compass,
-} from "lucide-react";
+import { Layers, Maximize2, X, Navigation, Compass } from "lucide-react";
 import { Listing } from "../../types";
 import { plural } from "../../utilities/formatters";
 import {
   getListingCoordinates,
   getMarketMapConfiguration,
 } from "../../configuration/geoCoordinates";
-import { Image } from "../../design-system/primitives/Image";
-import { showsVerifiedBadge } from "../../domains/user/user.domain";
 import { useTranslation } from "../../i18n/I18nProvider";
-import { getListingCategoryLabel } from "../../domains/taxonomy/taxonomy.display";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
+import { ListingCard } from "../../design-system/primitives/ListingCard";
+import { presentExploreMapMarker } from "./explore-map-marker.presentation";
 
 interface ExploreMapViewProps {
   listings: Listing[];
@@ -37,9 +25,9 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
   onSelectCity,
 }) => {
   const { t } = useTranslation();
-  const { activeMarket, formatPrice, popularCities } = useMarketLocation();
+  const { activeMarket, currentLocale, convertMoney, popularCities } =
+    useMarketLocation();
   const marketMap = getMarketMapConfiguration(activeMarket.code);
-  const navigate = useNavigate();
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersRef = useRef<{ [listingId: string]: L.Marker }>({});
@@ -144,9 +132,19 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
 
       const isSelected = activeListing?.id === listing.id;
       const isHovered = hoveredListingId === listing.id;
-      const priceText = formatPrice(listing.price, {
-        isFreeDonation: listing.isFreeDonation,
-      });
+      const markerPresentation = presentExploreMapMarker(
+        listing,
+        currentLocale,
+        activeMarket.code,
+        {
+          free: t("ui.listingCard.free"),
+          onRequest: t("ui.listingCard.onRequest"),
+        },
+        convertMoney,
+      );
+      const { isBoosted: hasActivePromotion, priceText } = markerPresentation;
+      const priceNode = document.createElement("span");
+      priceNode.textContent = priceText || "";
 
       // Custom HTML Marker Pill
       const customHtml = `
@@ -164,8 +162,8 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
                 ? "bg-surface-inverse text-text-inverse border-border-inverse"
                 : "bg-bg-surface text-text-main border-border-base hover:border-border-strong"
           }">
-            ${listing.isBoosted ? '<span class="w-1.5 h-1.5 rounded-full bg-rating-fill"></span>' : ""}
-            <span>${priceText}</span>
+            ${hasActivePromotion ? '<span class="w-1.5 h-1.5 rounded-full bg-rating-fill"></span>' : ""}
+            ${priceText ? priceNode.outerHTML : ""}
           </div>
           <div class="w-2 h-2 bg-current rotate-45 mx-auto -mt-1 ${
             isSelected
@@ -206,7 +204,15 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
     if (bounds.isValid()) {
       map.fitBounds(bounds, { padding: [60, 60], maxZoom: 14 });
     }
-  }, [listings, activeListing?.id, hoveredListingId, formatPrice]);
+  }, [
+    listings,
+    activeListing?.id,
+    hoveredListingId,
+    currentLocale,
+    activeMarket.code,
+    convertMoney,
+    t,
+  ]);
 
   // Pan to selected city if updated from parent or shortcut
   const handleFlyToCity = (cityName: string) => {
@@ -328,71 +334,23 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
               <span className="text-xs font-bold text-text-strong truncate">
                 {plural(listings.length, "annonce")} sur la carte
               </span>
-              <span className="text-xs text-text-tertiary">
-                {t("search.exploreMapView.cliquezPourCentrer")}
-              </span>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-3 space-y-2.5 divide-y divide-border-subtle">
+            <div className="flex-1 overflow-y-auto p-3 space-y-3">
               {listings.map((item) => {
                 const isSelected = activeListing?.id === item.id;
-                const isHovered = hoveredListingId === item.id;
 
                 return (
-                  <button
-                    type="button"
+                  <div
                     key={item.id}
                     onMouseEnter={() => setHoveredListingId(item.id)}
                     onMouseLeave={() => setHoveredListingId(null)}
-                    onClick={() => {
-                      setActiveListing(item);
-                      const coords = getListingCoordinates(item);
-                      mapInstanceRef.current?.setView(
-                        [coords.lat, coords.lng],
-                        13,
-                        {
-                          animate: true,
-                        },
-                      );
-                    }}
-                    aria-pressed={isSelected}
-                    className={`w-full pt-2.5 first:pt-0 cursor-pointer rounded-xl p-2 text-left transition-colors ${
-                      isSelected
-                        ? "bg-primary-light border border-primary-border"
-                        : isHovered
-                          ? "bg-surface-soft"
-                          : "hover:bg-surface-soft"
+                    className={`mx-auto w-listing-card max-w-full rounded-card ${
+                      isSelected ? "ring-2 ring-primary-ring-strong" : ""
                     }`}
                   >
-                    <div className="flex gap-2.5 items-center">
-                      <Image
-                        src={item.coverImageUrl || item.photos[0]?.url}
-                        alt=""
-                        sizes="56px"
-                        className="w-14 h-14 rounded-lg object-cover border border-border-base shrink-0"
-                        referrerPolicy="no-referrer"
-                      />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between gap-1">
-                          <span className="text-xs font-bold text-text-main truncate">
-                            {item.title}
-                          </span>
-                        </div>
-                        <div className="text-xs text-text-tertiary truncate flex items-center gap-1 mt-0.5">
-                          <MapPin className="w-icon-xs h-icon-xs text-text-inverse-subtle" />
-                          {item.city} ({item.postalCode})
-                        </div>
-                        <div className="flex items-center justify-between mt-1">
-                          <span className="text-xs font-bold text-primary">
-                            {formatPrice(item.price)}
-                          </span>
-                          <span className="text-micro text-text-tertiary font-medium">
-                            {item.sellerName}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </button>
+                    <ListingCard listing={item} />
+                  </div>
                 );
               })}
             </div>
@@ -411,78 +369,20 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
               aria-live="polite"
               data-testid="map-active-listing"
             >
-              <div className="pointer-events-auto mx-auto flex max-w-3xl items-start gap-3 rounded-card border border-border-base bg-bg-surface/95 p-3 shadow-lg backdrop-blur-sm sm:gap-4 sm:p-4">
+              <div className="pointer-events-auto mx-auto flex max-w-3xl items-start gap-2 rounded-card bg-bg-surface/95 p-2 shadow-lg backdrop-blur-sm">
+                <div className="min-w-0 flex-1">
+                  <ListingCard listing={activeListing} variant="list" />
+                </div>
                 <button
                   type="button"
                   onClick={() => setActiveListing(null)}
-                  className="order-3 shrink-0 rounded-full p-1 text-text-tertiary transition-colors hover:bg-surface-muted hover:text-text-emphasis focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                  className="shrink-0 rounded-full p-1 text-text-tertiary transition-colors hover:bg-surface-muted hover:text-text-emphasis focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
                   aria-label={t(
                     "search.exploreMapView.fermerLaPrevisualisation",
                   )}
                 >
                   <X className="w-icon-md h-icon-md" />
                 </button>
-
-                <div className="flex min-w-0 flex-1 gap-3">
-                  <Image
-                    src={
-                      activeListing.coverImageUrl ||
-                      activeListing.photos[0]?.url
-                    }
-                    alt={activeListing.title}
-                    sizes="(min-width: 640px) 96px, 80px"
-                    className="h-20 w-20 shrink-0 rounded-control border border-border-base object-cover sm:h-24 sm:w-24"
-                    referrerPolicy="no-referrer"
-                  />
-
-                  <div className="min-w-0 flex-1">
-                    <div className="mb-1 flex min-w-0 items-center gap-1.5">
-                      <span className="truncate text-xs font-semibold text-text-tertiary">
-                        {getListingCategoryLabel(activeListing)}
-                      </span>
-                      {showsVerifiedBadge(activeListing) && (
-                        <VerificationBadge
-                          label={t("ui.identityStatus.verification.generic")}
-                          accessibilityLabel={t(
-                            "ui.identityStatus.verification.profile",
-                          )}
-                        />
-                      )}
-                    </div>
-
-                    <h4 className="line-clamp-1 text-sm font-bold leading-snug text-text-main">
-                      {activeListing.title}
-                    </h4>
-
-                    <div className="mt-1 flex items-center gap-2 text-xs text-text-tertiary">
-                      <span className="flex min-w-0 items-center gap-0.5 font-medium text-text-emphasis">
-                        <MapPin className="h-icon-xs w-icon-xs shrink-0 text-primary" />
-                        <span className="truncate">
-                          {activeListing.city} ({activeListing.postalCode})
-                        </span>
-                      </span>
-                    </div>
-
-                    <div className="mt-2 flex items-baseline justify-between gap-2 border-t border-border-subtle pt-1">
-                      <span className="shrink-0 text-base font-bold text-primary">
-                        {formatPrice(activeListing.price)}
-                      </span>
-
-                      <button
-                        type="button"
-                        onClick={() =>
-                          navigate(routes.listing.detail(activeListing.id))
-                        }
-                        className="flex min-w-0 items-center gap-1 truncate text-xs font-semibold text-primary hover:underline cursor-pointer"
-                      >
-                        <span className="truncate">
-                          {t("search.exploreMapView.voirLAnnonce")}
-                        </span>
-                        <ExternalLink className="h-icon-xs w-icon-xs shrink-0" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
           )}

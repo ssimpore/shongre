@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import type { JobDraft } from "@shongre/contracts/employment";
+import type { JobDraft, JobPostingDetail } from "@shongre/contracts/employment";
+import type { MarketResolvedListingPromotion } from "@shongre/contracts";
 import { DemoEmploymentService } from "./demo-employment.service";
 import { storageService } from "../../../services/storage.service";
 
@@ -14,6 +15,12 @@ describe("DemoEmploymentService", () => {
     expect(
       catalog.dictionaries.some((entry) => entry.kind === "profession"),
     ).toBe(true);
+    await expect(service.getJob("job-react-lyon", "FR")).resolves.toMatchObject(
+      { marketCode: "FR" },
+    );
+    await expect(service.getJob("job-react-lyon", "BE")).rejects.toMatchObject({
+      code: "NOT_FOUND",
+    });
   });
 
   it("filters jobs deterministically without sensitive candidate attributes", async () => {
@@ -80,7 +87,7 @@ describe("DemoEmploymentService", () => {
 
   it("prevents duplicate active applications and never charges candidates", async () => {
     const service = new DemoEmploymentService();
-    const workspace = await service.getCandidateWorkspace();
+    const workspace = await service.getCandidateWorkspace("FR");
     await expect(
       service.apply("job-react-lyon", {
         cvId: workspace.cvs[0].id,
@@ -116,13 +123,13 @@ describe("DemoEmploymentService", () => {
 
   it("isolates candidate state and recruiter memberships when the demo user changes", async () => {
     const service = new DemoEmploymentService();
-    const thomas = await service.getCandidateWorkspace();
+    const thomas = await service.getCandidateWorkspace("FR");
     expect(thomas.profile.userId).toBe("user_thomas");
     expect(thomas.applications.length).toBeGreaterThan(0);
     expect(await service.listRecruiterEmployers()).toEqual([]);
 
     storageService.setCurrentUserKey("seller_camille");
-    const camille = await service.getCandidateWorkspace();
+    const camille = await service.getCandidateWorkspace("FR");
     expect(camille.profile.userId).toBe("user_camille");
     expect(camille.applications).toEqual([]);
     expect(
@@ -133,5 +140,103 @@ describe("DemoEmploymentService", () => {
     expect(
       (await service.listRecruiterEmployers()).map((employer) => employer.id),
     ).toEqual(["employer-technova"]);
+  });
+
+  it("keeps desired saved-job state isolated by account and market", async () => {
+    const service = new DemoEmploymentService();
+
+    await expect(
+      service.setSavedJob("user_thomas", "job-seasonal-nice", "FR", true),
+    ).resolves.toBe(true);
+    await expect(
+      service.setSavedJob("user_thomas", "job-seasonal-nice", "FR", true),
+    ).resolves.toBe(true);
+    expect(await service.getSavedJobIds("user_thomas", "FR")).toContain(
+      "job-seasonal-nice",
+    );
+    expect(await service.getSavedJobIds("user_thomas", "BE")).toEqual([]);
+    await expect(
+      service.setSavedJob("user_thomas", "job-seasonal-nice", "BE", true),
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
+    await expect(
+      service.setSavedJob("user_thomas", "missing-job", "BE", false),
+    ).resolves.toBe(false);
+
+    storageService.setCurrentUserKey("seller_camille");
+    expect(await service.getSavedJobIds("user_camille", "FR")).toEqual([]);
+    await expect(
+      service.getSavedJobIds("user_thomas", "FR"),
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
+  });
+
+  it("ranks and counts only active exact-market resolved promotions", async () => {
+    const service = new DemoEmploymentService();
+    const jobs = (service as unknown as { jobs: Map<string, JobPostingDetail> })
+      .jobs;
+    for (const [id, job] of jobs) {
+      const { resolvedPromotion: _promotion, ...withoutPromotion } = job;
+      jobs.set(id, {
+        ...withoutPromotion,
+        isUrgent: true,
+        isFeatured: true,
+        isSponsored: true,
+      });
+    }
+    const timestamp = Date.now();
+    const promotion = (
+      marketCode: string,
+      startsAt: number,
+      endsAt: number,
+      sourceId: string,
+    ): MarketResolvedListingPromotion => ({
+      state: "active",
+      type: "featured",
+      marketCode,
+      startsAt: new Date(startsAt).toISOString(),
+      endsAt: new Date(endsAt).toISOString(),
+      source: "purchase",
+      sourceId,
+    });
+    const withPromotion = (
+      id: string,
+      resolvedPromotion: MarketResolvedListingPromotion,
+    ) => {
+      const job = jobs.get(id);
+      if (job) jobs.set(id, { ...job, resolvedPromotion });
+    };
+    withPromotion(
+      "job-react-lyon",
+      promotion("FR", timestamp - 60_000, timestamp + 60_000, "active-fr"),
+    );
+    withPromotion(
+      "job-seasonal-nice",
+      promotion("FR", timestamp - 120_000, timestamp - 60_000, "expired-fr"),
+    );
+    withPromotion(
+      "job-freelance-remote",
+      promotion("BE", timestamp - 60_000, timestamp + 60_000, "active-be"),
+    );
+
+    const result = await service.searchJobs({
+      marketCode: "FR",
+      professionIds: [],
+      jobFamilyIds: [],
+      industryIds: [],
+      workingArrangementIds: [],
+      contractTypeIds: [],
+      workingTimeIds: [],
+      experienceLevelIds: [],
+      educationLevelIds: [],
+      languageIds: [],
+      scheduleIds: [],
+      employerTypeIds: [],
+      verifiedEmployerOnly: false,
+      accessibilityOnly: false,
+      sort: "promoted",
+      limit: 24,
+    });
+
+    expect(result.items[0]?.id).toBe("job-react-lyon");
+    expect(result.organicResultCount).toBe(result.total - 1);
   });
 });

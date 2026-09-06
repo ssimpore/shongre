@@ -279,6 +279,78 @@ describe("Publication System & Schema Resolvers", () => {
     expect(result.errors.some((error) => error.field === "photos")).toBe(false);
   });
 
+  it("keeps media absent when publishing a photo-optional listing", async () => {
+    vi.spyOn(publicationService, "validateDraft").mockReturnValue({
+      isValid: true,
+      errors: [],
+      warnings: [],
+    });
+    const draftUpdatedAt = "2026-09-06T12:00:00.000Z";
+    const user = {
+      id: "professional-job-publisher",
+      email: "jobs@example.test",
+      name: "Studio Canopée",
+      accountType: "professional",
+      status: "active",
+      role: "pro_seller",
+      primaryRole: "seller",
+      sellerType: "pro",
+      isVerified: true,
+      city: "Paris",
+      postalCode: "75011",
+      createdAt: "2026-01-01T00:00:00.000Z",
+      rating: 4.8,
+      reviewCount: 12,
+      responseRatePercent: 95,
+      responseTimeText: "Moins d’une heure",
+    } satisfies UserProfile;
+    const draft: PublicationDraftState = {
+      marketCode: "FR",
+      selectedMarkets: ["FR"],
+      taxonomyNodeId: "jobs.offers.it_data",
+      listingIntent: "JOB_OFFER",
+      title: "Développeur frontend senior",
+      description:
+        "CDI basé à Paris avec deux jours de télétravail par semaine.",
+      condition: "not_applicable",
+      attributes: {},
+      photos: [],
+      pricing: {
+        priceModel: "on_request",
+        amount: 0,
+        currency: "EUR",
+        isNegotiable: false,
+        isFreeDonation: false,
+      },
+      transaction: {
+        allowContact: true,
+        allowDirectPurchase: false,
+        allowReservation: false,
+      },
+      fulfillment: {
+        allowHandDelivery: false,
+        allowParcelShipping: false,
+        allowBulkyDelivery: false,
+        allowSellerDelivery: false,
+        allowStorePickup: false,
+      },
+      location: {
+        city: "Paris",
+        postalCode: "75011",
+        countryCode: "FR",
+        hideExactAddress: true,
+      },
+      currentStep: 1,
+      updatedAt: draftUpdatedAt,
+    };
+
+    const listing = await publicationService.publishListing(draft, user);
+
+    expect(listing.photos).toEqual([]);
+    expect(listing.coverImageUrl).toBe("");
+    expect(listing.publishedAt).toBe(listing.createdAt);
+  });
+
   it("saves, retrieves and restores draft seamlessly", () => {
     const mockDraft: PublicationDraftState = {
       marketCode: "FR",

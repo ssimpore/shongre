@@ -13,11 +13,12 @@ npm run test:e2e:ui           # interactive runner
 
 ## What each spec holds the line on
 
-| Spec | Guards |
-| --- | --- |
-| `responsive.spec.ts` | No route widens the document past the viewport, across the 320→1440 matrix. |
-| `accessibility.spec.ts` | Zero critical/serious axe violations per route; visible focus on every tab stop; dialog focus trap and restore. |
-| `journeys.spec.ts` | The validation matrix: public browsing, buyer, seller, pro and admin flows, plus URL-driven search state and scroll behaviour. |
+| Spec                              | Guards                                                                                                                                  |
+| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `responsive.spec.ts`              | No route widens the document past the viewport, across the 320→1440 matrix.                                                             |
+| `accessibility.spec.ts`           | Zero critical/serious axe violations per route; visible focus on every tab stop; dialog focus trap and restore.                         |
+| `journeys.spec.ts`                | The validation matrix: public browsing, buyer, seller, pro and admin flows, plus URL-driven search state and scroll behaviour.          |
+| `listing-card-responsive.spec.ts` | Canonical card anatomy, token-backed width/height, long-content containment, real optional facts, favourite isolation, grids and rails. |
 
 ## Adding a route
 

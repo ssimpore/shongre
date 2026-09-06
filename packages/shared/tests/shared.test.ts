@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  formatCompactMoney,
   formatMoney,
   formatRelativeTime,
   normalizeSearchFilters,
@@ -22,6 +23,15 @@ describe("cross-platform shared logic", () => {
     expect(
       formatMoney({ amountMinor: 2_999, currency: "BHD" }, "en-US"),
     ).toContain("2.999");
+  });
+
+  it("omits only an empty decimal suffix in compact card prices", () => {
+    expect(
+      formatCompactMoney({ amountMinor: 25_000, currency: "EUR" }, "fr-FR"),
+    ).toBe("250 €");
+    expect(
+      formatCompactMoney({ amountMinor: 25_050, currency: "EUR" }, "fr-FR"),
+    ).toBe("250,50 €");
   });
 
   it("normalizes the same search model for Web and native", () => {

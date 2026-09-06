@@ -344,6 +344,7 @@ export interface Listing {
   sellerRating: number;
   sellerReviewCount: number;
   sellerIsVerified: boolean;
+  sellerResponseTimeLabel?: string;
   sellerCity: string;
   sellerPostalCode: string;
   city: string;

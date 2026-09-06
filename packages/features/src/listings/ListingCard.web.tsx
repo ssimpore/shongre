@@ -1,13 +1,6 @@
-import type { MouseEvent, ReactNode } from "react";
+import type { ReactNode } from "react";
 import type { ListingCardView } from "@shongre/contracts";
-import {
-  AVATAR_SIZES,
-  buildSizedImageUrl,
-  buildSrcSet,
-  DEFAULT_WIDTH_LADDER,
-  formatMoney,
-  formatRelativeTime,
-} from "@shongre/shared";
+import { formatRelativeTime } from "@shongre/shared";
 import {
   Avatar,
   Badge,
@@ -15,31 +8,39 @@ import {
   ProBadge,
   SemanticIcon,
   Text,
-  VerifiedIcon,
 } from "@shongre/ui/web";
 import {
-  getListingCardCharacteristics,
+  getListingCardPriceText,
   getListingPromotionBadges,
+  getListingSellerRatingPresentation,
   listingAccessibilityLabel,
 } from "./presentation";
+import { useListingPromotionRefresh } from "./use-listing-promotion-refresh";
+export { useListingPromotionRefresh } from "./use-listing-promotion-refresh";
+
+export interface ListingCardLabels {
+  boosted: string;
+  free: string;
+  onRequest: string;
+  imageUnavailable: string;
+  rating: (rating: string, count: string) => string;
+}
 
 export interface ListingCardProps {
   listing: ListingCardView;
   href: string;
   locale?: string;
-  variant?: "grid" | "list" | "compact" | "showcase";
+  variant?: "grid" | "list" | "compact" | "showcase" | "hero";
   image?: ReactNode;
-  isFavorite?: boolean;
-  favoriteLabel?: string;
+  favoriteAction?: ReactNode;
+  labels: ListingCardLabels;
   identityLabels: {
     pro: string;
     proAccessibility: string;
     verified: string;
   };
-  onFavoriteToggle?: () => void;
-  /** Optional non-favorite quick action rendered beside the favorite control. */
-  quickAction?: ReactNode;
   className?: string;
+  interactive?: boolean;
   renderLink?: (props: {
     href: string;
     className: string;
@@ -48,34 +49,35 @@ export interface ListingCardProps {
   }) => ReactNode;
 }
 
-function ListingMeta({ city, published }: { city: string; published: string }) {
+function joinLabels(parts: Array<string | undefined>) {
+  return parts.map((part) => part?.trim()).filter(Boolean) as string[];
+}
+
+function ListingMeta({
+  city,
+  published,
+}: {
+  city: string;
+  published?: string;
+}) {
+  const parts = joinLabels([city, published]);
   return (
     <span
       data-listing-card-meta="true"
-      className="flex min-w-0 items-center gap-2"
+      className="flex min-w-0 items-center gap-1 text-micro leading-tight text-text-muted"
     >
-      <span className="inline-flex min-w-0 flex-1 items-center gap-1">
-        <SemanticIcon
-          name="map-pin"
-          size="xs"
-          className="shrink-0 text-primary"
-        />
-        <span
-          data-listing-card-location="true"
-          className="min-w-0 flex-1 truncate"
-          title={city}
-        >
-          {city}
+      {parts.map((part, index) => (
+        <span key={`${index}:${part}`} className="contents">
+          {index > 0 ? <span aria-hidden="true">·</span> : null}
+          <span
+            data-listing-card-location={index === 0 ? "true" : undefined}
+            className="min-w-0 truncate"
+            title={part}
+          >
+            {part}
+          </span>
         </span>
-      </span>
-      <span className="inline-flex shrink-0 items-center gap-1">
-        <SemanticIcon
-          name="calendar"
-          size="xs"
-          className="shrink-0 text-primary"
-        />
-        <span>{published}</span>
-      </span>
+      ))}
     </span>
   );
 }
@@ -83,263 +85,255 @@ function ListingMeta({ city, published }: { city: string; published: string }) {
 export function ListingCard({
   listing,
   href,
-  locale,
+  locale = "fr-FR",
   variant = "grid",
   image,
-  isFavorite,
-  favoriteLabel = "Ajouter aux favoris",
+  favoriteAction,
+  labels,
   identityLabels,
-  onFavoriteToggle,
-  quickAction,
   className,
+  interactive = true,
   renderLink,
 }: ListingCardProps) {
-  const price = listing.isFreeDonation
-    ? "Gratuit"
-    : listing.priceLabel || formatMoney(listing.price, locale);
-  const originalPrice = listing.originalPrice
-    ? formatMoney(listing.originalPrice, locale)
+  useListingPromotionRefresh(listing.promotion);
+  const price = getListingCardPriceText(listing, locale, labels);
+  const published = listing.publishedAt
+    ? formatRelativeTime(listing.publishedAt, {
+        locale,
+        style: "short",
+      })
     : undefined;
-  const published = formatRelativeTime(listing.publishedAt, {
+  const badges = getListingPromotionBadges(listing, labels.boosted);
+  const isHero = variant === "hero";
+  const horizontal = variant === "list" || isHero;
+  const categoryParts = joinLabels([listing.categoryLabel, listing.brandLabel]);
+  const rating = getListingSellerRatingPresentation(
+    listing.seller?.rating,
+    listing.seller?.reviewCount,
     locale,
-    style: "short",
-    includeDirection: false,
-  });
-  const badges = getListingPromotionBadges(listing);
-  const characteristics = getListingCardCharacteristics(listing);
-  const horizontal = variant === "list";
-  const compact = variant === "compact";
-  const showcase = variant === "showcase";
-  const sellerName =
-    listing.seller?.organizationName || listing.seller?.name || "";
-  const sellerImageUrl =
-    listing.seller?.organizationLogoUrl || listing.seller?.avatarUrl;
-  const sellerImageFallbackUrl =
-    buildSizedImageUrl(sellerImageUrl, DEFAULT_WIDTH_LADDER[0]) ??
-    sellerImageUrl;
-  const isSellerVerified = Boolean(
-    listing.seller?.isIdentityVerified || listing.seller?.isBusinessVerified,
   );
-  const showSellerVerifiedIcon = Boolean(
-    isSellerVerified && listing.seller?.sellerType !== "pro",
+  const ratingLabel = rating
+    ? labels.rating(rating.rating, rating.reviewCount)
+    : undefined;
+  const isProfessional =
+    listing.publisherType === "professional" ||
+    listing.seller?.sellerType === "pro";
+  const sellerSummaryVisible = isProfessional || Boolean(rating);
+  const ariaLabel = listingAccessibilityLabel(
+    listing,
+    price,
+    ratingLabel,
+    badges[0]?.label,
+    isProfessional ? identityLabels.proAccessibility : undefined,
+    published,
   );
-  const hasSellerRating = (listing.seller?.rating ?? 0) > 0;
-  const toggle = (event: MouseEvent<HTMLButtonElement>) => {
-    event.preventDefault();
-    event.stopPropagation();
-    onFavoriteToggle?.();
-  };
-  const ariaLabel = listingAccessibilityLabel(listing, price);
-  const linkClassName = `focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${horizontal ? "listing-card-list-link flex w-full" : "flex h-full flex-col"}`;
+  const linkClassName = `focus-visible:outline-none ${
+    horizontal ? "listing-card-list-link flex w-full" : "flex h-full flex-col"
+  }`;
+  const effectiveFavoriteAction = interactive ? favoriteAction : undefined;
   const linkContent = (
     <>
       <div
         data-listing-card-media="true"
-        className={`${horizontal ? "listing-card-list-image" : `${compact ? "aspect-video" : "aspect-media"} w-full`} relative shrink-0 overflow-hidden bg-bg-muted`}
+        className={`${horizontal ? "listing-card-list-image" : "listing-card-media w-full"} relative shrink-0 overflow-hidden bg-bg-muted`}
       >
         {image ??
           (listing.imageUrl ? (
             <img
               src={listing.imageUrl}
               alt=""
+              loading="lazy"
+              decoding="async"
               className="h-full w-full object-cover motion-surface group-hover:scale-105"
             />
           ) : (
-            <div className="flex h-full items-center justify-center font-bold text-primary">
-              Shongre
+            <div
+              role="img"
+              aria-label={labels.imageUnavailable}
+              className="flex h-full items-center justify-center bg-bg-subtle text-text-muted"
+            >
+              <SemanticIcon name="image-off" size="lg" />
             </div>
           ))}
-        {(listing.photoCount ?? 0) > 1 || listing.deliveryAvailable ? (
-          <div
-            data-listing-card-media-meta="true"
-            className={`absolute flex min-w-0 items-end justify-between gap-2 ${showcase ? "inset-x-3 bottom-3" : "inset-x-2.5 bottom-2.5"}`}
-          >
-            {(listing.photoCount ?? 0) > 1 ? (
-              <span
-                data-listing-card-photo-count="true"
-                aria-label={`${listing.photoCount} photos`}
-                className="inline-flex shrink-0 items-center gap-1.5 rounded-pill bg-overlay-scrim px-2.5 py-1 text-micro font-semibold text-text-inverse shadow-sm backdrop-blur-xs"
-              >
-                <SemanticIcon name="camera" size="xs" />
-                {listing.photoCount}
-              </span>
-            ) : null}
-            {listing.deliveryAvailable ? (
-              <span
-                data-listing-card-delivery-overlay="true"
-                aria-label="Livraison disponible"
-                title="Livraison disponible"
-                className="ml-auto inline-flex min-w-0 items-center gap-1.5 truncate rounded-pill bg-overlay-scrim px-2.5 py-1 text-micro font-semibold text-text-inverse shadow-sm backdrop-blur-xs"
-              >
-                <SemanticIcon name="truck" size="xs" />
-                Livraison
-              </span>
-            ) : null}
-          </div>
-        ) : null}
       </div>
       <div
         data-listing-card-content="true"
-        className={`${horizontal ? "listing-card-list-content" : ""} flex min-w-0 flex-1 flex-col p-3`}
+        className={`${horizontal ? "listing-card-list-content" : ""} flex min-w-0 flex-1 flex-col gap-1 px-3 py-2`}
       >
-        {listing.categoryLabel || hasSellerRating ? (
-          <div
-            data-listing-card-category-row="true"
-            className="mb-1.5 flex min-w-0 items-center justify-between gap-2 text-micro font-medium text-text-muted"
-          >
-            <span className="flex min-w-0 items-center gap-1.5 overflow-hidden">
-              {listing.categoryLabel ? (
-                <span className="min-w-0 shrink truncate">
-                  {listing.categoryLabel}
-                </span>
-              ) : null}
-            </span>
-            {hasSellerRating ? (
-              <span
-                data-listing-card-rating="true"
-                aria-label={`Note ${listing.seller?.rating?.toFixed(1)} sur 5, ${listing.seller?.reviewCount ?? 0} avis`}
-                className="inline-flex shrink-0 items-center gap-1 rounded-pill border border-border-base bg-bg-base px-2 py-1 font-semibold text-text-secondary shadow-2xs"
-              >
-                <SemanticIcon
-                  name="star"
-                  size="xs"
-                  className="fill-warning text-warning"
-                />
-                {listing.seller?.rating?.toFixed(1)}
-                {(listing.seller?.reviewCount ?? 0) > 0 ? (
-                  <span className="font-normal text-text-muted">
-                    ({listing.seller?.reviewCount})
-                  </span>
-                ) : null}
-              </span>
-            ) : null}
-          </div>
-        ) : null}
-        <h3
-          title={listing.title}
-          className={`line-clamp-2 text-card-title font-bold text-text-main group-hover:text-primary ${horizontal ? "" : "min-h-control-md"}`}
+        <div
+          data-listing-card-category-row="true"
+          className="flex min-w-0 items-center gap-1 text-micro font-medium leading-tight text-text-muted"
         >
-          {listing.title}
-        </h3>
-        <div data-listing-card-price="true" className="mt-1 min-w-0">
-          <span className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5">
+          {categoryParts.map((part, index) => (
+            <span key={`${index}:${part}`} className="contents">
+              {index > 0 ? <span aria-hidden="true">·</span> : null}
+              <span className="min-w-0 truncate" title={part}>
+                {part}
+              </span>
+            </span>
+          ))}
+        </div>
+
+        <div
+          data-listing-card-price-row="true"
+          className="flex min-h-control-sm min-w-0 items-center justify-between gap-2"
+        >
+          {price ? (
             <Text
               as="span"
               size="body-lg"
               weight="bold"
               data-listing-card-current-price="true"
-              className="min-w-0 break-words tracking-tight"
+              className={`min-w-0 flex-1 truncate leading-tight tracking-tight ${
+                isHero ? "lg:text-heading-sm" : ""
+              }`}
+              title={price}
             >
               {price}
             </Text>
-            {originalPrice ? (
-              <Text
-                as="span"
-                size="caption"
-                tone="muted"
-                data-listing-card-original-price="true"
-                className="line-through decoration-current"
-              >
-                {originalPrice}
-              </Text>
-            ) : null}
-          </span>
-          {listing.isNegotiable ? (
-            <Text
-              as="span"
-              size="caption"
-              tone="muted"
-              data-listing-card-negotiable="true"
-              className="mt-0.5 block"
+          ) : (
+            <span className="min-w-0 flex-1" />
+          )}
+          {sellerSummaryVisible ? (
+            <span
+              data-listing-card-seller-summary="true"
+              className="inline-flex min-w-0 shrink items-center justify-end gap-1 overflow-hidden"
             >
-              Négociable
-            </Text>
+              {isProfessional ? (
+                <ProBadge
+                  label={identityLabels.pro}
+                  accessibilityLabel={identityLabels.proAccessibility}
+                  size="xs"
+                  tone="primary"
+                />
+              ) : null}
+              {rating ? (
+                <span
+                  data-listing-card-rating="true"
+                  role="img"
+                  aria-label={ratingLabel}
+                  title={ratingLabel}
+                  className="inline-flex min-w-0 shrink items-center gap-0.5 overflow-hidden text-micro font-semibold text-text-main"
+                >
+                  <SemanticIcon
+                    name="star"
+                    size="xs"
+                    className="fill-primary text-primary"
+                  />
+                  <span className="shrink-0">{rating.rating}</span>
+                  <span className="min-w-0 truncate font-normal text-text-muted">
+                    ({rating.visualReviewCount})
+                  </span>
+                </span>
+              ) : null}
+            </span>
           ) : null}
         </div>
-        {characteristics.length ? (
-          <ul
-            data-listing-card-characteristics="true"
-            className={`mt-2 flex min-w-0 gap-1.5 overflow-hidden ${horizontal ? "flex-nowrap" : "flex-wrap"}`}
-            aria-label="Caractéristiques principales"
-          >
-            {characteristics.map((characteristic) => (
-              <li
-                key={`${characteristic.icon}:${characteristic.label}`}
-                data-listing-card-characteristic-icon={characteristic.icon}
-                className="inline-flex min-w-0 max-w-full items-center gap-1.5 overflow-hidden rounded-pill bg-bg-muted px-2 py-1 text-micro font-medium text-text-secondary"
-              >
-                <SemanticIcon
-                  name={characteristic.icon}
-                  size="xs"
-                  className="text-text-muted"
-                />
-                <span className="min-w-0 truncate">{characteristic.label}</span>
-              </li>
-            ))}
-          </ul>
-        ) : null}
-        <div
-          data-listing-card-footer="true"
-          className="mt-auto min-w-0 border-t border-border-base pt-2 text-micro text-text-muted sm:pt-1"
+
+        <h3
+          data-listing-card-title="true"
+          title={listing.title}
+          className={`truncate font-bold text-text-main group-hover:text-primary ${
+            isHero ? "text-card-title lg:text-heading-xs" : "text-card-title"
+          }`}
         >
-          {sellerName ? (
-            <div className="listing-card-seller-grid grid min-w-0 items-center gap-x-2 gap-y-px">
-              <span
-                aria-hidden="true"
-                data-listing-card-seller-avatar="true"
-                className="row-span-2 self-center"
-              >
-                <Avatar
-                  src={sellerImageFallbackUrl}
-                  srcSet={buildSrcSet(sellerImageUrl)}
-                  sizes={AVATAR_SIZES.sm}
-                  name={sellerName}
-                  size="sm"
-                />
-              </span>
-              <span
-                data-listing-card-seller="true"
-                className="flex min-w-0 items-center gap-1.5"
-              >
-                <span className="inline-flex min-w-0 max-w-full items-center gap-1">
-                  <span
-                    data-listing-card-seller-name="true"
-                    title={sellerName}
-                    className="min-w-0 truncate font-bold text-text-main"
-                  >
-                    {sellerName}
-                  </span>
-                  {showSellerVerifiedIcon ? (
-                    <VerifiedIcon size="sm" label={identityLabels.verified} />
-                  ) : null}
-                </span>
-                {listing.seller?.sellerType === "pro" ? (
-                  <ProBadge
-                    label={identityLabels.pro}
-                    accessibilityLabel={identityLabels.proAccessibility}
-                    size="xs"
+          {listing.title}
+        </h3>
+
+        {isHero && listing.characteristics.length ? (
+          <div
+            data-listing-card-characteristics="true"
+            className="listing-card-hero-characteristics hidden min-w-0 items-stretch gap-2 lg:flex"
+          >
+            {listing.characteristics
+              .slice(0, 3)
+              .map((characteristic, index) => (
+                <span
+                  key={`${index}:${characteristic}`}
+                  className="inline-flex min-h-control-sm min-w-0 flex-1 items-center justify-center gap-1.5 rounded-control border border-border-subtle bg-bg-subtle px-2 text-micro font-medium text-text-secondary"
+                  title={characteristic}
+                >
+                  <SemanticIcon
+                    name={listing.characteristicIcons?.[index] ?? "tag"}
+                    size="sm"
+                    className="shrink-0"
                   />
-                ) : null}
-              </span>
-              <ListingMeta city={listing.city} published={published} />
-            </div>
-          ) : (
-            <ListingMeta city={listing.city} published={published} />
-          )}
+                  <span className="min-w-0 truncate">{characteristic}</span>
+                </span>
+              ))}
+          </div>
+        ) : null}
+
+        {isHero ? (
+          <div className="listing-card-hero-divider hidden border-t border-border-subtle lg:block" />
+        ) : null}
+
+        <div className={`${isHero ? "" : "mt-auto"} min-w-0`}>
+          <ListingMeta city={listing.city} published={published} />
         </div>
+
+        {isHero && listing.seller ? (
+          <div
+            data-listing-card-seller-identity="true"
+            className="listing-card-hero-seller hidden min-w-0 items-center gap-2 lg:flex"
+          >
+            <Avatar
+              src={
+                listing.seller.organizationLogoUrl ?? listing.seller.avatarUrl
+              }
+              name={listing.seller.organizationName ?? listing.seller.name}
+              size="sm"
+              isVerified={
+                listing.seller.isBusinessVerified ||
+                listing.seller.isIdentityVerified
+              }
+              verifiedLabel={identityLabels.verified}
+              data-listing-card-seller-avatar="true"
+            />
+            <span className="flex min-w-0 flex-col leading-tight">
+              <span
+                className="truncate text-label-sm font-semibold text-text-main"
+                title={listing.seller.organizationName ?? listing.seller.name}
+              >
+                {listing.seller.organizationName ?? listing.seller.name}
+              </span>
+              {listing.seller.responseTimeLabel ? (
+                <span
+                  className="truncate text-micro text-text-muted"
+                  title={listing.seller.responseTimeLabel}
+                >
+                  {listing.seller.responseTimeLabel}
+                </span>
+              ) : null}
+            </span>
+          </div>
+        ) : null}
       </div>
     </>
   );
+
   return (
     <Card
       as="article"
       padding="none"
-      elevation="sm"
+      elevation="xs"
       data-listing-card="true"
       data-listing-card-variant={variant}
-      className={`group listing-card-shell surface-interactive relative overflow-hidden ${horizontal ? "listing-card-list flex" : `${showcase ? "listing-card-showcase" : "listing-card-standard"} flex h-full flex-col`} ${className ?? ""}`}
+      className={`listing-card-shell relative overflow-hidden border-border-subtle ${
+        interactive
+          ? "group surface-interactive focus-within:ring-2 focus-within:ring-inset focus-within:ring-primary-ring-strong"
+          : ""
+      } ${
+        horizontal
+          ? "listing-card-list flex"
+          : `listing-card-standard ${variant === "showcase" ? "listing-card-showcase" : ""} flex h-full flex-col`
+      } ${className ?? ""}`}
     >
-      {renderLink ? (
+      {!interactive ? (
+        <div role="group" aria-label={ariaLabel} className={linkClassName}>
+          {linkContent}
+        </div>
+      ) : renderLink ? (
         renderLink({
           href,
           className: linkClassName,
@@ -351,51 +345,37 @@ export function ListingCard({
           {linkContent}
         </a>
       )}
-      {badges.length || quickAction || onFavoriteToggle ? (
+
+      {badges.length || effectiveFavoriteAction ? (
         <div
           data-listing-card-top-overlay="true"
-          className="pointer-events-none absolute inset-x-2.5 top-2.5 flex min-w-0 items-start justify-between gap-2"
+          className={`pointer-events-none absolute inset-x-2.5 top-2.5 flex min-w-0 items-start justify-between gap-2 ${
+            horizontal ? "listing-card-list-overlay sm:px-2.5" : ""
+          }`}
         >
           {badges.length ? (
             <div
               data-listing-card-promotion="true"
-              className="flex min-w-0 flex-1 flex-wrap gap-1"
+              className="flex min-w-0 flex-1"
             >
-              {badges.map((badge) => (
-                <Badge
-                  key={badge.tone}
-                  variant={badge.tone === "featured" ? "featured" : "urgent"}
-                  className="listing-card-promotion-badge max-w-full min-w-0 rounded-pill py-1 text-micro font-semibold shadow-sm"
-                >
-                  <span className="truncate">{badge.label}</span>
-                </Badge>
-              ))}
+              <Badge
+                variant="primary"
+                size="sm"
+                icon={<SemanticIcon name="zap" size="xs" />}
+                className="listing-card-promotion-badge max-w-full min-w-0 rounded-pill shadow-sm"
+              >
+                <span className="truncate">{badges[0]?.label}</span>
+              </Badge>
             </div>
           ) : (
             <span />
           )}
-          {quickAction || onFavoriteToggle ? (
+          {effectiveFavoriteAction ? (
             <div
               data-listing-card-actions="true"
               className="pointer-events-auto flex shrink-0 items-center gap-1"
             >
-              {quickAction}
-              {onFavoriteToggle ? (
-                <button
-                  type="button"
-                  data-marketplace-action="favorite.manage"
-                  onClick={toggle}
-                  aria-label={favoriteLabel}
-                  aria-pressed={isFavorite}
-                  className="flex h-control-sm w-control-sm items-center justify-center rounded-pill border border-border-subtle bg-bg-surface/95 text-primary shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-                >
-                  <SemanticIcon
-                    name="heart"
-                    size="md"
-                    className={isFavorite ? "fill-current" : undefined}
-                  />
-                </button>
-              ) : null}
+              {effectiveFavoriteAction}
             </div>
           ) : null}
         </div>

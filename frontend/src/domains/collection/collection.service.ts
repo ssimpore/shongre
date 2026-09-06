@@ -6,6 +6,7 @@ import {
 } from "./collection.data";
 import { Listing } from "../../types";
 import { isProSeller } from "../user/user.domain";
+import { hasActiveGenericListingPromotion } from "../listing/listing-card.generic-presentation";
 
 class CollectionService {
   /**
@@ -35,7 +36,7 @@ class CollectionService {
   filterListingsForCollection(
     collection: Collection,
     allListings: Listing[],
-    options: { allowFallback?: boolean } = {},
+    options: { allowFallback?: boolean; marketCode?: string } = {},
   ): Listing[] {
     if (!allListings || allListings.length === 0) return [];
     const { filterCriteria, featuredListingIds } = collection;
@@ -87,7 +88,10 @@ class CollectionService {
       }
 
       // 6. Boosted only
-      if (filterCriteria.isBoostedOnly && !listing.isBoosted) {
+      if (
+        filterCriteria.isBoostedOnly &&
+        !hasActiveGenericListingPromotion(listing, options.marketCode)
+      ) {
         return false;
       }
 

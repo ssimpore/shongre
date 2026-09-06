@@ -129,7 +129,11 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
-  content: { padding: spacing.lg, paddingBottom: spacing.xxl },
+  content: {
+    gap: spacing.lg,
+    padding: spacing.lg,
+    paddingBottom: spacing.xxl,
+  },
   header: { gap: spacing.sm, marginBottom: spacing.xl },
   loadingState: {
     alignItems: "center",

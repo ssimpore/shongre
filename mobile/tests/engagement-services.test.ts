@@ -4,7 +4,11 @@ vi.mock("@/api/http-client", () => ({ apiRequest: vi.fn() }));
 vi.mock("@/config/environment", () => ({
   mobileEnvironment: { dataMode: "demo" },
 }));
-import { DemoFavoritesService } from "@/features/favorites/favorites.service";
+import { apiRequest } from "@/api/http-client";
+import {
+  DemoFavoritesService,
+  HttpFavoritesService,
+} from "@/features/favorites/favorites.service";
 import { DemoMessagingService } from "@/features/messaging/messaging.service";
 import { DemoWatchSubscriptionsService } from "@/features/watch-subscriptions/watch-subscriptions.service";
 import { DemoListingsService } from "@/features/listings/listings.service";
@@ -12,10 +16,39 @@ import { DemoListingsService } from "@/features/listings/listings.service";
 describe("mobile engagement services", () => {
   it("partitions favorites by account and market", async () => {
     const service = new DemoFavoritesService();
-    await service.toggle("account-a", "FR", "listing-1");
-    expect(await service.list("account-a", "FR")).toEqual(["listing-1"]);
-    expect(await service.list("account-b", "FR")).toEqual([]);
-    expect(await service.list("account-a", "BE")).toEqual([]);
+    await service.setFavorite("account-a", "FR", "list_2", true);
+    await service.setFavorite("account-a", "FR", "list_2", true);
+    const france = await service.list("account-a", "FR");
+
+    expect(france.listingIds).toEqual(["list_2"]);
+    expect(france.listings.map(({ id }) => id)).toEqual(["list_2"]);
+    expect(await service.list("account-b", "FR")).toEqual({
+      listingIds: [],
+      listings: [],
+    });
+    expect(await service.list("account-a", "BE")).toEqual({
+      listingIds: [],
+      listings: [],
+    });
+    await service.setFavorite("account-a", "FR", "unavailable-listing", true);
+    expect(await service.list("account-a", "FR")).toEqual({
+      listingIds: ["list_2"],
+      listings: [expect.objectContaining({ id: "list_2" })],
+    });
+  });
+
+  it("sets the desired HTTP favorite state idempotently in the exact market", async () => {
+    vi.mocked(apiRequest).mockResolvedValueOnce({ isFavorite: false });
+    const service = new HttpFavoritesService();
+
+    await expect(
+      service.setFavorite("account-a", "BE", "listing/a", false),
+    ).resolves.toBe(false);
+    expect(apiRequest).toHaveBeenCalledWith(
+      "/listings/listing%2Fa/favorite",
+      { method: "PUT", body: JSON.stringify({ isFavorite: false }) },
+      "BE",
+    );
   });
 
   it("enforces conversation participation and market scope", async () => {

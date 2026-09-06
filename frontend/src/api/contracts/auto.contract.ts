@@ -126,8 +126,16 @@ export interface AutoServiceContract {
     fileName?: string,
     idempotencyKey?: string,
   ): Promise<InventoryImport>;
-  getFavoriteVehicleIds(accountId: string): Promise<string[]>;
-  toggleFavoriteVehicle(accountId: string, vehicleId: string): Promise<boolean>;
+  getFavoriteVehicleIds(
+    accountId: string,
+    marketCode: string,
+  ): Promise<string[]>;
+  setFavoriteVehicle(
+    accountId: string,
+    vehicleId: string,
+    marketCode: string,
+    isFavorite: boolean,
+  ): Promise<boolean>;
   updateMarketConfig(
     marketCode: string,
     patch: Partial<AutoMarketConfig>,

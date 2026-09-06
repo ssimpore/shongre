@@ -228,7 +228,7 @@ export class DemoTrendingService implements TrendingServiceContract {
         ...query.personalization,
         favoriteListingIds:
           query.personalization?.favoriteListingIds ||
-          storageService.getFavorites(),
+          storageService.getFavorites(undefined, query.marketCode),
       },
     };
     const candidates = buildDemoTrendingCandidates(

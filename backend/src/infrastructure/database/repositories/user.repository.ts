@@ -472,7 +472,7 @@ export class PostgresUserRepository implements IUserRepository {
       isPhoneVerified: Boolean(row.is_phone_verified),
       isEmailVerified: Boolean(row.is_email_verified),
       isBusinessVerified: Boolean(row.is_business_verified),
-      rating: Number(row.rating || 5.0),
+      rating: Number(row.rating || 0),
       reviewCount: Number(row.review_count || 0),
       responseRatePercent: Number(row.response_rate_percent || 100),
       responseTimeText: row.response_time_text || undefined,
@@ -819,7 +819,7 @@ export class PostgresUserRepository implements IUserRepository {
     const supabase = getSupabaseAdminClient();
     const { data, error } = await supabase.rpc("complete_account_deletion", {
       p_user_id: userId,
-      p_reason: reason || null,
+      p_reason: reason,
     });
     const profile = data?.[0];
     if (error || !profile) databaseFailure("users.anonymize", error);

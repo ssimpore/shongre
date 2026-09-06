@@ -5,7 +5,9 @@ import {
   canTransitionDeliveryRequestForParticipant,
   deliveryCourierProfileInputSchema,
   deliveryCourierProfileSchema,
+  deliveryDiscoveryListingId,
   deliveryRequestDraftInputSchema,
+  deliveryRequestIdFromDiscoveryListingId,
   deliveryMarketActivationIssues,
 } from "./delivery";
 import { getCountryConfig } from "../market-country";
@@ -72,5 +74,18 @@ describe("delivery contract", () => {
     expect(deliveryMarketActivationIssues(undefined)).toEqual([
       "unknown_market",
     ]);
+  });
+
+  it("round-trips the unified-discovery identity without accepting lookalikes", () => {
+    const requestId = "418711cb-aee0-4fa3-a102-8ec6ea2a2cb8";
+    expect(
+      deliveryRequestIdFromDiscoveryListingId(
+        deliveryDiscoveryListingId(requestId),
+      ),
+    ).toBe(requestId);
+    expect(deliveryRequestIdFromDiscoveryListingId(requestId)).toBeUndefined();
+    expect(
+      deliveryRequestIdFromDiscoveryListingId("delivery_not-a-uuid"),
+    ).toBeUndefined();
   });
 });

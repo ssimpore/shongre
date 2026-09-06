@@ -35,6 +35,9 @@ export interface ProAnalyticsSnapshot {
 }
 
 export interface WorkspaceServiceContract {
-  getUserWorkspaceSummary(userId: string): Promise<UserWorkspaceSummary>;
+  getUserWorkspaceSummary(
+    userId: string,
+    marketCode: string,
+  ): Promise<UserWorkspaceSummary>;
   getProAnalytics(sellerId: string): Promise<ProAnalyticsSnapshot>;
 }

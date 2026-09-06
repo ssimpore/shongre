@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { marketCodeSchema, moneySchema } from "./primitives";
+import { marketResolvedListingPromotionSchema } from "./discovery";
 import {
   verticalActivationSchema,
   verticalAddOnSchema,
@@ -258,12 +259,15 @@ export const jobPostingCardSchema = z.object({
   workingTimeId: z.string().min(1),
   primaryLocation: employmentLocationSchema,
   salary: salaryRangeSchema.optional(),
-  publishedAt: z.string(),
+  /** Missing for drafts and legacy rows without authoritative publication
+   * evidence. Public cards hide the date instead of substituting creation. */
+  publishedAt: z.string().optional(),
   expiresAt: z.string(),
   applicationDeadline: z.string().optional(),
   isUrgent: z.boolean(),
   isFeatured: z.boolean(),
   isSponsored: z.boolean(),
+  resolvedPromotion: marketResolvedListingPromotionSchema.optional(),
   saved: z.boolean().default(false),
 });
 export type JobPostingCard = z.infer<typeof jobPostingCardSchema>;

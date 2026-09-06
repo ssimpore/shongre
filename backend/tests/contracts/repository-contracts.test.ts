@@ -152,26 +152,43 @@ describe("Repository Contract & Dual-Mode Compatibility Tests", () => {
       expect(await demoRepo.findById("list_test_456")).toBeNull();
     });
 
-    it("toggles favorites deterministically in Demo mode", async () => {
-      const isFav1 = await demoRepo.toggleFavorite(
-        "user_thomas",
-        "list_new_fav",
+    it("sets favorites idempotently in Demo mode", async () => {
+      const isFav1 = await demoRepo.setFavorite(
+        "user_market_test",
+        "list_1",
+        "FR",
+        true,
       );
       expect(isFav1).toBe(true);
-      const isFav2 = await demoRepo.toggleFavorite(
-        "user_thomas",
-        "list_new_fav",
+      const isFav2 = await demoRepo.setFavorite(
+        "user_market_test",
+        "list_1",
+        "FR",
+        true,
       );
-      expect(isFav2).toBe(false);
+      expect(isFav2).toBe(true);
+      expect(
+        await demoRepo.setFavorite("user_market_test", "list_1", "BE", true),
+      ).toBe(true);
+      expect(await demoRepo.getFavorites("user_market_test", "FR")).toEqual([
+        "list_1",
+      ]);
+      expect(await demoRepo.getFavorites("user_market_test", "BE")).toEqual([
+        "list_1",
+      ]);
+      expect(
+        await demoRepo.findPublicByIds(["list_1", "missing"], "BE"),
+      ).toMatchObject([{ id: "list_1", marketCode: "BE" }]);
     });
 
     it("PostgresListingRepository implements all interface methods cleanly", () => {
       expect(typeof postgresRepo.findById).toBe("function");
+      expect(typeof postgresRepo.findPublicByIds).toBe("function");
       expect(typeof postgresRepo.search).toBe("function");
       expect(typeof postgresRepo.save).toBe("function");
       expect(typeof postgresRepo.update).toBe("function");
       expect(typeof postgresRepo.delete).toBe("function");
-      expect(typeof postgresRepo.toggleFavorite).toBe("function");
+      expect(typeof postgresRepo.setFavorite).toBe("function");
       expect(typeof postgresRepo.getFavorites).toBe("function");
     });
   });

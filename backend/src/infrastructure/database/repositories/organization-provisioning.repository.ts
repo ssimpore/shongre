@@ -62,10 +62,11 @@ class PostgresOrganizationProvisioningRepository implements OrganizationProvisio
     const result = await supabase.rpc("ensure_owned_organization", {
       p_owner_id: input.ownerId,
       p_legal_name: input.legalName,
-      p_trading_name: input.tradingName ?? null,
+      // postgres-meta does not expose nullability for required RPC arguments.
+      p_trading_name: (input.tradingName ?? null) as unknown as string,
       p_business_identifier: input.businessIdentifier,
-      p_vat_number: input.vatNumber ?? null,
-      p_legal_form: input.legalForm ?? null,
+      p_vat_number: (input.vatNumber ?? null) as unknown as string,
+      p_legal_form: (input.legalForm ?? null) as unknown as string,
       p_registered_address: input.registeredAddress,
       p_city: input.city,
       p_postal_code: input.postalCode,

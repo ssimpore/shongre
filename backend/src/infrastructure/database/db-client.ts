@@ -6,11 +6,11 @@ import { config, isBackendDemoMode } from "../../app/config/index.js";
 import { logger } from "../logging/logger.js";
 
 export class DatabaseClient {
-  public get admin() {
+  public get admin(): ReturnType<typeof getSupabaseAdminClient> {
     return getSupabaseAdminClient();
   }
 
-  public get client() {
+  public get client(): ReturnType<typeof getSupabaseAnonClient> {
     return getSupabaseAnonClient();
   }
 

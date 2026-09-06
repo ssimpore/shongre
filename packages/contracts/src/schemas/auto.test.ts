@@ -60,6 +60,15 @@ const vehicle = {
     publicBadges: [],
   },
   promotionLabels: [],
+  resolvedPromotion: {
+    state: "active",
+    type: "featured",
+    marketCode: "FR",
+    source: "purchase",
+    sourceId: "auto-test-promotion",
+    startsAt: "2026-08-20T10:00:00.000Z",
+    endsAt: "2026-09-20T10:00:00.000Z",
+  },
   isFavorite: false,
   publishedAt: "2026-08-20T10:00:00.000Z",
   sortDate: "2026-08-20T10:00:00.000Z",
@@ -95,6 +104,11 @@ describe("Shongre Auto public contracts", () => {
     expect(publicVehicle.seller).toMatchObject({
       rating: 4.8,
       reviewCount: 64,
+    });
+    expect(publicVehicle.resolvedPromotion).toMatchObject({
+      marketCode: "FR",
+      state: "active",
+      type: "featured",
     });
   });
 

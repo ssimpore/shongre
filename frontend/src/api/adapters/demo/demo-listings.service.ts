@@ -13,6 +13,8 @@ import { marketService } from "../../../domains/market/market.service";
 import { resolveCanonicalTaxonomyIdentity } from "../../../domains/taxonomy/taxonomy.identity";
 import { requireDemoCapability } from "./demo-authorization";
 import { filterDemoDeliveryDiscoveryListings } from "./demo-delivery-discovery";
+import { deliveryDiscoveryListingId } from "@shongre/contracts/delivery";
+import { demoDeliveryFavoritesStore } from "./demo-delivery-favorites.store";
 
 const BULK_IMPORT_SAMPLE: BulkListingImportTemplate = {
   fileName: "modele_import_annonces_shongre.csv",
@@ -22,9 +24,6 @@ Lot 4 chaises scandinaves;home_garden;furniture;120;new_without_tag;4;Lyon;69002
 Lampadaire trépied vintage;home_garden;furniture;65;very_good;1;Lyon;69002;Lampadaire esprit projecteur de cinéma avec variateur.
 Miroir mural doré baroque;home_garden;furniture;95;good;1;Lyon;69002;Grand miroir moulure dorée 120x80cm.`,
 };
-
-const BULK_IMPORT_COVER_URL =
-  "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&auto=format&fit=crop&q=80";
 
 const loadPublicationService = () =>
   import("../../../domains/publication/publication.service").then(
@@ -92,6 +91,30 @@ export class DemoListingsService implements ListingsServiceContract {
     const listing = await listingRepository.getListingById(id);
     if (!listing) return null;
     return (await filterDemoDeliveryDiscoveryListings([listing]))[0] ?? null;
+  }
+
+  async getPublicListingsByIds(
+    listingIds: readonly string[],
+    marketCode: string,
+  ): Promise<Listing[]> {
+    await simulateNetworkDelay();
+    requireDemoCapability("listing.read");
+    const requested = new Set(listingIds);
+    if (requested.size === 0) return [];
+    const result = await this.getVisibleListings({
+      marketCode,
+      page: 1,
+      limit: Number.MAX_SAFE_INTEGER,
+    });
+    const byId = new Map(
+      result.listings
+        .filter((listing) => requested.has(listing.id))
+        .map((listing) => [listing.id, listing] as const),
+    );
+    return [...requested].flatMap((id) => {
+      const listing = byId.get(id);
+      return listing ? [listing] : [];
+    });
   }
 
   async searchListings(params: SearchFilters): Promise<{
@@ -284,7 +307,7 @@ export class DemoListingsService implements ListingsServiceContract {
           sellerName: seller.companyName || seller.name,
           sellerType: "pro",
           sellerAvatarUrl: seller.avatarUrl,
-          sellerRating: seller.rating || 5,
+          sellerRating: seller.rating ?? 0,
           sellerReviewCount: seller.reviewCount || 0,
           sellerIsVerified: true,
           sellerCity: row.city,
@@ -293,14 +316,8 @@ export class DemoListingsService implements ListingsServiceContract {
           postalCode: row.postalCode,
           department: seller.department || "",
           region: seller.region || "",
-          photos: [
-            {
-              id: `bulk-media-${row.id}`,
-              url: BULK_IMPORT_COVER_URL,
-              isCover: true,
-            },
-          ],
-          coverImageUrl: BULK_IMPORT_COVER_URL,
+          photos: [],
+          coverImageUrl: "",
           deliveryOptions: [
             { type: "hand_delivery", available: true, price: 0 },
             {
@@ -372,16 +389,53 @@ export class DemoListingsService implements ListingsServiceContract {
     return listingRepository.deleteListing(id);
   }
 
-  async toggleFavorite(listingId: string): Promise<boolean> {
+  async setFavorite(
+    listingId: string,
+    marketCode: string,
+    isFavorite: boolean,
+  ): Promise<boolean> {
     await simulateNetworkDelay();
     requireDemoCapability("favorite.manage.own");
-    return storageService.toggleFavorite(listingId);
+    const current = storageService
+      .getFavorites(undefined, marketCode)
+      .includes(listingId);
+    if (current !== isFavorite)
+      storageService.toggleFavorite(listingId, undefined, marketCode);
+    return isFavorite;
   }
 
-  async getFavorites(): Promise<string[]> {
+  async getFavoriteCollection(marketCode: string) {
     await simulateNetworkDelay();
     requireDemoCapability("favorite.manage.own");
-    return storageService.getFavorites();
+    const accountId = storageService.getCurrentUser()?.id;
+    const deliveryListingIds = accountId
+      ? demoDeliveryFavoritesStore
+          .list(accountId, marketCode)
+          .map(deliveryDiscoveryListingId)
+      : [];
+    const listingIds = [
+      ...storageService.getFavorites(undefined, marketCode),
+      ...deliveryListingIds,
+    ];
+    const targets = new Set(listingIds);
+    const result = await this.getVisibleListings({
+      marketCode,
+      page: 1,
+      limit: Number.MAX_SAFE_INTEGER,
+    });
+    const byId = new Map(
+      result.listings
+        .filter((listing) => targets.has(listing.id))
+        .map((listing) => [listing.id, listing] as const),
+    );
+    const visibleListingIds = listingIds.filter((id) => byId.has(id));
+    return {
+      listingIds: visibleListingIds,
+      listings: visibleListingIds.flatMap((id) => {
+        const listing = byId.get(id);
+        return listing ? [listing] : [];
+      }),
+    };
   }
 }
 

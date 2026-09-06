@@ -97,8 +97,6 @@ test.describe("Admin-managed homepage discovery", () => {
       const cardGeometry: Array<{
         height: number;
         contained: boolean;
-        characteristicsHeight: number | null;
-        characteristicsContained: boolean;
       }> = [];
 
       for (let sectionIndex = 0; sectionIndex < 3; sectionIndex += 1) {
@@ -119,25 +117,12 @@ test.describe("Admin-managed homepage discovery", () => {
           ...(await cards.evaluateAll((elements) =>
             elements.map((element) => {
               const link = element.querySelector<HTMLElement>(":scope > a");
-              const characteristics = element.querySelector<HTMLElement>(
-                '[data-listing-card-characteristics="true"]',
-              );
-              const characteristicLabels = Array.from(
-                element.querySelectorAll<HTMLElement>(
-                  "[data-listing-card-characteristic-icon] > span",
-                ),
-              );
               return {
                 height: element.getBoundingClientRect().height,
                 contained: Boolean(
                   link &&
                   element.scrollHeight <= element.clientHeight + 1 &&
                   link.scrollHeight <= link.clientHeight + 1,
-                ),
-                characteristicsHeight:
-                  characteristics?.getBoundingClientRect().height ?? null,
-                characteristicsContained: characteristicLabels.every(
-                  (label) => label.scrollWidth <= label.clientWidth + 1,
                 ),
               };
             }),
@@ -147,17 +132,6 @@ test.describe("Admin-managed homepage discovery", () => {
 
       expect(cardGeometry.length).toBeGreaterThan(3);
       expect(cardGeometry.every(({ contained }) => contained)).toBe(true);
-      expect(
-        cardGeometry.every(
-          ({ characteristicsContained }) => characteristicsContained,
-        ),
-      ).toBe(true);
-      expect(
-        cardGeometry.every(
-          ({ characteristicsHeight }) =>
-            characteristicsHeight === null || characteristicsHeight <= 25,
-        ),
-      ).toBe(true);
       expect(
         Math.max(...cardGeometry.map(({ height }) => height)) -
           Math.min(...cardGeometry.map(({ height }) => height)),

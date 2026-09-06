@@ -2548,12 +2548,12 @@ export interface paths {
             readonly cookie?: never;
         };
         readonly get?: never;
-        readonly put?: never;
         /**
-         * POST /auto/vehicles/:id/favorite
+         * Set the caller's vehicle favorite state
          * @description Implemented by backend/src/api/v1/router.ts.
          */
-        readonly post: operations["postAutoVehiclesByIdFavorite"];
+        readonly put: operations["putAutoVehiclesByIdFavorite"];
+        readonly post?: never;
         readonly delete?: never;
         readonly options?: never;
         readonly head?: never;
@@ -3347,6 +3347,23 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/delivery/favorites": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** List the caller's saved delivery requests in one market */
+        readonly get: operations["getDeliveryFavorites"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/delivery/me/applications": {
         readonly parameters: {
             readonly query?: never;
@@ -3461,6 +3478,23 @@ export interface paths {
         readonly put?: never;
         /** Atomically accept one application and reject competitors */
         readonly post: operations["postDeliveryApplicationAccept"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/delivery/requests/{requestId}/favorite": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        /** Set the caller's delivery request favorite state */
+        readonly put: operations["putDeliveryRequestFavorite"];
+        readonly post?: never;
         readonly delete?: never;
         readonly options?: never;
         readonly head?: never;
@@ -4313,12 +4347,12 @@ export interface paths {
             readonly cookie?: never;
         };
         readonly get?: never;
-        readonly put?: never;
         /**
-         * POST /education/tutors/:id/favorite
+         * Set the caller's tutor favorite state
          * @description Implemented by backend/src/api/v1/router.ts.
          */
-        readonly post: operations["postEducationTutorsByIdFavorite"];
+        readonly put: operations["putEducationTutorsByIdFavorite"];
+        readonly post?: never;
         readonly delete?: never;
         readonly options?: never;
         readonly head?: never;
@@ -4925,6 +4959,26 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/employment/favorites": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /**
+         * List the caller's saved jobs for the resolved market
+         * @description Implemented by backend/src/api/v1/router.ts.
+         */
+        readonly get: operations["getEmploymentFavorites"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/employment/jobs/{id}": {
         readonly parameters: {
             readonly query?: never;
@@ -4993,12 +5047,12 @@ export interface paths {
             readonly cookie?: never;
         };
         readonly get?: never;
-        readonly put?: never;
         /**
-         * POST /employment/jobs/:id/save
+         * Set the caller's saved-job state
          * @description Implemented by backend/src/api/v1/router.ts:1289.
          */
-        readonly post: operations["postEmploymentJobsByIdSave"];
+        readonly put: operations["putEmploymentJobsByIdSave"];
+        readonly post?: never;
         readonly delete?: never;
         readonly options?: never;
         readonly head?: never;
@@ -5574,12 +5628,12 @@ export interface paths {
             readonly cookie?: never;
         };
         readonly get?: never;
-        readonly put?: never;
         /**
-         * POST /listings/:id/favorite
+         * Set the caller's listing favorite state
          * @description Implemented by backend/src/api/v1/router.ts:676.
          */
-        readonly post: operations["postListingsByIdFavorite"];
+        readonly put: operations["putListingsByIdFavorite"];
+        readonly post?: never;
         readonly delete?: never;
         readonly options?: never;
         readonly head?: never;
@@ -5640,6 +5694,26 @@ export interface paths {
         readonly get: operations["getListingsBulkimportTemplate"];
         readonly put?: never;
         readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/listings/cards": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /**
+         * Hydrate a bounded set of public listing cards
+         * @description Returns only listings visible in the resolved marketplace. Used to hydrate browser-local guest favorites without an N+1 read.
+         */
+        readonly post: operations["postListingsCards"];
         readonly delete?: never;
         readonly options?: never;
         readonly head?: never;
@@ -9007,6 +9081,145 @@ export interface components {
             readonly primary: number;
             readonly secondary?: number;
         };
+        /** @description Vehicle identifiers saved by the caller in the resolved market. */
+        readonly AutoFavoriteCollection: {
+            readonly vehicleIds: readonly string[];
+        };
+        readonly AutoPriceEstimate: {
+            /** @enum {string} */
+            readonly band: "below_market" | "within_market" | "above_market" | "insufficient_data";
+            readonly disclaimer: string;
+            readonly generatedAt: string;
+            readonly high?: components["schemas"]["MonetizationMoney"];
+            readonly low?: components["schemas"]["MonetizationMoney"];
+            readonly sampleSize: number;
+        };
+        readonly AutoVehicleDocument: {
+            readonly expiresAt?: string;
+            readonly id: string;
+            readonly publicLabel: string;
+            /** @enum {string} */
+            readonly status: "missing" | "uploaded_private" | "pending_review" | "verified" | "rejected" | "expired";
+            /** @enum {string} */
+            readonly type: "registration_certificate" | "roadworthiness_inspection" | "histovec_or_non_pledge" | "transfer_document" | "maintenance_invoice" | "warranty" | "other";
+            readonly updatedAt: string;
+        };
+        readonly AutoVehicleHistory: {
+            /** @enum {string} */
+            readonly accidentStatus: "none_declared" | "repaired" | "known_damage" | "unknown";
+            /** @enum {string} */
+            readonly condition: "new" | "excellent" | "good" | "fair" | "damaged" | "for_parts";
+            /** @enum {string} */
+            readonly inspectionStatus: "not_applicable" | "valid" | "due_soon" | "expired" | "unknown";
+            readonly inspectionValidUntil?: string;
+            /** @enum {string} */
+            readonly maintenanceBookStatus: "complete" | "partial" | "none" | "unknown";
+            readonly previousOwnerCount?: number;
+            readonly warrantyLabel?: string;
+            readonly warrantyMonths?: number;
+        };
+        readonly AutoVehiclePublic: {
+            readonly description: string;
+            readonly dynamicAttributes: {
+                readonly [key: string]: string | number | boolean | readonly string[];
+            };
+            readonly equipment: readonly string[];
+            readonly financingAvailable?: boolean;
+            readonly financingDisclaimer?: string;
+            readonly financingMonthlyEstimate?: components["schemas"]["MonetizationMoney"];
+            readonly generationLabel?: string;
+            readonly history: components["schemas"]["AutoVehicleHistory"];
+            readonly id: string;
+            readonly isFavorite: boolean;
+            /** @enum {string} */
+            readonly lifecycle: "draft" | "pending_review" | "published" | "reserved" | "sold" | "expired" | "suspended" | "rejected" | "archived";
+            readonly locationLabel: string;
+            readonly makeId?: string;
+            readonly makeLabel: string;
+            readonly marketCodes: readonly components["schemas"]["MarketCode"][];
+            readonly mediaUrls: readonly string[];
+            readonly modelId?: string;
+            readonly modelLabel: string;
+            readonly price: components["schemas"]["MonetizationMoney"];
+            readonly priceEstimate?: components["schemas"]["AutoPriceEstimate"];
+            readonly priceIncludesTax: boolean;
+            readonly priceNegotiable?: boolean;
+            readonly promotionLabels: readonly ("urgent" | "featured" | "sponsored" | "bumped")[];
+            readonly publishedAt: string;
+            readonly resolvedPromotion?: components["schemas"]["MarketResolvedListingPromotion"];
+            /** @constant */
+            readonly schemaVersion: 1;
+            readonly seller: components["schemas"]["AutoVehicleSellerSummary"];
+            readonly slug: string;
+            readonly sortDate: string;
+            readonly technical: components["schemas"]["AutoVehicleTechnical"];
+            readonly title: string;
+            readonly trimLabel?: string;
+            readonly trust: components["schemas"]["AutoVehicleTrust"];
+            readonly updatedAt: string;
+            /** @enum {string} */
+            readonly vehicleType: "car" | "motorcycle" | "utility" | "truck" | "motorhome" | "boat" | "agricultural" | "construction" | "parts" | "other";
+            /** @constant */
+            readonly vertical: "automotive";
+        };
+        readonly AutoVehicleSearchResponse: {
+            readonly items: readonly components["schemas"]["AutoVehiclePublic"][];
+            readonly pageInfo: {
+                readonly hasNextPage: boolean;
+                readonly nextCursor?: string;
+            };
+            readonly total: number;
+        };
+        readonly AutoVehicleSellerSummary: {
+            readonly displayName: string;
+            readonly id: string;
+            readonly locationLabel: string;
+            /** Format: uri */
+            readonly logoUrl?: string;
+            readonly memberSinceYear: number;
+            readonly rating?: number;
+            readonly responseTimeMinutes?: number;
+            readonly reviewCount?: number;
+            readonly slug: string;
+            /** @enum {string} */
+            readonly type: "individual" | "dealer";
+            readonly verifiedBusiness: boolean;
+        };
+        readonly AutoVehicleTechnical: {
+            readonly batteryCapacityKwh?: number;
+            readonly bodyType?: string;
+            readonly chargingPowerKw?: number;
+            readonly co2GramsPerKm?: number;
+            readonly critAirClass?: string;
+            readonly doors?: number;
+            readonly electricRangeKm?: number;
+            readonly exteriorColor?: string;
+            readonly firstRegistrationDate?: string;
+            readonly fiscalPower?: number;
+            /** @enum {string} */
+            readonly fuelType: "petrol" | "diesel" | "electric" | "hybrid" | "plug_in_hybrid" | "lpg" | "hydrogen" | "other";
+            readonly interiorColor?: string;
+            readonly mileage: number;
+            /** @enum {string} */
+            readonly mileageUnit: "km" | "mi" | "hours";
+            readonly modelYear: number;
+            readonly powerHp?: number;
+            readonly powerKw?: number;
+            readonly seats?: number;
+            /** @enum {string} */
+            readonly transmission: "manual" | "automatic" | "semi_automatic" | "other";
+        };
+        readonly AutoVehicleTrust: {
+            readonly documents: readonly components["schemas"]["AutoVehicleDocument"][];
+            /** @enum {string} */
+            readonly historyReportStatus: "unavailable" | "declared" | "uploaded_private" | "verified";
+            /** @enum {string} */
+            readonly professionalBusiness: "not_applicable" | "not_submitted" | "pending" | "verified" | "rejected";
+            readonly publicBadges: readonly string[];
+            /** @enum {string} */
+            readonly sellerIdentity: "not_submitted" | "pending" | "verified" | "rejected";
+            readonly vinOnFile: boolean;
+        };
         /**
          * @description Canonical Shongre capability identifier from packages/contracts/src/access-control.ts.
          * @enum {string}
@@ -9810,6 +10023,10 @@ export interface components {
         };
         /** @enum {string} */
         readonly DeliveryCourierStatus: "inactive" | "active" | "paused" | "suspended";
+        /** @description Delivery request identifiers saved by the caller in the resolved market. */
+        readonly DeliveryFavoriteCollection: {
+            readonly requestIds: readonly string[];
+        };
         readonly DeliveryLocality: {
             readonly city: string;
             readonly postalCode: string;
@@ -10339,6 +10556,166 @@ export interface components {
             /** Format: date-time */
             readonly expiresAt: string;
         };
+        /** @description Tutor identifiers saved by the caller in the resolved market. */
+        readonly EducationFavoriteCollection: {
+            readonly tutorProfileIds: readonly string[];
+        };
+        readonly EmploymentEmployerSummary: {
+            readonly branchId?: string;
+            readonly description?: string;
+            readonly employerTypeId: string;
+            readonly id: string;
+            readonly isPubliclyVerified: boolean;
+            readonly locationLabel?: string;
+            /** Format: uri */
+            readonly logoUrl?: string;
+            readonly name: string;
+            readonly organizationId?: string;
+            readonly publisherUserId?: string;
+            readonly rating?: number;
+            readonly reviewCount?: number;
+            readonly slug: string;
+            readonly verificationExpiresAt?: string;
+            /** @enum {string} */
+            readonly verificationLevel: "self_declared" | "domain_verified" | "document_submitted" | "manually_verified" | "provider_verified" | "expired" | "rejected";
+        };
+        /** @description Job identifiers saved by the caller in the resolved market. */
+        readonly EmploymentFavoriteCollection: {
+            readonly jobIds: readonly string[];
+        };
+        readonly EmploymentJobPostingCard: {
+            readonly applicationDeadline?: string;
+            readonly contractTypeId: string;
+            readonly contractTypeLabel: string;
+            readonly employer: components["schemas"]["EmploymentEmployerSummary"];
+            readonly expiresAt: string;
+            readonly id: string;
+            readonly industryId: string;
+            readonly industryLabel: string;
+            readonly isFeatured: boolean;
+            readonly isSponsored: boolean;
+            readonly isUrgent: boolean;
+            readonly primaryLocation: components["schemas"]["EmploymentLocation"];
+            readonly professionId: string;
+            readonly professionLabel: string;
+            readonly publishedAt?: string;
+            readonly resolvedPromotion?: components["schemas"]["MarketResolvedListingPromotion"];
+            readonly salary?: components["schemas"]["EmploymentSalaryRange"];
+            readonly saved: boolean;
+            readonly schemaVersion: number;
+            readonly slug: string;
+            readonly specializationId?: string;
+            readonly specializationLabel?: string;
+            readonly title: string;
+            readonly workingArrangementId: string;
+            readonly workingArrangementLabel: string;
+            readonly workingTimeId: string;
+        };
+        readonly EmploymentJobPostingDetail: {
+            readonly accessibilityInformation?: string;
+            readonly additionalLocations: readonly components["schemas"]["EmploymentLocation"][];
+            readonly applicationDeadline?: string;
+            /** @enum {string} */
+            readonly applicationMethod: "shongre" | "external" | "contact_recruiter";
+            readonly benefits: readonly string[];
+            /** @constant */
+            readonly candidateFeeRequired: false;
+            readonly certifications: readonly string[];
+            readonly contactPreferences: readonly string[];
+            readonly contractDuration?: string;
+            readonly contractTypeId: string;
+            readonly contractTypeLabel: string;
+            readonly desiredStartDate?: string;
+            readonly educationLevelId?: string;
+            readonly employer: components["schemas"]["EmploymentEmployerSummary"];
+            readonly employerDescription?: string;
+            readonly expiresAt: string;
+            /** Format: uri */
+            readonly externalApplicationUrl?: string;
+            readonly id: string;
+            readonly industryId: string;
+            readonly industryLabel: string;
+            readonly isFeatured: boolean;
+            readonly isSponsored: boolean;
+            readonly isUrgent: boolean;
+            readonly languages: readonly {
+                readonly label: string;
+                readonly languageId: string;
+                readonly levelId: string;
+            }[];
+            /** @enum {string} */
+            readonly lifecycle: "draft" | "pending_review" | "published" | "closed" | "expired" | "suspended" | "rejected" | "archived";
+            readonly marketCode: components["schemas"]["MarketCode"];
+            readonly positionsCount: number;
+            readonly preferredSkillIds: readonly string[];
+            readonly preferredSkills: readonly string[];
+            readonly primaryLocation: components["schemas"]["EmploymentLocation"];
+            readonly professionId: string;
+            readonly professionLabel: string;
+            readonly publishedAt?: string;
+            readonly qualificationSummary?: string;
+            readonly recruitmentProcess: readonly string[];
+            readonly reference?: string;
+            readonly requiredExperienceId?: string;
+            readonly requiredSkillIds: readonly string[];
+            readonly requiredSkills: readonly string[];
+            readonly resolvedPromotion?: components["schemas"]["MarketResolvedListingPromotion"];
+            readonly responsibilities: readonly string[];
+            readonly safetyNotice: string;
+            readonly salary?: components["schemas"]["EmploymentSalaryRange"];
+            readonly saved: boolean;
+            readonly schemaVersion: number;
+            readonly screeningQuestions: readonly components["schemas"]["EmploymentScreeningQuestion"][];
+            readonly slug: string;
+            readonly specializationId?: string;
+            readonly specializationLabel?: string;
+            readonly title: string;
+            readonly travelRequirementId?: string;
+            readonly trialPeriodInformation?: string;
+            readonly weeklyHours?: number;
+            readonly workingArrangementId: string;
+            readonly workingArrangementLabel: string;
+            readonly workingTimeId: string;
+            readonly workScheduleIds: readonly string[];
+        };
+        readonly EmploymentLocation: {
+            readonly city: string;
+            readonly countryCode: string;
+            readonly id: string;
+            readonly isPrimary: boolean;
+            readonly isPublic: boolean;
+            readonly label: string;
+            readonly latitude?: number;
+            readonly longitude?: number;
+            readonly postalCode?: string;
+        };
+        readonly EmploymentSalaryRange: {
+            readonly bonusDescription?: string;
+            readonly frequencyId: string;
+            readonly isPublic: boolean;
+            readonly maximum?: components["schemas"]["MonetizationMoney"];
+            readonly minimum?: components["schemas"]["MonetizationMoney"];
+            readonly presentationId: string;
+        };
+        readonly EmploymentScreeningQuestion: {
+            readonly disqualifyingAnswerIds: readonly string[];
+            readonly helpText?: string;
+            readonly id: string;
+            readonly isRequired: boolean;
+            readonly label: string;
+            readonly options: readonly string[];
+            readonly questionTypeId: string;
+        };
+        readonly EmploymentSearchResult: {
+            readonly items: readonly components["schemas"]["EmploymentJobPostingCard"][];
+            readonly organicResultCount: number;
+            readonly pageInfo: {
+                readonly hasNextPage: boolean;
+                readonly nextCursor?: string;
+            };
+            readonly recommendationFactors: readonly string[];
+            readonly total: number;
+        };
         readonly ErrorDetail: {
             readonly code: string;
             readonly details?: components["schemas"]["JsonValue"];
@@ -10377,6 +10754,18 @@ export interface components {
             readonly rateNumerator: number;
             readonly reason: string;
             readonly source: string;
+        };
+        /** @description Listing identifiers and their public card projections saved by the caller in the resolved market. */
+        readonly FavoriteCollection: {
+            readonly listingIds: readonly string[];
+            readonly listings: readonly components["schemas"]["PublicListing"][];
+        };
+        /** @description The exact favorite state the caller wants; retries are idempotent. */
+        readonly FavoriteSetRequest: {
+            readonly isFavorite: boolean;
+        };
+        readonly FavoriteStateResult: {
+            readonly isFavorite: boolean;
         };
         readonly FulfillmentType: "PHYSICAL" | components["schemas"]["DigitalFulfillmentType"];
         readonly InvoicingDocument: {
@@ -10660,6 +11049,51 @@ export interface components {
         readonly JsonValue: null | boolean | number | string | readonly unknown[] | {
             readonly [key: string]: unknown;
         };
+        readonly ListingDiscoveryPresentation: {
+            readonly isSponsored: boolean;
+            readonly organicPositionContext?: number;
+            /** @enum {string} */
+            readonly placementReason: "organic_relevance" | "organic_freshness" | "organic_price" | "sponsored_relevant";
+            readonly promotionImpressionId?: string;
+            readonly promotionLabel?: string;
+            readonly promotionType?: components["schemas"]["ListingPromotionType"];
+            readonly rankingVersion: string;
+        };
+        /** @description Market-scoped availability and price evidence retained on a public listing. */
+        readonly ListingMarketPublication: {
+            readonly availableServices?: {
+                readonly [key: string]: components["schemas"]["JsonValue"];
+            };
+            /** @enum {string} */
+            readonly complianceState: "pending" | "approved" | "restricted" | "rejected";
+            readonly currency: string;
+            readonly isPrimary: boolean;
+            readonly localizedContent?: {
+                readonly [key: string]: components["schemas"]["JsonValue"];
+            };
+            readonly marketCode: components["schemas"]["MarketCode"];
+            readonly priceMinor: number;
+            /** Format: date-time */
+            readonly promotedAt?: string;
+            /** Format: date-time */
+            readonly promotionEndAt?: string;
+            readonly promotionLabel?: string;
+            /** Format: date-time */
+            readonly promotionStartAt?: string;
+            /** @enum {string} */
+            readonly promotionState?: "inactive" | "active";
+            readonly promotionType?: components["schemas"]["ListingPromotionType"];
+            /** Format: date-time */
+            readonly publishedAt?: string;
+            /** Format: date-time */
+            readonly sortDate: string;
+            /** @enum {string} */
+            readonly status: "draft" | "pending_review" | "active" | "paused" | "suspended" | "rejected" | "expired";
+        };
+        /** @enum {string} */
+        readonly ListingPromotionSource: "purchase" | "subscription_credit" | "admin_grant";
+        /** @enum {string} */
+        readonly ListingPromotionType: "urgent_badge" | "search_bump" | "featured" | "top_placement" | "sponsored_search" | "homepage_spotlight" | "category_spotlight" | "local_spotlight" | "seller_spotlight";
         /**
          * @example FR
          * @example BE
@@ -11230,6 +11664,21 @@ export interface components {
             /** Format: uri */
             readonly url: string;
         };
+        readonly MarketResolvedListingPromotion: {
+            /** Format: date-time */
+            readonly endsAt: string;
+            readonly label?: string;
+            readonly marketCode: components["schemas"]["MarketCode"];
+            /** Format: date-time */
+            readonly promotedAt?: string;
+            readonly source: components["schemas"]["ListingPromotionSource"];
+            readonly sourceId: string;
+            /** Format: date-time */
+            readonly startsAt: string;
+            /** @enum {string} */
+            readonly state: "inactive" | "scheduled" | "active" | "expired" | "cancelled" | "refunded" | "failed";
+            readonly type: components["schemas"]["ListingPromotionType"];
+        };
         readonly MonetizationAdminOverview: {
             readonly catalog: components["schemas"]["MonetizationCatalog"];
         } & {
@@ -11667,6 +12116,269 @@ export interface components {
             readonly supportedCurrencies: readonly string[];
             readonly supportedLocales: readonly string[];
             readonly timezone: string;
+        };
+        /** @description Public marketplace listing projection after private seller, entitlement, provider and risk fields are removed. */
+        readonly PublicListing: {
+            readonly allowedDelivery: readonly ("hand_delivery" | "relay_point" | "home_delivery" | "cocolis" | "express" | "digital")[];
+            readonly attributes: {
+                readonly [key: string]: components["schemas"]["JsonValue"];
+            };
+            readonly brand?: string;
+            /** Format: date-time */
+            readonly bumpedAt?: string;
+            readonly categoryId: string;
+            readonly city: string;
+            readonly condition: string;
+            readonly country: components["schemas"]["MarketCode"];
+            /** Format: date-time */
+            readonly createdAt: string;
+            readonly currency: string;
+            readonly department?: string;
+            readonly description: string;
+            readonly discovery?: components["schemas"]["ListingDiscoveryPresentation"];
+            /** Format: date-time */
+            readonly expiresAt: string;
+            readonly favoriteCount: number;
+            /** Format: date-time */
+            readonly featuredExpiresAt?: string;
+            readonly fulfillmentModel?: components["schemas"]["FulfillmentType"];
+            readonly fulfillmentTypes: readonly components["schemas"]["FulfillmentType"][];
+            readonly id: string;
+            readonly images: readonly string[];
+            readonly isFeatured?: boolean;
+            readonly isUrgent?: boolean;
+            readonly latitude?: number;
+            readonly listingIntent?: components["schemas"]["TaxonomyV4ListingIntent"];
+            readonly listingTypeId?: string;
+            readonly longitude?: number;
+            readonly marketCode: components["schemas"]["MarketCode"];
+            readonly marketCodes?: readonly components["schemas"]["MarketCode"][];
+            readonly marketPublications?: readonly components["schemas"]["ListingMarketPublication"][];
+            /** Format: date-time */
+            readonly materiallyUpdatedAt?: string;
+            readonly model?: string;
+            /** Format: date-time */
+            readonly organicFreshnessAt?: string;
+            readonly originalPrice?: number;
+            readonly postalCode: string;
+            /** @description Legacy major-unit listing amount. Client adapters convert this value to integer minor units at their transport boundary. */
+            readonly price: number;
+            readonly productVersion?: string;
+            /** Format: date-time */
+            readonly promotedAt?: string;
+            /** Format: date-time */
+            readonly promotionEndAt?: string;
+            readonly promotionLabel?: string;
+            /** @description Verified promotion evidence kind for the resolved market publication. */
+            readonly promotionSource?: components["schemas"]["ListingPromotionSource"];
+            /** @description Opaque public proof identifier; never an order, entitlement, or administrator grant identifier. */
+            readonly promotionSourceId?: string;
+            /** Format: date-time */
+            readonly promotionStartAt?: string;
+            /** @enum {string} */
+            readonly promotionState?: "inactive" | "scheduled" | "active" | "expired" | "cancelled" | "refunded" | "failed";
+            readonly promotionType?: components["schemas"]["ListingPromotionType"];
+            /** Format: date-time */
+            readonly publishedAt?: string;
+            readonly publisherBranchId?: string;
+            readonly publisherOrganizationId?: string;
+            /** @enum {string} */
+            readonly publisherType?: "private" | "professional";
+            readonly publisherUserId?: string;
+            /** @enum {string} */
+            readonly publisherVerificationStatus?: "unverified" | "email_verified" | "phone_verified" | "identity_verified" | "business_verified" | "suspended";
+            readonly region?: string;
+            readonly requiresPhysicalDelivery: boolean;
+            readonly seller?: components["schemas"]["PublicSellerProfile"];
+            readonly sellerId: string;
+            readonly shippingCost?: number;
+            /** @enum {string} */
+            readonly status: "draft" | "published" | "reserved" | "sold" | "archived" | "rejected" | "flagged";
+            readonly storeId?: string;
+            readonly title: string;
+            /** Format: date-time */
+            readonly updatedAt: string;
+            /** Format: date-time */
+            readonly urgentExpiresAt?: string;
+            readonly viewCount: number;
+        };
+        /** @description A bounded set of unique listing identifiers to hydrate in the resolved market. */
+        readonly PublicListingCardsRequest: {
+            readonly listingIds: readonly string[];
+        };
+        readonly PublicListingCollection: {
+            readonly listings: readonly components["schemas"]["PublicListing"][];
+            readonly total: number;
+        };
+        readonly PublicListingSearchResult: {
+            readonly items: readonly components["schemas"]["PublicListing"][];
+            readonly page: number;
+            readonly pageInfo: {
+                readonly hasNextPage: boolean;
+                readonly nextCursor?: string;
+            };
+            readonly rankingVersion: string;
+            /** Format: uuid */
+            readonly requestId: string;
+            readonly total: number;
+            readonly totalPages: number;
+        };
+        /** @description Public seller facts safe for marketplace discovery. Authentication, contact and Staff fields are excluded. */
+        readonly PublicSellerProfile: {
+            /** @enum {string} */
+            readonly accountType: "individual" | "professional";
+            readonly avatarUrl?: string;
+            readonly bio?: string;
+            readonly city?: string;
+            readonly country: components["schemas"]["MarketCode"];
+            /** Format: date-time */
+            readonly createdAt?: string;
+            readonly id: string;
+            readonly isBusinessVerified: boolean;
+            readonly isVerified: boolean;
+            readonly name: string;
+            readonly rating: number;
+            readonly responseRatePercent: number;
+            readonly responseTimeText?: string;
+            readonly reviewCount: number;
+            /** @enum {string} */
+            readonly sellerType: "individual" | "pro";
+            readonly slug: string;
+        };
+        readonly RealEstatePropertyCharacteristics: {
+            readonly accessibilityFeatures: readonly string[];
+            readonly amenities: readonly string[];
+            readonly availabilityDate?: string;
+            readonly bathrooms: number;
+            readonly bedrooms: number;
+            /** @enum {string} */
+            readonly condition: "new" | "excellent" | "good" | "renovation_needed" | "to_renovate";
+            readonly constructionYear?: number;
+            readonly energyType?: string;
+            readonly floor?: number;
+            readonly floorCount?: number;
+            readonly hasLift?: boolean;
+            readonly heatingType?: string;
+            readonly isFurnished?: boolean;
+            readonly landAreaSquareMeters?: number;
+            readonly livingAreaSquareMeters: number;
+            readonly rooms: number;
+        };
+        readonly RealEstatePropertyEnergy: {
+            readonly consumptionKwhPerSquareMeterYear?: number;
+            readonly diagnosticDate?: string;
+            /** @enum {string} */
+            readonly dpeClass?: "A" | "B" | "C" | "D" | "E" | "F" | "G";
+            readonly emissionsKgCo2PerSquareMeterYear?: number;
+            /** @enum {string} */
+            readonly gesClass?: "A" | "B" | "C" | "D" | "E" | "F" | "G";
+            readonly warningCode?: string;
+            readonly warningText?: string;
+        };
+        readonly RealEstatePropertyFinancials: {
+            readonly agencyFees?: components["schemas"]["MonetizationMoney"];
+            readonly charges?: components["schemas"]["MonetizationMoney"];
+            readonly deposit?: components["schemas"]["MonetizationMoney"];
+            /** @enum {string} */
+            readonly feesPaidBy: "seller" | "buyer" | "owner" | "tenant" | "shared" | "not_applicable";
+            readonly isNegotiable: boolean;
+            /** @enum {string} */
+            readonly period: "total" | "month" | "week" | "night";
+            readonly price: components["schemas"]["MonetizationMoney"];
+            readonly pricePerSquareMeter?: components["schemas"]["MonetizationMoney"];
+        };
+        readonly RealEstatePropertyMedia: {
+            readonly floorPlans: readonly string[];
+            readonly photos: readonly string[];
+            /** Format: uri */
+            readonly videoUrl?: string;
+            /** Format: uri */
+            readonly virtualTourUrl?: string;
+        };
+        readonly RealEstatePropertyPromotion: {
+            readonly bumpedAt?: string;
+            readonly endsAt?: string;
+            readonly featured: boolean;
+            readonly sponsored: boolean;
+            readonly urgent: boolean;
+        };
+        readonly RealEstatePropertyPublic: {
+            readonly address: {
+                readonly administrativeArea?: string;
+                readonly city: string;
+                readonly countryCode: components["schemas"]["MarketCode"];
+                readonly latitude: number;
+                readonly longitude: number;
+                readonly postalCode: string;
+                /** @enum {string} */
+                readonly precision: "exact" | "street" | "district" | "city";
+                readonly publicLabel: string;
+            };
+            readonly characteristics: components["schemas"]["RealEstatePropertyCharacteristics"];
+            readonly customAttributes: {
+                readonly [key: string]: unknown;
+            };
+            readonly description: string;
+            readonly energy: components["schemas"]["RealEstatePropertyEnergy"];
+            readonly financials: components["schemas"]["RealEstatePropertyFinancials"];
+            readonly id: string;
+            readonly isFavorite: boolean;
+            /** @enum {string} */
+            readonly lifecycle: "draft" | "pending_review" | "published" | "reserved" | "sold" | "expired" | "suspended" | "rejected" | "removed" | "archived";
+            readonly listingId: string;
+            readonly marketCodes: readonly components["schemas"]["MarketCode"][];
+            readonly media: components["schemas"]["RealEstatePropertyMedia"];
+            readonly promotion: components["schemas"]["RealEstatePropertyPromotion"];
+            /** @enum {string} */
+            readonly propertyType: "apartment" | "house" | "land" | "parking_garage" | "commercial" | "office" | "building" | "new_development" | "holiday_rental" | "room_shared" | "other";
+            readonly publishedAt?: string;
+            readonly recentlyViewedAt?: string;
+            readonly regulatory: components["schemas"]["RealEstatePropertyRegulatory"];
+            readonly resolvedPromotion?: components["schemas"]["MarketResolvedListingPromotion"];
+            readonly schemaVersion: number;
+            readonly seller: components["schemas"]["RealEstatePropertySeller"];
+            readonly slug: string;
+            readonly sortDate: string;
+            readonly title: string;
+            /** @enum {string} */
+            readonly transactionType: "sale" | "long_term_rental" | "seasonal_rental" | "shared_accommodation" | "life_annuity" | "other";
+        };
+        readonly RealEstatePropertyRegulatory: {
+            readonly annualCoOwnershipCharges?: components["schemas"]["MonetizationMoney"];
+            readonly coOwnershipApplicable: boolean;
+            readonly coOwnershipLots?: number;
+            /** @enum {string} */
+            readonly coOwnershipProcedureStatus: "none" | "in_progress" | "unknown" | "not_applicable";
+            readonly legalNotices: readonly string[];
+            readonly ownershipDeclared: boolean;
+            readonly professionalRegistrationLabel?: string;
+            /** @enum {string} */
+            readonly riskInformationStatus: "available" | "pending" | "not_applicable";
+            /** Format: uri */
+            readonly riskInformationUrl?: string;
+        };
+        readonly RealEstatePropertySearchResult: {
+            readonly items: readonly components["schemas"]["RealEstatePropertyPublic"][];
+            readonly pageInfo: {
+                readonly hasNextPage: boolean;
+                readonly nextCursor?: string;
+            };
+            readonly total: number;
+        };
+        readonly RealEstatePropertySeller: {
+            readonly displayName: string;
+            readonly id: string;
+            /** Format: uri */
+            readonly logoUrl?: string;
+            readonly professionalIdentity?: string;
+            readonly publicPhone?: string;
+            readonly rating?: number;
+            readonly responseTimeLabel?: string;
+            readonly reviewCount?: number;
+            readonly slug?: string;
+            /** @enum {string} */
+            readonly type: "owner" | "agency" | "developer" | "property_manager";
+            readonly verificationLabels: readonly string[];
         };
         readonly ReorderSolutionsInput: {
             readonly solutionIds: readonly string[];
@@ -17226,9 +17938,11 @@ export interface operations {
     readonly getAutoFavorites: {
         readonly parameters: {
             readonly query?: never;
-            readonly header?: {
+            readonly header: {
                 /** @description Caller correlation id. The server returns the accepted or generated value. */
                 readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
             };
             readonly path?: never;
             readonly cookie?: never;
@@ -17242,7 +17956,7 @@ export interface operations {
                     readonly [name: string]: unknown;
                 };
                 content: {
-                    readonly "application/json": components["schemas"]["JsonValue"];
+                    readonly "application/json": components["schemas"]["AutoFavoriteCollection"];
                 };
             };
             readonly 400: components["responses"]["BadRequest"];
@@ -17296,9 +18010,11 @@ export interface operations {
     readonly postAutoSearch: {
         readonly parameters: {
             readonly query?: never;
-            readonly header?: {
+            readonly header: {
                 /** @description Caller correlation id. The server returns the accepted or generated value. */
                 readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
             };
             readonly path?: never;
             readonly cookie?: never;
@@ -17318,7 +18034,7 @@ export interface operations {
                     readonly [name: string]: unknown;
                 };
                 content: {
-                    readonly "application/json": components["schemas"]["JsonValue"];
+                    readonly "application/json": components["schemas"]["AutoVehicleSearchResponse"];
                 };
             };
             readonly 400: components["responses"]["BadRequest"];
@@ -17372,9 +18088,11 @@ export interface operations {
     readonly getAutoVehiclesById: {
         readonly parameters: {
             readonly query?: never;
-            readonly header?: {
+            readonly header: {
                 /** @description Caller correlation id. The server returns the accepted or generated value. */
                 readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
             };
             readonly path: {
                 readonly id: string;
@@ -17390,7 +18108,7 @@ export interface operations {
                     readonly [name: string]: unknown;
                 };
                 content: {
-                    readonly "application/json": components["schemas"]["JsonValue"];
+                    readonly "application/json": components["schemas"]["AutoVehiclePublic"];
                 };
             };
             readonly 400: components["responses"]["BadRequest"];
@@ -17403,12 +18121,14 @@ export interface operations {
             readonly 500: components["responses"]["InternalError"];
         };
     };
-    readonly postAutoVehiclesByIdFavorite: {
+    readonly putAutoVehiclesByIdFavorite: {
         readonly parameters: {
             readonly query?: never;
-            readonly header?: {
+            readonly header: {
                 /** @description Caller correlation id. The server returns the accepted or generated value. */
                 readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
             };
             readonly path: {
                 readonly id: string;
@@ -17417,9 +18137,7 @@ export interface operations {
         };
         readonly requestBody: {
             readonly content: {
-                readonly "application/json": {
-                    readonly [key: string]: unknown;
-                };
+                readonly "application/json": components["schemas"]["FavoriteSetRequest"];
             };
         };
         readonly responses: {
@@ -17430,7 +18148,7 @@ export interface operations {
                     readonly [name: string]: unknown;
                 };
                 content: {
-                    readonly "application/json": components["schemas"]["JsonValue"];
+                    readonly "application/json": components["schemas"]["FavoriteStateResult"];
                 };
             };
             readonly 400: components["responses"]["BadRequest"];
@@ -19295,6 +20013,39 @@ export interface operations {
             readonly 500: components["responses"]["InternalError"];
         };
     };
+    readonly getDeliveryFavorites: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["DeliveryFavoriteCollection"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
     readonly getOwnDeliveryApplications: {
         readonly parameters: {
             readonly query?: never;
@@ -19576,6 +20327,45 @@ export interface operations {
                 };
                 content: {
                     readonly "application/json": components["schemas"]["DeliveryPrivateRequest"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly putDeliveryRequestFavorite: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path: {
+                readonly requestId: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["FavoriteSetRequest"];
+            };
+        };
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["FavoriteStateResult"];
                 };
             };
             readonly 400: components["responses"]["BadRequest"];
@@ -20830,9 +21620,11 @@ export interface operations {
     readonly getEducationFavorites: {
         readonly parameters: {
             readonly query?: never;
-            readonly header?: {
+            readonly header: {
                 /** @description Caller correlation id. The server returns the accepted or generated value. */
                 readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
             };
             readonly path?: never;
             readonly cookie?: never;
@@ -20846,7 +21638,7 @@ export interface operations {
                     readonly [name: string]: unknown;
                 };
                 content: {
-                    readonly "application/json": components["schemas"]["JsonValue"];
+                    readonly "application/json": components["schemas"]["EducationFavoriteCollection"];
                 };
             };
             readonly 400: components["responses"]["BadRequest"];
@@ -21243,12 +22035,14 @@ export interface operations {
             readonly 500: components["responses"]["InternalError"];
         };
     };
-    readonly postEducationTutorsByIdFavorite: {
+    readonly putEducationTutorsByIdFavorite: {
         readonly parameters: {
             readonly query?: never;
-            readonly header?: {
+            readonly header: {
                 /** @description Caller correlation id. The server returns the accepted or generated value. */
                 readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
             };
             readonly path: {
                 readonly id: string;
@@ -21257,9 +22051,7 @@ export interface operations {
         };
         readonly requestBody: {
             readonly content: {
-                readonly "application/json": {
-                    readonly [key: string]: unknown;
-                };
+                readonly "application/json": components["schemas"]["FavoriteSetRequest"];
             };
         };
         readonly responses: {
@@ -21270,7 +22062,7 @@ export interface operations {
                     readonly [name: string]: unknown;
                 };
                 content: {
-                    readonly "application/json": components["schemas"]["JsonValue"];
+                    readonly "application/json": components["schemas"]["FavoriteStateResult"];
                 };
             };
             readonly 400: components["responses"]["BadRequest"];
@@ -21886,9 +22678,11 @@ export interface operations {
     readonly getEmploymentCandidateWorkspace: {
         readonly parameters: {
             readonly query?: never;
-            readonly header?: {
+            readonly header: {
                 /** @description Caller correlation id. The server returns the accepted or generated value. */
                 readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
             };
             readonly path?: never;
             readonly cookie?: never;
@@ -22528,12 +23322,48 @@ export interface operations {
             readonly 500: components["responses"]["InternalError"];
         };
     };
+    readonly getEmploymentFavorites: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["EmploymentFavoriteCollection"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
     readonly getEmploymentJobsById: {
         readonly parameters: {
             readonly query?: never;
-            readonly header?: {
+            readonly header: {
                 /** @description Caller correlation id. The server returns the accepted or generated value. */
                 readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
             };
             readonly path: {
                 readonly id: string;
@@ -22549,7 +23379,7 @@ export interface operations {
                     readonly [name: string]: unknown;
                 };
                 content: {
-                    readonly "application/json": components["schemas"]["JsonValue"];
+                    readonly "application/json": components["schemas"]["EmploymentJobPostingDetail"];
                 };
             };
             readonly 400: components["responses"]["BadRequest"];
@@ -22642,19 +23472,25 @@ export interface operations {
             readonly 500: components["responses"]["InternalError"];
         };
     };
-    readonly postEmploymentJobsByIdSave: {
+    readonly putEmploymentJobsByIdSave: {
         readonly parameters: {
             readonly query?: never;
-            readonly header?: {
+            readonly header: {
                 /** @description Caller correlation id. The server returns the accepted or generated value. */
                 readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
             };
             readonly path: {
                 readonly id: string;
             };
             readonly cookie?: never;
         };
-        readonly requestBody?: never;
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["FavoriteSetRequest"];
+            };
+        };
         readonly responses: {
             /** @description Successful response. */
             readonly 200: {
@@ -22663,7 +23499,7 @@ export interface operations {
                     readonly [name: string]: unknown;
                 };
                 content: {
-                    readonly "application/json": components["schemas"]["JsonValue"];
+                    readonly "application/json": components["schemas"]["FavoriteStateResult"];
                 };
             };
             readonly 400: components["responses"]["BadRequest"];
@@ -22745,9 +23581,11 @@ export interface operations {
     readonly postEmploymentSearch: {
         readonly parameters: {
             readonly query?: never;
-            readonly header?: {
+            readonly header: {
                 /** @description Caller correlation id. The server returns the accepted or generated value. */
                 readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
             };
             readonly path?: never;
             readonly cookie?: never;
@@ -22767,7 +23605,7 @@ export interface operations {
                     readonly [name: string]: unknown;
                 };
                 content: {
-                    readonly "application/json": components["schemas"]["JsonValue"];
+                    readonly "application/json": components["schemas"]["EmploymentSearchResult"];
                 };
             };
             readonly 400: components["responses"]["BadRequest"];
@@ -22783,9 +23621,11 @@ export interface operations {
     readonly getFavorites: {
         readonly parameters: {
             readonly query?: never;
-            readonly header?: {
+            readonly header: {
                 /** @description Caller correlation id. The server returns the accepted or generated value. */
                 readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
             };
             readonly path?: never;
             readonly cookie?: never;
@@ -22799,7 +23639,7 @@ export interface operations {
                     readonly [name: string]: unknown;
                 };
                 content: {
-                    readonly "application/json": components["schemas"]["JsonValue"];
+                    readonly "application/json": components["schemas"]["FavoriteCollection"];
                 };
             };
             readonly 400: components["responses"]["BadRequest"];
@@ -23785,7 +24625,7 @@ export interface operations {
                     readonly [name: string]: unknown;
                 };
                 content: {
-                    readonly "application/json": components["schemas"]["JsonValue"];
+                    readonly "application/json": components["schemas"]["PublicListingCollection"];
                 };
             };
             readonly 400: components["responses"]["BadRequest"];
@@ -23821,7 +24661,7 @@ export interface operations {
                     readonly [name: string]: unknown;
                 };
                 content: {
-                    readonly "application/json": components["schemas"]["JsonValue"];
+                    readonly "application/json": components["schemas"]["PublicListing"] | null;
                 };
             };
             readonly 400: components["responses"]["BadRequest"];
@@ -23908,19 +24748,25 @@ export interface operations {
             readonly 500: components["responses"]["InternalError"];
         };
     };
-    readonly postListingsByIdFavorite: {
+    readonly putListingsByIdFavorite: {
         readonly parameters: {
             readonly query?: never;
-            readonly header?: {
+            readonly header: {
                 /** @description Caller correlation id. The server returns the accepted or generated value. */
                 readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
             };
             readonly path: {
                 readonly id: string;
             };
             readonly cookie?: never;
         };
-        readonly requestBody?: never;
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["FavoriteSetRequest"];
+            };
+        };
         readonly responses: {
             /** @description Successful response. */
             readonly 200: {
@@ -23929,7 +24775,7 @@ export interface operations {
                     readonly [name: string]: unknown;
                 };
                 content: {
-                    readonly "application/json": components["schemas"]["JsonValue"];
+                    readonly "application/json": components["schemas"]["FavoriteStateResult"];
                 };
             };
             readonly 400: components["responses"]["BadRequest"];
@@ -24050,6 +24896,44 @@ export interface operations {
             readonly 500: components["responses"]["InternalError"];
         };
     };
+    readonly postListingsCards: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["PublicListingCardsRequest"];
+            };
+        };
+        readonly responses: {
+            /** @description Public listing cards visible in the resolved market. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["PublicListingCollection"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
     readonly postListingsPublish: {
         readonly parameters: {
             readonly query?: never;
@@ -24119,7 +25003,7 @@ export interface operations {
                     readonly [name: string]: unknown;
                 };
                 content: {
-                    readonly "application/json": components["schemas"]["JsonValue"];
+                    readonly "application/json": components["schemas"]["PublicListingSearchResult"];
                 };
             };
             readonly 400: components["responses"]["BadRequest"];
@@ -29073,9 +29957,11 @@ export interface operations {
     readonly getRealEstatePropertiesById: {
         readonly parameters: {
             readonly query?: never;
-            readonly header?: {
+            readonly header: {
                 /** @description Caller correlation id. The server returns the accepted or generated value. */
                 readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
             };
             readonly path: {
                 readonly id: string;
@@ -29091,7 +29977,7 @@ export interface operations {
                     readonly [name: string]: unknown;
                 };
                 content: {
-                    readonly "application/json": components["schemas"]["JsonValue"];
+                    readonly "application/json": components["schemas"]["RealEstatePropertyPublic"];
                 };
             };
             readonly 400: components["responses"]["BadRequest"];
@@ -29248,9 +30134,11 @@ export interface operations {
     readonly postRealEstateSearch: {
         readonly parameters: {
             readonly query?: never;
-            readonly header?: {
+            readonly header: {
                 /** @description Caller correlation id. The server returns the accepted or generated value. */
                 readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
             };
             readonly path?: never;
             readonly cookie?: never;
@@ -29270,7 +30158,7 @@ export interface operations {
                     readonly [name: string]: unknown;
                 };
                 content: {
-                    readonly "application/json": components["schemas"]["JsonValue"];
+                    readonly "application/json": components["schemas"]["RealEstatePropertySearchResult"];
                 };
             };
             readonly 400: components["responses"]["BadRequest"];

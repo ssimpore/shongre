@@ -1,37 +1,13 @@
 import {
-  CANONICAL_TAXONOMY_ALIASES,
-  CANONICAL_TAXONOMY_IDENTITIES,
-  CANONICAL_TAXONOMY_IDENTITY_BY_ID,
-  type CanonicalTaxonomyIdentity,
-} from "@shongre/contracts/taxonomy-catalog";
+  isTaxonomyV4DescendantOf,
+  resolveTaxonomyV4Identity,
+  resolveTaxonomyV4Root,
+} from "@shongre/contracts/taxonomy-v4-identity";
 
-function normalizeTaxonomyIdentityLookup(value: string): string {
-  let decoded = value;
-  try {
-    decoded = decodeURIComponent(value);
-  } catch {
-    // Preserve malformed historical values for the unresolved report.
-  }
-  return decoded
-    .trim()
-    .toLocaleLowerCase("fr-FR")
-    .replace(/^\/+|\/+$/g, "");
-}
-
-export function resolveCanonicalTaxonomyIdentity(
-  value?: string,
-): CanonicalTaxonomyIdentity | undefined {
-  if (!value) return undefined;
-  const lookup = normalizeTaxonomyIdentityLookup(value);
-  const direct = CANONICAL_TAXONOMY_IDENTITY_BY_ID.get(lookup);
-  if (direct) return direct;
-  const bySlug = CANONICAL_TAXONOMY_IDENTITIES.find(
-    (identity) => identity.slug === lookup,
-  );
-  if (bySlug) return bySlug;
-  const mappedId = CANONICAL_TAXONOMY_ALIASES[lookup];
-  return mappedId ? CANONICAL_TAXONOMY_IDENTITY_BY_ID.get(mappedId) : undefined;
-}
+export {
+  isTaxonomyV4DescendantOf,
+  resolveTaxonomyV4Identity as resolveCanonicalTaxonomyIdentity,
+};
 
 export function normalizeListingTaxonomyIdentity(listing: {
   categorySlug?: string;
@@ -40,8 +16,8 @@ export function normalizeListingTaxonomyIdentity(listing: {
   subCategoryLabel?: string;
 }) {
   const identity =
-    resolveCanonicalTaxonomyIdentity(listing.subCategorySlug) ||
-    resolveCanonicalTaxonomyIdentity(listing.categorySlug);
+    resolveTaxonomyV4Identity(listing.subCategorySlug) ||
+    resolveTaxonomyV4Identity(listing.categorySlug);
   if (!identity) {
     return {
       categoryId:
@@ -53,11 +29,7 @@ export function normalizeListingTaxonomyIdentity(listing: {
     };
   }
 
-  let root = identity;
-  while (root.parentId) {
-    root = CANONICAL_TAXONOMY_IDENTITY_BY_ID.get(root.parentId) || root;
-    if (!root.parentId) break;
-  }
+  const root = resolveTaxonomyV4Root(identity.id) || identity;
 
   return {
     categoryId: identity.id,

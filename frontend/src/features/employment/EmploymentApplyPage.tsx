@@ -13,6 +13,7 @@ import type {
 } from "@shongre/contracts/employment";
 import { EMPLOYMENT_TEXT_LIMITS } from "@shongre/contracts/employment";
 import { services } from "../../api/client/service-registry";
+import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useToast } from "../../app/providers/ToastProvider";
 import {
   Button,
@@ -30,6 +31,7 @@ export const EmploymentApplyPage: React.FC = () => {
   const { slug = "" } = useParams();
   const navigate = useNavigate();
   const toast = useToast();
+  const { activeMarket } = useMarketLocation();
   const [job, setJob] = useState<JobPostingDetail | null>(null);
   const [workspace, setWorkspace] = useState<CandidateWorkspace | null>(null);
   const [cvId, setCvId] = useState("");
@@ -51,11 +53,16 @@ export const EmploymentApplyPage: React.FC = () => {
   });
 
   useEffect(() => {
+    let active = true;
+    setJob(null);
+    setWorkspace(null);
+    setError(undefined);
     Promise.all([
-      services.employment.getJob(slug),
-      services.employment.getCandidateWorkspace(),
+      services.employment.getJob(slug, activeMarket.code),
+      services.employment.getCandidateWorkspace(activeMarket.code),
     ])
       .then(([nextJob, nextWorkspace]) => {
+        if (!active) return;
         setJob(nextJob);
         setWorkspace(nextWorkspace);
         setCvId(
@@ -64,12 +71,18 @@ export const EmploymentApplyPage: React.FC = () => {
           )?.id || "",
         );
       })
-      .catch((cause) =>
-        setError(
-          cause instanceof Error ? cause.message : "Candidature indisponible.",
-        ),
-      );
-  }, [slug]);
+      .catch((cause) => {
+        if (active)
+          setError(
+            cause instanceof Error
+              ? cause.message
+              : "Candidature indisponible.",
+          );
+      });
+    return () => {
+      active = false;
+    };
+  }, [activeMarket.code, slug]);
 
   const activeApplication = useMemo(
     () =>

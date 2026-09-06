@@ -1,74 +1,154 @@
-import { listingCardSchema, type ListingCardView } from "@shongre/contracts";
+import {
+  getCountryConfig,
+  isActiveMarketResolvedListingPromotion,
+  listingCardSchema,
+  marketResolvedListingPromotionSchema,
+  type ListingCardView,
+} from "@shongre/contracts";
+import {
+  DELIVERY_TAXONOMY_CATEGORY_ID,
+  deliveryDiscoveryListingId,
+  type DeliveryPublicRequest,
+} from "@shongre/contracts/delivery";
+import type { components } from "@shongre/contracts/openapi";
+import {
+  getTaxonomyV4CardBrandLabel,
+  getTaxonomyV4CardRootLabel,
+} from "@shongre/contracts/taxonomy-v4-card";
+import { formatCompactMoney, majorToMinorAmount } from "@shongre/shared/money";
+import { messagesFr } from "@/i18n/messages.fr";
 
-export interface BackendListing {
-  id: string;
-  title: string;
-  price: number;
-  currency: string;
-  images?: string[];
-  city: string;
-  marketCode: string;
-  condition: string;
-  categoryLabel?: string;
-  createdAt: string;
-  deliveryAvailable?: boolean;
-  onlinePaymentAvailable?: boolean;
-  fulfillmentTypes?: import("@shongre/contracts/digital-products").FulfillmentType[];
-  requiresPhysicalDelivery?: boolean;
-  productVersion?: string;
-  isUrgent?: boolean;
-  isFeatured?: boolean;
-  seller?: {
-    id: string;
-    name: string;
-    sellerType?: "individual" | "pro";
-    city?: string;
-    isIdentityVerified?: boolean;
-    isBusinessVerified?: boolean;
-    organizationName?: string;
-    organizationLogoUrl?: string;
-    branchName?: string;
-    rating?: number;
-    reviewCount?: number;
-  };
+const RECURRING_PRICE_SUFFIXES = {
+  hourly: messagesFr["ui.listingCard.perHour"],
+  daily: messagesFr["ui.listingCard.perDay"],
+  weekly: messagesFr["ui.listingCard.perWeek"],
+  monthly: messagesFr["ui.listingCard.perMonth"],
+  rent_plus_charges: messagesFr["ui.listingCard.perMonth"],
+} as const;
+
+export type BackendListing = components["schemas"]["PublicListing"];
+
+export function mapDeliveryRequestListing(
+  request: DeliveryPublicRequest,
+): ListingCardView {
+  const locale = getCountryConfig(request.marketCode)?.defaultLocale || "fr-FR";
+  return listingCardSchema.parse({
+    id: deliveryDiscoveryListingId(request.id),
+    title: request.title,
+    price: request.budget,
+    priceKind: request.budget ? "amount" : "on_request",
+    city: `${request.pickupLocality.city} → ${request.dropoffLocality.city}`,
+    marketCode: request.marketCode,
+    categoryLabel:
+      getTaxonomyV4CardRootLabel(DELIVERY_TAXONOMY_CATEGORY_ID, locale) ||
+      DELIVERY_TAXONOMY_CATEGORY_ID,
+    conditionLabel: "Service",
+    publishedAt: request.publishedAt,
+    publisherType: "private",
+    seller: {
+      id: `delivery-requester:${request.id}`,
+      name: request.requester.displayName,
+      sellerType: "individual",
+      city: request.pickupLocality.city,
+      isIdentityVerified: request.requester.verified,
+      isBusinessVerified: false,
+    },
+    isUrgent: false,
+    isFeatured: false,
+  });
 }
 
 export function mapBackendListing(item: BackendListing): ListingCardView {
+  const locale = getCountryConfig(item.marketCode)?.defaultLocale || "fr-FR";
+  const priceType = item.attributes?.price_type;
+  const rawBrand =
+    typeof item.brand === "string" && item.brand.trim()
+      ? item.brand.trim()
+      : typeof item.attributes?.brand === "string" &&
+          item.attributes.brand.trim()
+        ? item.attributes.brand.trim()
+        : undefined;
+  const price = {
+    amountMinor: majorToMinorAmount(Number(item.price), item.currency),
+    currency: item.currency,
+  };
+  const priceKind: NonNullable<ListingCardView["priceKind"]> =
+    priceType === "free"
+      ? "free"
+      : priceType === "on_request"
+        ? "on_request"
+        : priceType === "unpriced" || Number(item.price) === 0
+          ? "unpriced"
+          : "amount";
+  const recurringSuffix =
+    typeof priceType === "string" && priceType in RECURRING_PRICE_SUFFIXES
+      ? RECURRING_PRICE_SUFFIXES[
+          priceType as keyof typeof RECURRING_PRICE_SUFFIXES
+        ]
+      : undefined;
+  const parsedPromotion = marketResolvedListingPromotionSchema.safeParse({
+    state: item.promotionState,
+    type: item.promotionType,
+    marketCode: item.marketCode,
+    source: item.promotionSource,
+    sourceId: item.promotionSourceId,
+    startsAt: item.promotionStartAt,
+    endsAt: item.promotionEndAt,
+    promotedAt: item.promotedAt,
+    label: item.promotionLabel,
+  });
+  const promotion =
+    parsedPromotion.success &&
+    isActiveMarketResolvedListingPromotion(
+      parsedPromotion.data,
+      item.marketCode,
+    )
+      ? parsedPromotion.data
+      : undefined;
   return listingCardSchema.parse({
     id: item.id,
     title: item.title,
-    price: {
-      amountMinor: Math.round(Number(item.price) * 100),
-      currency: item.currency,
-    },
-    imageUrl: item.images?.[0],
-    photoCount: item.images?.length ?? 0,
+    price: priceKind === "amount" ? price : undefined,
+    priceLabel: recurringSuffix
+      ? `${formatCompactMoney(price, locale)}${recurringSuffix}`
+      : undefined,
+    priceKind,
+    imageUrl: item.images[0],
+    photoCount: item.images.length,
     city: item.city,
     marketCode: item.marketCode,
-    categoryLabel: item.categoryLabel,
+    categoryLabel:
+      getTaxonomyV4CardRootLabel(item.categoryId, locale) || item.categoryId,
+    brandLabel: rawBrand
+      ? getTaxonomyV4CardBrandLabel(rawBrand, locale) || rawBrand
+      : undefined,
     conditionLabel: item.condition,
-    publishedAt: item.createdAt,
-    deliveryAvailable: Boolean(item.deliveryAvailable),
-    fulfillmentTypes: item.fulfillmentTypes,
+    publisherType: item.publisherType,
+    publishedAt: item.publishedAt,
+    deliveryAvailable: item.allowedDelivery.length > 0,
+    fulfillmentTypes: [...item.fulfillmentTypes],
     requiresPhysicalDelivery: item.requiresPhysicalDelivery,
     productVersion: item.productVersion,
-    onlinePaymentAvailable: Boolean(item.onlinePaymentAvailable),
+    onlinePaymentAvailable: false,
     seller: item.seller
       ? {
           id: item.seller.id,
           name: item.seller.name,
-          sellerType: item.seller.sellerType || "individual",
+          sellerType: item.publisherType
+            ? item.publisherType === "professional"
+              ? "pro"
+              : "individual"
+            : item.seller.sellerType || "individual",
           city: item.seller.city,
-          isIdentityVerified: Boolean(item.seller.isIdentityVerified),
+          isIdentityVerified: Boolean(item.seller.isVerified),
           isBusinessVerified: Boolean(item.seller.isBusinessVerified),
-          organizationName: item.seller.organizationName,
-          organizationLogoUrl: item.seller.organizationLogoUrl,
-          branchName: item.seller.branchName,
           rating: item.seller.rating,
           reviewCount: item.seller.reviewCount,
         }
       : undefined,
-    isUrgent: Boolean(item.isUrgent),
-    isFeatured: Boolean(item.isFeatured),
+    isUrgent: promotion?.type === "urgent_badge",
+    isFeatured: Boolean(promotion && promotion.type !== "urgent_badge"),
+    promotion,
+    discovery: item.discovery,
   });
 }

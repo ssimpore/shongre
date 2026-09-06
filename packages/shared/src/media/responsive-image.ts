@@ -76,9 +76,9 @@ export function buildSrcSet(
 }
 
 export const IMAGE_SIZES = {
-  card: "(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw",
+  card: "(max-width: 639px) calc(100vw - 2rem), (max-width: 767px) calc((100vw - 3rem) / 2), (max-width: 1023px) calc((100vw - 4rem) / 3), 208px",
   thumbnail: "(max-width: 640px) 100vw, 220px",
-  compact: "(max-width: 640px) 33vw, 160px",
+  compact: "208px",
   gallery: "(max-width: 1024px) 100vw, 900px",
   thumb: "80px",
 } as const;
@@ -92,9 +92,9 @@ export const AVATAR_SIZES = {
 } as const;
 
 const IMAGE_FALLBACK_WIDTHS = new Map<string, number>([
-  [IMAGE_SIZES.card, 320],
+  [IMAGE_SIZES.card, 640],
   [IMAGE_SIZES.thumbnail, 480],
-  [IMAGE_SIZES.compact, 320],
+  [IMAGE_SIZES.compact, 480],
   [IMAGE_SIZES.gallery, 640],
   [IMAGE_SIZES.thumb, 160],
 ]);

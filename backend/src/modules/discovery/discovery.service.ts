@@ -2,6 +2,8 @@ import { randomUUID } from "node:crypto";
 import type { DiscoveryDocument, DiscoveryRequest } from "@shongre/shared";
 import {
   DEFAULT_DISCOVERY_CONFIGURATION,
+  majorToMinorAmount,
+  minorToMajorAmount,
   runUnifiedDiscovery,
   scoreOrganicListing,
 } from "@shongre/shared";
@@ -15,6 +17,7 @@ import {
 import {
   DELIVERY_FEATURE_FLAG_KEY,
   DELIVERY_TAXONOMY_CATEGORY_ID,
+  deliveryDiscoveryListingId,
   deliveryMarketActivationIssues,
   type DeliveryPublicRequest,
 } from "@shongre/contracts/delivery";
@@ -55,7 +58,7 @@ export interface DiscoverySearchResult {
 export function deliveryRequestToDiscoveryListing(
   request: DeliveryPublicRequest,
 ): Listing {
-  const publishedAt = request.publishedAt || request.expiresAt;
+  const lifecycleReference = request.publishedAt || request.expiresAt;
   const currency =
     request.budget?.currency || getCountryConfig(request.marketCode)?.currency;
   if (!currency) {
@@ -65,7 +68,7 @@ export function deliveryRequestToDiscoveryListing(
     });
   }
   return {
-    id: `delivery_${request.id}`,
+    id: deliveryDiscoveryListingId(request.id),
     sellerId: `delivery-requester:${request.id}`,
     publisherType: "private",
     publisherVerificationStatus: request.requester.verified
@@ -77,7 +80,7 @@ export function deliveryRequestToDiscoveryListing(
     listingIntent: "SERVICE_REQUEST",
     title: request.title,
     description: request.description,
-    price: (request.budget?.amountMinor || 0) / 100,
+    price: minorToMajorAmount(request.budget?.amountMinor ?? 0, currency),
     currency,
     status: "published",
     condition: "not_applicable",
@@ -109,12 +112,13 @@ export function deliveryRequestToDiscoveryListing(
       handlingRequirements: request.package.handlingRequirements,
       requiredVehicleType: request.package.requiredVehicleType,
       applicationCount: request.applicationCount,
+      price_type: request.budget ? "fixed" : "on_request",
       taxonomyValid: true,
     },
-    publishedAt,
-    organicFreshnessAt: publishedAt,
-    createdAt: publishedAt,
-    updatedAt: publishedAt,
+    publishedAt: request.publishedAt,
+    organicFreshnessAt: lifecycleReference,
+    createdAt: lifecycleReference,
+    updatedAt: lifecycleReference,
     expiresAt: request.expiresAt,
     viewCount: 0,
     favoriteCount: 0,
@@ -191,7 +195,7 @@ export function toDiscoveryDocument(listing: Listing): DiscoveryDocument {
     title: listing.title,
     description: listing.description,
     searchableAttributes: attributes,
-    priceMinor: Math.round(listing.price * 100),
+    priceMinor: majorToMinorAmount(listing.price, listing.currency),
     currency: listing.currency,
     city: listing.city,
     status: listing.status,
@@ -295,7 +299,7 @@ export class UnifiedDiscoveryService {
   ): Promise<Listing[]> {
     const marketCode = requireMarketCode(filters.marketCode);
     const country = getCountryConfig(marketCode);
-    if (deliveryMarketActivationIssues(country).length) return [];
+    if (!country || deliveryMarketActivationIssues(country).length) return [];
     const flag = await this.flags.evaluatePublic(
       GUEST_PRINCIPAL,
       DELIVERY_FEATURE_FLAG_KEY,
@@ -309,7 +313,10 @@ export class UnifiedDiscoveryService {
     });
     return page.items
       .filter((request) => {
-        const price = (request.budget?.amountMinor || 0) / 100;
+        const price = minorToMajorAmount(
+          request.budget?.amountMinor ?? 0,
+          request.budget?.currency || country.currency,
+        );
         if (filters.minPrice !== undefined && price < filters.minPrice)
           return false;
         if (filters.maxPrice !== undefined && price > filters.maxPrice)

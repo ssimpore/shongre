@@ -27,7 +27,8 @@ import { BulkImportModal } from "./components/BulkImportModal";
 import { usePublishCta } from "../../security/usePublishCta";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { usePageMeta } from "../../hooks/usePageMeta";
-import { getListingCategoryLabel } from "../../domains/taxonomy/taxonomy.display";
+import { getListingCategoryLabel } from "../../domains/taxonomy/listing-category.display";
+import { resolveListingPhotoUrl } from "../../domains/listing/listing-media";
 import type { ListingBoostOption } from "../../configuration/plans.config";
 import { useMarketPromotions } from "../../domains/monetization/useMarketPromotions";
 import { useRegionalFormatters } from "../../hooks/useRegionalFormatters";
@@ -66,12 +67,6 @@ const BOOST_STYLES: Record<
     spanClass: "sm:col-span-2",
   },
 };
-
-function getPhotoUrl(photo: any): string {
-  if (typeof photo === "string") return photo;
-  if (photo && typeof photo.url === "string") return photo.url;
-  return "https://images.unsplash.com/photo-1584438784894-089d6a62b8fa?w=400&auto=format&fit=crop&q=80";
-}
 
 export const MyListingsPage: React.FC = () => {
   const { t } = useTranslation();
@@ -368,7 +363,9 @@ export const MyListingsPage: React.FC = () => {
     >
       <div className="flex min-w-0 gap-3">
         <Image
-          src={getPhotoUrl(listing.coverImageUrl || listing.photos?.[0])}
+          src={resolveListingPhotoUrl(
+            listing.coverImageUrl || listing.photos?.[0],
+          )}
           alt=""
           sizes="64px"
           className="h-16 w-16 shrink-0 rounded-control border border-border-base object-cover"
@@ -534,7 +531,7 @@ export const MyListingsPage: React.FC = () => {
                   cell: (listing) => (
                     <div className="flex items-center gap-3 min-w-0">
                       <Image
-                        src={getPhotoUrl(
+                        src={resolveListingPhotoUrl(
                           listing.coverImageUrl || listing.photos?.[0],
                         )}
                         alt=""

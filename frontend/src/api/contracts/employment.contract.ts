@@ -138,8 +138,11 @@ export interface SaveEmploymentPublicationDraftInput {
 export interface EmploymentServiceContract {
   getCatalog(marketCode: string): Promise<EmploymentCatalog>;
   searchJobs(query: EmploymentSearchQuery): Promise<EmploymentSearchResult>;
-  getJob(idOrSlug: string): Promise<JobPostingDetail>;
-  getSimilarJobs(idOrSlug: string): Promise<JobPostingCard[]>;
+  getJob(idOrSlug: string, marketCode?: string): Promise<JobPostingDetail>;
+  getSimilarJobs(
+    idOrSlug: string,
+    marketCode?: string,
+  ): Promise<JobPostingCard[]>;
   getOrCreateDraft(
     ownerUserId: string,
     marketCode: string,
@@ -159,14 +162,20 @@ export interface EmploymentServiceContract {
     complianceFlags: ProhibitedLanguageFlag[];
   }>;
   flagProhibitedLanguage(content: string): Promise<ProhibitedLanguageFlag[]>;
-  getCandidateWorkspace(): Promise<CandidateWorkspace>;
+  getCandidateWorkspace(marketCode: string): Promise<CandidateWorkspace>;
   saveCandidateProfile(profile: CandidateProfile): Promise<CandidateProfile>;
   apply(
     jobId: string,
     input: EmploymentApplicationDraft,
   ): Promise<EmploymentApplication>;
   withdrawApplication(applicationId: string): Promise<EmploymentApplication>;
-  toggleSavedJob(jobId: string): Promise<{ saved: boolean }>;
+  getSavedJobIds(accountId: string, marketCode: string): Promise<string[]>;
+  setSavedJob(
+    accountId: string,
+    jobId: string,
+    marketCode: string,
+    isFavorite: boolean,
+  ): Promise<boolean>;
   reportJob(
     jobId: string,
     input: Pick<EmploymentJobReport, "reason" | "details">,

@@ -1,15 +1,15 @@
+import { useEffect, useState, type ReactNode } from "react";
 import { Image, Pressable, StyleSheet, View } from "react-native";
 import type { ListingCardView } from "@shongre/contracts";
 import {
   nativeAspect,
-  nativeBorders,
   nativeColors,
   nativeOpacity,
   nativeRadius,
   nativeSizing,
   nativeSpacing,
 } from "@shongre/design-tokens/native";
-import { formatMoney, formatRelativeTime } from "@shongre/shared";
+import { formatRelativeTime } from "@shongre/shared";
 import {
   Badge,
   Card,
@@ -17,228 +17,218 @@ import {
   ProBadge,
   SemanticIcon,
   Text,
-  VerifiedIcon,
 } from "@shongre/ui/native";
 import {
-  getListingCardCharacteristics,
+  getListingCardPriceText,
   getListingPromotionBadges,
+  getListingSellerRatingPresentation,
   listingAccessibilityLabel,
 } from "./presentation";
+import { useListingPromotionRefresh } from "./use-listing-promotion-refresh";
 
 export interface ListingCardProps {
   listing: ListingCardView;
   onPress: () => void;
   locale?: string;
   variant?: "grid" | "list" | "compact";
+  favoriteAction?: ReactNode;
+  labels: {
+    boosted: string;
+    free: string;
+    onRequest: string;
+    rating: (rating: string, count: string) => string;
+    imageUnavailable: string;
+  };
   identityLabels: {
     pro: string;
     proAccessibility: string;
-    verified: string;
   };
 }
+
 export function ListingCard({
   listing,
   onPress,
-  locale,
+  locale = "fr-FR",
   variant = "grid",
+  favoriteAction,
+  labels,
   identityLabels,
 }: ListingCardProps) {
-  const price = listing.isFreeDonation
-    ? "Gratuit"
-    : listing.priceLabel || formatMoney(listing.price, locale);
-  const originalPrice = listing.originalPrice
-    ? formatMoney(listing.originalPrice, locale)
-    : undefined;
-  const badges = getListingPromotionBadges(listing);
-  const characteristics = getListingCardCharacteristics(listing);
+  useListingPromotionRefresh(listing.promotion);
+  const [imageFailed, setImageFailed] = useState(false);
+  useEffect(() => setImageFailed(false), [listing.imageUrl]);
+
+  const price = getListingCardPriceText(listing, locale, labels);
+  const badges = getListingPromotionBadges(listing, labels.boosted);
   const horizontal = variant === "list";
+  const categoryLine = [listing.categoryLabel, listing.brandLabel]
+    .map((part) => part?.trim())
+    .filter(Boolean)
+    .join(" · ");
+  const published = listing.publishedAt
+    ? formatRelativeTime(listing.publishedAt, {
+        locale,
+        style: "short",
+      })
+    : undefined;
+  const metaLine = [listing.city.trim(), published?.trim()]
+    .filter(Boolean)
+    .join(" · ");
+  const rating = getListingSellerRatingPresentation(
+    listing.seller?.rating,
+    listing.seller?.reviewCount,
+    locale,
+  );
+  const ratingLabel = rating
+    ? labels.rating(rating.rating, rating.reviewCount)
+    : undefined;
+  const isProfessional =
+    listing.publisherType === "professional" ||
+    listing.seller?.sellerType === "pro";
+
   return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={listingAccessibilityLabel(listing, price)}
-      onPress={onPress}
-      style={({ pressed }) => [pressed && styles.pressed]}
-    >
-      <Card
-        padding="none"
-        style={[styles.card, horizontal && styles.horizontal]}
+    <Card padding="none" style={styles.card}>
+      <Pressable
+        accessibilityRole="link"
+        accessibilityLabel={listingAccessibilityLabel(
+          listing,
+          price,
+          ratingLabel,
+          badges[0]?.label,
+          isProfessional ? identityLabels.proAccessibility : undefined,
+          published,
+        )}
+        onPress={onPress}
+        style={({ pressed }) => [
+          styles.link,
+          horizontal && styles.horizontal,
+          pressed && styles.pressed,
+        ]}
       >
         <View style={[styles.media, horizontal && styles.horizontalMedia]}>
-          {listing.imageUrl ? (
+          {listing.imageUrl && !imageFailed ? (
             <Image
               source={{ uri: listing.imageUrl }}
               style={styles.image}
+              resizeMode="cover"
               accessible={false}
               accessibilityIgnoresInvertColors
+              onError={() => setImageFailed(true)}
             />
           ) : (
-            <View style={[styles.image, styles.fallback]}>
-              <Text weight="bold" tone="primary">
-                Shongre
-              </Text>
-            </View>
-          )}
-          {(listing.photoCount ?? 0) > 1 ? (
             <View
-              style={styles.photoCount}
-              accessibilityLabel={`${listing.photoCount} photos`}
+              style={[styles.image, styles.fallback]}
+              accessible
+              accessibilityRole="image"
+              accessibilityLabel={labels.imageUnavailable}
             >
               <SemanticIcon
-                name="camera"
-                size="xs"
-                color={nativeColors.action.onPrimary}
+                name="image-off"
+                size="lg"
+                color={nativeColors.text.muted}
               />
-              <Text size="caption" style={styles.inverseText}>
-                {listing.photoCount}
-              </Text>
             </View>
-          ) : null}
+          )}
         </View>
+
         <View style={styles.body}>
-          {badges.length ? (
-            <View style={styles.badges}>
-              {badges.map((badge) => (
-                <Badge
-                  key={badge.tone}
-                  variant={badge.tone === "featured" ? "featured" : "urgent"}
-                >
-                  {badge.label}
-                </Badge>
-              ))}
-            </View>
-          ) : null}
-          {listing.categoryLabel || listing.seller ? (
-            <View style={styles.meta}>
-              <View style={[styles.identity, styles.flex]}>
-                <Text
-                  size="caption"
-                  tone="muted"
-                  numberOfLines={1}
-                  style={styles.flex}
-                >
-                  {[
-                    listing.categoryLabel,
-                    listing.seller?.sellerType === "pro"
-                      ? undefined
-                      : listing.seller?.name,
-                  ]
-                    .filter(Boolean)
-                    .join(" · ")}
+          <Text size="caption" tone="muted" numberOfLines={1}>
+            {categoryLine}
+          </Text>
+
+          <View style={styles.priceRow}>
+            <View style={styles.priceText}>
+              {price ? (
+                <Text size="body-lg" weight="bold" numberOfLines={1}>
+                  {price}
                 </Text>
-                {listing.seller?.sellerType === "pro" ? (
+              ) : null}
+            </View>
+            {isProfessional || rating ? (
+              <View style={styles.sellerSummary}>
+                {isProfessional ? (
                   <ProBadge
                     label={identityLabels.pro}
                     accessibilityLabel={identityLabels.proAccessibility}
                     size="xs"
+                    tone="primary"
                   />
-                ) : listing.seller?.isIdentityVerified ||
-                  listing.seller?.isBusinessVerified ? (
-                  <VerifiedIcon size="xs" label={identityLabels.verified} />
+                ) : null}
+                {rating ? (
+                  <View
+                    style={styles.rating}
+                    accessible
+                    accessibilityRole="image"
+                    accessibilityLabel={ratingLabel}
+                  >
+                    <SemanticIcon
+                      name="star"
+                      size="xs"
+                      color={nativeColors.action.primary}
+                      filled
+                    />
+                    <Text size="caption" weight="semibold" numberOfLines={1}>
+                      {rating.rating}
+                    </Text>
+                    <Text
+                      size="caption"
+                      tone="muted"
+                      numberOfLines={1}
+                      style={styles.ratingCount}
+                    >
+                      ({rating.visualReviewCount})
+                    </Text>
+                  </View>
                 ) : null}
               </View>
-              {(listing.seller?.rating ?? 0) > 0 ? (
-                <View
-                  style={styles.rating}
-                  accessibilityLabel={`Note ${listing.seller?.rating?.toFixed(1)} sur 5, ${listing.seller?.reviewCount ?? 0} avis`}
-                >
-                  <SemanticIcon
-                    name="star"
-                    size="xs"
-                    color={nativeColors.status.warning}
-                  />
-                  <Text size="caption" weight="semibold">
-                    {listing.seller?.rating?.toFixed(1)}
-                  </Text>
-                </View>
-              ) : null}
-            </View>
-          ) : null}
-          <Heading size="heading-xs" numberOfLines={2}>
-            {listing.title}
-          </Heading>
-          <View style={styles.price}>
-            <Text size="body-lg" weight="bold">
-              {price}
-            </Text>
-            {originalPrice ? (
-              <Text size="caption" tone="muted" style={styles.strike}>
-                {originalPrice}
-              </Text>
             ) : null}
           </View>
-          {listing.conditionLabel ? (
-            <Text size="caption" tone="muted">
-              {listing.conditionLabel}
-            </Text>
-          ) : null}
-          {characteristics.length ? (
-            <View
-              style={styles.characteristics}
-              accessibilityLabel={`Caractéristiques principales : ${characteristics
-                .map((characteristic) => characteristic.label)
-                .join(", ")}`}
-            >
-              {characteristics.map((characteristic) => (
-                <View
-                  key={`${characteristic.icon}:${characteristic.label}`}
-                  style={styles.characteristic}
-                >
-                  <SemanticIcon
-                    name={characteristic.icon}
-                    size="xs"
-                    color={nativeColors.text.muted}
-                  />
-                  <Text size="caption" tone="secondary" numberOfLines={1}>
-                    {characteristic.label}
-                  </Text>
-                </View>
-              ))}
-            </View>
-          ) : null}
-          <View style={styles.footer}>
-            <View style={[styles.inline, styles.flex]}>
-              <SemanticIcon
-                name="map-pin"
-                size="xs"
-                color={nativeColors.text.muted}
-              />
-              <Text
-                size="caption"
-                tone="muted"
-                numberOfLines={1}
-                style={styles.flex}
-              >
-                {listing.city}
-              </Text>
-            </View>
-            <View style={styles.inline}>
-              {listing.deliveryAvailable ? (
-                <SemanticIcon
-                  name="truck"
-                  size="xs"
-                  color={nativeColors.text.muted}
-                />
-              ) : null}
-              <Text size="caption" tone="muted">
-                {formatRelativeTime(listing.publishedAt, {
-                  locale,
-                  style: "short",
-                })}
-              </Text>
-            </View>
-          </View>
+
+          <Heading size="heading-xs" numberOfLines={1}>
+            {listing.title}
+          </Heading>
+          <Text size="caption" tone="muted" numberOfLines={1}>
+            {metaLine}
+          </Text>
         </View>
-      </Card>
-    </Pressable>
+      </Pressable>
+
+      {badges.length ? (
+        <View pointerEvents="none" style={styles.boostedBadge}>
+          <Badge
+            variant="primary"
+            size="sm"
+            icon={
+              <SemanticIcon
+                name="zap"
+                size="xs"
+                color={nativeColors.action.primary}
+              />
+            }
+          >
+            {badges[0]?.label ?? labels.boosted}
+          </Badge>
+        </View>
+      ) : null}
+      {favoriteAction ? (
+        <View style={styles.favoriteAction}>{favoriteAction}</View>
+      ) : null}
+    </Card>
   );
 }
+
 const styles = StyleSheet.create({
+  card: {
+    borderRadius: nativeRadius.listingCard,
+    borderColor: nativeColors.border.subtle,
+    position: "relative",
+  },
+  link: { flexDirection: "column" },
   pressed: { opacity: nativeOpacity.pressed },
-  card: { borderRadius: nativeRadius.listingCard },
   horizontal: { flexDirection: "row" },
   media: {
     width: nativeSizing.full,
-    aspectRatio: nativeAspect.media,
+    aspectRatio: nativeAspect.listingCard,
     backgroundColor: nativeColors.surface.muted,
     position: "relative",
   },
@@ -248,68 +238,42 @@ const styles = StyleSheet.create({
   },
   image: { width: nativeSizing.full, height: nativeSizing.full },
   fallback: { alignItems: "center", justifyContent: "center" },
-  photoCount: {
-    position: "absolute",
-    left: nativeSpacing.sm,
-    bottom: nativeSpacing.sm,
-    flexDirection: "row",
-    alignItems: "center",
+  body: {
+    flex: 1,
+    padding: nativeSpacing.md,
     gap: nativeSpacing.xs,
-    borderRadius: nativeRadius.control,
-    paddingHorizontal: nativeSpacing.sm,
-    paddingVertical: nativeSpacing.xs,
-    backgroundColor: nativeColors.interaction.overlay,
   },
-  inverseText: { color: nativeColors.text.inverse },
-  body: { flex: 1, padding: nativeSpacing.md, gap: nativeSpacing.xs },
-  badges: { flexDirection: "row", flexWrap: "wrap", gap: nativeSpacing.xs },
-  meta: { flexDirection: "row", alignItems: "center", gap: nativeSpacing.sm },
-  identity: {
+  priceRow: {
+    minHeight: nativeSizing.controlSm,
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
+    gap: nativeSpacing.sm,
+  },
+  priceText: { minWidth: nativeSpacing.none, flex: 1 },
+  sellerSummary: {
+    flexDirection: "row",
+    alignItems: "center",
+    flexShrink: 1,
+    minWidth: nativeSpacing.none,
     gap: nativeSpacing.xs,
   },
   rating: {
     flexDirection: "row",
     alignItems: "center",
-    gap: nativeSpacing.xs,
-    borderWidth: nativeBorders.hairline,
-    borderColor: nativeColors.border.default,
-    borderRadius: nativeRadius.control,
-    paddingHorizontal: nativeSpacing.sm,
-    paddingVertical: nativeSpacing.xs,
+    flexShrink: 1,
+    minWidth: nativeSpacing.none,
+    gap: nativeSpacing.xs / 2,
   },
-  price: {
-    flexDirection: "row",
-    alignItems: "baseline",
-    flexWrap: "wrap",
-    gap: nativeSpacing.sm,
+  ratingCount: { flexShrink: 1, minWidth: nativeSpacing.none },
+  boostedBadge: {
+    position: "absolute",
+    left: nativeSpacing.md,
+    top: nativeSpacing.md,
   },
-  strike: { textDecorationLine: "line-through" },
-  characteristics: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: nativeSpacing.xs,
+  favoriteAction: {
+    position: "absolute",
+    right: nativeSpacing.md,
+    top: nativeSpacing.md,
   },
-  characteristic: {
-    maxWidth: nativeSizing.full,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: nativeSpacing.xs,
-    borderRadius: nativeRadius.control,
-    paddingHorizontal: nativeSpacing.sm,
-    paddingVertical: nativeSpacing.xs,
-    backgroundColor: nativeColors.surface.muted,
-  },
-  footer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: nativeSpacing.sm,
-    borderTopWidth: nativeBorders.hairline,
-    borderTopColor: nativeColors.border.subtle,
-    paddingTop: nativeSpacing.sm,
-  },
-  inline: { flexDirection: "row", alignItems: "center", gap: nativeSpacing.xs },
-  flex: { flex: 1 },
 });

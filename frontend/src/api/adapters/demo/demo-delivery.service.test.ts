@@ -13,6 +13,9 @@ vi.mock("./demo-feature-flag.service", () => ({
       }),
   },
 }));
+vi.mock("./demo-authorization", () => ({
+  requireDemoCapability: vi.fn(),
+}));
 import { DemoDeliveryService } from "./demo-delivery.service";
 import { DemoSearchService } from "./demo-search.service";
 
@@ -147,6 +150,42 @@ describe("delivery demo service", () => {
     );
     expect(transitioned).not.toHaveProperty("applications");
     expect(transitioned).not.toHaveProperty("sourceOrderId");
+  });
+
+  it("partitions request favorites by account and exact market", async () => {
+    const service = new DemoDeliveryService();
+    const request = (await service.search({ marketCode: "FR", limit: 20 }))
+      .items[0];
+    expect(request).toBeDefined();
+
+    expect(
+      await service.setFavoriteRequest(
+        requester.userId,
+        request!.id,
+        "FR",
+        true,
+      ),
+    ).toBe(true);
+    expect(await service.getFavoriteRequestIds(requester.userId, "FR")).toEqual(
+      [request!.id],
+    );
+    expect(await service.getFavoriteRequestIds(outsider.userId, "FR")).toEqual(
+      [],
+    );
+    expect(await service.getFavoriteRequestIds(requester.userId, "BE")).toEqual(
+      [],
+    );
+    await expect(
+      service.setFavoriteRequest(requester.userId, request!.id, "BE", true),
+    ).rejects.toThrow("DELIVERY_REQUEST_NOT_OPEN");
+    expect(
+      await service.setFavoriteRequest(
+        requester.userId,
+        request!.id,
+        "FR",
+        false,
+      ),
+    ).toBe(false);
   });
 
   it("isolates instances and derives request identifiers from the account and idempotency key", async () => {

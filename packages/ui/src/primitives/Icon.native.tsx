@@ -13,6 +13,7 @@ import {
   Gauge,
   Heart,
   Home,
+  ImageOff,
   Laptop,
   Layers3,
   LayoutGrid,
@@ -20,6 +21,7 @@ import {
   Menu,
   MessageCircle,
   Plus,
+  RefreshCw,
   Ruler,
   Search,
   Settings,
@@ -30,6 +32,7 @@ import {
   Truck,
   User,
   X,
+  Zap,
 } from "lucide-react-native";
 import type { ComponentType } from "react";
 import { Platform, type ColorValue } from "react-native";
@@ -42,6 +45,7 @@ export interface SemanticIconProps {
   size?: "xs" | "sm" | "md" | "lg" | "nav" | "xl";
   label?: string;
   color?: ColorValue;
+  filled?: boolean;
 }
 const icons: Record<
   IconName,
@@ -49,6 +53,7 @@ const icons: Record<
     size?: number;
     color?: ColorValue;
     strokeWidth?: number;
+    fill?: ColorValue;
     accessibilityLabel?: string;
     accessible?: boolean;
   }>
@@ -67,6 +72,7 @@ const icons: Record<
   gauge: Gauge,
   heart: Heart,
   home: Home,
+  "image-off": ImageOff,
   laptop: Laptop,
   layers: Layers3,
   "layout-grid": LayoutGrid,
@@ -74,6 +80,7 @@ const icons: Record<
   menu: Menu,
   message: MessageCircle,
   plus: Plus,
+  refresh: RefreshCw,
   ruler: Ruler,
   search: Search,
   settings: Settings,
@@ -84,6 +91,7 @@ const icons: Record<
   truck: Truck,
   user: User,
   x: X,
+  zap: Zap,
 };
 const sizes = {
   xs: nativeSizing.iconXs,
@@ -98,6 +106,7 @@ export function SemanticIcon({
   size = "md",
   label,
   color,
+  filled = false,
 }: SemanticIconProps) {
   const Glyph = icons[name];
   const accessibilityProps =
@@ -108,6 +117,7 @@ export function SemanticIcon({
     <Glyph
       size={sizes[size]}
       color={color}
+      fill={filled ? color : undefined}
       strokeWidth={iconStrokeWidths.regular}
       {...accessibilityProps}
     />

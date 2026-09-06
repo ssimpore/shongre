@@ -5,10 +5,21 @@ import {
   type PublicationInput,
   type AuthUser,
 } from "@shongre/contracts";
+import { getTaxonomyV4CardRootLabel } from "@shongre/contracts/taxonomy-v4-card";
+import type { operations } from "@shongre/contracts/openapi";
 import { apiRequest } from "@/api/http-client";
+import { minorToMajorAmount } from "@shongre/shared/money";
 import { mobileEnvironment } from "@/config/environment";
 import { requireMobileAuthorization } from "@/features/auth/authorization";
 import { mapBackendListing, type BackendListing } from "./listing.mapper";
+import { createDemoListingPromotion } from "./listing.demo-promotion";
+
+type BackendListingCollection =
+  operations["getListings"]["responses"][200]["content"]["application/json"];
+type BackendListingDetail =
+  operations["getListingsById"]["responses"][200]["content"]["application/json"];
+type BackendListingSearchResult =
+  operations["postListingsSearch"]["responses"][200]["content"]["application/json"];
 
 const demoListings: ListingCardView[] = [
   {
@@ -19,6 +30,7 @@ const demoListings: ListingCardView[] = [
       "https://images.unsplash.com/photo-1571068316344-75bc76f77890?auto=format&fit=crop&w=900&q=80",
     city: "Paris",
     marketCode: "FR",
+    categoryLabel: "Sports",
     conditionLabel: "Très bon état",
     characteristics: ["Cadre carbone", "Shimano 105"],
     characteristicIcons: ["layers", "tag"],
@@ -33,6 +45,13 @@ const demoListings: ListingCardView[] = [
     },
     isUrgent: true,
     isFeatured: false,
+    promotion: createDemoListingPromotion(
+      "list_1",
+      "FR",
+      "urgent_badge",
+      "2026-08-18T09:30:00.000Z",
+      "2027-08-18T09:30:00.000Z",
+    ),
   },
   {
     id: "list_2",
@@ -42,6 +61,7 @@ const demoListings: ListingCardView[] = [
       "https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?auto=format&fit=crop&w=900&q=80",
     city: "Bordeaux",
     marketCode: "FR",
+    categoryLabel: "Maison",
     conditionLabel: "Bon état",
     characteristics: ["Chêne massif", "Fabrication artisanale"],
     characteristicIcons: ["layers", "tag"],
@@ -56,6 +76,13 @@ const demoListings: ListingCardView[] = [
     },
     isUrgent: false,
     isFeatured: true,
+    promotion: createDemoListingPromotion(
+      "list_2",
+      "FR",
+      "featured",
+      "2026-08-17T15:10:00.000Z",
+      "2027-08-17T15:10:00.000Z",
+    ),
   },
   {
     id: "list_3",
@@ -65,6 +92,7 @@ const demoListings: ListingCardView[] = [
       "https://images.unsplash.com/photo-1606980707986-e5e1e62c0f28?auto=format&fit=crop&w=900&q=80",
     city: "Lille",
     marketCode: "FR",
+    categoryLabel: "Électronique",
     conditionLabel: "Comme neuf",
     characteristics: ["Hybride", "Objectif inclus"],
     characteristicIcons: ["tag", "tag"],
@@ -80,6 +108,7 @@ const demoListings: ListingCardView[] = [
       "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=900&q=80",
     city: "",
     marketCode: "FR",
+    categoryLabel: "Électronique",
     conditionLabel: "Version numérique",
     characteristics: ["Produit numérique", "Fichier privé"],
     characteristicIcons: ["laptop", "file"],
@@ -105,12 +134,21 @@ const demoListings: ListingCardView[] = [
       "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&w=900&q=80",
     city: "Nantes",
     marketCode: "FR",
+    categoryLabel: "Véhicules",
+    brandLabel: "Peugeot",
     conditionLabel: "Occasion",
     characteristics: ["Auto", "Hybride", "32 000 km"],
     characteristicIcons: ["tag", "fuel", "gauge"],
     publishedAt: "2026-08-28T09:00:00.000Z",
     isUrgent: false,
     isFeatured: true,
+    promotion: createDemoListingPromotion(
+      "auto_fr_1",
+      "FR",
+      "featured",
+      "2026-08-28T09:00:00.000Z",
+      "2027-08-28T09:00:00.000Z",
+    ),
   },
   {
     id: "immo_fr_1",
@@ -120,6 +158,7 @@ const demoListings: ListingCardView[] = [
       "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=900&q=80",
     city: "Lyon",
     marketCode: "FR",
+    categoryLabel: "Immobilier",
     conditionLabel: "Immobilier",
     characteristics: ["Immo", "68 m²", "3 pièces"],
     characteristicIcons: ["home", "ruler", "layout-grid"],
@@ -133,12 +172,20 @@ const demoListings: ListingCardView[] = [
     price: { amountMinor: 4800000, currency: "EUR" },
     city: "Paris",
     marketCode: "FR",
+    categoryLabel: "Emploi",
     conditionLabel: "Emploi",
     characteristics: ["Emploi", "CDI", "Télétravail hybride"],
     characteristicIcons: ["briefcase", "briefcase", "laptop"],
     publishedAt: "2026-08-26T07:30:00.000Z",
     isUrgent: true,
     isFeatured: false,
+    promotion: createDemoListingPromotion(
+      "emploi_fr_1",
+      "FR",
+      "urgent_badge",
+      "2026-08-26T07:30:00.000Z",
+      "2027-08-26T07:30:00.000Z",
+    ),
   },
   {
     id: "education_fr_1",
@@ -146,6 +193,7 @@ const demoListings: ListingCardView[] = [
     price: { amountMinor: 149000, currency: "EUR" },
     city: "À distance",
     marketCode: "FR",
+    categoryLabel: "Éducation",
     conditionLabel: "Formation",
     characteristics: ["Education", "Certification", "À distance"],
     characteristicIcons: ["book-open", "tag", "laptop"],
@@ -159,12 +207,20 @@ const demoListings: ListingCardView[] = [
     price: { amountMinor: 78000, currency: "EUR" },
     city: "Bruxelles",
     marketCode: "BE",
+    categoryLabel: "Sports",
     conditionLabel: "Très bon état",
     characteristics: ["Cadre aluminium", "Éclairage inclus"],
     characteristicIcons: ["layers", "tag"],
     publishedAt: "2026-08-19T08:15:00.000Z",
     isUrgent: false,
     isFeatured: true,
+    promotion: createDemoListingPromotion(
+      "list_be_1",
+      "BE",
+      "featured",
+      "2026-08-19T08:15:00.000Z",
+      "2027-08-19T08:15:00.000Z",
+    ),
   },
   {
     id: "list_ch_1",
@@ -172,12 +228,20 @@ const demoListings: ListingCardView[] = [
     price: { amountMinor: 64000, currency: "CHF" },
     city: "Genève",
     marketCode: "CH",
+    categoryLabel: "Électronique",
     conditionLabel: "Comme neuf",
     characteristics: ["Capteur 1 pouce", "Garantie restante"],
     characteristicIcons: ["gauge", "calendar"],
     publishedAt: "2026-08-20T10:30:00.000Z",
     isUrgent: true,
     isFeatured: false,
+    promotion: createDemoListingPromotion(
+      "list_ch_1",
+      "CH",
+      "urgent_badge",
+      "2026-08-20T10:30:00.000Z",
+      "2027-08-20T10:30:00.000Z",
+    ),
   },
 ];
 
@@ -255,12 +319,17 @@ export class DemoListingsService implements ListingsService {
       id: "demo-new-listing",
       title: draft.title,
       price: { amountMinor: draft.amountMinor, currency: draft.currency },
+      priceKind: "amount",
       imageUrl: draft.images[0],
       city: draft.city,
       marketCode: draft.marketCode,
+      categoryLabel:
+        getTaxonomyV4CardRootLabel(
+          draft.categoryId,
+          market?.defaultLocale || "fr-FR",
+        ) || draft.categoryId,
       conditionLabel: draft.condition,
       characteristics: [],
-      publishedAt: "2026-08-21T10:00:00.000Z",
       fulfillmentTypes: draft.digitalFulfillment
         ? draft.digitalFulfillment.fulfillmentTypes
         : ["PHYSICAL"],
@@ -279,7 +348,7 @@ class HttpListingsService implements ListingsService {
     scope: MobileSearchScope = "marketplace",
   ): Promise<ListingCardView[]> {
     const response = query
-      ? await apiRequest<{ items: BackendListing[] }>(
+      ? await apiRequest<BackendListingSearchResult>(
           "/listings/search",
           {
             method: "POST",
@@ -287,11 +356,7 @@ class HttpListingsService implements ListingsService {
           },
           marketCode,
         )
-      : await apiRequest<{ listings: BackendListing[] }>(
-          "/listings",
-          {},
-          marketCode,
-        );
+      : await apiRequest<BackendListingCollection>("/listings", {}, marketCode);
     const items = "items" in response ? response.items : response.listings;
     return items
       .map(mapBackendListing)
@@ -299,7 +364,7 @@ class HttpListingsService implements ListingsService {
   }
 
   async get(id: string, marketCode: string): Promise<ListingCardView | null> {
-    const item = await apiRequest<BackendListing | null>(
+    const item = await apiRequest<BackendListingDetail>(
       `/listings/${encodeURIComponent(id)}`,
       {},
       marketCode,
@@ -328,7 +393,7 @@ class HttpListingsService implements ListingsService {
           draft: {
             title: draft.title,
             description: draft.description,
-            price: draft.amountMinor / 100,
+            price: minorToMajorAmount(draft.amountMinor, draft.currency),
             categoryId: draft.categoryId,
             listingTypeId: draft.listingTypeId,
             intent: draft.listingIntent,

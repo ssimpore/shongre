@@ -47,6 +47,17 @@ export interface DeliveryRepository {
     requesterId: string,
   ): Promise<DeliveryRequestRecord>;
   getRequest(requestId: string): Promise<DeliveryRequestRecord | null>;
+  getFavoriteRequestIds(userId: string, marketCode: string): Promise<string[]>;
+  getPublicRequestsByIds(
+    requestIds: readonly string[],
+    marketCode: string,
+  ): Promise<DeliveryPublicRequest[]>;
+  setFavoriteRequest(
+    userId: string,
+    requestId: string,
+    marketCode: string,
+    isFavorite: boolean,
+  ): Promise<boolean>;
   listOwnRequests(
     requesterId: string,
     marketCode: string,
@@ -123,6 +134,7 @@ export class DemoDeliveryRepository implements DeliveryRepository {
   private readonly requests = new Map<string, DeliveryRequestRecord>();
   private readonly applications = new Map<string, DeliveryApplicationRecord>();
   private readonly notificationKeys = new Set<string>();
+  private readonly favoriteRequestIds = new Map<string, Set<string>>();
 
   private profileKey(userId: string, marketCode: string) {
     return `${userId}:${marketCode}`;
@@ -240,6 +252,56 @@ export class DemoDeliveryRepository implements DeliveryRepository {
   async getRequest(requestId: string) {
     const request = this.requests.get(requestId);
     return request ? structuredClone(request) : null;
+  }
+
+  async getFavoriteRequestIds(userId: string, marketCode: string) {
+    return Array.from(
+      this.favoriteRequestIds.get(this.profileKey(userId, marketCode)) ?? [],
+    );
+  }
+
+  async getPublicRequestsByIds(
+    requestIds: readonly string[],
+    marketCode: string,
+  ) {
+    return requestIds.flatMap((requestId) => {
+      const request = this.requests.get(requestId);
+      return request &&
+        request.marketCode === marketCode &&
+        request.status === "open" &&
+        Boolean(request.publishedAt) &&
+        request.expiresAt > DEMO_NOW
+        ? [structuredClone(toPublic(request))]
+        : [];
+    });
+  }
+
+  async setFavoriteRequest(
+    userId: string,
+    requestId: string,
+    marketCode: string,
+    isFavorite: boolean,
+  ) {
+    const scopeKey = this.profileKey(userId, marketCode);
+    const favorites =
+      this.favoriteRequestIds.get(scopeKey) ?? new Set<string>();
+    if (isFavorite) {
+      const request = this.requests.get(requestId);
+      if (
+        !request ||
+        request.marketCode !== marketCode ||
+        request.status !== "open" ||
+        !request.publishedAt ||
+        request.expiresAt <= DEMO_NOW
+      ) {
+        throw new Error("DELIVERY_REQUEST_NOT_OPEN");
+      }
+      favorites.add(requestId);
+    } else {
+      favorites.delete(requestId);
+    }
+    this.favoriteRequestIds.set(scopeKey, favorites);
+    return favorites.has(requestId);
   }
 
   async listOwnRequests(requesterId: string, marketCode: string) {
@@ -506,6 +568,11 @@ export class DemoDeliveryRepository implements DeliveryRepository {
         opportunityNotifications: false,
       });
     }
+    for (const favoriteKey of this.favoriteRequestIds.keys()) {
+      if (favoriteKey.startsWith(`${userId}:`)) {
+        this.favoriteRequestIds.delete(favoriteKey);
+      }
+    }
     for (const application of this.applications.values()) {
       if (application.courierUserId !== userId) continue;
       if (application.status === "submitted") application.status = "withdrawn";
@@ -722,6 +789,88 @@ export class PostgresDeliveryRepository implements DeliveryRepository {
       return data ? mapJoinedRequest(data) : null;
     } catch (error) {
       databaseFailure("delivery.getRequest", error);
+    }
+  }
+
+  async getFavoriteRequestIds(userId: string, marketCode: string) {
+    try {
+      const { data, error } = await this.client().rpc(
+        "list_favorite_delivery_request_ids",
+        {
+          p_user_id: userId,
+          p_market_code: marketCode,
+        },
+      );
+      if (error) databaseFailure("delivery.getFavoriteRequestIds", error);
+      return (data ?? []).map((row: { request_id: string }) =>
+        String(row.request_id),
+      );
+    } catch (error) {
+      databaseFailure("delivery.getFavoriteRequestIds", error);
+    }
+  }
+
+  async getPublicRequestsByIds(
+    requestIds: readonly string[],
+    marketCode: string,
+  ): Promise<DeliveryPublicRequest[]> {
+    if (requestIds.length === 0) return [];
+    try {
+      const { data, error } = await this.client()
+        .from("delivery_requests")
+        .select(
+          "*, profiles!delivery_requests_requester_id_fkey(name,is_verified)",
+        )
+        .in("id", [...new Set(requestIds)])
+        .eq("market_code", marketCode)
+        .eq("status", "open")
+        .not("published_at", "is", null)
+        .gt("expires_at", new Date().toISOString());
+      if (error) databaseFailure("delivery.getPublicRequestsByIds", error);
+      const byId = new Map<string, DeliveryPublicRequest>(
+        (data ?? []).map((row: unknown) => {
+          const request = toPublic(mapRowWithoutPrivate(row));
+          return [request.id, request] as const;
+        }),
+      );
+      return requestIds.flatMap((requestId) => {
+        const request = byId.get(requestId);
+        return request ? [request] : [];
+      });
+    } catch (error) {
+      databaseFailure("delivery.getPublicRequestsByIds", error);
+    }
+  }
+
+  async setFavoriteRequest(
+    userId: string,
+    requestId: string,
+    marketCode: string,
+    isFavorite: boolean,
+  ) {
+    try {
+      const { data, error } = await this.client().rpc(
+        "set_delivery_request_favorite",
+        {
+          p_user_id: userId,
+          p_request_id: requestId,
+          p_market_code: marketCode,
+          p_is_favorite: isFavorite,
+        },
+      );
+      if (error?.code === "P0002") {
+        throw new Error("DELIVERY_REQUEST_NOT_OPEN");
+      }
+      if (error) databaseFailure("delivery.setFavoriteRequest", error);
+      return Boolean(data);
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        error.message === "DELIVERY_REQUEST_NOT_OPEN"
+      ) {
+        throw error;
+      }
+      databaseFailure("delivery.setFavoriteRequest", error);
     }
   }
 

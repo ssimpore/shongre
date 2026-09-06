@@ -1,14 +1,21 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { EMPLOYMENT_DEMO_JOBS } from "@shongre/contracts/employment-demo";
 import { listingRepository } from "../../repositories/listing.repository";
 import { AUTO_DEMO_PRIVATE_VEHICLES } from "../../mocks/autoDemoData";
 import { DEMO_COURSE_OFFERS, DEMO_TUTORS } from "../../mocks/coursesDemoData";
 import { IMMO_DEMO_PROPERTIES } from "../../mocks/realEstateDemoData";
 import { demoVerticalDiscoveryStore } from "./demo-vertical-discovery.store";
-import { projectEmploymentJob } from "./vertical-discovery.projection";
+import {
+  projectAutoVehicle,
+  projectEmploymentJob,
+  projectRealEstateProperty,
+} from "./vertical-discovery.projection";
 import { formatListingPricePresentation } from "../listing/listing-price.presentation";
 
-afterEach(() => demoVerticalDiscoveryStore.reset());
+afterEach(() => {
+  vi.restoreAllMocks();
+  demoVerticalDiscoveryStore.reset();
+});
 
 describe("canonical vertical discovery projection", () => {
   it("projects every vertical into one listing inventory with canonical routes", () => {
@@ -28,6 +35,12 @@ describe("canonical vertical discovery projection", () => {
     ).toMatchObject({
       sellerType: "pro",
       publisherType: "professional",
+      sellerRating: AUTO_DEMO_PRIVATE_VEHICLES.find((vehicle) =>
+        vehicle.title.includes("Peugeot 3008 BlueHDi"),
+      )?.seller.rating,
+      sellerReviewCount: AUTO_DEMO_PRIVATE_VEHICLES.find((vehicle) =>
+        vehicle.title.includes("Peugeot 3008 BlueHDi"),
+      )?.seller.reviewCount,
       attributes: {
         canonicalPath: "/auto/vehicule/peugeot-3008-bluehdi-130-allure-2019",
         brand: "peugeot",
@@ -66,6 +79,15 @@ describe("canonical vertical discovery projection", () => {
       listings.find((listing) => listing.title.includes("Jean Macé")),
     ).toMatchObject({
       categorySlug: "immobilier",
+      sellerRating: IMMO_DEMO_PROPERTIES.find((property) =>
+        property.title.includes("Jean Macé"),
+      )?.seller.rating,
+      sellerReviewCount: IMMO_DEMO_PROPERTIES.find((property) =>
+        property.title.includes("Jean Macé"),
+      )?.seller.reviewCount,
+      sellerResponseTimeLabel: IMMO_DEMO_PROPERTIES.find((property) =>
+        property.title.includes("Jean Macé"),
+      )?.seller.responseTimeLabel,
       attributes: {
         canonicalPath: "/immo/bien/appartement-meuble-lyon-jean-mace",
         property_type: "apartment",
@@ -141,6 +163,135 @@ describe("canonical vertical discovery projection", () => {
         "fr-FR",
       ),
     ).toBe("Rémunération non communiquée");
+  });
+
+  it("formats zero-decimal market currencies from minor units", () => {
+    const vehicle = structuredClone(AUTO_DEMO_PRIVATE_VEHICLES[0]);
+    vehicle.price = { amountMinor: 12_500, currency: "XOF" };
+
+    expect(projectAutoVehicle(vehicle).price).toBe(12_500);
+    expect(
+      formatListingPricePresentation(
+        {
+          kind: "service_rate",
+          visibility: "public",
+          minimumAmountMinor: 12_500,
+          maximumAmountMinor: 12_500,
+          currency: "XOF",
+          period: "day",
+        },
+        "fr-SN",
+      )?.replace(/\s/gu, " "),
+    ).toContain("12 500 F CFA / jour");
+  });
+
+  it("localizes request prices and recurring periods", () => {
+    expect(
+      formatListingPricePresentation(
+        {
+          kind: "price",
+          visibility: "undisclosed",
+          currency: "EUR",
+          period: "total",
+        },
+        "nl-BE",
+      ),
+    ).toBe("Prijs op aanvraag");
+
+    expect(
+      formatListingPricePresentation(
+        {
+          kind: "service_rate",
+          visibility: "public",
+          minimumAmountMinor: 12_500,
+          maximumAmountMinor: 12_500,
+          currency: "EUR",
+          period: "month",
+        },
+        "de-CH",
+      ),
+    ).toContain("/ Monat");
+  });
+
+  it("keeps missing vertical media absent for the neutral card fallback", () => {
+    const vehicle = structuredClone(AUTO_DEMO_PRIVATE_VEHICLES[0]);
+    vehicle.mediaUrls = [];
+
+    expect(projectAutoVehicle(vehicle)).toMatchObject({
+      photos: [],
+      coverImageUrl: "",
+    });
+
+    const job = structuredClone(EMPLOYMENT_DEMO_JOBS[0]);
+    job.employer.logoUrl = undefined;
+
+    expect(projectEmploymentJob(job)).toMatchObject({
+      photos: [],
+      coverImageUrl: "",
+    });
+  });
+
+  it("carries only a scheduled promotion resolved for the listing market", () => {
+    vi.spyOn(Date, "now").mockReturnValue(
+      Date.parse("2026-09-06T12:00:00.000Z"),
+    );
+    const vehicle = structuredClone(AUTO_DEMO_PRIVATE_VEHICLES[0]);
+    const active = projectAutoVehicle(vehicle);
+
+    expect(active).toMatchObject({
+      isBoosted: true,
+      promotionState: "active",
+      promotionType: "sponsored_search",
+      promotionStartAt: "2026-08-12T08:00:00.000Z",
+      promotionEndAt: "2026-10-12T08:00:00.000Z",
+    });
+
+    vehicle.resolvedPromotion = vehicle.resolvedPromotion
+      ? { ...vehicle.resolvedPromotion, marketCode: "BE" }
+      : undefined;
+    expect(projectAutoVehicle(vehicle).promotionType).toBeUndefined();
+    expect(projectAutoVehicle(vehicle).isBoosted).toBeUndefined();
+
+    vehicle.resolvedPromotion = vehicle.resolvedPromotion
+      ? {
+          ...vehicle.resolvedPromotion,
+          marketCode: "FR",
+          endsAt: "2026-09-01T00:00:00.000Z",
+        }
+      : undefined;
+    expect(projectAutoVehicle(vehicle).promotionState).toBeUndefined();
+  });
+
+  it("requires the caller's exact market for multi-market projections", () => {
+    vi.spyOn(Date, "now").mockReturnValue(
+      Date.parse("2026-09-06T12:00:00.000Z"),
+    );
+    const vehicle = structuredClone(AUTO_DEMO_PRIVATE_VEHICLES[0]);
+    vehicle.marketCodes = ["FR", "BE"];
+    vehicle.resolvedPromotion = vehicle.resolvedPromotion
+      ? { ...vehicle.resolvedPromotion, marketCode: "BE" }
+      : undefined;
+
+    expect(() => projectAutoVehicle(vehicle)).toThrow(
+      "requires an explicit market",
+    );
+    expect(projectAutoVehicle(vehicle, "FR").promotionType).toBeUndefined();
+    expect(projectAutoVehicle(vehicle, "BE")).toMatchObject({
+      marketCode: "BE",
+      promotionType: "sponsored_search",
+      promotionSource: "subscription_credit",
+      promotionSourceId: "demo:auto:vehicle_3008_diesel:sponsored",
+    });
+
+    const property = structuredClone(IMMO_DEMO_PROPERTIES[0]);
+    property.marketCodes = ["FR", "CH"];
+    expect(() => projectRealEstateProperty(property)).toThrow(
+      "requires an explicit market",
+    );
+    expect(projectRealEstateProperty(property, "CH").marketCode).toBe("CH");
+    expect(() => projectRealEstateProperty(property, "BE")).toThrow(
+      "is not published in market BE",
+    );
   });
 
   it("normalizes inactive Course and Immo states out of public discovery", () => {

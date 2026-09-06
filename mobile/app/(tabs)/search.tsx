@@ -114,17 +114,28 @@ export default function SearchScreen() {
         .list(activeMarket.code, query, scope)
         .then((results) => {
           if (currentRequest === requestId.current) {
+            const hasPriceFilter = Boolean(minPrice || maxPrice);
             const minimum = minPrice
-              ? Number(minPrice.replace(",", ".")) * 100
+              ? majorToMinorAmount(
+                  Number(minPrice.replace(",", ".")),
+                  activeMarket.currency,
+                )
               : 0;
             const maximum = maxPrice
-              ? Number(maxPrice.replace(",", ".")) * 100
+              ? majorToMinorAmount(
+                  Number(maxPrice.replace(",", ".")),
+                  activeMarket.currency,
+                )
               : Number.POSITIVE_INFINITY;
             setItems(
               results.filter(
                 (item) =>
-                  item.price.amountMinor >= minimum &&
-                  item.price.amountMinor <= maximum,
+                  !hasPriceFilter ||
+                  Boolean(
+                    item.price &&
+                    item.price.amountMinor >= minimum &&
+                    item.price.amountMinor <= maximum,
+                  ),
               ),
             );
             setError("");
@@ -150,7 +161,15 @@ export default function SearchScreen() {
       requestId.current += 1;
       clearTimeout(timer);
     };
-  }, [activeMarket.code, maxPrice, minPrice, query, requestKey, scope]);
+  }, [
+    activeMarket.code,
+    activeMarket.currency,
+    maxPrice,
+    minPrice,
+    query,
+    requestKey,
+    scope,
+  ]);
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>

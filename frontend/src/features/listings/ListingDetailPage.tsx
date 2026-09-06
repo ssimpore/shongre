@@ -77,12 +77,13 @@ import { ListingSafetyNotice } from "./components/ListingSafetyNotice";
 import { resolveListingIntentPresentation } from "../../domains/listing/listing-intent.presentation";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { digitalMessagesFr } from "../../i18n/digital.catalogue.fr";
-import {
-  getListingCategoryLabel,
-  getListingSubCategoryLabel,
-} from "../../domains/taxonomy/taxonomy.display";
+import { getListingCategoryLabel } from "../../domains/taxonomy/listing-category.display";
+import { projectGenericListingCardView } from "../../domains/listing/listing-card.generic-presentation";
+import { getListingSubCategoryLabel } from "../../domains/taxonomy/taxonomy.display";
 import type { WatchSubscription } from "@shongre/contracts/watch-subscriptions";
 import { majorToMinorAmount } from "@shongre/shared/money";
+import { getListingPromotionBadges } from "@shongre/features";
+import { useListingPromotionRefresh } from "@shongre/features/listings/web";
 import { publicListingUrl } from "../../domains/market/market-routing";
 import { usePublicRouteData } from "../../app/providers/PublicRouteDataProvider";
 import {
@@ -143,7 +144,13 @@ const PurchasePriceDisclosure: React.FC<{ listing: Listing }> = ({
 };
 
 export const ListingDetailPage: React.FC = () => {
-  const { activeMarket, marketContext, formatPrice } = useMarketLocation();
+  const {
+    activeMarket,
+    marketContext,
+    currentLocale,
+    convertMoney,
+    formatPrice,
+  } = useMarketLocation();
   const countryCode = marketContext?.countryCode ?? activeMarket.code;
   const { t } = useTranslation(digitalMessagesFr);
   const { id } = useParams<{ id: string }>();
@@ -152,7 +159,12 @@ export const ListingDetailPage: React.FC = () => {
   const { currentUser } = useAuth();
   const { isReadOnly: isReadOnlyStaff } = useStaffMarketplaceAccess();
   const toast = useToast();
-  const { isFavorite: isListingFavorite, toggleFavorite } = useFavorites();
+  const {
+    favoriteLoadState,
+    isFavorite: isListingFavorite,
+    refreshFavorites,
+    toggleFavorite,
+  } = useFavorites();
   const publicRouteData = usePublicRouteData();
   const initialData =
     publicRouteData?.kind === "listing" && publicRouteData.listing.id === id
@@ -192,6 +204,27 @@ export const ListingDetailPage: React.FC = () => {
   const [watchPending, setWatchPending] = useState<
     "listing_price" | "seller" | null
   >(null);
+  const listingCardProjection = useMemo(
+    () =>
+      listing
+        ? projectGenericListingCardView(
+            listing,
+            currentLocale,
+            activeMarket.code,
+            undefined,
+            convertMoney,
+          )
+        : undefined,
+    [activeMarket.code, convertMoney, currentLocale, listing],
+  );
+  useListingPromotionRefresh(listingCardProjection?.promotion);
+  const activePromotionVisible = Boolean(
+    listingCardProjection &&
+    getListingPromotionBadges(
+      listingCardProjection,
+      t("ui.listingCard.boosted"),
+    ).length > 0,
+  );
 
   // 1. Data Fetching
   useEffect(() => {
@@ -831,7 +864,26 @@ export const ListingDetailPage: React.FC = () => {
             overlayActions={
               <FavoriteButton
                 isFavorite={isListingFavorite(listing.id)}
+                interactionState={favoriteLoadState}
+                label={`${
+                  favoriteLoadState === "loading"
+                    ? t("ui.listingCard.favorisChargement")
+                    : favoriteLoadState === "error"
+                      ? t("ui.listingCard.favorisReessayer")
+                      : t(
+                          isListingFavorite(listing.id)
+                            ? "ui.listingCard.retirerDesFavoris"
+                            : "ui.listingCard.ajouterAuxFavoris",
+                        )
+                } : ${listing.title}`}
                 onToggle={handleFavoriteToggle}
+                onRetry={async () => {
+                  try {
+                    await refreshFavorites();
+                  } catch {
+                    toast.error(t("ui.listingCard.favorisChargementErreur"));
+                  }
+                }}
                 size="md"
                 variant="floating"
               />
@@ -857,26 +909,28 @@ export const ListingDetailPage: React.FC = () => {
                       accessibilityLabel={t("ui.identityStatus.pro.seller")}
                     />
                   )}
-                  {(listing.promotionState === "active" ||
-                    listing.isBoosted) && (
+                  {activePromotionVisible && (
                     <Badge
                       variant={
-                        listing.promotionType === "urgent_badge" ||
-                        listing.boostType === "urgent"
+                        listingCardProjection?.promotion?.type ===
+                          "urgent_badge" ||
+                        listingCardProjection?.discovery?.promotionType ===
+                          "urgent_badge"
                           ? "urgent"
                           : "featured"
                       }
                       size="md"
                       icon
                     >
-                      {listing.discovery?.isSponsored
-                        ? listing.discovery.promotionLabel || "Sponsorisé"
-                        : listing.promotionLabel ||
-                          (listing.promotionType === "search_bump" ||
-                          listing.boostType === "top_of_list"
+                      {listingCardProjection?.discovery?.isSponsored
+                        ? listingCardProjection.discovery.promotionLabel ||
+                          t("ui.listingCard.boosted")
+                        : listingCardProjection?.promotion?.label ||
+                          (listingCardProjection?.promotion?.type ===
+                          "search_bump"
                             ? "Remonté · sponsorisé"
-                            : listing.promotionType === "urgent_badge" ||
-                                listing.boostType === "urgent"
+                            : listingCardProjection?.promotion?.type ===
+                                "urgent_badge"
                               ? "Urgent"
                               : "À la une · sponsorisé")}
                     </Badge>

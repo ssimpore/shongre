@@ -58,13 +58,17 @@ export * from "./components/Tabs";
  * No feature imports the rail; its test imports the file directly. Anything
  * that needs it should import it by path so the cost lands on that route only:
  *   import { CategoryFilterRail } from "@/design-system/primitives/CategoryFilterRail";
+ *
+ * `ListingCard` follows the same route-owned rule. All card consumers import
+ * its canonical adapter directly, so re-exporting it here would hydrate the
+ * card projection, localized pricing and taxonomy data on routes without any
+ * listings.
  */
 export * from "./primitives/CategoryIcon";
 export * from "./primitives/CountryFlag";
 export * from "./primitives/FavoriteButton";
 export * from "./primitives/GlobalSearchBar";
 export * from "./primitives/LanguageSelector";
-export * from "./primitives/ListingCard";
 export * from "./primitives/ListingGrid";
 export * from "./primitives/ListingRail";
 export * from "./primitives/NoResultsFound";

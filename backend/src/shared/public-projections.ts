@@ -4,6 +4,7 @@ import type {
   PublicSellerProfile,
   UserProfile,
 } from "./types/index.js";
+import { createPublicPromotionProofId } from "./public-promotion-proof.js";
 
 const INTERNAL_ATTRIBUTE_KEYS = new Set([
   "confirmedReportCount",
@@ -59,12 +60,39 @@ export function toPublicListing(listing: Listing): PublicListing {
     duplicateGroupId: _duplicateGroupId,
     safetyRiskScore: _safetyRiskScore,
     digitalFulfillmentVersionId: _digitalFulfillmentVersionId,
+    marketPublications,
     attributes,
     ...publicFields
   } = listing;
   const publicSeller = seller ? toPublicSellerProfile(seller) : null;
+  const publicPromotionProof =
+    listing.promotionState === "active" &&
+    listing.promotionSource &&
+    listing.promotionSourceId?.trim()
+      ? {
+          promotionSource: listing.promotionSource,
+          promotionSourceId: createPublicPromotionProofId({
+            listingId: listing.id,
+            marketCode: listing.marketCode,
+            source: listing.promotionSource,
+            sourceId: listing.promotionSourceId,
+          }),
+        }
+      : {};
+  const publicMarketPublications = marketPublications?.map((publication) => {
+    const {
+      promotionSource: _promotionSource,
+      promotionSourceId: _promotionSourceId,
+      ...publicPublication
+    } = publication;
+    return publicPublication;
+  });
   return {
     ...publicFields,
+    ...publicPromotionProof,
+    ...(publicMarketPublications
+      ? { marketPublications: publicMarketPublications }
+      : {}),
     fulfillmentTypes: [listing.fulfillmentModel ?? "PHYSICAL"],
     requiresPhysicalDelivery:
       !listing.fulfillmentModel || listing.fulfillmentModel === "PHYSICAL",

@@ -14,6 +14,8 @@ import type {
   PropertyLead,
   PropertyPublic,
 } from "@shongre/contracts/real-estate";
+import { isActiveMarketResolvedListingPromotion } from "@shongre/contracts";
+import { useListingPromotionRefresh } from "@shongre/features/listings/web";
 import { VerificationBadge } from "@shongre/ui/web";
 import { services } from "../../api/client/service-registry";
 import { useAuth } from "../../app/providers/AuthProvider";
@@ -30,6 +32,7 @@ import {
   FormField,
   Image,
   Input,
+  ListingGrid,
   SellerIdentityLink,
   Select,
   Skeleton,
@@ -74,11 +77,12 @@ const amenityLabels: Record<string, string> = {
 export const ImmoPropertyDetailPage: React.FC = () => {
   const { slug = "" } = useParams<{ slug: string }>();
   const { currentUser } = useAuth();
-  const { currentLocale, convertMoney } = useMarketLocation();
+  const { activeMarket, currentLocale, convertMoney } = useMarketLocation();
   const { t } = useTranslation();
   const toast = useToast();
   const navigate = useNavigate();
-  const { isFavorite, toggleFavorite } = useFavorites();
+  const { favoriteLoadState, isFavorite, refreshFavorites, toggleFavorite } =
+    useFavorites();
   const [property, setProperty] = useState<PropertyPublic | null>(null);
   const [comparables, setComparables] = useState<PropertyPublic[]>([]);
   const [loading, setLoading] = useState(true);
@@ -96,6 +100,11 @@ export const ImmoPropertyDetailPage: React.FC = () => {
     preferredContactChannel: "message",
     consent: false,
   });
+  useListingPromotionRefresh(property?.resolvedPromotion);
+  const hasActivePromotion = isActiveMarketResolvedListingPromotion(
+    property?.resolvedPromotion,
+    activeMarket.code,
+  );
 
   useEffect(() => {
     setLoading(true);
@@ -163,6 +172,28 @@ export const ImmoPropertyDetailPage: React.FC = () => {
     if (!property) return;
     try {
       const active = await toggleFavorite(property.listingId);
+      toast.success(
+        active ? "Bien ajouté aux favoris." : "Bien retiré des favoris.",
+      );
+    } catch {
+      if (!currentUser) {
+        navigate(
+          `/connexion?redirect=${encodeURIComponent(`/immo/bien/${slug}`)}`,
+        );
+        return;
+      }
+      toast.error("Le favori n’a pas pu être enregistré.");
+    }
+  };
+
+  const favoriteComparable = async (target: PropertyPublic) => {
+    try {
+      const active = await toggleFavorite(target.listingId);
+      setComparables((current) =>
+        current.map((item) =>
+          item.id === target.id ? { ...item, isFavorite: active } : item,
+        ),
+      );
       toast.success(
         active ? "Bien ajouté aux favoris." : "Bien retiré des favoris.",
       );
@@ -288,11 +319,17 @@ export const ImmoPropertyDetailPage: React.FC = () => {
                   sizes="(min-width: 1024px) 760px, 100vw"
                 />
                 <div className="absolute left-3 top-3 flex gap-2">
-                  {property.promotion.featured ? (
-                    <Badge variant="featured">À la une</Badge>
-                  ) : null}
-                  {property.promotion.urgent ? (
-                    <Badge variant="urgent">Urgent</Badge>
+                  {hasActivePromotion ? (
+                    <Badge
+                      data-testid="immo-property-promotion"
+                      variant={
+                        property.resolvedPromotion?.type === "urgent_badge"
+                          ? "urgent"
+                          : "featured"
+                      }
+                    >
+                      {t("ui.listingCard.boosted")}
+                    </Badge>
                   ) : null}
                 </div>
                 <div
@@ -301,7 +338,28 @@ export const ImmoPropertyDetailPage: React.FC = () => {
                 >
                   <FavoriteButton
                     isFavorite={isFavorite(property.listingId)}
+                    interactionState={favoriteLoadState}
+                    label={`${
+                      favoriteLoadState === "loading"
+                        ? t("ui.listingCard.favorisChargement")
+                        : favoriteLoadState === "error"
+                          ? t("ui.listingCard.favorisReessayer")
+                          : t(
+                              isFavorite(property.listingId)
+                                ? "ui.listingCard.retirerDesFavoris"
+                                : "ui.listingCard.ajouterAuxFavoris",
+                            )
+                    } : ${property.title}`}
                     onToggle={favorite}
+                    onRetry={async () => {
+                      try {
+                        await refreshFavorites();
+                      } catch {
+                        toast.error(
+                          t("ui.listingCard.favorisChargementErreur"),
+                        );
+                      }
+                    }}
                     size="md"
                     variant="floating"
                   />
@@ -590,11 +648,19 @@ export const ImmoPropertyDetailPage: React.FC = () => {
             <p className="mt-1 text-xs text-text-muted">
               Même type de bien et même projet, sans estimation de valeur.
             </p>
-            <div className="mt-4 grid gap-4 lg:grid-cols-2">
+            <ListingGrid className="mt-4">
               {comparables.map((item) => (
-                <PropertyCard key={item.id} property={item} compact />
+                <PropertyCard
+                  key={item.id}
+                  property={item}
+                  favoriteState={isFavorite(item.listingId)}
+                  favoriteLoadState={favoriteLoadState}
+                  onFavorite={favoriteComparable}
+                  onFavoriteRetry={refreshFavorites}
+                  compact
+                />
               ))}
-            </div>
+            </ListingGrid>
           </section>
         ) : null}
       </Container>

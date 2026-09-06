@@ -627,6 +627,23 @@ export const messagesFr = {
   "ui.listingCard.noteAvis": "Note {rating} sur 5, {count} avis",
   "ui.listingCard.nombrePhotos": "{count} photos",
   "ui.listingCard.ajouterAuxFavoris": "Ajouter aux favoris",
+  "ui.listingCard.retirerDesFavoris": "Retirer des favoris",
+  "ui.listingCard.favoriErreur":
+    "Impossible de modifier les favoris pour le moment.",
+  "ui.listingCard.favorisChargement": "Chargement des favoris",
+  "ui.listingCard.favorisReessayer": "Réessayer le chargement des favoris",
+  "ui.listingCard.favorisChargementErreur":
+    "Impossible de charger les favoris pour le moment.",
+  "ui.listingCard.favorisRecharges":
+    "Vos favoris ont été rechargés. Vérifiez le cœur avant de réessayer.",
+  "ui.listingCard.favorisRechargesAvantVider":
+    "Vos favoris ont été rechargés. Vérifiez-les avant de les vider.",
+  "ui.listingCard.favorisViderErreur":
+    "Impossible de vider vos favoris pour le moment.",
+  "ui.listingCard.boosted": "Boosté",
+  "ui.listingCard.free": "Gratuit",
+  "ui.listingCard.onRequest": "Prix sur demande",
+  "ui.listingCard.imageUnavailable": "Image indisponible",
 
   // --- ui.noResultsFound ---
   "ui.noResultsFound.conseilsPourTrouverVotreBonheur":
@@ -830,6 +847,7 @@ export const messagesFr = {
   // --- favorites.favoritesPage ---
   "favorites.favoritesPage.aucunFavoriPourLeMoment":
     "Aucun favori pour le moment",
+  "favorites.favoritesPage.chargementImpossibleTitle": "Favoris indisponibles",
   "favorites.favoritesPage.cliquezSurLeCUr":
     "Cliquez sur le cœur d'une annonce pour la sauvegarder et la retrouver facilement ici.",
 

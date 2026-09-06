@@ -31,7 +31,11 @@ const requester: Principal = {
   accountType: "individual",
   status: "active",
   staffStatus: "none",
-  capabilities: ["delivery.request.manage.own", "delivery.read"],
+  capabilities: [
+    "delivery.request.manage.own",
+    "delivery.read",
+    "favorite.manage.own",
+  ],
 };
 
 const courier: Principal = {
@@ -120,6 +124,46 @@ function serviceWith(
 }
 
 describe("delivery service authorization", () => {
+  it("keeps favorite state account-and-market scoped", async () => {
+    const repository = new DemoDeliveryRepository();
+    const service = serviceWith(repository);
+    const publicBatch = vi.spyOn(repository, "getPublicRequestsByIds");
+    const request = await repository.createDraft(
+      "favorite-request-owner",
+      "Request owner",
+      false,
+      { ...draftInput, origin: "standalone", sourceOrderId: undefined },
+    );
+    await repository.publish(request.id, "favorite-request-owner");
+
+    expect(
+      await service.setFavoriteRequest(requester, context, request.id, true),
+    ).toBe(true);
+    expect(await service.getFavoriteRequestIds(requester, context)).toEqual([
+      request.id,
+    ]);
+    await expect(
+      service.getFavoritePublicRequests(requester, context),
+    ).resolves.toMatchObject([{ id: request.id, marketCode: "FR" }]);
+    expect(publicBatch).toHaveBeenCalledOnce();
+    expect(publicBatch).toHaveBeenCalledWith([request.id], "FR");
+    expect(
+      await repository.getFavoriteRequestIds(requester.userId, "BE"),
+    ).toEqual([]);
+    await expect(
+      service.getFavoriteRequestIds(courier, context),
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
+    expect(
+      await service.setFavoriteRequest(requester, context, request.id, false),
+    ).toBe(false);
+    expect(
+      await service.setFavoriteRequest(requester, context, request.id, true),
+    ).toBe(true);
+
+    await repository.prepareAccountDeletion(requester.userId);
+    expect(await service.getFavoriteRequestIds(requester, context)).toEqual([]);
+  });
+
   it("links only an owned, same-market, eligible physical order", async () => {
     const repository = new DemoDeliveryRepository();
     const service = serviceWith(repository);

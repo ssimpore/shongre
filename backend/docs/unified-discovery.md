@@ -8,6 +8,18 @@ Shongre uses one listing catalog for private sellers and professional organizati
 
 Paid candidates are retrieved separately, must be relevant and active, and are inserted under configured position/share/seller caps. Every inserted placement has a label and an impression ID. `organic_freshness_at` is never changed by promotion activation.
 
+Migration `00097_listing_promotion_market_scope.sql` binds each effective
+placement to one `(listing_id, market_code)` publication. Purchase and
+subscription evidence inherit the immutable commercial market; administrator
+grants must name an existing publication. The database refreshes the effective
+snapshot on that publication only, while the legacy columns on `listings`
+mirror the primary publication for rollback compatibility. Historical rows
+whose market cannot be established remain as evidence with a failed status and
+are excluded from discovery until reviewed. Migration
+`00100_listing_market_promotion_provenance.sql` keeps the selected source proof
+on the backend-owned market projection; public adapters expose only an opaque
+proof identifier and never the order, entitlement, or administrator reference.
+
 ## Migration
 
 Migration `00018_unified_catalog_discovery.sql` uses expand/backfill:

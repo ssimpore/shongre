@@ -12,6 +12,8 @@
     "./taxonomy": "./src/schemas/taxonomy.ts",
     "./taxonomy-catalog": "./src/fixtures/taxonomy-catalog.ts",
     "./taxonomy-v4-public": "./src/fixtures/generated/taxonomy-v4.public.ts",
+    "./taxonomy-v4-card": "./src/taxonomy-v4-card.ts",
+    "./taxonomy-v4-identity": "./src/taxonomy-v4-identity.ts",
     "./taxonomy-v4-resolver": "./src/taxonomy-v4-resolver.ts",
     "./courses": "./src/schemas/courses.ts",
     "./auto": "./src/schemas/auto.ts",

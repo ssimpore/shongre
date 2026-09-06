@@ -11,6 +11,14 @@ import type {
   InvoicingTaxBreakdown,
   InvoicingTenantSummary,
 } from "@shongre/contracts/invoicing";
+import {
+  invoicingDocumentSchema,
+  invoicingInvoiceSchema,
+  invoicingLegalEntitySchema,
+  invoicingLineSchema,
+  invoicingPartySchema,
+  invoicingTaxBreakdownSchema,
+} from "@shongre/contracts/invoicing";
 import type { Database } from "../../../generated/database.types.js";
 import { config } from "../../../app/config/index.js";
 import { AppError } from "../../../shared/errors/app-error.js";
@@ -29,6 +37,8 @@ type InvoiceLineRow =
   Database["public"]["Tables"]["invoicing_invoice_lines"]["Row"];
 type TaxBreakdownRow =
   Database["public"]["Tables"]["invoicing_tax_breakdowns"]["Row"];
+type InvoiceLineInsert =
+  Database["public"]["Tables"]["invoicing_invoice_lines"]["Insert"];
 
 export interface InvoicingTenantAccess extends InvoicingTenantSummary {
   userId: string;
@@ -121,6 +131,15 @@ function valueOrUndefined<T>(value: T | null): T | undefined {
   return value === null ? undefined : value;
 }
 
+/** Keep PostgreSQL NUMERIC values as decimal strings on the wire. */
+function postgresNumericLiteral(
+  value: string,
+): InvoiceLineInsert["quantity_decimal"] {
+  // postgres-meta models NUMERIC as number even though PostgREST accepts a
+  // decimal string; the string is required here to avoid floating-point loss.
+  return value as unknown as InvoiceLineInsert["quantity_decimal"];
+}
+
 function mapIdentifier(row: LegalIdentifierRow | PartyIdentifierRow) {
   return {
     id: row.id,
@@ -138,7 +157,7 @@ function mapLegalEntity(
   row: LegalEntityRow,
   identifiers: readonly LegalIdentifierRow[],
 ): InvoicingLegalEntity {
-  return {
+  return invoicingLegalEntitySchema.parse({
     id: row.id,
     tenantId: row.organization_id,
     scope: "MULTI_MARKET_SHARED",
@@ -163,14 +182,14 @@ function mapLegalEntity(
     verificationStatus: row.verification_status,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
-  };
+  });
 }
 
 function mapParty(
   row: PartyRow,
   identifiers: readonly PartyIdentifierRow[],
 ): InvoicingParty {
-  return {
+  return invoicingPartySchema.parse({
     id: row.id,
     tenantId: row.organization_id,
     scope: "MULTI_MARKET_SHARED",
@@ -195,11 +214,11 @@ function mapParty(
       .map(mapIdentifier),
     createdAt: row.created_at,
     updatedAt: row.updated_at,
-  };
+  });
 }
 
 function mapLine(row: InvoiceLineRow): InvoicingLine {
-  return {
+  return invoicingLineSchema.parse({
     id: row.id,
     position: row.position,
     description: row.description,
@@ -216,16 +235,16 @@ function mapLine(row: InvoiceLineRow): InvoicingLine {
     netAmountMinor: row.net_amount_minor,
     taxAmountMinor: row.tax_amount_minor,
     grossAmountMinor: row.gross_amount_minor,
-  };
+  });
 }
 
 function mapTax(row: TaxBreakdownRow): InvoicingTaxBreakdown {
-  return {
+  return invoicingTaxBreakdownSchema.parse({
     taxRateBps: row.tax_rate_bps,
     taxCategory: row.tax_category,
     taxableAmountMinor: row.taxable_amount_minor,
     taxAmountMinor: row.tax_amount_minor,
-  };
+  });
 }
 
 function mapInvoice(
@@ -233,7 +252,7 @@ function mapInvoice(
   lines: readonly InvoiceLineRow[],
   taxBreakdowns: readonly TaxBreakdownRow[],
 ): InvoicingInvoice {
-  return {
+  return invoicingInvoiceSchema.parse({
     id: row.id,
     tenantId: row.organization_id,
     legalEntityId: row.legal_entity_id,
@@ -279,7 +298,7 @@ function mapInvoice(
     finalizedAt: valueOrUndefined(row.finalized_at),
     createdAt: row.created_at,
     updatedAt: row.updated_at,
-  };
+  });
 }
 
 function deterministicUuid(namespace: string, value: string): string {
@@ -1303,9 +1322,11 @@ export class PostgresInvoicingRepository implements InvoicingRepository {
           invoice_id: value.id,
           position: line.position,
           description: line.description,
-          quantity_decimal: line.quantity,
+          quantity_decimal: postgresNumericLiteral(line.quantity),
           unit: line.unit,
-          unit_price_minor_decimal: line.unitPriceMinorDecimal,
+          unit_price_minor_decimal: postgresNumericLiteral(
+            line.unitPriceMinorDecimal,
+          ),
           tax_rate_bps: line.taxRateBps,
           tax_category: line.taxCategory,
           exemption_reason_code: line.exemptionReasonCode ?? null,
@@ -1432,7 +1453,7 @@ export class PostgresInvoicingRepository implements InvoicingRepository {
         lines: value.lines,
         taxBreakdowns: value.taxBreakdowns,
       },
-      p_request_id: record.requestId ?? null,
+      p_request_id: record.requestId,
     });
     if (result.error) {
       const message = result.error.message ?? "";
@@ -1464,7 +1485,7 @@ export class PostgresInvoicingRepository implements InvoicingRepository {
       p_actor_id: record.actorId,
       p_expected_version: record.expectedVersion,
       p_idempotency_key: record.idempotencyKey,
-      p_request_id: record.requestId ?? null,
+      p_request_id: record.requestId,
     });
     if (result.error) {
       const message = result.error.message ?? "";
@@ -1529,7 +1550,7 @@ export class PostgresInvoicingRepository implements InvoicingRepository {
         details: { gate: "PRIVATE_STORAGE_DOWNLOAD_REQUIRED" },
       });
     }
-    return {
+    return invoicingDocumentSchema.parse({
       id: result.data.id,
       invoiceId: result.data.invoice_id,
       fileName: result.data.file_name,
@@ -1543,6 +1564,6 @@ export class PostgresInvoicingRepository implements InvoicingRepository {
       complianceRulesetVersion: result.data.compliance_ruleset_version,
       generatedAt: result.data.generated_at,
       content: result.data.content_text,
-    };
+    });
   }
 }

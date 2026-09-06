@@ -3,6 +3,7 @@ import type {
   DiscoveryEvent,
   DiscoveryMetrics,
 } from "@shongre/contracts";
+import { discoveryConfigurationSchema } from "@shongre/contracts";
 import { DEFAULT_DISCOVERY_CONFIGURATION } from "@shongre/shared";
 import { getSupabaseAdminClient } from "../../supabase/supabase-client.js";
 
@@ -110,16 +111,16 @@ export class PostgresDiscoveryConfigurationRepository implements IDiscoveryConfi
       .maybeSingle();
     if (error) throw error;
     if (!data) return null;
-    return {
+    return discoveryConfigurationSchema.parse({
       version: data.id,
       marketCode: data.market_code,
       categoryId: data.category_id || undefined,
       context: data.context,
-      weights: data.weights as DiscoveryConfiguration["weights"],
+      weights: data.weights,
       freshnessHalfLifeDays: Number(data.freshness_half_life_days),
-      diversity: data.diversity_policy as DiscoveryConfiguration["diversity"],
-      sponsored: data.sponsored_policy as DiscoveryConfiguration["sponsored"],
-    };
+      diversity: data.diversity_policy,
+      sponsored: data.sponsored_policy,
+    });
   }
 
   async recordEvent(
@@ -159,7 +160,8 @@ export class PostgresDiscoveryConfigurationRepository implements IDiscoveryConfi
       {
         p_actor_id: input.actorUserId,
         p_market_code: configuration.marketCode,
-        p_category_id: configuration.categoryId || null,
+        // postgres-meta does not expose nullability for required RPC arguments.
+        p_category_id: (configuration.categoryId ?? null) as unknown as string,
         p_context: configuration.context,
         p_weights: configuration.weights,
         p_freshness_half_life_days: configuration.freshnessHalfLifeDays,

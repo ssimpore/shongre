@@ -23,7 +23,6 @@ import {
   INITIAL_MARKETS,
 } from "../domains/market/market.defaults";
 import { deepMergeOverrides } from "../domains/market/market.resolver";
-import { normalizeListingTaxonomyIdentity } from "../domains/taxonomy/taxonomy.identity";
 import { routes } from "../configuration/routes";
 import { telemetryService } from "./telemetry.service";
 import {
@@ -51,8 +50,9 @@ const KEYS = {
   MESSAGES: "shongre_messages_v1",
   TRANSACTIONS: "shongre_transactions_v1",
   NOTIFICATIONS: "shongre_notifications_v1",
-  // v2: per-user map. v1 was a single shared array — see getFavorites below.
-  FAVORITES: "shongre_favorites_v2",
+  FAVORITES_LEGACY: "shongre_favorites_v2",
+  // v3: account-and-market map. v2 separated users but still mixed markets.
+  FAVORITES: "shongre_favorites_v3",
   FOLLOWED_SELLERS: "shongre_followed_sellers_v1",
   BLOCKED_USERS: "shongre_blocked_users_v1",
   USER_REPORTS: "shongre_user_reports_v1",
@@ -182,8 +182,6 @@ class StorageService {
   getListings(): Listing[] {
     const list = this.get<Listing[]>(KEYS.LISTINGS, INITIAL_LISTINGS);
     return list.map((l) => {
-      const canonicalCategory = normalizeListingTaxonomyIdentity(l);
-
       const primaryMarket = (
         (l as any).marketCode || DEFAULT_MARKET_CODE
       ).toUpperCase();
@@ -207,7 +205,7 @@ class StorageService {
               status: (l.status === "active" ? "active" : "draft") as
                 "active" | "draft",
               isPrimary: mCode === primaryMarket,
-              publishedAt: l.createdAt,
+              publishedAt: l.publishedAt,
               currency:
                 l.currency ||
                 getCountryConfig(mCode)?.currency ||
@@ -217,7 +215,6 @@ class StorageService {
 
       return {
         ...l,
-        ...canonicalCategory,
         marketCode: primaryMarket,
         marketCodes,
         marketPublications,
@@ -251,38 +248,64 @@ class StorageService {
 
   // Favorites
   //
-  // Saved listings belong to an account, so they are stored per user rather than
-  // in one shared list. They were shared: signing in as the pro seller showed
-  // the buyer's saved listings back as "Mes annonces favorites", and every demo
-  // persona inherited whatever the previous one had saved — which also made the
-  // seeded demo state non-deterministic once anyone clicked a heart.
+  // Saved listings belong to one account in one market, so neither a persona nor
+  // a country switch can expose another scope's state. Earlier formats first
+  // shared one list globally, then separated users while still mixing markets.
   //
   // The guest bucket is real storage, not a throwaway: someone can save listings
   // before they have an account, and `mergeGuestFavorites` carries those saves
-  // into the account they sign in to.
+  // into the matching market bucket of the account they sign in to.
 
-  private getFavoritesByUser(): Record<string, string[]> {
-    return this.get<Record<string, string[]>>(KEYS.FAVORITES, {
-      // The seeded demo buyer keeps the two listings the fixtures assume.
-      buyer_thomas: ["list-101", "list-105"],
-    });
+  private favoriteScope(userKey: string, marketCode: string): string {
+    return `${userKey}::${marketCode.toUpperCase()}`;
   }
 
-  getFavorites(userKey: string = this.getCurrentUserKey()): string[] {
-    return this.getFavoritesByUser()[userKey] ?? [];
+  private getFavoritesByScope(): Record<string, string[]> {
+    const stored = this.get<Record<string, string[]> | null>(
+      KEYS.FAVORITES,
+      null,
+    );
+    if (stored) return stored;
+
+    const migrated: Record<string, string[]> = {
+      // The seeded demo buyer keeps the two France listings the fixtures assume.
+      [this.favoriteScope("buyer_thomas", "FR")]: ["list-101", "list-105"],
+    };
+    const legacy = this.get<Record<string, string[]>>(
+      KEYS.FAVORITES_LEGACY,
+      {},
+    );
+    // V2 did not record a market. Keep it quarantined instead of assigning a
+    // listing's current primary market, which could expose a save in the wrong
+    // account-market scope after publication changes.
+    void legacy;
+    this.set(KEYS.FAVORITES, migrated);
+    return migrated;
+  }
+
+  getFavorites(userKey: string | undefined, marketCode: string): string[] {
+    const resolvedUserKey = userKey ?? this.getCurrentUserKey();
+    return (
+      this.getFavoritesByScope()[
+        this.favoriteScope(resolvedUserKey, marketCode)
+      ] ?? []
+    );
   }
 
   toggleFavorite(
     listingId: string,
-    userKey: string = this.getCurrentUserKey(),
+    userKey: string | undefined,
+    marketCode: string,
   ): boolean {
-    const byUser = this.getFavoritesByUser();
-    const current = byUser[userKey] ?? [];
+    const resolvedUserKey = userKey ?? this.getCurrentUserKey();
+    const byScope = this.getFavoritesByScope();
+    const scope = this.favoriteScope(resolvedUserKey, marketCode);
+    const current = byScope[scope] ?? [];
     const exists = current.includes(listingId);
     const updated = exists
       ? current.filter((id) => id !== listingId)
       : [...current, listingId];
-    this.set(KEYS.FAVORITES, { ...byUser, [userKey]: updated });
+    this.set(KEYS.FAVORITES, { ...byScope, [scope]: updated });
     return !exists;
   }
 
@@ -293,24 +316,26 @@ class StorageService {
    * guest bucket is emptied afterwards — leaving it would hand the next signed-out
    * visitor on this device the previous one's saved listings.
    *
-   * The target defaults to the same accessor the reads use rather than to a
-   * caller-supplied account id, because `setCurrentRole` remaps the stored key
-   * onto a demo persona right after login: merging into `user.id` would fill a
-   * bucket that `getFavorites` never looks in.
+   * Callers must carry the active market explicitly. Passing no user key still
+   * resolves the exact signed-in demo persona, because `setCurrentRole` may map
+   * its public user id to a different persisted demo key.
    */
-  mergeGuestFavorites(userKey: string = this.getCurrentUserKey()): void {
-    if (userKey === GUEST_USER_KEY) return;
-    const byUser = this.getFavoritesByUser();
-    const guestSaved = byUser[GUEST_USER_KEY] ?? [];
+  mergeGuestFavorites(userKey: string | undefined, marketCode: string): void {
+    const resolvedUserKey = userKey ?? this.getCurrentUserKey();
+    if (resolvedUserKey === GUEST_USER_KEY) return;
+    const byScope = this.getFavoritesByScope();
+    const guestScope = this.favoriteScope(GUEST_USER_KEY, marketCode);
+    const userScope = this.favoriteScope(resolvedUserKey, marketCode);
+    const guestSaved = byScope[guestScope] ?? [];
     if (guestSaved.length === 0) return;
 
     const merged = Array.from(
-      new Set([...(byUser[userKey] ?? []), ...guestSaved]),
+      new Set([...(byScope[userScope] ?? []), ...guestSaved]),
     );
     this.set(KEYS.FAVORITES, {
-      ...byUser,
-      [userKey]: merged,
-      [GUEST_USER_KEY]: [],
+      ...byScope,
+      [userScope]: merged,
+      [guestScope]: [],
     });
   }
 

@@ -36,14 +36,17 @@ export const ListingCardSkeleton: React.FC<{ className?: string }> = ({
   <div
     aria-hidden="true"
     className={cn(
-      "listing-card-skeleton h-listing-card-height space-y-2",
+      "listing-card-skeleton h-listing-card-height overflow-hidden border border-border-subtle bg-bg-surface",
       className,
     )}
   >
-    <Skeleton shape="media" className="w-full" />
-    <Skeleton shape="line" className="w-3/4" />
-    <Skeleton shape="line" className="h-5 w-1/3" />
-    <Skeleton shape="line" className="h-3 w-1/2" />
+    <Skeleton shape="media" className="w-full rounded-none" />
+    <div className="flex flex-col gap-1 px-3 py-2">
+      <Skeleton shape="line" className="h-3 w-2/3" />
+      <Skeleton shape="line" className="h-6 w-full" />
+      <Skeleton shape="line" className="h-4 w-5/6" />
+      <Skeleton shape="line" className="h-3 w-1/2" />
+    </div>
   </div>
 );
 

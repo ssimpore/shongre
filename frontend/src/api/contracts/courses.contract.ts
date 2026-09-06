@@ -129,8 +129,13 @@ export interface CoursesServiceContract {
     decision: "accept" | "decline" | "invalid",
     declineReason?: string,
   ): Promise<CourseLead>;
-  getSavedTutorIds(accountId: string): Promise<string[]>;
-  toggleSavedTutor(accountId: string, tutorProfileId: string): Promise<boolean>;
+  getSavedTutorIds(accountId: string, marketCode: string): Promise<string[]>;
+  setSavedTutor(
+    accountId: string,
+    tutorProfileId: string,
+    marketCode: string,
+    isFavorite: boolean,
+  ): Promise<boolean>;
   updateMarketConfig(
     marketCode: string,
     config: CourseMarketConfig,

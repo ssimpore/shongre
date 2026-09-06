@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { MarketResolvedListingPromotion } from "@shongre/contracts";
 import { EmploymentService } from "../../src/modules/employment/employment.service.js";
 import { DemoEmploymentRepository } from "../../src/infrastructure/database/repositories/employment.repository.js";
 
@@ -16,6 +17,26 @@ class MutableEmploymentRepository extends DemoEmploymentRepository {
     for (const [jobId, job] of this.jobs) {
       if (job.employer.id === employerId) this.jobs.delete(jobId);
     }
+  }
+
+  replacePromotion(
+    jobId: string,
+    promotion: MarketResolvedListingPromotion | undefined,
+  ) {
+    const job = this.jobs.get(jobId);
+    if (job)
+      this.jobs.set(jobId, {
+        ...job,
+        isUrgent: true,
+        isFeatured: true,
+        isSponsored: true,
+        resolvedPromotion: promotion,
+      });
+  }
+
+  clearResolvedPromotions() {
+    for (const jobId of this.jobs.keys())
+      this.replacePromotion(jobId, undefined);
   }
 }
 
@@ -173,7 +194,10 @@ describe("EmploymentService", () => {
 
   it("never exposes recruiter notes in the candidate workspace", async () => {
     const service = createService();
-    const candidate = await service.getOwnCandidateWorkspace("user_thomas");
+    const candidate = await service.getOwnCandidateWorkspace(
+      "user_thomas",
+      "FR",
+    );
     const recruiter = await service.getOwnRecruiterWorkspace(
       "user_pro_atelier",
       "employer-technova",
@@ -185,6 +209,69 @@ describe("EmploymentService", () => {
     expect(JSON.stringify(candidate)).not.toContain(
       "Préparer les questions accessibilité",
     );
+  });
+
+  it("sets saved jobs idempotently without leaking accounts or markets", async () => {
+    const service = createService();
+
+    await expect(
+      service.setSavedJob("user_thomas", "job-seasonal-nice", "FR", true),
+    ).resolves.toBe(true);
+    await expect(
+      service.setSavedJob("user_thomas", "job-seasonal-nice", "FR", true),
+    ).resolves.toBe(true);
+    expect(await service.getSavedJobIds("user_thomas", "FR")).toContain(
+      "job-seasonal-nice",
+    );
+    expect(await service.getSavedJobIds("user_thomas", "BE")).toEqual([]);
+    expect(await service.getSavedJobIds("user_camille", "FR")).toEqual([]);
+
+    await expect(
+      service.setSavedJob("user_thomas", "job-seasonal-nice", "BE", true),
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
+    await expect(
+      service.setSavedJob("user_thomas", "missing-job", "BE", false),
+    ).resolves.toBe(false);
+  });
+
+  it("ranks and counts only active exact-market resolved promotions", async () => {
+    const repository = new MutableEmploymentRepository();
+    repository.clearResolvedPromotions();
+    const timestamp = Date.now();
+    const promotion = (
+      marketCode: string,
+      startsAt: number,
+      endsAt: number,
+      sourceId: string,
+    ): MarketResolvedListingPromotion => ({
+      state: "active",
+      type: "featured",
+      marketCode,
+      startsAt: new Date(startsAt).toISOString(),
+      endsAt: new Date(endsAt).toISOString(),
+      source: "purchase",
+      sourceId,
+    });
+    repository.replacePromotion(
+      "job-react-lyon",
+      promotion("FR", timestamp - 60_000, timestamp + 60_000, "active-fr"),
+    );
+    repository.replacePromotion(
+      "job-seasonal-nice",
+      promotion("FR", timestamp - 120_000, timestamp - 60_000, "expired-fr"),
+    );
+    repository.replacePromotion(
+      "job-freelance-remote",
+      promotion("BE", timestamp - 60_000, timestamp + 60_000, "active-be"),
+    );
+
+    const result = await repository.search({
+      marketCode: "FR",
+      sort: "promoted",
+    });
+
+    expect(result.items[0]?.id).toBe("job-react-lyon");
+    expect(result.organicResultCount).toBe(result.total - 1);
   });
 
   it("audits permitted pipeline transitions and rejects unauthorized recruiters", async () => {

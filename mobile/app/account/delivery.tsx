@@ -81,11 +81,17 @@ function RequestSummary({ request }: { request: DeliveryPublicRequest }) {
 export default function DeliveryScreen() {
   const { user } = useAuth();
   const { activeMarket } = useMarket();
-  const { orderId, mode: requestedMode } = useLocalSearchParams<{
+  const {
+    orderId,
+    requestId,
+    mode: requestedMode,
+  } = useLocalSearchParams<{
     orderId?: string;
+    requestId?: string;
     mode?: ViewMode;
   }>();
   const sourceOrderId = Array.isArray(orderId) ? orderId[0] : orderId;
+  const selectedRequestId = Array.isArray(requestId) ? requestId[0] : requestId;
   const requestedModeValue = Array.isArray(requestedMode)
     ? requestedMode[0]
     : requestedMode;
@@ -138,20 +144,39 @@ export default function DeliveryScreen() {
         setRequests([]);
         return;
       }
-      const [publicRequests, currentProfile, mine, applications] =
-        await Promise.all([
-          deliveryService.search({ marketCode: activeMarket.code, limit: 20 }),
-          actor
-            ? deliveryService.getCourierProfile(actor, activeMarket.code)
-            : Promise.resolve(null),
-          actor
-            ? deliveryService.listOwnRequests(actor, activeMarket.code)
-            : Promise.resolve([]),
-          actor
-            ? deliveryService.listOwnApplications(actor, activeMarket.code)
-            : Promise.resolve([]),
-        ]);
-      setRequests(publicRequests);
+      const [
+        publicRequests,
+        selectedPublicRequest,
+        currentProfile,
+        mine,
+        applications,
+      ] = await Promise.all([
+        deliveryService.search({ marketCode: activeMarket.code, limit: 20 }),
+        selectedRequestId
+          ? deliveryService
+              .getPublicRequest(selectedRequestId, activeMarket.code)
+              .catch(() => null)
+          : Promise.resolve(null),
+        actor
+          ? deliveryService.getCourierProfile(actor, activeMarket.code)
+          : Promise.resolve(null),
+        actor
+          ? deliveryService.listOwnRequests(actor, activeMarket.code)
+          : Promise.resolve([]),
+        actor
+          ? deliveryService.listOwnApplications(actor, activeMarket.code)
+          : Promise.resolve([]),
+      ]);
+      setRequests(
+        selectedPublicRequest
+          ? [
+              selectedPublicRequest,
+              ...publicRequests.filter(
+                (request) => request.id !== selectedPublicRequest.id,
+              ),
+            ]
+          : publicRequests,
+      );
       setProfile(currentProfile);
       setOwnRequests(mine);
       setOwnApplications(applications);
@@ -183,7 +208,7 @@ export default function DeliveryScreen() {
     } finally {
       setLoading(false);
     }
-  }, [activeMarket.code, actor]);
+  }, [activeMarket.code, actor, selectedRequestId]);
 
   useEffect(() => {
     const frame = requestAnimationFrame(() => void load());
@@ -243,6 +268,7 @@ export default function DeliveryScreen() {
       ) : mode === "browse" ? (
         <BrowseView
           requests={requests}
+          selectedRequestId={selectedRequestId}
           actor={actor}
           profile={profile}
           marketCode={activeMarket.code}
@@ -281,17 +307,22 @@ export default function DeliveryScreen() {
 
 function BrowseView({
   requests,
+  selectedRequestId,
   actor,
   profile,
   marketCode,
   onChanged,
 }: {
   requests: DeliveryPublicRequest[];
+  selectedRequestId?: string;
   actor: MobileDeliveryActor | null;
   profile: DeliveryCourierProfile | null;
   marketCode: string;
   onChanged: () => Promise<void>;
 }) {
+  const visibleRequests = selectedRequestId
+    ? requests.filter((request) => request.id === selectedRequestId)
+    : requests;
   const apply = async (request: DeliveryPublicRequest) => {
     if (
       !actor ||
@@ -323,16 +354,22 @@ function BrowseView({
       );
     }
   };
-  if (!requests.length)
+  if (!visibleRequests.length)
     return (
       <StatePanel
-        title="Aucune demande ouverte"
-        message="Revenez plus tard pour découvrir de nouvelles livraisons."
+        title={
+          selectedRequestId ? "Demande indisponible" : "Aucune demande ouverte"
+        }
+        message={
+          selectedRequestId
+            ? "Cette demande n’est plus disponible sur ce marché."
+            : "Revenez plus tard pour découvrir de nouvelles livraisons."
+        }
       />
     );
   return (
     <View style={styles.section}>
-      {requests.map((request) => (
+      {visibleRequests.map((request) => (
         <View key={request.id} style={styles.section}>
           <RequestSummary request={request} />
           <Button

@@ -157,6 +157,7 @@ describe("canonical design tokens", () => {
     expect(nativeSizing.avatar2xl).toBe(128);
     expect(nativeSizing.brandLogoCompact).toBe(120);
     expect(nativeSizing.brandLogoStandard).toBe(160);
+    expect(nativeAspect.listingCard).toBe(4 / 5);
     expect(nativeAspect.media).toBe(4 / 3);
     expect(iconStrokeWidths.regular).toBe(2);
     expect(nativeTypography.size.overline).toBe(
@@ -170,6 +171,8 @@ describe("canonical design tokens", () => {
 
   it("keeps listing cards compact through semantic shared tokens", () => {
     expect(themeSpacing["listing-card"]).toBe("13rem");
+    expect(themeSpacing["listing-card-mobile-max"]).toBe("19rem");
+    expect(themeSpacing["listing-card-media-height"]).toBe("16rem");
     expect(themeSpacing["environment-toolbar-height"]).toBe("3.5rem");
     expect(radius["listing-card"]).toBe("0.625rem");
     expect(radius["listing-card"]).toBe(radius.control);

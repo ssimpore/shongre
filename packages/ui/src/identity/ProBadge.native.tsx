@@ -8,17 +8,18 @@ export function ProBadge({
   label,
   size = "sm",
   accessibilityLabel,
+  tone = "inverse",
 }: ProBadgeProps) {
   return (
     <Badge
-      variant="inverse"
+      variant={tone}
       size={size}
       accessibilityLabel={accessibilityLabel}
       accessibilityRole="image"
       testID="ui-pro-badge"
     >
-      <Text style={[styles.label, labelSizes[size]]}>
-        {label.toLocaleUpperCase()}
+      <Text style={[styles.label, labelTones[tone], labelSizes[size]]}>
+        {label}
       </Text>
     </Badge>
   );
@@ -26,11 +27,13 @@ export function ProBadge({
 
 const styles = StyleSheet.create({
   label: {
-    color: nativeColors.text.inverse,
     fontFamily: nativeTypography.fontFamily.bold,
-    letterSpacing: nativeTypography.letterSpacing.wide,
-    textTransform: "uppercase",
   },
+});
+
+const labelTones = StyleSheet.create({
+  inverse: { color: nativeColors.text.inverse },
+  primary: { color: nativeColors.action.primary },
 });
 
 const labelSizes = StyleSheet.create({

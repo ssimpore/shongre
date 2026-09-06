@@ -1,105 +1,120 @@
 import { describe, expect, it } from "vitest";
 import {
   getGenericListingCardCharacteristicPresentation,
-  getGenericListingCardCharacteristics,
-  getGenericListingConditionLabel,
+  getGenericListingBrandLabel,
+  getGenericListingCardHref,
 } from "./listing-card.generic-presentation";
 
-describe("generic listing card presentation", () => {
-  it("keeps years ungrouped and formats vehicle decision fields", () => {
+describe("generic listing-card presentation", () => {
+  it("uses only a real non-empty brand attribute", () => {
     expect(
-      getGenericListingCardCharacteristics(
-        {
-          categorySlug: "vehicles",
-          subCategorySlug: "cars",
-          attributes: {
-            model_year: 2022,
-            mileage: 42_000,
-            mileage_unit: "km",
-            fuel_type: "hybrid",
-          },
-        },
-        "fr-FR",
-      ).map((value) => value.replace(/\s/gu, " ")),
-    ).toEqual(["2022", "42 000 km", "Hybride"]);
-
-    expect(
-      getGenericListingCardCharacteristicPresentation(
-        {
-          categorySlug: "vehicles",
-          subCategorySlug: "cars",
-          attributes: {
-            model_year: 2022,
-            mileage: 42_000,
-            mileage_unit: "km",
-            fuel_type: "hybrid",
-          },
-        },
-        "fr-FR",
-      ).map((characteristic) => characteristic.icon),
-    ).toEqual(["calendar", "gauge", "fuel"]);
+      getGenericListingBrandLabel({ attributes: { brand: "  IKEA  " } }),
+    ).toBe("IKEA");
+    expect(getGenericListingBrandLabel({ attributes: { brand: " " } })).toBe(
+      undefined,
+    );
+    expect(getGenericListingBrandLabel({ attributes: {} })).toBeUndefined();
   });
 
-  it("hides non-applicable condition and excludes internal attributes", () => {
-    expect(getGenericListingConditionLabel("not_applicable", "fr-FR")).toBe("");
+  it("localizes a canonical brand option key", () => {
     expect(
-      getGenericListingCardCharacteristics(
-        {
-          categorySlug: "other",
-          subCategorySlug: "other",
-          attributes: { canonicalPath: "/annonce/test", brand: "apple" },
-        },
-        "fr-FR",
-      ),
-    ).toEqual(["Apple"]);
+      getGenericListingBrandLabel({ attributes: { brand: "citroen" } }),
+    ).toBe("Citroën");
+  });
+
+  it("preserves a vertical canonical path and rejects external-looking paths", () => {
+    expect(
+      getGenericListingCardHref({
+        id: "vehicle-1",
+        attributes: { canonicalPath: "/auto/vehicule/peugeot-3008" },
+      }),
+    ).toBe("/auto/vehicule/peugeot-3008");
+    expect(
+      getGenericListingCardHref({
+        id: "unsafe",
+        attributes: { canonicalPath: "//example.test/redirect" },
+      }),
+    ).toBe("/annonce/unsafe");
+    expect(getGenericListingCardHref({ id: "generic" })).toBe(
+      "/annonce/generic",
+    );
+  });
+
+  it("projects real-estate decision fields in hero order from real attributes", () => {
     expect(
       getGenericListingCardCharacteristicPresentation(
         {
-          categorySlug: "other",
-          subCategorySlug: "other",
-          attributes: { material: "wood", unknown_field: "artisan" },
+          categorySlug: "immobilier",
+          subCategorySlug: "real_estate.sales.apartments",
+          attributes: {
+            rooms: 4,
+            living_area: 92,
+            dpe_class: "B",
+          },
         },
         "fr-FR",
       ),
     ).toEqual([
-      { icon: "layers", label: "Wood" },
-      { icon: "tag", label: "Artisan" },
+      { icon: "layout-grid", label: "4 pièces" },
+      { icon: "ruler", label: "92 m²" },
+      { icon: "home", label: "DPE B" },
     ]);
   });
 
-  it("localizes canonical employment values into compact card labels", () => {
-    const characteristics = (
-      contractType: string,
-      remoteWork: string,
-      locale: string,
-    ) =>
-      getGenericListingCardCharacteristics(
+  it("uses category-aware fields and a bounded fallback for other universes", () => {
+    expect(
+      getGenericListingCardCharacteristicPresentation(
         {
-          categorySlug: "jobs",
-          subCategorySlug: "jobs.offers",
+          categorySlug: "emploi",
+          subCategorySlug: "jobs.offers.it_data",
           attributes: {
-            contract_type: contractType,
-            remote_work: remoteWork,
+            contractType: "CDI",
+            workingArrangement: "Télétravail hybride",
+            profession: "Développement Web",
           },
         },
-        locale,
-      );
+        "fr-FR",
+      ),
+    ).toEqual([
+      { icon: "briefcase", label: "CDI" },
+      { icon: "laptop", label: "Télétravail hybride" },
+      { icon: "briefcase", label: "Développement Web" },
+    ]);
 
-    expect(characteristics("apprenticeship", "onsite", "fr-FR")).toEqual([
-      "Alternance",
-      "Sur site",
+    expect(
+      getGenericListingCardCharacteristicPresentation(
+        {
+          categorySlug: "education",
+          subCategorySlug: "cours-particuliers",
+          attributes: {
+            subject: "Mathématiques",
+            deliveryModes: ["online", "in_person"],
+            audience_level: "teenagers",
+          },
+        },
+        "fr-FR",
+      ),
+    ).toEqual([
+      { icon: "book-open", label: "Mathématiques" },
+      { icon: "laptop", label: "En ligne, En présentiel" },
+      { icon: "book-open", label: "Adolescents" },
     ]);
-    expect(characteristics("seasonal", "fully_remote", "fr-FR")).toEqual([
-      "Saisonnier",
-      "Télétravail",
-    ]);
-    expect(characteristics("temporary", "hybrid", "fr-FR")).toEqual([
-      "Intérim",
-      "Hybride",
-    ]);
-    expect(characteristics("internship", "onsite", "en-GB")).toEqual([
-      "Internship",
-      "On-site",
-    ]);
+
+    expect(
+      getGenericListingCardCharacteristicPresentation(
+        {
+          categorySlug: "collection",
+          subCategorySlug: "collection.divers",
+          attributes: {
+            canonicalPath: "/annonce/collection-1",
+            material: "wood",
+            size: "large",
+            year: 1987,
+            extra: "ignored-after-three",
+          },
+        },
+        "fr-FR",
+      ),
+    ).toHaveLength(3);
   });
 });

@@ -120,13 +120,13 @@ async function resolveUncached(
       return { status: "not_found", data: null, resourceType: "job" };
     }
     try {
-      const job = await employmentService.getJob(slug);
+      const job = await employmentService.getJob(slug, countryCode);
       if (job.marketCode !== countryCode || job.lifecycle !== "published") {
         return { status: "not_found", data: null, resourceType: "job" };
       }
       const [catalog, similarJobs] = await Promise.all([
         employmentService.getCatalog(countryCode),
-        employmentService.getSimilarJobs(job.id),
+        employmentService.getSimilarJobs(job.id, countryCode),
       ]);
       return {
         status: "found",
@@ -354,6 +354,7 @@ async function resolveUncached(
             count: collectionService.filterListingsForCollection(
               collection,
               candidateInventory.listings,
+              { marketCode: country.code },
             ).length,
           };
         }),
@@ -367,6 +368,7 @@ async function resolveUncached(
         listings: collectionService.filterListingsForCollection(
           collection,
           inventory.listings,
+          { marketCode: countryCode },
         ),
         availableCountryCodes: marketCollections
           .filter((entry) => entry.count > 0)
@@ -413,7 +415,7 @@ export async function listServerPublicSitemapData(countryCode: string) {
         employmentService.getCatalog(countryCode),
         Promise.all(
           employmentResult.items.map((job) =>
-            employmentService.getJob(job.slug),
+            employmentService.getJob(job.slug, countryCode),
           ),
         ),
       ])
@@ -424,6 +426,7 @@ export async function listServerPublicSitemapData(countryCode: string) {
     listings: collectionService.filterListingsForCollection(
       collection,
       activeListings,
+      { marketCode: countryCode },
     ),
   }));
 

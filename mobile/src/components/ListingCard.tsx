@@ -1,47 +1,62 @@
 import { useRouter } from "expo-router";
 import type { ListingCardView } from "@shongre/contracts";
+import { deliveryRequestIdFromDiscoveryListingId } from "@shongre/contracts/delivery";
 import { ListingCard as SharedListingCard } from "@shongre/features/listings/native";
-import { StyleSheet, Text, View } from "react-native";
-import {
-  mobileColors as colors,
-  mobileRadius as radius,
-  nativeSpacing as spacing,
-  nativeTypography,
-} from "@shongre/design-tokens/native";
 import { messagesFr } from "../i18n/messages.fr";
+import { useFavorites } from "@/features/favorites/FavoritesProvider";
+import { useMarket } from "@/features/market/MarketProvider";
+import { ListingFavoriteButton } from "./ListingFavoriteButton";
 
 export function ListingCard({ listing }: { listing: ListingCardView }) {
   const router = useRouter();
+  const { activeMarket } = useMarket();
+  const { isFavorite, isPending, loadState, retry, toggleFavorite } =
+    useFavorites();
+  const favorite = isFavorite(listing.id);
+  const deliveryRequestId = deliveryRequestIdFromDiscoveryListingId(listing.id);
   return (
-    <View style={styles.wrapper}>
-      {listing.requiresPhysicalDelivery === false ? (
-        <Text accessibilityRole="text" style={styles.badge}>
-          Produit numérique · aucune livraison physique
-        </Text>
-      ) : null}
-      <SharedListingCard
-        listing={listing}
-        onPress={() => router.push(`/listing/${listing.id}`)}
-        identityLabels={{
-          pro: messagesFr["ui.identityStatus.pro.short"],
-          proAccessibility: messagesFr["ui.identityStatus.pro.seller"],
-          verified: messagesFr["ui.identityStatus.verification.profile"],
-        }}
-      />
-    </View>
+    <SharedListingCard
+      listing={listing}
+      onPress={() =>
+        router.push(
+          deliveryRequestId
+            ? `/account/delivery?mode=browse&requestId=${encodeURIComponent(deliveryRequestId)}`
+            : `/listing/${listing.id}`,
+        )
+      }
+      locale={activeMarket.defaultLocale}
+      favoriteAction={
+        <ListingFavoriteButton
+          isFavorite={favorite}
+          disabled={loadState === "loading" || isPending(listing.id)}
+          loadState={loadState}
+          label={`${
+            loadState === "loading"
+              ? messagesFr["ui.favorites.loading"]
+              : loadState === "error"
+                ? messagesFr["ui.favorites.retry"]
+                : favorite
+                  ? messagesFr["ui.favorites.remove"]
+                  : messagesFr["ui.favorites.add"]
+          } : ${listing.title}`}
+          onPress={() => void toggleFavorite(listing.id)}
+          onRetry={() => void retry()}
+        />
+      }
+      labels={{
+        boosted: messagesFr["ui.listingCard.boosted"],
+        free: messagesFr["ui.listingCard.free"],
+        onRequest: messagesFr["ui.listingCard.onRequest"],
+        imageUnavailable: messagesFr["ui.listingCard.imageUnavailable"],
+        rating: (rating, count) =>
+          messagesFr["ui.listingCard.noteAvis"]
+            .replace("{rating}", rating)
+            .replace("{count}", count),
+      }}
+      identityLabels={{
+        pro: messagesFr["ui.identityStatus.pro.short"],
+        proAccessibility: messagesFr["ui.identityStatus.pro.seller"],
+      }}
+    />
   );
 }
-
-const styles = StyleSheet.create({
-  wrapper: { gap: spacing.xs },
-  badge: {
-    alignSelf: "flex-start",
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    borderRadius: radius.sm,
-    backgroundColor: colors.surfaceMuted,
-    color: colors.primary,
-    fontFamily: nativeTypography.fontFamily.bold,
-    fontSize: nativeTypography.size.micro,
-  },
-});

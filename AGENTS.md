@@ -418,10 +418,15 @@ component → hook/controller → service contract → demo or HTTP adapter
   `hasConsent(category)` gate before collection begins.
 - “Gestion des cookies” must open the real preference panel through the existing
   consent provider, not merely navigate to a policy page.
-- Favorites and other account-owned client data must be partitioned by account.
-  Guest favorites merge by union into the authenticated account and the guest
-  bucket is then cleared. React state must reload when the current account or
-  market changes.
+- Favorites and other market-sensitive account-owned client data must be
+  partitioned by both account and market through storage, service, API, and
+  database boundaries. Web guest favorites merge by union into the
+  authenticated account's current-market bucket and the guest bucket is then
+  cleared. Native does not persist guest favorites and sends favorite actions
+  to login. React state must reload when the current account or market changes.
+  Until that scoped collection loads successfully, membership remains explicitly
+  loading or unknown/error: clients must block the mutation or make the action
+  retry-only and must never interpret a load failure as an empty favorite set.
 - Account deletion, report/block state, blocked-message enforcement, and UGC
   safety are backend-authoritative. Deletion must reauthenticate, protect
   non-terminal transactions, revoke credentials/tokens, anonymize eligible PII,
@@ -631,9 +636,11 @@ France-only happy path is insufficient for market-sensitive work.
   actions until publication. Publication must require every configured
   replacement to be selectable and must reject a snapshot where its migration
   source remains selectable.
-- Use consistent public terms: **Urgent**, **Remonter l’annonce**, and **À la
-  une**. Promotion state must account for scheduling and expiry rather than a
-  stale boolean.
+- Use consistent public purchase/detail terms: **Urgent**, **Remonter
+  l’annonce**, and **À la une**. The compact listing-card indicator summarizes
+  any currently active placement as **Boosté**; it must use the resolved
+  market-scoped discovery/promotion state and its schedule, never a stale
+  boolean.
 - Payment, escrow, refund, payout, reservation, pickup, handover, cancellation,
   dispute, digital entitlement, credential assignment, download, reveal, and
   provisioning state are backend-authoritative and concurrency-safe. Digital
@@ -661,11 +668,14 @@ France-only happy path is insufficient for market-sensitive work.
   variation points; applications must not recreate them with generic badge
   variants, direct `BadgeCheck` icons, copied SVGs, local wrappers, or CSS
   overrides.
-- Compact listing characteristics carry typed semantic icon roles on
-  `ListingCardView`. Category and taxonomy presentation code assigns those
-  roles, and the shared Web/native listing card renders them through
-  `SemanticIcon`; pages must not infer icons from localized labels or inject
-  per-surface characteristic markup.
+- The canonical compact `ListingCardView` anatomy is photo overlays, then
+  category/universe with optional real brand, price with independent Pro and
+  seller-rating facts, title, and location/date. The shared Web/native listing
+  card must not add seller avatars/names, descriptions, characteristic chips,
+  photo counts, delivery labels, multiple stars, original-price rows, or local
+  category-specific markup. Missing brand, reviews, active promotion, price, or
+  photo stays absent or uses the shared neutral media fallback; applications
+  must never invent a replacement fact.
 - Web application typography uses the single Nunito Sans Variable loader in
   `frontend/app/layout.tsx`. Tailwind `font-sans` resolves through the generated
   `--font-family-sans` design token; Web components inherit it and must not load
@@ -682,9 +692,10 @@ France-only happy path is insufficient for market-sensitive work.
 - Marketplace listing grids, rails, search results, recommendations, favorites,
   and seller catalogues must render the canonical `@shongre/features` listing
   card through the client adapter. Structured category services map their
-  records to `ListingCardView`; generic listings use taxonomy
-  `presentation.cardAttributeIds`. Do not add category-specific card markup or
-  conditional fields in page components. Profile results, hero media slides,
+  records to `ListingCardView`; generic listings resolve the universe label and
+  optional brand from the canonical taxonomy and listing attributes. Do not add
+  category-specific card markup or conditional fields in page components.
+  Profile results, hero media slides,
   operational rows, and map popups may remain specialized when they are not
   listing-card equivalents.
 - Target WCAG 2.2 AA. Verify semantic landmarks and heading order, labels and

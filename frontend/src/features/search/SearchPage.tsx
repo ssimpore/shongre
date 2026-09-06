@@ -1458,10 +1458,7 @@ export const SearchPage: React.FC = () => {
           {isLoading ? (
             <ListingGrid fluid>
               {[...Array(12)].map((_, i) => (
-                <ListingCardSkeleton
-                  key={i}
-                  className="rounded-card border border-border-disabled bg-bg-surface p-2"
-                />
+                <ListingCardSkeleton key={i} />
               ))}
             </ListingGrid>
           ) : searchError ? (

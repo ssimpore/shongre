@@ -133,6 +133,7 @@ describe("unified discovery", () => {
           type: "sponsored_search",
           source: "purchase",
           sourceId: "order-expired",
+          startsAt: "2026-08-20T00:00:00.000Z",
           endsAt: "2026-08-22T00:00:00.000Z",
         },
       }),
@@ -142,6 +143,7 @@ describe("unified discovery", () => {
           type: "sponsored_search",
           source: "purchase",
           sourceId: "order-refunded",
+          startsAt: "2026-08-20T00:00:00.000Z",
           endsAt: "2026-08-30T00:00:00.000Z",
         },
       }),
@@ -154,6 +156,7 @@ describe("unified discovery", () => {
           type: "sponsored_search",
           source: "purchase",
           sourceId: "order-irrelevant",
+          startsAt: "2026-08-20T00:00:00.000Z",
           endsAt: "2026-08-30T00:00:00.000Z",
         },
       }),
@@ -168,6 +171,42 @@ describe("unified discovery", () => {
     expect(result.items.every((item) => !item.presentation.isSponsored)).toBe(
       true,
     );
+  });
+
+  it.each([
+    ["missing start", undefined, "2026-08-30T00:00:00.000Z"],
+    ["missing end", "2026-08-20T00:00:00.000Z", undefined],
+    ["invalid start", "not-a-date", "2026-08-30T00:00:00.000Z"],
+    [
+      "reversed schedule",
+      "2026-08-30T00:00:00.000Z",
+      "2026-08-20T00:00:00.000Z",
+    ],
+  ])("fails closed for a promotion with %s", (_case, startsAt, endsAt) => {
+    const promoted = listing("invalid-schedule", "pro-1", "professional", {
+      promotion: {
+        state: "active",
+        type: "sponsored_search",
+        source: "purchase",
+        sourceId: "paid-order-invalid-schedule",
+        startsAt,
+        endsAt,
+      },
+    });
+    const result = runUnifiedDiscovery(
+      [
+        promoted,
+        listing("organic-1", "private-1", "private"),
+        listing("organic-2", "private-2", "private"),
+        listing("organic-3", "private-3", "private"),
+      ],
+      { requestId: "invalid-schedule", marketCode: "FR", now: NOW },
+    );
+
+    expect(
+      result.items.find(({ document }) => document.id === promoted.id)
+        ?.presentation.isSponsored,
+    ).toBe(false);
   });
 
   it("suppresses exact duplicates and prevents one inventory monopolizing the first page", () => {
@@ -221,6 +260,7 @@ describe("unified discovery", () => {
                   type: "sponsored_search",
                   source: "purchase",
                   sourceId: `paid-order-${index}`,
+                  startsAt: "2026-08-20T00:00:00.000Z",
                   endsAt: "2026-08-30T00:00:00.000Z",
                   label: "Sponsorisé",
                 }

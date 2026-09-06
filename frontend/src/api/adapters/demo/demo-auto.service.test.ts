@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import type { VehicleDraft } from "@shongre/contracts/auto";
+import { isActiveMarketResolvedListingPromotion } from "@shongre/contracts";
 import { DemoAutoService } from "./demo-auto.service";
 import { storageService } from "../../../services/storage.service";
 
@@ -70,15 +71,48 @@ describe("DemoAutoService", () => {
     );
   });
 
-  it("keeps favorites isolated by account", async () => {
+  it("returns only the explicit market-resolved promotion proof", async () => {
     const service = new DemoAutoService();
-    await service.toggleFavoriteVehicle("account_a", "vehicle_3008_diesel");
-    expect(await service.getFavoriteVehicleIds("account_a")).toContain(
+    const promoted = await service.getVehicle(
+      "peugeot-3008-bluehdi-130-allure-2019",
+    );
+    const standard = await service.getVehicle(
+      "peugeot-3008-puretech-130-gt-line-2020",
+    );
+
+    expect(
+      isActiveMarketResolvedListingPromotion(
+        promoted.resolvedPromotion,
+        "FR",
+        Date.parse("2026-09-06T10:00:00.000Z"),
+      ),
+    ).toBe(true);
+    expect(standard.resolvedPromotion).toBeUndefined();
+  });
+
+  it("keeps favorites isolated by account and market", async () => {
+    const service = new DemoAutoService();
+    await service.setFavoriteVehicle(
+      "account_a",
+      "vehicle_3008_diesel",
+      "FR",
+      true,
+    );
+    expect(await service.getFavoriteVehicleIds("account_a", "FR")).toContain(
       "vehicle_3008_diesel",
     );
-    expect(await service.getFavoriteVehicleIds("account_b")).not.toContain(
-      "vehicle_3008_diesel",
-    );
+    expect(
+      await service.getFavoriteVehicleIds("account_b", "FR"),
+    ).not.toContain("vehicle_3008_diesel");
+    expect(await service.getFavoriteVehicleIds("account_a", "BE")).toEqual([]);
+    await expect(
+      service.setFavoriteVehicle(
+        "account_a",
+        "vehicle_3008_diesel",
+        "BE",
+        true,
+      ),
+    ).rejects.toThrow("indisponible");
   });
 
   it("autosaves, detects a duplicate and submits only complete drafts", async () => {

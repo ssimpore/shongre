@@ -21,6 +21,8 @@ import {
   DropdownMenu,
   FilterPanel,
   Input,
+  ListingCardSkeleton,
+  ListingGrid,
   LocationSelector,
   Skeleton,
   StatePanel,
@@ -352,7 +354,8 @@ export const ImmoSearchPage: React.FC = () => {
   const { activeMarket } = useMarketLocation();
   const toast = useToast();
   const navigate = useNavigate();
-  const { favoriteIds, toggleFavorite } = useFavorites();
+  const { favoriteIds, favoriteLoadState, refreshFavorites, toggleFavorite } =
+    useFavorites();
   const [params, setParams] = useSearchParams();
   const [catalog, setCatalog] = useState<RealEstateCatalog | null>(null);
   const [items, setItems] = useState<PropertyPublic[]>([]);
@@ -763,22 +766,31 @@ export const ImmoSearchPage: React.FC = () => {
             </aside>
             <section
               aria-label="Résultats immobiliers"
-              className={`min-w-0 space-y-3 ${view === "map" ? "xl:max-h-search-results-panel xl:overflow-y-auto xl:pr-1" : "xl:col-span-2"}`}
+              className={`min-w-0 ${view === "map" ? "xl:max-h-search-results-panel xl:overflow-y-auto xl:pr-1" : "xl:col-span-2"}`}
             >
               {loading ? (
-                Array.from({ length: 3 }, (_, index) => (
-                  <Skeleton key={index} className="h-52 rounded-card" />
-                ))
+                <ListingGrid fluid>
+                  {Array.from({ length: 6 }, (_, index) => (
+                    <div key={index} className="min-w-0">
+                      <ListingCardSkeleton />
+                    </div>
+                  ))}
+                </ListingGrid>
               ) : items.length ? (
-                visibleItems.map((property) => (
-                  <PropertyCard
-                    key={property.id}
-                    property={property}
-                    selected={selectedId === property.id}
-                    onSelect={(item) => setSelectedId(item.id)}
-                    onFavorite={favorite}
-                  />
-                ))
+                <ListingGrid fluid>
+                  {visibleItems.map((property) => (
+                    <PropertyCard
+                      key={property.id}
+                      property={property}
+                      selected={selectedId === property.id}
+                      onSelect={(item) => setSelectedId(item.id)}
+                      onFavorite={favorite}
+                      favoriteState={favoriteIds.includes(property.listingId)}
+                      favoriteLoadState={favoriteLoadState}
+                      onFavoriteRetry={refreshFavorites}
+                    />
+                  ))}
+                </ListingGrid>
               ) : (
                 <StatePanel
                   variant="notFound"

@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
+import { useFavorites } from "../../app/providers/FavoritesProvider";
 import { listingRepository } from "../../repositories/listing.repository";
 import { messagingRepository } from "../../repositories/messaging.repository";
 import { storageService } from "../../services/storage.service";
@@ -39,12 +40,7 @@ import { useTranslation } from "../../i18n/I18nProvider";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { StaffBadge } from "../../design-system/components/StaffBadge";
 import { STAFF_ROLE_PRESENTATION } from "../../security/roles.config";
-
-function getPhotoUrl(photo: any): string {
-  if (typeof photo === "string") return photo;
-  if (photo && typeof photo.url === "string") return photo.url;
-  return "https://images.unsplash.com/photo-1584438784894-089d6a62b8fa?w=400&auto=format&fit=crop&q=80";
-}
+import { resolveListingPhotoUrl } from "../../domains/listing/listing-media";
 
 export const AccountOverviewPage: React.FC = () => {
   const { activeMarket, formatPrice } = useMarketLocation();
@@ -103,7 +99,7 @@ export const AccountOverviewPage: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
 
   const [myListings, setMyListings] = useState<Listing[]>([]);
-  const [favCount, setFavCount] = useState(0);
+  const { count: favoriteCount } = useFavorites();
   const [, setSavedSearchCount] = useState(0);
   const [unreadMsgCount, setUnreadMsgCount] = useState(0);
 
@@ -117,15 +113,6 @@ export const AccountOverviewPage: React.FC = () => {
       })
       .catch(() => {
         setMyListings([]);
-      });
-
-    listingRepository
-      .getFavorites()
-      .then((favs) => {
-        setFavCount(favs.length);
-      })
-      .catch(() => {
-        setFavCount(0);
       });
 
     try {
@@ -428,7 +415,9 @@ export const AccountOverviewPage: React.FC = () => {
           <div className="w-8 h-8 rounded-lg bg-community-surface text-community flex items-center justify-center mb-2">
             <Heart className="w-icon-md h-icon-md" />
           </div>
-          <div className="text-2xl font-bold text-text-main">{favCount}</div>
+          <div className="text-2xl font-bold text-text-main">
+            {favoriteCount}
+          </div>
           <div className="text-xs font-semibold text-text-tertiary mt-0.5">
             {t("sellerworkspace.accountOverviewPage.annoncesSauvegardees")}
           </div>
@@ -638,7 +627,7 @@ export const AccountOverviewPage: React.FC = () => {
         {myListings.length > 0 ? (
           <div className="divide-y divide-border-subtle">
             {myListings.slice(0, 4).map((listing) => {
-              const photoUrl = getPhotoUrl(
+              const photoUrl = resolveListingPhotoUrl(
                 listing.coverImageUrl || listing.photos?.[0],
               );
               return (
