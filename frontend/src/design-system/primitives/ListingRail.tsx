@@ -28,7 +28,8 @@ export interface ListingRailProps {
  *
  * Vertical padding is not decoration: `overflow-x` also clips vertically, and
  * without it the card's `hover:shadow-xl` and the boosted card's `ring-2` get
- * sheared off at the track edge.
+ * sheared off at the track edge. The larger bottom inset also reserves a clear
+ * lane for the fine-pointer scrollbar so it never overlays a card footer.
  */
 export const ListingRail: React.FC<ListingRailProps> = ({
   children,
@@ -39,7 +40,7 @@ export const ListingRail: React.FC<ListingRailProps> = ({
     snap
     label={label}
     controlClassName="listing-rail-control top-1/2"
-    className={`-mx-4 max-w-viewport-full px-4 py-1.5 sm:mx-0 sm:max-w-full sm:px-0 ${className}`}
+    className={`-mx-4 max-w-viewport-full px-4 pt-1.5 pb-4 sm:mx-0 sm:max-w-full sm:px-0 ${className}`}
   >
     <div className="listing-rail-track flex flex-nowrap items-stretch gap-3 sm:gap-4">
       {React.Children.map(children, (child) =>

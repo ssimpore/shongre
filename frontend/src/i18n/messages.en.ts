@@ -372,7 +372,9 @@ export const messagesEn: MessageCatalogue = {
   "footer.createProAccount": "Create a Pro account",
   "footer.storeDirectory": "Store directory",
   "footer.boostGrid": "Options & boosts pricing",
-  "footer.safetyTips": "Safety tips",
+  "footer.trustSummary":
+    "Tracked payments · Clear handover · Explicit seller statuses",
+  "footer.trustLearnMore": "Learn more",
   "footer.contactSupport": "Contact support",
   "footer.currentDeals": "Reduced-price offers",
   "footer.comingSoon": "{name} — coming soon",
@@ -2668,8 +2670,6 @@ export const messagesEn: MessageCatalogue = {
   "home.homePage.paiementsSecurises": "Secure payments",
   "home.homePage.livraisonIntegree": "Clear handover and shipping",
   "home.homePage.vendeursVerifies": "Explicit seller statuses",
-  "home.homePage.trustSummary":
-    "Tracked payments · Clear handover · Explicit seller statuses",
   "home.homePage.annoncesRecentes": "Recent listings",
   "home.homePage.lesDernieresOffresPublieesPres":
     "The latest listings posted near you",
@@ -2709,7 +2709,6 @@ export const messagesEn: MessageCatalogue = {
   "home.heroBoostedScroll.annoncesControlees": "Checked listings",
   "home.heroBoostedScroll.securiteFiabiliteEtQualiteAssurees":
     "Safety, reliability and quality assured.",
-  "home.heroBoostedScroll.enSavoirPlus": "Learn more",
   "home.heroBoostedScroll.livraison": "Delivery",
   "home.homeCollectionsSection.nosCollectionsDuMoment": "Explore by collection",
   "home.homeCollectionsSection.desSelectionsThematiquesPrepareesPour":

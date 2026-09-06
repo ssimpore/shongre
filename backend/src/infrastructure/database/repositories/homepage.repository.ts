@@ -151,6 +151,10 @@ interface HomepageSectionRow {
   settings: HomepageSectionConfiguration["settings"];
 }
 
+function normalizeDatabaseTimestamp(value?: string | null) {
+  return value ? new Date(value).toISOString() : undefined;
+}
+
 async function hydrateConfiguration(
   revision: HomepageRevisionRow,
 ): Promise<HomepageConfiguration> {
@@ -189,8 +193,8 @@ async function hydrateConfiguration(
       listingId: row.listing_id,
       isPinned: Boolean(row.is_pinned),
       isHidden: Boolean(row.is_hidden),
-      startsAt: row.starts_at || undefined,
-      endsAt: row.ends_at || undefined,
+      startsAt: normalizeDatabaseTimestamp(row.starts_at),
+      endsAt: normalizeDatabaseTimestamp(row.ends_at),
       sortOrder: row.sort_order ?? undefined,
     });
     offersBySection.set(row.section_id, offers);
@@ -212,8 +216,8 @@ async function hydrateConfiguration(
       maxItems: Number(row.max_items),
       mobileVisible: row.mobile_visible,
       desktopVisible: row.desktop_visible,
-      startsAt: row.starts_at || undefined,
-      endsAt: row.ends_at || undefined,
+      startsAt: normalizeDatabaseTimestamp(row.starts_at),
+      endsAt: normalizeDatabaseTimestamp(row.ends_at),
       settings: (() => {
         const rule = rulesBySection.get(row.id);
         return {
@@ -235,8 +239,8 @@ async function hydrateConfiguration(
         };
       })(),
     })),
-    updatedAt: revision.updated_at,
-    publishedAt: revision.published_at || undefined,
+    updatedAt: normalizeDatabaseTimestamp(revision.updated_at),
+    publishedAt: normalizeDatabaseTimestamp(revision.published_at),
     changeReason: revision.change_reason || undefined,
   });
 }

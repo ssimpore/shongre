@@ -272,6 +272,26 @@ export const Footer: React.FC = () => {
   return (
     <footer className="border-t border-border-inverse bg-surface-inverse-deep pb-36 pt-10 text-xs text-text-inverse-muted lg:pb-10">
       <Container className="space-y-6">
+        <Link
+          to="/securite"
+          data-footer-trust="true"
+          className={`${PANEL} group flex min-h-control-touch min-w-0 items-center gap-3 px-4 py-3 font-medium text-text-inverse-subtle transition-colors hover:border-primary-on-dark hover:text-text-inverse focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-on-dark`}
+          aria-label={`${t("footer.trustSummary")}. ${t("footer.trustLearnMore")}`}
+        >
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-pill bg-surface-inverse-deep text-primary-on-dark">
+            <ShieldCheck className="h-icon-lg w-icon-lg" aria-hidden="true" />
+          </span>
+          <span className="min-w-0 flex-1 truncate">
+            {t("footer.trustSummary")}
+          </span>
+          <span className="inline-flex shrink-0 items-center gap-1 font-bold text-primary-on-dark">
+            <span className="hidden sm:inline">
+              {t("footer.trustLearnMore")}
+            </span>
+            <ChevronRight className="h-icon-sm w-icon-sm" aria-hidden="true" />
+          </span>
+        </Link>
+
         <div className={`${PANEL} p-5 sm:p-7`}>
           <div className="grid min-w-0 gap-x-6 md:grid-cols-2 md:gap-y-8 lg:grid-cols-footer lg:gap-x-0 lg:gap-y-0">
             <FooterColumn
@@ -333,7 +353,6 @@ export const Footer: React.FC = () => {
               onToggle={toggleSection}
             >
               <FooterLink to="/aide">{t("footer.helpCenter")}</FooterLink>
-              <FooterLink to="/securite">{t("footer.safetyTips")}</FooterLink>
               <FooterLink to="/contact">
                 {t("footer.contactSupport")}
               </FooterLink>

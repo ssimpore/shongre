@@ -26,7 +26,7 @@ describe("homepage configuration contract", () => {
       configuration.sections.find((item) => item.key === "trending"),
     ).toMatchObject({
       maxItems: 4,
-      titleByLocale: { "fr-FR": "En Tendence" },
+      titleByLocale: { "fr-FR": "En tendence" },
     });
     expect(
       configuration.sections.find((item) => item.key === "deals"),

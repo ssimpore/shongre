@@ -217,12 +217,19 @@ Web and mobile use the same boundary:
 component → hook/controller → service contract → demo or HTTP adapter
 ```
 
-- Canonical local development uses API-mode Web/mobile clients and a
-  database-mode backend backed by repository-owned Supabase. Demo adapters must
-  remain fully usable and testable with backend infrastructure stopped, but may
-  be selected only by explicit demo/test commands; connected builds must ignore
-  browser-persisted demo preferences and never expose a runtime path back to
-  demo mode.
+- All connected local product development must use API-mode Web/mobile clients
+  (`NEXT_PUBLIC_DATA_MODE=api`, `EXPO_PUBLIC_DATA_MODE=api`) and a database-mode
+  backend (`BACKEND_DATA_MODE=database`, `DATABASE_INFRA_MODE=local`) backed by
+  the repository-owned local Supabase stack, with mock storage disabled. All
+  business reads, writes, and authentication entry points go through the
+  Shongre API; clients must not access Supabase business tables or Auth
+  directly. Public media may use backend-projected Supabase Storage URLs. This
+  preserves the future production boundary so replacing local Supabase with an
+  environment's hosted Supabase does not change client architecture. Demo
+  adapters must remain usable and testable with backend infrastructure stopped,
+  but may be selected only by explicit `make frontend`, `make demo`, or test
+  workflows; connected builds must ignore browser-persisted demo preferences
+  and never expose a runtime path back to demo mode.
 - Local development uses the repository-owned Supabase stack for the backend and
   worker while `make frontend` remains an explicitly standalone demo UI. The
   canonical local sequence is `make install`, `make supabase-up`,

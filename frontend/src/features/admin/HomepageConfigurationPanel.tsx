@@ -33,7 +33,7 @@ import { useTranslation } from "../../i18n/I18nProvider";
 const SECTION_LABELS: Record<HomepageSectionType, string> = {
   hero: "En-tête et recherche",
   recent_searches: "Recherches récentes",
-  trending: "En Tendence",
+  trending: "En tendence",
   deals: "Meilleures offres",
   recent_listings: "Annonces récentes",
   collections: "Collections du moment",

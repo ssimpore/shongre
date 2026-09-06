@@ -180,7 +180,7 @@ export interface ResolvedHomepageConfiguration {
 const DEFAULT_TITLES: Record<HomepageSectionType, string> = {
   hero: "Trouvez la perle rare, sans tracas.",
   recent_searches: "Recherches récentes",
-  trending: "En Tendence",
+  trending: "En tendence",
   deals: "Meilleures offres",
   recent_listings: "Annonces récentes",
   collections: "Collections du moment",

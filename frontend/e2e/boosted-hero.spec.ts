@@ -470,7 +470,7 @@ test.describe("boosted listings hero rail", () => {
     await expectNoHorizontalOverflow(page, "mobile boosted hero rail");
   });
 
-  test("shows one compact hero trust line linked to safety guidance", async ({
+  test("moves the compact trust line from the hero to the footer", async ({
     page,
   }) => {
     await usePersona(page, "guest");
@@ -483,19 +483,26 @@ test.describe("boosted listings hero rail", () => {
     await expect(hero.locator('[data-home-hero-eyebrow="true"]')).toHaveText(
       "Plateforme de confiance",
     );
-    const trustLine = main.getByRole("link", { name: /Paiement suivi/ });
+    const footer = page.getByRole("contentinfo");
+    const trustLine = footer.getByRole("link", { name: /Paiement suivi/ });
     await expect(
       page.getByRole("list", { name: "Garanties Shongre" }),
     ).toHaveCount(0);
+    await expect(hero.locator('[data-home-hero-trust="true"]')).toHaveCount(0);
     await expect(trustLine).toBeVisible();
     await expect(trustLine).toHaveAttribute("href", "/securite");
-    await expect(main.locator('a[href="/securite"]')).toHaveCount(1);
+    await expect(footer.locator('a[href="/securite"]')).toHaveCount(1);
 
     const trustBox = await trustLine.boundingBox();
+    const heroSurfaceBox = await hero
+      .locator('[data-home-hero-surface="true"]')
+      .boundingBox();
     expect(trustBox).not.toBeNull();
+    expect(heroSurfaceBox).not.toBeNull();
     expect(trustBox!.height).toBeGreaterThanOrEqual(48);
-    expect(trustBox!.height).toBeLessThanOrEqual(64);
-    await expect(trustLine).toHaveAttribute("data-home-hero-trust", "true");
+    expect(trustBox!.height).toBeLessThanOrEqual(72);
+    expect(heroSurfaceBox!.height).toBeLessThanOrEqual(350);
+    await expect(trustLine).toHaveAttribute("data-footer-trust", "true");
 
     await trustLine.click();
     await expect(page).toHaveURL(/\/securite$/);

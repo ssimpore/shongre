@@ -383,7 +383,9 @@ export const messagesFr = {
   "footer.createProAccount": "Créer un compte Pro",
   "footer.storeDirectory": "Annuaire des boutiques",
   "footer.boostGrid": "Grille des options & boosts",
-  "footer.safetyTips": "Conseils de sécurité",
+  "footer.trustSummary":
+    "Paiement suivi · Remise claire · Statuts vendeur explicites",
+  "footer.trustLearnMore": "En savoir plus",
   "footer.contactSupport": "Contacter le support",
   "footer.currentDeals": "Promotions",
   "footer.comingSoon": "{name} — bientôt disponible",
@@ -3165,8 +3167,6 @@ export const messagesFr = {
   "home.homePage.paiementsSecurises": "Paiements sécurisés",
   "home.homePage.livraisonIntegree": "Remise et expédition claires",
   "home.homePage.vendeursVerifies": "Statuts vendeur explicites",
-  "home.homePage.trustSummary":
-    "Paiement suivi · Remise claire · Statuts vendeur explicites",
   "home.homePage.annoncesRecentes": "Annonces récentes",
   "home.homePage.lesDernieresOffresPublieesPres":
     "Les dernières offres publiées près de chez vous",
@@ -3211,7 +3211,6 @@ export const messagesFr = {
   "home.heroBoostedScroll.annoncesControlees": "Annonces contrôlées",
   "home.heroBoostedScroll.securiteFiabiliteEtQualiteAssurees":
     "Sécurité, fiabilité et qualité assurées.",
-  "home.heroBoostedScroll.enSavoirPlus": "En savoir plus",
   "home.heroBoostedScroll.livraison": "Livraison",
 
   // --- home.homeCollectionsSection ---

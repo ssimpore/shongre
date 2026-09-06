@@ -35,7 +35,7 @@ test.describe("Admin-managed homepage discovery", () => {
     await trending.scrollIntoViewIfNeeded();
     await expect(trending).toBeVisible();
     await expect(
-      trending.getByRole("heading", { name: "En Tendence" }),
+      trending.getByRole("heading", { name: "En tendence" }),
     ).toBeVisible();
     const trendingCount = await trending.locator("article").count();
     expect(trendingCount).toBeGreaterThan(0);

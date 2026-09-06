@@ -1,6 +1,5 @@
 import React from "react";
-import { ArrowRight, Search, ShieldCheck, Sparkles } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Search, Sparkles } from "lucide-react";
 import type { HomepageSectionView } from "../../../domains/homepage/homepage.types";
 import { Container, Heading } from "../../../design-system";
 import { Button } from "../../../design-system/primitives/Button";
@@ -21,7 +20,7 @@ export const HomeHeroSection: React.FC<{ section: HomepageSectionView }> = ({
       <Container className="relative z-raised">
         <div
           data-home-hero-surface="true"
-          className="rounded-listing-card border border-border-base bg-bg-surface px-5 py-7 shadow-sm sm:p-8 lg:p-10"
+          className="rounded-listing-card border border-border-base bg-bg-surface px-5 py-7 shadow-sm sm:p-8 lg:px-8 lg:py-6"
         >
           <div className="grid w-full grid-cols-1 items-stretch gap-8 lg:grid-cols-2 lg:gap-10 xl:gap-12">
             <div className="flex min-w-0 w-full flex-col justify-between text-left">
@@ -71,25 +70,6 @@ export const HomeHeroSection: React.FC<{ section: HomepageSectionView }> = ({
               <HeroBoostedScroll />
             </div>
           </div>
-          <Link
-            to="/securite"
-            data-home-hero-trust="true"
-            className="group mt-6 flex min-h-control-touch min-w-0 items-center gap-3 rounded-control border border-border-base bg-bg-base px-3 py-2 text-xs font-medium text-text-secondary shadow-2xs motion-interactive hover:border-primary-border hover:bg-primary-surface-faint hover:shadow-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus sm:px-4 sm:text-sm"
-            aria-label={`${t("home.homePage.trustSummary")}. ${t("home.heroBoostedScroll.enSavoirPlus")}`}
-          >
-            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-pill bg-success-surface text-success">
-              <ShieldCheck className="h-icon-lg w-icon-lg" aria-hidden="true" />
-            </span>
-            <span className="min-w-0 flex-1 truncate">
-              {t("home.homePage.trustSummary")}
-            </span>
-            <span className="inline-flex shrink-0 items-center gap-1 font-bold text-primary">
-              <span className="hidden sm:inline">
-                {t("home.heroBoostedScroll.enSavoirPlus")}
-              </span>
-              <ArrowRight className="h-icon-sm w-icon-sm" aria-hidden="true" />
-            </span>
-          </Link>
         </div>
       </Container>
     </section>
