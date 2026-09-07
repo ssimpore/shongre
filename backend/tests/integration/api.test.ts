@@ -149,6 +149,45 @@ describe("API v1 Endpoints Integration", () => {
     expect((await response.json()).error.code).toBe("BAD_REQUEST");
   });
 
+  it("contains malformed path parameters and continues serving requests", async () => {
+    for (const id of ["%E0%A4%A", "%FF", "%"]) {
+      const response = await fetch(`${baseUrl}/api/v1/listings/${id}`, {
+        signal: AbortSignal.timeout(2_000),
+        headers: { "X-Request-Id": "malformed-path-regression" },
+      });
+      expect(response.status).toBe(400);
+      expect(response.headers.get("x-request-id")).toBe(
+        "malformed-path-regression",
+      );
+      expect((await response.json()).error.code).toBe("BAD_REQUEST");
+      expect((await fetch(`${baseUrl}/livez`)).status).toBe(200);
+    }
+  });
+
+  it("allows idempotent browser writes only from configured CORS origins", async () => {
+    for (const origin of [
+      ...config.oauthAllowedReturnOrigins,
+      "https://untrusted.invalid",
+    ]) {
+      const response = await fetch(`${baseUrl}/api/v1/invoicing/invoices`, {
+        method: "OPTIONS",
+        headers: {
+          Origin: origin,
+          "Access-Control-Request-Method": "POST",
+          "Access-Control-Request-Headers":
+            "content-type,idempotency-key,x-csrf-token",
+        },
+      });
+      expect(response.status).toBe(204);
+      expect(response.headers.get("access-control-allow-origin")).toBe(
+        origin === "https://untrusted.invalid" ? null : origin,
+      );
+      expect(
+        response.headers.get("access-control-allow-headers")?.toLowerCase(),
+      ).toContain("idempotency-key");
+    }
+  });
+
   // ---------------------------------------------------------------------------
   // Public surface
   // ---------------------------------------------------------------------------

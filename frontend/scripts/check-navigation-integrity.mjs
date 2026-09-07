@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import ts from "typescript";
+import { collectStaticRoutes } from "./lib/route-inventory.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const sourceRoot = path.join(root, "src");
@@ -32,63 +33,7 @@ const routerAst = ts.createSourceFile(
   ts.ScriptKind.TSX,
 );
 
-const routes = new Set();
-
-function property(object, name) {
-  return object.properties.find(
-    (candidate) =>
-      ts.isPropertyAssignment(candidate) &&
-      (candidate.name.getText(routerAst) === name ||
-        candidate.name.getText(routerAst) === `"${name}"`),
-  );
-}
-
-function joinRoute(parent, child) {
-  if (!child) return parent || "/";
-  if (child.startsWith("/")) return child;
-  return `${parent === "/" ? "" : parent}/${child}`.replace(/\/{2,}/g, "/");
-}
-
-function collectRouteObjects(array, parent = "") {
-  for (const element of array.elements) {
-    if (!ts.isObjectLiteralExpression(element)) continue;
-    const pathProperty = property(element, "path");
-    const pathValue =
-      pathProperty && ts.isStringLiteralLike(pathProperty.initializer)
-        ? pathProperty.initializer.text
-        : "";
-    const complete = joinRoute(parent, pathValue);
-    if (pathValue !== "*" && !pathValue.includes("*")) routes.add(complete);
-    const children = property(element, "children");
-    if (children && ts.isArrayLiteralExpression(children.initializer)) {
-      collectRouteObjects(children.initializer, complete);
-    }
-  }
-}
-
-function findRouter(node) {
-  // The route table is exported once and passed to both the browser router and
-  // the SSR memory router. Read that shared declaration rather than requiring
-  // createBrowserRouter to contain an inline array literal.
-  if (
-    ts.isVariableDeclaration(node) &&
-    node.name.getText(routerAst) === "APP_ROUTES" &&
-    node.initializer &&
-    ts.isArrayLiteralExpression(node.initializer)
-  ) {
-    collectRouteObjects(node.initializer);
-  }
-  if (
-    ts.isCallExpression(node) &&
-    node.expression.getText(routerAst) === "createBrowserRouter" &&
-    ts.isArrayLiteralExpression(node.arguments[0])
-  ) {
-    collectRouteObjects(node.arguments[0]);
-  }
-  ts.forEachChild(node, findRouter);
-}
-
-findRouter(routerAst);
+const routes = collectStaticRoutes(routerAst);
 
 const matchers = [...routes].map((route) => ({
   route,

@@ -9,6 +9,14 @@ if [[ ! -f "$SHONGRE_ROOT/.env" && ! -f "$SHONGRE_ROOT/.env.local" && ! -f "$SHO
   exit 1
 fi
 
+if [[ "$APP_ENV" != production ]]; then
+  for key in STRIPE_SECRET_KEY NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY; do
+    case "${!key:-}" in
+      sk_live_*|rk_live_*|pk_live_*) shongre_fail "$key cannot use live credentials outside production"; exit 1 ;;
+    esac
+  done
+fi
+
 required=(
   APP_ENV ENVIRONMENT_ID API_ENVIRONMENT_ID DATABASE_ENVIRONMENT_ID SUPABASE_ENVIRONMENT_ID STORAGE_ENVIRONMENT_ID
   PUBLIC_FR_URL PUBLIC_INTL_URL API_URL FRONTEND_HOST FRONTEND_PORT E2E_FRONTEND_PORT BACKEND_HOST BACKEND_PORT EXPO_HOST SUPABASE_HOST API_PREFIX
@@ -159,7 +167,8 @@ if [[ "$APP_ENV" == "development" || "$APP_ENV" == "staging" || "$APP_ENV" == "p
     ]) {
       const value = process.env[name] || "";
       if (!base64.test(value) || Buffer.from(value, "base64").length !== 32) {
-        throw new Error(`${name} must be valid base64 that decodes to exactly 32 bytes`);
+        console.error(`${name} must be valid base64 that decodes to exactly 32 bytes`);
+        process.exit(1);
       }
     }
   '; then
@@ -241,9 +250,11 @@ if [[ "$APP_ENV" == "staging" || "$APP_ENV" == "production" ]]; then
     fi
   done
   if ! MALWARE_SCAN_URL="${MALWARE_SCAN_URL:-}" node --input-type=module -e '
-    const url = new URL(process.env.MALWARE_SCAN_URL);
-    if (url.protocol !== "https:" || url.username || url.password) {
-      throw new Error("MALWARE_SCAN_URL must be a credential-free HTTPS URL");
+    try {
+      const url = new URL(process.env.MALWARE_SCAN_URL);
+      if (url.protocol !== "https:" || url.username || url.password) process.exit(1);
+    } catch {
+      process.exit(1);
     }
   '; then
     shongre_fail "MALWARE_SCAN_URL must be a credential-free HTTPS URL in $APP_ENV"
@@ -268,21 +279,43 @@ if [[ "$APP_ENV" == "staging" || "$APP_ENV" == "production" ]]; then
   fi
 fi
 
-if ! APP_ENV="${APP_ENV:-}" PUBLIC_FR_URL="${PUBLIC_FR_URL:-}" PUBLIC_INTL_URL="${PUBLIC_INTL_URL:-}" API_URL="${API_URL:-}" NEXT_PUBLIC_API_URL="${NEXT_PUBLIC_API_URL:-}" EXPO_PUBLIC_API_URL="${EXPO_PUBLIC_API_URL:-}" SHONGRE_MARKETPLACE_ORIGIN="${SHONGRE_MARKETPLACE_ORIGIN:-}" SHONGRE_SOLUTIONS_ORIGIN="${SHONGRE_SOLUTIONS_ORIGIN:-}" SHONGRE_PROSPECTS_ORIGIN="${SHONGRE_PROSPECTS_ORIGIN:-}" SHONGRE_FACTURATION_ORIGIN="${SHONGRE_FACTURATION_ORIGIN:-}" node --input-type=module -e '
-  const names = ["PUBLIC_FR_URL", "PUBLIC_INTL_URL", "API_URL"];
-  const urls = Object.fromEntries(names.map((name) => [name, new URL(process.env[name])]));
-  for (const [name, url] of Object.entries(urls)) {
-    if (!/^https?:$/.test(url.protocol) || url.username || url.password || url.pathname !== "/" || url.search || url.hash) {
-      throw new Error(`${name} must be a credential-free HTTP(S) origin`);
-    }
-    if (!["local", "test"].includes(process.env.APP_ENV) && url.protocol !== "https:") {
-      throw new Error(`${name} must use HTTPS outside local/test`);
-    }
+if ! (cd "$SHONGRE_ROOT" && node --import tsx --input-type=module -e '
+  import { createEnvironmentConfig, assertEnvironmentSafety } from "@shongre/contracts/environment";
+  try {
+  const env = process.env;
+  const config = createEnvironmentConfig({
+    appEnvironment: env.APP_ENV, environmentId: env.ENVIRONMENT_ID,
+    publicFranceUrl: env.PUBLIC_FR_URL, publicInternationalUrl: env.PUBLIC_INTL_URL, apiUrl: env.API_URL,
+  });
+  assertEnvironmentSafety({
+    config, apiEnvironmentId: env.API_ENVIRONMENT_ID, databaseEnvironmentId: env.DATABASE_ENVIRONMENT_ID,
+    supabaseEnvironmentId: env.SUPABASE_ENVIRONMENT_ID, storageEnvironmentId: env.STORAGE_ENVIRONMENT_ID,
+    backendDataMode: env.BACKEND_DATA_MODE, databaseInfrastructureMode: env.DATABASE_INFRA_MODE,
+    paymentMode: env.PAYMENT_MODE, emailMode: env.EMAIL_MODE, aiMode: env.AI_MODE, analyticsMode: env.ANALYTICS_MODE,
+    supabaseProjectRef: env.SUPABASE_PROJECT_REF, expectedSupabaseProjectRef: env.EXPECTED_SUPABASE_PROJECT_REF,
+  });
+  if (env.DATABASE_INFRA_MODE === "hosted") {
+    const database = new URL(env.DATABASE_URL);
+    const supabase = new URL(env.SUPABASE_URL);
+    const localHost = (host) => {
+      // Normalize short/decimal IPv4 forms even for non-special postgres URLs.
+      const normalized = new URL(`http://${host}`).hostname.replace(/\.$/, "");
+      return /^(?:localhost|localhost\.localdomain|.*\.localhost|.*\.local|127\..*|0\.0\.0\.0|\[::(?:1|ffff:7f[0-9a-f]{2}:[0-9a-f]+)?\])$/i.test(normalized);
+    };
+    if (!["postgres:", "postgresql:"].includes(database.protocol) || localHost(database.hostname)) throw new Error("Invalid hosted database");
+    if (supabase.protocol !== "https:" || supabase.username || supabase.password || supabase.pathname !== "/" || supabase.search || supabase.hash || localHost(supabase.hostname)) throw new Error("Invalid hosted Supabase");
+    if (supabase.hostname.endsWith(".supabase.co") && supabase.hostname !== `${env.EXPECTED_SUPABASE_PROJECT_REF}.supabase.co`) throw new Error("Wrong Supabase project host");
   }
+  const urls = { PUBLIC_FR_URL: config.urls.franceApp, PUBLIC_INTL_URL: config.urls.internationalApp, API_URL: config.urls.api };
   for (const name of ["NEXT_PUBLIC_API_URL", "EXPO_PUBLIC_API_URL"]) {
     const url = new URL(process.env[name]);
-    if (url.origin !== urls.API_URL.origin || url.pathname.replace(/\/$/, "") !== "/api/v1") {
+    if (url.username || url.password || url.search || url.hash || url.origin !== urls.API_URL.origin || url.pathname.replace(/\/$/, "") !== "/api/v1") {
       throw new Error(`${name} must equal API_URL plus /api/v1`);
+    }
+  }
+  for (const prefix of ["NEXT_PUBLIC", "EXPO_PUBLIC"]) {
+    for (const market of ["FR", "INTL"]) {
+      if (new URL(env[`${prefix}_${market}_URL`]).href !== urls[`PUBLIC_${market}_URL`].href) throw new Error("Client market origin must match its environment");
     }
   }
   if (["staging", "production"].includes(process.env.APP_ENV)) {
@@ -303,7 +336,12 @@ if ! APP_ENV="${APP_ENV:-}" PUBLIC_FR_URL="${PUBLIC_FR_URL:-}" PUBLIC_INTL_URL="
       throw new Error("split application origins must use distinct hosts");
     }
   }
-'; then
+  } catch {
+    // Invalid URL errors may contain credentials; never serialize their input.
+    console.error("Environment contract, resource binding, or deployment origins are invalid.");
+    process.exit(1);
+  }
+'); then
   shongre_fail "deployment URL configuration is invalid or cross-environment"
   failed=1
 fi
@@ -339,7 +377,7 @@ for key in "${ports[@]}"; do
   seen_port_names+=("$key")
 done
 
-if env | cut -d= -f1 | grep -Eq '^(VITE|EXPO_PUBLIC)_(.*SECRET|.*TOKEN|.*PASSWORD|.*PRIVATE|DATABASE_URL|SUPABASE_SERVICE_ROLE_KEY)$'; then
+if env | cut -d= -f1 | grep -Eq '^(VITE|NEXT_PUBLIC|EXPO_PUBLIC)_(.*SECRET|.*TOKEN|.*PASSWORD|.*PRIVATE|DATABASE_URL|SUPABASE_SERVICE_ROLE_KEY)$'; then
   shongre_fail "A secret-like variable uses a browser/mobile public prefix"
   failed=1
 fi

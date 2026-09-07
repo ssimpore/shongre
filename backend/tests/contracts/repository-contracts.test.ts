@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import {
   DemoUserRepository,
   PostgresUserRepository,
@@ -29,6 +29,20 @@ import {
   createRepositoryContainer,
 } from "../../src/infrastructure/database/repositories/index.js";
 import { UserProfile, Listing } from "../../src/shared/types/index.js";
+
+// These are repository shape/factory contracts, not database integration tests.
+// Keep constructors independent of developer secrets and forbid accidental I/O.
+vi.mock("../../src/infrastructure/supabase/supabase-client.js", () => ({
+  getSupabaseAdminClient: () =>
+    new Proxy(
+      {},
+      {
+        get() {
+          throw new Error("Repository shape tests must not query Supabase");
+        },
+      },
+    ),
+}));
 
 describe("Repository Contract & Dual-Mode Compatibility Tests", () => {
   describe("User Repository Contract", () => {

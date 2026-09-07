@@ -6221,12 +6221,18 @@ export class ApiV1Router {
       const match = pathname.match(route.pattern);
       if (!match) continue;
 
-      const params: Record<string, string> = {};
-      route.paramNames.forEach((name, idx) => {
-        params[name] = decodeURIComponent(match[idx + 1]);
-      });
-
       try {
+        const params: Record<string, string> = {};
+        try {
+          route.paramNames.forEach((name, idx) => {
+            params[name] = decodeURIComponent(match[idx + 1]);
+          });
+        } catch {
+          throw new AppError({
+            code: "BAD_REQUEST",
+            message: "Le chemin de la requête est invalide.",
+          });
+        }
         let body: any = null;
         if (["POST", "PUT", "PATCH", "DELETE"].includes(method)) {
           body = await this.readRequestBody(req);

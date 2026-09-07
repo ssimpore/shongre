@@ -19,14 +19,19 @@ import {
   type PublicCacheProfileName,
 } from "@shongre/contracts/performance";
 
-// Explicit shell values win. Direct package commands follow the same local
-// precedence as root tooling without ever loading .env.example.
-dotenv.config({ path: resolve(process.cwd(), ".env.local") });
-dotenv.config({ path: resolve(process.cwd(), "backend/.env.local") });
-dotenv.config({ path: resolve(process.cwd(), ".env") });
-dotenv.config({ path: resolve(process.cwd(), "backend/.env") });
-dotenv.config({ path: resolve(process.cwd(), "../.env.local") });
-dotenv.config({ path: resolve(process.cwd(), "../.env") });
+// Root tooling and hosted secret stores already resolve the selected profile.
+// Only direct local package commands may fill missing values from local files.
+if (
+  !process.env.SHONGRE_ENV_LOADED &&
+  (process.env.SHONGRE_ENV || process.env.APP_ENV || "local") === "local"
+) {
+  dotenv.config({ path: resolve(process.cwd(), ".env.local") });
+  dotenv.config({ path: resolve(process.cwd(), "backend/.env.local") });
+  dotenv.config({ path: resolve(process.cwd(), ".env") });
+  dotenv.config({ path: resolve(process.cwd(), "backend/.env") });
+  dotenv.config({ path: resolve(process.cwd(), "../.env.local") });
+  dotenv.config({ path: resolve(process.cwd(), "../.env") });
+}
 
 type PaymentProviderMode = "demo" | "stripe";
 type KYCProviderMode = "demo" | "stripe" | "live";

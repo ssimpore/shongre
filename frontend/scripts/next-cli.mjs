@@ -7,10 +7,12 @@ import { resolve } from "node:path";
 const frontendRoot = resolve(import.meta.dirname, "..");
 const repositoryRoot = resolve(frontendRoot, "..");
 const inheritedKeys = new Set(Object.keys(process.env));
-for (const envPath of [
-  resolve(repositoryRoot, ".env"),
-  resolve(repositoryRoot, ".env.local"),
-]) {
+const localFiles =
+  !process.env.SHONGRE_ENV_LOADED &&
+  (process.env.SHONGRE_ENV || process.env.APP_ENV || "local") === "local"
+    ? [resolve(repositoryRoot, ".env"), resolve(repositoryRoot, ".env.local")]
+    : [];
+for (const envPath of localFiles) {
   if (!existsSync(envPath)) continue;
   for (const line of readFileSync(envPath, "utf8").split(/\r?\n/)) {
     const match = line.match(/^([A-Z][A-Z0-9_]*)=(.*)$/);
@@ -31,6 +33,8 @@ process.env.NEXT_PUBLIC_INTL_URL ??= process.env.PUBLIC_INTL_URL;
 process.env.NEXT_PUBLIC_API_URL ??= `${process.env.API_URL || ""}${process.env.API_PREFIX || "/api/v1"}`;
 
 const command = process.argv[2] ?? "dev";
+// NODE_ENV controls Next's compiler, never the selected Shongre data plane.
+process.env.NODE_ENV = command === "dev" ? "development" : "production";
 let childCwd = frontendRoot;
 let args = [
   resolve(repositoryRoot, "node_modules/next/dist/bin/next"),

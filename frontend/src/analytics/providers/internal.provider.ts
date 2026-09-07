@@ -1,11 +1,12 @@
 import type { AnalyticsEventEnvelope } from "@shongre/contracts/analytics";
 import type { PublicRuntimeConfig } from "../../platform/runtime-config/public-runtime-config";
 import type { AnalyticsProvider } from "../analytics-provider";
+import { httpClient } from "../../api/adapters/http/http-client";
 
 export class InternalAnalyticsProvider implements AnalyticsProvider {
   readonly id = "internal" as const;
   readonly consentCategory = "analytics" as const;
-  private endpoint = "";
+  private enabled = false;
 
   isConfigured(config: PublicRuntimeConfig): boolean {
     return (
@@ -16,34 +17,17 @@ export class InternalAnalyticsProvider implements AnalyticsProvider {
     );
   }
   async initialize(config: PublicRuntimeConfig): Promise<void> {
-    this.endpoint = `${config.apiBaseUrl}/analytics/events`;
+    this.enabled = this.isConfigured(config);
   }
   capture(event: AnalyticsEventEnvelope): void {
-    if (!this.endpoint) return;
-    const body = JSON.stringify({ events: [event] });
-    const endpoint = new URL(this.endpoint, window.location.origin);
-    if (
-      typeof navigator !== "undefined" &&
-      navigator.sendBeacon &&
-      endpoint.origin === window.location.origin
-    ) {
-      const sent = navigator.sendBeacon(
-        endpoint.href,
-        new Blob([body], { type: "application/json" }),
-      );
-      if (sent) return;
-    }
-    void fetch(endpoint.href, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      credentials: "include",
-      keepalive: true,
-      body,
-    }).catch(() => undefined);
+    if (!this.enabled) return;
+    void httpClient
+      .post("/analytics/events", { events: [event] }, { keepalive: true })
+      .catch(() => undefined);
   }
   async identify(): Promise<void> {}
   async reset(): Promise<void> {}
   async shutdown(): Promise<void> {
-    this.endpoint = "";
+    this.enabled = false;
   }
 }

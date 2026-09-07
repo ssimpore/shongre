@@ -177,6 +177,31 @@ function notFoundResponse(
 
 export async function proxy(request: NextRequest) {
   const environment = webEnvironmentFromEnvironment();
+  // The API transport validates the exact Web host/origin itself. Marketplace
+  // canonical redirects must not turn /api/v1 into /be/api/v1 or render HTML.
+  if (request.nextUrl.pathname.startsWith("/api/v1/")) {
+    try {
+      decodeURIComponent(request.nextUrl.pathname);
+    } catch {
+      return NextResponse.json(
+        {
+          error: {
+            code: "BAD_REQUEST",
+            statusCode: 400,
+            message: "Le chemin de la requête est invalide.",
+          },
+        },
+        {
+          status: 400,
+          headers: {
+            "Cache-Control": "no-store",
+            "X-Request-Id": crypto.randomUUID(),
+          },
+        },
+      );
+    }
+    return NextResponse.next();
+  }
   const hostname = requestHostname(request);
   const applications = createApplicationRegistry({
     environment: environment.environment,
@@ -395,6 +420,6 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!healthz$|_next/static|_next/image|favicon\\.ico|favicon\\.svg|images/|fonts/).*)",
+    "/((?!(?:healthz|readyz)$|_next/static|_next/image|favicon\\.ico|favicon\\.svg|images/|fonts/).*)",
   ],
 };

@@ -3,8 +3,9 @@
 set -euo pipefail
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source "$root/scripts/utils.sh"
+source "$root/scripts/lib/environment-profile.sh"
 
-environment="${1:-}"
+environment="$(shongre_environment_profile "${1:-}")"
 case "$environment" in development|staging|production) ;; *) shongre_fail "ENVIRONMENT must be development, staging, or production"; exit 2 ;; esac
 
 export SHONGRE_ENV="$environment"

@@ -2,6 +2,11 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 import { spawnSync } from "node:child_process";
+import {
+  PERFORMANCE_EVIDENCE_VERSION,
+  REQUIRED_PERFORMANCE_ENDPOINTS,
+  REQUIRED_HOSTED_SMOKE_TESTS,
+} from "./lib/release-evidence.mjs";
 
 const root = resolve(import.meta.dirname, "..");
 const directory = mkdtempSync(resolve(tmpdir(), "shongre-release-"));
@@ -30,27 +35,27 @@ try {
   writeFileSync(
     hostedReport,
     JSON.stringify({
+      config: { metadata: { environment: "staging", release: sha } },
       suites: [
         {
-          specs: [
-            "serves the international gateway with environment-safe headers",
-            "serves the France marketplace with environment-safe headers",
-            "serves each canonical Shongre application hostname",
-            "serves live and ready API probes through the Tunnel",
-            "returns a market-scoped public listings feed",
-          ].map((title) => ({
+          specs: REQUIRED_HOSTED_SMOKE_TESTS.map((title) => ({
             title,
             tests: [{ results: [{ status: "passed" }] }],
           })),
         },
       ],
-      stats: { expected: 5, skipped: 0, unexpected: 0, duration: 1234 },
+      stats: {
+        expected: REQUIRED_HOSTED_SMOKE_TESTS.length,
+        skipped: 0,
+        unexpected: 0,
+        duration: 1234,
+      },
     }),
   );
   writeFileSync(
     performanceEvidence,
     JSON.stringify({
-      schemaVersion: 1,
+      schemaVersion: PERFORMANCE_EVIDENCE_VERSION,
       environment: "staging",
       release: sha,
       scope: "MARKET_SCOPED",
@@ -58,9 +63,12 @@ try {
       verifiedAt: "2026-08-27T10:00:00.000Z",
       result: "PASS",
       budgets: { p95Ms: 750, minimumSuccessRate: 0.99 },
-      endpoints: ["liveness", "readiness", "marketplace_listings"].map(
-        (name) => ({ name, successRate: 1, p95Ms: 20 }),
-      ),
+      conditionalCache: { result: "PASS" },
+      endpoints: REQUIRED_PERFORMANCE_ENDPOINTS.map((name) => ({
+        name,
+        successRate: 1,
+        p95Ms: 20,
+      })),
     }),
   );
   run(["create", output, sha, "example/shongre", frontend, backend]);
@@ -87,6 +95,31 @@ try {
   if (invalid.status === 0) throw new Error("mismatched release was accepted");
 
   const report = JSON.parse(readFileSync(hostedReport, "utf8"));
+  for (const mutate of [
+    (value) => {
+      value.config.metadata.release = "d".repeat(40);
+    },
+    (value) => {
+      value.suites[0].specs.pop();
+    },
+    (value) => {
+      value.stats.skipped = 1;
+    },
+    (value) => {
+      value.stats.flaky = 1;
+    },
+    (value) => {
+      value.suites[0].specs[0].tests[0].results.unshift({ status: "failed" });
+    },
+  ]) {
+    const invalidReport = structuredClone(report);
+    mutate(invalidReport);
+    writeFileSync(hostedReport, JSON.stringify(invalidReport));
+    run(
+      ["certify", output, certification, hostedReport, performanceEvidence],
+      1,
+    );
+  }
   report.stats.unexpected = 1;
   writeFileSync(hostedReport, JSON.stringify(report));
   run(["certify", output, certification, hostedReport, performanceEvidence], 1);

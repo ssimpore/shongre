@@ -1,5 +1,8 @@
 BEGIN;
 
+CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
+SET LOCAL search_path = public, extensions;
+
 SELECT plan(10);
 
 SELECT ok(
@@ -45,14 +48,35 @@ INSERT INTO public.organization_members (
   ('93000000-0000-4000-a000-000000000002', '91000000-0000-4000-a000-000000000002',
    'owner', 'active', ARRAY['invoice.read','subscription.manage.own']);
 
+-- Current entitlements require the immutable catalog that authorized them.
+INSERT INTO public.commercial_rule_sets (id, name, description, domain)
+VALUES ('rls-facturation', 'RLS catalog', 'Isolated RLS test catalog', 'invoicing');
+INSERT INTO public.commercial_configuration_versions (
+  id, rule_set_id, version_number, market_code, status, change_reason,
+  snapshot, snapshot_hash
+) VALUES (
+  'rls-configuration-v1', 'rls-facturation', 1, 'FR', 'active',
+  'Isolated RLS fixture', '{}'::JSONB, repeat('0', 64)
+);
+INSERT INTO public.monetization_product_versions (
+  id, product_id, configuration_version_id, name, description, audience, scope, status
+) VALUES (
+  'rls-facturation-v1', 'product.facturation', 'rls-configuration-v1',
+  'RLS Facturation', 'Isolated product evidence', 'organization', '{}'::JSONB, 'active'
+);
+INSERT INTO public.monetization_product_entitlements (
+  product_version_id, entitlement_key, label, entitlement_value
+) VALUES ('rls-facturation-v1', 'invoicing.enabled', 'Invoicing', 'true'::JSONB);
+
 INSERT INTO public.monetization_entitlements (
   id, account_id, organization_id, product_id, entitlement_key,
-  entitlement_value, starts_at, status
+  entitlement_value, starts_at, status, product_version_id, configuration_version_id
 ) VALUES (
   '94000000-0000-4000-a000-000000000001',
   '91000000-0000-4000-a000-000000000001',
   '93000000-0000-4000-a000-000000000001',
-  'product.facturation', 'invoicing.enabled', 'true'::JSONB, NOW(), 'active'
+  'product.facturation', 'invoicing.enabled', 'true'::JSONB, NOW(), 'active',
+  'rls-facturation-v1', 'rls-configuration-v1'
 );
 
 INSERT INTO public.invoicing_parties (
@@ -116,9 +140,10 @@ SELECT is(
 );
 
 SET LOCAL ROLE anon;
-SELECT is(
-  (SELECT count(*) FROM public.invoicing_parties), 0::BIGINT,
-  'anonymous users see no invoicing parties'
+SELECT throws_ok(
+  $$ SELECT count(*) FROM public.invoicing_parties $$,
+  '42501', NULL,
+  'anonymous users cannot access the invoicing membership policy'
 );
 
 RESET ROLE;

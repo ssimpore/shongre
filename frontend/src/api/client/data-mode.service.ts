@@ -64,7 +64,7 @@ export function resolveLiveReadinessUrl(apiBaseUrl: string): string {
   parsed.pathname = `${rootPath}/readyz`.replace(/\/{2,}/g, "/");
   parsed.search = "";
   parsed.hash = "";
-  return parsed.toString();
+  return typeof window === "undefined" ? parsed.toString() : "/readyz";
 }
 
 /**

@@ -6,17 +6,16 @@ source "$SHONGRE_ROOT/scripts/utils.sh"
 cd "$SHONGRE_ROOT"
 
 mode="${1:-web}"
+if [[ "$APP_ENV" == production ]]; then
+  shongre_fail "production cannot run through the development launcher; use make deploy ENVIRONMENT=prod"
+  exit 2
+fi
 "$SHONGRE_ROOT/scripts/env-check.sh"
 
 started=()
-ensure_service() {
-  local service_name="$1" service_port="$2" status_line
+start_service() {
+  local service_name="$1" service_port="$2"
   shift 2
-  status_line="$("$SHONGRE_ROOT/scripts/service.sh" status "$service_name" "$service_port")" || return 1
-  if [[ "$status_line" == RUNNING* ]]; then
-    shongre_info "reusing tracked $service_name (${status_line#RUNNING })"
-    return 0
-  fi
   "$SHONGRE_ROOT/scripts/service.sh" start "$service_name" "$service_port" -- "$@"
   started+=("$service_name")
 }
@@ -58,6 +57,10 @@ case "$mode" in
   *) shongre_fail "usage: scripts/dev.sh <web|mobile|all>"; exit 2 ;;
 esac
 
+# Validate before stopping anything. A new profile must never reuse API/worker
+# processes from the previous environment.
+make --no-print-directory stop-all
+
 if [[ "$BACKEND_DATA_MODE" == "database" && "$DATABASE_INFRA_MODE" == "local" ]]; then
   shongre_info "database mode selected; ensuring local Supabase"
   "$SHONGRE_ROOT/scripts/supabase.sh" up
@@ -74,10 +77,10 @@ fi
 
 for service_name in "${selected_services[@]}"; do
   case "$service_name" in
-    backend) ensure_service backend "$BACKEND_PORT" npm run dev --workspace=backend ;;
-    worker) ensure_service worker none npm run dev:worker --workspace=backend ;;
-    frontend) ensure_service frontend "$FRONTEND_PORT" npm run dev --workspace=frontend ;;
-    metro) ensure_service metro "$EXPO_METRO_PORT" npm run start --workspace=mobile -- --port "$EXPO_METRO_PORT" ;;
+    backend) start_service backend "$BACKEND_PORT" npm run dev --workspace=backend ;;
+    worker) start_service worker none npm run dev:worker --workspace=backend ;;
+    frontend) start_service frontend "$FRONTEND_PORT" npm run dev --workspace=frontend ;;
+    metro) start_service metro "$EXPO_METRO_PORT" npm run start --workspace=mobile -- --port "$EXPO_METRO_PORT" ;;
   esac
 done
 

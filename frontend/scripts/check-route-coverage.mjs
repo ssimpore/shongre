@@ -20,6 +20,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import ts from "typescript";
+import { collectStaticRoutes } from "./lib/route-inventory.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const routerFile = path.join(root, "src/app/router/index.tsx");
@@ -49,51 +50,7 @@ const ast = ts.createSourceFile(
   ts.ScriptKind.TSX,
 );
 
-const routes = new Set();
-
-const property = (object, name) =>
-  object.properties.find(
-    (candidate) =>
-      ts.isPropertyAssignment(candidate) &&
-      (candidate.name.getText(ast) === name ||
-        candidate.name.getText(ast) === `"${name}"`),
-  );
-
-const joinRoute = (parent, child) => {
-  if (!child) return parent || "/";
-  if (child.startsWith("/")) return child;
-  return `${parent === "/" ? "" : parent}/${child}`.replace(/\/{2,}/g, "/");
-};
-
-function collect(array, parent = "") {
-  for (const element of array.elements) {
-    if (!ts.isObjectLiteralExpression(element)) continue;
-    const pathProperty = property(element, "path");
-    const value =
-      pathProperty && ts.isStringLiteralLike(pathProperty.initializer)
-        ? pathProperty.initializer.text
-        : "";
-    const complete = joinRoute(parent, value);
-    if (value !== "*" && !value.includes("*")) routes.add(complete);
-    const children = property(element, "children");
-    if (children && ts.isArrayLiteralExpression(children.initializer)) {
-      collect(children.initializer, complete);
-    }
-  }
-}
-
-function findRouteTable(node) {
-  if (
-    ts.isVariableDeclaration(node) &&
-    node.name.getText(ast) === "APP_ROUTES" &&
-    node.initializer &&
-    ts.isArrayLiteralExpression(node.initializer)
-  ) {
-    collect(node.initializer);
-  }
-  ts.forEachChild(node, findRouteTable);
-}
-findRouteTable(ast);
+const routes = collectStaticRoutes(ast);
 
 const matrixSource = fs.readFileSync(matrixFile, "utf8");
 const tested = [...matrixSource.matchAll(/path:\s*[`"']([^`"']+)[`"']/g)].map(

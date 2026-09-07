@@ -216,10 +216,16 @@ export function createHttpServer() {
         : randomUUID();
       res.setHeader("X-Request-Id", requestId);
       res.once("finish", () => {
+        let path = "[invalid-url]";
+        try {
+          path = new URL(req.url || "/", "http://request.invalid").pathname;
+        } catch {
+          // Never log a raw malformed URL or throw from the completion hook.
+        }
         logger.info("http_request_completed", {
           traceId: requestId,
           method: req.method || "GET",
-          path: new URL(req.url || "/", "http://request.invalid").pathname,
+          path,
           statusCode: res.statusCode,
           durationMs: Math.round(performance.now() - startedAt),
           cacheControl: String(res.getHeader("Cache-Control") || ""),
@@ -253,7 +259,7 @@ export function createHttpServer() {
       );
       res.setHeader(
         "Access-Control-Allow-Headers",
-        "Content-Type, Authorization, Accept, X-CSRF-Token, X-Shongre-Client, X-Shongre-Market, X-Request-Id",
+        "Content-Type, Authorization, Accept, X-CSRF-Token, X-Shongre-Client, X-Shongre-Market, X-Request-Id, Idempotency-Key, If-None-Match",
       );
       res.setHeader("Referrer-Policy", "no-referrer");
       res.setHeader("X-Content-Type-Options", "nosniff");
@@ -352,7 +358,35 @@ export function createHttpServer() {
       }
 
       // Delegate to API v1 Router
-      await apiV1Router.handleRequest(req, res);
+      await apiV1Router.handleRequest(req, res).catch((error: unknown) => {
+        // Parsing and dispatch failures must remain request-local, including
+        // failures before the router can select an operation.
+        const invalidUrl =
+          error instanceof TypeError &&
+          "code" in error &&
+          error.code === "ERR_INVALID_URL";
+        if (!invalidUrl)
+          logger.error("http_dispatch_failed", { error, requestId });
+        if (res.headersSent) {
+          res.destroy();
+          return;
+        }
+        res.writeHead(invalidUrl ? 400 : 500, {
+          "Content-Type": "application/json",
+          "Cache-Control": "no-store",
+        });
+        res.end(
+          JSON.stringify({
+            error: {
+              code: invalidUrl ? "BAD_REQUEST" : "INTERNAL_ERROR",
+              message: invalidUrl
+                ? "Le chemin de la requête est invalide."
+                : "Une erreur interne est survenue.",
+              statusCode: invalidUrl ? 400 : 500,
+            },
+          }),
+        );
+      });
     },
   );
 

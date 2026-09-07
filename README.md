@@ -91,26 +91,35 @@ make brand-check # validate checksums, mappings, dimensions, and references
 make check      # deterministic pre-commit/pre-PR gate
 ```
 
-Select a root profile with `SHONGRE_ENV`. Environment precedence is:
+Switch profiles per command with `ENVIRONMENT=local|dev|staging|prod`.
+`dev` and `prod` are CLI aliases for `development` and `production`;
+`APP_ENV` always stays canonical. `SHONGRE_ENV` remains supported when
+`ENVIRONMENT` is omitted. With neither selector, the default is local (or an
+explicitly exported `APP_ENV`). Nothing persists a production selection.
+Environment value precedence is:
 
 ```text
-local:        exported variable > .env.local > .env
-test:         exported variable > .env.test.local > .env.test > .env
-preview:      exported variable > .env.preview.local > .env.preview > .env
-development:  exported variable > .env.development.local > .env.development > .env
-staging:      exported variable > .env.staging.local > .env.staging > .env
-production:   exported variable > .env.production.local > .env.production > .env
+local:        exported variable > .env.local > .runtime/supabase.env > .env
+test:         exported variable > .env.test.local > .env.test
+preview:      exported variable > .env.preview.local > .env.preview
+development:  exported variable > .env.development.local > .env.development
+staging:      exported variable > .env.staging.local > .env.staging
+production:   exported variable > .env.production.local > .env.production
 ```
 
-The generic `.env.local` is intentionally not loaded into staging or production. All host ports and runtime URLs come from the selected configuration. `scripts/env.sh` derives local URLs when appropriate; Make targets and package scripts do not own competing port values.
+Generic `.env`, `.env.local`, and generated local Supabase credentials are never
+fallbacks for non-local profiles. All host ports and runtime URLs come from the
+selected configuration. Use a fresh shell if you previously sourced an entire
+profile: switching an already-loaded shell is rejected to avoid mixing secrets.
 
 ```bash
-make env-local                    # validate local Supabase defaults
-make env-test                     # validate deterministic test isolation
-make env-development              # validate hosted development resources
-make env-staging                  # validate hosted staging credentials
-SHONGRE_ENV=production make env-info # inspect non-secret production resolution
-make production-config-check      # fail closed until every live secret exists
+make env-check ENVIRONMENT=local   # validate local Supabase defaults
+make env-check ENVIRONMENT=dev     # validate hosted development resources
+make env-check ENVIRONMENT=staging # validate staging credentials and sandbox providers
+make env-check ENVIRONMENT=prod    # validate production configuration (does not deploy)
+make env-info ENVIRONMENT=dev      # inspect non-secret resolved configuration
+make env-matrix-check             # isolated six-profile tests; no hosted connections
+make production-config-check      # deeper live-provider/release configuration gate
 ```
 
 The shared `development`, `staging`, and `production` profiles are connected
@@ -120,11 +129,17 @@ Deterministic Web demo mode remains available through the explicit local
 `make frontend` command. The command-scoped `make demo` target runs a Web and
 backend demo stack without requiring Supabase; it does not select mobile mode.
 
+Hosted validation intentionally fails until the corresponding secret store or
+ignored `.env.<canonical-profile>.local` supplies that environment's resources.
+See [environment preparation and switching](docs/architecture/environments.md#preparing-and-switching-profiles)
+for prerequisites and the protected deployment workflow.
+
 ## Development
 
 ```bash
 make dev          # restart seeded local Supabase + API + worker + connected web
-make staging      # same stack using hosted staging configuration
+make dev ENVIRONMENT=dev     # restart local processes against hosted development DB
+make dev ENVIRONMENT=staging # restart local processes against hosted staging DB
 make dev-mobile   # backend API + scheduled worker + one Expo Metro server
 make dev-all      # backend API + scheduled worker + web + Expo Metro
 
@@ -143,6 +158,24 @@ make smoke        # health plus anonymous listings request
 make logs
 make stop-all
 ```
+
+The development launchers validate first, then restart tracked application
+processes so an old API or worker cannot be reused across environments. Only
+local starts/migrates/seeds Supabase. Hosted developer launches need their
+configured HTTPS routing and operate on real non-production data; normally use
+the deployed environment instead. `make dev ENVIRONMENT=prod` and local Docker
+commands against hosted profiles are rejected. Production runs only through the
+protected deployment workflow:
+
+```bash
+make deploy ENVIRONMENT=dev     # dispatch build/development deployment
+make deploy ENVIRONMENT=staging # promote the same immutable release to staging
+make deploy ENVIRONMENT=prod    # protected production promotion; main only
+make remote-health ENVIRONMENT=staging
+```
+
+These deploy commands change hosted state when explicitly run. Validation and
+profile selection alone never deploy or change DNS, secrets, or databases.
 
 Local development defaults to `BACKEND_DATA_MODE=database` and
 `DATABASE_INFRA_MODE=local`. `make supabase-up` starts the repository-owned

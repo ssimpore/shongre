@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 describe("API client environment configuration", () => {
   afterEach(() => {
     vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
     vi.resetModules();
   });
 
@@ -30,5 +31,14 @@ describe("API client environment configuration", () => {
 
     expect(apiClientConfig.dataMode).toBe("demo");
     expect(apiClientConfig.apiBaseUrl).toBe("");
+  });
+
+  it("keeps browser requests first-party and SSR requests on the configured API", async () => {
+    const { resolveApiRequestBaseUrl } = await import("./api-client.config");
+    const configured = "https://api.shongre.invalid/api/v1";
+    vi.stubGlobal("window", undefined);
+    expect(resolveApiRequestBaseUrl(configured)).toBe(configured);
+    vi.stubGlobal("window", {});
+    expect(resolveApiRequestBaseUrl(configured)).toBe("/api/v1");
   });
 });

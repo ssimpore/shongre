@@ -39,14 +39,40 @@ unset NO_COLOR
 mkdir -p "$SHONGRE_ROOT/.runtime"
 e2e_root="$(mktemp -d "$SHONGRE_ROOT/.runtime/e2e.XXXXXX")"
 e2e_server_pid=""
+e2e_backend_pid=""
 cleanup() {
-  if [[ -n "$e2e_server_pid" ]] && kill -0 "$e2e_server_pid" 2>/dev/null; then
-    kill "$e2e_server_pid" 2>/dev/null || true
-    wait "$e2e_server_pid" 2>/dev/null || true
-  fi
+  local e2e_pid
+  for e2e_pid in "$e2e_server_pid" "$e2e_backend_pid"; do
+    [[ -n "$e2e_pid" ]] || continue
+    shongre_stop_process_tree "$e2e_pid" "isolated-e2e" || return 1
+    wait "$e2e_pid" 2>/dev/null || true
+  done
   [[ ! -d "$e2e_root" ]] || find "$e2e_root" -depth -delete
 }
 trap cleanup EXIT INT TERM
+
+if [[ "${SHONGRE_E2E_API_TRANSPORT:-0}" == "1" ]]; then
+  export PLAYWRIGHT_NO_COPY_PROMPT=1
+  [[ "$APP_ENV" == "test" ]] || { shongre_fail "browser API transport requires APP_ENV=test"; exit 1; }
+  export PUBLIC_FR_URL="http://fr.localhost:${E2E_FRONTEND_PORT}"
+  export PUBLIC_INTL_URL="http://intl.localhost:${E2E_FRONTEND_PORT}"
+  export NEXT_PUBLIC_FR_URL="$PUBLIC_FR_URL"
+  export NEXT_PUBLIC_INTL_URL="$PUBLIC_INTL_URL"
+  export SHONGRE_FACTURATION_ORIGIN="http://facturation.localhost:${E2E_FRONTEND_PORT}"
+  export NEXT_PUBLIC_DATA_MODE=api NEXT_PUBLIC_ENABLE_MOCK_STORAGE=false
+  export DEMO_ACCOUNT_PASSWORD="$(node -e 'process.stdout.write(require("node:crypto").randomBytes(24).toString("base64url"))')"
+  export E2E_API_PORT_FILE="$e2e_root/api-port"
+  NODE_ENV=test BACKEND_DATA_MODE=demo node --import tsx backend/tests/fixtures/browser-api-server.ts >"$e2e_root/api.log" 2>&1 &
+  e2e_backend_pid=$!
+  for _ in {1..60}; do
+    [[ ! -s "$E2E_API_PORT_FILE" ]] || break
+    kill -0 "$e2e_backend_pid" 2>/dev/null || break
+    sleep 1
+  done
+  [[ -s "$E2E_API_PORT_FILE" ]] || { shongre_fail "isolated test API did not start"; exit 1; }
+  export API_URL="http://127.0.0.1:$(<"$E2E_API_PORT_FILE")"
+  export NEXT_PUBLIC_API_URL="$API_URL/api/v1"
+fi
 
 mkdir -p "$e2e_root/frontend"
 rsync -a \

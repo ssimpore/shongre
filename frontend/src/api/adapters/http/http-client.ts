@@ -1,4 +1,7 @@
-import { apiClientConfig } from "../../client/api-client.config";
+import {
+  apiClientConfig,
+  resolveApiRequestBaseUrl,
+} from "../../client/api-client.config";
 import { AppError, AppErrorCode } from "../../errors/app-error";
 import type { ApiPath, ApiPathForMethod } from "@shongre/contracts/openapi";
 import { deterministicRuntimeId } from "../../../utilities/deterministic-id";
@@ -18,7 +21,7 @@ class HttpClient {
   private refreshPromise: Promise<boolean> | null = null;
 
   constructor(baseUrl: string = apiClientConfig.apiBaseUrl) {
-    this.baseUrl = baseUrl;
+    this.baseUrl = resolveApiRequestBaseUrl(baseUrl);
   }
 
   private getCsrfToken(): string | null {
@@ -132,13 +135,22 @@ class HttpClient {
         !endpoint.startsWith("/auth/login") &&
         !endpoint.startsWith("/auth/register") &&
         !endpoint.startsWith("/auth/refresh") &&
-        !_retried &&
-        (await this.refreshSession())
+        !_retried
       ) {
-        return this.request<T>(endpoint, {
-          ...options,
-          _retried: true,
-        });
+        // A guest response can arrive after login, refresh, or logout. Retry
+        // with a newly issued session without rotating it; never refresh an
+        // anonymous request or resurrect a session that has just logged out.
+        const currentCsrfToken = this.getCsrfToken();
+        const recovered =
+          currentCsrfToken &&
+          (currentCsrfToken !== csrfToken
+            ? ["GET", "HEAD", "OPTIONS"].includes(method)
+            : await this.refreshSession());
+        if (recovered)
+          return this.request<T>(endpoint, {
+            ...options,
+            _retried: true,
+          });
       }
 
       if (!response.ok) {

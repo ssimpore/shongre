@@ -11,6 +11,11 @@ port="${3:-}"
 shift $(( $# >= 3 ? 3 : $# ))
 [[ "${1:-}" == "--" ]] && shift
 
+if [[ "$APP_ENV" == production && ( "$action" == foreground || "$action" == start ) ]]; then
+  shongre_fail "production services require the protected deployment workflow; use make deploy ENVIRONMENT=prod"
+  exit 2
+fi
+
 pid_file="$(shongre_pid_file "$service_name")"
 log_file="$SHONGRE_ROOT/.runtime/logs/${service_name}.log"
 mkdir -p "$SHONGRE_ROOT/.runtime/logs"

@@ -27,10 +27,12 @@ process production data or money.
 4. Complete the database and object-storage restore drill and record restricted
    evidence. Run the hosted load smoke and observability evidence probes. The
    provider-smoke and approval files must name the exact `release_sha`; the
-   staging certificate must embed successful public-browser and performance
+   staging certificate must embed successful public/authenticated-browser and performance
    evidence for the same commit. The browser certificate must exercise the
    France and international marketplace origins and every split application
    origin; a skipped or error-state Solutions catalog fails certification.
+   `make test-web-api-transport` must also pass the isolated first-party
+   transport regression on the CI browser matrix.
 5. Load production secrets from the secret manager and run
    `make production-release-check`. Never paste values into tickets or logs.
    This gate requires independent 32-byte keys for provider credentials and
@@ -42,6 +44,56 @@ Useful evidence commands are `make performance-smoke`,
 `ALLOW_BACKUP_RESTORE_TEST=true make backup-restore-test`. Signed storage URLs,
 dashboard links, alert receivers and evidence paths are release-scoped secrets
 or restricted operations configuration; they never belong in Git.
+
+## Authenticated staging certification
+
+The protected staging workflow runs `hosted-smoke.spec.ts` and
+`hosted-authenticated.spec.ts` together. Certification requires all ten named
+journeys, matching staging/release metadata, no skipped, flaky or failed tests,
+and schema-version-2 performance evidence from `make performance-smoke`,
+including both search transports and the conditional-cache probe. The producer
+and certification consumer share validation in `scripts/lib/release-evidence.mjs`.
+
+Set `STAGING_JOURNEY_FIXTURES_JSON` only as a protected GitHub **staging secret**.
+The workflow explicitly sets `PLAYWRIGHT_ALLOW_STAGING_WRITES=true`; the suite
+checks staging identity and the exact deployed release before login or writes.
+It must never be run with production accounts or data. Browser traces, video,
+screenshots and automatic page snapshots are disabled for these credentialed
+journeys. Do not upload the fixture or raw browser responses as evidence.
+
+The JSON fixture schema is enforced in
+`frontend/e2e/hosted-authenticated.spec.ts` and requires:
+
+- `environment: "staging"`, the exact full `release` SHA, and
+  `providerMode: "sandbox"`;
+- distinct `buyer`, `seller`, `outsider` and `finance` objects with dedicated
+  staging `id`, `email`, `password`; `finance` also has its real enrolled
+  base32 `totpSecret`. Never disable MFA or recent-authentication gates;
+- `favoriteListingId`: a France listing not already favorited by the outsider
+  or the buyer's Belgium account bucket;
+- `conversationListingId`: a published France listing owned by `seller`;
+- `publicationDraft`: a valid, release-specific France publication draft with
+  real staging taxonomy/media and all applicable compliance prerequisites;
+- `invoiceInput`: the canonical create-invoice request for a tenant, legal
+  entity and customer owned by the professional seller. Both seller and
+  outsider need Facturation access, but only seller belongs to this tenant;
+- `checkoutListingId`: a purchasable France listing supporting hand delivery;
+- `refundableOrderId`: a dedicated, actually funded Stripe **test** order in a
+  refundable state. Provision this through the sandbox checkout/webhook flow,
+  not a database status edit. Finance must have the authorized refund capability.
+
+The suite verifies browser login/refresh/write/logout on France and Belgium,
+favorite account/market isolation, authoritative publication, conversation
+ownership, invoice retry/tenant denial, a Stripe test Checkout session, and an
+MFA-authorized idempotent provider refund. Release-scoped keys make invoice,
+checkout and refund retries stable. Publication and messaging create staging
+records: use dedicated release fixtures and the approved staging retention
+workflow, never production seeding or cleanup. Refresh one-time payment fixtures
+for each release. Checkout creation is not proof of payment completion; provider
+webhook, payout, reconciliation and restore drills remain independent gates.
+The hosted operations review must also verify trusted client-IP propagation
+through the Web relay and Tunnel, and exercise login rate limits from distinct
+clients; local forwarding tests alone do not certify the deployed proxy chain.
 
 ## Production sequence
 

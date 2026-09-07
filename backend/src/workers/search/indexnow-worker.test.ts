@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import type { MarketInfrastructureConfig } from "@shongre/contracts/market-country";
+import * as supabase from "../../infrastructure/supabase/supabase-client.js";
 import {
   IndexNowWorker,
   type IndexNowEvent,
@@ -75,6 +76,25 @@ function settings(enabled = true) {
 }
 
 describe("IndexNowWorker", () => {
+  it("does not initialize a database client while disabled", async () => {
+    const client = vi
+      .spyOn(supabase, "getSupabaseAdminClient")
+      .mockImplementation(() => {
+        throw new Error(
+          "Disabled workers must not require database credentials",
+        );
+      });
+    try {
+      const result = await new IndexNowWorker({
+        settings: settings(false),
+      }).run();
+      expect(result.claimed).toBe(0);
+      expect(client).not.toHaveBeenCalled();
+    } finally {
+      client.mockRestore();
+    }
+  });
+
   it("stays inert until an authorized environment explicitly enables it", async () => {
     const repository = new MemoryRepository([
       event("event-fr", "FR", "/annonce/example"),

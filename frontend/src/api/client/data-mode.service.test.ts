@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   DATA_MODE_STORAGE_KEY,
@@ -25,6 +25,17 @@ class MemoryStorage {
 const availableResponse = { ok: true, status: 200 } as Response;
 
 describe("DataModeService", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("checks browser readiness through the same first-party transport", () => {
+    vi.stubGlobal("window", {});
+    expect(resolveLiveReadinessUrl("https://api.shongre.test/api/v1")).toBe(
+      "/readyz",
+    );
+    expect(() => resolveLiveReadinessUrl("not-an-origin")).toThrow();
+  });
   it("uses Demo mode by default", () => {
     const service = new DataModeService({
       storage: new MemoryStorage(),

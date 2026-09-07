@@ -3,6 +3,7 @@
 import { writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { resolve } from "node:path";
+import { PERFORMANCE_EVIDENCE_VERSION } from "./lib/release-evidence.mjs";
 import {
   SHONGRE_PERFORMANCE_BUDGETS,
   SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS,
@@ -289,7 +290,7 @@ export async function runLoadSmoke(overrides = {}) {
     failed.push({ name: "conditional_public_cache" });
   }
   const evidence = {
-    schemaVersion: 2,
+    schemaVersion: PERFORMANCE_EVIDENCE_VERSION,
     environment: expectedEnvironment,
     release: expectedRelease,
     scope: "MARKET_SCOPED",

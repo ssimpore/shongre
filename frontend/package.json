@@ -15,7 +15,7 @@
     "preview": "node scripts/next-cli.mjs start",
     "start": "node scripts/next-cli.mjs start",
     "clean": "rm -rf .next out server.js",
-    "lint": "tsc --noEmit && node scripts/check-design-tokens.mjs && node scripts/normalize-control-metrics.mjs --check && node scripts/check-i18n-coverage.mjs && node scripts/check-navigation-integrity.mjs && node scripts/check-route-coverage.mjs && npm run check:seo",
+    "lint": "tsc --noEmit && node scripts/check-design-tokens.mjs && node scripts/normalize-control-metrics.mjs --check && node scripts/check-i18n-coverage.mjs && node --test scripts/lib/route-inventory.test.mjs && node scripts/check-navigation-integrity.mjs && node scripts/check-route-coverage.mjs && npm run check:seo",
     "typecheck": "tsc --noEmit",
     "pretest": "npm run build --workspace=@shongre/design-tokens",
     "test": "vitest run",

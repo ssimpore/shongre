@@ -29,12 +29,16 @@ const firefoxCanLaunch =
 /**
  * Shongre end-to-end configuration.
  *
- * The suite runs against the demo data mode only — no backend, no Supabase, no
- * payment or KYC provider — which is what keeps it runnable from a clean
- * checkout with nothing but `npm install`.
+ * The default suite uses standalone demo data. The API transport target owns
+ * an isolated test backend; protected hosted certification uses dedicated
+ * staging accounts and sandbox providers, never production credentials.
  */
 export default defineConfig({
   testDir: "./e2e",
+  metadata: {
+    environment: process.env.PLAYWRIGHT_EXPECTED_ENVIRONMENT,
+    release: process.env.PLAYWRIGHT_EXPECTED_RELEASE,
+  },
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 1 : 0,

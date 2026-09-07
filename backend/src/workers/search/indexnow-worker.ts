@@ -32,7 +32,9 @@ export interface IndexNowOutboxRepository {
 }
 
 export class PostgresIndexNowOutboxRepository implements IndexNowOutboxRepository {
-  private readonly client = getSupabaseAdminClient();
+  private get client() {
+    return getSupabaseAdminClient();
+  }
 
   async claim(
     workerId: string,

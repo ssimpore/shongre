@@ -119,6 +119,58 @@ share links, email links, notification links, and auth handoffs use those
 builders. Non-production Web responses add `X-Robots-Tag: noindex, nofollow`,
 robots disallows crawling, and sitemaps are empty/404.
 
+## Preparing and switching profiles
+
+Use `make <target> ENVIRONMENT=local|dev|staging|prod`. Selection is scoped to
+that command and its children; it never rewrites `.env.local`, persists an
+active production target, or switches a signed-in browser/native session to a
+different backend. `dev`/`prod` normalize to `development`/`production` only at
+the operator CLI boundary. Existing `SHONGRE_ENV` commands remain supported;
+an explicit Make `ENVIRONMENT` takes precedence. `APP_ENV` must match the
+selected canonical profile. Start a fresh shell if you previously sourced a
+different profile instead of carrying its exported credentials across targets.
+
+| Target      | Preparation                                                                                                                                | Validate and inspect                 | Run or deploy                     |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------ | --------------------------------- |
+| Local       | `make env`, then local Supabase setup from the README                                                                                      | `make env-check ENVIRONMENT=local`   | `make dev ENVIRONMENT=local`      |
+| Development | Dedicated hosted project, fingerprints, runtime secrets and HTTPS origins                                                                  | `make env-check ENVIRONMENT=dev`     | `make deploy ENVIRONMENT=dev`     |
+| Staging     | Dedicated hosted project, sandbox provider bindings, split HTTPS origins, recipient allowlist and staging journey fixtures                 | `make env-check ENVIRONMENT=staging` | `make deploy ENVIRONMENT=staging` |
+| Production  | Dedicated production secrets/resources, split HTTPS origins, live provider configuration, certified staging release and protected approval | `make env-check ENVIRONMENT=prod`    | `make deploy ENVIRONMENT=prod`    |
+
+`make env-info ENVIRONMENT=<target>` prints only the validated non-secret
+resolution. `make env-matrix-check` tests all six profiles using temporary copies
+of committed configuration, dummy resource bindings and an isolated process
+environment; it never reads operator secrets or contacts hosted services.
+Passing that synthetic matrix is not evidence that a hosted environment is
+provisioned or release-certified. Missing credentials must remain failures,
+not be replaced by fabricated production configuration.
+
+Root loading precedence is exported variables, then `.env.<profile>.local`,
+then `.env.<profile>`. Only local uses `.env.local`, generated
+`.runtime/supabase.env`, and generic `.env` in that order. Non-local commands
+never inherit fallback values from those files. The Web launcher, backend and
+mobile release checks do not re-import root local files after profile loading.
+Keep application-level dotenv files local-only; hosted artifacts receive their
+complete runtime configuration from the secret store, not bundled env files.
+
+`make dev ENVIRONMENT=dev` and `make dev ENVIRONMENT=staging` are explicit
+developer-hosted process launches against those real non-production databases.
+The `make dev-development` convenience target and retained `make dev-staging`
+and `make staging` aliases select the same workflow. They need the configured HTTPS
+origins routed to those processes. Validation precedes process cleanup; successful
+launches stop the tracked old application stack before starting a new one.
+Only local starts Supabase and runs migrations/seed. Never point these launchers
+at production: production service startup and non-local use of the local Docker
+override are rejected. Use the protected deployment targets for hosted rollout.
+
+`NODE_ENV` follows the Web command (`development` for the development compiler,
+`production` for build/start), independent of `APP_ENV`. Hosted release
+promotion keeps the same image digests and uses Shongre's existing server-to-
+browser runtime configuration projection; it does not rebuild public values
+for each environment. Native configuration is bundled by Expo: switching its
+profile requires restarting Metro and rebuilding when native configuration or
+identifiers change, not a runtime settings toggle.
+
 ## Variables and secrets
 
 Commit-safe profile files contain non-secret topology, modes, ports, and empty

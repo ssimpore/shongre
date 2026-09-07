@@ -1,9 +1,14 @@
 .DEFAULT_GOAL := help
 SHELL := /bin/bash
 
+# Command-scoped selection; never persist an active production profile on disk.
+ifneq ($(strip $(ENVIRONMENT)),)
+export SHONGRE_ENV := $(ENVIRONMENT)
+endif
+
 .PHONY: help setup doctor info env-info urls env env-init env-check env-local env-test env-preview env-development env-staging env-production install reinstall \
-	dev demo dev-web dev-staging staging dev-mobile dev-all start stop stop-all restart status health smoke logs \
-	frontend frontend-start frontend-build frontend-lint frontend-typecheck frontend-test frontend-test-e2e frontend-check frontend-clean frontend-logs seo-check seo-audit \
+	dev demo dev-web dev-development dev-staging staging dev-mobile dev-all start stop stop-all restart status health smoke logs \
+	frontend frontend-start frontend-build frontend-lint frontend-typecheck frontend-test frontend-test-e2e test-web-api-transport frontend-check frontend-clean frontend-logs seo-check seo-audit \
 	backend backend-dev backend-start worker worker-dev worker-start backend-build backend-lint backend-typecheck backend-test backend-check backend-health backend-logs worker-logs \
 	contracts-lint contracts-typecheck contracts-test contracts-check openapi-lint openapi-generate openapi-check openapi-docs openapi-breaking-check \
 	brand-sync brand-check brand-activate brand-activation-check tokens-check tokens-build ui-check ui-test ui-lint ui-typecheck ui-build shared-check cross-platform-check \
@@ -15,7 +20,7 @@ SHELL := /bin/bash
 	clean clean-deps clean-all reset audit outdated \
 	eas-doctor ios-preview-build android-preview-build ios-production-build android-production-build eas-build-ios eas-build-android eas-build-all submit-ios submit-android \
 	privacy-check permissions-check sdk-audit version version-check version-bump-patch version-bump-minor version-bump-major reviewer-access-check association-files deep-links-check mobile-identifiers-check mobile-production-env-check release-content-check ios-sdk-check ios-privacy-check ios-permissions-check ios-entitlements-check ios-signing-check ios-store-check ios-release-check android-sdk-check android-data-safety-check android-permissions-check android-16kb-check android-signing-check android-store-check android-release-check release-check store-check \
-	production-config-check production-release-check backup-restore-test secret-scan hostname-check deploy-dev deploy-staging deploy-prod rollback remote-health \
+	production-config-check production-release-check backup-restore-test secret-scan hostname-check deploy deploy-dev deploy-staging deploy-prod rollback remote-health \
 	operations-tooling-check capability-inventory-check capability-inventory-update performance-smoke performance-db-plan performance-check storage-restore-test observability-evidence edge-functions-evidence \
 	docker-config docker-build docker-build-frontend docker-build-backend docker-start docker-stop docker-status docker-health docker-logs docker-scan docker-audit \
 	tunnel-status tunnel-health tunnel-logs api-schema api-types contracts release-manifest-check deployment-config-check env-matrix-check
@@ -47,7 +52,7 @@ help: ## Show this generated command reference
 			description = $$0; sub(/^[^#]*## /, "", description); \
 			printf "  make %-25s %s\n", target, description; \
 		}' $(MAKEFILE_LIST)
-	@printf '\nHost ports and runtime modes come from .env; run make info for resolved values.\n\n'
+	@printf '\nSelect per command: make env-check ENVIRONMENT=local|dev|staging|prod\nPorts and runtime modes come from the selected profile; run make env-info ENVIRONMENT=dev.\n\n'
 
 ##@ Setup & diagnostics
 setup: env install doctor ## Prepare a complete standalone development checkout
@@ -55,10 +60,11 @@ setup: env install doctor ## Prepare a complete standalone development checkout
 env: env-init ## Create missing local environment files without overwriting values
 
 env-init:
+	@source scripts/lib/environment-profile.sh && profile="$$(shongre_environment_profile "$${SHONGRE_ENV:-$${APP_ENV:-local}}")" && [[ "$$profile" == local ]] || { echo 'make env initializes local only; hosted profiles use their dedicated secret stores.'; exit 2; }
 	@if [[ ! -e .env.local ]]; then cp .env.example .env.local && echo 'Created .env.local from .env.example'; else echo '.env.local already exists; left unchanged'; fi
 	@source scripts/env.sh && scripts/render-supabase-config.sh
 
-env-check: ## Validate required names, modes, ports, and public-variable safety
+env-check: ## Validate the selected profile; ENVIRONMENT=local|dev|staging|prod
 	@scripts/env-check.sh
 
 env-local: ## Validate the ignored local development profile
@@ -80,15 +86,16 @@ env-production: ## Validate production, including required hosted database crede
 	@SHONGRE_ENV=production scripts/env-check.sh
 
 env-matrix-check: ## Validate all six profiles with isolated non-secret resource bindings
-	@scripts/environment-matrix-check.sh
+	@node --test scripts/environment-profile.test.mjs
 
 doctor: ## Diagnose tools, versions, configuration, ports, and optional platforms
 	@scripts/doctor.sh
 
-info env-info: env-check ## Print resolved non-secret environment, URL, provider, and indexing modes
+info: env-info
+env-info: env-check ## Print resolved non-secret environment, URL, provider, and indexing modes
 	@source scripts/env.sh && printf 'Environment       %s (%s)\nFrance frontend   %s\nIntl frontend     %s\nAPI               %s%s\nMobile API        %s\nSupabase          %s\nStorage           %s\nPayments          %s\nEmail             %s\nAI                %s\nAnalytics         %s\nSEO indexing      %s\nData modes        web=%s backend=%s/%s\n' "$$APP_ENV" "$$ENVIRONMENT_ID" "$$PUBLIC_FR_URL" "$$PUBLIC_INTL_URL" "$$API_URL" "$$API_PREFIX" "$$EXPO_PUBLIC_API_URL" "$${SUPABASE_PROJECT_REF:-local}" "$$STORAGE_ENVIRONMENT_ID" "$$PAYMENT_MODE" "$$EMAIL_MODE" "$$AI_MODE" "$$ANALYTICS_MODE" "$$( [[ "$$APP_ENV" == production ]] && echo enabled || echo disabled )" "$$NEXT_PUBLIC_DATA_MODE" "$$BACKEND_DATA_MODE" "$$DATABASE_INFRA_MODE"
 
-urls: env-check ## Print every configured local service URL without credentials
+urls: env-check ## Print the selected environment's service URLs without credentials
 	@scripts/service-urls.sh
 
 install: ## Install frontend, backend, mobile, and shared workspace dependencies
@@ -97,20 +104,20 @@ install: ## Install frontend, backend, mobile, and shared workspace dependencies
 reinstall: clean-deps install
 
 ##@ Development
-dev: ## Restart the complete Supabase-backed local Web stack
-	@$(MAKE) stop-all
-	@NEXT_PUBLIC_DATA_MODE=api NEXT_PUBLIC_ENABLE_MOCK_STORAGE=false BACKEND_DATA_MODE=database DATABASE_INFRA_MODE=local scripts/dev.sh web
+dev: ## Restart the connected Web stack; ENVIRONMENT=local (default), dev, or staging
+	@NEXT_PUBLIC_DATA_MODE=api NEXT_PUBLIC_ENABLE_MOCK_STORAGE=false BACKEND_DATA_MODE=database scripts/dev.sh web
 demo: ## Run the complete Web stack with command-scoped deterministic demo modes
 	@SHONGRE_EXPLICIT_DEMO=true NEXT_PUBLIC_DATA_MODE=demo NEXT_PUBLIC_ENABLE_MOCK_STORAGE=true BACKEND_DATA_MODE=demo DATABASE_INFRA_MODE=local scripts/dev.sh web
-dev-web:
-	@scripts/dev.sh web
+dev-web: dev
+dev-development: ## Restart the Web stack against the dedicated hosted development database
+	@$(MAKE) dev ENVIRONMENT=development
 dev-staging: ## Run the Web stack with .env.staging and .env.staging.local
-	@SHONGRE_ENV=staging scripts/dev.sh web
+	@$(MAKE) dev ENVIRONMENT=staging
 staging: dev-staging ## Alias for dev-staging
-dev-mobile: ## Run local Supabase, database-backed API, worker, and one Expo Metro server
-	@BACKEND_DATA_MODE=database DATABASE_INFRA_MODE=local scripts/dev.sh mobile
-dev-all: ## Run local Supabase, database-backed API, worker, Web, and one Expo Metro server
-	@NEXT_PUBLIC_DATA_MODE=api NEXT_PUBLIC_ENABLE_MOCK_STORAGE=false BACKEND_DATA_MODE=database DATABASE_INFRA_MODE=local scripts/dev.sh all
+dev-mobile: ## Restart API, worker and Metro; ENVIRONMENT=local (default), dev, or staging
+	@BACKEND_DATA_MODE=database scripts/dev.sh mobile
+dev-all: ## Restart API, worker, Web and Metro; ENVIRONMENT=local (default), dev, or staging
+	@NEXT_PUBLIC_DATA_MODE=api NEXT_PUBLIC_ENABLE_MOCK_STORAGE=false BACKEND_DATA_MODE=database scripts/dev.sh all
 start: dev
 
 frontend: ## Run the deterministic demo UI at the configured local Web origin
@@ -181,6 +188,8 @@ frontend-test: ## Run Web unit and component tests
 	@SHONGRE_ENV=test bash -c 'source scripts/env.sh && npm run test --workspace=frontend'
 frontend-test-e2e: ## Run the real Playwright browser suite
 	@SHONGRE_ENV=test scripts/e2e.sh $(E2E_ARGS)
+test-web-api-transport: ## Verify first-party Web sessions against an isolated test API and production Web build
+	@SHONGRE_ENV=test SHONGRE_E2E_API_TRANSPORT=1 scripts/e2e.sh web-api-transport.spec.ts $(E2E_ARGS)
 seo-check: ## Validate centralized SEO and GEO discovery governance
 	@npm run check:seo --workspace=frontend
 seo-audit: ## Audit a public origin (SEO_ORIGIN=https://example.test)
@@ -496,7 +505,7 @@ repository-hygiene-check: ## Reject tracked caches, logs, build output, backups,
 	@npm run check:repository-hygiene
 check: env env-check env-matrix-check migrations-check release-manifest-check deployment-config-check operations-tooling-check repository-hygiene-check format-check brand-check tokens-check lint typecheck test frontend-build backend-build infra-check secret-scan hostname-check ## Run the deterministic pre-commit and pre-PR gate
 	@npm run check:boundary
-check-all: check test-critical cross-platform-check test-e2e ## Run exhaustive local validation including browsers and critical subsets
+check-all: check test-critical cross-platform-check test-e2e test-web-api-transport ## Run exhaustive local validation including browsers and critical subsets
 	@npm audit --audit-level=high
 ci: env
 	@npm ci
@@ -504,6 +513,8 @@ ci: env
 build: ui-build frontend-build backend-build mobile-typecheck ## Build all local production artifacts without publishing
 
 ##@ Deployment
+deploy: ## Dispatch protected deployment; ENVIRONMENT=dev|staging|prod is required
+	@scripts/deploy.sh deploy "$${ENVIRONMENT:-}"
 deploy-dev: ## Dispatch the current commit through the protected development pipeline
 	@scripts/deploy.sh deploy development
 deploy-staging: ## Dispatch the current commit through the protected staging pipeline

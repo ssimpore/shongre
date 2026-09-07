@@ -1,7 +1,7 @@
 # Shongre production capability matrix
 
 Initial audit date: 2026-08-25
-Current launch review: 2026-09-03
+Current launch review: 2026-09-07
 Scope: Web, mobile, backend API/worker, PostgreSQL/Supabase migrations, shared
 packages, infrastructure, CI/CD, security, compliance, operations and
 documentation.
@@ -65,7 +65,7 @@ evidence.
 
 Current generated repository inventory: 521 OpenAPI operations across 460
 paths, including 516 runtime routes, and 113 ordered migrations through
-`00113_indexnow_publication_delete.sql`. There are 423 non-E2E test source files.
+`00113_indexnow_publication_delete.sql`. There are 425 non-E2E test source files.
 <!-- capability-inventory:end -->
 
 Statuses in this ledger are intentionally stricter than feature-development
@@ -86,8 +86,8 @@ statuses:
 | Six isolated environment profiles                                         | IMPLEMENTED + VERIFIED   | Platform                     | `.env.*`, `scripts/env-check.sh`, environment contract                        | `make env-matrix-check` passed 2026-09-01                                                                                                                                                                         | Blocks if a profile or fingerprint can cross environments           |
 | Production Web runtime safety                                             | IMPLEMENTED + VERIFIED   | Web / Platform               | Runtime startup guard, production readiness script, focused tests             | API mode, mock storage off, live publishable key; focused tests passed 2026-09-01                                                                                                                                 | Prevents a demo-only customer deployment                            |
 | Split marketplace / Solutions / Prospects / Facturation routing           | IMPLEMENTED + UNVERIFIED | Web / Platform               | Application registry, Solutions API/HTTP adapter, hosted smoke certificate    | Configure four real distinct HTTPS origins and pass the mandatory hosted certificate                                                                                                                              | **Blocks all-application launch**                                   |
-| Canonical OpenAPI and generated clients                                   | IMPLEMENTED + VERIFIED   | Backend                      | `backend/openapi/openapi.json`, generated contracts, router                   | `make openapi-check` validates all 496 operations and generated artifacts                                                                                                                                         | Blocks transport changes and API deployment                         |
-| PostgreSQL schema, RLS, and migrations                                    | PARTIAL                  | Data / Backend               | 88 source-controlled migrations and static RLS suites                         | Reconcile deployed checksums; approve a compatible legacy baseline repair for `00030`, `00032`, and `00040`; then replay, generate types, and probe real roles                                                    | **Blocks production data and every write path**                     |
+| Canonical OpenAPI and generated clients                                   | IMPLEMENTED + VERIFIED   | Backend                      | `backend/openapi/openapi.json`, generated contracts, router                   | `make openapi-check` validates all 521 operations and generated artifacts                                                                                                                                         | Blocks transport changes and API deployment                         |
+| PostgreSQL schema, RLS, and migrations                                    | PARTIAL                  | Data / Backend               | 113 fresh-replayed migrations and 13 real-role/lifecycle SQL assertions       | Reconcile deployed checksums and retain protected full-stack replay/generated-type evidence; see the dated evidence below                                                                                         | **Blocks production data and every write path**                     |
 | Authentication, sessions, RBAC, Staff separation, MFA                     | PARTIAL                  | Identity / Security          | Auth services, Staff capability policy, security tests                        | Full API-mode login/reset/reauth/MFA/OAuth rehearsal; social auth remains disabled                                                                                                                                | Blocks customer and privileged access until rehearsed               |
 | Markets, location, country consent, and URL switching                     | IMPLEMENTED + VERIFIED   | Marketplace                  | Canonical country registry, market context, location service boundary         | Contract, Web, backend and market-boundary suites passed in the 2,113-test canonical run on 2026-09-03                                                                                                            | Blocks multi-market launch on any future failure                    |
 | Market-aware pricing, checkout, subscriptions, promotions, and evidence   | IMPLEMENTED + VERIFIED   | Monetization / Finance       | Versioned commercial policy, minor-unit contracts, immutable evidence changes | Unit, integration, concurrency and market-isolation suites passed in the 2,113-test canonical run on 2026-09-03                                                                                                   | Blocks paid operations on any inconsistency                         |
@@ -97,7 +97,7 @@ statuses:
 | Email, SMS, push, business registry, KYC, geocoding, AI, search providers | BLOCKED — EXTERNAL       | Platform / Trust             | Provider registry/control plane and release evidence contract                 | Select approved providers, inject isolated secrets, and record every required staging smoke marker                                                                                                                | Keep each unapproved capability disabled                            |
 | Upload storage and malware controls                                       | BLOCKED — EXTERNAL       | Security / Platform          | Private/public storage separation and scan boundary                           | Configure buckets/scanner; drain legacy rescan; prove restore and signed-access boundaries                                                                                                                        | Blocks uploads and verification documents                           |
 | Search and indexing                                                       | PARTIAL                  | Search / Marketplace         | PostgreSQL search/index foundations                                           | Certify production index choice, reindex/drift operations, relevance and load                                                                                                                                     | Public browse may launch only if approved PostgreSQL path meets SLO |
-| Security, privacy, secrets, abuse, and compliance controls                | PARTIAL                  | Security / Privacy           | Static security/RLS/secret gates and incident runbooks                        | High-severity npm gate passed; triage 3 moderate Expo transitive advisories; add container/SAST/DAST and approvals                                                                                                | Blocks public traffic on any critical finding                       |
+| Security, privacy, secrets, abuse, and compliance controls                | PARTIAL                  | Security / Privacy           | Static security/RLS/secret gates and incident runbooks                        | Dependency audit passed in the 2026-09-07 review; container/SAST/DAST evidence and owner approvals remain required                                                                                                | Blocks public traffic on any critical finding                       |
 | SEO, localization, and legal content                                      | PARTIAL                  | Web / Legal                  | Canonical/noindex/market routing and French catalogue                         | Production crawl audit, sitemap scale, legal copy approval; do not expose unshipped locales                                                                                                                       | Blocks indexing and any unapproved market                           |
 | Observability, alerts, and on-call                                        | BLOCKED — EXTERNAL       | SRE / Operations             | Probes, structured logs, monitoring manifests, evidence verifier              | Prove drain, trace lookup, alert delivery, dashboards, ownership, and on-call for exact SHA                                                                                                                       | **Blocks public traffic**                                           |
 | Backup, restore, rollback, and reconciliation                             | BLOCKED — EXTERNAL       | SRE / Data / Finance         | Forward-only deploy/rollback and restore scripts                              | Dated DB/object restore with RPO/RTO plus post-restore Stripe reconciliation                                                                                                                                      | **Blocks production data**                                          |
@@ -105,9 +105,50 @@ statuses:
 | Legal, finance, tax, invoicing, DSA/DAC7, and operations approval         | BLOCKED — EXTERNAL       | Legal / Finance / Operations | Policy hooks, audit/evidence models, approval file contract                   | Counsel and accountable owners approve exact launch scope and disabled policies                                                                                                                                   | **Blocks marketplace and money movement**                           |
 
 Current verdict: **NO-GO**. Production Web fails closed on demo mode and skipped
-split-application certification. The Solutions production path is implemented;
-legacy migration replay, deployed certification, and the external evidence
-above remain unresolved.
+split-application certification. The Solutions production path and fresh
+source-migration replay are verified; deployed ledger reconciliation,
+certification and the external evidence above remain unresolved.
+
+### 2026-09-07 production-hardening evidence
+
+- Malformed percent-encoded route parameters now return `400` without killing
+  the API; the Web routing boundary rejects them before Next route decoding.
+- Browser HTTP requests use a fixed-upstream first-party relay with host-only
+  session/CSRF cookies, exact-Origin mutation checks and an explicit header
+  allowlist. SSR and mobile remain on the central API. Authentication routes are
+  reused on split application hosts; no domain service moved into the Web app.
+- HTTP retries distinguish late guest/old-session responses from current
+  session expiry. They reuse a newly issued session without rotating it and
+  do not refresh a guest request or retry after logout.
+- The isolated first-party browser regression passed in Chromium and WebKit;
+  the session journey also passed three consecutive repetitions per engine. It covers rendered
+  login, host-only cookies, CSRF, refresh/reload, logout, malformed paths and
+  idempotency headers across France, Belgium and Facturation hosts. The full
+  unrelated demo matrix was not rerun; Firefox remains part of Linux CI.
+  Local native release verification is blocked by missing full Xcode/iOS SDK,
+  so `make check-all` is not claimed complete.
+- API CORS now permits idempotency and conditional-request headers. The release
+  certifier accepts the actual version-2 load-smoke producer, checks its cache
+  probe and endpoint budgets, and requires all authenticated staging journeys
+  for the exact release. Missing fixtures and skipped/flaky tests fail closed.
+- `make check` passed all nine workspace suites (2,585 passing tests), types, lint, OpenAPI, static
+  migrations, production builds and infrastructure/security gates after the
+  split-host route expansion. Two database-dependent Vitest cases remain
+  intentionally skipped outside their dedicated database workflow.
+- A disposable Supabase PostgreSQL 15.8.1.085 database, bootstrapped with the
+  official Storage v1.70.3 migration runner, passed all **113 migrations**.
+  Both SQL suites then passed **13 pgTAP assertions**, including independent
+  authenticated/anonymous roles and vertical publication lifecycle triggers.
+  The tests now install pgTAP transactionally and own their publisher/catalog
+  fixtures instead of depending on developer seed data. Anonymous invoicing
+  reads correctly fail with permission denial; no policy was weakened.
+  The protected full-stack CI run and deployed checksum reconciliation remain
+  required. No applied migration or database type was edited. The disposable
+  database was removed and the existing developer database was not reset.
+- Dedicated staging credentials, real Staff MFA, provider certification,
+  physical-device evidence and production restore/operations approvals were not
+  supplied or synthesized. These remain release blockers, not completed code
+  tasks; configure the protected fixture described in `docs/operations/release.md`.
 
 ## Complete capability matrix
 
@@ -372,12 +413,14 @@ canonical OpenAPI, backend service/repository, market-scoped PostgreSQL catalog,
 and HTTP adapter. Production intentionally starts with an empty catalog rather
 than copying demo fixtures.
 
-Database rollout remains **NO-GO**. A fresh replay stops in already-versioned
-migration `00030`, followed by known compatibility defects in `00032` and
-`00040`. The Data/Platform owner must export the intended environment’s
+The complete source history and real-role SQL probes now pass on a fresh
+Supabase-equivalent database. Earlier `00030`/`00032`/`00040` claims are
+historical; the dated evidence above supersedes their diagnosis. Hosted
+database rollout remains **NO-GO** until its own ledger is reconciled.
+The Data/Platform owner must export the intended environment’s
 `supabase_migrations.schema_migrations` ledger and checksums, reconcile it with
-the repository, approve a forward-compatible baseline repair, prove a clean
-Supabase-equivalent replay, run real-role RLS probes, and regenerate
+the repository, approve any required forward-compatible repair, retain the
+protected clean-stack replay and RLS evidence, and verify generated
 `backend/src/generated/database.types.ts`. Editing applied history or
 hand-writing generated types is prohibited.
 

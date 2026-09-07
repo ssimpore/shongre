@@ -2,6 +2,24 @@
 
 BEGIN;
 
+CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
+SET LOCAL search_path = public, extensions;
+SELECT plan(3);
+
+-- The no-seed CI database must own every active publisher used by the triggers.
+INSERT INTO public.profiles (
+  id, slug, email, name, account_type, primary_role, status, country
+) VALUES
+  ('00000000-0000-0000-0000-000000000001', 'projection-owner',
+   'projection-owner@example.test', 'Projection owner',
+   'individual', 'individual_seller', 'active', 'FR'),
+  ('00000000-0000-0000-0000-000000000002', 'projection-tutor',
+   'projection-tutor@example.test', 'Projection tutor',
+   'individual', 'individual_seller', 'active', 'FR'),
+  ('00000000-0000-0000-0000-000000000003', 'projection-employer',
+   'projection-employer@example.test', 'Projection employer',
+   'individual', 'individual_seller', 'active', 'FR');
+
 INSERT INTO public.auto_vehicle_types (
   type, market_code, slug, label, description, public_payload
 ) VALUES (
@@ -149,6 +167,7 @@ BEGIN
   END IF;
 END;
 $$;
+SELECT pass('all four verticals publish distinct discovery projections');
 
 UPDATE public.auto_vehicles
    SET lifecycle = 'suspended'
@@ -179,6 +198,7 @@ BEGIN
   END IF;
 END;
 $$;
+SELECT pass('suspending any vertical archives its discovery projection');
 
 UPDATE public.auto_vehicles
    SET lifecycle = 'published'
@@ -220,5 +240,7 @@ BEGIN
   END IF;
 END;
 $$;
+SELECT pass('deleting any vertical retains an archived discovery projection');
 
+SELECT * FROM finish();
 ROLLBACK;

@@ -9,6 +9,7 @@ import type { RoutePolicyId } from "../../security/access-policy.registry";
 import { useAuthorization } from "../../security/useAuthorization";
 import type { ShongreProductId } from "../../types";
 import { applicationHref } from "../../platform/applications/use-application-href";
+import { getPublicRuntimeConfig } from "../../platform/runtime-config/public-runtime-config";
 import {
   BrandHeaderSignature,
   BrandIcon,
@@ -91,9 +92,14 @@ export const ProductHeader: React.FC<ProductHeaderProps> = ({
             "marketplace",
             routes.auth.registerProfessional(workspacePath),
           );
+  const applications = getPublicRuntimeConfig().applications;
+  const signInApplication =
+    applications[productId].origin === applications.marketplace.origin
+      ? "marketplace"
+      : productId;
   const accountDestination = isAuthenticated
     ? applicationHref("marketplace", routes.workspace.overview())
-    : applicationHref("marketplace", routes.auth.login(workspacePath));
+    : applicationHref(signInApplication, routes.auth.login(workspacePath));
   const platformDestination = applicationHref("marketplace");
   const accountLabel = isAuthenticated ? "Mon compte" : "Se connecter";
 

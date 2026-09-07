@@ -3,13 +3,16 @@
 set -euo pipefail
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/env.sh"
 
-printf '\nService URLs (credentials omitted)\n'
-printf '%-20s %s\n' 'Shongre Web' "http://${FRONTEND_HOST}:${FRONTEND_PORT}/"
-printf '%-20s %s\n' 'Shongre API' "http://${BACKEND_HOST}:${BACKEND_PORT}${API_PREFIX}"
-printf '%-20s %s\n' 'API readiness' "http://${BACKEND_HOST}:${BACKEND_PORT}/readyz"
-printf '%-20s %s\n' 'Expo Metro' "http://${EXPO_HOST}:${EXPO_METRO_PORT}/"
-printf '%-20s %s\n' 'Expo Web' "http://${EXPO_HOST}:${EXPO_WEB_PORT}/"
-printf '%-20s %s\n' 'Storybook' "http://${FRONTEND_HOST}:${STORYBOOK_PORT}/"
+printf '\nService URLs for %s (credentials omitted)\n' "$APP_ENV"
+printf '%-20s %s\n' 'France Web' "$PUBLIC_FR_URL"
+printf '%-20s %s\n' 'International Web' "$PUBLIC_INTL_URL"
+printf '%-20s %s\n' 'Shongre API' "${API_URL}${API_PREFIX}"
+printf '%-20s %s\n' 'API readiness' "${API_URL}/readyz"
+if [[ "$APP_ENV" == local || "$APP_ENV" == test ]]; then
+  printf '%-20s %s\n' 'Expo Metro' "http://${EXPO_HOST}:${EXPO_METRO_PORT}/"
+  printf '%-20s %s\n' 'Expo Web' "http://${EXPO_HOST}:${EXPO_WEB_PORT}/"
+  printf '%-20s %s\n' 'Storybook' "http://${FRONTEND_HOST}:${STORYBOOK_PORT}/"
+fi
 
 if [[ "$APP_ENV" == "local" && "$DATABASE_INFRA_MODE" == "local" ]]; then
   supabase_origin="http://${SUPABASE_HOST}:${SUPABASE_API_PORT}"

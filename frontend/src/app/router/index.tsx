@@ -756,6 +756,38 @@ const LegacyPathRedirect: React.FC<{ to: string }> = ({ to }) => {
   return <Navigate to={`${to}${location.search}${location.hash}`} replace />;
 };
 
+// One authentication route set on every Web origin; each owns its session cookies.
+const AUTH_ROUTES: RouteObject[] = [
+  {
+    path: "connexion",
+    element: <GuestOnlyRoute>{withSuspense(LoginPage)}</GuestOnlyRoute>,
+  },
+  {
+    path: "inscription",
+    element: (
+      <GuestOnlyRoute>{withSuspense(RegisterChoicePage)}</GuestOnlyRoute>
+    ),
+  },
+  {
+    path: "inscription/particulier",
+    element: (
+      <GuestOnlyRoute>{withSuspense(RegisterIndividualPage)}</GuestOnlyRoute>
+    ),
+  },
+  {
+    path: "inscription/professionnel",
+    element: <GuestOnlyRoute>{withSuspense(RegisterProPage)}</GuestOnlyRoute>,
+  },
+  { path: "mot-de-passe-oublie", element: withSuspense(ForgotPasswordPage) },
+  {
+    path: "reinitialisation-mot-de-passe",
+    element: withSuspense(ForgotPasswordPage),
+  },
+  { path: "verification-email", element: withSuspense(VerifyEmailPage) },
+  { path: "auth/callback", element: withSuspense(OAuthCallbackPage) },
+  { path: "auth/domain-handoff", element: withSuspense(DomainHandoffPage) },
+];
+
 const APP_ROUTES: RouteObject[] = [
   {
     path: "/solutions",
@@ -986,48 +1018,7 @@ const APP_ROUTES: RouteObject[] = [
         ),
       },
 
-      // Signing in and signing up are task-completion flows too: the full
-      // marketplace shell around a login form offers a dozen ways to wander off
-      // mid-task, and the footer's category and city links are noise to someone
-      // who is three fields from being done.
-      {
-        path: "connexion",
-        element: <GuestOnlyRoute>{withSuspense(LoginPage)}</GuestOnlyRoute>,
-      },
-      {
-        path: "inscription",
-        element: (
-          <GuestOnlyRoute>{withSuspense(RegisterChoicePage)}</GuestOnlyRoute>
-        ),
-      },
-      {
-        path: "inscription/particulier",
-        element: (
-          <GuestOnlyRoute>
-            {withSuspense(RegisterIndividualPage)}
-          </GuestOnlyRoute>
-        ),
-      },
-      {
-        path: "inscription/professionnel",
-        element: (
-          <GuestOnlyRoute>{withSuspense(RegisterProPage)}</GuestOnlyRoute>
-        ),
-      },
-      {
-        path: "mot-de-passe-oublie",
-        element: withSuspense(ForgotPasswordPage),
-      },
-      {
-        path: "reinitialisation-mot-de-passe",
-        element: withSuspense(ForgotPasswordPage),
-      },
-      { path: "verification-email", element: withSuspense(VerifyEmailPage) },
-      { path: "auth/callback", element: withSuspense(OAuthCallbackPage) },
-      {
-        path: "auth/domain-handoff",
-        element: withSuspense(DomainHandoffPage),
-      },
+      ...AUTH_ROUTES,
     ],
   },
   {
@@ -1812,9 +1803,15 @@ function routesForApplication(
   applicationId: ShongreApplicationId,
 ): RouteObject[] {
   if (applicationId === "marketplace") return APP_ROUTES;
+  const authentication: RouteObject = {
+    path: "/",
+    element: <FocusedLayout />,
+    children: AUTH_ROUTES,
+  };
 
   if (applicationId === "solutions") {
     return [
+      authentication,
       {
         path: "/",
         element: withSuspense(SolutionsLayout),
@@ -1832,6 +1829,7 @@ function routesForApplication(
       (route) => route.path === "/facturation",
     );
     return [
+      authentication,
       {
         path: "/",
         element: (
@@ -1863,6 +1861,7 @@ function routesForApplication(
   );
   const workspace = localRoute?.children?.find((child) => child.path === "app");
   return [
+    authentication,
     {
       path: "/",
       element: (

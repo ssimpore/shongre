@@ -3,6 +3,8 @@ import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 import { runLoadSmoke } from "./load-smoke.mjs";
+import assert from "node:assert/strict";
+import { validatePerformanceEvidence } from "./lib/release-evidence.mjs";
 
 const release = "a".repeat(40);
 const directory = mkdtempSync(resolve(tmpdir(), "shongre-load-smoke-"));
@@ -83,6 +85,27 @@ try {
     throw new Error("conditional cache evidence did not pass");
   }
   const persisted = JSON.parse(readFileSync(evidencePath, "utf8"));
+  // Exercise the actual producer output through the release consumer contract.
+  assert.equal(validatePerformanceEvidence(persisted, release), persisted);
+  for (const changed of [
+    { schemaVersion: 1 },
+    { release: "b".repeat(40) },
+    { conditionalCache: { result: "FAIL" } },
+    {
+      endpoints: persisted.endpoints.filter(
+        (endpoint) => endpoint.name !== "marketplace_search",
+      ),
+    },
+    {
+      endpoints: persisted.endpoints.map((endpoint) => ({
+        ...endpoint,
+        successRate: 0,
+      })),
+    },
+  ])
+    assert.throws(() =>
+      validatePerformanceEvidence({ ...persisted, ...changed }, release),
+    );
   if (persisted.scope !== "MARKET_SCOPED" || persisted.marketCode !== "FR") {
     throw new Error("load evidence lost its market scope");
   }

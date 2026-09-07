@@ -1,6 +1,10 @@
 import { createHash } from "node:crypto";
 import { readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
+import {
+  REQUIRED_HOSTED_SMOKE_TESTS,
+  validatePerformanceEvidence as validatePerformanceRecord,
+} from "./lib/release-evidence.mjs";
 
 const root = resolve(import.meta.dirname, "..");
 
@@ -49,14 +53,6 @@ function readJson(path) {
   return JSON.parse(readFileSync(path, "utf8"));
 }
 
-const REQUIRED_HOSTED_SMOKE_TESTS = [
-  "serves the international gateway with environment-safe headers",
-  "serves the France marketplace with environment-safe headers",
-  "serves each canonical Shongre application hostname",
-  "serves live and ready API probes through the Tunnel",
-  "returns a market-scoped public listings feed",
-];
-
 function playwrightSpecs(suites = []) {
   return suites.flatMap((suite) => [
     ...(suite.specs || []),
@@ -64,8 +60,14 @@ function playwrightSpecs(suites = []) {
   ]);
 }
 
-function validateHostedSmokeReport(path) {
+function validateHostedSmokeReport(path, manifest) {
   const report = readJson(path);
+  if (
+    report.config?.metadata?.environment !== "staging" ||
+    report.config?.metadata?.release !== manifest.commit
+  ) {
+    fail("hosted smoke report does not identify the exact staging release");
+  }
   const specs = playwrightSpecs(report.suites);
   const byTitle = new Map(specs.map((spec) => [spec.title, spec]));
   for (const title of REQUIRED_HOSTED_SMOKE_TESTS) {
@@ -74,12 +76,17 @@ function validateHostedSmokeReport(path) {
     const outcomes = (spec.tests || []).flatMap((test) =>
       (test.results || []).map((result) => result.status),
     );
-    if (!outcomes.includes("passed")) {
+    if (!outcomes.length || outcomes.some((outcome) => outcome !== "passed")) {
       fail(`hosted smoke test did not pass: ${title}`);
     }
   }
-  if ((report.stats?.unexpected || 0) !== 0) {
-    fail("hosted smoke report contains unexpected failures");
+  if (
+    (report.stats?.unexpected || 0) !== 0 ||
+    (report.stats?.skipped || 0) !== 0 ||
+    (report.stats?.flaky || 0) !== 0 ||
+    (report.errors || []).length
+  ) {
+    fail("hosted smoke report contains skipped, flaky or failed tests");
   }
   return {
     requiredTests: REQUIRED_HOSTED_SMOKE_TESTS,
@@ -94,31 +101,9 @@ function validateHostedSmokeReport(path) {
 }
 
 function validatePerformanceEvidence(path, manifest) {
-  const evidence = readJson(path);
-  const endpointNames = new Set(
-    (evidence.endpoints || []).map((endpoint) => endpoint.name),
-  );
-  if (
-    evidence.schemaVersion !== 1 ||
-    evidence.environment !== "staging" ||
-    evidence.release !== manifest.commit ||
-    evidence.result !== "PASS" ||
-    evidence.scope !== "MARKET_SCOPED" ||
-    !/^[A-Z]{2}$/.test(evidence.marketCode || "") ||
-    !["liveness", "readiness", "marketplace_listings"].every((name) =>
-      endpointNames.has(name),
-    )
-  ) {
-    fail(
-      "performance evidence is not a successful market-scoped staging record",
-    );
-  }
+  const evidence = validatePerformanceRecord(readJson(path), manifest.commit);
   return {
-    result: evidence.result,
-    marketCode: evidence.marketCode,
-    verifiedAt: evidence.verifiedAt,
-    budgets: evidence.budgets,
-    endpoints: evidence.endpoints,
+    ...evidence,
     reportDigest: filePathDigest(path),
   };
 }
@@ -220,7 +205,10 @@ if (command === "create") {
     );
   }
   const manifest = validateManifest(readJson(manifestPath));
-  const hostedSmoke = validateHostedSmokeReport(hostedSmokeReportPath);
+  const hostedSmoke = validateHostedSmokeReport(
+    hostedSmokeReportPath,
+    manifest,
+  );
   const performance = validatePerformanceEvidence(
     performanceEvidencePath,
     manifest,
@@ -265,18 +253,17 @@ if (command === "create") {
   if (
     !certification.checks?.hostedSmoke ||
     certification.checks.hostedSmoke.unexpected !== 0 ||
+    certification.checks.hostedSmoke.skipped !== 0 ||
     !REQUIRED_HOSTED_SMOKE_TESTS.every((title) =>
       certification.checks.hostedSmoke.requiredTests?.includes(title),
     )
   ) {
     fail("staging certification is missing the required hosted smoke evidence");
   }
-  if (
-    certification.checks?.performance?.result !== "PASS" ||
-    !/^[A-Z]{2}$/.test(certification.checks.performance.marketCode || "")
-  ) {
-    fail("staging certification is missing successful performance evidence");
-  }
+  validatePerformanceRecord(
+    certification.checks?.performance || {},
+    manifest.commit,
+  );
   for (const field of [
     "commit",
     "openapiDigest",

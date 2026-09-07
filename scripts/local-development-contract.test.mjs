@@ -70,7 +70,11 @@ test("the Makefile exposes one canonical local Supabase lifecycle", async () => 
   );
   assert.match(
     makefile,
-    /^dev:.*\n\s*@\$\(MAKE\) stop-all\n\s*@NEXT_PUBLIC_DATA_MODE=api NEXT_PUBLIC_ENABLE_MOCK_STORAGE=false BACKEND_DATA_MODE=database DATABASE_INFRA_MODE=local scripts\/dev\.sh web/m,
+    /^dev:.*\n\s*@NEXT_PUBLIC_DATA_MODE=api NEXT_PUBLIC_ENABLE_MOCK_STORAGE=false BACKEND_DATA_MODE=database scripts\/dev\.sh web/m,
+  );
+  assert.match(
+    developmentScript,
+    /scripts\/env-check\.sh"[\s\S]*make --no-print-directory stop-all/,
   );
   assert.match(
     developmentScript,

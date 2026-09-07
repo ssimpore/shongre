@@ -13,6 +13,31 @@ HttpOnly access cookie, an HttpOnly refresh cookie scoped to `/api/v1/auth`, and
 a readable random CSRF cookie used as a double-submit token. It never receives
 the refresh token in JSON.
 
+Browser HTTP adapters address `/api/v1` on the current Web origin. The fixed
+upstream transport in `frontend/src/platform/api/web-api-proxy.ts` forwards to
+the configured central `API_URL`; it contains no business decisions. Its cookie
+allowlist removes upstream `Domain` attributes, so France, international and
+split application hosts each receive their own first-party cookies. Both
+HttpOnly session cookies and the readable double-submit CSRF cookie remain
+host-only. Browsers never depend on third-party cookie acceptance or a shared
+cookie domain spanning `.fr` and `.com`. The credential-free `/readyz` relay
+also keeps the browser's dependency-readiness check first-party; `/healthz`
+remains the Web process's independent liveness probe.
+
+Mutations require the exact configured Web Origin as well as backend CSRF
+validation. The transport forces the Web client identity, strips bearer and
+untrusted forwarding headers, never follows redirects, and returns private
+no-store responses. Edge IP headers are forwarded only with
+`SHONGRE_TRUST_PROXY_IP=true` behind the controlled edge. SSR and native still
+call the central API directly. Provider callbacks remain at the backend;
+social sign-in remains disabled pending its separate end-to-end certification.
+
+`make test-web-api-transport` runs rendered login, host-only cookies, refresh,
+CSRF-protected writes and logout on independent France, international and
+Facturation hosts, against an owned test-only API and isolated production Web
+artifact. It never resets
+the developer database or uses provider credentials.
+
 The native app sends `X-Shongre-Client: native`. It receives short-lived access
 and rotating refresh tokens only from Shongre, stores them with Expo
 SecureStore, and refreshes once after a 401. OAuth opens the system browser.

@@ -3,9 +3,10 @@
 set -euo pipefail
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source "$root/scripts/utils.sh"
+source "$root/scripts/lib/environment-profile.sh"
 
 operation="${1:-}"
-environment="${2:-}"
+environment="$(shongre_environment_profile "${2:-}")"
 case "$operation" in deploy|rollback) ;; *) shongre_fail "operation must be deploy or rollback"; exit 2 ;; esac
 case "$environment" in development|staging|production) ;; *) shongre_fail "ENVIRONMENT must be development, staging, or production"; exit 2 ;; esac
 

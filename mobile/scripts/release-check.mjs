@@ -43,8 +43,13 @@ function parseEnvFile(file) {
 }
 
 const env = {
-  ...parseEnvFile(join(root, ".env")),
-  ...parseEnvFile(join(root, ".env.local")),
+  ...(!process.env.SHONGRE_ENV_LOADED &&
+  (process.env.SHONGRE_ENV || process.env.APP_ENV || "local") === "local"
+    ? {
+        ...parseEnvFile(join(root, ".env")),
+        ...parseEnvFile(join(root, ".env.local")),
+      }
+    : {}),
   ...process.env,
 };
 

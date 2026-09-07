@@ -172,7 +172,12 @@ scripts/ + Makefile    repository-level tooling
   `production`.
 - `APP_ENV` selects Shongre environment behavior. `NODE_ENV` may affect framework
   mechanics but must not select infrastructure, provider modes, indexing,
-  security, or business policy.
+  security, or business policy. Operator selection uses command-scoped
+  `make <target> ENVIRONMENT=local|dev|staging|prod`; CLI aliases normalize to
+  canonical environment names. Never persist an active production profile or
+  re-source a different profile into an already-loaded shell. Generic `.env`,
+  `.env.local`, and generated local Supabase credentials are local-only
+  fallbacks; downstream launchers must not re-import them after root loading.
 - Parse environments and origins through `@shongre/contracts/environment`.
   Runtime origins come from `PUBLIC_FR_URL`, `PUBLIC_INTL_URL`, and `API_URL`.
   Do not hardcode environment hostnames or fallback ports in application source,
@@ -242,9 +247,10 @@ Mobile: component → hook/controller → service contract → HTTP → /api/v1
   worker while `make frontend` remains an explicitly standalone demo UI. The
   canonical local sequence is `make install`, `make supabase-up`,
   `make db-migrate`, `make db-seed`, then `make backend` and/or `make worker`;
-  `make dev` performs that connected Web sequence in one command, first stopping
-  tracked application processes and then forcing Web API and backend database
-  mode with mock storage disabled, migrating, idempotently seeding, and
+  `make dev` performs that connected Web sequence in one command, validating
+  configuration before stopping tracked application processes and forcing Web
+  API and backend database mode with mock storage disabled, migrating,
+  idempotently seeding, and
   launching the API, worker, and Web app. The local seed mirrors the versioned
   standalone demo snapshot into production-shaped tables, imports the complete
   generated taxonomy v4 projection and market availability, restores the
@@ -394,6 +400,13 @@ Mobile: component → hook/controller → service contract → HTTP → /api/v1
 - Web authentication uses Shongre-owned HttpOnly cookies; native authentication
   uses Shongre bearer tokens stored in Keychain/Keystore through SecureStore.
   Provider authorization/access/refresh credentials remain backend-only.
+  Browser HTTP adapters use the same-origin `/api/v1` transport in
+  `frontend/src/platform/api/web-api-proxy.ts`, with host-only session/CSRF
+  cookies on each configured Web origin. The relay forwards only to configured
+  `API_URL`, also relays credential-free `/readyz`, validates mutation Origin,
+  strips bearer credentials and untrusted forwarding headers, and never
+  implements domain policy. SSR and native keep
+  the central API transport; do not rely on cross-site cookies between markets.
 - In database mode, Supabase Auth owns email/password identities and password
   verification. `profiles.auth_user_id` links that identity to the Shongre
   account; account type, Staff membership, role, and effective capabilities
@@ -1073,6 +1086,11 @@ France-only happy path is insufficient for market-sensitive work.
 - Browser E2E runs against the repository's isolated Webpack production build,
   not the interactive development server. Keep bounded concurrency and isolate
   multi-route/persona sweeps according to existing test-runner conventions.
+  `make test-web-api-transport` additionally owns an isolated test/demo API and
+  verifies first-party sessions with an API-mode Web build. Hosted staging
+  certification requires all public and authenticated journeys for the exact
+  release, dedicated staging accounts, sandbox providers and real Staff MFA;
+  missing fixtures, skipped tests and flaky retries cannot certify a release.
   The root runner may keep Chromium parallel, but Firefox and WebKit must remain
   single-worker and process-recycled through bounded shards until a full
   sustained matrix proves their browser contexts no longer deadlock during

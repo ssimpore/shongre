@@ -45,7 +45,7 @@ jobs:
       mode: deploy
 
   certify-staging:
-    name: Certify the public STAGING Tunnel journey
+    name: Certify public and authenticated STAGING journeys
     needs: [resolve, deploy-staging]
     runs-on: ubuntu-latest
     environment: staging
@@ -68,7 +68,7 @@ jobs:
       - run: npm ci
       - name: Install the bounded hosted browser
         run: npx playwright install --with-deps chromium
-      - name: Run public web/API checks through Cloudflare Tunnel
+      - name: Run public and authenticated journeys through Cloudflare Tunnel
         env:
           PLAYWRIGHT_BASE_URL: ${{ vars.PUBLIC_INTL_URL }}
           PLAYWRIGHT_FR_URL: ${{ vars.PUBLIC_FR_URL }}
@@ -78,8 +78,11 @@ jobs:
           PLAYWRIGHT_FACTURATION_URL: ${{ vars.SHONGRE_FACTURATION_ORIGIN }}
           PLAYWRIGHT_EXPECTED_ENVIRONMENT: staging
           PLAYWRIGHT_EXPECTED_RELEASE: ${{ inputs.release_sha }}
+          PLAYWRIGHT_ALLOW_STAGING_WRITES: "true"
+          PLAYWRIGHT_NO_COPY_PROMPT: "1"
+          STAGING_JOURNEY_FIXTURES_JSON: ${{ secrets.STAGING_JOURNEY_FIXTURES_JSON }}
           PLAYWRIGHT_JSON_OUTPUT_FILE: ${{ github.workspace }}/.release/hosted-smoke-report.json
-        run: npm run test:e2e --workspace=frontend -- hosted-smoke.spec.ts --project=chromium --reporter=json
+        run: npm run test:e2e --workspace=frontend -- hosted-smoke.spec.ts hosted-authenticated.spec.ts --project=chromium --reporter=json
       - name: Verify hosted latency and success-rate budgets
         env:
           LOAD_TEST_API_URL: ${{ vars.API_URL }}

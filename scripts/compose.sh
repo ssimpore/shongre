@@ -5,6 +5,11 @@ root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source "$root/scripts/env.sh"
 source "$root/scripts/utils.sh"
 
+if [[ "$APP_ENV" != local ]]; then
+  shongre_fail "local Docker commands require ENVIRONMENT=local; hosted environments use make deploy ENVIRONMENT=dev|staging|prod"
+  exit 2
+fi
+
 command -v docker >/dev/null 2>&1 || { shongre_fail "Docker is required"; exit 1; }
 docker compose version >/dev/null 2>&1 || { shongre_fail "Docker Compose v2 is required"; exit 1; }
 
