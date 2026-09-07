@@ -1,20 +1,35 @@
-import React from "react";
+import React, { Suspense, lazy } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "./AuthProvider";
 import { MarketLocationProvider } from "./MarketLocationProvider";
 import { ToastProvider } from "./ToastProvider";
-import { NotificationProvider } from "./NotificationProvider";
 import { FavoritesProvider } from "./FavoritesProvider";
 import { ConsentProvider } from "./ConsentProvider";
 import { I18nProvider } from "../../i18n/I18nProvider";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { DataModeProvider } from "./DataModeProvider";
 import { QUERY_CLIENT_CONFIG } from "../../configuration/query.config";
-import type { MarketContext } from "@shongre/contracts";
+import type { MarketContext } from "@shongre/contracts/market-country";
 import type { PublicRouteData } from "../../platform/seo/public-route-data";
 import { PublicRouteDataProvider } from "./PublicRouteDataProvider";
 import { StaffMarketplaceActionGuard } from "../../security/components/StaffMarketplaceActionGuard";
-import { WorkspaceSummaryProvider } from "./WorkspaceSummaryProvider";
+import { useAuth } from "./AuthProvider";
+
+const AuthenticatedAccountProviders = lazy(() =>
+  import("./AuthenticatedAccountProviders").then((module) => ({
+    default: module.AuthenticatedAccountProviders,
+  })),
+);
+
+function AccountDataBoundary({ children }: { children: React.ReactNode }) {
+  const { currentUser, isRestoring } = useAuth();
+  if (!currentUser || isRestoring) return children;
+  return (
+    <Suspense fallback={children}>
+      <AuthenticatedAccountProviders>{children}</AuthenticatedAccountProviders>
+    </Suspense>
+  );
+}
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -43,11 +58,9 @@ export const AppProviders: React.FC<{
                   <I18nProvider>
                     <ToastProvider>
                       <StaffMarketplaceActionGuard>
-                        <WorkspaceSummaryProvider>
-                          <NotificationProvider>
-                            <FavoritesProvider>{children}</FavoritesProvider>
-                          </NotificationProvider>
-                        </WorkspaceSummaryProvider>
+                        <AccountDataBoundary>
+                          <FavoritesProvider>{children}</FavoritesProvider>
+                        </AccountDataBoundary>
                       </StaffMarketplaceActionGuard>
                     </ToastProvider>
                   </I18nProvider>

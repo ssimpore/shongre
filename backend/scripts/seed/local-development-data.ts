@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { webBrandAssets } from "@shongre/brand/web";
 import type { CourseOffer, TutorProfile } from "@shongre/contracts/courses";
 import type { VehiclePrivate } from "@shongre/contracts/auto";
 import type { PropertyPrivate } from "@shongre/contracts/real-estate";
@@ -342,13 +343,20 @@ function unsplashPhotoId(value: string | undefined): string | undefined {
   return value?.match(/images\.unsplash\.com\/(photo-[^?]+)/)?.[1];
 }
 
+function relativePublicAssetPath(value: string): string {
+  return new URL(value, "https://brand.invalid").pathname.replace(/^\/+/, "");
+}
+
 function sourcePathForMediaUrl(value: string | undefined): string {
   const photoId = unsplashPhotoId(value);
   if (photoId) return path.join(seedAssetRoot, `${photoId}.jpg`);
   if (value?.startsWith("/")) {
     return path.join(publicAssetRoot, value.replace(/^\/+/, ""));
   }
-  return path.join(publicAssetRoot, "apple-touch-icon.png");
+  return path.join(
+    publicAssetRoot,
+    relativePublicAssetPath(webBrandAssets.favicon.appleTouch.src),
+  );
 }
 
 function extensionForMediaUrl(value: string | undefined): string {
@@ -667,7 +675,7 @@ async function seedPublicMedia() {
   const employerLogoUrl = await syncPublicAsset(
     "avatars",
     "local-seed/organizations/employer-logo.png",
-    "brand/shongre/icon/mono-orange.png",
+    relativePublicAssetPath(webBrandAssets.icon["mono-orange"].src),
   );
 
   await Promise.all(
@@ -1129,6 +1137,14 @@ async function seedGenericListings(
         publication.complianceChecked === false
           ? ("pending" as const)
           : ("approved" as const),
+      availableServices: {
+        ...Object.fromEntries(
+          (source.deliveryOptions || [])
+            .filter((option: Record<string, any>) => option.available)
+            .map((option: Record<string, any>) => [option.type, true]),
+        ),
+        online_payment: Boolean(source.isOnlinePaymentAvailable),
+      },
       publishedAt: publication.publishedAt || source.createdAt,
       sortDate: publication.publishedAt || source.createdAt,
     }));

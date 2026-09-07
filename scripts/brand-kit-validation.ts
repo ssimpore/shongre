@@ -57,29 +57,43 @@ export interface BrandKitValidationReport {
   artworkComparisons: number;
 }
 
-const canonicalOrangeArtwork = [
-  "01_Logo/Master/shongre-logo-horizontal-primary.png",
-  "01_Logo/Master/shongre-logo-stacked-primary.png",
-  "01_Logo/Master/shongre-wordmark-primary.png",
-  "01_Logo/Color_Variants/shongre-logo-horizontal-mono-orange.png",
-  "02_Icon/Master/shongre-icon-primary.png",
-  "02_Icon/Color_Variants/shongre-icon-mono-orange.png",
-  "03_Web/header/shongre-header-logo-240w.png",
-  "03_Web/header/shongre-header-logo-480w.png",
-  "03_Web/header/shongre-header-logo-960w.png",
-  "03_Web/favicon/favicon-16x16.png",
-  "03_Web/favicon/favicon-32x32.png",
-  "03_Web/favicon/favicon-48x48.png",
-  "03_Web/favicon/favicon-64x64.png",
-  "03_Web/favicon/favicon-96x96.png",
-  "03_Web/apple-touch-icon.png",
-  "03_Web/pwa/icon-192x192.png",
-  "03_Web/pwa/icon-512x512.png",
-  "03_Web/pwa/icon-maskable-192x192.png",
-  "03_Web/pwa/icon-maskable-512x512.png",
-  "04_iOS/AppIcon.appiconset/AppIcon-1024.png",
-  "05_Android/play-store/play-store-icon-512.png",
-] as const;
+const orangeArtworkExtension = /\.(?:jpe?g|png|svg|tiff?|webp)$/i;
+
+/**
+ * The kit manifest remains the technical file inventory. This predicate is the
+ * colour-governance layer: it covers every approved source family expected to
+ * retain Shongre Orange while explicitly excluding one-colour, grayscale,
+ * adaptive-mask and approximate-CMYK deliverables.
+ */
+function isCanonicalOrangeArtwork(source: string): boolean {
+  if (!orangeArtworkExtension.test(source)) return false;
+  if (source.startsWith("01_Logo/") || source.startsWith("02_Icon/")) {
+    return !/mono-(?:ink|white)/.test(source);
+  }
+  if (
+    source.startsWith("03_Web/") ||
+    source.startsWith("04_iOS/") ||
+    source.startsWith("06_Social/") ||
+    source.startsWith("10_Previews/")
+  ) {
+    return true;
+  }
+  if (source.startsWith("05_Android/")) {
+    return !/(?:foreground|monochrome)/.test(source);
+  }
+  return /^07_Print\/(?:shongre-icon-1024\.png|shongre-logo-horizontal-rgb-300dpi\.tif)$/.test(
+    source,
+  );
+}
+
+function colorDelta(color: string, target: readonly number[]): number {
+  return color
+    .split(",")
+    .reduce(
+      (sum, channel, index) => sum + Math.abs(Number(channel) - target[index]),
+      0,
+    );
+}
 
 async function validateCanonicalOrangeArtwork(
   sourceRoot: string,
@@ -89,8 +103,15 @@ async function validateCanonicalOrangeArtwork(
     Number.parseInt(canonical.slice(index, index + 2), 16),
   );
   const targetKey = target.join(",");
+  const sources = (await filesUnder(sourceRoot))
+    .map((file) => path.relative(sourceRoot, file).replaceAll(path.sep, "/"))
+    .filter(isCanonicalOrangeArtwork)
+    .sort();
   let validated = 0;
-  for (const source of canonicalOrangeArtwork) {
+  for (const source of sources) {
+    const isLossy = /\.(?:jpe?g|webp)$/i.test(source);
+    const tolerance = isLossy || source.endsWith("favicon-16x16.png") ? 1 : 0;
+    const solidPlateauTolerance = isLossy ? 7 : tolerance;
     const { data, info } = await sharp(safeBrandPath(sourceRoot, source))
       .ensureAlpha()
       .raw()
@@ -124,17 +145,41 @@ async function validateCanonicalOrangeArtwork(
         `${source} does not contain the canonical opaque color.orange artwork.`,
       );
     }
-    const tolerance = source.endsWith("favicon-16x16.png") ? 1 : 0;
-    const channelDelta = dominant[0]
-      .split(",")
-      .reduce(
-        (sum, channel, index) =>
-          sum + Math.abs(Number(channel) - target[index]),
-        0,
-      );
+    const channelDelta = colorDelta(dominant[0], target);
     if (dominant[0] !== targetKey && channelDelta > tolerance) {
       throw new Error(
         `${source} uses rgb(${dominant[0]}) as its dominant opaque orange; expected ${canonical}.`,
+      );
+    }
+    const solidAlternateOrangePixels = new Map<string, number>();
+    const pixelKey = (offset: number) =>
+      `${data[offset]},${data[offset + 1]},${data[offset + 2]}`;
+    for (let y = 1; y < info.height - 1; y += 1) {
+      for (let x = 1; x < info.width - 1; x += 1) {
+        const offset = (y * info.width + x) * info.channels;
+        const color = pixelKey(offset);
+        if (
+          !orangePixels.has(color) ||
+          colorDelta(color, target) <= solidPlateauTolerance ||
+          pixelKey(offset - info.channels) !== color ||
+          pixelKey(offset + info.channels) !== color ||
+          pixelKey(offset - info.width * info.channels) !== color ||
+          pixelKey(offset + info.width * info.channels) !== color
+        ) {
+          continue;
+        }
+        solidAlternateOrangePixels.set(
+          color,
+          (solidAlternateOrangePixels.get(color) ?? 0) + 1,
+        );
+      }
+    }
+    const alternatePlateau = [...solidAlternateOrangePixels].find(
+      ([, count]) => count >= 4,
+    );
+    if (alternatePlateau) {
+      throw new Error(
+        `${source} contains a second significant opaque orange rgb(${alternatePlateau[0]}) across ${alternatePlateau[1]} pixels; expected only ${canonical} plus antialiased or compressed edge pixels.`,
       );
     }
     validated += 1;

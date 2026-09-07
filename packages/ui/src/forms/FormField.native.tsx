@@ -8,6 +8,7 @@ import {
   nativeTypography,
 } from "@shongre/design-tokens/native";
 import { Text } from "../primitives/Typography.native";
+import { nativeTextInputAccessibilityState } from "../utils/nativeAccessibility";
 
 export interface FormFieldProps extends TextInputProps {
   label: string;
@@ -33,7 +34,10 @@ export function FormField({
         {...inputProps}
         accessibilityLabel={label}
         accessibilityHint={error || hint}
-        accessibilityState={{ disabled: !inputProps.editable }}
+        accessibilityState={nativeTextInputAccessibilityState(
+          inputProps.editable,
+          inputProps.accessibilityState,
+        )}
         style={[
           styles.input,
           inputProps.multiline && styles.multiline,

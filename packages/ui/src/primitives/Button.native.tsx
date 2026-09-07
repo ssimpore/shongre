@@ -4,6 +4,8 @@ import {
   Pressable,
   StyleSheet,
   Text,
+  type AccessibilityRole,
+  type AccessibilityState,
   type StyleProp,
   type ViewStyle,
 } from "react-native";
@@ -28,6 +30,8 @@ export interface ButtonProps {
   isLoading?: boolean;
   accessibilityLabel?: string;
   accessibilityHint?: string;
+  accessibilityRole?: AccessibilityRole;
+  accessibilityState?: AccessibilityState;
   leftIcon?: ReactNode;
   rightIcon?: ReactNode;
   icon?: ReactNode;
@@ -46,6 +50,8 @@ export function Button({
   isLoading,
   accessibilityLabel,
   accessibilityHint,
+  accessibilityRole = "button",
+  accessibilityState,
   leftIcon,
   rightIcon,
   icon,
@@ -65,10 +71,14 @@ export function Button({
 
   return (
     <Pressable
-      accessibilityRole="button"
+      accessibilityRole={accessibilityRole}
       accessibilityLabel={accessibilityLabel ?? labelText}
       accessibilityHint={accessibilityHint}
-      accessibilityState={{ disabled: unavailable, busy }}
+      accessibilityState={{
+        ...accessibilityState,
+        disabled: unavailable,
+        busy,
+      }}
       disabled={unavailable}
       onPress={onPress}
       style={({ pressed }) => [

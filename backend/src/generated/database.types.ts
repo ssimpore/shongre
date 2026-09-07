@@ -14408,6 +14408,81 @@ export type Database = {
           },
         ];
       };
+      discovery_search_event_outbox: {
+        Row: {
+          applied_filter_keys: string[];
+          attempt_count: number;
+          available_at: string;
+          category_id: string | null;
+          created_at: string;
+          diversity_rerank_count: number;
+          duplicate_suppression_count: number;
+          final_organic_count: number;
+          final_sponsored_count: number;
+          id: string;
+          last_error_code: string | null;
+          latency_ms: number | null;
+          lease_expires_at: string | null;
+          lease_owner: string | null;
+          market_code: string;
+          organic_candidate_count: number;
+          publisher_distribution: Json;
+          ranking_version: string;
+          request_id: string;
+          sponsored_candidate_count: number;
+          status: string;
+          updated_at: string;
+        };
+        Insert: {
+          applied_filter_keys?: string[];
+          attempt_count?: number;
+          available_at?: string;
+          category_id?: string | null;
+          created_at?: string;
+          diversity_rerank_count?: number;
+          duplicate_suppression_count?: number;
+          final_organic_count: number;
+          final_sponsored_count: number;
+          id?: string;
+          last_error_code?: string | null;
+          latency_ms?: number | null;
+          lease_expires_at?: string | null;
+          lease_owner?: string | null;
+          market_code: string;
+          organic_candidate_count: number;
+          publisher_distribution?: Json;
+          ranking_version: string;
+          request_id: string;
+          sponsored_candidate_count: number;
+          status?: string;
+          updated_at?: string;
+        };
+        Update: {
+          applied_filter_keys?: string[];
+          attempt_count?: number;
+          available_at?: string;
+          category_id?: string | null;
+          created_at?: string;
+          diversity_rerank_count?: number;
+          duplicate_suppression_count?: number;
+          final_organic_count?: number;
+          final_sponsored_count?: number;
+          id?: string;
+          last_error_code?: string | null;
+          latency_ms?: number | null;
+          lease_expires_at?: string | null;
+          lease_owner?: string | null;
+          market_code?: string;
+          organic_candidate_count?: number;
+          publisher_distribution?: Json;
+          ranking_version?: string;
+          request_id?: string;
+          sponsored_candidate_count?: number;
+          status?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       discovery_search_events: {
         Row: {
           applied_filter_keys: string[];
@@ -18300,6 +18375,75 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "homepage_sections";
             referencedColumns: ["id"];
+          },
+        ];
+      };
+      indexnow_events: {
+        Row: {
+          attempt_count: number;
+          available_at: string;
+          canonical_path: string;
+          claimed_at: string | null;
+          claimed_by: string | null;
+          completed_at: string | null;
+          content_updated_at: string;
+          created_at: string;
+          event_key: string;
+          event_type: string;
+          id: string;
+          last_error_code: string | null;
+          listing_id: string | null;
+          market_code: string;
+          status: string;
+        };
+        Insert: {
+          attempt_count?: number;
+          available_at?: string;
+          canonical_path: string;
+          claimed_at?: string | null;
+          claimed_by?: string | null;
+          completed_at?: string | null;
+          content_updated_at: string;
+          created_at?: string;
+          event_key: string;
+          event_type: string;
+          id?: string;
+          last_error_code?: string | null;
+          listing_id?: string | null;
+          market_code: string;
+          status?: string;
+        };
+        Update: {
+          attempt_count?: number;
+          available_at?: string;
+          canonical_path?: string;
+          claimed_at?: string | null;
+          claimed_by?: string | null;
+          completed_at?: string | null;
+          content_updated_at?: string;
+          created_at?: string;
+          event_key?: string;
+          event_type?: string;
+          id?: string;
+          last_error_code?: string | null;
+          listing_id?: string | null;
+          market_code?: string;
+          status?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "indexnow_events_listing_id_fkey";
+            columns: ["listing_id"];
+            isOneToOne: false;
+            referencedRelation: "listings";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "indexnow_events_market_code_fkey";
+            columns: ["market_code"];
+            isOneToOne: false;
+            referencedRelation: "markets";
+            referencedColumns: ["code"];
           },
         ];
       };
@@ -33229,6 +33373,73 @@ export type Database = {
           isSetofReturn: true;
         };
       };
+      claim_discovery_search_events: {
+        Args: {
+          p_lease_seconds?: number;
+          p_limit?: number;
+          p_worker_id: string;
+        };
+        Returns: {
+          applied_filter_keys: string[];
+          attempt_count: number;
+          available_at: string;
+          category_id: string | null;
+          created_at: string;
+          diversity_rerank_count: number;
+          duplicate_suppression_count: number;
+          final_organic_count: number;
+          final_sponsored_count: number;
+          id: string;
+          last_error_code: string | null;
+          latency_ms: number | null;
+          lease_expires_at: string | null;
+          lease_owner: string | null;
+          market_code: string;
+          organic_candidate_count: number;
+          publisher_distribution: Json;
+          ranking_version: string;
+          request_id: string;
+          sponsored_candidate_count: number;
+          status: string;
+          updated_at: string;
+        }[];
+        SetofOptions: {
+          from: "*";
+          to: "discovery_search_event_outbox";
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
+      claim_indexnow_events: {
+        Args: {
+          p_lease_seconds?: number;
+          p_limit?: number;
+          p_worker_id: string;
+        };
+        Returns: {
+          attempt_count: number;
+          available_at: string;
+          canonical_path: string;
+          claimed_at: string | null;
+          claimed_by: string | null;
+          completed_at: string | null;
+          content_updated_at: string;
+          created_at: string;
+          event_key: string;
+          event_type: string;
+          id: string;
+          last_error_code: string | null;
+          listing_id: string | null;
+          market_code: string;
+          status: string;
+        }[];
+        SetofOptions: {
+          from: "*";
+          to: "indexnow_events";
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
       claim_marketing_job: {
         Args: never;
         Returns: {
@@ -33503,6 +33714,25 @@ export type Database = {
           p_worker_id: string;
         };
         Returns: boolean;
+      };
+      complete_discovery_search_event: {
+        Args: {
+          p_error_code?: string;
+          p_event_id: string;
+          p_retry_at?: string;
+          p_success: boolean;
+          p_worker_id: string;
+        };
+        Returns: boolean;
+      };
+      complete_indexnow_event: {
+        Args: {
+          p_error_code?: string;
+          p_event_id: string;
+          p_success: boolean;
+          p_worker_id: string;
+        };
+        Returns: undefined;
       };
       complete_notification_delivery: {
         Args: {
@@ -33929,6 +34159,15 @@ export type Database = {
           isOneToOne: false;
           isSetofReturn: true;
         };
+      };
+      enqueue_indexnow_listing_event: {
+        Args: {
+          p_event_type: string;
+          p_listing_id: string;
+          p_market_code: string;
+          p_occurred_at: string;
+        };
+        Returns: undefined;
       };
       enqueue_provider_webhook: {
         Args: {
@@ -34536,6 +34775,10 @@ export type Database = {
           p_weights: Json;
         };
         Returns: string;
+      };
+      purge_completed_indexnow_events: {
+        Args: { p_limit?: number; p_retention_days?: number };
+        Returns: number;
       };
       purge_processed_provider_webhooks: {
         Args: { p_before: string; p_limit?: number };

@@ -14,7 +14,7 @@ import type {
   HomepageUniverseGroup,
 } from "./homepage.types";
 import type { TrendingSectionResponse } from "../trending/trending.types";
-import { majorToMinorAmount } from "@shongre/shared";
+import { majorToMinorAmount } from "@shongre/shared/money";
 import { DEFAULT_MARKET_CURRENCY } from "../../configuration/market-baseline";
 
 const isOverrideActive = (override: HomepageOfferOverride, now: Date) =>

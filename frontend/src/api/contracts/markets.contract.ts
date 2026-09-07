@@ -3,6 +3,7 @@ import type {
   CountryConfig,
   MarketDetectionRecommendation,
 } from "@shongre/contracts";
+import type { Market } from "../../domains/market/market.types";
 
 export interface MarketCoordinateDetectionInput {
   latitude: number;
@@ -31,6 +32,7 @@ export interface MarketConfigurationChangeRequest {
 }
 
 export interface MarketsServiceContract {
+  loadRuntimeMarkets(): Promise<Market[]>;
   detectProbableCountry(): Promise<MarketDetectionRecommendation>;
   detectCountryFromCoordinates(
     input: MarketCoordinateDetectionInput,

@@ -817,20 +817,33 @@ export const AutoSearchPage: React.FC = () => {
             : ""
         }`}
       >
-        {catalog && showDesktopFilters && (
+        {showDesktopFilters && (
           <aside
             className="hidden self-start lg:sticky lg:top-24 lg:block"
             aria-label="Filtres Auto"
           >
-            <AutoFilters
-              panelId="auto-filter-panel-desktop"
-              catalog={catalog}
-              params={params}
-              update={update}
-              updateLocation={updateLocation}
-              locationSelectorId="auto-location-selector-desktop"
-              onReset={resetFilters}
-            />
+            {catalog ? (
+              <AutoFilters
+                panelId="auto-filter-panel-desktop"
+                catalog={catalog}
+                params={params}
+                update={update}
+                updateLocation={updateLocation}
+                locationSelectorId="auto-location-selector-desktop"
+                onReset={resetFilters}
+              />
+            ) : (
+              <div
+                role="status"
+                aria-label="Chargement des filtres Auto"
+                className="space-y-4 rounded-card border border-border-base bg-bg-surface p-4"
+              >
+                <Skeleton className="h-5 w-2/3" />
+                {Array.from({ length: 6 }, (_, index) => (
+                  <Skeleton key={index} shape="control" className="w-full" />
+                ))}
+              </div>
+            )}
           </aside>
         )}
         <div className="min-w-0">

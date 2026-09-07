@@ -34,12 +34,12 @@ import {
   Truck,
 } from "lucide-react";
 import { useAuth } from "../providers/AuthProvider";
-import { useNotifications } from "../providers/NotificationProvider";
+import { useNotifications } from "../providers/NotificationContext";
 import { Avatar, Badge, Container } from "../../design-system";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { useAuthorization } from "../../security/useAuthorization";
 import { useFavorites } from "../providers/FavoritesProvider";
-import { useWorkspaceSummary } from "../providers/WorkspaceSummaryProvider";
+import { useWorkspaceSummary } from "../providers/WorkspaceSummaryContext";
 
 export const AccountLayout: React.FC = () => {
   const { t } = useTranslation();

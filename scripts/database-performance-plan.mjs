@@ -67,7 +67,7 @@ export function runDatabasePerformancePlan(overrides = {}) {
   );
   const queryBudgetMs = boundedInteger(
     overrides.queryBudgetMs || process.env.PERFORMANCE_QUERY_BUDGET_MS,
-    SHONGRE_PERFORMANCE_BUDGETS.database.slowQueryMs,
+    SHONGRE_PERFORMANCE_BUDGETS.database.interactiveQueryP95Ms,
     "PERFORMANCE_QUERY_BUDGET_MS",
     10,
     10_000,
@@ -144,6 +144,7 @@ export function runDatabasePerformancePlan(overrides = {}) {
     WHERE p.market_code = 'FR'
       AND p.status = 'active'
       AND p.compliance_state = 'approved'
+      AND p.sort_date <= now()
       AND l.status = 'published'
     ORDER BY p.sort_date DESC, p.listing_id DESC
     LIMIT 50;
@@ -167,7 +168,7 @@ export function runDatabasePerformancePlan(overrides = {}) {
     schemaVersion: 1,
     generatedAt: new Date().toISOString(),
     datasetRows: rowCount,
-    query: "anonymous-market-listing-discovery",
+    query: "anonymous-market-discovery-candidate-page",
     executionTimeMs: plan["Execution Time"],
     planningTimeMs: plan["Planning Time"],
     resultRows: plan.Plan["Actual Rows"],

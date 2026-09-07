@@ -9,7 +9,8 @@
     ".": "./src/index.ts",
     "./deterministic-id": "./src/deterministic-id.ts",
     "./currency-conversion": "./src/finance/currency-conversion.ts",
-    "./money": "./src/formatters/money.ts"
+    "./money": "./src/formatters/money.ts",
+    "./responsive-image": "./src/media/responsive-image.ts"
   },
   "scripts": {
     "lint": "tsc --noEmit",

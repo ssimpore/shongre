@@ -13,12 +13,8 @@ import {
   SearchFilters,
 } from "../../../types";
 import { PublicationDraftState } from "../../../domains/publication/publication.types";
-import {
-  publicListingCardsRequestSchema,
-  toTaxonomyV4ItemCondition,
-} from "@shongre/contracts";
+import { publicListingCardsRequestSchema } from "@shongre/contracts/listings";
 import type { components, operations } from "@shongre/contracts/openapi";
-import { getTaxonomyV4PublicBundle } from "@shongre/contracts/taxonomy-v4-public";
 import { majorToMinorAmount } from "@shongre/shared/money";
 import { AppError } from "../../errors/app-error";
 
@@ -127,6 +123,7 @@ export const mapBackendListing = (listing: BackendListing): Listing => {
     subCategoryLabel: categoryParts.at(-1) || "Annonce",
     condition: listing.condition as Listing["condition"],
     sellerId: listing.sellerId,
+    sellerProfile: listing.seller,
     sellerName: listing.seller?.name || "Vendeur",
     sellerType,
     publisherType: listing.publisherType,
@@ -159,10 +156,11 @@ export const mapBackendListing = (listing: BackendListing): Listing => {
         available: true,
         price: type === "hand_delivery" ? 0 : listing.shippingCost,
       })),
-    // The public listing contract does not expose an authoritative payment
-    // capability yet. Fail closed instead of advertising buyer protection for
-    // every HTTP result.
-    isOnlinePaymentAvailable: false,
+    isOnlinePaymentAvailable: Boolean(
+      listing.marketPublications?.some(
+        (publication) => publication.availableServices?.online_payment === true,
+      ),
+    ),
     attributes,
     status: frontendStatus(listing.status),
     viewsCount: listing.viewCount,
@@ -184,74 +182,6 @@ export const mapBackendListing = (listing: BackendListing): Listing => {
     createdAt: listing.createdAt,
     updatedAt: listing.updatedAt,
     expiresAt: listing.expiresAt,
-  };
-};
-
-const taxonomyV4Bundle = getTaxonomyV4PublicBundle();
-
-export const publicationPayload = (draft: PublicationDraftState) => {
-  const allowedAttributeIds = new Set(
-    taxonomyV4Bundle.bindings
-      .filter(
-        (binding) =>
-          binding.categoryId === draft.taxonomyNodeId &&
-          binding.listingTypeId === draft.listingTypeId &&
-          binding.publicationVisible,
-      )
-      .map((binding) => binding.attributeId),
-  );
-  const acceptsItemCondition = taxonomyV4Bundle.bindings.some(
-    (binding) =>
-      binding.categoryId === draft.taxonomyNodeId &&
-      binding.listingTypeId === draft.listingTypeId &&
-      binding.attributeId === "item_condition",
-  );
-  const itemCondition = acceptsItemCondition
-    ? toTaxonomyV4ItemCondition(draft.condition)
-    : undefined;
-
-  return {
-    title: draft.title,
-    description: draft.description,
-    price: draft.pricing.isFreeDonation ? 0 : draft.pricing.amount,
-    priceModel: draft.pricing.priceModel,
-    categoryId: draft.taxonomyNodeId,
-    marketCode: draft.marketCode,
-    city: draft.location.city,
-    postalCode: draft.location.postalCode,
-    images: [...draft.photos]
-      .sort((left, right) => Number(right.isCover) - Number(left.isCover))
-      .map((photo) => photo.url),
-    listingTypeId: draft.listingTypeId,
-    intent: draft.listingIntent,
-    taxonomyVersion: draft.taxonomyVersion,
-    attributes: {
-      ...Object.fromEntries(
-        Object.entries(draft.attributes).filter(([attributeId]) =>
-          allowedAttributeIds.has(attributeId),
-        ),
-      ),
-      ...(itemCondition ? { item_condition: itemCondition } : {}),
-      title: draft.title,
-      description: draft.description,
-      images: draft.photos.map((photo) => photo.url),
-      price: Math.round(draft.pricing.amount * 100),
-      currency: draft.pricing.currency,
-      location_country: draft.location.countryCode,
-      location_postcode: draft.location.postalCode,
-      location_city: draft.location.city,
-    },
-    allowedDelivery: [
-      ...(draft.digitalFulfillment
-        ? ["digital"]
-        : [
-            ...(draft.fulfillment.allowHandDelivery ? ["hand_delivery"] : []),
-            ...(draft.fulfillment.allowParcelShipping ? ["home_delivery"] : []),
-          ]),
-    ],
-    fulfillmentTypes: draft.fulfillmentTypes ?? ["PHYSICAL"],
-    digitalFulfillment: draft.digitalFulfillment,
-    condition: draft.condition,
   };
 };
 
@@ -352,6 +282,7 @@ export class HttpListingsService implements ListingsServiceContract {
   }
 
   async publishListing(draft: PublicationDraftState): Promise<Listing> {
+    const { publicationPayload } = await import("./publication-payload");
     const listing = await httpClient.post<BackendListing>("/listings/publish", {
       draft: publicationPayload(draft),
     });

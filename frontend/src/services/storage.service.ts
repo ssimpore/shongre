@@ -23,17 +23,22 @@ import {
   INITIAL_MARKETS,
 } from "../domains/market/market.defaults";
 import { deepMergeOverrides } from "../domains/market/market.resolver";
-import { routes } from "../configuration/routes";
 import { telemetryService } from "./telemetry.service";
 import {
   DEFAULT_MARKET_CODE,
   DEFAULT_MARKET_CURRENCY,
 } from "../configuration/market-baseline";
-import { getCountryConfig } from "@shongre/contracts";
+import { getCountryConfig } from "@shongre/contracts/market-country";
 import { staffRoleFromLegacyRole } from "@shongre/contracts/access-control";
 
 /** The user key a signed-out visitor is stored under. */
 const GUEST_USER_KEY = "guest";
+
+function storedSearchRoute(input: { category: string; city?: string }): string {
+  const params = new URLSearchParams({ category: input.category });
+  if (input.city) params.set("city", input.city);
+  return `/recherche?${params.toString()}`;
+}
 
 /** Emitted after structured recent-search state changes in this browser tab. */
 export const RECENT_SEARCH_ITEMS_CHANGED_EVENT =
@@ -678,7 +683,7 @@ class StorageService {
         title: "Antiquités",
         locationLabel: "Toute la France",
         categorySlug: "antiquites",
-        to: routes.search({ category: "antiquites" }),
+        to: storedSearchRoute({ category: "antiquites" }),
         createdAt: new Date(Date.now() - 3600000).toISOString(),
       },
       {
@@ -686,7 +691,7 @@ class StorageService {
         title: "Accessoires & bagagerie",
         locationLabel: "Toute la France",
         categorySlug: "accessoires-bagagerie",
-        to: routes.search({ category: "accessoires-bagagerie" }),
+        to: storedSearchRoute({ category: "accessoires-bagagerie" }),
         createdAt: new Date(Date.now() - 7200000).toISOString(),
       },
       {
@@ -694,7 +699,7 @@ class StorageService {
         title: "Photo, audio & vidéo",
         locationLabel: "Bray-Dunes (59123)",
         categorySlug: "multimedia",
-        to: routes.search({ category: "multimedia", city: "Bray-Dunes" }),
+        to: storedSearchRoute({ category: "multimedia", city: "Bray-Dunes" }),
         createdAt: new Date(Date.now() - 10800000).toISOString(),
       },
     ]);

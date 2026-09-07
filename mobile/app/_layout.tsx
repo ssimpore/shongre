@@ -104,6 +104,18 @@ export default function RootLayout() {
                   name="account/delivery"
                   options={{ title: "Livraison & coursier" }}
                 />
+                <Stack.Screen
+                  name="account/alerts"
+                  options={{ title: "Mes alertes" }}
+                />
+                <Stack.Screen
+                  name="account/favorites"
+                  options={{ title: "Mes favoris" }}
+                />
+                <Stack.Screen
+                  name="account/notification-preferences"
+                  options={{ title: "Préférences de notification" }}
+                />
               </Stack>
             </FavoritesProvider>
           </AuthProvider>

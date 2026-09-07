@@ -8,10 +8,48 @@ import { CountryMarketDefinition } from "../../../configuration/market.config";
 import type {
   CountryConfig,
   MarketDetectionRecommendation,
-} from "@shongre/contracts";
+} from "@shongre/contracts/market-country";
 import type { MarketCoordinateDetectionInput } from "../../contracts/markets.contract";
+import { BOOTSTRAP_MARKETS } from "../../../domains/market/market.bootstrap";
+import type { Market } from "../../../domains/market/market.types";
 
 export class HttpMarketsService implements MarketsServiceContract {
+  async loadRuntimeMarkets(): Promise<Market[]> {
+    const definitions = await this.getAllMarkets();
+    return BOOTSTRAP_MARKETS.flatMap((bootstrap) => {
+      const definition = definitions.find(
+        (candidate) => candidate.code === bootstrap.code,
+      );
+      if (!definition) return [];
+      return [
+        {
+          ...bootstrap,
+          name: definition.name,
+          flag: definition.flag,
+          isDefault: Boolean(definition.isDefault),
+          defaultLocale: definition.locale,
+          currency: definition.currency,
+          supportedCurrencies: [...definition.supportedCurrencies],
+          currencySymbol: definition.currencySymbol,
+          version: definition.version ?? bootstrap.version,
+          configuration: {
+            ...bootstrap.configuration,
+            general: {
+              ...bootstrap.configuration.general,
+              name: definition.name,
+            },
+            localization: {
+              ...bootstrap.configuration.localization,
+              defaultLocale: definition.locale,
+              defaultCurrency: definition.currency,
+              currencySymbol: definition.currencySymbol,
+            },
+          },
+        },
+      ];
+    });
+  }
+
   detectProbableCountry(): Promise<MarketDetectionRecommendation> {
     return httpClient.get<MarketDetectionRecommendation>("/markets/detection");
   }

@@ -1,145 +1,38 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/api/http-client", () => ({ apiRequest: vi.fn() }));
-vi.mock("@/config/environment", () => ({
-  mobileEnvironment: { dataMode: "demo" },
-}));
 
 import { apiRequest } from "@/api/http-client";
-import {
-  DemoMobileDigitalProductsService,
-  HttpMobileDigitalProductsService,
-} from "../src/features/digital-products/digital-products.service";
+import { HttpMobileDigitalProductsService } from "@/features/digital-products/digital-products.service";
 
-beforeEach(() => {
-  vi.clearAllMocks();
-});
+beforeEach(() => vi.clearAllMocks());
+afterEach(() => vi.unstubAllGlobals());
 
-afterEach(() => {
-  vi.unstubAllGlobals();
-});
+describe("API-backed mobile digital-products service", () => {
+  it("loads policy and entitlements only through the selected market API", async () => {
+    const policy = { marketCode: "CH", enabled: true, currency: "CHF" };
+    const entitlements = { items: [{ id: "entitlement-1", marketCode: "CH" }] };
+    vi.mocked(apiRequest)
+      .mockResolvedValueOnce(policy)
+      .mockResolvedValueOnce(entitlements);
+    const service = new HttpMobileDigitalProductsService();
 
-describe("mobile digital-products demo boundary", () => {
-  it.each([
-    ["FR", true, "EUR"],
-    ["BE", true, "EUR"],
-    ["CH", true, "CHF"],
-    ["SN", false, "XOF"],
-    ["BF", false, "XOF"],
-  ] as const)(
-    "projects the %s market policy",
-    async (marketCode, enabled, currency) => {
-      const policy = await new DemoMobileDigitalProductsService().getPolicy(
-        marketCode,
-      );
-      expect(policy.enabled).toBe(enabled);
-      expect(policy.currency).toBe(currency);
-      expect(policy.capabilities.checkout).toBe(enabled);
-    },
-  );
-
-  it("exposes deterministic processing and failure scenarios without raw secrets", async () => {
-    const service = new DemoMobileDigitalProductsService();
-    const items = await service.listEntitlements("FR", "user_thomas");
-    expect(items.map((item) => item.status)).toEqual(
-      expect.arrayContaining([
-        "ACCESS_AVAILABLE",
-        "PAYMENT_PENDING",
-        "PAYMENT_FAILED",
-        "PROVISIONING",
-        "QUARANTINED",
-        "INVALID_ACCESS",
-        "EXPIRED",
-        "DISPUTED",
-        "LIMIT_REACHED",
-        "UNAVAILABLE",
-        "REFUNDED",
-      ]),
+    await expect(service.getPolicy("CH")).resolves.toBe(policy);
+    await expect(service.listEntitlements("CH", "account-a")).resolves.toEqual(
+      entitlements.items,
     );
-    expect(
-      items.some(
-        (item) =>
-          item.fulfillmentTypes.includes("ACCESS_LINK") &&
-          item.fulfillmentTypes.includes("ACCESS_CREDENTIALS"),
-      ),
-    ).toBe(true);
-    expect(JSON.stringify(items)).not.toContain("DEMO-LICENSE-NOT-VALID");
-  });
-
-  it("keeps grants buyer-owned, file-scoped and single-use", async () => {
-    const service = new DemoMobileDigitalProductsService();
-    const entitlementId = "32000000-0000-4000-8000-000000000001";
-    await expect(
-      service.createDownloadGrant(
-        "FR",
-        "wrong-buyer",
-        entitlementId,
-        "wrong-asset",
-      ),
-    ).rejects.toThrow();
-    const grant = await service.createDownloadGrant(
-      "FR",
-      "user_thomas",
-      entitlementId,
-      "31000000-0000-4000-8000-000000000001",
+    expect(apiRequest).toHaveBeenNthCalledWith(1, "/digital/policy", {}, "CH");
+    expect(apiRequest).toHaveBeenNthCalledWith(
+      2,
+      "/digital/entitlements",
+      {},
+      "CH",
     );
-    await expect(
-      service.consumeGrant("wrong-buyer", grant.id),
-    ).rejects.toThrow();
-    expect((await service.consumeGrant("user_thomas", grant.id)).kind).toBe(
-      "DOWNLOAD",
-    );
-    await expect(
-      service.consumeGrant("user_thomas", grant.id),
-    ).rejects.toThrow();
   });
 
-  it("keeps seller provisioning scoped to a confirmed task", async () => {
-    const service = new DemoMobileDigitalProductsService();
-    expect(
-      await service.listSellerProvisioningTasks("FR", "user_camille"),
-    ).toHaveLength(1);
-    expect(
-      await service.listSellerProvisioningTasks("BE", "user_camille"),
-    ).toHaveLength(0);
-    expect(
-      await service.listSellerProvisioningTasks("FR", "user_thomas"),
-    ).toHaveLength(0);
-  });
-
-  it("accepts digital and combined sellers only for an exact policy combination", async () => {
-    const service = new DemoMobileDigitalProductsService();
-    await expect(
-      service.acceptSellerResponsibilities(
-        "FR",
-        "seller-digital",
-        ["FILE_DOWNLOAD"],
-        1,
-      ),
-    ).resolves.toMatchObject({ fulfillmentTypes: ["FILE_DOWNLOAD"] });
-    await expect(
-      service.acceptSellerResponsibilities(
-        "FR",
-        "seller-combined",
-        ["PHYSICAL", "ACCESS_LINK", "ACCESS_CREDENTIALS"],
-        1,
-      ),
-    ).resolves.toMatchObject({
-      fulfillmentTypes: ["PHYSICAL", "ACCESS_LINK", "ACCESS_CREDENTIALS"],
-    });
-    await expect(
-      service.acceptSellerResponsibilities(
-        "FR",
-        "seller-invalid",
-        ["FILE_DOWNLOAD", "SELLER_PROVISIONED"],
-        1,
-      ),
-    ).rejects.toThrow();
-  });
-
-  it("uploads only to a protected HTTPS destination and completes the canonical upload route", async () => {
+  it("uploads only to a current HTTPS destination and completes through the API", async () => {
     const asset = {
-      id: "31000000-0000-4000-8000-000000000099",
+      id: "asset-1",
       listingId: null,
       version: 1,
       safeFileName: "guide.pdf",
@@ -147,23 +40,20 @@ describe("mobile digital-products demo boundary", () => {
       sizeBytes: 12,
       status: "UPLOADING",
       scanStatus: "PENDING",
-      createdAt: "2026-09-01T10:00:00.000Z",
+      createdAt: "2099-09-01T10:00:00.000Z",
       readyAt: null,
     } as const;
     vi.mocked(apiRequest)
       .mockResolvedValueOnce({
         asset,
         signedUploadUrl: "https://private-storage.example/upload-token",
-        expiresAt: "2026-09-01T10:05:00.000Z",
+        expiresAt: "2099-09-01T10:05:00.000Z",
       })
-      .mockResolvedValueOnce({
-        ...asset,
-        status: "PROCESSING",
-      });
-    const fileBody = new Blob(["private file"]);
+      .mockResolvedValueOnce({ ...asset, status: "PROCESSING" });
+    const fileBody = new Blob(["private file"], { type: "application/pdf" });
     const fetchMock = vi
       .fn()
-      .mockResolvedValueOnce({ blob: async () => fileBody })
+      .mockResolvedValueOnce({ ok: true, blob: async () => fileBody })
       .mockResolvedValueOnce({ ok: true });
     vi.stubGlobal("fetch", fetchMock);
 
@@ -178,6 +68,10 @@ describe("mobile digital-products demo boundary", () => {
       },
     );
 
+    expect(fetchMock).toHaveBeenNthCalledWith(1, "file:///private/guide.pdf", {
+      credentials: "omit",
+      redirect: "error",
+    });
     expect(fetchMock).toHaveBeenNthCalledWith(
       2,
       new URL("https://private-storage.example/upload-token"),
@@ -188,17 +82,17 @@ describe("mobile digital-products demo boundary", () => {
       }),
     );
     expect(apiRequest).toHaveBeenLastCalledWith(
-      `/digital/assets/uploads/${asset.id}/complete`,
+      "/digital/assets/uploads/asset-1/complete",
       { method: "POST" },
       "FR",
     );
   });
 
-  it("rejects credential-bearing or non-HTTPS signed upload destinations before reading the private file", async () => {
-    vi.mocked(apiRequest).mockResolvedValue({
-      asset: { id: "31000000-0000-4000-8000-000000000099" },
+  it("rejects unsafe signed destinations before reading the private file", async () => {
+    vi.mocked(apiRequest).mockResolvedValueOnce({
+      asset: { id: "asset-1" },
       signedUploadUrl: "http://user:secret@private-storage.example/upload",
-      expiresAt: "2026-09-01T10:05:00.000Z",
+      expiresAt: "2099-09-01T10:05:00.000Z",
     });
     const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
@@ -216,5 +110,41 @@ describe("mobile digital-products demo boundary", () => {
       ),
     ).rejects.toThrow("private_upload_destination_invalid");
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects remote source URLs before reading or uploading private bytes", async () => {
+    vi.mocked(apiRequest).mockResolvedValueOnce({
+      asset: { id: "asset-1" },
+      signedUploadUrl: "https://private-storage.example/upload-token",
+      expiresAt: "2099-09-01T10:05:00.000Z",
+    });
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(
+      new HttpMobileDigitalProductsService().uploadPrivateFile(
+        "FR",
+        "ignored-principal",
+        {
+          uri: "https://untrusted.example/private.pdf",
+          name: "guide.pdf",
+          contentType: "application/pdf",
+          sizeBytes: 12,
+        },
+      ),
+    ).rejects.toThrow("private_upload_source_invalid");
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("does not synthesize access when the API denies a reveal grant", async () => {
+    vi.mocked(apiRequest).mockRejectedValueOnce(new Error("forbidden"));
+
+    await expect(
+      new HttpMobileDigitalProductsService().createRevealGrant(
+        "FR",
+        "account-a",
+        "entitlement-1",
+      ),
+    ).rejects.toThrow("forbidden");
   });
 });

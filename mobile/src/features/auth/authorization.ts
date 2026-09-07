@@ -39,7 +39,7 @@ export class MobileAuthorizationError extends Error {
 
 /**
  * Mobile presentation guard. The API remains authoritative; this prevents
- * unavailable actions from being initiated and keeps demo mode on the same
+ * unavailable actions from being initiated and keeps the native UI on the same
  * canonical policy as Web and backend request guards.
  */
 export function getMobileAuthorizationDecision(

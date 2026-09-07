@@ -1,100 +1,70 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { DeliveryRequestDraftInput } from "@shongre/contracts/delivery";
 
 vi.mock("@/api/http-client", () => ({ apiRequest: vi.fn() }));
-vi.mock("@/config/environment", () => ({
-  mobileEnvironment: { dataMode: "demo" },
-}));
-import { DemoMobileDeliveryService } from "../src/features/delivery/delivery.service";
 
-const courier = {
-  userId: "mobile-courier",
-  displayName: "Sam",
-  verified: true,
-};
-const requester = {
-  userId: "user_thomas",
-  displayName: "Thomas",
-  verified: true,
-};
+import { apiRequest } from "@/api/http-client";
+import { HttpMobileDeliveryService } from "@/features/delivery/delivery.service";
 
-describe("mobile delivery boundary", () => {
-  it("fails closed outside the explicit France demo market", async () => {
-    const service = new DemoMobileDeliveryService();
-    expect((await service.availability("FR")).enabled).toBe(true);
-    expect((await service.availability("CH")).enabled).toBe(false);
-    expect(await service.search({ marketCode: "CH", limit: 20 })).toEqual([]);
+const actor = { userId: "account-a", displayName: "Alex", verified: true };
+
+describe("API-backed mobile delivery service", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("propagates the exact market on public delivery reads", async () => {
+    vi.mocked(apiRequest).mockResolvedValueOnce({
+      marketCode: "CH",
+      enabled: false,
+      readOnlyAssigned: true,
+      reasons: ["feature_flag_disabled"],
+    });
+
+    await expect(
+      new HttpMobileDeliveryService().availability("CH"),
+    ).resolves.toMatchObject({ marketCode: "CH", enabled: false });
+    expect(apiRequest).toHaveBeenCalledWith(
+      "/delivery/availability?marketCode=CH",
+      {},
+      "CH",
+    );
   });
 
-  it("requires an active same-market courier profile before applying", async () => {
-    const service = new DemoMobileDeliveryService();
-    const [request] = await service.search({ marketCode: "FR", limit: 20 });
+  it("creates then publishes through two confirmed API mutations", async () => {
+    vi.mocked(apiRequest)
+      .mockResolvedValueOnce({ id: "request-1" })
+      .mockResolvedValueOnce({ id: "request-1", status: "open" });
+    const input = {
+      marketCode: "FR",
+      idempotencyKey: "create-request-1",
+    } as DeliveryRequestDraftInput;
+
     await expect(
-      service.submitApplication(courier, request.id, "FR", {
-        availabilityNote: "Disponible",
-        message: "Je peux assurer cette livraison.",
-        idempotencyKey: "mobile-delivery-application-test",
-      }),
-    ).rejects.toThrow("DELIVERY_NOT_ELIGIBLE");
-    await service.saveCourierProfile(courier, "FR", {
-      status: "active",
-      vehicleTypes: ["van"],
-      maxWeightGrams: 40_000,
-      serviceLocalities: [
-        { city: "Paris", postalCode: "75011" },
-        { city: "Boulogne-Billancourt", postalCode: "92100" },
-      ],
-      opportunityNotifications: true,
-    });
-    await expect(
-      service.submitApplication(courier, request.id, "FR", {
-        availabilityNote: "Disponible",
-        message: "Je peux assurer cette livraison.",
-        idempotencyKey: "mobile-delivery-application-test",
-      }),
-    ).resolves.toMatchObject({ status: "submitted" });
+      new HttpMobileDeliveryService().createAndPublish(actor, input),
+    ).resolves.toMatchObject({ id: "request-1", status: "open" });
+    expect(apiRequest).toHaveBeenNthCalledWith(
+      1,
+      "/delivery/requests",
+      { method: "POST", body: JSON.stringify(input) },
+      "FR",
+    );
+    expect(apiRequest).toHaveBeenNthCalledWith(
+      2,
+      "/delivery/requests/request-1/publish",
+      { method: "POST", body: JSON.stringify({ marketCode: "FR" }) },
+      "FR",
+    );
   });
 
-  it("limits a selected courier to their assignment and exact stops", async () => {
-    const service = new DemoMobileDeliveryService();
-    const [request] = await service.search({ marketCode: "FR", limit: 20 });
-    await service.saveCourierProfile(courier, "FR", {
-      status: "active",
-      vehicleTypes: ["van"],
-      maxWeightGrams: 40_000,
-      serviceLocalities: [
-        { city: "Paris", postalCode: "75011" },
-        { city: "Boulogne-Billancourt", postalCode: "92100" },
-      ],
-      opportunityNotifications: true,
-    });
-    const application = await service.submitApplication(
-      courier,
-      request.id,
-      "FR",
-      {
-        availabilityNote: "Disponible",
-        message: "Je peux assurer cette livraison.",
-        idempotencyKey: "mobile-delivery-private-assignment",
-      },
-    );
-    await service.acceptApplication(
-      requester,
-      request.id,
-      application.id,
-      "FR",
-      request.version,
-    );
+  it("does not simulate publication when request creation fails", async () => {
+    vi.mocked(apiRequest).mockRejectedValueOnce(new Error("forbidden"));
+    const input = {
+      marketCode: "FR",
+      idempotencyKey: "create-request-2",
+    } as DeliveryRequestDraftInput;
 
-    const assignment = await service.getPrivateRequest(
-      courier,
-      request.id,
-      "FR",
-    );
-    expect(assignment).toMatchObject({
-      pickup: { city: "Paris" },
-      selectedApplication: { id: application.id },
-    });
-    expect(assignment).not.toHaveProperty("applications");
-    expect(assignment).not.toHaveProperty("sourceOrderId");
+    await expect(
+      new HttpMobileDeliveryService().createAndPublish(actor, input),
+    ).rejects.toThrow("forbidden");
+    expect(apiRequest).toHaveBeenCalledTimes(1);
   });
 });

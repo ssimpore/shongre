@@ -1,8 +1,6 @@
-import type {
-  ListingCardView,
-  Money,
-  MoneyConversionProjection,
-} from "@shongre/contracts";
+import type { ListingCardView } from "@shongre/contracts/listings";
+import type { Money } from "@shongre/contracts/primitives";
+import type { MoneyConversionProjection } from "@shongre/contracts/currency";
 import { formatCompactMoney, majorToMinorAmount } from "@shongre/shared/money";
 import type { ListingPricePresentation } from "../../types";
 

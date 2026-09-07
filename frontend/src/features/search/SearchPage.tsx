@@ -2,6 +2,11 @@ import { PAGE_SIZES } from "../../configuration/pagination.config";
 import { routes } from "../../configuration/routes";
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import {
+  keepPreviousData,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
+import {
   useLocation,
   useNavigate,
   useSearchParams,
@@ -18,9 +23,10 @@ import {
 import type {
   MarketScopedSearchFilters,
   SearchFacetValue,
+  SearchResponse,
 } from "../../api/contracts/search.contract";
 import { services } from "../../api/client/service-registry";
-import { Listing, SearchFilters, ListingCondition } from "../../types";
+import { SearchFilters, ListingCondition } from "../../types";
 import { getTaxonomyLabel } from "../../domains/taxonomy/taxonomy.service";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useRootTaxonomyCategories } from "../../hooks/useRootTaxonomyCategories";
@@ -44,7 +50,7 @@ import type { LocationSelectorValue } from "../../design-system";
 import { NoResultsFound } from "../../design-system/primitives/NoResultsFound";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useToast } from "../../app/providers/ToastProvider";
-import { storageService } from "../../services/storage.service";
+import { browserPreferencesService } from "../../services/browser-preferences.service";
 import { analyticsService } from "../../services/analytics.service";
 import { CategoryIcon } from "../../design-system/primitives/CategoryIcon";
 import { FilterChip } from "../../design-system/primitives/FilterChip";
@@ -67,6 +73,10 @@ import {
   resolveSeoPolicy,
   structuredDataForPolicy,
 } from "../../platform/seo/seo-policy";
+import {
+  canonicalSearchKey,
+  normalizeSearchFilters,
+} from "../../api/search/normalized-search";
 
 // Leaflet is the heaviest optional frontend dependency. Keep it outside the
 // normal search bundle so grid/list browsing does not download a map engine or
@@ -120,7 +130,6 @@ export const SearchPage: React.FC = () => {
   );
   const initialData =
     publicRouteData?.kind === "listing_search" ? publicRouteData : null;
-  const initialDataPending = useRef(Boolean(initialData));
   const formatPriceBound = (value: number) =>
     `${value.toLocaleString(currentLocale)} ${currencySymbol}`;
 
@@ -130,16 +139,10 @@ export const SearchPage: React.FC = () => {
     urlViewParam === "map" || urlViewParam === "list" ? urlViewParam : "grid";
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
   const [showDesktopFilters, setShowDesktopFilters] = useState(true);
-  const [listings, setListings] = useState<Listing[]>(initialData?.items ?? []);
-  const [totalCount, setTotalCount] = useState(initialData?.total ?? 0);
-  const [totalPages, setTotalPages] = useState(initialData?.totalPages ?? 1);
-  const [attributeFacetValues, setAttributeFacetValues] = useState<
-    Record<string, SearchFacetValue[]>
-  >({});
-  const [isLoading, setIsLoading] = useState(!initialData);
-  const [searchError, setSearchError] = useState(false);
-  const [searchAttempt, setSearchAttempt] = useState(0);
   const lastStartedSearchKey = useRef<string | null>(null);
+  const cursorByPage = useRef(new Map<number, string | undefined>());
+  const paginationScope = useRef("");
+  const queryClient = useQueryClient();
 
   /* `/categorie/:categorySlug` is the canonical, linkable category search.
      Keep that route parameter implicit instead of copying it into `?category=`:
@@ -186,10 +189,11 @@ export const SearchPage: React.FC = () => {
   const sortBy = (searchParams.get("sortBy") as any) || "date_desc";
   const marketCode =
     searchParams.get("market") ||
-    storageService.getActiveMarketCode() ||
-    activeMarket.code;
+    activeMarket.code ||
+    browserPreferencesService.getActiveMarketCode();
   const pageParam = Number(searchParams.get("page") || "1");
   const page = Number.isInteger(pageParam) && pageParam > 0 ? pageParam : 1;
+  const cursor = searchParams.get("cursor") || undefined;
 
   const dynamicAttributeFilters = useMemo(() => {
     const values: SearchFilters["attributes"] = {};
@@ -216,46 +220,98 @@ export const SearchPage: React.FC = () => {
     return values;
   }, [searchParams]);
 
-  // Temporary filter state for mobile drawer / inputs
-  const [, setTempQuery] = useState(query);
-
-  useEffect(() => {
-    setTempQuery(query);
-  }, [query]);
-
-  // Execute search query
-  useEffect(() => {
-    let cancelled = false;
-    if (initialDataPending.current) {
-      initialDataPending.current = false;
-      return;
-    }
-    setIsLoading(true);
-    setSearchError(false);
-    const filters: MarketScopedSearchFilters = {
-      query: query || undefined,
-      categorySlug: categorySlug || undefined,
-      subCategorySlug: subCategorySlug || undefined,
-      city: city || undefined,
+  const filters = useMemo<MarketScopedSearchFilters>(
+    () =>
+      normalizeSearchFilters({
+        query: query || undefined,
+        categorySlug: categorySlug || undefined,
+        subCategorySlug: subCategorySlug || undefined,
+        city: city || undefined,
+        radiusKm,
+        minPrice,
+        maxPrice,
+        sellerType: sellerType as MarketScopedSearchFilters["sellerType"],
+        deliveryAvailable: delivery || undefined,
+        onlinePaymentAvailable: onlinePayment || undefined,
+        onlyDeals: onlyDeals || undefined,
+        conditions: conditions.length > 0 ? conditions : undefined,
+        attributes:
+          Object.keys(dynamicAttributeFilters).length > 0
+            ? dynamicAttributeFilters
+            : undefined,
+        sortBy,
+        marketCode,
+        page,
+        limit: PAGE_SIZES.marketplaceSearch,
+        cursor,
+      }),
+    [
+      query,
+      categorySlug,
+      subCategorySlug,
+      city,
       radiusKm,
       minPrice,
       maxPrice,
-      sellerType: sellerType as any,
-      deliveryAvailable: delivery || undefined,
-      onlinePaymentAvailable: onlinePayment || undefined,
-      onlyDeals: onlyDeals || undefined,
-      conditions: conditions.length > 0 ? conditions : undefined,
-      attributes:
-        Object.keys(dynamicAttributeFilters).length > 0
-          ? dynamicAttributeFilters
-          : undefined,
+      sellerType,
+      delivery,
+      onlinePayment,
+      onlyDeals,
+      conditions.join(","),
+      dynamicAttributeFilters,
       sortBy,
       marketCode,
       page,
-      limit: PAGE_SIZES.marketplaceSearch,
-    };
+      cursor,
+    ],
+  );
+  const searchKey = useMemo(() => canonicalSearchKey(filters), [filters]);
+  const matchesServerInitialSearch =
+    initialData?.pathname === location.pathname && location.search === "";
+  const paginationScopeKey = useMemo(
+    () => canonicalSearchKey({ ...filters, page: 1, cursor: undefined })[1],
+    [filters],
+  );
+  if (paginationScope.current !== paginationScopeKey) {
+    paginationScope.current = paginationScopeKey;
+    cursorByPage.current.clear();
+    cursorByPage.current.set(page, cursor);
+  }
+  const serverInitialData: SearchResponse | undefined =
+    initialData && matchesServerInitialSearch
+      ? {
+          items: initialData.items,
+          total: initialData.total,
+          page: initialData.page,
+          totalPages: initialData.totalPages,
+          totalRelation: initialData.totalRelation,
+          snapshotAt: initialData.snapshotAt,
+          pageInfo: initialData.pageInfo,
+        }
+      : undefined;
+  const searchQuery = useQuery<SearchResponse>({
+    queryKey: searchKey,
+    queryFn: ({ signal }) => services.search.search(filters, { signal }),
+    initialData: serverInitialData,
+    initialDataUpdatedAt: matchesServerInitialSearch ? Date.now() : undefined,
+    placeholderData: keepPreviousData,
+    staleTime: 15_000,
+    retry: 1,
+  });
+  const listings = searchQuery.data?.items ?? [];
+  const totalCount = searchQuery.data?.total ?? 0;
+  const totalPages = searchQuery.data?.totalPages ?? 1;
+  const totalRelation = searchQuery.data?.totalRelation ?? "exact";
+  const attributeFacetValues: Record<string, SearchFacetValue[]> =
+    searchQuery.data?.facets?.attributes ?? {};
+  const isLoading = searchQuery.isPending;
+  const searchError = searchQuery.isError && !searchQuery.data;
+  const hasNextPage = Boolean(searchQuery.data?.pageInfo?.hasNextPage);
 
-    const startedSearchKey = JSON.stringify({ filters, searchAttempt });
+  // Search lifecycle telemetry follows the canonical query key, not component
+  // renders. React Query owns deduplication, cancellation and stale protection.
+  useEffect(() => {
+    const startedSearchKey = searchKey[1];
     if (lastStartedSearchKey.current !== startedSearchKey) {
       lastStartedSearchKey.current = startedSearchKey;
       analyticsService.track("search_started", {
@@ -271,73 +327,87 @@ export const SearchPage: React.FC = () => {
         radiusKm,
       });
     }
-
-    services.search
-      .search(filters)
-      .then((res) => {
-        if (cancelled) return;
-        setListings(res.items);
-        setTotalCount(res.total);
-        setTotalPages(res.totalPages);
-        setAttributeFacetValues(res.facets?.attributes || {});
-        analyticsService.track("search_performed", {
-          query: query || undefined,
-          categoryId: categorySlug || undefined,
-          resultCount: res.total,
-          zeroResults: res.total === 0,
-          sort: sortBy,
-          radiusKm,
-        });
-
-        if (page > res.totalPages) {
-          setSearchParams(
-            (previous) => {
-              const next = new URLSearchParams(previous);
-              if (res.totalPages <= 1) next.delete("page");
-              else next.set("page", String(res.totalPages));
-              return next;
-            },
-            { replace: true },
-          );
-        }
-      })
-      .catch(() => {
-        if (cancelled) return;
-        setListings([]);
-        setTotalCount(0);
-        setTotalPages(1);
-        setAttributeFacetValues({});
-        setSearchError(true);
-      })
-      .finally(() => {
-        if (!cancelled) setIsLoading(false);
-      });
-
     if (query) {
-      storageService.addRecentSearch(query);
+      browserPreferencesService.addRecentSearch(query);
     }
-    return () => {
-      cancelled = true;
-    };
   }, [
+    searchKey,
     query,
     categorySlug,
-    subCategorySlug,
-    city,
-    radiusKm,
     minPrice,
     maxPrice,
     sellerType,
     delivery,
-    onlinePayment,
-    onlyDeals,
-    conditions.join(","),
-    JSON.stringify(dynamicAttributeFilters),
     sortBy,
-    marketCode,
+    radiusKm,
+  ]);
+
+  useEffect(() => {
+    const response = searchQuery.data;
+    if (!response || searchQuery.isPlaceholderData) return;
+    analyticsService.track("search_performed", {
+      query: query || undefined,
+      categoryId: categorySlug || undefined,
+      resultCount: response.total,
+      zeroResults: response.total === 0,
+      sort: sortBy,
+      radiusKm,
+    });
+    cursorByPage.current.set(page, cursor);
+    if (response.pageInfo?.nextCursor) {
+      cursorByPage.current.set(page + 1, response.pageInfo.nextCursor);
+    }
+    if (
+      response.totalRelation !== "lower_bound" &&
+      page > response.totalPages
+    ) {
+      setSearchParams(
+        (previous) => {
+          const next = new URLSearchParams(previous);
+          next.delete("cursor");
+          if (response.totalPages <= 1) next.delete("page");
+          else next.set("page", String(response.totalPages));
+          return next;
+        },
+        { replace: true },
+      );
+    }
+  }, [
+    categorySlug,
+    cursor,
     page,
-    searchAttempt,
+    query,
+    radiusKm,
+    searchQuery.data,
+    searchQuery.dataUpdatedAt,
+    searchQuery.isPlaceholderData,
     setSearchParams,
+    sortBy,
+  ]);
+
+  useEffect(() => {
+    const nextCursor = searchQuery.data?.pageInfo?.nextCursor;
+    if (!nextCursor || searchQuery.isPlaceholderData) return;
+    const nextFilters = normalizeSearchFilters({
+      ...filters,
+      page: page + 1,
+      cursor: nextCursor,
+    });
+    const timeout = window.setTimeout(() => {
+      void queryClient.prefetchQuery({
+        queryKey: canonicalSearchKey(nextFilters),
+        queryFn: ({ signal }) =>
+          services.search.search(nextFilters, { signal }),
+        staleTime: 15_000,
+      });
+    }, 250);
+    return () => window.clearTimeout(timeout);
+  }, [
+    filters,
+    page,
+    queryClient,
+    searchQuery.data?.pageInfo?.nextCursor,
+    searchQuery.isPlaceholderData,
   ]);
 
   const toggleCondition = (value: ListingCondition) => {
@@ -372,6 +442,7 @@ export const SearchPage: React.FC = () => {
       deleteAttributeFilters(next);
     }
     next.delete("page");
+    next.delete("cursor");
 
     if (key === "category" && categoryRouteSlug) {
       if (!value || value === "all" || value !== categoryRouteSlug) {
@@ -390,6 +461,7 @@ export const SearchPage: React.FC = () => {
     if (value.radiusKm) next.set("radius", String(value.radiusKm));
     else next.delete("radius");
     next.delete("page");
+    next.delete("cursor");
     setSearchParams(next);
   };
 
@@ -399,6 +471,9 @@ export const SearchPage: React.FC = () => {
       const next = new URLSearchParams(previous);
       if (boundedPage <= 1) next.delete("page");
       else next.set("page", String(boundedPage));
+      const targetCursor = cursorByPage.current.get(boundedPage);
+      if (targetCursor) next.set("cursor", targetCursor);
+      else next.delete("cursor");
       return next;
     });
     requestAnimationFrame(() => {
@@ -416,6 +491,7 @@ export const SearchPage: React.FC = () => {
       if (max !== undefined) next.set("maxPrice", String(max));
       else next.delete("maxPrice");
       next.delete("page");
+      next.delete("cursor");
       return next;
     });
   };
@@ -423,7 +499,6 @@ export const SearchPage: React.FC = () => {
   const clearAllFilters = () => {
     if (categoryRouteSlug) navigate("/recherche");
     else setSearchParams(new URLSearchParams());
-    setTempQuery("");
     resetLocation();
   };
 
@@ -483,7 +558,7 @@ export const SearchPage: React.FC = () => {
             : {}),
         },
       });
-      storageService.saveSearch(
+      browserPreferencesService.saveSearch(
         {
           id,
           title,
@@ -547,9 +622,10 @@ export const SearchPage: React.FC = () => {
       recentUrlParams.set("category", categoryRouteSlug);
     }
     recentUrlParams.delete("page");
+    recentUrlParams.delete("cursor");
     recentUrlParams.delete("view");
 
-    storageService.addRecentSearchItem({
+    browserPreferencesService.addRecentSearchItem({
       title:
         query.trim() ||
         (activeSubCat
@@ -722,11 +798,12 @@ export const SearchPage: React.FC = () => {
   ]);
 
   const paginationPages = useMemo(() => {
+    if (totalRelation === "lower_bound") return [page];
     const pages = new Set([1, totalPages, page - 1, page, page + 1]);
     return Array.from(pages)
       .filter((value) => value >= 1 && value <= totalPages)
       .sort((a, b) => a - b);
-  }, [page, totalPages]);
+  }, [page, totalPages, totalRelation]);
 
   const activeDynamicFilterChips = useMemo(() => {
     return dynamicFacets.flatMap((facet) => {
@@ -841,13 +918,14 @@ export const SearchPage: React.FC = () => {
         >
           {isLoading
             ? "Recherche en cours…"
-            : `${plural(totalCount, "annonce")} ${
+            : `${totalRelation === "lower_bound" ? "Au moins " : ""}${plural(totalCount, "annonce")} ${
                 totalCount > 1 ? "correspondent" : "correspond"
               } à votre recherche`}
         </p>
       </div>
 
-      {/* Query controls live in the global header and the adaptive filter panel. */}
+      {/* Active criteria stay removable here; result refinement lives in the
+          adaptive filter panel. */}
       {(query || activeFilterCount > 0) && (
         <SearchActiveFiltersBar onClear={clearAllFilters}>
           {query && (
@@ -1288,6 +1366,7 @@ export const SearchPage: React.FC = () => {
 
         {/* Results Column */}
         <div
+          aria-busy={searchQuery.isFetching}
           className={
             showDesktopFilters ? "lg:col-span-3 space-y-4" : "w-full space-y-4"
           }
@@ -1295,7 +1374,11 @@ export const SearchPage: React.FC = () => {
           {/* Controls Bar: Total Count, Save Search, View Mode, Sort */}
           <SearchResultsToolbar
             id="search-results-toolbar"
-            resultLabel={plural(totalCount, "annonce")}
+            resultLabel={
+              totalRelation === "lower_bound"
+                ? `Au moins ${plural(totalCount, "annonce")}`
+                : plural(totalCount, "annonce")
+            }
             desktopFilterPanelId="search-filter-panel-desktop"
             mobileFilterPanelId="search-filter-panel-mobile"
             desktopFiltersExpanded={showDesktopFilters}
@@ -1382,9 +1465,7 @@ export const SearchPage: React.FC = () => {
               title={t("common.error")}
               description={t("search.searchPage.loadError")}
               action={
-                <Button
-                  onClick={() => setSearchAttempt((attempt) => attempt + 1)}
-                >
+                <Button onClick={() => void searchQuery.refetch()}>
                   {t("common.retry")}
                 </Button>
               }
@@ -1410,11 +1491,12 @@ export const SearchPage: React.FC = () => {
               </React.Suspense>
             ) : viewMode === "grid" ? (
               <ListingGrid fluid>
-                {listings.map((listing) => (
+                {listings.map((listing, index) => (
                   <ListingCard
                     key={listing.id}
                     listing={listing}
                     variant="grid"
+                    imagePriority={page === 1 && index === 0}
                   />
                 ))}
               </ListingGrid>
@@ -1443,7 +1525,7 @@ export const SearchPage: React.FC = () => {
           {!isLoading &&
             !searchError &&
             listings.length > 0 &&
-            totalPages > 1 && (
+            (page > 1 || hasNextPage || totalPages > 1) && (
               <nav
                 aria-label="Pagination des résultats"
                 className="flex items-center justify-center gap-1.5 pt-3"
@@ -1489,7 +1571,7 @@ export const SearchPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => updatePage(page + 1)}
-                  disabled={page >= totalPages}
+                  disabled={!hasNextPage && page >= totalPages}
                   className={`inline-flex h-control-sm items-center gap-1 rounded-control border border-border-base bg-bg-surface px-2.5 text-xs font-semibold text-text-emphasis disabled:cursor-not-allowed disabled:opacity-40 ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS}`}
                   aria-label="Page suivante"
                 >

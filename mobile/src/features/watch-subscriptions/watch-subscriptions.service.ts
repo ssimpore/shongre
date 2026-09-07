@@ -1,10 +1,27 @@
-import type {
-  CreateWatchSubscriptionInput,
-  UpdateWatchSubscriptionInput,
-  WatchSubscription,
+import {
+  createWatchSubscriptionInputSchema,
+  updateWatchSubscriptionInputSchema,
+  watchSubscriptionListSchema,
+  watchSubscriptionSchema,
+  type CreateWatchSubscriptionInput,
+  type UpdateWatchSubscriptionInput,
+  type WatchSubscription,
 } from "@shongre/contracts/watch-subscriptions";
+import type { operations } from "@shongre/contracts/openapi";
 import { apiRequest } from "@/api/http-client";
-import { mobileEnvironment } from "@/config/environment";
+
+type ListResponse =
+  operations["getWatchSubscriptions"]["responses"][200]["content"]["application/json"];
+type CreateRequest =
+  operations["postWatchSubscription"]["requestBody"]["content"]["application/json"];
+type CreateResponse =
+  operations["postWatchSubscription"]["responses"][201]["content"]["application/json"];
+type UpdateRequest =
+  operations["patchWatchSubscription"]["requestBody"]["content"]["application/json"];
+type UpdateResponse =
+  operations["patchWatchSubscription"]["responses"][200]["content"]["application/json"];
+type DeleteResponse =
+  operations["deleteWatchSubscription"]["responses"][200]["content"]["application/json"];
 
 export interface WatchSubscriptionsService {
   list(userId: string, marketCode: string): Promise<WatchSubscription[]>;
@@ -21,95 +38,30 @@ export interface WatchSubscriptionsService {
   remove(userId: string, marketCode: string, id: string): Promise<void>;
 }
 
-const DEMO_NOW = "2026-09-03T08:00:00.000Z";
-
-export class DemoWatchSubscriptionsService implements WatchSubscriptionsService {
-  private readonly byAccountAndMarket = new Map<string, WatchSubscription[]>();
-
-  async list(userId: string, marketCode: string): Promise<WatchSubscription[]> {
-    return (
-      this.byAccountAndMarket.get(this.key(userId, marketCode)) || []
-    ).map((item) => ({ ...item, channels: { ...item.channels } }));
-  }
-
-  async createOrReplace(
-    userId: string,
-    input: CreateWatchSubscriptionInput,
-  ): Promise<WatchSubscription> {
-    const key = this.key(userId, input.marketCode);
-    const items = await this.list(userId, input.marketCode);
-    const existing = items.find(
-      (item) =>
-        item.targetType === input.targetType &&
-        item.targetId === input.targetId,
-    );
-    const next: WatchSubscription = {
-      ...input,
-      id:
-        existing?.id ||
-        `watch-${userId}-${input.marketCode}-${input.targetType}-${input.targetId}`,
-      status: "active",
-      createdAt: existing?.createdAt || DEMO_NOW,
-      updatedAt: DEMO_NOW,
-    };
-    this.byAccountAndMarket.set(key, [
-      next,
-      ...items.filter((item) => item.id !== next.id),
-    ]);
-    return { ...next };
-  }
-
-  async update(
-    userId: string,
-    marketCode: string,
-    id: string,
-    input: UpdateWatchSubscriptionInput,
-  ): Promise<WatchSubscription> {
-    const key = this.key(userId, marketCode);
-    const items = await this.list(userId, marketCode);
-    const current = items.find((item) => item.id === id);
-    if (!current) throw new Error("Alerte introuvable.");
-    const next = { ...current, ...input, updatedAt: DEMO_NOW };
-    this.byAccountAndMarket.set(
-      key,
-      items.map((item) => (item.id === id ? next : item)),
-    );
-    return next;
-  }
-
-  async remove(userId: string, marketCode: string, id: string): Promise<void> {
-    const key = this.key(userId, marketCode);
-    this.byAccountAndMarket.set(
-      key,
-      (await this.list(userId, marketCode)).filter((item) => item.id !== id),
-    );
-  }
-
-  private key(userId: string, marketCode: string): string {
-    return `${userId}::${marketCode.toUpperCase()}`;
-  }
-}
-
-class HttpWatchSubscriptionsService implements WatchSubscriptionsService {
+export class HttpWatchSubscriptionsService implements WatchSubscriptionsService {
   async list(
     _userId: string,
     marketCode: string,
   ): Promise<WatchSubscription[]> {
-    const result = await apiRequest<{ items: WatchSubscription[] }>(
+    const result = await apiRequest<ListResponse>(
       "/watch-subscriptions",
       {},
       marketCode,
     );
-    return result.items;
+    return watchSubscriptionListSchema.parse(result).items;
   }
   async createOrReplace(
     _userId: string,
     input: CreateWatchSubscriptionInput,
   ): Promise<WatchSubscription> {
-    return apiRequest(
-      "/watch-subscriptions",
-      { method: "POST", body: JSON.stringify(input) },
-      input.marketCode,
+    const parsed = createWatchSubscriptionInputSchema.parse(input);
+    const payload: CreateRequest = parsed;
+    return watchSubscriptionSchema.parse(
+      await apiRequest<CreateResponse>(
+        "/watch-subscriptions",
+        { method: "POST", body: JSON.stringify(payload) },
+        parsed.marketCode,
+      ),
     );
   }
   async update(
@@ -118,14 +70,18 @@ class HttpWatchSubscriptionsService implements WatchSubscriptionsService {
     id: string,
     input: UpdateWatchSubscriptionInput,
   ): Promise<WatchSubscription> {
-    return apiRequest(
-      `/watch-subscriptions/${encodeURIComponent(id)}`,
-      { method: "PATCH", body: JSON.stringify(input) },
-      marketCode,
+    const parsed = updateWatchSubscriptionInputSchema.parse(input);
+    const payload: UpdateRequest = parsed;
+    return watchSubscriptionSchema.parse(
+      await apiRequest<UpdateResponse>(
+        `/watch-subscriptions/${encodeURIComponent(id)}`,
+        { method: "PATCH", body: JSON.stringify(payload) },
+        marketCode,
+      ),
     );
   }
   async remove(_userId: string, marketCode: string, id: string): Promise<void> {
-    await apiRequest(
+    await apiRequest<DeleteResponse>(
       `/watch-subscriptions/${encodeURIComponent(id)}`,
       { method: "DELETE" },
       marketCode,
@@ -134,6 +90,4 @@ class HttpWatchSubscriptionsService implements WatchSubscriptionsService {
 }
 
 export const watchSubscriptionsService: WatchSubscriptionsService =
-  mobileEnvironment.dataMode === "demo"
-    ? new DemoWatchSubscriptionsService()
-    : new HttpWatchSubscriptionsService();
+  new HttpWatchSubscriptionsService();

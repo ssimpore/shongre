@@ -13,10 +13,19 @@ export const SHONGRE_PERFORMANCE_BUDGETS = {
     ttfbGoodMs: 800,
   },
   clientBundle: {
-    initialExecutableRawBytes: 1_725_000,
-    initialExecutableGzipBytes: 449_000,
-    executableChunkGzipBytes: 110_000,
+    initialExecutableRawBytes: 1_350_000,
+    initialExecutableGzipBytes: 365_000,
+    executableChunkGzipBytes: 95_000,
     generatedTaxonomyChunkGzipBytes: 650_000,
+    routeExecutableGzipBytes: {
+      home: 16_000,
+      search: 13_000,
+      automotive: 11_000,
+      realEstate: 9_000,
+      employment: 16_500,
+      education: 15_000,
+      listingDetail: 22_000,
+    },
   },
   api: {
     monthlyAvailability: 0.999,

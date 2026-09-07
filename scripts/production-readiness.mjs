@@ -131,7 +131,6 @@ exact("EXPO_PUBLIC_APP_ENV", "production");
 exact("BACKEND_DATA_MODE", "database");
 exact("DATABASE_INFRA_MODE", "hosted");
 exact("NEXT_PUBLIC_DATA_MODE", "api");
-exact("EXPO_PUBLIC_DATA_MODE", "api");
 exact("NEXT_PUBLIC_ENABLE_MOCK_STORAGE", "false");
 exact("NEXT_PUBLIC_ENABLE_AI_FEATURES", "false");
 exact("PAYMENT_MODE", "live");

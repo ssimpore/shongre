@@ -1,4 +1,4 @@
-import { DEFAULT_COUNTRY_CONFIG } from "@shongre/contracts";
+import { DEFAULT_COUNTRY_CONFIG } from "@shongre/contracts/market-country";
 
 /**
  * Bootstrap market identity used before persisted market configuration loads.

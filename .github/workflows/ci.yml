@@ -73,7 +73,6 @@ jobs:
           NEXT_PUBLIC_ENABLE_MOCK_STORAGE: "false"
           NEXT_PUBLIC_ENABLE_AI_FEATURES: "false"
           NEXT_PUBLIC_API_URL: https://api.shongre.invalid/api/v1
-          EXPO_PUBLIC_DATA_MODE: api
           EXPO_PUBLIC_APP_ENV: production
           EXPO_PUBLIC_ENVIRONMENT_ID: shongre-production
           EXPO_PUBLIC_FR_URL: https://fr.shongre.invalid

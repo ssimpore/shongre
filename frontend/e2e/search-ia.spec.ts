@@ -3,14 +3,9 @@ import { usePersona } from './personas';
 import { waitForStableLayout } from './overflow';
 
 /**
- * One search affordance per screen, and one visible result count.
- *
- * `/recherche` used to render the sticky header search *and* its own page-level
- * bar: two text inputs carrying the identical accessible name ("Rechercher une
- * annonce"), each with its own category dropdown, plus the result count printed
- * both in the page heading and in the results toolbar. The page-level bar wins
- * because it owns fields the header one does not (radius) and edits the URL in
- * place instead of navigating.
+ * The results route keeps refinement in its adaptive filter surface and one
+ * visible result count. It does not repeat query, category, location or submit
+ * controls above the results.
  */
 
 /** Ignores `sr-only` (1px, clipped) and anything genuinely hidden. */
@@ -23,22 +18,40 @@ const VISIBLE = `(el) => {
 
 test.describe('search page information architecture', () => {
   for (const width of [1280, 834]) {
-    test(`exposes exactly one search field at ${width}px`, async ({ page }) => {
+    test(`omits the redundant page-level search strip at ${width}px`, async ({ page }) => {
       await page.setViewportSize({ width, height: 900 });
       await usePersona(page, 'guest');
       await page.goto('/recherche', { waitUntil: 'domcontentloaded' });
       await waitForStableLayout(page);
 
-      const fields = await page.evaluate((visSrc) => {
-        const vis = eval(visSrc) as (el: Element) => boolean;
-        return Array.from(document.querySelectorAll('input'))
-          .filter((i) => vis(i) && (i.getAttribute('aria-label') || '').includes('Rechercher une annonce'))
-          .map((i) => i.placeholder);
-      }, VISIBLE);
+      for (const id of [
+        'search-results-page-category-button',
+        'search-results-page-query-input',
+        'search-results-page-location-button',
+        'search-results-page-submit-button',
+      ]) {
+        await expect(page.locator(`#${id}`)).toHaveCount(0);
+      }
+      await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+        /toutes les annonces/i,
+      );
 
-      expect(fields, `expected one search field, got:\n${fields.join('\n')}`).toHaveLength(1);
-      // The surviving one must be the page-level bar, not the header's.
-      expect(fields[0]).toContain('ex :');
+      if (width >= 1024) {
+        await expect(page.locator('#search-filter-panel-desktop')).toBeVisible();
+        await expect(page.locator('#desktop-category-select')).toBeVisible();
+        await expect(
+          page.locator('#search-filter-location-desktop'),
+        ).toBeVisible();
+      } else {
+        await page
+          .getByRole('button', { name: 'Ouvrir les filtres de recherche' })
+          .click();
+        await expect(page.locator('#search-filter-panel-mobile')).toBeVisible();
+        await expect(page.locator('#mobile-category-select')).toBeVisible();
+        await expect(
+          page.locator('#search-filter-location-mobile'),
+        ).toBeVisible();
+      }
     });
   }
 

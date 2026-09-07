@@ -1,27 +1,11 @@
 import { isStaffSeparatedSubject } from "@shongre/contracts/access-control";
-import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 import { services } from "../../api/client/service-registry";
 import type { UserWorkspaceSummary } from "../../api/contracts/workspace.contract";
 import { useAuth } from "./AuthProvider";
 import { useMarketLocation } from "./MarketLocationProvider";
-
-interface WorkspaceSummaryContextValue {
-  summary: UserWorkspaceSummary | null;
-  isLoading: boolean;
-  refresh: () => Promise<void>;
-}
-
-const WorkspaceSummaryContext = createContext<
-  WorkspaceSummaryContextValue | undefined
->(undefined);
+import { WorkspaceSummaryContext } from "./WorkspaceSummaryContext";
 
 export const WorkspaceSummaryProvider: React.FC<{
   children: React.ReactNode;
@@ -73,13 +57,3 @@ export const WorkspaceSummaryProvider: React.FC<{
     </WorkspaceSummaryContext.Provider>
   );
 };
-
-export function useWorkspaceSummary(): WorkspaceSummaryContextValue {
-  const context = useContext(WorkspaceSummaryContext);
-  if (!context) {
-    throw new Error(
-      "useWorkspaceSummary must be used within a WorkspaceSummaryProvider",
-    );
-  }
-  return context;
-}

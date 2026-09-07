@@ -2,7 +2,7 @@ import {
   buildPublicUrl,
   COUNTRY_REGISTRY,
   type MarketContext,
-} from "@shongre/contracts";
+} from "@shongre/contracts/market-country";
 import {
   resolveLocalizedTaxonomySeoText,
   resolveTaxonomySeoRecord,
@@ -24,6 +24,7 @@ import type {
 } from "./public-route-data";
 import { listingMarketCodes } from "./public-route-data";
 import { DEFAULT_MARKET_CURRENCY } from "../../configuration/market-baseline";
+import { minorToMajorAmount } from "@shongre/shared/money";
 import {
   DISCOVERY_PUBLIC_PATHS,
   organizationStructuredData,
@@ -826,7 +827,7 @@ export function resolveSeoPolicy({
       resourceType: "job",
       lifecycle: expired ? "expired" : "available",
       sitemapEligible: !expired,
-      structuredDataEligible: !expired,
+      structuredDataEligible: !expired && Boolean(data.job.publishedAt),
       exclusionReason: expired ? "RESOURCE_EXPIRED" : undefined,
       image: data.job.employer.logoUrl,
       openGraphType: "article",
@@ -944,6 +945,108 @@ function breadcrumb(
   };
 }
 
+function absolutePublicMediaUrl(
+  value: string | undefined,
+  canonicalUrl: string,
+): string | undefined {
+  if (!value) return undefined;
+  try {
+    const url = new URL(value, new URL(canonicalUrl).origin);
+    return ["http:", "https:"].includes(url.protocol) &&
+      !url.username &&
+      !url.password
+      ? url.toString()
+      : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function listingStructuredDataImages(
+  listing: Extract<PublicRouteData, { kind: "listing" }>["listing"],
+  canonicalUrl: string,
+): string[] {
+  return Array.from(
+    new Set(
+      [
+        listing.coverImageUrl,
+        ...listing.photos.map((photo) => photo.url),
+      ].flatMap((value) => {
+        const url = absolutePublicMediaUrl(value, canonicalUrl);
+        return url ? [url] : [];
+      }),
+    ),
+  );
+}
+
+function schemaItemCondition(condition: string): string | undefined {
+  if (condition === "new_with_tag" || condition === "new_without_tag") {
+    return "https://schema.org/NewCondition";
+  }
+  if (["very_good", "good", "fair", "for_parts"].includes(condition)) {
+    return "https://schema.org/UsedCondition";
+  }
+  return undefined;
+}
+
+function schemaEmploymentType(job: {
+  contractTypeId: string;
+  workingTimeId: string;
+}): string | string[] | undefined {
+  const values = new Set<string>();
+  const workingTime = job.workingTimeId.split(".").at(-1);
+  if (workingTime === "full_time") values.add("FULL_TIME");
+  if (workingTime === "part_time") values.add("PART_TIME");
+
+  const contractType = job.contractTypeId.split(".").at(-1);
+  const contractMapping: Record<string, string> = {
+    apprenticeship: "INTERN",
+    fixed_term: "TEMPORARY",
+    freelance: "CONTRACTOR",
+    internship: "INTERN",
+    seasonal: "TEMPORARY",
+    temporary: "TEMPORARY",
+  };
+  const contractValue = contractType ? contractMapping[contractType] : null;
+  if (contractValue) values.add(contractValue);
+  const result = [...values];
+  return result.length > 1 ? result : result[0];
+}
+
+function schemaJobSalary(
+  job: Extract<PublicRouteData, { kind: "job" }>["job"],
+): Record<string, unknown> | undefined {
+  const salary = job.salary;
+  if (!salary?.isPublic || (!salary.minimum && !salary.maximum)) {
+    return undefined;
+  }
+  const currency = salary.minimum?.currency || salary.maximum?.currency;
+  const unit = salary.frequencyId.split(".").at(-1)?.toUpperCase();
+  if (
+    !currency ||
+    !unit ||
+    !["HOUR", "DAY", "WEEK", "MONTH", "YEAR"].includes(unit)
+  ) {
+    return undefined;
+  }
+  const minimum = salary.minimum
+    ? minorToMajorAmount(salary.minimum.amountMinor, currency)
+    : undefined;
+  const maximum = salary.maximum
+    ? minorToMajorAmount(salary.maximum.amountMinor, currency)
+    : undefined;
+  return {
+    "@type": "MonetaryAmount",
+    currency,
+    value: {
+      "@type": "QuantitativeValue",
+      ...(minimum !== undefined ? { minValue: minimum } : {}),
+      ...(maximum !== undefined ? { maxValue: maximum } : {}),
+      unitText: unit,
+    },
+  };
+}
+
 export function structuredDataForPolicy(
   policy: SeoRoutePolicy,
   context: MarketContext,
@@ -1000,31 +1103,37 @@ export function structuredDataForPolicy(
 
   if (data?.kind === "listing") {
     const listing = data.listing;
-    const origin = new URL(policy.canonicalUrl).origin;
+    const images = listingStructuredDataImages(listing, policy.canonicalUrl);
+    const itemCondition = schemaItemCondition(listing.condition);
     return [
       {
         "@context": "https://schema.org",
         "@type": "Product",
+        url: policy.canonicalUrl,
         name: listing.title,
         description: listing.description,
         category: listing.categoryLabel,
-        ...(listing.coverImageUrl
-          ? { image: [new URL(listing.coverImageUrl, origin).toString()] }
-          : {}),
+        ...(images.length ? { image: images } : {}),
         offers: {
           "@type": "Offer",
           price: listing.isFreeDonation ? 0 : listing.price,
           priceCurrency:
             listing.currency || context.currency || DEFAULT_MARKET_CURRENCY,
           availability: "https://schema.org/InStock",
-          itemCondition: "https://schema.org/UsedCondition",
+          ...(itemCondition ? { itemCondition } : {}),
           url: policy.canonicalUrl,
+          areaServed: {
+            "@type": "Place",
+            address: {
+              "@type": "PostalAddress",
+              addressLocality: listing.city,
+              postalCode: listing.postalCode,
+              addressCountry: context.countryCode,
+            },
+          },
           seller: {
             "@type": isProSeller(data.seller) ? "Organization" : "Person",
-            name:
-              data.seller?.companyName ||
-              data.seller?.name ||
-              listing.sellerName,
+            name: data.seller?.name || listing.sellerName,
           },
         },
       },
@@ -1042,6 +1151,7 @@ export function structuredDataForPolicy(
   if (data?.kind === "seller") {
     const seller = data.seller;
     const professional = isProSeller(seller);
+    const image = absolutePublicMediaUrl(seller.avatarUrl, policy.canonicalUrl);
     return [
       {
         "@context": "https://schema.org",
@@ -1051,7 +1161,7 @@ export function structuredDataForPolicy(
           "@type": professional ? "Organization" : "Person",
           name: seller.companyName || seller.name,
           url: policy.canonicalUrl,
-          ...(seller.avatarUrl ? { image: seller.avatarUrl } : {}),
+          ...(image ? { image } : {}),
           ...(seller.city
             ? {
                 address: {
@@ -1075,6 +1185,16 @@ export function structuredDataForPolicy(
 
   if (data?.kind === "job") {
     const job = data.job;
+    const employmentType = schemaEmploymentType(job);
+    const baseSalary = schemaJobSalary(job);
+    const employerLogo = absolutePublicMediaUrl(
+      job.employer.logoUrl,
+      policy.canonicalUrl,
+    );
+    const remote = job.workingArrangementId.endsWith(".remote");
+    const applicantCountry = COUNTRY_REGISTRY.find(
+      (country) => country.code === job.primaryLocation.countryCode,
+    );
     return [
       {
         "@context": "https://schema.org",
@@ -1089,15 +1209,22 @@ export function structuredDataForPolicy(
           .join("\n\n"),
         datePosted: job.publishedAt,
         validThrough: job.expiresAt,
-        employmentType: job.contractTypeLabel,
+        ...(employmentType ? { employmentType } : {}),
         hiringOrganization: {
           "@type": "Organization",
           name: job.employer.name,
-          ...(job.employer.logoUrl ? { logo: job.employer.logoUrl } : {}),
+          ...(employerLogo ? { logo: employerLogo } : {}),
         },
-        ...(job.workingArrangementId.endsWith(".remote")
-          ? { jobLocationType: "TELECOMMUTE" }
+        ...(remote
+          ? {
+              jobLocationType: "TELECOMMUTE",
+              applicantLocationRequirements: {
+                "@type": "Country",
+                name: applicantCountry?.name || job.primaryLocation.countryCode,
+              },
+            }
           : {}),
+        ...(baseSalary ? { baseSalary } : {}),
         jobLocation: {
           "@type": "Place",
           address: {
@@ -1118,7 +1245,41 @@ export function structuredDataForPolicy(
   }
 
   if (data?.kind === "collection") {
+    const itemListId = `${policy.canonicalUrl}#items`;
     return [
+      {
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        name: data.collection.title,
+        description: data.collection.description,
+        url: policy.canonicalUrl,
+        inLanguage: context.locale || undefined,
+        mainEntity: { "@id": itemListId },
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        "@id": itemListId,
+        name: data.collection.title,
+        numberOfItems: data.listings.length,
+        itemListElement: data.listings.map((listing, index) => {
+          const projectedPath =
+            typeof listing.attributes?.canonicalPath === "string" &&
+            listing.attributes.canonicalPath.startsWith("/")
+              ? normalizedPath(listing.attributes.canonicalPath)
+              : `/annonce/${encodeURIComponent(listing.id)}`;
+          return {
+            "@type": "ListItem",
+            position: index + 1,
+            name: listing.title,
+            url: buildPublicUrl({
+              country: context.countryCode!,
+              route: projectedPath,
+              infrastructure: context.infrastructure,
+            }),
+          };
+        }),
+      },
       breadcrumb(context, [
         { name: "Accueil", path: "/" },
         { name: "Collections", path: "/collections" },

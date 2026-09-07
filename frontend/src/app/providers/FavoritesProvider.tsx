@@ -8,7 +8,7 @@ import React, {
   useState,
 } from "react";
 import { services } from "../../api/client/service-registry";
-import { storageService } from "../../services/storage.service";
+import { browserPreferencesService } from "../../services/browser-preferences.service";
 import { useAuth } from "./AuthProvider";
 import { analyticsService } from "../../services/analytics.service";
 import { ForbiddenError } from "../../security/authorization.service";
@@ -162,7 +162,7 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({
         }
 
         if (!targetIdentity) {
-          const guestIds = storageService.getFavorites(
+          const guestIds = browserPreferencesService.getFavorites(
             GUEST_FAVORITES_KEY,
             targetMarket,
           );
@@ -180,7 +180,7 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({
           // preserve. Once a successful public batch proves that it is no
           // longer visible in this market, remove the stale local membership.
           for (const listingId of guestCollection.unavailableIds) {
-            storageService.toggleFavorite(
+            browserPreferencesService.toggleFavorite(
               listingId,
               GUEST_FAVORITES_KEY,
               targetMarket,
@@ -194,7 +194,7 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({
         let collection =
           await services.listings.getFavoriteCollection(targetMarket);
         if (mergeGuestScopesRef.current.has(targetScope)) {
-          const guestIds = storageService.getFavorites(
+          const guestIds = browserPreferencesService.getFavorites(
             GUEST_FAVORITES_KEY,
             targetMarket,
           );
@@ -234,7 +234,7 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({
           // Clear only after every adapter write is confirmed. A partial failure
           // keeps the guest bucket intact so a later retry can reconcile it.
           for (const listingId of guestIds) {
-            storageService.toggleFavorite(
+            browserPreferencesService.toggleFavorite(
               listingId,
               GUEST_FAVORITES_KEY,
               targetMarket,
@@ -431,7 +431,7 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({
               ? (() => {
                   throw new Error("AUTH_REQUIRED");
                 })()
-              : storageService.toggleFavorite(
+              : browserPreferencesService.toggleFavorite(
                   listingId,
                   GUEST_FAVORITES_KEY,
                   marketCode,
@@ -552,7 +552,7 @@ export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({
           }
           return identity
             ? services.listings.setFavorite(listingId, marketCode, false)
-            : storageService.toggleFavorite(
+            : browserPreferencesService.toggleFavorite(
                 listingId,
                 GUEST_FAVORITES_KEY,
                 marketCode,

@@ -2,6 +2,7 @@ import { StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { Button } from "@/components/Button";
 import { Screen } from "@/components/Screen";
+import { StatePanel } from "@/components/StatePanel";
 import {
   mobileColors as colors,
   mobileRadius as radius,
@@ -13,7 +14,7 @@ import { useAuth } from "@/features/auth/AuthProvider";
 
 export default function AccountScreen() {
   const router = useRouter();
-  const { user, loading, logout } = useAuth();
+  const { user, loading, error, retryRestore, logout } = useAuth();
 
   return (
     <Screen>
@@ -27,6 +28,14 @@ export default function AccountScreen() {
       />
       {loading ? (
         <Text style={styles.muted}>Chargement sécurisé de votre session…</Text>
+      ) : error ? (
+        <StatePanel
+          title="Session indisponible"
+          message={error}
+          tone="error"
+          actionLabel="Réessayer"
+          onAction={() => void retryRestore()}
+        />
       ) : user ? (
         <>
           <View style={styles.profile}>

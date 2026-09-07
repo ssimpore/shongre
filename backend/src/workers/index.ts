@@ -12,3 +12,5 @@ export * from "./marketing/marketing-webhook-worker.js";
 export * from "./marketing/marketing-journey-worker.js";
 export * from "./digital-products/digital-fulfillment-worker.js";
 export * from "./delivery/delivery-outbox-worker.js";
+export * from "./search/discovery-event-worker.js";
+export * from "./search/indexnow-worker.js";

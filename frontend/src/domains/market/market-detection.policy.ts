@@ -1,4 +1,4 @@
-import type { MarketDetectionRecommendation } from "@shongre/contracts";
+import type { MarketDetectionRecommendation } from "@shongre/contracts/market-country";
 
 export type MarketDetectionOutcome =
   | { kind: "none" }

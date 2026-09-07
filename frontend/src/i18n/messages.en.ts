@@ -4400,6 +4400,23 @@ export const messagesEn: MessageCatalogue = {
     "This market meets the static prerequisites. A 100% rollout and reason are still required.",
   "admin.featureFlags.deliveryBlocked":
     "Activation is blocked for this market: {reasons}",
+  "admin.homepageConfigurationPanel.nombreMaximalDAnnonces":
+    "Maximum number of listings",
+  "admin.homepageConfigurationPanel.nombreMinimalDAnnoncesEligibles":
+    "Minimum number of eligible listings",
+  "admin.homepageConfigurationPanel.categoriesDeLExplorateur":
+    "Explorer categories",
+  "admin.homepageConfigurationPanel.categoriesDeLExplorateurDescription":
+    "Select the sections, their order, threshold, visibility, and target markets.",
+  "admin.homepageConfigurationPanel.marchesCibles": "Target markets",
+  "admin.homepageConfigurationPanel.sousSectionActive": "Section enabled",
+  "admin.homepageConfigurationPanel.collectionsAffichees":
+    "Visible collections",
+  "home.homePage.configurationUnavailableTitle":
+    "The homepage is temporarily unavailable",
+  "home.homePage.configurationUnavailableDescription":
+    "The published configuration could not be loaded. Try again without displaying incomplete content.",
+  "home.homePage.loadingConfiguration": "Loading the homepage",
   "delivery.error.generic":
     "The operation could not be completed. Refresh and try again.",
 };

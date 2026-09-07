@@ -30,9 +30,8 @@ import {
   UserPlus,
 } from "lucide-react";
 import { routes } from "../../configuration/routes";
-import { userRepository } from "../../repositories/user.repository";
 import { services } from "../../api/client/service-registry";
-import { Listing, UserProfile, Transaction } from "../../types";
+import { Listing, PublicSellerProfile, Transaction } from "../../types";
 import { taxonomyService } from "../../domains/taxonomy/taxonomy.service";
 import { TaxonomyMigration } from "../../domains/taxonomy/taxonomy.migration";
 import { transactionCapabilitiesService } from "../../domains/transaction/transaction.capabilities";
@@ -173,7 +172,7 @@ export const ListingDetailPage: React.FC = () => {
   const [listing, setListing] = useState<Listing | null>(
     initialData?.listing ?? null,
   );
-  const [seller, setSeller] = useState<UserProfile | null>(
+  const [seller, setSeller] = useState<PublicSellerProfile | null>(
     initialData?.seller ?? null,
   );
   const [similarListings, setSimilarListings] = useState<Listing[]>(
@@ -247,6 +246,7 @@ export const ListingDetailPage: React.FC = () => {
       .then((item) => {
         if (item) {
           setListing(item);
+          setSeller(item.sellerProfile ?? null);
 
           /* Viewing a listing is what makes it recently viewed. The storage layer
            has always known how to record this — deduplicating, newest first,
@@ -261,10 +261,6 @@ export const ListingDetailPage: React.FC = () => {
               categoryId: item.categorySlug,
             });
           }
-
-          userRepository.getUserById(item.sellerId).then((sellerUser) => {
-            if (sellerUser) setSeller(sellerUser);
-          });
 
           // Load similar listings by category
           services.listings
@@ -1115,20 +1111,15 @@ export const ListingDetailPage: React.FC = () => {
                 to={routes.seller.publicPage({
                   id: seller.id,
                   slug: seller.slug,
-                  storeSlug: seller.storeSlug,
                   isProfessional: isProSeller(seller),
                 })}
-                name={
-                  isProSeller(seller)
-                    ? seller.companyName || seller.name
-                    : seller.name
-                }
+                name={seller.name}
                 avatarUrl={seller.avatarUrl}
                 isVerified={seller.isVerified}
                 isProfessional={isProSeller(seller)}
                 rating={seller.rating}
                 reviewCount={seller.reviewCount}
-                locationLabel={seller.city}
+                locationLabel={seller.city || seller.country}
                 surface="subtle"
               />
             )}

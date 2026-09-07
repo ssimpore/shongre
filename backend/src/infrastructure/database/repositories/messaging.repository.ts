@@ -460,7 +460,7 @@ export class DemoMessagingRepository implements IMessagingRepository {
 
 export class PostgresMessagingRepository implements IMessagingRepository {
   private static readonly CONVERSATION_PROJECTION =
-    "id, listing_id, buyer_id, seller_id, last_message_text, last_message_at, created_at, listings:listing_id(id,title,price,currency,status,images), buyer:buyer_id(id,name,avatar_url,account_family,is_verified), seller:seller_id(id,name,avatar_url,account_family,is_verified)";
+    "id, listing_id, buyer_id, seller_id, last_message_text, last_message_at, created_at, listings:listing_id(id,title,price,currency,status,listing_media(url,sort_order,is_primary)), buyer:buyer_id(id,name,avatar_url,account_family,is_verified), seller:seller_id(id,name,avatar_url,account_family,is_verified)";
 
   private mapRowToConversation(row: any): Conversation {
     const mapParticipant = (profile: any): Partial<UserProfile> | undefined =>
@@ -490,8 +490,27 @@ export class PostgresMessagingRepository implements IMessagingRepository {
             price: Number(row.listings.price || 0),
             currency: row.listings.currency || undefined,
             status: row.listings.status,
-            images: Array.isArray(row.listings.images)
-              ? row.listings.images
+            images: Array.isArray(row.listings.listing_media)
+              ? (row.listings.listing_media as unknown[])
+                  .filter(
+                    (
+                      media: unknown,
+                    ): media is {
+                      url: string;
+                      sort_order?: number;
+                      is_primary?: boolean;
+                    } =>
+                      typeof media === "object" &&
+                      media !== null &&
+                      typeof (media as { url?: unknown }).url === "string",
+                  )
+                  .sort(
+                    (first, second) =>
+                      Number(Boolean(second.is_primary)) -
+                        Number(Boolean(first.is_primary)) ||
+                      (first.sort_order ?? 0) - (second.sort_order ?? 0),
+                  )
+                  .map((media) => media.url)
               : [],
           }
         : undefined,

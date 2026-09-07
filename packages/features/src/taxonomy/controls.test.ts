@@ -28,7 +28,7 @@ describe("taxonomy v4 shared controls", () => {
     const components = new Set(
       bundle.attributes.map((attribute) => attribute.uiComponent),
     );
-    expect(Object.keys(TAXONOMY_CONTROL_REGISTRY)).toHaveLength(50);
+    expect(Object.keys(TAXONOMY_CONTROL_REGISTRY)).toHaveLength(51);
     expect(components.size).toBe(35);
     expect(components.has("hidden")).toBe(false);
     expect(TAXONOMY_CONTROL_REGISTRY.hidden.kind).toBe("hidden");

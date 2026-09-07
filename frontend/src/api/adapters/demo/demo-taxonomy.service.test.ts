@@ -33,6 +33,15 @@ const senegal = resolveMarketContext({
 describe("DemoTaxonomyService header navigation", () => {
   beforeEach(() => storageService.setCurrentUserKey("content_julien"));
 
+  it("returns the contract-compatible legacy category projection", async () => {
+    const categories = await new DemoTaxonomyService().getRootCategories();
+
+    expect(categories.length).toBeGreaterThan(0);
+    expect(
+      categories.every((category) => Array.isArray(category.subCategories)),
+    ).toBe(true);
+  });
+
   it("persists a minimal admin configuration and publishes only active items", async () => {
     const service = new DemoTaxonomyService();
     const initialFrance = await service.getAdminHeaderNavigation(france);

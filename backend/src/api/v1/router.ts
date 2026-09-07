@@ -1,6 +1,6 @@
 import { IncomingMessage, ServerResponse } from "http";
 import { createHash } from "node:crypto";
-import { ZodError } from "zod";
+import { z, ZodError } from "zod";
 import {
   getCountryConfig,
   publicListingCardsRequestSchema,
@@ -114,6 +114,156 @@ import {
   requireOpenMarketplace,
   resolveApiRequestMarket,
 } from "../../modules/markets/request-market-context.js";
+
+const searchBooleanSchema = z.union([
+  z.boolean(),
+  z.enum(["true", "false"]).transform((value) => value === "true"),
+]);
+const searchAttributeScalarSchema = z.union([
+  z.string().trim().max(200),
+  z.number().finite(),
+  z.boolean(),
+]);
+const searchAttributeValueSchema = z.union([
+  searchAttributeScalarSchema,
+  z.array(searchAttributeScalarSchema).max(50),
+  z
+    .object({
+      min: z.number().finite().optional(),
+      max: z.number().finite().optional(),
+    })
+    .strict()
+    .refine((value) => value.min !== undefined || value.max !== undefined)
+    .refine(
+      (value) =>
+        value.min === undefined ||
+        value.max === undefined ||
+        value.min <= value.max,
+    ),
+]);
+
+const publicListingSearchSchema = z
+  .object({
+    marketCode: z.string().trim().length(2),
+    query: z.string().trim().max(200).optional(),
+    categoryId: z
+      .string()
+      .trim()
+      .max(200)
+      .regex(/^[a-zA-Z0-9_.-]+$/)
+      .optional(),
+    categorySlug: z
+      .string()
+      .trim()
+      .max(200)
+      .regex(/^[a-zA-Z0-9_.-]+$/)
+      .optional(),
+    subCategorySlug: z
+      .string()
+      .trim()
+      .max(200)
+      .regex(/^[a-zA-Z0-9_.-]+$/)
+      .optional(),
+    city: z.string().trim().max(200).optional(),
+    postalCode: z.string().trim().max(32).optional(),
+    radiusKm: z.coerce.number().min(0).max(500).optional(),
+    minPrice: z.coerce.number().min(0).optional(),
+    maxPrice: z.coerce.number().min(0).optional(),
+    sellerType: z.enum(["all", "individual", "pro"]).optional(),
+    deliveryAvailable: searchBooleanSchema.optional(),
+    onlinePaymentAvailable: searchBooleanSchema.optional(),
+    onlyDeals: searchBooleanSchema.optional(),
+    publishedToday: searchBooleanSchema.optional(),
+    conditions: z.array(z.string().trim().max(100)).max(20).optional(),
+    attributes: z
+      .record(
+        z
+          .string()
+          .trim()
+          .min(1)
+          .max(100)
+          .regex(/^[a-zA-Z0-9_.-]+$/),
+        searchAttributeValueSchema,
+      )
+      .optional(),
+    sortBy: z
+      .enum(["date_desc", "price_asc", "price_desc", "relevance", "distance"])
+      .optional(),
+    page: z.coerce.number().int().min(1).optional(),
+    limit: z.coerce.number().int().min(1).max(50).optional(),
+    cursor: z.string().trim().min(1).max(1024).optional(),
+  })
+  .strict()
+  .superRefine((value, context) => {
+    if (
+      value.minPrice !== undefined &&
+      value.maxPrice !== undefined &&
+      value.minPrice > value.maxPrice
+    ) {
+      context.addIssue({
+        code: "custom",
+        path: ["maxPrice"],
+        message: "maxPrice doit être supérieur ou égal à minPrice.",
+      });
+    }
+    if (value.attributes && Object.keys(value.attributes).length > 50) {
+      context.addIssue({
+        code: "custom",
+        path: ["attributes"],
+        message: "La recherche accepte au plus 50 attributs.",
+      });
+    }
+  });
+
+function parsePublicListingSearchQuery(
+  query: URLSearchParams,
+  marketCode: string,
+) {
+  let attributes: Record<string, unknown> | undefined;
+  const encodedAttributes = query.get("attributes");
+  if (encodedAttributes) {
+    try {
+      const parsed = JSON.parse(encodedAttributes);
+      if (!parsed || Array.isArray(parsed) || typeof parsed !== "object") {
+        throw new Error("attributes must be an object");
+      }
+      attributes = parsed;
+    } catch {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Le filtre attributes doit être un objet JSON valide.",
+      });
+    }
+  }
+  const conditions = query
+    .get("conditions")
+    ?.split(",")
+    .map((value) => value.trim())
+    .filter(Boolean);
+  return publicListingSearchSchema.parse({
+    marketCode,
+    query: query.get("query") || undefined,
+    categoryId: query.get("categoryId") || undefined,
+    categorySlug: query.get("categorySlug") || undefined,
+    subCategorySlug: query.get("subCategorySlug") || undefined,
+    city: query.get("city") || undefined,
+    postalCode: query.get("postalCode") || undefined,
+    radiusKm: query.get("radiusKm") || undefined,
+    minPrice: query.get("minPrice") || undefined,
+    maxPrice: query.get("maxPrice") || undefined,
+    sellerType: query.get("sellerType") || undefined,
+    deliveryAvailable: query.get("deliveryAvailable") || undefined,
+    onlinePaymentAvailable: query.get("onlinePaymentAvailable") || undefined,
+    onlyDeals: query.get("onlyDeals") || undefined,
+    publishedToday: query.get("publishedToday") || undefined,
+    conditions: conditions?.length ? conditions : undefined,
+    attributes,
+    sortBy: query.get("sortBy") || undefined,
+    page: query.get("page") || undefined,
+    limit: query.get("limit") || undefined,
+    cursor: query.get("cursor") || undefined,
+  });
+}
 
 function requireTaxonomyV4Version(value: string | null): "4.0.0" | undefined {
   if (value === null) return undefined;
@@ -1249,6 +1399,20 @@ export class ApiV1Router {
     // --------------------------------------------------------------------------
     // LISTINGS & SEARCH ROUTES
     // --------------------------------------------------------------------------
+    this.addRoute(
+      "GET",
+      "/discovery/sitemap-listings",
+      PUBLIC,
+      async ({ query, marketCode }) => {
+        const resolved = requireApiRequestMarket(marketCode);
+        requireOpenMarketplace(resolved);
+        return listingsService.getSitemapListings(
+          resolved,
+          query.get("cursor") || undefined,
+          Number(query.get("limit") || 500),
+        );
+      },
+    );
     this.addRoute("GET", "/listings", PUBLIC, async ({ query, marketCode }) => {
       const resolved = requireApiRequestMarket(marketCode);
       requireOpenMarketplace(resolved);
@@ -1274,6 +1438,18 @@ export class ApiV1Router {
     );
     this.addRoute(
       "GET",
+      "/listings/search",
+      PUBLIC,
+      async ({ query, marketCode }) => {
+        const resolved = requireApiRequestMarket(marketCode);
+        requireOpenMarketplace(resolved);
+        return listingsService.searchListings(
+          parsePublicListingSearchQuery(query, resolved),
+        );
+      },
+    );
+    this.addRoute(
+      "GET",
       "/listings/:id",
       PUBLIC,
       async ({ params, marketCode }) => {
@@ -1288,8 +1464,16 @@ export class ApiV1Router {
       async ({ body, marketCode }) => {
         const resolved = requireApiRequestMarket(marketCode);
         requireOpenMarketplace(resolved);
+        const parsed = publicListingSearchSchema.parse(body || {});
+        if (parsed.marketCode.toUpperCase() !== resolved) {
+          throw new AppError({
+            code: "VALIDATION_ERROR",
+            message:
+              "Le marché du corps ne correspond pas au contexte de requête.",
+          });
+        }
         return listingsService.searchListings({
-          ...(body || {}),
+          ...parsed,
           marketCode: resolved,
         });
       },

@@ -12,7 +12,7 @@ fi
 required=(
   APP_ENV ENVIRONMENT_ID API_ENVIRONMENT_ID DATABASE_ENVIRONMENT_ID SUPABASE_ENVIRONMENT_ID STORAGE_ENVIRONMENT_ID
   PUBLIC_FR_URL PUBLIC_INTL_URL API_URL FRONTEND_HOST FRONTEND_PORT E2E_FRONTEND_PORT BACKEND_HOST BACKEND_PORT EXPO_HOST SUPABASE_HOST API_PREFIX
-  NEXT_PUBLIC_DATA_MODE NEXT_PUBLIC_ENABLE_MOCK_STORAGE BACKEND_DATA_MODE DATABASE_INFRA_MODE EXPO_PUBLIC_DATA_MODE
+  NEXT_PUBLIC_DATA_MODE NEXT_PUBLIC_ENABLE_MOCK_STORAGE BACKEND_DATA_MODE DATABASE_INFRA_MODE
   NEXT_PUBLIC_APP_ENV NEXT_PUBLIC_ENVIRONMENT_ID NEXT_PUBLIC_FR_URL NEXT_PUBLIC_INTL_URL NEXT_PUBLIC_API_URL
   EXPO_PUBLIC_APP_ENV EXPO_PUBLIC_ENVIRONMENT_ID EXPO_PUBLIC_FR_URL EXPO_PUBLIC_INTL_URL EXPO_PUBLIC_API_URL
   PAYMENT_MODE EMAIL_MODE AI_MODE ANALYTICS_MODE
@@ -52,10 +52,6 @@ esac
 case "${DATABASE_INFRA_MODE:-}" in
   local|hosted) ;;
   *) shongre_fail "DATABASE_INFRA_MODE must be local or hosted"; failed=1 ;;
-esac
-case "$EXPO_PUBLIC_DATA_MODE" in
-  demo|api) ;;
-  *) shongre_fail "EXPO_PUBLIC_DATA_MODE must be demo or api"; failed=1 ;;
 esac
 case "${SEO_GPTBOT_TRAINING_POLICY:-deny}" in
   allow|deny) ;;
@@ -99,8 +95,7 @@ if [[ "$APP_ENV" == "local" && "${SHONGRE_EXPLICIT_DEMO:-false}" == "true" ]]; t
   for pair in \
     "NEXT_PUBLIC_DATA_MODE:demo" \
     "NEXT_PUBLIC_ENABLE_MOCK_STORAGE:true" \
-    "BACKEND_DATA_MODE:demo" \
-    "EXPO_PUBLIC_DATA_MODE:demo"; do
+    "BACKEND_DATA_MODE:demo"; do
     name="${pair%%:*}"
     expected="${pair#*:}"
     if [[ "${!name:-}" != "$expected" ]]; then
@@ -112,8 +107,7 @@ elif [[ "$APP_ENV" == "local" || "$APP_ENV" == "development" || "$APP_ENV" == "s
   for pair in \
     "NEXT_PUBLIC_DATA_MODE:api" \
     "NEXT_PUBLIC_ENABLE_MOCK_STORAGE:false" \
-    "BACKEND_DATA_MODE:database" \
-    "EXPO_PUBLIC_DATA_MODE:api"; do
+    "BACKEND_DATA_MODE:database"; do
     name="${pair%%:*}"
     expected="${pair#*:}"
     if [[ "${!name:-}" != "$expected" ]]; then
@@ -321,8 +315,8 @@ if [[ "$NEXT_PUBLIC_DATA_MODE" == "api" && -z "${NEXT_PUBLIC_API_URL:-}" ]]; the
   shongre_fail "NEXT_PUBLIC_API_URL is required when NEXT_PUBLIC_DATA_MODE=api"
   failed=1
 fi
-if [[ "$EXPO_PUBLIC_DATA_MODE" == "api" && -z "${EXPO_PUBLIC_API_URL:-}" ]]; then
-  shongre_fail "EXPO_PUBLIC_API_URL is required when EXPO_PUBLIC_DATA_MODE=api"
+if [[ -z "${EXPO_PUBLIC_API_URL:-}" ]]; then
+  shongre_fail "EXPO_PUBLIC_API_URL is required for the API-only mobile application"
   failed=1
 fi
 

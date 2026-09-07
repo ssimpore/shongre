@@ -25,9 +25,14 @@ of a soft 404. Mobile and backend consumers do not emit Web SEO metadata.
 - `packages/contracts/src/market-country.ts` owns market host/path resolution,
   public URLs, locale, currency and launch/indexing readiness.
 - `frontend/src/platform/seo/server-public-route-data.ts` owns bounded,
-  server-safe projections used by metadata, schemas and sitemaps.
+  server-safe projections used by metadata, schemas and sitemaps. Listing
+  sitemaps page through the generated `GET /api/v1/discovery/sitemap-listings`
+  contract, which uses a stable market/snapshot cursor and hydrates only the
+  selected public cards from PostgreSQL/Supabase.
 - `frontend/src/platform/seo/sitemap-catalog.server.ts` owns the deterministic
   public sitemap groups.
+- `indexnow_events`, its database triggers and the backend `IndexNowWorker` own
+  optional public-URL freshness notifications. Web/mobile never submit them.
 
 Pages and components must not write titles, canonicals, robots tags or JSON-LD
 directly. Server metadata uses the App Router metadata API. Client navigation
@@ -71,9 +76,11 @@ Crawler purpose is explicit and independent:
 | Model training           | `GPTBot`                                                   | Denied by default; controlled only by `SEO_GPTBOT_TRAINING_POLICY` |
 
 Every crawler is denied on account, authentication, publication, messaging,
-payment, verification, API and administration prefixes. `robots.txt` is only a
-cooperation signal: it neither authenticates a crawler nor protects private
-data.
+payment, verification, API and administration prefixes. Those prefixes are
+expanded from the country registry for every international market path (for
+example `/be/compte`, `/ch/messages`, `/sn/admin` and `/bf/paiement`) rather
+than maintained as a France-only list. `robots.txt` is only a cooperation
+signal: it neither authenticates a crawler nor protects private data.
 
 Production CDN/WAF configuration must verify requests that claim a recognized
 agent against the provider's current published IP data before granting a
@@ -100,10 +107,18 @@ only when the same claim is visible and current:
 - Organization and WebSite on the market home page;
 - AboutPage, ContactPage or WebPage on applicable trust/legal pages;
 - Product and Offer on active listing detail pages;
-- JobPosting on active job pages;
+- JobPosting on active, unexpired job pages, with only supported employment,
+  remote-location and public salary values;
 - ProfilePage for available public sellers;
 - CollectionPage, ItemList and BreadcrumbList where their visible content
   supports those types.
+
+Product image URLs, item condition, price, currency, availability, seller and
+service area come from the same server projection as the visible listing.
+Specialized Auto, Immo and Education detail routes remain `noindex, follow`
+until their full public entity is server-hydrated and a subtype can be emitted
+without relying on a post-hydration request. A generic listing alias redirects
+to an authoritative specialized route instead of creating a duplicate.
 
 Never invent ratings, reviews, price, availability, dates, seller identity,
 salary, location, authors, sources or update timestamps. Editorial or market
@@ -123,8 +138,19 @@ source, factual-review and correction workflow as other editorial content.
 Production sitemaps are same-host, XML-escaped, bounded and derived from the
 same route policy. Current groups are static pages, categories, collections,
 professionals, listings and jobs. Entries include a substantive last-modified
-date where the domain projection provides one. Redirects, inactive resources,
-private pages, arbitrary facets and wrong-market URLs are excluded.
+date where the domain projection provides one. Listing entries also include
+deduplicated, validated public image URLs and the image XML namespace.
+Redirects, inactive resources, private pages, arbitrary facets and wrong-market
+URLs are excluded.
+
+The backend can submit IndexNow batches only when `INDEXNOW_ENABLED=true` in
+production and the configured key passes the protocol format. PostgreSQL
+captures publish/update/sale/expiry/removal events in a service-role-only,
+market-scoped outbox. The worker claims rows with `SKIP LOCKED`, groups URLs by
+their canonical verification host, accepts only protocol success responses,
+backs off failed delivery, dead-letters after the configured attempt cap and
+purges completed rows after 30 days. Disabled/lower environments do not claim
+or call the provider; `/indexnow-key.txt` returns 404 there.
 
 `/llms.txt` is a small supplemental directory of canonical reference pages and
 the sitemap. It does not duplicate listing content, grant access, replace
@@ -172,7 +198,8 @@ SEO_ORIGIN=https://canonical-host.example make seo-audit
 ```
 
 `make seo-check` is part of lint and CI. It rejects missing crawler purpose
-rules, private-path crawl drift and disconnected discovery integrations. The
+rules, market-prefixed private-path crawl drift and disconnected discovery
+integrations. The
 live audit reads robots, sitemaps, `llms.txt`, metadata, canonicals, hreflang,
 JSON-LD, status codes and representative internal links. Browser tests cover
 initial HTML, hydration, facets, schema, redirects, real 404s and lower-

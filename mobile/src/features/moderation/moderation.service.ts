@@ -1,6 +1,19 @@
 import { reportInputSchema, type ReportInput } from "@shongre/contracts";
+import type { operations } from "@shongre/contracts/openapi";
 import { apiRequest } from "@/api/http-client";
-import { mobileEnvironment } from "@/config/environment";
+
+type ReportRequest =
+  operations["postReports"]["requestBody"]["content"]["application/json"];
+type ReportResponse =
+  operations["postReports"]["responses"][200]["content"]["application/json"];
+type BlockRequest =
+  operations["postMessagingBlock"]["requestBody"]["content"]["application/json"];
+type BlockResponse =
+  operations["postMessagingBlock"]["responses"][200]["content"]["application/json"];
+type UnblockRequest =
+  operations["postMessagingUnblock"]["requestBody"]["content"]["application/json"];
+type UnblockResponse =
+  operations["postMessagingUnblock"]["responses"][200]["content"]["application/json"];
 
 export interface ModerationService {
   report(input: ReportInput): Promise<void>;
@@ -8,42 +21,28 @@ export interface ModerationService {
   unblockUser(targetUserId: string): Promise<void>;
 }
 
-class DemoModerationService implements ModerationService {
-  private blockedUsers = new Set<string>();
+export class HttpModerationService implements ModerationService {
   async report(input: ReportInput): Promise<void> {
-    reportInputSchema.parse(input);
-  }
-  async blockUser(targetUserId: string): Promise<void> {
-    if (!targetUserId) throw new Error("Utilisateur invalide.");
-    this.blockedUsers.add(targetUserId);
-  }
-  async unblockUser(targetUserId: string): Promise<void> {
-    this.blockedUsers.delete(targetUserId);
-  }
-}
-
-class HttpModerationService implements ModerationService {
-  async report(input: ReportInput): Promise<void> {
-    await apiRequest("/reports", {
+    const payload: ReportRequest = reportInputSchema.parse(input);
+    await apiRequest<ReportResponse>("/reports", {
       method: "POST",
-      body: JSON.stringify(reportInputSchema.parse(input)),
+      body: JSON.stringify(payload),
     });
   }
   async blockUser(targetUserId: string): Promise<void> {
-    await apiRequest("/messaging/block", {
+    const payload: BlockRequest = { targetUserId };
+    await apiRequest<BlockResponse>("/messaging/block", {
       method: "POST",
-      body: JSON.stringify({ targetUserId }),
+      body: JSON.stringify(payload),
     });
   }
   async unblockUser(targetUserId: string): Promise<void> {
-    await apiRequest("/messaging/unblock", {
+    const payload: UnblockRequest = { targetUserId };
+    await apiRequest<UnblockResponse>("/messaging/unblock", {
       method: "POST",
-      body: JSON.stringify({ targetUserId }),
+      body: JSON.stringify(payload),
     });
   }
 }
 
-export const moderationService: ModerationService =
-  mobileEnvironment.dataMode === "demo"
-    ? new DemoModerationService()
-    : new HttpModerationService();
+export const moderationService: ModerationService = new HttpModerationService();

@@ -122,8 +122,9 @@ export class DemoTaxonomyService implements TaxonomyServiceContract {
   async getRootCategories(): Promise<Category[]> {
     this.requireReadAccess();
     await simulateNetworkDelay();
-    const taxonomyService = await loadLegacyTaxonomy();
-    return taxonomyService.getRootCategories() as any;
+    const { TAXONOMY } =
+      await import("../../../domains/taxonomy/taxonomy.data");
+    return TAXONOMY;
   }
 
   async getNodeById(id: string): Promise<TaxonomyNode | null> {

@@ -6,7 +6,7 @@ import {
   buildSizedImageUrl,
   buildSrcSet,
   DEFAULT_WIDTH_LADDER,
-} from "@shongre/shared";
+} from "@shongre/shared/responsive-image";
 import { useTranslation } from "../../i18n/I18nProvider";
 
 export interface BadgeProps {

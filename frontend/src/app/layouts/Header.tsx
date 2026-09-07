@@ -16,7 +16,7 @@ import {
   useNavigate,
   useSearchParams,
 } from "react-router-dom";
-import type { TaxonomyHeaderCategoryItem } from "@shongre/contracts";
+import type { TaxonomyHeaderCategoryItem } from "@shongre/contracts/taxonomy";
 import { brand } from "@shongre/brand";
 import { ProBadge, VerifiedIcon } from "@shongre/ui/web";
 import {
@@ -69,7 +69,7 @@ import {
   type HeaderAccountMenuItem,
   type HeaderAccountMenuItemId,
 } from "./account-menu.model";
-import { useWorkspaceSummary } from "../providers/WorkspaceSummaryProvider";
+import { useWorkspaceSummary } from "../providers/WorkspaceSummaryContext";
 
 const HeaderCategoryNav = lazy(() =>
   import("./HeaderCategoryNav").then((module) => ({
@@ -178,8 +178,8 @@ function AccountMenuDestinationLink({
 export const Header: React.FC = () => {
   const { t } = useTranslation();
   const location = useLocation();
-  /* The results page renders its own, richer search bar — see the desktop
-     search slot below. */
+  /* The results page owns refinement through its adaptive filter panel, so the
+     desktop search slot omits the global bar there. */
   const isSearchRoute = location.pathname === "/recherche";
   const { currentUser, isAuthenticated, isRestoring, logout } = useAuth();
   const { can, canAccessRoute } = useAuthorization();
@@ -517,18 +517,13 @@ export const Header: React.FC = () => {
           </div>
 
           {/* Global Search bar (Desktop).
-              The single search surface on desktop: sticky, so it is reachable
-              from any scroll position, including the homepage. The homepage hero
-              used to carry a second copy with the same placeholder — one search
-              per screen, and this is it.
-
-              `/recherche` is the one route that owns a better search surface
-              than this one: its page-level bar carries the same fields plus the
-              radius control, and it edits the URL in place instead of
-              navigating. Rendering both put two inputs with the identical
-              accessible name — and two category dropdowns — on one screen. The
-              wrapper stays mounted so the header keeps its three-part flex
-              rhythm and the actions do not slide inward. */}
+              The single search surface on ordinary pages is sticky, so it is
+              reachable from any scroll position. The results route instead
+              devotes refinement to its adaptive filter panel; repeating query,
+              category, location and submit controls above the results wastes
+              the first viewport. The wrapper stays mounted there so the header
+              keeps its three-part flex rhythm and the actions do not slide
+              inward. */}
           <div
             data-header-search-shell
             onBlurCapture={handleHeaderSearchBlur}

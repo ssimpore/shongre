@@ -85,37 +85,49 @@ applicable market, locale, tenant, organization, principal/role, and permission
 version. Use single-flight locking with a bounded lease and never make Redis
 authoritative.
 
-Server-rendered employment, automotive, education, and real-estate metadata now
-resolve through the same lazy demo/HTTP service registry as the client. In API
-mode they no longer instantiate demo services. Generic listing/category,
-seller, collection, and sitemap inventory still depend on frontend demo
-repositories because the metadata loader has not been migrated and the public
-API does not yet expose a slug-safe seller projection or cursor-based sitemap
-feed. That gap is a production indexing release blocker: migrate listing reads,
-add those two OpenAPI contracts, migrate the loader, and remove the repository
-imports before enabling large-scale indexing. Do not substitute unbounded
-per-record API calls.
+Server-rendered listing, category, search, employment, automotive, education,
+and real-estate data resolve through the same lazy service registry as their
+clients. In API mode, generic listing discovery uses the canonical GET search
+contract and listing detail consumes the public seller projection already
+embedded in `PublicListing`; it neither imports a demo seller nor performs an
+N+1 seller fetch. Seller-profile, collection, and sitemap inventory still have
+frontend-repository dependencies because the public API does not yet expose a
+slug-safe seller projection or cursor-based sitemap feed. That remaining gap is
+a production indexing release blocker: add those contracts, migrate every
+consumer, then remove the repository imports before enabling large-scale
+indexing. Do not substitute unbounded per-record API calls.
 
 ## Database path and query evidence
 
-The hot listing read selects an explicit column projection and nested public
-seller/media/publication projections. Market discovery orders by the
-publication's `sort_date`, matching the market-scoped freshness model and the
-existing `listing_market_discovery_idx`. The repository retains exact totals
-because they are part of the current API contract; deep/high-cardinality
-results must migrate contract-first to an opaque keyset cursor before exact
-count becomes a bottleneck.
+The hot search path starts from active, approved market publications, selects a
+narrow indexed candidate projection, applies bounded ranking and diversity,
+then hydrates only the final page with public seller/media/publication data. It
+orders by stable publication/ranking fields and uses an opaque filter-bound
+keyset cursor with a fixed snapshot timestamp, so new publications cannot
+duplicate or skip rows within an active traversal. The response reports
+`totalRelation: lower_bound` when the bounded candidate window cannot establish
+an exact total; it never runs an unbounded exact count for high-cardinality
+searches. Filters, snapshot, cursor, page size, and stable tiebreakers are part
+of one canonical query contract.
+
+Anonymous searches prefer cacheable `GET /api/v1/listings/search`; normalized
+query parameters make equivalent filters share a cache key. POST remains a
+private, no-store compatibility fallback for requests whose encoded attributes
+would exceed the bounded GET URL. Conditional GETs use stable entity tags that
+exclude request IDs and cursor issuance timestamps while retaining the actual
+result/page state. Any Cookie or Authorization header continues to force
+private, no-store behavior.
 
 `make performance-db-plan PERFORMANCE_DATABASE_URL=postgres` creates 250,000
 deterministic rows in transaction-local temporary tables, runs `ANALYZE` and
 `EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON)`, verifies index use and rolls back.
 It refuses credentials, non-loopback targets, production, and datasets outside
-100,000–2,000,000 rows. On the 2026-09-05 development workstation the original
-listing-level ordering produced 123.346 ms with a hash join, sequential scan,
-and sort; publication-level ordering produced 0.155 ms with bounded nested-loop
-index scans. These figures prove the query-shape improvement, not hosted
-capacity. A production release still requires a plan captured on staging with
-production-like statistics and RLS.
+100,000–2,000,000 rows. On the 2026-09-07 development workstation, the current
+250,000-row candidate plan returned 50 rows in 0.168 ms after 2.460 ms planning
+and used the market-discovery index with bounded incremental sort/nested-loop
+index scans. These figures prove the local query shape and 100 ms gate, not
+hosted capacity. A production release still requires a plan captured on staging
+with production-like statistics, RLS, pool pressure, and storage latency.
 
 Existing migrations already provide full-text/GIN, organic freshness,
 market-publication discovery/price, publisher, foreign-key, and partial indexes.
@@ -143,12 +155,44 @@ remain below 80% of the database connection limit, and alert before saturation.
 ## Asynchronous work and backpressure
 
 Email, notifications, provider webhooks, media scanning/cleanup, analytics,
-search indexing, CRM/marketing work, and lifecycle expiry already use the
-repository's durable PostgreSQL queues/outboxes and worker leases. Claims use
-bounded batches and `SKIP LOCKED`; retries are idempotent and exponentially
-backed off; terminal failure is retained for operational review. Do not move
-these paths back to request timers or process memory. Scale workers by queue age
-and provider quotas, not CPU alone.
+search indexing, CRM/marketing work, and lifecycle expiry use durable PostgreSQL
+queues/outboxes and worker leases. Search requests append privacy-safe discovery
+events to `discovery_search_event_outbox`; the worker leases bounded batches with
+`SKIP LOCKED`, writes the analytics projection idempotently, retries with
+backoff, and dead-letters after the configured attempt limit. Request latency
+does not depend on analytics persistence. Do not move these paths back to
+request timers or process memory. Scale workers by queue age and provider
+quotas, not CPU alone.
+
+## Latest connected local evidence
+
+The 2026-09-07 comparison used a production Next build connected to the local
+database-mode backend and repository-owned Supabase (`NEXT_PUBLIC_DATA_MODE=api`,
+mock storage disabled). It is regression evidence only:
+
+- executable JavaScript fell from 437.3 KiB to 345.8 KiB gzip and from 1,656.8
+  KiB to 1,263.1 KiB raw; the largest gzip chunk fell from 100.1 KiB to 84.3
+  KiB and generated taxonomy remained absent from the initial bundle;
+- cold desktop LCP across home, search, listing detail, Auto, Immo, Emploi, and
+  Education ranged from 792–1,448 ms; cold mobile LCP ranged from 732–1,752 ms;
+- cold CLS after reserving shell, gallery, card, and filter-rail geometry ranged
+  from 0–0.003; cold TTFB ranged from 11–120 ms on desktop and 8–154 ms on
+  mobile;
+- connected GET search load at concurrency six measured p50 81.66 ms, p95
+  287.08 ms, and p99 319.00 ms; the POST compatibility path measured p50
+  78.60 ms, p95 100.97 ms, and p99 104.60 ms;
+- repository search timings from the same connected run measured p50 14 ms,
+  p95 27 ms, and p99 75 ms. Anonymous GET search returned the discovery cache
+  policy/tags and a conditional request returned 304; credentialed GET and POST
+  remained private/no-store.
+
+Local Supabase Storage serves the original fixture images, so local image egress
+remains intentionally visible: for example, desktop search transferred about
+3.54 MB of images. That is not a CDN/image-optimization pass. Exact staging must
+verify the configured responsive image transformer, content negotiation,
+immutable media caching, CDN hit ratio, origin bytes, and visual quality before
+release. Lab total blocking time is not field INP; the INP objective requires
+staging or production RUM.
 
 ## Observability and scaling triggers
 

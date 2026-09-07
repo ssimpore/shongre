@@ -119,6 +119,49 @@ const LISTING_PRICE_TYPES = [
 type ListingPriceType = (typeof LISTING_PRICE_TYPES)[number];
 const LISTING_PRICE_TYPE_SET = new Set<string>(LISTING_PRICE_TYPES);
 
+interface SitemapListingCursor {
+  version: 1;
+  marketCode: string;
+  snapshotAt: string;
+  after: {
+    sortDate: string;
+    listingId: string;
+  };
+}
+
+function encodeSitemapListingCursor(cursor: SitemapListingCursor): string {
+  return Buffer.from(JSON.stringify(cursor), "utf8").toString("base64url");
+}
+
+function decodeSitemapListingCursor(
+  value: string | undefined,
+  marketCode: string,
+): SitemapListingCursor | undefined {
+  if (!value) return undefined;
+  try {
+    const cursor = JSON.parse(
+      Buffer.from(value, "base64url").toString("utf8"),
+    ) as SitemapListingCursor;
+    const snapshot = Date.parse(cursor.snapshotAt);
+    if (
+      cursor.version !== 1 ||
+      cursor.marketCode !== marketCode ||
+      !cursor.after?.listingId ||
+      !Number.isFinite(Date.parse(cursor.after.sortDate)) ||
+      !Number.isFinite(snapshot) ||
+      snapshot > Date.now() + 300_000
+    ) {
+      throw new Error("invalid sitemap cursor");
+    }
+    return cursor;
+  } catch {
+    throw new AppError({
+      code: "VALIDATION_ERROR",
+      message: "Le curseur de sitemap est invalide pour ce marché.",
+    });
+  }
+}
+
 function resolveListingPriceType(
   draft: PublicationDraftInput,
 ): ListingPriceType {
@@ -303,6 +346,57 @@ export class ListingsService {
   ): Promise<{ listings: PublicListing[]; total: number }> {
     const res = await this.discovery.search(filter || {});
     return { listings: res.items.map(toPublicListing), total: res.total };
+  }
+
+  async getSitemapListings(
+    marketCode: string,
+    cursorValue?: string,
+    requestedLimit = 500,
+  ): Promise<{
+    items: PublicListing[];
+    snapshotAt: string;
+    pageInfo: { hasNextPage: boolean; nextCursor?: string };
+  }> {
+    const normalizedMarketCode = requireMarketCode(marketCode);
+    const cursor = decodeSitemapListingCursor(
+      cursorValue,
+      normalizedMarketCode,
+    );
+    const page = await this.listingRepo.searchDiscoveryCandidates(
+      { marketCode: normalizedMarketCode, sortBy: "date_desc" },
+      {
+        limit: Math.max(1, Math.min(500, Math.trunc(requestedLimit))),
+        snapshotAt: cursor?.snapshotAt,
+        after: cursor?.after,
+      },
+    );
+    // Candidate pagination stays narrow and index-friendly. Hydrate only the
+    // selected IDs through the existing bounded public projection so sitemap
+    // image entries receive real media URLs and never ranking-only placeholders.
+    const hydratedItems = await this.listingRepo.findPublicByIds(
+      page.items.map((listing) => listing.id),
+      normalizedMarketCode,
+    );
+    const nextCursor =
+      page.hasMore && page.lastCandidate
+        ? encodeSitemapListingCursor({
+            version: 1,
+            marketCode: normalizedMarketCode,
+            snapshotAt: page.snapshotAt,
+            after: {
+              sortDate: page.lastCandidate.sortDate,
+              listingId: page.lastCandidate.listingId,
+            },
+          })
+        : undefined;
+    return {
+      items: hydratedItems.map(toPublicListing),
+      snapshotAt: page.snapshotAt,
+      pageInfo: {
+        hasNextPage: Boolean(nextCursor),
+        ...(nextCursor ? { nextCursor } : {}),
+      },
+    };
   }
 
   async getInternalListingById(id: string): Promise<Listing | null> {

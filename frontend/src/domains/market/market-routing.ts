@@ -6,7 +6,7 @@ import {
   sanitizeMarketSwitchQuery,
   type MarketContext,
   type MarketInfrastructureConfig,
-} from "@shongre/contracts";
+} from "@shongre/contracts/market-country";
 import { marketInfrastructureFromPublicEnvironment } from "../../platform/market/market-infrastructure";
 
 export function currentBrowserMarketCode(): string | null {
@@ -22,7 +22,7 @@ export function currentBrowserMarketCode(): string | null {
     : null;
 }
 
-export { sanitizeMarketSwitchQuery } from "@shongre/contracts";
+export { sanitizeMarketSwitchQuery } from "@shongre/contracts/market-country";
 
 function isDevelopmentMarketHost(hostname: string): boolean {
   const normalized = hostname.toLowerCase();

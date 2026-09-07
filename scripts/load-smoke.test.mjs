@@ -34,13 +34,17 @@ const server = createServer((request, response) => {
     );
     return;
   }
-  if (request.url === "/api/v1/markets") {
-    const etag = '"test-market-etag"';
+  if (
+    request.method === "GET" &&
+    request.url ===
+      "/api/v1/listings/search?marketCode=FR&limit=20&sortBy=date_desc"
+  ) {
+    const etag = '"test-discovery-etag"';
     response.setHeader(
       "Cache-Control",
-      "public, max-age=300, s-maxage=300, stale-while-revalidate=600, stale-if-error=3600",
+      "public, max-age=0, s-maxage=15, stale-while-revalidate=30, stale-if-error=120",
     );
-    response.setHeader("Cache-Tag", "shongre-v1-markets");
+    response.setHeader("Cache-Tag", "shongre-v1-discovery");
     response.setHeader("Vary", "X-Shongre-Market, Accept-Language");
     response.setHeader("ETag", etag);
     if (request.headers["if-none-match"] === etag) {
@@ -48,7 +52,9 @@ const server = createServer((request, response) => {
       response.end();
       return;
     }
-    response.end(JSON.stringify([{ code: "FR" }]));
+    response.end(
+      JSON.stringify({ items: [], total: 0, page: 1, totalPages: 1 }),
+    );
     return;
   }
   response.statusCode = 404;

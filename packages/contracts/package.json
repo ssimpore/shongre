@@ -9,6 +9,8 @@
     ".": "./src/index.ts",
     "./account": "./src/schemas/account.ts",
     "./auth": "./src/schemas/auth.ts",
+    "./listings": "./src/schemas/listings.ts",
+    "./publication": "./src/schemas/publication.ts",
     "./taxonomy": "./src/schemas/taxonomy.ts",
     "./taxonomy-catalog": "./src/fixtures/taxonomy-catalog.ts",
     "./taxonomy-v4-public": "./src/fixtures/generated/taxonomy-v4.public.ts",
@@ -52,7 +54,9 @@
     "./provider-platform": "./src/provider-platform.ts",
     "./environment": "./src/app-environment.ts",
     "./performance": "./src/operational-performance.ts",
-    "./openapi": "./src/openapi.ts"
+    "./openapi": "./src/openapi.ts",
+    "./market-country": "./src/market-country.ts",
+    "./primitives": "./src/schemas/primitives.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

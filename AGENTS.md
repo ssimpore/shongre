@@ -14,7 +14,7 @@ optional approaches.
 - [Working method and instruction maintenance](#working-method-and-instruction-maintenance)
 - [Repository ownership and dependency boundaries](#repository-ownership-and-dependency-boundaries)
 - [Developer CLI, environments, and local processes](#developer-cli-environments-and-local-processes)
-- [Client architecture and deterministic demo mode](#client-architecture-and-deterministic-demo-mode)
+- [Client architecture, API-only mobile, and deterministic Web demo mode](#client-architecture-api-only-mobile-and-deterministic-web-demo-mode)
 - [Backend, OpenAPI, and domain ownership](#backend-openapi-and-domain-ownership)
 - [Database, migrations, and storage](#database-migrations-and-storage)
 - [Identity, authorization, security, and privacy](#identity-authorization-security-and-privacy)
@@ -188,10 +188,11 @@ scripts/ + Makefile    repository-level tooling
   switch between demo, database, sandbox, or live behavior.
 - Local is the only developer profile whose backend may use local database
   infrastructure. Preview, development, staging, and production use isolated
-  hosted infrastructure; development, staging, and production Web/mobile
-  clients must use API mode with mock storage disabled. `make frontend` remains
-  the explicit standalone local demo surface, and `make demo` may select the
-  deterministic backend adapter for its command-scoped local stack.
+  hosted infrastructure. Web must use API mode with mock storage disabled in
+  development, staging, and production. Mobile is API-only in every
+  environment. `make frontend` remains the explicit standalone local Web demo
+  surface, and `make demo` may select deterministic Web/backend adapters for
+  its command-scoped local stack.
 - Development, staging, and production runtime secrets must be injected by the
   environment-specific secret store. Their startup and host deployment
   preflights must reject missing/short authentication secrets, local database
@@ -209,34 +210,41 @@ scripts/ + Makefile    repository-level tooling
   `APP_ENV=local`, a proven loopback target, and the canonical local Supabase
   workdir. Remote operations require a separate protected workflow.
 
-## Client architecture and deterministic demo mode
+## Client architecture, API-only mobile, and deterministic Web demo mode
 
-Web and mobile use the same boundary:
+Web and mobile keep the same service boundary but have different transport
+selection rules:
 
 ```text
-component → hook/controller → service contract → demo or HTTP adapter
+Web:    component → hook/controller → service contract → demo or HTTP adapter
+Mobile: component → hook/controller → service contract → HTTP → /api/v1
 ```
 
-- All connected local product development must use API-mode Web/mobile clients
-  (`NEXT_PUBLIC_DATA_MODE=api`, `EXPO_PUBLIC_DATA_MODE=api`) and a database-mode
+- Mobile must use `EXPO_PUBLIC_API_URL` in local, test, preview, development,
+  staging, and production. `EXPO_PUBLIC_DATA_MODE`, mobile data-mode selectors,
+  demo services, mobile fixture repositories, demo sessions or credentials,
+  and runtime fallback from API failures must not exist. Mobile business reads,
+  writes, authentication, authorization, and account state go through the
+  central HTTP client and canonical `/api/v1` operations. Mobile must never
+  access Supabase tables, RPCs, or Auth directly. A short-lived backend-issued
+  signed upload URL may be used only by the dedicated upload transport, without
+  credentials, redirects, or a second business API.
+- All connected local product development must use an API-mode Web client
+  (`NEXT_PUBLIC_DATA_MODE=api`), the API-only mobile client, and a database-mode
   backend (`BACKEND_DATA_MODE=database`, `DATABASE_INFRA_MODE=local`) backed by
-  the repository-owned local Supabase stack, with mock storage disabled. All
-  business reads, writes, and authentication entry points go through the
-  Shongre API; clients must not access Supabase business tables or Auth
-  directly. Public media may use backend-projected Supabase Storage URLs. This
-  preserves the future production boundary so replacing local Supabase with an
-  environment's hosted Supabase does not change client architecture. Demo
-  adapters must remain usable and testable with backend infrastructure stopped,
-  but may be selected only by explicit `make frontend`, `make demo`, or test
-  workflows; connected builds must ignore browser-persisted demo preferences
-  and never expose a runtime path back to demo mode.
+  the repository-owned local Supabase stack, with mock storage disabled. Public
+  media may use backend-projected Supabase Storage URLs. Web demo adapters must
+  remain usable with backend infrastructure stopped, but may be selected only
+  by explicit `make frontend`, `make demo`, or Web test workflows; connected
+  Web builds must ignore browser-persisted demo preferences and never expose a
+  runtime path back to demo mode.
 - Local development uses the repository-owned Supabase stack for the backend and
   worker while `make frontend` remains an explicitly standalone demo UI. The
   canonical local sequence is `make install`, `make supabase-up`,
   `make db-migrate`, `make db-seed`, then `make backend` and/or `make worker`;
   `make dev` performs that connected Web sequence in one command, first stopping
-  tracked application processes and then forcing Web/mobile API and backend
-  database mode with mock storage disabled, migrating, idempotently seeding, and
+  tracked application processes and then forcing Web API and backend database
+  mode with mock storage disabled, migrating, idempotently seeding, and
   launching the API, worker, and Web app. The local seed mirrors the versioned
   standalone demo snapshot into production-shaped tables, imports the complete
   generated taxonomy v4 projection and market availability, restores the
@@ -256,19 +264,21 @@ component → hook/controller → service contract → demo or HTTP adapter
   service registry and generated OpenAPI types.
 - Components must not branch on data mode, call Supabase business tables/RPCs,
   construct `/api/v1` requests ad hoc, or contain fake backend behavior.
-- Keep service-registry domains lazily loaded in both demo and HTTP modes. A new
-  registry entry must not eagerly import every adapter into the application
+- Keep Web service-registry domains lazily loaded in both demo and HTTP modes. A
+  new registry entry must not eagerly import every adapter into the application
   shell, and service-contract methods must remain Promise-based so deferred
-  domain loading preserves the public boundary.
-- Demo adapters must be asynchronous, deterministic, and contract-compatible.
+  domain loading preserves the public boundary. Mobile service implementations
+  must be HTTP-only and use generated OpenAPI path/operation types.
+- Web/backend demo adapters must be asynchronous, deterministic, and
+  contract-compatible.
   Important payment, moderation, verification, subscription, fraud, messaging,
   inventory, and error outcomes must use reproducible scenarios rather than
   uncontrolled `Math.random()` or component timers.
-- Reuse the existing persona/scenario infrastructure. Do not create a second
-  demo-mode switch or independent fixture system.
-- Demo mutations must use the owned store/repository abstraction. State that can
-  vary by user and market must be keyed by both; components must not mutate
-  shared fixture arrays.
+- Reuse the existing Web/backend persona/scenario infrastructure. Do not create
+  a second Web demo-mode switch or independent fixture system.
+- Web/backend demo mutations must use the owned store/repository abstraction.
+  State that can vary by user and market must be keyed by both; components must
+  not mutate shared fixture arrays.
 - Never put payment credentials, KYC data, provider secrets, or other sensitive
   values in local storage. Drafts may store non-sensitive marketplace form data
   required for interruption recovery.
@@ -865,6 +875,19 @@ France-only happy path is insufficient for market-sensitive work.
   safe sharding, bounded data access, and XML escaping; exclude redirects,
   private/inactive resources, arbitrary filters, and wrong-market URLs. Respect
   the sitemap protocol limits of 50,000 URLs and 50 MB uncompressed per file.
+- Listing sitemap generation pages through the bounded, market-scoped
+  `GET /api/v1/discovery/sitemap-listings` public projection. Do not reuse a
+  relevance search limit, query business tables from Web, silently truncate a
+  cursor, or omit public media hydration. Listing sitemap entries may include
+  only validated HTTP(S) image URLs from that public projection.
+- IndexNow is an optional production-only freshness signal owned by the backend.
+  Publication, meaningful update, sale, expiry and removal events enter the
+  durable `indexnow_events` outbox through database triggers; the scheduled
+  worker batches canonical URLs by verification host, retries with a lease and
+  dead-letter cap, and filters against current market/legal/indexing readiness.
+  `INDEXNOW_ENABLED=false` is the default, the key stays server-side and is
+  exposed at `/indexnow-key.txt` only while enabled in production. Never call an
+  indexing service from Web/mobile clients or put private content in the outbox.
 - Structured data must match visible content and canonical URLs. Never fabricate
   ratings, reviews, price, currency, availability, seller/employer identity,
   location, dates, salary, or organization facts. Remove misleading active
@@ -891,6 +914,13 @@ France-only happy path is insufficient for market-sensitive work.
 - `mobile/app/` and `mobile/src/` are the single business source for iOS and
   Android. Platform-specific files are narrow adapters using React Native
   resolution, not parallel products.
+- Mobile is API-only in every environment. Its configured URL must be the
+  validated API origin with `/api/v1` exactly once; components and routes must
+  not construct endpoint paths, and transport or session failure must produce an
+  explicit loading/error/retry state rather than fixture, cached-demo, synthetic
+  success, or unauthenticated fallback. Tests use mocked HTTP or an isolated
+  local API backed by local Supabase and must pass the mobile API-only
+  architecture guard.
 - `mobile/app.config.ts` and supported Expo config plugins are the native source
   of truth. `mobile/ios/` and `mobile/android/` are ignored generated output;
   regenerate them with `make mobile-prebuild-clean`, inspect the result, and
@@ -1019,7 +1049,9 @@ France-only happy path is insufficient for market-sensitive work.
 - Test behavior, not only rendering. Relevant changes should cover happy,
   loading, empty, error/retry, permission, ownership, market, lifecycle,
   concurrency, mobile/desktop, keyboard, and demo-persona states.
-- Web/mobile client tests must work with the backend stopped in demo mode.
+- Web client tests must work with the backend stopped in demo mode. Mobile tests
+  must work through mocked HTTP or an isolated local API and must not ship or
+  select a runtime demo implementation.
   Backend changes require appropriate unit, contract, integration, security,
   RLS, migration, idempotency, and concurrency coverage.
 - RLS tests must distinguish anonymous, owner, another user, relevant

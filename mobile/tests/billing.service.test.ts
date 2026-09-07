@@ -1,47 +1,44 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/api/http-client", () => ({ apiRequest: vi.fn() }));
-vi.mock("@/config/environment", () => ({
-  mobileEnvironment: { dataMode: "demo" },
-}));
 
-import { DemoMobileBillingService } from "@/features/billing/billing.service";
+import { apiRequest } from "@/api/http-client";
+import { HttpMobileBillingService } from "@/features/billing/billing.service";
 
-describe("DemoMobileBillingService", () => {
-  it("returns exact catalog evidence for a professional billing projection", async () => {
-    const service = new DemoMobileBillingService();
-    const catalog = await service.getCatalog("FR");
-    const overview = await service.getOverview("mobile_pro_test", "FR");
+describe("API-backed mobile billing service", () => {
+  beforeEach(() => vi.clearAllMocks());
 
-    expect(overview.currentSubscription).toMatchObject({
-      configurationVersionId: catalog.configurationVersionId,
-      marketCode: catalog.marketCode,
-      currency: catalog.currency,
-    });
-    expect(overview.entitlements.length).toBeGreaterThan(0);
-    expect(
-      overview.entitlements.every(
-        (entitlement) =>
-          entitlement.configurationVersionId ===
-            catalog.configurationVersionId &&
-          Boolean(entitlement.productVersionId),
-      ),
-    ).toBe(true);
-  });
+  it("loads the market catalog and account overview through the API", async () => {
+    const catalog = { marketCode: "FR", configurationVersionId: "catalog-v1" };
+    const overview = { subscriptions: [], entitlements: [], invoices: [] };
+    vi.mocked(apiRequest)
+      .mockResolvedValueOnce(catalog)
+      .mockResolvedValueOnce(overview);
+    const service = new HttpMobileBillingService();
 
-  it("fails closed instead of copying France pricing into another market", async () => {
-    const service = new DemoMobileBillingService();
-
-    await expect(service.getCatalog("BE")).rejects.toThrow(
-      "ne sont pas configurées",
+    await expect(service.getCatalog("FR")).resolves.toBe(catalog);
+    await expect(service.getOverview("account-a", "FR")).resolves.toBe(
+      overview,
+    );
+    expect(apiRequest).toHaveBeenNthCalledWith(
+      1,
+      "/business-rules/catalog?marketCode=FR",
+      {},
+      "FR",
+    );
+    expect(apiRequest).toHaveBeenNthCalledWith(
+      2,
+      "/monetization/billing",
+      {},
+      "FR",
     );
   });
 
-  it("returns an empty billing projection for an individual account", async () => {
-    const service = new DemoMobileBillingService();
+  it("propagates API failures without returning an empty billing success", async () => {
+    vi.mocked(apiRequest).mockRejectedValueOnce(new Error("offline"));
 
-    const overview = await service.getOverview("mobile_individual_test", "FR");
-    expect(overview.currentSubscription).toBeUndefined();
-    expect(overview.entitlements).toEqual([]);
+    await expect(
+      new HttpMobileBillingService().getOverview("account-a", "BE"),
+    ).rejects.toThrow("offline");
   });
 });

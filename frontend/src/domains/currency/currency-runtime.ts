@@ -1,9 +1,9 @@
 import type {
   CurrencyCatalog,
   CurrencyDefinition,
-  Money,
   MoneyConversionProjection,
-} from "@shongre/contracts";
+} from "@shongre/contracts/currency";
+import type { Money } from "@shongre/contracts/primitives";
 import {
   convertMoney,
   type CurrencyConversionErrorCode,

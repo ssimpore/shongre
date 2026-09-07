@@ -6,6 +6,7 @@ import {
   parseModelTrainingCrawlerPolicy,
   PRIVATE_CRAWL_PATHS,
   renderDiscoveryManifest,
+  validIndexNowKey,
   validWebmasterVerificationToken,
 } from "./discovery-governance";
 import { classifyAnswerEngineReferrer } from "./discovery-referrers";
@@ -43,6 +44,18 @@ describe("SEO and GEO discovery governance", () => {
       disallow: PRIVATE_CRAWL_PATHS,
     });
     expect(trainingRule).toEqual({ userAgent: "GPTBot", disallow: "/" });
+  });
+
+  it("protects private paths on every canonical market URL shape", () => {
+    expect(PRIVATE_CRAWL_PATHS).toEqual(
+      expect.arrayContaining([
+        "/compte",
+        "/be/compte",
+        "/ch/messages",
+        "/sn/paiement",
+        "/bf/admin",
+      ]),
+    );
   });
 
   it("requires an explicit valid model-training policy", () => {
@@ -134,6 +147,12 @@ describe("SEO and GEO discovery governance", () => {
     expect(() => validWebmasterVerificationToken("<script>")).toThrow(
       "verification token",
     );
+  });
+
+  it("accepts only protocol-compatible IndexNow keys", () => {
+    expect(validIndexNowKey(" abcDEF-12345678 ")).toBe("abcDEF-12345678");
+    expect(validIndexNowKey(undefined)).toBeUndefined();
+    expect(() => validIndexNowKey("too short")).toThrow("INDEXNOW_KEY");
   });
 
   it("renders a bounded machine-readable discovery manifest", () => {

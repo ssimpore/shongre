@@ -6,7 +6,7 @@ import {
   type AnalyticsEventName,
   type AnalyticsEventProperties,
 } from "@shongre/contracts/analytics";
-import { getCountryConfig } from "@shongre/contracts";
+import { getCountryConfig } from "@shongre/contracts/market-country";
 import type { ConsentCategories } from "../domains/consent/consent.types";
 import { consentService } from "../domains/consent/consent.service";
 import { getPublicRuntimeConfig } from "../platform/runtime-config/public-runtime-config";

@@ -87,7 +87,7 @@ for profile in local test preview development staging production; do
   validate_profile "$profile"
 done
 
-if SHONGRE_EXPLICIT_DEMO=true NEXT_PUBLIC_DATA_MODE=demo NEXT_PUBLIC_ENABLE_MOCK_STORAGE=true BACKEND_DATA_MODE=demo EXPO_PUBLIC_DATA_MODE=demo validate_profile local >/dev/null 2>&1; then
+if SHONGRE_EXPLICIT_DEMO=true NEXT_PUBLIC_DATA_MODE=demo NEXT_PUBLIC_ENABLE_MOCK_STORAGE=true BACKEND_DATA_MODE=demo validate_profile local >/dev/null 2>&1; then
   :
 else
   printf 'Local unexpectedly rejected the complete explicit deterministic demo contract.\n' >&2

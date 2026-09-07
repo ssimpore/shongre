@@ -12,24 +12,45 @@ import {
   nativeTypography,
 } from "@shongre/design-tokens/native";
 import { useAuth } from "@/features/auth/AuthProvider";
-import { mobileEnvironment } from "@/config/environment";
 
 export default function LoginScreen() {
   const router = useRouter();
   const {
     login,
+    completeMfa,
     loginWithProvider,
     socialProviders,
     pendingSocialCompletion,
     socialNotice,
     completePendingSocialRegistration,
   } = useAuth();
-  const [email, setEmail] = useState("thomas.laurent@example.fr");
-  const [password, setPassword] = useState("ShongreDemo2024!");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [mfaToken, setMfaToken] = useState<string | null>(null);
+  const [mfaCode, setMfaCode] = useState("");
 
   const submit = async () => {
+    if (mfaToken) {
+      if (mfaCode.trim().length < 6) {
+        setError("Saisissez votre code de sécurité ou votre code de secours.");
+        return;
+      }
+      setLoading(true);
+      setError("");
+      try {
+        await completeMfa(mfaToken, mfaCode.trim());
+        router.back();
+      } catch (reason) {
+        setError(
+          reason instanceof Error ? reason.message : "Code invalide ou expiré.",
+        );
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
     const parsed = loginRequestSchema.safeParse({ email, password });
     if (!parsed.success) {
       setError(
@@ -40,8 +61,13 @@ export default function LoginScreen() {
     setLoading(true);
     setError("");
     try {
-      await login(parsed.data);
-      router.back();
+      const result = await login(parsed.data);
+      if (result.kind === "mfa_required") {
+        setMfaToken(result.tempMfaToken);
+        setPassword("");
+      } else {
+        router.back();
+      }
     } catch (reason) {
       setError(
         reason instanceof Error ? reason.message : "Connexion impossible.",
@@ -89,32 +115,41 @@ export default function LoginScreen() {
     <Screen>
       <BrandLogo size="standard" />
       <Text accessibilityRole="header" style={styles.heading}>
-        Ravi de vous revoir
+        {mfaToken ? "Vérification de sécurité" : "Ravi de vous revoir"}
       </Text>
       <Text style={styles.subtitle}>
-        Votre session est conservée dans le trousseau sécurisé de l’appareil.
+        {mfaToken
+          ? "Saisissez le code de votre application d’authentification ou un code de secours."
+          : "Votre session est conservée dans le trousseau sécurisé de l’appareil."}
       </Text>
-      {mobileEnvironment.dataMode === "demo" ? (
-        <Text style={styles.demo}>
-          Mode démonstration : utilisez le compte prérempli avec un mot de passe
-          de six caractères ou plus.
-        </Text>
-      ) : null}
-      <FormField
-        label="Adresse email"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-        autoCapitalize="none"
-        autoComplete="email"
-      />
-      <FormField
-        label="Mot de passe"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-        autoComplete="current-password"
-      />
+      {mfaToken ? (
+        <FormField
+          label="Code de sécurité"
+          value={mfaCode}
+          onChangeText={setMfaCode}
+          keyboardType="number-pad"
+          autoCapitalize="none"
+          autoComplete="one-time-code"
+        />
+      ) : (
+        <>
+          <FormField
+            label="Adresse email"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoComplete="email"
+          />
+          <FormField
+            label="Mot de passe"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+            autoComplete="current-password"
+          />
+        </>
+      )}
       {error ? (
         <Text accessibilityRole="alert" style={styles.error}>
           {error}
@@ -133,13 +168,28 @@ export default function LoginScreen() {
         />
       ) : (
         <>
-          <Button label="Se connecter" onPress={submit} loading={loading} />
-          {socialProviders.google ||
-          socialProviders.apple ||
-          socialProviders.facebook ? (
+          <Button
+            label={mfaToken ? "Vérifier" : "Se connecter"}
+            onPress={submit}
+            loading={loading}
+          />
+          {mfaToken ? (
+            <Button
+              label="Revenir à la connexion"
+              variant="secondary"
+              onPress={() => {
+                setMfaToken(null);
+                setMfaCode("");
+                setError("");
+              }}
+              disabled={loading}
+            />
+          ) : socialProviders.google ||
+            socialProviders.apple ||
+            socialProviders.facebook ? (
             <Text style={styles.divider}>ou continuer avec</Text>
           ) : null}
-          {socialProviders.google ? (
+          {!mfaToken && socialProviders.google ? (
             <Button
               label="Continuer avec Google"
               variant="secondary"
@@ -147,7 +197,7 @@ export default function LoginScreen() {
               disabled={loading}
             />
           ) : null}
-          {socialProviders.apple ? (
+          {!mfaToken && socialProviders.apple ? (
             <Button
               label="Continuer avec Apple"
               variant="secondary"
@@ -155,7 +205,7 @@ export default function LoginScreen() {
               disabled={loading}
             />
           ) : null}
-          {socialProviders.facebook ? (
+          {!mfaToken && socialProviders.facebook ? (
             <Button
               label="Continuer avec Facebook"
               variant="secondary"
@@ -179,12 +229,6 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     fontSize: nativeTypography.size.bodySm,
     lineHeight: nativeTypography.lineHeight.bodySm,
-  },
-  demo: {
-    color: colors.warning,
-    fontSize: nativeTypography.size.caption,
-    lineHeight: nativeTypography.lineHeight.caption,
-    paddingVertical: spacing.sm,
   },
   error: {
     color: colors.danger,

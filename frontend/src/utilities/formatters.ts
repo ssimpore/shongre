@@ -1,9 +1,10 @@
-import type { Money, MoneyConversionProjection } from "@shongre/contracts";
+import type { Money } from "@shongre/contracts/primitives";
+import type { MoneyConversionProjection } from "@shongre/contracts/currency";
 import {
   formatCompactMoney,
   getCurrencyMinorUnitDigits,
   minorToMajorAmount,
-} from "@shongre/shared";
+} from "@shongre/shared/money";
 import {
   DEFAULT_MARKET_CURRENCY,
   DEFAULT_MARKET_LOCALE,

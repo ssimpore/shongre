@@ -44,6 +44,7 @@ export default function MessagesScreen() {
     try {
       setItems(await messagingService.list(user.id, activeMarket.code));
     } catch (reason) {
+      setItems([]);
       setError(
         reason instanceof Error ? reason.message : "Messagerie indisponible.",
       );

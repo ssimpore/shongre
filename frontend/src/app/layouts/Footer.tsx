@@ -9,7 +9,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import type { ComponentType, SVGProps } from "react";
-import type { TaxonomyHeaderCategoryItem } from "@shongre/contracts";
+import type { TaxonomyHeaderCategoryItem } from "@shongre/contracts/taxonomy";
 import { getTaxonomyLabel } from "../../domains/taxonomy/taxonomy.labels";
 import { services } from "../../api/client/service-registry";
 import { LanguageSelector } from "../../design-system/primitives/LanguageSelector";

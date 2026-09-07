@@ -16,7 +16,7 @@ import {
   SearchAutocomplete,
   AutocompleteSelection,
 } from "./SearchAutocomplete";
-import { storageService } from "../../services/storage.service";
+import { browserPreferencesService } from "../../services/browser-preferences.service";
 import { telemetryService } from "../../services/telemetry.service";
 import { useTranslation } from "../../i18n/I18nProvider";
 import {
@@ -130,7 +130,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
   // Sync recent searches from storage
   useEffect(() => {
     try {
-      setRecentSearches(storageService.getRecentSearches());
+      setRecentSearches(browserPreferencesService.getRecentSearches());
     } catch {
       setRecentSearches([]);
     }
@@ -298,8 +298,8 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
 
     if (finalQuery) {
       try {
-        storageService.addRecentSearch(finalQuery);
-        setRecentSearches(storageService.getRecentSearches());
+        browserPreferencesService.addRecentSearch(finalQuery);
+        setRecentSearches(browserPreferencesService.getRecentSearches());
       } catch (e) {
         telemetryService.captureException(e, "recent-search-write");
       }
@@ -372,7 +372,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
     e.stopPropagation();
     try {
       const updated = recentSearches.filter((s) => s !== searchItem);
-      storageService.setByKey("shongre_recent_searches_v1", updated);
+      browserPreferencesService.setByKey("shongre_recent_searches_v1", updated);
       setRecentSearches(updated);
     } catch (err) {
       telemetryService.captureException(err, "recent-search-remove");
@@ -382,7 +382,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
   const handleClearAllRecentSearches = (e: React.MouseEvent) => {
     e.stopPropagation();
     try {
-      storageService.setByKey("shongre_recent_searches_v1", []);
+      browserPreferencesService.setByKey("shongre_recent_searches_v1", []);
       setRecentSearches([]);
     } catch (err) {
       telemetryService.captureException(err, "recent-search-clear");

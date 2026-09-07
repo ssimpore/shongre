@@ -36,7 +36,7 @@ export const MainLayout: React.FC = () => {
       <main
         id="main-content"
         tabIndex={-1}
-        className="flex-1 pb-mobile-nav-clearance md:pb-0"
+        className="min-h-screen flex-1 pb-mobile-nav-clearance md:pb-0"
       >
         <Outlet />
       </main>

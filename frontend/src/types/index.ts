@@ -17,6 +17,7 @@ import type {
   StaffRole,
   StaffStatus,
 } from "@shongre/contracts/access-control";
+import type { components } from "@shongre/contracts/openapi";
 
 export type { AccountStatus, UserSession, AuthSecurityEvent };
 
@@ -42,6 +43,7 @@ export type UserRole =
   | PlatformRole;
 
 export type SellerType = "individual" | "pro";
+export type PublicSellerProfile = components["schemas"]["PublicSellerProfile"];
 
 interface MarketScope {
   countries: string[]; // e.g. ['FR'], ['BE'], ['*'] for global
@@ -324,6 +326,8 @@ export interface Listing {
   subCategoryLabel: string;
   condition: ListingCondition;
   sellerId: string;
+  /** Public seller facts projected by the listing API; never an auth profile. */
+  sellerProfile?: PublicSellerProfile;
   sellerName: string;
   sellerType: SellerType;
   publisherType?: "private" | "professional";
@@ -511,6 +515,8 @@ export interface SearchFilters {
   marketCode?: string; // Scopes search to active market (e.g. 'FR', 'BE', 'ES', 'CH')
   page?: number;
   limit?: number;
+  /** Opaque discovery cursor returned by the API. */
+  cursor?: string;
 }
 
 export interface SavedSearch {

@@ -1,7 +1,7 @@
 "use client";
 
 import App from "../src/App";
-import type { MarketContext } from "@shongre/contracts";
+import type { MarketContext } from "@shongre/contracts/market-country";
 import type { ShongreApplicationId } from "../src/platform/applications/application-registry";
 import type { PublicRouteData } from "../src/platform/seo/public-route-data";
 

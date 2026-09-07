@@ -3,7 +3,7 @@ import {
   buildPublicUrl,
   COUNTRY_REGISTRY,
   type MarketContext,
-} from "@shongre/contracts";
+} from "@shongre/contracts/market-country";
 import {
   DEFAULT_SHARE_IMAGE_PATH,
   resolveOpenGraphLocale,

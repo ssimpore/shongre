@@ -156,6 +156,8 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
           src={currentUrl!}
           srcSet={buildSrcSet(currentUrl!)}
           sizes={IMAGE_SIZES.gallery}
+          width={1200}
+          height={900}
           alt=""
           aria-hidden="true"
           decoding="async"
@@ -165,6 +167,8 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
         <Image
           src={currentUrl!}
           alt={`${title} - Photo ${safeActiveIndex + 1}`}
+          width={1200}
+          height={900}
           sizes={IMAGE_SIZES.gallery}
           priority
           onClick={() => setIsLightboxOpen(true)}

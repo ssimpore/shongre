@@ -10,6 +10,12 @@ export interface SearchResponse {
   total: number;
   page: number;
   totalPages: number;
+  totalRelation?: "exact" | "lower_bound";
+  snapshotAt?: string;
+  pageInfo?: {
+    hasNextPage: boolean;
+    nextCursor?: string;
+  };
   facets?: {
     attributes: Record<string, SearchFacetValue[]>;
   };
@@ -18,7 +24,10 @@ export interface SearchResponse {
 export type MarketScopedSearchFilters = SearchFilters & { marketCode: string };
 
 export interface SearchServiceContract {
-  search(params: MarketScopedSearchFilters): Promise<SearchResponse>;
+  search(
+    params: MarketScopedSearchFilters,
+    options?: { signal?: AbortSignal },
+  ): Promise<SearchResponse>;
   getPopularKeywords(marketCode: string): Promise<string[]>;
   getSearchSuggestions(query: string, marketCode: string): Promise<string[]>;
 }

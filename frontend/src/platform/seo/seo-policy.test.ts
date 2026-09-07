@@ -277,6 +277,53 @@ describe("central SEO policy", () => {
       resourceType: "listing",
       lifecycle: "available",
     });
+    const schemas = structuredDataForPolicy(
+      policy,
+      context("shongre.fr", `/annonce/${listing.id}`),
+      routeData,
+    );
+    expect(schemas[0]).toMatchObject({
+      "@type": "Product",
+      url: "https://shongre.fr/annonce/list-102",
+      offers: {
+        availability: "https://schema.org/InStock",
+        areaServed: { address: { addressCountry: "FR" } },
+      },
+    });
+  });
+
+  it("maps only truthful listing condition and public media values", () => {
+    const listing = {
+      ...INITIAL_LISTINGS[0],
+      condition: "new_with_tag" as const,
+      coverImageUrl: "/media/primary.webp",
+      photos: [
+        { id: "primary", url: "/media/primary.webp", isCover: true },
+        {
+          id: "detail",
+          url: "https://cdn.example/detail.webp",
+          isCover: false,
+        },
+      ],
+    };
+    const routeData: PublicRouteDataResolution = {
+      status: "found",
+      data: { kind: "listing", listing, seller: null, similarListings: [] },
+    };
+    const market = context("shongre.fr", `/annonce/${listing.id}`);
+    const policy = resolveSeoPolicy({
+      pathname: `/annonce/${listing.id}`,
+      marketContext: market,
+      routeData,
+    });
+    const product = structuredDataForPolicy(policy, market, routeData)[0];
+    expect(product.image).toEqual([
+      "https://shongre.fr/media/primary.webp",
+      "https://cdn.example/detail.webp",
+    ]);
+    expect(product.offers).toMatchObject({
+      itemCondition: "https://schema.org/NewCondition",
+    });
   });
 
   it("redirects a generic vertical projection to its authoritative route and excludes the alias", () => {
@@ -501,6 +548,100 @@ describe("central SEO policy", () => {
         (entry) => entry["@type"],
       ),
     ).toEqual(["CollectionPage", "ItemList", "BreadcrumbList"]);
+  });
+
+  it("describes a qualified editorial collection with its visible items", () => {
+    const collection = collectionService.getCollection("offres-prix-reduit")!;
+    const routeData: PublicRouteDataResolution = {
+      status: "found",
+      data: {
+        kind: "collection",
+        collection,
+        listings: INITIAL_LISTINGS.slice(0, 2),
+        availableCountryCodes: ["FR"],
+      },
+    };
+    const pathname = `/collections/${collection.slug}`;
+    const market = context("shongre.fr", pathname);
+    const policy = resolveSeoPolicy({
+      pathname,
+      marketContext: market,
+      routeData,
+    });
+    const schemas = structuredDataForPolicy(policy, market, routeData);
+    expect(schemas.map((entry) => entry["@type"])).toEqual([
+      "CollectionPage",
+      "ItemList",
+      "BreadcrumbList",
+    ]);
+    expect(schemas[1]).toMatchObject({
+      numberOfItems: 2,
+      itemListElement: [
+        expect.objectContaining({ position: 1, name: expect.any(String) }),
+        expect.objectContaining({ position: 2, name: expect.any(String) }),
+      ],
+    });
+  });
+
+  it("uses supported JobPosting enums and visible public salary facts", () => {
+    const routeData = {
+      status: "found" as const,
+      data: {
+        kind: "job" as const,
+        job: {
+          slug: "developpeur-front-end",
+          expiresAt: "2027-01-01T00:00:00.000Z",
+          publishedAt: "2026-09-01T00:00:00.000Z",
+          title: "Développeur front-end",
+          employer: { name: "Exemple", logoUrl: "/logos/exemple.webp" },
+          employerDescription: "Équipe produit locale.",
+          responsibilities: ["Développer l’interface publique."],
+          qualificationSummary: "Expérience React.",
+          primaryLocation: {
+            label: "Télétravail — France",
+            city: "Paris",
+            postalCode: "75001",
+            countryCode: "FR",
+          },
+          contractTypeId: "employment.fr.contract_type.permanent",
+          contractTypeLabel: "Emploi permanent",
+          workingArrangementId: "employment.fr.working_arrangement.remote",
+          workingArrangementLabel: "Télétravail",
+          workingTimeId: "employment.fr.work_schedule.full_time",
+          salary: {
+            minimum: { amountMinor: 4_000_000, currency: "EUR" },
+            maximum: { amountMinor: 5_000_000, currency: "EUR" },
+            frequencyId: "employment.fr.salary_frequency.year",
+            presentationId: "gross",
+            isPublic: true,
+          },
+        },
+      },
+    } as unknown as PublicRouteDataResolution;
+    const pathname = "/emploi/offre/developpeur-front-end";
+    const market = context("shongre.fr", pathname);
+    const policy = resolveSeoPolicy({
+      pathname,
+      marketContext: market,
+      routeData,
+      now: new Date("2026-09-07T00:00:00.000Z"),
+    });
+    const job = structuredDataForPolicy(policy, market, routeData)[0];
+    expect(job).toMatchObject({
+      employmentType: "FULL_TIME",
+      jobLocationType: "TELECOMMUTE",
+      applicantLocationRequirements: {
+        "@type": "Country",
+        name: "France",
+      },
+      hiringOrganization: {
+        logo: "https://shongre.fr/logos/exemple.webp",
+      },
+      baseSalary: {
+        currency: "EUR",
+        value: { minValue: 40_000, maxValue: 50_000, unitText: "YEAR" },
+      },
+    });
   });
 
   it("excludes expired jobs from schema and active sitemaps", () => {

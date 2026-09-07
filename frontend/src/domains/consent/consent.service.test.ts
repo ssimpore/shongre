@@ -7,14 +7,14 @@ import {
   CONSENT_VERSION,
   CONSENT_LIFETIME_DAYS,
 } from "./consent.service";
-import { storageService } from "../../services/storage.service";
+import { browserPreferencesService } from "../../services/browser-preferences.service";
 
 const KEY = "shongre_cookie_consent_v1";
 const NOW = new Date("2026-08-19T12:00:00.000Z");
 const daysBefore = (days: number) =>
   new Date(NOW.getTime() - days * 86_400_000).toISOString();
 
-beforeEach(() => storageService.remove(KEY));
+beforeEach(() => browserPreferencesService.removeByKey(KEY));
 
 describe("consent defaults", () => {
   // Consent is opt-in: "not asked yet" and "refused" must be indistinguishable
@@ -120,7 +120,7 @@ describe("a stored decision stops counting", () => {
   });
 
   it("re-prompts rather than honouring an expired acceptance", () => {
-    storageService.set(
+    browserPreferencesService.setByKey(
       KEY,
       decision({ decidedAt: daysBefore(CONSENT_LIFETIME_DAYS + 5) }),
     );

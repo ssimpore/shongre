@@ -1,13 +1,8 @@
 import { PAGE_SIZES } from "../../configuration/pagination.config";
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useCallback,
-} from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Notification,
+  NotificationContext as NotificationEventContext,
   NotificationType,
 } from "../../domains/notifications/notification.types";
 import { services } from "../../api/client/service-registry";
@@ -16,23 +11,7 @@ import { notificationCatalogService } from "../../domains/notifications/notifica
 import { useAuth } from "./AuthProvider";
 import { useToast } from "./ToastProvider";
 import { isStaffSeparatedSubject } from "@shongre/contracts/access-control";
-
-interface NotificationContextValue {
-  unreadCount: number;
-  recentNotifications: Notification[];
-  isLoading: boolean;
-  markAsRead: (id: string) => Promise<void>;
-  markAllAsRead: () => Promise<void>;
-  refresh: () => Promise<void>;
-  simulateNotification: (
-    type: NotificationType,
-    context?: any,
-  ) => Promise<void>;
-}
-
-const NotificationContext = createContext<NotificationContextValue | undefined>(
-  undefined,
-);
+import { NotificationContext } from "./NotificationContext";
 
 export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -144,7 +123,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const simulateNotification = async (
     type: NotificationType,
-    context?: any,
+    context?: NotificationEventContext,
   ) => {
     if (!currentUserId) {
       toast.info("Connectez-vous pour accéder aux notifications.");
@@ -179,14 +158,4 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({
       {children}
     </NotificationContext.Provider>
   );
-};
-
-export const useNotifications = (): NotificationContextValue => {
-  const ctx = useContext(NotificationContext);
-  if (!ctx) {
-    throw new Error(
-      "useNotifications must be used within a NotificationProvider",
-    );
-  }
-  return ctx;
 };

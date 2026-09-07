@@ -1,7 +1,8 @@
 # Common release checklist
 
 - [ ] Current Apple/Google/Expo requirements re-verified and dated
-- [ ] `make check`, `make mobile-check`, and `make store-check` reviewed
+- [ ] `make check`, `make mobile-check`, `make mobile-api-only-check`, and `make store-check` reviewed
+- [ ] Candidate is API-only: no mobile demo selector, fixture fallback, direct Supabase access, or development endpoint in the binary
 - [ ] No unresolved `FAIL`; warnings/manual items have named owners
 - [ ] Production URLs deployed over HTTPS and no development endpoint in binary
 - [ ] Identifiers, semantic version, buildNumber, and versionCode confirmed

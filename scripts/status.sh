@@ -12,8 +12,8 @@ fi
 
 printf 'Git: %s\n' "$(git -C "$SHONGRE_ROOT" branch --show-current 2>/dev/null || printf 'detached')"
 if [[ -f "$SHONGRE_ROOT/.env" || -f "$SHONGRE_ROOT/.env.local" || -f "$SHONGRE_ROOT/.env.${SHONGRE_ENV}" ]]; then
-  printf 'Environment: %s | APP_ENV=%s | web=%s | backend=%s/%s | mobile=%s\n\n' \
-    "$SHONGRE_ENV" "$APP_ENV" "$NEXT_PUBLIC_DATA_MODE" "$BACKEND_DATA_MODE" "$DATABASE_INFRA_MODE" "$EXPO_PUBLIC_DATA_MODE"
+  printf 'Environment: %s | APP_ENV=%s | web=%s | backend=%s/%s | mobile=api-only (%s)\n\n' \
+    "$SHONGRE_ENV" "$APP_ENV" "$NEXT_PUBLIC_DATA_MODE" "$BACKEND_DATA_MODE" "$DATABASE_INFRA_MODE" "$EXPO_PUBLIC_API_URL"
 else
   printf 'Environment: root environment missing (run make env)\n\n'
 fi

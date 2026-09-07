@@ -11,9 +11,10 @@
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "api-only": "node scripts/api-only-check.mjs",
     "dead-code": "node scripts/dead-code-check.mjs",
     "check:runtime-resolution": "node scripts/expo-cli.mjs --check-workspace-resolution",
-    "check": "npm run lint && npm run typecheck && npm run test && npm run check:runtime-resolution && npm run dead-code"
+    "check": "npm run lint && npm run typecheck && npm run test && npm run api-only && npm run check:runtime-resolution && npm run dead-code"
   },
   "dependencies": {
     "@expo-google-fonts/inter": "^0.4.2",

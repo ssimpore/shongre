@@ -14,7 +14,6 @@ import {
   mobileMarketStore,
 } from "@/features/market/market.store";
 import { getCountryConfig } from "@shongre/contracts";
-import { DemoListingsService } from "@/features/listings/listings.service";
 
 afterEach(async () => {
   vi.unstubAllGlobals();
@@ -58,19 +57,5 @@ describe("mobile market context", () => {
     const request = fetchMock.mock.calls[0]?.[1] as RequestInit;
     expect(new Headers(request.headers).get("X-Shongre-Market")).toBe("CH");
     expect(new Headers(request.headers).get("X-Shongre-Client")).toBe("native");
-  });
-
-  it("isolates deterministic demo listings and currency by market", async () => {
-    const service = new DemoListingsService();
-    const [france, belgium, switzerland] = await Promise.all([
-      service.list("FR"),
-      service.list("BE"),
-      service.list("CH"),
-    ]);
-
-    expect(france.every((listing) => listing.marketCode === "FR")).toBe(true);
-    expect(belgium.every((listing) => listing.marketCode === "BE")).toBe(true);
-    expect(switzerland).toHaveLength(1);
-    expect(switzerland[0]?.price?.currency).toBe("CHF");
   });
 });

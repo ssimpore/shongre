@@ -4,13 +4,18 @@ import type {
   JobPostingDetail,
 } from "@shongre/contracts/employment";
 import type { Collection } from "../../domains/collection/collection.types";
-import type { Listing, ReviewItem, UserProfile } from "../../types";
+import type {
+  Listing,
+  PublicSellerProfile,
+  ReviewItem,
+  UserProfile,
+} from "../../types";
 import { DEFAULT_MARKET_CODE } from "../../configuration/market-baseline";
 
 interface ListingPublicRouteData {
   kind: "listing";
   listing: Listing;
-  seller: UserProfile | null;
+  seller: PublicSellerProfile | null;
   similarListings: Listing[];
 }
 
@@ -44,6 +49,12 @@ interface ListingSearchPublicRouteData {
   total: number;
   page: number;
   totalPages: number;
+  totalRelation?: "exact" | "lower_bound";
+  snapshotAt?: string;
+  pageInfo?: {
+    hasNextPage: boolean;
+    nextCursor?: string;
+  };
   availableCountryCodes: string[];
 }
 

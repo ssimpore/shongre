@@ -4,8 +4,8 @@
 
 - Contract version: `1.0.0`
 - API base path: `/api/v1`
-- Operations: **519**
-- Specification SHA-256: `03435791369d7a00`
+- Operations: **521**
+- Specification SHA-256: `e92d5e7658d2929b`
 
 ## account
 
@@ -368,6 +368,12 @@
 | `PUT` | `/digital/seller-profile` | `putDigitalSellerProfile` | `permission` | `listing.create` | `200` |
 | `GET` | `/digital/seller/provisioning-tasks` | `getDigitalSellerProvisioningTasks` | `permission` | `order.manage.seller` | `200` |
 
+## discovery
+
+| Method | Path | Operation ID | Access | Permission | Success |
+| --- | --- | --- | --- | --- | --- |
+| `GET` | `/discovery/sitemap-listings` | `getDiscoverySitemapListings` | `public` | — | `200` |
+
 ## education
 
 | Method | Path | Operation ID | Access | Permission | Success |
@@ -509,6 +515,7 @@
 | `GET` | `/listings/bulk-import/template` | `getListingsBulkimportTemplate` | `permission` | `listing.create` | `200` |
 | `POST` | `/listings/cards` | `postListingsCards` | `public` | — | `200` |
 | `POST` | `/listings/publish` | `postListingsPublish` | `permission` | `listing.publish` | `200` |
+| `GET` | `/listings/search` | `getListingsSearch` | `public` | — | `200` |
 | `POST` | `/listings/search` | `postListingsSearch` | `public` | — | `200` |
 | `GET` | `/listings` | `getListings` | `public` | — | `200` |
 

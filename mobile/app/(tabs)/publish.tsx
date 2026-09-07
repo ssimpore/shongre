@@ -8,7 +8,10 @@ import {
   toApplicationListingCondition,
   toTaxonomyV4ItemCondition,
 } from "@shongre/contracts";
-import type { TaxonomyV4ResolvedSchema } from "@shongre/contracts";
+import type {
+  TaxonomyV4ResolvedSchema,
+  TaxonomyV4TreeResponse,
+} from "@shongre/contracts";
 import {
   digitalFulfillmentVersionInputSchema,
   type CredentialAllocationMode,
@@ -16,7 +19,6 @@ import {
   type DigitalPolicyProjection,
   type DigitalSellerProfile,
 } from "@shongre/contracts/digital-products";
-import { getTaxonomyV4PublicBundle } from "@shongre/contracts/taxonomy-v4-public";
 import { resolveTaxonomyFieldState } from "@shongre/features";
 import { Button } from "@/components/Button";
 import { FormField } from "@/components/FormField";
@@ -38,7 +40,6 @@ import { taxonomyService } from "@/features/taxonomy/taxonomy.service";
 import { mobileDigitalProductsService } from "@/features/digital-products/digital-products.service";
 import { mobileDigitalDraftStore } from "@/features/digital-products/digital-draft.store";
 
-const taxonomyBundle = getTaxonomyV4PublicBundle();
 const NATIVE_MANAGED_FIELDS = new Set([
   "title",
   "description",
@@ -63,18 +64,25 @@ export default function PublishScreen() {
   const router = useRouter();
   const { user } = useAuth();
   const { activeMarket, marketContext } = useMarket();
+  const [treeRetry, setTreeRetry] = useState(0);
+  const treeRequestKey = `${activeMarket.code}:${activeMarket.defaultLocale}:${treeRetry}`;
+  const [treeResult, setTreeResult] = useState<{
+    key: string;
+    tree: TaxonomyV4TreeResponse | null;
+    error: string;
+  }>({ key: "", tree: null, error: "" });
+  const taxonomyTree =
+    treeResult.key === treeRequestKey ? treeResult.tree : null;
+  const treeError = treeResult.key === treeRequestKey ? treeResult.error : "";
+  const treeState: "loading" | "ready" | "error" =
+    treeResult.key !== treeRequestKey
+      ? "loading"
+      : treeResult.error
+        ? "error"
+        : "ready";
   const availableNodes = useMemo(
-    () =>
-      taxonomyBundle.categories.filter(
-        (category) =>
-          category.status === "active" &&
-          category.marketAvailability.some(
-            (availability) =>
-              availability.marketCode === activeMarket.code &&
-              availability.marketplaceEnabled,
-          ),
-      ),
-    [activeMarket.code],
+    () => taxonomyTree?.items ?? [],
+    [taxonomyTree],
   );
   const rootCategories = useMemo(
     () => availableNodes.filter((category) => !category.parentId),
@@ -116,20 +124,15 @@ export default function PublishScreen() {
     user?.accountType === "professional" ? "professional" : "individual";
   const listingTypes = useMemo(
     () =>
-      taxonomyBundle.listingTypes.filter(
+      (taxonomyTree?.listingTypes ?? []).filter(
         (listingType) =>
           listingType.categoryId === activeCategoryId &&
           listingType.status === "active" &&
           (sellerType === "professional"
             ? listingType.sellerEligibility.professionalAllowed
-            : listingType.sellerEligibility.individualAllowed) &&
-          listingType.marketAvailability.some(
-            (availability) =>
-              availability.marketCode === activeMarket.code &&
-              availability.marketplaceEnabled,
-          ),
+            : listingType.sellerEligibility.individualAllowed),
       ),
-    [activeCategoryId, activeMarket.code, sellerType],
+    [activeCategoryId, sellerType, taxonomyTree?.listingTypes],
   );
   const [listingTypeId, setListingTypeId] = useState("");
   const activeListingTypeId = listingTypes.some(
@@ -213,6 +216,33 @@ export default function PublishScreen() {
         ? ["ACCESS_LINK", "ACCESS_CREDENTIALS"]
         : [fulfillmentMode];
   const isDigital = digitalFulfillmentTypes.length > 0;
+
+  useEffect(() => {
+    let active = true;
+    void taxonomyService
+      .tree({
+        marketContext,
+        locale: activeMarket.defaultLocale,
+      })
+      .then((tree) => {
+        if (!active) return;
+        setTreeResult({ key: treeRequestKey, tree, error: "" });
+      })
+      .catch((reason: unknown) => {
+        if (!active) return;
+        setTreeResult({
+          key: treeRequestKey,
+          tree: null,
+          error:
+            reason instanceof Error
+              ? reason.message
+              : "Les catégories sont momentanément indisponibles.",
+        });
+      });
+    return () => {
+      active = false;
+    };
+  }, [activeMarket.defaultLocale, marketContext, treeRequestKey, treeRetry]);
 
   useEffect(() => {
     let active = true;
@@ -618,6 +648,17 @@ export default function PublishScreen() {
       router.push("/auth/login");
       return;
     }
+    if (
+      treeState !== "ready" ||
+      !activeCategoryId ||
+      !activeListingTypeId ||
+      !resolvedSchema
+    ) {
+      setError(
+        "Attendez le chargement des catégories et du formulaire avant de publier.",
+      );
+      return;
+    }
     const numericPrice = Number(price.replace(",", "."));
     const acceptedAttributeIds = new Set(
       resolvedSchema?.attributes.map((field) => field.definition.id) ?? [],
@@ -816,13 +857,47 @@ export default function PublishScreen() {
         </Text>
       </View>
 
-      <View style={styles.categoryGroup}>
+      {treeState === "loading" ? (
+        <Text
+          accessibilityLiveRegion="polite"
+          accessibilityLabel="Chargement des catégories"
+          style={styles.subtitle}
+        >
+          Chargement des catégories…
+        </Text>
+      ) : null}
+      {treeState === "error" ? (
+        <View style={styles.categoryGroup}>
+          <Text accessibilityRole="alert" style={styles.error}>
+            {treeError}
+          </Text>
+          <Button
+            label="Réessayer le chargement des catégories"
+            variant="secondary"
+            onPress={() => setTreeRetry((value) => value + 1)}
+          />
+        </View>
+      ) : null}
+      {treeState === "ready" && rootCategories.length === 0 ? (
+        <Text accessibilityRole="alert" style={styles.error}>
+          Aucune catégorie publiable n’est disponible sur ce marché.
+        </Text>
+      ) : null}
+
+      <View style={styles.categoryGroup} accessibilityRole="radiogroup">
         <Text style={styles.label}>Univers</Text>
         <View style={styles.categoryRow}>
           {rootCategories.map((category) => (
             <Button
               key={category.id}
-              label={category.labels["fr-FR"]}
+              label={
+                category.labels[activeMarket.defaultLocale] ??
+                category.labels["fr-FR"]
+              }
+              accessibilityRole="radio"
+              accessibilityState={{
+                checked: activeRootCategoryId === category.id,
+              }}
               variant={
                 activeRootCategoryId === category.id ? "primary" : "secondary"
               }
@@ -844,7 +919,12 @@ export default function PublishScreen() {
           {publishableCategories.map((category) => (
             <Button
               key={category.id}
-              label={category.labels["fr-FR"]}
+              label={
+                category.labels[activeMarket.defaultLocale] ??
+                category.labels["fr-FR"]
+              }
+              accessibilityRole="radio"
+              accessibilityState={{ checked: activeCategoryId === category.id }}
               variant={
                 activeCategoryId === category.id ? "primary" : "secondary"
               }
@@ -869,6 +949,10 @@ export default function PublishScreen() {
                 listingType.intentLabel[activeMarket.defaultLocale] ??
                 listingType.intentLabel["fr-FR"]
               }
+              accessibilityRole="radio"
+              accessibilityState={{
+                checked: activeListingTypeId === listingType.id,
+              }}
               variant={
                 activeListingTypeId === listingType.id ? "primary" : "secondary"
               }
@@ -922,6 +1006,8 @@ export default function PublishScreen() {
             <Button
               key={mode}
               label={label}
+              accessibilityRole="radio"
+              accessibilityState={{ checked: fulfillmentMode === mode }}
               variant={fulfillmentMode === mode ? "primary" : "secondary"}
               onPress={() => setFulfillmentMode(mode as typeof fulfillmentMode)}
               style={styles.categoryButton}
@@ -1011,12 +1097,14 @@ export default function PublishScreen() {
           ) ? (
             <View style={styles.categoryGroup}>
               <Text style={styles.label}>Accès privé chiffré</Text>
-              <View style={styles.categoryRow}>
+              <View style={styles.categoryRow} accessibilityRole="radiogroup">
                 {digitalPolicy?.credentialInventory.allowedClasses.map(
                   (value) => (
                     <Button
                       key={value}
                       label={value}
+                      accessibilityRole="radio"
+                      accessibilityState={{ checked: accessClass === value }}
                       variant={accessClass === value ? "primary" : "secondary"}
                       onPress={() => setAccessClass(value)}
                     />
@@ -1024,9 +1112,13 @@ export default function PublishScreen() {
                 )}
               </View>
               {digitalFulfillmentTypes.includes("ACCESS_CREDENTIALS") ? (
-                <View style={styles.categoryRow}>
+                <View style={styles.categoryRow} accessibilityRole="radiogroup">
                   <Button
                     label="Accès réutilisable"
+                    accessibilityRole="radio"
+                    accessibilityState={{
+                      checked: credentialAllocationMode === "REUSABLE",
+                    }}
                     variant={
                       credentialAllocationMode === "REUSABLE"
                         ? "primary"
@@ -1036,6 +1128,10 @@ export default function PublishScreen() {
                   />
                   <Button
                     label="Clés uniques"
+                    accessibilityRole="radio"
+                    accessibilityState={{
+                      checked: credentialAllocationMode === "UNIQUE_INVENTORY",
+                    }}
                     variant={
                       credentialAllocationMode === "UNIQUE_INVENTORY"
                         ? "primary"
@@ -1134,12 +1230,14 @@ export default function PublishScreen() {
           {digitalFulfillmentTypes.includes("SELLER_PROVISIONED") ? (
             <View style={styles.categoryGroup}>
               <Text style={styles.label}>Classe d’accès autorisée</Text>
-              <View style={styles.categoryRow}>
+              <View style={styles.categoryRow} accessibilityRole="radiogroup">
                 {digitalPolicy?.credentialInventory.allowedClasses.map(
                   (value) => (
                     <Button
                       key={value}
                       label={value}
+                      accessibilityRole="radio"
+                      accessibilityState={{ checked: accessClass === value }}
                       variant={accessClass === value ? "primary" : "secondary"}
                       onPress={() => setAccessClass(value)}
                     />
@@ -1253,6 +1351,9 @@ export default function PublishScreen() {
         label={user ? "Publier l’annonce" : "Se connecter pour publier"}
         onPress={publish}
         loading={publishing}
+        disabled={
+          publishing || treeState !== "ready" || schemaState !== "ready"
+        }
       />
     </Screen>
   );

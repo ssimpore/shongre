@@ -4,25 +4,18 @@
  * into structured, grouped, unit-aware, and localized presentation models.
  */
 
-import { Listing, UserProfile } from "../../types";
+import { Listing } from "../../types";
 import { TaxonomyNode, TaxonomyAttribute } from "../taxonomy/taxonomy.types";
 import { taxonomyService } from "../taxonomy/taxonomy.service";
 import { TaxonomyMigration } from "../taxonomy/taxonomy.migration";
 import { ATTRIBUTE_REGISTRY } from "../taxonomy/attribute.registry";
 import { CONDITION_SCHEMES } from "../taxonomy/condition.schemes";
 import { CONDITION_OPTIONS } from "../../configuration/market.config";
-import { MarketConfiguration } from "../market/market.types";
 import { activeDataLocale } from "../../i18n/localized";
-import {
-  currentBrowserMarketCode,
-  publicListingUrl,
-} from "../market/market-routing";
-import { getCountryConfig, getDefaultCountryConfig } from "@shongre/contracts";
 import {
   getListingFieldLabel,
   normalizeListingFieldKey,
 } from "./listing-field-labels";
-import { isProSeller } from "../user/user.domain";
 
 /**
  * Demo and imported listings can contain attributes that are not yet present
@@ -119,13 +112,6 @@ export interface GroupedCharacteristics {
   groupKey: string;
   groupTitle: string;
   items: FormattedCharacteristicItem[];
-}
-
-interface ListingSeoMetadata {
-  title: string;
-  description: string;
-  canonicalUrl: string;
-  jsonLd: Record<string, any>;
 }
 
 class ListingDisplayResolver {
@@ -629,106 +615,6 @@ class ListingDisplayResolver {
     return clean
       .replace(/_/g, " ")
       .replace(/\b\w/g, (letter) => letter.toUpperCase());
-  }
-
-  /**
-   * Generates Schema.org compliant JSON-LD structured data for SEO.
-   */
-  generateListingStructuredData(
-    listing: Listing,
-    seller?: UserProfile | null,
-    effectiveMarket?: MarketConfiguration,
-  ): Record<string, any> {
-    const currency =
-      listing.currency ||
-      effectiveMarket?.localization.defaultCurrency ||
-      getCountryConfig(
-        listing.marketCode ||
-          currentBrowserMarketCode() ||
-          getDefaultCountryConfig().marketCode,
-      )?.currency ||
-      getDefaultCountryConfig().currency;
-    const photos = listing.photos
-      .map((p) => (typeof p === "string" ? p : p.url))
-      .filter(Boolean);
-    const listingUrl = publicListingUrl({
-      listingId: listing.id,
-      countryCode:
-        listing.marketCode ||
-        currentBrowserMarketCode() ||
-        getDefaultCountryConfig().marketCode,
-    });
-
-    return {
-      "@context": "https://schema.org",
-      "@type": "Product",
-      name: listing.title,
-      description: listing.description,
-      image: photos,
-      sku: listing.id,
-      offers: {
-        "@type": "Offer",
-        url: listingUrl,
-        priceCurrency: currency,
-        price: listing.price,
-        availability:
-          listing.status === "active"
-            ? "https://schema.org/InStock"
-            : "https://schema.org/SoldOut",
-        itemCondition:
-          listing.condition === "new_with_tag"
-            ? "https://schema.org/NewCondition"
-            : "https://schema.org/UsedCondition",
-        seller: {
-          "@type": isProSeller(seller) ? "Organization" : "Person",
-          name: seller?.name || listing.sellerName,
-        },
-      },
-    };
-  }
-
-  /**
-   * Generates SEO meta tags (title, description, canonical).
-   */
-  generateListingSeoMeta(
-    listing: Listing,
-    node?: TaxonomyNode | null,
-    effectiveMarket?: MarketConfiguration,
-  ): ListingSeoMetadata {
-    const currency =
-      listing.currency ||
-      effectiveMarket?.localization.defaultCurrency ||
-      getCountryConfig(
-        listing.marketCode ||
-          currentBrowserMarketCode() ||
-          getDefaultCountryConfig().marketCode,
-      )?.currency ||
-      getDefaultCountryConfig().currency;
-    const priceStr = listing.isFreeDonation
-      ? "Don gratuit"
-      : `${listing.price} ${currency === "EUR" ? "€" : currency}`;
-    const categoryName = node?.name || listing.categoryLabel;
-    const listingUrl = publicListingUrl({
-      listingId: listing.id,
-      countryCode:
-        listing.marketCode ||
-        currentBrowserMarketCode() ||
-        getDefaultCountryConfig().marketCode,
-    });
-
-    const title = `${listing.title} - ${priceStr} à ${listing.city} | Shongre`;
-    const description = `${listing.title} en vente à ${listing.city} (${listing.postalCode}) pour ${priceStr}. Retrouvez toutes les annonces ${categoryName} sur Shongre.`;
-
-    return {
-      title,
-      description,
-      canonicalUrl: listingUrl,
-      jsonLd: this.generateListingStructuredData(
-        listing,
-        null,
-        effectiveMarket,
-      ),
-    };
   }
 }
 

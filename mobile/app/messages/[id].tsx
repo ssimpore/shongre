@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   StyleSheet,
   Text,
@@ -92,14 +93,8 @@ export default function MessageThreadScreen() {
     }
   };
 
-  const sendOffer = async () => {
+  const submitOffer = async (amountMinor: number) => {
     if (!user || !id) return;
-    const amount = Number(offer.replace(",", "."));
-    if (!Number.isFinite(amount) || amount <= 0) {
-      setError("Saisissez un montant valide.");
-      return;
-    }
-    const amountMinor = majorToMinorAmount(amount, activeMarket.currency);
     setSending(true);
     setError("");
     try {
@@ -116,6 +111,28 @@ export default function MessageThreadScreen() {
     } finally {
       setSending(false);
     }
+  };
+
+  const confirmOffer = () => {
+    if (!user || !id) return;
+    const amount = Number(offer.replace(",", "."));
+    if (!Number.isFinite(amount) || amount <= 0) {
+      setError("Saisissez un montant valide.");
+      return;
+    }
+    const amountMinor = majorToMinorAmount(amount, activeMarket.currency);
+    setError("");
+    Alert.alert(
+      "Envoyer cette offre ?",
+      `Vous proposez ${formatMoney({ amountMinor, currency: activeMarket.currency })}. Le vendeur recevra immédiatement cette offre.`,
+      [
+        { text: "Annuler", style: "cancel" },
+        {
+          text: "Envoyer l’offre",
+          onPress: () => void submitOffer(amountMinor),
+        },
+      ],
+    );
   };
 
   if (!user) {
@@ -209,8 +226,8 @@ export default function MessageThreadScreen() {
             />
           </View>
           <Button
-            label="Proposer"
-            onPress={() => void sendOffer()}
+            label="Envoyer l’offre"
+            onPress={confirmOffer}
             disabled={sending || !offer.trim()}
             variant="secondary"
           />

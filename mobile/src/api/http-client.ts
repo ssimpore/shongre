@@ -1,7 +1,7 @@
+import type { ApiPath, operations } from "@shongre/contracts/openapi";
 import { mobileEnvironment } from "@/config/environment";
-import { secureStorage } from "@/services/secure-storage/secure-storage";
-import type { ApiPath } from "@shongre/contracts/openapi";
 import { mobileMarketStore } from "@/features/market/market.store";
+import { secureStorage } from "@/services/secure-storage/secure-storage";
 
 const SESSION_KEY = "shongre.mobile.session.v1";
 
@@ -13,7 +13,7 @@ export interface StoredSession {
   user: unknown;
 }
 
-class MobileApiError extends Error {
+export class MobileApiError extends Error {
   constructor(
     message: string,
     public readonly status: number,
@@ -24,15 +24,12 @@ class MobileApiError extends Error {
   }
 }
 
+export function isMobileApiError(error: unknown): error is MobileApiError {
+  return error instanceof MobileApiError;
+}
+
 async function readToken(): Promise<string | null> {
-  const raw = await secureStorage.get(SESSION_KEY);
-  if (!raw) return null;
-  try {
-    return (JSON.parse(raw) as StoredSession).token || null;
-  } catch {
-    await secureStorage.remove(SESSION_KEY);
-    return null;
-  }
+  return (await sessionStorage.read())?.token ?? null;
 }
 
 function buildRequestHeaders(
@@ -45,40 +42,34 @@ function buildRequestHeaders(
   headers.set("Accept", "application/json");
   headers.set("X-Shongre-Client", "native");
   headers.set("X-Shongre-Market", marketCode);
-  if (hasBody && !headers.has("Content-Type"))
+  if (hasBody && !headers.has("Content-Type")) {
     headers.set("Content-Type", "application/json");
+  }
   if (token) headers.set("Authorization", `Bearer ${token}`);
   return headers;
 }
 
 type ApiRequestPath = ApiPath | `${ApiPath}?${string}`;
+type RefreshRequest =
+  operations["postAuthRefresh"]["requestBody"]["content"]["application/json"];
+type RefreshResponse =
+  operations["postAuthRefresh"]["responses"][200]["content"]["application/json"];
 
-export async function apiRequest<T>(
+async function fetchApi(
   path: ApiRequestPath,
-  init: RequestInit = {},
-  requestedMarketCode?: string,
-): Promise<T> {
-  if (!mobileEnvironment.apiUrl) {
-    throw new MobileApiError(
-      "L’API mobile n’est pas configurée.",
-      0,
-      "CONFIG_ERROR",
-    );
-  }
-  const token = await readToken();
-  const marketCode = requestedMarketCode ?? mobileMarketStore.getActive().code;
-  const headers = buildRequestHeaders(
-    init.headers,
-    token,
-    marketCode,
-    Boolean(init.body),
-  );
-
-  let response: Response;
+  init: RequestInit,
+  token: string | null,
+  marketCode: string,
+): Promise<Response> {
   try {
-    response = await fetch(`${mobileEnvironment.apiUrl}${path}`, {
+    return await fetch(`${mobileEnvironment.apiUrl}${path}`, {
       ...init,
-      headers,
+      headers: buildRequestHeaders(
+        init.headers,
+        token,
+        marketCode,
+        Boolean(init.body),
+      ),
     });
   } catch {
     throw new MobileApiError(
@@ -87,54 +78,105 @@ export async function apiRequest<T>(
       "NETWORK_ERROR",
     );
   }
+}
 
+async function responsePayload(response: Response): Promise<unknown> {
   const text = await response.text();
-  const payload = text ? JSON.parse(text) : null;
+  if (!text) return null;
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new MobileApiError(
+      "La réponse du service est invalide. Réessayez.",
+      response.status,
+      "INVALID_API_RESPONSE",
+    );
+  }
+}
+
+function apiError(response: Response, payload: unknown): MobileApiError {
+  const error =
+    payload && typeof payload === "object" && "error" in payload
+      ? (payload.error as { code?: string; message?: string } | undefined)
+      : undefined;
+  return new MobileApiError(
+    error?.message || "La demande n’a pas pu aboutir.",
+    response.status,
+    error?.code,
+  );
+}
+
+async function refreshSession(
+  stored: StoredSession,
+  marketCode: string,
+): Promise<StoredSession | null> {
+  if (!stored.refreshToken) return null;
+  const body: RefreshRequest = { refreshToken: stored.refreshToken };
+  const response = await fetchApi(
+    "/auth/refresh",
+    {
+      method: "POST",
+      body: JSON.stringify(body),
+    },
+    null,
+    marketCode,
+  );
+  const payload = (await responsePayload(response)) as RefreshResponse;
+  if (!response.ok) return null;
+  if (
+    !payload ||
+    typeof payload !== "object" ||
+    !("token" in payload) ||
+    typeof payload.token !== "string" ||
+    !("user" in payload)
+  ) {
+    throw new MobileApiError(
+      "La session renouvelée est invalide.",
+      response.status,
+      "INVALID_API_RESPONSE",
+    );
+  }
+  return payload as unknown as StoredSession;
+}
+
+export async function apiRequest<T>(
+  path: ApiRequestPath,
+  init: RequestInit = {},
+  requestedMarketCode?: string,
+): Promise<T> {
+  const marketCode = requestedMarketCode ?? mobileMarketStore.getActive().code;
+  const response = await fetchApi(path, init, await readToken(), marketCode);
+
   if (
     response.status === 401 &&
     path !== "/auth/login" &&
     path !== "/auth/refresh"
   ) {
     const stored = await sessionStorage.read();
-    if (stored?.refreshToken) {
-      const refreshResponse = await fetch(
-        `${mobileEnvironment.apiUrl}/auth/refresh`,
-        {
-          method: "POST",
-          headers: buildRequestHeaders(undefined, null, marketCode, true),
-          body: JSON.stringify({ refreshToken: stored.refreshToken }),
-        },
-      );
-      const refreshText = await refreshResponse.text();
-      const refreshed = refreshText
-        ? (JSON.parse(refreshText) as StoredSession)
-        : null;
-      if (refreshResponse.ok && refreshed?.token && refreshed.user) {
+    if (stored) {
+      let refreshed: StoredSession | null;
+      try {
+        refreshed = await refreshSession(stored, marketCode);
+      } catch (error) {
+        if (isMobileApiError(error) && error.code === "NETWORK_ERROR") {
+          throw error;
+        }
+        await sessionStorage.clear();
+        throw error;
+      }
+      if (refreshed) {
         await sessionStorage.write(refreshed);
-        const retryHeaders = buildRequestHeaders(
-          init.headers,
-          refreshed.token,
-          marketCode,
-          Boolean(init.body),
-        );
-        const retry = await fetch(`${mobileEnvironment.apiUrl}${path}`, {
-          ...init,
-          headers: retryHeaders,
-        });
-        const retryText = await retry.text();
-        const retryPayload = retryText ? JSON.parse(retryText) : null;
+        const retry = await fetchApi(path, init, refreshed.token, marketCode);
+        const retryPayload = await responsePayload(retry);
         if (retry.ok) return retryPayload as T;
+        if (retry.status !== 401) throw apiError(retry, retryPayload);
       }
       await sessionStorage.clear();
     }
   }
-  if (!response.ok) {
-    throw new MobileApiError(
-      payload?.error?.message || "La demande n’a pas pu aboutir.",
-      response.status,
-      payload?.error?.code,
-    );
-  }
+
+  const payload = await responsePayload(response);
+  if (!response.ok) throw apiError(response, payload);
   return payload as T;
 }
 

@@ -1,6 +1,6 @@
 import { AppProviders } from "./app/providers/AppProviders";
 import { AppRouter } from "./app/router";
-import type { MarketContext } from "@shongre/contracts";
+import type { MarketContext } from "@shongre/contracts/market-country";
 import type { ShongreApplicationId } from "./platform/applications/application-registry";
 import type { PublicRouteData } from "./platform/seo/public-route-data";
 

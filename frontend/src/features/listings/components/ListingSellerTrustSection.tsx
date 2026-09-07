@@ -2,7 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { ProBadge, VerificationBadge } from "@shongre/ui/web";
 import { ShieldCheck, Star, Clock, MapPin, ChevronRight } from "lucide-react";
-import { UserProfile, ReviewItem } from "../../../types";
+import { PublicSellerProfile, ReviewItem } from "../../../types";
 import { Avatar } from "../../../design-system/primitives/Badge";
 import {
   isProSeller,
@@ -12,7 +12,7 @@ import { useTranslation } from "../../../i18n/I18nProvider";
 import { routes } from "../../../configuration/routes";
 
 export interface ListingSellerTrustSectionProps {
-  seller: UserProfile;
+  seller: PublicSellerProfile;
   reviews?: ReviewItem[];
   className?: string;
 }
@@ -25,7 +25,6 @@ export const ListingSellerTrustSection: React.FC<
   const profileUrl = routes.seller.publicPage({
     id: seller.id,
     slug: seller.slug,
-    storeSlug: seller.storeSlug,
     isProfessional: isPro,
   });
 
@@ -65,7 +64,7 @@ export const ListingSellerTrustSection: React.FC<
               to={profileUrl}
               className="inline-flex min-h-6 max-w-full items-center truncate text-base font-bold text-text-main transition-colors hover:text-primary"
             >
-              {seller.companyName || seller.name}
+              {seller.name}
             </Link>
             {isPro && (
               <ProBadge
@@ -95,7 +94,7 @@ export const ListingSellerTrustSection: React.FC<
             <span>•</span>
             <span className="flex items-center gap-1 text-text-tertiary">
               <MapPin className="w-icon-xs h-icon-xs text-text-inverse-subtle" />
-              {seller.city} ({seller.postalCode})
+              {seller.city || seller.country}
             </span>
           </div>
 

@@ -1,48 +1,69 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@/api/http-client", () => ({ apiRequest: vi.fn() }));
-vi.mock("@/config/environment", () => ({
-  mobileEnvironment: { dataMode: "demo" },
-}));
+
 import { apiRequest } from "@/api/http-client";
-import {
-  DemoFavoritesService,
-  HttpFavoritesService,
-} from "@/features/favorites/favorites.service";
-import { DemoMessagingService } from "@/features/messaging/messaging.service";
-import { DemoWatchSubscriptionsService } from "@/features/watch-subscriptions/watch-subscriptions.service";
-import { DemoListingsService } from "@/features/listings/listings.service";
+import { HttpFavoritesService } from "@/features/favorites/favorites.service";
+import { HttpListingsService } from "@/features/listings/listings.service";
+import { HttpMessagingService } from "@/features/messaging/messaging.service";
+import { HttpWatchSubscriptionsService } from "@/features/watch-subscriptions/watch-subscriptions.service";
 
-describe("mobile engagement services", () => {
-  it("partitions favorites by account and market", async () => {
-    const service = new DemoFavoritesService();
-    await service.setFavorite("account-a", "FR", "list_2", true);
-    await service.setFavorite("account-a", "FR", "list_2", true);
-    const france = await service.list("account-a", "FR");
+const listing = {
+  id: "listing-1",
+  sellerId: "seller-1",
+  title: "Vélo de ville",
+  description: "Description",
+  price: 120,
+  currency: "EUR",
+  status: "published",
+  city: "Bruxelles",
+  postalCode: "1000",
+  country: "BE",
+  marketCode: "BE",
+  condition: "good",
+  categoryId: "sports.cycling",
+  publisherType: "private",
+  attributes: {},
+  images: [],
+  allowedDelivery: [],
+  fulfillmentTypes: ["PHYSICAL"],
+  requiresPhysicalDelivery: true,
+  viewCount: 0,
+  favoriteCount: 0,
+  createdAt: "2026-09-01T00:00:00.000Z",
+  updatedAt: "2026-09-01T00:00:00.000Z",
+  expiresAt: "2026-10-01T00:00:00.000Z",
+};
 
-    expect(france.listingIds).toEqual(["list_2"]);
-    expect(france.listings.map(({ id }) => id)).toEqual(["list_2"]);
-    expect(await service.list("account-b", "FR")).toEqual({
-      listingIds: [],
-      listings: [],
+describe("API-backed mobile engagement services", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it("maps favorites returned for the exact market", async () => {
+    vi.mocked(apiRequest).mockResolvedValueOnce({
+      listingIds: [listing.id],
+      listings: [listing],
     });
-    expect(await service.list("account-a", "BE")).toEqual({
-      listingIds: [],
-      listings: [],
+
+    const result = await new HttpFavoritesService().list("account-a", "BE");
+    expect(result.listingIds).toEqual(["listing-1"]);
+    expect(result.listings[0]).toMatchObject({
+      id: "listing-1",
+      marketCode: "BE",
+      price: { amountMinor: 12_000, currency: "EUR" },
     });
-    await service.setFavorite("account-a", "FR", "unavailable-listing", true);
-    expect(await service.list("account-a", "FR")).toEqual({
-      listingIds: ["list_2"],
-      listings: [expect.objectContaining({ id: "list_2" })],
-    });
+    expect(apiRequest).toHaveBeenCalledWith("/favorites", {}, "BE");
   });
 
-  it("sets the desired HTTP favorite state idempotently in the exact market", async () => {
+  it("sets desired favorite state idempotently in the exact market", async () => {
     vi.mocked(apiRequest).mockResolvedValueOnce({ isFavorite: false });
-    const service = new HttpFavoritesService();
 
     await expect(
-      service.setFavorite("account-a", "BE", "listing/a", false),
+      new HttpFavoritesService().setFavorite(
+        "account-a",
+        "BE",
+        "listing/a",
+        false,
+      ),
     ).resolves.toBe(false);
     expect(apiRequest).toHaveBeenCalledWith(
       "/listings/listing%2Fa/favorite",
@@ -51,32 +72,36 @@ describe("mobile engagement services", () => {
     );
   });
 
-  it("enforces conversation participation and market scope", async () => {
-    const service = new DemoMessagingService();
-    const conversation = await service.createForListing({
-      listingId: "list_2",
+  it("maps API conversations without trusting a caller-selected participant", async () => {
+    vi.mocked(apiRequest).mockResolvedValueOnce({
+      items: [
+        {
+          id: "conversation-1",
+          listingId: "listing-1",
+          marketCode: "FR",
+          buyerId: "account-a",
+          sellerId: "seller-1",
+          seller: { name: "Camille" },
+          listing: { title: "Vélo", marketCode: "FR" },
+          lastMessageAt: "2026-09-01T00:00:00.000Z",
+        },
+      ],
+    });
+
+    const result = await new HttpMessagingService().list("account-a", "FR");
+    expect(result[0]).toMatchObject({
+      participantName: "Camille",
+      listingTitle: "Vélo",
       marketCode: "FR",
-      userId: "account-a",
     });
-    expect(conversation).toMatchObject({
-      sellerId: "pro_atelier",
-      listingTitle: "Fauteuil lounge en chêne massif",
-    });
-    await expect(
-      service.send({
-        conversationId: conversation.id,
-        senderId: "account-b",
-        marketCode: "FR",
-        text: "Intrusion",
-      }),
-    ).rejects.toThrow("introuvable");
-    await expect(
-      service.messages(conversation.id, "account-a", "BE"),
-    ).rejects.toThrow("introuvable");
+    expect(apiRequest).toHaveBeenCalledWith(
+      "/messaging/conversations?limit=50",
+      {},
+      "FR",
+    );
   });
 
-  it("creates idempotent watches and preserves market isolation", async () => {
-    const service = new DemoWatchSubscriptionsService();
+  it("sends watch mutations through their generated API paths", async () => {
     const input = {
       marketCode: "FR",
       targetType: "seller",
@@ -85,30 +110,61 @@ describe("mobile engagement services", () => {
       frequency: "daily",
       channels: { inApp: true, email: false, push: false },
     } as const;
-    const first = await service.createOrReplace("account-a", input);
-    const second = await service.createOrReplace("account-a", {
+    vi.mocked(apiRequest).mockResolvedValueOnce({
+      id: "watch-1",
       ...input,
-      frequency: "weekly",
+      status: "active",
+      createdAt: "2026-09-07T00:00:00.000Z",
+      updatedAt: "2026-09-07T00:00:00.000Z",
     });
-    expect(second.id).toBe(first.id);
-    expect(await service.list("account-a", "FR")).toHaveLength(1);
-    expect(await service.list("account-a", "CH")).toEqual([]);
+
+    await new HttpWatchSubscriptionsService().createOrReplace(
+      "account-a",
+      input,
+    );
+    expect(apiRequest).toHaveBeenCalledWith(
+      "/watch-subscriptions",
+      { method: "POST", body: JSON.stringify(input) },
+      "FR",
+    );
   });
 
-  it("applies search scopes without leaking another market", async () => {
-    const service = new DemoListingsService();
-    expect(
-      (await service.list("FR", "", "auto")).every(
-        (item) => item.marketCode === "FR",
-      ),
-    ).toBe(true);
-    expect(
-      (await service.list("FR", "", "auto")).some(
-        (item) => item.id === "auto_fr_1",
-      ),
-    ).toBe(true);
-    await expect(service.list("SN", "", "marketplace")).rejects.toThrow(
-      "pas encore accessible",
+  it("sends authoritative scope and price filters to search", async () => {
+    vi.mocked(apiRequest).mockResolvedValueOnce({ items: [listing] });
+
+    const result = await new HttpListingsService().search({
+      marketCode: "FR",
+      query: "  vélo  ",
+      scope: "auto",
+      minPrice: 10,
+      maxPrice: 25.5,
+    });
+
+    expect(result).toHaveLength(1);
+    expect(apiRequest).toHaveBeenCalledWith(
+      "/listings/search",
+      {
+        method: "POST",
+        body: JSON.stringify({
+          marketCode: "FR",
+          query: "vélo",
+          categoryId: "vehicles",
+          minPrice: 10,
+          maxPrice: 25.5,
+        }),
+      },
+      "FR",
     );
+  });
+
+  it("preserves API errors instead of returning listing fixtures", async () => {
+    vi.mocked(apiRequest).mockRejectedValueOnce(new Error("network offline"));
+
+    await expect(
+      new HttpListingsService().search({
+        marketCode: "FR",
+        query: "vélo",
+      }),
+    ).rejects.toThrow("network offline");
   });
 });

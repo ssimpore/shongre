@@ -2,6 +2,8 @@ import { defineConfig, devices } from "@playwright/test";
 import { release } from "node:os";
 
 const REMOTE_BASE_URL = process.env.PLAYWRIGHT_BASE_URL;
+const CHROMIUM_EXECUTABLE_PATH =
+  process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH;
 const PORT = Number(process.env.FRONTEND_PORT || process.env.PORT);
 const HOST = process.env.FRONTEND_HOST;
 if (
@@ -51,7 +53,15 @@ export default defineConfig({
   },
 
   projects: [
-    { name: "chromium", use: { ...devices["Desktop Chrome"] } },
+    {
+      name: "chromium",
+      use: {
+        ...devices["Desktop Chrome"],
+        ...(CHROMIUM_EXECUTABLE_PATH
+          ? { launchOptions: { executablePath: CHROMIUM_EXECUTABLE_PATH } }
+          : {}),
+      },
+    },
     // Sticky headers, `dvh` units and modal focus behave differently outside
     // Blink, which is exactly where the mobile chrome and messaging surfaces
     // are most fragile — so the journey suite is checked on all three engines.

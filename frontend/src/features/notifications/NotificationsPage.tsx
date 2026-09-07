@@ -12,7 +12,7 @@ import {
 } from "../../domains/notifications/notification.service";
 import { notificationCatalogService } from "../../domains/notifications/notification.catalog";
 import { services } from "../../api/client/service-registry";
-import { useNotifications } from "../../app/providers/NotificationProvider";
+import { useNotifications } from "../../app/providers/NotificationContext";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { Button } from "../../design-system/primitives/Button";
 import { NotificationItemCard } from "./components/NotificationItemCard";

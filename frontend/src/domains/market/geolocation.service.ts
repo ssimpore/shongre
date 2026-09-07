@@ -1,5 +1,5 @@
 import { MarketCity } from "./market.types";
-import { resolveCountryFromCoordinates } from "@shongre/contracts";
+import { resolveCountryFromCoordinates } from "@shongre/contracts/market-country";
 import { MARKET_CITY_COORDINATES } from "../../configuration/market-city-coordinates";
 
 export interface GeoCoordinates {

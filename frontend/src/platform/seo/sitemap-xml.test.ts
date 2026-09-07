@@ -23,6 +23,27 @@ describe("sitemap XML and sharding", () => {
     expect(xml).not.toContain("<changefreq>");
   });
 
+  it("emits crawlable listing images and drops unsafe image references", () => {
+    const xml = renderUrlSet([
+      {
+        url: "https://shongre.fr/annonce/list-102",
+        imageUrls: [
+          "https://storage.example/listings/peugeot-208.webp?a=1&b=2",
+          "https://storage.example/listings/peugeot-208.webp?a=1&b=2",
+          "javascript:alert(1)",
+        ],
+      },
+    ]);
+    expect(xml).toContain(
+      'xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"',
+    );
+    expect(xml).toContain(
+      "<image:loc>https://storage.example/listings/peugeot-208.webp?a=1&amp;b=2</image:loc>",
+    );
+    expect(xml.match(/<image:image>/g)).toHaveLength(1);
+    expect(xml).not.toContain("javascript:");
+  });
+
   it("creates deterministic shards before the 50,000 URL limit", () => {
     const entries = Array.from({ length: 50_001 }, (_, index) => ({
       url: `https://shongre.fr/annonce/${String(index).padStart(5, "0")}`,

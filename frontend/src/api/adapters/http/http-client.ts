@@ -102,17 +102,30 @@ class HttpClient {
     };
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+    const callerSignal = customConfig.signal;
+    let timedOut = false;
+    const abortFromCaller = () => controller.abort(callerSignal?.reason);
+    if (callerSignal?.aborted) abortFromCaller();
+    else
+      callerSignal?.addEventListener("abort", abortFromCaller, { once: true });
+    const timeoutId = setTimeout(() => {
+      timedOut = true;
+      controller.abort();
+    }, timeoutMs);
+    const cleanupAbort = () => {
+      clearTimeout(timeoutId);
+      callerSignal?.removeEventListener("abort", abortFromCaller);
+    };
 
     try {
       const response = await fetch(url, {
         ...customConfig,
-        credentials: "include",
+        credentials: customConfig.credentials ?? "include",
         signal: controller.signal,
         headers: defaultHeaders,
       });
 
-      clearTimeout(timeoutId);
+      cleanupAbort();
 
       if (
         response.status === 401 &&
@@ -168,8 +181,9 @@ class HttpClient {
 
       return (await response.json()) as T;
     } catch (err: any) {
-      clearTimeout(timeoutId);
+      cleanupAbort();
       if (err instanceof AppError) throw err;
+      if (callerSignal?.aborted && !timedOut) throw err;
       if (err.name === "AbortError") {
         telemetryService.captureException(
           new Error("Shongre API request timed out"),

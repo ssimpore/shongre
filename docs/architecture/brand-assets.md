@@ -20,10 +20,13 @@ The official signature is `SHONGRE.`: uppercase, with exactly one final period.
 In full color, the period is Shongre Orange. Canonical palette values come only
 from the selected kit's `08_Design_Tokens/brand-tokens.json`; documentation,
 tests, and application code must not restate them. `brand-check` decodes every
-orange logo, icon, favicon, PWA, iOS, and Android
-master and requires its dominant opaque saturated warm pixel to equal the
-canonical orange token. Resampling and antialiased edge pixels are deliberately
-excluded from that comparison; they are blends, not alternate brand swatches.
+governed orange-bearing logo, icon, Web, PWA, iOS, Android, social, RGB print,
+and preview image and requires its dominant opaque saturated warm pixel to
+equal the canonical orange token. It also rejects a second significant opaque
+orange plateau. The one-channel tolerance is limited to the 16 px favicon and
+inherently lossy JPEG/WebP exports; resampled and antialiased edge pixels are
+blends, not alternate brand swatches. Runtime copies remain byte-identical to
+their validated source.
 
 ## Generated runtime subset
 
@@ -86,6 +89,15 @@ The current destinations are:
 
 Files in those destinations are generated. Change the central mapping or the
 next canonical kit version, not the copies.
+
+`ASSET_MANIFEST.csv` deliberately owns technical source inventory: path, byte
+size, media type, dimensions, color mode, and SHA-256. Runtime role, variant,
+platform, exposure, and destination belong to the typed mapping and generated
+registries above. Background compatibility and source/master provenance belong
+to the kit README and guidelines. The active kit declares no deprecated runtime
+asset or replacement chain. Keeping these responsibilities separate avoids a
+second manifest while preserving deterministic traceability from source to
+consumer.
 
 ## Public and internal boundaries
 

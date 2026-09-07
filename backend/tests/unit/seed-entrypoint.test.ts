@@ -17,7 +17,10 @@ describe("local database seed entrypoint", () => {
     expect(seed).toContain("\\ir auto.sql");
     expect(seed).toContain("\\ir real-estate.sql");
     expect(seed).not.toContain("\\ir taxonomy-v4.generated.sql");
-    expect(seed).toContain("taxonomy-db-import");
+    expect(runner).toContain("taxonomy-v4.generated.sql");
+    expect(
+      runner.indexOf("runPsqlFile(databaseUrl, taxonomySeedSqlPath"),
+    ).toBeLessThan(runner.indexOf("runPsqlFile(databaseUrl, seedSqlPath)"));
   });
 
   it("adds the synthetic database and Storage scenario after reference data", () => {

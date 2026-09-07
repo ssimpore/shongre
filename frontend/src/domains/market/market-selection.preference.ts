@@ -1,4 +1,4 @@
-import { getCountryConfig } from "@shongre/contracts";
+import { getCountryConfig } from "@shongre/contracts/market-country";
 
 export const LEGACY_MANUAL_MARKET_SELECTION_KEY =
   "shongre_manual_market_selection_v1";

@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { ImageOff } from "lucide-react";
-import { buildResponsiveFallbackUrl, buildSrcSet } from "@shongre/shared";
+import {
+  buildResponsiveFallbackUrl,
+  buildSrcSet,
+} from "@shongre/shared/responsive-image";
 import { resolveOwnedPublicMediaUrl } from "../../platform/runtime-config/public-runtime-config";
 
 export interface ImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {

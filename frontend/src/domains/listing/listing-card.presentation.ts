@@ -1,11 +1,10 @@
 import {
   isActiveMarketResolvedListingPromotion,
-  type ListingCardView,
   type MarketResolvedListingPromotion,
-  type MarketCode,
-  type Money,
-  type MoneyConversionProjection,
-} from "@shongre/contracts";
+} from "@shongre/contracts/discovery";
+import type { ListingCardView } from "@shongre/contracts/listings";
+import type { MarketCode, Money } from "@shongre/contracts/primitives";
+import type { MoneyConversionProjection } from "@shongre/contracts/currency";
 import { getTaxonomyV4CardRootLabel } from "@shongre/contracts/taxonomy-v4-card";
 import type { VehiclePublic } from "@shongre/contracts/auto";
 import type {

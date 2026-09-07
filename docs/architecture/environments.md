@@ -56,6 +56,7 @@ match exactly.
 | Real customers      | no                         | no                       | no                   | no                   | no                       | yes                          |
 | Web data mode       | API                        | demo                     | demo or isolated API | API                  | API                      | API                          |
 | Web mock storage    | disabled                   | enabled                  | explicit             | disabled             | disabled                 | disabled                     |
+| Mobile transport    | API                        | API                      | isolated API         | API                  | API                      | API                          |
 
 The table describes deployment intent. Executable enforcement comes from the
 typed safety module, environment validator, startup checks, and protected
@@ -65,9 +66,11 @@ Local is the only developer environment allowed to bind the backend to local
 database infrastructure. Test uses an isolated local/ephemeral database or the
 deterministic backend adapter. Preview and every shared environment use hosted,
 environment-owned infrastructure. Canonical local development, development,
-staging, and production always run both clients in API mode with mock storage
-disabled; the standalone demo surface remains the explicit local
-`make frontend` workflow.
+staging, and production run Web in API mode with mock storage disabled. Mobile
+always uses the API, including test and preview; local mobile development
+reaches the database-mode backend backed by local Supabase. The standalone demo
+surface remains the explicit local Web `make frontend` workflow, and mobile has
+no data-mode selector or fallback.
 Shared development, staging, and production runtimes also require their own JWT,
 MFA, handover, provider-credential, and digital-fulfillment keys at startup;
 fixed local development keys are never accepted there.
@@ -244,9 +247,10 @@ validated public configuration at runtime.
 
 Preview is deliberately dynamic. Configure the hosting platform/Git integration
 to inject `APP_ENV=preview`, a preview-specific fingerprint, explicit dynamic
-France/international/API origins, and isolated non-production resources. If an
-isolated API is unavailable, keep Web/mobile in deterministic demo mode; never
-silently point a preview to production.
+France/international/API origins, and isolated non-production resources. Web
+may use its explicit deterministic adapter when an isolated API is unavailable;
+a mobile preview must fail configuration or remain undistributed until its
+isolated API exists. Neither client may silently point a preview to production.
 
 ## Health, observability, backup, and rollback
 

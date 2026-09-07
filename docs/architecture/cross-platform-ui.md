@@ -39,7 +39,10 @@ Shared packages never import application folders; backend may consume
   document registries without becoming a second asset source.
 - `packages/ui` owns reusable primitives. `.web.tsx` and `.native.tsx` files
   preserve a common public concept while using semantic HTML or React Native
-  primitives as appropriate.
+  primitives as appropriate. Native `Button` forwards explicit accessibility
+  roles and state while retaining authoritative disabled/loading state, so real
+  radio and toggle consumers do not have to bypass the primitive. Native form
+  fields are announced as disabled only when `editable={false}` is explicit.
 - `packages/features` owns reusable feature presentation and interaction rules.
   Listing cards are the first migrated vertical slice. Their shared projection
   carries category, optional brand, semantic price state, seller type/rating,
@@ -72,6 +75,14 @@ Shared does not mean identical rendering. The following remain platform-owned:
 No WebView is used. iOS and Android share `mobile/app` and `mobile/src`; there
 are no separate business UI trees or platform forks.
 
+The native client is API-only. Its screens use generated-contract service
+adapters under `mobile/src/features`; they do not load local taxonomy or listing
+fixtures and do not infer authoritative search results from rendered card text.
+Publication loads the market-scoped taxonomy tree and resolved publication
+schema through `/api/v1`, while search sends query, canonical category scope,
+and price bounds to the backend. Supabase remains behind the Shongre backend;
+changing the environment's Supabase project does not change mobile UI code.
+
 ## Next.js rendering boundary
 
 The App Router owns the server document shell, the single optimized Nunito Sans
@@ -101,12 +112,14 @@ primitives now delegate to `@shongre/ui`; listing-card consumers delegate to
 autocomplete, data tables, responsive galleries, SEO metadata, and admin grids
 remain local because their structure and interaction are Web-specific.
 
-Every Expo screen was audited: home, search, publish, messages, account, login,
-listing detail, settings, and account deletion. They use package tokens
-directly; Button, FormField, StatePanel, icons, typography, cards, layout,
-modal/sheet, skeleton, and listing presentation come from shared packages.
-Bottom tabs, safe-area screen composition, native permissions, secure storage,
-and deep linking remain mobile-specific.
+Every Expo route was audited: home, search, publication, message list and thread,
+account overview, alerts, favourites, billing, delivery, digital purchases,
+digital selling, notification preferences, login, listing detail, settings, and
+account deletion. They use package tokens directly; Button, FormField,
+StatePanel, icons, typography, cards, layout, modal/sheet, skeleton, and listing
+presentation come from shared packages. Bottom tabs, safe-area screen
+composition, native permissions, secure storage, confirmation alerts, and deep
+linking remain mobile-specific.
 
 ## One-edit propagation proof
 

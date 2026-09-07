@@ -28,6 +28,39 @@ function listingLastModified(listing: {
   );
 }
 
+function listingImageUrls(
+  listing: {
+    coverImageUrl?: string;
+    photos: Array<{ url: string }>;
+  },
+  canonicalUrl: string,
+): string[] {
+  const origin = new URL(canonicalUrl).origin;
+  return Array.from(
+    new Set(
+      [
+        listing.coverImageUrl,
+        ...listing.photos.map((photo) => photo.url),
+      ].flatMap((value) => {
+        if (!value) return [];
+        try {
+          const url = new URL(value, origin);
+          if (
+            (url.protocol !== "http:" && url.protocol !== "https:") ||
+            url.username ||
+            url.password
+          ) {
+            return [];
+          }
+          return [url.toString()];
+        } catch {
+          return [];
+        }
+      }),
+    ),
+  );
+}
+
 function entryFromPolicy(
   policy: SeoRoutePolicy,
   context: MarketContext,
@@ -149,8 +182,8 @@ export async function buildMarketSitemapGroups(
     );
   });
 
-  const listingEntries = activeListings.map((listing) =>
-    resolveEntry(
+  const listingEntries = activeListings.map((listing) => {
+    const entry = resolveEntry(
       context,
       `/annonce/${encodeURIComponent(listing.id)}`,
       {
@@ -163,8 +196,14 @@ export async function buildMarketSitemapGroups(
         },
       },
       listingLastModified(listing),
-    ),
-  );
+    );
+    return entry
+      ? {
+          ...entry,
+          imageUrls: listingImageUrls(listing, entry.url),
+        }
+      : null;
+  });
 
   const professionalEntries = sellers.map((seller) => {
     const listings = activeListings.filter(

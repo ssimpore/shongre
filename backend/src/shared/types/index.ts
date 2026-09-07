@@ -252,6 +252,7 @@ export interface SearchFilters {
   query?: string;
   categoryId?: string;
   categorySlug?: string;
+  subCategorySlug?: string;
   marketCode?: string;
   city?: string;
   postalCode?: string;
@@ -277,6 +278,14 @@ export interface SearchFilters {
     | "distance";
   page?: number;
   limit?: number;
+  /** Opaque discovery cursor. Callers must not parse or synthesize it. */
+  cursor?: string;
+  conditions?: string[];
+  deliveryAvailable?: boolean;
+  onlinePaymentAvailable?: boolean;
+  onlyDeals?: boolean;
+  radiusKm?: number;
+  publishedToday?: boolean;
 }
 
 export interface Transaction {

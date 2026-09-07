@@ -32,7 +32,6 @@ const valid = {
   BACKEND_DATA_MODE: "database",
   DATABASE_INFRA_MODE: "hosted",
   NEXT_PUBLIC_DATA_MODE: "api",
-  EXPO_PUBLIC_DATA_MODE: "api",
   NEXT_PUBLIC_ENABLE_MOCK_STORAGE: "false",
   NEXT_PUBLIC_ENABLE_AI_FEATURES: "false",
   PAYMENT_MODE: "live",

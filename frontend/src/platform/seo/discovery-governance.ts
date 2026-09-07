@@ -1,4 +1,5 @@
 import { brand } from "@shongre/brand";
+import { COUNTRY_REGISTRY } from "@shongre/contracts/market-country";
 
 export type DiscoveryCrawlerPurpose =
   "search" | "user_retrieval" | "model_training";
@@ -61,12 +62,11 @@ export function parseModelTrainingCrawlerPolicy(
   return normalized;
 }
 
-/** Private and transactional paths stay unavailable to every crawler. */
-export const PRIVATE_CRAWL_PATHS = Object.freeze([
-  "/admin/",
-  "/api/",
-  "/auth/",
-  "/compte/",
+const PRIVATE_CRAWL_ROUTE_PREFIXES = Object.freeze([
+  "/admin",
+  "/api",
+  "/auth",
+  "/compte",
   "/connexion",
   "/deposer",
   "/favoris",
@@ -76,6 +76,27 @@ export const PRIVATE_CRAWL_PATHS = Object.freeze([
   "/paiement",
   "/verification",
 ]);
+
+/**
+ * Private and transactional paths stay unavailable to every crawler on both
+ * canonical hosts. The international host serves several market prefixes, so
+ * its robots file must protect `/be/compte` as well as `/compte` without
+ * maintaining a second country or URL registry here.
+ */
+export const PRIVATE_CRAWL_PATHS = Object.freeze(
+  Array.from(
+    new Set([
+      ...PRIVATE_CRAWL_ROUTE_PREFIXES,
+      ...COUNTRY_REGISTRY.filter(
+        (country) => country.canonicalDomainMode === "international",
+      ).flatMap((country) =>
+        PRIVATE_CRAWL_ROUTE_PREFIXES.map(
+          (pathname) => `/${country.slug}${pathname}`,
+        ),
+      ),
+    ]),
+  ).sort(),
+);
 
 const SEARCH_AND_RETRIEVAL_AGENTS = Object.values(DISCOVERY_CRAWLERS)
   .filter(({ purpose }) => purpose !== "model_training")
@@ -115,6 +136,17 @@ export function validWebmasterVerificationToken(
     throw new Error("[Web Config] Invalid webmaster verification token.");
   }
   return token;
+}
+
+export function validIndexNowKey(
+  value: string | undefined,
+): string | undefined {
+  const key = value?.trim();
+  if (!key) return undefined;
+  if (!/^[A-Za-z0-9-]{8,128}$/.test(key)) {
+    throw new Error("[Web Config] Invalid INDEXNOW_KEY.");
+  }
+  return key;
 }
 
 export interface DiscoveryManifestLink {

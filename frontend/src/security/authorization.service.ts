@@ -9,7 +9,7 @@ import {
   type AuthorizationVerificationDimension,
   type ProfessionalVertical,
 } from "@shongre/contracts/access-control";
-import { getCountryConfig } from "@shongre/contracts";
+import { getCountryConfig } from "@shongre/contracts/market-country";
 import { isProSeller } from "../domains/user/user.domain";
 import type { Permission, UserProfile } from "../types";
 import { PRO_PLANS, type ProPlan } from "../configuration/plans.config";

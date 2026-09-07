@@ -2,7 +2,7 @@
  * SHONGRE LISTING DETAIL & DISPLAY AUTOMATED TEST SUITE
  * Exhaustively tests summary attributes derivation across all listing families,
  * grouped technical characteristics, absence of irrelevant fields, action resolution,
- * owner vs buyer views, and SEO structured data.
+ * and owner versus buyer views.
  */
 
 import { describe, it, expect } from "vitest";
@@ -529,56 +529,6 @@ describe("Listing Detail Display & Action Resolvers", () => {
       expect(actions.canReserve).toBe(false);
       expect(actions.statusNotice).not.toBeNull();
       expect(actions.statusNotice?.type).toBe("sold");
-    });
-  });
-
-  // =========================================================================
-  // 4. SEO & STRUCTURED DATA (JSON-LD) GENERATION
-  // =========================================================================
-  describe("SEO & Structured Data", () => {
-    it("generates valid Schema.org Product structured data", () => {
-      const sampleListing = {
-        id: "list-seo-1",
-        title: "Vélo Gravel Trek Checkpoint ALR 5",
-        description: "Excellent vélo gravel en taille 54.",
-        price: 1850,
-        isNegotiable: false,
-        isFreeDonation: false,
-        categorySlug: "sports-hobbies",
-        subCategorySlug: "sports_leisure.cycling.gravel",
-        categoryLabel: "Sports",
-        subCategoryLabel: "Vélos Gravel",
-        condition: "very_good",
-        sellerId: "user-thomas",
-        sellerName: "Thomas Laurent",
-        sellerType: "individual",
-        city: "Lyon",
-        postalCode: "69002",
-        coverImageUrl: "https://images.unsplash.com/gravel.jpg",
-        photos: [
-          {
-            id: "p1",
-            url: "https://images.unsplash.com/gravel.jpg",
-            isCover: true,
-          },
-        ],
-        deliveryOptions: [{ type: "hand_delivery", available: true }],
-        status: "active",
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        viewsCount: 40,
-        favoritesCount: 8,
-        contactCount: 3,
-      } as any as Listing;
-
-      const jsonLd =
-        listingDisplayResolver.generateListingStructuredData(sampleListing);
-      expect(jsonLd["@context"]).toBe("https://schema.org");
-      expect(jsonLd["@type"]).toBe("Product");
-      expect(jsonLd.name).toBe("Vélo Gravel Trek Checkpoint ALR 5");
-      expect(jsonLd.offers.price).toBe(1850);
-      expect(jsonLd.offers.priceCurrency).toBe("EUR");
-      expect(jsonLd.offers.availability).toBe("https://schema.org/InStock");
     });
   });
 });

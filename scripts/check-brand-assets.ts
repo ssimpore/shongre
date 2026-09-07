@@ -676,6 +676,8 @@ async function main(): Promise<void> {
   const sourceFiles = (
     await Promise.all(
       [
+        "backend/scripts",
+        "backend/src",
         "frontend/app",
         "frontend/src",
         "mobile/app",

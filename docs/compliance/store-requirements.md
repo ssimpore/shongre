@@ -1,6 +1,6 @@
 # Mobile store requirements
 
-Last verified: **2026-08-21**. Re-check every item before each production upload; this file records a baseline, not a continuing compliance claim.
+Last verified: **2026-09-07**. Re-check every item before each production upload; this file records a baseline, not a continuing compliance claim.
 
 | Area                    | Verified baseline                                                                                               | Shongre evidence                                                           | Next release action                                                             |
 | ----------------------- | --------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
@@ -11,6 +11,7 @@ Last verified: **2026-08-21**. Re-check every item before each production upload
 | Google target API       | New apps and updates must target API 36 from 2026-08-31                                                         | Generated Android project has compileSdk/targetSdk 36                      | Re-read target API policy before upload                                         |
 | Android native binaries | Target-35+ apps must support 16 KB pages; the current page says unsupported updates are blocked from 2027-02-01 | RN 0.86.2 and modern packaging configured                                  | Inspect the signed AAB and every packaged `.so` on a 16 KB device               |
 | Expo compatibility      | Expo SDK 57 uses React Native 0.86 and React 19.2                                                               | `mobile/package.json`, Expo Doctor, generated projects                     | Run `make expo-doctor` and review Expo release notes                            |
+| Runtime data boundary   | Review builds must not depend on hidden sample-data behavior                                                    | API-only architecture guard, central HTTP client, isolated staging API     | Run `make mobile-api-only-check` and verify the candidate against staging       |
 | Privacy                 | Apple manifests/labels and Google Data Safety must match actual data flows                                      | Repository inventories and generated manifest                              | Human review of production SDKs/processors and console answers                  |
 | Account deletion        | Apple requires in-app deletion; Google requires in-app and public Web paths                                     | Native settings flow, `/account/delete`, authenticated backend operation   | Test against the production identity/database and complete console declarations |
 | UGC safety              | Apple and Google require reporting, blocking, terms/content standards, and ongoing moderation                   | Backend-authoritative reports/blocks plus moderation UI and tests          | Staff and legal must validate response SLA and published standards              |

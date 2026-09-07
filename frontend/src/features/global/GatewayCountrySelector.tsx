@@ -6,7 +6,7 @@ import {
   publicMarketExperience,
   type MarketDetectionRecommendation,
   type PublicCountryConfig,
-} from "@shongre/contracts";
+} from "@shongre/contracts/market-country";
 import {
   marketSelectionPreferenceRepository,
   saveManualMarketSelectionPreference,

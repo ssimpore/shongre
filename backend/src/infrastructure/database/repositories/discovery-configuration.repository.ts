@@ -13,7 +13,7 @@ export interface IDiscoveryConfigurationRepository {
     categoryId?: string,
     context?: DiscoveryConfiguration["context"],
   ): Promise<DiscoveryConfiguration | null>;
-  recordEvent(
+  enqueueEvent(
     event: DiscoveryEvent,
     input: {
       categoryId?: string;
@@ -47,7 +47,7 @@ export class DemoDiscoveryConfigurationRepository implements IDiscoveryConfigura
     );
   }
 
-  async recordEvent(): Promise<void> {}
+  async enqueueEvent(): Promise<void> {}
 
   async saveVersion(
     configuration: DiscoveryConfiguration,
@@ -123,7 +123,7 @@ export class PostgresDiscoveryConfigurationRepository implements IDiscoveryConfi
     });
   }
 
-  async recordEvent(
+  async enqueueEvent(
     event: DiscoveryEvent,
     input: {
       categoryId?: string;
@@ -132,7 +132,7 @@ export class PostgresDiscoveryConfigurationRepository implements IDiscoveryConfi
     },
   ): Promise<void> {
     const { error } = await getSupabaseAdminClient()
-      .from("discovery_search_events")
+      .from("discovery_search_event_outbox")
       .insert({
         request_id: event.requestId,
         market_code: event.marketCode,

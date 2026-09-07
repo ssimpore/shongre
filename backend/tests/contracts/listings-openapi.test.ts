@@ -20,6 +20,11 @@ describe("public listings OpenAPI contract", () => {
       oneOf: [{ $ref: "#/components/schemas/PublicListing" }, { type: "null" }],
     });
     expect(
+      specification.paths["/listings/search"].get.responses["200"].content[
+        "application/json"
+      ].schema,
+    ).toEqual({ $ref: "#/components/schemas/PublicListingSearchResult" });
+    expect(
       specification.paths["/listings/search"].post.responses["200"].content[
         "application/json"
       ].schema,
@@ -54,6 +59,35 @@ describe("public listings OpenAPI contract", () => {
           maxItems: 100,
           uniqueItems: true,
           items: { type: "string", format: "uuid" },
+        },
+      },
+    });
+  });
+
+  it("exposes a bounded public cursor projection for sitemap generation", () => {
+    const operation = specification.paths["/discovery/sitemap-listings"].get;
+    expect(operation).toMatchObject({
+      operationId: "getDiscoverySitemapListings",
+      security: [],
+      "x-shongre-access": "public",
+      "x-shongre-deny-staff-marketplace": false,
+    });
+    expect(operation.parameters).toContainEqual({
+      $ref: "#/components/parameters/MarketContext",
+    });
+    expect(
+      operation.responses["200"].content["application/json"].schema,
+    ).toEqual({ $ref: "#/components/schemas/PublicSitemapListingPage" });
+    expect(
+      specification.components.schemas.PublicSitemapListingPage,
+    ).toMatchObject({
+      additionalProperties: false,
+      required: ["items", "snapshotAt", "pageInfo"],
+      properties: {
+        items: {
+          type: "array",
+          maxItems: 500,
+          items: { $ref: "#/components/schemas/PublicListing" },
         },
       },
     });

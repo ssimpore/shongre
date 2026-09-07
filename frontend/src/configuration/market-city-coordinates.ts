@@ -1,4 +1,4 @@
-import { getDefaultCountryConfig } from "@shongre/contracts";
+import { getDefaultCountryConfig } from "@shongre/contracts/market-country";
 import { FRENCH_MAJOR_CITIES } from "./geoCoordinates";
 
 export interface ConfiguredCityCoordinates {

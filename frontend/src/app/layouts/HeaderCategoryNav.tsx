@@ -1,8 +1,6 @@
 import { breakpoints, motionDurationMs } from "@shongre/design-tokens";
-import type {
-  MarketContext,
-  TaxonomyHeaderCategoryItem,
-} from "@shongre/contracts";
+import type { MarketContext } from "@shongre/contracts/market-country";
+import type { TaxonomyHeaderCategoryItem } from "@shongre/contracts/taxonomy";
 import React, {
   useCallback,
   useEffect,

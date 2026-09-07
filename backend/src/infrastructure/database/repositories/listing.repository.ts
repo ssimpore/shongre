@@ -74,6 +74,27 @@ export interface IListingRepository {
     page: number;
     totalPages: number;
   }>;
+  searchDiscoveryCandidates(
+    filter: SearchFilters,
+    options: {
+      limit: number;
+      snapshotAt?: string;
+      after?: {
+        sortDate: string;
+        listingId: string;
+        priceMinor?: number;
+      };
+    },
+  ): Promise<{
+    items: Listing[];
+    snapshotAt: string;
+    hasMore: boolean;
+    lastCandidate?: {
+      sortDate: string;
+      listingId: string;
+      priceMinor?: number;
+    };
+  }>;
   save(listing: Listing): Promise<Listing>;
   update(id: string, updates: Partial<Listing>): Promise<Listing>;
   delete(id: string): Promise<boolean>;
@@ -509,6 +530,95 @@ export class DemoListingRepository implements IListingRepository {
     };
   }
 
+  async searchDiscoveryCandidates(
+    filters: SearchFilters,
+    options: {
+      limit: number;
+      snapshotAt?: string;
+      after?: {
+        sortDate: string;
+        listingId: string;
+        priceMinor?: number;
+      };
+    },
+  ): Promise<{
+    items: Listing[];
+    snapshotAt: string;
+    hasMore: boolean;
+    lastCandidate?: {
+      sortDate: string;
+      listingId: string;
+      priceMinor?: number;
+    };
+  }> {
+    const snapshotAt = options.snapshotAt || new Date().toISOString();
+    const result = await this.search({
+      ...filters,
+      page: 1,
+      limit: 500,
+    });
+    const priceAscending = filters.sortBy === "price_asc";
+    const priceDescending = filters.sortBy === "price_desc";
+    const candidatePool = result.items.filter((listing) => {
+      const sortDate =
+        listing.marketPublications?.[0]?.sortDate ||
+        listing.organicFreshnessAt ||
+        listing.publishedAt ||
+        listing.createdAt;
+      if (sortDate > snapshotAt) return false;
+      if (!options.after) return true;
+      if (
+        (priceAscending || priceDescending) &&
+        options.after.priceMinor !== undefined
+      ) {
+        const factor = 10 ** getCurrencyMinorUnitDigits(listing.currency);
+        const priceMinor = Math.round(listing.price * factor);
+        return priceAscending
+          ? priceMinor > options.after.priceMinor ||
+              (priceMinor === options.after.priceMinor &&
+                listing.id > options.after.listingId)
+          : priceMinor < options.after.priceMinor ||
+              (priceMinor === options.after.priceMinor &&
+                listing.id < options.after.listingId);
+      }
+      return (
+        sortDate < options.after.sortDate ||
+        (sortDate === options.after.sortDate &&
+          listing.id < options.after.listingId)
+      );
+    });
+    const eligible = candidatePool.slice(0, options.limit);
+    const tail = eligible.at(-1);
+    const tailSortDate = tail
+      ? tail.marketPublications?.[0]?.sortDate ||
+        tail.organicFreshnessAt ||
+        tail.publishedAt ||
+        tail.createdAt
+      : undefined;
+    return {
+      items: eligible,
+      snapshotAt,
+      hasMore:
+        candidatePool.length > options.limit ||
+        result.total > result.items.length,
+      lastCandidate:
+        tail && tailSortDate
+          ? {
+              sortDate: tailSortDate,
+              listingId: tail.id,
+              ...(priceAscending || priceDescending
+                ? {
+                    priceMinor: Math.round(
+                      tail.price *
+                        10 ** getCurrencyMinorUnitDigits(tail.currency),
+                    ),
+                  }
+                : {}),
+            }
+          : undefined,
+    };
+  }
+
   async save(listing: Listing): Promise<Listing> {
     this.listings.set(listing.id, { ...listing });
     return { ...listing };
@@ -670,6 +780,46 @@ export class PostgresListingRepository implements IListingRepository {
 
   private static readonly MARKET_PUBLICATION_PROJECTION =
     "market_code, status, is_primary, price_minor, currency, localized_content, available_services, compliance_state, published_at, sort_date, promotion_state, promotion_type, promotion_source, promotion_source_id, promotion_label, promotion_start_at, promotion_end_at, promoted_at";
+
+  /**
+   * Ranking projection only. Full listing, media URL and seller hydration is
+   * deliberately deferred until the ranked page IDs are known.
+   */
+  private static readonly DISCOVERY_CANDIDATE_PROJECTION = [
+    "id",
+    "seller_id",
+    "publisher_type",
+    "publisher_user_id",
+    "publisher_organization_id",
+    "publisher_verification_status",
+    "category_id",
+    "title",
+    "description",
+    "price",
+    "original_price",
+    "currency",
+    "status",
+    "condition",
+    "market_code",
+    "city",
+    "country",
+    "allowed_delivery",
+    "published_at",
+    "materially_updated_at",
+    "organic_freshness_at",
+    "external_stock_id",
+    "duplicate_group_id",
+    "attributes",
+    "created_at",
+    "updated_at",
+    "expires_at",
+  ].join(", ");
+
+  private static readonly DISCOVERY_SELLER_PROJECTION =
+    "id, account_type, account_family, status, country, is_verified, is_identity_verified, is_phone_verified, is_email_verified, is_business_verified, rating, review_count, response_rate_percent, created_at";
+
+  private static readonly DISCOVERY_MARKET_PUBLICATION_PROJECTION =
+    "market_code, status, is_primary, price_minor, currency, available_services, compliance_state, published_at, sort_date, promotion_state, promotion_type, promotion_source, promotion_source_id, promotion_label, promotion_start_at, promotion_end_at, promoted_at";
 
   private toMarketPublicationRows(listing: Listing, listingId: string) {
     const defaultStatus: ListingMarketPublication["status"] =
@@ -1232,6 +1382,256 @@ export class PostgresListingRepository implements IListingRepository {
       return { items, total, page, totalPages };
     } catch (error) {
       databaseFailure("listings.search", error);
+    }
+  }
+
+  async searchDiscoveryCandidates(
+    filters: SearchFilters,
+    options: {
+      limit: number;
+      snapshotAt?: string;
+      after?: {
+        sortDate: string;
+        listingId: string;
+        priceMinor?: number;
+      };
+    },
+  ): Promise<{
+    items: Listing[];
+    snapshotAt: string;
+    hasMore: boolean;
+    lastCandidate?: {
+      sortDate: string;
+      listingId: string;
+      priceMinor?: number;
+    };
+  }> {
+    const startedAt = performance.now();
+    const requestedMarketCode = requireMarketCode(filters.marketCode);
+    const snapshotAt = options.snapshotAt || new Date().toISOString();
+    const limit = Math.max(1, Math.min(500, options.limit));
+    try {
+      const supabase = getSupabaseAdminClient();
+      let query = (supabase as any)
+        .from("listing_market_publications")
+        .select(
+          `listing_id, ${PostgresListingRepository.DISCOVERY_MARKET_PUBLICATION_PROJECTION}, listings!inner(${PostgresListingRepository.DISCOVERY_CANDIDATE_PROJECTION}, listing_media(id, sort_order), profiles:seller_id(${PostgresListingRepository.DISCOVERY_SELLER_PROJECTION}), publisher_organization:publisher_organization_id(status))`,
+        )
+        .eq("market_code", requestedMarketCode)
+        .eq("status", "active")
+        .eq("compliance_state", "approved")
+        .eq("listings.status", "published")
+        .lte("sort_date", snapshotAt);
+
+      const priceAscending = filters.sortBy === "price_asc";
+      const priceDescending = filters.sortBy === "price_desc";
+      if (
+        options.after &&
+        (priceAscending || priceDescending) &&
+        options.after.priceMinor !== undefined
+      ) {
+        const comparison = priceAscending ? "gt" : "lt";
+        query = query.or(
+          `price_minor.${comparison}.${options.after.priceMinor},and(price_minor.eq.${options.after.priceMinor},listing_id.${comparison}.${options.after.listingId})`,
+        );
+      } else if (options.after) {
+        query = query.or(
+          `sort_date.lt.${options.after.sortDate},and(sort_date.eq.${options.after.sortDate},listing_id.lt.${options.after.listingId})`,
+        );
+      }
+
+      if (filters.categoryId) {
+        query = query.or(
+          `category_id.eq.${filters.categoryId},category_id.like.${filters.categoryId}.%`,
+          { referencedTable: "listings" },
+        );
+      }
+      const publisherType =
+        filters.sellerType === "individual"
+          ? "private"
+          : filters.sellerType === "pro"
+            ? "professional"
+            : filters.sellerType;
+      if (publisherType && publisherType !== "all") {
+        query = query.eq("listings.publisher_type", publisherType);
+      }
+      if (filters.verifiedPublishersOnly) {
+        query = query.neq(
+          "listings.publisher_verification_status",
+          "unverified",
+        );
+      }
+      if (filters.sellerId)
+        query = query.eq("listings.seller_id", filters.sellerId);
+      if (filters.publisherOrganizationId) {
+        query = query.eq(
+          "listings.publisher_organization_id",
+          filters.publisherOrganizationId,
+        );
+      }
+      if (filters.conditions?.length) {
+        query = query.in("listings.condition", [
+          ...new Set(filters.conditions),
+        ]);
+      } else if (filters.condition) {
+        query = query.eq("listings.condition", filters.condition);
+      }
+      if (filters.minPrice !== undefined || filters.maxPrice !== undefined) {
+        const publicationCurrency =
+          getCountryConfig(requestedMarketCode)?.currency;
+        if (!publicationCurrency) {
+          throw new AppError({
+            code: "VALIDATION_ERROR",
+            message: "Devise du marché introuvable.",
+          });
+        }
+        const factor = 10 ** getCurrencyMinorUnitDigits(publicationCurrency);
+        if (filters.minPrice !== undefined) {
+          query = query.gte(
+            "price_minor",
+            Math.round(filters.minPrice * factor),
+          );
+        }
+        if (filters.maxPrice !== undefined) {
+          query = query.lte(
+            "price_minor",
+            Math.round(filters.maxPrice * factor),
+          );
+        }
+      }
+      if (filters.city) {
+        query = query.ilike("listings.city", `%${filters.city}%`);
+      }
+      if (filters.postalCode) {
+        query = query.eq("listings.postal_code", filters.postalCode);
+      }
+      if (filters.deliveryAvailable) {
+        query = query.overlaps("listings.allowed_delivery", [
+          "relay_point",
+          "home_delivery",
+          "cocolis",
+          "express",
+        ]);
+      }
+      if (filters.onlinePaymentAvailable) {
+        query = query.contains("available_services", {
+          online_payment: true,
+        });
+      }
+      if (filters.onlyDeals) {
+        query = query.not("listings.original_price", "is", null);
+      }
+      if (filters.attributes) {
+        const exactAttributes = Object.fromEntries(
+          Object.entries(filters.attributes).filter(
+            ([, value]) =>
+              value !== null &&
+              !Array.isArray(value) &&
+              typeof value !== "object",
+          ),
+        );
+        if (Object.keys(exactAttributes).length) {
+          query = query.contains("listings.attributes", exactAttributes);
+        }
+      }
+      if (filters.publishedToday) {
+        query = query.gte(
+          "published_at",
+          new Date(Date.parse(snapshotAt) - 86_400_000).toISOString(),
+        );
+      }
+      if (filters.query) {
+        const normalizedQuery = filters.query
+          .normalize("NFD")
+          .replace(/\p{Diacritic}/gu, "")
+          .trim();
+        if (normalizedQuery) {
+          query = query.textSearch("listings.search_vector", normalizedQuery, {
+            type: "websearch",
+            config: "simple",
+          });
+        }
+      }
+
+      query = priceAscending
+        ? query
+            .order("price_minor", { ascending: true })
+            .order("listing_id", { ascending: true })
+            .limit(limit + 1)
+        : priceDescending
+          ? query
+              .order("price_minor", { ascending: false })
+              .order("listing_id", { ascending: false })
+              .limit(limit + 1)
+          : query
+              .order("sort_date", { ascending: false })
+              .order("listing_id", { ascending: false })
+              .limit(limit + 1);
+
+      const { data, error } = await query;
+      if (error || !data) databaseFailure("listings.searchCandidates", error);
+      const hasMore = data.length > limit;
+      const candidateRows = data.slice(0, limit);
+      const items = candidateRows.map((row: any) => {
+        const listing = Array.isArray(row.listings)
+          ? row.listings[0]
+          : row.listings;
+        return this.mapRowToListing(
+          {
+            ...listing,
+            listing_market_publications: [
+              {
+                market_code: row.market_code,
+                status: row.status,
+                is_primary: row.is_primary,
+                price_minor: row.price_minor,
+                currency: row.currency,
+                available_services: row.available_services,
+                compliance_state: row.compliance_state,
+                published_at: row.published_at,
+                sort_date: row.sort_date,
+                promotion_state: row.promotion_state,
+                promotion_type: row.promotion_type,
+                promotion_source: row.promotion_source,
+                promotion_source_id: row.promotion_source_id,
+                promotion_label: row.promotion_label,
+                promotion_start_at: row.promotion_start_at,
+                promotion_end_at: row.promotion_end_at,
+                promoted_at: row.promoted_at,
+              },
+            ],
+          },
+          requestedMarketCode,
+        );
+      });
+      const lastRow = candidateRows.at(-1);
+
+      logger.info("database_query_completed", {
+        operation: "listings.searchCandidates",
+        durationMs: Math.round(performance.now() - startedAt),
+        rowCount: items.length,
+        projection: "discovery_candidate",
+        hydrated: false,
+        hasMore,
+        marketCode: requestedMarketCode,
+        limit,
+      });
+      return {
+        items,
+        snapshotAt,
+        hasMore,
+        lastCandidate: lastRow
+          ? {
+              sortDate: String(lastRow.sort_date),
+              listingId: String(lastRow.listing_id),
+              ...(priceAscending || priceDescending
+                ? { priceMinor: Number(lastRow.price_minor) }
+                : {}),
+            }
+          : undefined,
+      };
+    } catch (error) {
+      databaseFailure("listings.searchCandidates", error);
     }
   }
 

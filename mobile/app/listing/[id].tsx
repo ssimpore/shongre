@@ -1,9 +1,14 @@
 import { useEffect, useState } from "react";
 import { Alert, Image, StyleSheet, Text, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import type { ListingCardView } from "@shongre/contracts";
-import { ProBadge, VerificationBadge } from "@shongre/ui/native";
+import {
+  MODERATION_CONSTRAINTS,
+  type ListingCardView,
+  type ReportInput,
+} from "@shongre/contracts";
+import { Modal, ProBadge, VerificationBadge } from "@shongre/ui/native";
 import { Button } from "@/components/Button";
+import { FormField } from "@/components/FormField";
 import { Screen } from "@/components/Screen";
 import { StatePanel } from "@/components/StatePanel";
 import {
@@ -25,6 +30,17 @@ import { formatMoney } from "@/utils/format";
 import { useMarket } from "@/features/market/MarketProvider";
 import { messagesFr } from "@/i18n/messages.fr";
 
+const REPORT_REASONS: {
+  value: ReportInput["reason"];
+  label: string;
+}[] = [
+  { value: "fraud", label: "Fraude" },
+  { value: "counterfeit", label: "Contrefaçon" },
+  { value: "prohibited", label: "Article interdit" },
+  { value: "harassment", label: "Harcèlement" },
+  { value: "other", label: "Autre" },
+];
+
 export default function ListingDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
@@ -45,6 +61,12 @@ export default function ListingDetailScreen() {
   const [sellerWatchId, setSellerWatchId] = useState<string | null>(null);
   const [loadedEngagementKey, setLoadedEngagementKey] = useState("");
   const [engagementBusy, setEngagementBusy] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reportReason, setReportReason] =
+    useState<ReportInput["reason"]>("fraud");
+  const [reportDetails, setReportDetails] = useState("");
+  const [reportError, setReportError] = useState("");
+  const [reporting, setReporting] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -111,28 +133,46 @@ export default function ListingDetailScreen() {
   };
 
   const report = async () => {
-    if (!listing || !requireLogin()) return;
+    if (!listing) return;
+    const details = reportDetails.trim();
+    if (details.length < MODERATION_CONSTRAINTS.reportDetailsMinLength) {
+      setReportError(
+        `Décrivez le problème en au moins ${MODERATION_CONSTRAINTS.reportDetailsMinLength} caractères.`,
+      );
+      return;
+    }
+    setReporting(true);
+    setReportError("");
     try {
       await moderationService.report({
         listingId: listing.id,
-        reason: "other",
-        details:
-          "Signalement initié depuis la fiche mobile : contenu à vérifier par la modération.",
+        reason: reportReason,
+        details,
       });
+      setReportOpen(false);
+      setReportDetails("");
+      setReportReason("fraud");
       Alert.alert(
         "Signalement reçu",
         "Notre équipe de modération examinera cette annonce.",
       );
     } catch (reason) {
-      Alert.alert(
-        "Signalement impossible",
+      setReportError(
         reason instanceof Error ? reason.message : "Réessayez plus tard.",
       );
+    } finally {
+      setReporting(false);
     }
   };
 
+  const openReport = () => {
+    if (!listing || !requireLogin()) return;
+    setReportError("");
+    setReportOpen(true);
+  };
+
   const blockSeller = async () => {
-    if (!listing?.seller || !requireLogin()) return;
+    if (!listing?.seller) return;
     const sellerId = listing.seller.id;
     try {
       await moderationService.blockUser(sellerId);
@@ -164,6 +204,22 @@ export default function ListingDetailScreen() {
         reason instanceof Error ? reason.message : "Réessayez plus tard.",
       );
     }
+  };
+
+  const confirmBlockSeller = () => {
+    if (!listing?.seller || !requireLogin()) return;
+    Alert.alert(
+      "Bloquer ce vendeur ?",
+      "Cette personne ne pourra plus vous contacter. Vous pourrez la débloquer après l’action.",
+      [
+        { text: "Annuler", style: "cancel" },
+        {
+          text: "Bloquer",
+          style: "destructive",
+          onPress: () => void blockSeller(),
+        },
+      ],
+    );
   };
 
   const contactSeller = async () => {
@@ -254,7 +310,9 @@ export default function ListingDetailScreen() {
   if (loading)
     return (
       <Screen>
-        <Text style={styles.muted}>Chargement de l’annonce…</Text>
+        <Text accessibilityLiveRegion="polite" style={styles.muted}>
+          Chargement de l’annonce…
+        </Text>
       </Screen>
     );
   if (!listing) {
@@ -391,14 +449,73 @@ export default function ListingDetailScreen() {
           dehors du parcours de paiement prévu.
         </Text>
       </View>
-      <Button label="Signaler cette annonce" onPress={report} variant="ghost" />
+      <Button
+        label="Signaler cette annonce"
+        onPress={openReport}
+        variant="ghost"
+      />
       {listing.seller ? (
         <Button
           label="Bloquer ce vendeur"
-          onPress={blockSeller}
+          onPress={confirmBlockSeller}
           variant="danger"
         />
       ) : null}
+      <Modal
+        isOpen={reportOpen}
+        onClose={() => setReportOpen(false)}
+        title="Signaler cette annonce"
+        description="Choisissez le motif exact et décrivez uniquement les faits utiles à la vérification."
+        dismissible={!reporting}
+      >
+        <View style={styles.reportForm}>
+          <Text style={styles.sellerName}>Motif</Text>
+          <View style={styles.reportReasons} accessibilityRole="radiogroup">
+            {REPORT_REASONS.map((reason) => (
+              <Button
+                key={reason.value}
+                label={reason.label}
+                accessibilityRole="radio"
+                accessibilityState={{ checked: reportReason === reason.value }}
+                variant={
+                  reportReason === reason.value ? "primary" : "secondary"
+                }
+                onPress={() => setReportReason(reason.value)}
+                size="sm"
+              />
+            ))}
+          </View>
+          <FormField
+            label="Description du problème"
+            value={reportDetails}
+            onChangeText={(value) => {
+              setReportDetails(value);
+              setReportError("");
+            }}
+            multiline
+            maxLength={MODERATION_CONSTRAINTS.reportDetailsMaxLength}
+            required
+            error={reportError || undefined}
+            hint="Au moins 10 caractères. N’ajoutez pas de données sensibles."
+          />
+          <View style={styles.reportActions}>
+            <Button
+              label="Annuler"
+              variant="secondary"
+              disabled={reporting}
+              onPress={() => setReportOpen(false)}
+              fullWidth
+            />
+            <Button
+              label="Envoyer le signalement"
+              variant="danger"
+              loading={reporting}
+              onPress={() => void report()}
+              fullWidth
+            />
+          </View>
+        </View>
+      </Modal>
     </Screen>
   );
 }
@@ -468,5 +585,10 @@ const styles = StyleSheet.create({
     color: colors.success,
     fontSize: nativeTypography.size.body,
     fontFamily: nativeTypography.fontFamily.bold,
+  },
+  reportForm: { gap: spacing.md },
+  reportReasons: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
+  reportActions: {
+    gap: spacing.sm,
   },
 });

@@ -318,6 +318,9 @@ export const ImmoPropertyDetailPage: React.FC = () => {
                 <Image
                   src={property.media.photos[0]}
                   alt={property.title}
+                  width={1600}
+                  height={900}
+                  priority
                   className="h-full w-full object-cover"
                   sizes="(min-width: 1024px) 760px, 100vw"
                 />

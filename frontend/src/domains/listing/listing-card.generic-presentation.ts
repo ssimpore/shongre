@@ -1,9 +1,9 @@
 import type {
   ListingCharacteristicIcon,
   ListingCardView,
-  Money,
-  MoneyConversionProjection,
-} from "@shongre/contracts";
+} from "@shongre/contracts/listings";
+import type { Money } from "@shongre/contracts/primitives";
+import type { MoneyConversionProjection } from "@shongre/contracts/currency";
 import { getTaxonomyV4CardBrandLabel } from "@shongre/contracts/taxonomy-v4-card";
 import type { Listing } from "../../types";
 import { getListingCategoryLabel } from "../taxonomy/listing-category.display";

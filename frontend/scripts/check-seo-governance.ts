@@ -5,6 +5,7 @@ import {
   DISCOVERY_CRAWLERS,
   parseModelTrainingCrawlerPolicy,
   PRIVATE_CRAWL_PATHS,
+  validIndexNowKey,
   validWebmasterVerificationToken,
 } from "../src/platform/seo/discovery-governance";
 import { DISCOVERY_PUBLIC_PATHS } from "../src/platform/seo/discovery-structured-data";
@@ -22,6 +23,7 @@ const productionRules = buildDiscoveryRobotsRules({
 });
 validWebmasterVerificationToken(process.env.SEO_GOOGLE_SITE_VERIFICATION);
 validWebmasterVerificationToken(process.env.SEO_BING_SITE_VERIFICATION);
+validIndexNowKey(process.env.INDEXNOW_KEY);
 
 const hasAgent = (agent: string) =>
   productionRules.some(({ userAgent }) =>

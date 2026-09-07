@@ -1,4 +1,4 @@
-import type { MarketContext } from "@shongre/contracts";
+import type { MarketContext } from "@shongre/contracts/market-country";
 import { brand } from "@shongre/brand";
 import { webBrandAssets } from "@shongre/brand/web";
 import type { StructuredData } from "../../services/seo.service";

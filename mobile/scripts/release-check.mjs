@@ -641,6 +641,14 @@ function checkContent() {
         : STATUS.fail,
       sourceGraph || "The source graph check did not return a result.",
     );
+    const apiOnly = command("node", ["mobile/scripts/api-only-check.mjs"]);
+    add(
+      "Mobile API-only architecture",
+      apiOnly.startsWith("Mobile API-only architecture check passed")
+        ? STATUS.pass
+        : STATUS.fail,
+      apiOnly || "The API-only architecture check did not return a result.",
+    );
     add(
       "Store metadata and screenshots",
       STATUS.manual,
@@ -655,7 +663,7 @@ function checkDependencies() {
     add(
       "Expo mobile baseline",
       packageJson.dependencies.expo?.includes("57.") &&
-        packageJson.dependencies["react-native"] === "0.86.2"
+        packageJson.dependencies["react-native"] === "0.86.3"
         ? STATUS.pass
         : STATUS.fail,
       `Expo ${packageJson.dependencies.expo}, React Native ${packageJson.dependencies["react-native"]}, Expo Router ${packageJson.dependencies["expo-router"]}`,

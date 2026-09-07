@@ -32,7 +32,10 @@ test("the local environment uses the documented Web, API, and data modes", async
   );
   assert.equal(envValue(environment, "BACKEND_DATA_MODE"), "database");
   assert.equal(envValue(environment, "DATABASE_INFRA_MODE"), "local");
-  assert.equal(envValue(environment, "EXPO_PUBLIC_DATA_MODE"), "api");
+  assert.equal(
+    envValue(environment, "EXPO_PUBLIC_API_URL"),
+    `${backendUrl.origin}/api/v1`,
+  );
 });
 
 test("the Makefile exposes one canonical local Supabase lifecycle", async () => {
@@ -67,7 +70,7 @@ test("the Makefile exposes one canonical local Supabase lifecycle", async () => 
   );
   assert.match(
     makefile,
-    /^dev:.*\n\s*@\$\(MAKE\) stop-all\n\s*@NEXT_PUBLIC_DATA_MODE=api NEXT_PUBLIC_ENABLE_MOCK_STORAGE=false BACKEND_DATA_MODE=database DATABASE_INFRA_MODE=local EXPO_PUBLIC_DATA_MODE=api scripts\/dev\.sh web/m,
+    /^dev:.*\n\s*@\$\(MAKE\) stop-all\n\s*@NEXT_PUBLIC_DATA_MODE=api NEXT_PUBLIC_ENABLE_MOCK_STORAGE=false BACKEND_DATA_MODE=database DATABASE_INFRA_MODE=local scripts\/dev\.sh web/m,
   );
   assert.match(
     developmentScript,

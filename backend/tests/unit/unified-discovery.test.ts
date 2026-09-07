@@ -55,6 +55,84 @@ function listing(
 }
 
 describe("UnifiedDiscoveryService", () => {
+  it("keeps cursor pages stable, non-overlapping, and bound to their filters", async () => {
+    const repository = new DemoListingRepository({
+      first: listing("first", "user-1", "private", {
+        createdAt: "2026-08-23T10:05:00.000Z",
+        publishedAt: "2026-08-23T10:05:00.000Z",
+        organicFreshnessAt: "2026-08-23T10:05:00.000Z",
+      }),
+      second: listing("second", "user-2", "private", {
+        createdAt: "2026-08-23T10:04:00.000Z",
+        publishedAt: "2026-08-23T10:04:00.000Z",
+        organicFreshnessAt: "2026-08-23T10:04:00.000Z",
+      }),
+      third: listing("third", "user-3", "private", {
+        createdAt: "2026-08-23T10:03:00.000Z",
+        publishedAt: "2026-08-23T10:03:00.000Z",
+        organicFreshnessAt: "2026-08-23T10:03:00.000Z",
+      }),
+      fourth: listing("fourth", "user-4", "private", {
+        createdAt: "2026-08-23T10:02:00.000Z",
+        publishedAt: "2026-08-23T10:02:00.000Z",
+        organicFreshnessAt: "2026-08-23T10:02:00.000Z",
+      }),
+      fifth: listing("fifth", "user-5", "private", {
+        createdAt: "2026-08-23T10:01:00.000Z",
+        publishedAt: "2026-08-23T10:01:00.000Z",
+        organicFreshnessAt: "2026-08-23T10:01:00.000Z",
+      }),
+    });
+    const service = new UnifiedDiscoveryService(
+      repository,
+      new DemoDiscoveryConfigurationRepository(),
+    );
+    const firstPage = await service.search({
+      marketCode: "FR",
+      sortBy: "date_desc",
+      limit: 2,
+      conditions: ["tres-bon-etat", "bon-etat"],
+    });
+    expect(firstPage.pageInfo).toMatchObject({ hasNextPage: true });
+    expect(firstPage.pageInfo.nextCursor).toBeTruthy();
+
+    await repository.save(
+      listing("future", "user-future", "private", {
+        createdAt: "2099-01-01T00:00:00.000Z",
+        publishedAt: "2099-01-01T00:00:00.000Z",
+        organicFreshnessAt: "2099-01-01T00:00:00.000Z",
+        updatedAt: "2099-01-01T00:00:00.000Z",
+        expiresAt: "2099-03-01T00:00:00.000Z",
+      }),
+    );
+    const secondPage = await service.search({
+      marketCode: "FR",
+      sortBy: "date_desc",
+      limit: 2,
+      conditions: ["bon-etat", "tres-bon-etat"],
+      cursor: firstPage.pageInfo.nextCursor,
+    });
+
+    expect(secondPage.snapshotAt).toBe(firstPage.snapshotAt);
+    expect(secondPage.page).toBe(2);
+    expect(secondPage.items.map((item) => item.id)).not.toContain("future");
+    expect(
+      secondPage.items.some((item) =>
+        firstPage.items.some((firstItem) => firstItem.id === item.id),
+      ),
+    ).toBe(false);
+    await expect(
+      service.search({
+        marketCode: "FR",
+        query: "different filters",
+        sortBy: "date_desc",
+        limit: 2,
+        conditions: ["bon-etat", "tres-bon-etat"],
+        cursor: firstPage.pageInfo.nextCursor,
+      }),
+    ).rejects.toMatchObject({ code: "VALIDATION_ERROR" });
+  });
+
   it("mixes both publisher types and inserts only a labelled paid placement", async () => {
     const records: Record<string, Listing> = {
       private1: listing("private1", "user-1", "private"),

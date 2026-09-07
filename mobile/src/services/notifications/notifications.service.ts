@@ -1,8 +1,8 @@
 import { Platform } from "react-native";
 import Constants from "expo-constants";
 import * as Notifications from "expo-notifications";
+import type { operations } from "@shongre/contracts/openapi";
 import { apiRequest } from "@/api/http-client";
-import { mobileEnvironment } from "@/config/environment";
 import {
   permissionsService,
   type PermissionOutcome,
@@ -11,16 +11,19 @@ import { secureStorage } from "@/services/secure-storage/secure-storage";
 
 const PUSH_TOKEN_KEY = "shongre.mobile.push-token.v1";
 
+const NOTIFICATION_CATEGORIES = [
+  "messages",
+  "transactions",
+  "listings",
+  "delivery",
+  "delivery_opportunities",
+  "reviews",
+  "promotions",
+  "security",
+  "marketing",
+] as const;
 export type NotificationPreferenceCategory =
-  | "messages"
-  | "transactions"
-  | "listings"
-  | "delivery"
-  | "delivery_opportunities"
-  | "reviews"
-  | "promotions"
-  | "security"
-  | "marketing";
+  (typeof NOTIFICATION_CATEGORIES)[number];
 interface NotificationChannelPreference {
   inApp: boolean;
   email: boolean;
@@ -35,64 +38,91 @@ export type MobileNotificationPreferences = Record<
   updatedAt: string;
 };
 
-const DEFAULT_PREFERENCES: Omit<
-  MobileNotificationPreferences,
-  "userId" | "updatedAt"
-> = {
-  messages: { inApp: true, email: false, push: true },
-  transactions: { inApp: true, email: true, push: true, isMandatory: true },
-  listings: { inApp: true, email: true, push: false },
-  delivery: { inApp: true, email: true, push: true, isMandatory: true },
-  delivery_opportunities: { inApp: false, email: false, push: false },
-  reviews: { inApp: true, email: false, push: true },
-  promotions: { inApp: true, email: false, push: false },
-  security: { inApp: true, email: true, push: true, isMandatory: true },
-  marketing: { inApp: false, email: false, push: false },
-};
-const demoPreferences = new Map<string, MobileNotificationPreferences>();
+type PreferencesResponse =
+  operations["getNotificationPreferences"]["responses"][200]["content"]["application/json"];
+type PreferencesUpdateRequest =
+  operations["putNotificationPreferences"]["requestBody"]["content"]["application/json"];
+type PreferencesUpdateResponse =
+  operations["putNotificationPreferences"]["responses"][200]["content"]["application/json"];
+type DeviceRegistrationRequest =
+  operations["postNotificationsDevices"]["requestBody"]["content"]["application/json"];
+type DeviceRegistrationResponse =
+  operations["postNotificationsDevices"]["responses"][200]["content"]["application/json"];
+type DeviceUnregistrationRequest =
+  operations["postNotificationsDevicesUnregister"]["requestBody"]["content"]["application/json"];
+type DeviceUnregistrationResponse =
+  operations["postNotificationsDevicesUnregister"]["responses"][200]["content"]["application/json"];
+
+function mapPreferences(value: unknown): MobileNotificationPreferences {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error("Les préférences reçues sont invalides.");
+  }
+  const candidate = value as Record<string, unknown>;
+  if (
+    typeof candidate.userId !== "string" ||
+    typeof candidate.updatedAt !== "string"
+  ) {
+    throw new Error("Les préférences reçues sont invalides.");
+  }
+  const preferences = {
+    userId: candidate.userId,
+    updatedAt: candidate.updatedAt,
+  } as MobileNotificationPreferences;
+  for (const category of NOTIFICATION_CATEGORIES) {
+    const raw = candidate[category];
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
+      throw new Error("Les préférences reçues sont invalides.");
+    }
+    const channel = raw as Record<string, unknown>;
+    if (
+      typeof channel.inApp !== "boolean" ||
+      typeof channel.email !== "boolean" ||
+      typeof channel.push !== "boolean" ||
+      (channel.isMandatory !== undefined &&
+        typeof channel.isMandatory !== "boolean")
+    ) {
+      throw new Error("Les préférences reçues sont invalides.");
+    }
+    preferences[category] = {
+      inApp: channel.inApp,
+      email: channel.email,
+      push: channel.push,
+      ...(channel.isMandatory === undefined
+        ? {}
+        : { isMandatory: channel.isMandatory }),
+    };
+  }
+  return preferences;
+}
 
 export const notificationsService = {
-  async getPreferences(userId: string): Promise<MobileNotificationPreferences> {
-    if (mobileEnvironment.dataMode === "api") {
-      return apiRequest<MobileNotificationPreferences>(
-        "/notifications/preferences",
-      );
-    }
-    return (
-      demoPreferences.get(userId) || {
-        ...structuredClone(DEFAULT_PREFERENCES),
-        userId,
-        updatedAt: "2026-09-03T08:00:00.000Z",
-      }
+  async getPreferences(
+    _userId: string,
+  ): Promise<MobileNotificationPreferences> {
+    return mapPreferences(
+      await apiRequest<PreferencesResponse>("/notifications/preferences"),
     );
   },
 
   async updatePreferences(
-    userId: string,
+    _userId: string,
     preferences: MobileNotificationPreferences,
   ): Promise<MobileNotificationPreferences> {
-    if (mobileEnvironment.dataMode === "api") {
-      return apiRequest<MobileNotificationPreferences>(
+    const payload: PreferencesUpdateRequest = { ...preferences };
+    return mapPreferences(
+      await apiRequest<PreferencesUpdateResponse>(
         "/notifications/preferences",
         {
           method: "PUT",
-          body: JSON.stringify(preferences),
+          body: JSON.stringify(payload),
         },
-      );
-    }
-    const next = {
-      ...structuredClone(preferences),
-      userId,
-      updatedAt: "2026-09-03T08:01:00.000Z",
-    };
-    demoPreferences.set(userId, next);
-    return next;
+      ),
+    );
   },
 
   async enable(): Promise<PermissionOutcome> {
     const outcome = await permissionsService.requestNotifications();
-    if (outcome !== "granted" || mobileEnvironment.dataMode === "demo")
-      return outcome;
+    if (outcome !== "granted") return outcome;
     const projectId = Constants.expoConfig?.extra?.eas?.projectId as
       string | undefined;
     if (!projectId)
@@ -100,13 +130,14 @@ export const notificationsService = {
     if (Platform.OS !== "ios" && Platform.OS !== "android") return outcome;
     const token = (await Notifications.getExpoPushTokenAsync({ projectId }))
       .data;
-    await apiRequest("/notifications/devices", {
+    const payload: DeviceRegistrationRequest = {
+      token,
+      platform: Platform.OS,
+      appVersion: Constants.expoConfig?.version,
+    };
+    await apiRequest<DeviceRegistrationResponse>("/notifications/devices", {
       method: "POST",
-      body: JSON.stringify({
-        token,
-        platform: Platform.OS,
-        appVersion: Constants.expoConfig?.version,
-      }),
+      body: JSON.stringify(payload),
     });
     await secureStorage.set(PUSH_TOKEN_KEY, token);
     return outcome;
@@ -115,12 +146,14 @@ export const notificationsService = {
   async unregisterCurrentDevice(): Promise<void> {
     const token = await secureStorage.get(PUSH_TOKEN_KEY);
     if (!token) return;
-    if (mobileEnvironment.dataMode === "api") {
-      await apiRequest("/notifications/devices/unregister", {
+    const payload: DeviceUnregistrationRequest = { token };
+    await apiRequest<DeviceUnregistrationResponse>(
+      "/notifications/devices/unregister",
+      {
         method: "POST",
-        body: JSON.stringify({ token }),
-      });
-    }
+        body: JSON.stringify(payload),
+      },
+    );
     await secureStorage.remove(PUSH_TOKEN_KEY);
   },
 };

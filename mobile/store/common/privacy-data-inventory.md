@@ -1,6 +1,8 @@
 # Privacy data inventory
 
-Verified against repository behavior on 2026-08-21. “Collected” means transmitted off-device by an API-mode app; deterministic demo mode stays local except normal development tooling.
+Verified against repository behavior on 2026-09-07. “Collected” means
+transmitted off-device by the API-only app. Mobile has no runtime demo or local
+fixture fallback.
 
 | Data                                          | Collection and purpose                                                                 | Destination / recipients                                                 | Linked               | Retention and deletion                                                                                     | Store mapping                                                                      |
 | --------------------------------------------- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ | -------------------- | ---------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |

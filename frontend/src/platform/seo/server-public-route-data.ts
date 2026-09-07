@@ -14,44 +14,154 @@ import type {
 } from "./public-route-data";
 import { listingIsPublishedInMarket } from "./public-route-data";
 import { COUNTRY_REGISTRY } from "@shongre/contracts";
+import { fetchPublicSitemapListingPage } from "../../api/adapters/http/http-sitemap.service";
 
 const serverServices = createServiceRegistry(apiClientConfig.dataMode);
 const listingsService = serverServices.listings;
+const searchService = serverServices.search;
 const employmentService = serverServices.employment;
 const autoService = serverServices.auto;
 const coursesService = serverServices.courses;
 const realEstateService = serverServices.realEstate;
+const PUBLIC_SEARCH_PAGE_LIMIT = 50;
+const SITEMAP_API_PAGE_LIMIT = 500;
+const SITEMAP_MAX_API_PAGES = 2_000;
 
 interface ServerListingCollection {
   listings: Listing[];
   total: number;
   page: number;
   totalPages: number;
+  totalRelation?: "exact" | "lower_bound";
+  snapshotAt?: string;
+  pageInfo?: {
+    hasNextPage: boolean;
+    nextCursor?: string;
+  };
 }
 
 async function getServerListings(
   filters: SearchFilters,
 ): Promise<ServerListingCollection> {
-  if (apiClientConfig.dataMode === "demo") {
-    return listingRepository.getListings(filters);
+  if (!filters.marketCode) {
+    throw new Error("Server listing discovery requires an explicit market.");
   }
-  const result = await listingsService.getListings(filters);
+  const result = await searchService.search({
+    ...filters,
+    marketCode: filters.marketCode,
+    limit: Math.min(
+      PUBLIC_SEARCH_PAGE_LIMIT,
+      Math.max(1, filters.limit || PAGE_SIZES.marketplaceSearch),
+    ),
+  });
   const page = Math.max(1, filters.page || 1);
-  const limit = Math.max(1, filters.limit || PAGE_SIZES.marketplaceSearch);
   return {
-    ...result,
+    listings: result.items,
+    total: result.total,
     page,
-    totalPages: Math.max(1, Math.ceil(result.total / limit)),
+    totalPages: result.totalPages,
+    totalRelation: result.totalRelation,
+    snapshotAt: result.snapshotAt,
+    pageInfo: result.pageInfo,
   };
+}
+
+async function getServerListingWindow(
+  filters: SearchFilters,
+  maximumItems: number,
+): Promise<ServerListingCollection> {
+  const boundedMaximum = Math.max(1, Math.trunc(maximumItems));
+  const listings: Listing[] = [];
+  const seenListingIds = new Set<string>();
+  const seenCursors = new Set<string>();
+  let cursor: string | undefined;
+  let firstPage: ServerListingCollection | null = null;
+  let lastPage: ServerListingCollection | null = null;
+
+  do {
+    const page = await getServerListings({
+      ...filters,
+      page: undefined,
+      cursor,
+      limit: Math.min(
+        PUBLIC_SEARCH_PAGE_LIMIT,
+        boundedMaximum - listings.length,
+      ),
+    });
+    firstPage ??= page;
+    lastPage = page;
+    for (const listing of page.listings) {
+      if (seenListingIds.has(listing.id)) continue;
+      seenListingIds.add(listing.id);
+      listings.push(listing);
+      if (listings.length >= boundedMaximum) break;
+    }
+    const nextCursor = page.pageInfo?.nextCursor;
+    if (!nextCursor || !page.pageInfo?.hasNextPage) break;
+    if (seenCursors.has(nextCursor)) {
+      throw new Error(
+        "Public discovery returned a repeated pagination cursor.",
+      );
+    }
+    seenCursors.add(nextCursor);
+    cursor = nextCursor;
+  } while (listings.length < boundedMaximum);
+
+  const baseline = firstPage || {
+    listings: [],
+    total: 0,
+    page: 1,
+    totalPages: 1,
+  };
+  return {
+    ...baseline,
+    listings,
+    pageInfo: lastPage?.pageInfo,
+  };
+}
+
+async function getAllServerSitemapListings(
+  countryCode: string,
+): Promise<Listing[]> {
+  const listings: Listing[] = [];
+  const seenIds = new Set<string>();
+  const seenCursors = new Set<string>();
+  let cursor: string | undefined;
+
+  for (
+    let pageNumber = 0;
+    pageNumber < SITEMAP_MAX_API_PAGES;
+    pageNumber += 1
+  ) {
+    const page = await fetchPublicSitemapListingPage({
+      marketCode: countryCode,
+      cursor,
+      limit: SITEMAP_API_PAGE_LIMIT,
+    });
+    for (const listing of page.items) {
+      if (seenIds.has(listing.id)) continue;
+      seenIds.add(listing.id);
+      listings.push(listing);
+    }
+    const nextCursor = page.pageInfo.nextCursor;
+    if (!page.pageInfo.hasNextPage || !nextCursor) return listings;
+    if (seenCursors.has(nextCursor)) {
+      throw new Error(
+        "Sitemap discovery returned a repeated pagination cursor.",
+      );
+    }
+    seenCursors.add(nextCursor);
+    cursor = nextCursor;
+  }
+  throw new Error(
+    "Sitemap discovery exceeded its one-million-listing safety bound.",
+  );
 }
 
 async function getServerListingById(
   id: string,
   countryCode: string,
 ): Promise<Listing | null> {
-  if (apiClientConfig.dataMode === "demo") {
-    return listingRepository.getListingById(id);
-  }
   const listings = await listingsService.getPublicListingsByIds(
     [id],
     countryCode,
@@ -63,12 +173,6 @@ async function getServerSimilarListings(
   listing: Listing,
   countryCode: string,
 ): Promise<Listing[]> {
-  if (apiClientConfig.dataMode === "demo") {
-    return listingRepository.getSimilarListings(
-      listing.id,
-      listing.categorySlug,
-    );
-  }
   const result = await getServerListings({
     marketCode: countryCode,
     categorySlug: listing.subCategorySlug || listing.categorySlug,
@@ -145,16 +249,16 @@ async function resolveUncached(
     if (!listing || !listingIsPublishedInMarket(listing, countryCode)) {
       return { status: "not_found", data: null, resourceType: "listing" };
     }
-    const [seller, similarListings] = await Promise.all([
-      userRepository.getUserById(listing.sellerId),
-      getServerSimilarListings(listing, countryCode),
-    ]);
+    const similarListings = await getServerSimilarListings(
+      listing,
+      countryCode,
+    );
     return {
       status: "found",
       data: {
         kind: "listing",
         listing,
-        seller: publicSeller(seller) ? seller : null,
+        seller: listing.sellerProfile ?? null,
         similarListings: similarListings.filter((candidate) =>
           listingIsPublishedInMarket(candidate, countryCode),
         ),
@@ -377,6 +481,9 @@ async function resolveUncached(
         total: result.total,
         page: result.page,
         totalPages: result.totalPages,
+        totalRelation: result.totalRelation,
+        snapshotAt: result.snapshotAt,
+        pageInfo: result.pageInfo,
         availableCountryCodes: marketInventory
           .filter((entry) => entry.result.total > 0)
           .map((entry) => entry.countryCode),
@@ -392,10 +499,12 @@ async function resolveUncached(
       return { status: "not_found", data: null, resourceType: "collection" };
     }
     const [inventory, marketCollections] = await Promise.all([
-      getServerListings({
-        marketCode: countryCode,
-        limit: 1_000,
-      }),
+      getServerListingWindow(
+        {
+          marketCode: countryCode,
+        },
+        1_000,
+      ),
       Promise.all(
         COUNTRY_REGISTRY.filter(
           (country) =>
@@ -404,10 +513,12 @@ async function resolveUncached(
             country.seo.indexable &&
             ["active", "beta"].includes(country.launchStatus),
         ).map(async (country) => {
-          const candidateInventory = await getServerListings({
-            marketCode: country.code,
-            limit: 1_000,
-          });
+          const candidateInventory = await getServerListingWindow(
+            {
+              marketCode: country.code,
+            },
+            1_000,
+          );
           return {
             countryCode: country.code,
             count: collectionService.filterListingsForCollection(
@@ -442,11 +553,8 @@ async function resolveUncached(
 export const resolveServerPublicRouteData = cache(resolveUncached);
 
 export async function listServerPublicSitemapData(countryCode: string) {
-  const inventory = await getServerListings({
-    marketCode: countryCode,
-    limit: 50_000,
-  });
-  const activeListings = inventory.listings.filter(
+  const inventory = await getAllServerSitemapListings(countryCode);
+  const activeListings = inventory.filter(
     (listing) =>
       listing.status === "active" &&
       listingIsPublishedInMarket(listing, countryCode),

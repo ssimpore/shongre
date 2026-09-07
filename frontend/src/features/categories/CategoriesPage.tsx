@@ -47,6 +47,8 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, priority }) => {
         <Image
           src={visualSrc}
           alt=""
+          width={800}
+          height={500}
           priority={priority}
           sizes={IMAGE_SIZES.card}
           className="h-full w-full object-cover transition duration-slow group-hover:scale-105 motion-reduce:transform-none"

@@ -141,6 +141,10 @@ export interface AppConfig {
       siteUrls: string[];
     };
   };
+  indexNow: {
+    enabled: boolean;
+    key: string;
+  };
   emailRecipientAllowlist: string[];
   stripeSecretKey?: string;
   stripeWebhookSecret?: string;
@@ -276,6 +280,20 @@ function envList(name: string): string[] {
     .split(",")
     .map((value) => value.trim())
     .filter(Boolean);
+}
+
+function validateIndexNowConfiguration(candidate: AppConfig): void {
+  if (!candidate.indexNow.enabled) return;
+  if (!isProduction(candidate.environment.environment)) {
+    throw new Error(
+      "[Config Error] INDEXNOW_ENABLED may be true only in production.",
+    );
+  }
+  if (!/^[A-Za-z0-9-]{8,128}$/.test(candidate.indexNow.key)) {
+    throw new Error(
+      "[Config Error] INDEXNOW_KEY must contain 8–128 ASCII letters, digits, or hyphens when IndexNow is enabled.",
+    );
+  }
 }
 
 const STANDARD_BASE64 =
@@ -1099,6 +1117,10 @@ const candidateConfig: AppConfig = {
       siteUrls: envList("SEARCH_CONSOLE_SITE_URLS"),
     },
   },
+  indexNow: {
+    enabled: envFlag("INDEXNOW_ENABLED", false),
+    key: process.env.INDEXNOW_KEY?.trim() || "",
+  },
   emailRecipientAllowlist: envList("EMAIL_RECIPIENT_ALLOWLIST"),
   stripeSecretKey: process.env.STRIPE_SECRET_KEY,
   stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
@@ -1138,6 +1160,7 @@ validateManagedRuntimeConfiguration(candidateConfig);
 validateProductionRuntimeConfiguration(candidateConfig);
 validateCorsConfiguration(candidateConfig);
 validateProviderCredentialModes(candidateConfig);
+validateIndexNowConfiguration(candidateConfig);
 assertEnvironmentSafety({
   config: candidateConfig.environment,
   apiEnvironmentId: requiredRuntimeValue("API_ENVIRONMENT_ID"),

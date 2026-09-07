@@ -4,7 +4,7 @@ import {
   isCommercialEntitlementOperational,
   isCommercialProductPurchasable,
 } from "@shongre/contracts/monetization";
-import type { Money } from "@shongre/contracts";
+import type { Money } from "@shongre/contracts/primitives";
 
 export interface ProPlan {
   id: "free" | "pro_starter" | "pro_business" | "pro_enterprise";

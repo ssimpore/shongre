@@ -1,6 +1,6 @@
 # Reviewer access
 
-Reviewers need access to browsing/search, listing details, authentication, publication, messages, report/block, notification settings, and account deletion. API-mode review must use a stable staging backend with deterministic test data and a non-expiring test account. Put credentials only in the secure review fields of App Store Connect and Play Console—never in this repository or screenshots.
+Reviewers need access to browsing/search, listing details, authentication, publication, messages, report/block, notification settings, and account deletion. The mobile binary is API-only and review must use a stable, isolated staging backend with controlled test data and a non-expiring test account; there is no local sample-data fallback. Put credentials only in the secure review fields of App Store Connect and Play Console—never in this repository or screenshots.
 
 Recommended review scenario:
 

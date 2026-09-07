@@ -1,4 +1,4 @@
-import { storageService } from "../../services/storage.service";
+import { browserPreferencesService } from "../../services/browser-preferences.service";
 import {
   ConsentCategories,
   ConsentCategory,
@@ -79,7 +79,7 @@ export function isDecisionCurrent(
 class ConsentService {
   /** The stored decision, or `null` when none applies and the banner is due. */
   getDecision(now: Date = new Date()): ConsentDecision | null {
-    const stored = storageService.get<ConsentDecision | null>(
+    const stored = browserPreferencesService.getByKey<ConsentDecision | null>(
       STORAGE_KEY,
       null,
     );
@@ -105,7 +105,7 @@ class ConsentService {
       decidedAt: now.toISOString(),
       categories: normaliseCategories(categories),
     };
-    storageService.set(STORAGE_KEY, decision);
+    browserPreferencesService.setByKey(STORAGE_KEY, decision);
     return decision;
   }
 
@@ -120,7 +120,7 @@ class ConsentService {
 
   /** Lets someone withdraw consent as easily as they gave it. */
   clear(): void {
-    storageService.remove(STORAGE_KEY);
+    browserPreferencesService.removeByKey(STORAGE_KEY);
   }
 }
 

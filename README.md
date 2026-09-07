@@ -31,7 +31,11 @@ Versioned visual-identity source: brand/shongre/brand.config.json → vX.Y.Z/
 Runtime/deployment tooling:  infrastructure/ + scripts/ + Makefile
 ```
 
-The web and mobile clients are adapter-based. Their default `demo` mode is deterministic, asynchronous, and works with the backend stopped. `api` mode uses the same service contracts with HTTP adapters. UI components do not import backend implementation or branch on data mode.
+The Web client is adapter-based: its explicit standalone demo is deterministic
+and asynchronous, while connected Web uses HTTP services. Mobile is API-only in
+every environment and uses the same canonical service/OpenAPI boundary without
+a demo selector, fixture fallback, or direct Supabase access. UI components do
+not import backend implementation or construct business requests.
 
 Specialized verticals reuse that platform boundary. Shongre Immo is documented in [`docs/architecture/shongre-immo.md`](docs/architecture/shongre-immo.md); its current standalone routes are `/immo`, `/deposer/immo`, `/compte/immo`, and `/admin/immo`.
 
@@ -110,11 +114,11 @@ make production-config-check      # fail closed until every live secret exists
 ```
 
 The shared `development`, `staging`, and `production` profiles are connected
-environments: Web/mobile must use API adapters, mock storage is disabled, and
-the backend must use the dedicated hosted Supabase project. Deterministic demo
-mode remains available through the explicit local `make frontend` command.
-The command-scoped `make demo` target also runs the complete local stack with
-deterministic backend and client adapters, without requiring Supabase.
+environments: Web uses API adapters, mobile is always API-only, mock storage is
+disabled, and the backend uses the dedicated hosted Supabase project.
+Deterministic Web demo mode remains available through the explicit local
+`make frontend` command. The command-scoped `make demo` target runs a Web and
+backend demo stack without requiring Supabase; it does not select mobile mode.
 
 ## Development
 
@@ -176,15 +180,15 @@ Use `make ports` to see configured values and current owners. `make free-port PO
 | Client/runtime | Deterministic standalone mode | Connected mode                                      |
 | -------------- | ----------------------------- | --------------------------------------------------- |
 | Web            | `NEXT_PUBLIC_DATA_MODE=demo`  | `NEXT_PUBLIC_DATA_MODE=api` + `NEXT_PUBLIC_API_URL` |
-| Mobile         | `EXPO_PUBLIC_DATA_MODE=demo`  | `EXPO_PUBLIC_DATA_MODE=api` + `EXPO_PUBLIC_API_URL` |
+| Mobile         | Not supported                 | Always `EXPO_PUBLIC_API_URL`                        |
 | Backend        | `BACKEND_DATA_MODE=demo`      | `BACKEND_DATA_MODE=database`                        |
 
-Canonical local development uses connected Web/mobile API adapters, a
-database-backed backend, and mock storage disabled. Demo is available only
-through explicit demo/test commands. Connected builds ignore stale browser demo
-preferences, and there is no silent fallback between demo, Supabase, or hosted
-HTTP. Production mobile configuration is separately validated from local public
-Expo values.
+Canonical local development uses connected Web/mobile API services, a
+database-backed backend, and mock storage disabled. Web/backend demo behavior is
+available only through explicit Web demo/test commands. Connected Web builds
+ignore stale browser demo preferences. Mobile has no mode preference and never
+falls back between API, Supabase, or local fixtures; its configuration is
+validated independently for every environment.
 
 Runtime repositories use the Supabase Data API and its managed PostgREST
 connection pool. The server-only `DATABASE_URL` is reserved for migrations,

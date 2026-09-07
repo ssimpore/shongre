@@ -4052,6 +4052,26 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/discovery/sitemap-listings": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /**
+         * List a stable page of public listings for sitemap generation
+         * @description Returns a market-scoped cursor page from the public listing projection without relevance ranking. This server-to-server discovery feed is bounded and contains no private seller, provider, entitlement, payment, risk, or authentication fields.
+         */
+        readonly get: operations["getDiscoverySitemapListings"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/education/admin/catalog": {
         readonly parameters: {
             readonly query?: never;
@@ -5801,7 +5821,11 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        readonly get?: never;
+        /**
+         * Cacheable bounded public listing discovery
+         * @description Returns a market-scoped, bounded discovery page. Query parameters are normalized by clients so equivalent anonymous searches share a CDN cache key. Use POST only when the encoded filter exceeds safe URL limits.
+         */
+        readonly get: operations["getListingsSearch"];
         readonly put?: never;
         /**
          * POST /listings/search
@@ -12385,6 +12409,36 @@ export interface components {
             readonly listings: readonly components["schemas"]["PublicListing"][];
             readonly total: number;
         };
+        readonly PublicListingSearchRequest: {
+            readonly attributes?: {
+                readonly [key: string]: string | number | boolean | readonly (string | number | boolean)[] | {
+                    readonly max?: number;
+                    readonly min?: number;
+                };
+            };
+            readonly categoryId?: string;
+            readonly categorySlug?: string;
+            readonly city?: string;
+            readonly conditions?: readonly string[];
+            readonly cursor?: string;
+            readonly deliveryAvailable?: boolean;
+            readonly limit?: number;
+            readonly marketCode: components["schemas"]["MarketCode"];
+            readonly maxPrice?: number;
+            readonly minPrice?: number;
+            readonly onlinePaymentAvailable?: boolean;
+            readonly onlyDeals?: boolean;
+            readonly page?: number;
+            readonly postalCode?: string;
+            readonly publishedToday?: boolean;
+            readonly query?: string;
+            readonly radiusKm?: number;
+            /** @enum {string} */
+            readonly sellerType?: "all" | "individual" | "pro";
+            /** @enum {string} */
+            readonly sortBy?: "date_desc" | "price_asc" | "price_desc" | "relevance" | "distance";
+            readonly subCategorySlug?: string;
+        };
         readonly PublicListingSearchResult: {
             readonly items: readonly components["schemas"]["PublicListing"][];
             readonly page: number;
@@ -12395,8 +12449,18 @@ export interface components {
             readonly rankingVersion: string;
             /** Format: uuid */
             readonly requestId: string;
+            /**
+             * Format: date-time
+             * @description Stable discovery snapshot shared by every page in the cursor chain.
+             */
+            readonly snapshotAt: string;
             readonly total: number;
             readonly totalPages: number;
+            /**
+             * @description Whether total is exact or a lower bound imposed by the bounded candidate window.
+             * @enum {string}
+             */
+            readonly totalRelation: "exact" | "lower_bound";
         };
         /** @description Public seller facts safe for marketplace discovery. Authentication, contact and Staff fields are excluded. */
         readonly PublicSellerProfile: {
@@ -12419,6 +12483,16 @@ export interface components {
             /** @enum {string} */
             readonly sellerType: "individual" | "pro";
             readonly slug: string;
+        };
+        /** @description Stable cursor page used by the Web server to build canonical market sitemaps. */
+        readonly PublicSitemapListingPage: {
+            readonly items: readonly components["schemas"]["PublicListing"][];
+            readonly pageInfo: {
+                readonly hasNextPage: boolean;
+                readonly nextCursor?: string;
+            };
+            /** Format: date-time */
+            readonly snapshotAt: string;
         };
         readonly RealEstatePropertyCharacteristics: {
             readonly accessibilityFeatures: readonly string[];
@@ -13203,10 +13277,8 @@ export interface operations {
         readonly requestBody: {
             readonly content: {
                 readonly "application/json": {
-                    readonly password?: components["schemas"]["JsonValue"];
-                    readonly reason?: components["schemas"]["JsonValue"];
-                } & {
-                    readonly [key: string]: unknown;
+                    readonly password: string;
+                    readonly reason?: string;
                 };
             };
         };
@@ -13219,7 +13291,8 @@ export interface operations {
                 };
                 content: {
                     readonly "application/json": {
-                        readonly items: readonly components["schemas"]["CrmPipeline"][];
+                        /** @constant */
+                        readonly status: "completed";
                     };
                 };
             };
@@ -21643,6 +21716,40 @@ export interface operations {
             readonly 500: components["responses"]["InternalError"];
         };
     };
+    readonly getDiscoverySitemapListings: {
+        readonly parameters: {
+            readonly query: {
+                readonly cursor?: string;
+                readonly limit?: number;
+                readonly marketCode: components["schemas"]["MarketCode"];
+            };
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Successful bounded sitemap projection page. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["PublicSitemapListingPage"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
     readonly getEducationAdminCatalog: {
         readonly parameters: {
             readonly query?: {
@@ -25228,9 +25335,11 @@ export interface operations {
     readonly postListingsPublish: {
         readonly parameters: {
             readonly query?: never;
-            readonly header?: {
+            readonly header: {
                 /** @description Caller correlation id. The server returns the accepted or generated value. */
                 readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
             };
             readonly path?: never;
             readonly cookie?: never;
@@ -25238,9 +25347,26 @@ export interface operations {
         readonly requestBody: {
             readonly content: {
                 readonly "application/json": {
-                    readonly draft?: components["schemas"]["JsonValue"];
-                } & {
-                    readonly [key: string]: unknown;
+                    readonly draft: {
+                        readonly attributes: {
+                            readonly [key: string]: unknown;
+                        };
+                        readonly categoryId: string;
+                        readonly city: string;
+                        readonly condition: string;
+                        readonly description: string;
+                        readonly digitalFulfillment?: components["schemas"]["JsonValue"];
+                        readonly fulfillmentTypes: readonly components["schemas"]["FulfillmentType"][];
+                        readonly images: readonly string[];
+                        readonly intent?: components["schemas"]["TaxonomyV4ListingIntent"];
+                        readonly listingTypeId?: string;
+                        readonly marketCode: components["schemas"]["MarketCode"];
+                        readonly postalCode: string;
+                        readonly price: number;
+                        /** @constant */
+                        readonly taxonomyVersion?: "4.0.0";
+                        readonly title: string;
+                    };
                 };
             };
         };
@@ -25252,7 +25378,70 @@ export interface operations {
                     readonly [name: string]: unknown;
                 };
                 content: {
-                    readonly "application/json": components["schemas"]["JsonValue"];
+                    readonly "application/json": components["schemas"]["PublicListing"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getListingsSearch: {
+        readonly parameters: {
+            readonly query: {
+                /** @description Canonical JSON object with lexicographically sorted keys. */
+                readonly attributes?: string;
+                readonly categoryId?: string;
+                readonly categorySlug?: string;
+                readonly city?: string;
+                /** @description Comma-separated canonical condition identifiers. */
+                readonly conditions?: string;
+                /** @description Opaque cursor returned by the previous discovery page. */
+                readonly cursor?: string;
+                readonly deliveryAvailable?: boolean;
+                readonly limit?: number;
+                readonly marketCode: components["schemas"]["MarketCode"];
+                readonly maxPrice?: number;
+                readonly minPrice?: number;
+                readonly onlinePaymentAvailable?: boolean;
+                readonly onlyDeals?: boolean;
+                /**
+                 * @deprecated
+                 * @description Compatibility page number. New clients follow pageInfo.nextCursor.
+                 */
+                readonly page?: number;
+                readonly postalCode?: string;
+                readonly publishedToday?: boolean;
+                readonly query?: string;
+                readonly radiusKm?: number;
+                readonly sellerType?: "all" | "individual" | "pro";
+                readonly sortBy?: "date_desc" | "price_asc" | "price_desc" | "relevance" | "distance";
+                readonly subCategorySlug?: string;
+            };
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Successful bounded discovery response. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["PublicListingSearchResult"];
                 };
             };
             readonly 400: components["responses"]["BadRequest"];
@@ -25279,11 +25468,7 @@ export interface operations {
         };
         readonly requestBody: {
             readonly content: {
-                readonly "application/json": {
-                    readonly marketCode?: components["schemas"]["MarketCode"];
-                } & {
-                    readonly [key: string]: unknown;
-                };
+                readonly "application/json": components["schemas"]["PublicListingSearchRequest"];
             };
         };
         readonly responses: {

@@ -1,4 +1,4 @@
-import type { MarketDetectionRecommendation } from "@shongre/contracts";
+import type { MarketDetectionRecommendation } from "@shongre/contracts/market-country";
 import { services } from "../../api/client/service-registry";
 import type { GeoCoordinates } from "./geolocation.service";
 

@@ -1,8 +1,8 @@
 import {
   createEnvironmentConfig,
   type EnvironmentConfig,
-  type MarketInfrastructureConfig,
-} from "@shongre/contracts";
+} from "@shongre/contracts/environment";
+import type { MarketInfrastructureConfig } from "@shongre/contracts/market-country";
 import { getPublicRuntimeConfig } from "../runtime-config/public-runtime-config";
 
 function required(name: string, value: string | undefined): string {

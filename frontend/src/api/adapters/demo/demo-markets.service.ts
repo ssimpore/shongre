@@ -20,6 +20,7 @@ import {
 } from "@shongre/contracts";
 import type { MarketCoordinateDetectionInput } from "../../contracts/markets.contract";
 import { requireDemoCapability } from "./demo-authorization";
+import type { Market } from "../../../domains/market/market.types";
 
 export interface DemoMarketDetectionScenario {
   probableCountryCode?: string | null;
@@ -37,6 +38,11 @@ export class DemoMarketsService implements MarketsServiceContract {
   constructor(
     private readonly detectionScenario: DemoMarketDetectionScenario = {},
   ) {}
+
+  async loadRuntimeMarkets(): Promise<Market[]> {
+    await simulateNetworkDelay();
+    return marketService.getMarkets();
+  }
 
   async detectProbableCountry(): Promise<MarketDetectionRecommendation> {
     await simulateNetworkDelay();

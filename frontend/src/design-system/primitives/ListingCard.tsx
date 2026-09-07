@@ -1,9 +1,11 @@
 import type { ReactNode } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ListingCard as SharedListingCard } from "@shongre/features/listings/web";
-import type { ListingCardView, Money } from "@shongre/contracts";
+import type { ListingCardView } from "@shongre/contracts/listings";
+import type { Money } from "@shongre/contracts/primitives";
 import { deliveryRequestIdFromDiscoveryListingId } from "@shongre/contracts/delivery";
-import { IMAGE_SIZES, formatMoney as formatSharedMoney } from "@shongre/shared";
+import { IMAGE_SIZES } from "@shongre/shared/responsive-image";
+import { formatMoney as formatSharedMoney } from "@shongre/shared/money";
 import type { Listing } from "../../types";
 import { useFavorites } from "../../app/providers/FavoritesProvider";
 import { useToast } from "../../app/providers/ToastProvider";
@@ -23,6 +25,7 @@ export interface ListingCardProps {
   variant?: ListingCardVariant;
   className?: string;
   pricing?: { currentPrice: Money };
+  imagePriority?: boolean;
   /** Static result preview: preserves anatomy without navigation or mutation. */
   interactive?: boolean;
 }
@@ -96,6 +99,8 @@ export function ListingCardViewCard({
           <Image
             src={listing.imageUrl}
             alt=""
+            width={variant === "list" || variant === "hero" ? 320 : 640}
+            height={variant === "list" || variant === "hero" ? 240 : 480}
             fallbackLabel={t("ui.listingCard.imageUnavailable")}
             priority={imagePriority}
             sizes={
@@ -195,6 +200,7 @@ export function ListingCard({
   variant = "grid",
   className,
   pricing,
+  imagePriority = false,
   interactive = true,
 }: ListingCardProps) {
   const { t } = useTranslation();
@@ -223,6 +229,7 @@ export function ListingCard({
       href={href}
       variant={variant}
       className={className}
+      imagePriority={imagePriority}
       interactive={interactive}
       isFavorite={isFavorite(listing.id)}
       favoriteLoadState={favoriteLoadState}

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Bell } from "lucide-react";
-import { useNotifications } from "../../../app/providers/NotificationProvider";
+import { useNotifications } from "../../../app/providers/NotificationContext";
 import { NotificationPanel } from "./NotificationPanel";
 
 export const NotificationBell: React.FC = () => {

@@ -6,7 +6,7 @@ import { usePublishCta } from "../../security/usePublishCta";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { Icon } from "../../design-system";
 import { useStaffMarketplaceAccess } from "../../security/useStaffMarketplaceAccess";
-import { useWorkspaceSummary } from "../providers/WorkspaceSummaryProvider";
+import { useWorkspaceSummary } from "../providers/WorkspaceSummaryContext";
 
 export const MobileBottomNav: React.FC = () => {
   const location = useLocation();

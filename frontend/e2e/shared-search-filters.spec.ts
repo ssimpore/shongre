@@ -10,9 +10,10 @@ const searchSurfaces = [
     adaptiveField: "Catégories",
     locationId: "search-filter-location-desktop",
     removedControlIds: [
-      "search-page-page-category-button",
-      "search-page-page-query-input",
-      "search-page-page-submit-button",
+      "search-results-page-category-button",
+      "search-results-page-query-input",
+      "search-results-page-location-button",
+      "search-results-page-submit-button",
     ],
   },
   {

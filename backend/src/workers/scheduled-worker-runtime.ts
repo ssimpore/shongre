@@ -17,6 +17,8 @@ import { searchConsoleWorker } from "./analytics/search-console-worker.js";
 import { captureServerException } from "../infrastructure/observability/sentry.js";
 import { providerWebhookWorker } from "./payments/provider-webhook-worker.js";
 import { multilingualSearchReindexWorker } from "./search/multilingual-search-reindex-worker.js";
+import { discoveryEventWorker } from "./search/discovery-event-worker.js";
+import { indexNowWorker } from "./search/indexnow-worker.js";
 import { digitalFulfillmentWorker } from "./digital-products/digital-fulfillment-worker.js";
 import { watchSubscriptionsWorker } from "./watch-subscriptions/watch-subscriptions-worker.js";
 import { deliveryOutboxWorker } from "./delivery/delivery-outbox-worker.js";
@@ -42,6 +44,18 @@ const jobs: ScheduledJob[] = [
     group: "analytics",
     intervalSeconds: 15,
     run: () => analyticsService.retryProviderDeliveries(),
+  },
+  {
+    name: "discovery_event_outbox",
+    group: "analytics",
+    intervalSeconds: 5,
+    run: () => discoveryEventWorker.run(),
+  },
+  {
+    name: "indexnow_outbox",
+    group: "analytics",
+    intervalSeconds: 15,
+    run: () => indexNowWorker.run(),
   },
   {
     name: "analytics_aggregate_refresh",

@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import type { DiscoveryDocument, DiscoveryRequest } from "@shongre/shared";
 import {
   DEFAULT_DISCOVERY_CONFIGURATION,
@@ -7,6 +7,7 @@ import {
   runUnifiedDiscovery,
   scoreOrganicListing,
 } from "@shongre/shared";
+import { resolveTaxonomyV4Identity } from "@shongre/contracts/taxonomy-v4-identity";
 import {
   discoveryConfigurationSchema,
   discoveryChangeReasonSchema,
@@ -47,12 +48,164 @@ export interface DiscoverySearchResult {
   total: number;
   page: number;
   totalPages: number;
+  totalRelation: "exact" | "lower_bound";
+  snapshotAt: string;
   pageInfo: {
     hasNextPage: boolean;
     nextCursor?: string;
   };
   requestId: string;
   rankingVersion: string;
+}
+
+interface DiscoveryCursorPayload {
+  version: 1;
+  snapshotAt: string;
+  filterHash: string;
+  page: number;
+  windowPage: number;
+  after?: { sortDate: string; listingId: string; priceMinor?: number };
+}
+
+function stableJsonValue(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value
+      .map(stableJsonValue)
+      .sort((left, right) =>
+        JSON.stringify(left).localeCompare(JSON.stringify(right)),
+      );
+  }
+  if (value && typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value as Record<string, unknown>)
+        .filter(([, nested]) => nested !== undefined)
+        .sort(([left], [right]) => left.localeCompare(right))
+        .map(([key, nested]) => [key, stableJsonValue(nested)]),
+    );
+  }
+  return value;
+}
+
+function discoveryFilterHash(filters: SearchFilters): string {
+  const { cursor: _cursor, page: _page, ...stableFilters } = filters;
+  return createHash("sha256")
+    .update(JSON.stringify(stableJsonValue(stableFilters)))
+    .digest("base64url")
+    .slice(0, 22);
+}
+
+function encodeDiscoveryCursor(payload: DiscoveryCursorPayload): string {
+  return Buffer.from(JSON.stringify(payload), "utf8").toString("base64url");
+}
+
+function decodeDiscoveryCursor(
+  cursor: string | undefined,
+  expectedFilterHash: string,
+): DiscoveryCursorPayload | undefined {
+  if (!cursor) return undefined;
+  try {
+    const parsed = JSON.parse(
+      Buffer.from(cursor, "base64url").toString("utf8"),
+    ) as DiscoveryCursorPayload;
+    const snapshot = Date.parse(parsed.snapshotAt);
+    if (
+      parsed.version !== 1 ||
+      parsed.filterHash !== expectedFilterHash ||
+      !Number.isInteger(parsed.page) ||
+      parsed.page < 1 ||
+      !Number.isInteger(parsed.windowPage) ||
+      parsed.windowPage < 1 ||
+      !Number.isFinite(snapshot) ||
+      snapshot > Date.now() + 300_000 ||
+      (parsed.after &&
+        (!parsed.after.listingId ||
+          !Number.isFinite(Date.parse(parsed.after.sortDate)) ||
+          (parsed.after.priceMinor !== undefined &&
+            !Number.isFinite(parsed.after.priceMinor))))
+    ) {
+      throw new Error("invalid cursor payload");
+    }
+    return parsed;
+  } catch {
+    throw new AppError({
+      code: "VALIDATION_ERROR",
+      message:
+        "Le curseur de recherche est invalide ou ne correspond plus aux filtres.",
+    });
+  }
+}
+
+function matchesDiscoveryAttributes(
+  listing: Listing,
+  attributes: SearchFilters["attributes"],
+): boolean {
+  if (!attributes) return true;
+  return Object.entries(attributes).every(([key, criterion]) => {
+    const actual = listing.attributes?.[key];
+    if (actual === undefined || actual === null) return false;
+    if (Array.isArray(criterion)) {
+      const actualValues = Array.isArray(actual) ? actual : [actual];
+      return criterion.some((value) =>
+        actualValues.some((entry) => String(entry) === String(value)),
+      );
+    }
+    if (criterion && typeof criterion === "object") {
+      const range = criterion as { min?: number; max?: number };
+      const numeric = Number(actual);
+      return (
+        Number.isFinite(numeric) &&
+        (range.min === undefined || numeric >= range.min) &&
+        (range.max === undefined || numeric <= range.max)
+      );
+    }
+    return String(actual) === String(criterion);
+  });
+}
+
+function matchesDiscoveryFilters(
+  listing: Listing,
+  filters: SearchFilters,
+  snapshotAt: string,
+): boolean {
+  if (filters.postalCode && listing.postalCode !== filters.postalCode) {
+    return false;
+  }
+  if (
+    filters.conditions?.length &&
+    !filters.conditions.includes(listing.condition)
+  ) {
+    return false;
+  }
+  if (
+    filters.publishedToday &&
+    Date.parse(
+      listing.publishedAt || listing.organicFreshnessAt || listing.createdAt,
+    ) <
+      Date.parse(snapshotAt) - 86_400_000
+  ) {
+    return false;
+  }
+  if (
+    filters.deliveryAvailable &&
+    !listing.allowedDelivery.some((method) => method !== "hand_delivery")
+  ) {
+    return false;
+  }
+  if (
+    filters.onlinePaymentAvailable &&
+    !listing.marketPublications?.some(
+      (publication) => publication.availableServices?.online_payment === true,
+    )
+  ) {
+    return false;
+  }
+  if (
+    filters.onlyDeals &&
+    !(listing.originalPrice && listing.originalPrice > listing.price)
+  ) {
+    return false;
+  }
+  return matchesDiscoveryAttributes(listing, filters.attributes);
 }
 
 export function deliveryRequestToDiscoveryListing(
@@ -410,54 +563,119 @@ export class UnifiedDiscoveryService {
   async search(filters: SearchFilters = {}): Promise<DiscoverySearchResult> {
     const startedAt = Date.now();
     const requestId = randomUUID();
-    const page = Math.max(1, Number(filters.page || 1));
     const pageSize = Math.max(1, Math.min(50, Number(filters.limit || 20)));
-    // Bounded retrieval avoids loading the catalog while keeping ranking and
-    // diversification stable across the first discovery pages.
-    const [candidates, deliveryCandidates] = await Promise.all([
-      this.listingRepository.search({
-        ...filters,
-        sellerType: undefined,
-        sortBy: "recent",
-        page: 1,
-        limit: config.performance.discoveryCandidateLimit,
-      }),
-      this.getDeliveryCandidates(filters),
-    ]);
+    const filterHash = discoveryFilterHash(filters);
+    const cursor = decodeDiscoveryCursor(filters.cursor, filterHash);
+    const page = cursor?.page || Math.max(1, Number(filters.page || 1));
+    const windowPage = cursor?.windowPage || page;
+    const marketCode = requireMarketCode(filters.marketCode);
+    const snapshotAt = cursor?.snapshotAt || new Date().toISOString();
+    const requestedCategory =
+      filters.categoryId || filters.subCategorySlug || filters.categorySlug;
+    const categoryId = filters.categoryId
+      ? filters.categoryId
+      : requestedCategory
+        ? requestedCategory.includes(".")
+          ? requestedCategory
+          : resolveTaxonomyV4Identity(requestedCategory)?.id ||
+            requestedCategory
+        : undefined;
+    const candidateFilters: SearchFilters = {
+      ...filters,
+      categoryId,
+      page: undefined,
+      cursor: undefined,
+    };
     const request: DiscoveryRequest = {
       requestId,
-      marketCode: requireMarketCode(filters.marketCode),
+      marketCode,
       query: filters.query,
-      categoryId: filters.categoryId || filters.categorySlug,
+      categoryId,
       city: filters.city,
       publisherType: normalizePublisherType(filters.sellerType),
       sort: normalizeSort(filters.sortBy) || "relevance",
-      page,
+      page: windowPage,
       pageSize,
+      now: snapshotAt,
     };
-    const configuration = await this.getEffectiveConfiguration(
-      request.marketCode,
-      request.categoryId,
-      "search",
+
+    // The database returns a narrow, stable and strictly bounded projection.
+    // Only the final page IDs are hydrated below.
+    const [candidates, deliveryCandidates, configuration] = await Promise.all([
+      this.listingRepository.searchDiscoveryCandidates(candidateFilters, {
+        limit: config.performance.discoveryCandidateLimit,
+        snapshotAt,
+        after: cursor?.after,
+      }),
+      cursor?.after ? Promise.resolve([]) : this.getDeliveryCandidates(filters),
+      this.getEffectiveConfiguration(marketCode, request.categoryId, "search"),
+    ]);
+    const filteredCandidates = candidates.items.filter((listing) =>
+      matchesDiscoveryFilters(listing, candidateFilters, snapshotAt),
+    );
+    const filteredDeliveryCandidates = deliveryCandidates.filter((listing) =>
+      matchesDiscoveryFilters(listing, candidateFilters, snapshotAt),
     );
     const ranked = runUnifiedDiscovery(
-      [...candidates.items, ...deliveryCandidates].map(toDiscoveryDocument),
+      [...filteredCandidates, ...filteredDeliveryCandidates].map(
+        toDiscoveryDocument,
+      ),
       request,
       configuration,
     );
-    const listingsById = new Map(
-      [...candidates.items, ...deliveryCandidates].map((listing) => [
-        listing.id,
-        listing,
-      ]),
+    const deliveryById = new Map(
+      filteredDeliveryCandidates.map((listing) => [listing.id, listing]),
     );
+    const databaseIds = ranked.items
+      .map((item) => item.document.id)
+      .filter((id) => !deliveryById.has(id));
+    const hydratedListings = await this.listingRepository.findPublicByIds(
+      databaseIds,
+      marketCode,
+    );
+    const listingsById = new Map([
+      ...hydratedListings.map((listing) => [listing.id, listing] as const),
+      ...deliveryById.entries(),
+    ]);
     const items = ranked.items.flatMap((item) => {
       const listing = listingsById.get(item.document.id);
       return listing ? [{ ...listing, discovery: item.presentation }] : [];
     });
-    logger.info("unified_discovery_completed", ranked.event);
+    const hasNextPage = ranked.hasNextPage || candidates.hasMore;
+    const nextCursor = hasNextPage
+      ? encodeDiscoveryCursor({
+          version: 1,
+          snapshotAt: candidates.snapshotAt,
+          filterHash,
+          page: page + 1,
+          windowPage: ranked.hasNextPage ? windowPage + 1 : 1,
+          after: ranked.hasNextPage ? cursor?.after : candidates.lastCandidate,
+        })
+      : undefined;
+    const previousWindowPages = Math.max(0, page - windowPage);
+    const totalRelation =
+      Boolean(cursor?.after) ||
+      candidates.hasMore ||
+      filteredDeliveryCandidates.length === 50
+        ? "lower_bound"
+        : "exact";
+    const total =
+      previousWindowPages * pageSize +
+      ranked.totalResults +
+      (candidates.hasMore ? 1 : 0);
+    const totalPages = Math.max(
+      page,
+      previousWindowPages + ranked.totalPages + (candidates.hasMore ? 1 : 0),
+    );
+    logger.info("unified_discovery_completed", {
+      ...ranked.event,
+      candidateProjection: "narrow",
+      hydratedCount: hydratedListings.length,
+      candidateWindowHasMore: candidates.hasMore,
+      totalRelation,
+    });
     try {
-      await this.configurationRepository.recordEvent(ranked.event, {
+      await this.configurationRepository.enqueueEvent(ranked.event, {
         categoryId: request.categoryId,
         appliedFilterKeys: Object.entries(filters)
           .filter(
@@ -468,19 +686,21 @@ export class UnifiedDiscoveryService {
         latencyMs: Date.now() - startedAt,
       });
     } catch (error) {
-      logger.error("unified_discovery_event_persist_failed", {
+      logger.error("unified_discovery_event_enqueue_failed", {
         requestId,
         error: error instanceof Error ? error.message : "unknown",
       });
     }
     return {
       items,
-      total: ranked.totalResults,
-      page: ranked.page,
-      totalPages: ranked.totalPages,
+      total,
+      page,
+      totalPages,
+      totalRelation,
+      snapshotAt: candidates.snapshotAt,
       pageInfo: {
-        hasNextPage: ranked.hasNextPage,
-        nextCursor: ranked.nextCursor,
+        hasNextPage,
+        nextCursor,
       },
       requestId,
       rankingVersion: ranked.event.rankingVersion,

@@ -12,6 +12,7 @@ import {
   nativeTypography,
 } from "@shongre/design-tokens/native";
 import { Screen } from "@/components/Screen";
+import { StatePanel } from "@/components/StatePanel";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { mobileBillingService } from "@/features/billing/billing.service";
 import { useMarket } from "@/features/market/MarketProvider";
@@ -20,7 +21,8 @@ export default function BillingScreen() {
   const { user } = useAuth();
   const { activeMarket } = useMarket();
   const userId = user?.id;
-  const requestKey = `${userId || "anonymous"}:${activeMarket.code}`;
+  const [retryVersion, setRetryVersion] = useState(0);
+  const requestKey = `${userId || "anonymous"}:${activeMarket.code}:${retryVersion}`;
   const [result, setResult] = useState<{
     requestKey: string;
     catalog: MonetizationCatalog | null;
@@ -101,10 +103,13 @@ export default function BillingScreen() {
           <Text style={styles.muted}>Chargement de la facturation…</Text>
         </View>
       ) : error ? (
-        <View accessibilityRole="alert" style={styles.card}>
-          <Text style={styles.cardTitle}>Facturation indisponible</Text>
-          <Text style={styles.muted}>{error}</Text>
-        </View>
+        <StatePanel
+          title="Facturation indisponible"
+          message={error}
+          tone="error"
+          actionLabel="Réessayer"
+          onAction={() => setRetryVersion((version) => version + 1)}
+        />
       ) : !subscription ? (
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Aucun abonnement professionnel</Text>
@@ -116,7 +121,7 @@ export default function BillingScreen() {
       ) : (
         <>
           <View style={styles.card}>
-            <Text style={styles.eyebrow}>FORFAIT ACTUEL · DÉMONSTRATION</Text>
+            <Text style={styles.eyebrow}>FORFAIT ACTUEL</Text>
             <Text style={styles.cardTitle}>
               {product?.name || subscription.productId}
             </Text>

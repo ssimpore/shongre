@@ -4,7 +4,7 @@
  * status notices, and primary CTA determination for the listing detail page.
  */
 
-import { Listing, UserProfile } from "../../types";
+import { Listing, PublicSellerProfile, UserProfile } from "../../types";
 import { TransactionCapabilitiesResult } from "../publication/publication.types";
 import type { TaxonomyPrimaryCta } from "../taxonomy/taxonomy.types";
 
@@ -32,7 +32,7 @@ interface ResolvedListingActions {
 interface ResolveListingActionsParams {
   listing: Listing;
   viewer?: UserProfile | null;
-  seller?: UserProfile | null;
+  seller?: PublicSellerProfile | UserProfile | null;
   transactionCapabilities: TransactionCapabilitiesResult;
   taxonomyPrimaryCta?: TaxonomyPrimaryCta;
 }

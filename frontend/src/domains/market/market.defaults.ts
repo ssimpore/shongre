@@ -14,7 +14,10 @@ import {
   getDemoTaxRateBps,
   getDemoTransactionCommercials,
 } from "../monetization/demo-commercial-catalog";
-import { COUNTRY_REGISTRY, getCountryConfig } from "@shongre/contracts";
+import {
+  COUNTRY_REGISTRY,
+  getCountryConfig,
+} from "@shongre/contracts/market-country";
 
 const commercialProduct = (id: string) =>
   BASELINE_MONETIZATION_CATALOG.products.find((product) => product.id === id)!;

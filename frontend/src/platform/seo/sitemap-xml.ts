@@ -5,6 +5,7 @@ const SITEMAP_TARGET_BYTES = 45 * 1024 * 1024;
 export interface SitemapEntry {
   url: string;
   lastModified?: string;
+  imageUrls?: readonly string[];
 }
 
 export interface SitemapGroup {
@@ -31,9 +32,34 @@ function normalizedLastModified(value?: string): string | undefined {
   return Number.isFinite(parsed.getTime()) ? parsed.toISOString() : undefined;
 }
 
+function normalizedImageUrls(values: readonly string[] = []): string[] {
+  return Array.from(
+    new Set(
+      values.flatMap((value) => {
+        try {
+          const url = new URL(value);
+          return ["http:", "https:"].includes(url.protocol) &&
+            !url.username &&
+            !url.password
+            ? [url.toString()]
+            : [];
+        } catch {
+          return [];
+        }
+      }),
+    ),
+  ).slice(0, 1_000);
+}
+
 function serializeSitemapUrl(entry: SitemapEntry): string {
   const lastModified = normalizedLastModified(entry.lastModified);
-  return `<url><loc>${escapeXml(entry.url)}</loc>${lastModified ? `<lastmod>${escapeXml(lastModified)}</lastmod>` : ""}</url>`;
+  const images = normalizedImageUrls(entry.imageUrls)
+    .map(
+      (url) =>
+        `<image:image><image:loc>${escapeXml(url)}</image:loc></image:image>`,
+    )
+    .join("");
+  return `<url><loc>${escapeXml(entry.url)}</loc>${lastModified ? `<lastmod>${escapeXml(lastModified)}</lastmod>` : ""}${images}</url>`;
 }
 
 function byteLength(value: string): number {
@@ -41,9 +67,12 @@ function byteLength(value: string): number {
 }
 
 export function renderUrlSet(entries: SitemapEntry[]): string {
+  const hasImages = entries.some(
+    (entry) => normalizedImageUrls(entry.imageUrls).length,
+  );
   const body = [
     '<?xml version="1.0" encoding="UTF-8"?>',
-    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+    `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"${hasImages ? ' xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"' : ""}>`,
     ...entries.map(serializeSitemapUrl),
     "</urlset>",
   ].join("");

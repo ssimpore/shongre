@@ -7,7 +7,7 @@ SHELL := /bin/bash
 	backend backend-dev backend-start worker worker-dev worker-start backend-build backend-lint backend-typecheck backend-test backend-check backend-health backend-logs worker-logs \
 	contracts-lint contracts-typecheck contracts-test contracts-check openapi-lint openapi-generate openapi-check openapi-docs openapi-breaking-check \
 	brand-sync brand-check brand-activate brand-activation-check tokens-check tokens-build ui-check ui-test ui-lint ui-typecheck ui-build shared-check cross-platform-check \
-	mobile mobile-dev mobile-start mobile-stop mobile-status mobile-health mobile-web expo expo-start expo-clear expo-doctor ios ios-run ios-open ios-clean android android-run android-open android-clean mobile-prebuild mobile-prebuild-clean mobile-lint mobile-typecheck mobile-test mobile-dead-code mobile-check \
+	mobile mobile-dev mobile-start mobile-stop mobile-status mobile-health mobile-web expo expo-start expo-clear expo-doctor ios ios-run ios-open ios-clean android android-run android-open android-clean mobile-prebuild mobile-prebuild-clean mobile-lint mobile-typecheck mobile-test mobile-api-only-check mobile-dead-code mobile-check \
 	infra-check supabase-up supabase-down supabase-status supabase-health supabase-logs supabase-config \
 	db-migrate db-diff migrations-check db-seed monetization-draft-import taxonomy-db-dry-run taxonomy-db-import db-reset db-types db-shell supabase-link supabase-pull supabase-push \
 	ports check-ports free-app-ports free-ports free-port \
@@ -86,7 +86,7 @@ doctor: ## Diagnose tools, versions, configuration, ports, and optional platform
 	@scripts/doctor.sh
 
 info env-info: env-check ## Print resolved non-secret environment, URL, provider, and indexing modes
-	@source scripts/env.sh && printf 'Environment       %s (%s)\nFrance frontend   %s\nIntl frontend     %s\nAPI               %s%s\nSupabase          %s\nStorage           %s\nPayments          %s\nEmail             %s\nAI                %s\nAnalytics         %s\nSEO indexing      %s\nData modes        web=%s backend=%s/%s mobile=%s\n' "$$APP_ENV" "$$ENVIRONMENT_ID" "$$PUBLIC_FR_URL" "$$PUBLIC_INTL_URL" "$$API_URL" "$$API_PREFIX" "$${SUPABASE_PROJECT_REF:-local}" "$$STORAGE_ENVIRONMENT_ID" "$$PAYMENT_MODE" "$$EMAIL_MODE" "$$AI_MODE" "$$ANALYTICS_MODE" "$$( [[ "$$APP_ENV" == production ]] && echo enabled || echo disabled )" "$$NEXT_PUBLIC_DATA_MODE" "$$BACKEND_DATA_MODE" "$$DATABASE_INFRA_MODE" "$$EXPO_PUBLIC_DATA_MODE"
+	@source scripts/env.sh && printf 'Environment       %s (%s)\nFrance frontend   %s\nIntl frontend     %s\nAPI               %s%s\nMobile API        %s\nSupabase          %s\nStorage           %s\nPayments          %s\nEmail             %s\nAI                %s\nAnalytics         %s\nSEO indexing      %s\nData modes        web=%s backend=%s/%s\n' "$$APP_ENV" "$$ENVIRONMENT_ID" "$$PUBLIC_FR_URL" "$$PUBLIC_INTL_URL" "$$API_URL" "$$API_PREFIX" "$$EXPO_PUBLIC_API_URL" "$${SUPABASE_PROJECT_REF:-local}" "$$STORAGE_ENVIRONMENT_ID" "$$PAYMENT_MODE" "$$EMAIL_MODE" "$$AI_MODE" "$$ANALYTICS_MODE" "$$( [[ "$$APP_ENV" == production ]] && echo enabled || echo disabled )" "$$NEXT_PUBLIC_DATA_MODE" "$$BACKEND_DATA_MODE" "$$DATABASE_INFRA_MODE"
 
 urls: env-check ## Print every configured local service URL without credentials
 	@scripts/service-urls.sh
@@ -99,18 +99,18 @@ reinstall: clean-deps install
 ##@ Development
 dev: ## Restart the complete Supabase-backed local Web stack
 	@$(MAKE) stop-all
-	@NEXT_PUBLIC_DATA_MODE=api NEXT_PUBLIC_ENABLE_MOCK_STORAGE=false BACKEND_DATA_MODE=database DATABASE_INFRA_MODE=local EXPO_PUBLIC_DATA_MODE=api scripts/dev.sh web
+	@NEXT_PUBLIC_DATA_MODE=api NEXT_PUBLIC_ENABLE_MOCK_STORAGE=false BACKEND_DATA_MODE=database DATABASE_INFRA_MODE=local scripts/dev.sh web
 demo: ## Run the complete Web stack with command-scoped deterministic demo modes
-	@SHONGRE_EXPLICIT_DEMO=true NEXT_PUBLIC_DATA_MODE=demo NEXT_PUBLIC_ENABLE_MOCK_STORAGE=true BACKEND_DATA_MODE=demo DATABASE_INFRA_MODE=local EXPO_PUBLIC_DATA_MODE=demo scripts/dev.sh web
+	@SHONGRE_EXPLICIT_DEMO=true NEXT_PUBLIC_DATA_MODE=demo NEXT_PUBLIC_ENABLE_MOCK_STORAGE=true BACKEND_DATA_MODE=demo DATABASE_INFRA_MODE=local scripts/dev.sh web
 dev-web:
 	@scripts/dev.sh web
 dev-staging: ## Run the Web stack with .env.staging and .env.staging.local
 	@SHONGRE_ENV=staging scripts/dev.sh web
 staging: dev-staging ## Alias for dev-staging
-dev-mobile: ## Run backend, worker, and one Expo Metro server
-	@scripts/dev.sh mobile
-dev-all: ## Run backend, worker, Web, and one Expo Metro server
-	@scripts/dev.sh all
+dev-mobile: ## Run local Supabase, database-backed API, worker, and one Expo Metro server
+	@BACKEND_DATA_MODE=database DATABASE_INFRA_MODE=local scripts/dev.sh mobile
+dev-all: ## Run local Supabase, database-backed API, worker, Web, and one Expo Metro server
+	@NEXT_PUBLIC_DATA_MODE=api NEXT_PUBLIC_ENABLE_MOCK_STORAGE=false BACKEND_DATA_MODE=database DATABASE_INFRA_MODE=local scripts/dev.sh all
 start: dev
 
 frontend: ## Run the deterministic demo UI at the configured local Web origin
@@ -132,7 +132,7 @@ worker-dev:
 worker-start: backend-build
 	@scripts/service.sh foreground worker none -- npm run start:worker --workspace=backend
 
-mobile: mobile-dev ## Run the Expo development server
+mobile: dev-mobile ## Run the API-only mobile application with its local Supabase-backed API
 mobile-dev mobile-start expo expo-start:
 	@source scripts/env.sh && scripts/service.sh foreground metro "$$EXPO_METRO_PORT" -- npm run start --workspace=mobile -- --port "$$EXPO_METRO_PORT"
 mobile-stop:
@@ -334,11 +334,13 @@ mobile-typecheck:
 	@npm run typecheck --workspace=mobile
 mobile-test:
 	@SHONGRE_ENV=test bash -c 'source scripts/env.sh && npm run test --workspace=mobile'
+mobile-api-only-check: ## Reject mobile demo architecture, direct Supabase, and unapproved network calls
+	@npm run api-only --workspace=mobile
 mobile-dead-code: ## Reject unreachable Expo source files
 	@npm run dead-code --workspace=mobile
 mobile-runtime-resolution-check:
 	@npm run check:runtime-resolution --workspace=mobile
-mobile-check: mobile-lint mobile-typecheck mobile-test mobile-dead-code mobile-runtime-resolution-check expo-doctor mobile-production-env-check ## Validate Expo source, types, tests, reachability, runtime resolution, and configuration
+mobile-check: mobile-lint mobile-typecheck mobile-test mobile-api-only-check mobile-dead-code mobile-runtime-resolution-check expo-doctor mobile-production-env-check ## Validate Expo API-only architecture, source, types, tests, reachability, runtime resolution, and configuration
 
 ##@ Infrastructure & database
 infra-check: ## Validate Dockerfiles, manifests, runbooks, and generated config
@@ -454,7 +456,7 @@ typecheck: ui-typecheck frontend-typecheck backend-typecheck mobile-typecheck co
 test: ui-test frontend-test backend-test mobile-test contracts-test ## Run the complete non-E2E test suite
 test-unit: test
 test-integration: ## Run the backend HTTP integration suite
-	@npm run test:integration --workspace=backend
+	@SHONGRE_ENV=test bash -c 'source scripts/env.sh && npm run test:integration --workspace=backend'
 test-critical: ## Run focused marketplace security, auth, listing, money, and compliance tests
 	@SHONGRE_ENV=test bash -c 'source scripts/env.sh && npm run test:critical --workspace=backend'
 	@SHONGRE_ENV=test bash -c 'source scripts/env.sh && npm run test:critical --workspace=frontend'

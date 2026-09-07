@@ -12,7 +12,7 @@ import {
   ChevronUp,
 } from "lucide-react";
 import { NotificationType } from "../../../domains/notifications/notification.types";
-import { useNotifications } from "../../../app/providers/NotificationProvider";
+import { useNotifications } from "../../../app/providers/NotificationContext";
 import { useTranslation } from "../../../i18n/I18nProvider";
 
 export const NotificationDemoToolbar: React.FC = () => {

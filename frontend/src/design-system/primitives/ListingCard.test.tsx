@@ -146,15 +146,4 @@ describe("Listing Display & Card Data Presentation", () => {
     );
     expect(Array.isArray(attrs)).toBe(true);
   });
-
-  it("generates accurate SEO metadata and title for listing detail", () => {
-    const node = taxonomyService.getNode(mockListing.categorySlug);
-    const seo = listingDisplayResolver.generateListingSeoMeta(
-      mockListing,
-      node,
-    );
-    expect(seo.title).toContain("Appareil photo argentique vintage");
-    expect(seo.jsonLd).toBeDefined();
-    expect(seo.jsonLd["@type"]).toBe("Product");
-  });
 });

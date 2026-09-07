@@ -4,17 +4,21 @@ import {
   authUserSchema,
   loginRequestSchema,
   type AccountDeletionRequest,
-  type AuthSession,
   type AuthUser,
   type LoginRequest,
 } from "@shongre/contracts";
-import { apiRequest, sessionStorage } from "@/api/http-client";
-import { mobileEnvironment } from "@/config/environment";
-import { requireMobileCustomer, StaffMobileAccessError } from "./staff-access";
+import type { operations } from "@shongre/contracts/openapi";
+import {
+  apiRequest,
+  isMobileApiError,
+  sessionStorage,
+} from "@/api/http-client";
+import { requireMobileCustomer } from "./staff-access";
 
 export interface AuthService {
   restore(): Promise<AuthUser | null>;
-  login(input: LoginRequest): Promise<AuthUser>;
+  login(input: LoginRequest): Promise<MobileLoginResult>;
+  completeMfa(tempMfaToken: string, code: string): Promise<AuthUser>;
   getSocialProviders(): Promise<Record<SocialProvider, boolean>>;
   startSocialLogin(provider: SocialProvider): Promise<string>;
   completeSocialLogin(exchangeCode: string): Promise<AuthUser>;
@@ -28,140 +32,161 @@ export interface AuthService {
 
 export type SocialProvider = "google" | "apple" | "facebook";
 
-const demoSession: AuthSession = {
-  token: "demo-mobile-session",
-  user: {
-    id: "user_thomas",
-    email: "thomas.laurent@example.fr",
-    name: "Thomas Laurent",
-    role: "individual_buyer",
-    accountType: "individual",
-  },
-};
-
-class DemoAuthService implements AuthService {
-  async restore(): Promise<AuthUser | null> {
-    const stored = await sessionStorage.read();
-    if (!stored) return null;
-    const parsed = authUserSchema.safeParse(stored.user);
-    if (!parsed.success) return null;
-    try {
-      return requireMobileCustomer(parsed.data);
-    } catch (error) {
-      await sessionStorage.clear();
-      if (error instanceof StaffMobileAccessError) return null;
-      throw error;
-    }
-  }
-
-  async login(input: LoginRequest): Promise<AuthUser> {
-    const credentials = loginRequestSchema.parse(input);
-    if (credentials.password.length < 6)
-      throw new Error("Le mot de passe doit contenir au moins 6 caractères.");
-    const professional = /^pro(?:[+._-]|@)/i.test(credentials.email);
-    const session: AuthSession = {
-      ...demoSession,
-      user: {
-        ...demoSession.user,
-        id: professional ? "mobile_pro_demo" : demoSession.user.id,
-        email: credentials.email.toLowerCase(),
-        role: professional ? "professional_seller" : demoSession.user.role,
-        accountType: professional ? "professional" : "individual",
-      },
+export type MobileLoginResult =
+  | { kind: "authenticated"; user: AuthUser }
+  | {
+      kind: "mfa_required";
+      tempMfaToken: string;
+      expiresAt: string;
     };
-    await sessionStorage.write(session);
-    return session.user;
-  }
 
-  async startSocialLogin(provider: SocialProvider): Promise<string> {
-    return `shongre://auth/callback#status=success&exchange=demo-${provider}`;
-  }
+type AuthMeResponse =
+  operations["getAuthMe"]["responses"][200]["content"]["application/json"];
+type LoginRequestWire =
+  operations["postAuthLogin"]["requestBody"]["content"]["application/json"];
+type LoginResponse =
+  operations["postAuthLogin"]["responses"][200]["content"]["application/json"];
+type MfaRequest =
+  operations["postAuthMfaChallenge"]["requestBody"]["content"]["application/json"];
+type MfaResponse =
+  operations["postAuthMfaChallenge"]["responses"][200]["content"]["application/json"];
+type OAuthStartRequest =
+  operations["postAuthOauthByProviderStart"]["requestBody"]["content"]["application/json"];
+type OAuthStartResponse =
+  operations["postAuthOauthByProviderStart"]["responses"][200]["content"]["application/json"];
+type OAuthProvidersResponse =
+  operations["getAuthOauthProviders"]["responses"][200]["content"]["application/json"];
+type OAuthExchangeRequest =
+  operations["postAuthOauthNativeExchange"]["requestBody"]["content"]["application/json"];
+type OAuthExchangeResponse =
+  operations["postAuthOauthNativeExchange"]["responses"][200]["content"]["application/json"];
+type OAuthCompletionRequest =
+  operations["postAuthOauthCompleteProfile"]["requestBody"]["content"]["application/json"];
+type OAuthCompletionResponse =
+  operations["postAuthOauthCompleteProfile"]["responses"][200]["content"]["application/json"];
+type LogoutResponse =
+  operations["postAuthLogout"]["responses"][200]["content"]["application/json"];
+type AccountDeletionRequestWire =
+  operations["postAccountDelete"]["requestBody"]["content"]["application/json"];
+type AccountDeletionResponse =
+  operations["postAccountDelete"]["responses"][200]["content"]["application/json"];
 
-  async getSocialProviders(): Promise<Record<SocialProvider, boolean>> {
-    return { google: true, apple: true, facebook: true };
+function record(value: unknown): Record<string, unknown> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error("La réponse d’authentification est invalide.");
   }
-
-  async completeSocialLogin(exchangeCode: string): Promise<AuthUser> {
-    const provider = exchangeCode.replace(/^demo-/, "");
-    if (!["google", "apple", "facebook"].includes(provider))
-      throw new Error("Réponse de connexion invalide.");
-    const session = {
-      ...demoSession,
-      token: `demo-mobile-${provider}-session`,
-      user: { ...demoSession.user, email: `${provider}.demo@shongre.fr` },
-    };
-    await sessionStorage.write(session);
-    return session.user;
-  }
-
-  async completePendingSocialRegistration(
-    _completionHandle: string,
-    _email: string,
-  ): Promise<void> {
-    // Demo providers always assert a verified deterministic email. The method
-    // remains asynchronous so demo and API adapters keep the same contract.
-  }
-
-  async logout(): Promise<void> {
-    await sessionStorage.clear();
-  }
-
-  async deleteAccount(input: AccountDeletionRequest): Promise<void> {
-    accountDeletionRequestSchema.parse(input);
-    await sessionStorage.clear();
-  }
+  return value as Record<string, unknown>;
 }
 
-class HttpAuthService implements AuthService {
+function authenticatedUser(value: unknown): AuthUser {
+  const parsed = authUserSchema.safeParse(value);
+  if (!parsed.success) {
+    throw new Error("La réponse d’authentification est invalide.");
+  }
+  return requireMobileCustomer(parsed.data);
+}
+
+async function storeSession(value: unknown): Promise<AuthUser> {
+  const parsed = authSessionSchema.safeParse(value);
+  if (!parsed.success) {
+    await sessionStorage.clear();
+    throw new Error("La session reçue est invalide.");
+  }
+  let user: AuthUser;
+  try {
+    user = authenticatedUser(parsed.data.user);
+  } catch (error) {
+    await sessionStorage.clear();
+    throw error;
+  }
+  await sessionStorage.write({ ...parsed.data, user });
+  return user;
+}
+
+export class HttpAuthService implements AuthService {
   async restore(): Promise<AuthUser | null> {
     const session = await sessionStorage.read();
     if (!session) return null;
     try {
-      const user = await apiRequest<unknown>("/auth/me");
-      return requireMobileCustomer(authUserSchema.parse(user));
-    } catch {
-      await sessionStorage.clear();
-      return null;
+      const user = await apiRequest<AuthMeResponse>("/auth/me");
+      if (user === null) {
+        await sessionStorage.clear();
+        return null;
+      }
+      return authenticatedUser(user);
+    } catch (error) {
+      if (isMobileApiError(error) && error.status === 401) {
+        await sessionStorage.clear();
+        return null;
+      }
+      throw error;
     }
   }
 
-  async login(input: LoginRequest): Promise<AuthUser> {
+  async login(input: LoginRequest): Promise<MobileLoginResult> {
     const credentials = loginRequestSchema.parse(input);
-    const session = authSessionSchema.parse(
-      await apiRequest<unknown>("/auth/login", {
-        method: "POST",
-        body: JSON.stringify(credentials),
-      }),
-    );
-    try {
-      requireMobileCustomer(session.user);
-    } catch (error) {
-      await sessionStorage.clear();
-      throw error;
+    const payload: LoginRequestWire = { ...credentials };
+    const response = await apiRequest<LoginResponse>("/auth/login", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+    const candidate = record(response);
+    if (candidate.requiresMfa === true) {
+      if (
+        typeof candidate.tempMfaToken !== "string" ||
+        typeof candidate.expiresAt !== "string"
+      ) {
+        throw new Error("Le défi de sécurité reçu est invalide.");
+      }
+      return {
+        kind: "mfa_required",
+        tempMfaToken: candidate.tempMfaToken,
+        expiresAt: candidate.expiresAt,
+      };
     }
-    await sessionStorage.write(session);
-    return session.user;
+    return { kind: "authenticated", user: await storeSession(response) };
+  }
+
+  async completeMfa(tempMfaToken: string, code: string): Promise<AuthUser> {
+    const payload: MfaRequest = { tempMfaToken, code };
+    const response = await apiRequest<MfaResponse>("/auth/mfa/challenge", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+    return storeSession(response);
   }
 
   async startSocialLogin(provider: SocialProvider): Promise<string> {
-    const response = await apiRequest<{ authorizationUrl: string }>(
+    const payload: OAuthStartRequest = {
+      provider,
+      clientKind: "native",
+      returnTo: "/compte",
+    };
+    const response = await apiRequest<OAuthStartResponse>(
       `/auth/oauth/${provider}/start`,
       {
         method: "POST",
-        body: JSON.stringify({
-          provider,
-          clientKind: "native",
-          returnTo: "/compte",
-        }),
+        body: JSON.stringify(payload),
       },
     );
-    return response.authorizationUrl;
+    const authorizationUrl = record(response).authorizationUrl;
+    if (typeof authorizationUrl !== "string") {
+      throw new Error("La connexion externe est indisponible.");
+    }
+    return authorizationUrl;
   }
 
   async getSocialProviders(): Promise<Record<SocialProvider, boolean>> {
-    const response = await apiRequest<
-      Record<SocialProvider, boolean> & { linking: boolean }
-    >("/auth/oauth/providers");
+    const response = record(
+      await apiRequest<OAuthProvidersResponse>("/auth/oauth/providers"),
+    );
+    if (
+      typeof response.google !== "boolean" ||
+      typeof response.apple !== "boolean" ||
+      typeof response.facebook !== "boolean"
+    ) {
+      throw new Error("Les fournisseurs de connexion sont indisponibles.");
+    }
     return {
       google: response.google,
       apple: response.apple,
@@ -170,47 +195,41 @@ class HttpAuthService implements AuthService {
   }
 
   async completeSocialLogin(exchangeCode: string): Promise<AuthUser> {
-    const session = authSessionSchema.parse(
-      await apiRequest<unknown>("/auth/oauth/native-exchange", {
-        method: "POST",
-        body: JSON.stringify({ code: exchangeCode }),
-      }),
+    const payload: OAuthExchangeRequest = { code: exchangeCode };
+    const response = await apiRequest<OAuthExchangeResponse>(
+      "/auth/oauth/native-exchange",
+      { method: "POST", body: JSON.stringify(payload) },
     );
-    try {
-      requireMobileCustomer(session.user);
-    } catch (error) {
-      await sessionStorage.clear();
-      throw error;
-    }
-    await sessionStorage.write(session);
-    return session.user;
+    return storeSession(response);
   }
 
   async completePendingSocialRegistration(
     completionHandle: string,
     email: string,
   ): Promise<void> {
-    await apiRequest("/auth/oauth/complete-profile", {
+    const payload: OAuthCompletionRequest = {
+      completionHandle,
+      email,
+      accountType: "individual",
+    };
+    await apiRequest<OAuthCompletionResponse>("/auth/oauth/complete-profile", {
       method: "POST",
-      body: JSON.stringify({
-        completionHandle,
-        email,
-        accountType: "individual",
-      }),
+      body: JSON.stringify(payload),
     });
   }
 
   async logout(): Promise<void> {
     try {
-      await apiRequest("/auth/logout", { method: "POST" });
+      await apiRequest<LogoutResponse>("/auth/logout", { method: "POST" });
     } finally {
       await sessionStorage.clear();
     }
   }
 
   async deleteAccount(input: AccountDeletionRequest): Promise<void> {
-    const body = accountDeletionRequestSchema.parse(input);
-    await apiRequest("/account/delete", {
+    const parsed = accountDeletionRequestSchema.parse(input);
+    const body: AccountDeletionRequestWire = parsed;
+    await apiRequest<AccountDeletionResponse>("/account/delete", {
       method: "POST",
       body: JSON.stringify(body),
     });
@@ -218,7 +237,4 @@ class HttpAuthService implements AuthService {
   }
 }
 
-export const authService: AuthService =
-  mobileEnvironment.dataMode === "demo"
-    ? new DemoAuthService()
-    : new HttpAuthService();
+export const authService: AuthService = new HttpAuthService();

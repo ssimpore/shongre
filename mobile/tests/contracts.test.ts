@@ -4,7 +4,6 @@ import {
   mapBackendListing,
   type BackendListing,
 } from "@/features/listings/listing.mapper";
-import { createDemoListingPromotion } from "@/features/listings/listing.demo-promotion";
 
 const backendListing: BackendListing = {
   id: "listing-1",
@@ -34,19 +33,6 @@ const backendListing: BackendListing = {
 };
 
 describe("mobile public contracts", () => {
-  it("ties deterministic demo promotion evidence to its owning listing", () => {
-    const promotion = createDemoListingPromotion(
-      "listing-demo-1",
-      "FR",
-      "featured",
-      "2026-09-01T00:00:00.000Z",
-      "2026-10-01T00:00:00.000Z",
-    );
-
-    expect(promotion.sourceId).toBe("demo:listing-demo-1:featured");
-    expect(promotion.marketCode).toBe("FR");
-  });
-
   it("maps backend major-unit prices into integer minor units", () => {
     const listing = mapBackendListing({
       ...backendListing,

@@ -5,15 +5,15 @@ import {
   TaxonomyNode,
   TaxonomyAttribute,
 } from "../../../domains/taxonomy/taxonomy.types";
+import type { MarketContext } from "@shongre/contracts/market-country";
+import type { ResolveTaxonomyV4PublicInput } from "@shongre/contracts/taxonomy-v4-resolver";
 import type {
-  MarketContext,
-  ResolveTaxonomyV4PublicInput,
   TaxonomyHeaderNavigationConfiguration,
   TaxonomyHeaderNavigationUpdate,
   TaxonomyV4OptionPage,
   TaxonomyV4ResolvedSchema,
   TaxonomyV4TreeResponse,
-} from "@shongre/contracts";
+} from "@shongre/contracts/taxonomy";
 import type { components } from "@shongre/contracts/openapi";
 
 type BackendCategory = components["schemas"]["TaxonomyLegacyCategory"];

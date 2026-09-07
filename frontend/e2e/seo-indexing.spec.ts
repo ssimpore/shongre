@@ -1,9 +1,23 @@
-import { expect, test } from "@playwright/test";
-import { waitForStableLayout } from "./overflow";
+import { expect, test, type APIRequestContext } from "@playwright/test";
+import { expectNoHorizontalOverflow, waitForStableLayout } from "./overflow";
 
-const ACTIVE_LISTING = "/annonce/list-102";
 const ACTIVE_JOB =
   "/emploi/offre/developpeur-se-front-end-react-job-react-lyon";
+
+async function activeListingPath(request: APIRequestContext): Promise<string> {
+  const response = await request.get("/categorie/vehicules");
+  expect(response.status()).toBe(200);
+  const html = await response.text();
+  const titleMarker = '\\"title\\":\\"Peugeot 208 II';
+  const titleIndex = html.indexOf(titleMarker);
+  expect(titleIndex).toBeGreaterThan(0);
+  const precedingIds = [
+    ...html.slice(0, titleIndex).matchAll(/\\"id\\":\\"([^"\\]+)\\"/g),
+  ];
+  const listingId = precedingIds.at(-1)?.[1];
+  expect(listingId).toBeTruthy();
+  return `/annonce/${listingId}`;
+}
 
 function headValue(html: string, pattern: RegExp): string {
   return (html.match(pattern)?.[1] || "")
@@ -17,14 +31,15 @@ test.describe("SEO response and hydration contract", () => {
   test("renders active listing content and truthful schema in initial HTML", async ({
     request,
   }) => {
-    const response = await request.get(ACTIVE_LISTING);
+    const listingPath = await activeListingPath(request);
+    const response = await request.get(listingPath);
     expect(response.status()).toBe(200);
     expect(response.headers()["x-robots-tag"]).toContain("noindex");
     const html = await response.text();
     expect(html).toContain("<h1");
     expect(html).toContain("Peugeot 208 II");
     expect(html.match(/<link rel="canonical"/g)).toHaveLength(1);
-    expect(html).toContain('/annonce/list-102"');
+    expect(html).toContain(`${listingPath}"`);
     const schemas = [
       ...html.matchAll(
         /<script[^>]+type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g,
@@ -46,7 +61,8 @@ test.describe("SEO response and hydration contract", () => {
     page,
     request,
   }) => {
-    const response = await request.get(ACTIVE_LISTING);
+    const listingPath = await activeListingPath(request);
+    const response = await request.get(listingPath);
     const html = await response.text();
     const serverTitle = headValue(html, /<title>([\s\S]*?)<\/title>/);
     const serverCanonical = headValue(
@@ -58,7 +74,7 @@ test.describe("SEO response and hydration contract", () => {
       /<meta name="description" content="([^"]*)"/,
     );
 
-    await page.goto(ACTIVE_LISTING);
+    await page.goto(listingPath);
     await expect(page.getByRole("heading", { level: 1 })).toContainText(
       "Peugeot 208 II",
     );
@@ -76,9 +92,32 @@ test.describe("SEO response and hydration contract", () => {
     ).toHaveCount(2);
   });
 
+  test("keeps the indexable listing and its LCP media stable on a narrow viewport", async ({
+    page,
+    request,
+  }) => {
+    const listingPath = await activeListingPath(request);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(listingPath);
+    await waitForStableLayout(page);
+
+    await expect(page.getByRole("heading", { level: 1 })).toContainText(
+      "Peugeot 208 II",
+    );
+    const primaryListingImage = page.locator(
+      'main img[fetchpriority="high"][loading="eager"]',
+    );
+    await expect(primaryListingImage).toHaveCount(1);
+    await expect(primaryListingImage).toHaveAttribute("width", "1200");
+    await expect(primaryListingImage).toHaveAttribute("height", "900");
+    await expectNoHorizontalOverflow(page, "mobile listing discovery page");
+  });
+
   test("replaces temporary noindex metadata after a client-side listing navigation", async ({
     page,
+    request,
   }) => {
+    const listingPath = await activeListingPath(request);
     await page.goto("/categorie/vehicules");
     await waitForStableLayout(page);
     await page
@@ -87,7 +126,7 @@ test.describe("SEO response and hydration contract", () => {
       })
       .first()
       .click();
-    await expect(page).toHaveURL(/\/annonce\/list-102$/);
+    await expect(page).toHaveURL(new RegExp(`${listingPath}$`));
     await expect(page.getByRole("heading", { level: 1 })).toContainText(
       "Peugeot 208 II",
     );
@@ -97,7 +136,7 @@ test.describe("SEO response and hydration contract", () => {
     );
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
       "href",
-      /\/annonce\/list-102$/,
+      new RegExp(`${listingPath}$`),
     );
   });
 
@@ -197,6 +236,7 @@ test.describe("SEO response and hydration contract", () => {
       "content",
       "noindex, follow",
     );
+    await expect(page.locator('meta[name="robots"]')).toHaveCount(1);
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
       "href",
       /\/categorie\/maison-jardin$/,
@@ -252,6 +292,7 @@ test.describe("SEO response and hydration contract", () => {
       "/be/sitemap.xml",
       "/gateway-sitemap.xml",
       "/llms.txt",
+      "/indexnow-key.txt",
     ]) {
       expect((await request.get(sitemap)).status(), sitemap).toBe(404);
     }

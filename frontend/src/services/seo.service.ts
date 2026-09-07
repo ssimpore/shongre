@@ -28,7 +28,7 @@ import {
   buildPublicUrl,
   COUNTRY_REGISTRY,
   type MarketContext,
-} from "@shongre/contracts";
+} from "@shongre/contracts/market-country";
 import { brand } from "@shongre/brand";
 import { webBrandAssets } from "@shongre/brand/web";
 
@@ -171,8 +171,12 @@ function upsertMeta(
   value?: string,
 ) {
   if (typeof document === "undefined") return;
+  // App Router may keep streamed metadata nodes inside the React body tree
+  // after the compatibility router performs a client-side transition. Search
+  // the whole document so we update that authoritative node and retract our
+  // temporary head fallback instead of leaving contradictory directives.
   const matches = Array.from(
-    document.head.querySelectorAll<HTMLMetaElement>(selector),
+    document.querySelectorAll<HTMLMetaElement>(selector),
   );
   // Prefer the node Next owns. If our earlier client pass created a temporary
   // fallback before App Router installed its tag, retract only that fallback.
@@ -208,7 +212,7 @@ function upsertMeta(
 function upsertCanonical(url: string) {
   if (typeof document === "undefined") return;
   const links = Array.from(
-    document.head.querySelectorAll<HTMLLinkElement>('link[rel="canonical"]'),
+    document.querySelectorAll<HTMLLinkElement>('link[rel="canonical"]'),
   );
   let link = links.find((node) => !node.hasAttribute(MANAGED)) ?? links[0];
   links
@@ -232,7 +236,7 @@ function applyAlternateLinks(
 ) {
   if (typeof document === "undefined") return;
   const existingLinks = Array.from(
-    document.head.querySelectorAll<HTMLLinkElement>(
+    document.querySelectorAll<HTMLLinkElement>(
       'link[rel="alternate"][hreflang]',
     ),
   );

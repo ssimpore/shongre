@@ -12,10 +12,10 @@ import {
 } from "@shongre/contracts/delivery";
 import type { PropertyPrivate } from "@shongre/contracts/real-estate";
 import {
-  getCountryConfig,
   isActiveMarketResolvedListingPromotion,
   type MarketResolvedListingPromotion,
-} from "@shongre/contracts";
+} from "@shongre/contracts/discovery";
+import { getCountryConfig } from "@shongre/contracts/market-country";
 import { minorToMajorAmount } from "@shongre/shared/money";
 import type { Listing, ListingCondition, ListingStatus } from "../../types";
 import { DEFAULT_MARKET_CURRENCY } from "../../configuration/market-baseline";

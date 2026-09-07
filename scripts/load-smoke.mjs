@@ -86,8 +86,16 @@ async function measureEndpoint({
   };
 }
 
-async function verifyConditionalPublicCache({ api, headers, timeoutMs }) {
-  const target = new URL("/api/v1/markets", api);
+async function verifyConditionalPublicCache({
+  api,
+  headers,
+  timeoutMs,
+  marketCode,
+}) {
+  const target = new URL(
+    `/api/v1/listings/search?marketCode=${marketCode}&limit=20&sortBy=date_desc`,
+    api,
+  );
   const initial = await fetch(target, {
     headers,
     signal: AbortSignal.timeout(timeoutMs),
@@ -102,7 +110,7 @@ async function verifyConditionalPublicCache({ api, headers, timeoutMs }) {
     !cacheControl.includes("s-maxage=") ||
     !cacheControl.includes("stale-while-revalidate=") ||
     !cacheControl.includes("stale-if-error=") ||
-    !cacheTag.includes("markets") ||
+    !cacheTag.includes("discovery") ||
     !vary.toLowerCase().includes("x-shongre-market")
   ) {
     return {
@@ -227,9 +235,17 @@ export async function runLoadSmoke(overrides = {}) {
     },
     {
       name: "marketplace_search",
+      path: `/api/v1/listings/search?marketCode=${marketCode}&limit=20&sortBy=date_desc`,
+      validate: (payload) =>
+        Array.isArray(payload?.items) &&
+        Number.isFinite(payload?.total) &&
+        Number.isFinite(payload?.page),
+    },
+    {
+      name: "marketplace_search_post_fallback",
       path: "/api/v1/listings/search",
       method: "POST",
-      body: { marketCode, page: 1, limit: 20, sortBy: "recent" },
+      body: { marketCode, page: 1, limit: 20, sortBy: "date_desc" },
       validate: (payload) =>
         Array.isArray(payload?.items) &&
         Number.isFinite(payload?.total) &&
@@ -262,6 +278,7 @@ export async function runLoadSmoke(overrides = {}) {
     api,
     headers,
     timeoutMs,
+    marketCode,
   });
 
   const failed = results.filter(

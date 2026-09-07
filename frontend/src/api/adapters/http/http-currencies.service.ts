@@ -4,7 +4,7 @@ import type {
   CurrencyDefinitionUpdate,
   ExchangeRate,
   ExchangeRateUpdate,
-} from "@shongre/contracts";
+} from "@shongre/contracts/currency";
 import type { CurrenciesServiceContract } from "../../contracts/currencies.contract";
 import { httpClient } from "./http-client";
 

@@ -7,6 +7,8 @@ import { config } from "../../app/config/index.js";
 
 const PUBLIC_RESPONSE_PROFILES = {
   getListings: "discovery",
+  getListingsSearch: "discovery",
+  getDiscoverySitemapListings: "discovery",
   getListingsById: "discovery",
   getHome: "discovery",
   getHomeTrending: "discovery",
@@ -153,6 +155,32 @@ function requestMatchesEtag(req: IncomingMessage, etag: string): boolean {
     .some((value) => value === "*" || value === etag);
 }
 
+function entityTagPayload(operationId: string, result: unknown): string {
+  if (
+    operationId === "getListingsSearch" &&
+    result &&
+    typeof result === "object" &&
+    !Array.isArray(result)
+  ) {
+    const {
+      requestId: _requestId,
+      snapshotAt: _snapshotAt,
+      pageInfo,
+      ...stableResult
+    } = result as Record<string, unknown>;
+    const stablePageInfo =
+      pageInfo && typeof pageInfo === "object" && !Array.isArray(pageInfo)
+        ? {
+            hasNextPage: Boolean(
+              (pageInfo as Record<string, unknown>).hasNextPage,
+            ),
+          }
+        : pageInfo;
+    return JSON.stringify({ ...stableResult, pageInfo: stablePageInfo });
+  }
+  return JSON.stringify(result ?? null);
+}
+
 export async function writeJsonResponse(input: {
   req: IncomingMessage;
   res: ServerResponse;
@@ -192,7 +220,10 @@ export async function writeJsonResponse(input: {
     return;
   }
 
-  const etag = `"${createHash("sha256").update(encodedPayload).digest("base64url")}"`;
+  const etag = `"${createHash("sha256")
+    .update(Buffer.isBuffer(encodedPayload) ? "gzip:" : "identity:")
+    .update(entityTagPayload(input.operationId, input.result))
+    .digest("base64url")}"`;
   const policy = cacheControl(profile);
   input.res.setHeader("Cache-Control", policy);
   input.res.setHeader("CDN-Cache-Control", policy);

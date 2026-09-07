@@ -4,8 +4,8 @@ import {
   type BackendListing,
   HttpListingsService,
   mapBackendListing,
-  publicationPayload,
 } from "./http-listings.service";
+import { publicationPayload } from "./publication-payload";
 import { httpClient } from "./http-client";
 
 afterEach(() => vi.restoreAllMocks());
@@ -120,6 +120,11 @@ describe("HTTP listing publication payload", () => {
 
     expect(listing.publisherType).toBe("professional");
     expect(listing.sellerType).toBe("pro");
+    expect(listing.sellerProfile).toMatchObject({
+      id: "seller-1",
+      slug: "seller-1",
+      name: "Vendeur",
+    });
     expect(listing.attributes).toMatchObject({
       brand: "IKEA",
       material: "velvet",

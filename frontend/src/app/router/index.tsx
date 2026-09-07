@@ -10,7 +10,6 @@ import {
 import { MainLayout } from "../layouts/MainLayout";
 import { FocusedLayout } from "../layouts/FocusedLayout";
 import { ProductLayout } from "../layouts/ProductLayout";
-import { SolutionsLayout } from "../../features/solutions/SolutionsLayout";
 import { PageSuspense } from "../layouts/PageSuspense";
 import { routes } from "../../configuration/routes";
 
@@ -19,7 +18,6 @@ import { GuestOnlyRoute } from "../../security/components/GuestOnlyRoute";
 import { RequireRoutePolicy } from "../../security/components/RequireRoutePolicy";
 import { RequirePermission } from "../../security/components/RequirePermission";
 import { RequireStaffMfa } from "../../security/components/RequireStaffMfa";
-import { AdminLayout } from "../../features/admin/AdminLayout";
 import type { Permission } from "../../types";
 import type { ShongreApplicationId } from "../../platform/applications/application-registry";
 
@@ -27,6 +25,16 @@ import type { ShongreApplicationId } from "../../platform/applications/applicati
 const AccountLayout = lazy(() =>
   import("../layouts/AccountLayout").then((module) => ({
     default: module.AccountLayout,
+  })),
+);
+const AdminLayout = lazy(() =>
+  import("../../features/admin/AdminLayout").then((module) => ({
+    default: module.AdminLayout,
+  })),
+);
+const SolutionsLayout = lazy(() =>
+  import("../../features/solutions/SolutionsLayout").then((module) => ({
+    default: module.SolutionsLayout,
   })),
 );
 const HomePage = lazy(() =>
@@ -1461,9 +1469,7 @@ const APP_ROUTES: RouteObject[] = [
     path: "/admin",
     element: (
       <RequireRoutePolicy policyId="adminOverview" standalone>
-        <RequireStaffMfa>
-          <AdminLayout />
-        </RequireStaffMfa>
+        <RequireStaffMfa>{withSuspense(AdminLayout)}</RequireStaffMfa>
       </RequireRoutePolicy>
     ),
     children: [
@@ -1811,7 +1817,7 @@ function routesForApplication(
     return [
       {
         path: "/",
-        element: <SolutionsLayout />,
+        element: withSuspense(SolutionsLayout),
         children: [
           { index: true, element: withSuspense(SolutionsPage) },
           { path: ":solutionSlug", element: withSuspense(SolutionDetailPage) },

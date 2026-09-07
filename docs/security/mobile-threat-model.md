@@ -4,7 +4,15 @@ Assets include session tokens, account identity, private messages, listing draft
 
 Controls implemented:
 
+- every mobile business operation, including authentication, uses the central
+  typed `/api/v1` HTTP boundary; there is no mobile demo mode, fixture fallback,
+  direct Supabase access, or client-side synthetic success path;
 - bearer tokens are stored with Keychain/Keystore through SecureStore and removed on logout/deletion;
+- an expired access token permits one refresh-and-retry cycle; rejected refresh
+  clears the stored session while a network outage remains an explicit retryable
+  error rather than silently logging the user out;
+- signed file upload is isolated to short-lived backend-issued HTTPS destinations
+  and sends neither API credentials nor redirect-following requests;
 - production endpoints must be stable HTTPS URLs and release preflight rejects loopback, LAN, emulator, or tunnel hosts;
 - backend derives identity from the authenticated principal and enforces ownership/permissions;
 - report/block state and message blocking are server-authoritative;

@@ -1,7 +1,27 @@
+import type { operations } from "@shongre/contracts/openapi";
 import { apiRequest } from "@/api/http-client";
-import { mobileEnvironment } from "@/config/environment";
-import { listingsService } from "@/features/listings/listings.service";
-import { getCountryConfig } from "@shongre/contracts";
+
+type ConversationWireResponse =
+  operations["getMessagingConversations"]["responses"][200]["content"]["application/json"];
+type ConversationWireItem = NonNullable<ConversationWireResponse>;
+type ConversationResponse =
+  operations["postMessagingConversations"]["responses"][200]["content"]["application/json"];
+type ConversationRequest =
+  operations["postMessagingConversations"]["requestBody"]["content"]["application/json"];
+type MessageWireResponse =
+  operations["getMessagingConversationsByIdMessages"]["responses"][200]["content"]["application/json"];
+type MessageResponse =
+  operations["postMessagingConversationsByIdMessages"]["responses"][200]["content"]["application/json"];
+type MessageRequest =
+  operations["postMessagingConversationsByIdMessages"]["requestBody"]["content"]["application/json"];
+type OfferResponse =
+  operations["postMessagingOffer"]["responses"][200]["content"]["application/json"];
+type OfferRequest =
+  operations["postMessagingOffer"]["requestBody"]["content"]["application/json"];
+type MarkReadRequest =
+  operations["postMessagingRead"]["requestBody"]["content"]["application/json"];
+type MarkReadResponse =
+  operations["postMessagingRead"]["responses"][200]["content"]["application/json"];
 
 export interface MobileConversation {
   id: string;
@@ -49,6 +69,20 @@ interface BackendMessage {
   offerAmountMinor?: number;
   offerCurrency?: string;
   offerStatus?: string;
+}
+
+function conversationPage(response: ConversationWireResponse): {
+  items: BackendConversation[];
+} {
+  return response as ConversationWireItem & { items: BackendConversation[] };
+}
+
+function messagePage(response: MessageWireResponse): {
+  items: BackendMessage[];
+} {
+  return response as NonNullable<MessageWireResponse> & {
+    items: BackendMessage[];
+  };
 }
 
 export interface MessagingService {
@@ -120,292 +154,100 @@ const mapConversation = (
   unreadCount: conversation.unreadCount || 0,
 });
 
-const DEMO_TIMESTAMPS = [
-  "2026-09-03T08:42:00.000Z",
-  "2026-09-03T08:43:00.000Z",
-  "2026-09-03T08:44:00.000Z",
-  "2026-09-03T08:45:00.000Z",
-];
-
-export class DemoMessagingService implements MessagingService {
-  private conversations: MobileConversation[] = [
-    {
-      id: "mobile-conversation-bike",
-      listingId: "list_1",
-      marketCode: "FR",
-      buyerId: "user_thomas",
-      sellerId: "user_camille",
-      participantName: "Camille Martin",
-      listingTitle: "Vélo de route carbone Shimano 105",
-      lastMessageText:
-        "Bonjour, le vélo est toujours disponible. Souhaitez-vous venir l’essayer ?",
-      lastMessageAt: DEMO_TIMESTAMPS[0],
-      unreadCount: 1,
-    },
-  ];
-  private messagesByConversation = new Map<string, MobileMessage[]>([
-    [
-      "mobile-conversation-bike",
-      [
-        {
-          id: "mobile-message-bike-1",
-          conversationId: "mobile-conversation-bike",
-          senderId: "user_camille",
-          text: "Bonjour, le vélo est toujours disponible. Souhaitez-vous venir l’essayer ?",
-          createdAt: DEMO_TIMESTAMPS[0],
-        },
-      ],
-    ],
-  ]);
-  private sequence = 1;
-
+export class HttpMessagingService implements MessagingService {
   async list(
     userId: string,
     marketCode: string,
   ): Promise<MobileConversation[]> {
-    return this.conversations
-      .filter(
-        (item) =>
-          item.marketCode === marketCode &&
-          (item.buyerId === userId || item.sellerId === userId),
-      )
-      .map((item) => ({ ...item }));
-  }
-
-  async messages(
-    conversationId: string,
-    userId: string,
-    marketCode: string,
-  ): Promise<MobileMessage[]> {
-    this.assertParticipant(conversationId, userId, marketCode);
-    return (this.messagesByConversation.get(conversationId) || []).map(
-      (item) => ({ ...item }),
-    );
-  }
-
-  async createForListing(input: {
-    listingId: string;
-    marketCode: string;
-    userId: string;
-  }): Promise<MobileConversation> {
-    const existing = this.conversations.find(
-      (item) =>
-        item.listingId === input.listingId &&
-        item.marketCode === input.marketCode &&
-        item.buyerId === input.userId,
-    );
-    if (existing) return { ...existing };
-    const listing = (
-      await listingsService.list(input.marketCode, "", "marketplace")
-    ).find((item) => item.id === input.listingId);
-    if (!listing) throw new Error("Annonce introuvable.");
-    if (!listing.seller) throw new Error("Vendeur introuvable.");
-    if (listing.seller.id === input.userId) {
-      throw new Error("Vous ne pouvez pas vous contacter vous-même.");
-    }
-    const conversation: MobileConversation = {
-      id: `mobile-conversation-${input.userId}-${input.marketCode}-${input.listingId}`,
-      listingId: input.listingId,
-      marketCode: input.marketCode,
-      buyerId: input.userId,
-      sellerId: listing.seller.id,
-      participantName: listing.seller.name,
-      listingTitle: listing.title,
-      lastMessageText: "Conversation ouverte",
-      lastMessageAt: DEMO_TIMESTAMPS[0],
-      unreadCount: 0,
-    };
-    this.conversations.unshift(conversation);
-    this.messagesByConversation.set(conversation.id, []);
-    return { ...conversation };
-  }
-
-  async send(input: {
-    conversationId: string;
-    senderId: string;
-    marketCode: string;
-    text: string;
-  }): Promise<MobileMessage> {
-    this.assertParticipant(
-      input.conversationId,
-      input.senderId,
-      input.marketCode,
-    );
-    const text = input.text.trim();
-    if (!text || text.length > 5_000)
-      throw new Error("Le message doit contenir entre 1 et 5 000 caractères.");
-    return { ...this.append(input.conversationId, input.senderId, text) };
-  }
-
-  async offer(input: {
-    conversationId: string;
-    senderId: string;
-    marketCode: string;
-    amountMinor: number;
-  }): Promise<MobileMessage> {
-    this.assertParticipant(
-      input.conversationId,
-      input.senderId,
-      input.marketCode,
-    );
-    if (!Number.isSafeInteger(input.amountMinor) || input.amountMinor <= 0)
-      throw new Error("Le montant de l’offre est invalide.");
-    const market = getCountryConfig(input.marketCode);
-    if (!market)
-      throw new Error("Le marché de cette conversation est invalide.");
-    return {
-      ...this.append(
-        input.conversationId,
-        input.senderId,
-        "Offre de prix proposée.",
-        {
-          amountMinor: input.amountMinor,
-          currency: market.currency,
-          status: "pending",
-        },
+    const page = conversationPage(
+      await apiRequest<ConversationWireResponse>(
+        "/messaging/conversations?limit=50",
+        {},
+        marketCode,
       ),
-    };
-  }
-
-  async markRead(
-    conversationId: string,
-    userId: string,
-    marketCode: string,
-  ): Promise<void> {
-    this.assertParticipant(conversationId, userId, marketCode).unreadCount = 0;
-  }
-
-  private append(
-    conversationId: string,
-    senderId: string,
-    text: string,
-    offer?: MobileMessage["offer"],
-  ): MobileMessage {
-    const createdAt = DEMO_TIMESTAMPS[this.sequence % DEMO_TIMESTAMPS.length];
-    const message: MobileMessage = {
-      id: `mobile-message-${this.sequence}`,
-      conversationId,
-      senderId,
-      text,
-      createdAt,
-      ...(offer ? { offer } : {}),
-    };
-    this.sequence += 1;
-    this.messagesByConversation.set(conversationId, [
-      ...(this.messagesByConversation.get(conversationId) || []),
-      message,
-    ]);
-    const conversation = this.conversations.find(
-      (item) => item.id === conversationId,
-    );
-    if (conversation) {
-      conversation.lastMessageText = text;
-      conversation.lastMessageAt = createdAt;
-    }
-    return message;
-  }
-
-  private assertParticipant(
-    conversationId: string,
-    userId: string,
-    marketCode: string,
-  ): MobileConversation {
-    const conversation = this.conversations.find(
-      (item) => item.id === conversationId && item.marketCode === marketCode,
-    );
-    if (
-      !conversation ||
-      (conversation.buyerId !== userId && conversation.sellerId !== userId)
-    )
-      throw new Error("Conversation introuvable.");
-    return conversation;
-  }
-}
-
-class HttpMessagingService implements MessagingService {
-  async list(
-    userId: string,
-    marketCode: string,
-  ): Promise<MobileConversation[]> {
-    const page = await apiRequest<{ items: BackendConversation[] }>(
-      "/messaging/conversations?limit=50",
-      {},
-      marketCode,
     );
     return page.items.map((item) => mapConversation(item, userId, marketCode));
   }
+
   async messages(
     conversationId: string,
     _userId: string,
     marketCode: string,
   ): Promise<MobileMessage[]> {
-    const page = await apiRequest<{ items: BackendMessage[] }>(
-      `/messaging/conversations/${encodeURIComponent(conversationId)}/messages?limit=100`,
-      {},
-      marketCode,
+    const page = messagePage(
+      await apiRequest<MessageWireResponse>(
+        `/messaging/conversations/${encodeURIComponent(conversationId)}/messages?limit=100`,
+        {},
+        marketCode,
+      ),
     );
     return page.items.map(mapMessage);
   }
+
   async createForListing(input: {
     listingId: string;
     marketCode: string;
     userId: string;
   }): Promise<MobileConversation> {
-    const conversation = await apiRequest<BackendConversation>(
+    const payload: ConversationRequest = { listingId: input.listingId };
+    const conversation = (await apiRequest<ConversationResponse>(
       "/messaging/conversations",
-      { method: "POST", body: JSON.stringify({ listingId: input.listingId }) },
+      { method: "POST", body: JSON.stringify(payload) },
       input.marketCode,
-    );
+    )) as unknown as BackendConversation;
     return mapConversation(conversation, input.userId, input.marketCode);
   }
+
   async send(input: {
     conversationId: string;
     senderId: string;
     marketCode: string;
     text: string;
   }): Promise<MobileMessage> {
+    const payload: MessageRequest = { text: input.text };
     return mapMessage(
-      await apiRequest<BackendMessage>(
+      (await apiRequest<MessageResponse>(
         `/messaging/conversations/${encodeURIComponent(input.conversationId)}/messages`,
-        { method: "POST", body: JSON.stringify({ text: input.text }) },
+        { method: "POST", body: JSON.stringify(payload) },
         input.marketCode,
-      ),
+      )) as unknown as BackendMessage,
     );
   }
+
   async offer(input: {
     conversationId: string;
     senderId: string;
     marketCode: string;
     amountMinor: number;
   }): Promise<MobileMessage> {
+    const payload: OfferRequest = {
+      conversationId: input.conversationId,
+      amountMinor: input.amountMinor,
+    };
     return mapMessage(
-      await apiRequest<BackendMessage>(
+      (await apiRequest<OfferResponse>(
         "/messaging/offer",
         {
           method: "POST",
-          body: JSON.stringify({
-            conversationId: input.conversationId,
-            amountMinor: input.amountMinor,
-          }),
+          body: JSON.stringify(payload),
         },
         input.marketCode,
-      ),
+      )) as unknown as BackendMessage,
     );
   }
+
   async markRead(
     conversationId: string,
     _userId: string,
     marketCode: string,
   ): Promise<void> {
-    await apiRequest(
+    const payload: MarkReadRequest = { conversationId };
+    await apiRequest<MarkReadResponse>(
       "/messaging/read",
-      { method: "POST", body: JSON.stringify({ conversationId }) },
+      { method: "POST", body: JSON.stringify(payload) },
       marketCode,
     );
   }
 }
 
-export const messagingService: MessagingService =
-  mobileEnvironment.dataMode === "demo"
-    ? new DemoMessagingService()
-    : new HttpMessagingService();
+export const messagingService: MessagingService = new HttpMessagingService();

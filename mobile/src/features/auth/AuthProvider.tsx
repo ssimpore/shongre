@@ -14,19 +14,22 @@ import type {
   LoginRequest,
 } from "@shongre/contracts";
 import { authService } from "./auth.service";
-import type { SocialProvider } from "./auth.service";
+import type { MobileLoginResult, SocialProvider } from "./auth.service";
 import { parseNativeAuthCallback } from "./native-callback";
 import { notificationsService } from "@/services/notifications/notifications.service";
 
 interface AuthContextValue {
   user: AuthUser | null;
   loading: boolean;
+  error: string;
   socialProviders: Record<SocialProvider, boolean>;
   pendingSocialCompletion: boolean;
   socialNotice: string;
-  login(input: LoginRequest): Promise<void>;
+  login(input: LoginRequest): Promise<MobileLoginResult>;
+  completeMfa(tempMfaToken: string, code: string): Promise<void>;
   loginWithProvider(provider: SocialProvider): Promise<void>;
   completePendingSocialRegistration(email: string): Promise<void>;
+  retryRestore(): Promise<void>;
   logout(): Promise<void>;
   deleteAccount(input: AccountDeletionRequest): Promise<void>;
 }
@@ -36,6 +39,7 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 export function AuthProvider({ children }: PropsWithChildren) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [socialProviders, setSocialProviders] = useState<
     Record<SocialProvider, boolean>
   >({
@@ -48,22 +52,30 @@ export function AuthProvider({ children }: PropsWithChildren) {
   >(null);
   const [socialNotice, setSocialNotice] = useState("");
 
-  useEffect(() => {
-    let active = true;
-    Promise.all([authService.restore(), authService.getSocialProviders()])
-      .then(([restored, providers]) => {
-        if (active) {
-          setUser(restored);
-          setSocialProviders(providers);
-        }
-      })
-      .finally(() => {
-        if (active) setLoading(false);
-      });
-    return () => {
-      active = false;
-    };
+  const restore = useCallback(async () => {
+    setLoading(true);
+    setError("");
+    const [sessionResult, providersResult] = await Promise.allSettled([
+      authService.restore(),
+      authService.getSocialProviders(),
+    ]);
+    if (sessionResult.status === "fulfilled") {
+      setUser(sessionResult.value);
+    } else {
+      setError(
+        "Impossible de vérifier votre session. Vérifiez votre connexion puis réessayez.",
+      );
+    }
+    if (providersResult.status === "fulfilled") {
+      setSocialProviders(providersResult.value);
+    }
+    setLoading(false);
   }, []);
+
+  useEffect(() => {
+    const bootstrap = setTimeout(() => void restore(), 0);
+    return () => clearTimeout(bootstrap);
+  }, [restore]);
 
   useEffect(() => {
     let active = true;
@@ -117,8 +129,17 @@ export function AuthProvider({ children }: PropsWithChildren) {
   }, []);
 
   const login = useCallback(async (input: LoginRequest) => {
-    setUser(await authService.login(input));
+    const result = await authService.login(input);
+    if (result.kind === "authenticated") setUser(result.user);
+    return result;
   }, []);
+
+  const completeMfa = useCallback(
+    async (tempMfaToken: string, code: string) => {
+      setUser(await authService.completeMfa(tempMfaToken, code));
+    },
+    [],
+  );
 
   const loginWithProvider = useCallback(
     async (provider: SocialProvider) => {
@@ -146,9 +167,15 @@ export function AuthProvider({ children }: PropsWithChildren) {
   );
 
   const logout = useCallback(async () => {
-    await notificationsService.unregisterCurrentDevice();
-    await authService.logout();
-    setUser(null);
+    try {
+      await notificationsService.unregisterCurrentDevice();
+    } finally {
+      try {
+        await authService.logout();
+      } finally {
+        setUser(null);
+      }
+    }
   }, []);
 
   const deleteAccount = useCallback(async (input: AccountDeletionRequest) => {
@@ -161,24 +188,30 @@ export function AuthProvider({ children }: PropsWithChildren) {
     () => ({
       user,
       loading,
+      error,
       socialProviders,
       pendingSocialCompletion: Boolean(pendingCompletionHandle),
       socialNotice,
       login,
+      completeMfa,
       loginWithProvider,
       completePendingSocialRegistration,
+      retryRestore: restore,
       logout,
       deleteAccount,
     }),
     [
       user,
       loading,
+      error,
       socialProviders,
       pendingCompletionHandle,
       socialNotice,
       login,
+      completeMfa,
       loginWithProvider,
       completePendingSocialRegistration,
+      restore,
       logout,
       deleteAccount,
     ],
