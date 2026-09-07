@@ -57,6 +57,10 @@ export const SHONGRE_PERFORMANCE_BUDGETS = {
 } as const;
 
 export const SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS = {
+  worker: {
+    heartbeatMinimumIntervalMs: 5_000,
+    heartbeatMaximumAgeMs: 180_000,
+  },
   frontend: {
     queryStaleTimeMs: 180_000,
     queryGcTimeMs: 900_000,

@@ -42,6 +42,13 @@ require_backend() {
 
 require_worker() {
   require_process worker
+  if WORKER_HEALTH_FILE="${WORKER_HEALTH_FILE:-$SHONGRE_ROOT/.runtime/worker-health.json}" \
+    node --import tsx "$SHONGRE_ROOT/backend/scripts/health/worker-health.ts"; then
+    shongre_pass "worker heartbeat and database coordination"
+  else
+    shongre_fail "worker is not processing; inspect make logs-worker"
+    failed=1
+  fi
 }
 
 require_frontend() {

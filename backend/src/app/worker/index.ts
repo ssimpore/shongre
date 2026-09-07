@@ -14,7 +14,7 @@ export async function startWorker(): Promise<void> {
     logger.info("worker_shutdown_started", { signal });
     const deadline = setTimeout(() => {
       logger.error("worker_shutdown_deadline_exceeded", { signal });
-      process.exitCode = 1;
+      process.exit(1);
     }, config.shutdownGraceMs);
     deadline.unref();
     await scheduledWorkerRuntime.stop();

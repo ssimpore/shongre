@@ -22,8 +22,9 @@ import type { TaxonomyNode } from "../../domains/taxonomy/taxonomy.types";
 import { useTranslation } from "../../i18n/I18nProvider";
 import type { MessageKey } from "../../i18n/messages.fr";
 import {
-  loadCategoryNavigationBranch,
-  loadCategoryNavigationOverview,
+  filterCategoryNavigationOverview,
+  findCategoryNavigationBranch,
+  loadCategoryNavigationTree,
 } from "./categoryMegaMenu.model";
 
 interface HeaderCategoryNavProps {
@@ -408,6 +409,10 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
     scope: string;
     promise: Promise<TaxonomyHeaderCategoryItem[]>;
   } | null>(null);
+  const navigationTreeRequestRef = useRef<{
+    scope: string;
+    promise: Promise<TaxonomyNode[]>;
+  } | null>(null);
   const [branchesBySlug, setBranchesBySlug] = useState<
     ReadonlyMap<string, TaxonomyNode>
   >(() => new Map());
@@ -445,6 +450,9 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
     [disabledCategorySlugs, disabledSubCategorySlugs],
   );
   const normalizedMarketCode = marketCode.toUpperCase();
+  const navigationTreeScope = `${headerConfigurationScope}:${[...disabledKeys]
+    .sort()
+    .join(",")}`;
   const isAvailable = useCallback(
     (node: TaxonomyNode) => {
       const marketStatus =
@@ -517,6 +525,28 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
     return promise;
   }, [fallbackHeaderCategories, headerConfigurationScope]);
 
+  const loadNavigationTree = useCallback(() => {
+    const existing = navigationTreeRequestRef.current;
+    if (existing?.scope === navigationTreeScope) return existing.promise;
+
+    const promise = loadCategoryNavigationTree(
+      services.taxonomy,
+      marketContextRef.current,
+      locale,
+      isAvailable,
+    ).catch((error) => {
+      if (navigationTreeRequestRef.current?.scope === navigationTreeScope) {
+        navigationTreeRequestRef.current = null;
+      }
+      throw error;
+    });
+    navigationTreeRequestRef.current = {
+      scope: navigationTreeScope,
+      promise,
+    };
+    return promise;
+  }, [isAvailable, locale, navigationTreeScope]);
+
   const loadMenuContent = useCallback(
     async (menuKey: string) => {
       if (
@@ -530,15 +560,17 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
 
       loadingMenuKeysRef.current.add(menuKey);
       try {
-        const configuredCategories = await loadHeaderConfiguration();
+        const [configuredCategories, navigationRoots] = await Promise.all([
+          loadHeaderConfiguration(),
+          loadNavigationTree(),
+        ]);
         if (menuKey === OVERVIEW_MENU_KEY) {
           const promotedCategoryIds = new Set(
             configuredCategories.map((item) => item.categoryId),
           );
-          const roots = await loadCategoryNavigationOverview(
-            services.taxonomy,
+          const roots = filterCategoryNavigationOverview(
+            navigationRoots,
             promotedCategoryIds,
-            isAvailable,
           );
           setOverviewRoots(roots);
           return;
@@ -547,15 +579,14 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
         const configuredCategory = configuredCategories.find(
           (category) => category.slug === menuKey,
         );
-        const branch = await loadCategoryNavigationBranch(
-          services.taxonomy,
+        const branch = findCategoryNavigationBranch(
+          navigationRoots,
           configuredCategory
             ? {
                 id: configuredCategory.categoryId,
                 slug: configuredCategory.slug,
               }
             : menuKey,
-          isAvailable,
         );
         if (branch) {
           const projectedBranch = configuredCategory
@@ -571,14 +602,18 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
             new Map(current).set(menuKey, projectedBranch),
           );
         }
+      } catch {
+        // HTTP telemetry owns diagnostics. Keeping the rejection inside this
+        // user-triggered load prevents a recoverable menu failure from becoming
+        // an unhandled Next.js runtime error; the next interaction retries it.
       } finally {
         loadingMenuKeysRef.current.delete(menuKey);
       }
     },
     [
       branchesBySlug,
-      isAvailable,
       loadHeaderConfiguration,
+      loadNavigationTree,
       locale,
       overviewRoots.length,
     ],

@@ -20,13 +20,17 @@ export interface SearchMapItem {
 
 interface SearchResultsMapProps {
   items: SearchMapItem[];
+  layout?: "standalone" | "split";
 }
 
 /**
  * Shared, domain-neutral map for result types with public map coordinates.
  * Domain pages own the projection and decide which results are safe to map.
  */
-export function SearchResultsMap({ items }: SearchResultsMapProps) {
+export function SearchResultsMap({
+  items,
+  layout = "standalone",
+}: SearchResultsMapProps) {
   const { t } = useTranslation();
   const { activeMarket } = useMarketLocation();
   const mapConfiguration = getMarketMapConfiguration(activeMarket.code);
@@ -106,7 +110,9 @@ export function SearchResultsMap({ items }: SearchResultsMapProps) {
   return (
     <div
       data-search-results-map
-      className="overflow-hidden rounded-card border border-border-base bg-bg-surface shadow-xs"
+      className={`overflow-hidden rounded-card border border-border-base bg-bg-surface shadow-xs ${
+        layout === "split" ? "flex h-full min-h-0 flex-col" : ""
+      }`}
     >
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border-base px-3 py-2.5 sm:px-4">
         <div className="min-w-0">
@@ -136,7 +142,13 @@ export function SearchResultsMap({ items }: SearchResultsMapProps) {
         </button>
       </div>
 
-      <div className="relative h-search-map min-h-112 sm:h-search-map-tall">
+      <div
+        className={
+          layout === "split"
+            ? "relative min-h-0 flex-1"
+            : "relative h-search-map min-h-112 sm:h-search-map-tall"
+        }
+      >
         <div
           ref={containerRef}
           className="leaflet-container h-full w-full bg-bg-subtle"

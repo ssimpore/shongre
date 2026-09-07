@@ -255,7 +255,8 @@ jobs:
           for _ in $(seq 1 30); do
             if curl --fail --silent "$API_URL/livez" >/dev/null && \
                curl --fail --silent "$PUBLIC_FR_URL/healthz" >/dev/null && \
-               curl --fail --silent "http://127.0.0.1:$staging_frontend_port/healthz" >/dev/null; then
+               curl --fail --silent "http://127.0.0.1:$staging_frontend_port/healthz" >/dev/null && \
+               docker exec "$worker_id" node dist/worker-health.js >/dev/null 2>&1; then
               break
             fi
             sleep 1
@@ -264,6 +265,7 @@ jobs:
           curl --fail --silent "$PUBLIC_FR_URL/healthz" >/dev/null
           curl --fail --silent "http://127.0.0.1:$staging_frontend_port/healthz" >/dev/null
           docker inspect --format='{{.State.Running}}' "$worker_id" | grep -qx true
+          docker exec "$worker_id" node dist/worker-health.js
 
   web-e2e:
     name: Web E2E (${{ matrix.browser }})

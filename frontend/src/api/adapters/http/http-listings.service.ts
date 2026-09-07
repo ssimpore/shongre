@@ -1,4 +1,8 @@
 import {
+  getFavorites,
+  putListingsByIdFavorite,
+} from "@shongre/contracts/api-client";
+import {
   BulkListingImportTemplate,
   BulkListingImportRow,
   ListingsServiceContract,
@@ -27,10 +31,6 @@ type BackendListingCardsResult =
   operations["postListingsCards"]["responses"][200]["content"]["application/json"];
 type BackendListingSearchResult =
   operations["postListingsSearch"]["responses"][200]["content"]["application/json"];
-type BackendFavoriteCollection =
-  operations["getFavorites"]["responses"][200]["content"]["application/json"];
-type BackendFavoriteStateResult =
-  operations["putListingsByIdFavorite"]["responses"][200]["content"]["application/json"];
 type BackendOwnedListingCollection =
   operations["getAccountListings"]["responses"][200]["content"]["application/json"];
 type BackendSoldListing =
@@ -370,19 +370,18 @@ export class HttpListingsService implements ListingsServiceContract {
     marketCode: string,
     isFavorite: boolean,
   ): Promise<boolean> {
-    const result = await httpClient.put<BackendFavoriteStateResult>(
-      `/listings/${listingId}/favorite`,
-      { isFavorite },
-      { headers: { "X-Shongre-Market": marketCode } },
-    );
+    const result = await putListingsByIdFavorite(httpClient.request, {
+      path: { id: listingId },
+      body: { isFavorite },
+      headers: { "X-Shongre-Market": marketCode },
+    });
     return result.isFavorite;
   }
 
   async getFavoriteCollection(marketCode: string) {
-    const result = await httpClient.get<BackendFavoriteCollection>(
-      "/favorites",
-      { headers: { "X-Shongre-Market": marketCode } },
-    );
+    const result = await getFavorites(httpClient.request, {
+      headers: { "X-Shongre-Market": marketCode },
+    });
     return {
       listingIds: [...result.listingIds],
       listings: result.listings.map(mapBackendListing),

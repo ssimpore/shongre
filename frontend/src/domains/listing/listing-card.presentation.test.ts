@@ -73,7 +73,8 @@ describe("structured category listing-card presentation", () => {
 
     expect(card.priceLabel).toContain("/ mois");
     expect(card.categoryLabel).toBe("Immobilier");
-    expect(card.characteristics).toEqual([]);
+    expect(card.characteristics).toEqual(["68 m²", "3 pièces"]);
+    expect(card.characteristicIcons).toEqual(["ruler", "layout-grid"]);
     expect(card.seller?.sellerType).toBe("pro");
     expect(card.seller?.rating).toBe(4.9);
     expect(card.seller?.reviewCount).toBe(28);
@@ -168,7 +169,7 @@ describe("structured category listing-card presentation", () => {
     expect(sourcePrice).toEqual({ amountMinor: 129_000, currency: "EUR" });
   });
 
-  it("projects the vehicle universe and real make without card-only extras", () => {
+  it("projects buyer decision facts for the vehicle universe", () => {
     const vehicle = {
       id: "vehicle-1",
       title: "Peugeot 3008",
@@ -188,6 +189,7 @@ describe("structured category listing-card presentation", () => {
         displayName: "Auto Shongre",
         type: "dealer",
         locationLabel: "Lyon",
+        responseTimeMinutes: 42,
         rating: 4.8,
         reviewCount: 64,
         verifiedBusiness: true,
@@ -210,10 +212,14 @@ describe("structured category listing-card presentation", () => {
 
     const card = presentVehicleListingCard(vehicle, "fr-FR", "FR");
     expect(card.categoryLabel).toBe("Véhicules");
-    expect(card.characteristics).toEqual([]);
+    expect(
+      card.characteristics.map((value) => value.replace(/\s/gu, " ")),
+    ).toEqual(["2022", "42 000 km", "Hybride"]);
+    expect(card.characteristicIcons).toEqual(["calendar", "gauge", "fuel"]);
     expect(card.brandLabel).toBe("Peugeot");
     expect(card.seller?.rating).toBe(4.8);
     expect(card.seller?.reviewCount).toBe(64);
+    expect(card.seller?.responseTimeLabel).toBe("Répond en 42 min");
     expect(card.isUrgent).toBe(true);
     expect(card.promotion).toMatchObject({
       state: "active",
@@ -274,7 +280,16 @@ describe("structured category listing-card presentation", () => {
     );
     expect(card.priceLabel).toContain("par mois");
     expect(card.categoryLabel).toBe("Emploi");
-    expect(card.characteristics).toEqual([]);
+    expect(card.characteristics).toEqual([
+      "CDI",
+      "Hybride",
+      "Développement Web",
+    ]);
+    expect(card.characteristicIcons).toEqual([
+      "briefcase",
+      "laptop",
+      "briefcase",
+    ]);
     expect(card.seller?.sellerType).toBe("pro");
     expect(card.seller?.rating).toBe(4.7);
     expect(card.seller?.reviewCount).toBe(18);

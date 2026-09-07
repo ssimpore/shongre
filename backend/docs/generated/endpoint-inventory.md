@@ -4,8 +4,8 @@
 
 - Contract version: `1.0.0`
 - API base path: `/api/v1`
-- Operations: **522**
-- Specification SHA-256: `9ec7b8d0ed21c967`
+- Operations: **526**
+- Specification SHA-256: `4bd4b244a7e6dee4`
 
 ## account
 
@@ -666,8 +666,12 @@
 
 | Method | Path | Operation ID | Access | Permission | Success |
 | --- | --- | --- | --- | --- | --- |
+| `GET` | `/api/docs` | `getApiDocumentation` | `public` | — | `200` |
 | `GET` | `/api/health` | `getApiHealth` | `public` | — | `200` |
+| `GET` | `/api/openapi.json` | `getOpenApiDocument` | `public` | — | `200` |
 | `GET` | `/api/ready` | `getApiReadiness` | `public` | — | `200` |
+| `GET` | `/health/live` | `getHealthLive` | `public` | — | `200` |
+| `GET` | `/health/ready` | `getHealthReady` | `public` | — | `200` |
 | `GET` | `/health` | `getHealth` | `public` | — | `200` |
 | `GET` | `/livez` | `getLiveness` | `public` | — | `200` |
 | `GET` | `/readyz` | `getReadiness` | `public` | — | `200` |

@@ -37,4 +37,17 @@ describe("listing layout primitives", () => {
     expect(html).toContain("listing-grid-fluid");
     expect(html).toContain("sm:grid-cols-listing-grid-fluid");
   });
+
+  it("owns one full-width track for horizontal list results", () => {
+    const html = renderToStaticMarkup(
+      <ListingGrid variant="list">
+        <div>card</div>
+      </ListingGrid>,
+    );
+
+    expect(html).toContain('data-listing-grid-variant="list"');
+    expect(html).toContain("listing-grid-list sm:grid-cols-1");
+    expect(html).not.toContain("sm:grid-cols-listing-grid-fixed");
+    expect(html).not.toContain("sm:grid-cols-listing-grid-fluid");
+  });
 });

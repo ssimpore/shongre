@@ -70,6 +70,7 @@ frontend/.playwright/
 
 # Rebuilt locally/CI from the canonical OpenAPI document
 backend/docs/generated/openapi.html
+backend/openapi/openapi.yaml
 
 # Local staging scratch
 .stage-tmp/

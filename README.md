@@ -58,7 +58,7 @@ contract at boot and in CI. The architecture and API change workflow are in
 
 - Node.js 22 through 26 and npm 10 or newer (see `package.json` engines and `.nvmrc`)
 - Docker Desktop (or another Docker-compatible daemon) for local database mode;
-  the Supabase CLI is installed project-locally by `npm install`
+  the Supabase CLI is installed project-locally by `make install` (`npm ci`)
 - Expo-compatible iOS/Android tooling for local native runs
 - macOS and current Xcode for local iOS builds; EAS may build remotely
 
@@ -423,9 +423,8 @@ Local development keeps the historic France root and exposes every market as a
 path:
 
 ```bash
-cd frontend
-npm install
-npm run dev
+make install
+make dev
 
 # France
 open "$PUBLIC_FR_URL/"

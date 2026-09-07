@@ -3,6 +3,7 @@ import {
   Logger,
   redactLogContext,
 } from "../../src/infrastructure/logging/logger.js";
+import { requestContext } from "../../src/infrastructure/observability/request-context.js";
 
 const originalEnvironment = process.env.APP_ENV;
 const originalEnvironmentId = process.env.ENVIRONMENT_ID;
@@ -19,6 +20,39 @@ afterEach(() => {
 });
 
 describe("structured logger", () => {
+  it("keeps concurrent request identities isolated across asynchronous work", async () => {
+    const output = vi
+      .spyOn(console, "warn")
+      .mockImplementation(() => undefined);
+    const logger = new Logger("Domain");
+    await Promise.all(
+      ["request-a", "request-b"].map((requestId) =>
+        requestContext.run(
+          { requestId, actorId: requestId + "-actor" },
+          async () => {
+            await Promise.resolve();
+            logger.warn(requestId);
+          },
+        ),
+      ),
+    );
+    logger.warn("outside-request");
+    const payloads = output.mock.calls.map(([message]) =>
+      JSON.parse(String(message)),
+    );
+    for (const requestId of ["request-a", "request-b"]) {
+      expect(
+        payloads.find((payload) => payload.message === requestId),
+      ).toMatchObject({
+        requestId,
+        actorId: requestId + "-actor",
+      });
+    }
+    expect(
+      payloads.find((payload) => payload.message === "outside-request"),
+    ).not.toHaveProperty("requestId");
+  });
+
   it("adds immutable environment identity and redacts nested credentials", () => {
     process.env.APP_ENV = "staging";
     process.env.ENVIRONMENT_ID = "shongre-staging";

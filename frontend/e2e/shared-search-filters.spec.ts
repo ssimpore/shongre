@@ -96,7 +96,45 @@ test.describe("shared search filter panels", () => {
       await expect
         .poll(() => new URL(page.url()).searchParams.get("view"))
         .toBe("map");
-      await expect(page.locator("[data-search-results-map]")).toBeVisible();
+      const mapResultsLayout = page
+        .locator('[data-search-map-results-layout="true"]')
+        .first();
+      const mapResultsList = mapResultsLayout.locator(
+        '[data-search-map-results-list="true"]',
+      );
+      const mapPanel = mapResultsLayout.locator(
+        '[data-search-map-panel="true"]',
+      );
+      const mapResultCard = mapResultsList
+        .locator('[data-search-map-result-card="true"]')
+        .first();
+      await expect(mapResultsLayout).toBeVisible();
+      await expect(mapResultsList).toBeVisible();
+      await expect(mapResultCard).toBeVisible();
+      await expect(
+        mapResultCard.locator('article[data-listing-card-variant="list"]'),
+      ).toBeVisible();
+      await expect(mapPanel.locator("[data-search-results-map]")).toBeVisible();
+      const mapGeometry = await mapResultsLayout.evaluate((layout) => {
+        const results = layout.querySelector<HTMLElement>(
+          '[data-search-map-results-list="true"]',
+        );
+        const map = layout.querySelector<HTMLElement>(
+          '[data-search-map-panel="true"]',
+        );
+        const resultsRect = results?.getBoundingClientRect();
+        const mapRect = map?.getBoundingClientRect();
+        return {
+          resultsRight: resultsRect?.right ?? 0,
+          mapLeft: mapRect?.left ?? 0,
+          resultsHeight: resultsRect?.height ?? 0,
+          mapHeight: mapRect?.height ?? 0,
+        };
+      });
+      expect(mapGeometry.resultsRight).toBeLessThanOrEqual(
+        mapGeometry.mapLeft + 1,
+      );
+      expect(mapGeometry.resultsHeight).toBeCloseTo(mapGeometry.mapHeight, 0);
 
       await page.getByRole("button", { name: "Affichage liste" }).click();
       await expect(
@@ -105,6 +143,43 @@ test.describe("shared search filter panels", () => {
       await expect
         .poll(() => new URL(page.url()).searchParams.get("view"))
         .toBe("list");
+
+      const listGrid = page
+        .locator('[data-listing-grid-variant="list"]')
+        .first();
+      const listCard = listGrid
+        .locator('article[data-listing-card-variant="list"]')
+        .first();
+      await expect(listGrid).toBeVisible();
+      await expect(listCard).toBeVisible();
+      const geometry = await listCard.evaluate((card) => {
+        const grid = card.closest<HTMLElement>(
+          '[data-listing-grid-variant="list"]',
+        );
+        const link = card.querySelector<HTMLElement>(".listing-card-list-link");
+        const image = card.querySelector<HTMLElement>(
+          ".listing-card-list-image",
+        );
+        const content = card.querySelector<HTMLElement>(
+          ".listing-card-list-content",
+        );
+        return {
+          gridWidth: grid?.getBoundingClientRect().width ?? 0,
+          cardWidth: card.getBoundingClientRect().width,
+          direction: link ? getComputedStyle(link).flexDirection : "",
+          imageRight: image?.getBoundingClientRect().right ?? 0,
+          contentLeft: content?.getBoundingClientRect().left ?? 0,
+        };
+      });
+      expect(geometry.direction).toBe("row");
+      expect(geometry.cardWidth).toBeCloseTo(geometry.gridWidth, 0);
+      expect(geometry.imageRight).toBeLessThanOrEqual(geometry.contentLeft + 1);
+      await expect(
+        listCard.locator('[data-listing-card-characteristics="true"]'),
+      ).toBeVisible();
+      await expect(
+        listCard.locator('[data-listing-card-seller-identity="true"]'),
+      ).toBeVisible();
     });
   }
 });

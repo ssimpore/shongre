@@ -82,6 +82,95 @@ function ListingMeta({
   );
 }
 
+function ListingDecisionDetails({
+  listing,
+  isHero,
+}: {
+  listing: ListingCardView;
+  isHero: boolean;
+}) {
+  if (!listing.characteristics.length) return null;
+
+  return (
+    <div
+      data-listing-card-characteristics="true"
+      className={
+        isHero
+          ? "listing-card-hero-characteristics hidden min-w-0 items-stretch gap-2 lg:flex"
+          : "hidden min-w-0 items-stretch gap-2 sm:flex"
+      }
+    >
+      {listing.characteristics.slice(0, 3).map((characteristic, index) => (
+        <span
+          key={`${index}:${characteristic}`}
+          className="inline-flex min-h-control-sm min-w-0 flex-1 items-center justify-center gap-semantic-xs rounded-control border border-border-subtle bg-bg-subtle px-semantic-xs text-micro font-medium text-text-secondary"
+          title={characteristic}
+        >
+          <SemanticIcon
+            name={listing.characteristicIcons?.[index] ?? "tag"}
+            size="sm"
+            className="shrink-0"
+          />
+          <span className="min-w-0 truncate">{characteristic}</span>
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function ListingSellerIdentity({
+  seller,
+  isHero,
+  verifiedLabel,
+}: {
+  seller: NonNullable<ListingCardView["seller"]>;
+  isHero: boolean;
+  verifiedLabel: string;
+}) {
+  const sellerName = seller.organizationName ?? seller.name;
+  const isVerified = seller.isBusinessVerified || seller.isIdentityVerified;
+  const supportingLabel =
+    seller.responseTimeLabel ??
+    seller.branchName ??
+    (isVerified ? verifiedLabel : undefined);
+
+  return (
+    <div
+      data-listing-card-seller-identity="true"
+      className={
+        isHero
+          ? "listing-card-hero-seller hidden min-w-0 items-center gap-2 lg:flex"
+          : "hidden min-w-0 shrink items-center gap-2 sm:flex"
+      }
+    >
+      <Avatar
+        src={seller.organizationLogoUrl ?? seller.avatarUrl}
+        name={sellerName}
+        size="sm"
+        isVerified={isVerified}
+        verifiedLabel={verifiedLabel}
+        data-listing-card-seller-avatar="true"
+      />
+      <span className="flex min-w-0 max-w-listing-card flex-col leading-tight">
+        <span
+          className="truncate text-label-sm font-semibold text-text-main"
+          title={sellerName}
+        >
+          {sellerName}
+        </span>
+        {supportingLabel ? (
+          <span
+            className="truncate text-micro text-text-muted"
+            title={supportingLabel}
+          >
+            {supportingLabel}
+          </span>
+        ) : null}
+      </span>
+    </div>
+  );
+}
+
 export function ListingCard({
   listing,
   href,
@@ -119,7 +208,7 @@ export function ListingCard({
     listing.publisherType === "professional" ||
     listing.seller?.sellerType === "pro";
   const sellerSummaryVisible = isProfessional || Boolean(rating);
-  const ariaLabel = listingAccessibilityLabel(
+  const baseAriaLabel = listingAccessibilityLabel(
     listing,
     price,
     ratingLabel,
@@ -127,6 +216,13 @@ export function ListingCard({
     isProfessional ? identityLabels.proAccessibility : undefined,
     published,
   );
+  const ariaLabel = horizontal
+    ? joinLabels([
+        baseAriaLabel,
+        ...listing.characteristics.slice(0, 3),
+        listing.seller?.organizationName ?? listing.seller?.name,
+      ]).join(", ")
+    : baseAriaLabel;
   const linkClassName = `focus-visible:outline-none ${
     horizontal ? "listing-card-list-link flex w-full" : "flex h-full flex-col"
   }`;
@@ -240,74 +336,39 @@ export function ListingCard({
           {listing.title}
         </h3>
 
-        {isHero && listing.characteristics.length ? (
-          <div
-            data-listing-card-characteristics="true"
-            className="listing-card-hero-characteristics hidden min-w-0 items-stretch gap-2 lg:flex"
-          >
-            {listing.characteristics
-              .slice(0, 3)
-              .map((characteristic, index) => (
-                <span
-                  key={`${index}:${characteristic}`}
-                  className="inline-flex min-h-control-sm min-w-0 flex-1 items-center justify-center gap-semantic-xs rounded-control border border-border-subtle bg-bg-subtle px-semantic-xs text-micro font-medium text-text-secondary"
-                  title={characteristic}
-                >
-                  <SemanticIcon
-                    name={listing.characteristicIcons?.[index] ?? "tag"}
-                    size="sm"
-                    className="shrink-0"
-                  />
-                  <span className="min-w-0 truncate">{characteristic}</span>
-                </span>
-              ))}
-          </div>
+        {horizontal ? (
+          <ListingDecisionDetails listing={listing} isHero={isHero} />
         ) : null}
 
         {isHero ? (
           <div className="listing-card-hero-divider hidden border-t border-border-subtle lg:block" />
         ) : null}
 
-        <div className={`${isHero ? "" : "mt-auto"} min-w-0`}>
-          <ListingMeta city={listing.city} published={published} />
-        </div>
-
-        {isHero && listing.seller ? (
-          <div
-            data-listing-card-seller-identity="true"
-            className="listing-card-hero-seller hidden min-w-0 items-center gap-2 lg:flex"
-          >
-            <Avatar
-              src={
-                listing.seller.organizationLogoUrl ?? listing.seller.avatarUrl
-              }
-              name={listing.seller.organizationName ?? listing.seller.name}
-              size="sm"
-              isVerified={
-                listing.seller.isBusinessVerified ||
-                listing.seller.isIdentityVerified
-              }
-              verifiedLabel={identityLabels.verified}
-              data-listing-card-seller-avatar="true"
-            />
-            <span className="flex min-w-0 flex-col leading-tight">
-              <span
-                className="truncate text-label-sm font-semibold text-text-main"
-                title={listing.seller.organizationName ?? listing.seller.name}
-              >
-                {listing.seller.organizationName ?? listing.seller.name}
-              </span>
-              {listing.seller.responseTimeLabel ? (
-                <span
-                  className="truncate text-micro text-text-muted"
-                  title={listing.seller.responseTimeLabel}
-                >
-                  {listing.seller.responseTimeLabel}
-                </span>
-              ) : null}
-            </span>
+        {isHero ? (
+          <>
+            <div className="min-w-0">
+              <ListingMeta city={listing.city} published={published} />
+            </div>
+            {listing.seller ? (
+              <ListingSellerIdentity
+                seller={listing.seller}
+                isHero
+                verifiedLabel={identityLabels.verified}
+              />
+            ) : null}
+          </>
+        ) : (
+          <div className="mt-auto flex min-w-0 items-end justify-between gap-3">
+            <ListingMeta city={listing.city} published={published} />
+            {variant === "list" && listing.seller ? (
+              <ListingSellerIdentity
+                seller={listing.seller}
+                isHero={false}
+                verifiedLabel={identityLabels.verified}
+              />
+            ) : null}
           </div>
-        ) : null}
+        )}
       </div>
     </>
   );

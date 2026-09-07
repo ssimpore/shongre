@@ -4,9 +4,13 @@ import fs from "node:fs";
 import { execFileSync } from "node:child_process";
 
 const ownPath = "scripts/scan-tracked-secrets.mjs";
-const files = execFileSync("git", ["ls-files", "-z"], {
-  encoding: "utf8",
-})
+const files = execFileSync(
+  "git",
+  ["ls-files", "--cached", "--others", "--exclude-standard", "-z"],
+  {
+    encoding: "utf8",
+  },
+)
   .split("\0")
   .filter(Boolean)
   .filter((file) => file !== ownPath && !file.endsWith("package-lock.json"));
@@ -41,9 +45,11 @@ for (const file of files) {
 }
 
 if (findings.length) {
-  console.error("Potential production secrets were found in tracked files:");
+  console.error("Potential production secrets were found in repository files:");
   for (const finding of findings) console.error(`- ${finding}`);
   process.exitCode = 1;
 } else {
-  console.log(`Secret scan passed for ${files.length} tracked files.`);
+  console.log(
+    `Secret scan passed for ${files.length} tracked and new repository files.`,
+  );
 }

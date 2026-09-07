@@ -22,9 +22,38 @@ beforeEach(() => {
   vi.stubGlobal("document", cookieDocument);
   vi.stubGlobal("fetch", transport);
 });
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => {
+  vi.unstubAllGlobals();
+  vi.useRealTimers();
+});
 
 describe("session-aware HTTP retries", () => {
+  it("keeps the deadline active until the response body completes", async () => {
+    vi.useFakeTimers();
+    transport.mockImplementation(async (_url, init: RequestInit) => ({
+      status: 200,
+      ok: true,
+      json: () =>
+        new Promise((_resolve, reject) => {
+          init.signal?.addEventListener(
+            "abort",
+            () => reject(new DOMException("aborted", "AbortError")),
+            { once: true },
+          );
+        }),
+    }));
+    const result = httpClient.get("/favorites", { timeoutMs: 25 });
+    const rejected = expect(result).rejects.toMatchObject({ code: "TIMEOUT" });
+    await vi.advanceTimersByTimeAsync(25);
+    await rejected;
+  });
+
+  it("accepts an empty successful response", async () => {
+    transport.mockResolvedValueOnce(new Response(null, { status: 204 }));
+    await expect(
+      httpClient.delete("/listings/test-listing"),
+    ).resolves.toBeUndefined();
+  });
   it("does not refresh a guest request", async () => {
     transport.mockResolvedValueOnce(denied());
     await expect(httpClient.get("/favorites")).rejects.toMatchObject({

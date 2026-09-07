@@ -3,6 +3,8 @@ import React from "react";
 export interface ListingGridProps {
   children: React.ReactNode;
   className?: string;
+  /** One full-width result per row; pair with list-variant listing cards. */
+  variant?: "grid" | "list";
   /** Fill the available row with responsive columns instead of rail-width cards. */
   fluid?: boolean;
 }
@@ -18,13 +20,17 @@ export interface ListingGridProps {
 export const ListingGrid: React.FC<ListingGridProps> = ({
   children,
   className = "",
+  variant = "grid",
   fluid = false,
 }) => (
   <div
+    data-listing-grid-variant={variant}
     className={`listing-grid grid grid-cols-1 gap-3 sm:gap-4 ${
-      fluid
-        ? "listing-grid-fluid sm:grid-cols-listing-grid-fluid"
-        : "sm:grid-cols-listing-grid-fixed sm:justify-start"
+      variant === "list"
+        ? "listing-grid-list sm:grid-cols-1"
+        : fluid
+          ? "listing-grid-fluid sm:grid-cols-listing-grid-fluid"
+          : "sm:grid-cols-listing-grid-fixed sm:justify-start"
     } ${className}`}
   >
     {children}

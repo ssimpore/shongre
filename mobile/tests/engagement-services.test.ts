@@ -51,7 +51,11 @@ describe("API-backed mobile engagement services", () => {
       marketCode: "BE",
       price: { amountMinor: 12_000, currency: "EUR" },
     });
-    expect(apiRequest).toHaveBeenCalledWith("/favorites", {}, "BE");
+    expect(apiRequest).toHaveBeenCalledWith(
+      "/favorites",
+      expect.objectContaining({ method: "GET" }),
+      "BE",
+    );
   });
 
   it("sets desired favorite state idempotently in the exact market", async () => {
@@ -67,7 +71,10 @@ describe("API-backed mobile engagement services", () => {
     ).resolves.toBe(false);
     expect(apiRequest).toHaveBeenCalledWith(
       "/listings/listing%2Fa/favorite",
-      { method: "PUT", body: JSON.stringify({ isFavorite: false }) },
+      expect.objectContaining({
+        method: "PUT",
+        body: JSON.stringify({ isFavorite: false }),
+      }),
       "BE",
     );
   });

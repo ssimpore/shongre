@@ -1,3 +1,5 @@
+import { requestContext } from "../observability/request-context.js";
+
 export type LogLevel = "debug" | "info" | "warn" | "error";
 
 export interface LogContext {
@@ -96,7 +98,7 @@ export class Logger {
     const timestamp = new Date().toISOString();
     const secrets = configuredSecretValues();
     const payload = {
-      ...redactContext(context, secrets),
+      ...redactContext({ ...requestContext.getStore(), ...context }, secrets),
       timestamp,
       level: level.toUpperCase(),
       scope: this.scope,

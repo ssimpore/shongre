@@ -6,6 +6,7 @@
 backend/openapi/openapi.json
           │
           ├──▶ packages/contracts/src/generated/openapi.ts
+          ├──▶ packages/contracts/src/generated/api-client.ts
           │          ├──▶ Web HTTP adapters
           │          └──▶ mobile HTTP services
           │
@@ -30,6 +31,16 @@ an operation absent from the contract or for an access mismatch. Router startup
 also fails if a documented operation is missing. A static contract check gives
 the same guarantee in CI without needing a live server.
 
+The generated JSON operation functions in `@shongre/contracts/api-client`
+accept a platform transport and infer input and output from generated OpenAPI
+operations. Their serializer encodes path parameters, preserves false/zero
+query values, and forwards cancellation. The generator rejects unsupported
+query/body encodings instead of inventing a fallback. Redirect/pixel endpoints
+and operational probes keep their dedicated transport behavior. Web and native
+favorite reads/writes use these generated functions. Other existing adapters
+continue to consume generated path and operation types; remaining opaque
+`JsonValue` responses require domain-by-domain schema refinement.
+
 The Web and mobile HTTP foundations accept only generated OpenAPI path types.
 They still map transport data into client-specific view models at adapter
 boundaries, which prevents database rows or backend implementation types from
@@ -40,13 +51,14 @@ leaking into UI components.
 `/api/v1` is the sole active business API prefix. Additive evolution happens
 within v1. Breaking changes require a new major or an announced deprecation
 window. Operation removals are blocked unless the base contract already marks
-the operation deprecated and supplies `x-sunset-at`. All repository consumers
+the operation deprecated and supplies a valid `x-sunset-at` that has elapsed. All repository consumers
 must migrate before a legacy operation is removed.
 
 There are no active business-route compatibility aliases after this
 consolidation. The operational `/api/health` and `/api/ready` names coexist with
-the orchestrator-native `/livez` and `/readyz`; all four are implemented once by
-the server boundary and documented in this contract. A future business
+the orchestrator-native `/livez` and `/readyz`, and `/health/live` and
+`/health/ready`. These names share implementations and remain documented to
+preserve deployed probes. A future business
 exception must appear in OpenAPI, identify its replacement, owner, and sunset,
 and be covered by breaking-change checks.
 
@@ -71,3 +83,25 @@ checks and a base-branch breaking-change comparison.
 
 Developer commands and detailed contribution rules are in
 [`backend/docs/api.md`](../../backend/docs/api.md).
+
+## Generation and runtime documentation
+
+`make api-generate` uses the existing openapi-typescript generator plus the
+repository’s deterministic operation generator. `make api-check` checks spec,
+source ownership, generated drift, contract compilation, and premature operation
+removals when `OPENAPI_BASE_REF` is supplied. The comparison is not a complete
+schema-compatibility analysis: request/response shape changes still require
+review and consumer tests. An unreadable configured base fails the check.
+`make api-export` produces an ignored
+`backend/openapi/openapi.yaml` distribution artifact; JSON remains the sole
+editable specification, and Git history supplies version snapshots.
+
+`GET /api/openapi.json` and `GET /api/docs` are public operational routes. The
+reference requires no remote JavaScript/CDN dependency. `make openapi-docs`
+continues to build the fuller standalone Redoc artifact.
+
+Errors retain the documented v1 `error` extension while adding RFC 9457-style
+`type`, `title`, `status`, `code`, `detail` and request correlation. They remain
+`application/json` for existing clients, with `private, no-store` caching.
+The shape follows [Problem Details](https://www.rfc-editor.org/rfc/rfc9457.html);
+a future media-type or extension removal requires explicit versioning.

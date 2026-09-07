@@ -4,6 +4,12 @@ import { colors } from "@shongre/design-tokens";
 import { buildApiUrl, config } from "../config/index.js";
 import { bootstrapApp } from "../bootstrap/index.js";
 import { apiV1Router } from "../../api/v1/router.js";
+import { requestContext } from "../../infrastructure/observability/request-context.js";
+import { AppError } from "../../shared/errors/app-error.js";
+import {
+  openApiDocument,
+  renderApiDocumentation,
+} from "../../infrastructure/http/openapi-documentation.js";
 import { logger } from "../../infrastructure/logging/logger.js";
 
 function renderBackendHomePage(
@@ -214,178 +220,199 @@ export function createHttpServer() {
       const requestId = /^[A-Za-z0-9._-]{1,128}$/.test(suppliedRequestId)
         ? suppliedRequestId
         : randomUUID();
-      res.setHeader("X-Request-Id", requestId);
-      res.once("finish", () => {
-        let path = "[invalid-url]";
-        try {
-          path = new URL(req.url || "/", "http://request.invalid").pathname;
-        } catch {
-          // Never log a raw malformed URL or throw from the completion hook.
-        }
-        logger.info("http_request_completed", {
-          traceId: requestId,
-          method: req.method || "GET",
-          path,
-          statusCode: res.statusCode,
-          durationMs: Math.round(performance.now() - startedAt),
-          cacheControl: String(res.getHeader("Cache-Control") || ""),
-          cacheTagCount: String(res.getHeader("Cache-Tag") || "")
-            .split(",")
-            .filter(Boolean).length,
-          contentEncoding: String(
-            res.getHeader("Content-Encoding") || "identity",
-          ),
-          responseBytes: Number(res.getHeader("Content-Length") || 0),
+      return requestContext.run({ requestId }, async () => {
+        const context = requestContext.getStore()!;
+        res.setHeader("X-Request-Id", requestId);
+        res.once("finish", () => {
+          logger.info("http_request_completed", {
+            requestId,
+            operationId: context.operationId,
+            marketCode: context.marketCode,
+            method: req.method || "GET",
+            path: context.route || "[operational-or-unmatched]",
+            statusCode: res.statusCode,
+            durationMs: Math.round(performance.now() - startedAt),
+            cacheControl: String(res.getHeader("Cache-Control") || ""),
+            cacheTagCount: String(res.getHeader("Cache-Tag") || "")
+              .split(",")
+              .filter(Boolean).length,
+            contentEncoding: String(
+              res.getHeader("Content-Encoding") || "identity",
+            ),
+            responseBytes: Number(res.getHeader("Content-Length") || 0),
+          });
         });
-      });
 
-      // Set CORS headers
-      const requestOrigin = String(req.headers.origin || "");
-      const configuredOrigins = new Set([
-        ...config.corsOrigin
-          .split(",")
-          .map((value) => value.trim())
-          .filter(Boolean),
-        ...config.oauthAllowedReturnOrigins,
-      ]);
-      if (requestOrigin && configuredOrigins.has(requestOrigin)) {
-        res.setHeader("Access-Control-Allow-Origin", requestOrigin);
-        res.setHeader("Access-Control-Allow-Credentials", "true");
-        res.setHeader("Vary", "Origin");
-      }
-      res.setHeader(
-        "Access-Control-Allow-Methods",
-        "GET, POST, PUT, DELETE, OPTIONS, PATCH",
-      );
-      res.setHeader(
-        "Access-Control-Allow-Headers",
-        "Content-Type, Authorization, Accept, X-CSRF-Token, X-Shongre-Client, X-Shongre-Market, X-Request-Id, Idempotency-Key, If-None-Match",
-      );
-      res.setHeader("Referrer-Policy", "no-referrer");
-      res.setHeader("X-Content-Type-Options", "nosniff");
-      res.setHeader("X-Frame-Options", "DENY");
-      res.setHeader(
-        "Permissions-Policy",
-        "camera=(), microphone=(), geolocation=()",
-      );
-      res.setHeader("Cross-Origin-Resource-Policy", "same-site");
-      if (config.environment.environment === "production") {
+        // Set CORS headers
+        const requestOrigin = String(req.headers.origin || "");
+        const configuredOrigins = new Set([
+          ...config.corsOrigin
+            .split(",")
+            .map((value) => value.trim())
+            .filter(Boolean),
+          ...config.oauthAllowedReturnOrigins,
+        ]);
+        if (requestOrigin && configuredOrigins.has(requestOrigin)) {
+          res.setHeader("Access-Control-Allow-Origin", requestOrigin);
+          res.setHeader("Access-Control-Allow-Credentials", "true");
+          res.setHeader("Vary", "Origin");
+        }
         res.setHeader(
-          "Strict-Transport-Security",
-          "max-age=31536000; includeSubDomains",
+          "Access-Control-Allow-Methods",
+          "GET, POST, PUT, DELETE, OPTIONS, PATCH",
         );
-      }
-      res.setHeader("Cache-Control", "no-store");
+        res.setHeader(
+          "Access-Control-Allow-Headers",
+          "Content-Type, Authorization, Accept, X-CSRF-Token, X-Shongre-Client, X-Shongre-Market, X-Request-Id, Idempotency-Key, If-None-Match",
+        );
+        res.setHeader("Referrer-Policy", "no-referrer");
+        res.setHeader("X-Content-Type-Options", "nosniff");
+        res.setHeader("X-Frame-Options", "DENY");
+        res.setHeader(
+          "Permissions-Policy",
+          "camera=(), microphone=(), geolocation=()",
+        );
+        res.setHeader("Cross-Origin-Resource-Policy", "same-site");
+        if (config.environment.environment === "production") {
+          res.setHeader(
+            "Strict-Transport-Security",
+            "max-age=31536000; includeSubDomains",
+          );
+        }
+        res.setHeader("Cache-Control", "no-store");
 
-      if (req.method === "OPTIONS") {
-        res.writeHead(204);
-        res.end();
-        return;
-      }
+        if (req.method === "OPTIONS") {
+          res.writeHead(204);
+          res.end();
+          return;
+        }
 
-      const acceptHeader = req.headers.accept || "";
+        const acceptHeader = req.headers.accept || "";
 
-      // Backend Home Page (HTML in browser, JSON otherwise)
-      if (req.url === "/") {
-        if (acceptHeader.includes("text/html")) {
+        if (req.method === "GET" && req.url === "/api/openapi.json") {
+          res.writeHead(200, { "Content-Type": "application/json" });
+          res.end(JSON.stringify(await openApiDocument()));
+          return;
+        }
+        if (req.method === "GET" && req.url === "/api/docs") {
           res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+          res.end(await renderApiDocumentation());
+          return;
+        }
+
+        // Backend Home Page (HTML in browser, JSON otherwise)
+        if (req.url === "/") {
+          if (acceptHeader.includes("text/html")) {
+            res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+            res.end(
+              renderBackendHomePage(
+                config.port,
+                config.apiPrefix,
+                config.frontendUrl,
+              ),
+            );
+            return;
+          }
+          res.writeHead(200, { "Content-Type": "application/json" });
           res.end(
-            renderBackendHomePage(
-              config.port,
-              config.apiPrefix,
-              config.frontendUrl,
+            JSON.stringify({
+              status: "ok",
+              service: "shongre-backend",
+              version: config.version,
+              environment: config.environment.environment,
+              release: config.release,
+              port: config.port,
+              home: config.publicApiUrl,
+              api: buildApiUrl("/"),
+              health: new URL(
+                "/health",
+                config.environment.urls.api,
+              ).toString(),
+            }),
+          );
+          return;
+        }
+
+        // Liveness is deliberately shallow: it answers whether this process can
+        // serve HTTP, without ejecting every replica during a dependency outage.
+        if (
+          req.url === "/health" ||
+          req.url === "/health/live" ||
+          req.url === "/livez" ||
+          req.url === "/api/health"
+        ) {
+          res.writeHead(200, { "Content-Type": "application/json" });
+          res.end(
+            JSON.stringify({
+              status: "ok",
+              service: "shongre-backend",
+              version: config.version,
+              environment: config.environment.environment,
+              release: config.release,
+            }),
+          );
+          return;
+        }
+
+        // Readiness is dependency-aware and returns a failing status so the
+        // orchestrator does not route traffic before the database is usable.
+        if (
+          req.url === "/readyz" ||
+          req.url === "/api/ready" ||
+          req.url === "/health/ready"
+        ) {
+          const databaseReady =
+            await import("../../infrastructure/database/db-client.js").then(
+              ({ db }) => db.healthCheck(),
+            );
+          const statusCode = databaseReady ? 200 : 503;
+          res.writeHead(statusCode, { "Content-Type": "application/json" });
+          res.end(
+            JSON.stringify({
+              status: databaseReady ? "ready" : "not_ready",
+              service: "shongre-backend",
+              version: config.version,
+              environment: config.environment.environment,
+              release: config.release,
+              dependencies: { database: databaseReady ? "up" : "down" },
+            }),
+          );
+          return;
+        }
+
+        // Delegate to API v1 Router
+        await apiV1Router.handleRequest(req, res).catch((error: unknown) => {
+          // Parsing and dispatch failures must remain request-local, including
+          // failures before the router can select an operation.
+          const invalidUrl =
+            error instanceof TypeError &&
+            "code" in error &&
+            error.code === "ERR_INVALID_URL";
+          if (!invalidUrl)
+            logger.error("http_dispatch_failed", {
+              errorName: error instanceof Error ? error.name : "UnknownError",
+              operationId: context.operationId,
+              requestId,
+            });
+          if (res.headersSent) {
+            res.destroy();
+            return;
+          }
+          res.writeHead(invalidUrl ? 400 : 500, {
+            "Content-Type": "application/json",
+            "Cache-Control": "no-store",
+          });
+          res.end(
+            JSON.stringify(
+              new AppError({
+                code: invalidUrl ? "BAD_REQUEST" : "INTERNAL_ERROR",
+                message: invalidUrl
+                  ? "Le chemin de la requête est invalide."
+                  : "Une erreur interne est survenue.",
+              }).toJSON(requestId),
             ),
           );
-          return;
-        }
-        res.writeHead(200, { "Content-Type": "application/json" });
-        res.end(
-          JSON.stringify({
-            status: "ok",
-            service: "shongre-backend",
-            version: config.version,
-            environment: config.environment.environment,
-            release: config.release,
-            port: config.port,
-            home: config.publicApiUrl,
-            api: buildApiUrl("/"),
-            health: new URL("/health", config.environment.urls.api).toString(),
-          }),
-        );
-        return;
-      }
-
-      // Liveness is deliberately shallow: it answers whether this process can
-      // serve HTTP, without ejecting every replica during a dependency outage.
-      if (
-        req.url === "/health" ||
-        req.url === "/livez" ||
-        req.url === "/api/health"
-      ) {
-        res.writeHead(200, { "Content-Type": "application/json" });
-        res.end(
-          JSON.stringify({
-            status: "ok",
-            service: "shongre-backend",
-            version: config.version,
-            environment: config.environment.environment,
-            release: config.release,
-          }),
-        );
-        return;
-      }
-
-      // Readiness is dependency-aware and returns a failing status so the
-      // orchestrator does not route traffic before the database is usable.
-      if (req.url === "/readyz" || req.url === "/api/ready") {
-        const databaseReady =
-          await import("../../infrastructure/database/db-client.js").then(
-            ({ db }) => db.healthCheck(),
-          );
-        const statusCode = databaseReady ? 200 : 503;
-        res.writeHead(statusCode, { "Content-Type": "application/json" });
-        res.end(
-          JSON.stringify({
-            status: databaseReady ? "ready" : "not_ready",
-            service: "shongre-backend",
-            version: config.version,
-            environment: config.environment.environment,
-            release: config.release,
-            dependencies: { database: databaseReady ? "up" : "down" },
-          }),
-        );
-        return;
-      }
-
-      // Delegate to API v1 Router
-      await apiV1Router.handleRequest(req, res).catch((error: unknown) => {
-        // Parsing and dispatch failures must remain request-local, including
-        // failures before the router can select an operation.
-        const invalidUrl =
-          error instanceof TypeError &&
-          "code" in error &&
-          error.code === "ERR_INVALID_URL";
-        if (!invalidUrl)
-          logger.error("http_dispatch_failed", { error, requestId });
-        if (res.headersSent) {
-          res.destroy();
-          return;
-        }
-        res.writeHead(invalidUrl ? 400 : 500, {
-          "Content-Type": "application/json",
-          "Cache-Control": "no-store",
         });
-        res.end(
-          JSON.stringify({
-            error: {
-              code: invalidUrl ? "BAD_REQUEST" : "INTERNAL_ERROR",
-              message: invalidUrl
-                ? "Le chemin de la requête est invalide."
-                : "Une erreur interne est survenue.",
-              statusCode: invalidUrl ? 400 : 500,
-            },
-          }),
-        );
       });
     },
   );

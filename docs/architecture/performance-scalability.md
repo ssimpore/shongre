@@ -196,8 +196,8 @@ staging or production RUM.
 
 ## Observability and scaling triggers
 
-HTTP completion logs include request/trace ID, route path (never the query
-string), status, duration, cache policy, cache-tag count, encoding, and response
+HTTP completion logs include request ID, operation ID, a route template (never
+a token-bearing path or query string), status, duration, cache policy, cache-tag count, encoding, and response
 bytes. The listing repository emits privacy-safe query duration, result/count,
 market, page, limit, and sort dimensions. Catalogue access emits fresh-hit,
 miss, refresh, coalesced, and bounded-stale outcomes. Dashboards must show API

@@ -57,22 +57,35 @@ case "$mode" in
   *) shongre_fail "usage: scripts/dev.sh <web|mobile|all>"; exit 2 ;;
 esac
 
-# Validate before stopping anything. A new profile must never reuse API/worker
-# processes from the previous environment.
-make --no-print-directory stop-all
-
-if [[ "$BACKEND_DATA_MODE" == "database" && "$DATABASE_INFRA_MODE" == "local" ]]; then
-  shongre_info "database mode selected; ensuring local Supabase"
+# Infrastructure/configuration checks happen before tracked applications stop.
+if [[ "$BACKEND_DATA_MODE" == database && "$DATABASE_INFRA_MODE" == local ]]; then
   "$SHONGRE_ROOT/scripts/supabase.sh" up
-  # The CLI creates local API credentials when the stack starts. Import the
-  # generated, ignored runtime file for the backend and worker started below.
   set -a
   source "$SHONGRE_ROOT/.runtime/supabase.env"
   set +a
+fi
+
+expected_fingerprint="$(node "$SHONGRE_ROOT/scripts/runtime-fingerprint.mjs")"
+reusable=true
+for service_name in "${selected_services[@]}"; do
+  fingerprint_file="$(shongre_pid_file "$service_name").fingerprint"
+  if [[ ! -f "$fingerprint_file" || "$(cat "$fingerprint_file")" != "$expected_fingerprint" ]]; then
+    reusable=false
+  fi
+done
+health_mode=stack
+[[ "$mode" == mobile ]] && health_mode=mobile
+if [[ "$reusable" == true ]] && "$SHONGRE_ROOT/scripts/health.sh" "$health_mode" >/dev/null 2>&1 && \
+  { [[ "$mode" != all ]] || "$SHONGRE_ROOT/scripts/health.sh" mobile >/dev/null 2>&1; }; then
+  shongre_pass "the selected development stack is already healthy with matching configuration and migrations"
+  "$SHONGRE_ROOT/scripts/service-urls.sh"
+  exit 0
+fi
+
+make --no-print-directory stop-all
+if [[ "$BACKEND_DATA_MODE" == database && "$DATABASE_INFRA_MODE" == local ]]; then
   "$SHONGRE_ROOT/scripts/database.sh" migrate
   "$SHONGRE_ROOT/scripts/database.sh" seed
-elif [[ "$BACKEND_DATA_MODE" == "database" ]]; then
-  shongre_info "hosted database mode selected; local Supabase will not be started"
 fi
 
 for service_name in "${selected_services[@]}"; do

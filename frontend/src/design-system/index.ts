@@ -77,6 +77,7 @@ export * from "./primitives/ProgressBar";
 export * from "./primitives/PublishCtaButton";
 export * from "./primitives/SearchAutocomplete";
 export * from "./primitives/SearchPageControls";
+export * from "./primitives/SearchMapResultsLayout";
 export * from "./primitives/SellerCard";
 export * from "./primitives/ViewModeToggle";
 

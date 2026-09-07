@@ -25,7 +25,10 @@ const jsonResponse = (body: unknown, status = 200) =>
 
 describe("central mobile HTTP client", () => {
   beforeEach(() => memory.clear());
-  afterEach(() => vi.unstubAllGlobals());
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.useRealTimers();
+  });
 
   it("sends native, market, JSON, and bearer headers to the configured API", async () => {
     await sessionStorage.write({ token: "access-token", user: {} });
@@ -121,5 +124,137 @@ describe("central mobile HTTP client", () => {
       status: 0,
       code: "NETWORK_ERROR",
     });
+  });
+
+  it("shares token rotation across simultaneous expired requests", async () => {
+    await sessionStorage.write({
+      token: "expired",
+      refreshToken: "refresh",
+      user: {},
+    });
+    let finish!: (response: Response) => void;
+    const refresh = new Promise<Response>((resolve) => {
+      finish = resolve;
+    });
+    const transport = vi.fn(async (url: string, init: RequestInit) => {
+      if (url.endsWith("/auth/refresh")) return refresh;
+      return new Headers(init.headers).get("Authorization") === "Bearer expired"
+        ? jsonResponse({ error: {} }, 401)
+        : jsonResponse({ listingIds: [] });
+    });
+    vi.stubGlobal("fetch", transport);
+    const requests = [apiRequest("/favorites"), apiRequest("/favorites")];
+    await vi.waitFor(() => expect(transport).toHaveBeenCalledTimes(3));
+    finish(jsonResponse({ token: "fresh", refreshToken: "rotated", user: {} }));
+    await expect(Promise.all(requests)).resolves.toEqual([
+      { listingIds: [] },
+      { listingIds: [] },
+    ]);
+    expect(
+      transport.mock.calls.filter(([url]) => url.endsWith("/auth/refresh")),
+    ).toHaveLength(1);
+  });
+
+  it.each(["logout", "login"])(
+    "does not restore or replay an old session after %s during refresh",
+    async (change) => {
+      await sessionStorage.write({
+        token: "expired",
+        refreshToken: "refresh",
+        user: {},
+      });
+      let finish!: (response: Response) => void;
+      const refresh = new Promise<Response>((resolve) => {
+        finish = resolve;
+      });
+      const transport = vi
+        .fn()
+        .mockResolvedValueOnce(jsonResponse({ error: {} }, 401))
+        .mockReturnValueOnce(refresh);
+      vi.stubGlobal("fetch", transport);
+      const request = apiRequest("/listing-drafts", {
+        method: "POST",
+        body: "{}",
+      });
+      const rejected = expect(request).rejects.toMatchObject({
+        code: "SESSION_CHANGED",
+      });
+      await vi.waitFor(() => expect(transport).toHaveBeenCalledTimes(2));
+      if (change === "logout") await sessionStorage.clear();
+      else await sessionStorage.write({ token: "other-account", user: {} });
+      finish(jsonResponse({ token: "old-account-refreshed", user: {} }));
+      await rejected;
+      expect((await sessionStorage.read())?.token ?? null).toBe(
+        change === "logout" ? null : "other-account",
+      );
+      expect(transport).toHaveBeenCalledTimes(2);
+    },
+  );
+
+  it("retains the session during a temporary refresh provider failure", async () => {
+    const session = { token: "expired", refreshToken: "refresh", user: {} };
+    await sessionStorage.write(session);
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn()
+        .mockResolvedValueOnce(jsonResponse({ error: {} }, 401))
+        .mockResolvedValueOnce(
+          jsonResponse({ error: { code: "UNAVAILABLE" } }, 503),
+        ),
+    );
+    await expect(apiRequest("/favorites")).rejects.toMatchObject({
+      status: 503,
+    });
+    await expect(sessionStorage.read()).resolves.toEqual(session);
+  });
+
+  it("discards a successful account response after logout", async () => {
+    await sessionStorage.write({ token: "old-account", user: {} });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => {
+        await sessionStorage.clear();
+        return jsonResponse({ listingIds: ["private-favorite"] });
+      }),
+    );
+    await expect(apiRequest("/favorites")).rejects.toMatchObject({
+      code: "SESSION_CHANGED",
+    });
+  });
+
+  it("times out even when headers arrived but the response body stalled", async () => {
+    vi.useFakeTimers();
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (_url, init: RequestInit) => ({
+        status: 200,
+        ok: true,
+        text: () =>
+          new Promise((_resolve, reject) => {
+            init.signal?.addEventListener(
+              "abort",
+              () => reject(new Error("aborted")),
+              { once: true },
+            );
+          }),
+      })),
+    );
+    const request = apiRequest("/favorites");
+    const rejected = expect(request).rejects.toMatchObject({ code: "TIMEOUT" });
+    await vi.runAllTimersAsync();
+    await rejected;
+  });
+
+  it("preserves caller cancellation without turning it into a network error", async () => {
+    const controller = new AbortController();
+    const cancelled = new Error("navigation cancelled");
+    controller.abort(cancelled);
+    const transport = vi.fn();
+    vi.stubGlobal("fetch", transport);
+    await expect(
+      apiRequest("/favorites", { signal: controller.signal }),
+    ).rejects.toBe(cancelled);
+    expect(transport).not.toHaveBeenCalled();
   });
 });

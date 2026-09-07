@@ -7,6 +7,7 @@ export SHONGRE_ENV := $(ENVIRONMENT)
 endif
 
 .PHONY: help setup doctor info env-info urls env env-init env-check env-local env-test env-preview env-development env-staging env-production install reinstall \
+	dev-down dev-restart dev-status dev-logs dev-reset dev-clean api-export api-generate api-check docker-up docker-down docker-restart logs-backend logs-worker logs-frontend logs-supabase mail-up \
 	dev demo dev-web dev-development dev-staging staging dev-mobile dev-all start stop stop-all restart status health smoke logs \
 	frontend frontend-start frontend-build frontend-lint frontend-typecheck frontend-test frontend-test-e2e test-web-api-transport frontend-check frontend-clean frontend-logs seo-check seo-audit \
 	backend backend-dev backend-start worker worker-dev worker-start backend-build backend-lint backend-typecheck backend-test backend-check backend-health backend-logs worker-logs \
@@ -86,7 +87,7 @@ env-production: ## Validate production, including required hosted database crede
 	@SHONGRE_ENV=production scripts/env-check.sh
 
 env-matrix-check: ## Validate all six profiles with isolated non-secret resource bindings
-	@node --test scripts/environment-profile.test.mjs
+	@node --test scripts/environment-profile.test.mjs scripts/runtime-fingerprint.test.mjs
 
 doctor: ## Diagnose tools, versions, configuration, ports, and optional platforms
 	@scripts/doctor.sh
@@ -99,12 +100,12 @@ urls: env-check ## Print the selected environment's service URLs without credent
 	@scripts/service-urls.sh
 
 install: ## Install frontend, backend, mobile, and shared workspace dependencies
-	@npm install
+	@npm ci
 
 reinstall: clean-deps install
 
 ##@ Development
-dev: ## Restart the connected Web stack; ENVIRONMENT=local (default), dev, or staging
+dev: ## Ensure the connected Web stack; ENVIRONMENT=local (default), dev, or staging
 	@NEXT_PUBLIC_DATA_MODE=api NEXT_PUBLIC_ENABLE_MOCK_STORAGE=false BACKEND_DATA_MODE=database scripts/dev.sh web
 demo: ## Run the complete Web stack with command-scoped deterministic demo modes
 	@SHONGRE_EXPLICIT_DEMO=true NEXT_PUBLIC_DATA_MODE=demo NEXT_PUBLIC_ENABLE_MOCK_STORAGE=true BACKEND_DATA_MODE=demo DATABASE_INFRA_MODE=local scripts/dev.sh web
@@ -147,10 +148,33 @@ mobile-stop:
 
 stop: stop-all
 stop-all: ## Stop only tracked Shongre application processes
-	@source scripts/env.sh && scripts/service.sh stop frontend "$$FRONTEND_PORT" || true
-	@source scripts/env.sh && scripts/service.sh stop backend "$$BACKEND_PORT" || true
-	@source scripts/env.sh && scripts/service.sh stop worker none || true
-	@source scripts/env.sh && scripts/service.sh stop metro "$$EXPO_METRO_PORT" || true
+	@source scripts/env.sh || exit $$?; \
+	result=0; \
+	for service_name in frontend backend worker metro; do \
+		scripts/service.sh stop "$$service_name" auto || result=1; \
+	done; \
+	exit "$$result"
+
+dev-down: ## Stop owned applications, local containers, and Supabase without deleting data
+	@source scripts/env.sh && [[ "$$APP_ENV" == local ]] || { echo 'dev-down requires ENVIRONMENT=local'; exit 2; }
+	@$(MAKE) stop-all
+	@scripts/compose.sh stop
+	@scripts/supabase.sh down
+dev-restart: ## Stop the complete local stack, then start it again
+	@$(MAKE) dev-down
+	@$(MAKE) dev
+dev-status: status ## Show local processes, infrastructure, and configured URLs
+dev-logs: logs ## Show the bounded application log view
+dev-reset: dev-down ## Destructively recreate only the proven local database, then reseed
+	@$(MAKE) supabase-up
+	@$(MAKE) db-reset
+	@$(MAKE) db-seed
+dev-clean: clean ## Stop owned applications and remove disposable files; preserve database volumes
+logs-backend: backend-logs ## Show bounded API logs
+logs-worker: worker-logs ## Show bounded worker logs
+logs-frontend: frontend-logs ## Show bounded frontend logs
+logs-supabase: supabase-logs ## Show local Supabase endpoints and container log guidance
+mail-up: supabase-up ## Ensure the existing Supabase-owned Mailpit sink is available
 
 restart: dev
 
@@ -226,6 +250,11 @@ openapi-docs: ## Build standalone API reference documentation
 	@npm run openapi:docs
 openapi-breaking-check: ## Compare the contract with OPENAPI_BASE_REF when configured
 	@npm run openapi:breaking
+api-export: ## Export the canonical OpenAPI JSON as a generated YAML artifact
+	@node backend/scripts/openapi/export-yaml.mjs
+api-generate: openapi-generate ## Generate shared transport types, operations, and backend manifests
+api-check: openapi-check contracts-typecheck openapi-breaking-check ## Verify contract validity, generated drift, compilation, and configured base comparison
+
 api-schema: openapi-lint openapi-check ## Validate the canonical OpenAPI schema
 api-types: openapi-generate openapi-check ## Regenerate and compile OpenAPI client contracts
 release-manifest-check: ## Test digest, commit, OpenAPI, and migration manifest invariants
@@ -235,12 +264,12 @@ deployment-config-check: ## Test deploy-file isolation, target binding, and perm
 operations-tooling-check: ## Test release evidence, hosted load, storage restore, and observability tooling
 	@$(MAKE) capability-inventory-check
 	@node scripts/production-readiness.test.mjs
-	@npx tsx scripts/load-smoke.test.mjs
-	@APP_ENV=test npx tsx scripts/database-performance-plan.test.mjs
-	@npx tsx scripts/verify-storage-restore.test.mjs
-	@npx tsx scripts/verify-observability.test.mjs
+	@node --import tsx scripts/load-smoke.test.mjs
+	@APP_ENV=test node --import tsx scripts/database-performance-plan.test.mjs
+	@node --import tsx scripts/verify-storage-restore.test.mjs
+	@node --import tsx scripts/verify-observability.test.mjs
 	@node scripts/check-runtime-hostnames.test.mjs
-	@npx tsx scripts/check-performance-contract.mjs
+	@node --import tsx scripts/check-performance-contract.mjs
 	@npm run local-fixtures:check
 
 local-fixtures-sync: ## Refresh the versioned local database scenario and its media assets
@@ -262,7 +291,7 @@ brand-sync: ## Synchronize approved runtime assets from the canonical SHONGRE. k
 brand-check: ## Validate the canonical kit, runtime mappings, and public boundary
 	@npm run brand:check
 	@node scripts/check-brand-version-references.mjs
-	@npm exec -- tsx scripts/verify-brand-version-propagation.ts
+	@node --import tsx scripts/verify-brand-version-propagation.ts
 
 brand-activate: ## Activate VERSION transactionally (usage: make brand-activate VERSION=vX.Y.Z)
 	@test -n "$(VERSION)" || { echo "VERSION is required" >&2; exit 2; }
@@ -379,6 +408,12 @@ docker-start: ## Start the loopback-only local container topology
 	@scripts/compose.sh start
 docker-stop: ## Stop only this checkout's local container topology
 	@scripts/compose.sh stop
+docker-up: docker-start ## Start the canonical local container topology
+docker-down: docker-stop ## Stop the canonical local containers without deleting volumes
+docker-restart: ## Restart the canonical local container topology
+	@$(MAKE) docker-down
+	@$(MAKE) docker-up
+
 docker-status:
 	@scripts/compose.sh status
 docker-health:
@@ -402,15 +437,15 @@ production-release-check:
 backup-restore-test:
 	@scripts/verify-backup-restore.sh
 storage-restore-test: ## Verify a representative object from backup through an isolated restore target
-	@npx tsx scripts/verify-storage-restore.mjs
+	@node --import tsx scripts/verify-storage-restore.mjs
 performance-smoke: ## Measure hosted API success-rate and p95 budgets and write release evidence
-	@npx tsx scripts/load-smoke.mjs
+	@node --import tsx scripts/load-smoke.mjs
 performance-db-plan: ## EXPLAIN a production-sized discovery shape in an isolated local PostgreSQL session
-	@source scripts/env.sh && npx tsx scripts/database-performance-plan.mjs
+	@source scripts/env.sh && node --import tsx scripts/database-performance-plan.mjs
 performance-check: ## Reject drift in SLOs, budgets, cache policy, timeouts, and hot-query projections
-	@npx tsx scripts/check-performance-contract.mjs
+	@node --import tsx scripts/check-performance-contract.mjs
 observability-evidence: ## Prove request IDs and record confirmed drain, trace, alert, and on-call evidence
-	@npx tsx scripts/verify-observability.mjs
+	@node --import tsx scripts/verify-observability.mjs
 edge-functions-evidence: ## Prove only reviewed Supabase Edge Functions are deployed
 	@node scripts/verify-edge-functions.mjs
 secret-scan:
@@ -525,7 +560,6 @@ rollback: ## Roll back by digest; usage: make rollback ENVIRONMENT=staging RELEA
 	@[[ "$${RELEASE_SHA:-}" =~ ^[0-9a-f]{40}$$ ]] || { echo 'RELEASE_SHA must be a full known-good commit SHA'; exit 2; }; RELEASE_SHA="$$RELEASE_SHA" scripts/deploy.sh rollback "$${ENVIRONMENT:-}"
 remote-health: ## Verify a deployed target; usage: make remote-health ENVIRONMENT=staging
 	@scripts/remote-health.sh "$${ENVIRONMENT:-}"
-
 ##@ Maintenance
 clean: stop-all ## Remove disposable build, cache, coverage, and test artifacts
 	@[[ ! -d frontend/.next ]] || rm -rf frontend/.next

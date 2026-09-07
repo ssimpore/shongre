@@ -18,7 +18,11 @@ fi
 
 pid_file="$(shongre_pid_file "$service_name")"
 log_file="$SHONGRE_ROOT/.runtime/logs/${service_name}.log"
+fingerprint_file="${pid_file}.fingerprint"
 mkdir -p "$SHONGRE_ROOT/.runtime/logs"
+if [[ "$service_name" == worker ]]; then
+  export WORKER_HEALTH_FILE="${WORKER_HEALTH_FILE:-$SHONGRE_ROOT/.runtime/worker-health.json}"
+fi
 
 if [[ "$port" == "auto" || -z "$port" ]]; then
   port="$(shongre_service_port "$service_name")" || {
@@ -55,12 +59,12 @@ stop_service() {
   if shongre_pid_is_running "$tracked_pid"; then
     if ! shongre_pid_belongs_to_project "$tracked_pid" "$service_name"; then
       shongre_fail "stale PID file points to an unrelated process; removing tracking only"
-      rm -f "$pid_file"
+      rm -f "$pid_file" "$fingerprint_file"
       return 1
     fi
     shongre_stop_process_tree "$tracked_pid" "$service_name"
   fi
-  rm -f "$pid_file"
+  rm -f "$pid_file" "$fingerprint_file"
   shongre_pass "$service_name stopped"
 }
 
@@ -80,9 +84,12 @@ case "$action" in
       if [[ -n "$child_pid" ]] && shongre_pid_is_running "$child_pid"; then
         shongre_stop_process_tree "$child_pid" "$service_name" || true
       fi
-      rm -f "$pid_file"
+      if [[ -f "$pid_file" && "$(tr -dc '0-9' < "$pid_file")" == "$child_pid" ]]; then
+        rm -f "$pid_file" "$fingerprint_file"
+      fi
     }
     trap cleanup INT TERM EXIT
+    node "$SHONGRE_ROOT/scripts/runtime-fingerprint.mjs" > "$fingerprint_file"
     "$@" &
     child_pid=$!
     printf '%s\n' "$child_pid" > "$pid_file"
@@ -132,7 +139,7 @@ case "$action" in
         printf 'RUNNING %s\n' "$tracked_pid"
         exit 0
       fi
-      rm -f "$pid_file"
+      rm -f "$pid_file" "$fingerprint_file"
     fi
     printf 'STOPPED -\n'
     ;;

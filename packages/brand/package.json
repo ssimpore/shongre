@@ -11,8 +11,8 @@
     "./web": "./src/web-assets.generated.ts"
   },
   "scripts": {
-    "assets": "tsx ../../scripts/sync-brand-assets.ts",
-    "check:assets": "tsx ../../scripts/check-brand-assets.ts",
+    "assets": "node --import tsx ../../scripts/sync-brand-assets.ts",
+    "check:assets": "node --import tsx ../../scripts/check-brand-assets.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "build": "tsc --noEmit",

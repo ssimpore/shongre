@@ -17,12 +17,16 @@ interface ExploreMapViewProps {
   listings: Listing[];
   selectedCity?: string;
   onSelectCity?: (city: string) => void;
+  fillHeight?: boolean;
+  showResultsSidebar?: boolean;
 }
 
 export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
   listings,
   selectedCity,
   onSelectCity,
+  fillHeight = false,
+  showResultsSidebar = true,
 }) => {
   const { t } = useTranslation();
   const { activeMarket, currentLocale, convertMoney, popularCities } =
@@ -260,7 +264,9 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
   return (
     <div
       data-search-results-map
-      className="relative w-full overflow-hidden rounded-2xl border border-border-base bg-bg-base shadow-xs"
+      className={`relative w-full overflow-hidden rounded-2xl border border-border-base bg-bg-base shadow-xs ${
+        fillHeight ? "flex h-full min-h-0 flex-col" : ""
+      }`}
     >
       {/* Top Quick Filters Bar */}
       <div className="bg-bg-surface/95 backdrop-blur-sm border-b border-border-base px-4 py-2.5 flex items-center justify-between gap-3 z-sticky shrink-0">
@@ -320,24 +326,32 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
             </span>
           </button>
 
-          <button
-            type="button"
-            onClick={() => setIsSidebarOpen((v) => !v)}
-            className="p-1.5 text-xs font-semibold text-text-supporting hover:text-text-main bg-surface-muted hover:bg-surface-disabled rounded-lg hidden lg:flex items-center gap-1 transition-colors"
-          >
-            <span>
-              {isSidebarOpen ? "Masquer la liste" : "Afficher la liste"}
-            </span>
-          </button>
+          {showResultsSidebar ? (
+            <button
+              type="button"
+              onClick={() => setIsSidebarOpen((value) => !value)}
+              className="hidden items-center gap-1 rounded-lg bg-surface-muted p-1.5 text-xs font-semibold text-text-supporting transition-colors hover:bg-surface-disabled hover:text-text-main lg:flex"
+            >
+              <span>
+                {isSidebarOpen ? "Masquer la liste" : "Afficher la liste"}
+              </span>
+            </button>
+          ) : null}
         </div>
       </div>
 
       {/* Main Map Stage & Floating Sidepanel */}
-      <div className="relative flex h-search-map min-h-0 w-full overflow-hidden sm:h-search-map-tall">
+      <div
+        className={
+          fillHeight
+            ? "relative flex min-h-0 w-full flex-1 overflow-hidden"
+            : "relative flex h-search-map min-h-0 w-full overflow-hidden sm:h-search-map-tall"
+        }
+      >
         {/* Collapsible left sidebar with matching listings.
             Placed before the map in the DOM as well as visually, so tab order
             follows what is on screen rather than jumping the map first. */}
-        {isSidebarOpen && (
+        {showResultsSidebar && isSidebarOpen ? (
           <div className="hidden lg:flex flex-col w-80 xl:w-96 bg-bg-surface/95 backdrop-blur-md border-r border-border-base z-sticky shrink-0">
             <div className="p-3 border-b border-border-base flex items-center justify-between">
               <span className="text-xs font-bold text-text-strong truncate">
@@ -364,7 +378,7 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
               })}
             </div>
           </div>
-        )}
+        ) : null}
 
         {/* Keep the selected listing inside the actual map stage rather than
             growing the page below it. The wrapper also prevents the preview

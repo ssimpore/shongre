@@ -1,3 +1,4 @@
+import { SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS } from "@shongre/contracts/performance";
 import type { ApiPath, operations } from "@shongre/contracts/openapi";
 import { mobileEnvironment } from "@/config/environment";
 import { mobileMarketStore } from "@/features/market/market.store";
@@ -28,10 +29,6 @@ export function isMobileApiError(error: unknown): error is MobileApiError {
   return error instanceof MobileApiError;
 }
 
-async function readToken(): Promise<string | null> {
-  return (await sessionStorage.read())?.token ?? null;
-}
-
 function buildRequestHeaders(
   input: HeadersInit | undefined,
   token: string | null,
@@ -60,10 +57,21 @@ async function fetchApi(
   init: RequestInit,
   token: string | null,
   marketCode: string,
-): Promise<Response> {
+): Promise<{ response: Response; payload: unknown }> {
+  const controller = new AbortController();
+  const abortFromCaller = () => controller.abort(init.signal?.reason);
+  if (init.signal?.aborted) abortFromCaller();
+  else init.signal?.addEventListener("abort", abortFromCaller, { once: true });
+  let timedOut = false;
+  const deadline = setTimeout(() => {
+    timedOut = true;
+    controller.abort();
+  }, SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS.frontend.apiRequestTimeoutMs);
   try {
-    return await fetch(`${mobileEnvironment.apiUrl}${path}`, {
+    if (controller.signal.aborted) throw controller.signal.reason;
+    const response = await fetch(`${mobileEnvironment.apiUrl}${path}`, {
       ...init,
+      signal: controller.signal,
       headers: buildRequestHeaders(
         init.headers,
         token,
@@ -71,12 +79,21 @@ async function fetchApi(
         Boolean(init.body),
       ),
     });
-  } catch {
+    const payload = await responsePayload(response);
+    return { response, payload };
+  } catch (error) {
+    if (init.signal?.aborted && !timedOut) throw error;
+    if (isMobileApiError(error)) throw error;
     throw new MobileApiError(
-      "Connexion impossible. Vérifiez votre réseau puis réessayez.",
+      timedOut
+        ? "Le service met trop de temps à répondre. Réessayez."
+        : "Connexion impossible. Vérifiez votre réseau puis réessayez.",
       0,
-      "NETWORK_ERROR",
+      timedOut ? "TIMEOUT" : "NETWORK_ERROR",
     );
+  } finally {
+    clearTimeout(deadline);
+    init.signal?.removeEventListener("abort", abortFromCaller);
   }
 }
 
@@ -112,7 +129,7 @@ async function refreshSession(
 ): Promise<StoredSession | null> {
   if (!stored.refreshToken) return null;
   const body: RefreshRequest = { refreshToken: stored.refreshToken };
-  const response = await fetchApi(
+  const { response, payload: rawPayload } = await fetchApi(
     "/auth/refresh",
     {
       method: "POST",
@@ -121,8 +138,9 @@ async function refreshSession(
     null,
     marketCode,
   );
-  const payload = (await responsePayload(response)) as RefreshResponse;
-  if (!response.ok) return null;
+  if (response.status === 401 || response.status === 403) return null;
+  if (!response.ok) throw apiError(response, rawPayload);
+  const payload = rawPayload as RefreshResponse;
   if (
     !payload ||
     typeof payload !== "object" ||
@@ -139,43 +157,114 @@ async function refreshSession(
   return payload as unknown as StoredSession;
 }
 
+// Login/logout advance the generation synchronously. Refresh may update only
+// the generation that requested it, even while SecureStore writes are pending.
+let sessionGeneration = 0;
+let mutationTail: Promise<void> = Promise.resolve();
+let refreshFlight: {
+  generation: number;
+  promise: Promise<StoredSession | null>;
+} | null = null;
+
+function mutateSession(operation: () => Promise<void>): Promise<void> {
+  const result = mutationTail.then(operation);
+  mutationTail = result.catch(() => undefined);
+  return result;
+}
+
+function assertSameSession(generation: number): void {
+  if (generation !== sessionGeneration) {
+    throw new MobileApiError(
+      "La session a changé. Réessayez.",
+      401,
+      "SESSION_CHANGED",
+    );
+  }
+}
+
+async function clearSessionIfCurrent(generation: number): Promise<void> {
+  if (generation === sessionGeneration) await sessionStorage.clear();
+}
+
+function recoverSession(
+  stored: StoredSession,
+  marketCode: string,
+  generation: number,
+): Promise<StoredSession | null> {
+  assertSameSession(generation);
+  if (refreshFlight?.generation === generation) return refreshFlight.promise;
+  const promise = (async () => {
+    const current = await sessionStorage.read();
+    assertSameSession(generation);
+    if (!current) return null;
+    // A delayed 401 may arrive after another request already rotated the token.
+    if (current.token !== stored.token) return current;
+    let refreshed: StoredSession | null;
+    try {
+      refreshed = await refreshSession(current, marketCode);
+    } catch (error) {
+      if (isMobileApiError(error) && error.code === "INVALID_API_RESPONSE") {
+        await clearSessionIfCurrent(generation);
+      }
+      throw error;
+    }
+    assertSameSession(generation);
+    if (!refreshed) {
+      await clearSessionIfCurrent(generation);
+      return null;
+    }
+    await mutateSession(async () => {
+      assertSameSession(generation);
+      await secureStorage.set(SESSION_KEY, JSON.stringify(refreshed));
+    });
+    assertSameSession(generation);
+    return refreshed;
+  })();
+  const flight = { generation, promise };
+  refreshFlight = flight;
+  void promise
+    .finally(() => {
+      if (refreshFlight === flight) refreshFlight = null;
+    })
+    .catch(() => undefined);
+  return promise;
+}
+
 export async function apiRequest<T>(
   path: ApiRequestPath,
   init: RequestInit = {},
   requestedMarketCode?: string,
 ): Promise<T> {
   const marketCode = requestedMarketCode ?? mobileMarketStore.getActive().code;
-  const response = await fetchApi(path, init, await readToken(), marketCode);
+  const generation = sessionGeneration;
+  const stored = await sessionStorage.read();
+  assertSameSession(generation);
+  const { response, payload } = await fetchApi(
+    path,
+    init,
+    stored?.token ?? null,
+    marketCode,
+  );
+  assertSameSession(generation);
 
   if (
     response.status === 401 &&
+    stored &&
     path !== "/auth/login" &&
     path !== "/auth/refresh"
   ) {
-    const stored = await sessionStorage.read();
-    if (stored) {
-      let refreshed: StoredSession | null;
-      try {
-        refreshed = await refreshSession(stored, marketCode);
-      } catch (error) {
-        if (isMobileApiError(error) && error.code === "NETWORK_ERROR") {
-          throw error;
-        }
-        await sessionStorage.clear();
-        throw error;
-      }
-      if (refreshed) {
-        await sessionStorage.write(refreshed);
-        const retry = await fetchApi(path, init, refreshed.token, marketCode);
-        const retryPayload = await responsePayload(retry);
-        if (retry.ok) return retryPayload as T;
-        if (retry.status !== 401) throw apiError(retry, retryPayload);
-      }
-      await sessionStorage.clear();
+    const refreshed = await recoverSession(stored, marketCode, generation);
+    if (refreshed) {
+      assertSameSession(generation);
+      if (init.signal?.aborted) throw init.signal.reason;
+      const retry = await fetchApi(path, init, refreshed.token, marketCode);
+      assertSameSession(generation);
+      if (retry.response.ok) return retry.payload as T;
+      if (retry.response.status === 401)
+        await clearSessionIfCurrent(generation);
+      throw apiError(retry.response, retry.payload);
     }
   }
-
-  const payload = await responsePayload(response);
   if (!response.ok) throw apiError(response, payload);
   return payload as T;
 }
@@ -183,19 +272,23 @@ export async function apiRequest<T>(
 export const sessionStorage = {
   key: SESSION_KEY,
   async read(): Promise<StoredSession | null> {
+    await mutationTail;
     const raw = await secureStorage.get(SESSION_KEY);
     if (!raw) return null;
     try {
       return JSON.parse(raw) as StoredSession;
     } catch {
-      await secureStorage.remove(SESSION_KEY);
       return null;
     }
   },
-  async write(session: StoredSession): Promise<void> {
-    await secureStorage.set(SESSION_KEY, JSON.stringify(session));
+  write(session: StoredSession): Promise<void> {
+    sessionGeneration += 1;
+    return mutateSession(() =>
+      secureStorage.set(SESSION_KEY, JSON.stringify(session)),
+    );
   },
-  async clear(): Promise<void> {
-    await secureStorage.remove(SESSION_KEY);
+  clear(): Promise<void> {
+    sessionGeneration += 1;
+    return mutateSession(() => secureStorage.remove(SESSION_KEY));
   },
 };

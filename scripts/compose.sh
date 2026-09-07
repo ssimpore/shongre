@@ -39,7 +39,8 @@ case "$action" in
   health)
     "${compose[@]}" exec -T frontend node -e "fetch('http://127.0.0.1:' + process.env.FRONTEND_PORT + '/healthz').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
     "${compose[@]}" exec -T backend node -e "fetch('http://127.0.0.1:' + process.env.BACKEND_PORT + '/readyz').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
-    shongre_pass "frontend and backend containers are healthy"
+    "${compose[@]}" exec -T worker node dist/worker-health.js
+    shongre_pass "frontend, backend, and worker containers are healthy"
     ;;
   logs)
     "${compose[@]}" logs --tail=200 frontend backend worker

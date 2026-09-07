@@ -18,11 +18,13 @@ inventory is [`generated/endpoint-inventory.md`](generated/endpoint-inventory.md
    responses, and security schemes from `components`.
 2. Assign a unique `operationId`, explicit `security`, `x-shongre-access`, and,
    for permission-protected operations, `x-shongre-permission`.
-3. Run `make openapi-generate` to regenerate the shared TypeScript paths,
+3. Run `make api-generate` to regenerate shared operation functions, TypeScript paths,
    backend runtime manifest, and endpoint inventory.
-4. Implement the route in `backend/src/api/v1/router.ts`. The router refuses to
+4. Implement the handler in the owning `backend/src/modules/*/api/` registrar
+   and compose it in `backend/src/api/v1/router.ts`. The router refuses to
    boot if its method, path, access rule, or permission diverges from OpenAPI.
-5. Consume it through a Web or mobile HTTP adapter. Import path types from
+5. Consume it through a Web or mobile HTTP adapter. Import generated functions
+   from `@shongre/contracts/api-client` and transport types from
    `@shongre/contracts/openapi`; do not duplicate endpoint unions or wire DTOs.
 6. Add contract and integration coverage, then run `make openapi-check` and the
    relevant workspace tests.
@@ -30,6 +32,7 @@ inventory is [`generated/endpoint-inventory.md`](generated/endpoint-inventory.md
 Generated files are read-only:
 
 - `packages/contracts/src/generated/openapi.ts`
+- `packages/contracts/src/generated/api-client.ts`
 - `backend/src/generated/openapi-manifest.ts`
 - `backend/docs/generated/endpoint-inventory.md`
 
@@ -55,7 +58,7 @@ Additive changes remain in `/api/v1`. Removing or changing an established
 request/response requires either a new major prefix or a staged deprecation.
 A staged removal must set `deprecated: true` and `x-sunset-at` in a released
 contract, publish a migration path, migrate all repository consumers, and only
-then remove the operation. Compatibility aliases are exceptional, time-boxed,
+then remove the operation after its valid sunset date. Compatibility aliases are exceptional, time-boxed,
 documented in OpenAPI, and have an owner and sunset date.
 
 The API prefix is fixed at `/api/v1`; it is not a deploy-time variation. The

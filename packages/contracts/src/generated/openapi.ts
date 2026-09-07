@@ -13,10 +13,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /account/delete
-         * @description Implemented by backend/src/api/v1/router.ts:529.
-         */
+        /** POST /account/delete */
         readonly post: operations["postAccountDelete"];
         readonly delete?: never;
         readonly options?: never;
@@ -68,10 +65,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /admin/audit-logs
-         * @description Implemented by backend/src/api/v1/router.ts:2587.
-         */
+        /** GET /admin/audit-logs */
         readonly get: operations["getAdminAuditLogs"];
         readonly put?: never;
         readonly post?: never;
@@ -88,10 +82,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /admin/business-rules
-         * @description Implemented by backend/src/api/v1/router.ts:1838.
-         */
+        /** GET /admin/business-rules */
         readonly get: operations["getAdminBusinessRules"];
         readonly put?: never;
         readonly post?: never;
@@ -110,10 +101,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /admin/business-rules/drafts
-         * @description Implemented by backend/src/api/v1/router.ts:1992.
-         */
+        /** POST /admin/business-rules/drafts */
         readonly post: operations["postAdminBusinessRulesDrafts"];
         readonly delete?: never;
         readonly options?: never;
@@ -130,10 +118,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /admin/business-rules/simulate
-         * @description Implemented by backend/src/api/v1/router.ts:1845.
-         */
+        /** POST /admin/business-rules/simulate */
         readonly post: operations["postAdminBusinessRulesSimulate"];
         readonly delete?: never;
         readonly options?: never;
@@ -150,10 +135,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /admin/business-rules/versions/:id/approve
-         * @description Implemented by backend/src/api/v1/router.ts:2029.
-         */
+        /** POST /admin/business-rules/versions/:id/approve */
         readonly post: operations["postAdminBusinessRulesVersionsByIdApprove"];
         readonly delete?: never;
         readonly options?: never;
@@ -170,10 +152,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /admin/business-rules/versions/:id/publish
-         * @description Implemented by backend/src/api/v1/router.ts:2041.
-         */
+        /** POST /admin/business-rules/versions/:id/publish */
         readonly post: operations["postAdminBusinessRulesVersionsByIdPublish"];
         readonly delete?: never;
         readonly options?: never;
@@ -190,10 +169,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /admin/business-rules/versions/:id/rollback
-         * @description Implemented by backend/src/api/v1/router.ts:2053.
-         */
+        /** POST /admin/business-rules/versions/:id/rollback */
         readonly post: operations["postAdminBusinessRulesVersionsByIdRollback"];
         readonly delete?: never;
         readonly options?: never;
@@ -210,10 +186,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /admin/business-rules/versions/:id/submit
-         * @description Implemented by backend/src/api/v1/router.ts:2017.
-         */
+        /** POST /admin/business-rules/versions/:id/submit */
         readonly post: operations["postAdminBusinessRulesVersionsByIdSubmit"];
         readonly delete?: never;
         readonly options?: never;
@@ -228,10 +201,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /admin/commissions/analytics
-         * @description Implemented by backend/src/api/v1/router.ts:1869.
-         */
+        /** GET /admin/commissions/analytics */
         readonly get: operations["getAdminCommissionsAnalytics"];
         readonly put?: never;
         readonly post?: never;
@@ -248,10 +218,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /admin/commissions/calculations/:id
-         * @description Implemented by backend/src/api/v1/router.ts:1857.
-         */
+        /** GET /admin/commissions/calculations/:id */
         readonly get: operations["getAdminCommissionsCalculationsById"];
         readonly put?: never;
         readonly post?: never;
@@ -270,10 +237,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /admin/commissions/calculations/:id/reversals
-         * @description Implemented by backend/src/api/v1/router.ts:1863.
-         */
+        /** POST /admin/commissions/calculations/:id/reversals */
         readonly post: operations["postAdminCommissionsCalculationsByIdReversals"];
         readonly delete?: never;
         readonly options?: never;
@@ -290,10 +254,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /admin/commissions/drafts
-         * @description Implemented by backend/src/api/v1/router.ts:1884.
-         */
+        /** POST /admin/commissions/drafts */
         readonly post: operations["postAdminCommissionsDrafts"];
         readonly delete?: never;
         readonly options?: never;
@@ -310,10 +271,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /admin/commissions/simulate
-         * @description Implemented by backend/src/api/v1/router.ts:1851.
-         */
+        /** POST /admin/commissions/simulate */
         readonly post: operations["postAdminCommissionsSimulate"];
         readonly delete?: never;
         readonly options?: never;
@@ -330,10 +288,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /admin/commissions/versions/:id/approve
-         * @description Implemented by backend/src/api/v1/router.ts:1915.
-         */
+        /** POST /admin/commissions/versions/:id/approve */
         readonly post: operations["postAdminCommissionsVersionsByIdApprove"];
         readonly delete?: never;
         readonly options?: never;
@@ -350,10 +305,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /admin/commissions/versions/:id/publish
-         * @description Implemented by backend/src/api/v1/router.ts:1927.
-         */
+        /** POST /admin/commissions/versions/:id/publish */
         readonly post: operations["postAdminCommissionsVersionsByIdPublish"];
         readonly delete?: never;
         readonly options?: never;
@@ -370,10 +322,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /admin/commissions/versions/:id/submit
-         * @description Implemented by backend/src/api/v1/router.ts:1903.
-         */
+        /** POST /admin/commissions/versions/:id/submit */
         readonly post: operations["postAdminCommissionsVersionsByIdSubmit"];
         readonly delete?: never;
         readonly options?: never;
@@ -388,10 +337,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /admin/compliance/audit
-         * @description Implemented by backend/src/api/v1/router.ts:2510.
-         */
+        /** GET /admin/compliance/audit */
         readonly get: operations["getAdminComplianceAudit"];
         readonly put?: never;
         readonly post?: never;
@@ -410,10 +356,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /admin/compliance/retention/run
-         * @description Implemented by backend/src/api/v1/router.ts:2521.
-         */
+        /** POST /admin/compliance/retention/run */
         readonly post: operations["postAdminComplianceRetentionRun"];
         readonly delete?: never;
         readonly options?: never;
@@ -428,10 +371,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /admin/compliance/reviews
-         * @description Implemented by backend/src/api/v1/router.ts:2541.
-         */
+        /** GET /admin/compliance/reviews */
         readonly get: operations["getAdminComplianceReviews"];
         readonly put?: never;
         readonly post?: never;
@@ -450,10 +390,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /admin/compliance/reviews/:caseId/decision
-         * @description Implemented by backend/src/api/v1/router.ts:2550.
-         */
+        /** POST /admin/compliance/reviews/:caseId/decision */
         readonly post: operations["postAdminComplianceReviewsByCaseIdDecision"];
         readonly delete?: never;
         readonly options?: never;
@@ -468,10 +405,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /admin/compliance/rules
-         * @description Implemented by backend/src/api/v1/router.ts:2487.
-         */
+        /** GET /admin/compliance/rules */
         readonly get: operations["getAdminComplianceRules"];
         readonly put?: never;
         readonly post?: never;
@@ -489,10 +423,7 @@ export interface paths {
             readonly cookie?: never;
         };
         readonly get?: never;
-        /**
-         * PUT /admin/compliance/rules/:ruleId
-         * @description Implemented by backend/src/api/v1/router.ts:2493.
-         */
+        /** PUT /admin/compliance/rules/:ruleId */
         readonly put: operations["putAdminComplianceRulesByRuleId"];
         readonly post?: never;
         readonly delete?: never;
@@ -510,10 +441,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /admin/compliance/users/:userId/requirements
-         * @description Implemented by backend/src/api/v1/router.ts:2534.
-         */
+        /** POST /admin/compliance/users/:userId/requirements */
         readonly post: operations["postAdminComplianceUsersByUserIdRequirements"];
         readonly delete?: never;
         readonly options?: never;
@@ -528,10 +456,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /admin/compliance/users/:userId/status
-         * @description Implemented by backend/src/api/v1/router.ts:2528.
-         */
+        /** GET /admin/compliance/users/:userId/status */
         readonly get: operations["getAdminComplianceUsersByUserIdStatus"];
         readonly put?: never;
         readonly post?: never;
@@ -687,10 +612,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /admin/discovery/configuration
-         * @description Implemented by backend/src/api/v1/router.ts:1939.
-         */
+        /** GET /admin/discovery/configuration */
         readonly get: operations["getAdminDiscoveryConfiguration"];
         readonly put?: never;
         readonly post?: never;
@@ -709,10 +631,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /admin/discovery/configuration/drafts
-         * @description Implemented by backend/src/api/v1/router.ts:1970.
-         */
+        /** POST /admin/discovery/configuration/drafts */
         readonly post: operations["postAdminDiscoveryConfigurationDrafts"];
         readonly delete?: never;
         readonly options?: never;
@@ -729,10 +648,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /admin/discovery/configuration/publish
-         * @description Implemented by backend/src/api/v1/router.ts:1981.
-         */
+        /** POST /admin/discovery/configuration/publish */
         readonly post: operations["postAdminDiscoveryConfigurationPublish"];
         readonly delete?: never;
         readonly options?: never;
@@ -749,10 +665,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /admin/discovery/explain
-         * @description Implemented by backend/src/api/v1/router.ts:1950.
-         */
+        /** POST /admin/discovery/explain */
         readonly post: operations["postAdminDiscoveryExplain"];
         readonly delete?: never;
         readonly options?: never;
@@ -767,10 +680,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /admin/discovery/metrics
-         * @description Implemented by backend/src/api/v1/router.ts:1960.
-         */
+        /** GET /admin/discovery/metrics */
         readonly get: operations["getAdminDiscoveryMetrics"];
         readonly put?: never;
         readonly post?: never;
@@ -960,10 +870,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /admin/monetization/complimentary-grants/requests
-         * @description Implemented by backend/src/api/v1/router.ts:1999.
-         */
+        /** POST /admin/monetization/complimentary-grants/requests */
         readonly post: operations["postAdminMonetizationComplimentaryGrantsRequests"];
         readonly delete?: never;
         readonly options?: never;
@@ -980,10 +887,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /admin/monetization/complimentary-grants/requests/:id/decision
-         * @description Implemented by backend/src/api/v1/router.ts:2006.
-         */
+        /** POST /admin/monetization/complimentary-grants/requests/:id/decision */
         readonly post: operations["postAdminMonetizationComplimentaryGrantsRequestsByIdDecision"];
         readonly delete?: never;
         readonly options?: never;
@@ -1000,10 +904,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /admin/providers/:providerId/test
-         * @description Implemented by backend/src/api/v1/router.ts:2432.
-         */
+        /** POST /admin/providers/:providerId/test */
         readonly post: operations["postAdminProvidersByProviderIdTest"];
         readonly delete?: never;
         readonly options?: never;
@@ -1018,10 +919,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /admin/providers/control-plane
-         * @description Implemented by backend/src/api/v1/router.ts:2426.
-         */
+        /** GET /admin/providers/control-plane */
         readonly get: operations["getAdminProvidersControlPlane"];
         readonly put?: never;
         readonly post?: never;
@@ -1038,10 +936,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /admin/reports
-         * @description Implemented by backend/src/api/v1/router.ts:2562.
-         */
+        /** GET /admin/reports */
         readonly get: operations["getAdminReports"];
         readonly put?: never;
         readonly post?: never;
@@ -1060,10 +955,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /admin/reports/:reportId/resolve
-         * @description Implemented by backend/src/api/v1/router.ts:2568.
-         */
+        /** POST /admin/reports/:reportId/resolve */
         readonly post: operations["postAdminReportsByReportIdResolve"];
         readonly delete?: never;
         readonly options?: never;
@@ -1164,10 +1056,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /admin/stats
-         * @description Implemented by backend/src/api/v1/router.ts:2439.
-         */
+        /** GET /admin/stats */
         readonly get: operations["getAdminStats"];
         readonly put?: never;
         readonly post?: never;
@@ -1202,15 +1091,9 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /admin/trending/config
-         * @description Implemented by backend/src/api/v1/router.ts:2593.
-         */
+        /** GET /admin/trending/config */
         readonly get: operations["getAdminTrendingConfig"];
-        /**
-         * PUT /admin/trending/config
-         * @description Implemented by backend/src/api/v1/router.ts:2602.
-         */
+        /** PUT /admin/trending/config */
         readonly put: operations["putAdminTrendingConfig"];
         readonly post?: never;
         readonly delete?: never;
@@ -1227,10 +1110,7 @@ export interface paths {
             readonly cookie?: never;
         };
         readonly get?: never;
-        /**
-         * PUT /admin/trending/overrides/:topicKey
-         * @description Implemented by backend/src/api/v1/router.ts:2614.
-         */
+        /** PUT /admin/trending/overrides/:topicKey */
         readonly put: operations["putAdminTrendingOverridesByTopicKey"];
         readonly post?: never;
         readonly delete?: never;
@@ -1246,10 +1126,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /admin/users
-         * @description Implemented by backend/src/api/v1/router.ts:2445.
-         */
+        /** GET /admin/users */
         readonly get: operations["getAdminUsers"];
         readonly put?: never;
         readonly post?: never;
@@ -1327,10 +1204,7 @@ export interface paths {
             readonly cookie?: never;
         };
         readonly get?: never;
-        /**
-         * PUT /admin/users/:userId/status
-         * @description Implemented by backend/src/api/v1/router.ts:2448.
-         */
+        /** PUT /admin/users/:userId/status */
         readonly put: operations["putAdminUsersByUserIdStatus"];
         readonly post?: never;
         readonly delete?: never;
@@ -1347,10 +1221,7 @@ export interface paths {
             readonly cookie?: never;
         };
         readonly get?: never;
-        /**
-         * PUT /admin/users/:userId/verification
-         * @description Implemented by backend/src/api/v1/router.ts:2475.
-         */
+        /** PUT /admin/users/:userId/verification */
         readonly put: operations["putAdminUsersByUserIdVerification"];
         readonly post?: never;
         readonly delete?: never;
@@ -1368,10 +1239,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /ai/listing-assistance
-         * @description Implemented by backend/src/api/v1/router.ts:497.
-         */
+        /** POST /ai/listing-assistance */
         readonly post: operations["postAiListingAssistance"];
         readonly delete?: never;
         readonly options?: never;
@@ -1388,10 +1256,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /ai/listing-safety
-         * @description Implemented by backend/src/api/v1/router.ts:503.
-         */
+        /** POST /ai/listing-safety */
         readonly post: operations["postAiListingSafety"];
         readonly delete?: never;
         readonly options?: never;
@@ -1535,6 +1400,23 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/api/docs": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** Offline API operation reference */
+        readonly get: operations["getApiDocumentation"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/api/health": {
         readonly parameters: {
             readonly query?: never;
@@ -1544,6 +1426,23 @@ export interface paths {
         };
         /** Compatibility process-health endpoint */
         readonly get: operations["getApiHealth"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/api/openapi.json": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** Canonical OpenAPI 3.1 contract */
+        readonly get: operations["getOpenApiDocument"];
         readonly put?: never;
         readonly post?: never;
         readonly delete?: never;
@@ -1613,10 +1512,7 @@ export interface paths {
         readonly get?: never;
         readonly put?: never;
         readonly post?: never;
-        /**
-         * DELETE /auth/identities/:provider
-         * @description Implemented by backend/src/api/v1/router.ts:416.
-         */
+        /** DELETE /auth/identities/:provider */
         readonly delete: operations["deleteAuthIdentitiesByProvider"];
         readonly options?: never;
         readonly head?: never;
@@ -1632,10 +1528,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /auth/login
-         * @description Implemented by backend/src/api/v1/router.ts:167.
-         */
+        /** POST /auth/login */
         readonly post: operations["postAuthLogin"];
         readonly delete?: never;
         readonly options?: never;
@@ -1652,10 +1545,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /auth/logout
-         * @description Implemented by backend/src/api/v1/router.ts:196.
-         */
+        /** POST /auth/logout */
         readonly post: operations["postAuthLogout"];
         readonly delete?: never;
         readonly options?: never;
@@ -1672,10 +1562,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /auth/logout-all
-         * @description Implemented by backend/src/api/v1/router.ts:229.
-         */
+        /** POST /auth/logout-all */
         readonly post: operations["postAuthLogoutAll"];
         readonly delete?: never;
         readonly options?: never;
@@ -1690,10 +1577,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /auth/me
-         * @description Implemented by backend/src/api/v1/router.ts:164.
-         */
+        /** GET /auth/me */
         readonly get: operations["getAuthMe"];
         readonly put?: never;
         readonly post?: never;
@@ -1796,16 +1680,10 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /auth/oauth/:provider/callback
-         * @description Implemented by backend/src/api/v1/router.ts:366.
-         */
+        /** GET /auth/oauth/:provider/callback */
         readonly get: operations["getAuthOauthByProviderCallback"];
         readonly put?: never;
-        /**
-         * POST /auth/oauth/:provider/callback
-         * @description Implemented by backend/src/api/v1/router.ts:372.
-         */
+        /** POST /auth/oauth/:provider/callback */
         readonly post: operations["postAuthOauthByProviderCallback"];
         readonly delete?: never;
         readonly options?: never;
@@ -1822,10 +1700,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /auth/oauth/:provider/start
-         * @description Implemented by backend/src/api/v1/router.ts:290.
-         */
+        /** POST /auth/oauth/:provider/start */
         readonly post: operations["postAuthOauthByProviderStart"];
         readonly delete?: never;
         readonly options?: never;
@@ -1842,10 +1717,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /auth/oauth/complete-profile
-         * @description Implemented by backend/src/api/v1/router.ts:378.
-         */
+        /** POST /auth/oauth/complete-profile */
         readonly post: operations["postAuthOauthCompleteProfile"];
         readonly delete?: never;
         readonly options?: never;
@@ -1862,10 +1734,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /auth/oauth/facebook/data-deletion
-         * @description Implemented by backend/src/api/v1/router.ts:429.
-         */
+        /** POST /auth/oauth/facebook/data-deletion */
         readonly post: operations["postAuthOauthFacebookDataDeletion"];
         readonly delete?: never;
         readonly options?: never;
@@ -1880,10 +1749,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /auth/oauth/facebook/data-deletion/status
-         * @description Implemented by backend/src/api/v1/router.ts:436.
-         */
+        /** GET /auth/oauth/facebook/data-deletion/status */
         readonly get: operations["getAuthOauthFacebookDataDeletionStatus"];
         readonly put?: never;
         readonly post?: never;
@@ -1902,10 +1768,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /auth/oauth/native-exchange
-         * @description Implemented by backend/src/api/v1/router.ts:390.
-         */
+        /** POST /auth/oauth/native-exchange */
         readonly post: operations["postAuthOauthNativeExchange"];
         readonly delete?: never;
         readonly options?: never;
@@ -1920,10 +1783,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /auth/oauth/providers
-         * @description Implemented by backend/src/api/v1/router.ts:287.
-         */
+        /** GET /auth/oauth/providers */
         readonly get: operations["getAuthOauthProviders"];
         readonly put?: never;
         readonly post?: never;
@@ -1942,10 +1802,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /auth/password/add
-         * @description Implemented by backend/src/api/v1/router.ts:277.
-         */
+        /** POST /auth/password/add */
         readonly post: operations["postAuthPasswordAdd"];
         readonly delete?: never;
         readonly options?: never;
@@ -1962,10 +1819,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /auth/password/change
-         * @description Implemented by backend/src/api/v1/router.ts:264.
-         */
+        /** POST /auth/password/change */
         readonly post: operations["postAuthPasswordChange"];
         readonly delete?: never;
         readonly options?: never;
@@ -1982,10 +1836,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /auth/password/forgot
-         * @description Implemented by backend/src/api/v1/router.ts:476.
-         */
+        /** POST /auth/password/forgot */
         readonly post: operations["postAuthPasswordForgot"];
         readonly delete?: never;
         readonly options?: never;
@@ -2002,10 +1853,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /auth/password/reset
-         * @description Implemented by backend/src/api/v1/router.ts:483.
-         */
+        /** POST /auth/password/reset */
         readonly post: operations["postAuthPasswordReset"];
         readonly delete?: never;
         readonly options?: never;
@@ -2022,10 +1870,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /auth/reauthenticate
-         * @description Implemented by backend/src/api/v1/router.ts:257.
-         */
+        /** POST /auth/reauthenticate */
         readonly post: operations["postAuthReauthenticate"];
         readonly delete?: never;
         readonly options?: never;
@@ -2042,10 +1887,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /auth/refresh
-         * @description Implemented by backend/src/api/v1/router.ts:206.
-         */
+        /** POST /auth/refresh */
         readonly post: operations["postAuthRefresh"];
         readonly delete?: never;
         readonly options?: never;
@@ -2062,10 +1904,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /auth/register
-         * @description Implemented by backend/src/api/v1/router.ts:179.
-         */
+        /** POST /auth/register */
         readonly post: operations["postAuthRegister"];
         readonly delete?: never;
         readonly options?: never;
@@ -2080,10 +1919,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /auth/security
-         * @description Implemented by backend/src/api/v1/router.ts:406.
-         */
+        /** GET /auth/security */
         readonly get: operations["getAuthSecurity"];
         readonly put?: never;
         readonly post?: never;
@@ -2100,10 +1936,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /auth/sessions
-         * @description Implemented by backend/src/api/v1/router.ts:239.
-         */
+        /** GET /auth/sessions */
         readonly get: operations["getAuthSessions"];
         readonly put?: never;
         readonly post?: never;
@@ -2123,10 +1956,7 @@ export interface paths {
         readonly get?: never;
         readonly put?: never;
         readonly post?: never;
-        /**
-         * DELETE /auth/sessions/:id
-         * @description Implemented by backend/src/api/v1/router.ts:247.
-         */
+        /** DELETE /auth/sessions/:id */
         readonly delete: operations["deleteAuthSessionsById"];
         readonly options?: never;
         readonly head?: never;
@@ -2142,10 +1972,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /auth/switch-role
-         * @description Implemented by backend/src/api/v1/router.ts:443.
-         */
+        /** POST /auth/switch-role */
         readonly post: operations["postAuthSwitchRole"];
         readonly delete?: never;
         readonly options?: never;
@@ -2162,10 +1989,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /auth/verify-email
-         * @description Implemented by backend/src/api/v1/router.ts:465.
-         */
+        /** POST /auth/verify-email */
         readonly post: operations["postAuthVerifyEmail"];
         readonly delete?: never;
         readonly options?: never;
@@ -2182,10 +2006,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /auth/verify-email/resend
-         * @description Implemented by backend/src/api/v1/router.ts:469.
-         */
+        /** POST /auth/verify-email/resend */
         readonly post: operations["postAuthVerifyEmailResend"];
         readonly delete?: never;
         readonly options?: never;
@@ -2202,10 +2023,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /auth/verify-phone
-         * @description Implemented by backend/src/api/v1/router.ts:450.
-         */
+        /** POST /auth/verify-phone */
         readonly post: operations["postAuthVerifyPhone"];
         readonly delete?: never;
         readonly options?: never;
@@ -2221,10 +2039,7 @@ export interface paths {
             readonly cookie?: never;
         };
         readonly get?: never;
-        /**
-         * PUT /auto/admin/markets/:marketCode
-         * @description Implemented by backend/src/api/v1/router.ts:983.
-         */
+        /** PUT /auto/admin/markets/:marketCode */
         readonly put: operations["putAutoAdminMarketsByMarketCode"];
         readonly post?: never;
         readonly delete?: never;
@@ -2246,10 +2061,7 @@ export interface paths {
         readonly delete?: never;
         readonly options?: never;
         readonly head?: never;
-        /**
-         * PATCH /auto/admin/markets/:marketCode/add-ons/:addOnId
-         * @description Implemented by backend/src/api/v1/router.ts:997.
-         */
+        /** PATCH /auto/admin/markets/:marketCode/add-ons/:addOnId */
         readonly patch: operations["patchAutoAdminMarketsByMarketCodeAddOnsByAddOnId"];
         readonly trace?: never;
     };
@@ -2266,10 +2078,7 @@ export interface paths {
         readonly delete?: never;
         readonly options?: never;
         readonly head?: never;
-        /**
-         * PATCH /auto/admin/markets/:marketCode/plans/:planId
-         * @description Implemented by backend/src/api/v1/router.ts:990.
-         */
+        /** PATCH /auto/admin/markets/:marketCode/plans/:planId */
         readonly patch: operations["patchAutoAdminMarketsByMarketCodePlansByPlanId"];
         readonly trace?: never;
     };
@@ -2286,10 +2095,7 @@ export interface paths {
         readonly delete?: never;
         readonly options?: never;
         readonly head?: never;
-        /**
-         * PATCH /auto/admin/markets/:marketCode/types/:type
-         * @description Implemented by backend/src/api/v1/router.ts:1004.
-         */
+        /** PATCH /auto/admin/markets/:marketCode/types/:type */
         readonly patch: operations["patchAutoAdminMarketsByMarketCodeTypesByType"];
         readonly trace?: never;
     };
@@ -2300,10 +2106,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /auto/admin/overview
-         * @description Implemented by backend/src/api/v1/router.ts:976.
-         */
+        /** GET /auto/admin/overview */
         readonly get: operations["getAutoAdminOverview"];
         readonly put?: never;
         readonly post?: never;
@@ -2320,10 +2123,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /auto/catalog
-         * @description Implemented by backend/src/api/v1/router.ts:886.
-         */
+        /** GET /auto/catalog */
         readonly get: operations["getAutoCatalog"];
         readonly put?: never;
         readonly post?: never;
@@ -2342,10 +2142,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /auto/dealers/:organizationId/imports
-         * @description Implemented by backend/src/api/v1/router.ts:963.
-         */
+        /** POST /auto/dealers/:organizationId/imports */
         readonly post: operations["postAutoDealersByOrganizationIdImports"];
         readonly delete?: never;
         readonly options?: never;
@@ -2366,10 +2163,7 @@ export interface paths {
         readonly delete?: never;
         readonly options?: never;
         readonly head?: never;
-        /**
-         * PATCH /auto/dealers/:organizationId/leads/:leadId
-         * @description Implemented by backend/src/api/v1/router.ts:951.
-         */
+        /** PATCH /auto/dealers/:organizationId/leads/:leadId */
         readonly patch: operations["patchAutoDealersByOrganizationIdLeadsByLeadId"];
         readonly trace?: never;
     };
@@ -2380,10 +2174,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /auto/dealers/:organizationId/workspace
-         * @description Implemented by backend/src/api/v1/router.ts:941.
-         */
+        /** GET /auto/dealers/:organizationId/workspace */
         readonly get: operations["getAutoDealersByOrganizationIdWorkspace"];
         readonly put?: never;
         readonly post?: never;
@@ -2420,15 +2211,9 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /auto/drafts/:id
-         * @description Implemented by backend/src/api/v1/router.ts:895.
-         */
+        /** GET /auto/drafts/:id */
         readonly get: operations["getAutoDraftsById"];
-        /**
-         * PUT /auto/drafts/:id
-         * @description Implemented by backend/src/api/v1/router.ts:902.
-         */
+        /** PUT /auto/drafts/:id */
         readonly put: operations["putAutoDraftsById"];
         readonly post?: never;
         readonly delete?: never;
@@ -2446,10 +2231,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /auto/drafts/:id/duplicate-check
-         * @description Implemented by backend/src/api/v1/router.ts:909.
-         */
+        /** POST /auto/drafts/:id/duplicate-check */
         readonly post: operations["postAutoDraftsByIdDuplicateCheck"];
         readonly delete?: never;
         readonly options?: never;
@@ -2466,10 +2248,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /auto/drafts/:id/submit
-         * @description Implemented by backend/src/api/v1/router.ts:921.
-         */
+        /** POST /auto/drafts/:id/submit */
         readonly post: operations["postAutoDraftsByIdSubmit"];
         readonly delete?: never;
         readonly options?: never;
@@ -2506,10 +2285,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /auto/leads
-         * @description Implemented by backend/src/api/v1/router.ts:935.
-         */
+        /** POST /auto/leads */
         readonly post: operations["postAutoLeads"];
         readonly delete?: never;
         readonly options?: never;
@@ -2526,10 +2302,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /auto/search
-         * @description Implemented by backend/src/api/v1/router.ts:889.
-         */
+        /** POST /auto/search */
         readonly post: operations["postAutoSearch"];
         readonly delete?: never;
         readonly options?: never;
@@ -2546,10 +2319,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /auto/vehicles
-         * @description Implemented by backend/src/api/v1/router.ts:928.
-         */
+        /** POST /auto/vehicles */
         readonly post: operations["postAutoVehicles"];
         readonly delete?: never;
         readonly options?: never;
@@ -2564,10 +2334,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /auto/vehicles/:id
-         * @description Implemented by backend/src/api/v1/router.ts:892.
-         */
+        /** GET /auto/vehicles/:id */
         readonly get: operations["getAutoVehiclesById"];
         readonly put?: never;
         readonly post?: never;
@@ -2604,10 +2371,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /business-rules/catalog
-         * @description Implemented by backend/src/api/v1/router.ts:1655.
-         */
+        /** GET /business-rules/catalog */
         readonly get: operations["getBusinessRulesCatalog"];
         readonly put?: never;
         readonly post?: never;
@@ -2626,10 +2390,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /business-rules/eligibility
-         * @description Implemented by backend/src/api/v1/router.ts:1667.
-         */
+        /** POST /business-rules/eligibility */
         readonly post: operations["postBusinessRulesEligibility"];
         readonly delete?: never;
         readonly options?: never;
@@ -2646,10 +2407,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /compliance/identity/session
-         * @description Implemented by backend/src/api/v1/router.ts:2103.
-         */
+        /** POST /compliance/identity/session */
         readonly post: operations["postComplianceIdentitySession"];
         readonly delete?: never;
         readonly options?: never;
@@ -2666,10 +2424,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /compliance/manual-review
-         * @description Implemented by backend/src/api/v1/router.ts:2127.
-         */
+        /** POST /compliance/manual-review */
         readonly post: operations["postComplianceManualReview"];
         readonly delete?: never;
         readonly options?: never;
@@ -2686,10 +2441,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /compliance/payment/onboarding
-         * @description Implemented by backend/src/api/v1/router.ts:2115.
-         */
+        /** POST /compliance/payment/onboarding */
         readonly post: operations["postCompliancePaymentOnboarding"];
         readonly delete?: never;
         readonly options?: never;
@@ -2706,10 +2458,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /compliance/requirements
-         * @description Implemented by backend/src/api/v1/router.ts:2068.
-         */
+        /** POST /compliance/requirements */
         readonly post: operations["postComplianceRequirements"];
         readonly delete?: never;
         readonly options?: never;
@@ -2724,10 +2473,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /compliance/status
-         * @description Implemented by backend/src/api/v1/router.ts:2075.
-         */
+        /** GET /compliance/status */
         readonly get: operations["getComplianceStatus"];
         readonly put?: never;
         readonly post?: never;
@@ -4079,10 +3825,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /education/admin/catalog
-         * @description Implemented by backend/src/api/v1/router.ts:854.
-         */
+        /** GET /education/admin/catalog */
         readonly get: operations["getEducationAdminCatalog"];
         readonly put?: never;
         readonly post?: never;
@@ -4100,10 +3843,7 @@ export interface paths {
             readonly cookie?: never;
         };
         readonly get?: never;
-        /**
-         * PUT /education/admin/markets/:marketCode
-         * @description Implemented by backend/src/api/v1/router.ts:861.
-         */
+        /** PUT /education/admin/markets/:marketCode */
         readonly put: operations["putEducationAdminMarketsByMarketCode"];
         readonly post?: never;
         readonly delete?: never;
@@ -4125,10 +3865,7 @@ export interface paths {
         readonly delete?: never;
         readonly options?: never;
         readonly head?: never;
-        /**
-         * PATCH /education/admin/markets/:marketCode/plans/:planId
-         * @description Implemented by backend/src/api/v1/router.ts:875.
-         */
+        /** PATCH /education/admin/markets/:marketCode/plans/:planId */
         readonly patch: operations["patchEducationAdminMarketsByMarketCodePlansByPlanId"];
         readonly trace?: never;
     };
@@ -4145,10 +3882,7 @@ export interface paths {
         readonly delete?: never;
         readonly options?: never;
         readonly head?: never;
-        /**
-         * PATCH /education/admin/markets/:marketCode/subjects/:subjectId
-         * @description Implemented by backend/src/api/v1/router.ts:868.
-         */
+        /** PATCH /education/admin/markets/:marketCode/subjects/:subjectId */
         readonly patch: operations["patchEducationAdminMarketsByMarketCodeSubjectsBySubjectId"];
         readonly trace?: never;
     };
@@ -4161,10 +3895,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /education/bookings
-         * @description Implemented by backend/src/api/v1/router.ts:843.
-         */
+        /** POST /education/bookings */
         readonly post: operations["postEducationBookings"];
         readonly delete?: never;
         readonly options?: never;
@@ -4179,10 +3910,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /education/catalog
-         * @description Implemented by backend/src/api/v1/router.ts:733.
-         */
+        /** GET /education/catalog */
         readonly get: operations["getEducationCatalog"];
         readonly put?: never;
         readonly post?: never;
@@ -4225,10 +3953,7 @@ export interface paths {
         readonly delete?: never;
         readonly options?: never;
         readonly head?: never;
-        /**
-         * PATCH /education/leads/:leadId
-         * @description Implemented by backend/src/api/v1/router.ts:808.
-         */
+        /** PATCH /education/leads/:leadId */
         readonly patch: operations["patchEducationLeadsByLeadId"];
         readonly trace?: never;
     };
@@ -4241,10 +3966,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /education/learner-requests
-         * @description Implemented by backend/src/api/v1/router.ts:759.
-         */
+        /** POST /education/learner-requests */
         readonly post: operations["postEducationLearnerRequests"];
         readonly delete?: never;
         readonly options?: never;
@@ -4261,10 +3983,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /education/offers
-         * @description Implemented by backend/src/api/v1/router.ts:752.
-         */
+        /** POST /education/offers */
         readonly post: operations["postEducationOffers"];
         readonly delete?: never;
         readonly options?: never;
@@ -4301,10 +4020,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /education/organizations/:organizationId/locations
-         * @description Implemented by backend/src/api/v1/router.ts:797.
-         */
+        /** POST /education/organizations/:organizationId/locations */
         readonly post: operations["postEducationOrganizationsByOrganizationIdLocations"];
         readonly delete?: never;
         readonly options?: never;
@@ -4321,10 +4037,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /education/organizations/:organizationId/members
-         * @description Implemented by backend/src/api/v1/router.ts:786.
-         */
+        /** POST /education/organizations/:organizationId/members */
         readonly post: operations["postEducationOrganizationsByOrganizationIdMembers"];
         readonly delete?: never;
         readonly options?: never;
@@ -4339,10 +4052,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /education/organizations/:organizationId/workspace
-         * @description Implemented by backend/src/api/v1/router.ts:776.
-         */
+        /** GET /education/organizations/:organizationId/workspace */
         readonly get: operations["getEducationOrganizationsByOrganizationIdWorkspace"];
         readonly put?: never;
         readonly post?: never;
@@ -4361,10 +4071,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /education/search
-         * @description Implemented by backend/src/api/v1/router.ts:736.
-         */
+        /** POST /education/search */
         readonly post: operations["postEducationSearch"];
         readonly delete?: never;
         readonly options?: never;
@@ -4379,15 +4086,9 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /education/tutors/:id
-         * @description Implemented by backend/src/api/v1/router.ts:739.
-         */
+        /** GET /education/tutors/:id */
         readonly get: operations["getEducationTutorsById"];
-        /**
-         * PUT /education/tutors/:id
-         * @description Implemented by backend/src/api/v1/router.ts:742.
-         */
+        /** PUT /education/tutors/:id */
         readonly put: operations["putEducationTutorsById"];
         readonly post?: never;
         readonly delete?: never;
@@ -4479,10 +4180,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /education/workspace/:tutorProfileId
-         * @description Implemented by backend/src/api/v1/router.ts:766.
-         */
+        /** GET /education/workspace/:tutorProfileId */
         readonly get: operations["getEducationWorkspaceByTutorProfileId"];
         readonly put?: never;
         readonly post?: never;
@@ -4500,10 +4198,7 @@ export interface paths {
             readonly cookie?: never;
         };
         readonly get?: never;
-        /**
-         * PUT /employment/admin/markets/:marketCode
-         * @description Implemented by backend/src/api/v1/router.ts:1442.
-         */
+        /** PUT /employment/admin/markets/:marketCode */
         readonly put: operations["putEmploymentAdminMarketsByMarketCode"];
         readonly post?: never;
         readonly delete?: never;
@@ -4525,10 +4220,7 @@ export interface paths {
         readonly delete?: never;
         readonly options?: never;
         readonly head?: never;
-        /**
-         * PATCH /employment/admin/offers/:offerId
-         * @description Implemented by backend/src/api/v1/router.ts:1453.
-         */
+        /** PATCH /employment/admin/offers/:offerId */
         readonly patch: operations["patchEmploymentAdminOffersByOfferId"];
         readonly trace?: never;
     };
@@ -4539,10 +4231,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /employment/admin/overview
-         * @description Implemented by backend/src/api/v1/router.ts:1435.
-         */
+        /** GET /employment/admin/overview */
         readonly get: operations["getEmploymentAdminOverview"];
         readonly put?: never;
         readonly post?: never;
@@ -4561,10 +4250,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /employment/applications/:id/withdraw
-         * @description Implemented by backend/src/api/v1/router.ts:1282.
-         */
+        /** POST /employment/applications/:id/withdraw */
         readonly post: operations["postEmploymentApplicationsByIdWithdraw"];
         readonly delete?: never;
         readonly options?: never;
@@ -4581,10 +4267,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /employment/candidate/alerts
-         * @description Implemented by backend/src/api/v1/router.ts:1303.
-         */
+        /** POST /employment/candidate/alerts */
         readonly post: operations["postEmploymentCandidateAlerts"];
         readonly delete?: never;
         readonly options?: never;
@@ -4602,10 +4285,7 @@ export interface paths {
         readonly get?: never;
         readonly put?: never;
         readonly post?: never;
-        /**
-         * DELETE /employment/candidate/alerts/:id
-         * @description Implemented by backend/src/api/v1/router.ts:1310.
-         */
+        /** DELETE /employment/candidate/alerts/:id */
         readonly delete: operations["deleteEmploymentCandidateAlertsById"];
         readonly options?: never;
         readonly head?: never;
@@ -4621,10 +4301,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /employment/candidate/data-export
-         * @description Implemented by backend/src/api/v1/router.ts:1317.
-         */
+        /** POST /employment/candidate/data-export */
         readonly post: operations["postEmploymentCandidateDataExport"];
         readonly delete?: never;
         readonly options?: never;
@@ -4641,10 +4318,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /employment/candidate/deletion-request
-         * @description Implemented by backend/src/api/v1/router.ts:1324.
-         */
+        /** POST /employment/candidate/deletion-request */
         readonly post: operations["postEmploymentCandidateDeletionRequest"];
         readonly delete?: never;
         readonly options?: never;
@@ -4665,10 +4339,7 @@ export interface paths {
         readonly delete?: never;
         readonly options?: never;
         readonly head?: never;
-        /**
-         * PATCH /employment/candidate/interviews/:id
-         * @description Implemented by backend/src/api/v1/router.ts:1331.
-         */
+        /** PATCH /employment/candidate/interviews/:id */
         readonly patch: operations["patchEmploymentCandidateInterviewsById"];
         readonly trace?: never;
     };
@@ -4680,10 +4351,7 @@ export interface paths {
             readonly cookie?: never;
         };
         readonly get?: never;
-        /**
-         * PUT /employment/candidate/profile
-         * @description Implemented by backend/src/api/v1/router.ts:1268.
-         */
+        /** PUT /employment/candidate/profile */
         readonly put: operations["putEmploymentCandidateProfile"];
         readonly post?: never;
         readonly delete?: never;
@@ -4699,10 +4367,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /employment/candidate/workspace
-         * @description Implemented by backend/src/api/v1/router.ts:1261.
-         */
+        /** GET /employment/candidate/workspace */
         readonly get: operations["getEmploymentCandidateWorkspace"];
         readonly put?: never;
         readonly post?: never;
@@ -4719,10 +4384,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /employment/catalog
-         * @description Implemented by backend/src/api/v1/router.ts:1207.
-         */
+        /** GET /employment/catalog */
         readonly get: operations["getEmploymentCatalog"];
         readonly put?: never;
         readonly post?: never;
@@ -4741,10 +4403,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /employment/checkouts
-         * @description Implemented by backend/src/api/v1/router.ts:1428.
-         */
+        /** POST /employment/checkouts */
         readonly post: operations["postEmploymentCheckouts"];
         readonly delete?: never;
         readonly options?: never;
@@ -4761,10 +4420,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /employment/compliance/prohibited-language
-         * @description Implemented by backend/src/api/v1/router.ts:1250.
-         */
+        /** POST /employment/compliance/prohibited-language */
         readonly post: operations["postEmploymentComplianceProhibitedLanguage"];
         readonly delete?: never;
         readonly options?: never;
@@ -4799,15 +4455,9 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /employment/drafts/:id
-         * @description Implemented by backend/src/api/v1/router.ts:1222.
-         */
+        /** GET /employment/drafts/:id */
         readonly get: operations["getEmploymentDraftsById"];
-        /**
-         * PUT /employment/drafts/:id
-         * @description Implemented by backend/src/api/v1/router.ts:1229.
-         */
+        /** PUT /employment/drafts/:id */
         readonly put: operations["putEmploymentDraftsById"];
         readonly post?: never;
         readonly delete?: never;
@@ -4825,10 +4475,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /employment/drafts/:id/duplicate-check
-         * @description Implemented by backend/src/api/v1/router.ts:1236.
-         */
+        /** POST /employment/drafts/:id/duplicate-check */
         readonly post: operations["postEmploymentDraftsByIdDuplicateCheck"];
         readonly delete?: never;
         readonly options?: never;
@@ -4865,10 +4512,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /employment/drafts/:id/submit
-         * @description Implemented by backend/src/api/v1/router.ts:1243.
-         */
+        /** POST /employment/drafts/:id/submit */
         readonly post: operations["postEmploymentDraftsByIdSubmit"];
         readonly delete?: never;
         readonly options?: never;
@@ -4885,10 +4529,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /employment/employers/:employerId/applications/:applicationId/interviews
-         * @description Implemented by backend/src/api/v1/router.ts:1394.
-         */
+        /** POST /employment/employers/:employerId/applications/:applicationId/interviews */
         readonly post: operations["postEmploymentEmployersByEmployerIdApplicationsByApplicationIdInterviews"];
         readonly delete?: never;
         readonly options?: never;
@@ -4905,10 +4546,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /employment/employers/:employerId/applications/:applicationId/notes
-         * @description Implemented by backend/src/api/v1/router.ts:1382.
-         */
+        /** POST /employment/employers/:employerId/applications/:applicationId/notes */
         readonly post: operations["postEmploymentEmployersByEmployerIdApplicationsByApplicationIdNotes"];
         readonly delete?: never;
         readonly options?: never;
@@ -4929,10 +4567,7 @@ export interface paths {
         readonly delete?: never;
         readonly options?: never;
         readonly head?: never;
-        /**
-         * PATCH /employment/employers/:employerId/applications/:applicationId/stage
-         * @description Implemented by backend/src/api/v1/router.ts:1370.
-         */
+        /** PATCH /employment/employers/:employerId/applications/:applicationId/stage */
         readonly patch: operations["patchEmploymentEmployersByEmployerIdApplicationsByApplicationIdStage"];
         readonly trace?: never;
     };
@@ -4945,10 +4580,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /employment/employers/:employerId/imports
-         * @description Implemented by backend/src/api/v1/router.ts:1417.
-         */
+        /** POST /employment/employers/:employerId/imports */
         readonly post: operations["postEmploymentEmployersByEmployerIdImports"];
         readonly delete?: never;
         readonly options?: never;
@@ -4965,10 +4597,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /employment/employers/:employerId/imports/preview
-         * @description Implemented by backend/src/api/v1/router.ts:1406.
-         */
+        /** POST /employment/employers/:employerId/imports/preview */
         readonly post: operations["postEmploymentEmployersByEmployerIdImportsPreview"];
         readonly delete?: never;
         readonly options?: never;
@@ -4985,10 +4614,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /employment/employers/:employerId/jobs/:jobId/duplicate
-         * @description Implemented by backend/src/api/v1/router.ts:1359.
-         */
+        /** POST /employment/employers/:employerId/jobs/:jobId/duplicate */
         readonly post: operations["postEmploymentEmployersByEmployerIdJobsByJobIdDuplicate"];
         readonly delete?: never;
         readonly options?: never;
@@ -5003,10 +4629,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /employment/employers/:employerId/workspace
-         * @description Implemented by backend/src/api/v1/router.ts:1349.
-         */
+        /** GET /employment/employers/:employerId/workspace */
         readonly get: operations["getEmploymentEmployersByEmployerIdWorkspace"];
         readonly put?: never;
         readonly post?: never;
@@ -5043,10 +4666,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /employment/jobs/:id
-         * @description Implemented by backend/src/api/v1/router.ts:1213.
-         */
+        /** GET /employment/jobs/:id */
         readonly get: operations["getEmploymentJobsById"];
         readonly put?: never;
         readonly post?: never;
@@ -5065,10 +4685,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /employment/jobs/:id/applications
-         * @description Implemented by backend/src/api/v1/router.ts:1275.
-         */
+        /** POST /employment/jobs/:id/applications */
         readonly post: operations["postEmploymentJobsByIdApplications"];
         readonly delete?: never;
         readonly options?: never;
@@ -5085,10 +4702,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /employment/jobs/:id/report
-         * @description Implemented by backend/src/api/v1/router.ts:1296.
-         */
+        /** POST /employment/jobs/:id/report */
         readonly post: operations["postEmploymentJobsByIdReport"];
         readonly delete?: never;
         readonly options?: never;
@@ -5104,10 +4718,7 @@ export interface paths {
             readonly cookie?: never;
         };
         readonly get?: never;
-        /**
-         * Set the caller's saved-job state
-         * @description Implemented by backend/src/api/v1/router.ts:1289.
-         */
+        /** Set the caller's saved-job state */
         readonly put: operations["putEmploymentJobsByIdSave"];
         readonly post?: never;
         readonly delete?: never;
@@ -5123,10 +4734,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /employment/jobs/:id/similar
-         * @description Implemented by backend/src/api/v1/router.ts:1216.
-         */
+        /** GET /employment/jobs/:id/similar */
         readonly get: operations["getEmploymentJobsByIdSimilar"];
         readonly put?: never;
         readonly post?: never;
@@ -5143,10 +4751,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /employment/recruiter/employers
-         * @description Implemented by backend/src/api/v1/router.ts:1342.
-         */
+        /** GET /employment/recruiter/employers */
         readonly get: operations["getEmploymentRecruiterEmployers"];
         readonly put?: never;
         readonly post?: never;
@@ -5165,10 +4770,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /employment/search
-         * @description Implemented by backend/src/api/v1/router.ts:1210.
-         */
+        /** POST /employment/search */
         readonly post: operations["postEmploymentSearch"];
         readonly delete?: never;
         readonly options?: never;
@@ -5183,10 +4785,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /favorites
-         * @description Implemented by backend/src/api/v1/router.ts:688.
-         */
+        /** GET /favorites */
         readonly get: operations["getFavorites"];
         readonly put?: never;
         readonly post?: never;
@@ -5220,10 +4819,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /finance/account/overview
-         * @description Implemented by backend/src/api/v1/router.ts:1734.
-         */
+        /** GET /finance/account/overview */
         readonly get: operations["getFinanceAccountOverview"];
         readonly put?: never;
         readonly post?: never;
@@ -5240,10 +4836,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /finance/organization/overview
-         * @description Implemented by backend/src/api/v1/router.ts:1741.
-         */
+        /** GET /finance/organization/overview */
         readonly get: operations["getFinanceOrganizationOverview"];
         readonly put?: never;
         readonly post?: never;
@@ -5260,10 +4853,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /finance/platform/exports/transactions
-         * @description Implemented by backend/src/api/v1/router.ts:1787.
-         */
+        /** GET /finance/platform/exports/transactions */
         readonly get: operations["getFinancePlatformExportsTransactions"];
         readonly put?: never;
         readonly post?: never;
@@ -5280,10 +4870,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /finance/platform/overview
-         * @description Implemented by backend/src/api/v1/router.ts:1748.
-         */
+        /** GET /finance/platform/overview */
         readonly get: operations["getFinancePlatformOverview"];
         readonly put?: never;
         readonly post?: never;
@@ -5300,10 +4887,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /finance/platform/reconciliation
-         * @description Implemented by backend/src/api/v1/router.ts:1781.
-         */
+        /** GET /finance/platform/reconciliation */
         readonly get: operations["getFinancePlatformReconciliation"];
         readonly put?: never;
         readonly post?: never;
@@ -5320,10 +4904,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /finance/platform/transactions
-         * @description Implemented by backend/src/api/v1/router.ts:1759.
-         */
+        /** GET /finance/platform/transactions */
         readonly get: operations["getFinancePlatformTransactions"];
         readonly put?: never;
         readonly post?: never;
@@ -5340,10 +4921,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /finance/platform/transactions/:id
-         * @description Implemented by backend/src/api/v1/router.ts:1775.
-         */
+        /** GET /finance/platform/transactions/:id */
         readonly get: operations["getFinancePlatformTransactionsById"];
         readonly put?: never;
         readonly post?: never;
@@ -5362,6 +4940,40 @@ export interface paths {
         };
         /** Process health and liveness */
         readonly get: operations["getHealth"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/health/live": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** Orchestrator liveness probe */
+        readonly get: operations["getHealthLive"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/health/ready": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** Dependency-aware readiness probe */
+        readonly get: operations["getHealthReady"];
         readonly put?: never;
         readonly post?: never;
         readonly delete?: never;
@@ -5394,10 +5006,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /home/trending
-         * @description Implemented by backend/src/api/v1/router.ts:554.
-         */
+        /** GET /home/trending */
         readonly get: operations["getHomeTrending"];
         readonly put?: never;
         readonly post?: never;
@@ -5594,10 +5203,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /listing-drafts
-         * @description Implemented by backend/src/api/v1/router.ts:569.
-         */
+        /** POST /listing-drafts */
         readonly post: operations["postListingDrafts"];
         readonly delete?: never;
         readonly options?: never;
@@ -5612,15 +5218,9 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /listing-drafts/current
-         * @description Implemented by backend/src/api/v1/router.ts:562.
-         */
+        /** GET /listing-drafts/current */
         readonly get: operations["getListingDraftsCurrent"];
-        /**
-         * PUT /listing-drafts/current
-         * @description Implemented by backend/src/api/v1/router.ts:576.
-         */
+        /** PUT /listing-drafts/current */
         readonly put: operations["putListingDraftsCurrent"];
         readonly post?: never;
         readonly delete?: never;
@@ -5636,10 +5236,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /listings
-         * @description Implemented by backend/src/api/v1/router.ts:544.
-         */
+        /** GET /listings */
         readonly get: operations["getListings"];
         readonly put?: never;
         readonly post?: never;
@@ -5656,21 +5253,12 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /listings/:id
-         * @description Implemented by backend/src/api/v1/router.ts:548.
-         */
+        /** GET /listings/:id */
         readonly get: operations["getListingsById"];
-        /**
-         * PUT /listings/:id
-         * @description Implemented by backend/src/api/v1/router.ts:657.
-         */
+        /** PUT /listings/:id */
         readonly put: operations["putListingsById"];
         readonly post?: never;
-        /**
-         * DELETE /listings/:id
-         * @description Implemented by backend/src/api/v1/router.ts:666.
-         */
+        /** DELETE /listings/:id */
         readonly delete: operations["deleteListingsById"];
         readonly options?: never;
         readonly head?: never;
@@ -5685,10 +5273,7 @@ export interface paths {
             readonly cookie?: never;
         };
         readonly get?: never;
-        /**
-         * Set the caller's listing favorite state
-         * @description Implemented by backend/src/api/v1/router.ts:676.
-         */
+        /** Set the caller's listing favorite state */
         readonly put: operations["putListingsByIdFavorite"];
         readonly post?: never;
         readonly delete?: never;
@@ -5803,10 +5388,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /listings/publish
-         * @description Implemented by backend/src/api/v1/router.ts:619.
-         */
+        /** POST /listings/publish */
         readonly post: operations["postListingsPublish"];
         readonly delete?: never;
         readonly options?: never;
@@ -5827,10 +5409,7 @@ export interface paths {
          */
         readonly get: operations["getListingsSearch"];
         readonly put?: never;
-        /**
-         * POST /listings/search
-         * @description Implemented by backend/src/api/v1/router.ts:551.
-         */
+        /** POST /listings/search */
         readonly post: operations["postListingsSearch"];
         readonly delete?: never;
         readonly options?: never;
@@ -6602,10 +6181,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /markets
-         * @description Implemented by backend/src/api/v1/router.ts:1464.
-         */
+        /** GET /markets */
         readonly get: operations["getMarkets"];
         readonly put?: never;
         readonly post?: never;
@@ -6622,10 +6198,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /markets/:code
-         * @description Implemented by backend/src/api/v1/router.ts:1478.
-         */
+        /** GET /markets/:code */
         readonly get: operations["getMarketsByCode"];
         readonly put?: never;
         readonly post?: never;
@@ -6642,16 +6215,10 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /markets/active
-         * @description Implemented by backend/src/api/v1/router.ts:1467.
-         */
+        /** GET /markets/active */
         readonly get: operations["getMarketsActive"];
         readonly put?: never;
-        /**
-         * POST /markets/active
-         * @description Implemented by backend/src/api/v1/router.ts:1472.
-         */
+        /** POST /markets/active */
         readonly post: operations["postMarketsActive"];
         readonly delete?: never;
         readonly options?: never;
@@ -6706,10 +6273,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /markets/effective/:code
-         * @description Implemented by backend/src/api/v1/router.ts:1481.
-         */
+        /** GET /markets/effective/:code */
         readonly get: operations["getMarketsEffectiveByCode"];
         readonly put?: never;
         readonly post?: never;
@@ -6728,10 +6292,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /media/listings/uploads
-         * @description Implemented by backend/src/api/v1/router.ts:585.
-         */
+        /** POST /media/listings/uploads */
         readonly post: operations["postMediaListingsUploads"];
         readonly delete?: never;
         readonly options?: never;
@@ -6748,10 +6309,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /media/listings/uploads/:id/complete
-         * @description Implemented by backend/src/api/v1/router.ts:592.
-         */
+        /** POST /media/listings/uploads/:id/complete */
         readonly post: operations["postMediaListingsUploadsByIdComplete"];
         readonly delete?: never;
         readonly options?: never;
@@ -6768,10 +6326,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /media/private-documents/uploads
-         * @description Implemented by backend/src/api/v1/router.ts:599.
-         */
+        /** POST /media/private-documents/uploads */
         readonly post: operations["postMediaPrivateDocumentsUploads"];
         readonly delete?: never;
         readonly options?: never;
@@ -6788,10 +6343,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /media/private-documents/uploads/:id/complete
-         * @description Implemented by backend/src/api/v1/router.ts:609.
-         */
+        /** POST /media/private-documents/uploads/:id/complete */
         readonly post: operations["postMediaPrivateDocumentsUploadsByIdComplete"];
         readonly delete?: never;
         readonly options?: never;
@@ -6808,10 +6360,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /messaging/block
-         * @description Implemented by backend/src/api/v1/router.ts:2282.
-         */
+        /** POST /messaging/block */
         readonly post: operations["postMessagingBlock"];
         readonly delete?: never;
         readonly options?: never;
@@ -6826,10 +6375,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /messaging/blocked
-         * @description Implemented by backend/src/api/v1/router.ts:2274.
-         */
+        /** GET /messaging/blocked */
         readonly get: operations["getMessagingBlocked"];
         readonly put?: never;
         readonly post?: never;
@@ -6846,16 +6392,10 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /messaging/conversations
-         * @description Implemented by backend/src/api/v1/router.ts:2166.
-         */
+        /** GET /messaging/conversations */
         readonly get: operations["getMessagingConversations"];
         readonly put?: never;
-        /**
-         * POST /messaging/conversations
-         * @description Implemented by backend/src/api/v1/router.ts:2173.
-         */
+        /** POST /messaging/conversations */
         readonly post: operations["postMessagingConversations"];
         readonly delete?: never;
         readonly options?: never;
@@ -6870,10 +6410,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /messaging/conversations/:id
-         * @description Implemented by backend/src/api/v1/router.ts:2207.
-         */
+        /** GET /messaging/conversations/:id */
         readonly get: operations["getMessagingConversationsById"];
         readonly put?: never;
         readonly post?: never;
@@ -6890,16 +6427,10 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /messaging/conversations/:id/messages
-         * @description Implemented by backend/src/api/v1/router.ts:2184.
-         */
+        /** GET /messaging/conversations/:id/messages */
         readonly get: operations["getMessagingConversationsByIdMessages"];
         readonly put?: never;
-        /**
-         * POST /messaging/conversations/:id/messages
-         * @description Implemented by backend/src/api/v1/router.ts:2194.
-         */
+        /** POST /messaging/conversations/:id/messages */
         readonly post: operations["postMessagingConversationsByIdMessages"];
         readonly delete?: never;
         readonly options?: never;
@@ -6916,10 +6447,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /messaging/offer
-         * @description Implemented by backend/src/api/v1/router.ts:2218.
-         */
+        /** POST /messaging/offer */
         readonly post: operations["postMessagingOffer"];
         readonly delete?: never;
         readonly options?: never;
@@ -6936,10 +6464,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /messaging/offer-response
-         * @description Implemented by backend/src/api/v1/router.ts:2232.
-         */
+        /** POST /messaging/offer-response */
         readonly post: operations["postMessagingOfferResponse"];
         readonly delete?: never;
         readonly options?: never;
@@ -6990,10 +6515,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /messaging/read
-         * @description Implemented by backend/src/api/v1/router.ts:2261.
-         */
+        /** POST /messaging/read */
         readonly post: operations["postMessagingRead"];
         readonly delete?: never;
         readonly options?: never;
@@ -7010,10 +6532,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /messaging/schedule-pickup
-         * @description Implemented by backend/src/api/v1/router.ts:2246.
-         */
+        /** POST /messaging/schedule-pickup */
         readonly post: operations["postMessagingSchedulePickup"];
         readonly delete?: never;
         readonly options?: never;
@@ -7030,10 +6549,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /messaging/unblock
-         * @description Implemented by backend/src/api/v1/router.ts:2291.
-         */
+        /** POST /messaging/unblock */
         readonly post: operations["postMessagingUnblock"];
         readonly delete?: never;
         readonly options?: never;
@@ -7099,10 +6615,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /monetization/billing
-         * @description Implemented by backend/src/api/v1/router.ts:1720.
-         */
+        /** GET /monetization/billing */
         readonly get: operations["getMonetizationBilling"];
         readonly put?: never;
         readonly post?: never;
@@ -7121,10 +6634,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /monetization/checkouts
-         * @description Implemented by backend/src/api/v1/router.ts:1688.
-         */
+        /** POST /monetization/checkouts */
         readonly post: operations["postMonetizationCheckouts"];
         readonly delete?: never;
         readonly options?: never;
@@ -7139,10 +6649,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /monetization/entitlements
-         * @description Implemented by backend/src/api/v1/router.ts:1706.
-         */
+        /** GET /monetization/entitlements */
         readonly get: operations["getMonetizationEntitlements"];
         readonly put?: never;
         readonly post?: never;
@@ -7159,10 +6666,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /monetization/invoices/:id/document
-         * @description Implemented by backend/src/api/v1/router.ts:1801.
-         */
+        /** GET /monetization/invoices/:id/document */
         readonly get: operations["getMonetizationInvoicesByIdDocument"];
         readonly put?: never;
         readonly post?: never;
@@ -7179,10 +6683,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /monetization/professional-plans
-         * @description Implemented by backend/src/api/v1/router.ts:1658.
-         */
+        /** GET /monetization/professional-plans */
         readonly get: operations["getMonetizationProfessionalPlans"];
         readonly put?: never;
         readonly post?: never;
@@ -7201,10 +6702,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /monetization/promotions/validate
-         * @description Implemented by backend/src/api/v1/router.ts:1699.
-         */
+        /** POST /monetization/promotions/validate */
         readonly post: operations["postMonetizationPromotionsValidate"];
         readonly delete?: never;
         readonly options?: never;
@@ -7221,10 +6719,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /monetization/quotes
-         * @description Implemented by backend/src/api/v1/router.ts:1674.
-         */
+        /** POST /monetization/quotes */
         readonly post: operations["postMonetizationQuotes"];
         readonly delete?: never;
         readonly options?: never;
@@ -7239,10 +6734,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /monetization/subscriptions
-         * @description Implemented by backend/src/api/v1/router.ts:1713.
-         */
+        /** GET /monetization/subscriptions */
         readonly get: operations["getMonetizationSubscriptions"];
         readonly put?: never;
         readonly post?: never;
@@ -7265,10 +6757,7 @@ export interface paths {
         readonly delete?: never;
         readonly options?: never;
         readonly head?: never;
-        /**
-         * PATCH /monetization/subscriptions/:id
-         * @description Implemented by backend/src/api/v1/router.ts:1828.
-         */
+        /** PATCH /monetization/subscriptions/:id */
         readonly patch: operations["patchMonetizationSubscriptionsById"];
         readonly trace?: never;
     };
@@ -7281,10 +6770,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /monetization/subscriptions/:id/change
-         * @description Implemented by backend/src/api/v1/router.ts:1818.
-         */
+        /** POST /monetization/subscriptions/:id/change */
         readonly post: operations["postMonetizationSubscriptionsByIdChange"];
         readonly delete?: never;
         readonly options?: never;
@@ -7301,10 +6787,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /monetization/subscriptions/:id/change-preview
-         * @description Implemented by backend/src/api/v1/router.ts:1808.
-         */
+        /** POST /monetization/subscriptions/:id/change-preview */
         readonly post: operations["postMonetizationSubscriptionsByIdChangePreview"];
         readonly delete?: never;
         readonly options?: never;
@@ -7321,10 +6804,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /monetization/trials
-         * @description Implemented by backend/src/api/v1/router.ts:1681.
-         */
+        /** POST /monetization/trials */
         readonly post: operations["postMonetizationTrials"];
         readonly delete?: never;
         readonly options?: never;
@@ -7339,10 +6819,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /notifications
-         * @description Implemented by backend/src/api/v1/router.ts:2307.
-         */
+        /** GET /notifications */
         readonly get: operations["getNotifications"];
         readonly put?: never;
         readonly post?: never;
@@ -7362,10 +6839,7 @@ export interface paths {
         readonly get?: never;
         readonly put?: never;
         readonly post?: never;
-        /**
-         * DELETE /notifications/:id
-         * @description Implemented by backend/src/api/v1/router.ts:2342.
-         */
+        /** DELETE /notifications/:id */
         readonly delete: operations["deleteNotificationsById"];
         readonly options?: never;
         readonly head?: never;
@@ -7381,10 +6855,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /notifications/:id/read
-         * @description Implemented by backend/src/api/v1/router.ts:2323.
-         */
+        /** POST /notifications/:id/read */
         readonly post: operations["postNotificationsByIdRead"];
         readonly delete?: never;
         readonly options?: never;
@@ -7401,10 +6872,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /notifications/devices
-         * @description Implemented by backend/src/api/v1/router.ts:2352.
-         */
+        /** POST /notifications/devices */
         readonly post: operations["postNotificationsDevices"];
         readonly delete?: never;
         readonly options?: never;
@@ -7421,10 +6889,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /notifications/devices/unregister
-         * @description Implemented by backend/src/api/v1/router.ts:2366.
-         */
+        /** POST /notifications/devices/unregister */
         readonly post: operations["postNotificationsDevicesUnregister"];
         readonly delete?: never;
         readonly options?: never;
@@ -7459,10 +6924,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /notifications/read-all
-         * @description Implemented by backend/src/api/v1/router.ts:2333.
-         */
+        /** POST /notifications/read-all */
         readonly post: operations["postNotificationsReadAll"];
         readonly delete?: never;
         readonly options?: never;
@@ -7477,10 +6939,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /notifications/unread-count
-         * @description Implemented by backend/src/api/v1/router.ts:2314.
-         */
+        /** GET /notifications/unread-count */
         readonly get: operations["getNotificationsUnreadCount"];
         readonly put?: never;
         readonly post?: never;
@@ -7497,10 +6956,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /orders/:id
-         * @description Implemented by backend/src/api/v1/router.ts:1492.
-         */
+        /** GET /orders/:id */
         readonly get: operations["getOrdersById"];
         readonly put?: never;
         readonly post?: never;
@@ -7519,10 +6975,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /orders/:id/cancel
-         * @description Implemented by backend/src/api/v1/router.ts:1573.
-         */
+        /** POST /orders/:id/cancel */
         readonly post: operations["postOrdersByIdCancel"];
         readonly delete?: never;
         readonly options?: never;
@@ -7539,10 +6992,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /orders/:id/confirm-delivery
-         * @description Implemented by backend/src/api/v1/router.ts:1559.
-         */
+        /** POST /orders/:id/confirm-delivery */
         readonly post: operations["postOrdersByIdConfirmDelivery"];
         readonly delete?: never;
         readonly options?: never;
@@ -7559,10 +7009,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /orders/:id/confirm-pin
-         * @description Implemented by backend/src/api/v1/router.ts:1548.
-         */
+        /** POST /orders/:id/confirm-pin */
         readonly post: operations["postOrdersByIdConfirmPin"];
         readonly delete?: never;
         readonly options?: never;
@@ -7579,10 +7026,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /orders/:id/dispute
-         * @description Implemented by backend/src/api/v1/router.ts:1580.
-         */
+        /** POST /orders/:id/dispute */
         readonly post: operations["postOrdersByIdDispute"];
         readonly delete?: never;
         readonly options?: never;
@@ -7599,10 +7043,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /orders/:id/handover-code
-         * @description Implemented by backend/src/api/v1/router.ts:1541.
-         */
+        /** POST /orders/:id/handover-code */
         readonly post: operations["postOrdersByIdHandoverCode"];
         readonly delete?: never;
         readonly options?: never;
@@ -7619,10 +7060,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /orders/:id/refund
-         * @description Implemented by backend/src/api/v1/router.ts:1592.
-         */
+        /** POST /orders/:id/refund */
         readonly post: operations["postOrdersByIdRefund"];
         readonly delete?: never;
         readonly options?: never;
@@ -7659,10 +7097,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /orders/:id/ship
-         * @description Implemented by backend/src/api/v1/router.ts:1566.
-         */
+        /** POST /orders/:id/ship */
         readonly post: operations["postOrdersByIdShip"];
         readonly delete?: never;
         readonly options?: never;
@@ -7679,10 +7114,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /orders/direct-purchase
-         * @description Implemented by backend/src/api/v1/router.ts:1524.
-         */
+        /** POST /orders/direct-purchase */
         readonly post: operations["postOrdersDirectPurchase"];
         readonly delete?: never;
         readonly options?: never;
@@ -7699,10 +7131,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /orders/direct-purchase/quote
-         * @description Implemented by backend/src/api/v1/router.ts:1513.
-         */
+        /** POST /orders/direct-purchase/quote */
         readonly post: operations["postOrdersDirectPurchaseQuote"];
         readonly delete?: never;
         readonly options?: never;
@@ -7717,10 +7146,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /orders/purchases
-         * @description Implemented by backend/src/api/v1/router.ts:1501.
-         */
+        /** GET /orders/purchases */
         readonly get: operations["getOrdersPurchases"];
         readonly put?: never;
         readonly post?: never;
@@ -7739,10 +7165,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /orders/reservation
-         * @description Implemented by backend/src/api/v1/router.ts:1534.
-         */
+        /** POST /orders/reservation */
         readonly post: operations["postOrdersReservation"];
         readonly delete?: never;
         readonly options?: never;
@@ -7757,10 +7180,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /orders/sales
-         * @description Implemented by backend/src/api/v1/router.ts:1507.
-         */
+        /** GET /orders/sales */
         readonly get: operations["getOrdersSales"];
         readonly put?: never;
         readonly post?: never;
@@ -7777,10 +7197,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /payments/balance/:sellerId
-         * @description Implemented by backend/src/api/v1/router.ts:1642.
-         */
+        /** GET /payments/balance/:sellerId */
         readonly get: operations["getPaymentsBalanceBySellerId"];
         readonly put?: never;
         readonly post?: never;
@@ -7799,10 +7216,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /payments/intent
-         * @description Implemented by backend/src/api/v1/router.ts:1602.
-         */
+        /** POST /payments/intent */
         readonly post: operations["postPaymentsIntent"];
         readonly delete?: never;
         readonly options?: never;
@@ -7819,10 +7233,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /payments/payout
-         * @description Implemented by backend/src/api/v1/router.ts:1615.
-         */
+        /** POST /payments/payout */
         readonly post: operations["postPaymentsPayout"];
         readonly delete?: never;
         readonly options?: never;
@@ -7883,10 +7294,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /publication/entitlements
-         * @description Implemented by backend/src/api/v1/router.ts:644.
-         */
+        /** POST /publication/entitlements */
         readonly post: operations["postPublicationEntitlements"];
         readonly delete?: never;
         readonly options?: never;
@@ -7919,10 +7327,7 @@ export interface paths {
             readonly cookie?: never;
         };
         readonly get?: never;
-        /**
-         * PUT /real-estate/admin/markets/:marketCode
-         * @description Implemented by backend/src/api/v1/router.ts:1160.
-         */
+        /** PUT /real-estate/admin/markets/:marketCode */
         readonly put: operations["putRealEstateAdminMarketsByMarketCode"];
         readonly post?: never;
         readonly delete?: never;
@@ -7944,10 +7349,7 @@ export interface paths {
         readonly delete?: never;
         readonly options?: never;
         readonly head?: never;
-        /**
-         * PATCH /real-estate/admin/markets/:marketCode/add-ons/:addOnId
-         * @description Implemented by backend/src/api/v1/router.ts:1174.
-         */
+        /** PATCH /real-estate/admin/markets/:marketCode/add-ons/:addOnId */
         readonly patch: operations["patchRealEstateAdminMarketsByMarketCodeAddOnsByAddOnId"];
         readonly trace?: never;
     };
@@ -7964,10 +7366,7 @@ export interface paths {
         readonly delete?: never;
         readonly options?: never;
         readonly head?: never;
-        /**
-         * PATCH /real-estate/admin/markets/:marketCode/field-rules/:ruleId
-         * @description Implemented by backend/src/api/v1/router.ts:1192.
-         */
+        /** PATCH /real-estate/admin/markets/:marketCode/field-rules/:ruleId */
         readonly patch: operations["patchRealEstateAdminMarketsByMarketCodeFieldRulesByRuleId"];
         readonly trace?: never;
     };
@@ -7984,10 +7383,7 @@ export interface paths {
         readonly delete?: never;
         readonly options?: never;
         readonly head?: never;
-        /**
-         * PATCH /real-estate/admin/markets/:marketCode/offers/:offerId
-         * @description Implemented by backend/src/api/v1/router.ts:1167.
-         */
+        /** PATCH /real-estate/admin/markets/:marketCode/offers/:offerId */
         readonly patch: operations["patchRealEstateAdminMarketsByMarketCodeOffersByOfferId"];
         readonly trace?: never;
     };
@@ -8004,10 +7400,7 @@ export interface paths {
         readonly delete?: never;
         readonly options?: never;
         readonly head?: never;
-        /**
-         * PATCH /real-estate/admin/markets/:marketCode/types/:type
-         * @description Implemented by backend/src/api/v1/router.ts:1181.
-         */
+        /** PATCH /real-estate/admin/markets/:marketCode/types/:type */
         readonly patch: operations["patchRealEstateAdminMarketsByMarketCodeTypesByType"];
         readonly trace?: never;
     };
@@ -8018,10 +7411,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /real-estate/admin/overview
-         * @description Implemented by backend/src/api/v1/router.ts:1153.
-         */
+        /** GET /real-estate/admin/overview */
         readonly get: operations["getRealEstateAdminOverview"];
         readonly put?: never;
         readonly post?: never;
@@ -8040,10 +7430,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /real-estate/agencies/:organizationId/imports
-         * @description Implemented by backend/src/api/v1/router.ts:1126.
-         */
+        /** POST /real-estate/agencies/:organizationId/imports */
         readonly post: operations["postRealEstateAgenciesByOrganizationIdImports"];
         readonly delete?: never;
         readonly options?: never;
@@ -8064,10 +7451,7 @@ export interface paths {
         readonly delete?: never;
         readonly options?: never;
         readonly head?: never;
-        /**
-         * PATCH /real-estate/agencies/:organizationId/leads/:leadId
-         * @description Implemented by backend/src/api/v1/router.ts:1114.
-         */
+        /** PATCH /real-estate/agencies/:organizationId/leads/:leadId */
         readonly patch: operations["patchRealEstateAgenciesByOrganizationIdLeadsByLeadId"];
         readonly trace?: never;
     };
@@ -8080,10 +7464,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /real-estate/agencies/:organizationId/leads/:leadId/notes
-         * @description Implemented by backend/src/api/v1/router.ts:821.
-         */
+        /** POST /real-estate/agencies/:organizationId/leads/:leadId/notes */
         readonly post: operations["postRealEstateAgenciesByOrganizationIdLeadsByLeadIdNotes"];
         readonly delete?: never;
         readonly options?: never;
@@ -8098,10 +7479,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /real-estate/agencies/:organizationId/leads/export
-         * @description Implemented by backend/src/api/v1/router.ts:833.
-         */
+        /** GET /real-estate/agencies/:organizationId/leads/export */
         readonly get: operations["getRealEstateAgenciesByOrganizationIdLeadsExport"];
         readonly put?: never;
         readonly post?: never;
@@ -8118,10 +7496,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /real-estate/agencies/:organizationId/workspace
-         * @description Implemented by backend/src/api/v1/router.ts:1104.
-         */
+        /** GET /real-estate/agencies/:organizationId/workspace */
         readonly get: operations["getRealEstateAgenciesByOrganizationIdWorkspace"];
         readonly put?: never;
         readonly post?: never;
@@ -8138,10 +7513,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /real-estate/catalog
-         * @description Implemented by backend/src/api/v1/router.ts:1015.
-         */
+        /** GET /real-estate/catalog */
         readonly get: operations["getRealEstateCatalog"];
         readonly put?: never;
         readonly post?: never;
@@ -8160,10 +7532,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /real-estate/checkouts
-         * @description Implemented by backend/src/api/v1/router.ts:1139.
-         */
+        /** POST /real-estate/checkouts */
         readonly post: operations["postRealEstateCheckouts"];
         readonly delete?: never;
         readonly options?: never;
@@ -8180,10 +7549,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /real-estate/checkouts/:checkoutId/refunds
-         * @description Implemented by backend/src/api/v1/router.ts:1146.
-         */
+        /** POST /real-estate/checkouts/:checkoutId/refunds */
         readonly post: operations["postRealEstateCheckoutsByCheckoutIdRefunds"];
         readonly delete?: never;
         readonly options?: never;
@@ -8218,15 +7584,9 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /real-estate/drafts/:id
-         * @description Implemented by backend/src/api/v1/router.ts:1051.
-         */
+        /** GET /real-estate/drafts/:id */
         readonly get: operations["getRealEstateDraftsById"];
-        /**
-         * PUT /real-estate/drafts/:id
-         * @description Implemented by backend/src/api/v1/router.ts:1058.
-         */
+        /** PUT /real-estate/drafts/:id */
         readonly put: operations["putRealEstateDraftsById"];
         readonly post?: never;
         readonly delete?: never;
@@ -8244,10 +7604,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /real-estate/drafts/:id/submit
-         * @description Implemented by backend/src/api/v1/router.ts:1065.
-         */
+        /** POST /real-estate/drafts/:id/submit */
         readonly post: operations["postRealEstateDraftsByIdSubmit"];
         readonly delete?: never;
         readonly options?: never;
@@ -8264,10 +7621,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /real-estate/leads
-         * @description Implemented by backend/src/api/v1/router.ts:1083.
-         */
+        /** POST /real-estate/leads */
         readonly post: operations["postRealEstateLeads"];
         readonly delete?: never;
         readonly options?: never;
@@ -8284,10 +7638,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /real-estate/leads/:leadId/appointments
-         * @description Implemented by backend/src/api/v1/router.ts:1093.
-         */
+        /** POST /real-estate/leads/:leadId/appointments */
         readonly post: operations["postRealEstateLeadsByLeadIdAppointments"];
         readonly delete?: never;
         readonly options?: never;
@@ -8302,10 +7653,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /real-estate/properties/:id
-         * @description Implemented by backend/src/api/v1/router.ts:1021.
-         */
+        /** GET /real-estate/properties/:id */
         readonly get: operations["getRealEstatePropertiesById"];
         readonly put?: never;
         readonly post?: never;
@@ -8322,10 +7670,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /real-estate/properties/:id/comparables
-         * @description Implemented by backend/src/api/v1/router.ts:1027.
-         */
+        /** GET /real-estate/properties/:id/comparables */
         readonly get: operations["getRealEstatePropertiesByIdComparables"];
         readonly put?: never;
         readonly post?: never;
@@ -8342,10 +7687,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /real-estate/properties/:id/documents/:documentId/access
-         * @description Implemented by backend/src/api/v1/router.ts:1072.
-         */
+        /** GET /real-estate/properties/:id/documents/:documentId/access */
         readonly get: operations["getRealEstatePropertiesByIdDocumentsByDocumentIdAccess"];
         readonly put?: never;
         readonly post?: never;
@@ -8362,16 +7704,10 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /real-estate/recently-viewed
-         * @description Implemented by backend/src/api/v1/router.ts:1034.
-         */
+        /** GET /real-estate/recently-viewed */
         readonly get: operations["getRealEstateRecentlyViewed"];
         readonly put?: never;
-        /**
-         * POST /real-estate/recently-viewed
-         * @description Implemented by backend/src/api/v1/router.ts:1041.
-         */
+        /** POST /real-estate/recently-viewed */
         readonly post: operations["postRealEstateRecentlyViewed"];
         readonly delete?: never;
         readonly options?: never;
@@ -8388,10 +7724,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /real-estate/search
-         * @description Implemented by backend/src/api/v1/router.ts:1018.
-         */
+        /** POST /real-estate/search */
         readonly post: operations["postRealEstateSearch"];
         readonly delete?: never;
         readonly options?: never;
@@ -8408,10 +7741,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /reports
-         * @description Implemented by backend/src/api/v1/router.ts:2393.
-         */
+        /** POST /reports */
         readonly post: operations["postReports"];
         readonly delete?: never;
         readonly options?: never;
@@ -8446,10 +7776,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /reviews/user/:userId
-         * @description Implemented by backend/src/api/v1/router.ts:2383.
-         */
+        /** GET /reviews/user/:userId */
         readonly get: operations["getReviewsUserByUserId"];
         readonly put?: never;
         readonly post?: never;
@@ -8503,16 +7830,10 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * List support cases for support staff
-         * @description Implemented by backend/src/api/v1/router.ts:2482.
-         */
+        /** List support cases for support staff */
         readonly get: operations["getSupportCases"];
         readonly put?: never;
-        /**
-         * Create a support case
-         * @description Implemented by backend/src/api/v1/router.ts:2468.
-         */
+        /** Create a support case */
         readonly post: operations["postSupportCases"];
         readonly delete?: never;
         readonly options?: never;
@@ -8527,20 +7848,14 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * Read an authorized support case
-         * @description Implemented by backend/src/api/v1/router.ts:2494.
-         */
+        /** Read an authorized support case */
         readonly get: operations["getSupportCasesById"];
         readonly put?: never;
         readonly post?: never;
         readonly delete?: never;
         readonly options?: never;
         readonly head?: never;
-        /**
-         * Update a support case with an audited reason
-         * @description Implemented by backend/src/api/v1/router.ts:2501.
-         */
+        /** Update a support case with an audited reason */
         readonly patch: operations["patchSupportCasesById"];
         readonly trace?: never;
     };
@@ -8553,10 +7868,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * Add an authorized support case reply or internal note
-         * @description Implemented by backend/src/api/v1/router.ts:2508.
-         */
+        /** Add an authorized support case reply or internal note */
         readonly post: operations["postSupportCasesByIdNotes"];
         readonly delete?: never;
         readonly options?: never;
@@ -8571,10 +7883,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * List the current user's support cases
-         * @description Implemented by backend/src/api/v1/router.ts:2474.
-         */
+        /** List the current user's support cases */
         readonly get: operations["getSupportCasesMine"];
         readonly put?: never;
         readonly post?: never;
@@ -8591,10 +7900,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * Read support queue and SLA metrics
-         * @description Implemented by backend/src/api/v1/router.ts:2515.
-         */
+        /** Read support queue and SLA metrics */
         readonly get: operations["getSupportMetrics"];
         readonly put?: never;
         readonly post?: never;
@@ -8628,10 +7934,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /taxonomy/nodes/:id
-         * @description Implemented by backend/src/api/v1/router.ts:704.
-         */
+        /** GET /taxonomy/nodes/:id */
         readonly get: operations["getTaxonomyNodesById"];
         readonly put?: never;
         readonly post?: never;
@@ -8648,10 +7951,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /taxonomy/nodes/:id/attributes
-         * @description Implemented by backend/src/api/v1/router.ts:716.
-         */
+        /** GET /taxonomy/nodes/:id/attributes */
         readonly get: operations["getTaxonomyNodesByIdAttributes"];
         readonly put?: never;
         readonly post?: never;
@@ -8668,10 +7968,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /taxonomy/nodes/:id/children
-         * @description Implemented by backend/src/api/v1/router.ts:710.
-         */
+        /** GET /taxonomy/nodes/:id/children */
         readonly get: operations["getTaxonomyNodesByIdChildren"];
         readonly put?: never;
         readonly post?: never;
@@ -8688,10 +7985,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /taxonomy/root
-         * @description Implemented by backend/src/api/v1/router.ts:701.
-         */
+        /** GET /taxonomy/root */
         readonly get: operations["getTaxonomyRoot"];
         readonly put?: never;
         readonly post?: never;
@@ -8708,10 +8002,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /taxonomy/search-filters
-         * @description Implemented by backend/src/api/v1/router.ts:722.
-         */
+        /** GET /taxonomy/search-filters */
         readonly get: operations["getTaxonomySearchFilters"];
         readonly put?: never;
         readonly post?: never;
@@ -8728,10 +8019,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /taxonomy/slug/:slug
-         * @description Implemented by backend/src/api/v1/router.ts:707.
-         */
+        /** GET /taxonomy/slug/:slug */
         readonly get: operations["getTaxonomySlugBySlug"];
         readonly put?: never;
         readonly post?: never;
@@ -8799,15 +8087,9 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /users/:id
-         * @description Implemented by backend/src/api/v1/router.ts:514.
-         */
+        /** GET /users/:id */
         readonly get: operations["getUsersById"];
-        /**
-         * PUT /users/:id
-         * @description Implemented by backend/src/api/v1/router.ts:517.
-         */
+        /** PUT /users/:id */
         readonly put: operations["putUsersById"];
         readonly post?: never;
         readonly delete?: never;
@@ -8825,10 +8107,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /verification/business-registration
-         * @description Implemented by backend/src/api/v1/router.ts:2153.
-         */
+        /** POST /verification/business-registration */
         readonly post: operations["postVerificationBusinessRegistration"];
         readonly delete?: never;
         readonly options?: never;
@@ -8843,10 +8122,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /verification/siret-lookup/:siret
-         * @description Implemented by backend/src/api/v1/router.ts:2146.
-         */
+        /** GET /verification/siret-lookup/:siret */
         readonly get: operations["getVerificationSiretLookupBySiret"];
         readonly put?: never;
         readonly post?: never;
@@ -8863,10 +8139,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /verification/status/:userId
-         * @description Implemented by backend/src/api/v1/router.ts:2137.
-         */
+        /** GET /verification/status/:userId */
         readonly get: operations["getVerificationStatusByUserId"];
         readonly put?: never;
         readonly post?: never;
@@ -8921,10 +8194,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /webhooks/compliance/:provider
-         * @description Implemented by backend/src/api/v1/router.ts:2742.
-         */
+        /** POST /webhooks/compliance/:provider */
         readonly post: operations["postWebhooksComplianceByProvider"];
         readonly delete?: never;
         readonly options?: never;
@@ -8941,10 +8211,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /webhooks/stripe
-         * @description Implemented by backend/src/api/v1/router.ts:2633.
-         */
+        /** POST /webhooks/stripe */
         readonly post: operations["postWebhooksStripe"];
         readonly delete?: never;
         readonly options?: never;
@@ -8961,10 +8228,7 @@ export interface paths {
         };
         readonly get?: never;
         readonly put?: never;
-        /**
-         * POST /webhooks/stripe-connect-v2
-         * @description Implemented by backend/src/api/v1/router.ts:2710.
-         */
+        /** POST /webhooks/stripe-connect-v2 */
         readonly post: operations["postWebhooksStripeConnectV2"];
         readonly delete?: never;
         readonly options?: never;
@@ -8979,10 +8243,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /workspace/pro-analytics/:sellerId
-         * @description Implemented by backend/src/api/v1/router.ts:2413.
-         */
+        /** GET /workspace/pro-analytics/:sellerId */
         readonly get: operations["getWorkspaceProAnalyticsBySellerId"];
         readonly put?: never;
         readonly post?: never;
@@ -8999,10 +8260,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /**
-         * GET /workspace/summary/:userId
-         * @description Implemented by backend/src/api/v1/router.ts:2404.
-         */
+        /** GET /workspace/summary/:userId */
         readonly get: operations["getWorkspaceSummaryByUserId"];
         readonly put?: never;
         readonly post?: never;
@@ -10823,7 +10081,14 @@ export interface components {
             readonly [key: string]: unknown;
         };
         readonly ErrorResponse: {
+            readonly code?: string;
+            readonly detail?: string;
             readonly error: components["schemas"]["ErrorDetail"];
+            readonly requestId?: string;
+            readonly status?: number;
+            readonly title?: string;
+            /** Format: uri-reference */
+            readonly type?: string;
         };
         readonly ExchangeRate: {
             /** Format: date-time */
@@ -12681,6 +11946,19 @@ export interface components {
             /** @enum {string} */
             readonly reason: "fraud" | "counterfeit" | "prohibited" | "harassment" | "other";
             readonly reportedUserId?: string;
+        };
+        readonly RuntimeHealth: {
+            readonly dependencies?: {
+                /** @enum {unknown} */
+                readonly database?: "up" | "down";
+            };
+            readonly environment: string;
+            readonly release: string;
+            /** @constant */
+            readonly service: "shongre-backend";
+            /** @enum {unknown} */
+            readonly status: "ok" | "ready" | "not_ready";
+            readonly version: string;
         };
         readonly SellerAnalytics: {
             /** Format: date-time */
@@ -16443,6 +15721,28 @@ export interface operations {
             readonly 500: components["responses"]["InternalError"];
         };
     };
+    readonly getApiDocumentation: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Offline API operation reference */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "text/html": string;
+                };
+            };
+            readonly 404: components["responses"]["NotFound"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
     readonly getApiHealth: {
         readonly parameters: {
             readonly query?: never;
@@ -16458,10 +15758,32 @@ export interface operations {
                     readonly [name: string]: unknown;
                 };
                 content: {
+                    readonly "application/json": components["schemas"]["RuntimeHealth"];
+                };
+            };
+            readonly 404: components["responses"]["NotFound"];
+        };
+    };
+    readonly getOpenApiDocument: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Canonical OpenAPI 3.1 contract */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
                     readonly "application/json": components["schemas"]["JsonValue"];
                 };
             };
             readonly 404: components["responses"]["NotFound"];
+            readonly 500: components["responses"]["InternalError"];
         };
     };
     readonly getApiReadiness: {
@@ -16479,7 +15801,7 @@ export interface operations {
                     readonly [name: string]: unknown;
                 };
                 content: {
-                    readonly "application/json": components["schemas"]["JsonValue"];
+                    readonly "application/json": components["schemas"]["RuntimeHealth"];
                 };
             };
             readonly 404: components["responses"]["NotFound"];
@@ -16489,7 +15811,7 @@ export interface operations {
                     readonly [name: string]: unknown;
                 };
                 content: {
-                    readonly "application/json": components["schemas"]["JsonValue"];
+                    readonly "application/json": components["schemas"]["RuntimeHealth"];
                 };
             };
         };
@@ -24353,16 +23675,61 @@ export interface operations {
                     readonly [name: string]: unknown;
                 };
                 content: {
-                    readonly "application/json": {
-                        /** @constant */
-                        readonly service: "shongre-backend";
-                        /** @constant */
-                        readonly status: "ok";
-                        readonly version: string;
-                    };
+                    readonly "application/json": components["schemas"]["RuntimeHealth"];
                 };
             };
             readonly 404: components["responses"]["NotFound"];
+        };
+    };
+    readonly getHealthLive: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description The HTTP process is alive. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["RuntimeHealth"];
+                };
+            };
+            readonly 404: components["responses"]["NotFound"];
+        };
+    };
+    readonly getHealthReady: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description The process and its database dependency are ready. */
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["RuntimeHealth"];
+                };
+            };
+            readonly 404: components["responses"]["NotFound"];
+            /** @description A required dependency is unavailable. */
+            readonly 503: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["RuntimeHealth"];
+                };
+            };
         };
     };
     readonly getHome: {
@@ -25552,13 +24919,7 @@ export interface operations {
                     readonly [name: string]: unknown;
                 };
                 content: {
-                    readonly "application/json": {
-                        /** @constant */
-                        readonly service: "shongre-backend";
-                        /** @constant */
-                        readonly status: "ok";
-                        readonly version: string;
-                    };
+                    readonly "application/json": components["schemas"]["RuntimeHealth"];
                 };
             };
             readonly 404: components["responses"]["NotFound"];
@@ -29716,7 +29077,7 @@ export interface operations {
                     readonly [name: string]: unknown;
                 };
                 content: {
-                    readonly "application/json": components["schemas"]["JsonValue"];
+                    readonly "application/json": components["schemas"]["RuntimeHealth"];
                 };
             };
             readonly 404: components["responses"]["NotFound"];
@@ -29726,7 +29087,7 @@ export interface operations {
                     readonly [name: string]: unknown;
                 };
                 content: {
-                    readonly "application/json": components["schemas"]["JsonValue"];
+                    readonly "application/json": components["schemas"]["RuntimeHealth"];
                 };
             };
         };

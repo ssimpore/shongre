@@ -11,7 +11,7 @@ class ScheduledJobCoordinator {
     leaseSeconds: number,
   ): Promise<boolean> {
     if (config.dataMode === "demo") return true;
-    const { data, error } = await (getSupabaseAdminClient() as any).rpc(
+    const { data, error } = await getSupabaseAdminClient().rpc(
       "claim_scheduled_job",
       {
         p_job_name: jobName,
@@ -30,13 +30,13 @@ class ScheduledJobCoordinator {
     errorMessage?: string,
   ): Promise<void> {
     if (config.dataMode === "demo") return;
-    const { error } = await (getSupabaseAdminClient() as any).rpc(
+    const { error } = await getSupabaseAdminClient().rpc(
       "complete_scheduled_job",
       {
         p_job_name: jobName,
         p_owner_id: this.ownerId,
         p_interval_seconds: intervalSeconds,
-        p_error: errorMessage || null,
+        p_error: errorMessage || undefined,
       },
     );
     if (error) throw error;
@@ -44,7 +44,7 @@ class ScheduledJobCoordinator {
 
   async renew(jobName: string, leaseSeconds: number): Promise<boolean> {
     if (config.dataMode === "demo") return true;
-    const { data, error } = await (getSupabaseAdminClient() as any).rpc(
+    const { data, error } = await getSupabaseAdminClient().rpc(
       "renew_scheduled_job_lease",
       {
         p_job_name: jobName,

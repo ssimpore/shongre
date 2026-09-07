@@ -74,8 +74,10 @@ describe("API v1 Endpoints Integration", () => {
     await seedDemoCredentials();
 
     server = createHttpServer();
-    await new Promise<void>((resolve) => {
-      server.listen(0, () => {
+    await new Promise<void>((resolve, reject) => {
+      server.once("error", reject);
+      server.listen(0, "127.0.0.1", () => {
+        server.off("error", reject);
         const address = server.address() as any;
         baseUrl = `http://127.0.0.1:${address.port}`;
         resolve();

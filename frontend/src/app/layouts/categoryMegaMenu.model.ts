@@ -1,5 +1,6 @@
 import type { TaxonomyServiceContract } from "../../api/contracts/taxonomy.contract";
 import type { TaxonomyNode } from "../../domains/taxonomy/taxonomy.types";
+import type { MarketContext, TaxonomyV4Node } from "@shongre/contracts";
 
 export type TaxonomyNodeAvailability = (node: TaxonomyNode) => boolean;
 
@@ -11,76 +12,103 @@ export interface CategoryNavigationRootReference {
 const byTaxonomyOrder = (left: TaxonomyNode, right: TaxonomyNode) =>
   left.sortOrder - right.sortOrder || left.id.localeCompare(right.id);
 
-async function loadNodeBranch(
-  taxonomy: TaxonomyServiceContract,
-  node: TaxonomyNode,
-  isAvailable: TaxonomyNodeAvailability,
-  ancestors: ReadonlySet<string>,
-): Promise<TaxonomyNode | null> {
-  if (!isAvailable(node) || ancestors.has(node.id)) return null;
+const toNavigationNode = (node: TaxonomyV4Node): TaxonomyNode => ({
+  id: node.id,
+  code: node.sourceKey,
+  slug: node.slug,
+  parentId: node.parentId,
+  level:
+    node.level === 0 ? "category" : node.level === 1 ? "subcategory" : "type",
+  publishable: node.publishable,
+  labels: node.labels,
+  shortLabels: node.shortLabels,
+  name: node.labels["fr-FR"] ?? Object.values(node.labels)[0] ?? node.slug,
+  description: node.description,
+  iconName: node.iconName,
+  sortOrder: node.sortOrder,
+  status: node.status,
+  sellerEligibility: {
+    individualAllowed: node.sellerEligibility.individualAllowed,
+    proAllowed: node.sellerEligibility.professionalAllowed,
+  },
+  seo: { indexable: node.seo.indexable },
+});
 
-  const nextAncestors = new Set(ancestors);
-  nextAncestors.add(node.id);
-  const children = await taxonomy.getChildren(node.id);
-  const availableChildren = (
-    await Promise.all(
-      children.map((child) =>
-        loadNodeBranch(taxonomy, child, isAvailable, nextAncestors),
-      ),
-    )
-  )
-    .filter((child): child is TaxonomyNode => child !== null)
+/**
+ * Projects the canonical flat tree into the nested legacy view model still
+ * consumed by the header. The API returns the complete market tree in one
+ * request, so opening a menu never fans out into one request per node.
+ */
+export function buildCategoryNavigationTree(
+  items: readonly TaxonomyV4Node[],
+  isAvailable: TaxonomyNodeAvailability,
+): TaxonomyNode[] {
+  const itemsById = new Map(items.map((item) => [item.id, item]));
+  const childrenByParentId = new Map<string, TaxonomyV4Node[]>();
+  items.forEach((item) => {
+    if (!item.parentId || !itemsById.has(item.parentId)) return;
+    const children = childrenByParentId.get(item.parentId) ?? [];
+    children.push(item);
+    childrenByParentId.set(item.parentId, children);
+  });
+
+  const buildNode = (
+    item: TaxonomyV4Node,
+    ancestors: ReadonlySet<string>,
+  ): TaxonomyNode | null => {
+    const node = toNavigationNode(item);
+    if (!isAvailable(node) || ancestors.has(node.id)) return null;
+
+    const nextAncestors = new Set(ancestors);
+    nextAncestors.add(node.id);
+    const children = (childrenByParentId.get(node.id) ?? [])
+      .map((child) => buildNode(child, nextAncestors))
+      .filter((child): child is TaxonomyNode => child !== null)
+      .sort(byTaxonomyOrder);
+    return { ...node, children };
+  };
+
+  return items
+    .filter((item) => !item.parentId)
+    .map((item) => buildNode(item, new Set()))
+    .filter((node): node is TaxonomyNode => node !== null)
     .sort(byTaxonomyOrder);
-
-  return { ...node, children: availableChildren };
 }
 
-/**
- * Loads one complete navigation branch through the public taxonomy contract.
- *
- * The recursive projection deliberately makes no assumption about taxonomy
- * depth. Availability is injected so the caller can use the active market's
- * canonical policy without teaching this hierarchy helper about market state.
- */
-export async function loadCategoryNavigationBranch(
+export async function loadCategoryNavigationTree(
   taxonomy: TaxonomyServiceContract,
-  rootReference: string | CategoryNavigationRootReference,
-  isAvailable: TaxonomyNodeAvailability,
-): Promise<TaxonomyNode | null> {
-  const root =
-    typeof rootReference === "string"
-      ? await taxonomy.getNodeBySlug(rootReference)
-      : ((await taxonomy.getNodeById(rootReference.id)) ??
-        (await taxonomy.getNodeBySlug(rootReference.slug)));
-  if (!root) return null;
-
-  return loadNodeBranch(taxonomy, root, isAvailable, new Set());
-}
-
-/**
- * Loads the taxonomy roots not already promoted into the primary header row.
- * This keeps the "Autres" panel derived from the same authoritative taxonomy
- * instead of introducing another manually maintained category catalogue.
- */
-export async function loadCategoryNavigationOverview(
-  taxonomy: TaxonomyServiceContract,
-  excludedRootIds: ReadonlySet<string>,
+  marketContext: MarketContext,
+  locale: string,
   isAvailable: TaxonomyNodeAvailability,
 ): Promise<TaxonomyNode[]> {
-  const roots = await taxonomy.getRootCategories();
-  const rootSlugsById = new Map<string, string>();
-  roots.forEach((root) => {
-    if (!excludedRootIds.has(root.id) && !rootSlugsById.has(root.id)) {
-      rootSlugsById.set(root.id, root.slug);
-    }
+  const response = await taxonomy.getV4Tree({
+    marketContext,
+    locale,
+    taxonomyVersion: "4.0.0",
   });
-  const branches = await Promise.all(
-    [...rootSlugsById.values()].map((slug) =>
-      loadCategoryNavigationBranch(taxonomy, slug, isAvailable),
-    ),
+  return buildCategoryNavigationTree(response.items, isAvailable);
+}
+
+export function findCategoryNavigationBranch(
+  roots: readonly TaxonomyNode[],
+  rootReference: string | CategoryNavigationRootReference,
+): TaxonomyNode | null {
+  if (typeof rootReference === "string") {
+    return roots.find((root) => root.slug === rootReference) ?? null;
+  }
+  return (
+    roots.find((root) => root.id === rootReference.id) ??
+    roots.find((root) => root.slug === rootReference.slug) ??
+    null
   );
-  return branches
-    .filter((branch): branch is TaxonomyNode => branch !== null)
+}
+
+export function filterCategoryNavigationOverview(
+  roots: readonly TaxonomyNode[],
+  excludedRootIds: ReadonlySet<string>,
+): TaxonomyNode[] {
+  return roots
+    .filter((root) => !excludedRootIds.has(root.id))
     .sort(byTaxonomyOrder);
 }
 

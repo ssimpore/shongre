@@ -59,10 +59,10 @@ class HttpClient {
     return this.refreshPromise;
   }
 
-  async request<T>(
+  request = async <T>(
     endpoint: ApiPath,
     options: HttpRequestOptions = {},
-  ): Promise<T> {
+  ): Promise<T> => {
     const {
       params,
       headers,
@@ -93,7 +93,7 @@ class HttpClient {
       typeof crypto !== "undefined" && "randomUUID" in crypto
         ? crypto.randomUUID()
         : deterministicRuntimeId("req", [method, endpoint]);
-    const defaultHeaders: HeadersInit = {
+    const defaultHeaders = new Headers({
       "Content-Type": "application/json",
       Accept: "application/json",
       "X-Request-Id": requestId,
@@ -101,8 +101,10 @@ class HttpClient {
         ? { "X-CSRF-Token": csrfToken }
         : {}),
       ...(marketCode ? { "X-Shongre-Market": marketCode } : {}),
-      ...(headers as Record<string, string>),
-    };
+    });
+    new Headers(headers).forEach((value, key) =>
+      defaultHeaders.set(key, value),
+    );
 
     const controller = new AbortController();
     const callerSignal = customConfig.signal;
@@ -128,8 +130,6 @@ class HttpClient {
         headers: defaultHeaders,
       });
 
-      cleanupAbort();
-
       if (
         response.status === 401 &&
         !endpoint.startsWith("/auth/login") &&
@@ -146,11 +146,13 @@ class HttpClient {
           (currentCsrfToken !== csrfToken
             ? ["GET", "HEAD", "OPTIONS"].includes(method)
             : await this.refreshSession());
-        if (recovered)
+        if (recovered) {
+          cleanupAbort();
           return this.request<T>(endpoint, {
             ...options,
             _retried: true,
           });
+        }
       }
 
       if (!response.ok) {
@@ -162,12 +164,13 @@ class HttpClient {
         let errorData: any = {};
         try {
           errorData = await response.json();
-        } catch {
-          // non-json response
+        } catch (error) {
+          if (controller.signal.aborted) throw error;
         }
 
         const rawCode = errorData.error?.code || errorData.code;
-        const rawMessage = errorData.error?.message || errorData.message;
+        const rawMessage =
+          errorData.error?.message || errorData.detail || errorData.message;
 
         const code: AppErrorCode = rawCode
           ? (rawCode as AppErrorCode)
@@ -179,9 +182,11 @@ class HttpClient {
                 ? "NOT_FOUND"
                 : response.status === 409
                   ? "CONFLICT"
-                  : response.status === 422
-                    ? "VALIDATION_ERROR"
-                    : "INTERNAL_ERROR";
+                  : response.status === 429
+                    ? "RATE_LIMITED"
+                    : response.status === 422
+                      ? "VALIDATION_ERROR"
+                      : "INTERNAL_ERROR";
 
         throw new AppError({
           code,
@@ -191,7 +196,9 @@ class HttpClient {
         });
       }
 
-      return (await response.json()) as T;
+      const result =
+        response.status === 204 ? undefined : await response.json();
+      return result as T;
     } catch (err: any) {
       cleanupAbort();
       if (err instanceof AppError) throw err;
@@ -215,11 +222,13 @@ class HttpClient {
       );
       throw new AppError({
         code: "NETWORK_ERROR",
-        message: err.message || "Impossible de contacter le serveur Shongre.",
+        message: "Impossible de contacter le serveur Shongre.",
         originalError: err,
       });
+    } finally {
+      cleanupAbort();
     }
-  }
+  };
 
   get<T>(
     endpoint: ApiPathForMethod<"get">,

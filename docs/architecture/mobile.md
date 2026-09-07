@@ -46,3 +46,16 @@ documented in the repository README. Do not source the Bash loader directly
 from zsh: Expo's Xcode phases would miss the required identifiers and URLs.
 Unsigned simulator verification covers Release compilation and packaging only;
 signing, archive inspection, and device behavior remain separate release gates.
+
+## Concurrent requests and session rotation
+
+The central transport uses the shared request deadline for both headers and
+response-body reads, preserves caller cancellation, and normalizes timeouts and
+offline failures. Concurrent 401s share one refresh. Login and logout advance a
+session generation synchronously; SecureStore writes are serialized, and an
+older refresh cannot overwrite or delete the newer account’s credentials.
+Responses and retries from an obsolete generation are rejected. Transient
+refresh failures retain the current session for an explicit retry.
+
+Favorite operations now use the generated callable OpenAPI client; native
+transport still owns bearer credentials and the exact requested market.

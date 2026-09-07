@@ -57,7 +57,8 @@
     "./performance": "./src/operational-performance.ts",
     "./openapi": "./src/openapi.ts",
     "./market-country": "./src/market-country.ts",
-    "./primitives": "./src/schemas/primitives.ts"
+    "./primitives": "./src/schemas/primitives.ts",
+    "./api-client": "./src/generated/api-client.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

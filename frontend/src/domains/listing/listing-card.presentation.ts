@@ -2,7 +2,10 @@ import {
   isActiveMarketResolvedListingPromotion,
   type MarketResolvedListingPromotion,
 } from "@shongre/contracts/discovery";
-import type { ListingCardView } from "@shongre/contracts/listings";
+import type {
+  ListingCardView,
+  ListingCharacteristicIcon,
+} from "@shongre/contracts/listings";
 import type { MarketCode, Money } from "@shongre/contracts/primitives";
 import type { MoneyConversionProjection } from "@shongre/contracts/currency";
 import { getTaxonomyV4CardRootLabel } from "@shongre/contracts/taxonomy-v4-card";
@@ -27,6 +30,134 @@ const STRUCTURED_CATEGORY_ROOTS = {
   vehicle: "vehicles",
   employment: "jobs",
 } as const;
+
+interface ListingDecisionDetail {
+  label: string;
+  icon: ListingCharacteristicIcon;
+}
+
+const VEHICLE_FUEL_LABELS = {
+  fr: {
+    petrol: "Essence",
+    diesel: "Diesel",
+    electric: "Électrique",
+    hybrid: "Hybride",
+    plug_in_hybrid: "Hybride rechargeable",
+    lpg: "GPL",
+    hydrogen: "Hydrogène",
+    other: "Autre",
+  },
+  en: {
+    petrol: "Petrol",
+    diesel: "Diesel",
+    electric: "Electric",
+    hybrid: "Hybrid",
+    plug_in_hybrid: "Plug-in hybrid",
+    lpg: "LPG",
+    hydrogen: "Hydrogen",
+    other: "Other",
+  },
+} as const;
+
+function isFrench(locale: string) {
+  return locale.toLowerCase().startsWith("fr");
+}
+
+function decisionDetailsProjection(details: ListingDecisionDetail[]) {
+  return {
+    characteristics: details.map(({ label }) => label),
+    characteristicIcons: details.map(({ icon }) => icon),
+  };
+}
+
+function presentPropertyDecisionDetails(
+  property: PropertyPublic,
+  locale: string,
+): ListingDecisionDetail[] {
+  const details: Array<ListingDecisionDetail | undefined> = [
+    property.characteristics?.livingAreaSquareMeters > 0
+      ? {
+          label: `${new Intl.NumberFormat(locale).format(
+            property.characteristics.livingAreaSquareMeters,
+          )} m²`,
+          icon: "ruler",
+        }
+      : undefined,
+    property.characteristics?.rooms > 0
+      ? {
+          label: `${new Intl.NumberFormat(locale).format(
+            property.characteristics.rooms,
+          )} ${
+            isFrench(locale)
+              ? property.characteristics.rooms > 1
+                ? "pièces"
+                : "pièce"
+              : property.characteristics.rooms > 1
+                ? "rooms"
+                : "room"
+          }`,
+          icon: "layout-grid",
+        }
+      : undefined,
+    property.energy?.dpeClass
+      ? { label: `DPE ${property.energy.dpeClass}`, icon: "home" }
+      : undefined,
+  ];
+  return details.filter((detail): detail is ListingDecisionDetail =>
+    Boolean(detail),
+  );
+}
+
+function presentVehicleDecisionDetails(
+  vehicle: VehiclePublic,
+  locale: string,
+): ListingDecisionDetail[] {
+  const technical = vehicle.technical;
+  if (!technical) return [];
+  return [
+    { label: String(technical.modelYear), icon: "calendar" },
+    {
+      label: `${new Intl.NumberFormat(locale).format(technical.mileage)} ${technical.mileageUnit}`,
+      icon: "gauge",
+    },
+    {
+      label:
+        VEHICLE_FUEL_LABELS[isFrench(locale) ? "fr" : "en"][technical.fuelType],
+      icon: "fuel",
+    },
+  ];
+}
+
+function presentEmploymentDecisionDetails(
+  job: JobPostingCard,
+): ListingDecisionDetail[] {
+  const details: ListingDecisionDetail[] = [
+    { label: job.contractTypeLabel, icon: "briefcase" },
+    { label: job.workingArrangementLabel, icon: "laptop" },
+    { label: job.professionLabel, icon: "briefcase" },
+  ];
+  return details.filter(
+    ({ label }, index) =>
+      label.trim().length > 0 &&
+      details.findIndex(({ label: other }) => other === label) === index,
+  );
+}
+
+function presentVehicleResponseTime(
+  responseTimeMinutes: number | undefined,
+  locale: string,
+) {
+  if (responseTimeMinutes === undefined) return undefined;
+  const hours = Math.floor(responseTimeMinutes / 60);
+  const minutes = responseTimeMinutes % 60;
+  const duration = [
+    hours ? `${hours} h` : undefined,
+    minutes || !hours ? `${minutes} min` : undefined,
+  ]
+    .filter(Boolean)
+    .join(" ");
+  return `${isFrench(locale) ? "Répond en" : "Replies in"} ${duration}`;
+}
 
 function structuredCategoryLabel(
   root: (typeof STRUCTURED_CATEGORY_ROOTS)[keyof typeof STRUCTURED_CATEGORY_ROOTS],
@@ -117,6 +248,9 @@ export function presentPropertyListingCard(
     property.resolvedPromotion,
     marketCode,
   );
+  const decisionDetails = decisionDetailsProjection(
+    presentPropertyDecisionDetails(property, locale),
+  );
   return {
     id: property.id,
     title: property.title,
@@ -137,7 +271,7 @@ export function presentPropertyListingCard(
     conditionLabel: "",
     publisherType:
       property.seller.type === "owner" ? "private" : "professional",
-    characteristics: [],
+    ...decisionDetails,
     publishedAt: property.publishedAt,
     photoCount: property.media.photos.length,
     isNegotiable: property.financials.isNegotiable,
@@ -151,6 +285,7 @@ export function presentPropertyListingCard(
       rating: property.seller.rating,
       reviewCount: property.seller.reviewCount,
       isBusinessVerified: property.seller.verificationLabels.length > 0,
+      responseTimeLabel: property.seller.responseTimeLabel,
     },
     isUrgent: promotion?.type === "urgent_badge",
     isFeatured: Boolean(promotion && promotion.type !== "urgent_badge"),
@@ -168,6 +303,9 @@ export function presentVehicleListingCard(
   const promotion = resolvePromotionForMarket(
     vehicle.resolvedPromotion,
     marketCode,
+  );
+  const decisionDetails = decisionDetailsProjection(
+    presentVehicleDecisionDetails(vehicle, locale),
   );
   return {
     id: vehicle.id,
@@ -188,7 +326,7 @@ export function presentVehicleListingCard(
     conditionLabel: "",
     publisherType:
       vehicle.seller.type === "dealer" ? "professional" : "private",
-    characteristics: [],
+    ...decisionDetails,
     publishedAt: vehicle.publishedAt,
     photoCount: vehicle.mediaUrls.length,
     isNegotiable: vehicle.priceNegotiable,
@@ -202,6 +340,10 @@ export function presentVehicleListingCard(
       rating: vehicle.seller.rating,
       reviewCount: vehicle.seller.reviewCount,
       isBusinessVerified: vehicle.seller.verifiedBusiness,
+      responseTimeLabel: presentVehicleResponseTime(
+        vehicle.seller.responseTimeMinutes,
+        locale,
+      ),
     },
     isUrgent: promotion?.type === "urgent_badge",
     isFeatured: Boolean(promotion && promotion.type !== "urgent_badge"),
@@ -226,6 +368,9 @@ export function presentEmploymentListingCard(
     job.resolvedPromotion,
     marketCode,
   );
+  const decisionDetails = decisionDetailsProjection(
+    presentEmploymentDecisionDetails(job),
+  );
   return {
     id: job.id,
     title: job.title,
@@ -241,7 +386,7 @@ export function presentEmploymentListingCard(
     ),
     conditionLabel: "",
     publisherType: job.employer.organizationId ? "professional" : "private",
-    characteristics: [],
+    ...decisionDetails,
     publishedAt: job.publishedAt,
     seller: {
       id: job.employer.id,

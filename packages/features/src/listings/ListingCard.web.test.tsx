@@ -250,7 +250,7 @@ describe("canonical web listing card", () => {
     expect(html).not.toContain("Invalid");
   });
 
-  it("keeps list mode on the same content primitive", () => {
+  it("uses the horizontal room for decision details and seller trust", () => {
     const html = renderToStaticMarkup(
       <ListingCard
         listing={baseListing}
@@ -264,9 +264,37 @@ describe("canonical web listing card", () => {
     expect(html).toContain("listing-card-list-link");
     expect(html).toContain("listing-card-list-overlay");
     expect(html).toContain('data-listing-card-price-row="true"');
+    expect(html).toContain('data-listing-card-characteristics="true"');
+    expect(html).toContain("Velours");
+    expect(html).toContain("Trois places");
+    expect(html).toContain('data-listing-card-seller-identity="true"');
+    expect(html).toContain('data-listing-card-seller-avatar="true"');
+    expect(html).toContain("Agence Canopée");
+    expect(html).toContain("Profil vérifié");
+    expect(html).toMatch(/aria-label="[^"]*Velours[^"]*Agence Canopée/);
   });
 
-  it("adds real decision fields and seller identity only in hero mode", () => {
+  it("does not reserve empty horizontal detail zones", () => {
+    const html = renderToStaticMarkup(
+      <ListingCard
+        listing={{
+          ...baseListing,
+          characteristics: [],
+          seller: undefined,
+          publisherType: "private",
+        }}
+        href="/annonce/listing-card-test"
+        variant="list"
+        labels={labels}
+        identityLabels={identityLabels}
+      />,
+    );
+
+    expect(html).not.toContain('data-listing-card-characteristics="true"');
+    expect(html).not.toContain('data-listing-card-seller-identity="true"');
+  });
+
+  it("keeps the richer decision fields and seller identity in hero mode", () => {
     const html = renderToStaticMarkup(
       <ListingCard
         listing={{

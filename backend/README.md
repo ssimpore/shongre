@@ -19,8 +19,8 @@ backend/
 ├── openapi/                   the sole authoritative OpenAPI 3.1 contract
 ├── src/
 │   ├── app/                    configuration and server bootstrap
-│   ├── api/v1/                 versioned HTTP routing
-│   ├── modules/                marketplace application/domain services
+│   ├── api/v1/                 HTTP composition, transport, common security
+│   ├── modules/                domain-owned HTTP registrations, policies, services
 │   ├── infrastructure/         repositories, Supabase, payments, search, logs
 │   ├── integrations/providers/ explicit demo and external-provider boundaries
 │   ├── shared/                 errors, auth, money and backend DTOs
@@ -45,6 +45,32 @@ versioning policy are in [`docs/api.md`](docs/api.md).
 
 There is no second root-level Supabase tree and no compatibility `generated/`
 directory. `src/generated/database.types.ts` is the only database-type output.
+
+## HTTP and worker boundaries
+
+The existing Node HTTP transport composes 38 route families. Module `api/`
+registrars own operation handlers and resource checks; the shared dispatcher
+retains principal resolution, CSRF, capability enforcement, market consistency,
+body limits, error normalization and public cache policy. OpenAPI validates
+both operation parity and each source owner. No route registry replaces the
+canonical specification.
+
+`/health/live` and `/health/ready` share the existing liveness/readiness
+implementations with `/livez` and `/readyz`. `/api/openapi.json` serves the
+canonical specification; `/api/docs` is an offline operation reference. Startup
+fails if the selected database adapter is not ready, independently of NODE_ENV.
+
+Worker health is checked using `node dist/worker-health.js`. A heartbeat proves
+recent successful database coordination by the worker process in its configured
+environment. API shutdown does not terminate workers; worker containers do not
+depend on API containers. PostgreSQL leases and existing domain outboxes remain
+authoritative for retries and deduplication.
+
+`make install` uses `npm ci` across the workspace. One-shot TypeScript tools use
+`node --import tsx`, avoiding the CLI's auxiliary IPC server; development
+watchers retain the existing `tsx watch` commands. `scripts/build.mjs` builds
+the API, worker, worker health probe and migrator. Keep build tooling outside
+ignored output directories so a clean checkout contains every build input.
 
 ## Runtime modes
 
@@ -112,7 +138,7 @@ running local Supabase endpoint; it never treats a remote database as a
 development fallback.
 
 The production backend image contains `dist/server.js`, `dist/worker.js`,
-`dist/migrate.js`, `psql`, and the exact source-controlled SQL history. The
+`dist/worker-health.js`, `dist/migrate.js`, `psql`, and the exact source-controlled SQL history. The
 protected host runner invokes that migrator once under an environment lock
 before rolling out API/worker containers from the same digest. Replica startup
 never runs migrations.

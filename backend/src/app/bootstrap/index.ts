@@ -16,12 +16,7 @@ export async function bootstrapApp(): Promise<void> {
   if (dbOk) {
     logger.info("Database connection established successfully");
   } else {
-    if (config.nodeEnv === "production") {
-      throw new Error("Database readiness check failed during startup");
-    }
-    logger.warn(
-      "Database health check was non-blocking or offline; proceeding in resilient mode",
-    );
+    throw new Error("Database readiness check failed during startup");
   }
 
   logger.info("Backend bootstrap complete");

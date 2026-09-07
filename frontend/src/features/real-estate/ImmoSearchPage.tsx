@@ -26,6 +26,7 @@ import {
   ListingGrid,
   LocationSelector,
   SearchActiveFiltersBar,
+  SearchMapResultsLayout,
   SearchResultsToolbar,
   SearchSortControl,
   Skeleton,
@@ -812,11 +813,7 @@ export const ImmoSearchPage: React.FC = () => {
         {!error && catalog ? (
           <div
             className={`grid items-start gap-6 ${
-              showDesktopFilters
-                ? "lg:grid-cols-sidebar xl:grid-cols-search-properties"
-                : view === "map"
-                  ? "xl:grid-cols-search-properties-content"
-                  : "lg:grid-cols-1"
+              showDesktopFilters ? "lg:grid-cols-sidebar" : "lg:grid-cols-1"
             }`}
           >
             {showDesktopFilters ? (
@@ -835,84 +832,125 @@ export const ImmoSearchPage: React.FC = () => {
                 />
               </aside>
             ) : null}
-            <section
-              aria-label="Résultats immobiliers"
-              className={`min-w-0 ${
-                view === "map"
-                  ? "xl:max-h-search-results-panel xl:overflow-y-auto xl:pr-1"
-                  : showDesktopFilters
-                    ? "xl:col-span-2"
-                    : ""
-              }`}
-            >
-              {loading ? (
-                <ListingGrid
-                  fluid={view === "map"}
-                  className={view === "list" ? "sm:grid-cols-1" : undefined}
-                >
-                  {Array.from({ length: 6 }, (_, index) => (
-                    <div key={index} className="min-w-0">
-                      <ListingCardSkeleton />
-                    </div>
-                  ))}
-                </ListingGrid>
-              ) : items.length ? (
-                <ListingGrid
-                  fluid={view === "map"}
-                  className={view === "list" ? "sm:grid-cols-1" : undefined}
-                >
-                  {visibleItems.map((property) => (
-                    <PropertyCard
-                      key={property.id}
-                      property={property}
-                      displayVariant={view === "list" ? "list" : "grid"}
-                      selected={selectedId === property.id}
-                      onSelect={(item) => setSelectedId(item.id)}
-                      onFavorite={favorite}
-                      favoriteState={favoriteIds.includes(property.listingId)}
-                      favoriteLoadState={favoriteLoadState}
-                      onFavoriteRetry={refreshFavorites}
-                    />
-                  ))}
-                </ListingGrid>
-              ) : (
-                <StatePanel
-                  variant="notFound"
-                  title="Aucun bien ne correspond"
-                  description="Essayez une zone plus large ou retirez un filtre."
-                  action={
-                    <Button
-                      variant="outline"
-                      onClick={() => setParams({ transaction: "sale" })}
-                    >
-                      Effacer les filtres
-                    </Button>
-                  }
-                />
-              )}
-            </section>
             {view === "map" ? (
-              <aside className="sticky top-24 hidden h-search-map-panel overflow-hidden rounded-card border border-border-base bg-bg-surface xl:block">
-                <React.Suspense
-                  fallback={
-                    <div
-                      role="status"
-                      aria-label={t("common.loadingMap")}
-                      className="h-full w-full p-3"
-                    >
-                      <Skeleton className="h-full w-full rounded-card" />
-                    </div>
-                  }
-                >
-                  <ImmoMap
-                    properties={visibleItems}
-                    selectedId={selectedId}
-                    onSelect={(property) => setSelectedId(property.id)}
-                    onBoundsChange={setMapBounds}
+              <SearchMapResultsLayout
+                resultsLabel="Biens immobiliers sur la carte"
+                results={
+                  loading ? (
+                    <ListingGrid variant="list">
+                      {Array.from({ length: 3 }, (_, index) => (
+                        <div key={index} className="min-w-0">
+                          <ListingCardSkeleton />
+                        </div>
+                      ))}
+                    </ListingGrid>
+                  ) : items.length ? (
+                    <ListingGrid variant="list">
+                      {visibleItems.map((property) => (
+                        <div
+                          key={property.id}
+                          data-search-map-result-card="true"
+                          className="min-w-0"
+                        >
+                          <PropertyCard
+                            property={property}
+                            displayVariant="list"
+                            selected={selectedId === property.id}
+                            onSelect={(item) => setSelectedId(item.id)}
+                            onFavorite={favorite}
+                            favoriteState={favoriteIds.includes(
+                              property.listingId,
+                            )}
+                            favoriteLoadState={favoriteLoadState}
+                            onFavoriteRetry={refreshFavorites}
+                          />
+                        </div>
+                      ))}
+                    </ListingGrid>
+                  ) : (
+                    <StatePanel
+                      variant="notFound"
+                      title="Aucun bien ne correspond"
+                      description="Essayez une zone plus large ou retirez un filtre."
+                    />
+                  )
+                }
+                map={
+                  <div className="h-full overflow-hidden rounded-card border border-border-base bg-bg-surface shadow-xs">
+                    {loading ? (
+                      <div
+                        role="status"
+                        aria-label={t("common.loadingMap")}
+                        className="h-full w-full p-3"
+                      >
+                        <Skeleton className="h-full w-full rounded-card" />
+                      </div>
+                    ) : (
+                      <React.Suspense
+                        fallback={
+                          <div
+                            role="status"
+                            aria-label={t("common.loadingMap")}
+                            className="h-full w-full p-3"
+                          >
+                            <Skeleton className="h-full w-full rounded-card" />
+                          </div>
+                        }
+                      >
+                        <ImmoMap
+                          properties={visibleItems}
+                          selectedId={selectedId}
+                          onSelect={(property) => setSelectedId(property.id)}
+                          onBoundsChange={setMapBounds}
+                        />
+                      </React.Suspense>
+                    )}
+                  </div>
+                }
+              />
+            ) : (
+              <section aria-label="Résultats immobiliers" className="min-w-0">
+                {loading ? (
+                  <ListingGrid variant="list">
+                    {Array.from({ length: 6 }, (_, index) => (
+                      <div key={index} className="min-w-0">
+                        <ListingCardSkeleton />
+                      </div>
+                    ))}
+                  </ListingGrid>
+                ) : items.length ? (
+                  <ListingGrid variant="list">
+                    {visibleItems.map((property) => (
+                      <PropertyCard
+                        key={property.id}
+                        property={property}
+                        displayVariant="list"
+                        selected={selectedId === property.id}
+                        onSelect={(item) => setSelectedId(item.id)}
+                        onFavorite={favorite}
+                        favoriteState={favoriteIds.includes(property.listingId)}
+                        favoriteLoadState={favoriteLoadState}
+                        onFavoriteRetry={refreshFavorites}
+                      />
+                    ))}
+                  </ListingGrid>
+                ) : (
+                  <StatePanel
+                    variant="notFound"
+                    title="Aucun bien ne correspond"
+                    description="Essayez une zone plus large ou retirez un filtre."
+                    action={
+                      <Button
+                        variant="outline"
+                        onClick={() => setParams({ transaction: "sale" })}
+                      >
+                        Effacer les filtres
+                      </Button>
+                    }
                   />
-                </React.Suspense>
-              </aside>
-            ) : null}
+                )}
+              </section>
+            )}
           </div>
         ) : null}
       </Container>

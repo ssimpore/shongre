@@ -63,9 +63,9 @@ evidence.
 
 <!-- capability-inventory:start -->
 
-Current generated repository inventory: 522 OpenAPI operations across 461
+Current generated repository inventory: 526 OpenAPI operations across 465
 paths, including 517 runtime routes, and 114 ordered migrations through
-`00114_transaction_verified_reviews.sql`. There are 428 non-E2E test source files.
+`00114_transaction_verified_reviews.sql`. There are 432 non-E2E test source files.
 <!-- capability-inventory:end -->
 
 Statuses in this ledger are intentionally stricter than feature-development

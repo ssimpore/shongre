@@ -1,128 +1,156 @@
 import { describe, expect, it, vi } from "vitest";
+import type {
+  MarketContext,
+  TaxonomyV4Node,
+  TaxonomyV4TreeResponse,
+} from "@shongre/contracts";
 import type { TaxonomyServiceContract } from "../../api/contracts/taxonomy.contract";
-import type { TaxonomyNode } from "../../domains/taxonomy/taxonomy.types";
 import {
+  buildCategoryNavigationTree,
+  filterCategoryNavigationOverview,
+  findCategoryNavigationBranch,
   hasCategoryMenuContent,
-  loadCategoryNavigationBranch,
-  loadCategoryNavigationOverview,
+  loadCategoryNavigationTree,
 } from "./categoryMegaMenu.model";
+
+const marketAvailability: TaxonomyV4Node["marketAvailability"] = [
+  {
+    marketCode: "FR",
+    status: "active",
+    marketplaceEnabled: true,
+    indexable: true,
+  },
+  {
+    marketCode: "BE",
+    status: "active",
+    marketplaceEnabled: true,
+    indexable: true,
+  },
+  {
+    marketCode: "CH",
+    status: "active",
+    marketplaceEnabled: true,
+    indexable: true,
+  },
+  {
+    marketCode: "SN",
+    status: "unavailable",
+    marketplaceEnabled: false,
+    indexable: false,
+  },
+  {
+    marketCode: "BF",
+    status: "unavailable",
+    marketplaceEnabled: false,
+    indexable: false,
+  },
+];
 
 const node = (
   id: string,
   slug: string,
   sortOrder: number,
-  status: TaxonomyNode["status"] = "active",
-): TaxonomyNode => ({
+  parentId?: string,
+  status: TaxonomyV4Node["status"] = "active",
+): TaxonomyV4Node => ({
   id,
-  code: id.toUpperCase(),
+  sourceKey: id,
+  ...(parentId ? { parentId } : {}),
+  level: parentId ? (id.split(".").length === 2 ? 1 : 2) : 0,
   slug,
-  level: id.split(".").length === 1 ? "category" : "subcategory",
-  labels: { "fr-FR": slug },
-  name: slug,
+  labels: { "fr-FR": slug, "en-US": slug },
+  shortLabels: { "fr-FR": slug },
+  iconName: "package",
   sortOrder,
   status,
+  publishable: Boolean(parentId),
+  sellerEligibility: {
+    individualAllowed: true,
+    professionalAllowed: true,
+  },
+  marketAvailability,
+  seo: { indexable: true },
 });
 
 describe("category mega-menu taxonomy projection", () => {
-  it("loads a sorted variable-depth branch and removes unavailable nodes", async () => {
+  it("builds a sorted variable-depth tree and removes unavailable branches", () => {
     const root = node("root", "racine", 1);
-    const first = node("root.first", "premier", 1);
-    const second = node("root.second", "second", 2);
-    const disabled = node("root.disabled", "indisponible", 0, "disabled");
-    const leaf = node("root.second.leaf", "feuille", 1);
-    const children = new Map<string, TaxonomyNode[]>([
-      [root.id, [second, disabled, first]],
-      [first.id, []],
-      [second.id, [leaf]],
-      [disabled.id, []],
-      [leaf.id, []],
-    ]);
-    const taxonomy = {
-      getNodeBySlug: vi.fn().mockResolvedValue(root),
-      getChildren: vi.fn((id: string) =>
-        Promise.resolve(children.get(id) ?? []),
-      ),
-    } as unknown as TaxonomyServiceContract;
+    const first = node("root.first", "premier", 1, root.id);
+    const second = node("root.second", "second", 2, root.id);
+    const disabled = node(
+      "root.disabled",
+      "indisponible",
+      0,
+      root.id,
+      "disabled",
+    );
+    const leaf = node("root.second.leaf", "feuille", 1, second.id);
 
-    const result = await loadCategoryNavigationBranch(
-      taxonomy,
-      root.slug,
+    const result = buildCategoryNavigationTree(
+      [second, disabled, leaf, first, root],
       (candidate) => candidate.status === "active",
     );
 
-    expect(result?.children?.map((child) => child.id)).toEqual([
+    expect(result[0]?.children?.map((child) => child.id)).toEqual([
       first.id,
       second.id,
     ]);
-    expect(result?.children?.[1]?.children?.[0]?.id).toBe(leaf.id);
-    expect(taxonomy.getChildren).not.toHaveBeenCalledWith(disabled.id);
-    expect(hasCategoryMenuContent(result)).toBe(true);
+    expect(result[0]?.children?.[1]?.children?.[0]?.id).toBe(leaf.id);
+    expect(hasCategoryMenuContent(result[0])).toBe(true);
   });
 
-  it("fails closed when a root is unavailable or missing", async () => {
+  it("loads the complete market tree through one canonical API request", async () => {
     const root = node("root", "racine", 1);
-    const taxonomy = {
-      getNodeBySlug: vi
-        .fn()
-        .mockResolvedValueOnce(root)
-        .mockResolvedValueOnce(null),
-      getChildren: vi.fn(),
-    } as unknown as TaxonomyServiceContract;
+    const getV4Tree = vi.fn().mockResolvedValue({
+      items: [root],
+    } as TaxonomyV4TreeResponse);
+    const taxonomy = { getV4Tree } as unknown as TaxonomyServiceContract;
+    const marketContext = {
+      kind: "market",
+      countryCode: "FR",
+    } as MarketContext;
 
     await expect(
-      loadCategoryNavigationBranch(taxonomy, root.slug, () => false),
-    ).resolves.toBeNull();
-    await expect(
-      loadCategoryNavigationBranch(taxonomy, "absente", () => true),
-    ).resolves.toBeNull();
-    expect(taxonomy.getChildren).not.toHaveBeenCalled();
-    expect(hasCategoryMenuContent(null)).toBe(false);
+      loadCategoryNavigationTree(taxonomy, marketContext, "fr-FR", () => true),
+    ).resolves.toHaveLength(1);
+    expect(getV4Tree).toHaveBeenCalledTimes(1);
+    expect(getV4Tree).toHaveBeenCalledWith({
+      marketContext,
+      locale: "fr-FR",
+      taxonomyVersion: "4.0.0",
+    });
   });
 
-  it("resolves an admin-configured root by stable id before its display slug", async () => {
-    const root = node("electronics", "electronique", 1);
-    const taxonomy = {
-      getNodeById: vi.fn().mockResolvedValue(root),
-      getNodeBySlug: vi.fn().mockResolvedValue(null),
-      getChildren: vi.fn().mockResolvedValue([]),
-    } as unknown as TaxonomyServiceContract;
-
-    await expect(
-      loadCategoryNavigationBranch(
-        taxonomy,
-        { id: "electronics", slug: "multimedia-electronique" },
-        () => true,
-      ),
-    ).resolves.toMatchObject({ id: "electronics", slug: "electronique" });
-    expect(taxonomy.getNodeById).toHaveBeenCalledWith("electronics");
-    expect(taxonomy.getNodeBySlug).not.toHaveBeenCalled();
-  });
-
-  it("builds the Autres panel from every unpromoted canonical root id", async () => {
-    const promoted = node("promoted", "promue", 1);
-    const later = node("later", "plus-tard", 3);
-    const first = node("first", "premiere", 2);
-    const taxonomy = {
-      getRootCategories: vi
-        .fn()
-        .mockResolvedValue([promoted, later, first, first]),
-      getNodeBySlug: vi.fn((slug: string) =>
-        Promise.resolve(
-          [promoted, later, first].find((root) => root.slug === slug) ?? null,
-        ),
-      ),
-      getChildren: vi.fn().mockResolvedValue([]),
-    } as unknown as TaxonomyServiceContract;
-
-    const result = await loadCategoryNavigationOverview(
-      taxonomy,
-      new Set([promoted.id]),
+  it("resolves an admin-configured root by stable id before display slug", () => {
+    const root = buildCategoryNavigationTree(
+      [node("electronics", "electronique", 1)],
       () => true,
     );
 
+    expect(
+      findCategoryNavigationBranch(root, {
+        id: "electronics",
+        slug: "multimedia-electronique",
+      }),
+    ).toMatchObject({ id: "electronics", slug: "electronique" });
+    expect(findCategoryNavigationBranch(root, "absente")).toBeNull();
+  });
+
+  it("builds the Autres panel from every unpromoted canonical root id", () => {
+    const promoted = node("promoted", "promue", 1);
+    const later = node("later", "plus-tard", 3);
+    const first = node("first", "premiere", 2);
+    const roots = buildCategoryNavigationTree(
+      [promoted, later, first],
+      () => true,
+    );
+
+    const result = filterCategoryNavigationOverview(
+      roots,
+      new Set([promoted.id]),
+    );
+
     expect(result.map((root) => root.id)).toEqual([first.id, later.id]);
-    expect(taxonomy.getNodeBySlug).not.toHaveBeenCalledWith(promoted.slug);
-    expect(taxonomy.getNodeBySlug).toHaveBeenCalledTimes(2);
-    expect(hasCategoryMenuContent(first)).toBe(true);
+    expect(hasCategoryMenuContent(result[0])).toBe(true);
   });
 });

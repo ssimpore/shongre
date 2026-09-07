@@ -25,6 +25,7 @@ import {
   ListingGrid,
   LocationSelector,
   SearchActiveFiltersBar,
+  SearchMapResultsLayout,
   SearchResultsToolbar,
   SearchSortControl,
   StatePanel,
@@ -518,6 +519,10 @@ export const CoursesSearchPage: React.FC = () => {
       }),
     [activeMarket.code, formatMoney, items],
   );
+  const mappedOfferIds = useMemo(
+    () => new Set(mapItems.map(({ id }) => id)),
+    [mapItems],
+  );
 
   const toggleCompare = (id: string) => {
     setComparedIds((current) => {
@@ -747,7 +752,7 @@ export const CoursesSearchPage: React.FC = () => {
             <div aria-label="Chargement des professeurs" aria-busy="true">
               <ListingGrid
                 fluid={viewMode === "grid"}
-                className={viewMode === "list" ? "sm:grid-cols-1" : undefined}
+                variant={viewMode === "list" ? "list" : "grid"}
               >
                 {[0, 1, 2].map((index) => (
                   <ListingCardSkeleton key={index} />
@@ -778,19 +783,48 @@ export const CoursesSearchPage: React.FC = () => {
             />
           ) : viewMode === "map" ? (
             mapItems.length ? (
-              <React.Suspense
-                fallback={
-                  <div
-                    role="status"
-                    aria-label={t("common.loadingMap")}
-                    className="h-search-map rounded-card border border-border-base bg-bg-surface p-3"
-                  >
-                    <div className="h-full w-full animate-pulse rounded-card bg-surface-muted" />
-                  </div>
+              <SearchMapResultsLayout
+                resultsLabel="Professeurs sur la carte"
+                results={
+                  <ListingGrid variant="list">
+                    {items
+                      .filter((item) => mappedOfferIds.has(item.offer.id))
+                      .map((item) => (
+                        <div
+                          key={item.offer.id}
+                          data-search-map-result-card="true"
+                          className="min-w-0"
+                        >
+                          <CourseTutorCard
+                            item={item}
+                            isCompared={comparedIds.includes(item.tutor.id)}
+                            isSaved={savedIds.includes(item.tutor.id)}
+                            favoriteLoadState={savedLoadState}
+                            onToggleCompare={toggleCompare}
+                            onToggleSaved={toggleSaved}
+                            onFavoriteRetry={loadSavedTutors}
+                            displayVariant="list"
+                          />
+                        </div>
+                      ))}
+                  </ListingGrid>
                 }
-              >
-                <SearchResultsMap items={mapItems} />
-              </React.Suspense>
+                map={
+                  <React.Suspense
+                    fallback={
+                      <div
+                        role="status"
+                        aria-label={t("common.loadingMap")}
+                        className="h-full rounded-card border border-border-base bg-bg-surface p-3"
+                      >
+                        <div className="h-full w-full animate-pulse rounded-card bg-surface-muted" />
+                      </div>
+                    }
+                  >
+                    <SearchResultsMap items={mapItems} layout="split" />
+                  </React.Suspense>
+                }
+              />
             ) : (
               <StatePanel
                 variant="notFound"
@@ -802,7 +836,7 @@ export const CoursesSearchPage: React.FC = () => {
             <>
               <ListingGrid
                 fluid={viewMode === "grid"}
-                className={viewMode === "list" ? "sm:grid-cols-1" : undefined}
+                variant={viewMode === "list" ? "list" : "grid"}
               >
                 {items.map((item) => (
                   <CourseTutorCard

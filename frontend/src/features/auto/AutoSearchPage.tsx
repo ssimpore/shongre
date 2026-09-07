@@ -22,6 +22,7 @@ import {
   ListingCardSkeleton,
   ListingGrid,
   SearchActiveFiltersBar,
+  SearchMapResultsLayout,
   SearchResultsToolbar,
   SearchSortControl,
   Skeleton,
@@ -544,6 +545,10 @@ export const AutoSearchPage: React.FC = () => {
       }),
     [activeMarket.code, convertMoney, currentLocale, vehicles],
   );
+  const mappedVehicleIds = useMemo(
+    () => new Set(mapItems.map(({ id }) => id)),
+    [mapItems],
+  );
 
   const query = useMemo<VehicleSearchQuery>(
     () => ({
@@ -915,7 +920,7 @@ export const AutoSearchPage: React.FC = () => {
           ) : loading ? (
             <ListingGrid
               fluid={viewMode === "grid"}
-              className={viewMode === "list" ? "sm:grid-cols-1" : undefined}
+              variant={viewMode === "list" ? "list" : "grid"}
             >
               {Array.from({ length: 6 }, (_, index) => (
                 <div key={index} className="flex min-w-0 flex-col gap-2">
@@ -941,19 +946,72 @@ export const AutoSearchPage: React.FC = () => {
             />
           ) : viewMode === "map" ? (
             mapItems.length ? (
-              <React.Suspense
-                fallback={
-                  <div
-                    role="status"
-                    aria-label={t("common.loadingMap")}
-                    className="h-search-map rounded-card border border-border-base bg-bg-surface p-3"
-                  >
-                    <Skeleton className="h-full w-full rounded-card" />
-                  </div>
+              <SearchMapResultsLayout
+                resultsLabel="Véhicules sur la carte"
+                results={
+                  <ListingGrid variant="list">
+                    {vehicles
+                      .filter((vehicle) => mappedVehicleIds.has(vehicle.id))
+                      .map((vehicle) => {
+                        const isCompared = compared.some(
+                          (row) => row.id === vehicle.id,
+                        );
+                        return (
+                          <div
+                            key={vehicle.id}
+                            data-search-map-result-card="true"
+                            className="flex min-w-0 flex-col gap-2"
+                          >
+                            <AutoVehicleCard
+                              vehicle={vehicle}
+                              displayVariant="list"
+                              isFavorite={favoriteVehicleIds.has(vehicle.id)}
+                              favoriteLoadState={favoriteLoadState}
+                              onFavorite={favorite}
+                              onFavoriteRetry={loadFavoriteVehicleIds}
+                            />
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant={isCompared ? "primary" : "secondary"}
+                              fullWidth
+                              aria-pressed={isCompared}
+                              aria-label={`${isCompared ? "Retirer" : "Ajouter"} ${
+                                vehicle.title
+                              } ${isCompared ? "de" : "à"} la comparaison`}
+                              leftIcon={
+                                <GitCompareArrows
+                                  className="h-icon-sm w-icon-sm"
+                                  aria-hidden="true"
+                                />
+                              }
+                              onClick={() => toggleCompare(vehicle)}
+                            >
+                              {isCompared
+                                ? "Retirer du comparateur"
+                                : "Comparer"}
+                            </Button>
+                          </div>
+                        );
+                      })}
+                  </ListingGrid>
                 }
-              >
-                <SearchResultsMap items={mapItems} />
-              </React.Suspense>
+                map={
+                  <React.Suspense
+                    fallback={
+                      <div
+                        role="status"
+                        aria-label={t("common.loadingMap")}
+                        className="h-full rounded-card border border-border-base bg-bg-surface p-3"
+                      >
+                        <Skeleton className="h-full w-full rounded-card" />
+                      </div>
+                    }
+                  >
+                    <SearchResultsMap items={mapItems} layout="split" />
+                  </React.Suspense>
+                }
+              />
             ) : (
               <StatePanel
                 variant="notFound"
@@ -964,7 +1022,7 @@ export const AutoSearchPage: React.FC = () => {
           ) : (
             <ListingGrid
               fluid={viewMode === "grid"}
-              className={viewMode === "list" ? "sm:grid-cols-1" : undefined}
+              variant={viewMode === "list" ? "list" : "grid"}
             >
               {vehicles.map((vehicle) => {
                 const isCompared = compared.some(

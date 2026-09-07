@@ -248,7 +248,9 @@ Mobile: component → hook/controller → service contract → HTTP → /api/v1
   canonical local sequence is `make install`, `make supabase-up`,
   `make db-migrate`, `make db-seed`, then `make backend` and/or `make worker`;
   `make dev` performs that connected Web sequence in one command, validating
-  configuration before stopping tracked application processes and forcing Web
+  configuration and infrastructure before stopping tracked application processes,
+  reusing a healthy stack only when its environment and migration fingerprint
+  matches, and forcing Web
   API and backend database mode with mock storage disabled, migrating,
   idempotently seeding, and
   launching the API, worker, and Web app. The local seed mirrors the versioned
@@ -302,7 +304,12 @@ Mobile: component → hook/controller → service contract → HTTP → /api/v1
 
 ## Backend, OpenAPI, and domain ownership
 
-- `backend/` is a TypeScript/Node modular monolith. Domain/application services
+- `backend/` is a domain-oriented TypeScript/Node modular monolith. HTTP
+  registration belongs in the owning `backend/src/modules/*/api/` directory;
+  `backend/src/api/v1/router.ts` composes those registrations and owns only the
+  shared dispatch/security pipeline. Provider webhook entrypoints belong in
+  `backend/src/infrastructure/http/`. Resource policies stay with their domain.
+  Do not add domain handlers back to the composition root. Domain/application services
   own authoritative publication, reservation, order, payment, payout, refund,
   entitlement, promotion, verification, fraud, moderation, search, and lifecycle
   transitions. Clients may simulate and present these decisions but never own
@@ -316,12 +323,20 @@ Mobile: component → hook/controller → service contract → HTTP → /api/v1
   2. provide a unique `operationId`, explicit `security`, and Shongre access and
      permission metadata;
   3. run `make openapi-generate`;
-  4. implement the generated contract in `backend/src/api/v1/router.ts` and the
-     owning domain service;
+  4. implement the generated contract in the owning module’s `api/*.routes.ts`
+     and application/domain service, then compose its registrar in
+     `backend/src/api/v1/router.ts`;
   5. migrate Web/mobile/integration consumers through HTTP adapters;
   6. add contract, authorization, and integration tests;
   7. run `make openapi-check`.
 
+- `packages/contracts/src/generated/api-client.ts` supplies generated JSON
+  operations through `@shongre/contracts/api-client`. Platform transports own
+  sessions, CSRF, market headers, cancellation, deadlines, and normalized errors;
+  generated operations own methods, paths, serialization, and request/response
+  types. Keep response-body reads inside the request deadline. Native token
+  refresh must be coalesced and scoped to the session generation so logout or
+  another login cannot restore credentials or replay an old account’s writes.
 - Generated OpenAPI and database artifacts are read-only outputs. Do not create
   a second Swagger file, endpoint registry, router-derived spec, or handwritten
   client wire DTO source.
@@ -1030,6 +1045,10 @@ France-only happy path is insufficient for market-sensitive work.
 
 ## Deployment and operations
 
+- Docker is packaging and orchestration infrastructure, never a domain
+  dependency. API and worker use the same backend image but start and scale
+  independently; worker health must verify a recent, environment-scoped
+  heartbeat from successful database coordination, not only a running PID.
 - Root `compose.yaml` is the hosted workload topology. It publishes no origin
   application ports and uses persistent remote-managed Cloudflare Tunnels over
   the private network. `compose.local.yaml` is the only loopback-port override.

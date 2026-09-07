@@ -771,6 +771,18 @@
   }
 }
 
+/* Split-map result rows keep the compact horizontal anatomy while reclaiming
+   media width for decision facts and seller identity in the bounded side
+   panel. The slot resolves from the existing shared list-image token. */
+@variant xl {
+  .search-map-results-list .listing-card-list-image,
+  .search-map-results-list .listing-card-list-overlay {
+    width: var(--spacing-listing-card-list-image-sm);
+    min-width: var(--spacing-listing-card-list-image-sm);
+    flex-basis: var(--spacing-listing-card-list-image-sm);
+  }
+}
+
 /* The hero explicitly presents its featured listing as a landscape preview at
    every breakpoint. Search results keep the shared phone stack above; this
    narrow context modifier only supplies the token-backed row geometry that the

@@ -1,42 +1,17 @@
 import { readFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import ts from "typescript";
+import { implementedRoutes } from "./implemented-routes.mjs";
 
 const scriptDirectory = dirname(fileURLToPath(import.meta.url));
 const repositoryRoot = resolve(scriptDirectory, "../../..");
 const routerPath = resolve(repositoryRoot, "backend/src/api/v1/router.ts");
 const specPath = resolve(repositoryRoot, "backend/openapi/openapi.json");
 const routerSource = await readFile(routerPath, "utf8");
-const sourceFile = ts.createSourceFile(
-  routerPath,
-  routerSource,
-  ts.ScriptTarget.Latest,
-  true,
-  ts.ScriptKind.TS,
+const routeOwners = await implementedRoutes(repositoryRoot);
+const implemented = new Map(
+  [...routeOwners].map(([key, value]) => [key, value.access]),
 );
-
-const implemented = new Map();
-function visit(node) {
-  if (
-    ts.isCallExpression(node) &&
-    ts.isPropertyAccessExpression(node.expression) &&
-    node.expression.expression.kind === ts.SyntaxKind.ThisKeyword &&
-    ["addRoute", "addEducationRoute"].includes(node.expression.name.text)
-  ) {
-    const [method, path, access] = node.arguments;
-    if (ts.isStringLiteral(method) && ts.isStringLiteral(path)) {
-      const resolvedPath = `${
-        node.expression.name.text === "addEducationRoute" ? "/education" : ""
-      }${path.text}`;
-      const key = `${method.text.toUpperCase()} ${resolvedPath}`;
-      if (implemented.has(key)) throw new Error(`Duplicate route: ${key}`);
-      implemented.set(key, access?.getText(sourceFile) || "");
-    }
-  }
-  ts.forEachChild(node, visit);
-}
-visit(sourceFile);
 
 const implementedEntries = [...implemented.keys()].map((key) => {
   const separator = key.indexOf(" ");
@@ -49,7 +24,14 @@ for (
 ) {
   const earlier = implementedEntries[earlierIndex];
   const earlierPattern = new RegExp(
-    `^${earlier.path.replace(/:([A-Za-z0-9_]+)/g, "[^/]+")}$`,
+    `^${earlier.path
+      .split(/(:[A-Za-z0-9_]+)/g)
+      .map((part) =>
+        part.startsWith(":")
+          ? "[^/]+"
+          : part.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
+      )
+      .join("")}$`,
   );
   for (
     let laterIndex = earlierIndex + 1;
@@ -125,6 +107,9 @@ if (missingFromSpec.length || missingFromRouter.length) {
 const securityMismatches = [];
 for (const [key, accessExpression] of implemented) {
   const operation = documented.get(key);
+  if (operation["x-shongre-source"] !== routeOwners.get(key).source) {
+    throw new Error(`OpenAPI domain ownership diverges for ${key}`);
+  }
   const permissionMatch = accessExpression.match(
     /^permission\(["']([^"']+)["']\)$/,
   );
@@ -176,8 +161,13 @@ const forbiddenLegacyFragments = [
   '"/messaging/send"',
   '"/messaging/conversations/detail',
 ];
+const domainSources = await Promise.all(
+  [...new Set([...routeOwners.values()].map((route) => route.source))].map(
+    (path) => readFile(resolve(repositoryRoot, path), "utf8"),
+  ),
+);
 for (const fragment of forbiddenLegacyFragments) {
-  if (routerSource.includes(fragment)) {
+  if (domainSources.some((source) => source.includes(fragment))) {
     throw new Error(`Legacy API fragment remains in router: ${fragment}`);
   }
 }

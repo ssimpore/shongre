@@ -53,10 +53,11 @@ services:
     pull_policy: ${SHONGRE_PULL_POLICY:-missing}
     command: ["node", "dist/worker.js"]
     healthcheck:
-      disable: true
-    depends_on:
-      backend:
-        condition: service_healthy
+      test: ["CMD", "node", "dist/worker-health.js"]
+      interval: 15s
+      timeout: 5s
+      start_period: 20s
+      retries: 4
 
   cloudflared:
     image: cloudflare/cloudflared:2026.5.2@sha256:12ff5c6992a9863db4da270746af7c244bcaee49353039af8104268a18d6c4f0

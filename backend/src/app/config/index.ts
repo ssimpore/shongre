@@ -1,5 +1,9 @@
 import dotenv from "dotenv";
 import { resolve } from "path";
+import {
+  resolveWorkerGroups,
+  resolveWorkerHealthFile,
+} from "./worker.config.js";
 import { SHONGRE_API_PREFIX } from "@shongre/contracts/openapi";
 import {
   assertEnvironmentSafety,
@@ -55,6 +59,8 @@ export interface AppConfig {
   maxRequestBodyBytes: number;
   requestTimeoutMs: number;
   shutdownGraceMs: number;
+  workerHealthFile: string;
+  workerGroups: string[];
   performance: {
     headersTimeoutMs: number;
     keepAliveTimeoutMs: number;
@@ -781,6 +787,8 @@ const candidateConfig: AppConfig = {
     "REQUEST_TIMEOUT_MS",
     SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS.http.requestTimeoutMs,
   ),
+  workerGroups: resolveWorkerGroups(),
+  workerHealthFile: resolveWorkerHealthFile(),
   shutdownGraceMs: positiveInteger(
     "SHUTDOWN_GRACE_MS",
     SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS.http.shutdownGraceMs,

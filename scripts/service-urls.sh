@@ -7,6 +7,8 @@ printf '\nService URLs for %s (credentials omitted)\n' "$APP_ENV"
 printf '%-20s %s\n' 'France Web' "$PUBLIC_FR_URL"
 printf '%-20s %s\n' 'International Web' "$PUBLIC_INTL_URL"
 printf '%-20s %s\n' 'Shongre API' "${API_URL}${API_PREFIX}"
+printf '%-20s %s\n' 'OpenAPI reference' "${API_URL}/api/docs"
+printf '%-20s %s\n' 'OpenAPI JSON' "${API_URL}/api/openapi.json"
 printf '%-20s %s\n' 'API readiness' "${API_URL}/readyz"
 if [[ "$APP_ENV" == local || "$APP_ENV" == test ]]; then
   printf '%-20s %s\n' 'Expo Metro' "http://${EXPO_HOST}:${EXPO_METRO_PORT}/"

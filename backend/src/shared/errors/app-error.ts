@@ -1,3 +1,5 @@
+import { STATUS_CODES } from "node:http";
+
 export type ErrorCode =
   | "UNAUTHENTICATED"
   | "FORBIDDEN"
@@ -104,8 +106,16 @@ export class AppError extends Error {
     }
   }
 
-  public toJSON() {
+  public toJSON(requestId?: string) {
     return {
+      type: "about:blank",
+      title: STATUS_CODES[this.statusCode] || "Request failed",
+      status: this.statusCode,
+      code: this.code,
+      detail: this.message,
+      ...(requestId ? { requestId } : {}),
+      // v1 clients still consume this documented extension. Removing it is a
+      // versioned contract change, not part of adding Problem Details fields.
       error: {
         code: this.code,
         message: this.message,

@@ -68,9 +68,13 @@ export function findTrackedArtifacts(trackedPaths) {
 }
 
 function main() {
-  const trackedPaths = execFileSync("git", ["ls-files", "-z"], {
-    encoding: "utf8",
-  })
+  const trackedPaths = execFileSync(
+    "git",
+    ["ls-files", "--cached", "--others", "--exclude-standard", "-z"],
+    {
+      encoding: "utf8",
+    },
+  )
     .split("\0")
     .filter(Boolean);
   const artifacts = findTrackedArtifacts(trackedPaths);
@@ -85,7 +89,7 @@ function main() {
   }
 
   console.log(
-    `Repository hygiene check passed (${trackedPaths.length} tracked files inspected).`,
+    `Repository hygiene check passed (${trackedPaths.length} tracked and new files inspected).`,
   );
 }
 

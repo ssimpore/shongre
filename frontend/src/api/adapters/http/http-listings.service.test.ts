@@ -192,12 +192,10 @@ describe("HTTP listing publication payload", () => {
 
 describe("HTTP favorite market boundary", () => {
   it("sends the explicit market on favorite reads, writes, and projections", async () => {
-    const get = vi
-      .spyOn(httpClient, "get")
-      .mockResolvedValue({ listingIds: [], listings: [] });
-    const put = vi
-      .spyOn(httpClient, "put")
-      .mockResolvedValue({ isFavorite: false });
+    const request = vi
+      .spyOn(httpClient, "request")
+      .mockResolvedValueOnce({ listingIds: [], listings: [] })
+      .mockResolvedValueOnce({ isFavorite: false });
     const post = vi.spyOn(httpClient, "post").mockResolvedValue({
       items: [],
       total: 0,
@@ -210,14 +208,18 @@ describe("HTTP favorite market boundary", () => {
     await service.setFavorite("listing-1", "BE", false);
     await service.searchListings({ marketCode: "BE", page: 1, limit: 24 });
 
-    expect(get).toHaveBeenCalledWith("/favorites", {
-      headers: { "X-Shongre-Market": "BE" },
-    });
-    expect(put).toHaveBeenCalledWith(
-      "/listings/listing-1/favorite",
-      { isFavorite: false },
-      { headers: { "X-Shongre-Market": "BE" } },
+    expect(request.mock.calls[0]?.[0]).toBe("/favorites");
+    expect(
+      new Headers(request.mock.calls[0]?.[1]?.headers).get("X-Shongre-Market"),
+    ).toBe("BE");
+    expect(request.mock.calls[1]?.[0]).toBe("/listings/listing-1/favorite");
+    expect(request.mock.calls[1]?.[1]?.method).toBe("PUT");
+    expect(request.mock.calls[1]?.[1]?.body).toBe(
+      JSON.stringify({ isFavorite: false }),
     );
+    expect(
+      new Headers(request.mock.calls[1]?.[1]?.headers).get("X-Shongre-Market"),
+    ).toBe("BE");
     expect(post).toHaveBeenCalledWith(
       "/listings/search",
       { marketCode: "BE", page: 1, limit: 24 },

@@ -1,4 +1,6 @@
 import { logger } from "../infrastructure/logging/logger.js";
+import { config } from "../app/config/index.js";
+import { WorkerHeartbeat } from "../infrastructure/observability/worker-heartbeat.js";
 import { scheduledJobCoordinator } from "../infrastructure/queue/scheduled-job-coordinator.js";
 import { storageService } from "../infrastructure/storage/storage-service.js";
 import { providerDataDeletionWorker } from "./auth/provider-data-deletion-worker.js";
@@ -201,15 +203,16 @@ const jobs: ScheduledJob[] = [
 ];
 
 class ScheduledWorkerRuntime {
+  private readonly heartbeat = new WorkerHeartbeat(
+    config.workerHealthFile,
+    config.environment.environmentId,
+  );
   private stopped = false;
   private readonly timers = new Set<NodeJS.Timeout>();
   private readonly inFlight = new Set<Promise<void>>();
 
   private selectedJobs(): ScheduledJob[] {
-    const configured = (process.env.WORKER_GROUPS || "all")
-      .split(",")
-      .map((value) => value.trim())
-      .filter(Boolean);
+    const configured = config.workerGroups;
     if (configured.includes("all")) return jobs;
     const allowed = new Set(configured);
     const selected = jobs.filter((job) => allowed.has(job.group));
@@ -237,6 +240,7 @@ class ScheduledWorkerRuntime {
     for (const timer of this.timers) clearTimeout(timer);
     this.timers.clear();
     await Promise.allSettled(this.inFlight);
+    await this.heartbeat.stop();
     logger.info("scheduled_worker_stopped", {
       ownerId: scheduledJobCoordinator.ownerId,
     });
@@ -263,14 +267,16 @@ class ScheduledWorkerRuntime {
         job.intervalSeconds,
         leaseSeconds,
       );
+      await this.heartbeat.touch();
       if (!claimed) return;
       let leaseLost = false;
       const renewal = setInterval(
         () => {
           void scheduledJobCoordinator
             .renew(job.name, leaseSeconds)
-            .then((renewed) => {
+            .then(async (renewed) => {
               if (!renewed) leaseLost = true;
+              else await this.heartbeat.touch();
             })
             .catch((error) => {
               logger.error("scheduled_job_lease_renewal_failed", {

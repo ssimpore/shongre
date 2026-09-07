@@ -24,6 +24,7 @@ import {
   ListingRail,
   LocationSelector,
   SearchActiveFiltersBar,
+  SearchMapResultsLayout,
   SearchResultsToolbar,
   SearchSortControl,
   Skeleton,
@@ -577,6 +578,10 @@ export const EmploymentSearchPage: React.FC = () => {
       }),
     [activeMarket.code, items],
   );
+  const mappedJobIds = useMemo(
+    () => new Set(mapItems.map(({ id }) => id)),
+    [mapItems],
+  );
 
   const save = async (job: JobPostingCard) => {
     if (savedJobsLoadState !== "ready") return;
@@ -827,7 +832,7 @@ export const EmploymentSearchPage: React.FC = () => {
             ) : loading ? (
               <ListingGrid
                 fluid={viewMode === "grid"}
-                className={viewMode === "list" ? "sm:grid-cols-1" : undefined}
+                variant={viewMode === "list" ? "list" : "grid"}
               >
                 {Array.from({ length: 6 }, (_, index) => (
                   <div key={index} className="min-w-0">
@@ -846,19 +851,49 @@ export const EmploymentSearchPage: React.FC = () => {
               />
             ) : items.length && viewMode === "map" ? (
               mapItems.length ? (
-                <React.Suspense
-                  fallback={
-                    <div
-                      role="status"
-                      aria-label={t("common.loadingMap")}
-                      className="h-search-map rounded-card border border-border-base bg-bg-surface p-3"
-                    >
-                      <Skeleton className="h-full w-full rounded-card" />
-                    </div>
+                <SearchMapResultsLayout
+                  resultsLabel="Offres d’emploi sur la carte"
+                  results={
+                    <ListingGrid variant="list">
+                      {items
+                        .filter((job) => mappedJobIds.has(job.id))
+                        .map((job) => (
+                          <div
+                            key={job.id}
+                            data-search-map-result-card="true"
+                            className="min-w-0"
+                          >
+                            <JobCard
+                              job={{
+                                ...job,
+                                saved: savedJobIds.has(job.id),
+                              }}
+                              displayVariant="list"
+                              catalog={catalog}
+                              onSave={save}
+                              favoriteLoadState={savedJobsLoadState}
+                              onFavoriteRetry={loadSavedJobs}
+                            />
+                          </div>
+                        ))}
+                    </ListingGrid>
                   }
-                >
-                  <SearchResultsMap items={mapItems} />
-                </React.Suspense>
+                  map={
+                    <React.Suspense
+                      fallback={
+                        <div
+                          role="status"
+                          aria-label={t("common.loadingMap")}
+                          className="h-full rounded-card border border-border-base bg-bg-surface p-3"
+                        >
+                          <Skeleton className="h-full w-full rounded-card" />
+                        </div>
+                      }
+                    >
+                      <SearchResultsMap items={mapItems} layout="split" />
+                    </React.Suspense>
+                  }
+                />
               ) : (
                 <StatePanel
                   variant="notFound"
@@ -869,7 +904,7 @@ export const EmploymentSearchPage: React.FC = () => {
             ) : items.length ? (
               <ListingGrid
                 fluid={viewMode === "grid"}
-                className={viewMode === "list" ? "sm:grid-cols-1" : undefined}
+                variant={viewMode === "list" ? "list" : "grid"}
               >
                 {items.map((job) => (
                   <JobCard

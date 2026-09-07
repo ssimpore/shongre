@@ -1,16 +1,12 @@
 import { apiRequest } from "@/api/http-client";
 import type { ListingCardView } from "@shongre/contracts";
 import { deliveryRequestIdFromDiscoveryListingId } from "@shongre/contracts/delivery";
-import type { operations } from "@shongre/contracts/openapi";
+import {
+  getFavorites,
+  putListingsByIdFavorite,
+} from "@shongre/contracts/api-client";
 import { mapBackendListing } from "@/features/listings/listing.mapper";
 import { deliveryService } from "@/features/delivery/delivery.service";
-
-type BackendFavoriteCollection =
-  operations["getFavorites"]["responses"][200]["content"]["application/json"];
-type BackendFavoriteState =
-  operations["putListingsByIdFavorite"]["responses"][200]["content"]["application/json"];
-type BackendFavoriteSetRequest =
-  operations["putListingsByIdFavorite"]["requestBody"]["content"]["application/json"];
 
 export interface FavoriteListingCollection {
   listingIds: string[];
@@ -32,10 +28,9 @@ export class HttpFavoritesService implements FavoritesService {
     _userId: string,
     marketCode: string,
   ): Promise<FavoriteListingCollection> {
-    const result = await apiRequest<BackendFavoriteCollection>(
-      "/favorites",
+    const result = await getFavorites(
+      (path, init) => apiRequest(path, init, marketCode),
       {},
-      marketCode,
     );
     return {
       listingIds: [...result.listingIds],
@@ -59,11 +54,12 @@ export class HttpFavoritesService implements FavoritesService {
         isFavorite,
       );
     }
-    const payload: BackendFavoriteSetRequest = { isFavorite };
-    const result = await apiRequest<BackendFavoriteState>(
-      `/listings/${encodeURIComponent(listingId)}/favorite`,
-      { method: "PUT", body: JSON.stringify(payload) },
-      marketCode,
+    const result = await putListingsByIdFavorite(
+      (path, init) => apiRequest(path, init, marketCode),
+      {
+        path: { id: listingId },
+        body: { isFavorite },
+      },
     );
     return result.isFavorite;
   }

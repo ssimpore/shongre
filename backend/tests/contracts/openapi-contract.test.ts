@@ -35,7 +35,7 @@ describe("canonical OpenAPI contract", () => {
     }
 
     expect(routerOperationCount).toBe(Object.keys(OPENAPI_OPERATIONS).length);
-    expect(operationCount - routerOperationCount).toBe(5);
+    expect(operationCount - routerOperationCount).toBe(9);
     expect(operationCount).toBeGreaterThan(250);
   });
 
@@ -67,7 +67,7 @@ describe("canonical OpenAPI contract", () => {
     ).not.toEqual(profileSchema);
   });
 
-  it("rejects removal until deprecation and sunset are declared", () => {
+  it("rejects removal until a declared deprecation sunset has elapsed", () => {
     const current = { paths: {} };
     const undeclared = {
       paths: {
@@ -89,6 +89,23 @@ describe("canonical OpenAPI contract", () => {
     expect(findUndeclaredOperationRemovals(undeclared, current)).toEqual([
       "GET /example",
     ]);
-    expect(findUndeclaredOperationRemovals(announced, current)).toEqual([]);
+    expect(
+      findUndeclaredOperationRemovals(
+        announced,
+        current,
+        Date.parse("2026-01-01"),
+      ),
+    ).toEqual(["GET /example"]);
+    expect(
+      findUndeclaredOperationRemovals(
+        announced,
+        current,
+        Date.parse("2027-01-02"),
+      ),
+    ).toEqual([]);
+    announced.paths["/example"].get["x-sunset-at"] = "invalid";
+    expect(findUndeclaredOperationRemovals(announced, current)).toEqual([
+      "GET /example",
+    ]);
   });
 });

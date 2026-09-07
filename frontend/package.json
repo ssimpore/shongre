@@ -33,11 +33,11 @@
     "test:e2e:a11y": "playwright test accessibility.spec.ts --project=chromium",
     "test:e2e:ui": "playwright test --ui",
     "check:i18n": "node scripts/check-i18n-coverage.mjs",
-    "check:taxonomy": "tsx scripts/check-taxonomy-coverage.ts",
+    "check:taxonomy": "node --import tsx scripts/check-taxonomy-coverage.ts",
     "check:navigation": "node scripts/check-navigation-integrity.mjs",
     "check:routes": "node scripts/check-route-coverage.mjs",
-    "check:bundle": "tsx scripts/check-client-bundle-budget.mjs",
-    "check:seo": "tsx scripts/check-seo-governance.ts",
+    "check:bundle": "node --import tsx scripts/check-client-bundle-budget.mjs",
+    "check:seo": "node --import tsx scripts/check-seo-governance.ts",
     "seo:audit": "node scripts/seo-audit.mjs"
   },
   "dependencies": {

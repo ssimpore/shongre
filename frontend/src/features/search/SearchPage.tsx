@@ -41,6 +41,7 @@ import {
   ListingGrid,
   LocationSelector,
   SearchActiveFiltersBar,
+  SearchMapResultsLayout,
   SearchResultsToolbar,
   SearchSortControl,
   Skeleton,
@@ -1472,44 +1473,63 @@ export const SearchPage: React.FC = () => {
             />
           ) : listings.length > 0 ? (
             viewMode === "map" ? (
-              <React.Suspense
-                fallback={
-                  <div
-                    role="status"
-                    aria-label={t("common.loading")}
-                    className="h-search-map overflow-hidden rounded-2xl border border-border-base bg-bg-surface p-3 lg:h-search-map-tall"
-                  >
-                    <Skeleton className="h-full w-full rounded-xl" />
-                  </div>
+              <SearchMapResultsLayout
+                resultsLabel={t("search.resultsHeading")}
+                results={
+                  <ListingGrid variant="list">
+                    {listings.map((listing, index) => (
+                      <div
+                        key={listing.id}
+                        data-search-map-result-card="true"
+                        className="min-w-0"
+                      >
+                        <ListingCard
+                          listing={listing}
+                          variant="list"
+                          imagePriority={page === 1 && index === 0}
+                        />
+                      </div>
+                    ))}
+                  </ListingGrid>
                 }
+                map={
+                  <React.Suspense
+                    fallback={
+                      <div
+                        role="status"
+                        aria-label={t("common.loading")}
+                        className="h-full overflow-hidden rounded-2xl border border-border-base bg-bg-surface p-3"
+                      >
+                        <Skeleton className="h-full w-full rounded-xl" />
+                      </div>
+                    }
+                  >
+                    <ExploreMapView
+                      listings={listings}
+                      selectedCity={city || undefined}
+                      onSelectCity={(selected) =>
+                        updateFilter("city", selected)
+                      }
+                      fillHeight
+                      showResultsSidebar={false}
+                    />
+                  </React.Suspense>
+                }
+              />
+            ) : (
+              <ListingGrid
+                fluid={viewMode === "grid"}
+                variant={viewMode === "list" ? "list" : "grid"}
               >
-                <ExploreMapView
-                  listings={listings}
-                  selectedCity={city || undefined}
-                  onSelectCity={(selected) => updateFilter("city", selected)}
-                />
-              </React.Suspense>
-            ) : viewMode === "grid" ? (
-              <ListingGrid fluid>
                 {listings.map((listing, index) => (
                   <ListingCard
                     key={listing.id}
                     listing={listing}
-                    variant="grid"
+                    variant={viewMode === "list" ? "list" : "grid"}
                     imagePriority={page === 1 && index === 0}
                   />
                 ))}
               </ListingGrid>
-            ) : (
-              <div className="flex flex-col gap-3">
-                {listings.map((listing) => (
-                  <ListingCard
-                    key={listing.id}
-                    listing={listing}
-                    variant="list"
-                  />
-                ))}
-              </div>
             )
           ) : (
             <NoResultsFound
