@@ -13,6 +13,7 @@ import { FormField, Input } from "../../../design-system/primitives/FormField";
 import { Image } from "../../../design-system/primitives/Image";
 import { formatRelativeDate } from "../../../utilities/formatters";
 import { DisputeModal } from "./DisputeModal";
+import { TransactionReviewForm } from "./TransactionReviewForm";
 import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
 import { ORDER_HANDOVER_POLICY } from "../../../api/contracts/orders.contract";
 import { routes } from "../../../configuration/routes";
@@ -341,6 +342,13 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
                 Confirmer la réception
               </Button>
             )}
+
+          {isOpen && tx.status === "completed" && (isBuyer || isSeller) && (
+            <TransactionReviewForm
+              key={`${tx.id}::${currentUser.id}`}
+              orderId={tx.id}
+            />
+          )}
 
           <div className="flex flex-wrap justify-between gap-2 border-t border-border-soft pt-4">
             {isBuyer && ["initiated", "payment_pending"].includes(tx.status) ? (

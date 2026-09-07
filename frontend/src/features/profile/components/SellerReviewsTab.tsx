@@ -1,20 +1,20 @@
 import React, { useState, useMemo } from "react";
 import { Star, MessageSquare, ShoppingBag, Calendar } from "lucide-react";
 import { VerificationBadge } from "@shongre/ui/web";
-import { ReviewItem, UserProfile } from "../../../types";
+import { ReviewItem } from "../../../types";
 import { Avatar } from "../../../design-system/primitives/Badge";
 import { ProgressBar } from "../../../design-system/primitives/ProgressBar";
 import { useTranslation } from "../../../i18n/I18nProvider";
 import { useRegionalFormatters } from "../../../hooks/useRegionalFormatters";
 
 export interface SellerReviewsTabProps {
-  seller: UserProfile;
   reviews: ReviewItem[];
+  onReport: (review: ReviewItem) => void;
 }
 
 export const SellerReviewsTab: React.FC<SellerReviewsTabProps> = ({
-  seller,
   reviews,
+  onReport,
 }) => {
   const { t } = useTranslation();
   const { formatDate: formatRegionalDate } = useRegionalFormatters();
@@ -27,7 +27,7 @@ export const SellerReviewsTab: React.FC<SellerReviewsTabProps> = ({
     const total = reviews.length;
     if (total === 0) {
       return {
-        average: seller.rating || 5.0,
+        average: 0,
         total: 0,
         distribution: [
           { star: 5, count: 0, percentage: 0 },
@@ -55,7 +55,7 @@ export const SellerReviewsTab: React.FC<SellerReviewsTabProps> = ({
     }));
 
     return { average, total, distribution };
-  }, [reviews, seller.rating]);
+  }, [reviews]);
 
   // Filtered reviews
   const displayedReviews = useMemo(() => {
@@ -72,7 +72,7 @@ export const SellerReviewsTab: React.FC<SellerReviewsTabProps> = ({
         year: "numeric",
       });
     } catch {
-      return "Récemment";
+      return t("reviews.dateUnavailable");
     }
   };
 
@@ -84,7 +84,7 @@ export const SellerReviewsTab: React.FC<SellerReviewsTabProps> = ({
           {/* Main Average Score */}
           <div className="md:col-span-4 text-center md:text-left md:border-r md:border-border-subtle md:pr-6">
             <div className="text-4xl sm:text-5xl font-bold text-text-main leading-none mb-2">
-              {stats.average.toFixed(1)}
+              {stats.total ? stats.average.toFixed(1) : "—"}
               <span className="text-xl sm:text-2xl font-bold text-text-tertiary">
                 /5
               </span>
@@ -104,10 +104,10 @@ export const SellerReviewsTab: React.FC<SellerReviewsTabProps> = ({
             </div>
 
             <p className="text-xs sm:text-sm text-text-supporting font-medium">
-              Basé sur {stats.total} avis vérifié{stats.total > 1 ? "s" : ""}
+              {t("reviews.summary", { count: stats.total })}
             </p>
             <p className="text-xs text-text-tertiary mt-1">
-              {t("profile.sellerReviewsTab.avisCertifiesSuiteAUne")}
+              {t("reviews.verificationExplanation")}
             </p>
           </div>
 
@@ -117,6 +117,8 @@ export const SellerReviewsTab: React.FC<SellerReviewsTabProps> = ({
               <button
                 key={item.star}
                 type="button"
+                aria-pressed={selectedRatingFilter === item.star}
+                aria-label={t("reviews.form.score", { rating: item.star })}
                 onClick={() =>
                   setSelectedRatingFilter(
                     selectedRatingFilter === item.star ? null : item.star,
@@ -135,7 +137,10 @@ export const SellerReviewsTab: React.FC<SellerReviewsTabProps> = ({
 
                 <ProgressBar
                   value={item.percentage}
-                  label={`${item.percentage}% des avis ont ${item.star} étoiles`}
+                  label={t("reviews.ratingBreakdown", {
+                    percentage: item.percentage,
+                    rating: item.star,
+                  })}
                   variant="warning"
                   className="flex-1"
                 />
@@ -153,9 +158,10 @@ export const SellerReviewsTab: React.FC<SellerReviewsTabProps> = ({
       {selectedRatingFilter && (
         <div className="flex items-center justify-between bg-warning-surface border border-warning-border px-4 py-2.5 rounded-xl text-xs text-warning">
           <span>
-            {t("profile.sellerReviewsTab.affichageDesAvisAvecLa")}
-            <strong>{selectedRatingFilter} étoile(s)</strong> (
-            {displayedReviews.length})
+            {t("reviews.filtered", {
+              rating: selectedRatingFilter,
+              count: displayedReviews.length,
+            })}
           </span>
           <button
             type="button"
@@ -188,10 +194,12 @@ export const SellerReviewsTab: React.FC<SellerReviewsTabProps> = ({
                       <span className="text-xs sm:text-sm font-bold text-text-main">
                         {rev.authorName}
                       </span>
-                      <VerificationBadge
-                        size="xs"
-                        label={t("profile.sellerReviewsTab.achatVerifie")}
-                      />
+                      {rev.verifiedTransaction && (
+                        <VerificationBadge
+                          size="xs"
+                          label={t("reviews.verified")}
+                        />
+                      )}
                     </div>
 
                     <div className="flex items-center gap-2 mt-0.5 text-xs text-text-tertiary">
@@ -228,11 +236,20 @@ export const SellerReviewsTab: React.FC<SellerReviewsTabProps> = ({
               <p className="text-xs sm:text-sm text-text-emphasis leading-relaxed whitespace-pre-line pl-1">
                 {rev.comment}
               </p>
+              <button
+                type="button"
+                className="mt-3 text-sm text-text-supporting underline"
+                onClick={() => onReport(rev)}
+              >
+                {t("reviews.report")}
+              </button>
 
               {rev.listingTitle && (
                 <div className="sm:hidden mt-3 pt-2 border-t border-border-subtle flex items-center gap-1.5 text-xs text-text-tertiary">
                   <ShoppingBag className="w-icon-xs h-icon-xs text-text-inverse-subtle shrink-0" />
-                  <span className="truncate">Article : {rev.listingTitle}</span>
+                  <span className="truncate">
+                    {t("reviews.listing", { title: rev.listingTitle })}
+                  </span>
                 </div>
               )}
             </div>
@@ -243,13 +260,13 @@ export const SellerReviewsTab: React.FC<SellerReviewsTabProps> = ({
           <MessageSquare className="w-12 h-12 text-text-inverse-muted mx-auto mb-3" />
           <h4 className="text-base font-bold text-text-main mb-1">
             {selectedRatingFilter
-              ? `Aucun avis avec ${selectedRatingFilter} étoile(s)`
-              : "Pas encore d'avis pour ce vendeur"}
+              ? t("reviews.noFiltered", { rating: selectedRatingFilter })
+              : t("reviews.empty")}
           </h4>
           <p className="text-xs text-text-tertiary max-w-sm mx-auto">
             {selectedRatingFilter
-              ? "Essayez de réinitialiser le filtre de note pour afficher les autres avis."
-              : "Les avis clients apparaîtront ici dès que les premières transactions sécurisées auront été conclues."}
+              ? t("reviews.filterHint")
+              : t("reviews.emptyHint")}
           </p>
         </div>
       )}

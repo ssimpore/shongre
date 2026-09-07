@@ -63,9 +63,9 @@ evidence.
 
 <!-- capability-inventory:start -->
 
-Current generated repository inventory: 521 OpenAPI operations across 460
-paths, including 516 runtime routes, and 113 ordered migrations through
-`00113_indexnow_publication_delete.sql`. There are 425 non-E2E test source files.
+Current generated repository inventory: 522 OpenAPI operations across 461
+paths, including 517 runtime routes, and 114 ordered migrations through
+`00114_transaction_verified_reviews.sql`. There are 428 non-E2E test source files.
 <!-- capability-inventory:end -->
 
 Statuses in this ledger are intentionally stricter than feature-development
@@ -149,6 +149,29 @@ certification and the external evidence above remain unresolved.
   physical-device evidence and production restore/operations approvals were not
   supplied or synthesized. These remain release blockers, not completed code
   tasks; configure the protected fixture described in `docs/operations/release.md`.
+
+## Marketplace roadmap decisions — 2026-09-07
+
+The requested marketplace expansion is not fully implemented. Its first
+implementation slice is transaction-bound, two-sided reviews; see
+`backend/docs/transaction-reviews.md` for the contract, local migration,
+verification commands and remaining reputation work. This does not certify
+payments, returns, shipping, or a complete English storefront for release.
+
+User-approved choices for subsequent slices:
+
+| Area                   | Decision      | Remaining gate                                                                                                                                                                                                                                                                         |
+| ---------------------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Additional language    | English first | Migrate remaining UI and domain copy and pass full coverage/browser gates before adding English to `SHIPPED_LOCALES`. The current coverage check reports 2,588 untranslated UI strings.                                                                                                |
+| First shipping carrier | Colissimo     | Implement label, tracking and reconciliation flows; obtain approved environment-specific credentials and certify sandbox behavior. No live carrier integration is enabled.                                                                                                             |
+| Return shipping cost   | Seller pays   | Encode this in the approved, market-scoped return policy. Eligibility, return window, response deadlines and refund approval rules are not yet defined; do not enable automatic return/refund decisions from this answer alone. Existing explicit staff refund authority is unchanged. |
+
+The broader roadmap still includes transaction-linked support/returns,
+evidence-backed pricing and quality guidance, search recovery, generic Pro
+team/lead/inventory workflows, native transaction parity, privacy exports and
+liquidity/lifecycle measurement. Existing domain foundations should be extended
+incrementally; these items must not be marked complete because review work or
+provider selections are complete.
 
 ## Complete capability matrix
 

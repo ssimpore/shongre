@@ -4334,11 +4334,18 @@ export class ApiV1Router {
       reviewsService.getUserReviews(params.userId),
     );
     this.addRoute(
+      "GET",
+      "/orders/:id/review",
+      permission("review.create"),
+      async ({ principal, params }) =>
+        reviewsService.getOrderEligibility(params.id, principal.userId),
+    );
+    this.addRoute(
       "POST",
       "/reviews/submit",
       permission("review.create"),
       async ({ principal, body }) =>
-        reviewsService.submitReview({ ...body, authorId: principal.userId }),
+        reviewsService.submitReview(principal.userId, body),
     );
     this.addRoute(
       "POST",

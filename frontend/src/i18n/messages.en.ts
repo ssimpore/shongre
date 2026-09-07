@@ -10,6 +10,44 @@ import { messagingCatalogueEn } from "./messaging.catalogue.en";
  * catalogue only ever declares the forms and never the rule.
  */
 export const messagesEn: MessageCatalogue = {
+  "reviews.loading": "Loading reviews…",
+  "reviews.loadError": "Reviews could not be loaded.",
+  "reviews.report": "Report this review",
+  "reviews.reportDescription":
+    "Our moderation team will review your report concerning {name}. Do not share sensitive information.",
+  "reviews.form.title": "Your review of this transaction",
+  "reviews.form.description":
+    "Buyers and sellers can each publish a review after a completed order. Your review will be public: do not share personal information.",
+  "reviews.form.loading": "Checking whether you can leave a review…",
+  "reviews.form.loadError":
+    "We could not check whether you can leave a review.",
+  "reviews.form.notCompleted":
+    "You can leave a review once the order is completed.",
+  "reviews.form.saved": "Your review has been saved.",
+  "reviews.form.rating": "Rating",
+  "reviews.form.chooseRating": "Choose a rating",
+  "reviews.form.score": "{rating} out of 5",
+  "reviews.form.comment": "Your experience",
+  "reviews.form.commentHint":
+    "10 to 2,000 characters. Describe your experience respectfully, without personal information.",
+  "reviews.form.submit": "Publish my review",
+  "reviews.form.submitting": "Publishing…",
+  "reviews.form.submitError":
+    "Publication was not confirmed. Check your connection and try again.",
+  "reviews.verified": "Verified transaction",
+  "reviews.summary_one": "Based on {count} review",
+  "reviews.summary_other": "Based on {count} reviews",
+  "reviews.verificationExplanation":
+    "The badge identifies reviews linked to a completed transaction.",
+  "reviews.ratingBreakdown": "{percentage}% of reviews have {rating} stars",
+  "reviews.filtered": "Reviews rated {rating} out of 5 ({count})",
+  "reviews.noFiltered": "No reviews rated {rating} out of 5",
+  "reviews.empty": "No reviews yet",
+  "reviews.emptyHint":
+    "Reviews will appear after the first completed transactions.",
+  "reviews.filterHint": "Reset the rating filter to see other reviews.",
+  "reviews.listing": "Item: {title}",
+  "reviews.dateUnavailable": "Date unavailable",
   "watch.nav": "Followed alerts",
   "watch.meta.title": "My followed alerts — Shongre",
   "watch.meta.description":
@@ -2899,11 +2937,7 @@ export const messagesEn: MessageCatalogue = {
   "profile.sellerReportModal.detailsComplementairesFacultatifMaisRecommande":
     "Extra details (optional but recommended):",
   "profile.sellerReportModal.envoyerLeSignalement": "Send report",
-  "profile.sellerReviewsTab.avisCertifiesSuiteAUne":
-    "Verified reviews following a transaction completed on Shongre.",
-  "profile.sellerReviewsTab.affichageDesAvisAvecLa": "Showing reviews rated",
   "profile.sellerReviewsTab.afficherTousLesAvis": "Show all reviews",
-  "profile.sellerReviewsTab.achatVerifie": "Verified purchase",
   "profile.sellerTrustIndicators.garantiesSignauxDeConfiance":
     "Guarantees & trust signals",
   "profile.sellerTrustIndicators.remiseEnMainPropreOu":

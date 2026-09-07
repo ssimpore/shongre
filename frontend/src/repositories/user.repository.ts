@@ -4,7 +4,7 @@ import {
 } from "../domains/user/user.domain";
 import { UserProfile, UserRole, PlatformRole, ReviewItem } from "../types";
 import { storageService } from "../services/storage.service";
-import { DEMO_USERS, INITIAL_REVIEWS } from "../mocks/initialDemoData";
+import { DEMO_USERS } from "../mocks/initialDemoData";
 import { authorizationService } from "../security/authorization.service";
 import { auditService } from "../security/audit.service";
 
@@ -107,18 +107,15 @@ export interface IUserRepository {
   ): Promise<UserProfile>;
   updateUserRole(userId: string, newRole: PlatformRole): Promise<UserProfile>;
   getReviewsForUser(userId: string): Promise<ReviewItem[]>;
-  addReview(review: Omit<ReviewItem, "id" | "createdAt">): Promise<ReviewItem>;
+  addReview(
+    review: Omit<ReviewItem, "id" | "createdAt">,
+    orderId: string,
+  ): Promise<ReviewItem>;
   getAllProSellers(): Promise<UserProfile[]>;
   isFollowing(sellerId: string): boolean;
   toggleFollow(sellerId: string): boolean;
   isBlocked(userId: string): boolean;
   toggleBlock(userId: string): boolean;
-  reportUser(report: {
-    targetUserId: string;
-    targetUserName?: string;
-    reason: string;
-    comment?: string;
-  }): Promise<void>;
 }
 
 class MockUserRepository implements IUserRepository {
@@ -373,28 +370,29 @@ class MockUserRepository implements IUserRepository {
   }
 
   async getReviewsForUser(userId: string): Promise<ReviewItem[]> {
-    return INITIAL_REVIEWS.filter((r) => r.targetUserId === userId);
+    return storageService.getReviews().filter((r) => r.targetUserId === userId);
   }
 
   async addReview(
     review: Omit<ReviewItem, "id" | "createdAt">,
+    orderId: string,
   ): Promise<ReviewItem> {
     const currentUser = storageService.getCurrentUser();
     authorizationService.assertCan(currentUser, "review.create");
 
     const newReview: ReviewItem = {
       ...review,
-      id: `rev-${Date.now()}`,
+      id: `review-${orderId}-${review.authorId}`,
       createdAt: new Date().toISOString(),
     };
-    INITIAL_REVIEWS.unshift(newReview);
+    storageService.saveOrderReview(orderId, newReview);
 
     // Update target user's reviewCount and rating
     const targetUser = await this.getUserById(review.targetUserId);
     if (targetUser) {
-      const allTargetReviews = INITIAL_REVIEWS.filter(
-        (r) => r.targetUserId === review.targetUserId,
-      );
+      const allTargetReviews = storageService
+        .getReviews()
+        .filter((r) => r.targetUserId === review.targetUserId);
       const totalScore = allTargetReviews.reduce((sum, r) => sum + r.rating, 0);
       const avgRating =
         Math.round((totalScore / allTargetReviews.length) * 10) / 10;
@@ -443,17 +441,6 @@ class MockUserRepository implements IUserRepository {
     const currentUser = storageService.getCurrentUser();
     authorizationService.assertCan(currentUser, "message.block");
     return storageService.toggleBlockUser(userId);
-  }
-
-  async reportUser(report: {
-    targetUserId: string;
-    targetUserName?: string;
-    reason: string;
-    comment?: string;
-  }): Promise<void> {
-    const currentUser = storageService.getCurrentUser();
-    authorizationService.assertCan(currentUser, "report.create");
-    storageService.saveUserReport(report);
   }
 }
 

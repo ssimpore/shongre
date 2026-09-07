@@ -213,7 +213,7 @@ async function resolveSeller(
   }
   const [allListings, reviews] = await Promise.all([
     listingRepository.getListingsBySeller(seller.id),
-    userRepository.getReviewsForUser(seller.id),
+    serverServices.reviews.getUserReviews(seller.id),
   ]);
   const listings = allListings.filter(
     (listing) =>

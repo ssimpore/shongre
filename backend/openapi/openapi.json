@@ -34196,66 +34196,79 @@
         "x-shongre-permission": "report.create"
       }
     },
-    "/reviews/submit": {
-      "post": {
-        "operationId": "postReviewsSubmit",
+    "/orders/{id}/review": {
+      "get": {
+        "operationId": "getOrderReviewEligibility",
         "tags": ["reviews"],
-        "summary": "POST /reviews/submit",
-        "description": "Implemented by backend/src/api/v1/router.ts:2386.",
+        "summary": "Get own review and eligibility for an order",
+        "description": "Participant-private eligibility; unknown and other-party orders return 404. Public reviews omit private order identifiers.",
         "parameters": [
           {
-            "$ref": "#/components/parameters/RequestId"
-          }
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "minLength": 1 }
+          },
+          { "$ref": "#/components/parameters/RequestId" }
         ],
         "responses": {
           "200": {
             "description": "Successful response.",
             "headers": {
-              "X-Request-Id": {
-                "$ref": "#/components/headers/RequestId"
-              }
+              "X-Request-Id": { "$ref": "#/components/headers/RequestId" }
             },
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/JsonValue"
+                  "$ref": "#/components/schemas/OrderReviewEligibility"
                 }
               }
             }
           },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "403": {
-            "$ref": "#/components/responses/Forbidden"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
-          },
-          "409": {
-            "$ref": "#/components/responses/Conflict"
-          },
-          "422": {
-            "$ref": "#/components/responses/UnprocessableEntity"
-          },
-          "429": {
-            "$ref": "#/components/responses/TooManyRequests"
-          },
-          "500": {
-            "$ref": "#/components/responses/InternalError"
-          }
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "422": { "$ref": "#/components/responses/UnprocessableEntity" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalError" }
         },
-        "security": [
-          {
-            "CookieAuth": []
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-source": "backend/src/api/v1/router.ts:2386",
+        "x-shongre-permission": "review.create"
+      }
+    },
+    "/reviews/submit": {
+      "post": {
+        "operationId": "postReviewsSubmit",
+        "tags": ["reviews"],
+        "summary": "Submit a transaction-verified buyer or seller review",
+        "description": "Requires a completed order owned by the authenticated participant. Identity, recipient and listing are server-derived. One review per order and author. Unbound legacy submissions are rejected as a security correction; clients send transactionId, rating and comment only.",
+        "parameters": [{ "$ref": "#/components/parameters/RequestId" }],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "headers": {
+              "X-Request-Id": { "$ref": "#/components/headers/RequestId" }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MarketplaceReview" }
+              }
+            }
           },
-          {
-            "BearerAuth": []
-          }
-        ],
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "422": { "$ref": "#/components/responses/UnprocessableEntity" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
         "x-shongre-access": "permission",
         "x-shongre-source": "backend/src/api/v1/router.ts:2386",
         "requestBody": {
@@ -34263,9 +34276,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "properties": {},
-                "additionalProperties": true
+                "$ref": "#/components/schemas/SubmitTransactionReview"
               }
             }
           }
@@ -34284,55 +34295,33 @@
             "name": "userId",
             "in": "path",
             "required": true,
-            "schema": {
-              "type": "string",
-              "minLength": 1
-            }
+            "schema": { "type": "string", "minLength": 1 }
           },
-          {
-            "$ref": "#/components/parameters/RequestId"
-          }
+          { "$ref": "#/components/parameters/RequestId" }
         ],
         "responses": {
           "200": {
             "description": "Successful response.",
             "headers": {
-              "X-Request-Id": {
-                "$ref": "#/components/headers/RequestId"
-              }
+              "X-Request-Id": { "$ref": "#/components/headers/RequestId" }
             },
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/JsonValue"
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/MarketplaceReview" }
                 }
               }
             }
           },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "403": {
-            "$ref": "#/components/responses/Forbidden"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
-          },
-          "409": {
-            "$ref": "#/components/responses/Conflict"
-          },
-          "422": {
-            "$ref": "#/components/responses/UnprocessableEntity"
-          },
-          "429": {
-            "$ref": "#/components/responses/TooManyRequests"
-          },
-          "500": {
-            "$ref": "#/components/responses/InternalError"
-          }
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "422": { "$ref": "#/components/responses/UnprocessableEntity" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalError" }
         },
         "security": [],
         "x-shongre-access": "public",
@@ -39116,6 +39105,65 @@
       }
     },
     "schemas": {
+      "MarketplaceReview": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "targetUserId",
+          "authorId",
+          "authorName",
+          "rating",
+          "comment",
+          "listingTitle",
+          "createdAt",
+          "verifiedTransaction"
+        ],
+        "properties": {
+          "id": { "type": "string" },
+          "targetUserId": { "type": "string" },
+          "authorId": { "type": "string" },
+          "authorName": { "type": "string" },
+          "rating": { "type": "integer", "minimum": 1, "maximum": 5 },
+          "comment": { "type": "string" },
+          "listingTitle": { "type": "string" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "verifiedTransaction": { "type": "boolean" },
+          "reviewerRole": { "type": "string", "enum": ["buyer", "seller"] }
+        }
+      },
+      "SubmitTransactionReview": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["transactionId", "rating", "comment"],
+        "properties": {
+          "transactionId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "rating": { "type": "integer", "minimum": 1, "maximum": 5 },
+          "comment": { "type": "string", "minLength": 10, "maxLength": 2000 }
+        }
+      },
+      "OrderReviewEligibility": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["eligible", "reason", "review"],
+        "properties": {
+          "eligible": { "type": "boolean" },
+          "reason": {
+            "type": ["string", "null"],
+            "enum": ["NOT_COMPLETED", "ALREADY_REVIEWED", null]
+          },
+          "review": {
+            "anyOf": [
+              { "$ref": "#/components/schemas/MarketplaceReview" },
+              { "type": "null" }
+            ]
+          }
+        }
+      },
       "HomepageUniverseSubsectionConfiguration": {
         "type": "object",
         "additionalProperties": false,

@@ -7630,6 +7630,26 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/orders/{id}/review": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /**
+         * Get own review and eligibility for an order
+         * @description Participant-private eligibility; unknown and other-party orders return 404. Public reviews omit private order identifiers.
+         */
+        readonly get: operations["getOrderReviewEligibility"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/orders/{id}/ship": {
         readonly parameters: {
             readonly query?: never;
@@ -8409,8 +8429,8 @@ export interface paths {
         readonly get?: never;
         readonly put?: never;
         /**
-         * POST /reviews/submit
-         * @description Implemented by backend/src/api/v1/router.ts:2386.
+         * Submit a transaction-verified buyer or seller review
+         * @description Requires a completed order owned by the authenticated participant. Identity, recipient and listing are server-derived. One review per order and author. Unbound legacy submissions are rejected as a security correction; clients send transactionId, rating and comment only.
          */
         readonly post: operations["postReviewsSubmit"];
         readonly delete?: never;
@@ -11855,6 +11875,20 @@ export interface components {
             /** Format: uri */
             readonly url: string;
         };
+        readonly MarketplaceReview: {
+            readonly authorId: string;
+            readonly authorName: string;
+            readonly comment: string;
+            /** Format: date-time */
+            readonly createdAt: string;
+            readonly id: string;
+            readonly listingTitle: string;
+            readonly rating: number;
+            /** @enum {string} */
+            readonly reviewerRole?: "buyer" | "seller";
+            readonly targetUserId: string;
+            readonly verifiedTransaction: boolean;
+        };
         readonly MarketResolvedListingPromotion: {
             /** Format: date-time */
             readonly endsAt: string;
@@ -11931,6 +11965,12 @@ export interface components {
             readonly updatedAt: string;
         } & {
             readonly [key: string]: unknown;
+        };
+        readonly OrderReviewEligibility: {
+            readonly eligible: boolean;
+            /** @enum {string|null} */
+            readonly reason: "NOT_COMPLETED" | "ALREADY_REVIEWED" | null;
+            readonly review: components["schemas"]["MarketplaceReview"] | null;
         };
         readonly PaidPlacementPolicy: {
             readonly id: string;
@@ -12731,6 +12771,11 @@ export interface components {
         };
         /** @enum {string} */
         readonly StaffRole: "support_agent" | "moderator" | "trust_safety" | "compliance" | "finance" | "operations" | "commercial" | "content_manager" | "market_manager" | "admin" | "owner";
+        readonly SubmitTransactionReview: {
+            readonly comment: string;
+            readonly rating: number;
+            readonly transactionId: string;
+        };
         readonly SubscriptionChangePreview: {
             /** @enum {string} */
             readonly effectiveAt: "immediately" | "period_end";
@@ -29127,6 +29172,40 @@ export interface operations {
             readonly 500: components["responses"]["InternalError"];
         };
     };
+    readonly getOrderReviewEligibility: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path: {
+                readonly id: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["OrderReviewEligibility"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
     readonly postOrdersByIdShip: {
         readonly parameters: {
             readonly query?: never;
@@ -30695,9 +30774,7 @@ export interface operations {
         };
         readonly requestBody: {
             readonly content: {
-                readonly "application/json": {
-                    readonly [key: string]: unknown;
-                };
+                readonly "application/json": components["schemas"]["SubmitTransactionReview"];
             };
         };
         readonly responses: {
@@ -30708,7 +30785,7 @@ export interface operations {
                     readonly [name: string]: unknown;
                 };
                 content: {
-                    readonly "application/json": components["schemas"]["JsonValue"];
+                    readonly "application/json": components["schemas"]["MarketplaceReview"];
                 };
             };
             readonly 400: components["responses"]["BadRequest"];
@@ -30742,7 +30819,7 @@ export interface operations {
                     readonly [name: string]: unknown;
                 };
                 content: {
-                    readonly "application/json": components["schemas"]["JsonValue"];
+                    readonly "application/json": readonly components["schemas"]["MarketplaceReview"][];
                 };
             };
             readonly 400: components["responses"]["BadRequest"];

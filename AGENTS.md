@@ -725,6 +725,12 @@ France-only happy path is insufficient for market-sensitive work.
   support explicit permission, loading, empty, error, retry, and blocked states.
   New UGC surfaces must reuse reporting/blocking controls and add abuse and
   ownership tests.
+- Marketplace review submissions require a completed order and a verified
+  participant principal. Derive the recipient, author, and listing context on
+  the backend; allow one review per order and author, including the seller's
+  independent review of the buyer. Keep order identifiers private, and display
+  transaction-verification badges only when the service supplies evidence.
+  Unbound historical reviews must never acquire manufactured verification.
 - Admin surfaces must express domain capabilities rather than bypass services as
   raw table editors. Sensitive actions retain authorization and audit evidence.
 - Homepage discovery composition is a revisioned, market-scoped database

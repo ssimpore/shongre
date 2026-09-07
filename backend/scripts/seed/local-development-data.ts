@@ -1611,8 +1611,9 @@ async function seedMarketplaceAccountScenario(
   }
   const reviewRepository = new PostgresReviewRepository();
   for (const source of marketplaceFixture.reviews) {
-    const review: ReviewItem = {
+    const review: ReviewItem & { orderId: string } = {
       id: localSeedUuid("review", source.id),
+      orderId: localSeedUuid("order", source.orderId),
       targetUserId: profileId(source.targetUserId),
       authorId: profileId(source.authorId),
       authorName: source.authorName,
@@ -1620,6 +1621,7 @@ async function seedMarketplaceAccountScenario(
       comment: source.comment,
       listingTitle: source.listingTitle,
       createdAt: source.createdAt,
+      verifiedTransaction: true,
     };
     await reviewRepository.save(review);
   }

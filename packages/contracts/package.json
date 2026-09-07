@@ -30,6 +30,7 @@
     "./currency": "./src/schemas/currency.ts",
     "./compliance": "./src/schemas/compliance.ts",
     "./support": "./src/schemas/support.ts",
+    "./reviews": "./src/schemas/reviews.ts",
     "./feature-flags": "./src/schemas/feature-flags.ts",
     "./crm": "./src/schemas/crm.ts",
     "./prospecting": "./src/schemas/prospecting.ts",

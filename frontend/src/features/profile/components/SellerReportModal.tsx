@@ -1,16 +1,18 @@
 import React, { useState } from "react";
+import { MODERATION_CONSTRAINTS } from "@shongre/contracts";
 import { Flag, AlertTriangle } from "lucide-react";
 import { UserProfile } from "../../../types";
 import { Modal } from "../../../design-system/primitives/Modal";
 import { Button } from "../../../design-system/primitives/Button";
 import { useToast } from "../../../app/providers/ToastProvider";
-import { userRepository } from "../../../repositories/user.repository";
+import { services } from "../../../api/client/service-registry";
 import { useTranslation } from "../../../i18n/I18nProvider";
 
 export interface SellerReportModalProps {
   isOpen: boolean;
   onClose: () => void;
-  seller: UserProfile;
+  seller: Pick<UserProfile, "id" | "name" | "companyName">;
+  reviewId?: string;
 }
 
 const REPORT_REASONS = [
@@ -29,23 +31,35 @@ export const SellerReportModal: React.FC<SellerReportModalProps> = ({
   isOpen,
   onClose,
   seller,
+  reviewId,
 }) => {
   const { t } = useTranslation();
   const toast = useToast();
   const [selectedReason, setSelectedReason] = useState(REPORT_REASONS[0].id);
   const [comment, setComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const reportContext = reviewId
+    ? `Review: ${reviewId}`
+    : `Profile report: ${selectedReason}`;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     try {
-      await userRepository.reportUser({
-        targetUserId: seller.id,
-        targetUserName: seller.companyName || seller.name,
-        reason: selectedReason,
-        comment: comment.trim(),
+      await services.moderation.submitReport({
+        reportedUserId: seller.id,
+        reason:
+          selectedReason === "scam" ||
+          selectedReason === "offline_payment" ||
+          selectedReason === "impersonation"
+            ? "fraud"
+            : selectedReason === "harassment"
+              ? "harassment"
+              : selectedReason === "counterfeit"
+                ? "counterfeit"
+                : "other",
+        details: [reportContext, comment.trim()].filter(Boolean).join("\n"),
       });
 
       toast.success(
@@ -64,16 +78,20 @@ export const SellerReportModal: React.FC<SellerReportModalProps> = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={t("profile.sellerReportModal.signalerCeProfil")}
+      title={t(
+        reviewId
+          ? "reviews.report"
+          : "profile.sellerReportModal.signalerCeProfil",
+      )}
       maxWidth="md"
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="flex items-start gap-3 p-3 bg-warning-surface rounded-xl border border-warning-border text-xs text-warning">
           <AlertTriangle className="w-icon-md h-icon-md text-warning shrink-0 mt-0.5" />
           <p>
-            Vous êtes sur le point de signaler le profil de{" "}
-            <strong>{seller.companyName || seller.name}</strong>. Nos équipes de
-            sécurité examineront ce dossier sous 24h.
+            {t("reviews.reportDescription", {
+              name: seller.companyName || seller.name,
+            })}
           </p>
         </div>
 
@@ -112,6 +130,14 @@ export const SellerReportModal: React.FC<SellerReportModalProps> = ({
             )}
           </label>
           <textarea
+            aria-label={t(
+              "profile.sellerReportModal.detailsComplementairesFacultatifMaisRecommande",
+            )}
+            maxLength={
+              MODERATION_CONSTRAINTS.reportDetailsMaxLength -
+              reportContext.length -
+              1
+            }
             value={comment}
             onChange={(e) => setComment(e.target.value)}
             placeholder={t(

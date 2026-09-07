@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { UserProfile, Listing, ReviewItem } from "../../types";
 import { userRepository } from "../../repositories/user.repository";
+import { services } from "../../api/client/service-registry";
 import { listingRepository } from "../../repositories/listing.repository";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { SellerProfileHeader } from "./components/SellerProfileHeader";
@@ -76,6 +77,32 @@ export const SellerPublicPage: React.FC = () => {
   );
   const [isLoading, setIsLoading] = useState(!initialData);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [reportedReview, setReportedReview] = useState<ReviewItem | null>(null);
+  const [reviewsLoading, setReviewsLoading] = useState(true);
+  const [reviewsError, setReviewsError] = useState(false);
+  const [reviewAttempt, setReviewAttempt] = useState(0);
+  const sellerId = seller?.id;
+
+  useEffect(() => {
+    if (!sellerId) return;
+    let active = true;
+    setReviewsLoading(true);
+    setReviewsError(false);
+    services.reviews
+      .getUserReviews(sellerId)
+      .then((result) => {
+        if (active) setReviews(result);
+      })
+      .catch(() => {
+        if (active) setReviewsError(true);
+      })
+      .finally(() => {
+        if (active) setReviewsLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [sellerId, reviewAttempt]);
 
   // Tab management: catalog | reviews | about
   const tabFromUrl = searchParams.get("tab") as
@@ -120,12 +147,6 @@ export const SellerPublicPage: React.FC = () => {
             foundSeller.id,
           );
           setListings(sellerListings || []);
-
-          // Load reviews
-          const userReviews = await userRepository.getReviewsForUser(
-            foundSeller.id,
-          );
-          setReviews(userReviews || []);
         } else {
           setSeller(null);
         }
@@ -365,9 +386,33 @@ export const SellerPublicPage: React.FC = () => {
             />
           )}
 
-          {activeTab === "reviews" && (
-            <SellerReviewsTab seller={seller} reviews={reviews} />
-          )}
+          {activeTab === "reviews" &&
+            (reviewsLoading ? (
+              <p role="status">{t("reviews.loading")}</p>
+            ) : reviewsError ? (
+              <div role="alert" className="space-y-3">
+                <p>{t("reviews.loadError")}</p>
+                <Button
+                  variant="outline"
+                  onClick={() => setReviewAttempt((value) => value + 1)}
+                >
+                  {t("common.retry")}
+                </Button>
+              </div>
+            ) : (
+              <SellerReviewsTab
+                reviews={reviews}
+                onReport={(review) => {
+                  if (!currentUser) {
+                    navigate(
+                      routes.auth.login(location.pathname + location.search),
+                    );
+                    return;
+                  }
+                  setReportedReview(review);
+                }}
+              />
+            ))}
 
           {activeTab === "about" && isPro && (
             <ProBusinessInfo seller={seller} />
@@ -376,6 +421,17 @@ export const SellerPublicPage: React.FC = () => {
       </div>
 
       {/* Safety Report Modal */}
+      {reportedReview && (
+        <SellerReportModal
+          isOpen
+          onClose={() => setReportedReview(null)}
+          seller={{
+            id: reportedReview.authorId,
+            name: reportedReview.authorName,
+          }}
+          reviewId={reportedReview.id}
+        />
+      )}
       {isReportModalOpen && (
         <SellerReportModal
           seller={seller}

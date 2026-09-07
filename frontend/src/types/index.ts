@@ -788,4 +788,6 @@ export interface ReviewItem {
   comment: string;
   listingTitle: string;
   createdAt: string;
+  verifiedTransaction?: boolean;
+  reviewerRole?: "buyer" | "seller";
 }

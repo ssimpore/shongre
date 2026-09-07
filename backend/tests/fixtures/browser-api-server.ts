@@ -2,6 +2,7 @@ import { writeFileSync } from "node:fs";
 import { createHttpServer } from "../../src/app/server/index.js";
 import { config } from "../../src/app/config/index.js";
 import { seedDemoCredentials } from "../../src/app/bootstrap/seed-demo-credentials.js";
+import { repositories } from "../../src/infrastructure/database/repositories/index.js";
 
 if (
   config.environment.environment !== "test" ||
@@ -13,6 +14,16 @@ if (
   );
 }
 await seedDemoCredentials();
+const reviewOrder = await repositories.orders.findById("ord_sample_1");
+if (!reviewOrder) throw new Error("Missing canonical review order fixture");
+for (const engine of ["chromium", "firefox", "webkit"]) {
+  await repositories.orders.create({
+    ...reviewOrder,
+    id: `browser-review-${engine}`,
+    orderNumber: `BROWSER-REVIEW-${engine}`,
+    status: "completed",
+  });
+}
 const server = createHttpServer();
 server.listen(0, "127.0.0.1", () => {
   const address = server.address();

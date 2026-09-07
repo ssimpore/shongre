@@ -7,6 +7,7 @@ import {
   RecentSearch,
   UserProfile,
   UserRole,
+  ReviewItem,
 } from "../types";
 import {
   INITIAL_LISTINGS,
@@ -16,6 +17,7 @@ import {
   INITIAL_NOTIFICATIONS,
   INITIAL_SAVED_SEARCHES,
   DEMO_USERS,
+  INITIAL_REVIEWS,
 } from "../mocks/initialDemoData";
 import { Market } from "../domains/market/market.types";
 import {
@@ -54,6 +56,7 @@ const KEYS = {
   CONVERSATIONS: "shongre_conversations_v1",
   MESSAGES: "shongre_messages_v1",
   TRANSACTIONS: "shongre_transactions_v1",
+  REVIEWS: "shongre_transaction_reviews_v1",
   NOTIFICATIONS: "shongre_notifications_v1",
   FAVORITES_LEGACY: "shongre_favorites_v2",
   // v3: account-and-market map. v2 separated users but still mixed markets.
@@ -522,6 +525,42 @@ class StorageService {
     this.set(KEYS.TRANSACTIONS, list);
   }
 
+  // Reviews
+  getReviews(): ReviewItem[] {
+    const stored = this.get<Record<string, ReviewItem>>(KEYS.REVIEWS, {});
+    return [
+      ...Object.values(stored),
+      ...INITIAL_REVIEWS.map(({ orderId: _orderId, ...review }) => review),
+    ].map((review) => ({ ...review }));
+  }
+
+  getOrderReview(orderId: string, authorId: string): ReviewItem | null {
+    const stored = this.get<Record<string, ReviewItem>>(KEYS.REVIEWS, {})[
+      `${orderId}::${authorId}`
+    ];
+    if (stored) return { ...stored };
+    const initial = INITIAL_REVIEWS.find(
+      (review) => review.orderId === orderId && review.authorId === authorId,
+    );
+    if (!initial) return null;
+    const { orderId: _orderId, ...review } = initial;
+    return review;
+  }
+
+  saveOrderReview(orderId: string, review: ReviewItem): void {
+    const stored = this.get<Record<string, ReviewItem>>(KEYS.REVIEWS, {});
+    const key = `${orderId}::${review.authorId}`;
+    if (this.getOrderReview(orderId, review.authorId))
+      throw new Error("Vous avez déjà laissé un avis pour cette commande.");
+    this.set(KEYS.REVIEWS, { ...stored, [key]: { ...review } });
+    if (
+      this.get<Record<string, ReviewItem>>(KEYS.REVIEWS, {})[key]?.id !==
+      review.id
+    ) {
+      throw new Error("L’avis n’a pas pu être enregistré. Réessayez.");
+    }
+  }
+
   // Notifications
   getNotifications(): NotificationItem[] {
     return this.get<NotificationItem[]>(
@@ -817,22 +856,6 @@ class StorageService {
   // Reports
   getUserReports(): any[] {
     return this.get<any[]>(KEYS.USER_REPORTS, []);
-  }
-
-  saveUserReport(report: {
-    targetUserId: string;
-    targetUserName?: string;
-    reason: string;
-    comment?: string;
-  }): void {
-    const reports = this.getUserReports();
-    reports.push({
-      ...report,
-      id: `report-${Date.now()}`,
-      createdAt: new Date().toISOString(),
-      status: "pending",
-    });
-    this.set(KEYS.USER_REPORTS, reports);
   }
 
   deleteUserReport(reportId: string): void {

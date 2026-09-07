@@ -4,8 +4,8 @@
 
 - Contract version: `1.0.0`
 - API base path: `/api/v1`
-- Operations: **521**
-- Specification SHA-256: `e92d5e7658d2929b`
+- Operations: **522**
+- Specification SHA-256: `9ec7b8d0ed21c967`
 
 ## account
 
@@ -752,6 +752,7 @@
 
 | Method | Path | Operation ID | Access | Permission | Success |
 | --- | --- | --- | --- | --- | --- |
+| `GET` | `/orders/{id}/review` | `getOrderReviewEligibility` | `permission` | `review.create` | `200` |
 | `POST` | `/reviews/submit` | `postReviewsSubmit` | `permission` | `review.create` | `200` |
 | `GET` | `/reviews/user/{userId}` | `getReviewsUserByUserId` | `public` | — | `200` |
 

@@ -15,6 +15,45 @@ import type { DeliveryMessageKey } from "./delivery.catalogue.fr";
  *     of rule that must not be hand-written per call site.
  */
 export const messagesFr = {
+  "reviews.loading": "Chargement des avis…",
+  "reviews.loadError": "Les avis n’ont pas pu être chargés.",
+  "reviews.report": "Signaler cet avis",
+  "reviews.reportDescription":
+    "Le signalement concernant {name} sera examiné par notre équipe de modération. Ne partagez aucune donnée sensible.",
+  "reviews.form.title": "Votre avis sur cette transaction",
+  "reviews.form.description":
+    "Acheteur et vendeur peuvent chacun publier un avis après une commande terminée. Votre avis sera public : ne partagez aucune donnée personnelle.",
+  "reviews.form.loading": "Vérification de votre droit à publier un avis…",
+  "reviews.form.loadError":
+    "Impossible de vérifier votre droit à publier un avis.",
+  "reviews.form.notCompleted":
+    "Un avis peut être publié une fois la commande terminée.",
+  "reviews.form.saved": "Votre avis est enregistré.",
+  "reviews.form.rating": "Note",
+  "reviews.form.chooseRating": "Choisir une note",
+  "reviews.form.score": "{rating} sur 5",
+  "reviews.form.comment": "Votre expérience",
+  "reviews.form.commentHint":
+    "De 10 à 2 000 caractères. Décrivez votre expérience avec respect, sans données personnelles.",
+  "reviews.form.submit": "Publier mon avis",
+  "reviews.form.submitting": "Publication…",
+  "reviews.form.submitError":
+    "La publication n’a pas été confirmée. Vérifiez votre connexion puis réessayez.",
+  "reviews.verified": "Transaction vérifiée",
+  "reviews.summary_one": "Basé sur {count} avis",
+  "reviews.summary_other": "Basé sur {count} avis",
+  "reviews.verificationExplanation":
+    "Le badge distingue les avis associés à une transaction terminée.",
+  "reviews.ratingBreakdown": "{percentage} % des avis ont {rating} étoiles",
+  "reviews.filtered": "Avis avec la note {rating} sur 5 ({count})",
+  "reviews.noFiltered": "Aucun avis avec la note {rating} sur 5",
+  "reviews.empty": "Pas encore d’avis",
+  "reviews.emptyHint":
+    "Les avis apparaîtront après les premières transactions terminées.",
+  "reviews.filterHint":
+    "Réinitialisez le filtre pour afficher les autres avis.",
+  "reviews.listing": "Article : {title}",
+  "reviews.dateUnavailable": "Date indisponible",
   // --- Generic actions and states -----------------------------------------
   "common.loading": "Chargement…",
   "common.home": "Accueil",
@@ -3465,12 +3504,7 @@ export const messagesFr = {
   "profile.sellerReportModal.envoyerLeSignalement": "Envoyer le signalement",
 
   // --- profile.sellerReviewsTab ---
-  "profile.sellerReviewsTab.avisCertifiesSuiteAUne":
-    "Avis certifiés suite à une transaction réalisée sur Shongre.",
-  "profile.sellerReviewsTab.affichageDesAvisAvecLa":
-    "Affichage des avis avec la note de",
   "profile.sellerReviewsTab.afficherTousLesAvis": "Afficher tous les avis",
-  "profile.sellerReviewsTab.achatVerifie": "Achat vérifié",
 
   // --- profile.sellerTrustIndicators ---
   "profile.sellerTrustIndicators.garantiesSignauxDeConfiance":

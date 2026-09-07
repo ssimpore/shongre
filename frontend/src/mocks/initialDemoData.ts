@@ -2695,22 +2695,11 @@ export const INITIAL_SAVED_SEARCHES: SavedSearch[] = [
   },
 ];
 
-export const INITIAL_REVIEWS: ReviewItem[] = [
-  {
-    id: "rev-1",
-    authorId: "user_thomas",
-    authorName: "Thomas L.",
-    authorAvatarUrl:
-      "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80",
-    targetUserId: "user_pro_atelier",
-    rating: 5,
-    comment:
-      "Mobilier d'une qualité remarquable. Restauration parfaite et accueil chaleureux à l'atelier bordelais. Je recommande vivement ce professionnel !",
-    listingTitle: "Enfilade Scandinave Teck",
-    createdAt: "2026-07-28T14:00:00Z",
-  },
+// Only completed fixture orders provide transaction-verification evidence.
+export const INITIAL_REVIEWS: Array<ReviewItem & { orderId: string }> = [
   {
     id: "rev-2",
+    orderId: "tx-903",
     authorId: "user_camille",
     authorName: "Camille M.",
     authorAvatarUrl:
@@ -2718,60 +2707,10 @@ export const INITIAL_REVIEWS: ReviewItem[] = [
     targetUserId: "user_pro_atelier",
     rating: 5,
     comment:
-      "Superbe table livrée avec le plus grand soin. Conforme en tout point aux photos et à la description.",
-    listingTitle: "Table ronde teck",
-    createdAt: "2026-06-15T11:20:00Z",
-  },
-  {
-    id: "rev-3",
-    authorId: "user_thomas",
-    authorName: "Thomas L.",
-    authorAvatarUrl:
-      "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80",
-    targetUserId: "user_camille",
-    rating: 5,
-    comment:
-      "Vendeuse très réactive, article impeccable comme neuf dans sa boîte d'origine. Envoi soigné et rapide.",
-    listingTitle: "iPhone 15 Pro Titane Naturel",
-    createdAt: "2026-08-10T09:30:00Z",
-  },
-  {
-    id: "rev-4",
-    authorId: "user_lucas",
-    authorName: "Lucas B.",
-    authorAvatarUrl:
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80",
-    targetUserId: "user_camille",
-    rating: 5,
-    comment:
-      "Parfait ! Très bonne communication et vêtement exactement conforme.",
-    listingTitle: "Manteau Laine Sézane",
-    createdAt: "2026-07-02T16:45:00Z",
-  },
-  {
-    id: "rev-5",
-    authorId: "user_camille",
-    authorName: "Camille M.",
-    authorAvatarUrl:
-      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80",
-    targetUserId: "user_thomas",
-    rating: 5,
-    comment:
-      "Acheteur et vendeur au top, transaction fluide et personne très courtoise.",
-    listingTitle: "Vélo Gravel Canyon",
-    createdAt: "2026-07-20T18:00:00Z",
-  },
-  {
-    id: "rev-6",
-    authorId: "user_marion",
-    authorName: "Marion D.",
-    authorAvatarUrl:
-      "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80",
-    targetUserId: "user_pro_atelier",
-    rating: 5,
-    comment:
-      "Fauteuil magnifique, l'assise bouclette est splendide. Transporteur ponctuel et arrangeant.",
-    listingTitle: "Fauteuil Lounge Scandinave Chêne",
-    createdAt: "2026-05-19T10:15:00Z",
+      "Superbe table récupérée à l'atelier. Conforme en tout point aux photos et à la description.",
+    listingTitle: "Table Ronde Vintage Scandinave en Teck Extensible",
+    createdAt: "2026-08-06T11:20:00Z",
+    verifiedTransaction: true,
+    reviewerRole: "buyer",
   },
 ];

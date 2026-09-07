@@ -7,6 +7,7 @@ import {
 import { Server } from "http";
 import { generateTotpCode } from "../../src/modules/auth/mfa.service.js";
 import { config } from "../../src/app/config/index.js";
+import { repositories } from "../../src/infrastructure/database/repositories/index.js";
 
 describe("API v1 Endpoints Integration", () => {
   let server: Server;
@@ -1897,6 +1898,61 @@ describe("API v1 Endpoints Integration", () => {
       body: JSON.stringify({ email, password }),
     });
     expect(relogin.status).toBe(401);
+  });
+
+  it("enforces review authentication, participant ownership, Staff separation and strict input over HTTP", async () => {
+    const source = await repositories.orders.findById("ord_sample_1");
+    expect(source).not.toBeNull();
+    const orderId = "api-review-order";
+    await repositories.orders.create({
+      ...source!,
+      id: orderId,
+      status: "completed",
+    });
+    const endpoint = `${baseUrl}/api/v1/orders/${orderId}/review`;
+    expect((await fetch(endpoint)).status).toBe(401);
+    expect((await fetch(endpoint, { headers: auth(proToken) })).status).toBe(
+      404,
+    );
+    expect((await fetch(endpoint, { headers: auth(adminToken) })).status).toBe(
+      403,
+    );
+    const eligibility = await fetch(endpoint, { headers: auth(buyerToken) });
+    expect(eligibility.status).toBe(200);
+    expect(await eligibility.json()).toMatchObject({ eligible: true });
+
+    const input = {
+      transactionId: orderId,
+      rating: 4,
+      comment: "Conforme à la description, merci.",
+    };
+    const submit = (token: string, body: unknown) =>
+      fetch(`${baseUrl}/api/v1/reviews/submit`, {
+        method: "POST",
+        headers: auth(token),
+        body: JSON.stringify(body),
+      });
+    expect((await submit(adminToken, input)).status).toBe(403);
+    expect((await submit(proToken, input)).status).toBe(404);
+    expect(
+      (await submit(buyerToken, { ...input, targetUserId: "outsider" })).status,
+    ).toBe(400);
+    const accepted = await submit(buyerToken, input);
+    expect(accepted.status).toBe(200);
+    const review = await accepted.json();
+    expect(review).toMatchObject({
+      authorId: source!.buyerId,
+      targetUserId: source!.sellerId,
+      verifiedTransaction: true,
+      reviewerRole: "buyer",
+    });
+    expect(review).not.toHaveProperty("orderId");
+    expect((await submit(buyerToken, input)).status).toBe(409);
+    const publicReviews = await fetch(
+      `${baseUrl}/api/v1/reviews/user/${source!.sellerId}`,
+    );
+    expect(publicReviews.status).toBe(200);
+    expect(await publicReviews.json()).toContainEqual(review);
   });
 
   // ---------------------------------------------------------------------------

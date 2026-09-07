@@ -95,6 +95,64 @@ test.describe("first-party API browser regression", () => {
     }
   });
 
+  test("publishes a transaction review through the cookie-authenticated API and preserves CSRF", async ({
+    page,
+  }, testInfo) => {
+    await useEstablishedConsent(page);
+    const origin = process.env.PUBLIC_FR_URL!;
+    await loginWithForm(page, origin, {
+      email: "thomas.laurent@example.fr",
+      password: process.env.DEMO_ACCOUNT_PASSWORD!,
+      id: "user_thomas",
+    });
+    const orderId = `browser-review-${testInfo.project.name}`;
+    await page.goto(`${origin}/compte/achats?transactionId=${orderId}`, {
+      waitUntil: "domcontentloaded",
+    });
+    const form = page.getByRole("region", {
+      name: "Votre avis sur cette transaction",
+    });
+    await expect(
+      form.getByRole("combobox", { name: "Note", exact: true }),
+    ).toBeVisible();
+    expect(
+      (
+        await call(
+          page,
+          "/reviews/submit",
+          "POST",
+          {
+            transactionId: orderId,
+            rating: 4,
+            comment: "Un avis sans jeton CSRF est refusé.",
+          },
+          false,
+        )
+      ).status,
+    ).toBe(403);
+    await form
+      .getByRole("combobox", { name: "Note", exact: true })
+      .selectOption("4");
+    await form
+      .getByRole("textbox", { name: "Votre expérience", exact: true })
+      .fill("Article conforme, transaction bien organisée.");
+    await form.getByRole("button", { name: "Publier mon avis" }).click();
+    await expect(form).toContainText("Votre avis est enregistré.");
+    await page.reload({ waitUntil: "domcontentloaded" });
+    await expect(form).toContainText("Votre avis est enregistré.");
+    const eligibility = await call(page, `/orders/${orderId}/review`);
+    expect(eligibility.body).toMatchObject({
+      eligible: false,
+      reason: "ALREADY_REVIEWED",
+      review: {
+        verifiedTransaction: true,
+        authorId: "user_thomas",
+        targetUserId: "user_camille",
+      },
+    });
+    expect(eligibility.body.review).not.toHaveProperty("orderId");
+  });
+
   test("contains malformed paths and allows idempotent request headers", async ({
     page,
   }) => {

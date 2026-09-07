@@ -4317,6 +4317,15 @@ export const OPENAPI_OPERATIONS = {
     successStatus: 200,
     queryParameters: {},
   },
+  "GET /orders/:id/review": {
+    operationId: "getOrderReviewEligibility",
+    access: "permission",
+    permission: "review.create",
+    denyStaffMarketplace: false,
+    requestBodyRequired: false,
+    successStatus: 200,
+    queryParameters: {},
+  },
   "POST /reviews/submit": {
     operationId: "postReviewsSubmit",
     access: "permission",

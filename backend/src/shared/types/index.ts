@@ -411,16 +411,8 @@ export interface NotificationItem {
   createdAt: string;
 }
 
-export interface ReviewItem {
-  id: string;
-  targetUserId: string;
-  authorId: string;
-  authorName?: string;
-  rating: number;
-  comment: string;
-  listingTitle?: string;
-  createdAt: string;
-}
+export type ReviewItem =
+  import("@shongre/contracts/openapi").components["schemas"]["MarketplaceReview"];
 
 export interface Category {
   id: string;
