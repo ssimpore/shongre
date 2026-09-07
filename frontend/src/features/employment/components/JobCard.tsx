@@ -15,6 +15,7 @@ export const JobCard: React.FC<{
   favoriteLoadState?: "loading" | "ready" | "error";
   onFavoriteRetry?: () => void | Promise<void>;
   compact?: boolean;
+  displayVariant?: "grid" | "list";
 }> = ({
   job,
   catalog,
@@ -22,6 +23,7 @@ export const JobCard: React.FC<{
   favoriteLoadState = "ready",
   onFavoriteRetry,
   compact = false,
+  displayVariant = "grid",
 }) => {
   const { activeMarket, currentLocale, convertMoney } = useMarketLocation();
   const listing = presentEmploymentListingCard(
@@ -40,7 +42,7 @@ export const JobCard: React.FC<{
       <ListingCardViewCard
         listing={listing}
         href={`/emploi/offre/${job.slug}`}
-        variant={compact ? "compact" : "grid"}
+        variant={compact ? "compact" : displayVariant}
         imageFit="contain"
         isFavorite={job.saved}
         favoriteLoadState={favoriteLoadState}

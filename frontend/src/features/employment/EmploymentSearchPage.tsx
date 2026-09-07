@@ -1,12 +1,6 @@
 import { PAGE_SIZES } from "../../configuration/pagination.config";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  Bell,
-  BriefcaseBusiness,
-  Filter,
-  Search,
-  ShieldCheck,
-} from "lucide-react";
+import { Bell, BriefcaseBusiness, ShieldCheck } from "lucide-react";
 import type {
   EmploymentCatalog,
   EmploymentSearchQuery,
@@ -22,14 +16,20 @@ import {
   Container,
   Drawer,
   DropdownMenu,
+  FilterChip,
   FilterPanel,
   Input,
   ListingCardSkeleton,
   ListingGrid,
   ListingRail,
   LocationSelector,
+  SearchActiveFiltersBar,
+  SearchResultsToolbar,
+  SearchSortControl,
   Skeleton,
   StatePanel,
+  ViewModeToggle,
+  countActiveSearchParams,
 } from "../../design-system";
 import type {
   FilterPanelPresentation,
@@ -49,6 +49,14 @@ import {
   employmentRecentJobsStorageKey,
   selectRecentEmploymentJobs,
 } from "./employment-recent-jobs";
+import { resolvePublicMapCoordinates } from "../../configuration/geoCoordinates";
+import type { SearchMapItem } from "../search/SearchResultsMap";
+
+const SearchResultsMap = React.lazy(() =>
+  import("../search/SearchResultsMap").then((module) => ({
+    default: module.SearchResultsMap,
+  })),
+);
 
 const csv = (value: string | null) => (value || "").split(",").filter(Boolean);
 
@@ -72,18 +80,28 @@ const EMPLOYMENT_FILTER_KEYS = [
   "radius",
 ] as const;
 
+const EMPLOYMENT_SUMMARY_FILTER_KEYS = EMPLOYMENT_FILTER_KEYS.filter(
+  (key) => key !== "radius",
+);
+
 const EmploymentFilters: React.FC<{
+  panelId: string;
   catalog: EmploymentCatalog;
   params: URLSearchParams;
   setParam: (key: string, value?: string) => void;
+  updateLocation: (value: LocationSelectorValue) => void;
+  locationSelectorId: string;
   onReset: () => void;
   presentation?: FilterPanelPresentation;
   onApply?: () => void;
   resultCount?: number;
 }> = ({
+  panelId,
   catalog,
   params,
   setParam,
+  updateLocation,
+  locationSelectorId,
   onReset,
   presentation = "surface",
   onApply,
@@ -98,6 +116,7 @@ const EmploymentFilters: React.FC<{
     );
   return (
     <FilterPanel
+      id={panelId}
       title="Filtres"
       presentation={presentation}
       onReset={onReset}
@@ -109,6 +128,20 @@ const EmploymentFilters: React.FC<{
         ) : undefined
       }
     >
+      <fieldset>
+        <legend className="mb-2 text-xs font-bold text-text-main">
+          Localisation
+        </legend>
+        <LocationSelector
+          id={locationSelectorId}
+          city={params.get("location") || ""}
+          radiusKm={
+            params.get("radius") ? Number(params.get("radius")) : undefined
+          }
+          onChange={updateLocation}
+        />
+      </fieldset>
+
       {[
         ["profession", "Métier", "profession"],
         ["jobFamily", "Famille de métiers", "job_family"],
@@ -255,6 +288,12 @@ export const EmploymentSearchPage: React.FC = () => {
   const [loading, setLoading] = useState(!initialData);
   const [error, setError] = useState(false);
   const [mobileFilters, setMobileFilters] = useState(false);
+  const [showDesktopFilters, setShowDesktopFilters] = useState(true);
+  const requestedView = params.get("view");
+  const viewMode =
+    requestedView === "list" || requestedView === "map"
+      ? requestedView
+      : "grid";
   const [savingAlert, setSavingAlert] = useState(false);
   const [recentJobIds, setRecentJobIds] = useState<string[]>([]);
   const accountId = currentUser?.id;
@@ -488,6 +527,57 @@ export const EmploymentSearchPage: React.FC = () => {
     setParams(next, { replace: true });
   };
 
+  const clearAllSearch = () => {
+    const next = new URLSearchParams(params);
+    ["q", "location", ...EMPLOYMENT_FILTER_KEYS].forEach((key) =>
+      next.delete(key),
+    );
+    setParams(next, { replace: true });
+  };
+
+  const activeFacetCount = countActiveSearchParams(
+    params,
+    EMPLOYMENT_SUMMARY_FILTER_KEYS,
+  );
+  const activeLocation = params.get("location");
+  const activeRadius = params.get("radius");
+  const activeFilterCount =
+    (params.get("q") ? 1 : 0) +
+    (activeLocation || activeRadius ? 1 : 0) +
+    activeFacetCount;
+  const mapItems = useMemo<SearchMapItem[]>(
+    () =>
+      items.flatMap((job) => {
+        if (
+          !job.primaryLocation.isPublic ||
+          job.workingArrangementId.endsWith(".remote")
+        ) {
+          return [];
+        }
+        const coordinates = resolvePublicMapCoordinates({
+          id: job.id,
+          city: job.primaryLocation.city,
+          latitude: job.primaryLocation.latitude,
+          longitude: job.primaryLocation.longitude,
+          marketCode: activeMarket.code,
+        });
+        if (!coordinates) return [];
+        return [
+          {
+            id: job.id,
+            title: job.title,
+            href: routes.employment.job(job.slug),
+            locationLabel: job.primaryLocation.label,
+            latitude: coordinates.lat,
+            longitude: coordinates.lng,
+            eyebrow: job.employer.name,
+            detail: `${job.contractTypeLabel} · ${job.workingArrangementLabel}`,
+          },
+        ];
+      }),
+    [activeMarket.code, items],
+  );
+
   const save = async (job: JobPostingCard) => {
     if (savedJobsLoadState !== "ready") return;
     if (!currentUser) {
@@ -562,50 +652,47 @@ export const EmploymentSearchPage: React.FC = () => {
             <p className="mt-2 hidden max-w-2xl text-sm text-text-inverse/75 sm:block sm:text-base">
               {t("employment.search.subtitle")}
             </p>
-            <form
-              className="mt-4 grid gap-2 rounded-card bg-bg-surface p-2 sm:mt-6 sm:grid-cols-search-fields"
-              onSubmit={(event) => {
-                event.preventDefault();
-                const form = new FormData(event.currentTarget);
-                setParam("q", String(form.get("q") || "") || undefined);
-              }}
-            >
-              <label className="sr-only" htmlFor="employment-query">
-                {t("employment.search.queryLabel")}
-              </label>
-              <div className="relative">
-                <Search
-                  className="absolute left-3 top-1/2 h-icon-sm w-icon-sm -translate-y-1/2 text-text-muted"
-                  aria-hidden="true"
-                />
-                <input
-                  id="employment-query"
-                  name="q"
-                  defaultValue={params.get("q") || ""}
-                  className="h-control-touch w-full rounded-control border border-border-base bg-bg-surface pl-10 pr-3 text-sm text-text-main outline-none focus:border-primary"
-                  placeholder={t("employment.search.queryPlaceholder")}
-                />
-              </div>
-              <LocationSelector
-                id="employment-location-selector"
-                variant="field"
-                city={params.get("location") || ""}
-                radiusKm={
-                  params.get("radius")
-                    ? Number(params.get("radius"))
-                    : undefined
-                }
-                onChange={updateLocation}
-              />
-              <Button
-                type="submit"
-                variant="primary"
-                className="w-full sm:w-auto"
-              >
-                Rechercher
-              </Button>
-            </form>
           </div>
+          {activeFilterCount > 0 ? (
+            <SearchActiveFiltersBar
+              className="mt-4 mb-0 text-text-main sm:mt-6 sm:mb-0"
+              onClear={clearAllSearch}
+            >
+              {params.get("q") ? (
+                <FilterChip
+                  tone="query"
+                  label={params.get("q") || ""}
+                  onRemove={() => setParam("q", undefined)}
+                >
+                  “{params.get("q")}”
+                </FilterChip>
+              ) : null}
+              {activeLocation || activeRadius ? (
+                <FilterChip onRemove={() => updateLocation({})}>
+                  {activeLocation || t("ui.searchControls.zoneSelected")}
+                  {activeRadius ? ` (+${activeRadius} km)` : ""}
+                </FilterChip>
+              ) : null}
+              {activeFacetCount > 0 ? (
+                <FilterChip
+                  label={t(
+                    activeFacetCount === 1
+                      ? "ui.searchControls.criterion"
+                      : "ui.searchControls.criteria",
+                    { count: activeFacetCount },
+                  )}
+                  onRemove={resetFilters}
+                >
+                  {t(
+                    activeFacetCount === 1
+                      ? "ui.searchControls.criterion"
+                      : "ui.searchControls.criteria",
+                    { count: activeFacetCount },
+                  )}
+                </FilterChip>
+              ) : null}
+            </SearchActiveFiltersBar>
+          ) : null}
         </Container>
       </section>
 
@@ -633,20 +720,27 @@ export const EmploymentSearchPage: React.FC = () => {
             </ListingRail>
           </section>
         )}
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <p className="text-sm font-bold text-text-main">
-              {loading ? "Recherche…" : `${total} offres`}
-            </p>
-            <p className="mt-1 flex items-center gap-1.5 text-micro text-text-secondary">
+        <SearchResultsToolbar
+          resultLabel={loading ? "Recherche…" : `${total} offres`}
+          resultDescription={
+            <span className="flex items-center gap-1.5">
               <ShieldCheck
                 className="h-icon-xs w-icon-xs text-success"
                 aria-hidden="true"
               />
               {t("employment.trust.sponsoredTransparency")}
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
+            </span>
+          }
+          desktopFilterPanelId="employment-filter-panel-desktop"
+          mobileFilterPanelId="employment-filter-panel-mobile"
+          desktopFiltersExpanded={showDesktopFilters}
+          mobileFiltersExpanded={mobileFilters}
+          activeFilterCount={activeFilterCount}
+          onToggleDesktopFilters={() =>
+            setShowDesktopFilters(!showDesktopFilters)
+          }
+          onOpenMobileFilters={() => setMobileFilters(true)}
+          actions={
             <Button
               variant="outline"
               size="sm"
@@ -654,18 +748,23 @@ export const EmploymentSearchPage: React.FC = () => {
               onClick={createAlert}
               disabled={savingAlert}
             >
-              {savingAlert ? "Création…" : "Créer une alerte"}
+              <span className="hidden sm:inline">
+                {savingAlert ? "Création…" : "Créer une alerte"}
+              </span>
             </Button>
-            <Button
-              variant="outline"
+          }
+          viewControls={
+            <ViewModeToggle
+              viewMode={viewMode}
+              onChange={(mode) =>
+                setParam("view", mode === "grid" ? undefined : mode)
+              }
+              showMap
               size="sm"
-              className="lg:hidden"
-              leftIcon={<Filter className="h-icon-sm w-icon-sm" />}
-              onClick={() => setMobileFilters(true)}
-            >
-              Filtres
-            </Button>
-            <div className="hidden sm:block">
+            />
+          }
+          sortControl={
+            <SearchSortControl>
               <DropdownMenu
                 ariaLabel="Trier les offres"
                 headerTitle="Trier par"
@@ -682,9 +781,9 @@ export const EmploymentSearchPage: React.FC = () => {
                   { value: "promoted", label: "Placements sponsorisés" },
                 ]}
               />
-            </div>
-          </div>
-        </div>
+            </SearchSortControl>
+          }
+        />
 
         {recommendationFactors.length > 0 && (
           <p className="mb-4 rounded-control border border-border-subtle bg-bg-subtle px-3 py-2 text-xs text-text-secondary">
@@ -693,25 +792,43 @@ export const EmploymentSearchPage: React.FC = () => {
           </p>
         )}
 
-        <div className="grid gap-6 lg:grid-cols-sidebar">
-          <aside
-            className="hidden self-start lg:sticky lg:top-24 lg:block"
-            aria-label="Filtres emploi"
-          >
-            {catalog ? (
-              <EmploymentFilters
-                catalog={catalog}
-                params={params}
-                setParam={setParam}
-                onReset={resetFilters}
-              />
-            ) : (
-              <Skeleton className="h-96" />
-            )}
-          </aside>
+        <div
+          className={`grid gap-6 ${showDesktopFilters ? "lg:grid-cols-sidebar" : "lg:grid-cols-1"}`}
+        >
+          {showDesktopFilters ? (
+            <aside
+              className="hidden self-start lg:sticky lg:top-24 lg:block"
+              aria-label="Filtres emploi"
+            >
+              {catalog ? (
+                <EmploymentFilters
+                  panelId="employment-filter-panel-desktop"
+                  catalog={catalog}
+                  params={params}
+                  setParam={setParam}
+                  updateLocation={updateLocation}
+                  locationSelectorId="employment-location-selector-desktop"
+                  onReset={resetFilters}
+                />
+              ) : (
+                <Skeleton className="h-96" />
+              )}
+            </aside>
+          ) : null}
           <section aria-live="polite" aria-busy={loading} className="min-w-0">
-            {loading ? (
-              <ListingGrid fluid>
+            {loading && viewMode === "map" ? (
+              <div
+                role="status"
+                aria-label={t("common.loadingMap")}
+                className="h-search-map rounded-card border border-border-base bg-bg-surface p-3"
+              >
+                <Skeleton className="h-full w-full rounded-card" />
+              </div>
+            ) : loading ? (
+              <ListingGrid
+                fluid={viewMode === "grid"}
+                className={viewMode === "list" ? "sm:grid-cols-1" : undefined}
+              >
                 {Array.from({ length: 6 }, (_, index) => (
                   <div key={index} className="min-w-0">
                     <ListingCardSkeleton />
@@ -727,12 +844,38 @@ export const EmploymentSearchPage: React.FC = () => {
                   <Button onClick={() => setParams(params)}>Réessayer</Button>
                 }
               />
+            ) : items.length && viewMode === "map" ? (
+              mapItems.length ? (
+                <React.Suspense
+                  fallback={
+                    <div
+                      role="status"
+                      aria-label={t("common.loadingMap")}
+                      className="h-search-map rounded-card border border-border-base bg-bg-surface p-3"
+                    >
+                      <Skeleton className="h-full w-full rounded-card" />
+                    </div>
+                  }
+                >
+                  <SearchResultsMap items={mapItems} />
+                </React.Suspense>
+              ) : (
+                <StatePanel
+                  variant="notFound"
+                  title={t("ui.searchResultsMap.emptyTitle")}
+                  description={t("ui.searchResultsMap.emptyDescription")}
+                />
+              )
             ) : items.length ? (
-              <ListingGrid fluid>
+              <ListingGrid
+                fluid={viewMode === "grid"}
+                className={viewMode === "list" ? "sm:grid-cols-1" : undefined}
+              >
                 {items.map((job) => (
                   <JobCard
                     key={job.id}
                     job={{ ...job, saved: savedJobIds.has(job.id) }}
+                    displayVariant={viewMode === "list" ? "list" : "grid"}
                     catalog={catalog}
                     onSave={save}
                     favoriteLoadState={savedJobsLoadState}
@@ -763,9 +906,12 @@ export const EmploymentSearchPage: React.FC = () => {
           title="Filtres emploi"
         >
           <EmploymentFilters
+            panelId="employment-filter-panel-mobile"
             catalog={catalog}
             params={params}
             setParam={setParam}
+            updateLocation={updateLocation}
+            locationSelectorId="employment-location-selector-mobile"
             onReset={resetFilters}
             presentation="drawer"
             resultCount={total}

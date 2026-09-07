@@ -2,14 +2,7 @@ import { PAGE_SIZES } from "../../configuration/pagination.config";
 import { IMAGE_SIZES } from "@shongre/shared";
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import {
-  Bell,
-  CarFront,
-  Filter,
-  GitCompareArrows,
-  Search,
-  X,
-} from "lucide-react";
+import { Bell, CarFront, GitCompareArrows, X } from "lucide-react";
 import type {
   AutoCatalog,
   VehiclePublic,
@@ -23,13 +16,19 @@ import {
   Container,
   Drawer,
   DropdownMenu,
+  FilterChip,
   FilterPanel,
   LocationSelector,
   ListingCardSkeleton,
   ListingGrid,
+  SearchActiveFiltersBar,
+  SearchResultsToolbar,
+  SearchSortControl,
   Skeleton,
   StatePanel,
   Image,
+  ViewModeToggle,
+  countActiveSearchParams,
 } from "../../design-system";
 import type {
   FilterPanelPresentation,
@@ -45,11 +44,20 @@ import { useTranslation } from "../../i18n/I18nProvider";
 import { CANONICAL_TAXONOMY_IDS } from "@shongre/contracts/taxonomy-catalog";
 import { routes } from "../../configuration/routes";
 import { useAutoVehicleFavorites } from "./useAutoVehicleFavorites";
+import { resolvePublicMapCoordinates } from "../../configuration/geoCoordinates";
+import type { SearchMapItem } from "../search/SearchResultsMap";
+
+const SearchResultsMap = React.lazy(() =>
+  import("../search/SearchResultsMap").then((module) => ({
+    default: module.SearchResultsMap,
+  })),
+);
 
 const split = (value: string | null) =>
   (value || "").split(",").filter(Boolean);
 
 interface FiltersProps {
+  panelId: string;
   catalog: AutoCatalog;
   params: URLSearchParams;
   update: (key: string, value?: string) => void;
@@ -83,7 +91,12 @@ const AUTO_FILTER_KEYS = [
   "financing",
 ] as const;
 
+const AUTO_SUMMARY_FILTER_KEYS = AUTO_FILTER_KEYS.filter(
+  (key) => key !== "city" && key !== "radius",
+);
+
 const AutoFilters: React.FC<FiltersProps> = ({
+  panelId,
   catalog,
   params,
   update,
@@ -110,6 +123,7 @@ const AutoFilters: React.FC<FiltersProps> = ({
   };
   return (
     <FilterPanel
+      id={panelId}
       title="Filtres"
       presentation={presentation}
       onReset={onReset}
@@ -432,6 +446,12 @@ export const AutoSearchPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
+  const [showDesktopFilters, setShowDesktopFilters] = useState(true);
+  const requestedView = params.get("view");
+  const viewMode =
+    requestedView === "list" || requestedView === "map"
+      ? requestedView
+      : "grid";
   const [compared, setCompared] = useState<VehiclePublic[]>([]);
   const currentUserId = currentUser?.id;
   const {
@@ -477,6 +497,53 @@ export const AutoSearchPage: React.FC = () => {
       { replace: true },
     );
   };
+
+  const clearAllSearch = () => {
+    setParams(
+      (current) => {
+        const next = new URLSearchParams(current);
+        next.delete("query");
+        AUTO_FILTER_KEYS.forEach((key) => next.delete(key));
+        return next;
+      },
+      { replace: true },
+    );
+  };
+
+  const activeFacetCount = countActiveSearchParams(
+    params,
+    AUTO_SUMMARY_FILTER_KEYS,
+  );
+  const activeLocation = params.get("city");
+  const activeRadius = params.get("radius");
+  const activeFilterCount =
+    (params.get("query") ? 1 : 0) +
+    (activeLocation || activeRadius ? 1 : 0) +
+    activeFacetCount;
+  const mapItems = useMemo<SearchMapItem[]>(
+    () =>
+      vehicles.flatMap((vehicle) => {
+        const coordinates = resolvePublicMapCoordinates({
+          id: vehicle.id,
+          city: vehicle.locationLabel,
+          marketCode: activeMarket.code,
+        });
+        if (!coordinates) return [];
+        return [
+          {
+            id: vehicle.id,
+            title: vehicle.title,
+            href: routes.auto.vehicle(vehicle.slug),
+            locationLabel: vehicle.locationLabel,
+            latitude: coordinates.lat,
+            longitude: coordinates.lng,
+            eyebrow: `${vehicle.makeLabel} · ${vehicle.modelLabel}`,
+            detail: formatAutoMoney(vehicle.price, currentLocale, convertMoney),
+          },
+        ];
+      }),
+    [activeMarket.code, convertMoney, currentLocale, vehicles],
+  );
 
   const query = useMemo<VehicleSearchQuery>(
     () => ({
@@ -680,21 +747,8 @@ export const AutoSearchPage: React.FC = () => {
           <h1 className="text-2xl font-bold tracking-tight text-text-main sm:text-3xl">
             Voitures d’occasion
           </h1>
-          <p className="mt-1 text-sm text-text-secondary">
-            {loading ? "…" : new Intl.NumberFormat(currentLocale).format(total)}{" "}
-            véhicules
-          </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button
-            data-marketplace-action="saved-search.create"
-            variant="outline"
-            size="compact"
-            leftIcon={<Bell className="h-icon-sm w-icon-sm" />}
-            onClick={saveAlert}
-          >
-            Créer une alerte
-          </Button>
           <Button
             data-marketplace-action="listing.publish"
             to="/deposer/auto"
@@ -705,43 +759,71 @@ export const AutoSearchPage: React.FC = () => {
         </div>
       </div>
 
-      <form
-        onSubmit={(event) => event.preventDefault()}
-        className="mb-4 flex gap-2 rounded-card border border-border-base bg-bg-surface p-2 shadow-xs"
-      >
-        <label className="relative flex-1">
-          <span className="sr-only">Rechercher un véhicule</span>
-          <Search
-            className="pointer-events-none absolute left-3 top-1/2 h-icon-sm w-icon-sm -translate-y-1/2 text-text-muted"
-            aria-hidden="true"
-          />
-          <input
-            value={params.get("query") || ""}
-            onChange={(event) =>
-              update("query", event.target.value || undefined)
-            }
-            placeholder="Marque, modèle, finition…"
-            className="h-control-touch w-full rounded-control border-0 bg-bg-subtle pl-9 pr-3 text-sm"
-          />
-        </label>
-        <button
-          type="button"
-          onClick={() => setFilterOpen(true)}
-          className="inline-flex min-h-control-target items-center gap-2 rounded-control border border-border-base px-3 text-xs font-semibold lg:hidden"
-        >
-          <Filter className="h-icon-sm w-icon-sm" aria-hidden="true" /> Filtres
-        </button>
-      </form>
+      {activeFilterCount > 0 ? (
+        <SearchActiveFiltersBar onClear={clearAllSearch}>
+          {params.get("query") ? (
+            <FilterChip
+              tone="query"
+              label={params.get("query") || undefined}
+              onRemove={() => update("query", undefined)}
+            >
+              “{params.get("query")}”
+            </FilterChip>
+          ) : null}
+          {activeLocation || activeRadius ? (
+            <FilterChip onRemove={() => updateLocation({})}>
+              {activeLocation || t("ui.searchControls.zoneSelected")}
+              {activeRadius ? ` (+${activeRadius} km)` : ""}
+            </FilterChip>
+          ) : null}
+          {activeFacetCount > 0 ? (
+            <FilterChip
+              label={t(
+                activeFacetCount === 1
+                  ? "ui.searchControls.criterion"
+                  : "ui.searchControls.criteria",
+                { count: activeFacetCount },
+              )}
+              onRemove={() =>
+                setParams(
+                  (current) => {
+                    const next = new URLSearchParams(current);
+                    AUTO_SUMMARY_FILTER_KEYS.forEach((key) => next.delete(key));
+                    return next;
+                  },
+                  { replace: true },
+                )
+              }
+            >
+              {t(
+                activeFacetCount === 1
+                  ? "ui.searchControls.criterion"
+                  : "ui.searchControls.criteria",
+                { count: activeFacetCount },
+              )}
+            </FilterChip>
+          ) : null}
+        </SearchActiveFiltersBar>
+      ) : null}
 
       <div
-        className={`grid min-w-0 gap-6 lg:grid-cols-sidebar ${compared.length ? "xl:grid-cols-search-compare-auto" : ""}`}
+        className={`grid min-w-0 gap-6 ${
+          showDesktopFilters ? "lg:grid-cols-sidebar" : "lg:grid-cols-1"
+        } ${
+          compared.length
+            ? showDesktopFilters
+              ? "xl:grid-cols-search-compare-auto"
+              : "xl:grid-cols-content-aside-xs"
+            : ""
+        }`}
       >
-        {catalog && (
+        {catalog && showDesktopFilters && (
           <aside
             className="hidden self-start lg:sticky lg:top-24 lg:block"
             aria-label="Filtres Auto"
           >
             <AutoFilters
+              panelId="auto-filter-panel-desktop"
               catalog={catalog}
               params={params}
               update={update}
@@ -752,28 +834,76 @@ export const AutoSearchPage: React.FC = () => {
           </aside>
         )}
         <div className="min-w-0">
-          <div className="mb-3 flex items-center justify-between gap-3">
-            <div className="ml-auto flex items-center gap-2 text-xs text-text-secondary">
-              <span>Trier par</span>
-              <DropdownMenu
-                ariaLabel="Trier les véhicules"
-                headerTitle="Trier par"
-                placement="bottom-right"
-                value={query.sort}
-                onChange={(value) => update("sort", value)}
-                options={[
-                  { value: "relevance", label: "Pertinence" },
-                  { value: "price_asc", label: "Prix croissant" },
-                  { value: "price_desc", label: "Prix décroissant" },
-                  { value: "year_desc", label: "Année récente" },
-                  { value: "mileage_asc", label: "Kilométrage" },
-                  { value: "newest", label: "Plus récentes" },
-                ]}
+          <SearchResultsToolbar
+            resultLabel={
+              loading
+                ? "Recherche…"
+                : `${new Intl.NumberFormat(currentLocale).format(total)} véhicule${total > 1 ? "s" : ""}`
+            }
+            desktopFilterPanelId="auto-filter-panel-desktop"
+            mobileFilterPanelId="auto-filter-panel-mobile"
+            desktopFiltersExpanded={showDesktopFilters}
+            mobileFiltersExpanded={filterOpen}
+            activeFilterCount={activeFilterCount}
+            onToggleDesktopFilters={() =>
+              setShowDesktopFilters(!showDesktopFilters)
+            }
+            onOpenMobileFilters={() => setFilterOpen(true)}
+            actions={
+              <Button
+                data-marketplace-action="saved-search.create"
+                variant="outline"
+                size="sm"
+                leftIcon={<Bell className="h-icon-sm w-icon-sm" />}
+                onClick={saveAlert}
+              >
+                <span className="hidden sm:inline">Créer une alerte</span>
+              </Button>
+            }
+            viewControls={
+              <ViewModeToggle
+                viewMode={viewMode}
+                onChange={(mode) =>
+                  update("view", mode === "grid" ? undefined : mode)
+                }
+                showMap
+                size="sm"
               />
+            }
+            sortControl={
+              <SearchSortControl>
+                <DropdownMenu
+                  ariaLabel="Trier les véhicules"
+                  headerTitle="Trier par"
+                  placement="bottom-right"
+                  size="sm"
+                  value={query.sort}
+                  onChange={(value) => update("sort", value)}
+                  options={[
+                    { value: "relevance", label: "Pertinence" },
+                    { value: "price_asc", label: "Prix croissant" },
+                    { value: "price_desc", label: "Prix décroissant" },
+                    { value: "year_desc", label: "Année récente" },
+                    { value: "mileage_asc", label: "Kilométrage" },
+                    { value: "newest", label: "Plus récentes" },
+                  ]}
+                />
+              </SearchSortControl>
+            }
+          />
+          {loading && viewMode === "map" ? (
+            <div
+              role="status"
+              aria-label={t("common.loadingMap")}
+              className="h-search-map rounded-card border border-border-base bg-bg-surface p-3"
+            >
+              <Skeleton className="h-full w-full rounded-card" />
             </div>
-          </div>
-          {loading ? (
-            <ListingGrid fluid>
+          ) : loading ? (
+            <ListingGrid
+              fluid={viewMode === "grid"}
+              className={viewMode === "list" ? "sm:grid-cols-1" : undefined}
+            >
               {Array.from({ length: 6 }, (_, index) => (
                 <div key={index} className="flex min-w-0 flex-col gap-2">
                   <ListingCardSkeleton />
@@ -796,8 +926,33 @@ export const AutoSearchPage: React.FC = () => {
               title="Aucun véhicule pour ces critères"
               description="Élargissez le prix, l’année ou l’énergie pour voir davantage de résultats."
             />
+          ) : viewMode === "map" ? (
+            mapItems.length ? (
+              <React.Suspense
+                fallback={
+                  <div
+                    role="status"
+                    aria-label={t("common.loadingMap")}
+                    className="h-search-map rounded-card border border-border-base bg-bg-surface p-3"
+                  >
+                    <Skeleton className="h-full w-full rounded-card" />
+                  </div>
+                }
+              >
+                <SearchResultsMap items={mapItems} />
+              </React.Suspense>
+            ) : (
+              <StatePanel
+                variant="notFound"
+                title={t("ui.searchResultsMap.emptyTitle")}
+                description={t("ui.searchResultsMap.emptyDescription")}
+              />
+            )
           ) : (
-            <ListingGrid fluid>
+            <ListingGrid
+              fluid={viewMode === "grid"}
+              className={viewMode === "list" ? "sm:grid-cols-1" : undefined}
+            >
               {vehicles.map((vehicle) => {
                 const isCompared = compared.some(
                   (row) => row.id === vehicle.id,
@@ -806,6 +961,7 @@ export const AutoSearchPage: React.FC = () => {
                   <div key={vehicle.id} className="flex min-w-0 flex-col gap-2">
                     <AutoVehicleCard
                       vehicle={vehicle}
+                      displayVariant={viewMode === "list" ? "list" : "grid"}
                       isFavorite={favoriteVehicleIds.has(vehicle.id)}
                       favoriteLoadState={favoriteLoadState}
                       onFavorite={favorite}
@@ -908,6 +1064,7 @@ export const AutoSearchPage: React.FC = () => {
           title="Filtrer les véhicules"
         >
           <AutoFilters
+            panelId="auto-filter-panel-mobile"
             catalog={catalog}
             params={params}
             update={update}

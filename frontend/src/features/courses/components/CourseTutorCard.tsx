@@ -21,6 +21,7 @@ interface CourseTutorCardProps {
   onToggleCompare: (id: string) => void;
   onToggleSaved: (id: string) => void | Promise<unknown>;
   onFavoriteRetry?: () => void | Promise<unknown>;
+  displayVariant?: "grid" | "list";
 }
 
 export function presentCourseTutorCard(
@@ -89,6 +90,7 @@ export function CourseTutorCard({
   onToggleCompare,
   onToggleSaved,
   onFavoriteRetry,
+  displayVariant = "grid",
 }: CourseTutorCardProps) {
   const { activeMarket, currentLocale, convertMoney } = useMarketLocation();
   const listing = useMemo(
@@ -110,6 +112,7 @@ export function CourseTutorCard({
       <ListingCardViewCard
         listing={listing}
         href={routes.courses.tutor(item.tutor.slug)}
+        variant={displayVariant}
         isFavorite={isSaved}
         favoriteLoadState={favoriteLoadState}
         onFavoriteToggle={() => onToggleSaved(item.tutor.id)}

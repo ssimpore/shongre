@@ -829,10 +829,16 @@ export const ListingDetailPage: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-32 lg:pb-6 space-y-6">
       {/* Top Bar: Breadcrumbs & Secondary Tools */}
-      <div className="flex items-center justify-between gap-4 flex-wrap">
+      <div
+        data-testid="listing-detail-toolbar"
+        className="grid grid-cols-content-action items-center gap-2 sm:gap-4"
+      >
         <Breadcrumbs items={breadcrumbItems} />
 
-        <div className="ml-auto flex items-center gap-2">
+        <div
+          data-testid="listing-detail-secondary-actions"
+          className="flex shrink-0 items-center gap-2"
+        >
           <button
             type="button"
             onClick={handleShare}

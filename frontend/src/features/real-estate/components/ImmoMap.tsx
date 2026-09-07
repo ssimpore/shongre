@@ -109,6 +109,7 @@ export const ImmoMap: React.FC<{
   return (
     <div
       ref={containerRef}
+      data-search-results-map
       className="leaflet-container h-full min-h-112 w-full bg-bg-subtle"
       role="region"
       aria-label="Carte des biens immobiliers"

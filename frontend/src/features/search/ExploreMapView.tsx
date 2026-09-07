@@ -1,12 +1,12 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { Layers, Maximize2, X, Navigation, Compass } from "lucide-react";
 import { Listing } from "../../types";
 import { plural } from "../../utilities/formatters";
 import {
-  getListingCoordinates,
   getMarketMapConfiguration,
+  resolvePublicMapCoordinates,
 } from "../../configuration/geoCoordinates";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
@@ -37,6 +37,14 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
   const [hoveredListingId, setHoveredListingId] = useState<string | null>(null);
   const [mapStyle, setMapStyle] = useState<"positron" | "osm">("positron");
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const mapListings = useMemo(
+    () =>
+      listings.flatMap((listing) => {
+        const coordinates = resolvePublicMapCoordinates(listing);
+        return coordinates ? [{ listing, coordinates }] : [];
+      }),
+    [listings],
+  );
 
   // Initialize Map
   useEffect(() => {
@@ -121,13 +129,12 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
     });
     markersRef.current = {};
 
-    if (listings.length === 0) return;
+    if (mapListings.length === 0) return;
 
     const bounds = L.latLngBounds([]);
 
-    listings.forEach((listing) => {
-      const coords = getListingCoordinates(listing);
-      const latLng = L.latLng(coords.lat, coords.lng);
+    mapListings.forEach(({ listing, coordinates }) => {
+      const latLng = L.latLng(coordinates.lat, coordinates.lng);
       bounds.extend(latLng);
 
       const isSelected = activeListing?.id === listing.id;
@@ -205,7 +212,7 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
       map.fitBounds(bounds, { padding: [60, 60], maxZoom: 14 });
     }
   }, [
-    listings,
+    mapListings,
     activeListing?.id,
     hoveredListingId,
     currentLocale,
@@ -240,11 +247,10 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
 
   const handleFitAll = () => {
     const map = mapInstanceRef.current;
-    if (!map || listings.length === 0) return;
+    if (!map || mapListings.length === 0) return;
     const bounds = L.latLngBounds([]);
-    listings.forEach((l) => {
-      const coords = getListingCoordinates(l);
-      bounds.extend(L.latLng(coords.lat, coords.lng));
+    mapListings.forEach(({ coordinates }) => {
+      bounds.extend(L.latLng(coordinates.lat, coordinates.lng));
     });
     if (bounds.isValid()) {
       map.fitBounds(bounds, { padding: [50, 50], maxZoom: 14, animate: true });
@@ -252,7 +258,10 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
   };
 
   return (
-    <div className="relative w-full overflow-hidden rounded-2xl border border-border-base bg-bg-base shadow-xs">
+    <div
+      data-search-results-map
+      className="relative w-full overflow-hidden rounded-2xl border border-border-base bg-bg-base shadow-xs"
+    >
       {/* Top Quick Filters Bar */}
       <div className="bg-bg-surface/95 backdrop-blur-sm border-b border-border-base px-4 py-2.5 flex items-center justify-between gap-3 z-sticky shrink-0">
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
@@ -332,12 +341,12 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
           <div className="hidden lg:flex flex-col w-80 xl:w-96 bg-bg-surface/95 backdrop-blur-md border-r border-border-base z-sticky shrink-0">
             <div className="p-3 border-b border-border-base flex items-center justify-between">
               <span className="text-xs font-bold text-text-strong truncate">
-                {plural(listings.length, "annonce")} sur la carte
+                {plural(mapListings.length, "annonce")} sur la carte
               </span>
             </div>
 
             <div className="flex-1 overflow-y-auto p-3 space-y-3">
-              {listings.map((item) => {
+              {mapListings.map(({ listing: item }) => {
                 const isSelected = activeListing?.id === item.id;
 
                 return (
@@ -396,7 +405,7 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
           <Navigation className="w-icon-sm h-icon-sm text-primary" />
           <span>
             {plural(
-              listings.length,
+              mapListings.length,
               "annonce géolocalisée",
               "annonces géolocalisées",
             )}

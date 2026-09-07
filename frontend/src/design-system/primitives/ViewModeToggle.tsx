@@ -7,12 +7,14 @@ import {
   CONTROL_RADIUS_CLASS,
 } from "../utils/controlMetrics";
 
-type ListingViewMode = "grid" | "list" | "map";
+export type ListingViewMode = "grid" | "list" | "map";
 
 export interface ViewModeToggleProps {
   viewMode: ListingViewMode;
   onChange: (mode: ListingViewMode) => void;
   showMap?: boolean;
+  /** Explicit capability list for verticals that do not support every mode. */
+  modes?: readonly ListingViewMode[];
   className?: string;
   size?: "sm" | "md";
 }
@@ -21,10 +23,13 @@ export const ViewModeToggle: React.FC<ViewModeToggleProps> = ({
   viewMode,
   onChange,
   showMap = false,
+  modes,
   className = "",
   size = "md",
 }) => {
   const isSm = size === "sm";
+  const supportedModes =
+    modes ?? (showMap ? ["grid", "list", "map"] : ["grid", "list"]);
 
   return (
     <div
@@ -38,27 +43,31 @@ export const ViewModeToggle: React.FC<ViewModeToggleProps> = ({
         isSm ? "h-control-sm" : "h-control-md"
       } bg-bg-muted/90 border border-border-base ${CONTROL_RADIUS_CLASS} p-0.5 shadow-2xs shrink-0 select-none ${className}`}
     >
-      <ViewModeButton
-        label="Affichage grille"
-        active={viewMode === "grid"}
-        onClick={() => onChange("grid")}
-        size={size}
-      >
-        <LayoutGrid className="w-icon-sm h-icon-sm" />
-        <span className="hidden sm:inline">Grille</span>
-      </ViewModeButton>
+      {supportedModes.includes("grid") ? (
+        <ViewModeButton
+          label="Affichage grille"
+          active={viewMode === "grid"}
+          onClick={() => onChange("grid")}
+          size={size}
+        >
+          <LayoutGrid className="w-icon-sm h-icon-sm" />
+          <span className="hidden sm:inline">Grille</span>
+        </ViewModeButton>
+      ) : null}
 
-      <ViewModeButton
-        label="Affichage liste"
-        active={viewMode === "list"}
-        onClick={() => onChange("list")}
-        size={size}
-      >
-        <List className="w-icon-sm h-icon-sm" />
-        <span className="hidden sm:inline">Liste</span>
-      </ViewModeButton>
+      {supportedModes.includes("list") ? (
+        <ViewModeButton
+          label="Affichage liste"
+          active={viewMode === "list"}
+          onClick={() => onChange("list")}
+          size={size}
+        >
+          <List className="w-icon-sm h-icon-sm" />
+          <span className="hidden sm:inline">Liste</span>
+        </ViewModeButton>
+      ) : null}
 
-      {showMap && (
+      {supportedModes.includes("map") ? (
         <ViewModeButton
           label="Affichage carte"
           active={viewMode === "map"}
@@ -68,7 +77,7 @@ export const ViewModeToggle: React.FC<ViewModeToggleProps> = ({
           <MapIcon className="w-icon-sm h-icon-sm" />
           <span className="hidden sm:inline">Carte</span>
         </ViewModeButton>
-      )}
+      ) : null}
     </div>
   );
 };

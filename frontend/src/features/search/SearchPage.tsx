@@ -8,11 +8,9 @@ import {
   useParams,
 } from "react-router-dom";
 import {
-  SlidersHorizontal,
   Bookmark,
   ArrowUpDown,
   Tag,
-  PanelLeftClose,
   Layers,
   ChevronLeft,
   ChevronRight,
@@ -35,9 +33,14 @@ import {
   ListingCardSkeleton,
   FilterPanel,
   ListingGrid,
+  LocationSelector,
+  SearchActiveFiltersBar,
+  SearchResultsToolbar,
+  SearchSortControl,
   Skeleton,
   StatePanel,
 } from "../../design-system";
+import type { LocationSelectorValue } from "../../design-system";
 import { NoResultsFound } from "../../design-system/primitives/NoResultsFound";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useToast } from "../../app/providers/ToastProvider";
@@ -45,7 +48,6 @@ import { storageService } from "../../services/storage.service";
 import { analyticsService } from "../../services/analytics.service";
 import { CategoryIcon } from "../../design-system/primitives/CategoryIcon";
 import { FilterChip } from "../../design-system/primitives/FilterChip";
-import { GlobalSearchBar } from "../../design-system/primitives/GlobalSearchBar";
 import {
   DropdownMenu,
   DropdownOption,
@@ -124,11 +126,10 @@ export const SearchPage: React.FC = () => {
 
   const urlViewParam = searchParams.get("view") as
     "grid" | "list" | "map" | null;
-  const [viewMode, setViewMode] = useState<"grid" | "list" | "map">(
-    urlViewParam === "map" || urlViewParam === "list" ? urlViewParam : "grid",
-  );
+  const viewMode =
+    urlViewParam === "map" || urlViewParam === "list" ? urlViewParam : "grid";
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
-  const [showDesktopFilters, setShowDesktopFilters] = useState(false);
+  const [showDesktopFilters, setShowDesktopFilters] = useState(true);
   const [listings, setListings] = useState<Listing[]>(initialData?.items ?? []);
   const [totalCount, setTotalCount] = useState(initialData?.total ?? 0);
   const [totalPages, setTotalPages] = useState(initialData?.totalPages ?? 1);
@@ -379,6 +380,16 @@ export const SearchPage: React.FC = () => {
       }
       next.delete("category");
     }
+    setSearchParams(next);
+  };
+
+  const updateLocationFilter = (value: LocationSelectorValue) => {
+    const next = new URLSearchParams(searchParams);
+    if (value.city) next.set("city", value.city);
+    else next.delete("city");
+    if (value.radiusKm) next.set("radius", String(value.radiusKm));
+    else next.delete("radius");
+    next.delete("page");
     setSearchParams(next);
   };
 
@@ -836,187 +847,131 @@ export const SearchPage: React.FC = () => {
         </p>
       </div>
 
-      {/* Top Search bar on Search Page */}
-      <div className="bg-bg-surface p-3 sm:p-5 rounded-card border border-border-base shadow-sm mb-4 sm:mb-6">
-        <GlobalSearchBar
-          variant="search-page"
-          idPrefix="search-page"
-          initialQuery={query}
-          initialCategorySlug={categorySlug}
-          initialSubCategorySlug={subCategorySlug}
-          initialCity={city}
-          initialRadiusKm={radiusKm}
-          showCategory={true}
-          showLocation={true}
-          navigateOnSubmit={false}
-          onSearch={({
-            query: newQ,
-            categorySlug: newCat,
-            subCategorySlug: newSub,
-            city: newCity,
-            radiusKm: newRad,
-          }) => {
-            const next = new URLSearchParams(searchParams);
-            if (newCat !== categorySlug || newSub !== subCategorySlug) {
-              deleteAttributeFilters(next);
-            }
-            if (newQ) next.set("query", newQ);
-            else next.delete("query");
-            if (newCat && newCat !== categoryRouteSlug) {
-              next.set("category", newCat);
-            } else {
-              next.delete("category");
-            }
-            if (newSub) next.set("subCategory", newSub);
-            else next.delete("subCategory");
-            if (newCity) next.set("city", newCity);
-            else next.delete("city");
-            if (newRad && newRad > 0) next.set("radius", String(newRad));
-            else next.delete("radius");
-            next.delete("page");
-
-            if (categoryRouteSlug && newCat !== categoryRouteSlug) {
-              leaveCategoryRoute(next);
-            } else {
-              setSearchParams(next);
-            }
-          }}
-        />
-
-        {/* Active Filters Badges */}
-        {(query || activeFilterCount > 0) && (
-          <div className="flex items-center gap-1.5 flex-wrap pt-3 border-t border-border-subtle mt-3">
-            <span className="text-xs font-bold text-text-tertiary uppercase tracking-wider mr-1">
-              Filtres actifs :
-            </span>
-
-            {query && (
-              <FilterChip
-                tone="query"
-                label={query}
-                onRemove={() => updateFilter("query", undefined)}
-              >
-                "{query}"
-              </FilterChip>
-            )}
-
-            {activeCategory && (
-              <FilterChip
-                label={getTaxonomyLabel(activeCategory, "compact")}
-                onRemove={() => updateFilter("category", undefined)}
-              >
-                {getTaxonomyLabel(activeCategory, "compact")}
-              </FilterChip>
-            )}
-
-            {activeSubCat && (
-              <FilterChip
-                label={getTaxonomyLabel(activeSubCat, "compact")}
-                onRemove={() => updateFilter("subCategory", undefined)}
-              >
-                {getTaxonomyLabel(activeSubCat, "compact")}
-              </FilterChip>
-            )}
-
-            {sellerType === "pro" && (
-              <FilterChip
-                tone="strong"
-                onRemove={() => updateFilter("sellerType", undefined)}
-              >
-                Professionnels
-              </FilterChip>
-            )}
-
-            {sellerType === "individual" && (
-              <FilterChip
-                onRemove={() => updateFilter("sellerType", undefined)}
-              >
-                Particuliers
-              </FilterChip>
-            )}
-
-            {delivery && (
-              <FilterChip
-                tone="success"
-                onRemove={() => updateFilter("delivery", undefined)}
-              >
-                {t("search.searchPage.livraisonDisponible2")}
-              </FilterChip>
-            )}
-
-            {onlyDeals && (
-              <FilterChip
-                tone="warning"
-                onRemove={() => updateFilter("onlyDeals", undefined)}
-              >
-                Bons plans
-              </FilterChip>
-            )}
-
-            {onlinePayment && (
-              <FilterChip
-                tone="success"
-                onRemove={() => updateFilter("onlinePayment", undefined)}
-              >
-                Paiement en ligne
-              </FilterChip>
-            )}
-
-            {conditions.length > 0 && (
-              <FilterChip onRemove={() => updateFilter("condition", undefined)}>
-                {conditions.length === 1
-                  ? CONDITION_FILTER_OPTIONS.find(
-                      (option) => option.value === conditions[0],
-                    )?.label || "État"
-                  : `${conditions.length} états`}
-              </FilterChip>
-            )}
-
-            {(minPrice !== undefined || maxPrice !== undefined) && (
-              <FilterChip
-                onRemove={() => {
-                  updateFilter("minPrice", undefined);
-                  updateFilter("maxPrice", undefined);
-                }}
-              >
-                {`${
-                  minPrice === undefined
-                    ? t("search.searchPage.minimumShort")
-                    : formatPriceBound(minPrice)
-                } – ${
-                  maxPrice === undefined
-                    ? t("search.searchPage.maximumShort")
-                    : formatPriceBound(maxPrice)
-                }`}
-              </FilterChip>
-            )}
-
-            {activeDynamicFilterChips.map((chip) => (
-              <FilterChip
-                key={chip.code}
-                onRemove={() => {
-                  setSearchParams((previous) => {
-                    const next = new URLSearchParams(previous);
-                    chip.keys.forEach((key) => next.delete(key));
-                    next.delete("page");
-                    return next;
-                  });
-                }}
-              >
-                {chip.label}
-              </FilterChip>
-            ))}
-
-            <button
-              type="button"
-              onClick={clearAllFilters}
-              className="text-xs text-text-tertiary hover:text-danger font-semibold underline ml-2 cursor-pointer"
+      {/* Query controls live in the global header and the adaptive filter panel. */}
+      {(query || activeFilterCount > 0) && (
+        <SearchActiveFiltersBar onClear={clearAllFilters}>
+          {query && (
+            <FilterChip
+              tone="query"
+              label={query}
+              onRemove={() => updateFilter("query", undefined)}
             >
-              {t("search.searchPage.effacerTout")}
-            </button>
-          </div>
-        )}
-      </div>
+              "{query}"
+            </FilterChip>
+          )}
+
+          {activeCategory && (
+            <FilterChip
+              label={getTaxonomyLabel(activeCategory, "compact")}
+              onRemove={() => updateFilter("category", undefined)}
+            >
+              {getTaxonomyLabel(activeCategory, "compact")}
+            </FilterChip>
+          )}
+
+          {activeSubCat && (
+            <FilterChip
+              label={getTaxonomyLabel(activeSubCat, "compact")}
+              onRemove={() => updateFilter("subCategory", undefined)}
+            >
+              {getTaxonomyLabel(activeSubCat, "compact")}
+            </FilterChip>
+          )}
+
+          {city && (
+            <FilterChip onRemove={() => updateLocationFilter({})}>
+              {radiusKm > 0 ? `${city} (+${radiusKm} km)` : city}
+            </FilterChip>
+          )}
+
+          {sellerType === "pro" && (
+            <FilterChip
+              tone="strong"
+              onRemove={() => updateFilter("sellerType", undefined)}
+            >
+              Professionnels
+            </FilterChip>
+          )}
+
+          {sellerType === "individual" && (
+            <FilterChip onRemove={() => updateFilter("sellerType", undefined)}>
+              Particuliers
+            </FilterChip>
+          )}
+
+          {delivery && (
+            <FilterChip
+              tone="success"
+              onRemove={() => updateFilter("delivery", undefined)}
+            >
+              {t("search.searchPage.livraisonDisponible2")}
+            </FilterChip>
+          )}
+
+          {onlyDeals && (
+            <FilterChip
+              tone="warning"
+              onRemove={() => updateFilter("onlyDeals", undefined)}
+            >
+              Bons plans
+            </FilterChip>
+          )}
+
+          {onlinePayment && (
+            <FilterChip
+              tone="success"
+              onRemove={() => updateFilter("onlinePayment", undefined)}
+            >
+              Paiement en ligne
+            </FilterChip>
+          )}
+
+          {conditions.length > 0 && (
+            <FilterChip onRemove={() => updateFilter("condition", undefined)}>
+              {conditions.length === 1
+                ? CONDITION_FILTER_OPTIONS.find(
+                    (option) => option.value === conditions[0],
+                  )?.label || "État"
+                : `${conditions.length} états`}
+            </FilterChip>
+          )}
+
+          {(minPrice !== undefined || maxPrice !== undefined) && (
+            <FilterChip
+              onRemove={() => {
+                updateFilter("minPrice", undefined);
+                updateFilter("maxPrice", undefined);
+              }}
+            >
+              {`${
+                minPrice === undefined
+                  ? t("search.searchPage.minimumShort")
+                  : formatPriceBound(minPrice)
+              } – ${
+                maxPrice === undefined
+                  ? t("search.searchPage.maximumShort")
+                  : formatPriceBound(maxPrice)
+              }`}
+            </FilterChip>
+          )}
+
+          {activeDynamicFilterChips.map((chip) => (
+            <FilterChip
+              key={chip.code}
+              onRemove={() => {
+                setSearchParams((previous) => {
+                  const next = new URLSearchParams(previous);
+                  chip.keys.forEach((key) => next.delete(key));
+                  next.delete("page");
+                  return next;
+                });
+              }}
+            >
+              {chip.label}
+            </FilterChip>
+          ))}
+        </SearchActiveFiltersBar>
+      )}
 
       {/* Main Content Layout: Sidebar + Grid */}
       <div
@@ -1032,7 +987,11 @@ export const SearchPage: React.FC = () => {
             className="hidden lg:col-span-1 lg:block"
             aria-label="Filtres de recherche"
           >
-            <FilterPanel title="Filtres" onReset={clearAllFilters}>
+            <FilterPanel
+              id="search-filter-panel-desktop"
+              title="Filtres"
+              onReset={clearAllFilters}
+            >
               {/* Categories */}
               <div>
                 <label
@@ -1091,6 +1050,21 @@ export const SearchPage: React.FC = () => {
                     </div>
                   )}
                 </div>
+              </div>
+
+              <div>
+                <label
+                  htmlFor="search-filter-location-desktop"
+                  className="mb-2 block text-xs font-semibold uppercase tracking-wider text-text-main"
+                >
+                  {t("search.searchPage.localisation")}
+                </label>
+                <LocationSelector
+                  id="search-filter-location-desktop"
+                  city={city}
+                  radiusKm={city ? radiusKm : undefined}
+                  onChange={updateLocationFilter}
+                />
               </div>
 
               {/* Seller Type */}
@@ -1319,90 +1293,19 @@ export const SearchPage: React.FC = () => {
           }
         >
           {/* Controls Bar: Total Count, Save Search, View Mode, Sort */}
-          <div
+          <SearchResultsToolbar
             id="search-results-toolbar"
-            className="mb-4 flex scroll-mt-24 flex-wrap items-center justify-between gap-x-3 gap-y-2 rounded-card border border-border-base bg-bg-surface p-2 shadow-xs sm:p-4 lg:flex-nowrap"
-          >
-            <div className="flex items-center gap-3 min-w-0 shrink">
-              {/* The result count is the only feedback a filter change gives on
-                  this page — the grid below simply rewrites itself. Announced so
-                  a screen-reader user hears "42 annonces" after applying a
-                  filter instead of silence. */}
-              <span
-                role="status"
-                aria-live="polite"
-                aria-atomic="true"
-                className="text-sm font-bold text-text-main shrink-0"
-              >
-                {plural(totalCount, "annonce")}
-              </span>
-
-              {/* Desktop Toggle Filter Panel Button */}
-              <button
-                type="button"
-                onClick={() => setShowDesktopFilters(!showDesktopFilters)}
-                className={`hidden lg:inline-flex items-center gap-1.5 rounded-control px-2 py-1 text-xs font-semibold uppercase tracking-wider ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer ${
-                  showDesktopFilters
-                    ? "bg-bg-base border-border-base text-text-emphasis hover:bg-bg-subtle"
-                    : "text-text-main hover:text-primary"
-                }`}
-                title={
-                  showDesktopFilters
-                    ? "Masquer les filtres"
-                    : "Afficher les filtres"
-                }
-                aria-label={
-                  showDesktopFilters
-                    ? "Masquer les filtres"
-                    : "Afficher les filtres"
-                }
-              >
-                {showDesktopFilters ? (
-                  <>
-                    <PanelLeftClose className="w-icon-sm h-icon-sm text-text-tertiary" />
-                    <span>Masquer</span>
-                  </>
-                ) : (
-                  <>
-                    <SlidersHorizontal className="w-icon-sm h-icon-sm text-primary" />
-                    <span>Filtres</span>
-                  </>
-                )}
-              </button>
-            </div>
-
-            {/* Below `lg` this group wraps onto its own line, and it used to be
-                sized to its contents there — so the three controls huddled
-                against the left edge with 60px of empty bar beside them at
-                430px and 215px at 768px. It now claims the whole line, with
-                "Filtres" pinned left, the view toggle pinned right, and the
-                sort control absorbing whatever is left between them. */}
-            <div className="flex w-full min-w-0 flex-wrap items-center justify-between gap-2 lg:w-auto lg:flex-nowrap lg:justify-end">
-              {/* Mobile Filter Button with active count indicator */}
-              <button
-                type="button"
-                onClick={() => setIsFilterDrawerOpen(true)}
-                className={`lg:hidden flex items-center gap-1.5 h-control-sm px-2.5 sm:px-3 rounded-control text-xs font-semibold ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} cursor-pointer shrink-0 ${
-                  activeFilterCount > 0
-                    ? "bg-primary text-text-inverse shadow-xs"
-                    : "bg-bg-base text-text-strong border border-border-base hover:bg-bg-subtle"
-                }`}
-                aria-label={`Ouvrir les filtres de recherche (${activeFilterCount} actifs)`}
-              >
-                <SlidersHorizontal
-                  className={`w-icon-sm h-icon-sm ${activeFilterCount > 0 ? "text-text-inverse" : "text-primary"}`}
-                />
-                <span className="hidden sm:inline">Filtres</span>
-                {activeFilterCount > 0 && (
-                  <span className="min-w-4 h-4 px-1 rounded-full bg-bg-surface text-primary text-micro font-bold flex items-center justify-center">
-                    {activeFilterCount}
-                  </span>
-                )}
-              </button>
-
-              {/* Keep the save action with the other results controls so it
-                  remains a single, scannable toolbar at tablet widths instead
-                  of becoming a separate row beside the result count. */}
+            resultLabel={plural(totalCount, "annonce")}
+            desktopFilterPanelId="search-filter-panel-desktop"
+            mobileFilterPanelId="search-filter-panel-mobile"
+            desktopFiltersExpanded={showDesktopFilters}
+            mobileFiltersExpanded={isFilterDrawerOpen}
+            activeFilterCount={activeFilterCount + (query ? 1 : 0)}
+            onToggleDesktopFilters={() =>
+              setShowDesktopFilters(!showDesktopFilters)
+            }
+            onOpenMobileFilters={() => setIsFilterDrawerOpen(true)}
+            actions={
               <Button
                 type="button"
                 onClick={handleSaveSearch}
@@ -1417,22 +1320,24 @@ export const SearchPage: React.FC = () => {
               >
                 <span className="hidden sm:inline">Sauvegarder</span>
               </Button>
-
-              {/* View Mode Toggle */}
-              {/* `sm` is the toolbar size: 32px, the same control height as the
-                  filter button and the sort control either side of it. */}
+            }
+            viewControls={
               <ViewModeToggle
                 viewMode={viewMode}
-                onChange={(mode) => setViewMode(mode)}
+                onChange={(mode) =>
+                  setSearchParams((current) => {
+                    const next = new URLSearchParams(current);
+                    if (mode === "grid") next.delete("view");
+                    else next.set("view", mode);
+                    return next;
+                  })
+                }
                 showMap={true}
                 size="sm"
               />
-
-              {/* Sort selector at extreme right */}
-              <div className="flex items-center gap-1.5 text-xs min-w-0 shrink-0">
-                <span className="text-text-tertiary hidden sm:inline shrink-0 font-medium">
-                  {t("search.searchPage.trierPar")}
-                </span>
+            }
+            sortControl={
+              <SearchSortControl>
                 <DropdownMenu
                   id="sort-select"
                   ariaLabel="Trier les résultats"
@@ -1454,9 +1359,9 @@ export const SearchPage: React.FC = () => {
                   value={sortBy}
                   onChange={(val) => updateFilter("sortBy", val)}
                 />
-              </div>
-            </div>
-          </div>
+              </SearchSortControl>
+            }
+          />
 
           {/* The card titles are `h3`, so without this the outline jumped
               straight from the page `h1` to `h3`. The count is already shown
@@ -1603,6 +1508,7 @@ export const SearchPage: React.FC = () => {
         title={t("search.searchPage.filtresDeRecherche")}
       >
         <FilterPanel
+          id="search-filter-panel-mobile"
           presentation="drawer"
           onReset={clearAllFilters}
           footer={
@@ -1663,6 +1569,21 @@ export const SearchPage: React.FC = () => {
                 />
               </div>
             )}
+          </div>
+
+          <div>
+            <label
+              htmlFor="search-filter-location-mobile"
+              className="mb-2 block text-xs font-semibold uppercase tracking-wider text-text-emphasis"
+            >
+              {t("search.searchPage.localisation")}
+            </label>
+            <LocationSelector
+              id="search-filter-location-mobile"
+              city={city}
+              radiusKm={city ? radiusKm : undefined}
+              onChange={updateLocationFilter}
+            />
           </div>
 
           {/* Seller type */}

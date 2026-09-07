@@ -1,7 +1,7 @@
 import { PAGE_SIZES } from "../../configuration/pagination.config";
 import { useTranslation } from "../../i18n/I18nProvider";
 import React, { useEffect, useMemo, useState } from "react";
-import { Bell, Filter, List, Map, Search } from "lucide-react";
+import { Bell } from "lucide-react";
 import type {
   EnergyClass,
   PropertyPublic,
@@ -19,13 +19,19 @@ import {
   Container,
   Drawer,
   DropdownMenu,
+  FilterChip,
   FilterPanel,
   Input,
   ListingCardSkeleton,
   ListingGrid,
   LocationSelector,
+  SearchActiveFiltersBar,
+  SearchResultsToolbar,
+  SearchSortControl,
   Skeleton,
   StatePanel,
+  ViewModeToggle,
+  countActiveSearchParams,
 } from "../../design-system";
 import type {
   FilterPanelPresentation,
@@ -68,18 +74,26 @@ const IMMO_FILTER_KEYS = [
   "amenities",
 ] as const;
 
+const IMMO_SUMMARY_FILTER_KEYS = ["transaction", ...IMMO_FILTER_KEYS] as const;
+
 const ImmoFilters: React.FC<{
+  panelId: string;
   catalog: RealEstateCatalog;
   params: URLSearchParams;
   setParam: (key: string, value?: string) => void;
+  updateLocation: (value: LocationSelectorValue) => void;
+  locationSelectorId: string;
   onReset: () => void;
   presentation?: FilterPanelPresentation;
   onApply?: () => void;
   resultCount?: number;
 }> = ({
+  panelId,
   catalog,
   params,
   setParam,
+  updateLocation,
+  locationSelectorId,
   onReset,
   presentation = "surface",
   onApply,
@@ -106,6 +120,7 @@ const ImmoFilters: React.FC<{
   };
   return (
     <FilterPanel
+      id={panelId}
       title="Filtres"
       presentation={presentation}
       onReset={onReset}
@@ -133,6 +148,19 @@ const ImmoFilters: React.FC<{
             { value: "seasonal_rental", label: "Location saisonnière" },
             { value: "shared_accommodation", label: "Colocation" },
           ]}
+        />
+      </fieldset>
+      <fieldset>
+        <legend className="mb-2 text-xs font-bold text-text-main">
+          Localisation
+        </legend>
+        <LocationSelector
+          id={locationSelectorId}
+          city={params.get("city") || ""}
+          radiusKm={
+            params.get("radius") ? Number(params.get("radius")) : undefined
+          }
+          onChange={updateLocation}
         />
       </fieldset>
       <fieldset>
@@ -364,6 +392,7 @@ export const ImmoSearchPage: React.FC = () => {
   const [error, setError] = useState<string>();
   const [selectedId, setSelectedId] = useState<string>();
   const [mobileFilters, setMobileFilters] = useState(false);
+  const [showDesktopFilters, setShowDesktopFilters] = useState(true);
   const view = params.get("view") === "list" ? "list" : "map";
   const queryText = params.get("q") || "";
   const visibleItems = useMemo(
@@ -522,6 +551,39 @@ export const ImmoSearchPage: React.FC = () => {
     );
   };
 
+  const clearAllSearch = () => {
+    setParams(
+      (current) => {
+        const next = new URLSearchParams(current);
+        [
+          "q",
+          "city",
+          "radius",
+          "lat",
+          "lng",
+          "north",
+          "east",
+          "south",
+          "west",
+          ...IMMO_SUMMARY_FILTER_KEYS,
+        ].forEach((key) => next.delete(key));
+        return next;
+      },
+      { replace: true },
+    );
+  };
+
+  const activeFacetCount = countActiveSearchParams(
+    params,
+    IMMO_SUMMARY_FILTER_KEYS,
+  );
+  const activeLocation = params.get("city");
+  const activeRadius = params.get("radius");
+  const activeFilterCount =
+    (queryText ? 1 : 0) +
+    (activeLocation || activeRadius ? 1 : 0) +
+    activeFacetCount;
+
   const setMapBounds = (
     bounds: { north: number; east: number; south: number; west: number },
     center: { latitude: number; longitude: number },
@@ -629,62 +691,75 @@ export const ImmoSearchPage: React.FC = () => {
     <div className="min-h-screen bg-bg-subtle pb-12">
       <section className="border-b border-border-base bg-bg-surface py-4 sm:py-6">
         <Container>
-          <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-wide text-primary">
-                Shongre Immo
-              </p>
-              <h1 className="mt-1 text-xl font-bold text-text-main sm:text-2xl">
-                Trouvez le bien qui vous ressemble
-              </h1>
-              <p className="mt-1 hidden text-xs text-text-secondary sm:block">
-                Adresse précise protégée · annonces structurées · demandes
-                qualifiées
-              </p>
-            </div>
-            <div className="grid w-full gap-2 sm:grid-cols-2 lg:max-w-2xl">
-              <label className="relative block">
-                <span className="sr-only">Rechercher un bien</span>
-                <Input
-                  leftIcon={
-                    <Search
-                      className="h-icon-md w-icon-md"
-                      aria-hidden="true"
-                    />
-                  }
-                  placeholder="Appartement, terrasse…"
-                  value={queryText}
-                  onChange={(event) =>
-                    setParam("q", event.target.value || undefined)
-                  }
-                />
-              </label>
-              <LocationSelector
-                id="immo-location-selector"
-                city={params.get("city") || ""}
-                radiusKm={
-                  params.get("radius")
-                    ? Number(params.get("radius"))
-                    : undefined
-                }
-                onChange={updateLocation}
-              />
-            </div>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wide text-primary">
+              Shongre Immo
+            </p>
+            <h1 className="mt-1 text-xl font-bold text-text-main sm:text-2xl">
+              Trouvez le bien qui vous ressemble
+            </h1>
+            <p className="mt-1 hidden text-xs text-text-secondary sm:block">
+              Adresse précise protégée · annonces structurées · demandes
+              qualifiées
+            </p>
           </div>
+          {activeFilterCount > 0 ? (
+            <SearchActiveFiltersBar
+              className="mt-4 mb-0 sm:mt-5 sm:mb-0"
+              onClear={clearAllSearch}
+            >
+              {queryText ? (
+                <FilterChip
+                  tone="query"
+                  label={queryText}
+                  onRemove={() => setParam("q", undefined)}
+                >
+                  “{queryText}”
+                </FilterChip>
+              ) : null}
+              {activeLocation || activeRadius ? (
+                <FilterChip onRemove={() => updateLocation({})}>
+                  {activeLocation || t("ui.searchControls.zoneSelected")}
+                  {activeRadius ? ` (+${activeRadius} km)` : ""}
+                </FilterChip>
+              ) : null}
+              {activeFacetCount > 0 ? (
+                <FilterChip
+                  label={t(
+                    activeFacetCount === 1
+                      ? "ui.searchControls.criterion"
+                      : "ui.searchControls.criteria",
+                    { count: activeFacetCount },
+                  )}
+                  onRemove={resetFilters}
+                >
+                  {t(
+                    activeFacetCount === 1
+                      ? "ui.searchControls.criterion"
+                      : "ui.searchControls.criteria",
+                    { count: activeFacetCount },
+                  )}
+                </FilterChip>
+              ) : null}
+            </SearchActiveFiltersBar>
+          ) : null}
         </Container>
       </section>
 
       <Container className="py-5">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <p className="text-sm font-bold text-text-main">
-              {loading ? "Recherche…" : `${total} biens`}
-            </p>
-            <p className="text-micro text-text-secondary">
-              Localisation volontairement approximative sur la carte.
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center justify-end gap-2">
+        <SearchResultsToolbar
+          resultLabel={loading ? "Recherche…" : `${total} biens`}
+          resultDescription="Localisation volontairement approximative sur la carte."
+          desktopFilterPanelId="immo-filter-panel-desktop"
+          mobileFilterPanelId="immo-filter-panel-mobile"
+          desktopFiltersExpanded={showDesktopFilters}
+          mobileFiltersExpanded={mobileFilters}
+          activeFilterCount={activeFilterCount}
+          onToggleDesktopFilters={() =>
+            setShowDesktopFilters(!showDesktopFilters)
+          }
+          onOpenMobileFilters={() => setMobileFilters(true)}
+          actions={
             <Button
               data-marketplace-action="saved-search.create"
               variant="outline"
@@ -692,54 +767,37 @@ export const ImmoSearchPage: React.FC = () => {
               onClick={saveAlert}
               leftIcon={<Bell className="h-icon-md w-icon-md" />}
             >
-              Créer une alerte
+              <span className="hidden sm:inline">Créer une alerte</span>
             </Button>
-            <Button
-              variant="outline"
+          }
+          viewControls={
+            <ViewModeToggle
+              viewMode={view}
+              onChange={(mode) => setParam("view", mode)}
+              modes={["list", "map"]}
               size="sm"
-              className="lg:hidden"
-              onClick={() => setMobileFilters(true)}
-              leftIcon={<Filter className="h-icon-md w-icon-md" />}
-            >
-              Filtres
-            </Button>
-            <div className="inline-flex rounded-control border border-border-base bg-bg-surface p-1">
-              <button
-                type="button"
-                aria-label="Vue liste"
-                aria-pressed={view === "list"}
-                onClick={() => setParam("view", "list")}
-                className={`grid h-control-sm w-8 place-items-center rounded-control ${view === "list" ? "bg-primary text-text-inverse" : "text-text-secondary"}`}
-              >
-                <List className="h-icon-md w-icon-md" />
-              </button>
-              <button
-                type="button"
-                aria-label="Vue carte"
-                aria-pressed={view === "map"}
-                onClick={() => setParam("view", "map")}
-                className={`grid h-control-sm w-8 place-items-center rounded-control ${view === "map" ? "bg-primary text-text-inverse" : "text-text-secondary"}`}
-              >
-                <Map className="h-icon-md w-icon-md" />
-              </button>
-            </div>
-            <DropdownMenu
-              ariaLabel="Trier les biens"
-              headerTitle="Trier par"
-              placement="bottom-right"
-              size="sm"
-              value={query.sort}
-              onChange={(value) => setParam("sort", value)}
-              options={[
-                { value: "promoted", label: "Sélection Shongre" },
-                { value: "newest", label: "Plus récentes" },
-                { value: "price_asc", label: "Prix croissant" },
-                { value: "price_desc", label: "Prix décroissant" },
-                { value: "surface_desc", label: "Plus grandes surfaces" },
-              ]}
             />
-          </div>
-        </div>
+          }
+          sortControl={
+            <SearchSortControl>
+              <DropdownMenu
+                ariaLabel="Trier les biens"
+                headerTitle="Trier par"
+                placement="bottom-right"
+                size="sm"
+                value={query.sort}
+                onChange={(value) => setParam("sort", value)}
+                options={[
+                  { value: "promoted", label: "Sélection Shongre" },
+                  { value: "newest", label: "Plus récentes" },
+                  { value: "price_asc", label: "Prix croissant" },
+                  { value: "price_desc", label: "Prix décroissant" },
+                  { value: "surface_desc", label: "Plus grandes surfaces" },
+                ]}
+              />
+            </SearchSortControl>
+          }
+        />
 
         {error ? (
           <StatePanel
@@ -752,24 +810,46 @@ export const ImmoSearchPage: React.FC = () => {
           />
         ) : null}
         {!error && catalog ? (
-          <div className="grid items-start gap-6 lg:grid-cols-sidebar xl:grid-cols-search-properties">
-            <aside
-              className="sticky top-24 hidden lg:block"
-              aria-label="Filtres immobiliers"
-            >
-              <ImmoFilters
-                catalog={catalog}
-                params={params}
-                setParam={setParam}
-                onReset={resetFilters}
-              />
-            </aside>
+          <div
+            className={`grid items-start gap-6 ${
+              showDesktopFilters
+                ? "lg:grid-cols-sidebar xl:grid-cols-search-properties"
+                : view === "map"
+                  ? "xl:grid-cols-search-properties-content"
+                  : "lg:grid-cols-1"
+            }`}
+          >
+            {showDesktopFilters ? (
+              <aside
+                className="sticky top-24 hidden lg:block"
+                aria-label="Filtres immobiliers"
+              >
+                <ImmoFilters
+                  panelId="immo-filter-panel-desktop"
+                  catalog={catalog}
+                  params={params}
+                  setParam={setParam}
+                  updateLocation={updateLocation}
+                  locationSelectorId="immo-location-selector-desktop"
+                  onReset={resetFilters}
+                />
+              </aside>
+            ) : null}
             <section
               aria-label="Résultats immobiliers"
-              className={`min-w-0 ${view === "map" ? "xl:max-h-search-results-panel xl:overflow-y-auto xl:pr-1" : "xl:col-span-2"}`}
+              className={`min-w-0 ${
+                view === "map"
+                  ? "xl:max-h-search-results-panel xl:overflow-y-auto xl:pr-1"
+                  : showDesktopFilters
+                    ? "xl:col-span-2"
+                    : ""
+              }`}
             >
               {loading ? (
-                <ListingGrid fluid>
+                <ListingGrid
+                  fluid={view === "map"}
+                  className={view === "list" ? "sm:grid-cols-1" : undefined}
+                >
                   {Array.from({ length: 6 }, (_, index) => (
                     <div key={index} className="min-w-0">
                       <ListingCardSkeleton />
@@ -777,11 +857,15 @@ export const ImmoSearchPage: React.FC = () => {
                   ))}
                 </ListingGrid>
               ) : items.length ? (
-                <ListingGrid fluid>
+                <ListingGrid
+                  fluid={view === "map"}
+                  className={view === "list" ? "sm:grid-cols-1" : undefined}
+                >
                   {visibleItems.map((property) => (
                     <PropertyCard
                       key={property.id}
                       property={property}
+                      displayVariant={view === "list" ? "list" : "grid"}
                       selected={selectedId === property.id}
                       onSelect={(item) => setSelectedId(item.id)}
                       onFavorite={favorite}
@@ -840,9 +924,12 @@ export const ImmoSearchPage: React.FC = () => {
           title="Filtres immobiliers"
         >
           <ImmoFilters
+            panelId="immo-filter-panel-mobile"
             catalog={catalog}
             params={params}
             setParam={setParam}
+            updateLocation={updateLocation}
+            locationSelectorId="immo-location-selector-mobile"
             onReset={resetFilters}
             presentation="drawer"
             resultCount={total}

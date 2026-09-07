@@ -115,7 +115,7 @@ test.describe("current location picker", () => {
     expect(box!.x + box!.width).toBeLessThanOrEqual(390);
   });
 
-  test("keeps a results-page location draft until the search is submitted", async ({
+  test("applies a results-page location from the shared filter panel", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 1408, height: 900 });
@@ -123,7 +123,7 @@ test.describe("current location picker", () => {
     await page.goto("/recherche?city=Paris&radius=30");
     await waitForStableLayout(page);
 
-    const selector = page.locator("#search-page-page-location-button");
+    const selector = page.locator("#search-filter-location-desktop");
     await expect(selector).toHaveAttribute(
       "aria-label",
       "Localisation : Paris (+30 km)",
@@ -139,7 +139,6 @@ test.describe("current location picker", () => {
       "aria-label",
       "Localisation : Lyon (+20 km)",
     );
-    await page.locator("#search-page-page-submit-button").click();
     await expect(page).toHaveURL(/city=Lyon/);
     await expect(page).toHaveURL(/radius=20/);
   });

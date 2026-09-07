@@ -14,6 +14,7 @@ export const PropertyCard: React.FC<{
   favoriteLoadState?: "loading" | "ready" | "error";
   onFavoriteRetry?: () => void | Promise<unknown>;
   compact?: boolean;
+  displayVariant?: "grid" | "list";
 }> = ({
   property,
   selected,
@@ -23,6 +24,7 @@ export const PropertyCard: React.FC<{
   favoriteLoadState,
   onFavoriteRetry,
   compact = false,
+  displayVariant = "grid",
 }) => {
   const { activeMarket, currentLocale, convertMoney } = useMarketLocation();
   const listing = presentPropertyListingCard(
@@ -42,7 +44,7 @@ export const PropertyCard: React.FC<{
       <ListingCardViewCard
         listing={listing}
         href={`/immo/bien/${property.slug}`}
-        variant={compact ? "compact" : "grid"}
+        variant={compact ? "compact" : displayVariant}
         className={
           selected
             ? "border-primary ring-2 ring-primary-border"

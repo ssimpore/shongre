@@ -15,6 +15,46 @@ const seedConsentDecision = async (page: Parameters<typeof usePersona>[0]) => {
   });
 };
 
+test("aligns listing breadcrumbs and secondary actions on one row", async ({
+  page,
+}) => {
+  await usePersona(page, "guest");
+  await seedConsentDecision(page);
+  await page.setViewportSize({ width: 1408, height: 795 });
+  await page.goto("/annonce/list-113", { waitUntil: "domcontentloaded" });
+  await waitForStableLayout(page);
+
+  const toolbar = page.getByTestId("listing-detail-toolbar");
+  const breadcrumbs = toolbar.getByRole("navigation", {
+    name: "Fil d'Ariane",
+  });
+  const secondaryActions = page.getByTestId("listing-detail-secondary-actions");
+  const [toolbarBox, breadcrumbBox, actionsBox] = await Promise.all([
+    toolbar.boundingBox(),
+    breadcrumbs.boundingBox(),
+    secondaryActions.boundingBox(),
+  ]);
+
+  expect(toolbarBox).not.toBeNull();
+  expect(breadcrumbBox).not.toBeNull();
+  expect(actionsBox).not.toBeNull();
+  expect(
+    Math.abs(
+      breadcrumbBox!.y +
+        breadcrumbBox!.height / 2 -
+        (actionsBox!.y + actionsBox!.height / 2),
+    ),
+  ).toBeLessThanOrEqual(1);
+  expect(actionsBox!.x + actionsBox!.width).toBeCloseTo(
+    toolbarBox!.x + toolbarBox!.width,
+    0,
+  );
+  expect(breadcrumbBox!.x + breadcrumbBox!.width).toBeLessThanOrEqual(
+    actionsBox!.x,
+  );
+  await expectNoHorizontalOverflow(page, "listing detail top toolbar");
+});
+
 test("keeps every listing-detail commerce action full-width and readable", async ({
   page,
 }) => {

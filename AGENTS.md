@@ -754,6 +754,19 @@ France-only happy path is insufficient for market-sensitive work.
   Profile results, hero media slides,
   operational rows, and map popups may remain specialized when they are not
   listing-card equivalents.
+- Marketplace results pages must use the canonical Web `SearchResultsToolbar`,
+  `FilterPanel`, and `FilterPanelToggle` primitives for results controls,
+  desktop sidebar, collapse/restore disclosure, and mobile drawer. The optional
+  `SearchActiveFiltersBar` is the only standalone summary for applied filters.
+  Do not repeat global query, category, location, or submit controls above the
+  results when the application header and adaptive filter surface already own
+  them. Each vertical supplies its own query semantics, taxonomy- or
+  domain-specific fields, supported view modes, sorting, and actions through
+  those shared shells. Location belongs inside the filter surface. Map-capable
+  verticals must lazy-load their map renderer and project only API-authorized
+  public coordinates or explicitly approximate public city/service-area
+  locations; unknown or private locations are omitted rather than placed at an
+  invented market-centre position.
 - Target WCAG 2.2 AA. Verify semantic landmarks and heading order, labels and
   descriptions, errors, keyboard navigation, focus visibility/trapping/
   restoration, menus, tabs, dialogs, sheets, tables, carousels, contrast,

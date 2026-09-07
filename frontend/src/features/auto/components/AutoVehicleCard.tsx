@@ -12,6 +12,7 @@ interface Props {
   onFavorite?: (vehicle: VehiclePublic) => void;
   onFavoriteRetry?: () => void | Promise<unknown>;
   compact?: boolean;
+  displayVariant?: "grid" | "list";
 }
 
 export const AutoVehicleCard: React.FC<Props> = ({
@@ -21,6 +22,7 @@ export const AutoVehicleCard: React.FC<Props> = ({
   onFavorite,
   onFavoriteRetry,
   compact = false,
+  displayVariant = "grid",
 }) => {
   const { activeMarket, currentLocale, convertMoney } = useMarketLocation();
   const listing = presentVehicleListingCard(
@@ -35,7 +37,7 @@ export const AutoVehicleCard: React.FC<Props> = ({
       <ListingCardViewCard
         listing={listing}
         href={`/auto/vehicule/${vehicle.slug}`}
-        variant={compact ? "compact" : "grid"}
+        variant={compact ? "compact" : displayVariant}
         isFavorite={isFavorite}
         favoriteLoadState={favoriteLoadState}
         onFavoriteToggle={onFavorite ? () => onFavorite(vehicle) : undefined}

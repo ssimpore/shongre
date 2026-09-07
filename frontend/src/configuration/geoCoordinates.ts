@@ -1,4 +1,4 @@
-/** Geographic coordinates used by the deterministic demo map adapter. */
+/** Market-aware public coordinates shared by map-capable search surfaces. */
 
 export interface CityCoordinates {
   lat: number;
@@ -59,6 +59,14 @@ export interface MarketMapConfiguration {
   cities: Record<string, CityCoordinates>;
 }
 
+export interface PublicMapLocation {
+  id: string;
+  city?: string;
+  latitude?: number;
+  longitude?: number;
+  marketCode?: string;
+}
+
 const MARKET_MAP_CONFIGURATIONS: Record<string, MarketMapConfiguration> = {
   FR: { center: FRANCE_CENTER, cities: FRENCH_MAJOR_CITIES },
   BE: {
@@ -111,6 +119,51 @@ export function getMarketMapConfiguration(
 }
 
 /**
+ * Resolve only public coordinates that can be placed honestly on a results map.
+ *
+ * Explicit API coordinates win. A public city label may fall back to the
+ * configured market city centre with deterministic coarse spreading so markers
+ * remain selectable. Unknown locations return `undefined` instead of being
+ * misleadingly placed at the market centre.
+ */
+export function resolvePublicMapCoordinates(
+  location: PublicMapLocation,
+): { lat: number; lng: number } | undefined {
+  if (
+    Number.isFinite(location.latitude) &&
+    Number.isFinite(location.longitude)
+  ) {
+    return { lat: location.latitude!, lng: location.longitude! };
+  }
+
+  const rawCity = (location.city || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim()
+    .replace(/^(st|ste)\s+/i, "saint-");
+  if (!rawCity) return undefined;
+
+  const mapConfiguration = getMarketMapConfiguration(location.marketCode);
+  const normalizedCity = Object.keys(mapConfiguration.cities).find(
+    (key) => rawCity.includes(key) || key.includes(rawCity),
+  );
+  if (!normalizedCity) return undefined;
+
+  const base = mapConfiguration.cities[normalizedCity];
+  let hash = 0;
+  for (let index = 0; index < location.id.length; index += 1) {
+    hash = (hash << 5) - hash + location.id.charCodeAt(index);
+    hash |= 0;
+  }
+
+  return {
+    lat: base.lat + ((Math.abs(hash) % 31) - 15) * 0.00035,
+    lng: base.lng + ((Math.abs(hash >> 3) % 31) - 15) * 0.0005,
+  };
+}
+
+/**
  * Resolve coordinates for a listing based on city name, department, or postal code with unique pseudo-jitter
  */
 export function getListingCoordinates(listing: {
@@ -122,22 +175,11 @@ export function getListingCoordinates(listing: {
   longitude?: number;
   marketCode?: string;
 }): { lat: number; lng: number } {
-  if (listing.latitude && listing.longitude) {
-    return { lat: listing.latitude, lng: listing.longitude };
-  }
+  const publicCoordinates = resolvePublicMapCoordinates(listing);
+  if (publicCoordinates) return publicCoordinates;
 
-  const rawCity = (listing.city || "")
-    .toLowerCase()
-    .trim()
-    .replace(/^(st|ste)\s+/i, "saint-");
   const mapConfiguration = getMarketMapConfiguration(listing.marketCode);
-  const normalizedCity = Object.keys(mapConfiguration.cities).find(
-    (key) => rawCity.includes(key) || key.includes(rawCity),
-  );
-
-  const base = normalizedCity
-    ? mapConfiguration.cities[normalizedCity]
-    : mapConfiguration.center;
+  const base = mapConfiguration.center;
 
   // Generate deterministic jitter based on listing ID so items in same city don't stack on top of each other
   let hash = 0;

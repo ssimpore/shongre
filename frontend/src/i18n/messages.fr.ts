@@ -624,6 +624,29 @@ export const messagesFr = {
   "ui.globalSearchBar.toutesLesCategories": "Toutes les catégories",
   "ui.globalSearchBar.categories": "Catégories",
 
+  // --- ui.filterPanel ---
+  "ui.filterPanel.filters": "Filtres",
+  "ui.filterPanel.hideShort": "Masquer",
+  "ui.filterPanel.hide": "Masquer les filtres",
+  "ui.filterPanel.show": "Afficher les filtres",
+  "ui.filterPanel.open": "Ouvrir les filtres de recherche",
+  "ui.searchControls.activeFilters": "Filtres actifs :",
+  "ui.searchControls.zoneSelected": "Zone sélectionnée",
+  "ui.searchControls.criterion": "{count} critère",
+  "ui.searchControls.criteria": "{count} critères",
+  "ui.searchResultsMap.regionLabel": "Carte des résultats",
+  "ui.searchResultsMap.result": "{count} résultat géolocalisé",
+  "ui.searchResultsMap.results": "{count} résultats géolocalisés",
+  "ui.searchResultsMap.locationNote":
+    "Positions publiques approximatives, sans adresse privée.",
+  "ui.searchResultsMap.fitResults": "Recadrer",
+  "ui.searchResultsMap.selectResult": "Afficher le résultat {number}",
+  "ui.searchResultsMap.viewResult": "Voir le résultat",
+  "ui.searchResultsMap.closePreview": "Fermer l’aperçu",
+  "ui.searchResultsMap.emptyTitle": "Aucun résultat géolocalisable",
+  "ui.searchResultsMap.emptyDescription":
+    "Les résultats actuels ne disposent pas d’une localisation publique suffisante pour être affichés sur la carte.",
+
   // --- ui.listingCard ---
   "ui.listingCard.annonceALaUne": "Annonce à la une",
   "ui.listingCard.noteAvis": "Note {rating} sur 5, {count} avis",
@@ -3742,6 +3765,7 @@ export const messagesFr = {
   "search.searchPage.livraisonDisponible2": "Livraison disponible",
   "search.searchPage.effacerTout": "Effacer tout",
   "search.searchPage.categories2": "Catégories",
+  "search.searchPage.localisation": "Localisation",
   "search.searchPage.sousCategorie": "Sous-catégorie",
   "search.searchPage.typeDeVendeur": "Type de vendeur",
   "search.searchPage.filtresSpecifiques": "Filtres spécifiques",

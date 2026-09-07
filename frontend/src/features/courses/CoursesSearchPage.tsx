@@ -1,15 +1,7 @@
 import { PAGE_SIZES } from "../../configuration/pagination.config";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import {
-  ArrowUpDown,
-  BookOpen,
-  Filter,
-  GitCompareArrows,
-  GraduationCap,
-  Search,
-  X,
-} from "lucide-react";
+import { BookOpen, GitCompareArrows, GraduationCap, X } from "lucide-react";
 import { VerificationBadge } from "@shongre/ui/web";
 import type {
   CourseCatalog,
@@ -27,11 +19,17 @@ import {
   Container,
   Drawer,
   DropdownMenu,
+  FilterChip,
   FilterPanel,
   ListingCardSkeleton,
   ListingGrid,
   LocationSelector,
+  SearchActiveFiltersBar,
+  SearchResultsToolbar,
+  SearchSortControl,
   StatePanel,
+  ViewModeToggle,
+  countActiveSearchParams,
 } from "../../design-system";
 import type {
   FilterPanelPresentation,
@@ -41,8 +39,17 @@ import { usePageMeta } from "../../hooks/usePageMeta";
 import { useRegionalFormatters } from "../../hooks/useRegionalFormatters";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { CourseTutorCard } from "./components/CourseTutorCard";
+import { resolvePublicMapCoordinates } from "../../configuration/geoCoordinates";
+import type { SearchMapItem } from "../search/SearchResultsMap";
+
+const SearchResultsMap = React.lazy(() =>
+  import("../search/SearchResultsMap").then((module) => ({
+    default: module.SearchResultsMap,
+  })),
+);
 
 interface CourseFiltersProps {
+  panelId: string;
   catalog: CourseCatalog;
   params: URLSearchParams;
   updateParam: (key: string, value?: string) => void;
@@ -67,10 +74,15 @@ const COURSE_FILTER_KEYS = [
   "rating",
 ] as const;
 
+const COURSE_SUMMARY_FILTER_KEYS = COURSE_FILTER_KEYS.filter(
+  (key) => key !== "city" && key !== "radius",
+);
+
 const splitParam = (value: string | null) =>
   (value || "").split(",").filter(Boolean);
 
 const CourseFilters: React.FC<CourseFiltersProps> = ({
+  panelId,
   catalog,
   params,
   updateParam,
@@ -93,6 +105,7 @@ const CourseFilters: React.FC<CourseFiltersProps> = ({
 
   return (
     <FilterPanel
+      id={panelId}
       title="Filtres"
       presentation={presentation}
       onReset={onReset}
@@ -316,6 +329,12 @@ export const CoursesSearchPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [showDesktopFilters, setShowDesktopFilters] = useState(true);
+  const requestedView = params.get("view");
+  const viewMode =
+    requestedView === "list" || requestedView === "map"
+      ? requestedView
+      : "grid";
   const [comparedIds, setComparedIds] = useState<string[]>([]);
   const savedScope = `${currentUserId || "guest"}:${activeMarket.code}`;
   const [savedState, setSavedState] = useState<{
@@ -451,6 +470,55 @@ export const CoursesSearchPage: React.FC = () => {
     });
   };
 
+  const clearAllSearch = () => {
+    setParams((current) => {
+      const next = new URLSearchParams(current);
+      next.delete("query");
+      COURSE_FILTER_KEYS.forEach((key) => next.delete(key));
+      next.delete("cursor");
+      return next;
+    });
+  };
+
+  const activeFacetCount = countActiveSearchParams(
+    params,
+    COURSE_SUMMARY_FILTER_KEYS,
+  );
+  const activeLocation = params.get("city");
+  const activeRadius = params.get("radius");
+  const activeFilterCount =
+    (freeText ? 1 : 0) +
+    (activeLocation || activeRadius ? 1 : 0) +
+    activeFacetCount;
+  const mapItems = useMemo<SearchMapItem[]>(
+    () =>
+      items.flatMap((item) => {
+        const area = item.offer.serviceArea;
+        if (!area || !item.offer.deliveryModes.includes("in_person")) return [];
+        const coordinates = resolvePublicMapCoordinates({
+          id: item.offer.id,
+          city: area.cityLabel,
+          latitude: area.latitude,
+          longitude: area.longitude,
+          marketCode: area.marketCode || activeMarket.code,
+        });
+        if (!coordinates) return [];
+        return [
+          {
+            id: item.offer.id,
+            title: item.offer.title,
+            href: routes.courses.tutor(item.tutor.slug),
+            locationLabel: area.publicLocationLabel,
+            latitude: coordinates.lat,
+            longitude: coordinates.lng,
+            eyebrow: `${item.tutor.displayName} · ${item.subjectLabel}`,
+            detail: `${formatMoney(item.fromPrice)} / h`,
+          },
+        ];
+      }),
+    [activeMarket.code, formatMoney, items],
+  );
+
   const toggleCompare = (id: string) => {
     setComparedIds((current) => {
       if (current.includes(id)) return current.filter((item) => item !== id);
@@ -548,100 +616,139 @@ export const CoursesSearchPage: React.FC = () => {
           </Button>
         </div>
 
-        <form
-          onSubmit={(event) => {
-            event.preventDefault();
-            const data = new FormData(event.currentTarget);
-            updateParam("query", String(data.get("query") || "") || undefined);
-          }}
-          className="grid gap-2 rounded-card border border-border-base bg-bg-surface p-3 shadow-xs sm:grid-cols-content-action"
-        >
-          <label className="relative min-w-0">
-            <span className="sr-only">
-              Rechercher une matière ou un professeur
-            </span>
-            <Search
-              className="pointer-events-none absolute left-3 top-1/2 h-icon-sm w-icon-sm -translate-y-1/2 text-text-muted"
-              aria-hidden="true"
-            />
-            <input
-              name="query"
-              type="search"
-              defaultValue={freeText}
-              placeholder="Matière, objectif ou nom du professeur"
-              className="h-control-touch w-full rounded-control border border-border-base bg-bg-base pl-9 pr-3 text-sm text-text-main"
-            />
-          </label>
-          <Button type="submit" size="compact">
-            Rechercher
-          </Button>
-        </form>
+        {activeFilterCount > 0 ? (
+          <SearchActiveFiltersBar
+            className="mb-0 sm:mb-0"
+            onClear={clearAllSearch}
+          >
+            {freeText ? (
+              <FilterChip
+                tone="query"
+                label={freeText}
+                onRemove={() => updateParam("query", undefined)}
+              >
+                “{freeText}”
+              </FilterChip>
+            ) : null}
+            {activeLocation || activeRadius ? (
+              <FilterChip onRemove={() => updateLocation({})}>
+                {activeLocation || t("ui.searchControls.zoneSelected")}
+                {activeRadius ? ` (+${activeRadius} km)` : ""}
+              </FilterChip>
+            ) : null}
+            {activeFacetCount > 0 ? (
+              <FilterChip
+                label={t(
+                  activeFacetCount === 1
+                    ? "ui.searchControls.criterion"
+                    : "ui.searchControls.criteria",
+                  { count: activeFacetCount },
+                )}
+                onRemove={resetFilters}
+              >
+                {t(
+                  activeFacetCount === 1
+                    ? "ui.searchControls.criterion"
+                    : "ui.searchControls.criteria",
+                  { count: activeFacetCount },
+                )}
+              </FilterChip>
+            ) : null}
+          </SearchActiveFiltersBar>
+        ) : null}
       </div>
 
       <div
-        className={`grid min-w-0 gap-6 ${compared.length > 0 ? "lg:grid-cols-sidebar xl:grid-cols-search-compare-balanced" : "lg:grid-cols-sidebar"}`}
+        className={`grid min-w-0 gap-6 ${
+          showDesktopFilters ? "lg:grid-cols-sidebar" : "lg:grid-cols-1"
+        } ${
+          compared.length > 0
+            ? showDesktopFilters
+              ? "xl:grid-cols-search-compare-balanced"
+              : "xl:grid-cols-content-aside-xs"
+            : ""
+        }`}
       >
-        <aside
-          className="hidden self-start lg:sticky lg:top-24 lg:block"
-          aria-label={t("verticals.education.filters")}
-        >
-          {catalog && (
-            <CourseFilters
-              catalog={catalog}
-              params={params}
-              updateParam={updateParam}
-              updateLocation={updateLocation}
-              locationSelectorId="education-location-selector-desktop"
-              onReset={resetFilters}
-            />
-          )}
-        </aside>
+        {showDesktopFilters ? (
+          <aside
+            className="hidden self-start lg:sticky lg:top-24 lg:block"
+            aria-label={t("verticals.education.filters")}
+          >
+            {catalog && (
+              <CourseFilters
+                panelId="education-filter-panel-desktop"
+                catalog={catalog}
+                params={params}
+                updateParam={updateParam}
+                updateLocation={updateLocation}
+                locationSelectorId="education-location-selector-desktop"
+                onReset={resetFilters}
+              />
+            )}
+          </aside>
+        ) : null}
 
         <div className="min-w-0">
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
+          <SearchResultsToolbar
+            resultLabel={
+              isLoading
+                ? "Recherche en cours…"
+                : `${total} professeur${total > 1 ? "s" : ""}`
+            }
+            desktopFilterPanelId="education-filter-panel-desktop"
+            mobileFilterPanelId="education-filter-panel-mobile"
+            desktopFiltersExpanded={showDesktopFilters}
+            mobileFiltersExpanded={isFilterOpen}
+            activeFilterCount={activeFilterCount}
+            onToggleDesktopFilters={() =>
+              setShowDesktopFilters(!showDesktopFilters)
+            }
+            onOpenMobileFilters={() => setIsFilterOpen(true)}
+            viewControls={
+              <ViewModeToggle
+                viewMode={viewMode}
+                onChange={(mode) =>
+                  updateParam("view", mode === "grid" ? undefined : mode)
+                }
+                showMap
                 size="sm"
-                className="lg:hidden"
-                onClick={() => setIsFilterOpen(true)}
-                leftIcon={<Filter className="h-icon-sm w-icon-sm" />}
-              >
-                Filtres
-              </Button>
-              <p
-                className="text-xs font-semibold text-text-secondary"
-                aria-live="polite"
-              >
-                {isLoading
-                  ? "Recherche en cours…"
-                  : `${total} professeur${total > 1 ? "s" : ""}`}
-              </p>
-            </div>
-            <div className="flex items-center gap-2 text-xs font-semibold text-text-secondary">
-              <ArrowUpDown className="h-icon-sm w-icon-sm" aria-hidden="true" />
-              <span className="sr-only sm:not-sr-only">Trier par</span>
-              <DropdownMenu
-                ariaLabel="Trier les professeurs"
-                headerTitle="Trier par"
-                placement="bottom-right"
-                size="sm"
-                value={query.sort}
-                onChange={(value) => updateParam("sort", value)}
-                options={[
-                  { value: "relevance", label: "Pertinence" },
-                  { value: "price_asc", label: "Prix croissant" },
-                  { value: "price_desc", label: "Prix décroissant" },
-                  { value: "rating", label: "Avis vérifiés" },
-                  { value: "response_time", label: "Temps de réponse" },
-                ]}
               />
-            </div>
-          </div>
+            }
+            sortControl={
+              <SearchSortControl showIcon>
+                <DropdownMenu
+                  ariaLabel="Trier les professeurs"
+                  headerTitle="Trier par"
+                  placement="bottom-right"
+                  size="sm"
+                  value={query.sort}
+                  onChange={(value) => updateParam("sort", value)}
+                  options={[
+                    { value: "relevance", label: "Pertinence" },
+                    { value: "price_asc", label: "Prix croissant" },
+                    { value: "price_desc", label: "Prix décroissant" },
+                    { value: "rating", label: "Avis vérifiés" },
+                    { value: "response_time", label: "Temps de réponse" },
+                  ]}
+                />
+              </SearchSortControl>
+            }
+          />
 
-          {isLoading ? (
+          {isLoading && viewMode === "map" ? (
+            <div
+              role="status"
+              aria-label={t("common.loadingMap")}
+              className="h-search-map rounded-card border border-border-base bg-bg-surface p-3"
+            >
+              <div className="h-full w-full animate-pulse rounded-card bg-surface-muted" />
+            </div>
+          ) : isLoading ? (
             <div aria-label="Chargement des professeurs" aria-busy="true">
-              <ListingGrid fluid>
+              <ListingGrid
+                fluid={viewMode === "grid"}
+                className={viewMode === "list" ? "sm:grid-cols-1" : undefined}
+              >
                 {[0, 1, 2].map((index) => (
                   <ListingCardSkeleton key={index} />
                 ))}
@@ -669,9 +776,34 @@ export const CoursesSearchPage: React.FC = () => {
                 </Button>
               }
             />
+          ) : viewMode === "map" ? (
+            mapItems.length ? (
+              <React.Suspense
+                fallback={
+                  <div
+                    role="status"
+                    aria-label={t("common.loadingMap")}
+                    className="h-search-map rounded-card border border-border-base bg-bg-surface p-3"
+                  >
+                    <div className="h-full w-full animate-pulse rounded-card bg-surface-muted" />
+                  </div>
+                }
+              >
+                <SearchResultsMap items={mapItems} />
+              </React.Suspense>
+            ) : (
+              <StatePanel
+                variant="notFound"
+                title={t("ui.searchResultsMap.emptyTitle")}
+                description={t("ui.searchResultsMap.emptyDescription")}
+              />
+            )
           ) : (
             <>
-              <ListingGrid fluid>
+              <ListingGrid
+                fluid={viewMode === "grid"}
+                className={viewMode === "list" ? "sm:grid-cols-1" : undefined}
+              >
                 {items.map((item) => (
                   <CourseTutorCard
                     key={item.offer.id}
@@ -682,6 +814,7 @@ export const CoursesSearchPage: React.FC = () => {
                     onToggleCompare={toggleCompare}
                     onToggleSaved={toggleSaved}
                     onFavoriteRetry={loadSavedTutors}
+                    displayVariant={viewMode === "list" ? "list" : "grid"}
                   />
                 ))}
               </ListingGrid>
@@ -795,6 +928,7 @@ export const CoursesSearchPage: React.FC = () => {
           title="Filtrer les professeurs"
         >
           <CourseFilters
+            panelId="education-filter-panel-mobile"
             catalog={catalog}
             params={params}
             updateParam={updateParam}

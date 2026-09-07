@@ -76,6 +76,7 @@ export * from "./primitives/PriceRangeSlider";
 export * from "./primitives/ProgressBar";
 export * from "./primitives/PublishCtaButton";
 export * from "./primitives/SearchAutocomplete";
+export * from "./primitives/SearchPageControls";
 export * from "./primitives/SellerCard";
 export * from "./primitives/ViewModeToggle";
 

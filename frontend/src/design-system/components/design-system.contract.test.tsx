@@ -3,7 +3,13 @@ import { describe, expect, it } from "vitest";
 import { VerificationBadge } from "@shongre/ui/web";
 import { Button } from "../primitives/Button";
 import { Input, Switch } from "../primitives/FormField";
-import { FilterPanel } from "../primitives/FilterPanel";
+import { FilterPanel, FilterPanelToggle } from "../primitives/FilterPanel";
+import {
+  SearchActiveFiltersBar,
+  SearchResultsToolbar,
+  SearchSortControl,
+  countActiveSearchParams,
+} from "../primitives/SearchPageControls";
 import { Surface } from "../primitives/Layout";
 import { EmptyState, Notice } from "./Feedback";
 import { OnboardingPreparationPage } from "./OnboardingPreparationPage";
@@ -101,5 +107,74 @@ describe("design-system representative states", () => {
     expect(sidebar).toContain("Réinitialiser");
     expect(drawer).toContain('data-filter-panel="drawer"');
     expect(drawer).toContain("Voir les résultats");
+  });
+
+  it("renders the shared filter visibility controls", () => {
+    const expanded = renderToStaticMarkup(
+      <FilterPanelToggle
+        isExpanded
+        controls="vehicle-filters"
+        onToggle={() => undefined}
+      />,
+    );
+    const drawer = renderToStaticMarkup(
+      <FilterPanelToggle
+        isExpanded={false}
+        controls="vehicle-filter-drawer"
+        presentation="drawer"
+        activeCount={3}
+        onToggle={() => undefined}
+      />,
+    );
+
+    expect(expanded).toContain('aria-controls="vehicle-filters"');
+    expect(expanded).toContain('aria-expanded="true"');
+    expect(expanded).toContain("Masquer");
+    expect(drawer).toContain('aria-controls="vehicle-filter-drawer"');
+    expect(drawer).toContain('aria-expanded="false"');
+    expect(drawer).toContain("Ouvrir les filtres de recherche");
+    expect(drawer).toContain(">3<");
+  });
+
+  it("renders the canonical active-filter summary and results toolbar", () => {
+    const html = renderToStaticMarkup(
+      <>
+        <SearchActiveFiltersBar onClear={() => undefined}>
+          <span>Paris</span>
+        </SearchActiveFiltersBar>
+        <SearchResultsToolbar
+          resultLabel="12 annonces"
+          desktopFilterPanelId="desktop-filters"
+          mobileFilterPanelId="mobile-filters"
+          desktopFiltersExpanded
+          mobileFiltersExpanded={false}
+          activeFilterCount={2}
+          onToggleDesktopFilters={() => undefined}
+          onOpenMobileFilters={() => undefined}
+          actions={<button type="button">Sauvegarder</button>}
+          viewControls={<button type="button">Grille</button>}
+          sortControl={
+            <SearchSortControl>
+              <button type="button">Plus récentes</button>
+            </SearchSortControl>
+          }
+        />
+      </>,
+    );
+
+    expect(html).toContain("data-search-active-filters");
+    expect(html).toContain("data-search-results-toolbar");
+    expect(html).toContain('aria-controls="desktop-filters"');
+    expect(html).toContain('aria-controls="mobile-filters"');
+    expect(html).toContain("Sauvegarder");
+    expect(html).toContain("Plus récentes");
+  });
+
+  it("counts only configured non-empty search parameters", () => {
+    const params = new URLSearchParams(
+      "q=velo&city=&sort=newest&fuel=electric",
+    );
+
+    expect(countActiveSearchParams(params, ["q", "city", "fuel"])).toBe(2);
   });
 });

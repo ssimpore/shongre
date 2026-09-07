@@ -663,6 +663,7 @@ export const themeGridTemplates = {
   "search-compare-auto": "16rem minmax(0, 1fr) 17rem",
   "search-compare-balanced": "16rem minmax(0, 1fr) 16rem",
   "search-properties": "16rem minmax(30rem, 0.9fr) minmax(24rem, 1.1fr)",
+  "search-properties-content": "minmax(30rem, 0.9fr) minmax(24rem, 1.1fr)",
   "workspace-metrics":
     "auto minmax(0, 1fr) minmax(12rem, 0.7fr) minmax(12rem, 0.7fr)",
   "course-card": "9rem minmax(0, 1fr) 10rem",
