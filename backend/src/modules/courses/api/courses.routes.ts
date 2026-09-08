@@ -187,12 +187,32 @@ export function registerCoursesRoutes(routes: RouteRegistrar): void {
   );
   routes.addRoute(
     "GET",
+    "/education/workspace",
+    permission("course.lead.read.own"),
+    async ({ principal, marketCode }) =>
+      coursesService.getCurrentTutorWorkspace(
+        principal.userId,
+        requireApiRequestMarket(marketCode),
+      ),
+  );
+  routes.addRoute(
+    "GET",
     "/education/workspace/:tutorProfileId",
     permission("course.lead.read.own"),
     async ({ principal, params }) =>
       coursesService.getOwnTutorWorkspace(
         principal.userId,
         params.tutorProfileId,
+      ),
+  );
+  routes.addRoute(
+    "GET",
+    "/education/organizations/workspace",
+    permission("course.organization.manage.own"),
+    async ({ principal, marketCode }) =>
+      coursesService.getCurrentOrganizationWorkspace(
+        principal.userId,
+        requireApiRequestMarket(marketCode),
       ),
   );
   routes.addRoute(

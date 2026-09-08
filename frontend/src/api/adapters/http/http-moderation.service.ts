@@ -4,7 +4,7 @@ import type {
   ModerationServiceContract,
   OwnModerationCase,
 } from "../../contracts/moderation.contract";
-import { httpClient } from "./http-client";
+import { apiOperation } from "./generated-api-operation";
 
 export class HttpModerationService implements ModerationServiceContract {
   async submitReport(input: {
@@ -14,20 +14,25 @@ export class HttpModerationService implements ModerationServiceContract {
     reason: "fraud" | "counterfeit" | "prohibited" | "harassment" | "other";
     details: string;
   }): Promise<{ id: string; status: "pending" }> {
-    return httpClient.post("/reports", input);
+    return apiOperation<{ id: string; status: "pending" }, "postReports">(
+      "postReports",
+      { body: input },
+    );
   }
 
   async listOwnCases(_userId: string): Promise<OwnModerationCase[]> {
-    const response = await httpClient.get<{ items: OwnModerationCase[] }>(
-      "/moderation/cases/mine",
-    );
+    const response = await apiOperation<
+      { items: OwnModerationCase[] },
+      "getOwnModerationCases"
+    >("getOwnModerationCases", {});
     return response.items;
   }
 
   async listOwnAppeals(_userId: string): Promise<ModerationAppeal[]> {
-    const response = await httpClient.get<{ items: ModerationAppeal[] }>(
-      "/moderation/appeals/mine",
-    );
+    const response = await apiOperation<
+      { items: ModerationAppeal[] },
+      "getOwnModerationAppeals"
+    >("getOwnModerationAppeals", {});
     return response.items;
   }
 
@@ -36,27 +41,27 @@ export class HttpModerationService implements ModerationServiceContract {
     _userId: string,
     reason: string,
   ): Promise<ModerationAppeal> {
-    return httpClient.post<ModerationAppeal>(
-      `/moderation/cases/${encodeURIComponent(caseId)}/appeals`,
-      { reason },
+    return apiOperation<ModerationAppeal, "postModerationCaseAppeal">(
+      "postModerationCaseAppeal",
+      { path: { caseId: caseId }, body: { reason } },
     );
   }
 
   async listCases(status?: ModerationCaseStatus): Promise<OwnModerationCase[]> {
-    const response = await httpClient.get<{ items: OwnModerationCase[] }>(
-      "/admin/moderation/cases",
-      { params: { status } },
-    );
+    const response = await apiOperation<
+      { items: OwnModerationCase[] },
+      "getAdminModerationCases"
+    >("getAdminModerationCases", { query: { status } });
     return response.items;
   }
 
   async listAppeals(
     status?: ModerationAppeal["status"],
   ): Promise<ModerationAppeal[]> {
-    const response = await httpClient.get<{ items: ModerationAppeal[] }>(
-      "/admin/moderation/appeals",
-      { params: { status } },
-    );
+    const response = await apiOperation<
+      { items: ModerationAppeal[] },
+      "getAdminModerationAppeals"
+    >("getAdminModerationAppeals", { query: { status } });
     return response.items;
   }
 
@@ -65,9 +70,9 @@ export class HttpModerationService implements ModerationServiceContract {
     decision: "upheld" | "overturned" | "rejected",
     reason: string,
   ): Promise<ModerationAppeal> {
-    return httpClient.post<ModerationAppeal>(
-      `/admin/moderation/appeals/${encodeURIComponent(appealId)}/decision`,
-      { decision, reason },
+    return apiOperation<ModerationAppeal, "postAdminModerationAppealDecision">(
+      "postAdminModerationAppealDecision",
+      { path: { appealId: appealId }, body: { decision, reason } },
     );
   }
 }

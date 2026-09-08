@@ -1,4 +1,42 @@
 services:
+  redis:
+    image: redis:8.2.1-alpine@sha256:987c376c727652f99625c7d205a1cba3cb2c53b92b0b62aade2bd48ee1593232
+    pull_policy: missing
+    init: true
+    restart: unless-stopped
+    command:
+      - redis-server
+      - --port
+      - "6379"
+      - --appendonly
+      - "yes"
+      - --save
+      - "60"
+      - "1"
+    ports:
+      - "127.0.0.1:${REDIS_PORT:?REDIS_PORT is required}:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - private
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - SETGID
+      - SETUID
+    tmpfs:
+      - /tmp:size=16m,mode=1777
+    healthcheck:
+      test: ["CMD", "redis-cli", "-p", "6379", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
   frontend:
     build:
       context: .
@@ -6,6 +44,10 @@ services:
     pull_policy: never
     ports:
       - "127.0.0.1:${FRONTEND_PORT:?FRONTEND_PORT is required}:${FRONTEND_PORT:?FRONTEND_PORT is required}"
+    environment:
+      API_URL: http://backend:${BACKEND_PORT:?BACKEND_PORT is required}
+      PUBLIC_MEDIA_ASSET_BASE_URL: ${PUBLIC_MEDIA_ASSET_BASE_URL:?PUBLIC_MEDIA_ASSET_BASE_URL is required}
+      PUBLIC_CATEGORY_MEDIA_BASE_URL: ${PUBLIC_CATEGORY_MEDIA_BASE_URL:?PUBLIC_CATEGORY_MEDIA_BASE_URL is required}
 
   backend:
     build:
@@ -14,6 +56,48 @@ services:
     pull_policy: never
     ports:
       - "127.0.0.1:${BACKEND_PORT:?BACKEND_PORT is required}:${BACKEND_PORT:?BACKEND_PORT is required}"
+    environment:
+      APP_ENV: ${APP_ENV:?APP_ENV is required}
+      ENVIRONMENT_ID: ${ENVIRONMENT_ID:?ENVIRONMENT_ID is required}
+      API_ENVIRONMENT_ID: ${API_ENVIRONMENT_ID:?API_ENVIRONMENT_ID is required}
+      DATABASE_ENVIRONMENT_ID: ${DATABASE_ENVIRONMENT_ID:?DATABASE_ENVIRONMENT_ID is required}
+      SUPABASE_ENVIRONMENT_ID: ${SUPABASE_ENVIRONMENT_ID:?SUPABASE_ENVIRONMENT_ID is required}
+      STORAGE_ENVIRONMENT_ID: ${STORAGE_ENVIRONMENT_ID:?STORAGE_ENVIRONMENT_ID is required}
+      DATABASE_URL: ${SHONGRE_CONTAINER_DATABASE_URL:-}
+      SUPABASE_URL: ${SHONGRE_CONTAINER_SUPABASE_URL:-}
+      SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY:-}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-}
+      JWT_SECRET: ${JWT_SECRET:-}
+      REDIS_URL: redis://redis:6379
+      LOCAL_MAIL_SMTP_URL: smtp://host.docker.internal:${SUPABASE_SMTP_PORT:?SUPABASE_SMTP_PORT is required}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      redis:
+        condition: service_healthy
 
   worker:
     pull_policy: never
+    environment:
+      APP_ENV: ${APP_ENV:?APP_ENV is required}
+      ENVIRONMENT_ID: ${ENVIRONMENT_ID:?ENVIRONMENT_ID is required}
+      API_ENVIRONMENT_ID: ${API_ENVIRONMENT_ID:?API_ENVIRONMENT_ID is required}
+      DATABASE_ENVIRONMENT_ID: ${DATABASE_ENVIRONMENT_ID:?DATABASE_ENVIRONMENT_ID is required}
+      SUPABASE_ENVIRONMENT_ID: ${SUPABASE_ENVIRONMENT_ID:?SUPABASE_ENVIRONMENT_ID is required}
+      STORAGE_ENVIRONMENT_ID: ${STORAGE_ENVIRONMENT_ID:?STORAGE_ENVIRONMENT_ID is required}
+      DATABASE_URL: ${SHONGRE_CONTAINER_DATABASE_URL:-}
+      SUPABASE_URL: ${SHONGRE_CONTAINER_SUPABASE_URL:-}
+      SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY:-}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-}
+      JWT_SECRET: ${JWT_SECRET:-}
+      REDIS_URL: redis://redis:6379
+      LOCAL_MAIL_SMTP_URL: smtp://host.docker.internal:${SUPABASE_SMTP_PORT:?SUPABASE_SMTP_PORT is required}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      redis:
+        condition: service_healthy
+
+volumes:
+  redis-data:
+    name: ${COMPOSE_PROJECT_NAME:-shongre}-redis-data

@@ -29,8 +29,8 @@ const firefoxCanLaunch =
 /**
  * Shongre end-to-end configuration.
  *
- * The default suite uses standalone demo data. The API transport target owns
- * an isolated test backend; protected hosted certification uses dedicated
+ * The Web client always uses the API. The API transport target owns an
+ * isolated test backend; protected hosted certification uses dedicated
  * staging accounts and sandbox providers, never production credentials.
  */
 export default defineConfig({

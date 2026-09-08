@@ -17,7 +17,6 @@ import {
   Textarea,
 } from "../../design-system/primitives/FormField";
 import { Modal } from "../../design-system/primitives/Modal";
-import { marketService } from "../../domains/market/market.service";
 import { useTranslation } from "../../i18n/I18nProvider";
 
 const EMPTY_SCOPE: CommissionScope = {
@@ -56,14 +55,17 @@ type AdjustmentType = Extract<
   { kind: "adjustment" }
 >["adjustment"]["type"];
 
-function initialScope(policy?: CommissionPolicy | null): {
+function initialScope(
+  policy: CommissionPolicy | null | undefined,
+  defaultCountryCode: string,
+): {
   level: ScopeLevel;
   values: string;
 } {
   if (!policy)
     return {
       level: "countryCodes",
-      values: marketService.getDefaultMarket().countryCode,
+      values: defaultCountryCode,
     };
   const scope = policy.rules[0]?.scope;
   const ordered: ScopeKey[] = [
@@ -183,7 +185,10 @@ export function AdminCommissionPolicyEditor({
   onCreated,
 }: AdminCommissionPolicyEditorProps) {
   const { t } = useTranslation();
-  const seedScope = useMemo(() => initialScope(template), [template]);
+  const seedScope = useMemo(
+    () => initialScope(template, catalog.marketCode),
+    [catalog.marketCode, template],
+  );
   const seedModel = useMemo(() => modelDefaults(template), [template]);
   const templateEffect = template?.rules[0]?.effect;
   const [form, setForm] = useState({

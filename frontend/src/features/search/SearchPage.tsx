@@ -27,7 +27,7 @@ import type {
 } from "../../api/contracts/search.contract";
 import { services } from "../../api/client/service-registry";
 import { SearchFilters, ListingCondition } from "../../types";
-import { getTaxonomyLabel } from "../../domains/taxonomy/taxonomy.service";
+import { getTaxonomyLabel } from "../../domains/taxonomy/taxonomy.labels";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useRootTaxonomyCategories } from "../../hooks/useRootTaxonomyCategories";
 import { ListingCard } from "../../design-system/primitives/ListingCard";
@@ -559,25 +559,6 @@ export const SearchPage: React.FC = () => {
             : {}),
         },
       });
-      browserPreferencesService.saveSearch(
-        {
-          id,
-          title,
-          filters: {
-            query,
-            categorySlug,
-            city,
-            minPrice,
-            maxPrice,
-            marketCode: activeMarket.code,
-          },
-          createdAt: new Date().toISOString(),
-          hasNotifications: true,
-          matchCount: totalCount,
-        },
-        currentUser.id,
-        activeMarket.code,
-      );
       toast.success(t("watch.save.success"), t("watch.save.title"));
     } catch (reason) {
       toast.error(
@@ -593,77 +574,6 @@ export const SearchPage: React.FC = () => {
     (s) => s.slug === subCategorySlug || s.id === subCategorySlug,
   );
   const activeNodeId = activeSubCat?.id || activeCategory?.id;
-
-  // A search is useful on the home page only if it can be resumed with the
-  // same criteria. Store the structured URL after every meaningful search or
-  // filter change; the homepage listens for the storage event and updates the
-  // cards immediately when this happens in the same tab.
-  useEffect(() => {
-    const hasAttributeFilters = [...searchParams.keys()].some((key) =>
-      key.startsWith("attr_"),
-    );
-    const hasCriteria = Boolean(
-      query.trim() ||
-      categorySlug ||
-      subCategorySlug ||
-      city ||
-      minPrice !== undefined ||
-      maxPrice !== undefined ||
-      sellerType !== "all" ||
-      delivery ||
-      onlinePayment ||
-      onlyDeals ||
-      conditions.length > 0 ||
-      hasAttributeFilters,
-    );
-    if (!hasCriteria) return;
-
-    const recentUrlParams = new URLSearchParams(searchParams.toString());
-    if (categoryRouteSlug && !recentUrlParams.has("category")) {
-      recentUrlParams.set("category", categoryRouteSlug);
-    }
-    recentUrlParams.delete("page");
-    recentUrlParams.delete("cursor");
-    recentUrlParams.delete("view");
-
-    browserPreferencesService.addRecentSearchItem({
-      title:
-        query.trim() ||
-        (activeSubCat
-          ? getTaxonomyLabel(activeSubCat, "compact")
-          : undefined) ||
-        (activeCategory
-          ? getTaxonomyLabel(activeCategory, "compact")
-          : undefined) ||
-        t("search.searchPage.recherchePersonnalisee"),
-      locationLabel: city || userLocation.city || activeMarket.name,
-      categorySlug:
-        activeSubCat?.slug || activeCategory?.slug || categorySlug || undefined,
-      query: query.trim() || undefined,
-      to: `/recherche?${recentUrlParams.toString()}`,
-    });
-  }, [
-    activeCategory?.name,
-    activeCategory?.slug,
-    activeMarket.name,
-    activeSubCat?.name,
-    activeSubCat?.slug,
-    categoryRouteSlug,
-    categorySlug,
-    city,
-    conditions.length,
-    delivery,
-    maxPrice,
-    minPrice,
-    onlinePayment,
-    onlyDeals,
-    query,
-    searchParams,
-    sellerType,
-    subCategorySlug,
-    t,
-    userLocation.city,
-  ]);
 
   const [dynamicFacets, setDynamicFacets] = useState<
     Awaited<ReturnType<typeof services.taxonomy.resolveSearchFilters>>

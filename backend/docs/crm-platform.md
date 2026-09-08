@@ -270,14 +270,13 @@ AI/provider egress requires an approved data classification. Internal risk,
 fraud, moderation, credential, private KYC/KYB, payment, and unrelated tenant
 data must not enter prompts or emails.
 
-## Demo mode
+## Test mode
 
-Demo CRM and provider adapters are deterministic, asynchronous, clearly marked,
-and make no external calls. They exercise the same public service contracts as
-connected mode. Demo data is not a production persistence mechanism.
+Backend test adapters are deterministic, asynchronous, clearly marked, and
+make no external calls. They exercise the same public service contracts as
+database mode. Test data is not a production persistence mechanism.
 
-`NEXT_PUBLIC_DATA_MODE=demo` keeps the frontend standalone.
-`BACKEND_DATA_MODE=demo` selects deterministic repositories. A production
+`BACKEND_DATA_MODE=demo` selects deterministic test repositories. A production
 configuration must reject demo providers and must never silently fall back from
 database/API/provider failure to demo.
 

@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { MODERATION_CONSTRAINTS } from "@shongre/contracts";
 import { Flag, AlertTriangle } from "lucide-react";
-import { UserProfile } from "../../../types";
 import { Modal } from "../../../design-system/primitives/Modal";
 import { Button } from "../../../design-system/primitives/Button";
 import { useToast } from "../../../app/providers/ToastProvider";
@@ -11,7 +10,7 @@ import { useTranslation } from "../../../i18n/I18nProvider";
 export interface SellerReportModalProps {
   isOpen: boolean;
   onClose: () => void;
-  seller: Pick<UserProfile, "id" | "name" | "companyName">;
+  seller: { id: string; name: string };
   reviewId?: string;
 }
 
@@ -90,7 +89,7 @@ export const SellerReportModal: React.FC<SellerReportModalProps> = ({
           <AlertTriangle className="w-icon-md h-icon-md text-warning shrink-0 mt-0.5" />
           <p>
             {t("reviews.reportDescription", {
-              name: seller.companyName || seller.name,
+              name: seller.name,
             })}
           </p>
         </div>

@@ -49,6 +49,7 @@ const SERVER_METADATA_PAGES = new Set([
 
 /** Thin route wrappers whose shared page owns entry-point-aware metadata. */
 const DELEGATED_CLIENT_METADATA_PAGES = new Map([
+  ["saved-searches/SavedSearchesPage.tsx", "<WatchSubscriptionsPage"],
   ["admin/crm/CrmAiProspectingPage.tsx", "<ProspectingWorkspacePage"],
   [
     "prospecting/ProspectsStandaloneWorkspacePage.tsx",

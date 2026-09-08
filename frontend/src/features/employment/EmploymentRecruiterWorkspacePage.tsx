@@ -15,6 +15,7 @@ import {
 import type {
   EmploymentApplication,
   EmploymentImport,
+  EmploymentInterview,
   EmployerSummary,
   RecruiterWorkspace,
 } from "@shongre/contracts/employment";
@@ -71,7 +72,19 @@ export const EmploymentRecruiterWorkspacePage: React.FC = () => {
   const [interviewDraft, setInterviewDraft] = useState<{
     applicationId?: string;
     startsAt: string;
-  }>({ startsAt: "2026-08-28T10:00" });
+    modeId: EmploymentInterview["modeId"];
+    privateMeetingLink: string;
+    candidateMessage: string;
+  }>({
+    startsAt: "",
+    modeId: "video",
+    privateMeetingLink: "",
+    candidateMessage: "",
+  });
+  const [importDraft, setImportDraft] = useState<{
+    sourceType: EmploymentImport["sourceType"];
+    sourceIdentifier: string;
+  }>({ sourceType: "csv", sourceIdentifier: "" });
   const [busyId, setBusyId] = useState<string>();
   const [importPreview, setImportPreview] = useState<EmploymentImport>();
 
@@ -182,14 +195,15 @@ export const EmploymentRecruiterWorkspacePage: React.FC = () => {
         workspace.employer.id,
         interviewDraft.applicationId,
         {
-          modeId: "video",
+          modeId: interviewDraft.modeId,
           timezone: activeMarket.timezone,
           startsAt,
           endsAt,
           status: "proposed",
-          privateMeetingLink: "https://meet.example.test/private-demo",
+          privateMeetingLink:
+            interviewDraft.privateMeetingLink.trim() || undefined,
           participantUserIds: [],
-          candidateMessage: "Nous vous proposons un échange de 45 minutes.",
+          candidateMessage: interviewDraft.candidateMessage.trim() || undefined,
         },
       );
       setWorkspace((current) =>
@@ -205,22 +219,23 @@ export const EmploymentRecruiterWorkspacePage: React.FC = () => {
     }
   };
 
-  const previewImport = async (sourceType: "csv" | "xml" | "ats") => {
+  const previewImport = async () => {
+    const sourceIdentifier = importDraft.sourceIdentifier.trim();
+    if (!sourceIdentifier) return;
     try {
       if (!workspace) return;
       const preview = await services.employment.previewImport(
         workspace.employer.id,
         {
-          sourceType,
-          sourceIdentifier:
-            sourceType === "ats"
-              ? "ats-demo-connector"
-              : `offres-technova.${sourceType}`,
-          idempotencyKey: `technova-${sourceType}-20260822`,
+          sourceType: importDraft.sourceType,
+          sourceIdentifier,
+          idempotencyKey: crypto.randomUUID(),
         },
       );
       setImportPreview(preview);
-      toast.success(`Prévisualisation ${labelIdentifier(sourceType)} prête.`);
+      toast.success(
+        `Prévisualisation ${labelIdentifier(importDraft.sourceType)} prête.`,
+      );
     } catch (cause) {
       toast.error(
         cause instanceof Error ? cause.message : "Prévisualisation impossible.",
@@ -668,10 +683,53 @@ export const EmploymentRecruiterWorkspacePage: React.FC = () => {
                   }
                 />
               </FormField>
+              <FormField label="Format">
+                <Select
+                  labelledByAncestor
+                  value={interviewDraft.modeId}
+                  onChange={(event) =>
+                    setInterviewDraft((current) => ({
+                      ...current,
+                      modeId: event.target.value as typeof current.modeId,
+                    }))
+                  }
+                >
+                  <option value="video">Visioconférence</option>
+                  <option value="phone">Téléphone</option>
+                  <option value="in_person">Sur place</option>
+                </Select>
+              </FormField>
+              <FormField label="Lien privé (facultatif)">
+                <Input
+                  type="url"
+                  value={interviewDraft.privateMeetingLink}
+                  onChange={(event) =>
+                    setInterviewDraft((current) => ({
+                      ...current,
+                      privateMeetingLink: event.target.value,
+                    }))
+                  }
+                  placeholder="https://"
+                />
+              </FormField>
+              <FormField label="Message au candidat (facultatif)">
+                <Textarea
+                  rows={3}
+                  value={interviewDraft.candidateMessage}
+                  onChange={(event) =>
+                    setInterviewDraft((current) => ({
+                      ...current,
+                      candidateMessage: event.target.value,
+                    }))
+                  }
+                />
+              </FormField>
               <Button
                 className="w-full"
                 onClick={schedule}
-                disabled={!interviewDraft.applicationId}
+                disabled={
+                  !interviewDraft.applicationId || !interviewDraft.startsAt
+                }
               >
                 Envoyer la proposition
               </Button>
@@ -726,27 +784,58 @@ export const EmploymentRecruiterWorkspacePage: React.FC = () => {
               Chaque exécution utilise une clé d’idempotence pour éviter les
               doublons et produire un rapport détaillé.
             </p>
-            <div className="mt-4 flex flex-wrap gap-2">
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <FormField label="Type de source">
+                <Select
+                  labelledByAncestor
+                  value={importDraft.sourceType}
+                  onChange={(event) =>
+                    setImportDraft((current) => ({
+                      ...current,
+                      sourceType: event.target
+                        .value as EmploymentImport["sourceType"],
+                    }))
+                  }
+                >
+                  <option
+                    value="csv"
+                    disabled={workspace.entitlements.csvImport !== true}
+                  >
+                    Fichier CSV
+                  </option>
+                  <option
+                    value="xml"
+                    disabled={workspace.entitlements.xmlImport !== true}
+                  >
+                    Flux XML
+                  </option>
+                  <option
+                    value="ats"
+                    disabled={workspace.entitlements.apiSync !== true}
+                  >
+                    Connecteur ATS
+                  </option>
+                </Select>
+              </FormField>
+              <FormField label="Fichier, URL ou connecteur">
+                <Input
+                  value={importDraft.sourceIdentifier}
+                  onChange={(event) =>
+                    setImportDraft((current) => ({
+                      ...current,
+                      sourceIdentifier: event.target.value,
+                    }))
+                  }
+                  placeholder="Identifiant de la source"
+                />
+              </FormField>
               <Button
+                className="self-end"
                 variant="secondary"
-                disabled={workspace.entitlements.csvImport !== true}
-                onClick={() => previewImport("csv")}
+                disabled={!importDraft.sourceIdentifier.trim()}
+                onClick={previewImport}
               >
-                Importer un CSV
-              </Button>
-              <Button
-                variant="secondary"
-                disabled={workspace.entitlements.xmlImport !== true}
-                onClick={() => previewImport("xml")}
-              >
-                Synchroniser un flux XML
-              </Button>
-              <Button
-                variant="secondary"
-                disabled={workspace.entitlements.apiSync !== true}
-                onClick={() => previewImport("ats")}
-              >
-                Connecter un ATS
+                Prévisualiser
               </Button>
             </div>
             {workspace.entitlements.csvImport !== true &&

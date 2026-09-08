@@ -5,7 +5,7 @@ import { scheduledWorkerRuntime } from "../../workers/scheduled-worker-runtime.j
 
 export async function startWorker(): Promise<void> {
   await bootstrapApp();
-  scheduledWorkerRuntime.start();
+  await scheduledWorkerRuntime.start();
 
   let stopping = false;
   const shutdown = async (signal: NodeJS.Signals) => {

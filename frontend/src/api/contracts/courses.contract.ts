@@ -112,7 +112,11 @@ export interface CoursesServiceContract {
     draft: LearnerRequestProgressDraft,
   ): Promise<void>;
   clearLearnerRequestDraft(accountId: string): Promise<void>;
+  getCurrentTutorWorkspace(marketCode: string): Promise<TutorWorkspace>;
   getTutorWorkspace(tutorProfileId: string): Promise<TutorWorkspace>;
+  getCurrentOrganizationWorkspace(
+    marketCode: string,
+  ): Promise<CourseOrganizationWorkspace>;
   getOrganizationWorkspace(
     organizationId: string,
   ): Promise<CourseOrganizationWorkspace>;

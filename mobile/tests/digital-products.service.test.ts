@@ -21,11 +21,16 @@ describe("API-backed mobile digital-products service", () => {
     await expect(service.listEntitlements("CH", "account-a")).resolves.toEqual(
       entitlements.items,
     );
-    expect(apiRequest).toHaveBeenNthCalledWith(1, "/digital/policy", {}, "CH");
+    expect(apiRequest).toHaveBeenNthCalledWith(
+      1,
+      "/digital/policy",
+      expect.objectContaining({ method: "GET", headers: expect.any(Headers) }),
+      "CH",
+    );
     expect(apiRequest).toHaveBeenNthCalledWith(
       2,
       "/digital/entitlements",
-      {},
+      expect.objectContaining({ method: "GET", headers: expect.any(Headers) }),
       "CH",
     );
   });
@@ -83,7 +88,10 @@ describe("API-backed mobile digital-products service", () => {
     );
     expect(apiRequest).toHaveBeenLastCalledWith(
       "/digital/assets/uploads/asset-1/complete",
-      { method: "POST" },
+      expect.objectContaining({
+        method: "POST",
+        headers: expect.any(Headers),
+      }),
       "FR",
     );
   });

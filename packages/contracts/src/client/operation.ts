@@ -30,18 +30,27 @@ type Body<Id extends OperationId> = operations[Id] extends {
 }
   ? Content<NonNullable<B>>
   : never;
+type CompatibleBody<T> = T extends object
+  ? string extends keyof T
+    ? object
+    : T
+  : T;
 type BodySlot<Id extends OperationId> = [Body<Id>] extends [never]
   ? {}
   : operations[Id] extends { requestBody: unknown }
-    ? { body: Body<Id> }
-    : { body?: Body<Id> };
+    ? { body: CompatibleBody<Body<Id>> }
+    : { body?: CompatibleBody<Body<Id>> };
 
 export type ApiInput<Id extends OperationId> = Slot<
   "path",
   Parameter<Id, "path">
 > &
   Slot<"query", Parameter<Id, "query">> &
-  BodySlot<Id> & { signal?: AbortSignal; headers?: HeadersInit };
+  BodySlot<Id> & {
+    signal?: AbortSignal;
+    headers?: HeadersInit;
+    credentials?: RequestCredentials;
+  };
 export type ApiResponse<Id extends OperationId> = operations[Id] extends {
   responses: infer R;
 }
@@ -68,6 +77,7 @@ export function executeApiOperation<Id extends OperationId>(
     body?: unknown;
     signal?: AbortSignal;
     headers?: HeadersInit;
+    credentials?: RequestCredentials;
   };
   const path = template.replace(/\{([^}]+)\}/g, (_match, name: string) => {
     const value = args.path?.[name];
@@ -104,5 +114,6 @@ export function executeApiOperation<Id extends OperationId>(
     headers,
     ...(body !== undefined ? { body } : {}),
     ...(args.signal ? { signal: args.signal } : {}),
+    ...(args.credentials ? { credentials: args.credentials } : {}),
   }) as Promise<ApiResponse<Id>>;
 }

@@ -1,4 +1,5 @@
 import type { SolutionsServiceContract } from "../../contracts/solutions.contract";
+import { apiOperation } from "./generated-api-operation";
 import type {
   CreateSolutionInput,
   SolutionDefinition,
@@ -9,7 +10,6 @@ import type {
   UpdateSolutionInput,
 } from "../../../domains/solutions/solutions.types";
 import { deterministicRuntimeId } from "../../../utilities/deterministic-id";
-import { httpClient } from "./http-client";
 
 let mutationSequence = 0;
 
@@ -69,35 +69,45 @@ export class HttpSolutionsService implements SolutionsServiceContract {
   listPublicSolutions(
     options: SolutionListOptions = {},
   ): Promise<SolutionDefinition[]> {
-    return httpClient.get<SolutionDefinition[]>(
-      "/solutions",
-      marketOptions(options),
-    );
+    const request = marketOptions(options);
+    return apiOperation<SolutionDefinition[], "getSolutions">("getSolutions", {
+      query: request.params,
+      headers: request.headers,
+    });
   }
 
   getSolutionBySlug(
     slug: string,
     options: SolutionListOptions & { includeAdminOnly?: boolean } = {},
   ): Promise<SolutionDefinition | null> {
-    return httpClient.get<SolutionDefinition | null>(
-      `/solutions/${encodeURIComponent(slug)}`,
-      marketOptions(options),
+    const request = marketOptions(options);
+    return apiOperation<SolutionDefinition | null, "getSolutionBySlug">(
+      "getSolutionBySlug",
+      {
+        path: { solutionSlug: slug },
+        query: request.params,
+        headers: request.headers,
+      },
     );
   }
 
   listAdminSolutions(
     _actor: SolutionsAdminActor,
   ): Promise<SolutionDefinition[]> {
-    return httpClient.get<SolutionDefinition[]>("/admin/solutions");
+    return apiOperation<SolutionDefinition[], "getAdminSolutions">(
+      "getAdminSolutions",
+      {},
+    );
   }
 
   createSolution(
     input: CreateSolutionInput,
     _actor: SolutionsAdminActor,
   ): Promise<SolutionDefinition> {
-    return httpClient.post<SolutionDefinition>("/admin/solutions", input, {
-      headers: mutationHeaders("create"),
-    });
+    return apiOperation<SolutionDefinition, "postAdminSolution">(
+      "postAdminSolution",
+      { body: input, headers: mutationHeaders("create") },
+    );
   }
 
   updateSolution(
@@ -105,10 +115,13 @@ export class HttpSolutionsService implements SolutionsServiceContract {
     input: UpdateSolutionInput,
     _actor: SolutionsAdminActor,
   ): Promise<SolutionDefinition> {
-    return httpClient.patch<SolutionDefinition>(
-      `/admin/solutions/${encodeURIComponent(solutionId)}`,
-      serializeUpdate(input),
-      { headers: mutationHeaders("update") },
+    return apiOperation<SolutionDefinition, "patchAdminSolution">(
+      "patchAdminSolution",
+      {
+        path: { solutionId: solutionId },
+        body: serializeUpdate(input),
+        headers: mutationHeaders("update"),
+      },
     );
   }
 
@@ -116,10 +129,9 @@ export class HttpSolutionsService implements SolutionsServiceContract {
     solutionIds: readonly string[],
     _actor: SolutionsAdminActor,
   ): Promise<SolutionDefinition[]> {
-    return httpClient.put<SolutionDefinition[]>(
-      "/admin/solutions/order",
-      { solutionIds },
-      { headers: mutationHeaders("reorder") },
+    return apiOperation<SolutionDefinition[], "putAdminSolutionsOrder">(
+      "putAdminSolutionsOrder",
+      { body: { solutionIds }, headers: mutationHeaders("reorder") },
     );
   }
 
@@ -128,10 +140,13 @@ export class HttpSolutionsService implements SolutionsServiceContract {
     lifecycle: SolutionLifecycle,
     options: { explanation: string; actor: SolutionsAdminActor },
   ): Promise<SolutionDefinition> {
-    return httpClient.post<SolutionDefinition>(
-      `/admin/solutions/${encodeURIComponent(solutionId)}/lifecycle`,
-      { lifecycle, explanation: options.explanation },
-      { headers: mutationHeaders("transition") },
+    return apiOperation<SolutionDefinition, "postAdminSolutionLifecycle">(
+      "postAdminSolutionLifecycle",
+      {
+        path: { solutionId: solutionId },
+        body: { lifecycle, explanation: options.explanation },
+        headers: mutationHeaders("transition"),
+      },
     );
   }
 
@@ -139,9 +154,10 @@ export class HttpSolutionsService implements SolutionsServiceContract {
     solutionId: string,
     _actor: SolutionsAdminActor,
   ): Promise<SolutionLifecycleHistoryEntry[]> {
-    return httpClient.get<SolutionLifecycleHistoryEntry[]>(
-      `/admin/solutions/${encodeURIComponent(solutionId)}/lifecycle-history`,
-    );
+    return apiOperation<
+      SolutionLifecycleHistoryEntry[],
+      "getAdminSolutionLifecycleHistory"
+    >("getAdminSolutionLifecycleHistory", { path: { solutionId: solutionId } });
   }
 }
 

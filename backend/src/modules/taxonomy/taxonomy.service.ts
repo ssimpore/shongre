@@ -113,6 +113,16 @@ export class TaxonomyService {
         message: "La configuration ne correspond pas au marché demandé.",
       });
     }
+    if (
+      parsed.links?.some((link) => link.isActive) &&
+      context.marketContext.kind !== "market"
+    ) {
+      throw new AppError({
+        code: "CONFLICT",
+        statusCode: 409,
+        message: "Ce marché n’est pas encore ouvert.",
+      });
+    }
 
     const nodes = await Promise.all(
       parsed.items.map((item) =>

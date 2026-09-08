@@ -3,7 +3,7 @@ import {
   WorkspaceServiceContract,
   UserWorkspaceSummary,
 } from "../../contracts/workspace.contract";
-import { httpClient } from "./http-client";
+import { apiOperation } from "./generated-api-operation";
 import {
   mapBackendListing,
   type BackendListing,
@@ -18,12 +18,13 @@ export class HttpWorkspaceService implements WorkspaceServiceContract {
     userId: string,
     marketCode: string,
   ): Promise<UserWorkspaceSummary> {
-    const summary = await httpClient.get<BackendWorkspaceSummary>(
-      `/workspace/summary/${userId}`,
-      {
-        headers: { "X-Shongre-Market": marketCode },
-      },
-    );
+    const summary = await apiOperation<
+      BackendWorkspaceSummary,
+      "getWorkspaceSummaryByUserId"
+    >("getWorkspaceSummaryByUserId", {
+      path: { userId: userId },
+      headers: { "X-Shongre-Market": marketCode },
+    });
     return {
       ...summary,
       recentListings: summary.recentListings.map(mapBackendListing),
@@ -31,9 +32,10 @@ export class HttpWorkspaceService implements WorkspaceServiceContract {
   }
 
   async getProAnalytics(sellerId: string): Promise<ProAnalyticsSnapshot> {
-    return httpClient.get<ProAnalyticsSnapshot>(
-      `/workspace/pro-analytics/${sellerId}`,
-    );
+    return apiOperation<
+      ProAnalyticsSnapshot,
+      "getWorkspaceProAnalyticsBySellerId"
+    >("getWorkspaceProAnalyticsBySellerId", { path: { sellerId: sellerId } });
   }
 }
 

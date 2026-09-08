@@ -38,7 +38,7 @@ describe("protected route policy registry", () => {
     expect(canAccessRoutePolicy(admin, "accountOverview")).toBe(false);
   });
 
-  it("opens customer routes only to explicitly granted Staff in isolated demo mode", () => {
+  it("keeps Staff identities out of customer routes even with a legacy grant", () => {
     const tester = persona({
       staffStatus: "active",
       staffRole: "operations",
@@ -46,23 +46,7 @@ describe("protected route policy registry", () => {
     });
 
     expect(canAccessRoutePolicy(tester, "publishListing")).toBe(false);
-    expect(
-      canAccessRoutePolicy(tester, "publishListing", {
-        allowStaffMarketplaceDemo: true,
-      }),
-    ).toBe(true);
-    expect(
-      canAccessRoutePolicy(tester, "accountMessages", {
-        allowStaffMarketplaceDemo: true,
-      }),
-    ).toBe(true);
-    expect(
-      canAccessRoutePolicy(
-        { ...tester, customPermissions: [] },
-        "publishListing",
-        { allowStaffMarketplaceDemo: true },
-      ),
-    ).toBe(false);
+    expect(canAccessRoutePolicy(tester, "accountMessages")).toBe(false);
   });
 
   it("keeps professional workspaces vertical-specific", () => {

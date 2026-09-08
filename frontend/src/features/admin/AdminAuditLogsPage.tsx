@@ -1,82 +1,21 @@
-import { Modal } from "../../design-system/primitives/Modal";
+import { Download, Eye, LoaderCircle, Search } from "lucide-react";
+import React, { useEffect, useMemo, useState } from "react";
+import { services } from "../../api/client/service-registry";
+import type { AdminAuditLogEntry } from "../../api/contracts/admin.contract";
 import { Select } from "../../design-system";
-import { ConfirmModal } from "../../design-system/primitives/ConfirmModal";
-import React, { useState, useEffect } from "react";
-import { Search, Download, Trash2, Eye } from "lucide-react";
-import { useToast } from "../../app/providers/ToastProvider";
-import { auditService } from "../../security/audit.service";
-import { SecurityAuditLog, auditActionLabel } from "../../types";
-import { roleLabel } from "../../security/roles.config";
 import { Button } from "../../design-system/primitives/Button";
-import { useTranslation } from "../../i18n/I18nProvider";
+import { Modal } from "../../design-system/primitives/Modal";
+import { StatePanel } from "../../design-system/primitives/StatePanel";
 import { usePageMeta } from "../../hooks/usePageMeta";
+import { useTranslation } from "../../i18n/I18nProvider";
 import { formatLogTimestamp } from "../../utilities/formatters";
-import {
-  auditFieldLabel,
-  formatAuditDateTime,
-  formatAuditValue,
-  isAuditRecord,
-  isSensitiveAuditField,
-} from "../../security/audit-presentation";
 
-interface AuditValueViewProps {
-  value: unknown;
-  field?: string;
+function csvCell(value: string): string {
+  return `"${value.replaceAll('"', '""')}"`;
 }
 
-const AuditValueView: React.FC<AuditValueViewProps> = ({ value, field }) => {
-  if (field && isSensitiveAuditField(field)) {
-    return <span className="text-text-secondary">Valeur masquée</span>;
-  }
-
-  if (Array.isArray(value)) {
-    if (value.length === 0)
-      return <span className="text-text-tertiary">Aucune donnée</span>;
-    return (
-      <div className="flex flex-wrap gap-1.5">
-        {value.map((item, index) => (
-          <span
-            key={`${String(item)}-${index}`}
-            className="rounded-pill border border-border-disabled bg-surface-soft px-2 py-0.5 text-micro text-text-emphasis"
-          >
-            {formatAuditValue(item, field)}
-          </span>
-        ))}
-      </div>
-    );
-  }
-
-  if (isAuditRecord(value)) {
-    const entries = Object.entries(value);
-    if (entries.length === 0) {
-      return <span className="text-text-tertiary">Aucune donnée</span>;
-    }
-    return (
-      <dl className="space-y-2">
-        {entries.map(([key, item]) => (
-          <div
-            key={key}
-            className="grid gap-1 rounded-control border border-border-disabled bg-bg-surface p-2 sm:grid-cols-audit-row sm:gap-3"
-          >
-            <dt className="font-semibold text-text-secondary">
-              {auditFieldLabel(key)}
-            </dt>
-            <dd className="min-w-0 text-text-main">
-              <AuditValueView value={item} field={key} />
-            </dd>
-          </div>
-        ))}
-      </dl>
-    );
-  }
-
-  return (
-    <span className="text-text-main">{formatAuditValue(value, field)}</span>
-  );
-};
-
 export const AdminAuditLogsPage: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   usePageMeta({
     title: t("meta.adminAuditLogs.title"),
     description: t("meta.adminAuditLogs.description"),
@@ -84,392 +23,245 @@ export const AdminAuditLogsPage: React.FC = () => {
     noIndex: true,
   });
 
-  const toast = useToast();
-  const [logs, setLogs] = useState<SecurityAuditLog[]>([]);
+  const [logs, setLogs] = useState<AdminAuditLogEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedAction, setSelectedAction] = useState<string>("all");
-  const [selectedLog, setSelectedLog] = useState<SecurityAuditLog | null>(null);
-  const [isClearModalOpen, setIsClearModalOpen] = useState(false);
-
-  const loadLogs = () => {
-    setLogs(auditService.getLogs());
-  };
+  const [selectedAction, setSelectedAction] = useState("all");
+  const [selectedLog, setSelectedLog] = useState<AdminAuditLogEntry | null>(
+    null,
+  );
 
   useEffect(() => {
-    loadLogs();
+    let active = true;
+    setLoading(true);
+    services.admin
+      .getAuditLogs()
+      .then((entries) => {
+        if (!active) return;
+        setLogs(entries);
+        setError(null);
+      })
+      .catch((caught: unknown) => {
+        if (!active) return;
+        setError(
+          caught instanceof Error
+            ? caught.message
+            : "Le registre d’audit est indisponible.",
+        );
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
   }, []);
 
-  const handleExportCsv = () => {
-    const csv = auditService.exportLogsAsCsv();
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const actions = useMemo(
+    () => Array.from(new Set(logs.map((log) => log.action))).sort(),
+    [logs],
+  );
+  const filteredLogs = useMemo(() => {
+    const query = searchQuery.trim().toLocaleLowerCase(locale);
+    return logs.filter((log) => {
+      if (selectedAction !== "all" && log.action !== selectedAction) {
+        return false;
+      }
+      if (!query) return true;
+      return [log.actor, log.action, log.target].some((value) =>
+        value.toLocaleLowerCase(locale).includes(query),
+      );
+    });
+  }, [locale, logs, searchQuery, selectedAction]);
+
+  const exportCsv = () => {
+    const rows = [
+      ["timestamp", "actor", "action", "target"],
+      ...filteredLogs.map((log) => [
+        log.timestamp,
+        log.actor,
+        log.action,
+        log.target,
+      ]),
+    ];
+    const blob = new Blob(
+      [rows.map((row) => row.map(csvCell).join(",")).join("\n")],
+      { type: "text/csv;charset=utf-8" },
+    );
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute(
-      "download",
-      `shongre_audit_log_${new Date().toISOString().slice(0, 10)}.csv`,
-    );
-    document.body.appendChild(link);
+    link.href = url;
+    link.download = `shongre-audit-${new Date().toISOString().slice(0, 10)}.csv`;
     link.click();
-    document.body.removeChild(link);
-    toast.success("Le fichier CSV a été téléchargé avec succès.");
+    URL.revokeObjectURL(url);
   };
-
-  const handleConfirmClear = () => {
-    auditService.clearLogs();
-    loadLogs();
-    setIsClearModalOpen(false);
-    toast.info("Le registre d'audit a été réinitialisé.");
-  };
-
-  const filteredLogs = logs.filter((log) => {
-    if (selectedAction !== "all" && log.action !== selectedAction) {
-      return false;
-    }
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase().trim();
-      return (
-        log.action.toLowerCase().includes(q) ||
-        auditActionLabel(log.action).toLowerCase().includes(q) ||
-        log.actorName.toLowerCase().includes(q) ||
-        log.details.toLowerCase().includes(q) ||
-        log.targetName?.toLowerCase().includes(q)
-      );
-    }
-    return true;
-  });
-
-  const uniqueActions = Array.from(new Set(logs.map((l) => l.action)));
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="bg-bg-surface rounded-control border border-border-disabled p-6 shadow-xs flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <header className="flex flex-col gap-4 rounded-card border border-border-base bg-bg-surface p-6 shadow-xs md:flex-row md:items-center md:justify-between">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs font-bold uppercase tracking-wider text-primary">
-              {t("admin.adminAuditLogsPage.tracabiliteConformite")}
-            </span>
-            <span className="text-text-inverse-muted">•</span>
-            <span className="text-xs text-text-tertiary font-medium">
-              {t("admin.adminAuditLogsPage.conformiteRgpdSecuritePlateforme")}
-            </span>
-          </div>
-          <h1 className="text-2xl font-bold text-text-main tracking-tight">
+          <p className="text-xs font-bold uppercase tracking-wider text-primary">
+            {t("admin.adminAuditLogsPage.tracabiliteConformite")}
+          </p>
+          <h1 className="mt-1 text-2xl font-bold text-text-main">
             {t("admin.adminAuditLogsPage.registreDAuditSecurite")}
           </h1>
-          <p className="text-xs text-text-secondary mt-1">
+          <p className="mt-1 text-xs text-text-secondary">
             {t(
               "admin.adminAuditLogsPage.enregistrementImmuableDesModificationsDe",
             )}
           </p>
         </div>
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={filteredLogs.length === 0}
+          onClick={exportCsv}
+          leftIcon={<Download className="h-icon-sm w-icon-sm" />}
+        >
+          Exporter CSV
+        </Button>
+      </header>
 
-        <div className="flex items-center gap-2">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={handleExportCsv}
-            className="text-xs flex items-center gap-1.5"
-          >
-            <Download className="w-icon-sm h-icon-sm" />
-            Exporter CSV
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => setIsClearModalOpen(true)}
-            className="text-xs text-danger hover:bg-danger-surface"
-          >
-            <Trash2 className="w-icon-sm h-icon-sm mr-1" />
-            {t("admin.adminAuditLogsPage.reinitialiser")}
-          </Button>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <div className="bg-bg-surface rounded-control border border-border-disabled p-4 shadow-xs flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1">
-          <Search className="w-icon-md h-icon-md text-text-disabled absolute left-3 top-1/2 -translate-y-1/2" />
+      <section className="flex flex-col gap-3 rounded-card border border-border-base bg-bg-surface p-4 shadow-xs sm:flex-row">
+        <label className="relative flex-1">
+          <span className="sr-only">
+            {t("admin.adminAuditLogsPage.rechercherDansLeRegistreD")}
+          </span>
+          <Search className="absolute left-3 top-1/2 h-icon-md w-icon-md -translate-y-1/2 text-text-disabled" />
           <input
-            type="text"
+            type="search"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(event) => setSearchQuery(event.target.value)}
             placeholder={t(
               "admin.adminAuditLogsPage.rechercherParActeurActionCible",
             )}
-            aria-label={t("admin.adminAuditLogsPage.rechercherDansLeRegistreD")}
-            className="w-full pl-9 pr-3 py-2 text-xs border border-border-disabled rounded-control focus:outline-none focus:ring-1 focus:ring-primary h-control-touch"
+            className="h-control-touch w-full rounded-control border border-border-base py-2 pl-9 pr-3 text-xs focus:outline-none focus:ring-1 focus:ring-primary"
           />
-        </div>
-
+        </label>
         <Select
           className="w-auto"
           aria-label={t("admin.adminAuditLogsPage.filtrerLeJournalParType")}
           value={selectedAction}
-          onChange={(e) => setSelectedAction(e.target.value)}
+          onChange={(event) => setSelectedAction(event.target.value)}
         >
           <option value="all">
-            {t("admin.adminAuditLogsPage.toutesLesActionsDAudit")}
+            {t("admin.adminAuditLogsPage.toutesLesActionsDAudit")} (
             {logs.length})
           </option>
-          {uniqueActions.map((act) => (
-            <option key={act} value={act}>
-              {auditActionLabel(act)}
+          {actions.map((action) => (
+            <option key={action} value={action}>
+              {action}
             </option>
           ))}
         </Select>
-      </div>
+      </section>
 
-      {/* Logs Table */}
-      <div className="bg-bg-surface rounded-control border border-border-disabled shadow-xs overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-surface-muted text-text-emphasis font-bold border-b border-border-disabled">
-              <tr>
-                <th scope="col" className="p-3">
-                  {t("admin.adminAuditLogsPage.dateEtHeure")}
-                </th>
-                <th scope="col" className="p-3">
-                  Acteur (Initiateur)
-                </th>
-                <th scope="col" className="p-3">
-                  {t("admin.adminAuditLogsPage.actionSysteme")}
-                </th>
-                <th scope="col" className="p-3">
-                  Cible / Ressource
-                </th>
-                <th scope="col" className="p-3">
-                  {t("admin.adminAuditLogsPage.detailsMotif")}
-                </th>
-                <th scope="col" className="p-3 text-right">
-                  {t("admin.adminAuditLogsPage.detail")}
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border-disabled">
-              {filteredLogs.length === 0 ? (
+      {loading ? (
+        <div
+          className="flex min-h-48 items-center justify-center"
+          role="status"
+        >
+          <LoaderCircle className="h-icon-lg w-icon-lg animate-spin text-primary" />
+          <span className="ml-2 text-xs text-text-secondary">Chargement…</span>
+        </div>
+      ) : error ? (
+        <StatePanel
+          variant="error"
+          title="Registre indisponible"
+          description={error}
+        />
+      ) : (
+        <div className="overflow-hidden rounded-card border border-border-base bg-bg-surface shadow-xs">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="border-b border-border-base bg-surface-muted font-bold text-text-emphasis">
                 <tr>
-                  <td
-                    colSpan={6}
-                    className="p-8 text-center text-text-tertiary"
-                  >
-                    {t(
-                      "admin.adminAuditLogsPage.aucunEvenementDAuditEnregistre",
-                    )}
-                  </td>
+                  <th scope="col" className="p-3">
+                    Date et heure
+                  </th>
+                  <th scope="col" className="p-3">
+                    Acteur
+                  </th>
+                  <th scope="col" className="p-3">
+                    Action
+                  </th>
+                  <th scope="col" className="p-3">
+                    Cible
+                  </th>
+                  <th scope="col" className="p-3 text-right">
+                    Détail
+                  </th>
                 </tr>
-              ) : (
-                filteredLogs.map((log) => (
-                  <tr
-                    key={log.id}
-                    className="hover:bg-surface-soft transition-colors"
-                  >
+              </thead>
+              <tbody className="divide-y divide-border-subtle">
+                {filteredLogs.length === 0 ? (
+                  <tr>
                     <td
-                      className="p-3 text-xs text-text-tertiary whitespace-nowrap"
-                      title={`Horodatage ISO : ${log.timestamp}`}
+                      colSpan={5}
+                      className="p-8 text-center text-text-tertiary"
                     >
-                      {formatLogTimestamp(log.timestamp)}
-                    </td>
-                    <td className="p-3">
-                      <div className="font-bold text-text-main">
-                        {log.actorName}
-                      </div>
-                      <div className="text-micro text-text-tertiary">
-                        {roleLabel(log.actorRole)}
-                      </div>
-                    </td>
-                    <td className="p-3">
-                      <div
-                        className="font-semibold text-text-main"
-                        title={`Code action : ${log.action}`}
-                      >
-                        {auditActionLabel(log.action)}
-                      </div>
-                    </td>
-                    <td
-                      className="p-3 text-text-strong"
-                      title={
-                        log.targetId
-                          ? `Identifiant cible : ${log.targetId}`
-                          : undefined
-                      }
-                    >
-                      {log.targetName || "Ressource technique"}
-                    </td>
-                    <td
-                      className="p-3 text-text-secondary max-w-xs truncate"
-                      title={log.details}
-                    >
-                      {log.details}
-                    </td>
-                    <td className="p-3 text-right">
-                      <button
-                        type="button"
-                        onClick={() => setSelectedLog(log)}
-                        className="text-text-tertiary hover:text-text-main p-1 rounded-sm"
-                        aria-label={t(
-                          "admin.adminAuditLogsPage.voirLePayloadDe",
-                          { action: auditActionLabel(log.action) },
-                        )}
-                      >
-                        <Eye className="w-icon-md h-icon-md" />
-                      </button>
+                      {t(
+                        "admin.adminAuditLogsPage.aucunEvenementDAuditEnregistre",
+                      )}
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : (
+                  filteredLogs.map((log) => (
+                    <tr key={log.id} className="hover:bg-surface-soft">
+                      <td className="whitespace-nowrap p-3 text-text-tertiary">
+                        <time dateTime={log.timestamp} title={log.timestamp}>
+                          {formatLogTimestamp(log.timestamp)}
+                        </time>
+                      </td>
+                      <td className="p-3 font-semibold text-text-main">
+                        {log.actor}
+                      </td>
+                      <td className="p-3 text-text-strong">{log.action}</td>
+                      <td className="p-3 text-text-secondary">{log.target}</td>
+                      <td className="p-3 text-right">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedLog(log)}
+                          className="rounded-sm p-1 text-text-tertiary hover:text-text-main"
+                          aria-label={`Voir le détail de ${log.action}`}
+                        >
+                          <Eye className="h-icon-md w-icon-md" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      )}
 
       <Modal
-        isOpen={!!selectedLog}
+        isOpen={selectedLog !== null}
         onClose={() => setSelectedLog(null)}
         title={t("admin.adminAuditLogsPage.detailDeLEvenementDAudit")}
         maxWidth="lg"
       >
-        {selectedLog && (
-          <div className="space-y-5">
-            <dl className="grid gap-x-4 gap-y-3 text-xs sm:grid-cols-audit-row">
-              <dt className="font-semibold text-text-secondary">
-                {t("admin.adminAuditLogsPage.dateEtHeure")}
-              </dt>
-              <dd className="text-text-main">
-                <time
-                  dateTime={selectedLog.timestamp}
-                  title={`Horodatage ISO : ${selectedLog.timestamp}`}
-                >
-                  {formatAuditDateTime(selectedLog.timestamp)}
-                </time>
-              </dd>
-
-              <dt className="font-semibold text-text-secondary">Acteur</dt>
-              <dd className="text-text-main">{selectedLog.actorName}</dd>
-
-              <dt className="font-semibold text-text-secondary">
-                {t("admin.adminAuditLogsPage.role")}
-              </dt>
-              <dd className="text-text-main">
-                {roleLabel(selectedLog.actorRole)}
-              </dd>
-
-              <dt className="font-semibold text-text-secondary">Action</dt>
-              <dd className="text-text-main">
-                {auditActionLabel(selectedLog.action)}
-              </dd>
-
-              {(selectedLog.targetName || selectedLog.targetId) && (
-                <>
-                  <dt className="font-semibold text-text-secondary">Cible</dt>
-                  <dd className="text-text-main">
-                    {selectedLog.targetName || "Ressource technique"}
-                  </dd>
-                </>
-              )}
-
-              {selectedLog.market && (
-                <>
-                  <dt className="font-semibold text-text-secondary">
-                    {t("invoicing.product.previewMarket")}
-                  </dt>
-                  <dd className="text-text-main">
-                    {formatAuditValue(selectedLog.market, "marketCode")}
-                  </dd>
-                </>
-              )}
-            </dl>
-
-            <section className="space-y-1.5 text-xs">
-              <h3 className="font-semibold text-text-emphasis">
-                {t("admin.adminAuditLogsPage.details")}
-              </h3>
-              <p className="rounded-control bg-surface-soft p-3 leading-relaxed text-text-emphasis">
-                {selectedLog.details}
-              </p>
-            </section>
-
-            {selectedLog.previousValue !== undefined && (
-              <section className="space-y-1.5 text-xs">
-                <h3 className="font-semibold text-text-emphasis">
-                  {t("admin.adminAuditLogsPage.etatPrecedent")}
-                </h3>
-                <div className="rounded-control bg-surface-soft p-2">
-                  <AuditValueView value={selectedLog.previousValue} />
-                </div>
-              </section>
-            )}
-
-            {selectedLog.newValue !== undefined && (
-              <section className="space-y-1.5 text-xs">
-                <h3 className="font-semibold text-text-emphasis">
-                  {t("admin.adminAuditLogsPage.nouvelEtat")}
-                </h3>
-                <div className="rounded-control bg-surface-soft p-2">
-                  <AuditValueView value={selectedLog.newValue} />
-                </div>
-              </section>
-            )}
-
-            <details className="rounded-control border border-border-disabled bg-bg-surface text-xs">
-              <summary className="cursor-pointer px-3 py-2 font-semibold text-text-secondary">
-                {t("admin.adminAuditLogsPage.donneesTechniques")}
-              </summary>
-              <dl className="grid gap-2 border-t border-border-disabled p-3 sm:grid-cols-audit-row">
-                <dt className="text-text-tertiary">{t("crm.source.event")}</dt>
-                <dd className="break-all font-mono text-micro text-text-emphasis">
-                  {selectedLog.id}
-                </dd>
-                <dt className="text-text-tertiary">Identifiant acteur</dt>
-                <dd className="break-all font-mono text-micro text-text-emphasis">
-                  {selectedLog.actorId}
-                </dd>
-                {selectedLog.targetId && (
-                  <>
-                    <dt className="text-text-tertiary">Identifiant cible</dt>
-                    <dd className="break-all font-mono text-micro text-text-emphasis">
-                      {selectedLog.targetId}
-                    </dd>
-                  </>
-                )}
-                <dt className="text-text-tertiary">Code action</dt>
-                <dd className="break-all font-mono text-micro text-text-emphasis">
-                  {selectedLog.action}
-                </dd>
-                {selectedLog.ipAddress && (
-                  <>
-                    <dt className="text-text-tertiary">Adresse IP</dt>
-                    <dd className="break-all font-mono text-micro text-text-emphasis">
-                      {selectedLog.ipAddress}
-                    </dd>
-                  </>
-                )}
-              </dl>
-            </details>
-
-            <div className="pt-3 border-t border-border-disabled text-right">
-              <Button
-                size="sm"
-                onClick={() => setSelectedLog(null)}
-                className="text-xs"
-              >
-                Fermer
-              </Button>
-            </div>
-          </div>
-        )}
+        {selectedLog ? (
+          <dl className="grid gap-3 text-xs sm:grid-cols-audit-row">
+            <dt className="font-semibold text-text-secondary">Identifiant</dt>
+            <dd className="break-all font-mono text-text-main">
+              {selectedLog.id}
+            </dd>
+            <dt className="font-semibold text-text-secondary">Date</dt>
+            <dd className="text-text-main">{selectedLog.timestamp}</dd>
+            <dt className="font-semibold text-text-secondary">Acteur</dt>
+            <dd className="text-text-main">{selectedLog.actor}</dd>
+            <dt className="font-semibold text-text-secondary">Action</dt>
+            <dd className="text-text-main">{selectedLog.action}</dd>
+            <dt className="font-semibold text-text-secondary">Cible</dt>
+            <dd className="text-text-main">{selectedLog.target}</dd>
+          </dl>
+        ) : null}
       </Modal>
-
-      <ConfirmModal
-        isOpen={isClearModalOpen}
-        onClose={() => setIsClearModalOpen(false)}
-        onConfirm={handleConfirmClear}
-        title={t("admin.adminAuditLogsPage.reinitialiserLeRegistreDAudit")}
-        message="Cette action effacera l'historique des journaux d'audit enregistrés pour cette session démo."
-        confirmText="Réinitialiser les logs"
-        variant="warning"
-      />
     </div>
   );
 };

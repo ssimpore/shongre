@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { DemoRoleSwitcher } from "./DemoRoleSwitcher";
+import { EnvironmentToolbar } from "./EnvironmentToolbar";
 
 interface EnvironmentHeaderStackProps {
   children: ReactNode;
@@ -17,7 +17,7 @@ export function EnvironmentHeaderStack({
 }: EnvironmentHeaderStackProps) {
   return (
     <div data-environment-header-stack="true" className="sticky top-0 z-header">
-      <DemoRoleSwitcher utility={utility} />
+      <EnvironmentToolbar utility={utility} />
       {children}
     </div>
   );

@@ -362,13 +362,7 @@ export function createDefaultHomepageConfiguration(input: {
           }
         : type === "collections"
           ? {
-              collectionSlugs: [
-                "pepites-semaine",
-                "vintage-retro",
-                "maison-cocooning",
-                "mobilite-urbaine",
-                "reconditionne",
-              ],
+              collectionSlugs: [],
             }
           : type === "trending"
             ? { selectionMode: "hybrid" }

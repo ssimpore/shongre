@@ -12,7 +12,8 @@
       "default": "./src/listings/ListingCard.web.tsx"
     },
     "./listings/web": "./src/listings/ListingCard.web.tsx",
-    "./listings/native": "./src/listings/ListingCard.native.tsx"
+    "./listings/native": "./src/listings/ListingCard.native.tsx",
+    "./listings/presentation": "./src/listings/presentation.ts"
   },
   "scripts": {
     "lint": "tsc --noEmit",

@@ -16,7 +16,6 @@ import { useNotifications } from "../../app/providers/NotificationContext";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { Button } from "../../design-system/primitives/Button";
 import { NotificationItemCard } from "./components/NotificationItemCard";
-import { NotificationDemoToolbar } from "./components/NotificationDemoToolbar";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
@@ -33,7 +32,7 @@ export const NotificationsPage: React.FC = () => {
 
   const navigate = useNavigate();
   const { currentUser } = useAuth();
-  const currentUserId = currentUser ? currentUser.id : "user-thomas";
+  const currentUserId = currentUser?.id;
 
   const { unreadCount, markAsRead, markAllAsRead } = useNotifications();
 
@@ -45,6 +44,11 @@ export const NotificationsPage: React.FC = () => {
   // Load complete notification list
   const loadNotifications = async () => {
     setIsLoading(true);
+    if (!currentUserId) {
+      setNotifications([]);
+      setIsLoading(false);
+      return;
+    }
     try {
       const items =
         await services.notifications.getUserNotifications(currentUserId);
@@ -134,9 +138,6 @@ export const NotificationsPage: React.FC = () => {
           </Button>
         </div>
       </div>
-
-      {/* 2. Interactive Demo Toolbar */}
-      <NotificationDemoToolbar />
 
       {/* 3. Filter Tabs */}
       <div className="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar">

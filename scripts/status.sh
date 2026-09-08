@@ -12,8 +12,8 @@ fi
 
 printf 'Git: %s\n' "$(git -C "$SHONGRE_ROOT" branch --show-current 2>/dev/null || printf 'detached')"
 if [[ -f "$SHONGRE_ROOT/.env" || -f "$SHONGRE_ROOT/.env.local" || -f "$SHONGRE_ROOT/.env.${SHONGRE_ENV}" ]]; then
-  printf 'Environment: %s | APP_ENV=%s | web=%s | backend=%s/%s | mobile=api-only (%s)\n\n' \
-    "$SHONGRE_ENV" "$APP_ENV" "$NEXT_PUBLIC_DATA_MODE" "$BACKEND_DATA_MODE" "$DATABASE_INFRA_MODE" "$EXPO_PUBLIC_API_URL"
+  printf 'Environment: %s | APP_ENV=%s | web=api-only | backend=%s/%s | mobile=api-only (%s)\n\n' \
+    "$SHONGRE_ENV" "$APP_ENV" "$BACKEND_DATA_MODE" "$DATABASE_INFRA_MODE" "$EXPO_PUBLIC_API_URL"
 else
   printf 'Environment: root environment missing (run make env)\n\n'
 fi
@@ -43,6 +43,16 @@ else
 fi
 
 "$SHONGRE_ROOT/scripts/service-urls.sh"
+
+printf 'Redis: '
+if [[ "$APP_ENV" != local ]]; then
+  printf 'MANAGED (connectivity is reported by backend readiness)\n'
+elif "$SHONGRE_ROOT/scripts/redis.sh" status >/dev/null 2>&1; then
+  printf 'RUNNING\n'
+else
+  printf 'UNAVAILABLE (run make redis-up)\n'
+  failed=1
+fi
 
 printf 'Cloudflare Tunnel: '
 if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then

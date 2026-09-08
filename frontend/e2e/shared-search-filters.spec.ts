@@ -77,10 +77,18 @@ test.describe("shared search filter panels", () => {
       for (const id of surface.removedControlIds) {
         await expect(page.locator(`#${id}`)).toHaveCount(0);
       }
-      await expect(page.locator("[data-search-results-toolbar]")).toBeVisible();
+      const toolbar = page.locator("[data-search-results-toolbar]");
+      await expect(toolbar).toBeVisible();
+      await expect(toolbar).toHaveClass(/rounded-listing-card/);
+      if (surface.name === "marketplace") {
+        await expect(page.locator("[data-search-active-filters]")).toHaveClass(
+          /rounded-listing-card/,
+        );
+      }
 
       const panel = page.locator(`#${surface.panelId}`);
       await expect(panel).toBeVisible();
+      await expect(panel).toHaveClass(/rounded-listing-card/);
       await expect(panel).toContainText(surface.adaptiveField);
       await expect(page.locator(`#${surface.locationId}`)).toBeVisible();
 

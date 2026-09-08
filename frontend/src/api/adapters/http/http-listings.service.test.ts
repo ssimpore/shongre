@@ -27,8 +27,6 @@ const draft: PublicationDraftState = {
   attributes: {
     brand: "renault",
     storage_capacity_gb: 512,
-    stale_hidden_value: "never-submit",
-    siret: "unauthorized-for-individual",
   },
   photos: [],
   pricing: {
@@ -38,17 +36,9 @@ const draft: PublicationDraftState = {
     isNegotiable: false,
     isFreeDonation: false,
   },
-  transaction: {
-    allowContact: true,
-    allowDirectPurchase: true,
-    allowReservation: false,
-  },
   fulfillment: {
     allowHandDelivery: true,
     allowParcelShipping: true,
-    allowBulkyDelivery: false,
-    allowSellerDelivery: false,
-    allowStorePickup: false,
   },
   fulfillmentTypes: ["PHYSICAL"],
   location: {
@@ -88,13 +78,13 @@ const backendListing: BackendListing = {
 };
 
 describe("HTTP listing publication payload", () => {
-  it("allowlists canonical effective bindings and drops stale attributes", () => {
+  it("forwards the attributes already reconciled against the API schema", () => {
     const payload = publicationPayload(draft);
     const attributes = payload.attributes as Record<string, unknown>;
     expect(attributes.brand).toBe("renault");
     expect(attributes.storage_capacity_gb).toBe(512);
-    expect(attributes).not.toHaveProperty("stale_hidden_value");
-    expect(attributes).not.toHaveProperty("siret");
+    expect(attributes.title).toBe(draft.title);
+    expect(attributes.currency).toBe("EUR");
     expect(payload.fulfillmentTypes).toEqual(["PHYSICAL"]);
   });
 
@@ -169,6 +159,66 @@ describe("HTTP listing publication payload", () => {
     });
   });
 
+  it("shows only transaction capabilities explicitly projected by the API", () => {
+    const absent = mapBackendListing(backendListing);
+    const available = mapBackendListing({
+      ...backendListing,
+      listingTypeId: "home_garden.furniture.sofas.sell",
+      listingIntent: "SELL",
+      attributes: { price_type: "negotiable" },
+      marketPublications: [
+        {
+          marketCode: "FR",
+          status: "active",
+          isPrimary: true,
+          priceMinor: 10_000,
+          currency: "EUR",
+          availableServices: {
+            online_payment: true,
+            reservation: true,
+            reservation_type: "request",
+          },
+          complianceState: "approved",
+          sortDate: "2026-09-02T10:00:00.000Z",
+        },
+      ],
+    });
+
+    expect(absent.isOnlinePaymentAvailable).toBe(false);
+    expect(absent.isReservable).toBe(false);
+    expect(available).toMatchObject({
+      listingTypeId: "home_garden.furniture.sofas.sell",
+      listingIntent: "SELL",
+      isNegotiable: true,
+      isOnlinePaymentAvailable: true,
+      isReservable: true,
+      reservationType: "request",
+    });
+  });
+
+  it("retains every public delivery method instead of dropping valid capabilities", () => {
+    const listing = mapBackendListing({
+      ...backendListing,
+      allowedDelivery: [
+        "hand_delivery",
+        "relay_point",
+        "home_delivery",
+        "cocolis",
+        "express",
+        "digital",
+      ],
+    });
+
+    expect(listing.deliveryOptions.map(({ type }) => type)).toEqual([
+      "hand_delivery",
+      "relay_point",
+      "home_delivery",
+      "cocolis",
+      "express",
+      "digital",
+    ]);
+  });
+
   it("preserves sponsored discovery when no promotion record is projected", () => {
     const discovery = {
       isSponsored: true,
@@ -195,13 +245,13 @@ describe("HTTP favorite market boundary", () => {
     const request = vi
       .spyOn(httpClient, "request")
       .mockResolvedValueOnce({ listingIds: [], listings: [] })
-      .mockResolvedValueOnce({ isFavorite: false });
-    const post = vi.spyOn(httpClient, "post").mockResolvedValue({
-      items: [],
-      total: 0,
-      page: 1,
-      totalPages: 1,
-    });
+      .mockResolvedValueOnce({ isFavorite: false })
+      .mockResolvedValueOnce({
+        items: [],
+        total: 0,
+        page: 1,
+        totalPages: 1,
+      });
     const service = new HttpListingsService();
 
     await service.getFavoriteCollection("BE");
@@ -220,17 +270,22 @@ describe("HTTP favorite market boundary", () => {
     expect(
       new Headers(request.mock.calls[1]?.[1]?.headers).get("X-Shongre-Market"),
     ).toBe("BE");
-    expect(post).toHaveBeenCalledWith(
-      "/listings/search",
-      { marketCode: "BE", page: 1, limit: 24 },
-      { headers: { "X-Shongre-Market": "BE" } },
+    expect(request.mock.calls[2]?.[0]).toBe("/listings/search");
+    expect(request.mock.calls[2]?.[1]).toEqual(
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({ marketCode: "BE", page: 1, limit: 24 }),
+      }),
     );
+    expect(
+      new Headers(request.mock.calls[2]?.[1]?.headers).get("X-Shongre-Market"),
+    ).toBe("BE");
   });
 
   it("hydrates several guest favorites with one market-scoped batch request", async () => {
     const listingIdOne = "018f47d2-2b91-7e16-8ab5-1fba3b1d1001";
     const listingIdTwo = "018f47d2-2b91-7e16-8ab5-1fba3b1d1002";
-    const post = vi.spyOn(httpClient, "post").mockResolvedValue({
+    const request = vi.spyOn(httpClient, "request").mockResolvedValue({
       listings: [
         { ...backendListing, id: listingIdOne, marketCode: "BE" },
         { ...backendListing, id: listingIdTwo, marketCode: "BE" },
@@ -245,18 +300,23 @@ describe("HTTP favorite market boundary", () => {
     );
 
     expect(listings.map(({ id }) => id)).toEqual([listingIdOne, listingIdTwo]);
-    expect(post).toHaveBeenCalledTimes(1);
-    expect(post).toHaveBeenCalledWith(
-      "/listings/cards",
-      { listingIds: [listingIdOne, listingIdTwo] },
-      { headers: { "X-Shongre-Market": "BE" } },
+    expect(request).toHaveBeenCalledTimes(1);
+    expect(request.mock.calls[0]?.[0]).toBe("/listings/cards");
+    expect(request.mock.calls[0]?.[1]).toEqual(
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({ listingIds: [listingIdOne, listingIdTwo] }),
+      }),
     );
+    expect(
+      new Headers(request.mock.calls[0]?.[1]?.headers).get("X-Shongre-Market"),
+    ).toBe("BE");
   });
 });
 
 describe("HTTP seller listing workspace", () => {
   it("loads only the signed-in account collection for the explicit market", async () => {
-    const get = vi.spyOn(httpClient, "get").mockResolvedValue({
+    const request = vi.spyOn(httpClient, "request").mockResolvedValue({
       listings: [backendListing],
       total: 1,
     });
@@ -266,13 +326,14 @@ describe("HTTP seller listing workspace", () => {
 
     expect(result.total).toBe(1);
     expect(result.listings[0]?.id).toBe(backendListing.id);
-    expect(get).toHaveBeenCalledWith("/account/listings", {
-      headers: { "X-Shongre-Market": "FR" },
-    });
+    expect(request.mock.calls[0]?.[0]).toBe("/account/listings");
+    expect(
+      new Headers(request.mock.calls[0]?.[1]?.headers).get("X-Shongre-Market"),
+    ).toBe("FR");
   });
 
   it("marks a listing sold through the authenticated owner endpoint", async () => {
-    const post = vi.spyOn(httpClient, "post").mockResolvedValue({
+    const request = vi.spyOn(httpClient, "request").mockResolvedValue({
       ...backendListing,
       status: "sold",
     });
@@ -281,8 +342,9 @@ describe("HTTP seller listing workspace", () => {
     const result = await service.markListingSold(backendListing.id);
 
     expect(result.status).toBe("sold");
-    expect(post).toHaveBeenCalledWith(
+    expect(request).toHaveBeenCalledWith(
       `/listings/${backendListing.id}/mark-sold`,
+      expect.objectContaining({ method: "POST" }),
     );
   });
 });

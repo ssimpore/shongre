@@ -1,6 +1,9 @@
 import { breakpoints, motionDurationMs } from "@shongre/design-tokens";
 import type { MarketContext } from "@shongre/contracts/market-country";
-import type { TaxonomyHeaderCategoryItem } from "@shongre/contracts/taxonomy";
+import type {
+  TaxonomyHeaderCategoryItem,
+  TaxonomyHeaderNavigationLink,
+} from "@shongre/contracts/taxonomy";
 import React, {
   useCallback,
   useEffect,
@@ -20,17 +23,24 @@ import {
 import { getTaxonomyLabel } from "../../domains/taxonomy/taxonomy.labels";
 import type { TaxonomyNode } from "../../domains/taxonomy/taxonomy.types";
 import { useTranslation } from "../../i18n/I18nProvider";
-import type { MessageKey } from "../../i18n/messages.fr";
 import {
   filterCategoryNavigationOverview,
   findCategoryNavigationBranch,
   loadCategoryNavigationTree,
 } from "./categoryMegaMenu.model";
+import {
+  dedicatedCategoryDestination,
+  headerNavigationItems,
+  headerNavigationLabel,
+  headerLinkDestination,
+  type HeaderNavigationItem,
+} from "./headerNavigation.model";
 
 interface HeaderCategoryNavProps {
   activeCategorySlug?: string;
   currentPath: string;
   initialCategories?: readonly TaxonomyHeaderCategoryItem[];
+  initialLinks?: readonly TaxonomyHeaderNavigationLink[];
   marketContext: MarketContext;
   marketCode: string;
   disabledCategorySlugs?: readonly string[];
@@ -38,58 +48,17 @@ interface HeaderCategoryNavProps {
   onSelectCategory: (categorySlug: string) => void;
 }
 
-type HeaderNavItem =
-  | ({ kind: "category" } & TaxonomyHeaderCategoryItem)
-  | { kind: "overview"; labelKey: MessageKey; to: string }
-  | { kind: "link"; labelKey: MessageKey; to: string; emphasis?: boolean };
-
-const HEADER_UTILITY_ITEMS: readonly HeaderNavItem[] = [
-  {
-    kind: "overview",
-    labelKey: "nav.category.autres",
-    to: routes.categories(),
-  },
-  {
-    kind: "link",
-    labelKey: "nav.category.bonsPlans",
-    to: routes.deals(),
-    emphasis: true,
-  },
-];
-
-function localizedHeaderCategoryLabel(
-  item: TaxonomyHeaderCategoryItem,
-  locale: string,
-): string {
-  const language = locale.split("-")[0];
-  const localizedEntry = (values: Record<string, string>) =>
-    values[locale] ??
-    Object.entries(values).find(
-      ([key]) => key.split("-")[0] === language,
-    )?.[1] ??
-    values["fr-FR"] ??
-    Object.values(values)[0];
-  return (
-    localizedEntry(item.shortLabels) ?? localizedEntry(item.labels) ?? item.slug
-  );
-}
-
 const CATEGORY_MENU_ID = "header-category-mega-menu";
-const OVERVIEW_MENU_KEY = "autres";
+const OVERVIEW_MENU_KEY = "category_overview";
 const EMPTY_DISABLED_CATEGORY_KEYS: readonly string[] = [];
 const EMPTY_HEADER_CATEGORIES: readonly TaxonomyHeaderCategoryItem[] = [];
+const EMPTY_HEADER_LINKS: readonly TaxonomyHeaderNavigationLink[] = [];
 const categoryTriggerId = (slug: string) => `header-category-trigger-${slug}`;
 
-const getDedicatedRootDestination = (slug: string): string | undefined => {
-  if (slug === "vehicules") return routes.auto.search();
-  if (slug === "immobilier") return routes.immo.search();
-  if (slug === "emploi") return routes.employment.search();
-  if (slug === "education") return routes.courses.search();
-  return undefined;
-};
-
 const getRootCategoryDestination = (slug: string): string => {
-  return getDedicatedRootDestination(slug) ?? routes.search({ category: slug });
+  return (
+    dedicatedCategoryDestination(slug) ?? routes.search({ category: slug })
+  );
 };
 
 const getTaxonomyDestination = (
@@ -305,6 +274,7 @@ const CategoryMegaMenu: React.FC<CategoryMegaMenuProps> = ({
 };
 
 interface CategoryOverviewMenuProps {
+  label: string;
   roots: TaxonomyNode[];
   menuRef: React.RefObject<HTMLDivElement | null>;
   onKeyDown: (event: React.KeyboardEvent<HTMLDivElement>) => void;
@@ -312,6 +282,7 @@ interface CategoryOverviewMenuProps {
 }
 
 const CategoryOverviewMenu: React.FC<CategoryOverviewMenuProps> = ({
+  label: headingLabel,
   roots,
   menuRef,
   onKeyDown,
@@ -341,7 +312,7 @@ const CategoryOverviewMenu: React.FC<CategoryOverviewMenuProps> = ({
           className="min-w-0 border-l-4 border-primary bg-bg-subtle p-5 xl:p-6"
         >
           <p className="text-micro font-bold uppercase tracking-wider text-text-emphasis">
-            {t("nav.category.autres")}
+            {headingLabel}
           </p>
           <h2
             role="presentation"
@@ -387,6 +358,7 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
   activeCategorySlug,
   currentPath,
   initialCategories = EMPTY_HEADER_CATEGORIES,
+  initialLinks = EMPTY_HEADER_LINKS,
   marketContext,
   marketCode,
   disabledCategorySlugs = EMPTY_DISABLED_CATEGORY_KEYS,
@@ -431,6 +403,9 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
     [initialCategories],
   );
   const [overviewRoots, setOverviewRoots] = useState<TaxonomyNode[]>([]);
+  const [headerLoadFailed, setHeaderLoadFailed] = useState(false);
+  const [headerLinks, setHeaderLinks] =
+    useState<readonly TaxonomyHeaderNavigationLink[]>(initialLinks);
   const [activeMenuSlug, setActiveMenuSlug] = useState<string | null>(null);
   const [scrollAffordance, setScrollAffordance] = useState({
     previous: false,
@@ -499,11 +474,18 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
 
     const promise = services.taxonomy
       .getHeaderNavigation(marketContextRef.current)
-      .then((configuration) =>
-        [...configuration.items].sort(
+      .then((configuration) => {
+        if (
+          currentHeaderConfigurationScopeRef.current ===
+          headerConfigurationScope
+        ) {
+          setHeaderLinks(configuration.links ?? EMPTY_HEADER_LINKS);
+          setHeaderLoadFailed(false);
+        }
+        return [...configuration.items].sort(
           (left, right) => left.displayOrder - right.displayOrder,
-        ),
-      )
+        );
+      })
       .then((items) => {
         if (
           currentHeaderConfigurationScopeRef.current ===
@@ -516,14 +498,26 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
         }
         return items;
       })
-      .catch(() => fallbackHeaderCategories);
+      .catch(() => {
+        if (
+          currentHeaderConfigurationScopeRef.current ===
+          headerConfigurationScope
+        ) {
+          headerConfigurationRequestRef.current = null;
+          setHeaderCategories([]);
+          setHeaderLinks(EMPTY_HEADER_LINKS);
+          setHeaderLoadFailed(true);
+          closeMenu();
+        }
+        return [];
+      });
 
     headerConfigurationRequestRef.current = {
       scope: headerConfigurationScope,
       promise,
     };
     return promise;
-  }, [fallbackHeaderCategories, headerConfigurationScope]);
+  }, [closeMenu, headerConfigurationScope]);
 
   const loadNavigationTree = useCallback(() => {
     const existing = navigationTreeRequestRef.current;
@@ -595,7 +589,7 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
                 slug: configuredCategory.slug,
                 labels: configuredCategory.labels,
                 shortLabels: configuredCategory.shortLabels,
-                name: localizedHeaderCategoryLabel(configuredCategory, locale),
+                name: headerNavigationLabel(configuredCategory, locale),
               }
             : branch;
           setBranchesBySlug((current) =>
@@ -650,11 +644,13 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
 
   useEffect(() => {
     setHeaderCategories(fallbackHeaderCategories);
+    setHeaderLinks(initialLinks);
+    setHeaderLoadFailed(false);
     setBranchesBySlug(new Map());
     setOverviewRoots([]);
     loadingMenuKeysRef.current.clear();
     headerConfigurationRequestRef.current = null;
-  }, [fallbackHeaderCategories, headerConfigurationScope]);
+  }, [fallbackHeaderCategories, headerConfigurationScope, initialLinks]);
 
   useEffect(() => {
     void loadHeaderConfiguration();
@@ -680,7 +676,7 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
       rail.removeEventListener("scroll", sync);
       observer.disconnect();
     };
-  }, [headerCategories]);
+  }, [headerCategories, headerLinks]);
 
   useEffect(() => {
     if (!isDesktop) closeMenu();
@@ -713,15 +709,16 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
       activeMenuSlug ? (branchesBySlug.get(activeMenuSlug) ?? null) : null,
     [activeMenuSlug, branchesBySlug],
   );
-  const headerNavItems = useMemo<readonly HeaderNavItem[]>(
-    () => [
-      ...headerCategories.map((category) => ({
-        kind: "category" as const,
-        ...category,
-      })),
-      ...HEADER_UTILITY_ITEMS,
-    ],
-    [headerCategories],
+  const headerNavItems = useMemo<readonly HeaderNavigationItem[]>(
+    () =>
+      headerNavigationItems({
+        items: headerCategories,
+        links: [...headerLinks],
+      }).filter((item) => item.isActive),
+    [headerCategories, headerLinks],
+  );
+  const overviewLink = headerLinks.find(
+    (link) => link.target === "category_overview" && link.isActive,
   );
 
   const focusFirstMenuItem = useCallback(
@@ -829,9 +826,11 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
       ref={rootRef}
       onPointerEnter={() => {
         clearCloseTimer();
-        void loadHeaderConfiguration();
+        if (!headerLoadFailed) void loadHeaderConfiguration();
       }}
-      onFocusCapture={() => void loadHeaderConfiguration()}
+      onFocusCapture={() => {
+        if (!headerLoadFailed) void loadHeaderConfiguration();
+      }}
       onPointerLeave={() => {
         if (isDesktop) scheduleClose();
       }}
@@ -868,20 +867,29 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
           className="no-scrollbar overflow-x-auto scroll-smooth"
         >
           <ul className="flex min-h-control-md w-max min-w-full items-stretch justify-start sm:justify-center">
+            {headerLoadFailed ? (
+              <li className="flex items-center gap-2 text-xs text-text-muted">
+                <span role="status">{t("nav.category.unavailable")}</span>
+                <button
+                  type="button"
+                  onClick={() => void loadHeaderConfiguration()}
+                  className={`min-h-control-md rounded-control px-2 font-semibold text-primary ${CONTROL_FOCUS_CLASS}`}
+                >
+                  {t("common.retry")}
+                </button>
+              </li>
+            ) : null}
             {headerNavItems.map((item, index) => {
               const menuKey =
                 item.kind === "category"
                   ? item.slug
-                  : item.kind === "overview"
+                  : item.target === "category_overview"
                     ? OVERVIEW_MENU_KEY
                     : undefined;
-              const label =
-                item.kind === "category"
-                  ? localizedHeaderCategoryLabel(item, locale)
-                  : t(item.labelKey);
+              const label = headerNavigationLabel(item, locale);
               const dedicatedDestination =
                 item.kind === "category"
-                  ? getDedicatedRootDestination(item.slug)
+                  ? dedicatedCategoryDestination(item.slug)
                   : undefined;
               const isActive =
                 item.kind === "category"
@@ -893,19 +901,17 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
                           ))) ||
                       item.slug === activeCategorySlug,
                     )
-                  : currentPath === item.to;
+                  : currentPath === headerLinkDestination(item.target);
               const destination =
                 item.kind === "category"
                   ? getRootCategoryDestination(item.slug)
-                  : item.to;
+                  : headerLinkDestination(item.target);
               const hasMenu = isDesktop && menuKey !== undefined;
               const isExpanded = hasMenu && activeMenuSlug === menuKey;
 
               return (
                 <React.Fragment
-                  key={
-                    item.kind === "category" ? item.categoryId : item.labelKey
-                  }
+                  key={item.kind === "category" ? item.categoryId : item.target}
                 >
                   {index > 0 && (
                     <li
@@ -922,7 +928,9 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
                         if (element) triggerRefs.current.set(menuKey, element);
                         else triggerRefs.current.delete(menuKey);
                       }}
-                      id={menuKey ? categoryTriggerId(menuKey) : undefined}
+                      id={categoryTriggerId(
+                        item.kind === "category" ? item.slug : item.target,
+                      )}
                       data-header-nav-item="true"
                       to={destination}
                       onPointerEnter={(event) => {
@@ -961,9 +969,7 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
                       className={`relative inline-flex min-h-control-md items-center whitespace-nowrap rounded-control px-1.5 text-sm tracking-tight ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} focus-visible:bg-primary-light focus-visible:ring-2 focus-visible:ring-primary-ring ${
                         isActive || isExpanded
                           ? "bg-primary-light font-bold text-primary after:absolute after:inset-x-1.5 after:bottom-0 after:h-0.5 after:rounded-sm after:bg-primary md:after:inset-x-2"
-                          : item.kind === "link" && item.emphasis
-                            ? "font-bold text-text-main hover:bg-primary-light hover:text-primary"
-                            : "font-medium text-text-strong hover:bg-bg-subtle hover:text-primary"
+                          : "font-medium text-text-strong hover:bg-bg-subtle hover:text-primary"
                       }`}
                     >
                       {label}
@@ -996,9 +1002,11 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
         />
       )}
       {isDesktop &&
+        overviewLink &&
         activeMenuSlug === OVERVIEW_MENU_KEY &&
         overviewRoots.length > 0 && (
           <CategoryOverviewMenu
+            label={headerNavigationLabel(overviewLink, locale)}
             roots={overviewRoots}
             menuRef={menuRef}
             onKeyDown={handleMenuKeyDown}

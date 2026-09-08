@@ -16,6 +16,13 @@ docker compose version >/dev/null 2>&1 || { shongre_fail "Docker Compose v2 is r
 export SHONGRE_RUNTIME_ENV_FILE="${SHONGRE_RUNTIME_ENV_FILE:-.env.local}"
 export SHONGRE_FRONTEND_ENV_FILE="${SHONGRE_FRONTEND_ENV_FILE:-.env.example}"
 export COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-shongre-${APP_ENV}}"
+configure_container_urls() {
+  local container_database_url="${DATABASE_URL:-}"
+  local container_supabase_url="${SUPABASE_URL:-}"
+  export SHONGRE_CONTAINER_DATABASE_URL="${container_database_url//$SUPABASE_HOST/host.docker.internal}"
+  export SHONGRE_CONTAINER_SUPABASE_URL="${container_supabase_url//$SUPABASE_HOST/host.docker.internal}"
+}
+configure_container_urls
 compose=(docker compose --project-directory "$root" -f "$root/compose.yaml" -f "$root/compose.local.yaml")
 
 action="${1:-status}"
@@ -28,10 +35,18 @@ case "$action" in
     "${compose[@]}" build frontend backend
     ;;
   start)
-    "${compose[@]}" up --detach --build --wait backend worker frontend
+    "$root/scripts/supabase.sh" up
+    set -a
+    source "$root/.runtime/supabase.env"
+    set +a
+    configure_container_urls
+    "$root/scripts/database.sh" migrate
+    "$root/scripts/database.sh" seed
+    "${compose[@]}" up --detach --build --wait redis backend worker frontend
     ;;
   stop)
     "${compose[@]}" down --remove-orphans
+    "$root/scripts/supabase.sh" down
     ;;
   status)
     "${compose[@]}" ps
@@ -40,10 +55,11 @@ case "$action" in
     "${compose[@]}" exec -T frontend node -e "fetch('http://127.0.0.1:' + process.env.FRONTEND_PORT + '/healthz').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
     "${compose[@]}" exec -T backend node -e "fetch('http://127.0.0.1:' + process.env.BACKEND_PORT + '/readyz').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"
     "${compose[@]}" exec -T worker node dist/worker-health.js
-    shongre_pass "frontend, backend, and worker containers are healthy"
+    "${compose[@]}" exec -T redis redis-cli -p 6379 ping | grep -qx PONG
+    shongre_pass "frontend, backend, worker, and Redis containers are healthy"
     ;;
   logs)
-    "${compose[@]}" logs --tail=200 frontend backend worker
+    "${compose[@]}" logs --tail=200 frontend backend worker redis
     ;;
   *)
     shongre_fail "usage: scripts/compose.sh <config|build|start|stop|status|health|logs>"

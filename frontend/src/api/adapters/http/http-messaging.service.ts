@@ -1,11 +1,9 @@
 import {
   CreateOrGetConversationInput,
-  MessageComposerOptions,
-  MessageComposerOptionsInput,
   MessagingServiceContract,
   SendMessageInput,
 } from "../../contracts/messaging.contract";
-import { httpClient } from "./http-client";
+import { apiOperation } from "./generated-api-operation";
 import type {
   Conversation,
   ListingStatus,
@@ -126,17 +124,21 @@ const mapConversation = (conversation: BackendConversation): Conversation => ({
 
 export class HttpMessagingService implements MessagingServiceContract {
   async getUserConversations(_userId: string): Promise<Conversation[]> {
-    const page = await httpClient.get<{
-      items: BackendConversation[];
-      pageInfo: { hasNextPage: boolean; nextCursor?: string };
-    }>("/messaging/conversations", { params: { limit: 100 } });
+    const page = await apiOperation<
+      {
+        items: BackendConversation[];
+        pageInfo: { hasNextPage: boolean; nextCursor?: string };
+      },
+      "getMessagingConversations"
+    >("getMessagingConversations", { query: { limit: 100 } });
     return page.items.map(mapConversation);
   }
 
   async getConversationById(id: string): Promise<Conversation | null> {
-    const conversation = await httpClient.get<BackendConversation>(
-      `/messaging/conversations/${encodeURIComponent(id)}`,
-    );
+    const conversation = await apiOperation<
+      BackendConversation,
+      "getMessagingConversationsById"
+    >("getMessagingConversationsById", { path: { id: id } });
     const messages = await this.getMessages(id);
     return { ...mapConversation(conversation), messages };
   }
@@ -145,50 +147,43 @@ export class HttpMessagingService implements MessagingServiceContract {
     conversationId: string,
     cursor?: string,
   ): Promise<Message[]> {
-    const page = await httpClient.get<BackendMessagePage>(
-      `/messaging/conversations/${encodeURIComponent(conversationId)}/messages`,
-      { params: { cursor, limit: 50 } },
-    );
+    const page = await apiOperation<
+      BackendMessagePage,
+      "getMessagingConversationsByIdMessages"
+    >("getMessagingConversationsByIdMessages", {
+      path: { id: conversationId },
+      query: { cursor, limit: 50 },
+    });
     return page.items.map(mapMessage);
-  }
-
-  async getComposerOptions(
-    input: MessageComposerOptionsInput,
-  ): Promise<MessageComposerOptions> {
-    return httpClient.get<MessageComposerOptions>(
-      `/messaging/conversations/${encodeURIComponent(input.conversationId)}/composer-options`,
-      {
-        params: {
-          userId: input.userId,
-          isProfessional: input.isProfessional,
-          locale: input.locale,
-        },
-      },
-    );
   }
 
   async createOrGetConversation(
     input: CreateOrGetConversationInput,
   ): Promise<Conversation> {
-    const conversation = await httpClient.post<BackendConversation>(
-      "/messaging/conversations",
-      {
+    const conversation = await apiOperation<
+      BackendConversation,
+      "postMessagingConversations"
+    >("postMessagingConversations", {
+      body: {
         listingId: input.listingId,
         initialMessage: input.initialMessage,
       },
-    );
+    });
     return mapConversation(conversation);
   }
 
   async sendMessage(input: SendMessageInput): Promise<Message> {
-    const message = await httpClient.post<BackendMessage>(
-      `/messaging/conversations/${encodeURIComponent(input.conversationId)}/messages`,
-      {
+    const message = await apiOperation<
+      BackendMessage,
+      "postMessagingConversationsByIdMessages"
+    >("postMessagingConversationsByIdMessages", {
+      path: { id: input.conversationId },
+      body: {
         text: input.text,
         attachments: input.attachments,
         offerPrice: input.offerPrice,
       },
-    );
+    });
     return mapMessage(message);
   }
 
@@ -198,10 +193,15 @@ export class HttpMessagingService implements MessagingServiceContract {
     _senderName: string,
     amount: number,
   ): Promise<Message> {
-    const message = await httpClient.post<BackendMessage>("/messaging/offer", {
-      conversationId,
-      amountMinor: Math.round(amount * 100),
-    });
+    const message = await apiOperation<BackendMessage, "postMessagingOffer">(
+      "postMessagingOffer",
+      {
+        body: {
+          conversationId,
+          amountMinor: Math.round(amount * 100),
+        },
+      },
+    );
     return mapMessage(message);
   }
 
@@ -211,18 +211,18 @@ export class HttpMessagingService implements MessagingServiceContract {
     _userName: string,
     accept: boolean,
   ): Promise<Message> {
-    const message = await httpClient.post<BackendMessage>(
-      "/messaging/offer-response",
-      { offerId, accept },
-    );
+    const message = await apiOperation<
+      BackendMessage,
+      "postMessagingOfferResponse"
+    >("postMessagingOfferResponse", { body: { offerId, accept } });
     return mapMessage(message);
   }
 
   async withdrawOffer(offerId: string, _userId: string): Promise<Message> {
-    const message = await httpClient.post<BackendMessage>(
-      `/messaging/offers/${encodeURIComponent(offerId)}/withdraw`,
-      {},
-    );
+    const message = await apiOperation<
+      BackendMessage,
+      "postMessagingOffersIdWithdraw"
+    >("postMessagingOffersIdWithdraw", { path: { id: offerId }, body: {} });
     return mapMessage(message);
   }
 
@@ -232,29 +232,38 @@ export class HttpMessagingService implements MessagingServiceContract {
     timeSlot: string,
     address: string,
   ): Promise<Message> {
-    const message = await httpClient.post<BackendMessage>(
-      "/messaging/schedule-pickup",
-      { conversationId, date, timeSlot, address },
-    );
+    const message = await apiOperation<
+      BackendMessage,
+      "postMessagingSchedulePickup"
+    >("postMessagingSchedulePickup", {
+      body: { conversationId, date, timeSlot, address },
+    });
     return mapMessage(message);
   }
 
   async markAsRead(conversationId: string, _userId: string): Promise<void> {
-    await httpClient.post<void>("/messaging/read", { conversationId });
+    await apiOperation<void, "postMessagingRead">("postMessagingRead", {
+      body: { conversationId },
+    });
   }
 
   async blockUser(_userId: string, targetUserId: string): Promise<void> {
-    await httpClient.post<void>("/messaging/block", { targetUserId });
+    await apiOperation<void, "postMessagingBlock">("postMessagingBlock", {
+      body: { targetUserId },
+    });
   }
 
   async unblockUser(_userId: string, targetUserId: string): Promise<void> {
-    await httpClient.post<void>("/messaging/unblock", { targetUserId });
+    await apiOperation<void, "postMessagingUnblock">("postMessagingUnblock", {
+      body: { targetUserId },
+    });
   }
 
   async getBlockedUserIds(_userId: string): Promise<string[]> {
-    const response = await httpClient.get<{ userIds: string[] }>(
-      "/messaging/blocked",
-    );
+    const response = await apiOperation<
+      { userIds: string[] },
+      "getMessagingBlocked"
+    >("getMessagingBlocked", {});
     return response.userIds;
   }
 }

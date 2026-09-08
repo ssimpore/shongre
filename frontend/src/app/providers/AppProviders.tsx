@@ -7,7 +7,6 @@ import { FavoritesProvider } from "./FavoritesProvider";
 import { ConsentProvider } from "./ConsentProvider";
 import { I18nProvider } from "../../i18n/I18nProvider";
 import { ErrorBoundary } from "./ErrorBoundary";
-import { DataModeProvider } from "./DataModeProvider";
 import { QUERY_CLIENT_CONFIG } from "../../configuration/query.config";
 import type { MarketContext } from "@shongre/contracts/market-country";
 import type { PublicRouteData } from "../../platform/seo/public-route-data";
@@ -49,27 +48,25 @@ export const AppProviders: React.FC<{
 }> = ({ children, marketContext, initialPublicRouteData }) => {
   return (
     <ErrorBoundary>
-      <DataModeProvider>
-        <QueryClientProvider client={queryClient}>
-          <AuthProvider>
-            <ConsentProvider>
-              <PublicRouteDataProvider initialData={initialPublicRouteData}>
-                <MarketLocationProvider initialMarketContext={marketContext}>
-                  <I18nProvider>
-                    <ToastProvider>
-                      <StaffMarketplaceActionGuard>
-                        <AccountDataBoundary>
-                          <FavoritesProvider>{children}</FavoritesProvider>
-                        </AccountDataBoundary>
-                      </StaffMarketplaceActionGuard>
-                    </ToastProvider>
-                  </I18nProvider>
-                </MarketLocationProvider>
-              </PublicRouteDataProvider>
-            </ConsentProvider>
-          </AuthProvider>
-        </QueryClientProvider>
-      </DataModeProvider>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <ConsentProvider>
+            <PublicRouteDataProvider initialData={initialPublicRouteData}>
+              <MarketLocationProvider initialMarketContext={marketContext}>
+                <I18nProvider>
+                  <ToastProvider>
+                    <StaffMarketplaceActionGuard>
+                      <AccountDataBoundary>
+                        <FavoritesProvider>{children}</FavoritesProvider>
+                      </AccountDataBoundary>
+                    </StaffMarketplaceActionGuard>
+                  </ToastProvider>
+                </I18nProvider>
+              </MarketLocationProvider>
+            </PublicRouteDataProvider>
+          </ConsentProvider>
+        </AuthProvider>
+      </QueryClientProvider>
     </ErrorBoundary>
   );
 };

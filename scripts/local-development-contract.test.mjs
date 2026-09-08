@@ -14,7 +14,7 @@ function envValue(source, name) {
   return match[1];
 }
 
-test("the local environment uses the documented Web, API, and data modes", async () => {
+test("the local environment uses the documented API-only clients", async () => {
   const environment = await read(".env.example");
   const frontendPort = envValue(environment, "FRONTEND_PORT");
   const backendPort = envValue(environment, "BACKEND_PORT");
@@ -25,10 +25,9 @@ test("the local environment uses the documented Web, API, and data modes", async
   assert.match(backendPort, /^\d+$/);
   assert.equal(frontendUrl.port, frontendPort);
   assert.equal(backendUrl.port, backendPort);
-  assert.equal(envValue(environment, "NEXT_PUBLIC_DATA_MODE"), "api");
   assert.equal(
-    envValue(environment, "NEXT_PUBLIC_ENABLE_MOCK_STORAGE"),
-    "false",
+    envValue(environment, "NEXT_PUBLIC_API_URL"),
+    `${backendUrl.origin}/api/v1`,
   );
   assert.equal(envValue(environment, "BACKEND_DATA_MODE"), "database");
   assert.equal(envValue(environment, "DATABASE_INFRA_MODE"), "local");
@@ -64,13 +63,10 @@ test("the Makefile exposes one canonical local Supabase lifecycle", async () => 
     );
   }
 
+  assert.doesNotMatch(makefile, /^demo:/m);
   assert.match(
     makefile,
-    /^\s*@SHONGRE_EXPLICIT_DEMO=true NEXT_PUBLIC_DATA_MODE=demo NEXT_PUBLIC_ENABLE_MOCK_STORAGE=true scripts\/service\.sh foreground frontend/m,
-  );
-  assert.match(
-    makefile,
-    /^dev:.*\n\s*@NEXT_PUBLIC_DATA_MODE=api NEXT_PUBLIC_ENABLE_MOCK_STORAGE=false BACKEND_DATA_MODE=database scripts\/dev\.sh web/m,
+    /^dev:.*\n\s*@BACKEND_DATA_MODE=database scripts\/dev\.sh web/m,
   );
   assert.match(
     developmentScript,
@@ -102,7 +98,13 @@ test("local Supabase tooling is installed and runtime credentials stay ignored",
   assert.match(service, /source "\$SHONGRE_ROOT\/\.runtime\/supabase\.env"/);
   assert.match(service, /run make supabase-up/);
   assert.match(supabase, /local Supabase requires at least 5 GiB/);
-  assert.match(supabase, /timeout: 10_000/);
+  assert.match(supabase, /shongre_require_docker_daemon/);
+  const utils = await read("scripts/utils.sh");
+  assert.match(utils, /timeout: 10_000/);
+  assert.match(utils, /\["version", "--format", "\{\{\.Server\.Version\}\}"\]/);
+  const redis = await read("scripts/redis.sh");
+  assert.match(redis, /shongre_require_docker_daemon/);
+  assert.doesNotMatch(redis, /docker info/);
   assert.match(
     supabase,
     /supabase start --workdir "\$SHONGRE_ROOT\/backend" >\/dev\/null/,

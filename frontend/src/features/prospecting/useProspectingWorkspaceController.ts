@@ -303,7 +303,7 @@ export function useProspectingWorkspaceController(
       const updated = new URLSearchParams(params);
       if (activeQuery) updated.set("q", activeQuery);
       else updated.delete("q");
-      // The demo adapter can resolve before React Router commits the URL update.
+      // The request can resolve before React Router commits the URL update.
       // Mark this query as the controller's own navigation so the synchronization
       // effect does not erase the just-returned discovery as if Back/Forward had
       // changed the search externally.

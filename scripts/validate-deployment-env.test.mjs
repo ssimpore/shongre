@@ -17,12 +17,11 @@ FRONTEND_PORT=3000
 PUBLIC_FR_URL=https://staging.shongre.example
 PUBLIC_INTL_URL=https://staging-intl.shongre.example
 API_URL=https://api-staging.shongre.example
+NEXT_PUBLIC_API_URL=https://api-staging.shongre.example/api/v1
 SHONGRE_MARKETPLACE_ORIGIN=https://marketplace-staging.shongre.example
 SHONGRE_SOLUTIONS_ORIGIN=https://solutions-staging.shongre.example
 SHONGRE_PROSPECTS_ORIGIN=https://prospects-staging.shongre.example
 SHONGRE_FACTURATION_ORIGIN=https://facturation-staging.shongre.example
-NEXT_PUBLIC_DATA_MODE=api
-NEXT_PUBLIC_ENABLE_MOCK_STORAGE=false
 NEXT_PUBLIC_ENABLE_AI_FEATURES=false
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_ci
 `;
@@ -116,13 +115,6 @@ try {
   writePrivate(
     frontendPath,
     `${frontend}DATABASE_URL=postgresql://forbidden\n`,
-  );
-  run(1);
-
-  writePrivate(frontendPath, frontend);
-  writePrivate(
-    frontendPath,
-    frontend.replace("NEXT_PUBLIC_DATA_MODE=api", "NEXT_PUBLIC_DATA_MODE=demo"),
   );
   run(1);
 

@@ -165,16 +165,22 @@ export function ListingCardViewCard({
       }
       labels={{
         boosted: t("ui.listingCard.boosted"),
+        delivery: t("ui.listingCard.delivery"),
+        digitalFulfillment: t("ui.listingCard.digitalFulfillment"),
         free: t("ui.listingCard.free"),
+        negotiable: t("ui.listingCard.negotiable"),
         onRequest: t("ui.listingCard.onRequest"),
+        onlinePayment: t("ui.listingCard.onlinePayment"),
         imageUnavailable: t("ui.listingCard.imageUnavailable"),
+        photos: (count) => t("ui.listingCard.photos", { count }),
         rating: (rating, count) =>
           t("ui.listingCard.noteAvis", { rating }).replace("{count}", count),
+        verifiedSeller: t("ui.listingCard.verifiedSeller"),
+        verifiedSellerShort: t("ui.listingCard.verifiedSellerShort"),
       }}
       identityLabels={{
         pro: t("ui.identityStatus.pro.short"),
         proAccessibility: t("ui.identityStatus.pro.seller"),
-        verified: t("ui.identityStatus.verification.profile"),
       }}
       renderLink={({
         href: to,

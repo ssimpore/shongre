@@ -123,20 +123,23 @@ backup/restore runbook only for actual loss or corruption.
 - Bad release: dispatch rollback, verify all public endpoints, then record the
   incident and forward database compatibility decision.
 
-## Worker health and local lifecycle
+## Worker, Redis, and local lifecycle
 
 The API and worker share the backend image. Compose starts workers independently
 and probes `node dist/worker-health.js` instead of only checking process state.
 The heartbeat contains only PID, environment ID and a timestamp, expires after
-the centrally configured age, and is refreshed after successful database lease
-coordination. Container `/tmp` is writable while the image filesystem stays
-read-only. `WORKER_HEALTH_FILE` may override the path; native Make launchers use
-an ignored file in the checkout’s `.runtime/`. CI checks the heartbeat in the
-built worker container as well as Web/API HTTP probes.
+the centrally configured age, and is refreshed after successful BullMQ and
+database-lease coordination. Redis is private, credentialed/TLS in hosted
+environments, and owns only queue transport and realtime fan-out; PostgreSQL
+outboxes remain authoritative. Container `/tmp` is writable while the image
+filesystem stays read-only. `WORKER_HEALTH_FILE` may override the path; native
+Make launchers use an ignored file in the checkout’s `.runtime/`. CI checks the
+heartbeat, Redis PING, and API readiness in the built containers.
 
-`make dev` ensures local Supabase before stopping applications, then applies
-pending migrations and the deterministic seed. A repeat invocation reuses the
-healthy selected stack when environment/lockfile/migration hashes match; it
+`make dev` ensures local Supabase, Mailpit, and Redis before stopping
+applications, then applies pending migrations and the deterministic seed. A
+repeat invocation reuses the healthy selected stack when
+environment/lockfile/migration hashes match; it
 never records secret values in process metadata. `make dev-down` stops tracked
 applications, the canonical local Compose project and Supabase without deleting
 database volumes. `make dev-restart` performs that stop followed by startup.
@@ -144,5 +147,6 @@ database volumes. `make dev-restart` performs that stop followed by startup.
 `make dev-clean` removes only disposable build/runtime files after stopping
 owned applications. `make dev-status`, `make dev-logs`, `make docker-up`,
 `make docker-down`, and `make docker-restart` delegate to the existing tooling.
-`make mail-up` ensures the existing Supabase-owned local mail sink, avoiding a
-second Mailpit instance.
+`make redis-up`, `make redis-status`, and `make redis-logs` own local Redis.
+`make mail-up` ensures the Supabase-owned Mailpit instance, avoiding a second
+mail sink.

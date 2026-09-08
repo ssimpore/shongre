@@ -37,7 +37,6 @@ export const VerifyEmailPage: React.FC = () => {
   >(urlToken ? "verifying" : "idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [resendStatus, setResendStatus] = useState<string | null>(null);
-  const [demoCodeHint] = useState<string | null>(null);
 
   useEffect(() => {
     if (urlToken) {
@@ -132,14 +131,6 @@ export const VerifyEmailPage: React.FC = () => {
                 <CheckCircle2 className="w-icon-md h-icon-md text-success" />
                 <span>{resendStatus}</span>
               </div>
-              {demoCodeHint && (
-                <p className="text-micro text-success">
-                  {t("auth.verifyEmailPage.tokenDemo")}
-                  <code className="bg-success-surface px-1 py-0.5 rounded font-bold">
-                    {demoCodeHint}
-                  </code>
-                </p>
-              )}
             </div>
           )}
 

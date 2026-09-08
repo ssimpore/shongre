@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { AlertCircle, CheckCircle2, Loader2, ShieldCheck } from "lucide-react";
 import { Button } from "../../design-system/primitives/Button";
-import { newsletterRepository } from "../../repositories/newsletter.repository";
+import { services } from "../../api/client/service-registry";
 import { useToast } from "../../app/providers/ToastProvider";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { usePageMeta } from "../../hooks/usePageMeta";
@@ -30,8 +30,8 @@ export const NewsletterConfirmPage: React.FC = () => {
       setState("error");
       return;
     }
-    newsletterRepository
-      .confirmSubscription(token)
+    services.marketing
+      .confirmPublic(token)
       .then((subscription) => {
         setConfirmedEmail(subscription.email);
         setState("confirmed");

@@ -222,17 +222,16 @@ could be composed or extended.
 | local market/country/currency strings                                     | market definitions and `MarketLocationProvider`                                  |
 | floating-point price presentation                                         | `{ amountMinor, currency }` plus `Intl` formatters                               |
 | relative time millisecond arithmetic in changed business flows            | shared time conversion utilities                                                 |
-| random demo IDs                                                           | deterministic ID utilities and adapter sequences                                 |
-| direct component storage                                                  | `storageService` or a typed demo adapter                                         |
+| random IDs                                                                | backend-issued identifiers                                                       |
+| direct component storage                                                  | API services or `browser-preferences.service.ts` for display preferences only    |
 | auth, publication, course, auto, property, and employment bounds/defaults | shared contract constraints and service policies                                 |
 | discovery/trending weights                                                | named discovery and trend policy contracts                                       |
 | monetization offers, prices, commission, entitlement limits               | versioned monetization catalogue and admin schemas                               |
 
-Browser persistence is owned by explicit gateways: `storage.service.ts` for
-structured application state, `data-mode.service.ts` for the isolated data-mode
-preference, and the consent-gated analytics attribution/identity modules for
-their narrow records. Feature pages, layouts, and design-system components have
-no direct local/session storage access.
+Browser persistence is limited to `browser-preferences.service.ts` for
+non-authoritative display preferences and consent-gated analytics modules for
+their narrow records. Business and account state is API-owned. Feature pages,
+layouts, and design-system components have no direct local/session storage access.
 
 ## Responsive findings and evidence
 
@@ -339,8 +338,8 @@ The implementation is accepted when all of the following stay true:
    admin routes expose one main landmark, one H1, one description, and one
    canonical, with no missing image alternatives or unnamed buttons.
 8. the WCAG 2.2 AA and bottom-navigation clearance E2E suites pass.
-9. the frontend starts and functions in `NEXT_PUBLIC_DATA_MODE=demo` with no
-   backend, Supabase, Stripe, or identity provider running.
+9. the frontend starts against the isolated API test transport without using
+   browser fixtures or client-side identities.
 10. the source scan finds no `Math.random`, browser alert/confirm/prompt, or
     direct feature/layout/design-system storage access.
 

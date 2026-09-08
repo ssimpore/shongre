@@ -111,9 +111,9 @@ export type UpdateWatchSubscriptionInput = z.infer<
 export const watchSubscriptionSchema = watchSubscriptionCoreSchema.extend({
   id: z.string().min(1),
   status: watchSubscriptionStatusSchema,
-  lastNotifiedAt: z.string().datetime().optional(),
-  createdAt: z.string().datetime(),
-  updatedAt: z.string().datetime(),
+  lastNotifiedAt: z.string().datetime({ offset: true }).optional(),
+  createdAt: z.string().datetime({ offset: true }),
+  updatedAt: z.string().datetime({ offset: true }),
 });
 export type WatchSubscription = z.infer<typeof watchSubscriptionSchema>;
 

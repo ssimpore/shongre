@@ -79,7 +79,7 @@ ${colors.bright}Available Commands:${colors.reset}
   ${colors.green}test-e2e${colors.reset}        Playwright: responsive overflow, axe a11y, journey matrix
   ${colors.green}seo-audit <origin>${colors.reset} Audit robots, sitemaps, metadata, initial HTML and public links
   ${colors.green}info${colors.reset}            Display platform environment, versions & configuration
-  ${colors.green}ai-test [prompt]${colors.reset} Exercise the AI listing-assistance adapter (demo, deterministic)
+  ${colors.green}ai-test [prompt]${colors.reset} Exercise the API-backed AI listing-assistance adapter
   ${colors.green}clean${colors.reset}           Remove build artifacts and cache
   ${colors.green}help${colors.reset}            Show this help manual
 `);
@@ -108,12 +108,11 @@ function runInfo() {
     `  • .env file   : ${hasEnv ? `${colors.green}Detected${colors.reset}` : `${colors.yellow}Missing; run make env-init${colors.reset}`}`,
   );
   console.log(
-    `  • Data mode   : ${colors.green}${process.env.NEXT_PUBLIC_DATA_MODE || "not configured"}${colors.reset}`,
+    `  • API         : ${colors.green}${process.env.NEXT_PUBLIC_API_URL || "not configured"}${colors.reset}`,
   );
-  // AI runs behind the service contract now, so the browser holds no provider
-  // key to report on — credentials belong to backend/ when the HTTP adapter lands.
+  // Provider credentials remain backend-only.
   console.log(
-    `  • AI          : ${colors.dim}deterministic demo adapter (no provider key in the browser)${colors.reset}\n`,
+    `  • AI          : ${colors.dim}backend service (no provider key in the browser)${colors.reset}\n`,
   );
 }
 
@@ -144,7 +143,7 @@ async function runAiTest(promptInput) {
     );
     const result = spawnSync(
       "npx",
-      ["vitest", "run", "src/api/adapters/demo/demo-ai.service.test.ts"],
+      ["vitest", "run", "src/api/adapters/http/http-critical-boundaries.test.ts"],
       {
         cwd: rootDir,
         stdio: "inherit",

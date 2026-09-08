@@ -1,7 +1,6 @@
 /**
  * SHONGRE CANONICAL NEWSLETTER TYPES
- * Authoritative domain definitions for newsletter subscriptions, topics,
- * consent records, campaigns, audience targeting, and delivery simulation.
+ * API-facing newsletter subscription, topic, and consent projections.
  */
 
 export type NewsletterTopic =
@@ -30,7 +29,6 @@ interface NewsletterConsent {
   consentedAt: string;
   version: string;
   source: NewsletterSubscriptionSource;
-  ipOrFingerprintSim?: string;
 }
 
 export interface NewsletterSubscription {

@@ -47,7 +47,6 @@ import { FormField, Input } from "../../design-system/primitives/FormField";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useRegionalFormatters } from "../../hooks/useRegionalFormatters";
 import { useAuthorization } from "../../security/useAuthorization";
-import { useStaffMarketplaceAccess } from "../../security/useStaffMarketplaceAccess";
 import { useMarketBusinessRules } from "../../domains/monetization/useMarketBusinessRules";
 
 type BillingInterval = "month" | "year";
@@ -131,7 +130,6 @@ export const ProPlansPage: React.FC = () => {
   const { t } = useTranslation();
   const { currentUser, isAuthenticated } = useAuth();
   const { can } = useAuthorization();
-  const { canUseDemoMarketplace } = useStaffMarketplaceAccess();
   const { activeMarket } = useMarketLocation();
   const marketBusinessRules = useMarketBusinessRules();
   const { formatDate, formatMoneyMinor: formatMoney } = useRegionalFormatters();
@@ -165,8 +163,7 @@ export const ProPlansPage: React.FC = () => {
   const [checkoutCanRetry, setCheckoutCanRetry] = useState(false);
   const [billingHistoryOpen, setBillingHistoryOpen] = useState(false);
   const [promotionCode, setPromotionCode] = useState("");
-  const canManageSubscriptions =
-    can("subscription.manage.own") || canUseDemoMarketplace;
+  const canManageSubscriptions = can("subscription.manage.own");
 
   usePageMeta({
     title: "Offres et forfaits professionnels",

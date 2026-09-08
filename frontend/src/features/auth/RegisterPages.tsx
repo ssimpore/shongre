@@ -23,10 +23,6 @@ import { PasswordField } from "./components/PasswordField";
 import { AuthLayout } from "./components/AuthLayout";
 import { AccountTypeSelector } from "./components/AccountTypeSelector";
 import { SocialLoginButtons } from "./components/SocialLoginButtons";
-import {
-  SUPPORTED_MARKETS,
-  validateBusinessIdentifier,
-} from "../../configuration/market.config";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { routes } from "../../configuration/routes";
@@ -162,7 +158,7 @@ export const RegisterIndividualPage: React.FC = () => {
   const returnTo = useRegistrationReturn(routes.workspace.overview());
   const { registerIndividual } = useAuth();
   const toast = useToast();
-  const { activeMarket } = useMarketLocation();
+  const { activeMarket, availableMarkets } = useMarketLocation();
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -220,8 +216,6 @@ export const RegisterIndividualPage: React.FC = () => {
       setIsLoading(false);
     }
   };
-
-  const market = SUPPORTED_MARKETS[country];
 
   return (
     <AuthLayout
@@ -301,7 +295,7 @@ export const RegisterIndividualPage: React.FC = () => {
               value={country}
               onChange={(e) => setCountry(e.target.value)}
             >
-              {Object.values(SUPPORTED_MARKETS).map((m) => (
+              {availableMarkets.map((m) => (
                 <option key={m.code} value={m.code}>
                   {m.flag} {m.name}
                 </option>
@@ -321,7 +315,7 @@ export const RegisterIndividualPage: React.FC = () => {
               type="text"
               value={postalCode}
               onChange={(e) => setPostalCode(e.target.value)}
-              placeholder={market.postalCodePlaceholder}
+              placeholder="Code postal"
               required
               className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
             />
@@ -439,7 +433,7 @@ export const RegisterProPage: React.FC = () => {
   const returnTo = useRegistrationReturn(routes.workspace.pro.dashboard());
   const { registerProfessional } = useAuth();
   const toast = useToast();
-  const { activeMarket } = useMarketLocation();
+  const { activeMarket, availableMarkets } = useMarketLocation();
 
   const [step, setStep] = useState<1 | 2>(1);
 
@@ -455,9 +449,7 @@ export const RegisterProPage: React.FC = () => {
     useState<ProfessionalVertical>("generic");
   const [country, setCountry] = useState(activeMarket.code);
   const [sirenSiret, setSirenSiret] = useState("");
-  const [legalForm, setLegalForm] = useState(
-    "Micro-entreprise / Auto-entrepreneur",
-  );
+  const [legalForm, setLegalForm] = useState("");
   const [vatNumber, setVatNumber] = useState("");
   const [businessAddress, setBusinessAddress] = useState("");
   const [city, setCity] = useState("");
@@ -466,8 +458,6 @@ export const RegisterProPage: React.FC = () => {
 
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  const currentMarket = SUPPORTED_MARKETS[country];
 
   const handleNextStep = (e: React.FormEvent) => {
     e.preventDefault();
@@ -495,10 +485,8 @@ export const RegisterProPage: React.FC = () => {
       return;
     }
 
-    if (!validateBusinessIdentifier(sirenSiret, country)) {
-      setErrorMessage(
-        `Identifiant d'entreprise invalide. ${currentMarket.businessIdentifierHelper}`,
-      );
+    if (!sirenSiret.trim()) {
+      setErrorMessage("L’identifiant légal de l’entreprise est requis.");
       return;
     }
 
@@ -763,7 +751,7 @@ export const RegisterProPage: React.FC = () => {
                     value={country}
                     onChange={(e) => setCountry(e.target.value)}
                   >
-                    {Object.values(SUPPORTED_MARKETS).map((m) => (
+                    {availableMarkets.map((m) => (
                       <option key={m.code} value={m.code}>
                         {m.flag} {m.name}
                       </option>
@@ -778,18 +766,14 @@ export const RegisterProPage: React.FC = () => {
                   >
                     Forme juridique <span className="text-primary">*</span>
                   </label>
-                  <Select
-                    className="w-full"
+                  <input
                     id="reg-forme-juridique"
                     value={legalForm}
-                    onChange={(e) => setLegalForm(e.target.value)}
-                  >
-                    {currentMarket.supportedLegalForms.map((f) => (
-                      <option key={f} value={f}>
-                        {f}
-                      </option>
-                    ))}
-                  </Select>
+                    onChange={(event) => setLegalForm(event.target.value)}
+                    required
+                    autoComplete="organization-title"
+                    className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
+                  />
                 </div>
               </div>
 
@@ -821,7 +805,7 @@ export const RegisterProPage: React.FC = () => {
                     htmlFor="reg-currentmarket-businessidentifierlabel"
                     className="block text-xs font-semibold text-text-strong mb-1.5"
                   >
-                    {currentMarket.businessIdentifierLabel}{" "}
+                    Identifiant légal de l’entreprise{" "}
                     <span className="text-primary">*</span>
                   </label>
                   <input
@@ -829,9 +813,7 @@ export const RegisterProPage: React.FC = () => {
                     type="text"
                     value={sirenSiret}
                     onChange={(e) => setSirenSiret(e.target.value)}
-                    placeholder={
-                      currentMarket.businessIdentifierFormatPlaceholder
-                    }
+                    placeholder="Numéro d’immatriculation"
                     required
                     className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
                   />
@@ -849,7 +831,7 @@ export const RegisterProPage: React.FC = () => {
                     type="text"
                     value={vatNumber}
                     onChange={(e) => setVatNumber(e.target.value)}
-                    placeholder={currentMarket.vatNumberFormatPlaceholder}
+                    placeholder="Numéro de TVA"
                     className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
                   />
                 </div>
@@ -890,7 +872,7 @@ export const RegisterProPage: React.FC = () => {
                     type="text"
                     value={postalCode}
                     onChange={(e) => setPostalCode(e.target.value)}
-                    placeholder={currentMarket.postalCodePlaceholder}
+                    placeholder="Code postal"
                     required
                     className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
                   />

@@ -53,31 +53,12 @@ if (
   throw new Error(`[Web Startup] ${environment} URLs must use HTTPS.`);
 }
 
-const dataMode = required("NEXT_PUBLIC_DATA_MODE");
-if (!new Set(["demo", "api"]).has(dataMode)) {
-  throw new Error("[Web Startup] NEXT_PUBLIC_DATA_MODE must be demo or api.");
-}
+required("NEXT_PUBLIC_API_URL");
 const stripeKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "";
 if (environment !== "production" && stripeKey.startsWith("pk_live_")) {
   throw new Error(
     "[Web Startup] A live Stripe key is forbidden outside production.",
   );
-}
-const connectedEnvironment =
-  environment === "development" ||
-  environment === "staging" ||
-  environment === "production" ||
-  (environment === "local" && process.env.SHONGRE_EXPLICIT_DEMO !== "true");
-if (connectedEnvironment) {
-  if (dataMode !== "api")
-    throw new Error(
-      `[Web Startup] Connected ${environment} requires NEXT_PUBLIC_DATA_MODE=api.`,
-    );
-  if (process.env.NEXT_PUBLIC_ENABLE_MOCK_STORAGE !== "false") {
-    throw new Error(
-      `[Web Startup] Connected ${environment} requires NEXT_PUBLIC_ENABLE_MOCK_STORAGE=false.`,
-    );
-  }
 }
 if (environment === "production") {
   if (!/^pk_live_[A-Za-z0-9]+$/.test(stripeKey)) {

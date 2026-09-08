@@ -1,16 +1,16 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import { createHttpServer } from "../../src/app/server/index.js";
+import { createBackendApplication } from "../../src/app/server/index.js";
 import {
   seedDemoCredentials,
   DEMO_ACCOUNT_PASSWORD,
 } from "../../src/app/bootstrap/seed-demo-credentials.js";
-import { Server } from "http";
+import type { NestFastifyApplication } from "@nestjs/platform-fastify";
 import { generateTotpCode } from "../../src/modules/auth/mfa.service.js";
 import { config } from "../../src/app/config/index.js";
 import { repositories } from "../../src/infrastructure/database/repositories/index.js";
 
 describe("API v1 Endpoints Integration", () => {
-  let server: Server;
+  let app: NestFastifyApplication;
   let baseUrl: string;
   let buyerToken: string;
   let proToken: string;
@@ -73,16 +73,9 @@ describe("API v1 Endpoints Integration", () => {
     // The demo personas need password hashes before login can verify anything.
     await seedDemoCredentials();
 
-    server = createHttpServer();
-    await new Promise<void>((resolve, reject) => {
-      server.once("error", reject);
-      server.listen(0, "127.0.0.1", () => {
-        server.off("error", reject);
-        const address = server.address() as any;
-        baseUrl = `http://127.0.0.1:${address.port}`;
-        resolve();
-      });
-    });
+    app = await createBackendApplication();
+    await app.listen(0, "127.0.0.1");
+    baseUrl = await app.getUrl();
 
     buyerToken = await login("thomas.laurent@example.fr");
     proToken = await login("recrutement@technova.fr");
@@ -94,7 +87,7 @@ describe("API v1 Endpoints Integration", () => {
   });
 
   afterAll(async () => {
-    await new Promise<void>((resolve) => server.close(() => resolve()));
+    await app.close();
   });
 
   it("GET /health returns 200 OK", async () => {
@@ -400,6 +393,7 @@ describe("API v1 Endpoints Integration", () => {
             expectedRevision: 1,
             changeReason: "Tentative non authentifiée de modification.",
             items: [],
+            links: [],
           }),
         }),
       ]);
@@ -408,6 +402,18 @@ describe("API v1 Endpoints Integration", () => {
     const configuration = await publicResponse.json();
     expect(configuration.marketCode).toBe("FR");
     expect(configuration.items.length).toBeGreaterThan(0);
+    expect(configuration.links).toMatchObject([
+      {
+        target: "category_overview",
+        isActive: true,
+        shortLabels: { "fr-FR": "Autres" },
+      },
+      {
+        target: "promotions",
+        isActive: true,
+        shortLabels: { "fr-FR": "Promotions" },
+      },
+    ]);
     expect(configuration.items.every((item: any) => item.isActive)).toBe(true);
     expect(configuration.items.map((item: any) => item.displayOrder)).toEqual(
       [...configuration.items]
@@ -1033,7 +1039,12 @@ describe("API v1 Endpoints Integration", () => {
     });
 
     expect(unknown.status).toBe(wrongPassword.status);
-    expect(await unknown.json()).toEqual(await wrongPassword.json());
+    const unknownBody = await unknown.json();
+    const wrongPasswordBody = await wrongPassword.json();
+    expect({ ...unknownBody, requestId: undefined }).toEqual({
+      ...wrongPasswordBody,
+      requestId: undefined,
+    });
   });
 
   it("GET /api/v1/auth/me returns null without a token and the profile with one", async () => {

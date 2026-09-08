@@ -6,24 +6,16 @@ import {
   type ListingCardView,
   type PublicationInput,
 } from "@shongre/contracts";
+import { apiOperation } from "@/api/generated-api-operation";
 import type { operations } from "@shongre/contracts/openapi";
 import { minorToMajorAmount } from "@shongre/shared/money";
-import { apiRequest } from "@/api/http-client";
 import { requireMobileAuthorization } from "@/features/auth/authorization";
 import { mapBackendListing } from "./listing.mapper";
 
-type BackendListingCollection =
-  operations["getListings"]["responses"][200]["content"]["application/json"];
-type BackendListingDetail =
-  operations["getListingsById"]["responses"][200]["content"]["application/json"];
-type BackendListingSearchResult =
-  operations["postListingsSearch"]["responses"][200]["content"]["application/json"];
 type BackendListingSearchRequest =
   operations["postListingsSearch"]["requestBody"]["content"]["application/json"];
 type BackendPublicationRequest =
   operations["postListingsPublish"]["requestBody"]["content"]["application/json"];
-type BackendPublicationResponse =
-  operations["postListingsPublish"]["responses"][200]["content"]["application/json"];
 
 export type MobileSearchScope =
   "marketplace" | "auto" | "immo" | "emploi" | "education";
@@ -57,11 +49,7 @@ export interface ListingsService {
 
 export class HttpListingsService implements ListingsService {
   async list(marketCode: string): Promise<ListingCardView[]> {
-    const response = await apiRequest<BackendListingCollection>(
-      "/listings",
-      {},
-      marketCode,
-    );
+    const response = await apiOperation("getListings", {}, marketCode);
     return response.listings.map(mapBackendListing);
   }
 
@@ -75,21 +63,18 @@ export class HttpListingsService implements ListingsService {
       ...(input.minPrice !== undefined ? { minPrice: input.minPrice } : {}),
       ...(input.maxPrice !== undefined ? { maxPrice: input.maxPrice } : {}),
     };
-    const response = await apiRequest<BackendListingSearchResult>(
-      "/listings/search",
-      {
-        method: "POST",
-        body: JSON.stringify(searchPayload),
-      },
+    const response = await apiOperation(
+      "postListingsSearch",
+      { body: searchPayload },
       input.marketCode,
     );
     return response.items.map(mapBackendListing);
   }
 
   async get(id: string, marketCode: string): Promise<ListingCardView | null> {
-    const item = await apiRequest<BackendListingDetail>(
-      `/listings/${encodeURIComponent(id)}`,
-      {},
+    const item = await apiOperation(
+      "getListingsById",
+      { path: { id: id } },
       marketCode,
     );
     return item ? mapBackendListing(item) : null;
@@ -129,9 +114,9 @@ export class HttpListingsService implements ListingsService {
         digitalFulfillment: draft.digitalFulfillment,
       },
     };
-    const item = await apiRequest<BackendPublicationResponse>(
-      "/listings/publish",
-      { method: "POST", body: JSON.stringify(payload) },
+    const item = await apiOperation(
+      "postListingsPublish",
+      { body: payload },
       draft.marketCode,
     );
     return mapBackendListing(item);

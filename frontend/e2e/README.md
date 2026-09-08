@@ -1,8 +1,7 @@
 # End-to-end suite
 
-Runs entirely against `NEXT_PUBLIC_DATA_MODE=demo`. No backend, Supabase, Stripe or KYC
-provider is involved, so `npm install && npm run test:e2e` works from a clean
-checkout.
+Runs the API-only frontend against the isolated backend test transport. No live
+Supabase, Stripe, or KYC provider is involved.
 
 ```bash
 npm run test:e2e              # everything, every configured browser
@@ -28,9 +27,8 @@ without touching either spec.
 
 ## Personas
 
-`personas.ts` seeds `localStorage` before first paint, which is what the demo
-store reads on boot — equivalent to picking the persona in the demo switcher,
-without driving the UI for it in every test.
+`personas.ts` describes the API test identities used by journey setup. The
+frontend never reads personas from local storage.
 
 ## Browsers
 

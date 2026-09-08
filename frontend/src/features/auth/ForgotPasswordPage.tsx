@@ -29,14 +29,11 @@ export const ForgotPasswordPage: React.FC = () => {
 
   const urlToken = searchParams.get("token") || "";
 
-  const [step, setStep] = useState<"request" | "reset">(
-    urlToken ? "reset" : "request",
-  );
+  const step: "request" | "reset" = urlToken ? "reset" : "request";
   const [email, setEmail] = useState("");
   const [token, setToken] = useState(urlToken);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [demoResetToken, setDemoResetToken] = useState<string | null>(null);
 
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -52,10 +49,6 @@ export const ForgotPasswordPage: React.FC = () => {
       const res = await services.auth.requestPasswordReset(email.trim());
       if (res.success) {
         setSuccessMessage(res.message);
-        if (res.demoToken) {
-          setDemoResetToken(res.demoToken);
-          setToken(res.demoToken);
-        }
       } else {
         setErrorMessage(res.message);
       }
@@ -129,25 +122,6 @@ export const ForgotPasswordPage: React.FC = () => {
             <CheckCircle2 className="w-icon-md h-icon-md text-success shrink-0 mt-0.5" />
             <span>{successMessage}</span>
           </div>
-
-          {demoResetToken && (
-            <div className="pt-2 border-t border-success-border/80">
-              <p className="text-micro text-success mb-1.5 font-medium">
-                {t(
-                  "auth.forgotPasswordPage.environnementDeDemonstrationCliquezCi",
-                )}
-              </p>
-              <Button
-                type="button"
-                variant="primary"
-                size="sm"
-                className="w-full"
-                onClick={() => setStep("reset")}
-              >
-                {t("auth.forgotPasswordPage.accederAuFormulaireDeNouveau")}
-              </Button>
-            </div>
-          )}
         </div>
       )}
 
@@ -244,16 +218,6 @@ export const ForgotPasswordPage: React.FC = () => {
             rightIcon={<ArrowRight className="w-icon-md h-icon-md" />}
           >
             {t("auth.forgotPasswordPage.mettreAJourMonMot")}
-          </Button>
-
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => setStep("request")}
-            className="w-full text-text-tertiary"
-          >
-            {t("auth.forgotPasswordPage.renvoyerUnNouvelEmail")}
           </Button>
         </form>
       )}

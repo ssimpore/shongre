@@ -1,24 +1,26 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { HttpSolutionsService } from "./http-solutions.service";
-import { httpClient } from "./http-client";
+import { apiOperation } from "./generated-api-operation";
+
+vi.mock("./generated-api-operation", () => ({ apiOperation: vi.fn() }));
 
 const actor = { id: "client-value", name: "Client Value", canManage: true };
 
 describe("HttpSolutionsService", () => {
-  beforeEach(() => vi.restoreAllMocks());
+  beforeEach(() => vi.mocked(apiOperation).mockReset());
 
   it("passes explicit market and locale to public reads", async () => {
-    const get = vi.spyOn(httpClient, "get").mockResolvedValue([]);
+    vi.mocked(apiOperation).mockResolvedValue([]);
     const service = new HttpSolutionsService();
     await service.listPublicSolutions({ marketCode: "be", language: "fr-BE" });
-    expect(get).toHaveBeenCalledWith("/solutions", {
-      params: { locale: "fr-BE" },
+    expect(apiOperation).toHaveBeenCalledWith("getSolutions", {
+      query: { locale: "fr-BE" },
       headers: { "X-Shongre-Market": "BE" },
     });
   });
 
   it("never sends the caller-selected admin actor and adds idempotency", async () => {
-    const post = vi.spyOn(httpClient, "post").mockResolvedValue({});
+    const operation = vi.mocked(apiOperation).mockResolvedValue({});
     const service = new HttpSolutionsService();
     await service.createSolution(
       {
@@ -41,47 +43,46 @@ describe("HttpSolutionsService", () => {
       },
       actor,
     );
-    const [, body, options] = post.mock.calls[0];
+    const [, { body, headers }] = operation.mock.calls[0];
     expect(body).not.toHaveProperty("actor");
-    expect(options?.headers).toMatchObject({
+    expect(headers).toMatchObject({
       "Idempotency-Key": expect.stringContaining("solutions"),
     });
   });
 
   it("uses the backend lifecycle endpoint without embedding identity", async () => {
-    const post = vi.spyOn(httpClient, "post").mockResolvedValue({});
+    vi.mocked(apiOperation).mockResolvedValue({});
     const service = new HttpSolutionsService();
     await service.transitionLifecycle("solution-id", "AVAILABLE", {
       explanation: "Validation du lancement.",
       actor,
     });
-    expect(post).toHaveBeenCalledWith(
-      "/admin/solutions/solution-id/lifecycle",
-      { lifecycle: "AVAILABLE", explanation: "Validation du lancement." },
-      {
-        headers: expect.objectContaining({
-          "Idempotency-Key": expect.any(String),
-        }),
+    expect(apiOperation).toHaveBeenCalledWith("postAdminSolutionLifecycle", {
+      path: { solutionId: "solution-id" },
+      body: {
+        lifecycle: "AVAILABLE",
+        explanation: "Validation du lancement.",
       },
-    );
+      headers: expect.objectContaining({
+        "Idempotency-Key": expect.any(String),
+      }),
+    });
   });
 
   it("serializes an explicitly cleared optional field as null", async () => {
-    const patch = vi.spyOn(httpClient, "patch").mockResolvedValue({});
+    vi.mocked(apiOperation).mockResolvedValue({});
     const service = new HttpSolutionsService();
     await service.updateSolution(
       "solution-id",
       { documentationUrl: undefined },
       actor,
     );
-    expect(patch).toHaveBeenCalledWith(
-      "/admin/solutions/solution-id",
-      { documentationUrl: null },
-      {
-        headers: expect.objectContaining({
-          "Idempotency-Key": expect.any(String),
-        }),
-      },
-    );
+    expect(apiOperation).toHaveBeenCalledWith("patchAdminSolution", {
+      path: { solutionId: "solution-id" },
+      body: { documentationUrl: null },
+      headers: expect.objectContaining({
+        "Idempotency-Key": expect.any(String),
+      }),
+    });
   });
 });

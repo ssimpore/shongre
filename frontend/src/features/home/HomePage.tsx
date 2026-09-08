@@ -11,7 +11,6 @@ import {
 import { getPublicRuntimeConfig } from "../../platform/runtime-config/public-runtime-config";
 import { socialProfilesFromExternalLinks } from "../../platform/seo/discovery-structured-data";
 import { HomeHeroSection } from "./components/HomeHeroSection";
-import { HomeRecentSearches } from "./components/HomeRecentSearches";
 import { Button, Container, StatePanel } from "../../design-system";
 import { RefreshCw } from "lucide-react";
 import { useTranslation } from "../../i18n/I18nProvider";
@@ -126,7 +125,7 @@ export const HomePage: React.FC = () => {
           return <HomeHeroSection key={section.key} section={section} />;
         }
         if (section.type === "recent_searches") {
-          return <HomeRecentSearches key={section.key} section={section} />;
+          return null;
         }
         return (
           <Suspense

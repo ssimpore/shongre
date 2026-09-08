@@ -30,24 +30,19 @@ const persona = (overrides: Partial<UserProfile>): UserProfile =>
     ...overrides,
   }) as UserProfile;
 
-function resolve(
-  user: UserProfile,
-  options: { allowStaffMarketplaceDemo?: boolean } = {},
-) {
+function resolve(user: UserProfile) {
   return resolveHeaderAccountMenuItems({
     user,
     canAccessRoute: (policyId: RoutePolicyId) =>
-      canAccessRoutePolicy(user, policyId, options),
+      canAccessRoutePolicy(user, policyId),
     hasCapability: (capability: Capability) =>
       hasEffectiveCapability(user, capability),
-    canUseDemoMarketplace: options.allowStaffMarketplaceDemo === true,
     listingCount: 3,
     favoriteCount: 4,
   });
 }
 
-const ids = (user: UserProfile, allowStaffMarketplaceDemo = false) =>
-  resolve(user, { allowStaffMarketplaceDemo }).map((item) => item.id);
+const ids = (user: UserProfile) => resolve(user).map((item) => item.id);
 
 describe("header account-menu model", () => {
   it("shows ordinary customers only the customer destinations they can enter", () => {
@@ -88,20 +83,14 @@ describe("header account-menu model", () => {
     expect(ids(staff)).toEqual(["admin"]);
   });
 
-  it("adds one clearly labelled isolated demo entry for explicitly authorized Staff", () => {
+  it("does not expose customer routes to Staff carrying a legacy demo grant", () => {
     const tester = persona({
       staffStatus: "active",
       staffRole: "operations",
       customPermissions: ["staff.marketplace.demo"],
     });
-    const items = resolve(tester, { allowStaffMarketplaceDemo: true });
-
-    expect(items.map((item) => item.id)).toEqual(["admin", "demo_workspace"]);
-    expect(items[1]).toMatchObject({
-      to: "/compte",
-      isDemo: true,
-      separatorBefore: true,
-    });
+    const items = resolve(tester);
+    expect(items.map((item) => item.id)).toEqual(["admin"]);
     expect(items.some((item) => item.id === "pro_solutions")).toBe(false);
   });
 

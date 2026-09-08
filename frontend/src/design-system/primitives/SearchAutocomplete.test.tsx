@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 import React from "react";
 import { SearchAutocomplete, HighlightMatch } from "./SearchAutocomplete";
 import { getSearchSuggestions } from "../../configuration/search.config";
-import { TAXONOMY } from "../../domains/taxonomy/taxonomy.data";
+import { taxonomyV4TestCategories } from "../../testing/taxonomy-v4.test-support";
 
 describe("HighlightMatch", () => {
   it("instantiates correctly with text", () => {
@@ -26,14 +26,25 @@ describe("HighlightMatch", () => {
 
 describe("getSearchSuggestions", () => {
   it("returns empty matched categories and keywords when query is empty", () => {
-    const results = getSearchSuggestions("");
+    const results = getSearchSuggestions(
+      "",
+      undefined,
+      [],
+      5,
+      [],
+      ["Vélo gravel"],
+    );
     expect(results.categories).toHaveLength(0);
     expect(results.keywords).toHaveLength(0);
     expect(results.trending.length).toBeGreaterThan(0);
   });
 
   it("matches categories when typing category name or keyword", () => {
-    const results = getSearchSuggestions("vehic", undefined, TAXONOMY);
+    const results = getSearchSuggestions(
+      "vehic",
+      undefined,
+      taxonomyV4TestCategories,
+    );
     expect(
       results.categories.some(
         (c) => c.slug === "vehicules" || c.parentSlug === "vehicules",
@@ -42,7 +53,9 @@ describe("getSearchSuggestions", () => {
   });
 
   it("matches keywords for tech searches", () => {
-    const results = getSearchSuggestions("iPhone");
+    const results = getSearchSuggestions("iPhone", undefined, [], 5, [
+      "iPhone 15 Pro",
+    ]);
     expect(
       results.keywords.some((k) => k.keyword.toLowerCase().includes("iphone")),
     ).toBe(true);

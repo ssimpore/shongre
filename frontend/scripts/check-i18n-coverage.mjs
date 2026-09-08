@@ -34,7 +34,7 @@ const MIGRATED = [
 ];
 
 /** Directories with no user-facing copy of their own. */
-const SKIP_DIRS = new Set(["i18n", "mocks"]);
+const SKIP_DIRS = new Set(["i18n"]);
 
 const ACCENTED = /[àâäçéèêëîïôöùûüÿœÆ]/i;
 const FRENCH_WORDS =

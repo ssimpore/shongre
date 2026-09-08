@@ -30829,6 +30829,41 @@ export type Database = {
           },
         ];
       };
+      taxonomy_header_links: {
+        Row: {
+          display_order: number;
+          is_active: boolean;
+          labels: Json;
+          market_code: string;
+          short_labels: Json;
+          target: string;
+        };
+        Insert: {
+          display_order: number;
+          is_active?: boolean;
+          labels: Json;
+          market_code: string;
+          short_labels: Json;
+          target: string;
+        };
+        Update: {
+          display_order?: number;
+          is_active?: boolean;
+          labels?: Json;
+          market_code?: string;
+          short_labels?: Json;
+          target?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "taxonomy_header_links_market_code_fkey";
+            columns: ["market_code"];
+            isOneToOne: false;
+            referencedRelation: "taxonomy_header_configurations";
+            referencedColumns: ["market_code"];
+          },
+        ];
+      };
       taxonomy_imports: {
         Row: {
           compiler_version: string;
@@ -34005,81 +34040,44 @@ export type Database = {
         };
         Returns: Json;
       };
-      create_notification_with_deliveries:
-        | {
-            Args: {
-              p_body: string;
-              p_category: string;
-              p_channels: string[];
-              p_created_at: string;
-              p_id: string;
-              p_in_app_visible: boolean;
-              p_link_url: string;
-              p_title: string;
-              p_type: string;
-              p_user_id: string;
-            };
-            Returns: {
-              body: string;
-              category: string;
-              created_at: string;
-              id: string;
-              in_app_visible: boolean;
-              is_read: boolean;
-              link_route: string | null;
-              link_url: string | null;
-              market_code: string;
-              metadata: Json;
-              read_at: string | null;
-              title: string;
-              type: string;
-              user_id: string;
-            }[];
-            SetofOptions: {
-              from: "*";
-              to: "notifications";
-              isOneToOne: false;
-              isSetofReturn: true;
-            };
-          }
-        | {
-            Args: {
-              p_body: string;
-              p_category: string;
-              p_channels: string[];
-              p_created_at: string;
-              p_id: string;
-              p_in_app_visible: boolean;
-              p_link_route: string;
-              p_link_url: string;
-              p_market_code: string;
-              p_title: string;
-              p_type: string;
-              p_user_id: string;
-            };
-            Returns: {
-              body: string;
-              category: string;
-              created_at: string;
-              id: string;
-              in_app_visible: boolean;
-              is_read: boolean;
-              link_route: string | null;
-              link_url: string | null;
-              market_code: string;
-              metadata: Json;
-              read_at: string | null;
-              title: string;
-              type: string;
-              user_id: string;
-            }[];
-            SetofOptions: {
-              from: "*";
-              to: "notifications";
-              isOneToOne: false;
-              isSetofReturn: true;
-            };
-          };
+      create_notification_with_deliveries: {
+        Args: {
+          p_body: string;
+          p_category: string;
+          p_channels: string[];
+          p_created_at: string;
+          p_id: string;
+          p_in_app_visible: boolean;
+          p_link_route: string;
+          p_link_url: string;
+          p_market_code: string;
+          p_title: string;
+          p_type: string;
+          p_user_id: string;
+        };
+        Returns: {
+          body: string;
+          category: string;
+          created_at: string;
+          id: string;
+          in_app_visible: boolean;
+          is_read: boolean;
+          link_route: string | null;
+          link_url: string | null;
+          market_code: string;
+          metadata: Json;
+          read_at: string | null;
+          title: string;
+          type: string;
+          user_id: string;
+        }[];
+        SetofOptions: {
+          from: "*";
+          to: "notifications";
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
       current_profile_id: { Args: never; Returns: string };
       decide_complimentary_plan_request: {
         Args: {
@@ -34980,6 +34978,10 @@ export type Database = {
         };
         Returns: boolean;
       };
+      release_scheduled_job_for_retry: {
+        Args: { p_job_name: string; p_owner_id: string };
+        Returns: undefined;
+      };
       renew_scheduled_job_lease: {
         Args: {
           p_job_name: string;
@@ -35007,6 +35009,18 @@ export type Database = {
           p_change_reason: string;
           p_expected_revision: number;
           p_items: Json;
+          p_market_code: string;
+          p_request_id?: string;
+        };
+        Returns: number;
+      };
+      replace_taxonomy_header_navigation: {
+        Args: {
+          p_actor_profile_id: string;
+          p_change_reason: string;
+          p_expected_revision: number;
+          p_items: Json;
+          p_links?: Json;
           p_market_code: string;
           p_request_id?: string;
         };

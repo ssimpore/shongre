@@ -1,279 +1,324 @@
-# Architecture modernization implementation report
+# Architecture modernization certification
 
-Review date: 2026-09-07. This report describes this change, not a production
-release certification. The requested NestJS/Fastify and Redis/BullMQ migration
-is **not complete**. Package downloads, Docker access and socket binding are
-unavailable in the execution environment. Existing domain implementations were
-preserved; no substitute framework, inert queue service or parallel runtime was
-introduced to make the target diagram appear complete.
+Certification date: 2026-09-08
 
-## Repository audit and migration decisions
+Status: **local and container architecture certified; API-only cleanup verified
+against the local database-backed runtime**. This is a
+repository/runtime architecture certificate, not approval to launch production
+markets, money movement, or unconfigured external providers. Those remain under
+the stricter release evidence in
+[`../architecture/production-capability-matrix.md`](../architecture/production-capability-matrix.md).
 
-The initial working tree was clean. The recursive inventory covered 2,341
-tracked files, application entrypoints, package manifests and TypeScript
-configuration, client transports, domain services, repository adapters, SQL,
-workers, generated assets, Docker/Compose, environment launchers, Make targets,
-CI workflows, tests and canonical documentation. The initial contract contained
-522 operations. Inspection found a substantial modular monolith rather than an
-application needing replacement.
+## Final architecture
 
-The implementation sequence was: preserve the audited behavior; extract domain
-HTTP ownership; strengthen contract generation and boundary checks; correct
-client transport races and deadlines; add worker health and request correlation;
-improve existing lifecycle/build tooling; regenerate, test and clean the affected
-scope. No top-level monorepo reorganization was needed.
+```mermaid
+flowchart LR
+  Browser[Next.js Web] -->|first-party /api/v1 proxy| API
+  Mobile[Expo mobile] -->|generated /api/v1 operations| API
+  API[NestJS + Fastify API] --> Domains[Domain-owned route registrars and services]
+  Domains --> Repositories[Repositories and provider adapters]
+  Repositories --> Supabase[Local Supabase: PostgreSQL, Auth, Storage]
+  API -->|typed domain wake| Redis[(Redis)]
+  Worker[Independent BullMQ worker] <--> Redis
+  Worker -->|lease, process, persist outcome| Supabase
+  API <--> |authenticated WebSocket gateway and pub/sub| Redis
+  Supabase --> Mailpit[Mailpit local SMTP/UI]
+```
 
-| Area             | Before                                                                                   | After / decision                                                                                                                   |
-| ---------------- | ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| Backend          | Node HTTP transport; domain services; 6,633-line shared router                           | Same runtime; 570-line composition/transport router with 38 route families, including provider webhooks                            |
-| Domain ownership | Most HTTP handlers centralized                                                           | 517 business operations owned by module API registrars or the provider webhook boundary; resource policies moved with their domain |
-| Framework        | Custom Node HTTP, TypeScript, ESM                                                        | NestJS/Fastify migration blocked by unavailable packages; no untested dependency declarations added                                |
-| Contract         | Canonical OpenAPI 3.1 JSON, generated path/types and backend manifest                    | Same source, plus generated operation functions, distribution YAML and runtime documentation                                       |
-| Clients          | Existing Web service registry and API-only Expo application                              | Same architecture; shared generated favorite operations; hardened platform transports                                              |
-| Data             | PostgreSQL/Supabase, typed repositories, 114 ordered migrations                          | Preserved; no schema or database-type changes                                                                                      |
-| Queues/events    | PostgreSQL coordination, durable domain outboxes/inboxes and leases                      | Preserved; independent worker health added; Redis/BullMQ remain unimplemented                                                      |
-| Docker           | Root Compose plus local override; non-root immutable images                              | Same topology; independent worker health, corrected build input ownership, stronger context exclusions                             |
-| Shared packages  | Contracts, semantic tokens, brand, generic utilities, UI and shared listing presentation | Preserved; expanded dependency-direction enforcement                                                                               |
-| Environments     | Six validated application profiles and protected hosted deployment                       | Preserved; safer repeated local startup and deterministic installation                                                             |
+The architecture remains a TypeScript modular monolith. The modernization
+adapted the working domain model instead of replacing it: the canonical
+OpenAPI contract still owns HTTP semantics; the 38 domain route families still
+own their handlers; PostgreSQL outboxes, inboxes, leases, idempotency records,
+and delivery attempts remain authoritative business state.
 
-All 517 pre-existing handler bodies were compared as TypeScript syntax trees
-before and after extraction. They match after removing the obsolete `this`
-qualifier from the five moved ownership helpers. Transport behavior changes are
-covered separately by tests. This is a domain-ownership migration, not a claim
-that every handler has become a Nest controller or that all persistence is now
-colocated with its domain.
+## Backend and transport
 
-## Backend, contracts and client changes
+- `NestFactory` creates one `NestFastifyApplication` with the Fastify adapter.
+  A narrow catch-all controller delegates canonical `/api/v1` operations to the
+  existing domain-owned registrars, preserving their extracted handler bodies
+  and avoiding a replacement central controller.
+- The transport retains cookies, CSRF, CORS, request IDs, market validation,
+  principal/capability checks, rate limits, cache policy, compression, one-MiB
+  request bodies, bounded response reads, timeouts, safe errors, and proxy
+  policy. Fastify malformed-URL and parser failures use the same safe error
+  boundary and request correlation.
+- Liveness is shallow. Readiness verifies both the database and Redis and does
+  not advertise ready when a required dependency is unavailable.
+- API and worker bundles are separate entrypoints in one backend image. The API
+  neither starts migrations nor runs background processors.
 
-- Module `api/*.routes.ts` files own HTTP handlers; shared dispatch retains
-  authentication, CSRF, capability checks, market consistency, validation and
-  response/cache handling. Domain services remain authoritative for listings,
-  publication, taxonomy, search, messaging, professional access, subscriptions,
-  monetization, payments, delivery, moderation and compliance.
-- OpenAPI source metadata follows each real registrar. The checker discovers
-  registrations from the actual composition root, rejects duplicate or
-  nonliteral operations, verifies access/source parity and checks route order.
-  Literal punctuation is escaped when matching routes.
-- The contract now has 526 operations across 465 paths and 329 component
-  schemas. Four additions expose `/health/live`, `/health/ready`,
-  `/api/openapi.json` and `/api/docs`. Existing probe aliases remain for deployed
-  consumers. Runtime health schemas include the actual environment/release data.
-- `make api-generate` generates 513 JSON business-operation functions alongside
-  the existing transport types. Redirect/pixel operations retain their existing
-  specialized transports. Generated files carry read-only notices. JSON remains
-  the editable source; YAML is an ignored export and Git supplies history.
-- Web and mobile favorite adapters use the same generated functions. Other
-  adapters still use generated OpenAPI path/operation types; their conversion
-  to function calls is not complete. UI projections remain separate from wire
-  DTOs where their shape and responsibility differ.
-- The operation-removal check now handles specifications larger than Node's
-  default subprocess buffer, rejects unreadable configured bases, and requires
-  a valid elapsed deprecation sunset. It is **not** comprehensive schema-level
-  breaking-change detection. 278 success responses still reference `JsonValue`;
-  those require domain-by-domain schema tightening and consumer migration.
-- Web request deadlines cover response-body consumption, cancellation remains
-  distinct from timeout, empty 204 responses work and 429 errors normalize.
-  Generated `Headers` objects compose correctly with platform headers.
-- Mobile refresh requests are coalesced and tied to session generations.
-  Login/logout changes invalidate old responses and prevent stale refreshes or
-  retries from restoring another session. SecureStore writes are serialized;
-  transient refresh failures preserve credentials. Headers and body reads have
-  a bounded deadline and caller cancellation.
+## Redis, BullMQ, and worker model
 
-## Identity, markets, security and privacy
+Redis 8.2.1 is digest-pinned in the local topology, private to the Compose
+network, loopback-bound on host port `REDIS_PORT`, health-checked with
+`redis-cli ping`, non-root constrained, append-only, and backed by a named
+volume. Hosted environments must inject a protected TLS `REDIS_URL`; production
+also requires credentials.
 
-The audit found existing Supabase Auth identity checks, Shongre HttpOnly Web
-sessions, native bearer sessions in SecureStore, backend capabilities, resource
-policies, market policies and Staff MFA/recent-authentication gates. These were
-preserved. Individual/Professional account types and the separate Staff plane
-were not replaced with conflicting buyer/seller role labels.
+BullMQ's `scheduled-runtime` queue is the durable execution transport for the
+27 existing worker responsibilities. Definitions retain their real domain
+processors rather than introducing generic fake queues. Jobs use:
 
-`MarketContext`, the configured France default and country catalog already
-cover FR, CH, BE, SN and BF. Existing availability gates remain authoritative;
-this change does not activate additional markets, currencies or providers.
-Feature policy remains backend-controlled through the existing contract and
-service. `packages/features` retains its actual shared Web/native presentation
-consumers instead of being repurposed into a competing feature registry.
+- stable names and schema-versioned, typed payloads;
+- an environment fingerprint and optional correlation/request ID;
+- deterministic domain-wake job IDs for producer deduplication;
+- configurable concurrency, bounded locks, exponential retry/backoff, and
+  completed/failed retention caps;
+- PostgreSQL leases, transactional outboxes/inboxes, and idempotency as the
+  authoritative effect boundary;
+- structured start, completion, retry, failure, and shutdown logs.
 
-The client Supabase audit found no direct business-table/Auth client in Web or
-mobile requiring migration. Existing central HTTP transports are **KEEP**;
-backend Supabase Auth, database and Storage adapters are **KEEP**. No direct
-client Supabase implementation was invented or removed.
+The independent worker connects to Redis and Supabase, registers recurring
+BullMQ schedulers, publishes a recent environment-scoped heartbeat, stops
+accepting work during graceful shutdown, closes its worker before producer
+connections, and can scale independently from the API. Migration
+`00115_bullmq_scheduled_job_retry.sql` makes a completed BullMQ delivery
+compatible with database-owned retry timing. Migration
+`00116_notification_market_rpc_hardening.sql` removes an accidentally
+reintroduced pre-market notification overload and keeps the current explicit
+market/route RPC aligned with delivery-opportunity notifications.
 
-Errors add safe Problem Details-style fields and request IDs while retaining
-the documented v1 `error` extension and JSON media type. Unknown paths are not
-reflected into errors. Error responses are non-cacheable. Request-local async
-context supplies operation, route template, verified actor and market to
-structured logs; unexpected dispatch failures do not log raw request paths or
-exception messages. Existing secret redaction remains in force.
+## Realtime
 
-Dependency checks now inspect imports, re-exports, dynamic imports, `require`
-and workspace manifests. Web/mobile cannot import backend internals, and backend
-cannot depend on client/UI code. Secret and hygiene checks include new
-non-ignored files before staging. This is not an assertion that an external
-penetration test or dependency advisory scan passed.
+Nest's WebSocket gateway listens at `/realtime`. A connection must authenticate
+within the configured deadline and is limited to a bounded subscription count.
+Notification subscriptions are restricted to the authenticated user;
+conversation subscriptions load the conversation and enforce participant
+membership. Unauthorized resources return the same `NOT_FOUND` result used for
+cross-user isolation.
 
-## Database, workers, storage and providers
+Redis pub/sub fans out schema-versioned envelopes across API replicas. The
+gateway covers connect, authenticate, subscribe, publish, unsubscribe,
+reconnect, invalid token, isolation, and cleanup behavior. WebSocket traffic is
+the documented exception to the generated JSON client.
 
-No SQL history was rewritten. Existing constraints, RLS, authorization tests,
-integer-money/idempotency boundaries, taxonomy projections, PostgreSQL search,
-storage authorization and domain outboxes were retained. Migration ordering
-validation passes; actual database replay, seed, concurrency tests and EXPLAIN
-plans require a reachable disposable local database.
+## Supabase and local mail
 
-Worker heartbeats are atomic, permission-restricted files containing PID,
-environment ID and update time. They refresh after successful database claims
-or lease renewals, including during long jobs. Health requires a live process,
-matching environment and recent timestamp. Graceful shutdown removes the owned
-heartbeat; a shutdown deadline terminates a stuck worker. Queue RPC calls use
-generated database types instead of three unbounded casts.
+`backend/supabase/` remains the single Supabase tree. The local stack supplies
+PostgreSQL, Auth, Storage, Realtime, Studio, and Mailpit/Inbucket. Root tooling
+renders ignored local configuration, waits on health, applies the ordered
+forward migrations, and idempotently loads the production-shaped seed:
 
-Redis caching, distributed Redis rate limiting and BullMQ were not installed.
-Existing PostgreSQL scheduling/outbox behavior remains operational in its
-supported environment; there is no new generic `outbox_events` table layered
-over the domain outboxes. A future BullMQ rollout must preserve atomic writes,
-deduplication, leases, retry semantics and idempotent effects before switching
-consumers. Email, AI, payment and storage provider abstractions were preserved;
-no live provider was contacted or enabled. Supabase's existing mail sink is
-reused instead of starting a second Mailpit.
+- 37 profiles and linked Supabase Auth users;
+- 19 marketplace listings plus Auto, Immo, Education, and Employment data;
+- messages, transactions, notifications, saved searches, and reviews;
+- taxonomy v4, commercial rules, market configuration, and 165 owned Storage
+  objects.
 
-## Docker, infrastructure, CI/CD and developer experience
+Local password recovery uses backend email abstractions and Mailpit SMTP. Live
+email provider abstractions remain independent and fail closed when not
+configured.
 
-`compose.yaml` remains the private hosted topology; `compose.local.yaml` remains
-the loopback-only override. API and worker share one backend image and can start
-independently. Worker health is checked by Compose, `make docker-health`, native
-stack health and the CI container smoke job. Dockerfile non-root users,
-multi-stage installs, read-only Compose filesystems, dropped capabilities,
-secret mounts and digest-based environment promotion remain intact.
+## OpenAPI and generated clients
 
-The backend build script was hidden by the repository's `build/` ignore rule.
-It now lives at `backend/scripts/build.mjs`, so a clean checkout includes the
-API/worker/migrator/health build entrypoints. Docker context excludes local
-runtime credentials/state, Supabase CLI state, logs and signing credentials.
-No second Docker directory/topology or duplicate database was introduced.
+`backend/openapi/openapi.json` remains the only HTTP authority. Generation now
+produces 513 typed JSON operation functions plus the path/operation types,
+backend manifest, and endpoint inventory. All normal frontend HTTP adapters and
+all mobile business services invoke generated operations through their single
+platform transport. The platform transports alone own sessions, first-party
+cookies, CSRF, bearer refresh, market headers, cancellation, timeouts, and safe
+error normalization.
 
-`make install` uses `npm ci`. One-shot TypeScript tooling uses the existing
-`tsx` loader through Node, without the CLI's extra IPC server. Development
-watchers retain `tsx watch`. `make dev` validates infrastructure before stopping
-owned apps and reuses a healthy stack only when environment, lockfile and
-migration and workspace manifest hashes match. It does not save plaintext secrets in process metadata.
-PID cleanup preserves ownership checks and does not remove newer tracking.
+Audited raw-transport exceptions are limited to:
 
-New commands delegate to the existing orchestration: `dev-down`, `dev-restart`,
-`dev-status`, `dev-logs`, `dev-reset`, `dev-clean`, per-application log aliases,
-`mail-up`, `docker-up`, `docker-down`, `docker-restart`, `api-export`,
-`api-generate` and `api-check`. Reset remains explicitly destructive and local;
-it was not executed. Redis commands were not added without a Redis-backed
-runtime. Cloudflare routing, environment secret injection, immutable image
-promotion and protected deployment workflows were preserved, not deployed.
+- WebSocket connections;
+- direct upload to backend-issued signed Storage URLs;
+- Stripe's third-party SDK/provider endpoint;
+- static/native asset fetches and the Web first-party proxy itself.
 
-## Performance, observability, accessibility and SEO/GEO
+There is no second business API client. UI view models remain intentional
+adapter projections, not duplicate wire-contract authorities.
 
-Transport deadlines and refresh coalescing address boundedness and duplicate
-requests. The shared router is smaller and domain ownership is explicit; no
-measured throughput or bundle-size improvement is claimed. Backend latency,
-database plans, pool saturation, queue lag and load still need runtime evidence.
-The worker probe proves coordination freshness, not successful delivery of
-every individual business job.
+The commands `make api-export`, `make api-generate`, and `make api-check`
+validate the OpenAPI 3.1 document, generated drift, source/access parity,
+operation uniqueness, route registration, compilation, and configured
+base-contract removals. Local checks report that a breaking-change comparison
+is intentionally unavailable when `OPENAPI_BASE_REF` is unset; CI supplies the
+base ref.
 
-Existing structured logging, Sentry/provider boundaries, performance budgets
-and `infrastructure/monitoring` remain. Request correlation and worker probes
-were strengthened; a complete OpenTelemetry SDK/exporter rollout was not added.
+## Environment and developer lifecycle
 
-The audit retained the existing semantic token/brand system, shared accessible
-primitives, responsive layouts, SSR metadata, canonical/hreflang rules,
-structured data, robots/sitemaps, publication-aware indexing and consent gates.
-Design-token, navigation and SEO/GEO governance checks pass. No visual redesign,
-crawler-specific spam content, newly enabled locale or production indexing
-behavior was introduced. Browser accessibility and real crawl/performance
-measurements remain unverified here.
+The existing six canonical application environments remain `local`, `test`,
+`preview`, `development`, `staging`, and `production`. `APP_ENV` selects
+behavior; `NODE_ENV` does not select infrastructure or provider policy. Root
+commands load and validate one profile, preserve explicit shell overrides, and
+derive matching API, database, Supabase, Storage, Web, and mobile fingerprints.
 
-## Verification and command outcomes
+Key runtime variables are:
 
-Successful checks on the modified tree include:
+| Concern      | Variables                                                                     |
+| ------------ | ----------------------------------------------------------------------------- |
+| Origins      | `PUBLIC_FR_URL`, `PUBLIC_INTL_URL`, `API_URL`                                 |
+| Modes        | `BACKEND_DATA_MODE`, `DATABASE_INFRA_MODE`; Web/mobile are API-only           |
+| Redis/BullMQ | `REDIS_HOST`, `REDIS_PORT`, `REDIS_URL`, `QUEUE_CONCURRENCY`                  |
+| Worker       | `WORKER_GROUPS`, `WORKER_HEALTH_FILE`, `SHUTDOWN_GRACE_MS`                    |
+| Supabase     | `DATABASE_URL`, `SUPABASE_URL`, server-only keys and environment fingerprints |
+| Local mail   | `LOCAL_MAIL_SMTP_URL`, `SUPABASE_SMTP_PORT`, `SUPABASE_INBUCKET_PORT`         |
 
-- All workspace typechecks and canonical lint, including SEO/GEO, token,
-  navigation, mobile and contract checks.
-- Frontend: 170 test files, 1,126 passing tests.
-- Backend excluding the socket-binding HTTP integration file: 185 files,
-  972 passing tests and two existing conditional disposable-database skips.
-  In-process tests exercise the real HTTP listener, login, market isolation,
-  capability denial, documentation, health and safe errors.
-- Mobile: 19 files, 82 passing tests; API-only boundary and source reachability
-  checks pass. Contract package: 35 files, 275 passing tests.
-- Environment/fingerprint tests, migration-order validation, OpenAPI generation,
-  lint/parity/drift checks, operation removal comparison against `HEAD`, backend
-  production bundling, Compose syntax, repository hygiene and secret checks.
+`make dev` is the canonical connected native workflow: start/verify Supabase,
+Redis, and Mailpit; migrate and seed; then launch API, worker, and API-only Web.
+`make frontend` starts that API-only Web client against the configured API. The
+root process registry owns only this checkout's PIDs, detects reused/zombie
+PIDs, and shuts down leaf-to-root without broad process matching.
 
-The following table distinguishes unavailable execution from implemented
-behavior. No failed command is counted as a successful release gate.
+## Container architecture
 
-| Command                                | Result                             | Evidence or blocker                                                                                                                                                                 |
-| -------------------------------------- | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `make install`                         | BLOCKED                            | Executed in an isolated manifest/lockfile copy to preserve installed workspace dependencies; registry downloads fail with `ENOTFOUND`, then npm reports `Exit handler never called` |
-| `make dev`                             | BLOCKED                            | Docker daemon/socket unavailable to the sandbox before application replacement                                                                                                      |
-| `make dev-status`                      | FAIL / accurate unavailable status | Reports application/infrastructure state and configured URLs, exits nonzero because the stack is unavailable                                                                        |
-| `make dev-down`                        | PARTIAL / FAIL                     | Owned-app stop succeeds with no tracked apps; Docker stop is denied                                                                                                                 |
-| `make dev-restart`                     | BLOCKED                            | Stops at the same Docker access failure                                                                                                                                             |
-| `make frontend`                        | BLOCKED                            | Next cannot bind the configured loopback port: `listen EPERM`                                                                                                                       |
-| `make backend`                         | BLOCKED                            | Required local Supabase is unavailable                                                                                                                                              |
-| `make worker`                          | BLOCKED                            | Required local Supabase is unavailable                                                                                                                                              |
-| `make docker-build`                    | BLOCKED                            | Docker Buildx activity path/socket access denied                                                                                                                                    |
-| `make docker-up`                       | BLOCKED                            | Docker daemon/socket access denied                                                                                                                                                  |
-| `make docker-status`                   | BLOCKED                            | Docker daemon/socket access denied                                                                                                                                                  |
-| `make docker-down`                     | BLOCKED                            | Docker daemon/socket access denied                                                                                                                                                  |
-| `make docker-config`                   | PASS                               | Canonical base plus local override render successfully                                                                                                                              |
-| `make supabase-up`                     | BLOCKED                            | Docker daemon/socket unavailable                                                                                                                                                    |
-| `make redis-up`                        | NOT IMPLEMENTED / FAIL             | No Redis dependency or service exists; Make correctly reports no target                                                                                                             |
-| `make mail-up`                         | BLOCKED                            | Existing Supabase-owned mail sink requires Docker                                                                                                                                   |
-| `make db-migrate`                      | BLOCKED                            | Actual local database connection unavailable; ordering-only validation passes                                                                                                       |
-| `make db-seed`                         | BLOCKED                            | Actual local database connection unavailable; no seed mutation completed                                                                                                            |
-| `make api-export`                      | PASS                               | Generated YAML export from canonical JSON                                                                                                                                           |
-| `make api-generate`                    | PASS                               | Types, operation functions, manifest and inventory regenerate                                                                                                                       |
-| `OPENAPI_BASE_REF=HEAD make api-check` | PASS                               | Validity, generated drift, source parity, compilation and operation-removal comparison                                                                                              |
-| `make test`                            | BLOCKED / FAIL                     | Full backend HTTP integration requires socket binding; successful subsets are listed above                                                                                          |
-| `make check`                           | BLOCKED / FAIL                     | Operational-tooling tests attempt a local HTTP listener and receive `EPERM`                                                                                                         |
-| `make build`                           | BLOCKED / FAIL                     | UI build succeeds; Next Turbopack CSS processing attempts a subprocess port bind and receives `EPERM`; backend build passes independently                                           |
-| `make mobile-check`                    | PARTIAL / FAIL                     | Local lint/types/tests/architecture pass; Expo remote schema/directory checks cannot resolve `exp.host`                                                                             |
+The root Compose topology is shared by hosted deployment; the local override is
+the only file that publishes ports, and it binds Web, API, Redis, Supabase, and
+Mailpit to loopback. Containers use service DNS (`backend`, `redis`) or the
+explicit local-host gateway for the repository-owned Supabase stack—never
+another container's `localhost`.
 
-Container smoke tests, live Supabase/Storage, queue execution, browser E2E,
-hosted development/staging/production, deployment, provider activation, database
-restore and native store certification are not certified by these results.
+Frontend and backend use digest-pinned Node 22 Alpine multi-stage Dockerfiles,
+lockfile installs, cache mounts, non-root runtime users, read-only filesystems,
+dropped capabilities, init handling, health checks, and graceful stop periods.
+The independent worker reuses the backend image with its own command and health
+probe. Build contexts exclude dependencies, build output, credentials, runtime
+state, coverage, test results, and Git data. The frontend build reads the
+checked-in non-secret local template only to evaluate dynamic route modules;
+the template is not copied into the runtime image, whose target configuration
+is validated and injected at startup.
 
-## Cleanup and remaining work
+## CI/CD and scaling
 
-Removed the centralized domain handler implementation, obsolete ownership
-methods, the education route alias helper, unused imports, duplicated favorite
-request construction and stale router-line descriptions in the specification.
-Corrected a stale mobile architecture-check path. The ignored backend build
-script was moved, not retained as a second implementation. Generated artifacts
-were regenerated through their owners; no dependency was added or removed and
-the lockfile did not change. Existing probe aliases, domain outboxes, public
-contracts, migrations, platform assets and shared presentation APIs are
-intentionally retained for concrete consumers.
+CI performs lockfile install, environment/migration/security checks, lint,
+typecheck, OpenAPI drift, the complete test suite including sockets, production
+builds, Compose validation, and clean frontend/backend image builds. Its runtime
+integration uses PostgreSQL/Supabase-compatible database configuration plus a
+Redis service and verifies API and worker readiness without production secrets.
 
-Required follow-up work, in dependency order:
+Web, API, worker, PostgreSQL/Supabase, and Redis are independently scalable.
+Queue connections are reused per process; worker concurrency is configured per
+environment. Supavisor owns application database pooling. API keep-alive,
+header/request deadlines, generated-client bundle limits, bounded search
+candidates, queue retention, and provider/database timeouts use typed central
+performance defaults.
 
-1. Run the full gates on a machine with registry access, Docker and permitted
-   local listeners. Verify actual database migration/seed, independent worker
-   heartbeat, local stop/restart/reuse and clean immutable image builds.
-2. Install and integrate NestJS/Fastify through the extracted domain boundary,
-   preserving the canonical spec, raw webhook bodies, CSRF, principal/capability
-   checks, request limits, caching and errors. Remove the old dispatcher only
-   after real HTTP parity tests pass.
-3. Design and verify the Redis/BullMQ transition against existing durable
-   PostgreSQL outboxes. Add Redis to the existing local infrastructure only when
-   a real consumer exists; prove failure recovery, deduplication and scaling.
-4. Replace opaque success schemas and finish generated-function consumers.
-   Add a reviewed schema-level compatibility detector before claiming complete
-   breaking-change coverage.
-5. Validate local container routing to Supabase on the host and Web-to-API
-   routing. Compose syntax alone does not prove that host-loopback runtime URLs
-   are reachable inside containers; that pre-existing limitation remains open.
-6. Collect browser/native, query-plan/load, vulnerability, restore, observability
-   and exact-image staging evidence before production activation. Existing
-   market/provider/legal launch restrictions remain in effect.
+## Certification evidence
 
-`AGENTS.md` and the canonical backend, OpenAPI, mobile, performance and Docker
-runbooks describe the implemented boundaries. They deliberately do not assert
-that NestJS, Redis or BullMQ is already running.
+The certification ran every required lifecycle command rather than inferring
+success from source inspection. Highlights:
+
+- `make install`: lockfile install of 1,245 packages, zero npm audit findings;
+- `make test`: 438 test files, 2,677 passing tests, two intentional
+  database-workflow skips;
+- `make check`: environment, migrations, capabilities, production config,
+  formatting, lint, typecheck, OpenAPI, full tests, production builds,
+  infrastructure, secret, hostname, and dependency-boundary gates;
+- `make build`: shared UI/design packages, Web production build and bundle
+  budgets, backend API/worker bundles, and mobile typecheck;
+- `make docker-audit`: both runtime images use the non-root `node` user and
+  contain no package managers, common secret files, source maps, or Git data;
+- `make docker-scan`: the pinned Trivy scanner reported zero HIGH or CRITICAL
+  findings in both Alpine runtime images and their Node dependencies;
+- OpenAPI: 526 operations across 465 paths, 517 runtime routes, 513 generated
+  JSON business operations;
+- database: 116 ordered migrations and repeatable seed;
+- native foreground starts for Web, API, and independent worker, each probed
+  before controlled shutdown;
+- clean multi-stage Docker build followed by healthy full-stack startup.
+
+Container smoke evidence includes HTTP 200 for Web, Web health, API liveness,
+API readiness, and OpenAPI 3.1; a database-backed listing result with total 17
+through both direct API and Web proxy; browser-cookie login with CSRF; favorite
+on/off mutation; a password-reset email captured in Mailpit; Redis PING; worker
+heartbeat; an authenticated notification socket receiving a Redis-published
+event and unsubscribing; and a completed BullMQ job with a persisted delivery
+attempt.
+
+## Intentional boundaries after certification
+
+- Database mode deliberately uses an unavailable notification-delivery provider
+  until an approved external email/push vendor is configured. The worker records
+  bounded retry/dead-letter evidence; local auth email uses Mailpit separately.
+- The two pre-existing database tests remain intentionally skipped by the
+  ordinary Vitest suite and are owned by their dedicated database workflow.
+- Hosted provider activation, production load/restore/alert evidence, legal and
+  market approvals, signed container provenance/hosted attestation, and
+  mobile-store signing remain release gates. They are not local architecture
+  defects and are never fabricated by this certificate.
+- `OPENAPI_BASE_REF` is supplied in CI for the base-branch compatibility check;
+  an unset local value cannot prove repository-history compatibility.
+
+## API-only cleanup verification
+
+The Web service registry now loads HTTP adapters only. Client demo adapters,
+fixture repositories, data-mode selectors, fabricated provider configuration,
+editorial collections, and API-error fallback data were removed. Collections
+resolve through API taxonomy and listing inventory; search suggestions use API
+results. Backend test scenarios and the explicit local database seed remain
+intentional development infrastructure, never a browser fallback. Environment
+badges identify the configured application environment instead of claiming that
+local data is live production data.
+
+Verification for this cleanup:
+
+- Web: 103 suites / 650 tests, typecheck, lint, production build, and client
+  bundle budget checks passed.
+- Six additional collection tests passed for API projections, absent inventory
+  or media, error propagation, removed editorial slugs, collection details, and
+  the shared browser/SSR result limit. That limit now respects the canonical
+  search API maximum of 50 instead of sending the retired client-only limit of 60.
+- Formatting, repository hygiene, and local-development tooling checks passed.
+  Local Docker readiness now uses a bounded server-version probe shared by
+  Supabase and Redis; optional `docker info` plugin discovery no longer causes
+  a healthy daemon to fail startup preflight.
+- Backend typecheck and generated OpenAPI checks passed: 529 operations across
+  468 paths, 520 runtime routes, and 516 generated JSON operations.
+- Three isolated API-transport browser tests passed, exercising real HTTP,
+  cookies, CSRF, account sessions, publication drafts, reviews, and idempotency.
+- Database-backed browser checks loaded the homepage, electronics list,
+  vehicle map, nine taxonomy collections, and a collection detail without failed
+  API requests, JavaScript exceptions, or a Next.js error overlay. Final
+  `make smoke` passed for Web, API, worker, Redis, and local Supabase.
+- Migration 00117 passed an actual PostgreSQL transaction/rollback check for
+  historical preservation and idempotence, plus three regression tests. It
+  retires only known obsolete collection selections using the existing audited
+  revision writer; it neither deletes marketplace records nor changes archived
+  configurations.
+
+Migration 00117 is applied: the final canonical `make db-migrate` reported all
+117 migrations current, and the active homepage configuration contains no
+obsolete collection selections. Initial attempts encountered PostgreSQL
+recovery and a misleading Docker preflight timeout. A data-preserving local
+Supabase restart and the direct Docker server probe restored startup. No
+database reset was performed. The final collection-detail browser check also
+confirmed that the API result-limit correction resolves the earlier HTTP 400.
+
+Local Redis was also recovered with its standard AOF checker after a verified
+full-volume backup. Only the invalid 5,115-byte incremental AOF tail was
+truncated. The recoverable archive is ignored at
+`.runtime/redis-recovery.gT0ww5/redis-data-before-repair.tar.gz`; PostgreSQL
+remains authoritative for domain jobs and marketplace records.
+
+## Canonical commands
+
+```bash
+make install
+make dev
+make dev-status
+make dev-down
+
+make frontend
+make backend
+make worker
+
+make supabase-up
+make redis-up
+make mail-up
+make db-migrate
+make db-seed
+
+make api-export
+make api-generate
+make api-check
+make test
+make check
+make build
+
+make docker-down
+make docker-build
+make docker-up
+make docker-status
+make docker-down
+```

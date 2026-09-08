@@ -5,12 +5,12 @@ import type {
   PlatformFinanceDashboard,
   ReconciliationCase,
 } from "@shongre/contracts/finance";
+import { apiOperation } from "./generated-api-operation";
 import type {
   FinanceExport,
   FinanceServiceContract,
   FinanceTransactionQuery,
 } from "../../contracts/finance.contract";
-import { httpClient } from "./http-client";
 
 const queryParams = (query: FinanceTransactionQuery) => ({
   period: query.period,
@@ -25,51 +25,51 @@ const queryParams = (query: FinanceTransactionQuery) => ({
 
 export class HttpFinanceService implements FinanceServiceContract {
   getPlatformDashboard(scope: FinanceTransactionQuery) {
-    return httpClient.get<PlatformFinanceDashboard>(
-      "/finance/platform/overview",
-      {
-        params: queryParams(scope),
-      },
+    return apiOperation<PlatformFinanceDashboard, "getFinancePlatformOverview">(
+      "getFinancePlatformOverview",
+      { query: queryParams(scope) },
     );
   }
 
   getAccountDashboard() {
-    return httpClient.get<AccountFinanceDashboard>("/finance/account/overview");
+    return apiOperation<AccountFinanceDashboard, "getFinanceAccountOverview">(
+      "getFinanceAccountOverview",
+      {},
+    );
   }
 
   getOrganizationDashboard() {
-    return httpClient.get<AccountFinanceDashboard>(
-      "/finance/organization/overview",
-    );
+    return apiOperation<
+      AccountFinanceDashboard,
+      "getFinanceOrganizationOverview"
+    >("getFinanceOrganizationOverview", {});
   }
 
   listTransactions(query: FinanceTransactionQuery) {
-    return httpClient.get<FinanceTransactionPage>(
-      "/finance/platform/transactions",
-      {
-        params: queryParams(query),
-      },
-    );
+    return apiOperation<
+      FinanceTransactionPage,
+      "getFinancePlatformTransactions"
+    >("getFinancePlatformTransactions", { query: queryParams(query) });
   }
 
   getTransaction(transactionId: string) {
-    return httpClient.get<FinanceTransaction>(
-      `/finance/platform/transactions/${encodeURIComponent(transactionId)}`,
-    );
+    return apiOperation<
+      FinanceTransaction,
+      "getFinancePlatformTransactionsById"
+    >("getFinancePlatformTransactionsById", { path: { id: transactionId } });
   }
 
   listReconciliationCases() {
-    return httpClient.get<ReconciliationCase[]>(
-      "/finance/platform/reconciliation",
-    );
+    return apiOperation<
+      ReconciliationCase[],
+      "getFinancePlatformReconciliation"
+    >("getFinancePlatformReconciliation", {});
   }
 
   exportTransactions(query: FinanceTransactionQuery) {
-    return httpClient.get<FinanceExport>(
-      "/finance/platform/exports/transactions",
-      {
-        params: queryParams(query),
-      },
+    return apiOperation<FinanceExport, "getFinancePlatformExportsTransactions">(
+      "getFinancePlatformExportsTransactions",
+      { query: queryParams(query) },
     );
   }
 }

@@ -288,10 +288,20 @@ export const taxonomyLocalizedLabelsSchema = z
     message: "A French taxonomy label is required.",
   });
 
+export const TAXONOMY_HEADER_NAVIGATION_CONSTRAINTS = {
+  maxItems: 30,
+  shortLabelMaxLength: 28,
+  changeReason: { minLength: 10, maxLength: 500 },
+} as const;
+
 export const taxonomyLocalizedShortLabelsSchema = z
   .record(
     z.string().regex(/^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/),
-    z.string().trim().min(1).max(28),
+    z
+      .string()
+      .trim()
+      .min(1)
+      .max(TAXONOMY_HEADER_NAVIGATION_CONSTRAINTS.shortLabelMaxLength),
   )
   .refine((labels) => Boolean(labels["fr-FR"]), {
     message: "A French taxonomy shortLabel is required.",
@@ -713,11 +723,6 @@ export const taxonomyV4OptionPageSchema = z.object({
   taxonomyVersion: z.literal("4.0.0"),
 });
 
-export const TAXONOMY_HEADER_NAVIGATION_CONSTRAINTS = {
-  maxItems: 30,
-  changeReason: { minLength: 10, maxLength: 500 },
-} as const;
-
 export const taxonomyHeaderCategoryItemSchema = z.object({
   categoryId: z.string().min(1).max(150),
   slug: z.string().min(1).max(180),
@@ -728,10 +733,19 @@ export const taxonomyHeaderCategoryItemSchema = z.object({
   displayOrder: z.number().int().nonnegative(),
 });
 
+export const taxonomyHeaderNavigationLinkSchema = z.object({
+  target: z.enum(["category_overview", "promotions"]),
+  labels: taxonomyLocalizedLabelsSchema,
+  shortLabels: taxonomyLocalizedShortLabelsSchema,
+  isActive: z.boolean(),
+  displayOrder: z.number().int().nonnegative(),
+});
+
 export const taxonomyHeaderNavigationConfigurationSchema = z.object({
   marketCode: marketCodeSchema,
   revision: z.number().int().nonnegative(),
   updatedAt: z.string().datetime().nullable(),
+  links: z.array(taxonomyHeaderNavigationLinkSchema).max(2).optional(),
   items: z
     .array(taxonomyHeaderCategoryItemSchema)
     .max(TAXONOMY_HEADER_NAVIGATION_CONSTRAINTS.maxItems),
@@ -752,6 +766,7 @@ export const taxonomyHeaderNavigationUpdateSchema = z
       .trim()
       .min(TAXONOMY_HEADER_NAVIGATION_CONSTRAINTS.changeReason.minLength)
       .max(TAXONOMY_HEADER_NAVIGATION_CONSTRAINTS.changeReason.maxLength),
+    links: z.array(taxonomyHeaderNavigationLinkSchema).max(2).optional(),
     items: z
       .array(taxonomyHeaderCategoryUpdateSchema)
       .max(TAXONOMY_HEADER_NAVIGATION_CONSTRAINTS.maxItems),
@@ -778,6 +793,26 @@ export const taxonomyHeaderNavigationUpdateSchema = z
         });
       }
       displayOrders.add(item.displayOrder);
+    });
+    const targets = new Set<string>();
+    configuration.links?.forEach((link, index) => {
+      if (targets.has(link.target)) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["links", index, "target"],
+          message: "A header destination may only be selected once.",
+        });
+      }
+      targets.add(link.target);
+      if (displayOrders.has(link.displayOrder)) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["links", index, "displayOrder"],
+          message:
+            "Header display orders must be unique across categories and links.",
+        });
+      }
+      displayOrders.add(link.displayOrder);
     });
   });
 
@@ -869,6 +904,9 @@ export type TaxonomyV4TreeResponse = z.infer<
 export type TaxonomyV4OptionPage = z.infer<typeof taxonomyV4OptionPageSchema>;
 export type TaxonomyHeaderCategoryItem = z.infer<
   typeof taxonomyHeaderCategoryItemSchema
+>;
+export type TaxonomyHeaderNavigationLink = z.infer<
+  typeof taxonomyHeaderNavigationLinkSchema
 >;
 export type TaxonomyHeaderNavigationConfiguration = z.infer<
   typeof taxonomyHeaderNavigationConfigurationSchema

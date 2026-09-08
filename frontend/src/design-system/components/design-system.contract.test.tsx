@@ -99,7 +99,7 @@ describe("design-system representative states", () => {
     );
 
     expect(sidebar).toContain('data-filter-panel="surface"');
-    expect(sidebar).toContain("rounded-card");
+    expect(sidebar).toContain("rounded-listing-card");
     expect(sidebar).toContain("divide-y");
     expect(sidebar).toContain("divide-border-subtle");
     expect(sidebar).toContain("w-full");
@@ -164,6 +164,7 @@ describe("design-system representative states", () => {
 
     expect(html).toContain("data-search-active-filters");
     expect(html).toContain("data-search-results-toolbar");
+    expect(html.match(/rounded-listing-card/g)).toHaveLength(2);
     expect(html).toContain('aria-controls="desktop-filters"');
     expect(html).toContain('aria-controls="mobile-filters"');
     expect(html).toContain("Sauvegarder");

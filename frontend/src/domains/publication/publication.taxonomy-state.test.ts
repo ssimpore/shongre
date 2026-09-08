@@ -113,17 +113,9 @@ describe("publication taxonomy state", () => {
         isNegotiable: false,
         isFreeDonation: false,
       },
-      transaction: {
-        allowContact: true,
-        allowDirectPurchase: true,
-        allowReservation: false,
-      },
       fulfillment: {
         allowHandDelivery: true,
         allowParcelShipping: true,
-        allowBulkyDelivery: false,
-        allowSellerDelivery: false,
-        allowStorePickup: false,
       },
       fulfillmentTypes: ["PHYSICAL"],
       location: {

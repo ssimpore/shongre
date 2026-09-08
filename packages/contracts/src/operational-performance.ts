@@ -24,7 +24,7 @@ export const SHONGRE_PERFORMANCE_BUDGETS = {
       realEstate: 9_000,
       employment: 16_500,
       education: 15_000,
-      listingDetail: 22_000,
+      listingDetail: 25_000,
     },
   },
   api: {
@@ -60,6 +60,21 @@ export const SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS = {
   worker: {
     heartbeatMinimumIntervalMs: 5_000,
     heartbeatMaximumAgeMs: 180_000,
+    dependencyProbeIntervalMs: 15_000,
+  },
+  queues: {
+    concurrency: 4,
+    attempts: 3,
+    backoffDelayMs: 2_000,
+    lockDurationMs: 120_000,
+    completedRetentionSeconds: 86_400,
+    completedRetentionCount: 1_000,
+    failedRetentionSeconds: 2_592_000,
+    failedRetentionCount: 5_000,
+  },
+  realtime: {
+    authenticationTimeoutMs: 5_000,
+    maximumSubscriptionsPerConnection: 50,
   },
   frontend: {
     queryStaleTimeMs: 180_000,

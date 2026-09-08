@@ -14,7 +14,7 @@ export const PAGE_SIZES = {
   similarVerticalListings: 4,
   homepagePromotedListings: 50,
   homepageUniverseListings: 8,
-  collectionListings: 60,
+  collectionListings: 50,
   adminFinanceRows: 25,
   adminFinanceExportRows: 1_000,
 } as const;

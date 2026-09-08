@@ -120,7 +120,7 @@ class ListingActionsResolver {
     );
 
     const canReserve = !!(
-      (listing.isReservable ?? true) &&
+      listing.isReservable === true &&
       transactionCapabilities.canReserve &&
       listing.price > 0 &&
       !listing.isFreeDonation

@@ -8,7 +8,7 @@ import {
   Tag,
 } from "lucide-react";
 import { Breadcrumbs } from "../../design-system";
-import { storageService } from "../../services/storage.service";
+import { services } from "../../api/client/service-registry";
 import { Button } from "../../design-system/primitives/Button";
 import { ListingCard } from "../../design-system/primitives/ListingCard";
 import { ListingGrid } from "../../design-system/primitives/ListingGrid";
@@ -16,6 +16,8 @@ import { useStaticPageSeo } from "../../hooks/useStaticPageSeo";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { routes } from "../../configuration/routes";
+import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
+import type { Listing } from "../../types";
 
 const DEALS_PER_PAGE = 8;
 
@@ -241,8 +243,12 @@ export const HelpSafetyPage: React.FC = () => {
 
 export const DealsPage: React.FC = () => {
   const { t } = useTranslation();
+  const { activeMarket } = useMarketLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const dealsSectionRef = React.useRef<HTMLElement>(null);
+  const [deals, setDeals] = React.useState<Listing[]>([]);
+  const [pageCount, setPageCount] = React.useState(1);
+  const [loading, setLoading] = React.useState(true);
   usePageMeta({
     title: "Offres à prix réduit",
     description:
@@ -250,21 +256,34 @@ export const DealsPage: React.FC = () => {
     canonicalPath: routes.deals(),
   });
 
-  const deals = storageService
-    .getListings()
-    .filter((l) => l.originalPrice && l.originalPrice > l.price);
-  const pageCount = Math.max(1, Math.ceil(deals.length / DEALS_PER_PAGE));
   const requestedPage = Number(searchParams.get("page") ?? "1");
   const currentPage =
-    Number.isInteger(requestedPage) && requestedPage > 0
-      ? Math.min(requestedPage, pageCount)
-      : 1;
+    Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
   const previousPageRef = React.useRef(currentPage);
-  const firstDealIndex = (currentPage - 1) * DEALS_PER_PAGE;
-  const visibleDeals = deals.slice(
-    firstDealIndex,
-    firstDealIndex + DEALS_PER_PAGE,
-  );
+
+  React.useEffect(() => {
+    let active = true;
+    setLoading(true);
+    void services.search
+      .search({
+        marketCode: activeMarket.code,
+        onlyDeals: true,
+        page: currentPage,
+        limit: DEALS_PER_PAGE,
+        sortBy: "date_desc",
+      })
+      .then((result) => {
+        if (!active) return;
+        setDeals(result.items);
+        setPageCount(Math.max(1, result.totalPages));
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [activeMarket.code, currentPage]);
 
   React.useEffect(() => {
     if (previousPageRef.current === currentPage) return;
@@ -321,10 +340,18 @@ export const DealsPage: React.FC = () => {
           aria-label={t("legal.legalPages.annoncesEnPromotion")}
         >
           <ListingGrid fluid>
-            {visibleDeals.map((listing) => (
+            {deals.map((listing) => (
               <ListingCard key={listing.id} listing={listing} />
             ))}
           </ListingGrid>
+          {loading ? (
+            <p
+              role="status"
+              className="py-8 text-center text-xs text-text-tertiary"
+            >
+              Chargement des offres…
+            </p>
+          ) : null}
         </div>
 
         {pageCount > 1 && (

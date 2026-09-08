@@ -46,7 +46,6 @@ import {
   Textarea,
 } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
-import { storageService } from "../../services/storage.service";
 import { JobCard } from "./components/JobCard";
 import { formatEmploymentDate, formatSalary } from "./employment-format";
 import { publicRouteUrl } from "../../domains/market/market-routing";
@@ -57,7 +56,6 @@ import {
   structuredDataForPolicy,
 } from "../../platform/seo/seo-policy";
 import { useTranslation } from "../../i18n/I18nProvider";
-import { employmentRecentJobsStorageKey } from "./employment-recent-jobs";
 
 export const EmploymentJobDetailPage: React.FC = () => {
   const { t } = useTranslation();
@@ -145,24 +143,12 @@ export const EmploymentJobDetailPage: React.FC = () => {
 
   useEffect(() => {
     const marketCode = activeMarket.code;
-    const rememberRecentJob = (result: JobPostingDetail) => {
-      const recentKey = employmentRecentJobsStorageKey(
-        currentUser?.id,
-        marketCode,
-      );
-      const recent = storageService.get<string[]>(recentKey, []);
-      storageService.set(
-        recentKey,
-        [result.id, ...recent.filter((id) => id !== result.id)].slice(0, 12),
-      );
-    };
     if (initialData?.job.marketCode === marketCode) {
       setJob(initialData.job);
       setCatalog(initialData.catalog);
       setSimilar(initialData.similarJobs);
       setError(false);
       setLoading(false);
-      rememberRecentJob(initialData.job);
       return;
     }
     let active = true;
@@ -184,14 +170,13 @@ export const EmploymentJobDetailPage: React.FC = () => {
         setJob(result);
         setCatalog(nextCatalog);
         setSimilar(nextSimilar);
-        rememberRecentJob(result);
       })
       .catch(() => active && setError(true))
       .finally(() => active && setLoading(false));
     return () => {
       active = false;
     };
-  }, [activeMarket.code, currentUser?.id, initialData, slug]);
+  }, [activeMarket.code, initialData, slug]);
 
   const pageMeta = React.useMemo(() => {
     if (!job || !catalog || !marketContext) {

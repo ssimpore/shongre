@@ -1,9 +1,9 @@
-import { BASELINE_MONETIZATION_CATALOG } from "@shongre/contracts/monetization-catalog";
 import {
   hasCommercialEntitlementValue,
   isCommercialEntitlementOperational,
   isCommercialProductPurchasable,
 } from "@shongre/contracts/monetization";
+import type { MonetizationCatalog } from "@shongre/contracts/monetization";
 import type { Money } from "@shongre/contracts/primitives";
 
 export interface ProPlan {
@@ -31,7 +31,7 @@ const LEGACY_PLAN_IDS: Record<string, ProPlan["id"]> = {
 };
 
 const entitlement = (
-  product: (typeof BASELINE_MONETIZATION_CATALOG.products)[number],
+  product: MonetizationCatalog["products"][number],
   key: string,
 ) =>
   product.entitlements.find(
@@ -39,13 +39,9 @@ const entitlement = (
   )?.value;
 
 /**
- * Compatibility presentation derived from the canonical demo catalog. It
- * contains no independent prices or quotas and can be removed when the last
- * synchronous entitlement consumer has migrated to BusinessRulesService.
+ * Presentation projection derived from the catalog returned by the API.
  */
-export const resolveProPlans = (
-  catalog: typeof BASELINE_MONETIZATION_CATALOG,
-): ProPlan[] =>
+export const resolveProPlans = (catalog: MonetizationCatalog): ProPlan[] =>
   catalog.products
     .filter(
       (product) => product.status === "active" && product.id in LEGACY_PLAN_IDS,
@@ -96,10 +92,6 @@ export const resolveProPlans = (
       };
     });
 
-export const PRO_PLANS: ProPlan[] = resolveProPlans(
-  BASELINE_MONETIZATION_CATALOG,
-);
-
 export interface ListingBoostOption {
   id: "urgent" | "highlight" | "top_of_list" | "gallery_boost" | "spotlight";
   productId: string;
@@ -120,7 +112,7 @@ const LEGACY_BOOST_IDS: Record<string, ListingBoostOption["id"]> = {
 };
 
 export const resolveListingBoosts = (
-  catalog: typeof BASELINE_MONETIZATION_CATALOG,
+  catalog: MonetizationCatalog,
 ): ListingBoostOption[] =>
   catalog.products
     .filter(
@@ -141,7 +133,3 @@ export const resolveListingBoosts = (
         multiplierEstimate: "Visibilité payante",
       };
     });
-
-export const LISTING_BOOSTS: ListingBoostOption[] = resolveListingBoosts(
-  BASELINE_MONETIZATION_CATALOG,
-);

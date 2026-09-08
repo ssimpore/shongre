@@ -54,7 +54,6 @@ const sourceFiles = (
     filesUnder(path.join(root, "packages/ui/src")),
     filesUnder(path.join(root, "packages/features/src")),
     filesUnder(path.join(root, "packages/brand/src")),
-    filesUnder(path.join(root, "packages/brand/scripts")),
     filesUnder(path.join(root, "backend/src")),
     [path.join(root, "mobile/app.config.ts")],
   ])

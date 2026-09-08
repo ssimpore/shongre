@@ -9,10 +9,8 @@ import {
   NotificationType,
   NotificationCategory,
   NotificationPriority,
-  NotificationContext,
   NotificationAction,
 } from "./notification.types";
-import { deterministicRuntimeId } from "../../utilities/deterministic-id";
 import { formatPrice } from "../../utilities/formatters";
 import { routes } from "../../configuration/routes";
 import { resolveSafeReturn } from "../../security/safe-return";
@@ -807,59 +805,6 @@ export const NOTIFICATION_TEMPLATES: Record<
 };
 
 class NotificationCatalogService {
-  /**
-   * Constructs a canonical Notification object from a domain event.
-   */
-  createNotificationFromEvent(params: {
-    type: NotificationType;
-    recipientId: string;
-    context?: NotificationContext;
-    overrides?: Partial<Notification>;
-  }): Notification {
-    const { type, recipientId, context, overrides } = params;
-    const template = NOTIFICATION_TEMPLATES[type];
-
-    if (!template) {
-      return {
-        id: deterministicRuntimeId("notif", [type, recipientId, context]),
-        type,
-        category: "system",
-        recipientId,
-        title: "Information Shongre",
-        body: "Vous avez reçu une nouvelle mise à jour.",
-        createdAt: new Date().toISOString(),
-        priority: "normal",
-        context,
-        status: "unread",
-        isRead: false,
-        ...overrides,
-      };
-    }
-
-    const title = overrides?.title || template.getTitle(context);
-    const body = overrides?.body || template.getBody(context);
-    const priority = overrides?.priority || template.defaultPriority;
-    const actions =
-      overrides?.actions ||
-      (template.getActions ? template.getActions(context) : undefined);
-
-    return {
-      id: deterministicRuntimeId("notif", [type, recipientId, context]),
-      type,
-      category: template.category,
-      recipientId,
-      title,
-      body,
-      createdAt: new Date().toISOString(),
-      priority,
-      context,
-      actions,
-      status: "unread",
-      isRead: false,
-      ...overrides,
-    };
-  }
-
   /**
    * Resolves the deep-link destination for a given notification.
    */

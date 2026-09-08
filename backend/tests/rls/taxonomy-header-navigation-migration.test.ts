@@ -8,8 +8,38 @@ const migration = readFileSync(
   ),
   "utf8",
 );
+const linksMigration = readFileSync(
+  new URL(
+    "../../supabase/migrations/00118_taxonomy_header_links.sql",
+    import.meta.url,
+  ),
+  "utf8",
+);
 
 describe("taxonomy header navigation migration", () => {
+  it("keeps navigation links in the same locked, audited backend-only aggregate", () => {
+    expect(linksMigration).toContain("PRIMARY KEY (market_code, target)");
+    expect(linksMigration).toContain(
+      "REFERENCES public.taxonomy_header_configurations(market_code)",
+    );
+    expect(linksMigration).toContain(
+      "ALTER TABLE public.taxonomy_header_links ENABLE ROW LEVEL SECURITY",
+    );
+    expect(linksMigration).toContain(
+      "ALTER TABLE public.taxonomy_header_links FORCE ROW LEVEL SECURITY",
+    );
+    expect(linksMigration).toContain(
+      "REVOKE ALL ON public.taxonomy_header_links FROM PUBLIC, anon, authenticated",
+    );
+    expect(linksMigration).toContain(
+      "next_revision := public.replace_taxonomy_header_categories(",
+    );
+    expect(linksMigration).toContain("p_links JSONB DEFAULT NULL");
+    expect(linksMigration).toContain("header_navigation.links_updated");
+    expect(linksMigration).toContain(
+      "target IN ('category_overview', 'promotions')",
+    );
+  });
   it("stores a market-scoped selection with stable ordering", () => {
     expect(migration).toContain("public.taxonomy_header_configurations");
     expect(migration).toContain("public.taxonomy_header_categories");

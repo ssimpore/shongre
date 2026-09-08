@@ -18,15 +18,13 @@ const staff = (overrides: Partial<UserProfile> = {}): UserProfile =>
   }) as UserProfile;
 
 describe("Staff marketplace presentation mode", () => {
-  it("keeps ordinary Staff read-only in every data mode", () => {
-    expect(resolveStaffMarketplaceMode(staff(), "demo")).toBe("read_only");
-    expect(resolveStaffMarketplaceMode(staff(), "api")).toBe("read_only");
+  it("keeps ordinary Staff read-only", () => {
+    expect(resolveStaffMarketplaceMode(staff())).toBe("read_only");
   });
 
-  it("activates the visible sandbox only for an explicit grant in demo data", () => {
+  it("ignores obsolete marketplace demo grants", () => {
     const tester = staff({ customPermissions: ["staff.marketplace.demo"] });
-    expect(resolveStaffMarketplaceMode(tester, "demo")).toBe("demo");
-    expect(resolveStaffMarketplaceMode(tester, "api")).toBe("read_only");
+    expect(resolveStaffMarketplaceMode(tester)).toBe("read_only");
   });
 
   it("never treats a customer-side forged grant as Staff demo access", () => {
@@ -35,6 +33,6 @@ describe("Staff marketplace presentation mode", () => {
       staffRole: undefined,
       customPermissions: ["staff.marketplace.demo"],
     });
-    expect(resolveStaffMarketplaceMode(customer, "demo")).toBe("customer");
+    expect(resolveStaffMarketplaceMode(customer)).toBe("customer");
   });
 });

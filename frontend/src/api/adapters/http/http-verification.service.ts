@@ -2,7 +2,7 @@ import {
   VerificationServiceContract,
   KYBCompanyLookupResult,
 } from "../../contracts/verification.contract";
-import { httpClient } from "./http-client";
+import { apiOperation } from "./generated-api-operation";
 import { VerificationState } from "../../../types";
 import type {
   ComplianceEvaluationInput,
@@ -18,25 +18,29 @@ import { getPublicRuntimeConfig } from "../../../platform/runtime-config/public-
 
 export class HttpVerificationService implements VerificationServiceContract {
   async listComplianceRules(): Promise<ComplianceRule[]> {
-    return httpClient.get<ComplianceRule[]>("/admin/compliance/rules");
+    return apiOperation<ComplianceRule[], "getAdminComplianceRules">(
+      "getAdminComplianceRules",
+      {},
+    );
   }
 
   async saveComplianceRule(input: {
     rule: ComplianceRule;
     reason: string;
   }): Promise<ComplianceRule> {
-    return httpClient.put<ComplianceRule>(
-      `/admin/compliance/rules/${encodeURIComponent(input.rule.id)}`,
-      input,
+    return apiOperation<ComplianceRule, "putAdminComplianceRulesByRuleId">(
+      "putAdminComplianceRulesByRuleId",
+      { path: { ruleId: input.rule.id }, body: input },
     );
   }
 
   async listManualReviews(
     state?: ManualReviewState,
   ): Promise<ManualReviewCase[]> {
-    return httpClient.get<ManualReviewCase[]>("/admin/compliance/reviews", {
-      params: { state },
-    });
+    return apiOperation<ManualReviewCase[], "getAdminComplianceReviews">(
+      "getAdminComplianceReviews",
+      { query: { state } },
+    );
   }
 
   async decideManualReview(input: {
@@ -47,39 +51,51 @@ export class HttpVerificationService implements VerificationServiceContract {
     >;
     reason: string;
   }): Promise<ManualReviewCase> {
-    return httpClient.post<ManualReviewCase>(
-      `/admin/compliance/reviews/${encodeURIComponent(input.caseId)}/decision`,
-      { state: input.state, reason: input.reason },
-    );
+    return apiOperation<
+      ManualReviewCase,
+      "postAdminComplianceReviewsByCaseIdDecision"
+    >("postAdminComplianceReviewsByCaseIdDecision", {
+      path: { caseId: input.caseId },
+      body: { state: input.state, reason: input.reason },
+    });
   }
 
   async listComplianceAudit(limit = 100): Promise<ComplianceAuditEvent[]> {
-    return httpClient.get<ComplianceAuditEvent[]>("/admin/compliance/audit", {
-      params: { limit },
-    });
+    return apiOperation<ComplianceAuditEvent[], "getAdminComplianceAudit">(
+      "getAdminComplianceAudit",
+      { query: { limit } },
+    );
   }
 
   async requestManualReview(input: {
     userId: string;
     dimension: VerificationDimension;
   }): Promise<ManualReviewCase> {
-    return httpClient.post<ManualReviewCase>("/compliance/manual-review", {
-      dimension: input.dimension,
-    });
+    return apiOperation<ManualReviewCase, "postComplianceManualReview">(
+      "postComplianceManualReview",
+      {
+        body: {
+          dimension: input.dimension,
+        },
+      },
+    );
   }
 
   async getComplianceStatus(_userId: string): Promise<ComplianceSubject> {
-    return httpClient.get<ComplianceSubject>("/compliance/status");
+    return apiOperation<ComplianceSubject, "getComplianceStatus">(
+      "getComplianceStatus",
+      {},
+    );
   }
 
   async getVerificationRequirements(
     _userId: string,
     input: ComplianceEvaluationInput,
   ): Promise<ComplianceRequirementDecision> {
-    return httpClient.post<ComplianceRequirementDecision>(
-      "/compliance/requirements",
-      input,
-    );
+    return apiOperation<
+      ComplianceRequirementDecision,
+      "postComplianceRequirements"
+    >("postComplianceRequirements", { body: input });
   }
 
   async startIdentitySession(input: {
@@ -88,10 +104,15 @@ export class HttpVerificationService implements VerificationServiceContract {
     jurisdiction: string;
     returnTo: string;
   }): Promise<{ sessionId: string; redirectUrl: string; expiresAt: string }> {
-    return httpClient.post("/compliance/identity/session", {
-      dimension: input.dimension,
-      jurisdiction: input.jurisdiction,
-      returnTo: input.returnTo,
+    return apiOperation<
+      { sessionId: string; redirectUrl: string; expiresAt: string },
+      "postComplianceIdentitySession"
+    >("postComplianceIdentitySession", {
+      body: {
+        dimension: input.dimension,
+        jurisdiction: input.jurisdiction,
+        returnTo: input.returnTo,
+      },
     });
   }
 
@@ -108,10 +129,19 @@ export class HttpVerificationService implements VerificationServiceContract {
     required: VerificationDimension[];
   }> {
     const accountToken = await createStripeAccountToken(input);
-    return httpClient.post("/compliance/payment/onboarding", {
-      jurisdiction: input.jurisdiction,
-      returnTo: input.returnTo,
-      accountToken,
+    return apiOperation<
+      {
+        accountReference: string;
+        onboardingUrl: string;
+        required: VerificationDimension[];
+      },
+      "postCompliancePaymentOnboarding"
+    >("postCompliancePaymentOnboarding", {
+      body: {
+        jurisdiction: input.jurisdiction,
+        returnTo: input.returnTo,
+        accountToken,
+      },
     });
   }
   async getUserVerificationStatus(userId: string): Promise<{
@@ -121,31 +151,35 @@ export class HttpVerificationService implements VerificationServiceContract {
     isBusinessVerified: boolean;
     isBankPayoutConfigured: boolean;
   }> {
-    return httpClient.get<{
-      state: VerificationState;
-      isPhoneVerified: boolean;
-      isIdentityVerified: boolean;
-      isBusinessVerified: boolean;
-      isBankPayoutConfigured: boolean;
-    }>(`/verification/status/${userId}`);
+    return apiOperation<
+      {
+        state: VerificationState;
+        isPhoneVerified: boolean;
+        isIdentityVerified: boolean;
+        isBusinessVerified: boolean;
+        isBankPayoutConfigured: boolean;
+      },
+      "getVerificationStatusByUserId"
+    >("getVerificationStatusByUserId", { path: { userId: userId } });
   }
 
   async lookupCompanyBySiret(
     siretOrSiren: string,
   ): Promise<KYBCompanyLookupResult | null> {
-    return httpClient.get<KYBCompanyLookupResult | null>(
-      `/verification/siret-lookup/${siretOrSiren}`,
-    );
+    return apiOperation<
+      KYBCompanyLookupResult | null,
+      "getVerificationSiretLookupBySiret"
+    >("getVerificationSiretLookupBySiret", { path: { siret: siretOrSiren } });
   }
 
   async submitBusinessRegistration(
     userId: string,
     siret: string,
   ): Promise<{ status: "verified" }> {
-    return httpClient.post<{ status: "verified" }>(
-      "/verification/business-registration",
-      { userId, siret },
-    );
+    return apiOperation<
+      { status: "verified" },
+      "postVerificationBusinessRegistration"
+    >("postVerificationBusinessRegistration", { body: { userId, siret } });
   }
 }
 

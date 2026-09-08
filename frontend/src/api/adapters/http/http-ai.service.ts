@@ -5,7 +5,7 @@ import {
   ListingSafetyAnalysis,
   ListingSafetyRequest,
 } from "../../contracts/ai.contract";
-import { httpClient } from "./http-client";
+import { apiOperation } from "./generated-api-operation";
 
 /**
  * Calls `backend/`, which holds the provider credentials. No key ever reaches
@@ -15,18 +15,18 @@ export class HttpAiService implements AiServiceContract {
   async generateListingAssistance(
     request: ListingAssistanceRequest,
   ): Promise<ListingAssistanceResult> {
-    return httpClient.post<ListingAssistanceResult>(
-      "/ai/listing-assistance",
-      request,
+    return apiOperation<ListingAssistanceResult, "postAiListingAssistance">(
+      "postAiListingAssistance",
+      { body: request },
     );
   }
 
   async analyzeListingSafety(
     request: ListingSafetyRequest,
   ): Promise<ListingSafetyAnalysis> {
-    return httpClient.post<ListingSafetyAnalysis>(
-      "/ai/listing-safety",
-      request,
+    return apiOperation<ListingSafetyAnalysis, "postAiListingSafety">(
+      "postAiListingSafety",
+      { body: request },
     );
   }
 }

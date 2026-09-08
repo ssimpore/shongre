@@ -89,7 +89,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { location: userLocation } = useMarketLocation();
+  const { activeMarket, location: userLocation } = useMarketLocation();
 
   const [query, setQuery] = useState(initialQuery);
   const [selectedCategorySlug, setSelectedCategorySlug] =
@@ -105,6 +105,8 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
   const [isAutocompleteOpen, setIsAutocompleteOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const [keywordSuggestions, setKeywordSuggestions] = useState<string[]>([]);
+  const [popularKeywords, setPopularKeywords] = useState<string[]>([]);
 
   const isCountryWide =
     userLocation.city.startsWith("Tout") ||
@@ -183,10 +185,55 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
     showCategory,
   ]);
 
+  useEffect(() => {
+    if (!isAutocompleteOpen) return;
+    let cancelled = false;
+    const normalizedQuery = query.trim();
+    const timer = window.setTimeout(
+      () => {
+        const request = normalizedQuery
+          ? services.search.getSearchSuggestions(
+              normalizedQuery,
+              activeMarket.code,
+            )
+          : services.search.getPopularKeywords(activeMarket.code);
+        void request
+          .then((items) => {
+            if (cancelled) return;
+            if (normalizedQuery) setKeywordSuggestions(items);
+            else setPopularKeywords(items);
+          })
+          .catch(() => {
+            if (cancelled) return;
+            if (normalizedQuery) setKeywordSuggestions([]);
+            else setPopularKeywords([]);
+          });
+      },
+      normalizedQuery ? 180 : 0,
+    );
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [activeMarket.code, isAutocompleteOpen, query]);
+
   // Derive autocomplete suggestions
   const suggestions: AutocompleteResults = useMemo(() => {
-    return getSearchSuggestions(query, selectedCategorySlug, categories, 5);
-  }, [categories, query, selectedCategorySlug]);
+    return getSearchSuggestions(
+      query,
+      selectedCategorySlug,
+      categories,
+      5,
+      keywordSuggestions,
+      popularKeywords,
+    );
+  }, [
+    categories,
+    keywordSuggestions,
+    popularKeywords,
+    query,
+    selectedCategorySlug,
+  ]);
 
   // Total selectable items in autocomplete dropdown
   const totalSelectableCount = useMemo(() => {

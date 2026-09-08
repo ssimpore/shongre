@@ -1,7 +1,7 @@
 /**
  * Homepage recent-search presentation is market configuration, not a UI
  * constant. Keeping the safe range here lets the admin editor and consuming
- * components apply the same rules when a persisted demo override is stale.
+ * components apply the same rules when a persisted preference is stale.
  */
 export const RECENT_SEARCHES_LIMIT_DEFAULT = 6;
 export const RECENT_SEARCHES_LIMIT_MIN = 1;

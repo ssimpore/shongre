@@ -15,7 +15,6 @@ import { RequireAuth } from "./RequireAuth";
 import { RequirePermission } from "./RequirePermission";
 import { hasProductAccess } from "../../domains/user/user.domain";
 import type { RoutePolicy } from "../access-policy.registry";
-import { useDataMode } from "../../app/providers/DataModeProvider";
 import { resolveStaffMarketplaceMode } from "../useStaffMarketplaceAccess";
 import { applicationHref } from "../../platform/applications/use-application-href";
 
@@ -41,7 +40,6 @@ export const RequireRoutePolicy: React.FC<{
   children: React.ReactNode;
 }> = ({ policyId, standalone, children }) => {
   const { currentUser, isRestoring } = useAuth();
-  const { mode: dataMode } = useDataMode();
   const location = useLocation();
   const policy: RoutePolicy = ROUTE_POLICIES[policyId];
 
@@ -64,14 +62,11 @@ export const RequireRoutePolicy: React.FC<{
   }
 
   const access = canonicalAccessContext(currentUser);
-  const staffMarketplaceMode = resolveStaffMarketplaceMode(
-    currentUser,
-    dataMode,
-  );
+  const staffMarketplaceMode = resolveStaffMarketplaceMode(currentUser);
   if (
     access.staffStatus !== "none" &&
     (policy.access === "customer" || policy.access === "professional") &&
-    staffMarketplaceMode !== "demo"
+    staffMarketplaceMode === "read_only"
   ) {
     return (
       <Navigate
@@ -90,10 +85,7 @@ export const RequireRoutePolicy: React.FC<{
   ) {
     return <Navigate to={routes.workspace.overview()} replace />;
   }
-  if (
-    !policy.accountTypes.some((type) => type === access.accountType) &&
-    staffMarketplaceMode !== "demo"
-  ) {
+  if (!policy.accountTypes.some((type) => type === access.accountType)) {
     if (policy.access === "staff_capability") {
       return <Navigate to={routes.workspace.overview()} replace />;
     }
@@ -108,11 +100,7 @@ export const RequireRoutePolicy: React.FC<{
     );
   }
 
-  if (
-    canAccessRoutePolicy(currentUser, policyId, {
-      allowStaffMarketplaceDemo: staffMarketplaceMode === "demo",
-    })
-  ) {
+  if (canAccessRoutePolicy(currentUser, policyId)) {
     return <>{children}</>;
   }
   if (policy.productId && !hasProductAccess(currentUser, policy.productId)) {

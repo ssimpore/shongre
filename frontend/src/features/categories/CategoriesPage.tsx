@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 import { IMAGE_SIZES } from "@shongre/shared";
 import { Link } from "react-router-dom";
 import { ChevronRight, Search } from "lucide-react";
-import { getTaxonomyLabel } from "../../domains/taxonomy/taxonomy.service";
+import { getTaxonomyLabel } from "../../domains/taxonomy/taxonomy.labels";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useRootTaxonomyCategories } from "../../hooks/useRootTaxonomyCategories";
 import { useTranslation } from "../../i18n/I18nProvider";

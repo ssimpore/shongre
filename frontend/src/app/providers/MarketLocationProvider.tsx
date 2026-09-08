@@ -13,11 +13,7 @@ import {
   MarketConfiguration,
   MarketCity,
 } from "../../domains/market/market.types";
-import {
-  MARKETS_CHANGED_EVENT,
-  MARKETS_STORAGE_KEY,
-  browserPreferencesService,
-} from "../../services/browser-preferences.service";
+import { browserPreferencesService } from "../../services/browser-preferences.service";
 import {
   formatCurrencySymbol,
   formatPrice as formatPriceUtil,
@@ -50,7 +46,6 @@ import {
   shouldUseAuthenticatedMarketHandoff,
 } from "../../domains/market/market-routing";
 import { useAuth } from "./AuthProvider";
-import { useDataMode } from "./DataModeProvider";
 import { services } from "../../api/client/service-registry";
 import { analyticsService } from "../../services/analytics.service";
 import { marketInfrastructureFromPublicEnvironment } from "../../platform/market/market-infrastructure";
@@ -193,7 +188,6 @@ export const MarketLocationProvider: React.FC<{
   initialMarketContext?: MarketContext;
 }> = ({ children, initialMarketContext }) => {
   const { currentUser, isAuthenticated, isRestoring } = useAuth();
-  const { mode: dataMode } = useDataMode();
   const [runtimeMarkets, setRuntimeMarkets] =
     useState<Market[]>(BOOTSTRAP_MARKETS);
   const preferenceAccountId = currentUser?.id ?? null;
@@ -218,7 +212,6 @@ export const MarketLocationProvider: React.FC<{
   const [activeMarketCode, setActiveMarketCode] = useState<string>(
     initialMarketContext?.countryCode || INITIAL_DEFAULT_MARKET.code,
   );
-  const [marketDataVersion, setMarketDataVersion] = useState(0);
   const [restoredPreferenceSubject, setRestoredPreferenceSubject] = useState<
     string | null
   >(null);
@@ -240,51 +233,17 @@ export const MarketLocationProvider: React.FC<{
   const automaticDetectionScope = useRef<string | null>(null);
   const detectionRequestId = useRef(0);
 
-  useEffect(() => {
-    const refreshMarketConfiguration = () => {
-      setMarketDataVersion((version) => version + 1);
-    };
-    const handleStorageChange = (event: StorageEvent) => {
-      if (event.key === null || event.key === MARKETS_STORAGE_KEY) {
-        refreshMarketConfiguration();
-      }
-    };
-
-    window.addEventListener(MARKETS_CHANGED_EVENT, refreshMarketConfiguration);
-    window.addEventListener("storage", handleStorageChange);
-
-    return () => {
-      window.removeEventListener(
-        MARKETS_CHANGED_EVENT,
-        refreshMarketConfiguration,
-      );
-      window.removeEventListener("storage", handleStorageChange);
-    };
-  }, []);
-
   const activeMarket = useMemo<Market>(() => {
     if (!hasRestoredPreferences) {
       return requestMarket;
     }
     return getRuntimeMarket(runtimeMarkets, activeMarketCode);
-  }, [
-    activeMarketCode,
-    hasRestoredPreferences,
-    marketDataVersion,
-    requestMarket,
-    runtimeMarkets,
-  ]);
+  }, [activeMarketCode, hasRestoredPreferences, requestMarket, runtimeMarkets]);
 
   const effectiveConfig = useMemo<MarketConfiguration>(() => {
     if (!hasRestoredPreferences) return requestConfig;
     return getRuntimeMarketConfig(runtimeMarkets, activeMarket.code);
-  }, [
-    activeMarket,
-    hasRestoredPreferences,
-    marketDataVersion,
-    requestConfig,
-    runtimeMarkets,
-  ]);
+  }, [activeMarket, hasRestoredPreferences, requestConfig, runtimeMarkets]);
 
   const resolvedMarketContext = useMemo<MarketContext | null>(() => {
     if (initialMarketContext?.countryCode === activeMarket.code) {
@@ -309,7 +268,7 @@ export const MarketLocationProvider: React.FC<{
       const market = markets.find((entry) => entry.code === country.code);
       return market ? [market] : [];
     });
-  }, [marketDataVersion, runtimeMarkets]);
+  }, [runtimeMarkets]);
   const selectableCountries = useMemo(() => listPublicCountries(), []);
 
   const [location, setLocationState] = useState<LocationSelection>({
@@ -503,17 +462,6 @@ export const MarketLocationProvider: React.FC<{
           : shippedLocale;
       setCurrentLocaleState(regionalLocale);
       browserPreferencesService.saveUserLocale(regionalLocale);
-      /* Taxonomy labels are resolved into the index when it is built, so the tree
-       has to be rebuilt for a language change to reach category names. Without
-       this, switching language re-rendered the chrome in English and left every
-       category in the language the app happened to boot in. */
-      void Promise.all([
-        import("../../domains/taxonomy/taxonomy.service"),
-        import("../../domains/taxonomy/taxonomy.data"),
-      ]).then(([{ taxonomyService }, { refreshTaxonomyProjection }]) => {
-        taxonomyService.reload();
-        refreshTaxonomyProjection(shippedLocale);
-      });
     },
     [effectiveConfig.localization.defaultLocale],
   );
@@ -552,7 +500,7 @@ export const MarketLocationProvider: React.FC<{
     return () => {
       active = false;
     };
-  }, [dataMode]);
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -595,7 +543,7 @@ export const MarketLocationProvider: React.FC<{
               ? [...market.supportedCurrencies]
               : [market.currency],
             currencySymbol: market.currencySymbol || market.currency,
-            defaultLocale: market.locale,
+            defaultLocale: market.defaultLocale,
             configuration: {
               ...existing.configuration,
               general: {
@@ -606,7 +554,7 @@ export const MarketLocationProvider: React.FC<{
                 ...existing.configuration.localization,
                 defaultCurrency: market.currency,
                 currencySymbol: market.currencySymbol || market.currency,
-                defaultLocale: market.locale,
+                defaultLocale: market.defaultLocale,
               },
             },
             version: market.version ?? existing.version,

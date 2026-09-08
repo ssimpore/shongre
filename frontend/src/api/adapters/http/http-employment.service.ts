@@ -21,33 +21,43 @@ import type {
   RecruiterNote,
   RecruiterWorkspace,
 } from "@shongre/contracts/employment";
+import { apiOperation } from "./generated-api-operation";
 import type { VerticalCheckout } from "@shongre/contracts/vertical";
 import type {
   EmploymentApplicationDraft,
   EmploymentServiceContract,
   SaveEmploymentPublicationDraftInput,
 } from "../../contracts/employment.contract";
-import { httpClient } from "./http-client";
 
 export class HttpEmploymentService implements EmploymentServiceContract {
   getCatalog(marketCode: string) {
-    return httpClient.get<EmploymentCatalog>("/employment/catalog", {
-      params: { market: marketCode },
-    });
+    return apiOperation<EmploymentCatalog, "getEmploymentCatalog">(
+      "getEmploymentCatalog",
+      { query: { market: marketCode } },
+    );
   }
   searchJobs(query: EmploymentSearchQuery) {
-    return httpClient.post<EmploymentSearchResult>("/employment/search", query);
+    return apiOperation<EmploymentSearchResult, "postEmploymentSearch">(
+      "postEmploymentSearch",
+      { body: query },
+    );
   }
   getJob(idOrSlug: string, marketCode?: string) {
-    return httpClient.get<JobPostingDetail>(
-      `/employment/jobs/${encodeURIComponent(idOrSlug)}`,
-      marketCode ? { headers: { "X-Shongre-Market": marketCode } } : undefined,
+    return apiOperation<JobPostingDetail, "getEmploymentJobsById">(
+      "getEmploymentJobsById",
+      {
+        path: { id: idOrSlug },
+        ...(marketCode ? { headers: { "X-Shongre-Market": marketCode } } : {}),
+      },
     );
   }
   getSimilarJobs(idOrSlug: string, marketCode?: string) {
-    return httpClient.get<JobPostingCard[]>(
-      `/employment/jobs/${encodeURIComponent(idOrSlug)}/similar`,
-      marketCode ? { headers: { "X-Shongre-Market": marketCode } } : undefined,
+    return apiOperation<JobPostingCard[], "getEmploymentJobsByIdSimilar">(
+      "getEmploymentJobsByIdSimilar",
+      {
+        path: { id: idOrSlug },
+        ...(marketCode ? { headers: { "X-Shongre-Market": marketCode } } : {}),
+      },
     );
   }
   getOrCreateDraft(
@@ -55,15 +65,21 @@ export class HttpEmploymentService implements EmploymentServiceContract {
     marketCode: string,
     preferredDraftId?: string,
   ): Promise<JobDraft> {
-    return httpClient.post<JobDraft>("/employment/drafts", {
-      marketCode,
-      preferredDraftId,
-    });
+    return apiOperation<JobDraft, "postEmploymentDrafts">(
+      "postEmploymentDrafts",
+      {
+        body: {
+          marketCode,
+          preferredDraftId,
+        },
+      },
+    );
   }
   async getDraft(draftId: string) {
     try {
-      return await httpClient.get<JobDraft>(
-        `/employment/drafts/${encodeURIComponent(draftId)}`,
+      return await apiOperation<JobDraft, "getEmploymentDraftsById">(
+        "getEmploymentDraftsById",
+        { path: { id: draftId } },
       );
     } catch (error: unknown) {
       if (
@@ -77,79 +93,94 @@ export class HttpEmploymentService implements EmploymentServiceContract {
     }
   }
   saveDraft(draft: JobDraft) {
-    return httpClient.put<JobDraft>(
-      `/employment/drafts/${encodeURIComponent(draft.id)}`,
-      draft,
+    return apiOperation<JobDraft, "putEmploymentDraftsById">(
+      "putEmploymentDraftsById",
+      { path: { id: draft.id }, body: draft },
     );
   }
   savePublicationDraft(
     input: SaveEmploymentPublicationDraftInput,
   ): Promise<JobDraft> {
-    return httpClient.put<JobDraft>(
-      `/employment/drafts/${encodeURIComponent(input.draftId)}/publication`,
+    return apiOperation<JobDraft, "putEmploymentDraftsByIdPublication">(
+      "putEmploymentDraftsByIdPublication",
       {
-        marketCode: input.marketCode,
-        countryCode: input.countryCode,
-        currentStep: input.currentStep,
-        privateEmployer: input.privateEmployer,
-        data: input.data,
-        selectedOfferId: input.selectedOfferId,
-        selectedAddOnIds: input.selectedAddOnIds,
-        duplicateCandidateIds: input.duplicateCandidateIds,
-        markAllPreviousStepsComplete: input.markAllPreviousStepsComplete,
+        path: { id: input.draftId },
+        body: {
+          marketCode: input.marketCode,
+          countryCode: input.countryCode,
+          currentStep: input.currentStep,
+          privateEmployer: input.privateEmployer,
+          data: input.data,
+          selectedOfferId: input.selectedOfferId,
+          selectedAddOnIds: input.selectedAddOnIds,
+          duplicateCandidateIds: input.duplicateCandidateIds,
+          markAllPreviousStepsComplete: input.markAllPreviousStepsComplete,
+        },
       },
     );
   }
   checkDuplicateDraft(draftId: string) {
-    return httpClient.post<{ duplicateCandidateIds: string[] }>(
-      `/employment/drafts/${encodeURIComponent(draftId)}/duplicate-check`,
-    );
+    return apiOperation<
+      { duplicateCandidateIds: string[] },
+      "postEmploymentDraftsByIdDuplicateCheck"
+    >("postEmploymentDraftsByIdDuplicateCheck", { path: { id: draftId } });
   }
   submitDraft(draftId: string) {
-    return httpClient.post<{
-      jobId: string;
-      lifecycle: "pending_review" | "published";
-      complianceFlags: ProhibitedLanguageFlag[];
-    }>(`/employment/drafts/${encodeURIComponent(draftId)}/submit`);
+    return apiOperation<
+      {
+        jobId: string;
+        lifecycle: "pending_review" | "published";
+        complianceFlags: ProhibitedLanguageFlag[];
+      },
+      "postEmploymentDraftsByIdSubmit"
+    >("postEmploymentDraftsByIdSubmit", { path: { id: draftId } });
   }
   async flagProhibitedLanguage(content: string) {
-    const result = await httpClient.post<{ flags: ProhibitedLanguageFlag[] }>(
-      "/employment/compliance/prohibited-language",
-      { content },
-    );
+    const result = await apiOperation<
+      { flags: ProhibitedLanguageFlag[] },
+      "postEmploymentComplianceProhibitedLanguage"
+    >("postEmploymentComplianceProhibitedLanguage", { body: { content } });
     return result.flags;
   }
   getCandidateWorkspace(marketCode: string) {
-    return httpClient.get<CandidateWorkspace>(
-      "/employment/candidate/workspace",
+    return apiOperation<CandidateWorkspace, "getEmploymentCandidateWorkspace">(
+      "getEmploymentCandidateWorkspace",
       { headers: { "X-Shongre-Market": marketCode } },
     );
   }
   saveCandidateProfile(profile: CandidateProfile) {
-    return httpClient.put<CandidateProfile>(
-      "/employment/candidate/profile",
-      profile,
+    return apiOperation<CandidateProfile, "putEmploymentCandidateProfile">(
+      "putEmploymentCandidateProfile",
+      { body: profile },
     );
   }
   apply(jobId: string, input: EmploymentApplicationDraft) {
-    return httpClient.post<EmploymentApplication>(
-      `/employment/jobs/${encodeURIComponent(jobId)}/applications`,
-      input,
-    );
+    return apiOperation<
+      EmploymentApplication,
+      "postEmploymentJobsByIdApplications"
+    >("postEmploymentJobsByIdApplications", {
+      path: { id: jobId },
+      body: input,
+    });
   }
   withdrawApplication(applicationId: string) {
-    return httpClient.post<EmploymentApplication>(
-      `/employment/applications/${encodeURIComponent(applicationId)}/withdraw`,
-    );
+    return apiOperation<
+      EmploymentApplication,
+      "postEmploymentApplicationsByIdWithdraw"
+    >("postEmploymentApplicationsByIdWithdraw", {
+      path: { id: applicationId },
+    });
   }
   async getSavedJobIds(
     _accountId: string,
     marketCode: string,
   ): Promise<string[]> {
-    const result = await httpClient.get<{ jobIds: string[] }>(
-      "/employment/favorites",
-      { headers: { "X-Shongre-Market": marketCode } },
-    );
+    const result = await apiOperation<
+      { jobIds: string[] },
+      "getEmploymentFavorites"
+    >("getEmploymentFavorites", {
+      headers: { "X-Shongre-Market": marketCode },
+    });
     return result.jobIds;
   }
   async setSavedJob(
@@ -158,20 +189,23 @@ export class HttpEmploymentService implements EmploymentServiceContract {
     marketCode: string,
     isFavorite: boolean,
   ): Promise<boolean> {
-    const result = await httpClient.put<{ isFavorite: boolean }>(
-      `/employment/jobs/${encodeURIComponent(jobId)}/save`,
-      { isFavorite },
-      { headers: { "X-Shongre-Market": marketCode } },
-    );
+    const result = await apiOperation<
+      { isFavorite: boolean },
+      "putEmploymentJobsByIdSave"
+    >("putEmploymentJobsByIdSave", {
+      path: { id: jobId },
+      body: { isFavorite },
+      headers: { "X-Shongre-Market": marketCode },
+    });
     return result.isFavorite;
   }
   reportJob(
     jobId: string,
     input: Pick<EmploymentJobReport, "reason" | "details">,
   ) {
-    return httpClient.post<EmploymentJobReport>(
-      `/employment/jobs/${encodeURIComponent(jobId)}/report`,
-      input,
+    return apiOperation<EmploymentJobReport, "postEmploymentJobsByIdReport">(
+      "postEmploymentJobsByIdReport",
+      { path: { id: jobId }, body: input },
     );
   }
   saveJobAlert(input: {
@@ -179,58 +213,81 @@ export class HttpEmploymentService implements EmploymentServiceContract {
     query: EmploymentSearchQuery;
     frequency: JobAlert["frequency"];
   }) {
-    return httpClient.post<JobAlert>("/employment/candidate/alerts", input);
+    return apiOperation<JobAlert, "postEmploymentCandidateAlerts">(
+      "postEmploymentCandidateAlerts",
+      { body: input },
+    );
   }
   deleteJobAlert(alertId: string) {
-    return httpClient.request<void>(
-      `/employment/candidate/alerts/${encodeURIComponent(alertId)}`,
-      { method: "DELETE" },
+    return apiOperation<void, "deleteEmploymentCandidateAlertsById">(
+      "deleteEmploymentCandidateAlertsById",
+      { path: { id: alertId } },
     );
   }
   exportCandidateData() {
-    return httpClient.post<CandidateDataExport>(
-      "/employment/candidate/data-export",
-    );
+    return apiOperation<
+      CandidateDataExport,
+      "postEmploymentCandidateDataExport"
+    >("postEmploymentCandidateDataExport", {});
   }
   requestCandidateDeletion() {
-    return httpClient.post<EmploymentDataSubjectRequest>(
-      "/employment/candidate/deletion-request",
-    );
+    return apiOperation<
+      EmploymentDataSubjectRequest,
+      "postEmploymentCandidateDeletionRequest"
+    >("postEmploymentCandidateDeletionRequest", {});
   }
   respondToInterview(interviewId: string, status: "confirmed" | "cancelled") {
-    return httpClient.request<EmploymentInterview>(
-      `/employment/candidate/interviews/${encodeURIComponent(interviewId)}`,
-      { method: "PATCH", body: JSON.stringify({ status }) },
-    );
+    return apiOperation<
+      EmploymentInterview,
+      "patchEmploymentCandidateInterviewsById"
+    >("patchEmploymentCandidateInterviewsById", {
+      path: { id: interviewId },
+      body: { status },
+    });
   }
   listRecruiterEmployers() {
-    return httpClient.get<EmployerSummary[]>("/employment/recruiter/employers");
+    return apiOperation<EmployerSummary[], "getEmploymentRecruiterEmployers">(
+      "getEmploymentRecruiterEmployers",
+      {},
+    );
   }
   getRecruiterWorkspace(employerId: string) {
-    return httpClient.get<RecruiterWorkspace>(
-      `/employment/employers/${encodeURIComponent(employerId)}/workspace`,
-    );
+    return apiOperation<
+      RecruiterWorkspace,
+      "getEmploymentEmployersByEmployerIdWorkspace"
+    >("getEmploymentEmployersByEmployerIdWorkspace", {
+      path: { employerId: employerId },
+    });
   }
   duplicateJob(employerId: string, jobId: string) {
-    return httpClient.post<JobDraft>(
-      `/employment/employers/${encodeURIComponent(employerId)}/jobs/${encodeURIComponent(jobId)}/duplicate`,
-    );
+    return apiOperation<
+      JobDraft,
+      "postEmploymentEmployersByEmployerIdJobsByJobIdDuplicate"
+    >("postEmploymentEmployersByEmployerIdJobsByJobIdDuplicate", {
+      path: { employerId: employerId, jobId: jobId },
+    });
   }
   moveApplication(
     employerId: string,
     applicationId: string,
     input: { stageId: string; reason?: string; notifyCandidate?: boolean },
   ) {
-    return httpClient.request<EmploymentApplication>(
-      `/employment/employers/${encodeURIComponent(employerId)}/applications/${encodeURIComponent(applicationId)}/stage`,
-      { method: "PATCH", body: JSON.stringify(input) },
-    );
+    return apiOperation<
+      EmploymentApplication,
+      "patchEmploymentEmployersByEmployerIdApplicationsByApplicationIdStage"
+    >("patchEmploymentEmployersByEmployerIdApplicationsByApplicationIdStage", {
+      path: { employerId: employerId, applicationId: applicationId },
+      body: input,
+    });
   }
   addRecruiterNote(employerId: string, applicationId: string, body: string) {
-    return httpClient.post<RecruiterNote>(
-      `/employment/employers/${encodeURIComponent(employerId)}/applications/${encodeURIComponent(applicationId)}/notes`,
-      { body },
-    );
+    return apiOperation<
+      RecruiterNote,
+      "postEmploymentEmployersByEmployerIdApplicationsByApplicationIdNotes"
+    >("postEmploymentEmployersByEmployerIdApplicationsByApplicationIdNotes", {
+      path: { employerId: employerId, applicationId: applicationId },
+      body: { body },
+    });
   }
   scheduleInterview(
     employerId: string,
@@ -240,9 +297,15 @@ export class HttpEmploymentService implements EmploymentServiceContract {
       "id" | "applicationId" | "createdAt" | "updatedAt"
     >,
   ) {
-    return httpClient.post<EmploymentInterview>(
-      `/employment/employers/${encodeURIComponent(employerId)}/applications/${encodeURIComponent(applicationId)}/interviews`,
-      interview,
+    return apiOperation<
+      EmploymentInterview,
+      "postEmploymentEmployersByEmployerIdApplicationsByApplicationIdInterviews"
+    >(
+      "postEmploymentEmployersByEmployerIdApplicationsByApplicationIdInterviews",
+      {
+        path: { employerId: employerId, applicationId: applicationId },
+        body: interview,
+      },
     );
   }
   previewImport(
@@ -253,10 +316,13 @@ export class HttpEmploymentService implements EmploymentServiceContract {
       idempotencyKey: string;
     },
   ) {
-    return httpClient.post<EmploymentImport>(
-      `/employment/employers/${encodeURIComponent(employerId)}/imports/preview`,
-      input,
-    );
+    return apiOperation<
+      EmploymentImport,
+      "postEmploymentEmployersByEmployerIdImportsPreview"
+    >("postEmploymentEmployersByEmployerIdImportsPreview", {
+      path: { employerId: employerId },
+      body: input,
+    });
   }
   requestImport(
     employerId: string,
@@ -266,10 +332,13 @@ export class HttpEmploymentService implements EmploymentServiceContract {
       idempotencyKey: string;
     },
   ) {
-    return httpClient.post<EmploymentImport>(
-      `/employment/employers/${encodeURIComponent(employerId)}/imports`,
-      input,
-    );
+    return apiOperation<
+      EmploymentImport,
+      "postEmploymentEmployersByEmployerIdImports"
+    >("postEmploymentEmployersByEmployerIdImports", {
+      path: { employerId: employerId },
+      body: input,
+    });
   }
   createCheckout(input: {
     marketCode: string;
@@ -277,33 +346,40 @@ export class HttpEmploymentService implements EmploymentServiceContract {
     addOnIds?: string[];
     idempotencyKey: string;
   }) {
-    return httpClient.post<VerticalCheckout>("/employment/checkouts", input);
+    return apiOperation<VerticalCheckout, "postEmploymentCheckouts">(
+      "postEmploymentCheckouts",
+      { body: input },
+    );
   }
   getAdminOverview(marketCode: string) {
-    return httpClient.get<EmploymentAdminOverview>(
-      "/employment/admin/overview",
-      {
-        params: { market: marketCode },
-      },
+    return apiOperation<EmploymentAdminOverview, "getEmploymentAdminOverview">(
+      "getEmploymentAdminOverview",
+      { query: { market: marketCode } },
     );
   }
   updateMarketConfig(
     marketCode: string,
     patch: Partial<EmploymentMarketConfig>,
   ) {
-    return httpClient.put<EmploymentMarketConfig>(
-      `/employment/admin/markets/${encodeURIComponent(marketCode)}`,
-      patch,
-    );
+    return apiOperation<
+      EmploymentMarketConfig,
+      "putEmploymentAdminMarketsByMarketCode"
+    >("putEmploymentAdminMarketsByMarketCode", {
+      path: { marketCode: marketCode },
+      body: patch,
+    });
   }
   updateOffer(
     offerId: string,
     patch: Partial<EmploymentCatalog["offers"][number]>,
   ) {
-    return httpClient.request<EmploymentCatalog["offers"][number]>(
-      `/employment/admin/offers/${encodeURIComponent(offerId)}`,
-      { method: "PATCH", body: JSON.stringify(patch) },
-    );
+    return apiOperation<
+      EmploymentCatalog["offers"][number],
+      "patchEmploymentAdminOffersByOfferId"
+    >("patchEmploymentAdminOffersByOfferId", {
+      path: { offerId: offerId },
+      body: patch,
+    });
   }
 }
 

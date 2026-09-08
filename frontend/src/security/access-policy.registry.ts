@@ -242,27 +242,18 @@ export type RoutePolicyId = keyof typeof ROUTE_POLICIES;
 export function canAccessRoutePolicy(
   user: UserProfile | null,
   id: RoutePolicyId,
-  options?: { allowStaffMarketplaceDemo?: boolean },
 ): boolean {
   const policy: RoutePolicy = ROUTE_POLICIES[id];
   const access = canonicalAccessContext(user);
   const capabilities = user?.capabilities ?? resolveEffectiveCapabilities(user);
-  const staffMarketplaceDemo =
-    options?.allowStaffMarketplaceDemo === true &&
-    access.staffStatus === "active" &&
-    capabilities.includes("staff.marketplace.demo");
   if (access.accountType === "guest") return false;
   if (
     access.staffStatus !== "none" &&
-    (policy.access === "customer" || policy.access === "professional") &&
-    !staffMarketplaceDemo
+    (policy.access === "customer" || policy.access === "professional")
   ) {
     return false;
   }
-  if (
-    !policy.accountTypes.some((type) => type === access.accountType) &&
-    !staffMarketplaceDemo
-  ) {
+  if (!policy.accountTypes.some((type) => type === access.accountType)) {
     return false;
   }
   if (policy.requiresActiveStaff && access.staffStatus !== "active") {
@@ -278,12 +269,6 @@ export function canAccessRoutePolicy(
     return false;
   }
   if (!policy.capability) return true;
-  if (
-    staffMarketplaceDemo &&
-    (policy.access === "customer" || policy.access === "professional")
-  ) {
-    return true;
-  }
   return [policy.capability, ...(policy.alternativeCapabilities ?? [])].some(
     (capability) => capabilities.includes(capability),
   );

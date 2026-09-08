@@ -688,7 +688,6 @@ export const AccountOverviewPage: React.FC = () => {
       {currentUser && (
         <>
           <PhoneVerificationModal
-            userId={currentUser.id}
             initialPhone={currentUser.phone}
             isOpen={showPhoneModal}
             onClose={() => setShowPhoneModal(false)}

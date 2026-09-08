@@ -14,5 +14,4 @@ export interface NotificationsServiceContract {
     userId: string,
     preferences: NotificationPreferences,
   ): Promise<NotificationPreferences>;
-  simulateNotification?(notification: Notification): Promise<void>;
 }

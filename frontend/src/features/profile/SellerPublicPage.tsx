@@ -12,24 +12,18 @@ import {
 import {
   ChevronRight,
   Home,
-  ShieldAlert,
   Search,
   Package,
   Star,
-  Building2,
   AlertCircle,
-  ArrowLeft,
 } from "lucide-react";
-import { UserProfile, Listing, ReviewItem } from "../../types";
-import { userRepository } from "../../repositories/user.repository";
+import { PublicSellerProfile, Listing, ReviewItem } from "../../types";
 import { services } from "../../api/client/service-registry";
-import { listingRepository } from "../../repositories/listing.repository";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { SellerProfileHeader } from "./components/SellerProfileHeader";
 import { SellerTrustIndicators } from "./components/SellerTrustIndicators";
 import { SellerCatalog } from "./components/SellerCatalog";
 import { SellerReviewsTab } from "./components/SellerReviewsTab";
-import { ProBusinessInfo } from "./components/ProBusinessInfo";
 import { SellerReportModal } from "./components/SellerReportModal";
 import { Button } from "../../design-system/primitives/Button";
 import { Tabs, TabPanel } from "../../design-system";
@@ -52,21 +46,19 @@ export const SellerPublicPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { currentUser } = useAuth();
-  const { marketContext } = useMarketLocation();
+  const { marketContext, activeMarket } = useMarketLocation();
 
   const activeSlug = slug || sellerSlug || "";
   const publicRouteData = usePublicRouteData();
   const initialData =
     publicRouteData?.kind === "seller" &&
-    [
-      publicRouteData.seller.slug,
-      publicRouteData.seller.storeSlug,
-      publicRouteData.seller.id,
-    ].includes(activeSlug)
+    [publicRouteData.seller.slug, publicRouteData.seller.id].includes(
+      activeSlug,
+    )
       ? publicRouteData
       : null;
 
-  const [seller, setSeller] = useState<UserProfile | null>(
+  const [seller, setSeller] = useState<PublicSellerProfile | null>(
     initialData?.seller ?? null,
   );
   const [listings, setListings] = useState<Listing[]>(
@@ -138,15 +130,17 @@ export const SellerPublicPage: React.FC = () => {
     const fetchProfileData = async () => {
       setIsLoading(true);
       try {
-        const foundSeller = await userRepository.getUserBySlugOrId(activeSlug);
+        const foundSeller = await services.users.getPublicProfile(activeSlug);
         if (foundSeller) {
           setSeller(foundSeller);
-
-          // Load seller's listings via repository
-          const sellerListings = await listingRepository.getListingsBySeller(
-            foundSeller.id,
+          const result = await services.listings.getListings({
+            marketCode: activeMarket.code,
+          });
+          setListings(
+            result.listings.filter(
+              (listing) => listing.sellerId === foundSeller.id,
+            ),
           );
-          setListings(sellerListings || []);
         } else {
           setSeller(null);
         }
@@ -158,12 +152,12 @@ export const SellerPublicPage: React.FC = () => {
     };
 
     fetchProfileData();
-  }, [activeSlug, initialData]);
+  }, [activeMarket.code, activeSlug, initialData]);
 
   const handleContactClick = () => {
     if (!seller) return;
     navigate(
-      `/messages?sellerId=${seller.id}&sellerName=${encodeURIComponent(seller.companyName || seller.name)}`,
+      `/messages?sellerId=${seller.id}&sellerName=${encodeURIComponent(seller.name)}`,
     );
   };
 
@@ -266,37 +260,12 @@ export const SellerPublicPage: React.FC = () => {
     );
   }
 
-  // 3. Suspended Profile (Safety Barrier)
-  if (seller.isSuspended) {
-    return (
-      <div className="max-w-3xl mx-auto px-4 py-16 text-center">
-        <div className="w-16 h-16 rounded-2xl bg-danger-surface border border-danger-border text-danger flex items-center justify-center mx-auto mb-4">
-          <ShieldAlert className="w-8 h-8" />
-        </div>
-        <h1 className="text-2xl font-bold text-text-main mb-2">
-          Profil temporairement indisponible
-        </h1>
-        <p className="text-sm text-text-supporting max-w-md mx-auto mb-6 leading-relaxed">
-          {t("profile.sellerPublicPage.ceCompteVendeurAEte")}
-        </p>
-        <Button
-          to={routes.search()}
-          variant="primary"
-          size="md"
-          leftIcon={<ArrowLeft className="w-icon-md h-icon-md" />}
-        >
-          {t("profile.sellerPublicPage.retournerAuxAnnonces")}
-        </Button>
-      </div>
-    );
-  }
-
   const isOwnProfile = currentUser?.id === seller.id;
   const isPro = isProSeller(seller);
   const activeListingsCount = listings.filter(
     (l) => l.status === "active",
   ).length;
-  const displayName = isPro ? seller.companyName || seller.name : seller.name;
+  const displayName = seller.name;
 
   return (
     <div className="min-h-screen bg-bg-base pb-16">
@@ -364,15 +333,6 @@ export const SellerPublicPage: React.FC = () => {
               count: reviews.length,
               icon: <Star className="w-icon-md h-icon-md" />,
             },
-            ...(isPro
-              ? [
-                  {
-                    id: "about",
-                    label: "Informations légales",
-                    icon: <Building2 className="w-icon-md h-icon-md" />,
-                  },
-                ]
-              : []),
           ]}
         />
 
@@ -413,10 +373,6 @@ export const SellerPublicPage: React.FC = () => {
                 }}
               />
             ))}
-
-          {activeTab === "about" && isPro && (
-            <ProBusinessInfo seller={seller} />
-          )}
         </TabPanel>
       </div>
 

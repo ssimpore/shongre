@@ -1,7 +1,4 @@
-import {
-  getFavorites,
-  putListingsByIdFavorite,
-} from "@shongre/contracts/api-client";
+import { apiOperation } from "./generated-api-operation";
 import {
   BulkListingImportTemplate,
   BulkListingImportRow,
@@ -9,7 +6,6 @@ import {
   ParseBulkListingImportInput,
   PublishBulkListingsInput,
 } from "../../contracts/listings.contract";
-import { httpClient } from "./http-client";
 import {
   Listing,
   ListingPricePresentation,
@@ -104,6 +100,15 @@ export const mapBackendListing = (listing: BackendListing): Listing => {
       ? { brand: listing.brand }
       : {}),
   };
+  const marketPublication = listing.marketPublications?.find(
+    (publication) => publication.marketCode === listing.marketCode,
+  );
+  const availableServices = marketPublication?.availableServices;
+  const reservationType =
+    availableServices?.reservation_type === "instant" ||
+    availableServices?.reservation_type === "request"
+      ? availableServices.reservation_type
+      : undefined;
   return {
     id: listing.id,
     title: listing.title,
@@ -111,7 +116,7 @@ export const mapBackendListing = (listing: BackendListing): Listing => {
     price: listing.price,
     originalPrice: listing.originalPrice,
     currency: listing.currency,
-    isNegotiable: false,
+    isNegotiable: priceType === "negotiable",
     isFreeDonation: priceType === "free",
     pricePresentation: mapPricePresentation(listing, priceType),
     fulfillmentTypes: [...(listing.fulfillmentTypes ?? [])],
@@ -119,20 +124,27 @@ export const mapBackendListing = (listing: BackendListing): Listing => {
     productVersion: listing.productVersion,
     categorySlug: categoryParts[0] || listing.categoryId,
     subCategorySlug: listing.categoryId,
-    categoryLabel: categoryParts[0] || "Annonce",
-    subCategoryLabel: categoryParts.at(-1) || "Annonce",
+    categoryLabel: categoryParts[0] || listing.categoryId,
+    subCategoryLabel: categoryParts.at(-1) || listing.categoryId,
+    listingTypeId: listing.listingTypeId,
+    listingIntent: listing.listingIntent,
     condition: listing.condition as Listing["condition"],
     sellerId: listing.sellerId,
     sellerProfile: listing.seller,
     sellerName: listing.seller?.name || "Vendeur",
     sellerType,
     publisherType: listing.publisherType,
+    publisherUserId: listing.publisherUserId,
+    publisherOrganizationId: listing.publisherOrganizationId,
+    publisherBranchId: listing.publisherBranchId,
+    publisherVerificationStatus: listing.publisherVerificationStatus,
     sellerAvatarUrl: listing.seller?.avatarUrl,
     sellerRating: Number(listing.seller?.rating || 0),
     sellerReviewCount: Number(listing.seller?.reviewCount || 0),
     sellerIsVerified: Boolean(
       listing.seller?.isVerified || listing.seller?.isBusinessVerified,
     ),
+    sellerResponseTimeLabel: listing.seller?.responseTimeText,
     sellerCity: listing.seller?.city || listing.city,
     sellerPostalCode: listing.postalCode,
     city: listing.city,
@@ -149,18 +161,24 @@ export const mapBackendListing = (listing: BackendListing): Listing => {
     coverImageUrl: listing.images?.[0] || "",
     deliveryOptions: (listing.allowedDelivery ?? [])
       .filter((type) =>
-        ["hand_delivery", "home_delivery", "custom_carrier"].includes(type),
+        [
+          "hand_delivery",
+          "relay_point",
+          "home_delivery",
+          "custom_carrier",
+          "cocolis",
+          "express",
+          "digital",
+        ].includes(type),
       )
       .map((type) => ({
         type,
         available: true,
         price: type === "hand_delivery" ? 0 : listing.shippingCost,
       })),
-    isOnlinePaymentAvailable: Boolean(
-      listing.marketPublications?.some(
-        (publication) => publication.availableServices?.online_payment === true,
-      ),
-    ),
+    isOnlinePaymentAvailable: availableServices?.online_payment === true,
+    isReservable: availableServices?.reservation === true,
+    reservationType,
     attributes,
     status: frontendStatus(listing.status),
     viewsCount: listing.viewCount,
@@ -187,17 +205,21 @@ export const mapBackendListing = (listing: BackendListing): Listing => {
 
 export class HttpListingsService implements ListingsServiceContract {
   async getListings(filter?: SearchFilters) {
-    const result = await httpClient.get<BackendListingCollection>("/listings", {
-      params: filter as Record<string, string | number | boolean | undefined>,
-    });
+    const result = await apiOperation<BackendListingCollection, "getListings">(
+      "getListings",
+      {
+        query: filter as Record<string, string | number | boolean | undefined>,
+      },
+    );
     return { ...result, listings: result.listings.map(mapBackendListing) };
   }
 
   async getListingById(id: string): Promise<Listing | null> {
     try {
-      const listing = await httpClient.get<BackendListingDetail>(
-        `/listings/${id}`,
-      );
+      const listing = await apiOperation<
+        BackendListingDetail,
+        "getListingsById"
+      >("getListingsById", { path: { id: id } });
       return listing ? mapBackendListing(listing) : null;
     } catch (error) {
       if (error instanceof AppError && error.code === "NOT_FOUND") return null;
@@ -206,10 +228,10 @@ export class HttpListingsService implements ListingsServiceContract {
   }
 
   async getOwnListings(_userId: string, marketCode: string) {
-    const result = await httpClient.get<BackendOwnedListingCollection>(
-      "/account/listings",
-      { headers: { "X-Shongre-Market": marketCode } },
-    );
+    const result = await apiOperation<
+      BackendOwnedListingCollection,
+      "getAccountListings"
+    >("getAccountListings", { headers: { "X-Shongre-Market": marketCode } });
     return { ...result, listings: result.listings.map(mapBackendListing) };
   }
 
@@ -217,7 +239,7 @@ export class HttpListingsService implements ListingsServiceContract {
     listingIds: readonly string[],
     marketCode: string,
   ): Promise<Listing[]> {
-    // Browser-local demo or stale data must not make a production UUID batch
+    // Browser-stale data must not make a production UUID batch
     // fail as a whole. Invalid identifiers are simply not public projections.
     const uniqueIds = [...new Set(listingIds)].filter(
       (listingId) =>
@@ -235,10 +257,12 @@ export class HttpListingsService implements ListingsServiceContract {
     );
     const results = await Promise.all(
       batches.map((batch) =>
-        httpClient.post<BackendListingCardsResult>(
-          "/listings/cards",
-          { listingIds: batch },
-          { headers: { "X-Shongre-Market": marketCode } },
+        apiOperation<BackendListingCardsResult, "postListingsCards">(
+          "postListingsCards",
+          {
+            body: { listingIds: batch },
+            headers: { "X-Shongre-Market": marketCode },
+          },
         ),
       ),
     );
@@ -246,58 +270,66 @@ export class HttpListingsService implements ListingsServiceContract {
   }
 
   async searchListings(params: SearchFilters) {
-    const result = await httpClient.post<BackendListingSearchResult>(
-      "/listings/search",
-      params,
-      params.marketCode
+    const result = await apiOperation<
+      BackendListingSearchResult,
+      "postListingsSearch"
+    >("postListingsSearch", {
+      body: params,
+      ...(params.marketCode
         ? { headers: { "X-Shongre-Market": params.marketCode } }
-        : undefined,
-    );
+        : {}),
+    });
     return { ...result, items: result.items.map(mapBackendListing) };
   }
 
   async createListingDraft(marketCode: string): Promise<PublicationDraftState> {
-    return httpClient.post<PublicationDraftState>(
-      "/listing-drafts",
-      undefined,
-      {
-        headers: { "X-Shongre-Market": marketCode },
-      },
+    return apiOperation<PublicationDraftState, "postListingDrafts">(
+      "postListingDrafts",
+      { headers: { "X-Shongre-Market": marketCode } },
     );
   }
 
   async getListingDraft(
     marketCode: string,
   ): Promise<PublicationDraftState | null> {
-    return httpClient.get<PublicationDraftState | null>(
-      "/listing-drafts/current",
-      { headers: { "X-Shongre-Market": marketCode } },
-    );
+    return apiOperation<
+      PublicationDraftState | null,
+      "getListingDraftsCurrent"
+    >("getListingDraftsCurrent", {
+      headers: { "X-Shongre-Market": marketCode },
+    });
   }
 
   async saveListingDraft(draft: PublicationDraftState): Promise<void> {
-    await httpClient.put("/listing-drafts/current", draft, {
-      headers: { "X-Shongre-Market": draft.marketCode },
-    });
+    await apiOperation<void, "putListingDraftsCurrent">(
+      "putListingDraftsCurrent",
+      { body: draft, headers: { "X-Shongre-Market": draft.marketCode } },
+    );
   }
 
   async publishListing(draft: PublicationDraftState): Promise<Listing> {
     const { publicationPayload } = await import("./publication-payload");
-    const listing = await httpClient.post<BackendListing>("/listings/publish", {
-      draft: publicationPayload(draft),
-    });
+    const listing = await apiOperation<BackendListing, "postListingsPublish">(
+      "postListingsPublish",
+      {
+        body: {
+          draft: publicationPayload(draft),
+        },
+      },
+    );
     return mapBackendListing(listing);
   }
 
   async uploadListingPhoto(file: File) {
-    const prepared = await httpClient.post<{
-      assetId: string;
-      signedUrl: string;
-      contentType: string;
-    }>("/media/listings/uploads", {
-      fileName: file.name,
-      contentType: file.type,
-      sizeBytes: file.size,
+    const prepared = await apiOperation<
+      { assetId: string; signedUrl: string; contentType: string },
+      "postMediaListingsUploads"
+    >("postMediaListingsUploads", {
+      body: {
+        fileName: file.name,
+        contentType: file.type,
+        sizeBytes: file.size,
+      },
     });
     const uploaded = await fetch(prepared.signedUrl, {
       method: "PUT",
@@ -307,61 +339,75 @@ export class HttpListingsService implements ListingsServiceContract {
     if (!uploaded.ok) {
       throw new Error("Le téléversement de la photo a échoué.");
     }
-    return httpClient.post<{ assetId: string; url: string }>(
-      `/media/listings/uploads/${prepared.assetId}/complete`,
-    );
+    return apiOperation<
+      { assetId: string; url: string },
+      "postMediaListingsUploadsByIdComplete"
+    >("postMediaListingsUploadsByIdComplete", {
+      path: { id: prepared.assetId },
+    });
   }
 
   async getBulkImportTemplate(
     locale: string,
   ): Promise<BulkListingImportTemplate> {
-    return httpClient.get<BulkListingImportTemplate>(
-      "/listings/bulk-import/template",
-      { params: { locale } },
-    );
+    return apiOperation<
+      BulkListingImportTemplate,
+      "getListingsBulkimportTemplate"
+    >("getListingsBulkimportTemplate", { query: { locale } });
   }
 
   async parseBulkImportCsv(
     input: ParseBulkListingImportInput,
   ): Promise<BulkListingImportRow[]> {
-    return httpClient.post<BulkListingImportRow[]>(
-      "/listings/bulk-import/parse",
-      input,
+    return apiOperation<BulkListingImportRow[], "postListingsBulkimportParse">(
+      "postListingsBulkimportParse",
+      { body: input },
     );
   }
 
   async publishBulkListings(
     input: PublishBulkListingsInput,
   ): Promise<Listing[]> {
-    const listings = await httpClient.post<BackendListing[]>(
-      "/listings/bulk-import/publish",
-      { marketCode: input.marketCode, rows: input.rows },
-    );
+    const listings = await apiOperation<
+      BackendListing[],
+      "postListingsBulkimportPublish"
+    >("postListingsBulkimportPublish", {
+      body: { marketCode: input.marketCode, rows: input.rows },
+    });
     return listings.map(mapBackendListing);
   }
 
   async updateListing(id: string, updates: Partial<Listing>): Promise<Listing> {
-    const listing = await httpClient.put<BackendListing>(`/listings/${id}`, {
-      title: updates.title,
-      description: updates.description,
-      price: updates.price,
-      condition: updates.condition,
-      city: updates.city,
-      postalCode: updates.postalCode,
-      attributes: updates.attributes,
-    });
-    return mapBackendListing(listing);
-  }
-
-  async markListingSold(id: string): Promise<Listing> {
-    const listing = await httpClient.post<BackendSoldListing>(
-      `/listings/${id}/mark-sold`,
+    const listing = await apiOperation<BackendListing, "putListingsById">(
+      "putListingsById",
+      {
+        path: { id: id },
+        body: {
+          title: updates.title,
+          description: updates.description,
+          price: updates.price,
+          condition: updates.condition,
+          city: updates.city,
+          postalCode: updates.postalCode,
+          attributes: updates.attributes,
+        },
+      },
     );
     return mapBackendListing(listing);
   }
 
+  async markListingSold(id: string): Promise<Listing> {
+    const listing = await apiOperation<
+      BackendSoldListing,
+      "postListingsByIdMarkSold"
+    >("postListingsByIdMarkSold", { path: { id: id } });
+    return mapBackendListing(listing);
+  }
+
   async deleteListing(id: string): Promise<boolean> {
-    await httpClient.delete(`/listings/${id}`);
+    await apiOperation<void, "deleteListingsById">("deleteListingsById", {
+      path: { id: id },
+    });
     return true;
   }
 
@@ -370,7 +416,7 @@ export class HttpListingsService implements ListingsServiceContract {
     marketCode: string,
     isFavorite: boolean,
   ): Promise<boolean> {
-    const result = await putListingsByIdFavorite(httpClient.request, {
+    const result = await apiOperation("putListingsByIdFavorite", {
       path: { id: listingId },
       body: { isFavorite },
       headers: { "X-Shongre-Market": marketCode },
@@ -379,7 +425,7 @@ export class HttpListingsService implements ListingsServiceContract {
   }
 
   async getFavoriteCollection(marketCode: string) {
-    const result = await getFavorites(httpClient.request, {
+    const result = await apiOperation("getFavorites", {
       headers: { "X-Shongre-Market": marketCode },
     });
     return {

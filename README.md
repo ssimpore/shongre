@@ -31,11 +31,10 @@ Versioned visual-identity source: brand/shongre/brand.config.json → vX.Y.Z/
 Runtime/deployment tooling:  infrastructure/ + scripts/ + Makefile
 ```
 
-The Web client is adapter-based: its explicit standalone demo is deterministic
-and asynchronous, while connected Web uses HTTP services. Mobile is API-only in
-every environment and uses the same canonical service/OpenAPI boundary without
-a demo selector, fixture fallback, or direct Supabase access. UI components do
-not import backend implementation or construct business requests.
+Web and mobile are API-only in every environment and use the same canonical
+service/OpenAPI boundary without a demo selector, fixture fallback, local
+business repository, or direct Supabase access. UI components do not import
+backend implementation or construct business requests.
 
 Specialized verticals reuse that platform boundary. Shongre Immo is documented in [`docs/architecture/shongre-immo.md`](docs/architecture/shongre-immo.md); its current standalone routes are `/immo`, `/deposer/immo`, `/compte/immo`, and `/admin/immo`.
 
@@ -123,11 +122,8 @@ make production-config-check      # deeper live-provider/release configuration g
 ```
 
 The shared `development`, `staging`, and `production` profiles are connected
-environments: Web uses API adapters, mobile is always API-only, mock storage is
-disabled, and the backend uses the dedicated hosted Supabase project.
-Deterministic Web demo mode remains available through the explicit local
-`make frontend` command. The command-scoped `make demo` target runs a Web and
-backend demo stack without requiring Supabase; it does not select mobile mode.
+environments: Web and mobile always use API adapters, and the backend uses the
+dedicated hosted Supabase project.
 
 Hosted validation intentionally fails until the corresponding secret store or
 ignored `.env.<canonical-profile>.local` supplies that environment's resources.
@@ -137,15 +133,23 @@ for prerequisites and the protected deployment workflow.
 ## Development
 
 ```bash
-make dev          # restart seeded local Supabase + API + worker + connected web
+make dev          # Supabase + Redis/Mailpit + seeded API + worker + connected web
 make dev ENVIRONMENT=dev     # restart local processes against hosted development DB
 make dev ENVIRONMENT=staging # restart local processes against hosted staging DB
 make dev-mobile   # backend API + scheduled worker + one Expo Metro server
 make dev-all      # backend API + scheduled worker + web + Expo Metro
 
-make frontend     # demo UI at PUBLIC_FR_URL
+make frontend     # API-only Web client at PUBLIC_FR_URL
 make backend      # database-backed API at API_URL
-make worker       # database-backed queue worker
+make worker       # independent Redis/BullMQ + database-backed worker
+
+make redis-up
+make redis-status
+make redis-logs
+make redis-down
+make mail-up
+make mail-status
+make mail-down
 
 make ios
 make android
@@ -181,19 +185,22 @@ Local development defaults to `BACKEND_DATA_MODE=database` and
 `DATABASE_INFRA_MODE=local`. `make supabase-up` starts the repository-owned
 Supabase stack and writes generated credentials to ignored
 `.runtime/supabase.env`; `make backend` and `make worker` require that stack and
-load those credentials automatically. `make dev` is the one-command connected
-local workflow: it stops tracked Shongre application processes, forces Web API
-and backend database modes with mock storage disabled, starts Supabase, applies
+load those credentials automatically. Redis is the BullMQ and cross-replica
+realtime transport; local Mailpit is the mail service already supplied by the
+Supabase stack. `make dev` is the one-command connected local workflow: it
+stops tracked Shongre application processes, forces backend database mode,
+starts Supabase, Redis, and Mailpit, applies
 pending migrations, loads the deterministic idempotent seed (including taxonomy
 v4, market availability, header navigation, accounts, listings, and owned
-Storage media), and launches the API, worker, and Web app. Connected category
-navigation and filters are therefore database-backed; `make frontend` is the
-only standalone surface that uses the compiled demo taxonomy adapter.
+Storage media), and launches the Nest/Fastify API, independent BullMQ worker,
+and Web app. Category navigation and filters are therefore API- and
+database-backed. `make frontend` starts the same API-only Web client and
+requires a reachable backend.
 Docker must be installed and running first, its data store must be writable, and
 the host must have at least 5 GiB free. The startup preflight fails with an
 actionable error instead of waiting indefinitely for an unhealthy daemon.
-`make frontend` always forces the deterministic client demo adapter, so it
-remains usable with the API and Supabase stopped.
+The frontend fails closed when its API is unavailable; it never switches to
+browser fixtures or mock storage.
 
 Processes launched through the root tooling are recorded under ignored `.runtime/`. Port collision handling prints the owning PID/command and only terminates a process whose tracked PID belongs to this repository. It never runs a broad `killall`, pattern kill, or blind SIGKILL.
 
@@ -208,20 +215,17 @@ E2E_FRONTEND_PORT=3110 make test-e2e
 
 Use `make ports` to see configured values and current owners. `make free-port PORT=…` refuses to kill an unrelated process. Playwright builds one isolated Webpack production checkout, starts its standalone server on `E2E_FRONTEND_PORT`, and removes both afterward; it never borrows the interactive Next.js process.
 
-## Data modes
+## Data paths
 
-| Client/runtime | Deterministic standalone mode | Connected mode                                      |
-| -------------- | ----------------------------- | --------------------------------------------------- |
-| Web            | `NEXT_PUBLIC_DATA_MODE=demo`  | `NEXT_PUBLIC_DATA_MODE=api` + `NEXT_PUBLIC_API_URL` |
-| Mobile         | Not supported                 | Always `EXPO_PUBLIC_API_URL`                        |
-| Backend        | `BACKEND_DATA_MODE=demo`      | `BACKEND_DATA_MODE=database`                        |
+| Client/runtime | Data path                                                                                  |
+| -------------- | ------------------------------------------------------------------------------------------ |
+| Web            | Always `NEXT_PUBLIC_API_URL`                                                               |
+| Mobile         | Always `EXPO_PUBLIC_API_URL`                                                               |
+| Backend        | `BACKEND_DATA_MODE=database` for application runtime; deterministic adapters are test-only |
 
-Canonical local development uses connected Web/mobile API services, a
-database-backed backend, and mock storage disabled. Web/backend demo behavior is
-available only through explicit Web demo/test commands. Connected Web builds
-ignore stale browser demo preferences. Mobile has no mode preference and never
-falls back between API, Supabase, or local fixtures; its configuration is
-validated independently for every environment.
+Canonical local development uses Web/mobile API services and a database-backed
+backend. Neither client has a mode preference or a fixture fallback; client
+configuration is validated independently for every environment.
 
 Runtime repositories use the Supabase Data API and its managed PostgREST
 connection pool. The server-only `DATABASE_URL` is reserved for migrations,
@@ -241,10 +245,16 @@ make db-types
 make supabase-down
 ```
 
+Redis persists local AOF data in the Compose-owned `redis-data` volume and is
+bound to loopback only. API readiness verifies Redis and PostgreSQL/Supabase;
+worker health requires a recent environment-scoped heartbeat after successful
+queue/database coordination. Mailpit is reached through the backend email
+abstraction and is never a production-provider dependency.
+
 `make db-seed` installs the reviewed commercial baseline plus a repeatable,
 production-shaped local scenario: synthetic customer and professional profiles,
 marketplace listings, vehicles, properties, tutors, course offers, jobs, and
-the standalone demo's conversations, messages, transactions, notifications,
+synthetic conversations, messages, transactions, notifications,
 saved searches, reviews, and public media in Supabase Storage. It also creates
 one Supabase Auth identity per synthetic profile, links
 `profiles.auth_user_id`, and assigns account and Staff roles through the same
@@ -252,7 +262,7 @@ database tables used by the backend; it does not keep database-mode passwords
 in `public.user_credentials`. Re-running it updates the same stable records
 instead of creating duplicates. Run
 `make local-fixtures-check` to detect drift or `make local-fixtures-sync` after
-an intentional demo-fixture change. The scenario never copies production
+an intentional backend-fixture change. The scenario never copies production
 identities, real payments, KYC/KYB documents, or provider credentials; private
 Storage buckets therefore remain empty until a local workflow creates safe test
 data.
@@ -269,10 +279,11 @@ to loopback. Useful local checks are:
 ```bash
 make docker-config
 make docker-build
-make docker-start
+make docker-up
+make docker-status
 make docker-health
 make docker-audit
-make docker-stop
+make docker-down
 ```
 
 Main CI builds frontend and backend once, attaches SBOM/provenance, scans the
@@ -437,8 +448,8 @@ open "$PUBLIC_INTL_URL/sn/"
 open "$PUBLIC_INTL_URL/bf/"
 ```
 
-The frontend remains fully standalone in `NEXT_PUBLIC_DATA_MODE=demo`; these
-routes do not require the backend, Supabase, Stripe, or an identity provider.
+The frontend is API-only; local routes require the repository-owned backend and
+Supabase stack started by `make dev`.
 Architecture, deployment, redirects, auth handoff, SEO and the public URL
 migration map are documented in
 [`docs/architecture/multi-country.md`](docs/architecture/multi-country.md).

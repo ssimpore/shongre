@@ -1,25 +1,16 @@
-import type { Market } from "../domains/market/market.types";
-import type { LocationSelection, RecentSearch, SavedSearch } from "../types";
+import type { LocationSelection } from "../types";
 import { DEFAULT_MARKET_CODE } from "../configuration/market-baseline";
 
 const GUEST_KEY = "guest";
 const KEYS = {
   favorites: "shongre_favorites_v3",
   recentSearches: "shongre_recent_searches_v1",
-  recentSearchItems: "shongre_recent_search_items_v1",
-  savedSearches: "shongre_saved_searches_v2",
   location: "shongre_location_preference_v1",
-  markets: "shongre_markets_v2",
   activeMarket: "shongre_active_market_v1",
   locale: "shongre_user_locale_v1",
   legacyCurrency: "shongre_user_currency_v1",
   currencyPreferences: "shongre_user_currency_preferences_v2",
 } as const;
-
-export const MARKETS_CHANGED_EVENT = "shongre:markets-changed";
-export const MARKETS_STORAGE_KEY = KEYS.markets;
-export const RECENT_SEARCH_ITEMS_CHANGED_EVENT =
-  "shongre:recent-search-items-changed";
 
 class BrowserPreferencesService {
   private readonly memory = new Map<string, string>();
@@ -64,12 +55,6 @@ class BrowserPreferencesService {
     } catch {
       // Preferences are best effort and never authoritative application state.
     }
-  }
-
-  getMarkets(): Market[] {
-    return this.get<Market[]>(KEYS.markets, []).filter(
-      (market) => Boolean(market?.configuration) && Boolean(market?.code),
-    );
   }
 
   getActiveMarketCode(): string {
@@ -161,12 +146,7 @@ class BrowserPreferencesService {
   }
 
   getRecentSearches(): string[] {
-    return this.get<string[]>(KEYS.recentSearches, [
-      "Vélo gravel",
-      "iPhone 15 Pro",
-      "Fauteuil vintage chêne",
-      "PS5",
-    ]);
+    return this.get<string[]>(KEYS.recentSearches, []);
   }
 
   addRecentSearch(query: string): void {
@@ -176,42 +156,6 @@ class BrowserPreferencesService {
       (value) => value.toLocaleLowerCase() !== normalized.toLocaleLowerCase(),
     );
     this.set(KEYS.recentSearches, [normalized, ...searches].slice(0, 8));
-  }
-
-  private getRecentSearchItems(): RecentSearch[] {
-    return this.get<RecentSearch[]>(KEYS.recentSearchItems, []);
-  }
-
-  addRecentSearchItem(item: Omit<RecentSearch, "id" | "createdAt">): void {
-    const searches = this.getRecentSearchItems().filter(
-      (existing) => existing.to !== item.to,
-    );
-    this.set(
-      KEYS.recentSearchItems,
-      [
-        {
-          ...item,
-          id: `recent-search-${Date.now()}`,
-          createdAt: new Date().toISOString(),
-        },
-        ...searches,
-      ].slice(0, 8),
-    );
-    if (typeof window !== "undefined") {
-      window.dispatchEvent(new Event(RECENT_SEARCH_ITEMS_CHANGED_EVENT));
-    }
-  }
-
-  saveSearch(search: SavedSearch, userId: string, marketCode: string): void {
-    const partitions = this.get<Record<string, SavedSearch[]>>(
-      KEYS.savedSearches,
-      {},
-    );
-    const key = `${userId}::${marketCode.toUpperCase()}`;
-    this.set(KEYS.savedSearches, {
-      ...partitions,
-      [key]: [search, ...(partitions[key] ?? [])],
-    });
   }
 }
 

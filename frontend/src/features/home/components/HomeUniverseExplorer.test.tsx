@@ -7,7 +7,14 @@ import {
 } from "@shongre/contracts/homepage";
 import type { HomepageSectionView } from "../../../domains/homepage/homepage.types";
 import type { Listing } from "../../../types";
-import { HomeUniverseExplorer } from "./HomeUniverseExplorer";
+import {
+  HomeUniverseExplorer,
+  resolveUniverseGroups,
+} from "./HomeUniverseExplorer";
+
+vi.mock("../../../app/providers/MarketLocationProvider", () => ({
+  useMarketLocation: () => ({ marketContext: null }),
+}));
 
 vi.mock("../../../design-system/primitives/ListingCard", () => ({
   ListingCard: ({ listing }: { listing: Listing }) => (
@@ -48,20 +55,37 @@ function universeSection(): HomepageSectionView {
 }
 
 describe("HomeUniverseExplorer", () => {
-  it("renders only the database-resolved, ordered universe groups", () => {
-    const markup = renderToStaticMarkup(
-      <MemoryRouter>
-        <HomeUniverseExplorer section={universeSection()} onRetry={() => {}} />
-      </MemoryRouter>,
+  it("joins only API-resolved taxonomy roots to backend universe groups", () => {
+    const groups = resolveUniverseGroups(
+      universeSection(),
+      new Map([
+        [
+          "home_garden",
+          {
+            id: "home_garden",
+            sourceKey: "home_garden",
+            level: 0,
+            slug: "maison",
+            labels: { "fr-FR": "Maison" },
+            shortLabels: { "fr-FR": "Maison" },
+            iconName: "Home",
+            sortOrder: 0,
+            status: "active",
+            publishable: true,
+            sellerEligibility: {
+              individualAllowed: true,
+              professionalAllowed: true,
+            },
+            marketAvailability: [],
+            seo: { indexable: true },
+          },
+        ],
+      ]) as never,
     );
-
-    expect(markup).toContain("Explorez par univers");
-    expect(markup.match(/data-home-universe-group=/g)).toHaveLength(2);
-    expect(markup).toContain('data-home-universe-group="home_garden"');
-    expect(markup).toContain('data-home-universe-group="vehicles"');
-    expect(markup).not.toContain('data-home-universe-group="fashion"');
-    expect(markup).toContain("Table ronde en teck");
-    expect(markup).toContain("Peugeot 208");
+    expect(groups).toHaveLength(1);
+    expect(groups[0]?.categoryId).toBe("home_garden");
+    expect(groups[0]?.listings[0]?.title).toBe("Table ronde en teck");
+    expect(groups[0]?.root.slug).toBe("maison");
   });
 
   it("renders a retry state when the backend cannot resolve listing data", () => {

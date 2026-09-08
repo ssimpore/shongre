@@ -3,17 +3,18 @@ import type {
   UpdateWatchSubscriptionInput,
   WatchSubscription,
 } from "@shongre/contracts/watch-subscriptions";
+import { apiOperation } from "./generated-api-operation";
 import type { WatchSubscriptionsServiceContract } from "../../contracts/watch-subscriptions.contract";
-import { httpClient } from "./http-client";
 
 export class HttpWatchSubscriptionsService implements WatchSubscriptionsServiceContract {
   async list(
     _userId: string,
     _marketCode: string,
   ): Promise<WatchSubscription[]> {
-    const result = await httpClient.get<{ items: WatchSubscription[] }>(
-      "/watch-subscriptions",
-    );
+    const result = await apiOperation<
+      { items: WatchSubscription[] },
+      "getWatchSubscriptions"
+    >("getWatchSubscriptions", {});
     return result.items;
   }
 
@@ -21,7 +22,10 @@ export class HttpWatchSubscriptionsService implements WatchSubscriptionsServiceC
     _userId: string,
     input: CreateWatchSubscriptionInput,
   ): Promise<WatchSubscription> {
-    return httpClient.post<WatchSubscription>("/watch-subscriptions", input);
+    return apiOperation<WatchSubscription, "postWatchSubscription">(
+      "postWatchSubscription",
+      { body: input },
+    );
   }
 
   async update(
@@ -30,9 +34,9 @@ export class HttpWatchSubscriptionsService implements WatchSubscriptionsServiceC
     id: string,
     input: UpdateWatchSubscriptionInput,
   ): Promise<WatchSubscription> {
-    return httpClient.patch<WatchSubscription>(
-      `/watch-subscriptions/${encodeURIComponent(id)}`,
-      input,
+    return apiOperation<WatchSubscription, "patchWatchSubscription">(
+      "patchWatchSubscription",
+      { path: { id: id }, body: input },
     );
   }
 
@@ -41,8 +45,9 @@ export class HttpWatchSubscriptionsService implements WatchSubscriptionsServiceC
     _marketCode: string,
     id: string,
   ): Promise<void> {
-    await httpClient.delete<{ success: true }>(
-      `/watch-subscriptions/${encodeURIComponent(id)}`,
+    await apiOperation<{ success: true }, "deleteWatchSubscription">(
+      "deleteWatchSubscription",
+      { path: { id: id } },
     );
   }
 }

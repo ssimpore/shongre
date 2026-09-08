@@ -7,21 +7,22 @@ import type {
   CommercialConfigurationVersion,
   CommissionPolicy,
 } from "@shongre/contracts/monetization";
+import { apiOperation } from "./generated-api-operation";
 import type { CommissionServiceContract } from "../../contracts/commission.contract";
-import { httpClient } from "./http-client";
 
 export class HttpCommissionService implements CommissionServiceContract {
   preview(input: CommissionCalculationInput) {
-    return httpClient.post<CommissionCalculation>(
-      "/admin/commissions/simulate",
-      input,
+    return apiOperation<CommissionCalculation, "postAdminCommissionsSimulate">(
+      "postAdminCommissionsSimulate",
+      { body: input },
     );
   }
 
   getCalculation(calculationId: string) {
-    return httpClient.get<CommissionCalculation>(
-      `/admin/commissions/calculations/${encodeURIComponent(calculationId)}`,
-    );
+    return apiOperation<
+      CommissionCalculation,
+      "getAdminCommissionsCalculationsById"
+    >("getAdminCommissionsCalculationsById", { path: { id: calculationId } });
   }
 
   reverse(
@@ -32,17 +33,20 @@ export class HttpCommissionService implements CommissionServiceContract {
       occurredAt?: string;
     },
   ) {
-    return httpClient.post<CommissionReversal>(
-      `/admin/commissions/calculations/${encodeURIComponent(calculationId)}/reversals`,
-      input,
-    );
+    return apiOperation<
+      CommissionReversal,
+      "postAdminCommissionsCalculationsByIdReversals"
+    >("postAdminCommissionsCalculationsByIdReversals", {
+      path: { id: calculationId },
+      body: input,
+    });
   }
 
   getAnalytics(query: CommissionAnalyticsQuery) {
-    return httpClient.get<CommissionAnalyticsRow[]>(
-      "/admin/commissions/analytics",
-      { params: query },
-    );
+    return apiOperation<
+      CommissionAnalyticsRow[],
+      "getAdminCommissionsAnalytics"
+    >("getAdminCommissionsAnalytics", { query: query });
   }
 
   createDraft(input: {
@@ -51,15 +55,17 @@ export class HttpCommissionService implements CommissionServiceContract {
     reason: string;
     effectiveFrom?: string;
   }) {
-    return httpClient.post<CommercialConfigurationVersion>(
-      "/admin/commissions/drafts",
-      {
+    return apiOperation<
+      CommercialConfigurationVersion,
+      "postAdminCommissionsDrafts"
+    >("postAdminCommissionsDrafts", {
+      body: {
         marketCode: input.marketCode,
         reason: input.reason,
         effectiveFrom: input.effectiveFrom,
         commissionPolicies: input.policies,
       },
-    );
+    });
   }
 
   transitionVersion(
@@ -67,10 +73,24 @@ export class HttpCommissionService implements CommissionServiceContract {
     action: "submit" | "approve" | "publish",
     reason: string,
   ) {
-    return httpClient.post<CommercialConfigurationVersion>(
-      `/admin/commissions/versions/${encodeURIComponent(versionId)}/${action}`,
-      { reason },
-    );
+    const input = { path: { id: versionId }, body: { reason } };
+    switch (action) {
+      case "submit":
+        return apiOperation<
+          CommercialConfigurationVersion,
+          "postAdminCommissionsVersionsByIdSubmit"
+        >("postAdminCommissionsVersionsByIdSubmit", input);
+      case "approve":
+        return apiOperation<
+          CommercialConfigurationVersion,
+          "postAdminCommissionsVersionsByIdApprove"
+        >("postAdminCommissionsVersionsByIdApprove", input);
+      case "publish":
+        return apiOperation<
+          CommercialConfigurationVersion,
+          "postAdminCommissionsVersionsByIdPublish"
+        >("postAdminCommissionsVersionsByIdPublish", input);
+    }
   }
 }
 

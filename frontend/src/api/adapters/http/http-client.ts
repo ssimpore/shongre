@@ -156,7 +156,7 @@ class HttpClient {
       }
 
       if (!response.ok) {
-        telemetryService.captureException(
+        telemetryService.captureOperationalFailure(
           new Error("Shongre API request failed"),
           "api-request",
           { requestId, route: endpoint, statusCode: response.status },
@@ -204,7 +204,7 @@ class HttpClient {
       if (err instanceof AppError) throw err;
       if (callerSignal?.aborted && !timedOut) throw err;
       if (err.name === "AbortError") {
-        telemetryService.captureException(
+        telemetryService.captureOperationalFailure(
           new Error("Shongre API request timed out"),
           "api-timeout",
           { requestId, route: endpoint },
@@ -215,7 +215,7 @@ class HttpClient {
             "Délai d’attente dépassé lors de la communication avec le serveur.",
         });
       }
-      telemetryService.captureException(
+      telemetryService.captureOperationalFailure(
         new Error("Shongre API network request failed"),
         "api-network",
         { requestId, route: endpoint },

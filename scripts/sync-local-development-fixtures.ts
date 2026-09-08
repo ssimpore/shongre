@@ -2,17 +2,6 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { format } from "prettier";
-import {
-  DEMO_USERS,
-  INITIAL_CONVERSATIONS,
-  INITIAL_LISTINGS,
-  INITIAL_MESSAGES,
-  INITIAL_NOTIFICATIONS,
-  INITIAL_REVIEWS,
-  INITIAL_SAVED_SEARCHES,
-  INITIAL_TRANSACTIONS,
-} from "../frontend/src/mocks/initialDemoData.ts";
 
 const repositoryRoot = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -34,11 +23,6 @@ const fallbackMediaPath = path.join(
   repositoryRoot,
   "frontend/public/images/categories/services.jpg",
 );
-const sourceDirectories = [
-  "frontend/src/mocks",
-  "frontend/src/api/adapters/demo",
-  "frontend/src/domains/collection",
-].map((relativePath) => path.join(repositoryRoot, relativePath));
 
 interface DemoMediaEntry {
   key: string;
@@ -46,45 +30,36 @@ interface DemoMediaEntry {
   fileName: string;
 }
 
-function stableJson(value: unknown): Promise<string> {
-  return format(JSON.stringify(value), { parser: "json" });
+interface MarketplaceFixture {
+  schemaVersion: number;
+  users: unknown[];
+  listings: unknown[];
 }
 
-function listSourceFiles(directory: string): string[] {
-  return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
-    const entryPath = path.join(directory, entry.name);
-    if (entry.isDirectory()) return listSourceFiles(entryPath);
-    return /\.[cm]?[jt]sx?$/.test(entry.name) ? [entryPath] : [];
-  });
+function readJson<T>(filePath: string): T {
+  return JSON.parse(fs.readFileSync(filePath, "utf8")) as T;
 }
 
-function buildMediaManifest(): DemoMediaEntry[] {
-  const photoIds = new Set<string>();
-  const urlPattern = /https:\/\/images\.unsplash\.com\/(photo-[^?"'`\s]+)/g;
-  for (const filePath of sourceDirectories.flatMap(listSourceFiles)) {
-    const source = fs.readFileSync(filePath, "utf8");
-    for (const match of source.matchAll(urlPattern)) photoIds.add(match[1]);
+function readMediaEntries(): DemoMediaEntry[] {
+  const manifest = readJson<{ schemaVersion: number; media: DemoMediaEntry[] }>(
+    mediaManifestPath,
+  );
+  if (manifest.schemaVersion !== 1 || !Array.isArray(manifest.media)) {
+    throw new Error("The local media manifest is invalid.");
   }
-  return [...photoIds].sort().map((photoId) => ({
-    key: photoId,
-    sourceUrl: `https://images.unsplash.com/${photoId}?fm=jpg&fit=crop&w=1200&q=80`,
-    fileName: `${photoId}.jpg`,
-  }));
+  return manifest.media;
 }
 
-function buildMarketplaceFixture() {
-  return {
-    schemaVersion: 1,
-    generatedFrom: "frontend/src/mocks/initialDemoData.ts",
-    users: Object.values(DEMO_USERS),
-    listings: INITIAL_LISTINGS,
-    conversations: INITIAL_CONVERSATIONS,
-    messages: INITIAL_MESSAGES,
-    transactions: INITIAL_TRANSACTIONS,
-    notifications: INITIAL_NOTIFICATIONS,
-    savedSearches: INITIAL_SAVED_SEARCHES,
-    reviews: INITIAL_REVIEWS,
-  };
+function readMarketplaceFixture(): MarketplaceFixture {
+  const fixture = readJson<MarketplaceFixture>(fixturePath);
+  if (
+    fixture.schemaVersion !== 1 ||
+    !Array.isArray(fixture.users) ||
+    !Array.isArray(fixture.listings)
+  ) {
+    throw new Error("The backend-owned local marketplace fixture is invalid.");
+  }
+  return fixture;
 }
 
 function sha256(value: Buffer): string {
@@ -106,7 +81,7 @@ async function downloadMedia(entries: readonly DemoMediaEntry[]) {
       if (!response.ok) {
         fs.copyFileSync(fallbackMediaPath, destination);
         console.warn(
-          `Substituted ${entry.fileName} with the local fallback because the source returned HTTP ${response.status}.`,
+          `Substituted ${entry.fileName} because the source returned HTTP ${response.status}.`,
         );
         continue;
       }
@@ -117,11 +92,10 @@ async function downloadMedia(entries: readonly DemoMediaEntry[]) {
         );
       }
       const bytes = Buffer.from(await response.arrayBuffer());
-      if (bytes.length <= 1_024) {
+      if (bytes.length <= 1_024)
         throw new Error(
           `Downloaded image is unexpectedly small: ${entry.sourceUrl}`,
         );
-      }
       fs.writeFileSync(destination, bytes);
       console.log(
         `Downloaded ${entry.fileName} (${bytes.length} bytes, sha256 ${sha256(bytes).slice(0, 12)})`,
@@ -131,51 +105,24 @@ async function downloadMedia(entries: readonly DemoMediaEntry[]) {
   await Promise.all(workers);
 }
 
-function assertCurrent(filePath: string, expected: string) {
-  if (
-    !fs.existsSync(filePath) ||
-    fs.readFileSync(filePath, "utf8") !== expected
-  ) {
-    throw new Error(
-      `${path.relative(repositoryRoot, filePath)} is stale; run npm run local-fixtures:sync`,
-    );
-  }
-}
-
 async function main() {
   const check = process.argv.includes("--check");
   const download = process.argv.includes("--download");
-  const fixture = await stableJson(buildMarketplaceFixture());
-  const mediaEntries = buildMediaManifest();
-  const mediaManifest = await stableJson({
-    schemaVersion: 1,
-    media: mediaEntries,
+  const fixture = readMarketplaceFixture();
+  const mediaEntries = readMediaEntries();
+  const missing = mediaEntries.filter((entry) => {
+    const filePath = path.join(mediaDirectory, entry.fileName);
+    return !fs.existsSync(filePath) || fs.statSync(filePath).size <= 1_024;
   });
 
-  if (check) {
-    assertCurrent(fixturePath, fixture);
-    assertCurrent(mediaManifestPath, mediaManifest);
-    const missing = mediaEntries.filter((entry) => {
-      const filePath = path.join(mediaDirectory, entry.fileName);
-      return !fs.existsSync(filePath) || fs.statSync(filePath).size <= 1_024;
-    });
-    if (missing.length) {
-      throw new Error(
-        `${missing.length} local demo media asset(s) are missing; run npm run local-fixtures:sync`,
-      );
-    }
-    console.log(
-      `Local fixture snapshot is current: ${INITIAL_LISTINGS.length} listings, ${Object.keys(DEMO_USERS).length} profiles, ${mediaEntries.length} media assets.`,
+  if (download && missing.length) await downloadMedia(missing);
+  if (check && missing.length) {
+    throw new Error(
+      `${missing.length} local database media asset(s) are missing; run npm run local-fixtures:sync`,
     );
-    return;
   }
-
-  fs.mkdirSync(path.dirname(fixturePath), { recursive: true });
-  fs.writeFileSync(fixturePath, fixture);
-  fs.writeFileSync(mediaManifestPath, mediaManifest);
-  if (download) await downloadMedia(mediaEntries);
   console.log(
-    `Synchronized local fixture snapshot: ${INITIAL_LISTINGS.length} listings, ${Object.keys(DEMO_USERS).length} profiles, ${mediaEntries.length} media assets.`,
+    `Backend local fixture is valid: ${fixture.listings.length} listings, ${fixture.users.length} profiles, ${mediaEntries.length} media assets.`,
   );
 }
 

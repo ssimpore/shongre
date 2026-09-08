@@ -94,6 +94,7 @@ function bindings(profile) {
   }
   if (!["local", "test"].includes(profile))
     Object.assign(env, {
+      REDIS_URL: `rediss://matrix:secret@redis-${profile}.shongre.invalid:6380`,
       DATABASE_URL: `postgresql://matrix:matrix@db-${profile}.shongre.invalid:5432/shongre`,
       SUPABASE_PROJECT_REF: `matrix-${profile}`,
       EXPECTED_SUPABASE_PROJECT_REF: `matrix-${profile}`,
@@ -194,6 +195,29 @@ test("non-local profiles never read generic local files or Supabase runtime cred
   }
 });
 
+test("generated local Supabase credentials replace blank profile placeholders", (t) => {
+  const dir = fixture(t);
+  mkdirSync(join(dir, ".runtime"));
+  writeFileSync(
+    join(dir, ".runtime/supabase.env"),
+    [
+      "DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres",
+      "SUPABASE_URL=http://127.0.0.1:54321",
+      "SUPABASE_ANON_KEY=generated-anon-key",
+      "SUPABASE_SERVICE_ROLE_KEY=generated-service-role-key",
+      "JWT_SECRET=generated-local-jwt-secret",
+      "",
+    ].join("\n"),
+  );
+  succeeds(
+    run(
+      dir,
+      'source scripts/env.sh; test "$SUPABASE_ANON_KEY" = generated-anon-key; test "$SUPABASE_SERVICE_ROLE_KEY" = generated-service-role-key; test "$JWT_SECRET" = generated-local-jwt-secret',
+      { SHONGRE_ENV: "local" },
+    ),
+  );
+});
+
 test("profile overrides and intentionally empty shell values take precedence without evaluation", (t) => {
   const dir = fixture(t);
   writeFileSync(
@@ -241,11 +265,6 @@ test("a loaded profile is idempotent but cannot be switched in place", (t) => {
 
 const invalidCases = [
   ["local", { BACKEND_DATA_MODE: "demo" }, /BACKEND_DATA_MODE must/],
-  [
-    "development",
-    { NEXT_PUBLIC_DATA_MODE: "demo" },
-    /NEXT_PUBLIC_DATA_MODE must/,
-  ],
   ["staging", { DATABASE_INFRA_MODE: "local" }, /DATABASE_INFRA_MODE must/],
   ["production", { BACKEND_DATA_MODE: "demo" }, /BACKEND_DATA_MODE must/],
   [
@@ -336,18 +355,6 @@ test("hosted URL discovery reports selected public origins, not loopback listene
   assert.doesNotMatch(
     result.stdout,
     /127\.0\.0\.1|0\.0\.0\.0|localhost|matrix-validation-server/,
-  );
-});
-
-test("the complete explicit local demo remains available", (t) => {
-  succeeds(
-    run(fixture(t), "scripts/env-check.sh", {
-      SHONGRE_ENV: "local",
-      SHONGRE_EXPLICIT_DEMO: "true",
-      NEXT_PUBLIC_DATA_MODE: "demo",
-      NEXT_PUBLIC_ENABLE_MOCK_STORAGE: "true",
-      BACKEND_DATA_MODE: "demo",
-    }),
   );
 });
 

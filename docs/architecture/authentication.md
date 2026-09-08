@@ -51,12 +51,9 @@ short-lived completion handle in the fragment. The app asks for an email,
 submits the handle once, and tells the user to follow the verification message;
 it does not create an active session before verification.
 
-The explicit `make frontend` command selects `NEXT_PUBLIC_DATA_MODE=demo`. Its
-auth adapter is deterministic and asynchronous, and it does not require the
-backend, Supabase or any provider console. Canonical local development and
-hosted development, staging, and production require
-`NEXT_PUBLIC_DATA_MODE=api` with mock storage disabled; API failures never fall
-back to demo identity.
+Web and mobile authentication always use the Shongre API. Local development
+requires the repository-owned backend and Supabase stack; API failures never
+fall back to a browser identity or fixture session.
 
 ## Identity and account rules
 

@@ -35,10 +35,11 @@ The generated JSON operation functions in `@shongre/contracts/api-client`
 accept a platform transport and infer input and output from generated OpenAPI
 operations. Their serializer encodes path parameters, preserves false/zero
 query values, and forwards cancellation. The generator rejects unsupported
-query/body encodings instead of inventing a fallback. Redirect/pixel endpoints
-and operational probes keep their dedicated transport behavior. Web and native
-favorite reads/writes use these generated functions. Other existing adapters
-continue to consume generated path and operation types; remaining opaque
+query/body encodings instead of inventing a fallback. Every normal Web HTTP
+adapter and mobile business service invokes these generated operations through
+its platform transport. Redirect/pixel endpoints, operational probes,
+WebSockets, backend-issued signed Storage uploads, third-party provider SDKs,
+and static/native assets keep their specialized transports. Remaining opaque
 `JsonValue` responses require domain-by-domain schema refinement.
 
 The Web and mobile HTTP foundations accept only generated OpenAPI path types.

@@ -794,6 +794,10 @@ export interface ICoursesRepository {
   searchTutors(query: TutorSearchQuery): Promise<TutorSearchResponse>;
   getTutorProfile(idOrSlug: string): Promise<TutorProfile | null>;
   saveTutorProfile(profile: TutorProfile): Promise<TutorProfile>;
+  getTutorWorkspaceForUser(
+    userId: string,
+    marketCode: string,
+  ): Promise<TutorWorkspace | null>;
   getCourseOffers(tutorProfileId: string): Promise<CourseOffer[]>;
   saveCourseOffer(offer: CourseOffer): Promise<CourseOffer>;
   createLearnerRequest(request: LearnerRequest): Promise<LearnerRequest>;
@@ -804,6 +808,10 @@ export interface ICoursesRepository {
   getOrganization(idOrSlug: string): Promise<CourseOrganization | null>;
   getOrganizationWorkspace(
     organizationId: string,
+  ): Promise<CourseOrganizationWorkspace | null>;
+  getOrganizationWorkspaceForUser(
+    userId: string,
+    marketCode: string,
   ): Promise<CourseOrganizationWorkspace | null>;
   addOrganizationMember(input: {
     organizationId: string;
@@ -1262,6 +1270,19 @@ export class DemoCoursesRepository implements ICoursesRepository {
     };
   }
 
+  async getTutorWorkspaceForUser(
+    userId: string,
+    marketCode: string,
+  ): Promise<TutorWorkspace | null> {
+    const normalizedMarket = requireMarketCode(marketCode);
+    const tutor = Array.from(this.tutors.values()).find(
+      (item) =>
+        item.userId === userId &&
+        item.serviceArea?.marketCode === normalizedMarket,
+    );
+    return tutor ? this.getTutorWorkspace(tutor.id) : null;
+  }
+
   async getOrganization(idOrSlug: string): Promise<CourseOrganization | null> {
     const organization = DEMO_COURSE_ORGANIZATIONS.find(
       (item) => item.id === idOrSlug || item.slug === idOrSlug,
@@ -1293,6 +1314,23 @@ export class DemoCoursesRepository implements ICoursesRepository {
         activeTutors: 8,
       },
     });
+  }
+
+  async getOrganizationWorkspaceForUser(
+    userId: string,
+    marketCode: string,
+  ): Promise<CourseOrganizationWorkspace | null> {
+    const normalizedMarket = requireMarketCode(marketCode);
+    const membership = this.organizationMembers.find(
+      (item) => item.userId === userId && item.status === "active",
+    );
+    if (!membership) return null;
+    const workspace = await this.getOrganizationWorkspace(
+      membership.organizationId,
+    );
+    return workspace?.organization.marketCode === normalizedMarket
+      ? workspace
+      : null;
   }
 
   async addOrganizationMember(input: {
@@ -2006,6 +2044,22 @@ export class PostgresCoursesRepository implements ICoursesRepository {
     };
   }
 
+  async getTutorWorkspaceForUser(
+    userId: string,
+    marketCode: string,
+  ): Promise<TutorWorkspace | null> {
+    const { data, error } = await (getSupabaseAdminClient() as any)
+      .from("course_tutor_profiles")
+      .select("id")
+      .eq("user_id", userId)
+      .eq("market_code", requireMarketCode(marketCode))
+      .order("updated_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (error) throw error;
+    return data ? this.getTutorWorkspace(data.id) : null;
+  }
+
   async getOrganization(idOrSlug: string): Promise<CourseOrganization | null> {
     const supabase = getSupabaseAdminClient() as any;
     let { data, error } = await supabase
@@ -2090,6 +2144,23 @@ export class PostgresCoursesRepository implements ICoursesRepository {
         activeTutors: tutors.length,
       },
     };
+  }
+
+  async getOrganizationWorkspaceForUser(
+    userId: string,
+    marketCode: string,
+  ): Promise<CourseOrganizationWorkspace | null> {
+    const supabase = getSupabaseAdminClient() as any;
+    const { data, error } = await supabase
+      .from("course_organization_members")
+      .select("organization_id, course_organizations!inner(market_code)")
+      .eq("user_id", userId)
+      .eq("status", "active")
+      .eq("course_organizations.market_code", requireMarketCode(marketCode))
+      .limit(1)
+      .maybeSingle();
+    if (error) throw error;
+    return data ? this.getOrganizationWorkspace(data.organization_id) : null;
   }
 
   async addOrganizationMember(input: {

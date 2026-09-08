@@ -1,12 +1,14 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { HttpTaxonomyService } from "./http-taxonomy.service";
-import { httpClient } from "./http-client";
+import { apiOperation } from "./generated-api-operation";
+
+vi.mock("./generated-api-operation", () => ({ apiOperation: vi.fn() }));
 
 describe("HttpTaxonomyService", () => {
   afterEach(() => vi.restoreAllMocks());
 
   it("maps the API compatibility projection into frontend categories", async () => {
-    vi.spyOn(httpClient, "get").mockResolvedValue([
+    vi.mocked(apiOperation).mockResolvedValue([
       {
         id: "vehicles",
         slug: "vehicules",
@@ -49,6 +51,6 @@ describe("HttpTaxonomyService", () => {
         ],
       },
     ]);
-    expect(httpClient.get).toHaveBeenCalledWith("/taxonomy/root");
+    expect(apiOperation).toHaveBeenCalledWith("getTaxonomyRoot", {});
   });
 });

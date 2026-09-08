@@ -10,8 +10,8 @@ import type {
   InvoicingWorkspace,
   UpdateInvoicingInvoiceDraft,
 } from "@shongre/contracts/invoicing";
+import { apiOperation } from "./generated-api-operation";
 import type { InvoicingServiceContract } from "../../contracts/invoicing.contract";
-import { httpClient } from "./http-client";
 
 const marketHeaders = (marketCode: string) => ({
   "X-Shongre-Market": marketCode,
@@ -19,29 +19,33 @@ const marketHeaders = (marketCode: string) => ({
 
 export class HttpInvoicingService implements InvoicingServiceContract {
   activateForCurrentOrganization(marketCode: string) {
-    return httpClient.post<
-      InvoicingWorkspace["tenants"][number]["productAccess"]
-    >("/invoicing/activation", {}, { headers: marketHeaders(marketCode) });
+    return apiOperation<
+      InvoicingWorkspace["tenants"][number]["productAccess"],
+      "activateInvoicingForCurrentOrganization"
+    >("activateInvoicingForCurrentOrganization", {
+      body: {},
+      headers: marketHeaders(marketCode),
+    });
   }
 
   getWorkspace(marketCode: string) {
-    return httpClient.get<InvoicingWorkspace>("/invoicing/workspace", {
-      headers: marketHeaders(marketCode),
-    });
+    return apiOperation<InvoicingWorkspace, "getInvoicingWorkspace">(
+      "getInvoicingWorkspace",
+      { headers: marketHeaders(marketCode) },
+    );
   }
 
   listLegalEntities(tenantId: string, marketCode: string) {
-    return httpClient.get<InvoicingLegalEntity[]>("/invoicing/legal-entities", {
-      params: { tenantId },
-      headers: marketHeaders(marketCode),
-    });
+    return apiOperation<InvoicingLegalEntity[], "listInvoicingLegalEntities">(
+      "listInvoicingLegalEntities",
+      { query: { tenantId }, headers: marketHeaders(marketCode) },
+    );
   }
 
   createLegalEntity(input: CreateInvoicingLegalEntity) {
-    return httpClient.post<InvoicingLegalEntity>(
-      "/invoicing/legal-entities",
-      input,
-      { headers: marketHeaders(input.defaultMarketCode) },
+    return apiOperation<InvoicingLegalEntity, "createInvoicingLegalEntity">(
+      "createInvoicingLegalEntity",
+      { body: input, headers: marketHeaders(input.defaultMarketCode) },
     );
   }
 
@@ -49,21 +53,27 @@ export class HttpInvoicingService implements InvoicingServiceContract {
     tenantId: string;
     marketCode: string;
   }) {
-    return httpClient.post<InvoicingLegalEntity>(
-      "/invoicing/legal-entities/from-organization",
-      input,
-      { headers: marketHeaders(input.marketCode) },
-    );
-  }
-
-  listParties(tenantId: string) {
-    return httpClient.get<InvoicingParty[]>("/invoicing/parties", {
-      params: { tenantId },
+    return apiOperation<
+      InvoicingLegalEntity,
+      "bootstrapInvoicingLegalEntityFromOrganization"
+    >("bootstrapInvoicingLegalEntityFromOrganization", {
+      body: input,
+      headers: marketHeaders(input.marketCode),
     });
   }
 
+  listParties(tenantId: string) {
+    return apiOperation<InvoicingParty[], "listInvoicingParties">(
+      "listInvoicingParties",
+      { query: { tenantId } },
+    );
+  }
+
   createParty(input: CreateInvoicingParty) {
-    return httpClient.post<InvoicingParty>("/invoicing/parties", input);
+    return apiOperation<InvoicingParty, "createInvoicingParty">(
+      "createInvoicingParty",
+      { body: input },
+    );
   }
 
   listInvoices(options: {
@@ -72,35 +82,43 @@ export class HttpInvoicingService implements InvoicingServiceContract {
     limit?: number;
     cursor?: string;
   }) {
-    return httpClient.get<InvoicingInvoicePage>("/invoicing/invoices", {
-      params: {
-        tenantId: options.tenantId,
-        limit: options.limit,
-        cursor: options.cursor,
+    return apiOperation<InvoicingInvoicePage, "listInvoicingInvoices">(
+      "listInvoicingInvoices",
+      {
+        query: {
+          tenantId: options.tenantId,
+          limit: options.limit,
+          cursor: options.cursor,
+        },
+        headers: marketHeaders(options.marketCode),
       },
-      headers: marketHeaders(options.marketCode),
-    });
+    );
   }
 
   getInvoice(invoiceId: string) {
-    return httpClient.get<InvoicingInvoice>(
-      `/invoicing/invoices/${encodeURIComponent(invoiceId)}`,
+    return apiOperation<InvoicingInvoice, "getInvoicingInvoice">(
+      "getInvoicingInvoice",
+      { path: { invoiceId: invoiceId } },
     );
   }
 
   createInvoice(input: CreateInvoicingInvoice, idempotencyKey: string) {
-    return httpClient.post<InvoicingInvoice>("/invoicing/invoices", input, {
-      headers: {
-        ...marketHeaders(input.marketCode),
-        "Idempotency-Key": idempotencyKey,
+    return apiOperation<InvoicingInvoice, "createInvoicingInvoice">(
+      "createInvoicingInvoice",
+      {
+        body: input,
+        headers: {
+          ...marketHeaders(input.marketCode),
+          "Idempotency-Key": idempotencyKey,
+        },
       },
-    });
+    );
   }
 
   updateInvoiceDraft(invoiceId: string, input: UpdateInvoicingInvoiceDraft) {
-    return httpClient.put<InvoicingInvoice>(
-      `/invoicing/invoices/${encodeURIComponent(invoiceId)}`,
-      input,
+    return apiOperation<InvoicingInvoice, "updateInvoicingInvoiceDraft">(
+      "updateInvoicingInvoiceDraft",
+      { path: { invoiceId: invoiceId }, body: input },
     );
   }
 
@@ -109,16 +127,20 @@ export class HttpInvoicingService implements InvoicingServiceContract {
     expectedVersion: number,
     idempotencyKey: string,
   ) {
-    return httpClient.post<InvoicingInvoice>(
-      `/invoicing/invoices/${encodeURIComponent(invoiceId)}/finalize`,
-      { expectedVersion },
-      { headers: { "Idempotency-Key": idempotencyKey } },
+    return apiOperation<InvoicingInvoice, "finalizeInvoicingInvoice">(
+      "finalizeInvoicingInvoice",
+      {
+        path: { invoiceId: invoiceId },
+        body: { expectedVersion },
+        headers: { "Idempotency-Key": idempotencyKey },
+      },
     );
   }
 
   getDocument(invoiceId: string) {
-    return httpClient.get<InvoicingDocument>(
-      `/invoicing/invoices/${encodeURIComponent(invoiceId)}/document`,
+    return apiOperation<InvoicingDocument, "getInvoicingDocument">(
+      "getInvoicingDocument",
+      { path: { invoiceId: invoiceId } },
     );
   }
 }

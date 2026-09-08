@@ -13,8 +13,6 @@ import {
 } from "lucide-react";
 import type { CourseOrganizationWorkspace } from "@shongre/contracts/courses";
 import { ProBadge, VerificationBadge, VerifiedIcon } from "@shongre/ui/web";
-import { BASELINE_MONETIZATION_CATALOG } from "@shongre/contracts/monetization-catalog";
-import { isCoursePlanFeatureOperational } from "@shongre/contracts/vertical-monetization-adapters";
 import { services } from "../../api/client/service-registry";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useToast } from "../../app/providers/ToastProvider";
@@ -70,10 +68,10 @@ export const CourseOrganizationWorkspacePage: React.FC = () => {
 
   useEffect(() => {
     services.courses
-      .getOrganizationWorkspace("org_college_lumiere")
+      .getCurrentOrganizationWorkspace(activeMarket.code)
       .then(setWorkspace)
       .catch(() => setError(true));
-  }, []);
+  }, [activeMarket.code]);
 
   if (error) {
     return (
@@ -91,21 +89,9 @@ export const CourseOrganizationWorkspacePage: React.FC = () => {
   if (!workspace) return <Skeleton className="h-160 w-full rounded-card" />;
 
   const { organization, analytics, plan } = workspace;
-  const teamManagementAvailable = isCoursePlanFeatureOperational(
-    BASELINE_MONETIZATION_CATALOG,
-    plan.id,
-    "teamMembers",
-  );
-  const locationManagementAvailable = isCoursePlanFeatureOperational(
-    BASELINE_MONETIZATION_CATALOG,
-    plan.id,
-    "locations",
-  );
-  const centralInboxAvailable = isCoursePlanFeatureOperational(
-    BASELINE_MONETIZATION_CATALOG,
-    plan.id,
-    "centralLeadInbox",
-  );
+  const teamManagementAvailable = plan.entitlements.teamMembers > 1;
+  const locationManagementAvailable = plan.entitlements.locations > 0;
+  const centralInboxAvailable = plan.entitlements.centralLeadInbox;
 
   const inviteMember = async (event: React.FormEvent) => {
     event.preventDefault();

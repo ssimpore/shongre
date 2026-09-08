@@ -8,7 +8,6 @@ import {
   UserCheck,
   Flag,
   ExternalLink,
-  Sparkles,
 } from "lucide-react";
 import { ProBadge, VerifiedIcon } from "@shongre/ui/web";
 import {
@@ -16,7 +15,6 @@ import {
   ConversationCapabilities,
 } from "../../../domains/messaging/messaging.types";
 import { Avatar } from "../../../design-system/primitives/Badge";
-import { Button } from "../../../design-system/primitives/Button";
 import { useTranslation } from "../../../i18n/I18nProvider";
 import { routes } from "../../../configuration/routes";
 
@@ -26,7 +24,6 @@ interface ConversationHeaderProps {
   onBack?: () => void;
   onBlockToggle: () => void;
   onReport: () => void;
-  onSimulateReply?: () => void;
   publicProfileSlug?: string;
 }
 
@@ -36,7 +33,6 @@ export const ConversationHeader: React.FC<ConversationHeaderProps> = ({
   onBack,
   onBlockToggle,
   onReport,
-  onSimulateReply,
   publicProfileSlug,
 }) => {
   const { t } = useTranslation();
@@ -130,32 +126,13 @@ export const ConversationHeader: React.FC<ConversationHeaderProps> = ({
               <span className="text-danger font-bold">
                 {t("messaging.conversationHeader.utilisateurBloque")}
               </span>
-            ) : (
-              <span className="flex items-center gap-1 text-success font-bold">
-                <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
-                <span>En ligne</span>
-              </span>
-            )}
+            ) : null}
           </div>
         </div>
       </div>
 
       {/* Header Actions */}
       <div className="flex items-center gap-2">
-        {onSimulateReply && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onSimulateReply}
-            leftIcon={
-              <Sparkles className="w-icon-sm h-icon-sm text-rating-strong" />
-            }
-            className="hidden sm:inline-flex text-xs"
-          >
-            {t("messaging.conversationHeader.simulerReponse")}
-          </Button>
-        )}
-
         {/* Dropdown Menu */}
         <div className="relative">
           <button

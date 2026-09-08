@@ -62,3 +62,13 @@ JOIN public.categories category
    AND category.parent_id IS NULL
    AND category.status = 'active'
    AND category.is_active = TRUE;
+
+DELETE FROM public.taxonomy_header_links WHERE market_code IN ('FR', 'BE', 'CH');
+INSERT INTO public.taxonomy_header_links (market_code, target, labels, short_labels, is_active, display_order)
+SELECT configuration.market_code, link.target, link.labels, link.labels, TRUE, link.display_order
+FROM public.taxonomy_header_configurations configuration
+CROSS JOIN (VALUES
+    ('category_overview', '{"fr-FR":"Autres","en-GB":"Other"}'::jsonb, 10),
+    ('promotions', '{"fr-FR":"Promotions","en-GB":"Deals"}'::jsonb, 11)
+) AS link(target, labels, display_order)
+WHERE configuration.market_code IN ('FR', 'BE', 'CH');

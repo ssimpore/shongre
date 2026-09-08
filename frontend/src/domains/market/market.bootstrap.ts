@@ -163,9 +163,8 @@ function bootstrapConfiguration(
 }
 
 /**
- * Server-safe, fail-closed shell data. The selected service adapter replaces
- * the current market with its authoritative API or deterministic demo
- * projection after hydration.
+ * Server-safe, fail-closed shell data. The HTTP service replaces the current
+ * market with its authoritative API projection after hydration.
  */
 export const BOOTSTRAP_MARKETS: Market[] = listPublicCountries().map(
   (country) => ({

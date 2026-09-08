@@ -15,6 +15,7 @@ import type {
   RealEstateCatalog,
   RealEstateMarketConfig,
 } from "@shongre/contracts/real-estate";
+import { apiOperation } from "./generated-api-operation";
 import type {
   VerticalAddOn,
   VerticalCheckout,
@@ -24,57 +25,77 @@ import type {
   PropertyLeadDraft,
   RealEstateServiceContract,
 } from "../../contracts/real-estate.contract";
-import { httpClient } from "./http-client";
 import { uploadPrivateDocument, uploadPublicImage } from "./http-upload";
 
 export class HttpRealEstateService implements RealEstateServiceContract {
   getCatalog(marketCode: string) {
-    return httpClient.get<RealEstateCatalog>("/real-estate/catalog", {
-      params: { market: marketCode },
-    });
+    return apiOperation<RealEstateCatalog, "getRealEstateCatalog">(
+      "getRealEstateCatalog",
+      { query: { market: marketCode } },
+    );
   }
   getAdminOverview(marketCode: string) {
-    return httpClient.get<RealEstateAdminOverview>(
-      "/real-estate/admin/overview",
-      { params: { market: marketCode } },
+    return apiOperation<RealEstateAdminOverview, "getRealEstateAdminOverview">(
+      "getRealEstateAdminOverview",
+      { query: { market: marketCode } },
     );
   }
   searchProperties(query: PropertySearchQuery) {
-    return httpClient.post<PropertySearchResult>("/real-estate/search", query);
+    return apiOperation<PropertySearchResult, "postRealEstateSearch">(
+      "postRealEstateSearch",
+      { body: query },
+    );
   }
   getProperty(idOrSlug: string, marketCode: string) {
-    return httpClient.get<PropertyPublic>(
-      `/real-estate/properties/${encodeURIComponent(idOrSlug)}`,
-      { headers: { "X-Shongre-Market": marketCode } },
+    return apiOperation<PropertyPublic, "getRealEstatePropertiesById">(
+      "getRealEstatePropertiesById",
+      { path: { id: idOrSlug }, headers: { "X-Shongre-Market": marketCode } },
     );
   }
   getComparableProperties(propertyId: string, marketCode: string) {
-    return httpClient.get<PropertyPublic[]>(
-      `/real-estate/properties/${encodeURIComponent(propertyId)}/comparables`,
-      { headers: { "X-Shongre-Market": marketCode } },
-    );
+    return apiOperation<
+      PropertyPublic[],
+      "getRealEstatePropertiesByIdComparables"
+    >("getRealEstatePropertiesByIdComparables", {
+      path: { id: propertyId },
+      headers: { "X-Shongre-Market": marketCode },
+    });
   }
   getRecentlyViewed(_accountId: string) {
-    return httpClient.get<PropertyPublic[]>("/real-estate/recently-viewed");
+    return apiOperation<PropertyPublic[], "getRealEstateRecentlyViewed">(
+      "getRealEstateRecentlyViewed",
+      {},
+    );
   }
   markRecentlyViewed(_accountId: string, propertyId: string) {
-    return httpClient.post<void>("/real-estate/recently-viewed", {
-      propertyId,
-    });
+    return apiOperation<void, "postRealEstateRecentlyViewed">(
+      "postRealEstateRecentlyViewed",
+      {
+        body: {
+          propertyId,
+        },
+      },
+    );
   }
   getOrCreateDraft(
     _ownerUserId: string,
     marketCode: string,
     _sellerDisplayName?: string,
   ): Promise<PropertyDraft> {
-    return httpClient.post<PropertyDraft>("/real-estate/drafts", {
-      marketCode,
-    });
+    return apiOperation<PropertyDraft, "postRealestateDrafts">(
+      "postRealestateDrafts",
+      {
+        body: {
+          marketCode,
+        },
+      },
+    );
   }
   async getDraft(draftId: string) {
     try {
-      return await httpClient.get<PropertyDraft>(
-        `/real-estate/drafts/${encodeURIComponent(draftId)}`,
+      return await apiOperation<PropertyDraft, "getRealEstateDraftsById">(
+        "getRealEstateDraftsById",
+        { path: { id: draftId } },
       );
     } catch (error: unknown) {
       if (
@@ -88,16 +109,19 @@ export class HttpRealEstateService implements RealEstateServiceContract {
     }
   }
   saveDraft(draft: PropertyDraft) {
-    return httpClient.put<PropertyDraft>(
-      `/real-estate/drafts/${encodeURIComponent(draft.id)}`,
-      draft,
+    return apiOperation<PropertyDraft, "putRealEstateDraftsById">(
+      "putRealEstateDraftsById",
+      { path: { id: draft.id }, body: draft },
     );
   }
   submitDraft(draftId: string) {
-    return httpClient.post<{
-      propertyId: string;
-      lifecycle: "pending_review";
-    }>(`/real-estate/drafts/${encodeURIComponent(draftId)}/submit`);
+    return apiOperation<
+      {
+        propertyId: string;
+        lifecycle: "pending_review";
+      },
+      "postRealEstateDraftsByIdSubmit"
+    >("postRealEstateDraftsByIdSubmit", { path: { id: draftId } });
   }
   async uploadDraftMedia(
     _draftId: string,
@@ -109,18 +133,27 @@ export class HttpRealEstateService implements RealEstateServiceContract {
       : uploadPublicImage(file);
   }
   submitLead(input: PropertyLeadDraft) {
-    return httpClient.post<PropertyLead>("/real-estate/leads", input);
+    return apiOperation<PropertyLead, "postRealEstateLeads">(
+      "postRealEstateLeads",
+      { body: input },
+    );
   }
   requestAppointment(leadId: string, startsAt: string) {
-    return httpClient.post<PropertyAppointment>(
-      `/real-estate/leads/${encodeURIComponent(leadId)}/appointments`,
-      { startsAt },
-    );
+    return apiOperation<
+      PropertyAppointment,
+      "postRealEstateLeadsByLeadIdAppointments"
+    >("postRealEstateLeadsByLeadIdAppointments", {
+      path: { leadId: leadId },
+      body: { startsAt },
+    });
   }
   getAgencyWorkspace(organizationId: string) {
-    return httpClient.get<AgencyWorkspace>(
-      `/real-estate/agencies/${encodeURIComponent(organizationId)}/workspace`,
-    );
+    return apiOperation<
+      AgencyWorkspace,
+      "getRealEstateAgenciesByOrganizationIdWorkspace"
+    >("getRealEstateAgenciesByOrganizationIdWorkspace", {
+      path: { organizationId: organizationId },
+    });
   }
   updateLead(
     organizationId: string,
@@ -129,21 +162,30 @@ export class HttpRealEstateService implements RealEstateServiceContract {
       Pick<PropertyLead, "status" | "assignedUserId" | "nextReminderAt">
     >,
   ) {
-    return httpClient.request<PropertyLead>(
-      `/real-estate/agencies/${encodeURIComponent(organizationId)}/leads/${encodeURIComponent(leadId)}`,
-      { method: "PATCH", body: JSON.stringify(patch) },
-    );
+    return apiOperation<
+      PropertyLead,
+      "patchRealEstateAgenciesByOrganizationIdLeadsByLeadId"
+    >("patchRealEstateAgenciesByOrganizationIdLeadsByLeadId", {
+      path: { organizationId: organizationId, leadId: leadId },
+      body: patch,
+    });
   }
   addLeadNote(organizationId: string, leadId: string, body: string) {
-    return httpClient.post<PropertyLeadNote>(
-      `/real-estate/agencies/${encodeURIComponent(organizationId)}/leads/${encodeURIComponent(leadId)}/notes`,
-      { body },
-    );
+    return apiOperation<
+      PropertyLeadNote,
+      "postRealEstateAgenciesByOrganizationIdLeadsByLeadIdNotes"
+    >("postRealEstateAgenciesByOrganizationIdLeadsByLeadIdNotes", {
+      path: { organizationId: organizationId, leadId: leadId },
+      body: { body },
+    });
   }
   exportAgencyLeads(organizationId: string) {
-    return httpClient.get<PropertyLeadExport>(
-      `/real-estate/agencies/${encodeURIComponent(organizationId)}/leads/export`,
-    );
+    return apiOperation<
+      PropertyLeadExport,
+      "getRealEstateAgenciesByOrganizationIdLeadsExport"
+    >("getRealEstateAgenciesByOrganizationIdLeadsExport", {
+      path: { organizationId: organizationId },
+    });
   }
   requestPropertyImport(
     organizationId: string,
@@ -151,10 +193,13 @@ export class HttpRealEstateService implements RealEstateServiceContract {
     fileName?: string,
     idempotencyKey?: string,
   ) {
-    return httpClient.post<PropertyImport>(
-      `/real-estate/agencies/${encodeURIComponent(organizationId)}/imports`,
-      { type, fileName, idempotencyKey },
-    );
+    return apiOperation<
+      PropertyImport,
+      "postRealEstateAgenciesByOrganizationIdImports"
+    >("postRealEstateAgenciesByOrganizationIdImports", {
+      path: { organizationId: organizationId },
+      body: { type, fileName, idempotencyKey },
+    });
   }
   createCheckout(input: {
     accountId: string;
@@ -164,65 +209,86 @@ export class HttpRealEstateService implements RealEstateServiceContract {
     idempotencyKey: string;
     scenario?: "success" | "pending" | "failed" | "requires_action";
   }) {
-    return httpClient.post<VerticalCheckout>("/real-estate/checkouts", input);
+    return apiOperation<VerticalCheckout, "postRealEstateCheckouts">(
+      "postRealEstateCheckouts",
+      { body: input },
+    );
   }
   refundCheckout(
     checkoutId: string,
     input: { amountMinor?: number; idempotencyKey: string },
   ) {
-    return httpClient.post<VerticalCheckout>(
-      `/real-estate/checkouts/${encodeURIComponent(checkoutId)}/refunds`,
-      input,
-    );
+    return apiOperation<
+      VerticalCheckout,
+      "postRealEstateCheckoutsByCheckoutIdRefunds"
+    >("postRealEstateCheckoutsByCheckoutIdRefunds", {
+      path: { checkoutId: checkoutId },
+      body: input,
+    });
   }
   updateMarketConfig(
     marketCode: string,
     patch: Partial<RealEstateMarketConfig>,
   ) {
-    return httpClient.put<RealEstateMarketConfig>(
-      `/real-estate/admin/markets/${encodeURIComponent(marketCode)}`,
-      patch,
-    );
+    return apiOperation<
+      RealEstateMarketConfig,
+      "putRealEstateAdminMarketsByMarketCode"
+    >("putRealEstateAdminMarketsByMarketCode", {
+      path: { marketCode: marketCode },
+      body: patch,
+    });
   }
   updateOffer(
     marketCode: string,
     offerId: string,
     patch: Partial<VerticalOffer>,
   ) {
-    return httpClient.request<VerticalOffer>(
-      `/real-estate/admin/markets/${encodeURIComponent(marketCode)}/offers/${encodeURIComponent(offerId)}`,
-      { method: "PATCH", body: JSON.stringify(patch) },
-    );
+    return apiOperation<
+      VerticalOffer,
+      "patchRealEstateAdminMarketsByMarketCodeOffersByOfferId"
+    >("patchRealEstateAdminMarketsByMarketCodeOffersByOfferId", {
+      path: { marketCode: marketCode, offerId: offerId },
+      body: patch,
+    });
   }
   updateAddOn(
     marketCode: string,
     addOnId: string,
     patch: Partial<VerticalAddOn>,
   ) {
-    return httpClient.request<VerticalAddOn>(
-      `/real-estate/admin/markets/${encodeURIComponent(marketCode)}/add-ons/${encodeURIComponent(addOnId)}`,
-      { method: "PATCH", body: JSON.stringify(patch) },
-    );
+    return apiOperation<
+      VerticalAddOn,
+      "patchRealEstateAdminMarketsByMarketCodeAddOnsByAddOnId"
+    >("patchRealEstateAdminMarketsByMarketCodeAddOnsByAddOnId", {
+      path: { marketCode: marketCode, addOnId: addOnId },
+      body: patch,
+    });
   }
   updatePropertyType(
     marketCode: string,
     type: string,
     patch: Partial<PropertyTypeConfig>,
   ) {
-    return httpClient.request<PropertyTypeConfig>(
-      `/real-estate/admin/markets/${encodeURIComponent(marketCode)}/types/${encodeURIComponent(type)}`,
-      { method: "PATCH", body: JSON.stringify(patch) },
-    );
+    return apiOperation<
+      PropertyTypeConfig,
+      "patchRealEstateAdminMarketsByMarketCodeTypesByType"
+    >("patchRealEstateAdminMarketsByMarketCodeTypesByType", {
+      path: { marketCode: marketCode, type: type },
+      body: patch,
+    });
   }
   updateFieldRule(
     marketCode: string,
     ruleId: string,
     patch: Partial<PropertyFieldRule>,
   ) {
-    return httpClient.request<PropertyFieldRule>(
-      `/real-estate/admin/markets/${encodeURIComponent(marketCode)}/field-rules/${encodeURIComponent(ruleId)}`,
-      { method: "PATCH", body: JSON.stringify(patch) },
-    );
+    return apiOperation<
+      PropertyFieldRule,
+      "patchRealEstateAdminMarketsByMarketCodeFieldRulesByRuleId"
+    >("patchRealEstateAdminMarketsByMarketCodeFieldRulesByRuleId", {
+      path: { marketCode: marketCode, ruleId: ruleId },
+      body: patch,
+    });
   }
 }
 

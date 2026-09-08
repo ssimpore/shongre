@@ -156,7 +156,7 @@ export interface SecurityAuditLog {
   newValue?: unknown;
   ipAddress?: string;
   market?: string;
-  /** Consecutive equivalent client-demo events collapsed into this entry. */
+  /** Consecutive equivalent client events collapsed into this entry. */
   occurrenceCount?: number;
   /** Timestamp of the first event represented by an aggregate. */
   firstOccurredAt?: string;
@@ -324,6 +324,8 @@ export interface Listing {
   subCategorySlug: string;
   categoryLabel: string;
   subCategoryLabel: string;
+  listingTypeId?: string;
+  listingIntent?: import("@shongre/contracts/taxonomy").TaxonomyV4ListingIntent;
   condition: ListingCondition;
   sellerId: string;
   /** Public seller facts projected by the listing API; never an auth profile. */

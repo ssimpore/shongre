@@ -1,22 +1,13 @@
 import { describe, it, expect } from "vitest";
 import React from "react";
 import { FileKey } from "lucide-react";
-import {
-  CategoryIcon,
-  ICON_NAME_MAP,
-  CATEGORY_SLUG_ICON_MAP,
-} from "./CategoryIcon";
-import {
-  CANONICAL_TAXONOMY,
-  TAXONOMY,
-} from "../../domains/taxonomy/taxonomy.data";
-import { taxonomyService } from "../../domains/taxonomy/taxonomy.service";
+import { CategoryIcon, ICON_NAME_MAP } from "./CategoryIcon";
 import { getTaxonomyV4PublicBundle } from "@shongre/contracts/taxonomy-v4-public";
+
+const categories = getTaxonomyV4PublicBundle().categories;
 
 describe("CategoryIcon Component & Taxonomy Icon Integrity", () => {
   it("resolves every canonical v4 icon directly from taxonomy metadata", () => {
-    const categories = getTaxonomyV4PublicBundle().categories;
-
     categories.forEach((category) => {
       expect(ICON_NAME_MAP[category.iconName], category.iconName).toBeDefined();
     });
@@ -34,44 +25,31 @@ describe("CategoryIcon Component & Taxonomy Icon Integrity", () => {
     expect(new Set(rootIcons).size).toBe(rootIcons.length);
   });
 
-  it("preserves the dedicated digital-products icon across taxonomy projections", () => {
-    const publicDigitalCategory = getTaxonomyV4PublicBundle().categories.find(
-      (category) => category.id === "digital_products",
-    );
-    const adaptedDigitalCategory = CANONICAL_TAXONOMY.find(
+  it("preserves the dedicated digital-products icon from taxonomy metadata", () => {
+    const publicDigitalCategory = categories.find(
       (category) => category.id === "digital_products",
     );
 
     expect(publicDigitalCategory?.iconName).toBe("file-key");
-    expect(adaptedDigitalCategory?.iconName).toBe(
-      publicDigitalCategory?.iconName,
-    );
     expect(
-      CategoryIcon({ category: adaptedDigitalCategory }) as React.ReactElement,
+      CategoryIcon({
+        iconName: publicDigitalCategory?.iconName,
+      }) as React.ReactElement,
     ).toHaveProperty("type", FileKey);
   });
 
-  // 1. Verify every root category in CANONICAL_TAXONOMY has a defined, mapped icon
+  // 1. Verify every API taxonomy root has a defined, mapped icon.
   it("ensures each canonical root category has a valid iconName registered in ICON_NAME_MAP", () => {
-    CANONICAL_TAXONOMY.forEach((root) => {
-      expect(root.iconName).toBeDefined();
-      expect(typeof root.iconName).toBe("string");
-      expect(ICON_NAME_MAP[root.iconName!]).toBeDefined();
-    });
+    categories
+      .filter((category) => !category.parentId)
+      .forEach((root) => {
+        expect(root.iconName).toBeDefined();
+        expect(typeof root.iconName).toBe("string");
+        expect(ICON_NAME_MAP[root.iconName]).toBeDefined();
+      });
   });
 
-  // 2. Verify all categories in legacy TAXONOMY bridge have an icon
-  it("ensures each category in TAXONOMY bridge has a non-empty iconName", () => {
-    TAXONOMY.forEach((cat) => {
-      expect(cat.iconName).toBeDefined();
-      expect(cat.iconName.length).toBeGreaterThan(0);
-      expect(
-        ICON_NAME_MAP[cat.iconName] || CATEGORY_SLUG_ICON_MAP[cat.slug],
-      ).toBeDefined();
-    });
-  });
-
-  // 3. Verify subcategories have valid icon resolution
+  // 2. Verify subcategories have valid icon resolution.
   it("resolves icons for subcategories across different domains", () => {
     const subCategories = [
       "vehicles.cars",
@@ -82,11 +60,12 @@ describe("CategoryIcon Component & Taxonomy Icon Integrity", () => {
     ];
 
     subCategories.forEach((subId) => {
-      const node = taxonomyService.getNode(subId);
+      const node = categories.find((category) => category.id === subId);
       expect(node).toBeDefined();
 
       const element = CategoryIcon({
-        category: node,
+        category: node?.slug,
+        iconName: node?.iconName,
       }) as React.ReactElement<any>;
       expect(element).toBeDefined();
       expect(element.type).toBeDefined();

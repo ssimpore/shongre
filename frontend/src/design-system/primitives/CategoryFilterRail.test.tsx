@@ -1,8 +1,8 @@
 import { describe, it, expect, vi } from "vitest";
 import React from "react";
 import { CategoryFilterRail } from "./CategoryFilterRail";
-import { TAXONOMY } from "../../domains/taxonomy/taxonomy.data";
-import { getTaxonomyLabel } from "../../domains/taxonomy/taxonomy.service";
+import { taxonomyV4TestCategories } from "../../testing/taxonomy-v4.test-support";
+import { getTaxonomyLabel } from "../../domains/taxonomy/taxonomy.labels";
 
 describe("CategoryFilterRail Primitive", () => {
   it("instantiates correctly as a React component element", () => {
@@ -20,27 +20,33 @@ describe("CategoryFilterRail Primitive", () => {
   });
 
   it("covers major requested marketplace categories in taxonomy", () => {
-    const slugs = TAXONOMY.map((c) => c.slug);
+    const slugs = taxonomyV4TestCategories.map((c) => c.slug);
     // Common requested categories: Automobile/Véhicules, Immobilier, High-Tech/Multimédia
     expect(slugs).toContain("vehicules");
     expect(slugs).toContain("immobilier");
     expect(slugs).toContain("electronique");
 
-    const vehiculesCat = TAXONOMY.find((c) => c.slug === "vehicules");
+    const vehiculesCat = taxonomyV4TestCategories.find(
+      (c) => c.slug === "vehicules",
+    );
     expect(vehiculesCat).toBeDefined();
     expect(getTaxonomyLabel(vehiculesCat!, "compact")).toBeTruthy();
 
-    const immoCat = TAXONOMY.find((c) => c.slug === "immobilier");
+    const immoCat = taxonomyV4TestCategories.find(
+      (c) => c.slug === "immobilier",
+    );
     expect(immoCat).toBeDefined();
     expect(getTaxonomyLabel(immoCat!, "compact")).toBeTruthy();
 
-    const techCat = TAXONOMY.find((c) => c.slug === "electronique");
+    const techCat = taxonomyV4TestCategories.find(
+      (c) => c.slug === "electronique",
+    );
     expect(techCat).toBeDefined();
     expect(getTaxonomyLabel(techCat!, "compact")).toBeTruthy();
   });
 
   it("provides compact labels and icons for all categories in the rail", () => {
-    TAXONOMY.forEach((cat) => {
+    taxonomyV4TestCategories.forEach((cat) => {
       const compactLabel = getTaxonomyLabel(cat, "compact");
       expect(compactLabel).toBeTruthy();
       expect(typeof compactLabel).toBe("string");
@@ -49,20 +55,22 @@ describe("CategoryFilterRail Primitive", () => {
     });
     expect(
       getTaxonomyLabel(
-        TAXONOMY.find((cat) => cat.id === "professional_equipment"),
+        taxonomyV4TestCategories.find(
+          (cat) => cat.id === "professional_equipment",
+        ),
         "compact",
       ),
     ).toBe("Outils pro");
     expect(
       getTaxonomyLabel(
-        TAXONOMY.find((cat) => cat.id === "home_garden"),
+        taxonomyV4TestCategories.find((cat) => cat.id === "home_garden"),
         "compact",
       ),
     ).toBe("Maison");
   });
 
   it("supports subcategories rendering for active categories", () => {
-    const vehCat = TAXONOMY.find((c) => c.slug === "vehicules");
+    const vehCat = taxonomyV4TestCategories.find((c) => c.slug === "vehicules");
     expect(vehCat?.subCategories.length).toBeGreaterThan(0);
 
     const sub = vehCat!.subCategories[0];

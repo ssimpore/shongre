@@ -69,13 +69,17 @@ export function InvoicingWorkspacePage() {
   const [saving, setSaving] = useState(false);
   const [finalizing, setFinalizing] = useState(false);
   const [documentLoading, setDocumentLoading] = useState(false);
-  const [description, setDescription] = useState("Conception graphique");
-  const [quantity, setQuantity] = useState("1.5");
-  const [unitPrice, setUnitPrice] = useState("10.00");
-  const [taxRateBps, setTaxRateBps] = useState(2000);
+  const [description, setDescription] = useState("");
+  const [quantity, setQuantity] = useState("1");
+  const [unitPrice, setUnitPrice] = useState("");
+  const [taxRateBps, setTaxRateBps] = useState(0);
   const [customerPartyId, setCustomerPartyId] = useState("");
-  const [issueDate, setIssueDate] = useState("2026-08-28");
-  const [dueDate, setDueDate] = useState("2026-09-27");
+  const [issueDate, setIssueDate] = useState(() =>
+    new Date().toISOString().slice(0, 10),
+  );
+  const [dueDate, setDueDate] = useState(() =>
+    new Date(Date.now() + 30 * 86_400_000).toISOString().slice(0, 10),
+  );
   const [newCustomerName, setNewCustomerName] = useState("");
   const [newCustomerEmail, setNewCustomerEmail] = useState("");
   const [savingCustomer, setSavingCustomer] = useState(false);
@@ -410,9 +414,6 @@ export function InvoicingWorkspacePage() {
                 {label}
               </a>
             ))}
-            <div className="hidden pt-8 lg:block">
-              <Badge variant="primary">{t("invoicing.workspace.demo")}</Badge>
-            </div>
           </nav>
         </aside>
 
@@ -426,9 +427,6 @@ export function InvoicingWorkspacePage() {
                 <h1 className="text-2xl font-bold tracking-tight text-text-main sm:text-3xl">
                   {t("invoicing.workspace.title")}
                 </h1>
-                <Badge variant="primary" className="lg:hidden">
-                  {t("invoicing.workspace.demo")}
-                </Badge>
               </div>
               <p className="mt-1 text-xs text-text-secondary">
                 {t("invoicing.workspace.description")}
@@ -450,7 +448,7 @@ export function InvoicingWorkspacePage() {
               onClick={() => {
                 setSelectedInvoice(null);
                 setSelectedDocument(null);
-                setDescription("Nouvelle prestation");
+                setDescription("");
                 formRef.current?.scrollIntoView({ behavior: "smooth" });
               }}
             >

@@ -4,12 +4,7 @@ import type {
   JobPostingDetail,
 } from "@shongre/contracts/employment";
 import type { Collection } from "../../domains/collection/collection.types";
-import type {
-  Listing,
-  PublicSellerProfile,
-  ReviewItem,
-  UserProfile,
-} from "../../types";
+import type { Listing, PublicSellerProfile, ReviewItem } from "../../types";
 import { DEFAULT_MARKET_CODE } from "../../configuration/market-baseline";
 
 interface ListingPublicRouteData {
@@ -21,7 +16,7 @@ interface ListingPublicRouteData {
 
 export interface SellerPublicRouteData {
   kind: "seller";
-  seller: UserProfile;
+  seller: PublicSellerProfile;
   listings: Listing[];
   reviews: ReviewItem[];
 }

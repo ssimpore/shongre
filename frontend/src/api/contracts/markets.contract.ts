@@ -1,4 +1,3 @@
-import type { CountryMarketDefinition } from "../../configuration/market.config";
 import type {
   CountryConfig,
   MarketDetectionRecommendation,
@@ -30,6 +29,10 @@ export interface MarketConfigurationChangeRequest {
   reviewReason?: string;
   createdAt: string;
 }
+
+export type CountryMarketDefinition = CountryConfig & {
+  version?: number;
+};
 
 export interface MarketsServiceContract {
   loadRuntimeMarkets(): Promise<Market[]>;

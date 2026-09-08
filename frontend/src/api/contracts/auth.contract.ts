@@ -151,7 +151,6 @@ export interface AuthServiceContract {
   logout(): Promise<void>;
   logoutAll(keepCurrent?: boolean): Promise<void>;
   switchRole(role: UserRole): Promise<UserProfile | null>;
-  switchDemoUser(userKey: string): Promise<UserProfile | null>;
   verifyPhone(phone: string, code: string): Promise<boolean>;
   verifyEmail(token: string): Promise<boolean>;
   resendEmailVerification(
@@ -159,7 +158,7 @@ export interface AuthServiceContract {
   ): Promise<{ success: boolean; message: string }>;
   requestPasswordReset(
     email: string,
-  ): Promise<{ success: boolean; message: string; demoToken?: string }>;
+  ): Promise<{ success: boolean; message: string }>;
   resetPassword(
     token: string,
     newPassword: string,
@@ -177,11 +176,6 @@ export interface AuthServiceContract {
     code: string;
     targetCountry: string;
   }): Promise<DomainHandoffExchangeResult>;
-  /** Deterministic callback hook exposed only by the demo adapter. */
-  completeDemoSocialAuth?(input: {
-    provider: SocialAuthProvider;
-    intent?: "sign_in" | "link";
-  }): Promise<UserProfile>;
   completeOAuthProfile(input: {
     email: string;
     accountType?: "individual" | "professional";

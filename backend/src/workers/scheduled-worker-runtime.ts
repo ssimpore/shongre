@@ -24,6 +24,18 @@ import { indexNowWorker } from "./search/indexnow-worker.js";
 import { digitalFulfillmentWorker } from "./digital-products/digital-fulfillment-worker.js";
 import { watchSubscriptionsWorker } from "./watch-subscriptions/watch-subscriptions-worker.js";
 import { deliveryOutboxWorker } from "./delivery/delivery-outbox-worker.js";
+import { Queue, Worker, type Job } from "bullmq";
+import type Redis from "ioredis";
+import { SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS } from "@shongre/contracts/performance";
+import {
+  createRedisConnection,
+  redisKeyPrefix,
+} from "../infrastructure/queue/redis-connection.js";
+import { db } from "../infrastructure/database/db-client.js";
+import {
+  SCHEDULED_RUNTIME_QUEUE_NAME,
+  type ScheduledJobPayload,
+} from "../infrastructure/queue/runtime-queue.contract.js";
 
 interface ScheduledJob {
   name: string;
@@ -35,12 +47,25 @@ interface ScheduledJob {
     | "commercial"
     | "payments"
     | "finance"
-    | "lifecycle";
+    | "lifecycle"
+    | "infrastructure";
   intervalSeconds: number;
   run: () => Promise<unknown>;
 }
 
 const jobs: ScheduledJob[] = [
+  {
+    name: "runtime_dependency_probe",
+    group: "infrastructure",
+    intervalSeconds:
+      SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS.worker.dependencyProbeIntervalMs /
+      1_000,
+    run: async () => {
+      if (!(await db.healthCheck())) {
+        throw new Error("Database dependency probe failed");
+      }
+    },
+  },
   {
     name: "analytics_provider_delivery",
     group: "analytics",
@@ -202,20 +227,25 @@ const jobs: ScheduledJob[] = [
   },
 ];
 
-class ScheduledWorkerRuntime {
+const queueDefaults = SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS.queues;
+
+export class ScheduledWorkerRuntime {
   private readonly heartbeat = new WorkerHeartbeat(
     config.workerHealthFile,
     config.environment.environmentId,
   );
-  private stopped = false;
-  private readonly timers = new Set<NodeJS.Timeout>();
-  private readonly inFlight = new Set<Promise<void>>();
+  private queueConnection: Redis | undefined;
+  private workerConnection: Redis | undefined;
+  private queue: Queue<ScheduledJobPayload, void, string> | undefined;
+  private worker: Worker<ScheduledJobPayload, void, string> | undefined;
 
   private selectedJobs(): ScheduledJob[] {
     const configured = config.workerGroups;
     if (configured.includes("all")) return jobs;
     const allowed = new Set(configured);
-    const selected = jobs.filter((job) => allowed.has(job.group));
+    const selected = jobs.filter(
+      (job) => job.group === "infrastructure" || allowed.has(job.group),
+    );
     if (!selected.length) {
       throw new Error(
         `WORKER_GROUPS selected no jobs: ${configured.join(",") || "empty"}`,
@@ -224,10 +254,99 @@ class ScheduledWorkerRuntime {
     return selected;
   }
 
-  start(): void {
-    this.stopped = false;
+  async start(): Promise<void> {
     const selectedJobs = this.selectedJobs();
-    for (const job of selectedJobs) this.schedule(job, 0);
+    const jobsByName = new Map(selectedJobs.map((job) => [job.name, job]));
+    this.queueConnection = createRedisConnection("scheduled-producer");
+    this.workerConnection = createRedisConnection("scheduled-consumer", {
+      worker: true,
+    });
+    this.queue = new Queue<ScheduledJobPayload, void, string>(
+      SCHEDULED_RUNTIME_QUEUE_NAME,
+      {
+        connection: this.queueConnection,
+        prefix: redisKeyPrefix,
+        defaultJobOptions: {
+          attempts: queueDefaults.attempts,
+          backoff: { type: "exponential", delay: queueDefaults.backoffDelayMs },
+          removeOnComplete: {
+            age: queueDefaults.completedRetentionSeconds,
+            count: queueDefaults.completedRetentionCount,
+          },
+          removeOnFail: {
+            age: queueDefaults.failedRetentionSeconds,
+            count: queueDefaults.failedRetentionCount,
+          },
+        },
+      },
+    );
+    this.worker = new Worker<ScheduledJobPayload, void, string>(
+      SCHEDULED_RUNTIME_QUEUE_NAME,
+      async (queueJob) => {
+        const payload = queueJob.data;
+        if (
+          payload.schemaVersion !== 1 ||
+          payload.environmentId !== config.environment.environmentId
+        ) {
+          throw new Error("Scheduled job payload belongs to another runtime");
+        }
+        const definition = jobsByName.get(payload.jobName);
+        if (!definition || queueJob.name !== definition.name) {
+          throw new Error("Scheduled job payload is not registered");
+        }
+        if (payload.trigger === "domain") {
+          if (!(await db.healthCheck())) {
+            throw new Error("Database dependency probe failed");
+          }
+          await definition.run();
+          await this.heartbeat.touch();
+          logger.info("domain_wake_job_completed", {
+            jobId: queueJob.id,
+            jobName: queueJob.name,
+            correlationId: payload.correlationId,
+          });
+        } else {
+          await this.execute(definition, queueJob);
+        }
+      },
+      {
+        connection: this.workerConnection,
+        prefix: redisKeyPrefix,
+        concurrency: config.queueConcurrency,
+        lockDuration: queueDefaults.lockDurationMs,
+      },
+    );
+    this.worker.on("error", (error) => {
+      logger.error("bullmq_worker_error", { error: error.message });
+    });
+    this.worker.on("failed", (job, error) => {
+      logger.error("bullmq_job_attempt_failed", {
+        jobId: job?.id,
+        jobName: job?.name,
+        attemptsMade: job?.attemptsMade,
+        error: error.message,
+      });
+    });
+    await Promise.all([
+      this.queue.waitUntilReady(),
+      this.worker.waitUntilReady(),
+    ]);
+    for (const job of selectedJobs) {
+      const payload: ScheduledJobPayload = {
+        schemaVersion: 1,
+        environmentId: config.environment.environmentId,
+        jobName: job.name,
+        trigger: "scheduled",
+      };
+      await this.queue.upsertJobScheduler(
+        job.name,
+        { every: job.intervalSeconds * 1_000 },
+        { name: job.name, data: payload },
+      );
+      await this.queue.add(job.name, payload, {
+        jobId: `bootstrap-${job.name}-${process.pid}-${Date.now()}`,
+      });
+    }
     logger.info("scheduled_worker_started", {
       ownerId: scheduledJobCoordinator.ownerId,
       jobCount: selectedJobs.length,
@@ -236,30 +355,31 @@ class ScheduledWorkerRuntime {
   }
 
   async stop(): Promise<void> {
-    this.stopped = true;
-    for (const timer of this.timers) clearTimeout(timer);
-    this.timers.clear();
-    await Promise.allSettled(this.inFlight);
+    await this.worker?.close();
+    await this.queue?.close();
+    this.worker = undefined;
+    this.queue = undefined;
+    await Promise.allSettled(
+      [this.workerConnection, this.queueConnection]
+        .filter((connection): connection is Redis => Boolean(connection))
+        .map(async (connection) => {
+          if (connection.status !== "end") {
+            await connection.quit().catch(() => connection.disconnect());
+          }
+        }),
+    );
+    this.workerConnection = undefined;
+    this.queueConnection = undefined;
     await this.heartbeat.stop();
     logger.info("scheduled_worker_stopped", {
       ownerId: scheduledJobCoordinator.ownerId,
     });
   }
 
-  private schedule(job: ScheduledJob, delayMs: number): void {
-    if (this.stopped) return;
-    const timer = setTimeout(() => {
-      this.timers.delete(timer);
-      const execution = this.execute(job).finally(() => {
-        this.inFlight.delete(execution);
-        this.schedule(job, Math.min(job.intervalSeconds * 1_000, 60_000));
-      });
-      this.inFlight.add(execution);
-    }, delayMs);
-    this.timers.add(timer);
-  }
-
-  private async execute(job: ScheduledJob): Promise<void> {
+  private async execute(
+    job: ScheduledJob,
+    queueJob: Job<ScheduledJobPayload, void, string>,
+  ): Promise<void> {
     try {
       const leaseSeconds = Math.max(120, Math.min(job.intervalSeconds, 900));
       const claimed = await scheduledJobCoordinator.claim(
@@ -279,6 +399,7 @@ class ScheduledWorkerRuntime {
               else await this.heartbeat.touch();
             })
             .catch((error) => {
+              leaseLost = true;
               logger.error("scheduled_job_lease_renewal_failed", {
                 jobName: job.name,
                 error: error instanceof Error ? error.message : String(error),
@@ -302,18 +423,23 @@ class ScheduledWorkerRuntime {
         // A different replica owns recovery after a lost lease. Completing the
         // old lease here would either overwrite that replica's state or create
         // a noisy ownership error that obscures the original failure.
-        if (!leaseLost) {
+        const maximumAttempts = Number(queueJob.opts.attempts || 1);
+        const finalAttempt = queueJob.attemptsMade + 1 >= maximumAttempts;
+        if (!leaseLost && finalAttempt) {
           await scheduledJobCoordinator.complete(
             job.name,
             job.intervalSeconds,
             message,
           );
+        } else if (!leaseLost) {
+          await scheduledJobCoordinator.releaseForRetry(job.name);
         }
         logger.error("scheduled_job_failed", {
           jobName: job.name,
           error: message,
         });
         captureServerException(error, { operation: job.name });
+        throw error;
       } finally {
         clearInterval(renewal);
       }
@@ -323,6 +449,7 @@ class ScheduledWorkerRuntime {
         error: String(error?.message || error),
       });
       captureServerException(error, { operation: job.name });
+      throw error;
     }
   }
 }

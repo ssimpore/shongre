@@ -22,7 +22,6 @@ import type {
 } from "@shongre/contracts/courses";
 import { ProBadge, VerificationBadge, VerifiedIcon } from "@shongre/ui/web";
 import { services } from "../../api/client/service-registry";
-import { useAuth } from "../../app/providers/AuthProvider";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useToast } from "../../app/providers/ToastProvider";
 import {
@@ -47,7 +46,6 @@ function requestForLead(
 
 export const CourseTutorWorkspacePage: React.FC = () => {
   const { t } = useTranslation();
-  const { currentUser } = useAuth();
   const toast = useToast();
   const { activeMarket } = useMarketLocation();
   const { formatDate, formatMoney, formatNumber } = useRegionalFormatters();
@@ -65,15 +63,12 @@ export const CourseTutorWorkspacePage: React.FC = () => {
   });
 
   useEffect(() => {
-    // Demo personas currently map to one deterministic tutor workspace. The
-    // HTTP adapter resolves ownership from the authenticated session.
-    const tutorId = "tutor_sophie";
     services.courses
-      .getTutorWorkspace(tutorId)
+      .getCurrentTutorWorkspace(activeMarket.code)
       .then(setWorkspace)
       .catch(() => setError(true))
       .finally(() => setIsLoading(false));
-  }, [currentUser?.id]);
+  }, [activeMarket.code]);
 
   const visibleLeads = useMemo(() => {
     if (!workspace) return [];

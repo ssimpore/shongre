@@ -1306,10 +1306,10 @@ const DESCRIBED_PERMISSIONS: PermissionDefinition[] = [
   },
   {
     id: "staff.marketplace.demo",
-    name: "Tester la marketplace en bac à sable",
+    name: "Compatibilité historique marketplace Staff",
     category: "Administration Système",
     description:
-      "Autoriser explicitement un membre Staff actif à simuler des parcours client uniquement avec les adaptateurs Démo isolés et audités.",
+      "Capacité historique conservée pour la compatibilité des rôles existants. Elle n’autorise aucun parcours client, appel API ou mutation marketplace.",
     isSensitive: true,
   },
   {

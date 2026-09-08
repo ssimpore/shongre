@@ -1,27 +1,19 @@
 import type { operations } from "@shongre/contracts/openapi";
-import { apiRequest } from "@/api/http-client";
+import { apiOperation } from "@/api/generated-api-operation";
 
 type ConversationWireResponse =
   operations["getMessagingConversations"]["responses"][200]["content"]["application/json"];
 type ConversationWireItem = NonNullable<ConversationWireResponse>;
-type ConversationResponse =
-  operations["postMessagingConversations"]["responses"][200]["content"]["application/json"];
 type ConversationRequest =
   operations["postMessagingConversations"]["requestBody"]["content"]["application/json"];
 type MessageWireResponse =
   operations["getMessagingConversationsByIdMessages"]["responses"][200]["content"]["application/json"];
-type MessageResponse =
-  operations["postMessagingConversationsByIdMessages"]["responses"][200]["content"]["application/json"];
 type MessageRequest =
   operations["postMessagingConversationsByIdMessages"]["requestBody"]["content"]["application/json"];
-type OfferResponse =
-  operations["postMessagingOffer"]["responses"][200]["content"]["application/json"];
 type OfferRequest =
   operations["postMessagingOffer"]["requestBody"]["content"]["application/json"];
 type MarkReadRequest =
   operations["postMessagingRead"]["requestBody"]["content"]["application/json"];
-type MarkReadResponse =
-  operations["postMessagingRead"]["responses"][200]["content"]["application/json"];
 
 export interface MobileConversation {
   id: string;
@@ -160,9 +152,9 @@ export class HttpMessagingService implements MessagingService {
     marketCode: string,
   ): Promise<MobileConversation[]> {
     const page = conversationPage(
-      await apiRequest<ConversationWireResponse>(
-        "/messaging/conversations?limit=50",
-        {},
+      await apiOperation(
+        "getMessagingConversations",
+        { query: { limit: 50 } },
         marketCode,
       ),
     );
@@ -175,9 +167,9 @@ export class HttpMessagingService implements MessagingService {
     marketCode: string,
   ): Promise<MobileMessage[]> {
     const page = messagePage(
-      await apiRequest<MessageWireResponse>(
-        `/messaging/conversations/${encodeURIComponent(conversationId)}/messages?limit=100`,
-        {},
+      await apiOperation(
+        "getMessagingConversationsByIdMessages",
+        { path: { id: conversationId }, query: { limit: 100 } },
         marketCode,
       ),
     );
@@ -190,9 +182,9 @@ export class HttpMessagingService implements MessagingService {
     userId: string;
   }): Promise<MobileConversation> {
     const payload: ConversationRequest = { listingId: input.listingId };
-    const conversation = (await apiRequest<ConversationResponse>(
-      "/messaging/conversations",
-      { method: "POST", body: JSON.stringify(payload) },
+    const conversation = (await apiOperation(
+      "postMessagingConversations",
+      { body: payload },
       input.marketCode,
     )) as unknown as BackendConversation;
     return mapConversation(conversation, input.userId, input.marketCode);
@@ -206,9 +198,9 @@ export class HttpMessagingService implements MessagingService {
   }): Promise<MobileMessage> {
     const payload: MessageRequest = { text: input.text };
     return mapMessage(
-      (await apiRequest<MessageResponse>(
-        `/messaging/conversations/${encodeURIComponent(input.conversationId)}/messages`,
-        { method: "POST", body: JSON.stringify(payload) },
+      (await apiOperation(
+        "postMessagingConversationsByIdMessages",
+        { path: { id: input.conversationId }, body: payload },
         input.marketCode,
       )) as unknown as BackendMessage,
     );
@@ -225,12 +217,9 @@ export class HttpMessagingService implements MessagingService {
       amountMinor: input.amountMinor,
     };
     return mapMessage(
-      (await apiRequest<OfferResponse>(
-        "/messaging/offer",
-        {
-          method: "POST",
-          body: JSON.stringify(payload),
-        },
+      (await apiOperation(
+        "postMessagingOffer",
+        { body: payload },
         input.marketCode,
       )) as unknown as BackendMessage,
     );
@@ -242,11 +231,7 @@ export class HttpMessagingService implements MessagingService {
     marketCode: string,
   ): Promise<void> {
     const payload: MarkReadRequest = { conversationId };
-    await apiRequest<MarkReadResponse>(
-      "/messaging/read",
-      { method: "POST", body: JSON.stringify(payload) },
-      marketCode,
-    );
+    await apiOperation("postMessagingRead", { body: payload }, marketCode);
   }
 }
 

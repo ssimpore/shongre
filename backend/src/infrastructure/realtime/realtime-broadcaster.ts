@@ -1,6 +1,7 @@
 import { getSupabaseAdminClient } from "../supabase/supabase-client.js";
 import { logger } from "../logging/logger.js";
 import { isBackendDemoMode } from "../../app/config/index.js";
+import { realtimePubSub } from "./realtime-pub-sub.js";
 
 export class RealtimeBroadcaster {
   async broadcastEvent(
@@ -8,8 +9,18 @@ export class RealtimeBroadcaster {
     event: string,
     payload: Record<string, any>,
   ): Promise<void> {
-    // Demo behavior is simulated by the frontend's deterministic realtime
-    // client. Never open a Supabase channel from a standalone demo backend.
+    try {
+      await realtimePubSub.publish({
+        schemaVersion: 1,
+        channelName,
+        event,
+        payload,
+      });
+    } catch (err: any) {
+      logger.warn(`Failed to publish realtime event: ${err.message}`);
+    }
+    // Supabase Broadcast remains the hosted/native compatibility projection;
+    // the application WebSocket gateway is fanned out through Redis above.
     if (isBackendDemoMode()) return;
     try {
       const supabase = getSupabaseAdminClient();

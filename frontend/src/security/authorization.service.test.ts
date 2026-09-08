@@ -118,11 +118,6 @@ describe("AuthorizationService - RBAC Permissions & Security Rules", () => {
     ).toBe("verification_required");
     expect(
       authorizationService.decision(professional, "listing.create", undefined, {
-        entitlement: "bulkImportExport",
-      }).denialReason,
-    ).toBe("entitlement_required");
-    expect(
-      authorizationService.decision(professional, "listing.create", undefined, {
         featureFlag: "listing-v2",
         enabledFeatureFlags: [],
       }).denialReason,
@@ -246,25 +241,6 @@ describe("AuthorizationService - RBAC Permissions & Security Rules", () => {
     ).toBe(false);
     expect(
       authorizationService.can(automotivePro as UserProfile, "listing.create"),
-    ).toBe(false);
-  });
-
-  it("does not grant commercial entitlements to staff administrators", () => {
-    const admin: Partial<UserProfile> = {
-      id: "admin-1",
-      accountType: "individual",
-      staffStatus: "active",
-      staffRole: "admin",
-      role: "admin",
-      primaryRole: "admin",
-      status: "active",
-      activePlanId: "pro_enterprise",
-    };
-    expect(
-      authorizationService.hasEntitlement(
-        admin as UserProfile,
-        "bulkImportExport",
-      ),
     ).toBe(false);
   });
 

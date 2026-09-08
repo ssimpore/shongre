@@ -1,6 +1,5 @@
 import {
   TAXONOMY_HEADER_NAVIGATION_CONSTRAINTS,
-  type TaxonomyHeaderCategoryItem,
   type TaxonomyHeaderNavigationConfiguration,
 } from "@shongre/contracts/taxonomy";
 import {
@@ -19,6 +18,7 @@ import { useMarketLocation } from "../../../../app/providers/MarketLocationProvi
 import { Button } from "../../../../design-system/primitives/Button";
 import {
   FormField,
+  Input,
   Select,
   Switch,
 } from "../../../../design-system/primitives/FormField";
@@ -27,11 +27,33 @@ import { PromptModal } from "../../../../design-system/primitives/PromptModal";
 import { StatePanel } from "../../../../design-system/primitives/StatePanel";
 import { useTranslation } from "../../../../i18n/I18nProvider";
 import type { Category } from "../../../../types";
+import {
+  headerNavigationItems,
+  headerNavigationLabel,
+  type HeaderNavigationItem,
+} from "../../../../app/layouts/headerNavigation.model";
 
-function normalizeOrder(
-  items: TaxonomyHeaderCategoryItem[],
-): TaxonomyHeaderCategoryItem[] {
-  return items.map((item, displayOrder) => ({ ...item, displayOrder }));
+function withOrderedItems(
+  configuration: TaxonomyHeaderNavigationConfiguration,
+  items: HeaderNavigationItem[],
+): TaxonomyHeaderNavigationConfiguration {
+  const ordered = items.map((item, displayOrder) => ({
+    ...item,
+    displayOrder,
+  }));
+  return {
+    ...configuration,
+    items: ordered.filter(
+      (item): item is Extract<HeaderNavigationItem, { kind: "category" }> =>
+        item.kind === "category",
+    ),
+    links: ordered
+      .filter(
+        (item): item is Extract<HeaderNavigationItem, { kind: "link" }> =>
+          item.kind === "link",
+      )
+      .map(({ kind: _kind, ...link }) => link),
+  };
 }
 
 function categoryLabel(category: Category): string {
@@ -65,14 +87,12 @@ export const TaxonomyHeaderNavigationTab: React.FC = () => {
         services.taxonomy.getAdminHeaderNavigation(marketContext),
         services.taxonomy.getRootCategories(),
       ]);
-      setConfiguration({
-        ...nextConfiguration,
-        items: normalizeOrder(
-          [...nextConfiguration.items].sort(
-            (left, right) => left.displayOrder - right.displayOrder,
-          ),
+      setConfiguration(
+        withOrderedItems(
+          nextConfiguration,
+          headerNavigationItems(nextConfiguration),
         ),
-      });
+      );
       setRootCategories(
         [...nextRootCategories].sort((left, right) =>
           categoryLabel(left).localeCompare(categoryLabel(right), locale),
@@ -111,13 +131,11 @@ export const TaxonomyHeaderNavigationTab: React.FC = () => {
   );
 
   const updateItems = (
-    update: (
-      items: TaxonomyHeaderCategoryItem[],
-    ) => TaxonomyHeaderCategoryItem[],
+    update: (items: HeaderNavigationItem[]) => HeaderNavigationItem[],
   ) => {
     setConfiguration((current) =>
       current
-        ? { ...current, items: normalizeOrder(update(current.items)) }
+        ? withOrderedItems(current, update(headerNavigationItems(current)))
         : current,
     );
     setNotice(null);
@@ -129,6 +147,7 @@ export const TaxonomyHeaderNavigationTab: React.FC = () => {
     updateItems((items) => [
       ...items,
       {
+        kind: "category",
         categoryId: category.id,
         slug: category.slug,
         labels: { "fr-FR": category.name },
@@ -165,13 +184,14 @@ export const TaxonomyHeaderNavigationTab: React.FC = () => {
         marketCode: configuration.marketCode,
         expectedRevision: configuration.revision,
         changeReason,
+        links: configuration.links,
         items: configuration.items.map((item) => ({
           categoryId: item.categoryId,
           isActive: item.isActive,
           displayOrder: item.displayOrder,
         })),
       });
-      setConfiguration({ ...saved, items: normalizeOrder(saved.items) });
+      setConfiguration(withOrderedItems(saved, headerNavigationItems(saved)));
       setNotice(t("admin.taxonomyHeader.saved"));
     } catch (caught) {
       setError(
@@ -207,6 +227,8 @@ export const TaxonomyHeaderNavigationTab: React.FC = () => {
       />
     );
   }
+
+  const navigationItems = headerNavigationItems(configuration);
 
   return (
     <div className="space-y-5">
@@ -308,36 +330,69 @@ export const TaxonomyHeaderNavigationTab: React.FC = () => {
           className="text-sm font-bold text-text-main"
         >
           {t("admin.taxonomyHeader.selectedTitle", {
-            count: configuration.items.length,
+            count: navigationItems.length,
           })}
         </h3>
-        {configuration.items.length === 0 ? (
+        {navigationItems.length === 0 ? (
           <p className="mt-4 rounded-control bg-bg-subtle p-5 text-center text-xs text-text-secondary">
             {t("admin.taxonomyHeader.empty")}
           </p>
         ) : (
           <ol className="mt-4 space-y-2">
-            {configuration.items.map((item, index) => {
-              const rootCategory = rootCategoryById.get(item.categoryId);
+            {navigationItems.map((item, index) => {
+              const rootCategory =
+                item.kind === "category"
+                  ? rootCategoryById.get(item.categoryId)
+                  : undefined;
               const label = rootCategory
                 ? categoryLabel(rootCategory)
-                : item.shortLabels[locale] ||
-                  item.shortLabels["fr-FR"] ||
-                  item.labels["fr-FR"];
+                : headerNavigationLabel(item, locale);
               return (
                 <li
-                  key={item.categoryId}
+                  key={item.kind === "category" ? item.categoryId : item.target}
                   className="flex flex-col gap-3 rounded-control border border-border-base p-3 sm:flex-row sm:items-center"
                 >
                   <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-pill bg-primary-light text-xs font-bold text-primary">
                     {index + 1}
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-xs font-bold text-text-main">
-                      {label}
-                    </span>
+                    {item.kind === "link" ? (
+                      <Input
+                        aria-label={t("admin.taxonomyHeader.linkLabel", {
+                          name: label,
+                        })}
+                        value={label}
+                        maxLength={
+                          TAXONOMY_HEADER_NAVIGATION_CONSTRAINTS.shortLabelMaxLength
+                        }
+                        onChange={(event) => {
+                          const value = event.target.value;
+                          updateItems((items) =>
+                            items.map((candidate, candidateIndex) =>
+                              candidateIndex === index
+                                ? {
+                                    ...candidate,
+                                    labels: {
+                                      ...candidate.labels,
+                                      [locale]: value,
+                                    },
+                                    shortLabels: {
+                                      ...candidate.shortLabels,
+                                      [locale]: value,
+                                    },
+                                  }
+                                : candidate,
+                            ),
+                          );
+                        }}
+                      />
+                    ) : (
+                      <span className="block truncate text-xs font-bold text-text-main">
+                        {label}
+                      </span>
+                    )}
                     <span className="block truncate text-micro text-text-muted">
-                      {item.categoryId}
+                      {item.kind === "category" ? item.categoryId : item.target}
                     </span>
                   </span>
                   <span className="flex flex-wrap items-center gap-1.5">
@@ -348,8 +403,8 @@ export const TaxonomyHeaderNavigationTab: React.FC = () => {
                       })}
                       onChange={(isActive) =>
                         updateItems((items) =>
-                          items.map((candidate) =>
-                            candidate.categoryId === item.categoryId
+                          items.map((candidate, candidateIndex) =>
+                            candidateIndex === index
                               ? { ...candidate, isActive }
                               : candidate,
                           ),
@@ -376,7 +431,7 @@ export const TaxonomyHeaderNavigationTab: React.FC = () => {
                       ariaLabel={t("admin.taxonomyHeader.moveDown", {
                         name: label,
                       })}
-                      disabled={index === configuration.items.length - 1}
+                      disabled={index === navigationItems.length - 1}
                       onClick={() => moveCategory(index, 1)}
                     >
                       <ArrowDown
@@ -384,26 +439,27 @@ export const TaxonomyHeaderNavigationTab: React.FC = () => {
                         aria-hidden="true"
                       />
                     </IconButton>
-                    <IconButton
-                      size="sm"
-                      variant="ghost"
-                      ariaLabel={t("admin.taxonomyHeader.remove", {
-                        name: label,
-                      })}
-                      onClick={() =>
-                        updateItems((items) =>
-                          items.filter(
-                            (candidate) =>
-                              candidate.categoryId !== item.categoryId,
-                          ),
-                        )
-                      }
-                    >
-                      <Trash2
-                        className="h-icon-sm w-icon-sm"
-                        aria-hidden="true"
-                      />
-                    </IconButton>
+                    {item.kind === "category" ? (
+                      <IconButton
+                        size="sm"
+                        variant="ghost"
+                        ariaLabel={t("admin.taxonomyHeader.remove", {
+                          name: label,
+                        })}
+                        onClick={() =>
+                          updateItems((items) =>
+                            items.filter(
+                              (_, candidateIndex) => candidateIndex !== index,
+                            ),
+                          )
+                        }
+                      >
+                        <Trash2
+                          className="h-icon-sm w-icon-sm"
+                          aria-hidden="true"
+                        />
+                      </IconButton>
+                    ) : null}
                   </span>
                 </li>
               );

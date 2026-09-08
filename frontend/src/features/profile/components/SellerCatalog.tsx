@@ -10,11 +10,7 @@ import {
   PlusCircle,
 } from "lucide-react";
 
-import { Listing, UserProfile } from "../../../types";
-import {
-  taxonomyService,
-  getTaxonomyLabel,
-} from "../../../domains/taxonomy/taxonomy.service";
+import { Listing, PublicSellerProfile } from "../../../types";
 import { ListingCard } from "../../../design-system/primitives/ListingCard";
 import { ListingRail } from "../../../design-system/primitives/ListingRail";
 import { Button } from "../../../design-system/primitives/Button";
@@ -28,7 +24,7 @@ import { PRICE_FILTER_INPUT_CONSTRAINTS } from "../../../domains/market/market.c
 
 export interface SellerCatalogProps {
   listings: Listing[];
-  seller: UserProfile;
+  seller: PublicSellerProfile;
   isOwnProfile?: boolean;
 }
 
@@ -64,10 +60,7 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
     const map = new Map<string, { name: string; count: number }>();
     activeListings.forEach((l) => {
       const catSlug = l.categorySlug || "autres";
-      const node = taxonomyService.getNodeBySlug(catSlug);
-      const catName = node
-        ? getTaxonomyLabel(node, "compact")
-        : l.categoryLabel || "Autres";
+      const catName = l.categoryLabel || "Autres";
       const existing = map.get(catSlug);
       if (existing) {
         existing.count += 1;
@@ -90,10 +83,7 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
       .filter((l) => l.categorySlug === selectedCategory && l.subCategorySlug)
       .forEach((l) => {
         const subSlug = l.subCategorySlug!;
-        const node = taxonomyService.getNodeBySlug(subSlug);
-        const subName = node
-          ? getTaxonomyLabel(node, "compact")
-          : l.subCategoryLabel || subSlug;
+        const subName = l.subCategoryLabel || subSlug;
         const existing = map.get(subSlug);
         if (existing) {
           existing.count += 1;
@@ -205,7 +195,7 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
         </h3>
         <p className="text-xs sm:text-sm text-text-tertiary max-w-md mx-auto mb-6">
           {isPro
-            ? `${seller.companyName || seller.name} n'a pas d'articles en vente pour le moment. Revenez bientôt découvrir leurs nouveautés.`
+            ? `${seller.name} n'a pas d'articles en vente pour le moment. Revenez bientôt découvrir leurs nouveautés.`
             : `${seller.name} n'a aucune annonce active en ce moment.`}
         </p>
         {isOwnProfile ? (
@@ -238,8 +228,8 @@ export const SellerCatalog: React.FC<SellerCatalogProps> = ({
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={`Rechercher parmi les annonces de ${seller.companyName || seller.name}...`}
-              aria-label={`Rechercher parmi les annonces de ${seller.companyName || seller.name}`}
+              placeholder={`Rechercher parmi les annonces de ${seller.name}...`}
+              aria-label={`Rechercher parmi les annonces de ${seller.name}`}
               className="w-full pl-9 pr-8 py-2 bg-bg-base border border-border-base rounded-control text-xs sm:text-sm text-text-main placeholder:text-text-tertiary focus:bg-bg-surface focus:outline-hidden focus:ring-2 focus:ring-primary-ring focus:border-primary transition-all h-control-touch"
             />
             {searchQuery && (

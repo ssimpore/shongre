@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight, LayoutGrid, X } from "lucide-react";
-import { getTaxonomyLabel } from "../../domains/taxonomy/taxonomy.service";
+import { getTaxonomyLabel } from "../../domains/taxonomy/taxonomy.labels";
 import { CategoryIcon } from "./CategoryIcon";
 import { Category } from "../../types";
 import { useTranslation } from "../../i18n/I18nProvider";

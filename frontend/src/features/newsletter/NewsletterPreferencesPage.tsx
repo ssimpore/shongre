@@ -4,18 +4,17 @@ import { useAuth } from "../../app/providers/AuthProvider";
 import { useToast } from "../../app/providers/ToastProvider";
 import { Button } from "../../design-system/primitives/Button";
 import { Badge } from "../../design-system/primitives/Badge";
-import {
-  NewsletterSubscription,
-  NewsletterTopic,
-} from "../../domains/newsletter/newsletter.types";
+import { NewsletterTopic } from "../../domains/newsletter/newsletter.types";
 import { newsletterService } from "../../domains/newsletter/newsletter.service";
 import { newsletterTopicsService } from "../../domains/newsletter/newsletter.topics";
 import { newsletterCapabilitiesService } from "../../domains/newsletter/newsletter.capabilities";
-import { newsletterRepository } from "../../repositories/newsletter.repository";
+import { services } from "../../api/client/service-registry";
+import type { MarketingSubscriptionView } from "@shongre/contracts";
 import { NewsletterTopicSelector } from "./components/NewsletterTopicSelector";
 import { Skeleton } from "../../design-system";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { usePageMeta } from "../../hooks/usePageMeta";
+import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 
 export const NewsletterPreferencesPage: React.FC = () => {
   const { t } = useTranslation();
@@ -27,10 +26,11 @@ export const NewsletterPreferencesPage: React.FC = () => {
   });
 
   const { currentUser } = useAuth();
+  const { activeMarket, currentLocale } = useMarketLocation();
   const toast = useToast();
 
   const [subscription, setSubscription] =
-    useState<NewsletterSubscription | null>(null);
+    useState<MarketingSubscriptionView | null>(null);
   const [selectedTopics, setSelectedTopics] = useState<NewsletterTopic[]>([]);
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -44,15 +44,14 @@ export const NewsletterPreferencesPage: React.FC = () => {
       if (!currentUser) return;
       setLoading(true);
       try {
-        let sub = await newsletterRepository.getSubscriptionByUserId(
-          currentUser.id,
-        );
-        if (!sub && currentUser.email) {
-          sub = await newsletterRepository.getSubscription(currentUser.email);
-        }
+        const sub = await services.marketing.getAccountSubscription({
+          userId: currentUser.id,
+          email: currentUser.email,
+          marketCode: activeMarket.code,
+        });
         setSubscription(sub);
         if (sub) {
-          setSelectedTopics(sub.topics);
+          setSelectedTopics(sub.topics as NewsletterTopic[]);
         } else {
           // Default topics if not yet subscribed
           setSelectedTopics(
@@ -64,25 +63,28 @@ export const NewsletterPreferencesPage: React.FC = () => {
       }
     };
     fetchSub();
-  }, [currentUser, capabilities.isPro]);
+  }, [activeMarket.code, capabilities.isPro, currentUser]);
 
   const handleSave = async () => {
     if (!currentUser) return;
     setIsSaving(true);
     try {
       if (subscription) {
-        const updated = await newsletterRepository.updatePreferences(
-          subscription.id,
-          selectedTopics,
-        );
+        const updated = await services.marketing.updateAccountPreferences({
+          userId: currentUser.id,
+          email: currentUser.email,
+          marketCode: activeMarket.code,
+          topics: selectedTopics,
+        });
         setSubscription(updated);
       } else {
-        const created = await newsletterRepository.subscribe({
+        const created = await services.marketing.subscribeAccount({
+          userId: currentUser.id,
           email: currentUser.email,
-          subscriberId: currentUser.id,
+          marketCode: activeMarket.code,
+          locale: currentLocale,
           topics: selectedTopics,
-          accountType: capabilities.isPro ? "pro" : "individual",
-          source: "account",
+          consentGiven: true,
         });
         setSubscription(created);
       }
@@ -104,7 +106,12 @@ export const NewsletterPreferencesPage: React.FC = () => {
     if (!subscription) return;
     setIsSaving(true);
     try {
-      const updated = await newsletterRepository.unsubscribe(subscription.id);
+      if (!currentUser) return;
+      const updated = await services.marketing.unsubscribeAccount({
+        userId: currentUser.id,
+        email: currentUser.email,
+        marketCode: activeMarket.code,
+      });
       setSubscription(updated);
       toast.info(
         "Vous êtes désabonné de la newsletter Shongre.",
@@ -121,10 +128,15 @@ export const NewsletterPreferencesPage: React.FC = () => {
     if (!subscription) return;
     setIsSaving(true);
     try {
-      const updated = await newsletterRepository.resubscribe(
-        subscription.id,
-        selectedTopics,
-      );
+      if (!currentUser) return;
+      const updated = await services.marketing.subscribeAccount({
+        userId: currentUser.id,
+        email: currentUser.email,
+        marketCode: activeMarket.code,
+        locale: currentLocale,
+        topics: selectedTopics,
+        consentGiven: true,
+      });
       setSubscription(updated);
       toast.success(
         "Votre réabonnement à la newsletter a été confirmé.",
@@ -146,9 +158,15 @@ export const NewsletterPreferencesPage: React.FC = () => {
     );
   }
 
-  const isSubscribed = subscription?.status === "subscribed";
+  const isSubscribed = subscription?.status === "SUBSCRIBED";
   const statusInfo = newsletterService.getStatusInfo(
-    subscription?.status || "unsubscribed",
+    subscription?.status === "SUBSCRIBED"
+      ? "subscribed"
+      : subscription?.status === "PENDING"
+        ? "pending_confirmation"
+        : subscription?.status === "SUPPRESSED"
+          ? "suppressed"
+          : "unsubscribed",
   );
 
   return (

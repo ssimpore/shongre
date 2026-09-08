@@ -36,7 +36,6 @@ import type {
   LocationSelectorValue,
 } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
-import { storageService } from "../../services/storage.service";
 import { AutoVehicleCard } from "./components/AutoVehicleCard";
 import { formatAutoMoney, fuelLabels } from "./auto-format";
 import { formatCurrencySymbol } from "../../utilities/formatters";
@@ -708,31 +707,6 @@ export const AutoSearchPage: React.FC = () => {
             : {}),
         },
       });
-      storageService.saveSearch(
-        {
-          id,
-          title,
-          filters: {
-            query: query.query,
-            categorySlug: "auto",
-            city: query.city,
-            radiusKm: query.radiusKm,
-            minPrice: query.minPriceMinor
-              ? Math.round(query.minPriceMinor / 100)
-              : undefined,
-            maxPrice: query.maxPriceMinor
-              ? Math.round(query.maxPriceMinor / 100)
-              : undefined,
-            marketCode: query.marketCode,
-            attributes: Object.fromEntries(params.entries()),
-          },
-          createdAt: new Date().toISOString(),
-          hasNotifications: true,
-          matchCount: total,
-        },
-        currentUser.id,
-        query.marketCode,
-      );
       toast.success(t("watch.auto.success"));
     } catch (reason) {
       toast.error(

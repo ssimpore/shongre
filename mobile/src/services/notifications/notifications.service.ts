@@ -1,8 +1,8 @@
 import { Platform } from "react-native";
+import { apiOperation } from "@/api/generated-api-operation";
 import Constants from "expo-constants";
 import * as Notifications from "expo-notifications";
 import type { operations } from "@shongre/contracts/openapi";
-import { apiRequest } from "@/api/http-client";
 import {
   permissionsService,
   type PermissionOutcome,
@@ -38,20 +38,12 @@ export type MobileNotificationPreferences = Record<
   updatedAt: string;
 };
 
-type PreferencesResponse =
-  operations["getNotificationPreferences"]["responses"][200]["content"]["application/json"];
 type PreferencesUpdateRequest =
   operations["putNotificationPreferences"]["requestBody"]["content"]["application/json"];
-type PreferencesUpdateResponse =
-  operations["putNotificationPreferences"]["responses"][200]["content"]["application/json"];
 type DeviceRegistrationRequest =
   operations["postNotificationsDevices"]["requestBody"]["content"]["application/json"];
-type DeviceRegistrationResponse =
-  operations["postNotificationsDevices"]["responses"][200]["content"]["application/json"];
 type DeviceUnregistrationRequest =
   operations["postNotificationsDevicesUnregister"]["requestBody"]["content"]["application/json"];
-type DeviceUnregistrationResponse =
-  operations["postNotificationsDevicesUnregister"]["responses"][200]["content"]["application/json"];
 
 function mapPreferences(value: unknown): MobileNotificationPreferences {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
@@ -99,9 +91,7 @@ export const notificationsService = {
   async getPreferences(
     _userId: string,
   ): Promise<MobileNotificationPreferences> {
-    return mapPreferences(
-      await apiRequest<PreferencesResponse>("/notifications/preferences"),
-    );
+    return mapPreferences(await apiOperation("getNotificationPreferences", {}));
   },
 
   async updatePreferences(
@@ -110,13 +100,7 @@ export const notificationsService = {
   ): Promise<MobileNotificationPreferences> {
     const payload: PreferencesUpdateRequest = { ...preferences };
     return mapPreferences(
-      await apiRequest<PreferencesUpdateResponse>(
-        "/notifications/preferences",
-        {
-          method: "PUT",
-          body: JSON.stringify(payload),
-        },
-      ),
+      await apiOperation("putNotificationPreferences", { body: payload }),
     );
   },
 
@@ -135,10 +119,7 @@ export const notificationsService = {
       platform: Platform.OS,
       appVersion: Constants.expoConfig?.version,
     };
-    await apiRequest<DeviceRegistrationResponse>("/notifications/devices", {
-      method: "POST",
-      body: JSON.stringify(payload),
-    });
+    await apiOperation("postNotificationsDevices", { body: payload });
     await secureStorage.set(PUSH_TOKEN_KEY, token);
     return outcome;
   },
@@ -147,13 +128,7 @@ export const notificationsService = {
     const token = await secureStorage.get(PUSH_TOKEN_KEY);
     if (!token) return;
     const payload: DeviceUnregistrationRequest = { token };
-    await apiRequest<DeviceUnregistrationResponse>(
-      "/notifications/devices/unregister",
-      {
-        method: "POST",
-        body: JSON.stringify(payload),
-      },
-    );
+    await apiOperation("postNotificationsDevicesUnregister", { body: payload });
     await secureStorage.remove(PUSH_TOKEN_KEY);
   },
 };

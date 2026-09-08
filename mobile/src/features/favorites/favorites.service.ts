@@ -1,10 +1,6 @@
-import { apiRequest } from "@/api/http-client";
+import { apiOperation } from "@/api/generated-api-operation";
 import type { ListingCardView } from "@shongre/contracts";
 import { deliveryRequestIdFromDiscoveryListingId } from "@shongre/contracts/delivery";
-import {
-  getFavorites,
-  putListingsByIdFavorite,
-} from "@shongre/contracts/api-client";
 import { mapBackendListing } from "@/features/listings/listing.mapper";
 import { deliveryService } from "@/features/delivery/delivery.service";
 
@@ -28,10 +24,7 @@ export class HttpFavoritesService implements FavoritesService {
     _userId: string,
     marketCode: string,
   ): Promise<FavoriteListingCollection> {
-    const result = await getFavorites(
-      (path, init) => apiRequest(path, init, marketCode),
-      {},
-    );
+    const result = await apiOperation("getFavorites", {}, marketCode);
     return {
       listingIds: [...result.listingIds],
       listings: result.listings.map(mapBackendListing),
@@ -54,12 +47,13 @@ export class HttpFavoritesService implements FavoritesService {
         isFavorite,
       );
     }
-    const result = await putListingsByIdFavorite(
-      (path, init) => apiRequest(path, init, marketCode),
+    const result = await apiOperation(
+      "putListingsByIdFavorite",
       {
         path: { id: listingId },
         body: { isFavorite },
       },
+      marketCode,
     );
     return result.isFavorite;
   }

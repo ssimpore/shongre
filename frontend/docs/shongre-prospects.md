@@ -22,16 +22,12 @@ page
   -> CRM prospecting service contract (discovery, evidence, import)
   -> CRM Core service contract (accounts, opportunities, tasks, activities)
   -> Marketing service contract (campaigns, suppression, preflight)
-  -> deterministic tenant-keyed demo adapters
+  -> HTTP adapters -> canonical backend operations
 ```
 
-The explicit `make frontend` demo runtime uses
-`NEXT_PUBLIC_DATA_MODE=demo`, so the workspace works with the backend,
-Supabase, AI providers and enrichment providers stopped. Canonical local
-development and hosted development, staging, and production use `api` mode and
-select the live `HttpCrmProspectingService`, which calls only the
+All environments select `HttpCrmProspectingService`, which calls only the
 canonical `/api/v1/crm/prospecting/*` OpenAPI operations and validates response
-payloads before returning them to the UI. API failures never fall back to demo.
+payloads before returning them to the UI. API failures never fall back to fixtures.
 
 The `standalone_trial_owner` persona demonstrates an organization that uses the
 SaaS product without marketplace seller activity. `pro_atelier` demonstrates

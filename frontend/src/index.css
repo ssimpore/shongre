@@ -647,16 +647,19 @@
   }
 }
 
-/* Every vertical listing card owns one compact footprint. Essential values are
-   single-line and safely truncated, so grids and rails stay aligned without a
-   second category-specific height. */
+/* Keep the shared footprint as a minimum, not a clipping boundary: unusually
+   long prices or trust facts may wrap without hiding buyer information. */
 .listing-card-standard {
   width: min(100%, var(--spacing-listing-card-mobile-max));
   max-width: var(--spacing-listing-card-mobile-max);
-  height: var(--spacing-listing-card-height);
   min-height: var(--spacing-listing-card-height);
-  max-height: var(--spacing-listing-card-height);
   margin-inline: auto;
+}
+
+.listing-card-title-vertical {
+  min-height: 2lh;
+  flex-shrink: 0;
+  overflow-wrap: anywhere;
 }
 
 .listing-card-shell,
@@ -672,7 +675,7 @@
 /* One token-backed media height keeps the four essential information rows
    visible even when a fluid grid gives the compact card a little more width.
    The canonical 13rem card remains near the dedicated 4:5 portrait ratio;
-   wider phone cards reveal more of the crop without changing total height. */
+   wider phone cards reveal more of the crop without changing media height. */
 .listing-card-media,
 .listing-card-skeleton > :first-child {
   height: var(--spacing-listing-card-media-height);
@@ -680,9 +683,7 @@
 
 /* Showcase is a context variant of the same primitive and footprint. */
 .listing-card-showcase {
-  height: var(--spacing-listing-card-showcase-height);
   min-height: var(--spacing-listing-card-showcase-height);
-  max-height: var(--spacing-listing-card-showcase-height);
 }
 
 .listing-card-showcase-skeleton {
@@ -898,7 +899,6 @@
 
 .listing-rail-cell > * {
   flex: 1 1 auto;
-  min-height: 0;
 }
 
 /* Touch is the clearest rail control on phones, where an overlaid arrow would

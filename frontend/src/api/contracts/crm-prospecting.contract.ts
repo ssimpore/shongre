@@ -10,18 +10,6 @@ import type {
   ProspectingUsage,
 } from "@shongre/contracts/prospecting";
 
-export type ProspectingDemoScenario =
-  | "prospects_default"
-  | "empty_discovery"
-  | "discovery_error"
-  | "duplicates_found"
-  | "ai_unavailable"
-  | "quota_near_limit"
-  | "quota_exhausted"
-  | "source_disconnected"
-  | "subscription_expired"
-  | "permission_denied";
-
 /** Shared UI boundary for the standalone, Pro and internal entry points. */
 export interface CrmProspectingServiceContract {
   listProfiles(): Promise<ProspectingProfile[]>;

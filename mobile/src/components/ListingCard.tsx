@@ -45,13 +45,23 @@ export function ListingCard({ listing }: { listing: ListingCardView }) {
       }
       labels={{
         boosted: messagesFr["ui.listingCard.boosted"],
+        delivery: messagesFr["ui.listingCard.delivery"],
+        digitalFulfillment: messagesFr["ui.listingCard.digitalFulfillment"],
         free: messagesFr["ui.listingCard.free"],
+        negotiable: messagesFr["ui.listingCard.negotiable"],
         onRequest: messagesFr["ui.listingCard.onRequest"],
+        onlinePayment: messagesFr["ui.listingCard.onlinePayment"],
         imageUnavailable: messagesFr["ui.listingCard.imageUnavailable"],
+        photos: (count) =>
+          (count === 1
+            ? messagesFr["ui.listingCard.photos_one"]
+            : messagesFr["ui.listingCard.photos_other"]
+          ).replace("{count}", new Intl.NumberFormat("fr-FR").format(count)),
         rating: (rating, count) =>
           messagesFr["ui.listingCard.noteAvis"]
             .replace("{rating}", rating)
             .replace("{count}", count),
+        verifiedSeller: messagesFr["ui.listingCard.verifiedSeller"],
       }}
       identityLabels={{
         pro: messagesFr["ui.identityStatus.pro.short"],

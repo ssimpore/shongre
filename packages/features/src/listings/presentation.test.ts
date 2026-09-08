@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { ListingCardView } from "@shongre/contracts";
 import {
   getListingCardPriceText,
+  getListingCapabilityPresentation,
   getListingPromotionBadges,
   getListingSellerRatingPresentation,
   listingAccessibilityLabel,
@@ -130,6 +131,91 @@ describe("getListingPromotionBadges", () => {
 });
 
 describe("compact card value presentation", () => {
+  it("projects only explicit buyer-facing capabilities in a stable order", () => {
+    const labels = {
+      delivery: "Livraison",
+      digitalFulfillment: "Accès numérique",
+      negotiable: "Négociable",
+      onlinePayment: "Paiement en ligne",
+      verifiedSeller: "Vendeur vérifié",
+    };
+
+    expect(
+      getListingCapabilityPresentation(
+        {
+          onlinePaymentAvailable: true,
+          deliveryAvailable: true,
+          fulfillmentTypes: ["PHYSICAL"],
+          requiresPhysicalDelivery: true,
+          isNegotiable: true,
+          seller: {
+            id: "seller",
+            name: "Vendeur",
+            sellerType: "individual",
+            isIdentityVerified: true,
+            isBusinessVerified: false,
+          },
+        },
+        labels,
+      ),
+    ).toEqual([
+      { icon: "shield", kind: "online_payment", label: "Paiement en ligne" },
+      { icon: "truck", kind: "delivery", label: "Livraison" },
+      { icon: "tag", kind: "negotiable", label: "Négociable" },
+      {
+        icon: "verified",
+        kind: "verified_seller",
+        label: "Vendeur vérifié",
+      },
+    ]);
+
+    expect(
+      getListingCapabilityPresentation(
+        {
+          onlinePaymentAvailable: false,
+          deliveryAvailable: false,
+          fulfillmentTypes: ["PHYSICAL"],
+          requiresPhysicalDelivery: true,
+          isNegotiable: false,
+          seller: undefined,
+        },
+        labels,
+      ),
+    ).toEqual([]);
+  });
+
+  it("requires an explicit non-physical fulfillment method for digital access", () => {
+    const labels = {
+      delivery: "Livraison",
+      digitalFulfillment: "Accès numérique",
+      negotiable: "Négociable",
+      onlinePayment: "Paiement en ligne",
+      verifiedSeller: "Vendeur vérifié",
+    };
+
+    expect(
+      getListingCapabilityPresentation(
+        {
+          requiresPhysicalDelivery: false,
+          fulfillmentTypes: ["FILE_DOWNLOAD"],
+        },
+        labels,
+      ),
+    ).toEqual([
+      {
+        icon: "file",
+        kind: "digital_fulfillment",
+        label: "Accès numérique",
+      },
+    ]);
+    expect(
+      getListingCapabilityPresentation(
+        { requiresPhysicalDelivery: false },
+        labels,
+      ),
+    ).toEqual([]);
+  });
+
   it("uses semantic price states shared by cards and map markers", () => {
     const labels = { free: "Gratuit", onRequest: "Prix sur demande" };
     expect(
@@ -205,11 +291,14 @@ describe("listingAccessibilityLabel", () => {
       "Boosté",
       "Pro",
       "Aujourd’hui",
+      ["Paiement en ligne", "Livraison"],
     );
 
     expect(label).toContain("Boosté");
     expect(label).toContain("Pro");
     expect(label).toContain("Aujourd’hui");
+    expect(label).toContain("Paiement en ligne");
+    expect(label).toContain("Livraison");
   });
 });
 

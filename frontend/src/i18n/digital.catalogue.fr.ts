@@ -6,7 +6,6 @@
 export const digitalMessagesFr = {
   "digital.common.title": "Produits numériques",
   "digital.common.simulated": "Simulation — aucun paiement ni accès réel",
-  "digital.common.noShipping": "Aucune livraison physique",
   "digital.common.loading": "Chargement des accès numériques…",
   "digital.common.error":
     "Les informations numériques sont temporairement indisponibles.",

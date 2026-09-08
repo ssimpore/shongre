@@ -5,9 +5,8 @@
  * reading a browser-prefixed AI key — which shipped it to every visitor because
  * the legacy bundler exposed that prefix to the browser. A provider key is a
  * server-side secret, so AI joins every other backend capability here: the UI
- * calls the contract, demo answers it deterministically today, and the HTTP
- * adapter will hand it to `backend/` (which owns the provider credentials)
- * without any UI change.
+ * calls the contract and the HTTP adapter hands the request to `backend/`,
+ * which owns the provider credentials.
  */
 
 export interface ListingAssistanceRequest {

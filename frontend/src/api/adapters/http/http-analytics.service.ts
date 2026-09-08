@@ -8,8 +8,8 @@ import {
   sellerAnalyticsSchema,
   type AnalyticsDashboardQuery,
 } from "@shongre/contracts/analytics";
+import { apiOperation } from "./generated-api-operation";
 import type { AnalyticsServiceContract } from "../../contracts/analytics.contract";
-import { httpClient } from "./http-client";
 
 const params = (query: AnalyticsDashboardQuery) => ({
   range: query.range,
@@ -25,42 +25,40 @@ const params = (query: AnalyticsDashboardQuery) => ({
 export class HttpAnalyticsService implements AnalyticsServiceContract {
   async getOverview(query: AnalyticsDashboardQuery) {
     return analyticsOverviewSchema.parse(
-      await httpClient.get("/analytics/overview", { params: params(query) }),
+      await apiOperation("getAnalyticsOverview", { query: params(query) }),
     );
   }
   async getAcquisition(query: AnalyticsDashboardQuery) {
     return analyticsAcquisitionSchema.parse(
-      await httpClient.get("/analytics/acquisition", { params: params(query) }),
+      await apiOperation("getAnalyticsAcquisition", { query: params(query) }),
     );
   }
   async getSearch(query: AnalyticsDashboardQuery) {
     return analyticsSearchSchema.parse(
-      await httpClient.get("/analytics/search", { params: params(query) }),
+      await apiOperation("getAnalyticsSearch", { query: params(query) }),
     );
   }
   async getMonetization(query: AnalyticsDashboardQuery) {
     return analyticsMonetizationSchema.parse(
-      await httpClient.get("/analytics/monetization", {
-        params: params(query),
-      }),
+      await apiOperation("getAnalyticsMonetization", { query: params(query) }),
     );
   }
   async getSeo(query: AnalyticsDashboardQuery) {
     return analyticsSeoSchema.parse(
-      await httpClient.get("/analytics/seo", { params: params(query) }),
+      await apiOperation("getAnalyticsSeo", { query: params(query) }),
     );
   }
   async getProviderHealth() {
     return analyticsProviderHealthSchema
       .array()
-      .parse(await httpClient.get("/analytics/providers"));
+      .parse(await apiOperation("getAnalyticsProviders", {}));
   }
   async getSeller(sellerId: string, query: AnalyticsDashboardQuery) {
     return sellerAnalyticsSchema.parse(
-      await httpClient.get(
-        `/analytics/sellers/${encodeURIComponent(sellerId)}` as "/analytics/sellers/{sellerId}",
-        { params: params(query) },
-      ),
+      await apiOperation("getAnalyticsSeller", {
+        path: { sellerId: sellerId },
+        query: params(query),
+      }),
     );
   }
 }

@@ -13,43 +13,50 @@ import type {
   VehicleSearchResponse,
   VehicleTypeConfig,
 } from "@shongre/contracts/auto";
+import { apiOperation } from "./generated-api-operation";
 import type {
   AutoLeadDraft,
   AutoServiceContract,
 } from "../../contracts/auto.contract";
-import { httpClient } from "./http-client";
 import { uploadPublicImage } from "./http-upload";
 
 export class HttpAutoService implements AutoServiceContract {
   getCatalog(marketCode: string) {
-    return httpClient.get<AutoCatalog>("/auto/catalog", {
-      params: { market: marketCode },
+    return apiOperation<AutoCatalog, "getAutoCatalog">("getAutoCatalog", {
+      query: { market: marketCode },
     });
   }
   getAdminOverview(marketCode: string) {
-    return httpClient.get<AutoAdminOverview>("/auto/admin/overview", {
-      params: { market: marketCode },
-    });
+    return apiOperation<AutoAdminOverview, "getAutoAdminOverview">(
+      "getAutoAdminOverview",
+      { query: { market: marketCode } },
+    );
   }
   searchVehicles(query: VehicleSearchQuery) {
-    return httpClient.post<VehicleSearchResponse>("/auto/search", query);
+    return apiOperation<VehicleSearchResponse, "postAutoSearch">(
+      "postAutoSearch",
+      { body: query },
+    );
   }
   getVehicle(idOrSlug: string, marketCode: string) {
-    return httpClient.get<VehiclePublic>(
-      `/auto/vehicles/${encodeURIComponent(idOrSlug)}`,
-      { headers: { "X-Shongre-Market": marketCode } },
+    return apiOperation<VehiclePublic, "getAutoVehiclesById">(
+      "getAutoVehiclesById",
+      { path: { id: idOrSlug }, headers: { "X-Shongre-Market": marketCode } },
     );
   }
   getOrCreateDraft(
     _ownerUserId: string,
     marketCode: string,
   ): Promise<VehicleDraft> {
-    return httpClient.post<VehicleDraft>("/auto/drafts", { marketCode });
+    return apiOperation<VehicleDraft, "postAutoDrafts">("postAutoDrafts", {
+      body: { marketCode },
+    });
   }
   async getDraft(draftId: string) {
     try {
-      return await httpClient.get<VehicleDraft>(
-        `/auto/drafts/${encodeURIComponent(draftId)}`,
+      return await apiOperation<VehicleDraft, "getAutoDraftsById">(
+        "getAutoDraftsById",
+        { path: { id: draftId } },
       );
     } catch (error: any) {
       if (error?.code === "NOT_FOUND") return null;
@@ -57,23 +64,27 @@ export class HttpAutoService implements AutoServiceContract {
     }
   }
   saveDraft(draft: VehicleDraft) {
-    return httpClient.put<VehicleDraft>(
-      `/auto/drafts/${encodeURIComponent(draft.id)}`,
-      draft,
+    return apiOperation<VehicleDraft, "putAutoDraftsById">(
+      "putAutoDraftsById",
+      { path: { id: draft.id }, body: draft },
     );
   }
   checkDuplicateIdentity(draftId: string, vin?: string, registration?: string) {
-    return httpClient.post<{ status: VehicleDraft["duplicateCheck"] }>(
-      `/auto/drafts/${encodeURIComponent(draftId)}/duplicate-check`,
-      { vin, registration },
-    );
+    return apiOperation<
+      { status: VehicleDraft["duplicateCheck"] },
+      "postAutoDraftsByIdDuplicateCheck"
+    >("postAutoDraftsByIdDuplicateCheck", {
+      path: { id: draftId },
+      body: { vin, registration },
+    });
   }
   submitDraft(
     draftId: string,
   ): Promise<{ vehicleId: string; lifecycle: "pending_review" }> {
-    return httpClient.post(
-      `/auto/drafts/${encodeURIComponent(draftId)}/submit`,
-    );
+    return apiOperation<
+      { vehicleId: string; lifecycle: "pending_review" },
+      "postAutoDraftsByIdSubmit"
+    >("postAutoDraftsByIdSubmit", { path: { id: draftId } });
   }
   async uploadDraftMedia(
     _draftId: string,
@@ -83,12 +94,17 @@ export class HttpAutoService implements AutoServiceContract {
     return { url: uploaded.url };
   }
   submitLead(input: AutoLeadDraft): Promise<AutoLead> {
-    return httpClient.post("/auto/leads", input);
+    return apiOperation<AutoLead, "postAutoLeads">("postAutoLeads", {
+      body: input,
+    });
   }
   getDealerWorkspace(organizationId: string) {
-    return httpClient.get<DealerWorkspace>(
-      `/auto/dealers/${encodeURIComponent(organizationId)}/workspace`,
-    );
+    return apiOperation<
+      DealerWorkspace,
+      "getAutoDealersByOrganizationIdWorkspace"
+    >("getAutoDealersByOrganizationIdWorkspace", {
+      path: { organizationId: organizationId },
+    });
   }
   updateLead(
     organizationId: string,
@@ -97,10 +113,13 @@ export class HttpAutoService implements AutoServiceContract {
       Pick<AutoLead, "status" | "assignedUserId" | "nextReminderAt">
     >,
   ) {
-    return httpClient.request<AutoLead>(
-      `/auto/dealers/${encodeURIComponent(organizationId)}/leads/${encodeURIComponent(leadId)}`,
-      { method: "PATCH", body: JSON.stringify(patch) },
-    );
+    return apiOperation<
+      AutoLead,
+      "patchAutoDealersByOrganizationIdLeadsByLeadId"
+    >("patchAutoDealersByOrganizationIdLeadsByLeadId", {
+      path: { organizationId: organizationId, leadId: leadId },
+      body: patch,
+    });
   }
   requestInventoryImport(
     organizationId: string,
@@ -108,19 +127,22 @@ export class HttpAutoService implements AutoServiceContract {
     fileName?: string,
     idempotencyKey?: string,
   ) {
-    return httpClient.post<InventoryImport>(
-      `/auto/dealers/${encodeURIComponent(organizationId)}/imports`,
-      { type, fileName, idempotencyKey },
-    );
+    return apiOperation<
+      InventoryImport,
+      "postAutoDealersByOrganizationIdImports"
+    >("postAutoDealersByOrganizationIdImports", {
+      path: { organizationId: organizationId },
+      body: { type, fileName, idempotencyKey },
+    });
   }
   async getFavoriteVehicleIds(
     _accountId: string,
     marketCode: string,
   ): Promise<string[]> {
-    const result = await httpClient.get<{ vehicleIds: string[] }>(
-      "/auto/favorites",
-      { headers: { "X-Shongre-Market": marketCode } },
-    );
+    const result = await apiOperation<
+      { vehicleIds: string[] },
+      "getAutoFavorites"
+    >("getAutoFavorites", { headers: { "X-Shongre-Market": marketCode } });
     return result.vehicleIds;
   }
   async setFavoriteVehicle(
@@ -129,17 +151,20 @@ export class HttpAutoService implements AutoServiceContract {
     marketCode: string,
     isFavorite: boolean,
   ): Promise<boolean> {
-    const result = await httpClient.put<{ isFavorite: boolean }>(
-      `/auto/vehicles/${encodeURIComponent(vehicleId)}/favorite`,
-      { isFavorite },
-      { headers: { "X-Shongre-Market": marketCode } },
-    );
+    const result = await apiOperation<
+      { isFavorite: boolean },
+      "putAutoVehiclesByIdFavorite"
+    >("putAutoVehiclesByIdFavorite", {
+      path: { id: vehicleId },
+      body: { isFavorite },
+      headers: { "X-Shongre-Market": marketCode },
+    });
     return result.isFavorite;
   }
   updateMarketConfig(marketCode: string, patch: Partial<AutoMarketConfig>) {
-    return httpClient.put<AutoMarketConfig>(
-      `/auto/admin/markets/${encodeURIComponent(marketCode)}`,
-      patch,
+    return apiOperation<AutoMarketConfig, "putAutoAdminMarketsByMarketCode">(
+      "putAutoAdminMarketsByMarketCode",
+      { path: { marketCode: marketCode }, body: patch },
     );
   }
   updatePlan(
@@ -158,10 +183,13 @@ export class HttpAutoService implements AutoServiceContract {
       >
     >,
   ) {
-    return httpClient.request<AutoPlan>(
-      `/auto/admin/markets/${encodeURIComponent(marketCode)}/plans/${encodeURIComponent(planId)}`,
-      { method: "PATCH", body: JSON.stringify(patch) },
-    );
+    return apiOperation<
+      AutoPlan,
+      "patchAutoAdminMarketsByMarketCodePlansByPlanId"
+    >("patchAutoAdminMarketsByMarketCodePlansByPlanId", {
+      path: { marketCode: marketCode, planId: planId },
+      body: patch,
+    });
   }
   updateAddOn(
     marketCode: string,
@@ -180,10 +208,13 @@ export class HttpAutoService implements AutoServiceContract {
       >
     >,
   ) {
-    return httpClient.request<AutoAddOn>(
-      `/auto/admin/markets/${encodeURIComponent(marketCode)}/add-ons/${encodeURIComponent(addOnId)}`,
-      { method: "PATCH", body: JSON.stringify(patch) },
-    );
+    return apiOperation<
+      AutoAddOn,
+      "patchAutoAdminMarketsByMarketCodeAddOnsByAddOnId"
+    >("patchAutoAdminMarketsByMarketCodeAddOnsByAddOnId", {
+      path: { marketCode: marketCode, addOnId: addOnId },
+      body: patch,
+    });
   }
   updateVehicleType(
     marketCode: string,
@@ -199,10 +230,13 @@ export class HttpAutoService implements AutoServiceContract {
       >
     >,
   ) {
-    return httpClient.request<VehicleTypeConfig>(
-      `/auto/admin/markets/${encodeURIComponent(marketCode)}/types/${encodeURIComponent(type)}`,
-      { method: "PATCH", body: JSON.stringify(patch) },
-    );
+    return apiOperation<
+      VehicleTypeConfig,
+      "patchAutoAdminMarketsByMarketCodeTypesByType"
+    >("patchAutoAdminMarketsByMarketCodeTypesByType", {
+      path: { marketCode: marketCode, type: type },
+      body: patch,
+    });
   }
 }
 

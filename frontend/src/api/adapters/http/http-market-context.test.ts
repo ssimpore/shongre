@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { get } = vi.hoisted(() => ({ get: vi.fn() }));
+const { apiOperation } = vi.hoisted(() => ({ apiOperation: vi.fn() }));
 
-vi.mock("./http-client", () => ({
-  httpClient: { get },
+vi.mock("./generated-api-operation", () => ({
+  apiOperation,
 }));
 
 import { HttpAutoService } from "./http-auto.service";
@@ -11,12 +11,13 @@ import { HttpCoursesService } from "./http-courses.service";
 import { HttpRealEstateService } from "./http-real-estate.service";
 
 describe("market-scoped public detail requests", () => {
-  beforeEach(() => get.mockReset());
+  beforeEach(() => apiOperation.mockReset());
 
   it("sends the resolved market when loading a vehicle", () => {
     new HttpAutoService().getVehicle("vehicle-slug", "FR");
 
-    expect(get).toHaveBeenCalledWith("/auto/vehicles/vehicle-slug", {
+    expect(apiOperation).toHaveBeenCalledWith("getAutoVehiclesById", {
+      path: { id: "vehicle-slug" },
       headers: { "X-Shongre-Market": "FR" },
     });
   });
@@ -26,22 +27,29 @@ describe("market-scoped public detail requests", () => {
     service.getProperty("property-slug", "FR");
     service.getComparableProperties("property-id", "FR");
 
-    expect(get).toHaveBeenNthCalledWith(
+    expect(apiOperation).toHaveBeenNthCalledWith(
       1,
-      "/real-estate/properties/property-slug",
-      { headers: { "X-Shongre-Market": "FR" } },
+      "getRealEstatePropertiesById",
+      {
+        path: { id: "property-slug" },
+        headers: { "X-Shongre-Market": "FR" },
+      },
     );
-    expect(get).toHaveBeenNthCalledWith(
+    expect(apiOperation).toHaveBeenNthCalledWith(
       2,
-      "/real-estate/properties/property-id/comparables",
-      { headers: { "X-Shongre-Market": "FR" } },
+      "getRealEstatePropertiesByIdComparables",
+      {
+        path: { id: "property-id" },
+        headers: { "X-Shongre-Market": "FR" },
+      },
     );
   });
 
   it("sends the resolved market when loading a tutor", () => {
     new HttpCoursesService().getTutorProfile("tutor-slug", "FR");
 
-    expect(get).toHaveBeenCalledWith("/education/tutors/tutor-slug", {
+    expect(apiOperation).toHaveBeenCalledWith("getEducationTutorsById", {
+      path: { id: "tutor-slug" },
       headers: { "X-Shongre-Market": "FR" },
     });
   });

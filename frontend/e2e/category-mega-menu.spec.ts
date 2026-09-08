@@ -2,19 +2,125 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
 import { getTaxonomyV4PublicBundle } from "@shongre/contracts/taxonomy-v4-public";
 import { expectNoHorizontalOverflow, waitForStableLayout } from "./overflow";
-import { useEstablishedConsent, usePersona } from "./personas";
+import { useEstablishedConsent } from "./personas";
 
 const desktopWidths = [1024, 1280, 1440] as const;
 
 test.beforeEach(async ({ page }) => {
   await useEstablishedConsent(page);
-  await usePersona(page, "guest");
 });
 
 const categoryNav = (page: Page) =>
   page.locator('header nav[aria-label="Filtres par catégorie"]');
 
+async function configureHeaderCategories(page: Page, categoryIds: string[]) {
+  await page.route("**/api/v1/taxonomy/header-navigation", async (route) => {
+    const response = await route.fetch();
+    const configuration = await response.json();
+    await route.fulfill({
+      response,
+      json: {
+        ...configuration,
+        items: categoryIds.map((categoryId, displayOrder) => {
+          const item = configuration.items.find(
+            (candidate) => candidate.categoryId === categoryId,
+          );
+          expect(item, `API category ${categoryId}`).toBeDefined();
+          return { ...item, isActive: true, displayOrder };
+        }),
+        links: (configuration.links ?? []).map((link, index) => ({
+          ...link,
+          displayOrder: categoryIds.length + index,
+        })),
+      },
+    });
+  });
+}
+
 test.describe("desktop category mega-menu", () => {
+  test("backend-managed utility links share labels, order, styling and navigation", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1408, height: 800 });
+    const responsePromise = page.waitForResponse(
+      (response) =>
+        new URL(response.url()).pathname ===
+          "/api/v1/taxonomy/header-navigation" && response.ok(),
+    );
+    await page.goto("/");
+    const configuration = await (await responsePromise).json();
+    const expected = [...configuration.items, ...(configuration.links ?? [])]
+      .filter((item) => item.isActive)
+      .sort((a, b) => a.displayOrder - b.displayOrder)
+      .map((item) => item.shortLabels["fr-FR"]);
+    const nav = categoryNav(page);
+    await expect(nav.locator('[data-header-nav-item="true"]')).toHaveText(
+      expected,
+    );
+    const overview = nav.locator("#header-category-trigger-category_overview");
+    const promotions = nav.locator("#header-category-trigger-promotions");
+    await expect(promotions).toContainClass("font-medium");
+    await overview.hover();
+    await expect(page.getByRole("menu")).toHaveAttribute(
+      "data-active-category",
+      "category_overview",
+    );
+    await page.keyboard.press("Escape");
+    await promotions.click();
+    await expect(page).toHaveURL(/\/offres-prix-reduit$/);
+    await expect(
+      categoryNav(page).locator("#header-category-trigger-promotions"),
+    ).toHaveAttribute("aria-current", "page");
+  });
+
+  test("backend-managed utility links disappear on failure and recover through retry", async ({
+    page,
+  }) => {
+    await page.route("**/api/v1/taxonomy/header-navigation", (route) =>
+      route.fulfill({
+        status: 503,
+        contentType: "application/json",
+        body: JSON.stringify({
+          error: { code: "SERVICE_UNAVAILABLE", message: "Indisponible" },
+        }),
+      }),
+    );
+    await page.goto("/");
+    const nav = categoryNav(page);
+    await expect(nav.getByRole("status")).toHaveText("Navigation indisponible");
+    await expect(nav.locator('[data-header-nav-item="true"]')).toHaveCount(0);
+    await page.unroute("**/api/v1/taxonomy/header-navigation");
+    await nav.getByRole("button", { name: "Réessayer", exact: true }).click();
+    await expect(
+      nav.locator("#header-category-trigger-promotions"),
+    ).toBeVisible();
+    await expect(nav.getByRole("status")).toHaveCount(0);
+  });
+
+  test("backend-managed utility links use the same mobile category list", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/");
+    await page
+      .getByRole("button", { name: "Ouvrir le menu", exact: true })
+      .click();
+    const drawer = page.getByRole("dialog");
+    await drawer
+      .locator('button[aria-controls="header-mobile-navigation-categories"]')
+      .click();
+    const promotions = drawer.getByRole("link", {
+      name: "Promotions",
+      exact: true,
+    });
+    await expect(promotions).toBeVisible();
+    await expect(
+      drawer.getByRole("link", { name: "Autres", exact: true }),
+    ).toBeVisible();
+    await promotions.click();
+    await expect(page).toHaveURL(/\/offres-prix-reduit$/);
+    await expectNoHorizontalOverflow(page, "backend-driven mobile navigation");
+  });
   test("opens on hover, switches categories, stays open over the panel, and closes on exit", async ({
     page,
   }) => {
@@ -60,39 +166,25 @@ test.describe("desktop category mega-menu", () => {
   test("opens every category after an admin configuration change", async ({
     page,
   }) => {
-    const configuredCategories = [
-      {
-        categoryId: "electronics",
-        label: "Multimédia",
-        slug: "multimedia-electronique",
-      },
-      { categoryId: "fashion", label: "Mode", slug: "mode-accessoires" },
-      {
-        categoryId: "home_garden",
-        label: "Maison",
-        slug: "maison-jardin",
-      },
-    ];
-    await page.addInitScript((categories) => {
-      localStorage.setItem(
-        "shongre_taxonomy_header_navigation:v1",
-        JSON.stringify({
-          FR: {
-            revision: 8,
-            updatedAt: "2026-09-02T18:00:00.000Z",
-            items: categories.map(({ categoryId }, displayOrder) => ({
-              categoryId,
-              isActive: true,
-              displayOrder,
-            })),
-          },
-        }),
-      );
-    }, configuredCategories);
+    await configureHeaderCategories(page, [
+      "electronics",
+      "fashion",
+      "home_garden",
+    ]);
+    const responsePromise = page.waitForResponse(
+      (response) =>
+        new URL(response.url()).pathname ===
+          "/api/v1/taxonomy/header-navigation" && response.ok(),
+    );
 
     await page.setViewportSize({ width: 1408, height: 800 });
     await page.goto("/", { waitUntil: "domcontentloaded" });
     await waitForStableLayout(page);
+    const configuration = await (await responsePromise).json();
+    const configuredCategories = configuration.items.map((item) => ({
+      slug: item.slug,
+      label: item.shortLabels["fr-FR"],
+    }));
 
     const nav = categoryNav(page);
     await nav.hover();
@@ -184,22 +276,7 @@ test.describe("desktop category mega-menu", () => {
     page,
   }) => {
     const promotedCategoryIds = ["real_estate", "vehicles", "jobs"];
-    await page.addInitScript((categoryIds) => {
-      localStorage.setItem(
-        "shongre_taxonomy_header_navigation:v1",
-        JSON.stringify({
-          FR: {
-            revision: 7,
-            updatedAt: "2026-09-02T14:00:00.000Z",
-            items: categoryIds.map((categoryId, displayOrder) => ({
-              categoryId,
-              isActive: true,
-              displayOrder,
-            })),
-          },
-        }),
-      );
-    }, promotedCategoryIds);
+    await configureHeaderCategories(page, promotedCategoryIds);
 
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto("/", { waitUntil: "domcontentloaded" });
@@ -220,8 +297,8 @@ test.describe("desktop category mega-menu", () => {
       .evaluateAll((sections) =>
         sections.map((section) => section.getAttribute("data-category-id")),
       );
-    const expectedOtherIds = getTaxonomyV4PublicBundle().categories
-      .filter(
+    const expectedOtherIds = getTaxonomyV4PublicBundle()
+      .categories.filter(
         (category) =>
           !category.parentId &&
           category.status === "active" &&
@@ -261,9 +338,7 @@ test.describe("desktop category mega-menu", () => {
       .getByRole("button", { name: "Numérique", exact: true });
 
     await expect(digitalCategory).toBeVisible();
-    await expect(digitalCategory.locator("svg")).toHaveClass(
-      /lucide-file-key/,
-    );
+    await expect(digitalCategory.locator("svg")).toHaveClass(/lucide-file-key/);
     await digitalCategory.click();
     await expect(categoryTrigger).toContainText("Numérique");
     await expect(categoryTrigger.locator("svg").first()).toHaveClass(

@@ -62,7 +62,6 @@ export const ProStorefrontEditorPage: React.FC = () => {
         </p>
       </div>
 
-      {/* Banner & Logo simulation */}
       <div className="space-y-3">
         <label className="text-xs font-semibold text-text-emphasis uppercase tracking-wider block">
           {t(
@@ -75,7 +74,7 @@ export const ProStorefrontEditorPage: React.FC = () => {
               src={currentUser?.avatarUrl}
               name={companyName}
               size="lg"
-              isVerified={true}
+              isVerified={currentUser?.isVerified === true}
               className="ring-2 ring-border-on-inverse"
             />
             <div className="text-text-inverse">

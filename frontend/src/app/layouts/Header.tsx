@@ -16,7 +16,12 @@ import {
   useNavigate,
   useSearchParams,
 } from "react-router-dom";
-import type { TaxonomyHeaderCategoryItem } from "@shongre/contracts/taxonomy";
+import {
+  headerNavigationItems,
+  headerNavigationLabel,
+  headerNavigationDestination,
+  type HeaderNavigationItem,
+} from "./headerNavigation.model";
 import { brand } from "@shongre/brand";
 import { ProBadge, VerifiedIcon } from "@shongre/ui/web";
 import {
@@ -42,7 +47,6 @@ import {
 import { useAuth } from "../providers/AuthProvider";
 import { useMarketLocation } from "../providers/MarketLocationProvider";
 import { useFavorites } from "../providers/FavoritesProvider";
-import { getTaxonomyLabel } from "../../domains/taxonomy/taxonomy.labels";
 import { services } from "../../api/client/service-registry";
 import { usePublishCta } from "../../security/usePublishCta";
 import { Badge } from "../../design-system/primitives/Badge";
@@ -99,7 +103,6 @@ function AccountMenuItemIcon({
   switch (id) {
     case "admin":
       return <Shield {...props} />;
-    case "demo_workspace":
     case "pro_solutions":
       return <Sparkles {...props} />;
     case "listings":
@@ -121,13 +124,11 @@ function AccountMenuItemIcon({
 function AccountMenuDestinationLink({
   item,
   label,
-  demoBadgeLabel,
   mobile = false,
   onNavigate,
 }: {
   item: HeaderAccountMenuItem;
   label: string;
-  demoBadgeLabel: string;
   mobile?: boolean;
   onNavigate: () => void;
 }) {
@@ -149,7 +150,6 @@ function AccountMenuDestinationLink({
       to={item.to}
       data-account-menu-item={item.id}
       data-marketplace-action={item.marketplaceAction}
-      data-staff-demo-destination={item.isDemo || undefined}
       onClick={onNavigate}
       className={`${mobile ? "touch-row w-full min-w-0 gap-2.5 rounded-xl p-2.5" : "flex items-center gap-2.5 px-4 py-2"} text-xs font-semibold transition-colors ${tone}`}
     >
@@ -166,11 +166,6 @@ function AccountMenuDestinationLink({
           {item.count}
         </span>
       ) : null}
-      {item.isDemo && !mobile ? (
-        <Badge variant="warning" size="sm">
-          {demoBadgeLabel}
-        </Badge>
-      ) : null}
     </Link>
   );
 }
@@ -183,8 +178,7 @@ export const Header: React.FC = () => {
   const isSearchRoute = location.pathname === "/recherche";
   const { currentUser, isAuthenticated, isRestoring, logout } = useAuth();
   const { can, canAccessRoute } = useAuthorization();
-  const { isStaff: isStaffIdentity, canUseDemoMarketplace } =
-    useStaffMarketplaceAccess();
+  const { isStaff: isStaffIdentity } = useStaffMarketplaceAccess();
   const staffStatusLabel =
     currentUser?.staffStatus === "active"
       ? t("admin.staff.status.active")
@@ -382,7 +376,7 @@ export const Header: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileCategoriesOpen, setIsMobileCategoriesOpen] = useState(false);
   const [mobileCategories, setMobileCategories] = useState<
-    TaxonomyHeaderCategoryItem[]
+    HeaderNavigationItem[]
   >([]);
   const [isHeaderSearchActive, setIsHeaderSearchActive] = useState(false);
 
@@ -397,13 +391,14 @@ export const Header: React.FC = () => {
   useEffect(() => {
     if (!isMobileCategoriesOpen || !marketContext) return;
     let cancelled = false;
+    setMobileCategories([]);
     void services.taxonomy
       .getHeaderNavigation(marketContext)
       .then((configuration) => {
         if (!cancelled) {
           setMobileCategories(
-            [...configuration.items].sort(
-              (left, right) => left.displayOrder - right.displayOrder,
+            headerNavigationItems(configuration).filter(
+              (item) => item.isActive,
             ),
           );
         }
@@ -458,7 +453,6 @@ export const Header: React.FC = () => {
         user: currentUser,
         canAccessRoute,
         hasCapability: can,
-        canUseDemoMarketplace,
         listingCount,
         favoriteCount: favCount,
       })
@@ -698,11 +692,6 @@ export const Header: React.FC = () => {
                           Particulier
                         </Badge>
                       )}
-                      {canUseDemoMarketplace ? (
-                        <Badge variant="warning" size="sm">
-                          {t("shell.header.accountMenu.demoAuthorized")}
-                        </Badge>
-                      ) : null}
                       {!isStaffIdentity && customerStatusLabel ? (
                         <Badge variant="warning" size="sm">
                           {customerStatusLabel}
@@ -726,7 +715,6 @@ export const Header: React.FC = () => {
                         <AccountMenuDestinationLink
                           item={item}
                           label={t(item.labelKey)}
-                          demoBadgeLabel={t("shell.demoRoleSwitcher.modeDemo")}
                           onNavigate={() => setIsAccountMenuOpen(false)}
                         />
                       </React.Fragment>
@@ -923,11 +911,6 @@ export const Header: React.FC = () => {
                               Particulier
                             </Badge>
                           )}
-                          {canUseDemoMarketplace ? (
-                            <Badge variant="warning" size="sm">
-                              {t("shell.header.accountMenu.demoAuthorized")}
-                            </Badge>
-                          ) : null}
                           {!isStaffIdentity && customerStatusLabel ? (
                             <Badge variant="warning" size="sm">
                               {customerStatusLabel}
@@ -996,19 +979,6 @@ export const Header: React.FC = () => {
                       <ChevronRight className="w-icon-md h-icon-md text-primary" />
                     </Link>
 
-                    {/* Promotions */}
-                    <Link
-                      to={routes.deals()}
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className="touch-row justify-between p-2.5 rounded-xl text-xs font-bold text-warning hover:bg-warning-surface transition-colors"
-                    >
-                      <span className="flex items-center gap-2.5">
-                        <Sparkles className="w-icon-md h-icon-md text-rating-strong" />
-                        {t("shell.header.bonsPlansPrixReduits")}
-                      </span>
-                      <ChevronRight className="w-icon-md h-icon-md text-rating-fill" />
-                    </Link>
-
                     {/* Boutiques Professionnelles */}
                     <Link
                       to="/professionnels"
@@ -1026,6 +996,8 @@ export const Header: React.FC = () => {
                     <div className="pt-2">
                       <button
                         type="button"
+                        aria-expanded={isMobileCategoriesOpen}
+                        aria-controls="header-mobile-navigation-categories"
                         onClick={() =>
                           setIsMobileCategoriesOpen(!isMobileCategoriesOpen)
                         }
@@ -1043,39 +1015,41 @@ export const Header: React.FC = () => {
                       </button>
 
                       {isMobileCategoriesOpen && (
-                        <div className="pl-6 pr-2 py-1 space-y-0.5 animate-in fade-in duration-fast">
+                        <div
+                          id="header-mobile-navigation-categories"
+                          className="pl-6 pr-2 py-1 space-y-0.5 animate-in fade-in duration-fast"
+                        >
                           {mobileCategories.map((cat) => (
                             <Link
-                              key={cat.categoryId}
-                              to={`/categorie/${cat.slug}`}
+                              key={
+                                cat.kind === "category"
+                                  ? cat.categoryId
+                                  : cat.target
+                              }
+                              to={headerNavigationDestination(cat)}
                               onClick={() => setIsMobileMenuOpen(false)}
                               className="flex items-center justify-between py-1.5 px-2 text-xs font-medium text-text-emphasis hover:text-primary hover:bg-primary-light rounded-lg transition-colors"
-                              title={getTaxonomyLabel(cat, "compact")}
+                              title={headerNavigationLabel(cat, currentLocale)}
                             >
                               <div className="flex items-center gap-2">
-                                <CategoryIcon
-                                  category={cat.slug}
-                                  iconName={cat.iconName}
-                                  size="xs"
-                                />
+                                {cat.kind === "category" ? (
+                                  <CategoryIcon
+                                    category={cat.slug}
+                                    iconName={cat.iconName}
+                                    size="xs"
+                                  />
+                                ) : (
+                                  <Layers
+                                    className="h-icon-xs w-icon-xs"
+                                    aria-hidden="true"
+                                  />
+                                )}
                                 <span>
-                                  {getTaxonomyLabel(cat, {
-                                    compact: true,
-                                    locale: currentLocale,
-                                  })}
+                                  {headerNavigationLabel(cat, currentLocale)}
                                 </span>
                               </div>
                             </Link>
                           ))}
-                          {mobileCategories.length === 0 && (
-                            <Link
-                              to={routes.categories()}
-                              onClick={() => setIsMobileMenuOpen(false)}
-                              className="block rounded-lg px-2 py-2 text-xs font-semibold text-primary hover:bg-primary-light"
-                            >
-                              Voir toutes les catégories
-                            </Link>
-                          )}
                         </div>
                       )}
                     </div>
@@ -1100,9 +1074,6 @@ export const Header: React.FC = () => {
                           <AccountMenuDestinationLink
                             item={item}
                             label={t(item.labelKey)}
-                            demoBadgeLabel={t(
-                              "shell.demoRoleSwitcher.modeDemo",
-                            )}
                             mobile
                             onNavigate={() => setIsMobileMenuOpen(false)}
                           />

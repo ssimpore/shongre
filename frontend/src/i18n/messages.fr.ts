@@ -180,8 +180,6 @@ export const messagesFr = {
   "verticals.education.unavailable": "Shongre Éducation est indisponible",
   "verticals.education.workspaceUnavailable": "Espace Éducation indisponible",
   "verticals.education.filters": "Filtres Éducation",
-  "verticals.education.demoPersona":
-    "7. Pro Éducation (Sophie · Collège Lumière)",
   "verticals.education.organizationWorkspace": "Organisme Éducation",
   "verticals.education.openWorkspace": "Ouvrir mon espace Éducation",
   "verticals.education.adminCategory": "Éducation",
@@ -212,9 +210,6 @@ export const messagesFr = {
     "Vous pouvez parcourir la marketplace, mais toutes les actions client restent désactivées.",
   "staffMarketplace.readOnly.footerMutation":
     "Inscription désactivée pour cette identité Staff en lecture seule.",
-  "staffMarketplace.demo.title": "Mode test Staff — données isolées.",
-  "staffMarketplace.demo.description":
-    "Les actions sont simulées et auditées ; aucune publication, aucun paiement, message, notification ou fournisseur réel n’est déclenché.",
   "staffMarketplace.openAdmin": "Ouvrir l’administration",
   "staffMarketplace.actionBlocked.title":
     "Action indisponible pour les comptes Staff",
@@ -391,9 +386,8 @@ export const messagesFr = {
   "nav.category.famille": "Famille",
   "nav.category.electronique": "Électronique",
   "nav.category.loisirs": "Loisirs",
-  "nav.category.autres": "Autres",
+  "nav.category.unavailable": "Navigation indisponible",
   "nav.category.cours": "Éducation",
-  "nav.category.bonsPlans": "Promotions",
   "nav.unreadMessages_one": "{count} message non lu",
   "nav.unreadMessages_other": "{count} messages non lus",
 
@@ -705,9 +699,18 @@ export const messagesFr = {
   "ui.listingCard.favorisViderErreur":
     "Impossible de vider vos favoris pour le moment.",
   "ui.listingCard.boosted": "Boosté",
+  "ui.listingCard.delivery": "Livraison",
+  "ui.listingCard.digitalFulfillment": "Accès numérique",
   "ui.listingCard.free": "Gratuit",
+  "ui.listingCard.negotiable": "Négociable",
   "ui.listingCard.onRequest": "Prix sur demande",
+  "ui.listingCard.onlinePayment": "Paiement en ligne",
   "ui.listingCard.imageUnavailable": "Image indisponible",
+  "ui.listingCard.photos": "{count} photos",
+  "ui.listingCard.photos_one": "{count} photo",
+  "ui.listingCard.photos_other": "{count} photos",
+  "ui.listingCard.verifiedSeller": "Vendeur vérifié",
+  "ui.listingCard.verifiedSellerShort": "Vérifié",
 
   // --- ui.noResultsFound ---
   "ui.noResultsFound.conseilsPourTrouverVotreBonheur":
@@ -1044,6 +1047,9 @@ export const messagesFr = {
     "Vous êtes l'auteur de cette annonce",
   "listings.listingDetailPage.voirTout": "Voir tout",
   "listings.listingDetailPage.annoncesSimilaires": "Annonces similaires",
+  "listings.listingDetailPage.servicesAndInformation":
+    "Services et informations",
+  "listings.listingDetailPage.ratingSummary": "Note {rating} · {count} avis",
 
   // --- listings.listingMediaGallery ---
   "listings.listingMediaGallery.photoPrecedente": "Photo précédente",
@@ -1130,31 +1136,11 @@ export const messagesFr = {
   "messaging.makeOfferModal.montantDeVotreOffre": "Montant de votre offre (€)",
 
   // --- messaging.messageComposer ---
-  "messaging.messageComposer.apercuPieceJointe": "Aperçu pièce jointe",
-  "messaging.messageComposer.supprimerLaPhoto": "Supprimer la photo",
-  "messaging.messageComposer.joindreUnePhoto": "Joindre une photo",
   "messaging.messageComposer.ecrivezVotreMessageEntreePour":
     "Écrivez votre message…",
   "messaging.messageComposer.keyboardHint":
     "Entrée pour envoyer. Majuscule plus Entrée pour aller à la ligne.",
-  "messaging.messageComposer.photoPreteAEtreEnvoyee":
-    "Photo prête à être envoyée",
-  "messaging.messageComposer.seraTransmiseAvecVotreMessage":
-    "Sera transmise avec votre message",
-  "messaging.messageComposer.ajouterUnePhotoALa":
-    "Ajouter une photo à la conversation",
   "messaging.messageComposer.envoyer": "Envoyer",
-  "messaging.messageComposer.demoAttachmentCondition": "Photo état",
-  "messaging.messageComposer.demoAttachmentInvoice": "Facture / Garantie",
-  "messaging.messageComposer.demoAttachmentAccessories": "Accessoires inclus",
-  "messaging.messageComposer.quickReplyAvailable":
-    "Bonjour, oui, l'article est disponible en stock.",
-  "messaging.messageComposer.quickReplyShipping":
-    "Bonjour, expédition possible sous 24h avec suivi.",
-  "messaging.messageComposer.quickReplyPickup":
-    "Bonjour, nous pouvons convenir d'un retrait en boutique.",
-  "messaging.messageComposer.quickReplyInvoice":
-    "Bonjour, facture avec TVA fournie sur demande.",
 
   // --- messaging.messageTimeline ---
   "messaging.messageTimeline.historiqueDeLaConversation":
@@ -1244,10 +1230,6 @@ export const messagesFr = {
   "notifications.notificationsPage.centreDeNotifications":
     "Centre de notifications",
 
-  // --- notifications.notificationDemoToolbar ---
-  "notifications.notificationDemoToolbar.simulateurDEvenementsTempsReel":
-    "Simulateur d'événements temps-réel (Mode Démo)",
-
   // --- notifications.notificationPanel ---
   "notifications.notificationPanel.panneauDesNotifications":
     "Panneau des notifications",
@@ -1330,7 +1312,6 @@ export const messagesFr = {
   "publishing.publishWizard.criteresDetailles": "Critères détaillés",
   "publishing.publishWizard.selectionnerUneOption":
     "Sélectionner une option...",
-  "publishing.publishWizard.exempleDemo": "Exemple démo",
   "publishing.publishWizard.gestionDesStocksReferenceProfessionnelle":
     "Gestion des stocks & Référence Professionnelle",
   "publishing.publishWizard.achatEnLigneDirectSans":
@@ -1463,8 +1444,6 @@ export const messagesFr = {
   "support.supportRequestDetailPage.retourAMesDemandes":
     "Retour à mes demandes",
   "support.supportRequestDetailPage.marquerCommeResolu": "Marquer comme résolu",
-  "support.supportRequestDetailPage.simulerReponseConseillerDemo":
-    "Simuler réponse conseiller (Démo)",
 
   // --- support.supportContextCard ---
   "support.supportContextCard.ouvrirLAnnonce": "Ouvrir l'annonce",
@@ -1668,16 +1647,12 @@ export const messagesFr = {
     "Document obligatoire délivré par le Greffe du Tribunal",
   "verification.businessVerificationModal.pourAccelererLaValidationDes":
     "Pour accélérer la validation des virements de ventes",
-  "verification.businessVerificationModal.modeDemonstrationShongre":
-    "Mode Démonstration Shongre",
 
   // --- verification.identityVerificationModal ---
   "verification.identityVerificationModal.formatsAcceptesJpgPngPdf":
     "Formats acceptés : JPG, PNG, PDF (max 8 Mo)",
   "verification.identityVerificationModal.requisPourLaValidationOptique":
     "Requis pour la validation optique",
-  "verification.identityVerificationModal.modeDemonstrationShongre":
-    "Mode Démonstration Shongre",
 
   // --- verification.trustBadge ---
   "verification.trustBadge.identiteOfficielleVerifieeCniPasseport":
@@ -1901,9 +1876,9 @@ export const messagesFr = {
   // --- admin.adminTaxonomyPage ---
   "admin.adminTaxonomyPage.taxonomieSynchronisee": "Taxonomie Synchronisée",
   "admin.taxonomyHeader.tabLabel": "Barre de catégories",
-  "admin.taxonomyHeader.title": "Catégories de l’en-tête",
+  "admin.taxonomyHeader.title": "Navigation de l’en-tête",
   "admin.taxonomyHeader.description":
-    "Sélectionnez les catégories racines présentées dans l’en-tête de ce marché, activez-les ou désactivez-les et définissez leur ordre d’affichage.",
+    "Sélectionnez les catégories et les liens de ce marché, définissez leur ordre et leur visibilité, et adaptez les libellés des liens.",
   "admin.taxonomyHeader.loading": "Chargement de la configuration…",
   "admin.taxonomyHeader.marketRequired":
     "Sélectionnez un marché avant de configurer son en-tête.",
@@ -1920,9 +1895,10 @@ export const messagesFr = {
   "admin.taxonomyHeader.addLabel": "Ajouter une catégorie racine",
   "admin.taxonomyHeader.addPlaceholder": "Sélectionner une catégorie",
   "admin.taxonomyHeader.add": "Ajouter",
-  "admin.taxonomyHeader.selectedTitle": "Catégories sélectionnées ({count})",
+  "admin.taxonomyHeader.selectedTitle": "Entrées de navigation ({count})",
+  "admin.taxonomyHeader.linkLabel": "Libellé de {name}",
   "admin.taxonomyHeader.empty":
-    "Aucune catégorie n’est sélectionnée. Les liens utilitaires restent disponibles.",
+    "Aucune entrée de navigation n’est configurée pour ce marché.",
   "admin.taxonomyHeader.toggle": "Activer ou désactiver {name}",
   "admin.taxonomyHeader.moveUp": "Monter {name}",
   "admin.taxonomyHeader.moveDown": "Descendre {name}",
@@ -2140,7 +2116,6 @@ export const messagesFr = {
   "admin.adminProviderDetailPage.capacitesFournies": "Capacités fournies :",
   "admin.adminProviderDetailPage.configurationCles": "Configuration & Clés",
   "admin.adminProviderDetailPage.marchesSurcharges": "Marchés & affectations",
-  "admin.adminProviderDetailPage.santeTestsDemo": "Santé & Tests Démo",
   "admin.adminProviderDetailPage.utilisationDependances":
     "Utilisation & Dépendances",
 
@@ -2500,69 +2475,11 @@ export const messagesFr = {
   "admin.taxonomyNodeEditor.exempleDescriptionSeo":
     "Ex: Achetez et vendez vos articles {category} avec paiement en ligne sécurisé...",
 
-  // --- shell.demoRoleSwitcher ---
-  "shell.demoRoleSwitcher.modeDemo": "Mode Démo",
-  "shell.demoRoleSwitcher.testerLesProfilsEtParcours":
-    "Tester les {count} profils et parcours sans mot de passe :",
-  "shell.demoRoleSwitcher.commercialLabel": "15. Commercial Shongre (Léa)",
-  "shell.demoRoleSwitcher.commercialDescription":
-    "Prospects, opportunités, relances et relation partenaires",
-  "shell.demoRoleSwitcher.changerDeRolePourTester":
-    "Changer de profil utilisateur pour tester",
-  "shell.demoRoleSwitcher.sessionUpdated":
-    "Session de démonstration actualisée",
-  "shell.demoRoleSwitcher.sessionUnchanged": "Session inchangée",
-  "shell.demoRoleSwitcher.guestActivated":
-    "Vous naviguez maintenant comme visiteur non connecté.",
-  "shell.demoRoleSwitcher.personaActivated":
-    "Le profil {profile} est maintenant actif avec ses données et permissions.",
-  "shell.demoRoleSwitcher.switchFailed":
-    "Impossible de changer de profil. Réessayez.",
-  "shell.demoRoleSwitcher.accesDirectAuxProfilsPublics":
-    "Accès direct aux profils publics",
-  "shell.demoRoleSwitcher.0AnnonceParticulier": "📦 0 annonce (Particulier)",
-  "shell.demoRoleSwitcher.0AnnoncePro": "📦 0 annonce (Pro)",
-  "shell.demoRoleSwitcher.profilSuspenduSecurite":
-    "🚫 Profil Suspendu (Sécurité)",
-
-  // --- shell.dataMode ---
-  "shell.dataMode.collapseToolbar": "Réduire la barre d’environnement",
-  "shell.dataMode.expandToolbar": "Développer la barre d’environnement",
-  "shell.dataMode.modeLive": "Mode Live",
-  "shell.dataMode.liveSummary": "Données fournies par l’API Shongre",
-  "shell.dataMode.openSettings": "Configurer le mode des données",
-  "shell.dataMode.settingsTitle": "Mode des données",
-  "shell.dataMode.settingsDescription":
-    "Choisissez la source utilisée par tous les services du frontend.",
-  "shell.dataMode.demoTitle": "Démo",
-  "shell.dataMode.demoDescription":
-    "Adaptateurs locaux, déterministes et indépendants du backend.",
-  "shell.dataMode.liveTitle": "Live",
-  "shell.dataMode.liveDescription":
-    "Adaptateurs HTTP connectés à l’API configurée.",
-  "shell.dataMode.active": "Actif",
-  "shell.dataMode.liveConfirmationTitle": "Confirmez l’activation du mode Live",
-  "shell.dataMode.liveConfirmationDescription":
-    "La session et les caches du frontend seront entièrement rechargés. Aucun repli automatique vers les données de démonstration ne sera effectué en cas d’erreur.",
-  "shell.dataMode.liveNotConfigured":
-    "Aucune URL d’API Live n’est configurée dans cette version.",
-  "shell.dataMode.liveConfigurationError":
-    "L’API Live n’est pas configurée dans cette version. Ajoutez NEXT_PUBLIC_API_URL puis rechargez l’application.",
-  "shell.dataMode.liveUnavailableError":
-    "L’API Live est configurée mais indisponible. Le mode actuel reste actif.",
-  "shell.dataMode.liveUnavailableBootError":
-    "L’API Live ne répond pas à son contrôle de disponibilité. Le mode Démo n’a pas été activé automatiquement.",
-  "shell.dataMode.liveCheckingTitle": "Connexion au mode Live",
-  "shell.dataMode.liveCheckingDescription":
-    "Vérification de la disponibilité de l’API Shongre…",
-  "shell.dataMode.liveUnavailableLabel": "Mode Live indisponible",
-  "shell.dataMode.liveUnavailableTitle": "Impossible de contacter l’API Live",
-  "shell.dataMode.noSilentFallback":
-    "Aucun repli silencieux vers les données de démonstration n’a été effectué.",
-  "shell.dataMode.confirmLive": "Confirmer et activer Live",
-  "shell.dataMode.confirmDemo": "Activer le mode Démo",
-  "shell.dataMode.switchUnexpectedError":
-    "Impossible de changer de mode. Le mode actuel reste actif.",
+  // --- API environment toolbar ---
+  "shell.environment.collapseToolbar": "Réduire la barre d’environnement",
+  "shell.environment.expandToolbar": "Développer la barre d’environnement",
+  "shell.environment.label": "{environment}",
+  "shell.environment.apiSummary": "Données fournies par l’API Shongre",
 
   // --- shell.header ---
   "shell.header.tableauDeBordCompte": "Tableau de bord compte",
@@ -2570,7 +2487,6 @@ export const messagesFr = {
   "shell.header.connectezVousPourGererVos":
     "Connectez-vous pour gérer vos annonces et messages",
   "shell.header.explorerSurLaCarte": "Explorer sur la carte",
-  "shell.header.bonsPlansPrixReduits": "Promotions",
   "shell.header.tableauDeBord": "Tableau de bord",
   "shell.header.mesAnnonces": "Mes annonces",
   "shell.header.accountMenu.availableAccess": "Accès disponibles",
@@ -2579,8 +2495,6 @@ export const messagesFr = {
   "shell.header.accountMenu.publicProfile": "Voir mon profil public",
   "shell.header.accountMenu.publicStorefront": "Voir ma vitrine boutique",
   "shell.header.accountMenu.proSolutions": "Solutions & Abonnements Pro",
-  "shell.header.accountMenu.demoWorkspace": "Espace marketplace Démo",
-  "shell.header.accountMenu.demoAuthorized": "Démo marketplace autorisée",
   "shell.header.accountMenu.status.pending": "Compte en attente",
   "shell.header.accountMenu.status.restricted": "Compte limité",
   "shell.header.accountMenu.status.suspended": "Compte suspendu",
@@ -3045,8 +2959,6 @@ export const messagesFr = {
     "Les capacités et attributs hérités seront réévalués selon le nouveau parent.",
 
   // --- auth.forgotPasswordPage ---
-  "auth.forgotPasswordPage.environnementDeDemonstrationCliquezCi":
-    "Environnement de démonstration — Cliquez ci-dessous pour procéder immédiatement à la réinitialisation :",
   "auth.forgotPasswordPage.accederAuFormulaireDeNouveau":
     "Accéder au formulaire de nouveau mot de passe",
   "auth.forgotPasswordPage.adresseEmailDeVotreCompte":
@@ -3069,7 +2981,6 @@ export const messagesFr = {
   "auth.loginPage.retourALEcranDe": "← Retour à l'écran de connexion",
   "auth.loginPage.motDePasse": "Mot de passe",
   "auth.loginPage.motDePasseOublie": "Mot de passe oublié ?",
-  "auth.loginPage.connexionRapideDemo": "Connexion rapide Démo",
   "auth.loginPage.1ClicSansMotDe": "1-clic sans mot de passe",
 
   // --- auth.registerPages ---
@@ -3105,7 +3016,6 @@ export const messagesFr = {
   "auth.verifyEmailPage.votreCompteEstDesormaisSecurise":
     'Votre compte est désormais sécurisé et votre badge "Email Vérifié" est actif sur votre profil.',
   "auth.verifyEmailPage.accederAMonEspace": "Accéder à mon espace",
-  "auth.verifyEmailPage.tokenDemo": "Token démo :",
   "auth.verifyEmailPage.jetonDeValidationOuCode":
     "Jeton de validation ou Code de vérification",
 
@@ -3160,7 +3070,6 @@ export const messagesFr = {
     "La validation du code a échoué.",
   "auth.phoneVerificationModal.resendSuccess":
     "Un nouveau code a été envoyé par SMS.",
-  "auth.phoneVerificationModal.demoCode": "Code SMS de test : {code}",
   "auth.phoneVerificationModal.resendCountdown": "Renvoyer ({count} s)",
   "auth.phoneVerificationModal.resend": "Renvoyer le code",
 
@@ -3198,7 +3107,7 @@ export const messagesFr = {
   // --- collections.collectionsPage ---
   "collections.collectionsPage.toutesNosCollections": "Toutes nos collections",
   "collections.collectionsPage.decouvrezDesUniversThematiquesPenses":
-    "Découvrez des univers thématiques pensés pour vous inspirer : bons plans, mobilier vintage, tech reconditionnée, mobilité douce, rentrée et créateurs de nos régions.",
+    "Explorez les catégories disponibles et retrouvez les annonces publiées sur votre marché.",
   "collections.collectionsPage.voirToutesLesCollections":
     "Voir toutes les collections",
   "collections.collectionsPage.aucuneAnnonceNeCorrespondAux":
@@ -3328,8 +3237,6 @@ export const messagesFr = {
   "listings.listingFulfillmentSummary.livraisonParTransporteurSpecialiseCocolis":
     "Transporteur spécialisé convenu avec le vendeur avant expédition",
   "listings.listingFulfillmentSummary.surDevisTransport": "Sur devis transport",
-  "listings.listingFulfillmentSummary.retraitDirectDansLeMagasin":
-    "Retrait direct dans le magasin du vendeur Pro",
 
   // --- listings.listingSafetyNotice ---
   "listings.listingSafetyNotice.sequestreGaranti":
@@ -3339,6 +3246,14 @@ export const messagesFr = {
 
   // --- listings.listingSellerTrustSection ---
   "listings.listingSellerTrustSection.aProposDuVendeur": "À propos du vendeur",
+  "listings.listingSellerTrustSection.viewStore": "Voir la boutique",
+  "listings.listingSellerTrustSection.viewProfile": "Voir le profil",
+  "listings.listingSellerTrustSection.reviews": "({count} avis)",
+  "listings.listingSellerTrustSection.responds": "Répond {responseTime}",
+  "listings.listingSellerTrustSection.responseRate":
+    "Taux de réponse : {rate}%",
+  "listings.listingSellerTrustSection.recentBuyerReviews":
+    "Derniers avis acheteurs",
 
   // --- messaging.messagingPage ---
   "messaging.messagingPage.vosEchangesAvecLesAcheteurs":
@@ -3447,10 +3362,6 @@ export const messagesFr = {
   "notifications.notificationsPage.preferences": "Préférences",
   "notifications.notificationsPage.vosAlertesConcernantLesBaisses":
     "Vos alertes concernant les baisses de prix, rendez-vous et messages s'afficheront ici.",
-
-  // --- notifications.notificationDemoToolbar ---
-  "notifications.notificationDemoToolbar.cliquezSurUnScenarioPour":
-    "Cliquez sur un scénario pour injecter instantanément une notification réelle et tester l'affichage, les badges et les liens profonds.",
 
   // --- notifications.notificationPanel ---
   "notifications.notificationPanel.vosAlertesMessagesEtTransactions":
@@ -3947,8 +3858,6 @@ export const messagesFr = {
   "support.contactPage.ouvrirLaMessagerie": "Ouvrir la messagerie",
   "support.contactPage.piecesJointesOuCapturesD":
     "Pièces jointes ou captures d'écran (facultatif)",
-  "support.contactPage.ajouterUneCaptureOuUn":
-    "Ajouter une capture ou un justificatif (Simulation démo)",
 
   // --- support.helpCenterPage ---
   "support.helpCenterPage.commentPouvonsNousVousAider":
@@ -4072,8 +3981,6 @@ export const messagesFr = {
     "Shongre utilise un modèle de confiance progressif. Validez vos étapes au fur et à mesure pour débloquer des plafonds plus élevés et rassurer la communauté.",
   "verification.verificationCenterPage.indiceDeConfiance":
     "Indice de Confiance",
-  "verification.verificationCenterPage.modeDemonstrationSimulerUnProfil":
-    "Mode Démonstration : Simuler un profil utilisateur",
   "verification.verificationCenterPage.checklistDesVerifications2":
     "Checklist des vérifications",
   "verification.verificationCenterPage.completezChaqueDimensionPourRenforcer":
@@ -4467,8 +4374,6 @@ export const messagesFr = {
     "Les permissions n’ont pas pu être mises à jour.",
   "admin.capabilities.saveAction": "Enregistrer les permissions",
   "admin.capabilities.manageAction": "Gérer les permissions",
-  "shell.demoRoleSwitcher.roleHorsPersonasDemo":
-    "Rôle plateforme hors des personas de démonstration",
   "sellerworkspace.proDashboardPage.pasEncoreDeDonnees":
     "Pas encore de données",
   "sellerworkspace.proDashboardPage.totalVuesUniques":
@@ -4618,15 +4523,13 @@ export const messagesFr = {
     "Facturez clairement. Gardez le contrôle à chaque étape.",
   "invoicing.product.description":
     "Centralisez vos clients, brouillons, factures et avoirs dans un espace conçu pour plusieurs marchés, avec des totaux exacts et une finalisation protégée.",
-  "invoicing.product.primaryCta": "Ouvrir l’espace de démonstration",
   "invoicing.product.secondaryCta": "Découvrir le parcours",
   "invoicing.product.openApp": "Ouvrir Shongre Facturation",
   "invoicing.product.activatePro": "Découvrir l’accès Facturation Pro",
   "invoicing.product.createWorkspace": "Créer mon espace Facturation",
-  "invoicing.product.demoNotice":
-    "Données locales déterministes · Aucun transport électronique activé",
-  "invoicing.product.previewAria":
-    "Ouvrir l’espace de démonstration Shongre Facturation",
+  "invoicing.product.apiNotice":
+    "Données fournies par l’API Shongre · Transport électronique uniquement si configuré",
+  "invoicing.product.previewAria": "Ouvrir l’espace Shongre Facturation",
   "invoicing.product.previewTitle": "Facturation",
   "invoicing.product.previewOrganization": "Organisation",
   "invoicing.product.previewNumber": "Numéro",
@@ -4637,15 +4540,13 @@ export const messagesFr = {
   "invoicing.product.previewSubtotal": "Sous-total HT",
   "invoicing.product.previewTax": "Taxe",
   "invoicing.product.previewMarket": "Marché",
-  "invoicing.product.previewMarketValue": "France · EUR",
   "invoicing.product.previewDocument": "Document lisible",
   "invoicing.product.previewDocumentNotice":
-    "Dérivé texte de démonstration — ce fichier n’est pas un original juridique.",
+    "Aperçu lisible — le document finalisé reste la référence.",
   "invoicing.product.trustTitle": "Fondations de Shongre Facturation",
   "invoicing.product.trustExact": "Totaux calculés exactement",
   "invoicing.product.trustMarkets": "Contexte multi-marché",
   "invoicing.product.trustFinalization": "Finalisation protégée",
-  "invoicing.product.trustDemo": "Démo sans transmission",
   "invoicing.product.workflowTitle":
     "De votre organisation à une facture finalisée.",
   "invoicing.product.workflowBody":
@@ -4677,14 +4578,11 @@ export const messagesFr = {
   "invoicing.product.marketsBody":
     "Pays, devise, langue et fuseau sont contrôlés ensemble. Un contexte incomplet ou incohérent bloque l’opération au lieu de revenir silencieusement à la France.",
   "invoicing.product.marketsDisclaimer":
-    "Le socle générique est démontré pour ces contextes actifs ; cela ne constitue pas une attestation de conformité fiscale ou électronique locale.",
-  "invoicing.product.marketFrance": "France",
-  "invoicing.product.marketBelgium": "Belgique",
-  "invoicing.product.marketSwitzerland": "Suisse",
+    "Les marchés affichés viennent de la configuration API active ; cela ne constitue pas une attestation de conformité fiscale ou électronique locale.",
   "invoicing.product.guardrailsTitle":
     "Les limites de production restent visibles.",
   "invoicing.product.guardrailsBody":
-    "Shongre Facturation distingue ce qui fonctionne en démonstration de ce qui exige encore une configuration, une revue ou une certification externe.",
+    "Shongre Facturation distingue les capacités actives de celles qui exigent encore une configuration, une revue ou une certification externe.",
   "invoicing.product.guardrailNoTransmission":
     "Aucune transmission légale simulée comme réussie",
   "invoicing.product.guardrailNoFallback":
@@ -4692,9 +4590,9 @@ export const messagesFr = {
   "invoicing.product.guardrailIsolation":
     "Données isolées par organisation et entité",
   "invoicing.product.finalCtaTitle":
-    "Préparez votre première facture dans un espace sans dépendance backend.",
+    "Préparez votre première facture dans votre espace sécurisé.",
   "invoicing.product.finalCtaBody":
-    "Explorez le parcours avec des données déterministes, sans connecter de fournisseur ni transmettre de document.",
+    "Utilisez le parcours configuré sans transmettre de document électronique tant que le prestataire requis n’est pas actif.",
   "invoicing.product.explorePro": "Explorer Shongre Pro",
   "invoicing.product.controlTitle": "Des états séparés et explicites",
   "invoicing.product.controlBody":
@@ -4707,12 +4605,11 @@ export const messagesFr = {
     "La numérotation, l’instantané et le document lisible sont produits par une seule opération idempotente.",
   "invoicing.workspace.title": "Facturation",
   "invoicing.workspace.description": "Factures de vente de votre organisation",
-  "invoicing.workspace.demo": "Mode démonstration",
   "invoicing.workspace.newInvoice": "Nouvelle facture",
   "invoicing.workspace.configurationTitle":
     "Configuration de production requise",
   "invoicing.workspace.configurationBody":
-    "Le transport électronique n’est pas actif. Les brouillons et la finalisation locale restent disponibles dans ce scénario de démonstration.",
+    "Le transport électronique n’est pas actif. Les brouillons et la finalisation locale restent disponibles dans cet espace.",
   "invoicing.workspace.navigation": "Navigation de la facturation",
   "invoicing.workspace.overview": "Vue d’ensemble",
   "invoicing.workspace.invoices": "Factures",
@@ -5822,7 +5719,6 @@ export const messagesFr = {
   "admin.providerMarketMatrix.preuveLiveVerifiee": "Preuve live vérifiée",
   "admin.providerMarketMatrix.affectationNonVerifiee":
     "Affectation non vérifiée",
-  "admin.providerMarketMatrix.simulationDemo": "Simulation démo",
   "admin.providerMarketMatrix.aucunAdaptateur": "Aucun adaptateur",
   "admin.providerMarketOverridesTab.affecte": "Affecté",
   "admin.providerMarketOverridesTab.marcheParDefaut": "(marché par défaut)",
@@ -5924,6 +5820,7 @@ export const messagesFr = {
 
   // --- digital products shared by the application shell ------------------
   "digital.common.title": "Produits numériques",
+  "digital.common.noShipping": "Aucune livraison physique",
   "digital.nav.purchases": "Achats numériques",
   "digital.nav.seller": "Vente numérique",
   "digital.nav.admin": "Produits numériques",

@@ -1,5 +1,5 @@
 import { PromotionsServiceContract } from "../../contracts/promotions.contract";
-import { httpClient } from "./http-client";
+import { apiOperation } from "./generated-api-operation";
 import {
   ListingBoostOption,
   ProPlan,
@@ -25,20 +25,20 @@ export class HttpPromotionsService implements PromotionsServiceContract {
     listingId?: string,
   ): Promise<ListingBoostOption[]> {
     if (!listingId) return [];
-    const catalog = await httpClient.get<MonetizationCatalog>(
-      "/business-rules/catalog",
-      { headers: this.headers(marketContext) },
-    );
+    const catalog = await apiOperation<
+      MonetizationCatalog,
+      "getBusinessRulesCatalog"
+    >("getBusinessRulesCatalog", { headers: this.headers(marketContext) });
     return resolveListingBoosts(catalog);
   }
 
   async getProSubscriptionPlans(
     marketContext: MarketContext,
   ): Promise<ProPlan[]> {
-    const catalog = await httpClient.get<MonetizationCatalog>(
-      "/business-rules/catalog",
-      { headers: this.headers(marketContext) },
-    );
+    const catalog = await apiOperation<
+      MonetizationCatalog,
+      "getBusinessRulesCatalog"
+    >("getBusinessRulesCatalog", { headers: this.headers(marketContext) });
     return resolveProPlans(catalog);
   }
 
@@ -48,24 +48,28 @@ export class HttpPromotionsService implements PromotionsServiceContract {
     productId: string,
     input: { paymentMethod: string; idempotencyKey: string },
   ): Promise<PromotionActivationResult> {
-    const quote = await httpClient.post<MonetizationQuote>(
-      "/monetization/quotes",
-      {
+    const quote = await apiOperation<
+      MonetizationQuote,
+      "postMonetizationQuotes"
+    >("postMonetizationQuotes", {
+      body: {
         productIds: [productId],
         listingId,
         marketCode: marketContext.countryCode!,
         idempotencyKey: `promotion-quote:${input.idempotencyKey}`,
       },
-      { headers: this.headers(marketContext) },
-    );
-    const order = await httpClient.post<MonetizationOrder>(
-      "/monetization/checkouts",
-      {
+      headers: this.headers(marketContext),
+    });
+    const order = await apiOperation<
+      MonetizationOrder,
+      "postMonetizationCheckouts"
+    >("postMonetizationCheckouts", {
+      body: {
         quoteId: quote.id,
         idempotencyKey: `promotion-checkout:${input.idempotencyKey}`,
       },
-      { headers: this.headers(marketContext) },
-    );
+      headers: this.headers(marketContext),
+    });
     return {
       success: order.status === "paid",
       providerCheckoutUrl: order.providerCheckoutUrl,
@@ -78,23 +82,27 @@ export class HttpPromotionsService implements PromotionsServiceContract {
     planId: string,
   ): Promise<{ success: boolean; plan: ProPlan }> {
     const idempotencyKey = `subscription:${planId}:${crypto.randomUUID()}`;
-    const quote = await httpClient.post<MonetizationQuote>(
-      "/monetization/quotes",
-      {
+    const quote = await apiOperation<
+      MonetizationQuote,
+      "postMonetizationQuotes"
+    >("postMonetizationQuotes", {
+      body: {
         productIds: [planId],
         marketCode: marketContext.countryCode!,
         idempotencyKey: `quote:${idempotencyKey}`,
       },
-      { headers: this.headers(marketContext) },
-    );
+      headers: this.headers(marketContext),
+    });
     const [order, plans] = await Promise.all([
-      httpClient.post<MonetizationOrder>(
-        "/monetization/checkouts",
+      apiOperation<MonetizationOrder, "postMonetizationCheckouts">(
+        "postMonetizationCheckouts",
         {
-          quoteId: quote.id,
-          idempotencyKey: `checkout:${idempotencyKey}`,
+          body: {
+            quoteId: quote.id,
+            idempotencyKey: `checkout:${idempotencyKey}`,
+          },
+          headers: this.headers(marketContext),
         },
-        { headers: this.headers(marketContext) },
       ),
       this.getProSubscriptionPlans(marketContext),
     ]);

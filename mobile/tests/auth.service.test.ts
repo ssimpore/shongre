@@ -48,13 +48,18 @@ describe("API-backed mobile authentication", () => {
         password: "correct-password",
       }),
     ).resolves.toEqual({ kind: "authenticated", user });
-    expect(mocks.apiRequest).toHaveBeenCalledWith("/auth/login", {
-      method: "POST",
-      body: JSON.stringify({
-        email: "account@example.test",
-        password: "correct-password",
+    expect(mocks.apiRequest).toHaveBeenCalledWith(
+      "/auth/login",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({
+          email: "account@example.test",
+          password: "correct-password",
+        }),
+        headers: expect.any(Headers),
       }),
-    });
+      undefined,
+    );
     expect(mocks.write).toHaveBeenCalledWith(session);
   });
 
@@ -89,13 +94,18 @@ describe("API-backed mobile authentication", () => {
     await expect(
       service.completeMfa("one-time-challenge", "123456"),
     ).resolves.toEqual(user);
-    expect(mocks.apiRequest).toHaveBeenLastCalledWith("/auth/mfa/challenge", {
-      method: "POST",
-      body: JSON.stringify({
-        tempMfaToken: "one-time-challenge",
-        code: "123456",
+    expect(mocks.apiRequest).toHaveBeenLastCalledWith(
+      "/auth/mfa/challenge",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({
+          tempMfaToken: "one-time-challenge",
+          code: "123456",
+        }),
+        headers: expect.any(Headers),
       }),
-    });
+      undefined,
+    );
     expect(mocks.write).toHaveBeenCalledWith(session);
   });
 

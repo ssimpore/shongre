@@ -573,6 +573,24 @@ export class CoursesService {
     return workspace;
   }
 
+  async getCurrentTutorWorkspace(
+    userId: string,
+    marketCode: string,
+  ): Promise<TutorWorkspace> {
+    const workspace = await this.courseRepo.getTutorWorkspaceForUser(
+      userId,
+      marketCode,
+    );
+    if (!workspace) {
+      throw new AppError({
+        code: "NOT_FOUND",
+        message:
+          "Aucun espace professeur n’est associé à ce compte sur ce marché.",
+      });
+    }
+    return workspace;
+  }
+
   async getOwnOrganizationWorkspace(
     userId: string,
     organizationId: string,
@@ -591,6 +609,24 @@ export class CoursesService {
       throw new AppError({
         code: "FORBIDDEN",
         message: "Vous n’appartenez pas à cet organisme.",
+      });
+    }
+    return workspace;
+  }
+
+  async getCurrentOrganizationWorkspace(
+    userId: string,
+    marketCode: string,
+  ): Promise<CourseOrganizationWorkspace> {
+    const workspace = await this.courseRepo.getOrganizationWorkspaceForUser(
+      userId,
+      marketCode,
+    );
+    if (!workspace) {
+      throw new AppError({
+        code: "NOT_FOUND",
+        message:
+          "Aucun espace organisme n’est associé à ce compte sur ce marché.",
       });
     }
     return workspace;

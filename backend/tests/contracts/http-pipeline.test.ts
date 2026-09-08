@@ -1,46 +1,14 @@
-import { beforeAll, describe, expect, it } from "vitest";
-import { Readable, Writable } from "node:stream";
-import type { IncomingMessage, ServerResponse } from "node:http";
-import { createHttpServer } from "../../src/app/server/index.js";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import type { NestFastifyApplication } from "@nestjs/platform-fastify";
+import { createBackendApplication } from "../../src/app/server/index.js";
 import {
   seedDemoCredentials,
   DEMO_ACCOUNT_PASSWORD,
 } from "../../src/app/bootstrap/seed-demo-credentials.js";
 
-// Exercise the real request listener and domain registrations without binding
-// a port. The separate HTTP integration suite still verifies Node networking.
-class CapturedResponse extends Writable {
-  statusCode = 200;
-  headersSent = false;
-  readonly headers = new Map<string, string | number | readonly string[]>();
-  readonly chunks: Buffer[] = [];
-  setHeader(name: string, value: string | number | readonly string[]) {
-    this.headers.set(name.toLowerCase(), value);
-    return this;
-  }
-  getHeader(name: string) {
-    return this.headers.get(name.toLowerCase());
-  }
-  removeHeader(name: string) {
-    this.headers.delete(name.toLowerCase());
-  }
-  writeHead(status: number, headers?: Record<string, string>) {
-    this.statusCode = status;
-    for (const [name, value] of Object.entries(headers || {}))
-      this.setHeader(name, value);
-    this.headersSent = true;
-    return this;
-  }
-  _write(
-    chunk: Buffer,
-    _encoding: BufferEncoding,
-    done: (error?: Error | null) => void,
-  ) {
-    this.chunks.push(Buffer.from(chunk));
-    done();
-  }
-}
-const server = createHttpServer();
+// Exercise Fastify's real parsing and the composed domain registrations
+// without binding a port. The integration suite separately verifies sockets.
+let app: NestFastifyApplication;
 async function request(
   path: string,
   init: {
@@ -49,39 +17,40 @@ async function request(
     headers?: Record<string, string>;
   } = {},
 ) {
-  const req = Readable.from(
-    init.body === undefined ? [] : [Buffer.from(JSON.stringify(init.body))],
+  const response = await app
+    .getHttpAdapter()
+    .getInstance()
+    .inject({
+      url: path,
+      method: (init.method || "GET") as "GET",
+      headers: {
+        "content-type": "application/json",
+        "x-request-id": "contract-request",
+        ...init.headers,
+      },
+      payload: init.body === undefined ? undefined : JSON.stringify(init.body),
+    });
+  const headers = new Map(
+    Object.entries(response.headers).map(([name, value]) => [
+      name.toLowerCase(),
+      value,
+    ]),
   );
-  Object.assign(req, {
-    url: path,
-    method: init.method || "GET",
-    headers: {
-      "content-type": "application/json",
-      "x-request-id": "contract-request",
-      ...init.headers,
-    },
-    socket: { remoteAddress: "127.0.0.1" },
-  });
-  const res = new CapturedResponse();
-  await new Promise<void>((resolve, reject) => {
-    res.once("finish", resolve);
-    res.once("error", reject);
-    server.emit(
-      "request",
-      req as unknown as IncomingMessage,
-      res as unknown as ServerResponse,
-    );
-  });
   return {
-    status: res.statusCode,
-    headers: res.headers,
-    body: String(res.getHeader("content-type")).includes("application/json")
-      ? JSON.parse(Buffer.concat(res.chunks).toString() || "null")
-      : Buffer.concat(res.chunks).toString(),
+    status: response.statusCode,
+    headers,
+    body: String(response.headers["content-type"]).includes("application/json")
+      ? JSON.parse(response.body || "null")
+      : response.body,
   };
 }
 
-beforeAll(() => seedDemoCredentials());
+beforeAll(async () => {
+  await seedDemoCredentials();
+  app = await createBackendApplication();
+});
+
+afterAll(async () => app?.close());
 
 describe("composed domain HTTP pipeline", () => {
   it("serves the canonical specification and a self-contained API reference", async () => {

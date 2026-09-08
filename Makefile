@@ -7,8 +7,8 @@ export SHONGRE_ENV := $(ENVIRONMENT)
 endif
 
 .PHONY: help setup doctor info env-info urls env env-init env-check env-local env-test env-preview env-development env-staging env-production install reinstall \
-	dev-down dev-restart dev-status dev-logs dev-reset dev-clean api-export api-generate api-check docker-up docker-down docker-restart logs-backend logs-worker logs-frontend logs-supabase mail-up \
-	dev demo dev-web dev-development dev-staging staging dev-mobile dev-all start stop stop-all restart status health smoke logs \
+	dev-down dev-restart dev-status dev-logs dev-reset dev-clean api-export api-generate api-check docker-up docker-down docker-restart logs-backend logs-worker logs-frontend logs-supabase mail-up mail-down mail-status redis-up redis-down redis-status redis-logs \
+	dev dev-web dev-development dev-staging staging dev-mobile dev-all start stop stop-all restart status health smoke logs \
 	frontend frontend-start frontend-build frontend-lint frontend-typecheck frontend-test frontend-test-e2e test-web-api-transport frontend-check frontend-clean frontend-logs seo-check seo-audit \
 	backend backend-dev backend-start worker worker-dev worker-start backend-build backend-lint backend-typecheck backend-test backend-check backend-health backend-logs worker-logs \
 	contracts-lint contracts-typecheck contracts-test contracts-check openapi-lint openapi-generate openapi-check openapi-docs openapi-breaking-check \
@@ -94,7 +94,7 @@ doctor: ## Diagnose tools, versions, configuration, ports, and optional platform
 
 info: env-info
 env-info: env-check ## Print resolved non-secret environment, URL, provider, and indexing modes
-	@source scripts/env.sh && printf 'Environment       %s (%s)\nFrance frontend   %s\nIntl frontend     %s\nAPI               %s%s\nMobile API        %s\nSupabase          %s\nStorage           %s\nPayments          %s\nEmail             %s\nAI                %s\nAnalytics         %s\nSEO indexing      %s\nData modes        web=%s backend=%s/%s\n' "$$APP_ENV" "$$ENVIRONMENT_ID" "$$PUBLIC_FR_URL" "$$PUBLIC_INTL_URL" "$$API_URL" "$$API_PREFIX" "$$EXPO_PUBLIC_API_URL" "$${SUPABASE_PROJECT_REF:-local}" "$$STORAGE_ENVIRONMENT_ID" "$$PAYMENT_MODE" "$$EMAIL_MODE" "$$AI_MODE" "$$ANALYTICS_MODE" "$$( [[ "$$APP_ENV" == production ]] && echo enabled || echo disabled )" "$$NEXT_PUBLIC_DATA_MODE" "$$BACKEND_DATA_MODE" "$$DATABASE_INFRA_MODE"
+	@source scripts/env.sh && printf 'Environment       %s (%s)\nFrance frontend   %s\nIntl frontend     %s\nAPI               %s%s\nMobile API        %s\nSupabase          %s\nStorage           %s\nPayments          %s\nEmail             %s\nAI                %s\nAnalytics         %s\nSEO indexing      %s\nBackend mode      %s/%s\n' "$$APP_ENV" "$$ENVIRONMENT_ID" "$$PUBLIC_FR_URL" "$$PUBLIC_INTL_URL" "$$API_URL" "$$API_PREFIX" "$$EXPO_PUBLIC_API_URL" "$${SUPABASE_PROJECT_REF:-local}" "$$STORAGE_ENVIRONMENT_ID" "$$PAYMENT_MODE" "$$EMAIL_MODE" "$$AI_MODE" "$$ANALYTICS_MODE" "$$( [[ "$$APP_ENV" == production ]] && echo enabled || echo disabled )" "$$BACKEND_DATA_MODE" "$$DATABASE_INFRA_MODE"
 
 urls: env-check ## Print the selected environment's service URLs without credentials
 	@scripts/service-urls.sh
@@ -106,9 +106,7 @@ reinstall: clean-deps install
 
 ##@ Development
 dev: ## Ensure the connected Web stack; ENVIRONMENT=local (default), dev, or staging
-	@NEXT_PUBLIC_DATA_MODE=api NEXT_PUBLIC_ENABLE_MOCK_STORAGE=false BACKEND_DATA_MODE=database scripts/dev.sh web
-demo: ## Run the complete Web stack with command-scoped deterministic demo modes
-	@SHONGRE_EXPLICIT_DEMO=true NEXT_PUBLIC_DATA_MODE=demo NEXT_PUBLIC_ENABLE_MOCK_STORAGE=true BACKEND_DATA_MODE=demo DATABASE_INFRA_MODE=local scripts/dev.sh web
+	@BACKEND_DATA_MODE=database scripts/dev.sh web
 dev-web: dev
 dev-development: ## Restart the Web stack against the dedicated hosted development database
 	@$(MAKE) dev ENVIRONMENT=development
@@ -118,11 +116,11 @@ staging: dev-staging ## Alias for dev-staging
 dev-mobile: ## Restart API, worker and Metro; ENVIRONMENT=local (default), dev, or staging
 	@BACKEND_DATA_MODE=database scripts/dev.sh mobile
 dev-all: ## Restart API, worker, Web and Metro; ENVIRONMENT=local (default), dev, or staging
-	@NEXT_PUBLIC_DATA_MODE=api NEXT_PUBLIC_ENABLE_MOCK_STORAGE=false BACKEND_DATA_MODE=database scripts/dev.sh all
+	@BACKEND_DATA_MODE=database scripts/dev.sh all
 start: dev
 
-frontend: ## Run the deterministic demo UI at the configured local Web origin
-	@SHONGRE_EXPLICIT_DEMO=true NEXT_PUBLIC_DATA_MODE=demo NEXT_PUBLIC_ENABLE_MOCK_STORAGE=true scripts/service.sh foreground frontend auto -- npm run dev --workspace=frontend
+frontend: ## Run the API-only Web client at the configured origin
+	@scripts/service.sh foreground frontend auto -- npm run dev --workspace=frontend
 
 frontend-start:
 	@scripts/service.sh foreground frontend auto -- npm run preview --workspace=frontend
@@ -159,7 +157,6 @@ dev-down: ## Stop owned applications, local containers, and Supabase without del
 	@source scripts/env.sh && [[ "$$APP_ENV" == local ]] || { echo 'dev-down requires ENVIRONMENT=local'; exit 2; }
 	@$(MAKE) stop-all
 	@scripts/compose.sh stop
-	@scripts/supabase.sh down
 dev-restart: ## Stop the complete local stack, then start it again
 	@$(MAKE) dev-down
 	@$(MAKE) dev
@@ -174,7 +171,20 @@ logs-backend: backend-logs ## Show bounded API logs
 logs-worker: worker-logs ## Show bounded worker logs
 logs-frontend: frontend-logs ## Show bounded frontend logs
 logs-supabase: supabase-logs ## Show local Supabase endpoints and container log guidance
-mail-up: supabase-up ## Ensure the existing Supabase-owned Mailpit sink is available
+mail-up: ## Ensure the existing Supabase-owned Mailpit sink is available
+	@scripts/mail.sh up
+mail-down: ## Stop only the repository-owned Mailpit container
+	@scripts/mail.sh down
+mail-status: ## Require the local Mailpit UI and container to be healthy
+	@scripts/mail.sh status
+redis-up: ## Start the repository-owned local Redis service
+	@scripts/redis.sh up
+redis-down: ## Stop local Redis while preserving its named volume
+	@scripts/redis.sh down
+redis-status: ## Require a successful local Redis ping
+	@scripts/redis.sh status
+redis-logs: ## Show bounded local Redis logs
+	@scripts/redis.sh logs
 
 restart: dev
 
@@ -275,7 +285,7 @@ operations-tooling-check: ## Test release evidence, hosted load, storage restore
 local-fixtures-sync: ## Refresh the versioned local database scenario and its media assets
 	@npm run local-fixtures:sync
 
-local-fixtures-check: ## Reject drift between the standalone demo and local database scenario
+local-fixtures-check: ## Reject drift in the backend-owned local database scenario
 	@npm run local-fixtures:check
 
 capability-inventory-check: ## Reject stale generated counts in the capability matrix
@@ -416,8 +426,12 @@ docker-restart: ## Restart the canonical local container topology
 
 docker-status:
 	@scripts/compose.sh status
+	@$(MAKE) supabase-status
+	@$(MAKE) mail-status
 docker-health:
 	@scripts/compose.sh health
+	@$(MAKE) supabase-health
+	@$(MAKE) mail-status
 docker-logs:
 	@scripts/compose.sh logs
 docker-scan: ## Scan locally built runtime images for HIGH/CRITICAL findings
@@ -523,11 +537,11 @@ taxonomy-check: ## Validate taxonomy v4 source drift, generated projections, and
 providers-check: ## Run safe mocked provider adapters and fail-closed provider tests
 	@SHONGRE_ENV=test bash -c 'source scripts/env.sh && npm run test:providers --workspace=backend'
 analytics-check: ## Validate analytics privacy, consent, services, migration, and API contracts
-	@SHONGRE_ENV=test bash -c 'source scripts/env.sh && npm run test --workspace=frontend -- src/analytics src/services/analytics.service.test.ts src/api/adapters/demo/demo-analytics.service.test.ts src/app/layouts/DataModeSettingsControl.test.ts'
+	@SHONGRE_ENV=test bash -c 'source scripts/env.sh && npm run test --workspace=frontend -- src/analytics src/services/analytics.service.test.ts'
 	@SHONGRE_ENV=test bash -c 'source scripts/env.sh && npm run test --workspace=backend -- tests/unit/analytics-service.test.ts tests/unit/search-console-worker.test.ts tests/rls/analytics-migration.test.ts tests/rls/commission-earned-analytics-migration.test.ts tests/contracts/analytics-openapi.test.ts'
 	@$(MAKE) migrations-check
 	@$(MAKE) openapi-check
-crm-check: ## Run focused CRM contracts, services, RLS, SSRF, and demo-adapter tests
+crm-check: ## Run focused CRM contracts, services, RLS, SSRF, and HTTP-adapter tests
 	@SHONGRE_ENV=test bash -c 'source scripts/env.sh && npm run test:crm --workspace=backend'
 	@SHONGRE_ENV=test bash -c 'source scripts/env.sh && npm run test:crm --workspace=frontend'
 marketing-check: ## Run focused Marketing consent, audience, campaign, RLS, provider, and demo tests

@@ -12,7 +12,12 @@ import {
   useNavigate,
   useSearchParams,
 } from "react-router-dom";
-import { ProBadge } from "@shongre/ui/web";
+import {
+  Badge as SharedBadge,
+  ProBadge,
+  SemanticIcon,
+  VerificationBadge,
+} from "@shongre/ui/web";
 import {
   Share2,
   Flag,
@@ -32,10 +37,6 @@ import {
 import { routes } from "../../configuration/routes";
 import { services } from "../../api/client/service-registry";
 import { Listing, PublicSellerProfile, Transaction } from "../../types";
-import { taxonomyService } from "../../domains/taxonomy/taxonomy.service";
-import { TaxonomyMigration } from "../../domains/taxonomy/taxonomy.migration";
-import { transactionCapabilitiesService } from "../../domains/transaction/transaction.capabilities";
-import { listingDisplayResolver } from "../../domains/listing/listing.display";
 import { listingActionsResolver } from "../../domains/listing/listing.actions";
 import { useStaffMarketplaceAccess } from "../../security/useStaffMarketplaceAccess";
 import { formatRelativeDate } from "../../utilities/formatters";
@@ -61,26 +62,21 @@ import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useToast } from "../../app/providers/ToastProvider";
 import { useFavorites } from "../../app/providers/FavoritesProvider";
 import { usePageMeta } from "../../hooks/usePageMeta";
-import { storageService } from "../../services/storage.service";
 import { analyticsService } from "../../services/analytics.service";
 import { isProSeller } from "../../domains/user/user.domain";
-import { DirectPurchaseCheckoutModal } from "../transactions/DirectPurchaseCheckoutModal";
-import { ReservationCheckoutModal } from "../transactions/components/ReservationCheckoutModal";
-import { ListingMediaGallery } from "./components/ListingMediaGallery";
-import { ListingCharacteristics } from "./components/ListingCharacteristics";
 import { DropdownMenu } from "../../design-system/primitives/DropdownMenu";
-import { ListingFulfillmentSummary } from "./components/ListingFulfillmentSummary";
-import { ListingSellerTrustSection } from "./components/ListingSellerTrustSection";
-import { ListingSafetyNotice } from "./components/ListingSafetyNotice";
 import { resolveListingIntentPresentation } from "../../domains/listing/listing-intent.presentation";
 import { useTranslation } from "../../i18n/I18nProvider";
-import { digitalMessagesFr } from "../../i18n/digital.catalogue.fr";
 import { getListingCategoryLabel } from "../../domains/taxonomy/listing-category.display";
 import { projectGenericListingCardView } from "../../domains/listing/listing-card.generic-presentation";
-import { getListingSubCategoryLabel } from "../../domains/taxonomy/taxonomy.display";
 import type { WatchSubscription } from "@shongre/contracts/watch-subscriptions";
+import type { TaxonomyV4ResolvedSchema } from "@shongre/contracts/taxonomy";
 import { majorToMinorAmount } from "@shongre/shared/money";
-import { getListingPromotionBadges } from "@shongre/features";
+import {
+  getListingCapabilityPresentation,
+  getListingPromotionBadges,
+  getListingSellerRatingPresentation,
+} from "@shongre/features/listings/presentation";
 import { useListingPromotionRefresh } from "@shongre/features/listings/web";
 import { publicListingUrl } from "../../domains/market/market-routing";
 import { usePublicRouteData } from "../../app/providers/PublicRouteDataProvider";
@@ -89,6 +85,64 @@ import {
   resolveSeoPolicy,
   structuredDataForPolicy,
 } from "../../platform/seo/seo-policy";
+
+const DirectPurchaseCheckoutModal = React.lazy(() =>
+  import("../transactions/DirectPurchaseCheckoutModal").then((module) => ({
+    default: module.DirectPurchaseCheckoutModal,
+  })),
+);
+const ReservationCheckoutModal = React.lazy(() =>
+  import("../transactions/components/ReservationCheckoutModal").then(
+    (module) => ({ default: module.ReservationCheckoutModal }),
+  ),
+);
+const ListingMediaGallery = React.lazy(() =>
+  import("./components/ListingMediaGallery").then((module) => ({
+    default: module.ListingMediaGallery,
+  })),
+);
+const ListingCharacteristics = React.lazy(() =>
+  import("./components/ListingCharacteristics").then((module) => ({
+    default: module.ListingCharacteristics,
+  })),
+);
+const ListingFulfillmentSummary = React.lazy(() =>
+  import("./components/ListingFulfillmentSummary").then((module) => ({
+    default: module.ListingFulfillmentSummary,
+  })),
+);
+const ListingSellerTrustSection = React.lazy(() =>
+  import("./components/ListingSellerTrustSection").then((module) => ({
+    default: module.ListingSellerTrustSection,
+  })),
+);
+const ListingSafetyNotice = React.lazy(() =>
+  import("./components/ListingSafetyNotice").then((module) => ({
+    default: module.ListingSafetyNotice,
+  })),
+);
+
+const DetailSectionFallback = ({ gallery = false }: { gallery?: boolean }) => (
+  <div
+    aria-hidden="true"
+    className={`skeleton-shimmer rounded-3xl border border-border-soft bg-bg-surface ${
+      gallery ? "aspect-photo-gallery w-full" : "h-32"
+    }`}
+  />
+);
+
+function localizedTaxonomyLabel(
+  labels: Readonly<Record<string, string | undefined>>,
+  locale: string,
+): string {
+  return (
+    labels[locale] ||
+    labels[locale.split("-")[0]] ||
+    labels["fr-FR"] ||
+    Object.values(labels).find(Boolean) ||
+    ""
+  );
+}
 
 const PurchasePriceDisclosure: React.FC<{ listing: Listing }> = ({
   listing,
@@ -150,7 +204,7 @@ export const ListingDetailPage: React.FC = () => {
     formatPrice,
   } = useMarketLocation();
   const countryCode = marketContext?.countryCode ?? activeMarket.code;
-  const { t } = useTranslation(digitalMessagesFr);
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -180,6 +234,13 @@ export const ListingDetailPage: React.FC = () => {
   );
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const [isLoading, setIsLoading] = useState(!initialData);
+  const [taxonomySchema, setTaxonomySchema] =
+    useState<TaxonomyV4ResolvedSchema | null>(null);
+  const [taxonomyState, setTaxonomyState] = useState<
+    "loading" | "ready" | "error"
+  >("loading");
+  const [taxonomyRetryKey, setTaxonomyRetryKey] = useState(0);
+  const [taxonomyRootLabel, setTaxonomyRootLabel] = useState("");
 
   // Modal Dialog States
   const [isDirectPurchaseModalOpen, setIsDirectPurchaseModalOpen] =
@@ -223,12 +284,26 @@ export const ListingDetailPage: React.FC = () => {
       t("ui.listingCard.boosted"),
     ).length > 0,
   );
+  const listingCapabilities = listingCardProjection
+    ? getListingCapabilityPresentation(listingCardProjection, {
+        delivery: t("ui.listingCard.delivery"),
+        digitalFulfillment: t("ui.listingCard.digitalFulfillment"),
+        negotiable: t("ui.listingCard.negotiable"),
+        onlinePayment: t("ui.listingCard.onlinePayment"),
+        verifiedSeller: t("ui.listingCard.verifiedSeller"),
+      })
+    : [];
+  const sellerRatingPresentation = getListingSellerRatingPresentation(
+    listingCardProjection?.seller?.rating,
+    listingCardProjection?.seller?.reviewCount,
+    currentLocale,
+  );
+  const detailPhotoCount = listingCardProjection?.photoCount;
 
   // 1. Data Fetching
   useEffect(() => {
     if (!id) return;
     if (initialData?.listing.id === id) {
-      storageService.addRecentlyViewed(initialData.listing.id);
       if (trackedListingId.current !== initialData.listing.id) {
         trackedListingId.current = initialData.listing.id;
         analyticsService.track("listing_viewed", {
@@ -248,11 +323,6 @@ export const ListingDetailPage: React.FC = () => {
           setListing(item);
           setSeller(item.sellerProfile ?? null);
 
-          /* Viewing a listing is what makes it recently viewed. The storage layer
-           has always known how to record this — deduplicating, newest first,
-           capped at ten — but nothing ever called it, so the history it handed
-           back was the seeded fixture and never the visitor's own browsing. */
-          storageService.addRecentlyViewed(item.id);
           if (trackedListingId.current !== item.id) {
             trackedListingId.current = item.id;
             analyticsService.track("listing_viewed", {
@@ -281,25 +351,74 @@ export const ListingDetailPage: React.FC = () => {
       .finally(() => setIsLoading(false));
   }, [countryCode, id, initialData]);
 
-  // 2. Taxonomy & Market resolution
-  const taxonomyNode = useMemo(() => {
-    if (!listing) return null;
-    return (
-      TaxonomyMigration.resolveCanonicalNode(listing.subCategorySlug) ||
-      TaxonomyMigration.resolveCanonicalNode(listing.categorySlug) ||
-      taxonomyService.getNode(listing.subCategorySlug) ||
-      taxonomyService.getNodeBySlug(listing.subCategorySlug) ||
-      taxonomyService.getNode(listing.categorySlug) ||
-      taxonomyService.getNodeBySlug(listing.categorySlug)
-    );
-  }, [listing]);
+  useEffect(() => {
+    let active = true;
+    if (!listing || !marketContext) {
+      setTaxonomySchema(null);
+      setTaxonomyRootLabel("");
+      setTaxonomyState("error");
+      return () => {
+        active = false;
+      };
+    }
 
-  const displayCategoryLabel = listing ? getListingCategoryLabel(listing) : "";
+    setTaxonomySchema(null);
+    setTaxonomyRootLabel("");
+    setTaxonomyState("loading");
+    void services.taxonomy
+      .getNodeById(listing.categorySlug)
+      .then((node) => {
+        if (!active || !node) return;
+        setTaxonomyRootLabel(
+          node.shortLabel?.trim() || node.label?.trim() || node.name.trim(),
+        );
+      })
+      .catch(() => undefined);
+    void services.taxonomy
+      .resolveV4({
+        marketContext,
+        categoryIdentity: listing.subCategorySlug || listing.categorySlug,
+        listingTypeId: listing.listingTypeId,
+        intent: listing.listingIntent,
+        sellerType:
+          listing.publisherType === "professional" ||
+          listing.sellerType === "pro"
+            ? "professional"
+            : "individual",
+        locale: currentLocale,
+        taxonomyVersion: "4.0.0",
+      })
+      .then((resolved) => {
+        if (!active) return;
+        setTaxonomySchema(resolved);
+        setTaxonomyState("ready");
+      })
+      .catch(() => {
+        if (!active) return;
+        setTaxonomySchema(null);
+        setTaxonomyState("error");
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [currentLocale, listing, marketContext, taxonomyRetryKey]);
+
+  const displayCategoryLabel = listing
+    ? taxonomyRootLabel || getListingCategoryLabel(listing, currentLocale)
+    : "";
   const displaySubCategoryLabel = listing
-    ? getListingSubCategoryLabel(listing)
+    ? taxonomySchema
+      ? localizedTaxonomyLabel(
+          taxonomySchema.category.shortLabels,
+          currentLocale,
+        ) ||
+        localizedTaxonomyLabel(taxonomySchema.category.labels, currentLocale)
+      : listing.subCategoryLabel.trim()
     : "";
 
-  // 3. Capabilities & Actions Resolution
+  // An absent public capability is never inferred from taxonomy, seller type,
+  // price, or browser configuration. The listing API is the source of truth.
   const transactionCaps = useMemo(() => {
     if (!listing)
       return {
@@ -308,15 +427,19 @@ export const ListingDetailPage: React.FC = () => {
         canReserve: false,
         defaultModes: ["CONTACT_ONLY" as const],
       };
-    return transactionCapabilitiesService.resolve({
-      taxonomyNodeId:
-        taxonomyNode?.id || listing.subCategorySlug || listing.categorySlug,
-      marketCode: listing.marketCode,
-      sellerType: listing.sellerType,
-      sellerIsVerified: listing.sellerIsVerified,
-      price: listing.price,
-    });
-  }, [listing, taxonomyNode]);
+    const canDirectPurchase = listing.isOnlinePaymentAvailable === true;
+    const canReserve = listing.isReservable === true;
+    return {
+      canContact: true,
+      canDirectPurchase,
+      canReserve,
+      defaultModes: [
+        "CONTACT_ONLY" as const,
+        ...(canDirectPurchase ? (["DIRECT_PURCHASE"] as const) : []),
+        ...(canReserve ? (["RESERVATION"] as const) : []),
+      ],
+    };
+  }, [listing]);
 
   const actions = useMemo(() => {
     if (!listing) {
@@ -336,38 +459,18 @@ export const ListingDetailPage: React.FC = () => {
       viewer: currentUser,
       seller,
       transactionCapabilities: transactionCaps,
-      taxonomyPrimaryCta: taxonomyNode?.publication?.primaryCta,
     });
-  }, [listing, currentUser, seller, transactionCaps, taxonomyNode]);
+  }, [listing, currentUser, seller, transactionCaps]);
 
-  const contactActionLabel = useMemo(() => {
-    switch (taxonomyNode?.publication?.primaryCta) {
-      case "apply":
-        return "Postuler";
-      case "request_quote":
-        return "Demander un devis";
-      case "request_visit":
-        return "Demander une visite";
-      case "request_test_drive":
-        return "Demander un essai";
-      case "request_lesson":
-        return "Demander un cours";
-      case "check_availability":
-        return "Vérifier la disponibilité";
-      case "propose_exchange":
-        return "Proposer un échange";
-      default:
-        return t("listings.listingDetailPage.message");
-    }
-  }, [taxonomyNode, t]);
+  const contactActionLabel = t("listings.listingDetailPage.message");
 
   const intentPresentation = useMemo(
     () =>
       resolveListingIntentPresentation(
-        taxonomyNode?.publication?.primaryCta,
+        undefined,
         Boolean(listing?.isOnlinePaymentAvailable),
       ),
-    [listing?.isOnlinePaymentAvailable, taxonomyNode?.publication?.primaryCta],
+    [listing?.isOnlinePaymentAvailable],
   );
 
   /**
@@ -462,22 +565,7 @@ export const ListingDetailPage: React.FC = () => {
     return classes.filter(Boolean).join(" ");
   };
 
-  // 4. Characteristics & Summary derivation
-  const summaryAttributes = useMemo(() => {
-    if (!listing) return [];
-    return listingDisplayResolver.resolveSummaryAttributes(
-      listing,
-      taxonomyNode,
-    );
-  }, [listing, taxonomyNode]);
-
-  const groupedCharacteristics = useMemo(() => {
-    if (!listing) return [];
-    return listingDisplayResolver.resolveGroupedCharacteristics(
-      listing,
-      taxonomyNode,
-    );
-  }, [listing, taxonomyNode]);
+  const summaryAttributes = listingCardProjection?.characteristics ?? [];
 
   const pageMeta = useMemo(() => {
     if (!listing || !marketContext) {
@@ -864,37 +952,39 @@ export const ListingDetailPage: React.FC = () => {
         {/* ========================================================================= */}
         <div className="lg:col-span-8 space-y-6">
           {/* 1. MEDIA GALLERY — let buyers inspect the item before its details. */}
-          <ListingMediaGallery
-            photos={listing.photos}
-            title={listing.title}
-            overlayActions={
-              <FavoriteButton
-                isFavorite={isListingFavorite(listing.id)}
-                interactionState={favoriteLoadState}
-                label={`${
-                  favoriteLoadState === "loading"
-                    ? t("ui.listingCard.favorisChargement")
-                    : favoriteLoadState === "error"
-                      ? t("ui.listingCard.favorisReessayer")
-                      : t(
-                          isListingFavorite(listing.id)
-                            ? "ui.listingCard.retirerDesFavoris"
-                            : "ui.listingCard.ajouterAuxFavoris",
-                        )
-                } : ${listing.title}`}
-                onToggle={handleFavoriteToggle}
-                onRetry={async () => {
-                  try {
-                    await refreshFavorites();
-                  } catch {
-                    toast.error(t("ui.listingCard.favorisChargementErreur"));
-                  }
-                }}
-                size="md"
-                variant="floating"
-              />
-            }
-          />
+          <React.Suspense fallback={<DetailSectionFallback gallery />}>
+            <ListingMediaGallery
+              photos={listing.photos}
+              title={listing.title}
+              overlayActions={
+                <FavoriteButton
+                  isFavorite={isListingFavorite(listing.id)}
+                  interactionState={favoriteLoadState}
+                  label={`${
+                    favoriteLoadState === "loading"
+                      ? t("ui.listingCard.favorisChargement")
+                      : favoriteLoadState === "error"
+                        ? t("ui.listingCard.favorisReessayer")
+                        : t(
+                            isListingFavorite(listing.id)
+                              ? "ui.listingCard.retirerDesFavoris"
+                              : "ui.listingCard.ajouterAuxFavoris",
+                          )
+                  } : ${listing.title}`}
+                  onToggle={handleFavoriteToggle}
+                  onRetry={async () => {
+                    try {
+                      await refreshFavorites();
+                    } catch {
+                      toast.error(t("ui.listingCard.favorisChargementErreur"));
+                    }
+                  }}
+                  size="md"
+                  variant="floating"
+                />
+              }
+            />
+          </React.Suspense>
 
           {/* 2. PRIMARY SUMMARY CARD */}
           <div className="bg-bg-surface rounded-3xl border border-border-disabled/60 p-6 sm:p-8 space-y-5 shadow-sm relative overflow-hidden">
@@ -928,17 +1018,8 @@ export const ListingDetailPage: React.FC = () => {
                       size="md"
                       icon
                     >
-                      {listingCardProjection?.discovery?.isSponsored
-                        ? listingCardProjection.discovery.promotionLabel ||
-                          t("ui.listingCard.boosted")
-                        : listingCardProjection?.promotion?.label ||
-                          (listingCardProjection?.promotion?.type ===
-                          "search_bump"
-                            ? "Remonté · sponsorisé"
-                            : listingCardProjection?.promotion?.type ===
-                                "urgent_badge"
-                              ? "Urgent"
-                              : "À la une · sponsorisé")}
+                      {listingCardProjection?.promotion?.label ||
+                        t("ui.listingCard.boosted")}
                     </Badge>
                   )}
                 </div>
@@ -975,6 +1056,77 @@ export const ListingDetailPage: React.FC = () => {
               </div>
             )}
 
+            {listingCapabilities.length > 0 ||
+            sellerRatingPresentation ||
+            (detailPhotoCount !== undefined && detailPhotoCount > 0) ? (
+              <div
+                data-testid="listing-detail-capabilities"
+                className="space-y-2 border-t border-border-soft pt-4"
+              >
+                <p className="text-micro font-bold uppercase tracking-wider text-text-tertiary">
+                  {t("listings.listingDetailPage.servicesAndInformation")}
+                </p>
+                <div className="flex flex-wrap items-center gap-2">
+                  {listingCapabilities.map((capability) =>
+                    capability.kind === "verified_seller" ? (
+                      <VerificationBadge
+                        key={capability.kind}
+                        label={capability.label}
+                        accessibilityLabel={capability.label}
+                        size="md"
+                      />
+                    ) : (
+                      <SharedBadge
+                        key={capability.kind}
+                        data-listing-capability={capability.kind}
+                        variant="neutral"
+                        size="md"
+                        icon={<SemanticIcon name={capability.icon} size="sm" />}
+                        className="rounded-pill"
+                      >
+                        {capability.label}
+                      </SharedBadge>
+                    ),
+                  )}
+                  {sellerRatingPresentation ? (
+                    <SharedBadge
+                      data-listing-detail-rating="true"
+                      variant="neutral"
+                      size="md"
+                      icon={
+                        <SemanticIcon
+                          name="star"
+                          size="sm"
+                          className="fill-primary text-primary"
+                        />
+                      }
+                      className="rounded-pill"
+                    >
+                      {t("listings.listingDetailPage.ratingSummary")
+                        .replace("{rating}", sellerRatingPresentation.rating)
+                        .replace(
+                          "{count}",
+                          sellerRatingPresentation.reviewCount,
+                        )}
+                    </SharedBadge>
+                  ) : null}
+                  {detailPhotoCount !== undefined && detailPhotoCount > 0 ? (
+                    <SharedBadge
+                      data-listing-detail-photo-count="true"
+                      variant="neutral"
+                      size="md"
+                      icon={<SemanticIcon name="camera" size="sm" />}
+                      className="rounded-pill"
+                    >
+                      {t("ui.listingCard.photos", {
+                        count: detailPhotoCount,
+                      })}
+                    </SharedBadge>
+                  ) : null}
+                </div>
+              </div>
+            ) : null}
+
             <div
               ref={inlineMobileActionRef}
               className="space-y-3 pt-3 lg:hidden"
@@ -1006,7 +1158,15 @@ export const ListingDetailPage: React.FC = () => {
           </div>
 
           {/* 3. GROUPED TECHNICAL CHARACTERISTICS */}
-          <ListingCharacteristics groups={groupedCharacteristics} />
+          <React.Suspense fallback={<DetailSectionFallback />}>
+            <ListingCharacteristics
+              listing={listing}
+              schema={taxonomySchema}
+              state={taxonomyState}
+              locale={currentLocale}
+              onRetry={() => setTaxonomyRetryKey((current) => current + 1)}
+            />
+          </React.Suspense>
 
           {/* 4. DESCRIPTION */}
           <div className="bg-bg-surface rounded-3xl border border-border-disabled/60 p-6 sm:p-8 space-y-4 shadow-sm">
@@ -1038,13 +1198,21 @@ export const ListingDetailPage: React.FC = () => {
           </div>
 
           {/* 5. FULFILLMENT & DELIVERY SUMMARY */}
-          <ListingFulfillmentSummary listing={listing} />
+          <React.Suspense fallback={<DetailSectionFallback />}>
+            <ListingFulfillmentSummary listing={listing} />
+          </React.Suspense>
 
           {/* 6. COMPACT SELLER IDENTITY & TRUST */}
-          {seller && <ListingSellerTrustSection seller={seller} reviews={[]} />}
+          {seller && (
+            <React.Suspense fallback={<DetailSectionFallback />}>
+              <ListingSellerTrustSection seller={seller} reviews={[]} />
+            </React.Suspense>
+          )}
 
           {/* 7. SAFETY REASSURANCE NOTICE */}
-          <ListingSafetyNotice variant={intentPresentation.safetyVariant} />
+          <React.Suspense fallback={<DetailSectionFallback />}>
+            <ListingSafetyNotice variant={intentPresentation.safetyVariant} />
+          </React.Suspense>
 
           {/* 8. LISTING BOTTOM METADATA */}
           <div className="p-4 rounded-xl bg-bg-base/60 text-micro text-text-tertiary flex items-center justify-between flex-wrap gap-2 border border-border-subtle">
@@ -1072,15 +1240,8 @@ export const ListingDetailPage: React.FC = () => {
         {/* ========================================================================= */}
         <div className="lg:col-span-4 space-y-6">
           <div className="bg-bg-surface rounded-3xl border border-border-disabled/60 p-6 sm:p-8 space-y-6 shadow-md sticky top-24">
-            {/* Price Box — the item price only.
-                The fee breakdown that used to sit here was removed for two
-                reasons. It quoted `calculateBuyerFee` (4% + 0.70 €), while
-                checkout actually charges via `fulfillmentResolver` (4% + 0.99 €,
-                and waived entirely for hand delivery) — so the panel advertised
-                a total the buyer would never be charged. And the real total
-                depends on the delivery method, which is not chosen yet at this
-                point. The fee is disclosed, itemised, in the checkout and
-                reservation flows where the amount is actually known. */}
+            {/* The authoritative fee total is disclosed after the buyer chooses
+                a delivery method and the orders API returns its quote. */}
             <div className="space-y-1">
               <span className="text-xs text-text-tertiary font-bold uppercase tracking-wider block">
                 {t(intentPresentation.priceLabelKey)}
@@ -1392,35 +1553,37 @@ export const ListingDetailPage: React.FC = () => {
       {/* MODAL DIALOGS */}
       {/* ========================================================================= */}
 
-      {/* 1. Direct Purchase Checkout Modal (Standalone, 0 reservation requirement) */}
-      {isDirectPurchaseModalOpen && (
-        <DirectPurchaseCheckoutModal
-          isOpen={isDirectPurchaseModalOpen}
-          onClose={() => setIsDirectPurchaseModalOpen(false)}
-          listing={listing}
-          onSuccess={() => {
-            setListing((prev) => (prev ? { ...prev, status: "sold" } : null));
-          }}
-        />
-      )}
+      <React.Suspense fallback={null}>
+        {/* 1. Direct Purchase Checkout Modal (Standalone, 0 reservation requirement) */}
+        {isDirectPurchaseModalOpen && (
+          <DirectPurchaseCheckoutModal
+            isOpen={isDirectPurchaseModalOpen}
+            onClose={() => setIsDirectPurchaseModalOpen(false)}
+            listing={listing}
+            onSuccess={() => {
+              setListing((prev) => (prev ? { ...prev, status: "sold" } : null));
+            }}
+          />
+        )}
 
-      {/* 2. Reservation Modal */}
-      {isReservationModalOpen && (
-        <ReservationCheckoutModal
-          isOpen={isReservationModalOpen}
-          onClose={() => setIsReservationModalOpen(false)}
-          listing={listing}
-          currentUser={currentUser}
-          onReservationComplete={(_tx: Transaction) => {
-            setListing((prev) =>
-              prev ? { ...prev, status: "reserved" } : null,
-            );
-            toast.success(
-              "Réservation enregistrée. Consultez la commande pour suivre le paiement.",
-            );
-          }}
-        />
-      )}
+        {/* 2. Reservation Modal */}
+        {isReservationModalOpen && (
+          <ReservationCheckoutModal
+            isOpen={isReservationModalOpen}
+            onClose={() => setIsReservationModalOpen(false)}
+            listing={listing}
+            currentUser={currentUser}
+            onReservationComplete={(_tx: Transaction) => {
+              setListing((prev) =>
+                prev ? { ...prev, status: "reserved" } : null,
+              );
+              toast.success(
+                "Réservation enregistrée. Consultez la commande pour suivre le paiement.",
+              );
+            }}
+          />
+        )}
+      </React.Suspense>
 
       {/* 3. Contact Seller Modal */}
       <Modal

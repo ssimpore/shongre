@@ -21,31 +21,10 @@ export interface CreateOrGetConversationInput {
   initialMessage?: string;
 }
 
-export interface MessageAttachmentOption {
-  id: string;
-  label: string;
-  url: string;
-}
-
-export interface MessageComposerOptions {
-  attachmentOptions: MessageAttachmentOption[];
-  quickReplies: string[];
-}
-
-export interface MessageComposerOptionsInput {
-  conversationId: string;
-  userId: string;
-  isProfessional: boolean;
-  locale: string;
-}
-
 export interface MessagingServiceContract {
   getUserConversations(userId: string): Promise<Conversation[]>;
   getConversationById(id: string): Promise<Conversation | null>;
   getMessages(conversationId: string, cursor?: string): Promise<Message[]>;
-  getComposerOptions(
-    input: MessageComposerOptionsInput,
-  ): Promise<MessageComposerOptions>;
   createOrGetConversation(
     input: CreateOrGetConversationInput,
   ): Promise<Conversation>;

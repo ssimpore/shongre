@@ -1,5 +1,4 @@
 import { MessageCatalogue } from "./messages.fr";
-import { messagingCatalogueEn } from "./messaging.catalogue.en";
 
 /**
  * English (en-US).
@@ -171,8 +170,6 @@ export const messagesEn: MessageCatalogue = {
   "verticals.education.unavailable": "Shongre Education is unavailable",
   "verticals.education.workspaceUnavailable": "Education workspace unavailable",
   "verticals.education.filters": "Education filters",
-  "verticals.education.demoPersona":
-    "7. Education Pro (Sophie · Collège Lumière)",
   "verticals.education.organizationWorkspace": "Education organisation",
   "verticals.education.openWorkspace": "Open my Education workspace",
   "verticals.education.adminCategory": "Education",
@@ -203,9 +200,6 @@ export const messagesEn: MessageCatalogue = {
     "You can browse the marketplace, but all customer actions remain disabled.",
   "staffMarketplace.readOnly.footerMutation":
     "Sign-up is disabled for this read-only Staff identity.",
-  "staffMarketplace.demo.title": "Staff test mode — isolated data.",
-  "staffMarketplace.demo.description":
-    "Actions are simulated and audited; no real publication, payment, message, notification, or provider is triggered.",
   "staffMarketplace.openAdmin": "Open administration",
   "staffMarketplace.actionBlocked.title":
     "Action unavailable for Staff accounts",
@@ -379,9 +373,8 @@ export const messagesEn: MessageCatalogue = {
   "nav.category.famille": "Family",
   "nav.category.electronique": "Electronics",
   "nav.category.loisirs": "Leisure",
-  "nav.category.autres": "More",
+  "nav.category.unavailable": "Navigation unavailable",
   "nav.category.cours": "Education",
-  "nav.category.bonsPlans": "Reduced-price offers",
   "nav.unreadMessages_one": "{count} unread message",
   "nav.unreadMessages_other": "{count} unread messages",
 
@@ -658,9 +651,18 @@ export const messagesEn: MessageCatalogue = {
     "Favorites were reloaded. Check them before clearing the list.",
   "ui.listingCard.favorisViderErreur": "Favorites cannot be cleared right now.",
   "ui.listingCard.boosted": "Boosted",
+  "ui.listingCard.delivery": "Delivery",
+  "ui.listingCard.digitalFulfillment": "Digital access",
   "ui.listingCard.free": "Free",
+  "ui.listingCard.negotiable": "Negotiable",
   "ui.listingCard.onRequest": "Price on request",
+  "ui.listingCard.onlinePayment": "Online payment",
   "ui.listingCard.imageUnavailable": "Image unavailable",
+  "ui.listingCard.photos": "{count} photos",
+  "ui.listingCard.photos_one": "{count} photo",
+  "ui.listingCard.photos_other": "{count} photos",
+  "ui.listingCard.verifiedSeller": "Verified seller",
+  "ui.listingCard.verifiedSellerShort": "Verified",
   "ui.noResultsFound.conseilsPourTrouverVotreBonheur":
     "Tips for finding what you want:",
   "ui.noResultsFound.title": "No listings found",
@@ -937,6 +939,10 @@ export const messagesEn: MessageCatalogue = {
   "listings.listingDetailPage.vousEtesLAuteurDe": "This is your own listing",
   "listings.listingDetailPage.voirTout": "See all",
   "listings.listingDetailPage.annoncesSimilaires": "Similar listings",
+  "listings.listingDetailPage.servicesAndInformation":
+    "Services and information",
+  "listings.listingDetailPage.ratingSummary":
+    "Rated {rating} · {count} reviews",
   "listings.listingMediaGallery.photoPrecedente": "Previous photo",
   "listings.listingMediaGallery.photoSuivante": "Next photo",
   "listings.listingMediaGallery.photoPosition": "Photo {current} of {total}",
@@ -1001,20 +1007,11 @@ export const messagesEn: MessageCatalogue = {
     "No conversation found",
   "messaging.makeOfferModal.faireUneOffreDePrix": "Make an offer",
   "messaging.makeOfferModal.montantDeVotreOffre": "Your offer (€)",
-  "messaging.messageComposer.apercuPieceJointe": "Attachment preview",
-  "messaging.messageComposer.supprimerLaPhoto": "Remove photo",
-  "messaging.messageComposer.joindreUnePhoto": "Attach a photo",
   "messaging.messageComposer.ecrivezVotreMessageEntreePour":
     "Write your message…",
   "messaging.messageComposer.keyboardHint":
     "Press Enter to send. Press Shift plus Enter for a new line.",
-  "messaging.messageComposer.photoPreteAEtreEnvoyee": "Photo ready to send",
-  "messaging.messageComposer.seraTransmiseAvecVotreMessage":
-    "Will be sent with your message",
-  "messaging.messageComposer.ajouterUnePhotoALa":
-    "Add a photo to the conversation",
   "messaging.messageComposer.envoyer": "Send",
-  ...messagingCatalogueEn,
   "messaging.messageTimeline.historiqueDeLaConversation":
     "Conversation history",
   "messaging.messageTimeline.photoPartagee": "Shared photo",
@@ -1085,8 +1082,6 @@ export const messagesEn: MessageCatalogue = {
     "On mobile (push):",
   "notifications.notificationsPage.centreDeNotifications":
     "Notification centre",
-  "notifications.notificationDemoToolbar.simulateurDEvenementsTempsReel":
-    "Real-time event simulator (demo mode)",
   "notifications.notificationPanel.panneauDesNotifications":
     "Notifications panel",
   "notifications.notificationPanel.preferencesDeNotifications":
@@ -1191,7 +1186,6 @@ export const messagesEn: MessageCatalogue = {
   "publishing.publishWizard.categorieActiveValidee": "Selected category:",
   "publishing.publishWizard.criteresDetailles": "Detailed criteria",
   "publishing.publishWizard.selectionnerUneOption": "Select an option…",
-  "publishing.publishWizard.exempleDemo": "Demo example",
   "publishing.publishWizard.gestionDesStocksReferenceProfessionnelle":
     "Stock management & professional reference",
   "publishing.publishWizard.achatEnLigneDirectSans":
@@ -1292,8 +1286,6 @@ export const messagesEn: MessageCatalogue = {
     "Write your message or extra details here…",
   "support.supportRequestDetailPage.retourAMesDemandes": "Back to my requests",
   "support.supportRequestDetailPage.marquerCommeResolu": "Mark as resolved",
-  "support.supportRequestDetailPage.simulerReponseConseillerDemo":
-    "Simulate an agent reply (demo)",
   "support.supportContextCard.ouvrirLAnnonce": "Open listing",
   "support.supportContextCard.detacherLAnnonce": "Detach listing",
   "support.supportContextCard.voirLaCommande": "View order",
@@ -1470,14 +1462,10 @@ export const messagesEn: MessageCatalogue = {
     "Mandatory document issued by the Commercial Court registry",
   "verification.businessVerificationModal.pourAccelererLaValidationDes":
     "To speed up approval of sales payouts",
-  "verification.businessVerificationModal.modeDemonstrationShongre":
-    "Shongre demo mode",
   "verification.identityVerificationModal.formatsAcceptesJpgPngPdf":
     "Accepted formats: JPG, PNG, PDF (max 8 MB)",
   "verification.identityVerificationModal.requisPourLaValidationOptique":
     "Required for optical validation",
-  "verification.identityVerificationModal.modeDemonstrationShongre":
-    "Shongre demo mode",
   "verification.trustBadge.identiteOfficielleVerifieeCniPasseport":
     "Official identity verified (ID card / passport)",
   "verification.trustBadge.entrepriseCertifieeAuRegistreDu":
@@ -1671,9 +1659,9 @@ export const messagesEn: MessageCatalogue = {
   "admin.adminRolesMatrixPage.marchesTerritoires": "Markets & territories",
   "admin.adminTaxonomyPage.taxonomieSynchronisee": "Taxonomy synchronised",
   "admin.taxonomyHeader.tabLabel": "Category bar",
-  "admin.taxonomyHeader.title": "Header categories",
+  "admin.taxonomyHeader.title": "Header navigation",
   "admin.taxonomyHeader.description":
-    "Select the root categories shown in this market header, enable or disable them, and set their display order.",
+    "Select this market’s categories and links, set their order and visibility, and edit link labels.",
   "admin.taxonomyHeader.loading": "Loading configuration…",
   "admin.taxonomyHeader.marketRequired":
     "Select a market before configuring its header.",
@@ -1688,9 +1676,10 @@ export const messagesEn: MessageCatalogue = {
   "admin.taxonomyHeader.addLabel": "Add a root category",
   "admin.taxonomyHeader.addPlaceholder": "Select a category",
   "admin.taxonomyHeader.add": "Add",
-  "admin.taxonomyHeader.selectedTitle": "Selected categories ({count})",
+  "admin.taxonomyHeader.selectedTitle": "Navigation entries ({count})",
+  "admin.taxonomyHeader.linkLabel": "Label for {name}",
   "admin.taxonomyHeader.empty":
-    "No categories are selected. Utility links remain available.",
+    "No navigation entries are configured for this market.",
   "admin.taxonomyHeader.toggle": "Enable or disable {name}",
   "admin.taxonomyHeader.moveUp": "Move {name} up",
   "admin.taxonomyHeader.moveDown": "Move {name} down",
@@ -1871,7 +1860,6 @@ export const messagesEn: MessageCatalogue = {
   "admin.adminProviderDetailPage.capacitesFournies": "Capabilities provided:",
   "admin.adminProviderDetailPage.configurationCles": "Configuration & keys",
   "admin.adminProviderDetailPage.marchesSurcharges": "Markets & assignments",
-  "admin.adminProviderDetailPage.santeTestsDemo": "Health & demo tests",
   "admin.adminProviderDetailPage.utilisationDependances":
     "Usage & dependencies",
   "admin.adminProvidersPage.matriceMultiMarches": "Multi-market matrix",
@@ -2171,71 +2159,15 @@ export const messagesEn: MessageCatalogue = {
     "e.g. Buy and sell your {category} items with secure online payment...",
 
   // --- migrated surfaces ---
-  "shell.demoRoleSwitcher.modeDemo": "Demo mode",
-  "shell.demoRoleSwitcher.testerLesProfilsEtParcours":
-    "Try the {count} profiles and journeys without a password:",
-  "shell.demoRoleSwitcher.commercialLabel": "15. Shongre Sales (Léa)",
-  "shell.demoRoleSwitcher.commercialDescription":
-    "Prospects, opportunities, follow-ups, and partner relationships",
-  "shell.demoRoleSwitcher.changerDeRolePourTester":
-    "Switch user profile to test",
-  "shell.demoRoleSwitcher.sessionUpdated": "Demo session updated",
-  "shell.demoRoleSwitcher.sessionUnchanged": "Session unchanged",
-  "shell.demoRoleSwitcher.guestActivated":
-    "You are now browsing as a signed-out visitor.",
-  "shell.demoRoleSwitcher.personaActivated":
-    "The {profile} profile is now active with its own data and permissions.",
-  "shell.demoRoleSwitcher.switchFailed":
-    "Unable to switch profile. Please try again.",
-  "shell.demoRoleSwitcher.accesDirectAuxProfilsPublics":
-    "Direct access to public profiles",
-  "shell.demoRoleSwitcher.0AnnonceParticulier": "📦 0 listings (private)",
-  "shell.demoRoleSwitcher.0AnnoncePro": "📦 0 listings (pro)",
-  "shell.demoRoleSwitcher.profilSuspenduSecurite":
-    "🚫 Suspended profile (security)",
-  "shell.dataMode.collapseToolbar": "Collapse environment toolbar",
-  "shell.dataMode.expandToolbar": "Expand environment toolbar",
-  "shell.dataMode.modeLive": "Live mode",
-  "shell.dataMode.liveSummary": "Data supplied by the Shongre API",
-  "shell.dataMode.openSettings": "Configure data mode",
-  "shell.dataMode.settingsTitle": "Data mode",
-  "shell.dataMode.settingsDescription":
-    "Choose the source used by every frontend service.",
-  "shell.dataMode.demoTitle": "Demo",
-  "shell.dataMode.demoDescription":
-    "Local, deterministic adapters that do not require the backend.",
-  "shell.dataMode.liveTitle": "Live",
-  "shell.dataMode.liveDescription":
-    "HTTP adapters connected to the configured API.",
-  "shell.dataMode.active": "Active",
-  "shell.dataMode.liveConfirmationTitle": "Confirm Live mode activation",
-  "shell.dataMode.liveConfirmationDescription":
-    "The frontend session and caches will be fully reloaded. If an error occurs, the app will not fall back automatically to demo data.",
-  "shell.dataMode.liveNotConfigured":
-    "No Live API URL is configured in this build.",
-  "shell.dataMode.liveConfigurationError":
-    "The Live API is not configured in this build. Add NEXT_PUBLIC_API_URL, then reload the application.",
-  "shell.dataMode.liveUnavailableError":
-    "The Live API is configured but unavailable. The current mode remains active.",
-  "shell.dataMode.liveUnavailableBootError":
-    "The Live API did not pass its availability check. Demo mode was not enabled automatically.",
-  "shell.dataMode.liveCheckingTitle": "Connecting to Live mode",
-  "shell.dataMode.liveCheckingDescription":
-    "Checking the Shongre API availability…",
-  "shell.dataMode.liveUnavailableLabel": "Live mode unavailable",
-  "shell.dataMode.liveUnavailableTitle": "Unable to contact the Live API",
-  "shell.dataMode.noSilentFallback":
-    "No silent fallback to demonstration data was performed.",
-  "shell.dataMode.confirmLive": "Confirm and enable Live",
-  "shell.dataMode.confirmDemo": "Enable Demo mode",
-  "shell.dataMode.switchUnexpectedError":
-    "The data mode could not be changed. The current mode remains active.",
+  "shell.environment.collapseToolbar": "Collapse environment toolbar",
+  "shell.environment.expandToolbar": "Expand environment toolbar",
+  "shell.environment.label": "{environment}",
+  "shell.environment.apiSummary": "Data supplied by the Shongre API",
   "shell.header.tableauDeBordCompte": "Account dashboard",
   "shell.header.deconnexion": "Sign out",
   "shell.header.connectezVousPourGererVos":
     "Sign in to manage your listings and messages",
   "shell.header.explorerSurLaCarte": "Explore on the map",
-  "shell.header.bonsPlansPrixReduits": "Reduced-price offers",
   "shell.header.tableauDeBord": "Dashboard",
   "shell.header.mesAnnonces": "My listings",
   "shell.header.accountMenu.availableAccess": "Available access",
@@ -2244,8 +2176,6 @@ export const messagesEn: MessageCatalogue = {
   "shell.header.accountMenu.publicProfile": "View my public profile",
   "shell.header.accountMenu.publicStorefront": "View my storefront",
   "shell.header.accountMenu.proSolutions": "Professional plans & subscriptions",
-  "shell.header.accountMenu.demoWorkspace": "Demo marketplace workspace",
-  "shell.header.accountMenu.demoAuthorized": "Marketplace demo authorized",
   "shell.header.accountMenu.status.pending": "Account pending",
   "shell.header.accountMenu.status.restricted": "Limited account",
   "shell.header.accountMenu.status.suspended": "Suspended account",
@@ -2587,8 +2517,6 @@ export const messagesEn: MessageCatalogue = {
   "admin.deleteNodeModal.deprecierALaPlace": "Deprecate instead",
   "admin.moveNodeModal.lesCapacitesEtAttributsHerites":
     "Inherited capabilities and attributes will be re-evaluated against the new parent.",
-  "auth.forgotPasswordPage.environnementDeDemonstrationCliquezCi":
-    "Demo environment — click below to go straight to the reset step:",
   "auth.forgotPasswordPage.accederAuFormulaireDeNouveau":
     "Go to the new password form",
   "auth.forgotPasswordPage.adresseEmailDeVotreCompte":
@@ -2605,7 +2533,6 @@ export const messagesEn: MessageCatalogue = {
   "auth.loginPage.retourALEcranDe": "← Back to sign-in",
   "auth.loginPage.motDePasse": "Password",
   "auth.loginPage.motDePasseOublie": "Forgot your password?",
-  "auth.loginPage.connexionRapideDemo": "Quick demo sign-in",
   "auth.loginPage.1ClicSansMotDe": "One click, no password",
   "auth.registerPages.creerVotreCompteShongre": "Create your Shongre account",
   "auth.registerPages.rejoignezLaCommunauteDeCommerce":
@@ -2633,7 +2560,6 @@ export const messagesEn: MessageCatalogue = {
   "auth.verifyEmailPage.votreCompteEstDesormaisSecurise":
     "Your account is now secured and the “Email verified” badge is live on your profile.",
   "auth.verifyEmailPage.accederAMonEspace": "Go to my account",
-  "auth.verifyEmailPage.tokenDemo": "Demo token:",
   "auth.verifyEmailPage.jetonDeValidationOuCode":
     "Validation token or verification code",
   "auth.accountTypeSelector.pourAcheterEnTouteSecurite":
@@ -2675,7 +2601,6 @@ export const messagesEn: MessageCatalogue = {
   "auth.phoneVerificationModal.validateError":
     "The code could not be verified.",
   "auth.phoneVerificationModal.resendSuccess": "A new code was sent by SMS.",
-  "auth.phoneVerificationModal.demoCode": "Test SMS code: {code}",
   "auth.phoneVerificationModal.resendCountdown": "Resend ({count}s)",
   "auth.phoneVerificationModal.resend": "Resend code",
   "auth.upgradeToProModal.passerEnCompteProfessionnel":
@@ -2706,7 +2631,7 @@ export const messagesEn: MessageCatalogue = {
     "No category matches “{query}”.",
   "collections.collectionsPage.toutesNosCollections": "All our collections",
   "collections.collectionsPage.decouvrezDesUniversThematiquesPenses":
-    "Discover themed worlds put together to inspire you: deals, vintage furniture, refurbished tech, light mobility, back-to-school and makers from across the regions.",
+    "Explore available categories and discover listings published in your market.",
   "collections.collectionsPage.voirToutesLesCollections": "See all collections",
   "collections.collectionsPage.aucuneAnnonceNeCorrespondAux":
     "No listing matches the active filters in this collection.",
@@ -2815,12 +2740,17 @@ export const messagesEn: MessageCatalogue = {
     "Specialist carrier agreed with the seller before shipping",
   "listings.listingFulfillmentSummary.surDevisTransport":
     "Transport quoted on request",
-  "listings.listingFulfillmentSummary.retraitDirectDansLeMagasin":
-    "Collect directly from the Pro seller's store",
   "listings.listingSafetyNotice.sequestreGaranti": "Provider-managed payment",
   "listings.listingSafetyNotice.paiementChiffre3dSecure":
     "3-D Secure encrypted payment",
   "listings.listingSellerTrustSection.aProposDuVendeur": "About the seller",
+  "listings.listingSellerTrustSection.viewStore": "View shop",
+  "listings.listingSellerTrustSection.viewProfile": "View profile",
+  "listings.listingSellerTrustSection.reviews": "({count} reviews)",
+  "listings.listingSellerTrustSection.responds": "Responds {responseTime}",
+  "listings.listingSellerTrustSection.responseRate": "Response rate: {rate}%",
+  "listings.listingSellerTrustSection.recentBuyerReviews":
+    "Recent buyer reviews",
   "messaging.messagingPage.vosEchangesAvecLesAcheteurs":
     "Your conversations with buyers and sellers appear here, with secure payment and order tracking.",
   "messaging.messagingPage.parcourirLesAnnonces": "Browse listings",
@@ -2899,8 +2829,6 @@ export const messagesEn: MessageCatalogue = {
   "notifications.notificationsPage.preferences": "Preferences",
   "notifications.notificationsPage.vosAlertesConcernantLesBaisses":
     "Your alerts about price drops, meetings and messages will appear here.",
-  "notifications.notificationDemoToolbar.cliquezSurUnScenarioPour":
-    "Click a scenario to inject a real notification instantly and test the display, badges and deep links.",
   "notifications.notificationPanel.vosAlertesMessagesEtTransactions":
     "Your alerts, messages and transactions will appear here.",
   "pro.proDirectoryPage.trouvezDesCommercantsEtArtisans":
@@ -3293,8 +3221,6 @@ export const messagesEn: MessageCatalogue = {
   "support.contactPage.ouvrirLaMessagerie": "Open messaging",
   "support.contactPage.piecesJointesOuCapturesD":
     "Attachments or screenshots (optional)",
-  "support.contactPage.ajouterUneCaptureOuUn":
-    "Add a screenshot or document (demo simulation)",
   "support.helpCenterPage.commentPouvonsNousVousAider": "How can we help?",
   "support.helpCenterPage.retrouvezLesReponsesAuxQuestions":
     "Find answers to common questions about payments, delivery, publishing and your account.",
@@ -3386,8 +3312,6 @@ export const messagesEn: MessageCatalogue = {
   "verification.verificationCenterPage.shongreUtiliseUnModeleDe":
     "Shongre uses a progressive trust model. Complete each step as you go to unlock higher limits and reassure the community.",
   "verification.verificationCenterPage.indiceDeConfiance": "Trust score",
-  "verification.verificationCenterPage.modeDemonstrationSimulerUnProfil":
-    "Demo mode: simulate a user profile",
   "verification.verificationCenterPage.checklistDesVerifications2":
     "Verification checklist",
   "verification.verificationCenterPage.completezChaqueDimensionPourRenforcer":
@@ -3754,8 +3678,6 @@ export const messagesEn: MessageCatalogue = {
   "admin.capabilities.updateError": "Permissions could not be updated.",
   "admin.capabilities.saveAction": "Save permissions",
   "admin.capabilities.manageAction": "Manage permissions",
-  "shell.demoRoleSwitcher.roleHorsPersonasDemo":
-    "Platform role outside the demo personas",
   "sellerworkspace.proDashboardPage.pasEncoreDeDonnees": "No data yet",
   "sellerworkspace.proDashboardPage.totalVuesUniques":
     "Total: {count} unique views",
@@ -3883,14 +3805,13 @@ export const messagesEn: MessageCatalogue = {
   "invoicing.product.title": "Invoice clearly. Stay in control at every step.",
   "invoicing.product.description":
     "Keep customers, drafts, invoices and credit notes together in a workspace designed for multiple markets, with exact totals and protected finalization.",
-  "invoicing.product.primaryCta": "Open the demo workspace",
   "invoicing.product.secondaryCta": "Explore the workflow",
   "invoicing.product.openApp": "Open Shongre Invoicing",
   "invoicing.product.activatePro": "Explore Pro invoicing access",
   "invoicing.product.createWorkspace": "Create my invoicing workspace",
-  "invoicing.product.demoNotice":
-    "Deterministic local data · No electronic transport enabled",
-  "invoicing.product.previewAria": "Open the Shongre Invoicing demo workspace",
+  "invoicing.product.apiNotice":
+    "Data supplied by the Shongre API · Electronic transport only when configured",
+  "invoicing.product.previewAria": "Open the Shongre Invoicing workspace",
   "invoicing.product.previewTitle": "Invoicing",
   "invoicing.product.previewOrganization": "Organization",
   "invoicing.product.previewNumber": "Number",
@@ -3901,15 +3822,13 @@ export const messagesEn: MessageCatalogue = {
   "invoicing.product.previewSubtotal": "Subtotal before tax",
   "invoicing.product.previewTax": "Tax",
   "invoicing.product.previewMarket": "Market",
-  "invoicing.product.previewMarketValue": "France · EUR",
   "invoicing.product.previewDocument": "Readable document",
   "invoicing.product.previewDocumentNotice":
-    "Demo text derivative — this file is not a legal original.",
+    "Readable preview — the finalized document remains authoritative.",
   "invoicing.product.trustTitle": "Shongre Invoicing foundations",
   "invoicing.product.trustExact": "Exact totals",
   "invoicing.product.trustMarkets": "Multi-market context",
   "invoicing.product.trustFinalization": "Protected finalization",
-  "invoicing.product.trustDemo": "Demo without transmission",
   "invoicing.product.workflowTitle":
     "From your organization to a finalized invoice.",
   "invoicing.product.workflowBody":
@@ -3941,13 +3860,10 @@ export const messagesEn: MessageCatalogue = {
   "invoicing.product.marketsBody":
     "Country, currency, language and timezone are checked together. An incomplete or inconsistent context blocks the operation instead of silently falling back to France.",
   "invoicing.product.marketsDisclaimer":
-    "The generic core is demonstrated for these active contexts; this is not evidence of local tax or electronic-invoicing compliance.",
-  "invoicing.product.marketFrance": "France",
-  "invoicing.product.marketBelgium": "Belgium",
-  "invoicing.product.marketSwitzerland": "Switzerland",
+    "Markets shown come from the active API configuration; this is not evidence of local tax or electronic-invoicing compliance.",
   "invoicing.product.guardrailsTitle": "Production limits remain visible.",
   "invoicing.product.guardrailsBody":
-    "Shongre Invoicing separates what works in the demo from what still requires external configuration, review or certification.",
+    "Shongre Invoicing separates active capabilities from those that still require external configuration, review or certification.",
   "invoicing.product.guardrailNoTransmission":
     "No legal transmission presented as successful",
   "invoicing.product.guardrailNoFallback":
@@ -3955,9 +3871,9 @@ export const messagesEn: MessageCatalogue = {
   "invoicing.product.guardrailIsolation":
     "Data isolated by organization and legal entity",
   "invoicing.product.finalCtaTitle":
-    "Prepare your first invoice in a backend-independent workspace.",
+    "Prepare your first invoice in your secure workspace.",
   "invoicing.product.finalCtaBody":
-    "Explore the workflow with deterministic data without connecting a provider or transmitting a document.",
+    "Use the configured workflow without transmitting an electronic document until the required provider is active.",
   "invoicing.product.explorePro": "Explore Shongre Pro",
   "invoicing.product.controlTitle": "Separate, explicit states",
   "invoicing.product.controlBody":
@@ -3970,11 +3886,10 @@ export const messagesEn: MessageCatalogue = {
     "Numbering, snapshot and the readable document are produced by one idempotent operation.",
   "invoicing.workspace.title": "Invoicing",
   "invoicing.workspace.description": "Your organization’s sales invoices",
-  "invoicing.workspace.demo": "Demo mode",
   "invoicing.workspace.newInvoice": "New invoice",
   "invoicing.workspace.configurationTitle": "Production configuration required",
   "invoicing.workspace.configurationBody":
-    "Electronic transport is not active. Drafting and local finalization remain available in this demo scenario.",
+    "Electronic transport is not active. Drafting and local finalization remain available in this workspace.",
   "invoicing.workspace.navigation": "Invoicing navigation",
   "invoicing.workspace.overview": "Overview",
   "invoicing.workspace.invoices": "Invoices",

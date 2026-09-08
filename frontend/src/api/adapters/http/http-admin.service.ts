@@ -2,7 +2,7 @@ import {
   AdminServiceContract,
   AdminStatsSummary,
 } from "../../contracts/admin.contract";
-import { httpClient } from "./http-client";
+import { apiOperation } from "./generated-api-operation";
 import { UserProfile } from "../../../types";
 import type {
   TrendingAdminConfig,
@@ -21,29 +21,36 @@ import type {
 
 export class HttpAdminService implements AdminServiceContract {
   async getPlatformStats(): Promise<AdminStatsSummary> {
-    return httpClient.get<AdminStatsSummary>("/admin/stats");
+    return apiOperation<AdminStatsSummary, "getAdminStats">(
+      "getAdminStats",
+      {},
+    );
   }
 
   async getAllUsers(): Promise<UserProfile[]> {
-    return httpClient.get<UserProfile[]>("/admin/users");
+    return apiOperation<UserProfile[], "getAdminUsers">("getAdminUsers", {});
   }
 
   async getCapabilityOverrides(
     userId: string,
   ): Promise<CapabilityManagementProjection> {
-    return httpClient.get<CapabilityManagementProjection>(
-      `/admin/users/${encodeURIComponent(userId)}/capabilities`,
-    );
+    return apiOperation<
+      CapabilityManagementProjection,
+      "getAdminUserCapabilities"
+    >("getAdminUserCapabilities", { path: { userId: userId } });
   }
 
   async updateCapabilityOverrides(
     userId: string,
     update: CapabilityOverrideUpdate,
   ): Promise<CapabilityManagementProjection> {
-    return httpClient.put<CapabilityManagementProjection>(
-      `/admin/users/${encodeURIComponent(userId)}/capability-overrides`,
-      update,
-    );
+    return apiOperation<
+      CapabilityManagementProjection,
+      "updateAdminUserCapabilityOverrides"
+    >("updateAdminUserCapabilityOverrides", {
+      path: { userId: userId },
+      body: update,
+    });
   }
 
   async updateUserStatus(
@@ -51,10 +58,16 @@ export class HttpAdminService implements AdminServiceContract {
     status: "active" | "restricted" | "suspended" | "banned",
     reason: string,
   ): Promise<UserProfile> {
-    return httpClient.put<UserProfile>(`/admin/users/${userId}/status`, {
-      status,
-      reason,
-    });
+    return apiOperation<UserProfile, "putAdminUsersByUserIdStatus">(
+      "putAdminUsersByUserIdStatus",
+      {
+        path: { userId: userId },
+        body: {
+          status,
+          reason,
+        },
+      },
+    );
   }
 
   async updateStaffStatus(
@@ -63,11 +76,17 @@ export class HttpAdminService implements AdminServiceContract {
     staffRole: StaffRole,
     reason: string,
   ): Promise<UserProfile> {
-    return httpClient.put<UserProfile>(`/admin/users/${userId}/staff-status`, {
-      status,
-      staffRole,
-      reason,
-    });
+    return apiOperation<UserProfile, "updateAdminUserStaffStatus">(
+      "updateAdminUserStaffStatus",
+      {
+        path: { userId: userId },
+        body: {
+          status,
+          staffRole,
+          reason,
+        },
+      },
+    );
   }
 
   async reviewProfessionalVerification(
@@ -75,10 +94,16 @@ export class HttpAdminService implements AdminServiceContract {
     approve: boolean,
     notes: string,
   ): Promise<UserProfile> {
-    return httpClient.put<UserProfile>(`/admin/users/${userId}/verification`, {
-      approve,
-      notes,
-    });
+    return apiOperation<UserProfile, "putAdminUsersByUserIdVerification">(
+      "putAdminUsersByUserIdVerification",
+      {
+        path: { userId: userId },
+        body: {
+          approve,
+          notes,
+        },
+      },
+    );
   }
 
   async getPendingReports(): Promise<
@@ -90,15 +115,16 @@ export class HttpAdminService implements AdminServiceContract {
       createdAt: string;
     }>
   > {
-    return httpClient.get<
+    return apiOperation<
       Array<{
         id: string;
         listingId: string;
         reason: string;
         reporterName: string;
         createdAt: string;
-      }>
-    >("/admin/reports");
+      }>,
+      "getAdminReports"
+    >("getAdminReports", {});
   }
 
   async resolveReport(
@@ -106,10 +132,16 @@ export class HttpAdminService implements AdminServiceContract {
     action: "dismiss" | "remove_listing" | "ban_user",
     reason: string,
   ): Promise<void> {
-    return httpClient.post<void>(`/admin/reports/${reportId}/resolve`, {
-      action,
-      reason,
-    });
+    return apiOperation<void, "postAdminReportsByReportIdResolve">(
+      "postAdminReportsByReportIdResolve",
+      {
+        path: { reportId: reportId },
+        body: {
+          action,
+          reason,
+        },
+      },
+    );
   }
 
   async getAuditLogs(): Promise<
@@ -121,56 +153,61 @@ export class HttpAdminService implements AdminServiceContract {
       target: string;
     }>
   > {
-    return httpClient.get<
+    return apiOperation<
       Array<{
         id: string;
         timestamp: string;
         actor: string;
         action: string;
         target: string;
-      }>
-    >("/admin/audit-logs");
+      }>,
+      "getAdminAuditLogs"
+    >("getAdminAuditLogs", {});
   }
 
   async getTrendingConfig(
     marketCode = DEFAULT_MARKET_CODE,
   ): Promise<TrendingAdminConfig> {
-    return httpClient.get<TrendingAdminConfig>("/admin/trending/config", {
-      params: { market: marketCode },
-    });
+    return apiOperation<TrendingAdminConfig, "getAdminTrendingConfig">(
+      "getAdminTrendingConfig",
+      { query: { market: marketCode } },
+    );
   }
 
   async updateTrendingConfig(
     updates: Partial<TrendingAdminConfig>,
     marketCode = DEFAULT_MARKET_CODE,
   ): Promise<TrendingAdminConfig> {
-    return httpClient.put<TrendingAdminConfig>(
-      "/admin/trending/config",
-      updates,
-      { params: { market: marketCode } },
+    return apiOperation<TrendingAdminConfig, "putAdminTrendingConfig">(
+      "putAdminTrendingConfig",
+      { query: { market: marketCode }, body: updates },
     );
   }
 
   async upsertTrendingOverride(
     override: TrendingTopicOverride,
   ): Promise<TrendingAdminConfig> {
-    return httpClient.put<TrendingAdminConfig>(
-      `/admin/trending/overrides/${encodeURIComponent(override.topicKey)}`,
-      override,
-    );
+    return apiOperation<
+      TrendingAdminConfig,
+      "putAdminTrendingOverridesByTopicKey"
+    >("putAdminTrendingOverridesByTopicKey", {
+      path: { topicKey: override.topicKey },
+      body: override,
+    });
   }
 
   async getDiscoveryConfiguration(marketCode = DEFAULT_MARKET_CODE) {
-    return httpClient.get<DiscoveryConfiguration>(
-      "/admin/discovery/configuration",
-      { params: { marketCode } },
-    );
+    return apiOperation<
+      DiscoveryConfiguration,
+      "getAdminDiscoveryConfiguration"
+    >("getAdminDiscoveryConfiguration", { query: { marketCode } });
   }
 
   async getDiscoveryMetrics(marketCode = DEFAULT_MARKET_CODE) {
-    return httpClient.get<DiscoveryMetrics>("/admin/discovery/metrics", {
-      params: { marketCode },
-    });
+    return apiOperation<DiscoveryMetrics, "getAdminDiscoveryMetrics">(
+      "getAdminDiscoveryMetrics",
+      { query: { marketCode } },
+    );
   }
 
   async saveDiscoveryConfiguration(
@@ -178,10 +215,16 @@ export class HttpAdminService implements AdminServiceContract {
     changeReason: string,
     activate: boolean,
   ) {
-    return httpClient.post<DiscoveryConfiguration>(
-      `/admin/discovery/configuration/${activate ? "publish" : "drafts"}`,
-      { configuration, changeReason },
-    );
+    const input = { body: { configuration, changeReason } };
+    return activate
+      ? apiOperation<
+          DiscoveryConfiguration,
+          "postAdminDiscoveryConfigurationPublish"
+        >("postAdminDiscoveryConfigurationPublish", input)
+      : apiOperation<
+          DiscoveryConfiguration,
+          "postAdminDiscoveryConfigurationDrafts"
+        >("postAdminDiscoveryConfigurationDrafts", input);
   }
 }
 

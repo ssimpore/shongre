@@ -1,12 +1,9 @@
 import "server-only";
 import { cache } from "react";
 import { PAGE_SIZES } from "../../configuration/pagination.config";
-import { listingRepository } from "../../repositories/listing.repository";
-import { userRepository } from "../../repositories/user.repository";
 import { createServiceRegistry } from "../../api/client/service-registry";
-import { apiClientConfig } from "../../api/client/api-client.config";
 import { collectionService } from "../../domains/collection/collection.service";
-import type { Listing, SearchFilters, UserProfile } from "../../types";
+import type { Listing, PublicSellerProfile, SearchFilters } from "../../types";
 import { employmentSearchQuerySchema } from "@shongre/contracts/employment";
 import type {
   PublicRouteDataResolution,
@@ -16,7 +13,7 @@ import { listingIsPublishedInMarket } from "./public-route-data";
 import { COUNTRY_REGISTRY } from "@shongre/contracts";
 import { fetchPublicSitemapListingPage } from "../../api/adapters/http/http-sitemap.service";
 
-const serverServices = createServiceRegistry(apiClientConfig.dataMode);
+const serverServices = createServiceRegistry();
 const listingsService = serverServices.listings;
 const searchService = serverServices.search;
 const employmentService = serverServices.employment;
@@ -63,60 +60,6 @@ async function getServerListings(
     totalRelation: result.totalRelation,
     snapshotAt: result.snapshotAt,
     pageInfo: result.pageInfo,
-  };
-}
-
-async function getServerListingWindow(
-  filters: SearchFilters,
-  maximumItems: number,
-): Promise<ServerListingCollection> {
-  const boundedMaximum = Math.max(1, Math.trunc(maximumItems));
-  const listings: Listing[] = [];
-  const seenListingIds = new Set<string>();
-  const seenCursors = new Set<string>();
-  let cursor: string | undefined;
-  let firstPage: ServerListingCollection | null = null;
-  let lastPage: ServerListingCollection | null = null;
-
-  do {
-    const page = await getServerListings({
-      ...filters,
-      page: undefined,
-      cursor,
-      limit: Math.min(
-        PUBLIC_SEARCH_PAGE_LIMIT,
-        boundedMaximum - listings.length,
-      ),
-    });
-    firstPage ??= page;
-    lastPage = page;
-    for (const listing of page.listings) {
-      if (seenListingIds.has(listing.id)) continue;
-      seenListingIds.add(listing.id);
-      listings.push(listing);
-      if (listings.length >= boundedMaximum) break;
-    }
-    const nextCursor = page.pageInfo?.nextCursor;
-    if (!nextCursor || !page.pageInfo?.hasNextPage) break;
-    if (seenCursors.has(nextCursor)) {
-      throw new Error(
-        "Public discovery returned a repeated pagination cursor.",
-      );
-    }
-    seenCursors.add(nextCursor);
-    cursor = nextCursor;
-  } while (listings.length < boundedMaximum);
-
-  const baseline = firstPage || {
-    listings: [],
-    total: 0,
-    page: 1,
-    totalPages: 1,
-  };
-  return {
-    ...baseline,
-    listings,
-    pageInfo: lastPage?.pageInfo,
   };
 }
 
@@ -192,11 +135,7 @@ function decoded(value: string): string | null {
   }
 }
 
-function publicSeller(seller: UserProfile | null): seller is UserProfile {
-  return Boolean(seller && seller.status === "active");
-}
-
-function sellerCountryCode(seller: UserProfile): string | null {
+function sellerCountryCode(seller: PublicSellerProfile): string | null {
   const value = String(seller.country || "")
     .trim()
     .toUpperCase();
@@ -207,16 +146,17 @@ async function resolveSeller(
   slug: string,
   countryCode: string,
 ): Promise<PublicRouteDataResolution> {
-  const seller = await userRepository.getUserBySlugOrId(slug);
-  if (!publicSeller(seller)) {
+  const seller = await serverServices.users.getPublicProfile(slug);
+  if (!seller) {
     return { status: "not_found", data: null, resourceType: "seller" };
   }
-  const [allListings, reviews] = await Promise.all([
-    listingRepository.getListingsBySeller(seller.id),
+  const [listingResult, reviews] = await Promise.all([
+    serverServices.listings.getListings({ marketCode: countryCode }),
     serverServices.reviews.getUserReviews(seller.id),
   ]);
-  const listings = allListings.filter(
+  const listings = listingResult.listings.filter(
     (listing) =>
+      listing.sellerId === seller.id &&
       listing.status === "active" &&
       listingIsPublishedInMarket(listing, countryCode),
   );
@@ -494,54 +434,42 @@ async function resolveUncached(
   const collectionMatch = pathname.match(/^\/collections\/([^/]+)$/);
   if (collectionMatch) {
     const slug = decoded(collectionMatch[1]);
-    const collection = slug ? collectionService.getCollection(slug) : undefined;
-    if (!collection) {
+    const resolution = slug
+      ? await collectionService.getCollection(
+          slug,
+          { countryCode },
+          "fr-FR",
+          PAGE_SIZES.collectionListings,
+        )
+      : null;
+    if (!resolution) {
       return { status: "not_found", data: null, resourceType: "collection" };
     }
-    const [inventory, marketCollections] = await Promise.all([
-      getServerListingWindow(
-        {
-          marketCode: countryCode,
-        },
-        1_000,
-      ),
-      Promise.all(
-        COUNTRY_REGISTRY.filter(
-          (country) =>
-            country.enabled &&
-            country.marketplace.enabled &&
-            country.seo.indexable &&
-            ["active", "beta"].includes(country.launchStatus),
-        ).map(async (country) => {
-          const candidateInventory = await getServerListingWindow(
-            {
-              marketCode: country.code,
-            },
-            1_000,
-          );
-          return {
-            countryCode: country.code,
-            count: collectionService.filterListingsForCollection(
-              collection,
-              candidateInventory.listings,
-              { marketCode: country.code },
-            ).length,
-          };
-        }),
-      ),
-    ]);
+    const marketCollections = await Promise.all(
+      COUNTRY_REGISTRY.filter(
+        (country) =>
+          country.enabled &&
+          country.marketplace.enabled &&
+          country.seo.indexable &&
+          ["active", "beta"].includes(country.launchStatus),
+      ).map(async (country) => ({
+        countryCode: country.code,
+        resolution: await collectionService.getCollection(
+          slug!,
+          { countryCode: country.code },
+          "fr-FR",
+          1,
+        ),
+      })),
+    );
     return {
       status: "found",
       data: {
         kind: "collection",
-        collection,
-        listings: collectionService.filterListingsForCollection(
-          collection,
-          inventory.listings,
-          { marketCode: countryCode },
-        ),
+        collection: resolution.collection,
+        listings: resolution.listings,
         availableCountryCodes: marketCollections
-          .filter((entry) => entry.count > 0)
+          .filter((entry) => entry.resolution !== null)
           .map((entry) => entry.countryCode),
       },
     };
@@ -562,10 +490,13 @@ export async function listServerPublicSitemapData(countryCode: string) {
   const sellerIds = Array.from(
     new Set(activeListings.map((listing) => listing.sellerId)),
   );
-  const sellerIdSet = new Set(sellerIds);
-  const sellers = (await userRepository.getAllUsers()).filter(
-    (seller) => sellerIdSet.has(seller.id) && publicSeller(seller),
-  );
+  const sellers = (
+    await Promise.all(
+      sellerIds.map((sellerId) =>
+        serverServices.users.getPublicProfile(sellerId),
+      ),
+    )
+  ).filter((seller): seller is PublicSellerProfile => seller !== null);
 
   const employmentResult =
     countryCode === "FR"
@@ -588,12 +519,12 @@ export async function listServerPublicSitemapData(countryCode: string) {
       ])
     : [null, []];
 
-  const collections = collectionService.getCollections().map((collection) => ({
+  const collections = (
+    await collectionService.getCollections({ countryCode }, "fr-FR")
+  ).map((collection) => ({
     collection,
-    listings: collectionService.filterListingsForCollection(
-      collection,
-      activeListings,
-      { marketCode: countryCode },
+    listings: activeListings.filter(
+      (listing) => listing.categorySlug === collection.slug,
     ),
   }));
 

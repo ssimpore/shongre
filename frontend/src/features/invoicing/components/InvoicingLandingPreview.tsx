@@ -58,32 +58,34 @@ export function InvoicingLandingPreview({
               <p className="text-micro font-bold uppercase tracking-wide text-text-muted">
                 {labels.customer}
               </p>
-              <p className="mt-1 text-sm font-bold text-text-main">
-                Studio Mercure
-              </p>
+              <span
+                aria-hidden="true"
+                className="mt-2 block h-3 w-28 rounded-full bg-border-base"
+              />
             </div>
             <div className="sm:text-right">
               <p className="text-micro font-bold uppercase tracking-wide text-text-muted">
                 {labels.invoiceNumber}
               </p>
-              <p className="mt-1 text-sm font-bold text-text-main">
-                DEMO-FAC-2026-000001
-              </p>
+              <span
+                aria-hidden="true"
+                className="mt-2 block h-3 w-32 rounded-full bg-border-base sm:ml-auto"
+              />
             </div>
           </div>
 
           <div className="space-y-3 border-y border-border-base py-5 text-xs">
             <div className="flex items-center justify-between gap-4 text-text-secondary">
               <span>{labels.totalLabel}</span>
-              <strong className="text-text-main">1 500,00 €</strong>
+              <span className="h-2.5 w-16 rounded-full bg-border-base" />
             </div>
             <div className="flex items-center justify-between gap-4 text-text-secondary">
               <span>{labels.taxLabel}</span>
-              <strong className="text-text-main">300,00 €</strong>
+              <span className="h-2.5 w-12 rounded-full bg-border-base" />
             </div>
             <div className="flex items-center justify-between gap-4 text-base font-bold text-text-main">
               <span>Total</span>
-              <span>1 800,00 €</span>
+              <span className="h-3 w-20 rounded-full bg-border-base" />
             </div>
           </div>
 
@@ -140,9 +142,10 @@ export function InvoicingLandingPreview({
               <p className="text-micro font-bold uppercase tracking-wider text-text-muted">
                 {labels.organization}
               </p>
-              <h2 className="mt-1 text-lg font-bold text-text-main">
-                Atelier Horizon
-              </h2>
+              <span
+                aria-hidden="true"
+                className="mt-2 block h-4 w-32 rounded-full bg-border-base"
+              />
             </div>
             <span className="rounded-control border border-border-base bg-bg-surface px-2 py-1 text-micro font-bold text-text-secondary">
               {labels.marketValue}
@@ -152,13 +155,17 @@ export function InvoicingLandingPreview({
           <div className="mt-5 grid grid-cols-2 gap-2">
             <div className="rounded-control border border-border-base p-3">
               <p className="text-micro text-text-muted">{labels.amount}</p>
-              <p className="mt-1 text-base font-bold text-text-main">
-                1 800,00 €
-              </p>
+              <span
+                aria-hidden="true"
+                className="mt-2 block h-3 w-16 rounded-full bg-border-base"
+              />
             </div>
             <div className="rounded-control border border-border-base p-3">
               <p className="text-micro text-text-muted">{labels.marketLabel}</p>
-              <p className="mt-1 text-base font-bold text-text-main">FR</p>
+              <span
+                aria-hidden="true"
+                className="mt-2 block h-3 w-8 rounded-full bg-border-base"
+              />
             </div>
           </div>
 
@@ -169,9 +176,9 @@ export function InvoicingLandingPreview({
               <span className="text-right">{labels.amount}</span>
             </div>
             <div className="grid grid-cols-3 items-center gap-2 px-3 py-3 text-micro text-text-secondary">
-              <strong className="truncate text-text-main">DEMO-FAC-0001</strong>
-              <span className="truncate">Studio Mercure</span>
-              <strong className="text-right text-text-main">1 800 €</strong>
+              <span className="h-2.5 rounded-full bg-border-base" />
+              <span className="h-2.5 rounded-full bg-bg-muted" />
+              <span className="ml-auto h-2.5 w-12 rounded-full bg-border-base" />
             </div>
           </div>
 

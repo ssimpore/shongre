@@ -32,15 +32,16 @@ if (!existsSync(manifestPath)) {
 }
 
 const source = readFileSync(manifestPath, "utf8");
-const assignmentMarker =
-  'globalThis.__RSC_MANIFEST["/[[...segments]]/page"] = ';
-const assignmentStart = source.indexOf(assignmentMarker);
-if (assignmentStart < 0) {
+const assignment =
+  /globalThis\.__RSC_MANIFEST\["\/\[\[\.\.\.segments\]\]\/page"\]\s*=\s*/.exec(
+    source,
+  );
+if (!assignment || assignment.index === undefined) {
   throw new Error("The catch-all client manifest has an unsupported shape.");
 }
 
 const manifest = JSON.parse(
-  source.slice(assignmentStart + assignmentMarker.length).replace(/;\s*$/, ""),
+  source.slice(assignment.index + assignment[0].length).replace(/;\s*$/, ""),
 );
 const applicationEntry = Object.entries(manifest.clientModules).find(
   ([modulePath]) => modulePath.endsWith("/frontend/app/WebApplication.tsx"),
@@ -48,9 +49,21 @@ const applicationEntry = Object.entries(manifest.clientModules).find(
 if (!applicationEntry) {
   throw new Error("WebApplication is missing from the client manifest.");
 }
+const usesWebpackChunkIds = applicationEntry[1].chunks.some(
+  (chunkPath) => typeof chunkPath === "string" && !chunkPath.endsWith(".js"),
+);
 
-const rows = [...new Set(applicationEntry[1].chunks)].map((chunkPath) => {
-  const diskPath = resolve(nextRoot, chunkPath.replace(/^\/_next\//, ""));
+const rows = [
+  ...new Set(
+    applicationEntry[1].chunks.filter(
+      (chunkPath) => typeof chunkPath === "string" && chunkPath.endsWith(".js"),
+    ),
+  ),
+].map((chunkPath) => {
+  const diskPath = resolve(
+    nextRoot,
+    decodeURIComponent(chunkPath.replace(/^\/_next\//, "")),
+  );
   const bytes = readFileSync(diskPath);
   const sourceText = bytes.toString("utf8");
   return {
@@ -103,8 +116,11 @@ function routeChunkRows() {
       const sourceMapPath = resolve(chunksRoot, sourceMapName);
       if (!existsSync(sourceMapPath)) return [];
       const sourceMap = JSON.parse(readFileSync(sourceMapPath, "utf8"));
-      const ownsRouteEntry = (sourceMap.sources || []).some((source) =>
-        source.endsWith(`/${sourcePath}`),
+      const sourceSuffix = sourcePath.replace(/^frontend\//, "");
+      const ownsRouteEntry = (sourceMap.sources || []).some(
+        (source) =>
+          source.endsWith(`/${sourcePath}`) ||
+          source.endsWith(`/${sourceSuffix}`),
       );
       return ownsRouteEntry
         ? [
@@ -124,6 +140,9 @@ const routes = routeChunkRows();
 
 console.log("\nClient bundle budget");
 console.log("=".repeat(50));
+console.log(
+  `Build chunk layout: ${usesWebpackChunkIds ? "webpack" : "turbopack"}`,
+);
 console.log(`Initial client JavaScript: ${kb(totals.gzipBytes)} gzip`);
 console.log(`Initial client JavaScript: ${kb(totals.rawBytes)} raw`);
 console.log(
@@ -156,6 +175,7 @@ if (executableTotals.gzipBytes > BUDGETS.initialExecutableGzipBytes)
     `executable hydration ${kb(executableTotals.gzipBytes)} gzip exceeds ${kb(BUDGETS.initialExecutableGzipBytes)}`,
   );
 if (
+  !usesWebpackChunkIds &&
   largestExecutable &&
   largestExecutable.gzipBytes > BUDGETS.executableChunkGzipBytes
 )

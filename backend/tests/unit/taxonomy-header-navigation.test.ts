@@ -9,7 +9,7 @@ const infrastructure = {
   canonicalProtocol: "https" as const,
 };
 
-const context = (marketCode: "FR" | "BE" | "SN") =>
+const context = (marketCode: "FR" | "BE" | "CH" | "SN" | "BF") =>
   resolveMarketContext({
     hostname: marketCode === "FR" ? "shongre.fr" : "shongre.com",
     pathname: marketCode === "FR" ? "/" : `/${marketCode.toLowerCase()}`,
@@ -17,6 +17,145 @@ const context = (marketCode: "FR" | "BE" | "SN") =>
   });
 
 describe("taxonomy header navigation", () => {
+  it.each(["FR", "BE", "CH"] as const)(
+    "persists labels, visibility and ordering for links in %s",
+    async (marketCode) => {
+      const service = new TaxonomyService(new DemoTaxonomyRepository());
+      const marketContext = context(marketCode);
+      const initial = await service.getHeaderNavigation(marketContext, true);
+      const otherContext = context(marketCode === "FR" ? "BE" : "FR");
+      const other = await service.getHeaderNavigation(otherContext, true);
+      const saved = await service.saveHeaderNavigation(
+        {
+          marketCode,
+          expectedRevision: initial.revision,
+          changeReason: "Configuration des liens du marché.",
+          items: [{ categoryId: "vehicles", isActive: true, displayOrder: 1 }],
+          links: [
+            {
+              target: "promotions",
+              labels: { "fr-FR": "Offres locales" },
+              shortLabels: { "fr-FR": "Offres locales" },
+              isActive: true,
+              displayOrder: 0,
+            },
+            {
+              target: "category_overview",
+              labels: { "fr-FR": "Explorer" },
+              shortLabels: { "fr-FR": "Explorer" },
+              isActive: false,
+              displayOrder: 2,
+            },
+          ],
+        },
+        { marketContext, actorProfileId: "admin-profile" },
+      );
+      expect(saved.revision).toBe(initial.revision + 1);
+      expect(saved.links).toHaveLength(2);
+      expect((await service.getHeaderNavigation(marketContext)).links).toEqual([
+        saved.links![0],
+      ]);
+      expect(await service.getHeaderNavigation(otherContext, true)).toEqual(
+        other,
+      );
+      await expect(
+        service.saveHeaderNavigation(
+          {
+            marketCode,
+            expectedRevision: initial.revision,
+            changeReason: "Tentative avec révision obsolète.",
+            items: [],
+            links: [],
+          },
+          { marketContext, actorProfileId: "admin-profile" },
+        ),
+      ).rejects.toThrow(/revision conflict/);
+    },
+  );
+
+  it("preserves stored links for category-only consumers and allows explicit removal", async () => {
+    const service = new TaxonomyService(new DemoTaxonomyRepository());
+    const marketContext = context("FR");
+    const initial = await service.getHeaderNavigation(marketContext, true);
+    const saved = await service.saveHeaderNavigation(
+      {
+        marketCode: "FR",
+        expectedRevision: initial.revision,
+        changeReason: "Mise à jour des catégories seules.",
+        items: [],
+      },
+      { marketContext, actorProfileId: "admin-profile" },
+    );
+    expect(saved.links).toEqual(initial.links);
+    const cleared = await service.saveHeaderNavigation(
+      {
+        marketCode: "FR",
+        expectedRevision: saved.revision,
+        changeReason: "Désactivation explicite de tous les liens.",
+        items: [],
+        links: [],
+      },
+      { marketContext, actorProfileId: "admin-profile" },
+    );
+    expect(cleared.links).toEqual([]);
+  });
+
+  it("rejects unapproved destinations, duplicate ordering and unopened markets", async () => {
+    const service = new TaxonomyService(new DemoTaxonomyRepository());
+    const link = {
+      target: "promotions" as const,
+      labels: { "fr-FR": "Promotions" },
+      shortLabels: { "fr-FR": "Promotions" },
+      isActive: true,
+      displayOrder: 0,
+    };
+    for (const links of [
+      [link, link],
+      [{ ...link, target: "https://untrusted.invalid" }],
+    ]) {
+      await expect(
+        service.saveHeaderNavigation(
+          {
+            marketCode: "FR",
+            expectedRevision: 1,
+            changeReason: "Configuration volontairement invalide.",
+            items: [],
+            links,
+          } as never,
+          { marketContext: context("FR"), actorProfileId: "admin-profile" },
+        ),
+      ).rejects.toThrow();
+    }
+    await expect(
+      service.saveHeaderNavigation(
+        {
+          marketCode: "FR",
+          expectedRevision: 1,
+          changeReason: "Collision entre catégorie et lien.",
+          items: [{ categoryId: "vehicles", isActive: true, displayOrder: 0 }],
+          links: [link],
+        },
+        { marketContext: context("FR"), actorProfileId: "admin-profile" },
+      ),
+    ).rejects.toThrow(/unique/);
+    for (const marketCode of ["SN", "BF"] as const) {
+      await expect(
+        service.saveHeaderNavigation(
+          {
+            marketCode,
+            expectedRevision: 0,
+            changeReason: "Activation avant ouverture du marché.",
+            items: [],
+            links: [link],
+          },
+          {
+            marketContext: context(marketCode),
+            actorProfileId: "admin-profile",
+          },
+        ),
+      ).rejects.toThrow(/pas encore ouvert/);
+    }
+  });
   it("persists selection, activation, and order without changing the taxonomy", async () => {
     const service = new TaxonomyService(new DemoTaxonomyRepository());
     const france = context("FR");

@@ -10,6 +10,13 @@ import { listingsService } from "../../listings/listings.service.js";
 import { requireApiRequestMarket } from "../../markets/request-market-context.js";
 
 export function registerUsersRoutes(routes: RouteRegistrar): void {
+  routes.addRoute(
+    "GET",
+    "/users/professionals",
+    PUBLIC,
+    async ({ marketCode }) =>
+      usersService.listPublicProfessionals(requireApiRequestMarket(marketCode)),
+  );
   routes.addRoute("GET", "/users/:id", PUBLIC, async ({ params }) =>
     usersService.getPublicUserById(params.id),
   );

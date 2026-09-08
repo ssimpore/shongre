@@ -21,11 +21,13 @@ import { GlobalGatewayPage } from "../../src/features/global/GlobalGatewayPage";
 import { MarketLaunchPage } from "../../src/features/global/MarketLaunchPage";
 import { WebApplication } from "../WebApplication";
 import { resolveServerApplicationContext } from "../../src/platform/applications/server-application-context";
-import { DEMO_SOLUTIONS } from "../../src/api/adapters/demo/demo-solutions.data";
 import { PUBLIC_SOLUTION_LIFECYCLES } from "../../src/domains/solutions/solutions.presentation";
 import { DEFAULT_SHARE_IMAGE_PATH } from "../../src/services/seo.service";
 import { createPublicRuntimeConfig } from "../../src/platform/runtime-config/public-runtime-config.server";
 import { socialProfilesFromExternalLinks } from "../../src/platform/seo/discovery-structured-data";
+import { createServiceRegistry } from "../../src/api/client/service-registry";
+
+const serverServices = createServiceRegistry();
 
 interface PageProps {
   params: Promise<{ segments?: string[] }>;
@@ -71,7 +73,7 @@ export async function generateMetadata({
     if (applicationId === "solutions") {
       const slug = applicationPath.split("/").filter(Boolean)[0];
       const candidate = slug
-        ? DEMO_SOLUTIONS.find((value) => value.slug === slug)
+        ? await serverServices.solutions.getSolutionBySlug(slug)
         : null;
       const solution =
         candidate && PUBLIC_SOLUTION_LIFECYCLES.includes(candidate.lifecycle)

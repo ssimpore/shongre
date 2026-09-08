@@ -1,31 +1,7 @@
-import { toTaxonomyV4ItemCondition } from "@shongre/contracts/publication";
-import { getTaxonomyV4PublicBundle } from "@shongre/contracts/taxonomy-v4-public";
 import type { PublicationDraftState } from "../../../domains/publication/publication.types";
-
-const taxonomyV4Bundle = getTaxonomyV4PublicBundle();
 
 /** Publication-only projection, loaded lazily by the publish flow. */
 export function publicationPayload(draft: PublicationDraftState) {
-  const allowedAttributeIds = new Set(
-    taxonomyV4Bundle.bindings
-      .filter(
-        (binding) =>
-          binding.categoryId === draft.taxonomyNodeId &&
-          binding.listingTypeId === draft.listingTypeId &&
-          binding.publicationVisible,
-      )
-      .map((binding) => binding.attributeId),
-  );
-  const acceptsItemCondition = taxonomyV4Bundle.bindings.some(
-    (binding) =>
-      binding.categoryId === draft.taxonomyNodeId &&
-      binding.listingTypeId === draft.listingTypeId &&
-      binding.attributeId === "item_condition",
-  );
-  const itemCondition = acceptsItemCondition
-    ? toTaxonomyV4ItemCondition(draft.condition)
-    : undefined;
-
   return {
     title: draft.title,
     description: draft.description,
@@ -42,12 +18,7 @@ export function publicationPayload(draft: PublicationDraftState) {
     intent: draft.listingIntent,
     taxonomyVersion: draft.taxonomyVersion,
     attributes: {
-      ...Object.fromEntries(
-        Object.entries(draft.attributes).filter(([attributeId]) =>
-          allowedAttributeIds.has(attributeId),
-        ),
-      ),
-      ...(itemCondition ? { item_condition: itemCondition } : {}),
+      ...draft.attributes,
       title: draft.title,
       description: draft.description,
       images: draft.photos.map((photo) => photo.url),

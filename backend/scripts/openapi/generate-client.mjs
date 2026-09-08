@@ -15,6 +15,7 @@ const dereference = (value) =>
         .reduce((item, key) => item[key], spec)
     : value;
 const functions = [];
+const operationIds = [];
 for (const [path, item] of Object.entries(spec.paths)) {
   for (const method of ["get", "post", "put", "patch", "delete"]) {
     const operation = item[method];
@@ -57,6 +58,7 @@ for (const [path, item] of Object.entries(spec.paths)) {
     const id = operation.operationId;
     if (!/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(id))
       throw new Error(`Invalid operationId: ${id}`);
+    operationIds.push(id);
     functions.push(
       `export function ${id}(transport: ApiTransport, input: ApiInput<${JSON.stringify(id)}>): Promise<ApiResponse<${JSON.stringify(id)}>> { return executeApiOperation<${JSON.stringify(id)}>(transport, ${JSON.stringify(method.toUpperCase())}, ${JSON.stringify(path)}, input, ${JSON.stringify(contentType)}); }`,
     );
@@ -64,7 +66,7 @@ for (const [path, item] of Object.entries(spec.paths)) {
 }
 const output = resolve(root, "packages/contracts/src/generated/api-client.ts");
 const source = await format(
-  `/** AUTO-GENERATED from backend/openapi/openapi.json. DO NOT EDIT. */\nimport { executeApiOperation, type ApiTransport, type ApiInput, type ApiResponse } from "../client/operation";\nexport type { ApiTransport, ApiInput, ApiResponse } from "../client/operation";\n${functions.join("\n")}`,
+  `/** AUTO-GENERATED from backend/openapi/openapi.json. DO NOT EDIT. */\nimport { executeApiOperation, type ApiTransport, type ApiInput, type ApiResponse } from "../client/operation";\nexport type { ApiTransport, ApiInput, ApiResponse } from "../client/operation";\n${functions.join("\n")}\nexport const generatedApiOperations = { ${operationIds.join(",")} } as const;\nexport type GeneratedApiOperationId = keyof typeof generatedApiOperations;\ntype AnyGeneratedApiOperation = (transport: ApiTransport, input: any) => Promise<any>;\nexport function executeGeneratedApiOperation<Id extends GeneratedApiOperationId>(transport: ApiTransport, operationId: Id, input: ApiInput<Id>): Promise<ApiResponse<Id>> { const operation = generatedApiOperations[operationId] as AnyGeneratedApiOperation; return operation(transport, input) as Promise<ApiResponse<Id>>; }`,
   { parser: "typescript" },
 );
 if (process.argv.includes("--check")) {

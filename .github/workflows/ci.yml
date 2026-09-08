@@ -65,12 +65,10 @@ jobs:
           SHONGRE_FACTURATION_ORIGIN: https://facturation.shongre.invalid
           BACKEND_DATA_MODE: database
           DATABASE_INFRA_MODE: hosted
-          NEXT_PUBLIC_DATA_MODE: api
           NEXT_PUBLIC_APP_ENV: production
           NEXT_PUBLIC_ENVIRONMENT_ID: shongre-production
           NEXT_PUBLIC_FR_URL: https://fr.shongre.invalid
           NEXT_PUBLIC_INTL_URL: https://intl.shongre.invalid
-          NEXT_PUBLIC_ENABLE_MOCK_STORAGE: "false"
           NEXT_PUBLIC_ENABLE_AI_FEATURES: "false"
           NEXT_PUBLIC_API_URL: https://api.shongre.invalid/api/v1
           EXPO_PUBLIC_APP_ENV: production
@@ -81,6 +79,7 @@ jobs:
           NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: pk_live_${{ github.run_id }}CIOnly
           CORS_ORIGIN: https://fr.shongre.invalid,https://intl.shongre.invalid
           DATABASE_URL: postgresql://ci:ci@db.shongre.invalid:5432/shongre
+          REDIS_URL: rediss://ci:ci-only-password@redis.shongre.invalid:6380
           SUPABASE_PROJECT_REF: ci-production-ref
           EXPECTED_SUPABASE_PROJECT_REF: ci-production-ref
           SUPABASE_URL: https://ci-production-ref.supabase.co
@@ -181,7 +180,7 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - run: make env
       - name: Validate hosted and loopback-only Compose files
-        run: docker compose -f compose.yaml -f compose.local.yaml config --quiet
+        run: make docker-config
       - name: Build backend API/worker artifact
         run: docker build -f backend/Dockerfile -t shongre-backend:local .
       - name: Build environment-agnostic frontend artifact once
@@ -195,7 +194,11 @@ jobs:
         run: |
           source scripts/env.sh
           staging_frontend_port="$((FRONTEND_PORT + 1))"
-          api_id=$(docker run -d -p "$BACKEND_PORT:$BACKEND_PORT" \
+          runtime_network=shongre-ci-runtime
+          docker network create "$runtime_network" >/dev/null
+          redis_id=$(docker run -d --network "$runtime_network" --name shongre-ci-redis \
+            redis:8.2.1-alpine@sha256:987c376c727652f99625c7d205a1cba3cb2c53b92b0b62aade2bd48ee1593232)
+          api_id=$(docker run -d --network "$runtime_network" -p "$BACKEND_PORT:$BACKEND_PORT" \
             -e NODE_ENV=development \
             -e APP_ENV=local \
             -e ENVIRONMENT_ID=shongre-local \
@@ -212,6 +215,7 @@ jobs:
             -e BACKEND_HOST=0.0.0.0 \
             -e BACKEND_PORT="$BACKEND_PORT" \
             -e BACKEND_DATA_MODE=demo \
+            -e REDIS_URL=redis://shongre-ci-redis:6379 \
             shongre-backend:local)
           web_dev_id=$(docker run -d -p "$FRONTEND_PORT:$FRONTEND_PORT" \
             -e APP_ENV=development \
@@ -220,8 +224,6 @@ jobs:
             -e PUBLIC_FR_URL=https://dev.shongre.invalid \
             -e PUBLIC_INTL_URL=https://dev-intl.shongre.invalid \
             -e API_URL=https://api-dev.shongre.invalid \
-            -e NEXT_PUBLIC_DATA_MODE=demo \
-            -e NEXT_PUBLIC_ENABLE_MOCK_STORAGE=true \
             shongre-frontend:local)
           web_staging_id=$(docker run -d -p "$staging_frontend_port:$FRONTEND_PORT" \
             -e APP_ENV=staging \
@@ -230,10 +232,8 @@ jobs:
             -e PUBLIC_FR_URL=https://staging.shongre.invalid \
             -e PUBLIC_INTL_URL=https://staging-intl.shongre.invalid \
             -e API_URL=https://api-staging.shongre.invalid \
-            -e NEXT_PUBLIC_DATA_MODE=demo \
-            -e NEXT_PUBLIC_ENABLE_MOCK_STORAGE=true \
             shongre-frontend:local)
-          worker_id=$(docker run -d \
+          worker_id=$(docker run -d --network "$runtime_network" \
             -e NODE_ENV=development \
             -e APP_ENV=local \
             -e ENVIRONMENT_ID=shongre-local \
@@ -250,10 +250,11 @@ jobs:
             -e BACKEND_HOST=0.0.0.0 \
             -e BACKEND_PORT="$BACKEND_PORT" \
             -e BACKEND_DATA_MODE=demo \
+            -e REDIS_URL=redis://shongre-ci-redis:6379 \
             shongre-backend:local node dist/worker.js)
-          trap 'docker rm -f "$api_id" "$web_dev_id" "$web_staging_id" "$worker_id" >/dev/null' EXIT
+          trap 'docker rm -f "$api_id" "$web_dev_id" "$web_staging_id" "$worker_id" "$redis_id" >/dev/null; docker network rm "$runtime_network" >/dev/null' EXIT
           for _ in $(seq 1 30); do
-            if curl --fail --silent "$API_URL/livez" >/dev/null && \
+            if curl --fail --silent "$API_URL/readyz" >/dev/null && \
                curl --fail --silent "$PUBLIC_FR_URL/healthz" >/dev/null && \
                curl --fail --silent "http://127.0.0.1:$staging_frontend_port/healthz" >/dev/null && \
                docker exec "$worker_id" node dist/worker-health.js >/dev/null 2>&1; then
@@ -261,7 +262,7 @@ jobs:
             fi
             sleep 1
           done
-          curl --fail --silent "$API_URL/livez" >/dev/null
+          curl --fail --silent "$API_URL/readyz" >/dev/null
           curl --fail --silent "$PUBLIC_FR_URL/healthz" >/dev/null
           curl --fail --silent "http://127.0.0.1:$staging_frontend_port/healthz" >/dev/null
           docker inspect --format='{{.State.Running}}' "$worker_id" | grep -qx true

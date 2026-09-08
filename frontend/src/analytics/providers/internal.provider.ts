@@ -10,7 +10,6 @@ export class InternalAnalyticsProvider implements AnalyticsProvider {
 
   isConfigured(config: PublicRuntimeConfig): boolean {
     return (
-      config.dataMode === "api" &&
       config.analytics.mode !== "off" &&
       config.analytics.internalEnabled &&
       Boolean(config.apiBaseUrl)

@@ -11,13 +11,19 @@
 #     > .env.<profile>
 #     > .env (local only)
 #
-# Local uses .env.local > .runtime/supabase.env > .env. We do not load those
-# files for any non-local profile, preventing local-only values or
-# secrets from leaking into test or hosted targets. The example file remains
-# documentation/initialization only and is never loaded at runtime.
+# Local uses .env.local > .runtime/supabase.env > .env > .env.example. The
+# example is a final non-secret baseline so an existing checkout receives new
+# local infrastructure defaults without overwriting its ignored configuration.
+# It is never loaded for test or hosted targets.
 
 SHONGRE_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 export SHONGRE_ROOT
+# Capture the caller's environment before loading any profile. Explicit shell
+# values, including an intentionally empty value, outrank every file. Empty
+# placeholders in a profile do not suppress a usable lower-precedence value,
+# notably the generated local Supabase credentials.
+shongre_initial_environment_keys="$(env | sed 's/=.*//' | LC_ALL=C sort -u)"
+shongre_loaded_file_keys=""
 source "$SHONGRE_ROOT/scripts/lib/environment-profile.sh"
 requested_environment="$(shongre_environment_profile "${SHONGRE_ENV:-${APP_ENV:-local}}")" || { return 1 2>/dev/null || exit 1; }
 if [[ -n "${SHONGRE_ENV_LOADED:-}" ]]; then
@@ -45,6 +51,7 @@ case "$requested_environment" in
       "$SHONGRE_ROOT/.env.local"
       "$SHONGRE_ROOT/.runtime/supabase.env"
       "$SHONGRE_ROOT/.env"
+      "$SHONGRE_ROOT/.env.example"
     )
     ;;
   *)
@@ -67,6 +74,14 @@ if [[ -z "${ANDROID_SDK_ROOT:-}" && -n "${ANDROID_HOME:-}" ]]; then
   export ANDROID_SDK_ROOT="${ANDROID_HOME}"
 fi
 
+shongre_env_key_in_list() {
+  local key="$1" list="$2"
+  case $'\n'"$list"$'\n' in
+    *$'\n'"$key"$'\n'*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
 shongre_load_env_file() {
   local env_file="$1" line key value
   [[ -f "$env_file" ]] || return 0
@@ -84,15 +99,19 @@ shongre_load_env_file() {
     # Files cannot change the loader's selection or completion marker.
     case "$key" in SHONGRE_ENV|SHONGRE_ENV_LOADED|SHONGRE_ROOT) continue ;; esac
 
-    # An explicitly exported value wins even when it is intentionally empty.
-    if printenv "$key" >/dev/null 2>&1; then
+    # Caller values win even when empty; otherwise the first non-empty file
+    # value wins according to environment_files ordering.
+    if shongre_env_key_in_list "$key" "$shongre_initial_environment_keys" || \
+      shongre_env_key_in_list "$key" "$shongre_loaded_file_keys"; then
       continue
     fi
 
     if [[ "$value" =~ ^\".*\"$ || "$value" =~ ^\'.*\'$ ]]; then
       value="${value:1:${#value}-2}"
     fi
+    [[ -n "$value" ]] || continue
     export "$key=$value"
+    shongre_loaded_file_keys="${shongre_loaded_file_keys}${key}"$'\n'
   done < "$env_file"
 }
 
@@ -115,15 +134,8 @@ if [[ "$SHONGRE_ENV" == "local" ]]; then
   export PUBLIC_FR_URL="${PUBLIC_FR_URL:-http://${FRONTEND_HOST}:${FRONTEND_PORT}}"
   export PUBLIC_INTL_URL="${PUBLIC_INTL_URL:-http://${FRONTEND_HOST}:${FRONTEND_PORT}}"
   export API_URL="${API_URL:-http://${BACKEND_HOST}:${BACKEND_PORT}}"
+  export REDIS_URL="${REDIS_URL:-redis://${REDIS_HOST}:${REDIS_PORT}}"
 fi
-if [[ "$SHONGRE_ENV" == "local" ]]; then
-  default_client_data_mode=api
-  default_mock_storage=false
-else
-  default_client_data_mode=demo
-  default_mock_storage=true
-fi
-export NEXT_PUBLIC_DATA_MODE="${NEXT_PUBLIC_DATA_MODE:-$default_client_data_mode}"
 export DATABASE_INFRA_MODE="${DATABASE_INFRA_MODE:-local}"
 export NEXT_PUBLIC_APP_ENV="${NEXT_PUBLIC_APP_ENV:-${APP_ENV:-}}"
 export NEXT_PUBLIC_ENVIRONMENT_ID="${NEXT_PUBLIC_ENVIRONMENT_ID:-${ENVIRONMENT_ID:-}}"
@@ -138,7 +150,6 @@ export NEXT_PUBLIC_DEFAULT_COUNTRY_CODE="${NEXT_PUBLIC_DEFAULT_COUNTRY_CODE:-FR}
 export NEXT_PUBLIC_DEFAULT_CURRENCY="${NEXT_PUBLIC_DEFAULT_CURRENCY:-EUR}"
 export NEXT_PUBLIC_DEFAULT_LOCALE="${NEXT_PUBLIC_DEFAULT_LOCALE:-fr-FR}"
 export NEXT_PUBLIC_ENABLE_AI_FEATURES="${NEXT_PUBLIC_ENABLE_AI_FEATURES:-false}"
-export NEXT_PUBLIC_ENABLE_MOCK_STORAGE="${NEXT_PUBLIC_ENABLE_MOCK_STORAGE:-$default_mock_storage}"
 if [[ "$SHONGRE_ENV" == "local" && -z "${SUPABASE_URL:-}" && -n "${SUPABASE_HOST:-}" && -n "${SUPABASE_API_PORT:-}" ]]; then
   export SUPABASE_URL="http://${SUPABASE_HOST}:${SUPABASE_API_PORT}"
 fi

@@ -148,7 +148,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
       className={cn(
         isDrawer
           ? "min-w-0"
-          : "min-w-0 rounded-card border border-border-base bg-bg-surface p-6 shadow-sm",
+          : "min-w-0 rounded-listing-card border border-border-base bg-bg-surface p-6 shadow-sm",
         className,
       )}
     >

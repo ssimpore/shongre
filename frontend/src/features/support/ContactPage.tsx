@@ -34,7 +34,6 @@ import { supportCapabilitiesService } from "../../domains/support/support.capabi
 import { supportService } from "../../domains/support/support.service";
 import { services } from "../../api/client/service-registry";
 import type { SupportCaseCategory } from "@shongre/contracts/support";
-import { storageService } from "../../services/storage.service";
 import { SupportContextCard } from "./components/SupportContextCard";
 import { useStaticPageSeo } from "../../hooks/useStaticPageSeo";
 import { useTranslation } from "../../i18n/I18nProvider";
@@ -83,6 +82,7 @@ export const ContactPage: React.FC = () => {
 
   // Read URL query params for deep linking context
   useEffect(() => {
+    let active = true;
     const catParam = searchParams.get("category") as SupportCategory | null;
     const txId = searchParams.get("txId");
     const listingId = searchParams.get("listingId");
@@ -92,21 +92,24 @@ export const ContactPage: React.FC = () => {
     }
 
     if (txId) {
-      const txList = storageService.getTransactions();
-      const foundTx = txList.find((t) => t.id === txId);
-      if (foundTx) {
+      void services.orders.getOrderById(txId).then((foundTx) => {
+        if (!active || !foundTx) return;
         setContext({
           type: "transaction",
           transactionId: foundTx.id,
+          orderNumber: foundTx.code,
+          listingId: foundTx.listingId,
           listingTitle: foundTx.listingTitle,
+          listingPhotoUrl:
+            foundTx.listingCoverImageUrl || foundTx.listingPhotoUrl,
           amount: foundTx.amount,
+          currency: foundTx.currency,
         });
         setSelectedCategory("purchase");
-      }
+      });
     } else if (listingId) {
-      const listingList = storageService.getListings();
-      const foundListing = listingList.find((l) => l.id === listingId);
-      if (foundListing) {
+      void services.listings.getListingById(listingId).then((foundListing) => {
+        if (!active || !foundListing) return;
         setContext({
           type: "listing",
           listingId: foundListing.id,
@@ -116,8 +119,11 @@ export const ContactPage: React.FC = () => {
           sellerId: foundListing.sellerId,
         });
         setSelectedCategory("listing");
-      }
+      });
     }
+    return () => {
+      active = false;
+    };
   }, [searchParams]);
 
   // Sync user info if auth changes

@@ -8,17 +8,13 @@ import {
   InboxFilterTab,
   TimelineItem,
   UserTimelineMessage,
-  TypingState,
   ListingConversationContext,
 } from "../../domains/messaging/messaging.types";
 import { messagingService } from "../../domains/messaging/messaging.service";
 import { messagingCapabilitiesService } from "../../domains/messaging/messaging.capabilities";
-import { messagingRealtimeClient } from "../../domains/messaging/messaging.realtime";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { useToast } from "../../app/providers/ToastProvider";
-import { storageService } from "../../services/storage.service";
 import { Transaction } from "../../types";
-import { DEMO_USERS } from "../../mocks/initialDemoData";
 
 import { ConversationList } from "./components/ConversationList";
 import { ConversationHeader } from "./components/ConversationHeader";
@@ -34,17 +30,11 @@ import { Button } from "../../design-system/primitives/Button";
 import { Image } from "../../design-system/primitives/Image";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { usePageMeta } from "../../hooks/usePageMeta";
-import type { MessageComposerOptions } from "../../api/contracts/messaging.contract";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { analyticsService } from "../../services/analytics.service";
 
-const EMPTY_COMPOSER_OPTIONS: MessageComposerOptions = {
-  attachmentOptions: [],
-  quickReplies: [],
-};
-
 export const MessagingPage: React.FC = () => {
-  const { t, locale } = useTranslation();
+  const { t } = useTranslation();
   const { formatPrice } = useMarketLocation();
   usePageMeta({
     title: t("meta.messaging.title"),
@@ -54,10 +44,10 @@ export const MessagingPage: React.FC = () => {
   });
 
   const [searchParams, setSearchParams] = useSearchParams();
-  const { currentUser, isPro } = useAuth();
+  const { currentUser } = useAuth();
   const toast = useToast();
 
-  const currentUserId = currentUser ? currentUser.id : "user-thomas";
+  const currentUserId = currentUser?.id ?? "";
 
   // State
   const [conversations, setConversations] = useState<ConversationPreview[]>([]);
@@ -69,8 +59,6 @@ export const MessagingPage: React.FC = () => {
   const [selectedFilter, setSelectedFilter] = useState<InboxFilterTab>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  const [composerOptions, setComposerOptions] =
-    useState<MessageComposerOptions>(EMPTY_COMPOSER_OPTIONS);
 
   // Modals & Popovers
   const [isPickupModalOpen, setIsPickupModalOpen] = useState(false);
@@ -82,14 +70,16 @@ export const MessagingPage: React.FC = () => {
     null,
   );
 
-  // Real-time typing state
-  const [typingState, setTypingState] = useState<TypingState | null>(null);
-
   // Blocked users set
   const [blockedUsers, setBlockedUsers] = useState<string[]>([]);
 
   // 1. Load User's Conversations
   const loadConversations = useCallback(async () => {
+    if (!currentUserId) {
+      setConversations([]);
+      setIsLoading(false);
+      return;
+    }
     setIsLoading(true);
     try {
       const [rawList, blocked] = await Promise.all([
@@ -112,32 +102,28 @@ export const MessagingPage: React.FC = () => {
           type: "listing",
           counterpart: {
             id: counterpartId,
-            name: counterpartName || "Utilisateur Shongre",
+            name: counterpartName,
             avatarUrl: counterpartAvatar,
             accountType:
               c.sellerType === "pro" && isBuyer ? "pro" : "individual",
-            isVerified: true,
-            rating: 4.9,
-            reviewCount: 12,
           },
           context: {
             type: "listing",
             listingId: c.listingId,
-            listingTitle: c.listingTitle || "Annonce",
-            listingPrice: c.listingPrice || 0,
+            listingTitle: c.listingTitle,
+            listingPrice: c.listingPrice,
             listingPhotoUrl: c.listingPhotoUrl,
-            listingStatus: c.listingStatus || "active",
+            listingStatus: c.listingStatus,
             sellerId: c.sellerId,
-            sellerName: c.sellerName || "Vendeur",
+            sellerName: c.sellerName,
           },
-          lastMessageText: c.lastMessage || "Nouvelle conversation",
-          lastMessageAt:
-            c.lastMessageAt || (c as any).updatedAt || new Date().toISOString(),
-          unreadCount: c.unreadCount || 0,
+          lastMessageText: c.lastMessage,
+          lastMessageAt: c.lastMessageAt,
+          unreadCount: c.unreadCount,
           isBlocked,
           status: isBlocked ? "blocked" : "active",
-          createdAt: (c as any).createdAt || new Date().toISOString(),
-          updatedAt: c.lastMessageAt || new Date().toISOString(),
+          createdAt: c.lastMessageAt,
+          updatedAt: c.lastMessageAt,
         };
       });
 
@@ -176,59 +162,6 @@ export const MessagingPage: React.FC = () => {
     });
   }, [activeConvId, currentUserId]);
 
-  useEffect(() => {
-    if (!activeConvId) {
-      setComposerOptions(EMPTY_COMPOSER_OPTIONS);
-      return;
-    }
-
-    let cancelled = false;
-    services.messaging
-      .getComposerOptions({
-        conversationId: activeConvId,
-        userId: currentUserId,
-        isProfessional: isPro,
-        locale,
-      })
-      .then((options) => {
-        if (!cancelled) setComposerOptions(options);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [activeConvId, currentUserId, isPro, locale]);
-
-  // 3. Real-time Subscription to Active Conversation
-  useEffect(() => {
-    if (!activeConvId) return;
-
-    const unsubscribe = messagingRealtimeClient.subscribeToConversation(
-      activeConvId,
-      (event) => {
-        if (event.type === "new_message") {
-          const incomingMsg = event.payload as UserTimelineMessage;
-          setTimelineItems((prev) => {
-            if (prev.some((m) => m.id === incomingMsg.id)) return prev;
-            return [...prev, incomingMsg];
-          });
-        } else if (event.type === "system_event") {
-          const sysEvent = event.payload;
-          setTimelineItems((prev) => [...prev, sysEvent]);
-        } else if (event.type === "typing") {
-          const typing = event.payload as TypingState;
-          if (typing.userId !== currentUserId) {
-            setTypingState(typing.isTyping ? typing : null);
-          }
-        }
-      },
-    );
-
-    return () => {
-      unsubscribe();
-    };
-  }, [activeConvId, currentUserId]);
-
   // Derive active counterpart and capabilities
   const activeConversationPreview = useMemo(() => {
     return conversations.find((c) => c.id === activeConvId) || null;
@@ -259,7 +192,7 @@ export const MessagingPage: React.FC = () => {
   };
 
   const handleSendMessage = async (text: string, attachmentUrl?: string) => {
-    if (!activeConvId) return;
+    if (!activeConvId || !currentUser) return;
 
     const clientMsgId = `msg-opt-${Date.now()}`;
     const optimisticMsg: UserTimelineMessage = {
@@ -267,7 +200,7 @@ export const MessagingPage: React.FC = () => {
       id: clientMsgId,
       conversationId: activeConvId,
       senderId: currentUserId,
-      senderName: currentUser?.name || "Moi",
+      senderName: currentUser.name,
       content: text || (attachmentUrl ? "Photo partagée" : ""),
       contentType: attachmentUrl ? "image" : "text",
       status: "sending",
@@ -320,27 +253,6 @@ export const MessagingPage: React.FC = () => {
     await handleSendMessage(msg.content, msg.attachment?.url);
   };
 
-  const handleTyping = (isTyping: boolean) => {
-    if (!activeConvId) return;
-    messagingRealtimeClient.sendTyping(
-      activeConvId,
-      currentUserId,
-      currentUser?.name || "Moi",
-      isTyping,
-    );
-  };
-
-  const handleSimulateReply = () => {
-    if (!activeConvId || !activeConversationPreview) return;
-    const counterpart = activeConversationPreview.counterpart;
-    messagingRealtimeClient.simulateSellerAutoReply(
-      activeConvId,
-      counterpart.id,
-      counterpart.name,
-      "Bonjour, je confirme que la disponibilité et le créneau conviennent parfaitement !",
-    );
-  };
-
   const handleBlockToggle = async () => {
     if (!activeConversationPreview) return;
     const counterpart = activeConversationPreview.counterpart;
@@ -370,7 +282,7 @@ export const MessagingPage: React.FC = () => {
     timeSlot: string,
     address: string,
   ) => {
-    if (!activeConvId) return;
+    if (!activeConvId || !currentUser) return;
     await services.messaging.schedulePickup(
       activeConvId,
       date,
@@ -382,11 +294,11 @@ export const MessagingPage: React.FC = () => {
   };
 
   const handleSendOffer = async (amount: number) => {
-    if (!activeConvId) return;
+    if (!activeConvId || !currentUser) return;
     const offer = await services.messaging.makeOffer(
       activeConvId,
       currentUserId,
-      currentUser?.name || "Moi",
+      currentUser.name,
       amount,
     );
     const timelineOffer = messagingService.mapMessageToTimelineItem(offer);
@@ -406,11 +318,11 @@ export const MessagingPage: React.FC = () => {
     accept: boolean,
     amount?: number,
   ) => {
-    if (!activeConvId) return;
+    if (!activeConvId || !currentUser) return;
     const updated = await services.messaging.respondToOffer(
       offerId,
       currentUserId,
-      currentUser?.name || "Moi",
+      currentUser.name,
       accept,
     );
     setTimelineItems((previous) =>
@@ -480,12 +392,12 @@ export const MessagingPage: React.FC = () => {
       return {
         type: "listing",
         listingId: activeRawConv.listingId,
-        listingTitle: activeRawConv.listingTitle || "Annonce",
-        listingPrice: activeRawConv.listingPrice || 0,
+        listingTitle: activeRawConv.listingTitle,
+        listingPrice: activeRawConv.listingPrice,
         listingPhotoUrl: activeRawConv.listingPhotoUrl,
-        listingStatus: activeRawConv.listingStatus || "active",
+        listingStatus: activeRawConv.listingStatus,
         sellerId: activeRawConv.sellerId,
-        sellerName: activeRawConv.sellerName || "Vendeur",
+        sellerName: activeRawConv.sellerName,
       };
     }, [activeRawConv]);
 
@@ -581,7 +493,6 @@ export const MessagingPage: React.FC = () => {
                   onReport={() =>
                     setReportModalTarget(activeConversationPreview.id)
                   }
-                  onSimulateReply={handleSimulateReply}
                 />
 
                 {/* Contextual Listing Banner */}
@@ -591,10 +502,12 @@ export const MessagingPage: React.FC = () => {
                   onSchedulePickup={() => setIsPickupModalOpen(true)}
                   onViewTransaction={() => {
                     if (activeRawConv?.transactionId) {
-                      const foundTx = storageService
-                        .getTransactions()
-                        .find((t) => t.id === activeRawConv.transactionId);
-                      if (foundTx) setSelectedTx(foundTx);
+                      void services.orders
+                        .getOrderById(activeRawConv.transactionId)
+                        .then(setSelectedTx)
+                        .catch(() =>
+                          toast.error("La transaction est indisponible."),
+                        );
                     }
                   }}
                 />
@@ -603,7 +516,6 @@ export const MessagingPage: React.FC = () => {
                 <MessageTimeline
                   items={timelineItems}
                   currentUserId={currentUserId}
-                  typingState={typingState}
                   onOpenImage={(url) => setLightboxImageUrl(url)}
                   onRetryMessage={handleRetryMessage}
                   onRespondOffer={handleRespondOffer}
@@ -613,10 +525,7 @@ export const MessagingPage: React.FC = () => {
                 {/* Message Composer */}
                 <MessageComposer
                   onSendMessage={handleSendMessage}
-                  onTyping={handleTyping}
                   capabilities={capabilities}
-                  attachmentOptions={composerOptions.attachmentOptions}
-                  quickReplies={composerOptions.quickReplies}
                 />
               </>
             ) : (
@@ -666,12 +575,12 @@ export const MessagingPage: React.FC = () => {
       )}
 
       {/* 3. Transaction Detail Modal */}
-      {selectedTx && (
+      {selectedTx && currentUser && (
         <TransactionDetailModal
           isOpen={!!selectedTx}
           onClose={() => setSelectedTx(null)}
           transaction={selectedTx}
-          currentUser={currentUser || DEMO_USERS.buyer_thomas}
+          currentUser={currentUser}
           onUpdate={(_updatedTx) => {
             loadConversations();
           }}

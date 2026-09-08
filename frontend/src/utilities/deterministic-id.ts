@@ -1,4 +1,4 @@
-/** Stable FNV-1a identifier for deterministic demo records and scenarios. */
+/** Stable FNV-1a identifier for reproducible request and presentation keys. */
 export function deterministicId(prefix: string, parts: unknown[]): string {
   const serialized = JSON.stringify(parts, (_key, value) => {
     if (!value || typeof value !== "object" || Array.isArray(value)) {
@@ -22,7 +22,7 @@ let runtimeSequence = 0;
 
 /**
  * Produces distinct ids from deterministic input plus deterministic call order.
- * The sequence intentionally resets with the demo runtime, unlike Math.random.
+ * The sequence intentionally resets with the page runtime, unlike Math.random.
  */
 export function deterministicRuntimeId(
   prefix: string,

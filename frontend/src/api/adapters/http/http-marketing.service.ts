@@ -29,78 +29,89 @@ import type {
   MarketingTemplate,
   MarketingTemplateInput,
 } from "@shongre/contracts";
+import { apiOperation } from "./generated-api-operation";
 import type {
   MarketingAccountIdentity,
   MarketingAccountSubscriptionInput,
   MarketingPage,
   MarketingServiceContract,
 } from "../../contracts/marketing.contract";
-import { httpClient } from "./http-client";
 
 export class HttpMarketingService implements MarketingServiceContract {
   subscribePublic(input: MarketingPublicSubscriptionInput) {
-    return httpClient.post<MarketingSubscriptionReceipt>(
-      "/marketing/public/subscriptions",
-      input,
-    );
+    return apiOperation<
+      MarketingSubscriptionReceipt,
+      "createPublicMarketingSubscription"
+    >("createPublicMarketingSubscription", { body: input });
   }
   confirmPublic(token: string) {
-    return httpClient.post<MarketingSubscriptionView>(
-      "/marketing/public/confirm",
-      { token },
-    );
+    return apiOperation<
+      MarketingSubscriptionView,
+      "confirmPublicMarketingSubscription"
+    >("confirmPublicMarketingSubscription", { body: { token } });
   }
   getPublicPreferences(token: string) {
-    return httpClient.get<MarketingSubscriptionView>(
-      "/marketing/public/preferences",
-      { params: { token } },
-    );
+    return apiOperation<
+      MarketingSubscriptionView,
+      "getPublicMarketingPreferences"
+    >("getPublicMarketingPreferences", { query: { token } });
   }
   updatePublicPreferences(input: MarketingPublicPreferencesUpdate) {
-    return httpClient.put<MarketingSubscriptionView>(
-      "/marketing/public/preferences",
-      input,
-    );
+    return apiOperation<
+      MarketingSubscriptionView,
+      "updatePublicMarketingPreferences"
+    >("updatePublicMarketingPreferences", { body: input });
   }
   unsubscribePublic(token: string) {
-    return httpClient.post<MarketingSubscriptionReceipt>(
-      "/marketing/public/unsubscribe",
-      { token },
-    );
+    return apiOperation<
+      MarketingSubscriptionReceipt,
+      "unsubscribePublicMarketingProfile"
+    >("unsubscribePublicMarketingProfile", { body: { token } });
   }
   getAccountSubscription(identity: MarketingAccountIdentity) {
-    return httpClient.get<MarketingSubscriptionView | null>(
-      "/marketing/account/subscription",
-      { params: { marketCode: identity.marketCode } },
-    );
+    return apiOperation<
+      MarketingSubscriptionView | null,
+      "getAccountMarketingSubscription"
+    >("getAccountMarketingSubscription", {
+      query: { marketCode: identity.marketCode },
+    });
   }
   subscribeAccount(input: MarketingAccountSubscriptionInput) {
-    return httpClient.post<MarketingSubscriptionView>(
-      "/marketing/account/subscription",
-      {
+    return apiOperation<
+      MarketingSubscriptionView,
+      "subscribeAccountToMarketing"
+    >("subscribeAccountToMarketing", {
+      body: {
         marketCode: input.marketCode,
         locale: input.locale,
         topics: input.topics,
         consentGiven: input.consentGiven,
       },
-    );
+    });
   }
   updateAccountPreferences(
     input: MarketingAccountIdentity & { topics: string[] },
   ) {
-    return httpClient.put<MarketingSubscriptionView>(
-      "/marketing/account/preferences",
-      { marketCode: input.marketCode, topics: input.topics },
-    );
+    return apiOperation<
+      MarketingSubscriptionView,
+      "updateAccountMarketingPreferences"
+    >("updateAccountMarketingPreferences", {
+      body: { marketCode: input.marketCode, topics: input.topics },
+    });
   }
   unsubscribeAccount(identity: MarketingAccountIdentity) {
-    return httpClient.post<MarketingSubscriptionView>(
-      "/marketing/account/unsubscribe",
-      { marketCode: identity.marketCode },
-    );
+    return apiOperation<
+      MarketingSubscriptionView,
+      "unsubscribeAccountFromMarketing"
+    >("unsubscribeAccountFromMarketing", {
+      body: { marketCode: identity.marketCode },
+    });
   }
   getDashboard() {
-    return httpClient.get<MarketingDashboard>("/marketing/dashboard");
+    return apiOperation<MarketingDashboard, "getMarketingDashboard">(
+      "getMarketingDashboard",
+      {},
+    );
   }
   listProfiles(
     options: {
@@ -110,213 +121,263 @@ export class HttpMarketingService implements MarketingServiceContract {
       status?: string;
     } = {},
   ) {
-    return httpClient.get<MarketingPage<MarketingProfile>>(
-      "/marketing/profiles",
-      { params: options },
-    );
+    return apiOperation<
+      MarketingPage<MarketingProfile>,
+      "listMarketingProfiles"
+    >("listMarketingProfiles", { query: options });
   }
   createProfile(input: MarketingProfileInput) {
-    return httpClient.post<MarketingProfile>("/marketing/profiles", input);
+    return apiOperation<MarketingProfile, "createMarketingProfile">(
+      "createMarketingProfile",
+      { body: input },
+    );
   }
   confirmProfile(id: string) {
-    return httpClient.post<MarketingProfile>(
-      `/marketing/profiles/${encodeURIComponent(id)}/confirm`,
-      {},
+    return apiOperation<MarketingProfile, "confirmMarketingProfile">(
+      "confirmMarketingProfile",
+      { path: { profileId: id }, body: {} },
     );
   }
   unsubscribeProfile(id: string) {
-    return httpClient.post<MarketingProfile>(
-      `/marketing/profiles/${encodeURIComponent(id)}/unsubscribe`,
-      {},
+    return apiOperation<MarketingProfile, "unsubscribeMarketingProfile">(
+      "unsubscribeMarketingProfile",
+      { path: { profileId: id }, body: {} },
     );
   }
   async listLists() {
     return (
-      await httpClient.get<{ items: MarketingList[] }>("/marketing/lists")
+      await apiOperation<{ items: MarketingList[] }, "listMarketingLists">(
+        "listMarketingLists",
+        {},
+      )
     ).items;
   }
   createList(input: MarketingListInput) {
-    return httpClient.post<MarketingList>("/marketing/lists", input);
+    return apiOperation<MarketingList, "createMarketingList">(
+      "createMarketingList",
+      { body: input },
+    );
   }
   async addListMember(listId: string, profileId: string) {
-    await httpClient.post(
-      `/marketing/lists/${encodeURIComponent(listId)}/members/${encodeURIComponent(profileId)}`,
-      {},
-    );
+    await apiOperation("addMarketingListMember", {
+      path: { listId: listId, profileId: profileId },
+      body: {},
+    });
   }
   async listSegments() {
     return (
-      await httpClient.get<{ items: MarketingSegment[] }>("/marketing/segments")
+      await apiOperation<
+        { items: MarketingSegment[] },
+        "listMarketingSegments"
+      >("listMarketingSegments", {})
     ).items;
   }
   createSegment(input: MarketingSegmentInput) {
-    return httpClient.post<MarketingSegment>("/marketing/segments", input);
+    return apiOperation<MarketingSegment, "createMarketingSegment">(
+      "createMarketingSegment",
+      { body: input },
+    );
   }
   async listTemplates() {
     return (
-      await httpClient.get<{ items: MarketingTemplate[] }>(
-        "/marketing/templates",
-      )
+      await apiOperation<
+        { items: MarketingTemplate[] },
+        "listMarketingTemplates"
+      >("listMarketingTemplates", {})
     ).items;
   }
   createTemplate(input: MarketingTemplateInput) {
-    return httpClient.post<MarketingTemplate>("/marketing/templates", input);
+    return apiOperation<MarketingTemplate, "createMarketingTemplate">(
+      "createMarketingTemplate",
+      { body: input },
+    );
   }
   async listCampaigns() {
     return (
-      await httpClient.get<{ items: MarketingCampaign[] }>(
-        "/marketing/campaigns",
-      )
+      await apiOperation<
+        { items: MarketingCampaign[] },
+        "listMarketingCampaigns"
+      >("listMarketingCampaigns", {})
     ).items;
   }
   getCampaign(id: string) {
-    return httpClient.get<MarketingCampaign>(
-      `/marketing/campaigns/${encodeURIComponent(id)}`,
+    return apiOperation<MarketingCampaign, "getMarketingCampaign">(
+      "getMarketingCampaign",
+      { path: { campaignId: id } },
     );
   }
   createCampaign(input: MarketingCampaignInput) {
-    return httpClient.post<MarketingCampaign>("/marketing/campaigns", input);
+    return apiOperation<MarketingCampaign, "createMarketingCampaign">(
+      "createMarketingCampaign",
+      { body: input },
+    );
   }
   estimateAudience(audience: MarketingAudienceDefinition) {
-    return httpClient.post<MarketingAudienceEstimate>(
-      "/marketing/campaigns/audience-estimate",
-      audience,
+    return apiOperation<MarketingAudienceEstimate, "estimateMarketingAudience">(
+      "estimateMarketingAudience",
+      { body: audience },
     );
   }
   preflight(id: string) {
-    return httpClient.post<MarketingPreflight>(
-      `/marketing/campaigns/${encodeURIComponent(id)}/preflight`,
-      {},
+    return apiOperation<MarketingPreflight, "preflightMarketingCampaign">(
+      "preflightMarketingCampaign",
+      { path: { campaignId: id }, body: {} },
     );
   }
   testSend(id: string, recipient: string) {
-    return httpClient.post<{ externalMessageId: string; acceptedAt: string }>(
-      `/marketing/campaigns/${encodeURIComponent(id)}/test-send`,
-      { recipient },
-    );
+    return apiOperation<
+      { externalMessageId: string; acceptedAt: string },
+      "testSendMarketingCampaign"
+    >("testSendMarketingCampaign", {
+      path: { campaignId: id },
+      body: { recipient },
+    });
   }
   send(id: string) {
-    return httpClient.post<{
-      campaign: MarketingCampaign;
-      queuedRecipients: number;
-      excludedRecipients: number;
-    }>(`/marketing/campaigns/${encodeURIComponent(id)}/send`, {});
+    return apiOperation<
+      {
+        campaign: MarketingCampaign;
+        queuedRecipients: number;
+        excludedRecipients: number;
+      },
+      "sendMarketingCampaign"
+    >("sendMarketingCampaign", { path: { campaignId: id }, body: {} });
   }
   schedule(id: string, scheduledAt: string) {
-    return httpClient.post<MarketingCampaign>(
-      `/marketing/campaigns/${encodeURIComponent(id)}/schedule`,
-      { scheduledAt },
+    return apiOperation<MarketingCampaign, "scheduleMarketingCampaign">(
+      "scheduleMarketingCampaign",
+      { path: { campaignId: id }, body: { scheduledAt } },
     );
   }
   pause(id: string) {
-    return httpClient.post<MarketingCampaign>(
-      `/marketing/campaigns/${encodeURIComponent(id)}/pause`,
-      {},
+    return apiOperation<MarketingCampaign, "pauseMarketingCampaign">(
+      "pauseMarketingCampaign",
+      { path: { campaignId: id }, body: {} },
     );
   }
   resume(id: string) {
-    return httpClient.post<MarketingCampaign>(
-      `/marketing/campaigns/${encodeURIComponent(id)}/resume`,
-      {},
+    return apiOperation<MarketingCampaign, "resumeMarketingCampaign">(
+      "resumeMarketingCampaign",
+      { path: { campaignId: id }, body: {} },
     );
   }
   submitForReview(id: string) {
-    return httpClient.post<MarketingCampaign>(
-      `/marketing/campaigns/${encodeURIComponent(id)}/review`,
-      {},
+    return apiOperation<MarketingCampaign, "reviewMarketingCampaign">(
+      "reviewMarketingCampaign",
+      { path: { campaignId: id }, body: {} },
     );
   }
   approve(id: string) {
-    return httpClient.post<MarketingCampaign>(
-      `/marketing/campaigns/${encodeURIComponent(id)}/approve`,
-      {},
+    return apiOperation<MarketingCampaign, "approveMarketingCampaign">(
+      "approveMarketingCampaign",
+      { path: { campaignId: id }, body: {} },
     );
   }
   selectExperimentWinner(id: string, variantId?: string) {
-    return httpClient.post<MarketingCampaign>(
-      `/marketing/campaigns/${encodeURIComponent(id)}/select-winner`,
-      variantId ? { variantId } : {},
+    return apiOperation<MarketingCampaign, "selectMarketingCampaignWinner">(
+      "selectMarketingCampaignWinner",
+      { path: { campaignId: id }, body: variantId ? { variantId } : {} },
     );
   }
   cancel(id: string) {
-    return httpClient.post<MarketingCampaign>(
-      `/marketing/campaigns/${encodeURIComponent(id)}/cancel`,
-      {},
+    return apiOperation<MarketingCampaign, "cancelMarketingCampaign">(
+      "cancelMarketingCampaign",
+      { path: { campaignId: id }, body: {} },
     );
   }
   async listSuppressions() {
     return (
-      await httpClient.get<{ items: MarketingSuppression[] }>(
-        "/marketing/suppressions",
-      )
+      await apiOperation<
+        { items: MarketingSuppression[] },
+        "listMarketingSuppressions"
+      >("listMarketingSuppressions", {})
     ).items;
   }
   generateCampaignDraft(instructions: string, locale?: string) {
-    return httpClient.post<AiGenerationResult>("/marketing/ai/campaign-draft", {
-      instructions,
-      locale,
-    });
+    return apiOperation<AiGenerationResult, "generateMarketingCampaignDraft">(
+      "generateMarketingCampaignDraft",
+      {
+        body: {
+          instructions,
+          locale,
+        },
+      },
+    );
   }
   aiAssist(input: MarketingAiAssistInput) {
-    return httpClient.post<AiGenerationResult & { draftOnly: true }>(
-      "/marketing/ai/assist",
-      input,
-    );
+    return apiOperation<
+      AiGenerationResult & { draftOnly: true },
+      "assistMarketingWithAi"
+    >("assistMarketingWithAi", { body: input });
   }
   getAnalytics(campaignId?: string) {
-    return httpClient.get<MarketingAnalytics>("/marketing/analytics", {
-      params: { campaignId },
-    });
-  }
-  recordConversion(input: MarketingConversionInput) {
-    return httpClient.post<{ accepted: true; duplicate: boolean }>(
-      "/marketing/conversions",
-      input,
+    return apiOperation<MarketingAnalytics, "getMarketingAnalytics">(
+      "getMarketingAnalytics",
+      { query: { campaignId } },
     );
   }
+  recordConversion(input: MarketingConversionInput) {
+    return apiOperation<
+      { accepted: true; duplicate: boolean },
+      "recordMarketingConversion"
+    >("recordMarketingConversion", { body: input });
+  }
   getUsage() {
-    return httpClient.get<MarketingUsage>("/marketing/usage");
+    return apiOperation<MarketingUsage, "getMarketingUsage">(
+      "getMarketingUsage",
+      {},
+    );
   }
   async listJourneys() {
     return (
-      await httpClient.get<{ items: MarketingJourney[] }>("/marketing/journeys")
+      await apiOperation<
+        { items: MarketingJourney[] },
+        "listMarketingJourneys"
+      >("listMarketingJourneys", {})
     ).items;
   }
   createJourney(input: MarketingJourneyInput) {
-    return httpClient.post<MarketingJourney>("/marketing/journeys", input);
+    return apiOperation<MarketingJourney, "createMarketingJourney">(
+      "createMarketingJourney",
+      { body: input },
+    );
   }
   activateJourney(id: string) {
-    return httpClient.post<MarketingJourney>(
-      `/marketing/journeys/${encodeURIComponent(id)}/activate`,
-      {},
+    return apiOperation<MarketingJourney, "activateMarketingJourney">(
+      "activateMarketingJourney",
+      { path: { journeyId: id }, body: {} },
     );
   }
   pauseJourney(id: string) {
-    return httpClient.post<MarketingJourney>(
-      `/marketing/journeys/${encodeURIComponent(id)}/pause`,
-      {},
+    return apiOperation<MarketingJourney, "pauseMarketingJourney">(
+      "pauseMarketingJourney",
+      { path: { journeyId: id }, body: {} },
     );
   }
   async listJourneyExecutions(journeyId?: string) {
     return (
-      await httpClient.get<{ items: MarketingJourneyExecution[] }>(
-        "/marketing/journey-executions",
-        { params: { journeyId } },
-      )
+      await apiOperation<
+        { items: MarketingJourneyExecution[] },
+        "listMarketingJourneyExecutions"
+      >("listMarketingJourneyExecutions", { query: { journeyId } })
     ).items;
   }
   async listWebhookSubscriptions() {
     return (
-      await httpClient.get<{ items: MarketingWebhookSubscription[] }>(
-        "/marketing/webhooks",
-      )
+      await apiOperation<
+        { items: MarketingWebhookSubscription[] },
+        "listMarketingWebhooks"
+      >("listMarketingWebhooks", {})
     ).items;
   }
   createWebhookSubscription(input: MarketingWebhookSubscriptionInput) {
-    return httpClient.post<{
-      subscription: MarketingWebhookSubscription;
-      signingSecret: string;
-    }>("/marketing/webhooks", input);
+    return apiOperation<
+      {
+        subscription: MarketingWebhookSubscription;
+        signingSecret: string;
+      },
+      "createMarketingWebhook"
+    >("createMarketingWebhook", { body: input });
   }
 }
 

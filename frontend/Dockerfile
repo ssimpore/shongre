@@ -26,8 +26,16 @@ RUN --mount=type=cache,target=/root/.npm \
 COPY frontend ./frontend
 COPY packages ./packages
 COPY scripts/upload-sentry-sourcemaps.sh ./scripts/upload-sentry-sourcemaps.sh
+COPY .env.example ./.env.example
 
-RUN npm run build --workspace=frontend
+# The checked-in local template lets Next evaluate runtime-dependent modules
+# while collecting route metadata. It contains no secrets and is not copied to
+# the runtime image; startup still validates and injects the target environment.
+# Connected Web images are always API-only.
+RUN set -a \
+    && . /app/.env.example \
+    && set +a \
+    && npm run build --workspace=frontend
 RUN --mount=type=secret,id=sentry_auth_token \
     --mount=type=secret,id=sentry_org \
     --mount=type=secret,id=sentry_frontend_project \

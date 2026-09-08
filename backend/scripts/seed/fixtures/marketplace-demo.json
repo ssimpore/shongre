@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedFrom": "frontend/src/mocks/initialDemoData.ts",
+  "generatedFrom": "backend/scripts/seed/fixtures/marketplace-demo.json",
   "users": [
     {
       "id": "user_thomas",

@@ -55,7 +55,6 @@ RUN --mount=type=cache,target=/root/.npm \
     apk upgrade --no-cache \
     && apk add --no-cache postgresql-client \
     && npm ci --omit=dev --workspace=backend --include-workspace-root=false \
-    && npm cache clean --force \
     && rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack /opt/yarn-v* \
     && rm -f /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack \
        /usr/local/bin/yarn /usr/local/bin/yarnpkg

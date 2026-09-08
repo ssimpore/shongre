@@ -17,11 +17,13 @@ fi
 export FRONTEND_PORT="$E2E_FRONTEND_PORT"
 export PORT="$E2E_FRONTEND_PORT"
 export E2E_BASE_URL="http://${FRONTEND_HOST}:${E2E_FRONTEND_PORT}"
+# The first-party API relay must recognize the isolated browser origin, never
+# inherit the interactive marketplace listener from the local profile.
+export SHONGRE_MARKETPLACE_ORIGIN="$E2E_BASE_URL"
 export PUBLIC_FR_URL="$E2E_BASE_URL"
 export PUBLIC_INTL_URL="$E2E_BASE_URL"
 export NEXT_PUBLIC_FR_URL="$E2E_BASE_URL"
 export NEXT_PUBLIC_INTL_URL="$E2E_BASE_URL"
-export NEXT_PUBLIC_DATA_MODE=demo
 export PLAYWRIGHT_REUSE_EXISTING_SERVER=1
 export SHONGRE_DISABLE_DEV_ASSET_HEADERS=1
 export SHONGRE_E2E_ALLOW_HTTP=1
@@ -51,28 +53,34 @@ cleanup() {
 }
 trap cleanup EXIT INT TERM
 
-if [[ "${SHONGRE_E2E_API_TRANSPORT:-0}" == "1" ]]; then
-  export PLAYWRIGHT_NO_COPY_PROMPT=1
-  [[ "$APP_ENV" == "test" ]] || { shongre_fail "browser API transport requires APP_ENV=test"; exit 1; }
+export PLAYWRIGHT_NO_COPY_PROMPT=1
+[[ "$APP_ENV" == "test" ]] || { shongre_fail "browser tests require APP_ENV=test"; exit 1; }
   export PUBLIC_FR_URL="http://fr.localhost:${E2E_FRONTEND_PORT}"
   export PUBLIC_INTL_URL="http://intl.localhost:${E2E_FRONTEND_PORT}"
   export NEXT_PUBLIC_FR_URL="$PUBLIC_FR_URL"
   export NEXT_PUBLIC_INTL_URL="$PUBLIC_INTL_URL"
   export SHONGRE_FACTURATION_ORIGIN="http://facturation.localhost:${E2E_FRONTEND_PORT}"
-  export NEXT_PUBLIC_DATA_MODE=api NEXT_PUBLIC_ENABLE_MOCK_STORAGE=false
   export DEMO_ACCOUNT_PASSWORD="$(node -e 'process.stdout.write(require("node:crypto").randomBytes(24).toString("base64url"))')"
   export E2E_API_PORT_FILE="$e2e_root/api-port"
-  NODE_ENV=test BACKEND_DATA_MODE=demo node --import tsx backend/tests/fixtures/browser-api-server.ts >"$e2e_root/api.log" 2>&1 &
+  NODE_ENV=test BACKEND_DATA_MODE=demo \
+    TSX_TSCONFIG_PATH="$SHONGRE_ROOT/backend/tsconfig.json" \
+    node --import tsx backend/tests/fixtures/browser-api-server.ts >"$e2e_root/api.log" 2>&1 &
   e2e_backend_pid=$!
-  for _ in {1..60}; do
+  # A cold tsx load of the complete API graph can take more than one minute on
+  # development machines. Keep a finite two-minute startup deadline while the
+  # port file remains the readiness proof.
+  for _ in {1..120}; do
     [[ ! -s "$E2E_API_PORT_FILE" ]] || break
     kill -0 "$e2e_backend_pid" 2>/dev/null || break
     sleep 1
   done
-  [[ -s "$E2E_API_PORT_FILE" ]] || { shongre_fail "isolated test API did not start"; exit 1; }
+  if [[ ! -s "$E2E_API_PORT_FILE" ]]; then
+    shongre_fail "isolated test API did not start"
+    [[ ! -f "$e2e_root/api.log" ]] || sed -n '1,160p' "$e2e_root/api.log" >&2
+    exit 1
+  fi
   export API_URL="http://127.0.0.1:$(<"$E2E_API_PORT_FILE")"
-  export NEXT_PUBLIC_API_URL="$API_URL/api/v1"
-fi
+export NEXT_PUBLIC_API_URL="$API_URL/api/v1"
 
 mkdir -p "$e2e_root/frontend"
 rsync -a \

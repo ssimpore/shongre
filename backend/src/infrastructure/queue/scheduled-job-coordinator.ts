@@ -55,6 +55,18 @@ class ScheduledJobCoordinator {
     if (error) throw error;
     return data === true;
   }
+
+  async releaseForRetry(jobName: string): Promise<void> {
+    if (config.dataMode === "demo") return;
+    const { error } = await getSupabaseAdminClient().rpc(
+      "release_scheduled_job_for_retry",
+      {
+        p_job_name: jobName,
+        p_owner_id: this.ownerId,
+      },
+    );
+    if (error) throw error;
+  }
 }
 
 export const scheduledJobCoordinator = new ScheduledJobCoordinator();

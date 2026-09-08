@@ -10,10 +10,15 @@ import {
 import { realtimeBroadcaster } from "../../infrastructure/realtime/realtime-broadcaster.js";
 import { AppError } from "../../shared/errors/app-error.js";
 import { getCountryConfig } from "@shongre/contracts";
+import {
+  BackgroundJobDispatcher,
+  backgroundJobDispatcher,
+} from "../../infrastructure/queue/background-job-dispatcher.js";
 
 export class NotificationsService {
   constructor(
     private notificationRepo: INotificationRepository = repositories.notifications,
+    private jobDispatcher: BackgroundJobDispatcher = backgroundJobDispatcher,
   ) {}
 
   async getUserNotifications(userId: string): Promise<NotificationItem[]> {
@@ -192,6 +197,12 @@ export class NotificationsService {
         `user:${userId}:notifications`,
         "notification_received",
         saved,
+      );
+    }
+    if (channels.length > 0) {
+      await this.jobDispatcher.enqueueDomainWake(
+        "notification_delivery",
+        saved.id,
       );
     }
     return saved;

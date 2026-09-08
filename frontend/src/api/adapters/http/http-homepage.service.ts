@@ -1,4 +1,5 @@
 import type { HomepageConfiguration } from "@shongre/contracts/homepage";
+import { apiOperation } from "./generated-api-operation";
 import type { HomepageServiceContract } from "../../contracts/homepage.contract";
 import type {
   HomepageDealItem,
@@ -11,7 +12,6 @@ import type {
 import type { TrendingSectionResponse } from "../../../domains/trending/trending.types";
 import type { BackendListing } from "./http-listings.service";
 import { mapBackendListing } from "./http-listings.service";
-import { httpClient } from "./http-client";
 
 type BackendHomepageDealItem = Omit<HomepageDealItem, "listing"> & {
   listing: BackendListing;
@@ -87,30 +87,30 @@ function mapExperience(
 export class HttpHomepageService implements HomepageServiceContract {
   async getHomepage(query: HomepageQuery): Promise<HomepageExperience> {
     return mapExperience(
-      await httpClient.get<BackendHomepageExperience>("/home", {
-        params: params(query),
+      await apiOperation<BackendHomepageExperience, "getHome">("getHome", {
+        query: params(query),
       }),
     );
   }
 
   getHomepageDraft(query: HomepageQuery): Promise<HomepageConfiguration> {
-    return httpClient.get<HomepageConfiguration>(
-      "/admin/homepage/configuration",
-      { params: params(query) },
+    return apiOperation<HomepageConfiguration, "getAdminHomepageConfiguration">(
+      "getAdminHomepageConfiguration",
+      { query: params(query) },
     );
   }
 
   saveHomepageDraft(
     input: SaveHomepageDraftInput,
   ): Promise<HomepageConfiguration> {
-    return httpClient.put<HomepageConfiguration>(
-      "/admin/homepage/configuration",
-      input,
+    return apiOperation<HomepageConfiguration, "putAdminHomepageConfiguration">(
+      "putAdminHomepageConfiguration",
       {
-        params: {
+        query: {
           market: input.configuration.marketCode,
           locale: input.configuration.locale,
         },
+        body: input,
       },
     );
   }
@@ -120,19 +120,20 @@ export class HttpHomepageService implements HomepageServiceContract {
     query: HomepageQuery,
   ): Promise<HomepageExperience> {
     return mapExperience(
-      await httpClient.post<BackendHomepageExperience>(
-        "/admin/homepage/preview",
-        { configuration },
-        { params: params(query) },
+      await apiOperation<BackendHomepageExperience, "postAdminHomepagePreview">(
+        "postAdminHomepagePreview",
+        { query: params(query), body: { configuration } },
       ),
     );
   }
 
   publishHomepage(input: PublishHomepageInput): Promise<HomepageConfiguration> {
-    return httpClient.post<HomepageConfiguration>(
-      "/admin/homepage/publish",
-      input,
-      { params: { market: input.marketCode, locale: input.locale } },
+    return apiOperation<HomepageConfiguration, "postAdminHomepagePublish">(
+      "postAdminHomepagePublish",
+      {
+        query: { market: input.marketCode, locale: input.locale },
+        body: input,
+      },
     );
   }
 }

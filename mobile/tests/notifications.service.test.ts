@@ -68,7 +68,12 @@ describe("API-only mobile notifications", () => {
     await expect(
       notificationsService.getPreferences("account-a"),
     ).resolves.toEqual(preferences);
-    expect(apiRequest).toHaveBeenNthCalledWith(1, "/notifications/preferences");
+    expect(apiRequest).toHaveBeenNthCalledWith(
+      1,
+      "/notifications/preferences",
+      expect.objectContaining({ method: "GET", headers: expect.any(Headers) }),
+      undefined,
+    );
 
     await expect(
       notificationsService.updatePreferences("account-a", preferences),
@@ -76,7 +81,12 @@ describe("API-only mobile notifications", () => {
     expect(apiRequest).toHaveBeenNthCalledWith(
       2,
       "/notifications/preferences",
-      { method: "PUT", body: JSON.stringify(preferences) },
+      expect.objectContaining({
+        method: "PUT",
+        body: JSON.stringify(preferences),
+        headers: expect.any(Headers),
+      }),
+      undefined,
     );
   });
 
@@ -88,14 +98,19 @@ describe("API-only mobile notifications", () => {
     expect(getExpoPushTokenAsync).toHaveBeenCalledWith({
       projectId: "mobile-test-project",
     });
-    expect(apiRequest).toHaveBeenCalledWith("/notifications/devices", {
-      method: "POST",
-      body: JSON.stringify({
-        token: "expo-push-token",
-        platform: "ios",
-        appVersion: "1.0.0",
+    expect(apiRequest).toHaveBeenCalledWith(
+      "/notifications/devices",
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({
+          token: "expo-push-token",
+          platform: "ios",
+          appVersion: "1.0.0",
+        }),
+        headers: expect.any(Headers),
       }),
-    });
+      undefined,
+    );
     expect(state.storedToken).toBe("expo-push-token");
   });
 
@@ -115,10 +130,12 @@ describe("API-only mobile notifications", () => {
 
     expect(apiRequest).toHaveBeenCalledWith(
       "/notifications/devices/unregister",
-      {
+      expect.objectContaining({
         method: "POST",
         body: JSON.stringify({ token: "expo-push-token" }),
-      },
+        headers: expect.any(Headers),
+      }),
+      undefined,
     );
     expect(state.storedToken).toBeNull();
   });

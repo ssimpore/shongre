@@ -32,21 +32,6 @@ require_docker_capacity() {
   fi
 }
 
-require_docker_daemon() {
-  if ! node --input-type=module -e '
-    import { spawnSync } from "node:child_process";
-    const result = spawnSync("docker", ["info"], {
-      stdio: "ignore",
-      timeout: 10_000,
-    });
-    process.exit(result.status === 0 ? 0 : 1);
-  '; then
-    shongre_fail "Docker daemon is unavailable or did not respond within 10 seconds"
-    shongre_info "restart Docker Desktop and verify that its data store is writable"
-    exit 1
-  fi
-}
-
 case "$action" in
   up)
     require_local_supabase
@@ -56,7 +41,7 @@ case "$action" in
       exit 1
     }
     require_docker_capacity
-    require_docker_daemon
+    shongre_require_docker_daemon
     "$SHONGRE_ROOT/scripts/render-supabase-config.sh"
     # Supabase prints generated API and S3 credentials on successful startup.
     # Keep those values in the ignored runtime env file instead of terminal

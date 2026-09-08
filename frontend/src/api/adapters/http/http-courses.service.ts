@@ -24,53 +24,73 @@ import type {
   TutorProfileDraft,
   TutorOnboardingDraft,
 } from "../../contracts/courses.contract";
-import { httpClient } from "./http-client";
-
-const EDUCATION_API_BASE = "/education";
+import { apiOperation } from "./generated-api-operation";
 
 export class HttpCoursesService implements CoursesServiceContract {
   private readonly tutorDraftMarkets = new Map<string, string>();
   private readonly learnerDraftMarkets = new Map<string, string>();
 
   getCatalog(marketCode: string): Promise<CourseCatalog> {
-    return httpClient.get(`${EDUCATION_API_BASE}/catalog`, {
-      params: { market: marketCode },
-    });
+    return apiOperation<CourseCatalog, "getEducationCatalog">(
+      "getEducationCatalog",
+      {
+        query: { market: marketCode },
+      },
+    );
   }
 
   getAdminCatalog(marketCode: string): Promise<CourseCatalog> {
-    return httpClient.get(`${EDUCATION_API_BASE}/admin/catalog`, {
-      params: { market: marketCode },
-    });
+    return apiOperation<CourseCatalog, "getEducationAdminCatalog">(
+      "getEducationAdminCatalog",
+      {
+        query: { market: marketCode },
+      },
+    );
   }
 
   searchTutors(query: TutorSearchQuery): Promise<TutorSearchResponse> {
-    return httpClient.post(`${EDUCATION_API_BASE}/search`, query);
+    return apiOperation<TutorSearchResponse, "postEducationSearch">(
+      "postEducationSearch",
+      { body: query },
+    );
   }
 
   getTutorProfile(idOrSlug: string, marketCode: string) {
-    return httpClient.get<{
-      tutor: TutorPublicProfile;
-      offers: CoursePublicOffer[];
-    }>(`${EDUCATION_API_BASE}/tutors/${encodeURIComponent(idOrSlug)}`, {
+    return apiOperation<
+      {
+        tutor: TutorPublicProfile;
+        offers: CoursePublicOffer[];
+      },
+      "getEducationTutorsById"
+    >("getEducationTutorsById", {
+      path: { id: idOrSlug },
       headers: { "X-Shongre-Market": marketCode },
     });
   }
 
   saveTutorProfile(profile: TutorProfileDraft): Promise<TutorProfile> {
     const id = profile.id || "new";
-    return httpClient.put(
-      `${EDUCATION_API_BASE}/tutors/${encodeURIComponent(id)}`,
-      profile,
+    return apiOperation<TutorProfile, "putEducationTutorsById">(
+      "putEducationTutorsById",
+      {
+        path: { id },
+        body: profile,
+      },
     );
   }
 
   createCourseOffer(offer: CourseOfferDraft): Promise<CourseOffer> {
-    return httpClient.post(`${EDUCATION_API_BASE}/offers`, offer);
+    return apiOperation<CourseOffer, "postEducationOffers">(
+      "postEducationOffers",
+      { body: offer },
+    );
   }
 
   submitLearnerRequest(request: LearnerRequestDraft): Promise<LearnerRequest> {
-    return httpClient.post(`${EDUCATION_API_BASE}/learner-requests`, request);
+    return apiOperation<LearnerRequest, "postEducationLearnerRequests">(
+      "postEducationLearnerRequests",
+      { body: request },
+    );
   }
 
   getTutorOnboardingDraft(
@@ -79,21 +99,25 @@ export class HttpCoursesService implements CoursesServiceContract {
     _displayName?: string,
   ): Promise<TutorOnboardingDraft> {
     this.tutorDraftMarkets.set(accountId, marketCode);
-    return httpClient.get(
-      `${EDUCATION_API_BASE}/workflow-drafts/tutor-onboarding`,
-      { params: { market: marketCode } },
-    );
+    return apiOperation<
+      TutorOnboardingDraft,
+      "getEducationWorkflowdraftsTutoronboarding"
+    >("getEducationWorkflowdraftsTutoronboarding", {
+      query: { market: marketCode },
+    });
   }
 
   saveTutorOnboardingDraft(
     accountId: string,
     draft: TutorOnboardingDraft,
   ): Promise<void> {
-    return httpClient.put(
-      `${EDUCATION_API_BASE}/workflow-drafts/tutor-onboarding`,
+    return apiOperation<void, "putEducationWorkflowdraftsTutoronboarding">(
+      "putEducationWorkflowdraftsTutoronboarding",
       {
-        marketCode: this.tutorDraftMarkets.get(accountId) || "FR",
-        draft,
+        body: {
+          marketCode: this.tutorDraftMarkets.get(accountId) || "FR",
+          draft,
+        },
       },
     );
   }
@@ -104,17 +128,21 @@ export class HttpCoursesService implements CoursesServiceContract {
     draft: TutorOnboardingDraft,
   ): Promise<{ profile: TutorProfile; offer: CourseOffer }> {
     this.tutorDraftMarkets.set(accountId, marketCode);
-    return httpClient.post(`${EDUCATION_API_BASE}/onboarding/submit`, {
-      marketCode,
-      draft,
+    return apiOperation<
+      { profile: TutorProfile; offer: CourseOffer },
+      "postEducationOnboardingSubmit"
+    >("postEducationOnboardingSubmit", {
+      body: { marketCode, draft },
     });
   }
 
   async clearTutorOnboardingDraft(accountId: string): Promise<void> {
     const market = this.tutorDraftMarkets.get(accountId) || "FR";
-    await httpClient.delete(
-      `${EDUCATION_API_BASE}/workflow-drafts/tutor-onboarding`,
-      { params: { market } },
+    await apiOperation<void, "deleteEducationWorkflowdraftsTutoronboarding">(
+      "deleteEducationWorkflowdraftsTutoronboarding",
+      {
+        query: { market },
+      },
     );
     this.tutorDraftMarkets.delete(accountId);
   }
@@ -125,66 +153,104 @@ export class HttpCoursesService implements CoursesServiceContract {
     subjectId?: string,
   ): Promise<LearnerRequestProgressDraft> {
     this.learnerDraftMarkets.set(accountId, marketCode);
-    return httpClient.get(
-      `${EDUCATION_API_BASE}/workflow-drafts/learner-request`,
-      { params: { market: marketCode, subject: subjectId } },
-    );
+    return apiOperation<
+      LearnerRequestProgressDraft,
+      "getEducationWorkflowdraftsLearnerrequest"
+    >("getEducationWorkflowdraftsLearnerrequest", {
+      query: { market: marketCode, subject: subjectId },
+    });
   }
 
   saveLearnerRequestDraft(
     accountId: string,
     draft: LearnerRequestProgressDraft,
   ): Promise<void> {
-    return httpClient.put(
-      `${EDUCATION_API_BASE}/workflow-drafts/learner-request`,
+    return apiOperation<void, "putEducationWorkflowdraftsLearnerrequest">(
+      "putEducationWorkflowdraftsLearnerrequest",
       {
-        marketCode: this.learnerDraftMarkets.get(accountId) || "FR",
-        draft,
+        body: {
+          marketCode: this.learnerDraftMarkets.get(accountId) || "FR",
+          draft,
+        },
       },
     );
   }
 
   async clearLearnerRequestDraft(accountId: string): Promise<void> {
     const market = this.learnerDraftMarkets.get(accountId) || "FR";
-    await httpClient.delete(
-      `${EDUCATION_API_BASE}/workflow-drafts/learner-request`,
-      { params: { market } },
+    await apiOperation<void, "deleteEducationWorkflowdraftsLearnerrequest">(
+      "deleteEducationWorkflowdraftsLearnerrequest",
+      {
+        query: { market },
+      },
     );
     this.learnerDraftMarkets.delete(accountId);
   }
 
-  getTutorWorkspace(tutorProfileId: string): Promise<TutorWorkspace> {
-    return httpClient.get(
-      `${EDUCATION_API_BASE}/workspace/${encodeURIComponent(tutorProfileId)}`,
+  getCurrentTutorWorkspace(marketCode: string): Promise<TutorWorkspace> {
+    return apiOperation<TutorWorkspace, "getEducationCurrentTutorWorkspace">(
+      "getEducationCurrentTutorWorkspace",
+      {
+        headers: { "X-Shongre-Market": marketCode },
+      },
     );
+  }
+
+  getTutorWorkspace(tutorProfileId: string): Promise<TutorWorkspace> {
+    return apiOperation<
+      TutorWorkspace,
+      "getEducationWorkspaceByTutorProfileId"
+    >("getEducationWorkspaceByTutorProfileId", {
+      path: { tutorProfileId },
+    });
+  }
+
+  getCurrentOrganizationWorkspace(
+    marketCode: string,
+  ): Promise<CourseOrganizationWorkspace> {
+    return apiOperation<
+      CourseOrganizationWorkspace,
+      "getEducationCurrentOrganizationWorkspace"
+    >("getEducationCurrentOrganizationWorkspace", {
+      headers: { "X-Shongre-Market": marketCode },
+    });
   }
 
   getOrganizationWorkspace(
     organizationId: string,
   ): Promise<CourseOrganizationWorkspace> {
-    return httpClient.get(
-      `${EDUCATION_API_BASE}/organizations/${encodeURIComponent(organizationId)}/workspace`,
-    );
+    return apiOperation<
+      CourseOrganizationWorkspace,
+      "getEducationOrganizationsByOrganizationIdWorkspace"
+    >("getEducationOrganizationsByOrganizationIdWorkspace", {
+      path: { organizationId },
+    });
   }
 
   inviteOrganizationMember(
     organizationId: string,
     input: CourseOrganizationInviteInput,
   ): Promise<CourseOrganizationWorkspace> {
-    return httpClient.post(
-      `${EDUCATION_API_BASE}/organizations/${encodeURIComponent(organizationId)}/members`,
-      input,
-    );
+    return apiOperation<
+      CourseOrganizationWorkspace,
+      "postEducationOrganizationsByOrganizationIdMembers"
+    >("postEducationOrganizationsByOrganizationIdMembers", {
+      path: { organizationId },
+      body: input,
+    });
   }
 
   addOrganizationLocation(
     organizationId: string,
     input: CourseOrganizationLocationInput,
   ): Promise<CourseOrganizationWorkspace> {
-    return httpClient.post(
-      `${EDUCATION_API_BASE}/organizations/${encodeURIComponent(organizationId)}/locations`,
-      input,
-    );
+    return apiOperation<
+      CourseOrganizationWorkspace,
+      "postEducationOrganizationsByOrganizationIdLocations"
+    >("postEducationOrganizationsByOrganizationIdLocations", {
+      path: { organizationId },
+      body: input,
+    });
   }
 
   respondToLead(
@@ -193,11 +259,11 @@ export class HttpCoursesService implements CoursesServiceContract {
     decision: "accept" | "decline" | "invalid",
     declineReason?: string,
   ): Promise<CourseLead> {
-    return httpClient.request(
-      `${EDUCATION_API_BASE}/leads/${encodeURIComponent(leadId)}`,
+    return apiOperation<CourseLead, "patchEducationLeadsByLeadId">(
+      "patchEducationLeadsByLeadId",
       {
-        method: "PATCH",
-        body: JSON.stringify({ tutorProfileId, decision, declineReason }),
+        path: { leadId },
+        body: { tutorProfileId, decision, declineReason },
       },
     );
   }
@@ -206,10 +272,12 @@ export class HttpCoursesService implements CoursesServiceContract {
     _accountId: string,
     marketCode: string,
   ): Promise<string[]> {
-    const result = await httpClient.get<{ tutorProfileIds: string[] }>(
-      `${EDUCATION_API_BASE}/favorites`,
-      { headers: { "X-Shongre-Market": marketCode } },
-    );
+    const result = await apiOperation<
+      { tutorProfileIds: string[] },
+      "getEducationFavorites"
+    >("getEducationFavorites", {
+      headers: { "X-Shongre-Market": marketCode },
+    });
     return result.tutorProfileIds;
   }
 
@@ -219,11 +287,14 @@ export class HttpCoursesService implements CoursesServiceContract {
     marketCode: string,
     isFavorite: boolean,
   ): Promise<boolean> {
-    const result = await httpClient.put<{ isFavorite: boolean }>(
-      `${EDUCATION_API_BASE}/tutors/${encodeURIComponent(tutorProfileId)}/favorite`,
-      { isFavorite },
-      { headers: { "X-Shongre-Market": marketCode } },
-    );
+    const result = await apiOperation<
+      { isFavorite: boolean },
+      "putEducationTutorsByIdFavorite"
+    >("putEducationTutorsByIdFavorite", {
+      path: { id: tutorProfileId },
+      body: { isFavorite },
+      headers: { "X-Shongre-Market": marketCode },
+    });
     return result.isFavorite;
   }
 
@@ -231,10 +302,13 @@ export class HttpCoursesService implements CoursesServiceContract {
     marketCode: string,
     config: CourseMarketConfig,
   ): Promise<CourseMarketConfig> {
-    return httpClient.put(
-      `${EDUCATION_API_BASE}/admin/markets/${encodeURIComponent(marketCode)}`,
-      config,
-    );
+    return apiOperation<
+      CourseMarketConfig,
+      "putEducationAdminMarketsByMarketCode"
+    >("putEducationAdminMarketsByMarketCode", {
+      path: { marketCode },
+      body: config,
+    });
   }
 
   updateSubject(
@@ -242,10 +316,13 @@ export class HttpCoursesService implements CoursesServiceContract {
     subjectId: string,
     patch: Partial<Pick<CourseSubject, "label" | "isActive" | "levelIds">>,
   ): Promise<CourseSubject> {
-    return httpClient.request(
-      `${EDUCATION_API_BASE}/admin/markets/${encodeURIComponent(marketCode)}/subjects/${encodeURIComponent(subjectId)}`,
-      { method: "PATCH", body: JSON.stringify(patch) },
-    );
+    return apiOperation<
+      CourseSubject,
+      "patchEducationAdminMarketsByMarketCodeSubjectsBySubjectId"
+    >("patchEducationAdminMarketsByMarketCodeSubjectsBySubjectId", {
+      path: { marketCode, subjectId },
+      body: patch,
+    });
   }
 
   updatePlan(
@@ -258,10 +335,13 @@ export class HttpCoursesService implements CoursesServiceContract {
       >
     >,
   ): Promise<CoursePlan> {
-    return httpClient.request(
-      `${EDUCATION_API_BASE}/admin/markets/${encodeURIComponent(marketCode)}/plans/${encodeURIComponent(planId)}`,
-      { method: "PATCH", body: JSON.stringify(patch) },
-    );
+    return apiOperation<
+      CoursePlan,
+      "patchEducationAdminMarketsByMarketCodePlansByPlanId"
+    >("patchEducationAdminMarketsByMarketCodePlansByPlanId", {
+      path: { marketCode, planId },
+      body: patch,
+    });
   }
 }
 

@@ -7,7 +7,7 @@ export const PUBLICATION_CONSTRAINTS = {
   title: { minLength: 3, maxLength: 120 },
   description: { maxLength: 4_000 },
   stockQuantity: { min: 1 },
-  imageCount: { max: 12 },
+  imageCount: { min: 0, max: 12 },
 } as const;
 
 const TAXONOMY_V4_ITEM_CONDITION_BY_APPLICATION_VALUE = {
@@ -146,6 +146,7 @@ export const publicationInputSchema = z
     condition: z.string().min(1),
     images: z
       .array(z.string())
+      .min(PUBLICATION_CONSTRAINTS.imageCount.min)
       .max(PUBLICATION_CONSTRAINTS.imageCount.max)
       .default([]),
     digitalFulfillment: digitalFulfillmentVersionInputSchema.optional(),

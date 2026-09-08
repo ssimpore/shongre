@@ -103,7 +103,7 @@ describe("API-backed mobile engagement services", () => {
     });
     expect(apiRequest).toHaveBeenCalledWith(
       "/messaging/conversations?limit=50",
-      {},
+      expect.objectContaining({ method: "GET", headers: expect.any(Headers) }),
       "FR",
     );
   });
@@ -131,7 +131,11 @@ describe("API-backed mobile engagement services", () => {
     );
     expect(apiRequest).toHaveBeenCalledWith(
       "/watch-subscriptions",
-      { method: "POST", body: JSON.stringify(input) },
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify(input),
+        headers: expect.any(Headers),
+      }),
       "FR",
     );
   });
@@ -150,7 +154,7 @@ describe("API-backed mobile engagement services", () => {
     expect(result).toHaveLength(1);
     expect(apiRequest).toHaveBeenCalledWith(
       "/listings/search",
-      {
+      expect.objectContaining({
         method: "POST",
         body: JSON.stringify({
           marketCode: "FR",
@@ -159,7 +163,8 @@ describe("API-backed mobile engagement services", () => {
           minPrice: 10,
           maxPrice: 25.5,
         }),
-      },
+        headers: expect.any(Headers),
+      }),
       "FR",
     );
   });

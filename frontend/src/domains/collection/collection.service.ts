@@ -1,155 +1,90 @@
-import { Collection } from "./collection.types";
-import {
-  COLLECTION_PILLARS,
-  getCollectionBySlug,
-  getCollectionsByPillar,
-} from "./collection.data";
-import { Listing } from "../../types";
-import { isProSeller } from "../user/user.domain";
-import { hasActiveGenericListingPromotion } from "../listing/listing-card.generic-presentation";
+import type { MarketContext } from "@shongre/contracts";
+import { services } from "../../api/client/service-registry";
+import type { Collection, CollectionResolution } from "./collection.types";
+
+const labelFor = (labels: Record<string, string>, locale: string): string =>
+  labels[locale] || labels["fr-FR"] || Object.values(labels)[0] || "";
 
 class CollectionService {
-  /**
-   * Returns all available collection pillars.
-   */
-  getPillars() {
-    return COLLECTION_PILLARS;
-  }
-
-  /**
-   * Returns all collections, optionally filtered by pillar ID.
-   */
-  getCollections(pillarId: string = "all"): Collection[] {
-    return getCollectionsByPillar(pillarId);
-  }
-
-  /**
-   * Returns a single collection by its slug or ID.
-   */
-  getCollection(slug: string): Collection | undefined {
-    return getCollectionBySlug(slug);
-  }
-
-  /**
-   * Evaluates and filters a list of listings against a collection's criteria.
-   */
-  filterListingsForCollection(
-    collection: Collection,
-    allListings: Listing[],
-    options: { allowFallback?: boolean; marketCode?: string } = {},
-  ): Listing[] {
-    if (!allListings || allListings.length === 0) return [];
-    const { filterCriteria, featuredListingIds } = collection;
-
-    // Filter active listings only
-    const active = allListings.filter((l) => l && l.status === "active");
-
-    const matched = active.filter((listing) => {
-      // 1. Check explicit featured listing IDs
-      if (featuredListingIds && featuredListingIds.includes(listing.id)) {
-        return true;
-      }
-
-      // 2. Free Donation check
-      if (filterCriteria.isFreeDonation !== undefined) {
-        if (
-          filterCriteria.isFreeDonation &&
-          !listing.isFreeDonation &&
-          listing.price > 0
-        ) {
-          return false;
-        }
-      }
-
-      // 3. Price bounds
-      if (
-        filterCriteria.priceMax !== undefined &&
-        listing.price > filterCriteria.priceMax
-      ) {
-        return false;
-      }
-      if (
-        filterCriteria.priceMin !== undefined &&
-        listing.price < filterCriteria.priceMin
-      ) {
-        return false;
-      }
-
-      // 4. Discount check
-      if (filterCriteria.isDiscounted) {
-        const hasDiscount =
-          listing.originalPrice && listing.originalPrice > listing.price;
-        if (!hasDiscount) return false;
-      }
-
-      // 5. Pro seller only
-      if (filterCriteria.isProOnly && !isProSeller(listing)) {
-        return false;
-      }
-
-      // 6. Boosted only
-      if (
-        filterCriteria.isBoostedOnly &&
-        !hasActiveGenericListingPromotion(listing, options.marketCode)
-      ) {
-        return false;
-      }
-
-      // 7. Delivery available
-      if (filterCriteria.hasDelivery) {
-        const hasDelivery = listing.deliveryOptions?.some(
-          (opt) => opt.available && opt.type !== "hand_delivery",
-        );
-        if (!hasDelivery) return false;
-      }
-
-      // 8. Condition check
-      if (filterCriteria.conditions && filterCriteria.conditions.length > 0) {
-        if (
-          !listing.condition ||
-          !filterCriteria.conditions.includes(listing.condition)
-        ) {
-          return false;
-        }
-      }
-
-      // 9. Category match
-      if (filterCriteria.categorySlug) {
-        const matchesCat =
-          listing.categorySlug === filterCriteria.categorySlug ||
-          listing.categoryLabel
-            ?.toLowerCase()
-            .includes(filterCriteria.categorySlug.toLowerCase());
-        if (!matchesCat) return false;
-      }
-
-      // 10. Keyword match (if specified)
-      if (filterCriteria.keywords && filterCriteria.keywords.length > 0) {
-        const titleLower = listing.title.toLowerCase();
-        const descLower = listing.description?.toLowerCase() || "";
-        const catLower = listing.categoryLabel?.toLowerCase() || "";
-
-        const matchesAnyKeyword = filterCriteria.keywords.some((kw) => {
-          const kwLower = kw.toLowerCase();
-          return (
-            titleLower.includes(kwLower) ||
-            descLower.includes(kwLower) ||
-            catLower.includes(kwLower)
-          );
+  async getCollections(
+    marketContext: Pick<MarketContext, "countryCode">,
+    locale: string,
+  ): Promise<Collection[]> {
+    const tree = await services.taxonomy.getV4Tree({ marketContext, locale });
+    const roots = tree.items.filter((node) => !node.parentId);
+    const results = await Promise.all(
+      roots.map(async (node): Promise<Collection | null> => {
+        const inventory = await services.search.search({
+          marketCode: marketContext.countryCode || "",
+          categorySlug: node.slug,
+          sortBy: "date_desc",
+          limit: 1,
         });
+        const coverImageUrl = inventory.items[0]?.coverImageUrl;
+        if (!inventory.total || !coverImageUrl) return null;
+        const title = labelFor(node.labels, locale);
+        const shortTitle = labelFor(node.shortLabels, locale) || title;
+        const tags = tree.items
+          .filter((candidate) => candidate.parentId === node.id)
+          .slice(0, 4)
+          .map((candidate) => labelFor(candidate.shortLabels, locale))
+          .filter(Boolean);
+        return {
+          id: node.id,
+          slug: node.slug,
+          title,
+          shortTitle,
+          description: node.description || title,
+          coverImageUrl,
+          tags,
+          listingCount: inventory.total,
+          itemCountLabel: new Intl.NumberFormat(locale).format(inventory.total),
+        };
+      }),
+    );
+    return results.filter((item): item is Collection => item !== null);
+  }
 
-        if (!matchesAnyKeyword) return false;
-      }
-
-      return true;
+  async getCollection(
+    slug: string,
+    marketContext: Pick<MarketContext, "countryCode">,
+    locale: string,
+    limit: number,
+  ): Promise<CollectionResolution | null> {
+    const tree = await services.taxonomy.getV4Tree({ marketContext, locale });
+    const node = tree.items.find(
+      (candidate) => !candidate.parentId && candidate.slug === slug,
+    );
+    if (!node) return null;
+    const inventory = await services.search.search({
+      marketCode: marketContext.countryCode || "",
+      categorySlug: node.slug,
+      sortBy: "date_desc",
+      limit,
     });
-
-    if (options.allowFallback && matched.length < 2) {
-      const fallback = active.slice(0, 6);
-      return Array.from(new Set([...matched, ...fallback]));
-    }
-
-    return matched;
+    const coverImageUrl = inventory.items[0]?.coverImageUrl;
+    if (!inventory.total || !coverImageUrl) return null;
+    const title = labelFor(node.labels, locale);
+    const shortTitle = labelFor(node.shortLabels, locale) || title;
+    const tags = tree.items
+      .filter((candidate) => candidate.parentId === node.id)
+      .slice(0, 8)
+      .map((candidate) => labelFor(candidate.shortLabels, locale))
+      .filter(Boolean);
+    return {
+      collection: {
+        id: node.id,
+        slug: node.slug,
+        title,
+        shortTitle,
+        description: node.description || title,
+        coverImageUrl,
+        tags,
+        listingCount: inventory.total,
+        itemCountLabel: new Intl.NumberFormat(locale).format(inventory.total),
+      },
+      listings: inventory.items,
+    };
   }
 }
 

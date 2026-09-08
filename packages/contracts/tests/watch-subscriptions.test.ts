@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   createWatchSubscriptionInputSchema,
   updateWatchSubscriptionInputSchema,
+  watchSubscriptionSchema,
 } from "../src/schemas/watch-subscriptions";
 
 describe("watch subscription contracts", () => {
@@ -43,5 +44,22 @@ describe("watch subscription contracts", () => {
         channels: { inApp: false, email: false, push: false },
       }),
     ).toThrow(/channel/i);
+  });
+
+  it("accepts PostgreSQL timestamp offsets in repository projections", () => {
+    expect(
+      watchSubscriptionSchema.parse({
+        id: "watch-1",
+        marketCode: "FR",
+        targetType: "listing_price",
+        targetId: "listing-1",
+        title: "Baisse de prix",
+        frequency: "immediate",
+        channels: { inApp: true, email: true, push: false },
+        status: "active",
+        createdAt: "2026-09-08T00:00:00.123456+00:00",
+        updatedAt: "2026-09-08T00:00:00.123456+00:00",
+      }).id,
+    ).toBe("watch-1");
   });
 });

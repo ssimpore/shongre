@@ -1,14 +1,8 @@
 import React, { useState } from "react";
-import { Select } from "../../../design-system";
 import { Briefcase, ShieldCheck, AlertCircle, ArrowRight } from "lucide-react";
 import { useAuth } from "../../../app/providers/AuthProvider";
-import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
 import { Button } from "../../../design-system/primitives/Button";
 import { Modal } from "../../../design-system/primitives/Modal";
-import {
-  SUPPORTED_MARKETS,
-  validateBusinessIdentifier,
-} from "../../../configuration/market.config";
 import { useTranslation } from "../../../i18n/I18nProvider";
 
 export interface UpgradeToProModalProps {
@@ -24,12 +18,9 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
 }) => {
   const { t } = useTranslation();
   const { currentUser, upgradeToPro } = useAuth();
-  const { activeMarket } = useMarketLocation();
   const [companyName, setCompanyName] = useState("");
   const [sirenSiret, setSirenSiret] = useState("");
-  const [legalForm, setLegalForm] = useState(
-    "Micro-entreprise / Auto-entrepreneur",
-  );
+  const [legalForm, setLegalForm] = useState("");
   const [vatNumber, setVatNumber] = useState("");
   const [businessAddress, setBusinessAddress] = useState("");
   const [phone, setPhone] = useState(currentUser?.phone || "");
@@ -37,9 +28,6 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
   const [error, setError] = useState<string | null>(null);
 
   if (!isOpen || !currentUser) return null;
-
-  const jurisdiction = currentUser.country || activeMarket.code;
-  const currentMarket = SUPPORTED_MARKETS[jurisdiction];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,10 +38,8 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
       return;
     }
 
-    if (!validateBusinessIdentifier(sirenSiret, jurisdiction)) {
-      setError(
-        `Identifiant légal invalide. ${currentMarket.businessIdentifierHelper}`,
-      );
+    if (!sirenSiret.trim()) {
+      setError("L’identifiant légal de l’entreprise est requis.");
       return;
     }
 
@@ -123,14 +109,14 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label className="block text-xs font-semibold text-text-strong mb-1.5">
-              {currentMarket.businessIdentifierLabel}{" "}
+              Identifiant légal de l’entreprise{" "}
               <span className="text-primary">*</span>
             </label>
             <input
               type="text"
               value={sirenSiret}
               onChange={(e) => setSirenSiret(e.target.value)}
-              placeholder={currentMarket.businessIdentifierFormatPlaceholder}
+              placeholder="Numéro d’immatriculation"
               required
               className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm font-semibold text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
             />
@@ -143,18 +129,14 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
             >
               Statut / Forme juridique <span className="text-primary">*</span>
             </label>
-            <Select
-              className="w-full"
+            <input
               id="upgrade-pro-legal-form"
               value={legalForm}
-              onChange={(e) => setLegalForm(e.target.value)}
-            >
-              {currentMarket.supportedLegalForms.map((f) => (
-                <option key={f} value={f}>
-                  {f}
-                </option>
-              ))}
-            </Select>
+              onChange={(event) => setLegalForm(event.target.value)}
+              required
+              autoComplete="organization-title"
+              className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
+            />
           </div>
         </div>
 
@@ -167,7 +149,7 @@ export const UpgradeToProModal: React.FC<UpgradeToProModalProps> = ({
               type="text"
               value={vatNumber}
               onChange={(e) => setVatNumber(e.target.value)}
-              placeholder={currentMarket.vatNumberFormatPlaceholder}
+              placeholder="Numéro de TVA"
               className="w-full px-3.5 py-2.5 bg-bg-surface border border-border-disabled rounded-control text-sm text-text-main focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary-ring h-control-touch"
             />
           </div>

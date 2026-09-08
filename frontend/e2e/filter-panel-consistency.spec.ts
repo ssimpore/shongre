@@ -56,16 +56,16 @@ test.describe("canonical marketplace filter panel", () => {
       await page.goto(surface.path, { waitUntil: "domcontentloaded" });
       await waitForStableLayout(page);
 
-      if ("desktopTrigger" in surface) {
+      const panel = page.locator('[data-filter-panel="surface"]');
+      if ("desktopTrigger" in surface && !(await panel.isVisible())) {
         await page
           .getByRole("button", { name: surface.desktopTrigger })
           .click();
       }
 
-      const panel = page.locator('[data-filter-panel="surface"]');
       await expect(panel).toHaveCount(1);
       await expect(panel).toBeVisible();
-      await expect(panel).toHaveClass(/rounded-card/);
+      await expect(panel).toHaveClass(/rounded-listing-card/);
       await expect(panel).toHaveClass(/border-border-base/);
       await expect(panel).toHaveClass(/bg-bg-surface/);
       await expect(

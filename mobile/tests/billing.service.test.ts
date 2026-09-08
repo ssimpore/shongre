@@ -23,13 +23,13 @@ describe("API-backed mobile billing service", () => {
     expect(apiRequest).toHaveBeenNthCalledWith(
       1,
       "/business-rules/catalog?marketCode=FR",
-      {},
+      expect.objectContaining({ method: "GET", headers: expect.any(Headers) }),
       "FR",
     );
     expect(apiRequest).toHaveBeenNthCalledWith(
       2,
       "/monetization/billing",
-      {},
+      expect.objectContaining({ method: "GET", headers: expect.any(Headers) }),
       "FR",
     );
   });

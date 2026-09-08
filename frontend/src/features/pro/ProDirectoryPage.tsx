@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Search } from "lucide-react";
 
-import { userRepository } from "../../repositories/user.repository";
-import { UserProfile } from "../../types";
+import { services } from "../../api/client/service-registry";
+import { PublicSellerProfile } from "../../types";
 import { SellerCard } from "../../design-system/primitives/SellerCard";
 import { Breadcrumbs } from "../../design-system";
 import { Button } from "../../design-system/primitives/Button";
@@ -20,17 +20,20 @@ export const ProDirectoryPage: React.FC = () => {
     canonicalPath: "/professionnels",
   });
 
-  const [proSellers, setProSellers] = useState<UserProfile[]>([]);
+  const [proSellers, setProSellers] = useState<PublicSellerProfile[]>([]);
   const [search, setSearch] = useState("");
 
   useEffect(() => {
-    userRepository.getAllProSellers().then(setProSellers);
-  }, []);
+    services.users
+      .listProfessionalProfiles(activeMarket.code)
+      .then(setProSellers)
+      .catch(() => setProSellers([]));
+  }, [activeMarket.code]);
 
   const filtered = proSellers.filter(
     (s) =>
-      (s.companyName || s.name).toLowerCase().includes(search.toLowerCase()) ||
-      s.city.toLowerCase().includes(search.toLowerCase()),
+      s.name.toLowerCase().includes(search.toLowerCase()) ||
+      (s.city || "").toLowerCase().includes(search.toLowerCase()),
   );
 
   return (

@@ -32,7 +32,7 @@ export interface TaxonomyServiceContract {
     input: TaxonomyHeaderNavigationUpdate,
   ): Promise<TaxonomyHeaderNavigationConfiguration>;
   getV4Tree(input: {
-    marketContext: MarketContext;
+    marketContext: Pick<MarketContext, "countryCode">;
     locale: string;
     taxonomyVersion?: string;
   }): Promise<TaxonomyV4TreeResponse>;

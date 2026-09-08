@@ -1028,14 +1028,6 @@ const APP_ROUTES: RouteObject[] = [
       { index: true, element: withSuspense(HomePage) },
       { path: "categories", element: withSuspense(CategoriesPage) },
       { path: "collections", element: withSuspense(CollectionsPage) },
-      {
-        path: "collections/bons-plans",
-        element: (
-          <LegacyPathRedirect
-            to={routes.collections.detail("offres-prix-reduit")}
-          />
-        ),
-      },
       { path: "collections/:slug", element: withSuspense(CollectionsPage) },
       { path: "recherche", element: withSuspense(SearchPage) },
       {

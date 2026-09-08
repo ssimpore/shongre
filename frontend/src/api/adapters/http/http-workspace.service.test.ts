@@ -1,8 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { httpClient } from "./http-client";
+import { apiOperation } from "./generated-api-operation";
 import { HttpWorkspaceService } from "./http-workspace.service";
 import type { BackendListing } from "./http-listings.service";
+
+vi.mock("./generated-api-operation", () => ({ apiOperation: vi.fn() }));
 
 const backendListing = {
   id: "listing-workspace-1",
@@ -34,7 +36,7 @@ afterEach(() => vi.restoreAllMocks());
 
 describe("HttpWorkspaceService", () => {
   it("loads a market-scoped summary and maps API listings for the UI", async () => {
-    vi.spyOn(httpClient, "get").mockResolvedValue({
+    vi.mocked(apiOperation).mockResolvedValue({
       totalListingsCount: 6,
       activeListingsCount: 5,
       savedSearchesCount: 2,
@@ -52,7 +54,8 @@ describe("HttpWorkspaceService", () => {
       "FR",
     );
 
-    expect(httpClient.get).toHaveBeenCalledWith("/workspace/summary/user-1", {
+    expect(apiOperation).toHaveBeenCalledWith("getWorkspaceSummaryByUserId", {
+      path: { userId: "user-1" },
       headers: { "X-Shongre-Market": "FR" },
     });
     expect(summary).toMatchObject({

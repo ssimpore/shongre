@@ -469,13 +469,12 @@ const isImageGenerationRoute = (file) =>
 
    `next/font` belongs at the Next.js root, the design-token package owns the
    family stack, and application surfaces inherit it. Standalone HTML returned
-   by the edge 404 path or exported as a demo invoice cannot inherit the root
+   by the edge 404 path or exported as a preview invoice cannot inherit the root
    class, so those two documents may consume the canonical token string
    directly. Native files retain their platform font-family mapping.
    --------------------------------------------------------------------------- */
 const ALLOWED_WEB_FONT_DECLARATION_FILES = new Set([
   "src/index.css",
-  "src/api/adapters/demo/demo-business-rules.service.ts",
   "src/platform/seo/not-found-presentation.ts",
 ]);
 const fontArchitectureViolations = [];

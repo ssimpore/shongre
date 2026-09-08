@@ -7,54 +7,61 @@ import type {
   SupportCaseUpdate,
   SupportCaseCreate,
 } from "@shongre/contracts/support";
+import { apiOperation } from "./generated-api-operation";
 import type {
   SupportCaseDetail,
   SupportServiceContract,
 } from "../../contracts/support.contract";
-import { httpClient } from "./http-client";
 
 export class HttpSupportService implements SupportServiceContract {
   createCase(input: SupportCaseCreate) {
-    return httpClient.post<SupportCase>("/support/cases", input);
+    return apiOperation<SupportCase, "postSupportCases">("postSupportCases", {
+      body: input,
+    });
   }
 
   async listOwnCases() {
-    const result = await httpClient.get<{ items: SupportCase[] }>(
-      "/support/cases/mine",
-    );
+    const result = await apiOperation<
+      { items: SupportCase[] },
+      "getSupportCasesMine"
+    >("getSupportCasesMine", {});
     return result.items;
   }
 
   getCase(caseId: string) {
-    return httpClient.get<SupportCaseDetail>(
-      `/support/cases/${encodeURIComponent(caseId)}`,
+    return apiOperation<SupportCaseDetail, "getSupportCasesById">(
+      "getSupportCasesById",
+      { path: { id: caseId } },
     );
   }
 
   async listCases(filter: SupportCaseFilter = {}) {
-    const result = await httpClient.get<{ items: SupportCase[] }>(
-      "/support/cases",
-      { params: filter },
-    );
+    const result = await apiOperation<
+      { items: SupportCase[] },
+      "getSupportCases"
+    >("getSupportCases", { query: filter });
     return result.items;
   }
 
   updateCase(caseId: string, input: SupportCaseUpdate) {
-    return httpClient.patch<SupportCase>(
-      `/support/cases/${encodeURIComponent(caseId)}`,
-      input,
+    return apiOperation<SupportCase, "patchSupportCasesById">(
+      "patchSupportCasesById",
+      { path: { id: caseId }, body: input },
     );
   }
 
   addNote(caseId: string, input: SupportCaseNoteCreate) {
-    return httpClient.post<SupportCaseNote>(
-      `/support/cases/${encodeURIComponent(caseId)}/notes`,
-      input,
+    return apiOperation<SupportCaseNote, "postSupportCasesByIdNotes">(
+      "postSupportCasesByIdNotes",
+      { path: { id: caseId }, body: input },
     );
   }
 
   getMetrics() {
-    return httpClient.get<SupportCaseMetrics>("/support/metrics");
+    return apiOperation<SupportCaseMetrics, "getSupportMetrics">(
+      "getSupportMetrics",
+      {},
+    );
   }
 }
 

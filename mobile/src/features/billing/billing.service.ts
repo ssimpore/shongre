@@ -2,13 +2,7 @@ import type {
   BillingOverview,
   MonetizationCatalog,
 } from "@shongre/contracts/monetization";
-import type { operations } from "@shongre/contracts/openapi";
-import { apiRequest } from "@/api/http-client";
-
-type CatalogResponse =
-  operations["getBusinessRulesCatalog"]["responses"][200]["content"]["application/json"];
-type BillingResponse =
-  operations["getMonetizationBilling"]["responses"][200]["content"]["application/json"];
+import { apiOperation } from "@/api/generated-api-operation";
 
 export interface MobileBillingService {
   getCatalog(marketCode: string): Promise<MonetizationCatalog>;
@@ -17,9 +11,9 @@ export interface MobileBillingService {
 
 export class HttpMobileBillingService implements MobileBillingService {
   async getCatalog(marketCode: string): Promise<MonetizationCatalog> {
-    return (await apiRequest<CatalogResponse>(
-      `/business-rules/catalog?marketCode=${encodeURIComponent(marketCode)}`,
-      {},
+    return (await apiOperation(
+      "getBusinessRulesCatalog",
+      { query: { marketCode } },
       marketCode,
     )) as MonetizationCatalog;
   }
@@ -28,8 +22,8 @@ export class HttpMobileBillingService implements MobileBillingService {
     _accountId: string,
     marketCode: string,
   ): Promise<BillingOverview> {
-    return (await apiRequest<BillingResponse>(
-      "/monetization/billing",
+    return (await apiOperation(
+      "getMonetizationBilling",
       {},
       marketCode,
     )) as BillingOverview;

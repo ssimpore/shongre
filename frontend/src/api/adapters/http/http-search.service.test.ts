@@ -1,20 +1,19 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { httpClient } from "./http-client";
+import { apiOperation } from "./generated-api-operation";
 import { HttpSearchService } from "./http-search.service";
 
-vi.mock("./http-client", () => ({
-  httpClient: { get: vi.fn(), post: vi.fn() },
+vi.mock("./generated-api-operation", () => ({
+  apiOperation: vi.fn(),
 }));
 
 describe("HttpSearchService", () => {
   beforeEach(() => {
-    vi.mocked(httpClient.get).mockReset();
-    vi.mocked(httpClient.post).mockReset();
+    vi.mocked(apiOperation).mockReset();
   });
 
   it("maps backend listings to the frontend listing contract", async () => {
-    vi.mocked(httpClient.get).mockResolvedValue({
+    vi.mocked(apiOperation).mockResolvedValue({
       items: [
         {
           id: "listing-1",
@@ -65,16 +64,15 @@ describe("HttpSearchService", () => {
       ],
       deliveryOptions: [{ type: "hand_delivery", available: true, price: 0 }],
     });
-    expect(httpClient.get).toHaveBeenCalledWith("/listings/search", {
+    expect(apiOperation).toHaveBeenCalledWith("getListingsSearch", {
       credentials: "omit",
-      params: { marketCode: "FR" },
+      query: { marketCode: "FR" },
       signal: undefined,
     });
-    expect(httpClient.post).not.toHaveBeenCalled();
   });
 
   it("normalizes equivalent filters for cacheable GET and forwards cancellation", async () => {
-    vi.mocked(httpClient.get).mockResolvedValue({
+    vi.mocked(apiOperation).mockResolvedValue({
       items: [],
       total: 0,
       page: 1,
@@ -96,9 +94,9 @@ describe("HttpSearchService", () => {
       { signal: controller.signal },
     );
 
-    expect(httpClient.get).toHaveBeenCalledWith("/listings/search", {
+    expect(apiOperation).toHaveBeenCalledWith("getListingsSearch", {
       credentials: "omit",
-      params: {
+      query: {
         attributes: JSON.stringify({ a: "first", z: "last" }),
         conditions: "good,very_good",
         marketCode: "FR",
@@ -108,7 +106,7 @@ describe("HttpSearchService", () => {
   });
 
   it("uses POST only when canonical filters exceed the safe URL length", async () => {
-    vi.mocked(httpClient.post).mockResolvedValue({
+    vi.mocked(apiOperation).mockResolvedValue({
       items: [],
       total: 0,
       page: 1,
@@ -126,10 +124,10 @@ describe("HttpSearchService", () => {
 
     await new HttpSearchService().search(filters);
 
-    expect(httpClient.post).toHaveBeenCalledWith("/listings/search", filters, {
+    expect(apiOperation).toHaveBeenCalledWith("postListingsSearch", {
+      body: filters,
       credentials: "omit",
       signal: undefined,
     });
-    expect(httpClient.get).not.toHaveBeenCalled();
   });
 });

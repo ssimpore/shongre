@@ -3,7 +3,6 @@ import { useMemo } from "react";
 import { useAuth } from "../app/providers/AuthProvider";
 import {
   authorizationService,
-  type FeatureRequirement,
   ResourceOwnershipContext,
   AuthorizationContextOptions,
 } from "./authorization.service";
@@ -13,11 +12,9 @@ import {
   canAccessRoutePolicy,
   type RoutePolicyId,
 } from "./access-policy.registry";
-import { useDataMode } from "../app/providers/DataModeProvider";
 
 export function useAuthorization() {
   const { currentUser } = useAuth();
-  const { mode: dataMode } = useDataMode();
 
   const effectivePermissions = useMemo(() => {
     return authorizationService.getEffectivePermissions(currentUser);
@@ -47,36 +44,16 @@ export function useAuthorization() {
       authorizationService.decision(currentUser, permission, resource, options);
   }, [currentUser]);
 
-  const hasEntitlement = useMemo(() => {
-    return (
-      entitlement:
-        | "storefrontCustomization"
-        | "prioritySupport"
-        | "bulkImportExport"
-        | "automaticRelisting",
-    ): boolean => {
-      return authorizationService.hasEntitlement(currentUser, entitlement);
-    };
-  }, [currentUser]);
-
   const canAccessMarket = useMemo(() => {
     return (countryCode?: string): boolean => {
       return authorizationService.canAccessMarket(currentUser, countryCode);
     };
   }, [currentUser]);
 
-  const getFeatureAvailability = useMemo(
-    () => (requirement: FeatureRequirement) =>
-      authorizationService.getFeatureAvailability(currentUser, requirement),
-    [currentUser],
-  );
-
   const canAccessRoute = useMemo(
     () => (policyId: RoutePolicyId) =>
-      canAccessRoutePolicy(currentUser, policyId, {
-        allowStaffMarketplaceDemo: dataMode === "demo",
-      }),
-    [currentUser, dataMode],
+      canAccessRoutePolicy(currentUser, policyId),
+    [currentUser],
   );
 
   const isSuspended =
@@ -98,9 +75,7 @@ export function useAuthorization() {
     permissions: effectivePermissions,
     can,
     decision,
-    hasEntitlement,
     canAccessMarket,
-    getFeatureAvailability,
     canAccessRoute,
     role: normalizedRole,
     accountType:

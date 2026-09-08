@@ -1,139 +1,125 @@
-import { PAGE_SIZES } from "../../configuration/pagination.config";
+import React, { useEffect, useMemo, useState } from "react";
+import { ArrowRight, Layers, Search } from "lucide-react";
+import { Link, useParams } from "react-router-dom";
 import { IMAGE_SIZES } from "@shongre/shared";
-import React, { useState, useEffect, useMemo, useRef } from "react";
-import { useParams, Link } from "react-router-dom";
-import {
-  Sparkles,
-  ChevronRight,
-  Filter,
-  Layers,
-  ArrowLeft,
-  Search,
-  Home,
-  Tag,
-  TrendingUp,
-  Shirt,
-  Bike,
-  MapPin,
-  Heart,
-} from "lucide-react";
+import { PAGE_SIZES } from "../../configuration/pagination.config";
+import { routes } from "../../configuration/routes";
 import { collectionService } from "../../domains/collection/collection.service";
-import {
+import type {
   Collection,
-  CollectionPillarId,
+  CollectionResolution,
 } from "../../domains/collection/collection.types";
-import { listingRepository } from "../../repositories/listing.repository";
-import { Listing } from "../../types";
-import { ListingCard } from "../../design-system/primitives/ListingCard";
-import { ListingRail } from "../../design-system/primitives/ListingRail";
 import {
   Breadcrumbs,
   Button,
   Container,
   EmptyState,
-  FilterChip,
   Heading,
   Input,
   ListingCardSkeleton,
+  ListingRail,
   StatePanel,
 } from "../../design-system";
 import { Image } from "../../design-system/primitives/Image";
-import { ScrollRail } from "../../design-system/primitives/ScrollRail";
+import { ListingCard } from "../../design-system/primitives/ListingCard";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useTranslation } from "../../i18n/I18nProvider";
-import { routes } from "../../configuration/routes";
-import { usePublicRouteData } from "../../app/providers/PublicRouteDataProvider";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
+import { usePublicRouteData } from "../../app/providers/PublicRouteDataProvider";
 import {
   pageMetaForPolicy,
   resolveSeoPolicy,
   structuredDataForPolicy,
 } from "../../platform/seo/seo-policy";
 
-const BADGE_STYLES: Record<string, string> = {
-  terracotta: "bg-primary-light text-primary border-primary-border",
-  emerald: "bg-success-surface text-success border-success-border",
-  sky: "bg-info-surface text-info border-info-border",
-  amber: "bg-warning-surface text-warning border-warning-border",
-  purple:
-    "bg-automation-surface text-automation-strong border-automation-border",
-  rose: "bg-danger-surface text-danger border-danger-border",
-  indigo: "bg-insight-surface text-insight-strong border-insight-border",
-  success: "bg-success-surface text-success border-success-border",
-  info: "bg-info-surface text-info border-info-border",
-  warning: "bg-warning-surface text-warning border-warning-border",
-  danger: "bg-danger-surface text-danger border-danger-border",
-};
-
-const PILLAR_ICONS: Record<string, React.FC<{ className?: string }>> = {
-  Sparkles,
-  TrendingUp,
-  Tag,
-  Shirt,
-  Home,
-  Bike,
-  MapPin,
-  Heart,
-};
+type LoadState<T> =
+  | { status: "loading"; data: null }
+  | { status: "success"; data: T }
+  | { status: "not_found"; data: null }
+  | { status: "error"; data: null };
 
 export const CollectionsPage: React.FC = () => {
   const { t } = useTranslation();
   const { slug } = useParams<{ slug?: string }>();
-  const { activeMarket, marketContext } = useMarketLocation();
+  const { activeMarket, currentLocale, marketContext } = useMarketLocation();
   const publicRouteData = usePublicRouteData();
-  const initialData =
+  const serverResolution =
     publicRouteData?.kind === "collection" &&
     publicRouteData.collection.slug === slug
-      ? publicRouteData
-      : null;
-  const initialDataPending = useRef(Boolean(initialData));
-
-  const selectedCollection: Collection | undefined = useMemo(() => {
-    return slug ? collectionService.getCollection(slug) : undefined;
-  }, [slug]);
-
-  const [activePillar, setActivePillar] = useState<CollectionPillarId>("all");
-  const [collectionSearch, setCollectionSearch] = useState("");
-  const [detailFilters, setDetailFilters] = useState<{
-    collectionId: string;
-    activeTag: string | null;
-    search: string;
-  }>({ collectionId: "", activeTag: null, search: "" });
-  const [listingState, setListingState] = useState<{
-    collectionId: string;
-    status: "loading" | "success" | "error";
-    listings: Listing[];
-  } | null>(() =>
-    initialData
       ? {
-          collectionId: initialData.collection.id,
-          status: "success",
-          listings: initialData.listings,
+          collection: publicRouteData.collection,
+          listings: publicRouteData.listings,
         }
-      : null,
-  );
-  const [loadAttempt, setLoadAttempt] = useState(0);
-
-  // React Router keeps this component mounted between slugs. Scope filters to
-  // their collection so the next detail view is correct on its first frame.
-  const activeTag =
-    detailFilters.collectionId === selectedCollection?.id
-      ? detailFilters.activeTag
       : null;
-  const inCollectionSearch =
-    detailFilters.collectionId === selectedCollection?.id
-      ? detailFilters.search
-      : "";
-  const currentListingState =
-    listingState?.collectionId === selectedCollection?.id ? listingState : null;
-  const listings = currentListingState?.listings ?? [];
-  const isLoading = Boolean(
-    selectedCollection &&
-    (!currentListingState || currentListingState.status === "loading"),
+  const [search, setSearch] = useState("");
+  const [retry, setRetry] = useState(0);
+  const [catalog, setCatalog] = useState<LoadState<Collection[]>>({
+    status: "loading",
+    data: null,
+  });
+  const [detail, setDetail] = useState<LoadState<CollectionResolution>>(() =>
+    serverResolution
+      ? { status: "success", data: serverResolution }
+      : { status: "loading", data: null },
   );
-  const loadError = currentListingState?.status === "error";
 
-  const pillars = useMemo(() => collectionService.getPillars(), []);
+  useEffect(() => {
+    if (!marketContext) return;
+    let cancelled = false;
+    if (slug) {
+      if (serverResolution && retry === 0) return;
+      setDetail({ status: "loading", data: null });
+      void collectionService
+        .getCollection(
+          slug,
+          marketContext,
+          currentLocale,
+          PAGE_SIZES.collectionListings,
+        )
+        .then((result) => {
+          if (!cancelled) {
+            setDetail(
+              result
+                ? { status: "success", data: result }
+                : { status: "not_found", data: null },
+            );
+          }
+        })
+        .catch(() => {
+          if (!cancelled) setDetail({ status: "error", data: null });
+        });
+    } else {
+      setCatalog({ status: "loading", data: null });
+      void collectionService
+        .getCollections(marketContext, currentLocale)
+        .then((items) => {
+          if (!cancelled) setCatalog({ status: "success", data: items });
+        })
+        .catch(() => {
+          if (!cancelled) setCatalog({ status: "error", data: null });
+        });
+    }
+    return () => {
+      cancelled = true;
+    };
+  }, [currentLocale, marketContext, retry, serverResolution, slug]);
+
+  const selectedCollection = detail.data?.collection;
+  const listings = detail.data?.listings ?? [];
+  const filteredCollections = useMemo(() => {
+    const query = search.trim().toLocaleLowerCase(currentLocale);
+    if (!query) return catalog.data ?? [];
+    return (catalog.data ?? []).filter(
+      (collection) =>
+        collection.title.toLocaleLowerCase(currentLocale).includes(query) ||
+        collection.description
+          ?.toLocaleLowerCase(currentLocale)
+          .includes(query) ||
+        collection.tags.some((tag) =>
+          tag.toLocaleLowerCase(currentLocale).includes(query),
+        ),
+    );
+  }, [catalog.data, currentLocale, search]);
 
   const pageMeta = useMemo(() => {
     if (!marketContext) {
@@ -146,18 +132,16 @@ export const CollectionsPage: React.FC = () => {
             kind: "collection" as const,
             collection: selectedCollection,
             listings,
-            availableCountryCodes:
-              initialData?.availableCountryCodes ||
-              (listings.length ? [activeMarket.code] : []),
+            availableCountryCodes: listings.length ? [activeMarket.code] : [],
           },
         }
       : ({ status: "not_applicable", data: null } as const);
     const policy = resolveSeoPolicy({
       pathname: selectedCollection
-        ? `/collections/${selectedCollection.slug}`
+        ? routes.collections.detail(selectedCollection.slug)
         : slug
-          ? `/collections/${slug}`
-          : "/collections",
+          ? routes.collections.detail(slug)
+          : routes.collections.list(),
       marketContext,
       routeData,
     });
@@ -165,156 +149,50 @@ export const CollectionsPage: React.FC = () => {
       policy,
       structuredDataForPolicy(policy, marketContext, routeData),
     );
-  }, [
-    activeMarket.code,
-    initialData?.availableCountryCodes,
-    listings,
-    marketContext,
-    selectedCollection,
-    slug,
-  ]);
+  }, [activeMarket.code, listings, marketContext, selectedCollection, slug]);
   usePageMeta(pageMeta);
 
-  const isUnknownCollection = Boolean(slug && !selectedCollection);
-
-  // The catalogue landing page renders collection definitions, not listings.
-  // Fetch only for a real detail route so the overview has no unused request.
-  useEffect(() => {
-    if (!selectedCollection) {
-      setListingState(null);
-      return;
-    }
-    if (
-      initialDataPending.current &&
-      initialData?.collection.id === selectedCollection.id
-    ) {
-      initialDataPending.current = false;
-      return;
-    }
-
-    let isMounted = true;
-    setListingState({
-      collectionId: selectedCollection.id,
-      status: "loading",
-      listings: [],
-    });
-
-    listingRepository
-      .getListings({
-        marketCode: activeMarket.code,
-        limit: PAGE_SIZES.collectionListings,
-        sortBy: "date_desc",
-      })
-      .then((res) => {
-        if (!isMounted) return;
-        const fetched = res.listings || [];
-        const matched = collectionService.filterListingsForCollection(
-          selectedCollection,
-          fetched,
-          { marketCode: activeMarket.code },
-        );
-        setListingState({
-          collectionId: selectedCollection.id,
-          status: "success",
-          listings: matched,
-        });
-      })
-      .catch(() => {
-        if (isMounted) {
-          setListingState({
-            collectionId: selectedCollection.id,
-            status: "error",
-            listings: [],
-          });
-        }
-      });
-
-    return () => {
-      isMounted = false;
-    };
-  }, [activeMarket.code, initialData, loadAttempt, selectedCollection]);
-
-  // Collections filtered by active pillar tab and keyword search
-  const visibleCollections = useMemo(() => {
-    let list = collectionService.getCollections(activePillar);
-    if (collectionSearch.trim()) {
-      const q = collectionSearch.toLowerCase().trim();
-      list = list.filter(
-        (c) =>
-          c.title.toLowerCase().includes(q) ||
-          c.subtitle.toLowerCase().includes(q) ||
-          c.description.toLowerCase().includes(q) ||
-          c.tags.some((t) => t.toLowerCase().includes(q)),
-      );
-    }
-    return list;
-  }, [activePillar, collectionSearch]);
-
-  // Filter listings within single collection
-  const displayedListings = useMemo(() => {
-    let res = listings;
-    if (activeTag) {
-      const tagLower = activeTag.toLowerCase();
-      res = res.filter(
-        (l) =>
-          l.title.toLowerCase().includes(tagLower) ||
-          l.description?.toLowerCase().includes(tagLower) ||
-          l.categoryLabel?.toLowerCase().includes(tagLower),
-      );
-    }
-    if (inCollectionSearch.trim()) {
-      const q = inCollectionSearch.toLowerCase().trim();
-      res = res.filter(
-        (l) =>
-          l.title.toLowerCase().includes(q) ||
-          l.description?.toLowerCase().includes(q),
-      );
-    }
-    return res;
-  }, [listings, activeTag, inCollectionSearch]);
-
-  if (isUnknownCollection) {
+  if (slug && detail.status === "not_found") {
     return (
-      <div className="min-h-screen bg-bg-base">
-        <div className="border-b border-border-base bg-bg-surface">
-          <Container className="py-3">
-            <Breadcrumbs
-              items={[
-                { label: "Accueil", href: routes.home() },
-                {
-                  label: t("collections.collectionsPage.toutesLesCollections"),
-                  href: routes.collections.list(),
-                },
-                { label: t("collections.collectionsPage.notFoundTitle") },
-              ]}
-            />
-          </Container>
-        </div>
-        <Container className="py-10 sm:py-16">
-          <StatePanel
-            variant="notFound"
-            headingLevel={1}
-            title={t("collections.collectionsPage.notFoundTitle")}
-            description={t("collections.collectionsPage.notFoundDescription")}
-            action={
-              <Button to={routes.collections.list()} variant="primary">
-                {t("collections.collectionsPage.returnToCollections")}
-              </Button>
-            }
-            secondaryAction={
-              <Button to={routes.search()} variant="outline">
-                {t("errors.notFoundPage.rechercherUneAnnonce")}
-              </Button>
-            }
-          />
-        </Container>
-      </div>
+      <Container className="py-12">
+        <StatePanel
+          variant="notFound"
+          headingLevel={1}
+          title={t("collections.collectionsPage.notFoundTitle")}
+          description={t("collections.collectionsPage.notFoundDescription")}
+          action={
+            <Button to={routes.collections.list()} variant="primary">
+              {t("collections.collectionsPage.returnToCollections")}
+            </Button>
+          }
+        />
+      </Container>
+    );
+  }
+
+  if (slug && detail.status === "error") {
+    return (
+      <Container className="py-12">
+        <StatePanel
+          variant="error"
+          headingLevel={1}
+          title={t("collections.collectionsPage.loadErrorTitle")}
+          description={t("collections.collectionsPage.loadErrorDescription")}
+          action={
+            <Button
+              variant="primary"
+              onClick={() => setRetry((value) => value + 1)}
+            >
+              {t("common.retry")}
+            </Button>
+          }
+        />
+      </Container>
     );
   }
 
   return (
     <div className="min-h-screen bg-bg-base pb-20">
-      {/* 1. Breadcrumbs */}
       <div className="border-b border-border-base bg-bg-surface">
         <Container className="py-3">
           <Breadcrumbs
@@ -331,473 +209,160 @@ export const CollectionsPage: React.FC = () => {
         </Container>
       </div>
 
-      {/* 2. Header / Hero Section */}
-      {selectedCollection ? (
-        <section className="relative bg-gradient-to-b from-surface-inverse to-surface-inverse-deep text-text-inverse pt-8 pb-12 sm:py-14 overflow-hidden">
-          <div className="collections-dot-pattern absolute inset-0 opacity-20 pointer-events-none" />
-
-          <Container className="relative z-raised">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-              {/* Left Column: Title, description, curator note */}
-              <div className="lg:col-span-7 space-y-4">
-                <Link
-                  to={routes.collections.list()}
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-text-inverse-muted hover:text-text-inverse transition-colors mb-2"
-                >
-                  <ArrowLeft className="w-icon-md h-icon-md" />
-                  <span>
-                    {t("collections.collectionsPage.toutesLesCollections")}
-                  </span>
-                </Link>
-
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span
-                    className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border shadow-xs ${
-                      BADGE_STYLES[selectedCollection.badge.variant] ||
-                      BADGE_STYLES.terracotta
-                    }`}
-                  >
-                    {selectedCollection.badge.label}
-                  </span>
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-inverse-hover text-text-inverse-muted text-xs font-medium border border-border-inverse-subtle">
-                    <Layers className="w-icon-xs h-icon-xs text-text-inverse-subtle" />
-                    {selectedCollection.itemCountLabel}
-                  </span>
-                </div>
-
-                <Heading as="h1" size="display-md" tone="inverse">
-                  {selectedCollection.title}
-                </Heading>
-
-                <p className="text-sm sm:text-base text-text-inverse-muted max-w-xl leading-relaxed">
-                  {selectedCollection.description}
-                </p>
-
-                {/* Curator note */}
-                <div className="p-3.5 sm:p-4 rounded-2xl bg-bg-surface/5 border border-border-on-inverse/10 backdrop-blur-xs flex items-start gap-3 max-w-xl">
-                  <Sparkles className="w-icon-md h-icon-md text-primary shrink-0 mt-0.5" />
-                  <div className="text-xs text-text-inverse-muted space-y-0.5">
-                    <p className="font-bold text-text-inverse">
-                      {t("collections.collectionsPage.leMotDeLaRedaction")}
+      {slug ? (
+        <>
+          {detail.status === "loading" ? (
+            <Container className="py-10">
+              <ListingRail label="Chargement">
+                {Array.from({ length: 4 }).map((_, index) => (
+                  <ListingCardSkeleton key={index} />
+                ))}
+              </ListingRail>
+            </Container>
+          ) : selectedCollection ? (
+            <>
+              <section className="bg-surface-inverse py-10 text-text-inverse">
+                <Container className="grid items-center gap-8 lg:grid-cols-2">
+                  <div>
+                    <p className="mb-2 text-xs font-bold uppercase tracking-wide text-text-inverse-muted">
+                      {selectedCollection.itemCountLabel} annonces
                     </p>
-                    <p>{selectedCollection.curatorNote}</p>
+                    <Heading as="h1" size="display-md" tone="inverse">
+                      {selectedCollection.title}
+                    </Heading>
+                    {selectedCollection.description ? (
+                      <p className="mt-3 max-w-xl text-sm leading-relaxed text-text-inverse-muted">
+                        {selectedCollection.description}
+                      </p>
+                    ) : null}
                   </div>
-                </div>
-              </div>
-
-              {/* Right Column: Hero Cover Photo */}
-              <div className="lg:col-span-5">
-                <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-border-on-inverse/10 aspect-4/3 max-w-md mx-auto lg:max-w-none">
                   <Image
                     src={selectedCollection.coverImageUrl}
-                    alt={selectedCollection.title}
+                    alt=""
                     sizes={IMAGE_SIZES.card}
-                    className="w-full h-full object-cover"
+                    className="aspect-16/9 w-full rounded-card object-cover"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-surface-overlay-deep/60 via-transparent to-transparent pointer-events-none" />
-                </div>
-              </div>
-            </div>
-          </Container>
-        </section>
-      ) : (
-        <section className="relative bg-bg-base pt-8 pb-10 sm:py-14 border-b border-border-base">
-          <Container>
-            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
-              <div className="max-w-3xl space-y-3">
-                <Heading as="h1" size="display-md">
-                  {t("collections.collectionsPage.toutesNosCollections")}
-                </Heading>
-
-                <p className="text-sm sm:text-base text-text-supporting leading-relaxed font-normal max-w-2xl">
-                  {t(
-                    "collections.collectionsPage.decouvrezDesUniversThematiquesPenses",
-                  )}
-                </p>
-              </div>
-
-              {/* Search collections bar */}
-              <div className="relative w-full sm:w-80 shrink-0">
-                <Input
-                  type="text"
-                  value={collectionSearch}
-                  onChange={(e) => setCollectionSearch(e.target.value)}
-                  placeholder={t(
-                    "collections.collectionsPage.chercherUneThematique",
-                  )}
-                  aria-label={t(
-                    "collections.collectionsPage.chercherUneThematique",
-                  )}
-                  leftIcon={
-                    <Search
-                      aria-hidden="true"
-                      className="h-icon-md w-icon-md"
-                    />
-                  }
-                  className="h-control-touch bg-bg-surface shadow-2xs"
-                />
-              </div>
-            </div>
-          </Container>
-        </section>
-      )}
-
-      {/* 3. Main Content Area */}
-      <Container className="mt-6 space-y-10 sm:mt-10">
-        {/* ========================================================= */}
-        {/* A. OVERVIEW MODE: Browse All Collections with Pillar Tabs */}
-        {/* ========================================================= */}
-        {!selectedCollection && (
-          <div className="space-y-8">
-            {/* Pillar Navigation Tabs */}
-            <div
-              className="rounded-card border border-border-base bg-bg-surface p-2 shadow-2xs"
-              role="group"
-              aria-label={t("collections.collectionsPage.toutesLesCollections")}
-            >
-              <ScrollRail
-                label="piliers"
-                className="-mx-2 px-2 sm:mx-0 sm:px-0"
-              >
-                <div className="flex gap-2 min-w-max">
-                  {pillars.map((pillar) => {
-                    const isSelected = activePillar === pillar.id;
-                    const IconComponent =
-                      PILLAR_ICONS[pillar.iconName] || Sparkles;
-
-                    return (
-                      <FilterChip
-                        key={pillar.id}
-                        onSelect={() => setActivePillar(pillar.id)}
-                        selected={isSelected}
-                        className="min-h-control-md gap-2 px-4 text-xs font-bold sm:text-sm"
-                      >
-                        <IconComponent
-                          aria-hidden="true"
-                          className={`h-icon-sm w-icon-sm ${isSelected ? "text-primary" : "text-text-muted"}`}
-                        />
-                        <span>{pillar.label}</span>
-                      </FilterChip>
-                    );
-                  })}
-                </div>
-              </ScrollRail>
-            </div>
-
-            {/* Active Pillar Description */}
-            <div className="flex items-center justify-between gap-4 text-xs text-text-tertiary font-medium px-1">
-              <span>
-                {pillars.find((p) => p.id === activePillar)?.description || ""}
-              </span>
-              <span className="font-bold text-text-emphasis shrink-0">
-                {visibleCollections.length} collection
-                {visibleCollections.length > 1 ? "s" : ""}
-              </span>
-            </div>
-
-            {/* Collections Grid */}
-            {visibleCollections.length > 0 ? (
-              <div
-                className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-5"
-                data-testid="collections-grid"
-              >
-                {visibleCollections.map((col) => (
-                  <Link
-                    key={col.id}
-                    to={routes.collections.detail(col.slug)}
-                    aria-label={col.title}
-                    className="group relative flex h-48 min-w-0 flex-col justify-between overflow-hidden rounded-card border border-border-base bg-bg-surface shadow-xs motion-surface hover:-translate-y-0.5 hover:border-primary-border hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus active:scale-95"
-                  >
-                    {/* Media Well */}
-                    <div className="relative h-24 w-full shrink-0 overflow-hidden bg-bg-subtle">
-                      <Image
-                        src={col.coverImageUrl}
-                        alt={col.title}
-                        sizes={IMAGE_SIZES.compact}
-                        className="h-full w-full object-cover motion-surface group-hover:scale-105"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-surface-overlay-deep/50 via-transparent to-surface-overlay-deep/10 pointer-events-none" />
-
-                      <div className="absolute inset-x-2 top-2 z-raised">
-                        <span
-                          className={`inline-flex max-w-full items-center truncate rounded-pill border px-2 py-0.5 text-micro font-bold shadow-xs backdrop-blur-xs ${
-                            BADGE_STYLES[col.badge.variant] ||
-                            BADGE_STYLES.terracotta
-                          }`}
-                        >
-                          {col.badge.label}
-                        </span>
-                      </div>
-
-                      <div className="absolute inset-x-2 bottom-2 z-raised">
-                        <span className="inline-flex max-w-full items-center gap-1 rounded-control bg-surface-overlay-deep/65 px-2 py-0.5 text-micro font-semibold text-text-inverse backdrop-blur-xs">
-                          <Layers className="h-icon-xs w-icon-xs shrink-0 text-text-inverse-muted" />
-                          <span className="truncate">{col.itemCountLabel}</span>
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Content */}
-                    <div className="flex flex-1 flex-col justify-between gap-3 p-3">
-                      <h2 className="line-clamp-2 text-sm font-bold leading-snug text-text-main motion-interactive group-hover:text-primary">
-                        {col.shortTitle}
-                      </h2>
-
-                      <div className="flex items-center justify-between gap-2 border-t border-border-subtle pt-2">
-                        <span className="min-w-0 flex-1 truncate rounded-control bg-bg-subtle px-2 py-0.5 text-micro font-medium text-text-secondary motion-interactive group-hover:bg-primary-light">
-                          {col.tags[0]}
-                        </span>
-
-                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-bg-subtle text-text-secondary motion-interactive group-hover:bg-primary group-hover:text-text-inverse">
-                          <ChevronRight className="h-icon-sm w-icon-sm motion-interactive group-hover:translate-x-0.5" />
-                        </div>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            ) : (
-              <EmptyState
-                className="mx-auto max-w-md"
-                icon={
-                  <Search className="h-icon-xl w-icon-xl" aria-hidden="true" />
-                }
-                title={t("collections.collectionsPage.aucuneCollectionTrouvee")}
-                description={`Aucune collection ne correspond à votre recherche « ${collectionSearch} ».`}
-                action={
-                  <Button
-                    type="button"
-                    variant="primary"
-                    size="compact"
-                    onClick={() => {
-                      setCollectionSearch("");
-                      setActivePillar("all");
-                    }}
-                  >
-                    {t("collections.collectionsPage.voirToutesLesCollections")}
-                  </Button>
-                }
-              />
-            )}
-          </div>
-        )}
-
-        {/* ========================================================= */}
-        {/* B. SINGLE COLLECTION DETAIL: Filterable Inventory Showcase */}
-        {/* ========================================================= */}
-        {selectedCollection && (
-          <div className="space-y-6">
-            {/* Filter Bar with sub-tags & local search */}
-            <div className="bg-bg-surface rounded-2xl border border-border-base p-4 shadow-2xs space-y-3">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div
-                  className="flex items-center gap-2 flex-wrap"
-                  role="group"
-                  aria-label={t(
-                    "collections.collectionsPage.filtrerDansLaSelection",
-                  )}
-                >
-                  <FilterChip
-                    onSelect={() =>
-                      setDetailFilters({
-                        collectionId: selectedCollection.id,
-                        activeTag: null,
-                        search: inCollectionSearch,
-                      })
-                    }
-                    selected={activeTag === null}
-                    count={listings.length}
-                  >
-                    Tout
-                  </FilterChip>
-                  {selectedCollection.tags.map((tag) => (
-                    <FilterChip
-                      key={tag}
-                      onSelect={() =>
-                        setDetailFilters({
-                          collectionId: selectedCollection.id,
-                          activeTag: activeTag === tag ? null : tag,
-                          search: inCollectionSearch,
-                        })
-                      }
-                      selected={activeTag === tag}
-                    >
-                      {tag}
-                    </FilterChip>
-                  ))}
-                </div>
-
-                {/* In-collection search input */}
-                <div className="w-full sm:w-64">
-                  <Input
-                    type="text"
-                    value={inCollectionSearch}
-                    onChange={(e) =>
-                      setDetailFilters({
-                        collectionId: selectedCollection.id,
-                        activeTag,
-                        search: e.target.value,
-                      })
-                    }
-                    placeholder={t(
-                      "collections.collectionsPage.filtrerDansLaSelection",
+                </Container>
+              </section>
+              <Container className="pt-8">
+                {listings.length ? (
+                  <ListingRail
+                    label={t(
+                      "collections.collectionsPage.annoncesDeLaCollection",
                     )}
-                    aria-label={t(
-                      "collections.collectionsPage.filtrerDansLaSelection",
-                    )}
-                    leftIcon={
-                      <Search
-                        aria-hidden="true"
-                        className="h-icon-md w-icon-md"
-                      />
-                    }
-                    className="h-control-md bg-bg-subtle text-xs"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Listings Grid */}
-            <div>
-              <div className="flex items-center justify-between gap-2 mb-4">
-                <h2 className="text-base sm:text-lg font-bold text-text-main">
-                  {activeTag
-                    ? `Sélection filtrée par "${activeTag}"`
-                    : "Pièces sélectionnées"}
-                  <span className="text-xs text-text-secondary font-normal ml-2">
-                    ({displayedListings.length} annonce
-                    {displayedListings.length > 1 ? "s" : ""})
-                  </span>
-                </h2>
-              </div>
-
-              {isLoading ? (
-                <ListingRail
-                  label={t(
-                    "collections.collectionsPage.annoncesDeLaCollection",
-                  )}
-                >
-                  {Array.from({ length: 8 }).map((_, idx) => (
-                    <ListingCardSkeleton key={idx} />
-                  ))}
-                </ListingRail>
-              ) : loadError ? (
-                <StatePanel
-                  variant="error"
-                  title={t("collections.collectionsPage.loadErrorTitle")}
-                  description={t(
-                    "collections.collectionsPage.loadErrorDescription",
-                  )}
-                  action={
-                    <Button
-                      type="button"
-                      variant="primary"
-                      size="compact"
-                      onClick={() => setLoadAttempt((attempt) => attempt + 1)}
-                    >
-                      {t("common.retry")}
-                    </Button>
-                  }
-                />
-              ) : displayedListings.length > 0 ? (
-                <ListingRail
-                  label={t(
-                    "collections.collectionsPage.annoncesDeLaCollection",
-                  )}
-                >
-                  {displayedListings.map((listing) => (
-                    <ListingCard key={listing.id} listing={listing} />
-                  ))}
-                </ListingRail>
-              ) : (
-                <EmptyState
-                  className="mx-auto max-w-lg"
-                  icon={
-                    <Filter
-                      className="h-icon-xl w-icon-xl"
-                      aria-hidden="true"
-                    />
-                  }
-                  title={t("collections.collectionsPage.aucuneAnnonceTrouvee")}
-                  description={t(
-                    "collections.collectionsPage.aucuneAnnonceNeCorrespondAux",
-                  )}
-                  action={
-                    <Button
-                      type="button"
-                      variant="primary"
-                      size="compact"
-                      onClick={() =>
-                        setDetailFilters({
-                          collectionId: selectedCollection.id,
-                          activeTag: null,
-                          search: "",
-                        })
-                      }
-                    >
-                      {t("collections.collectionsPage.reinitialiserLesFiltres")}
-                    </Button>
-                  }
-                />
-              )}
-            </div>
-
-            {/* Other Collections Rail */}
-            <div className="pt-10 border-t border-border-base space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-lg font-bold text-text-main">
-                  {t("collections.collectionsPage.decouvrirDAutresCollections")}
-                </h2>
-                <Link
-                  to={routes.collections.list()}
-                  className="text-xs font-bold text-primary hover:underline"
-                >
-                  Voir tout ({collectionService.getCollections("all").length})
-                </Link>
-              </div>
-
-              <ScrollRail
-                label="autres collections"
-                className="-mx-4 px-4 sm:mx-0 sm:px-0"
-              >
-                <div className="flex gap-4">
-                  {collectionService
-                    .getCollections("all")
-                    .filter((c) => c.id !== selectedCollection.id)
-                    .slice(0, 6)
-                    .map((c) => (
-                      <Link
-                        key={c.id}
-                        to={routes.collections.detail(c.slug)}
-                        className="group flex items-center gap-3.5 p-3 rounded-2xl bg-bg-surface border border-border-disabled hover:border-border-prominent w-72 shrink-0 shadow-2xs hover:shadow-md transition-all"
-                      >
-                        <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 bg-surface-muted">
-                          <Image
-                            src={c.coverImageUrl}
-                            alt={c.title}
-                            sizes={IMAGE_SIZES.compact}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                          />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <span className="text-micro font-bold text-primary uppercase block truncate">
-                            {c.badge.label}
-                          </span>
-                          <h3 className="text-xs font-bold text-text-main truncate group-hover:text-primary transition-colors">
-                            {c.title}
-                          </h3>
-                          <p className="text-micro text-text-secondary mt-0.5">
-                            {c.itemCountLabel}
-                          </p>
-                        </div>
-                      </Link>
+                  >
+                    {listings.map((listing) => (
+                      <ListingCard key={listing.id} listing={listing} />
                     ))}
-                </div>
-              </ScrollRail>
+                  </ListingRail>
+                ) : (
+                  <EmptyState
+                    icon={<Layers className="h-icon-xl w-icon-xl" />}
+                    title={t(
+                      "collections.collectionsPage.aucuneAnnonceTrouvee",
+                    )}
+                    description={t(
+                      "collections.collectionsPage.aucuneAnnonceNeCorrespondAux",
+                    )}
+                    action={null}
+                  />
+                )}
+              </Container>
+            </>
+          ) : null}
+        </>
+      ) : (
+        <Container className="py-10">
+          <div className="mb-8 flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
+            <div>
+              <Heading as="h1" size="display-md">
+                {t("collections.collectionsPage.toutesNosCollections")}
+              </Heading>
+              <p className="mt-2 max-w-2xl text-sm text-text-supporting">
+                {t(
+                  "collections.collectionsPage.decouvrezDesUniversThematiquesPenses",
+                )}
+              </p>
             </div>
+            <Input
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder={t(
+                "collections.collectionsPage.chercherUneThematique",
+              )}
+              aria-label={t(
+                "collections.collectionsPage.chercherUneThematique",
+              )}
+              leftIcon={<Search className="h-icon-md w-icon-md" />}
+              className="w-full sm:w-80"
+            />
           </div>
-        )}
-      </Container>
+
+          {catalog.status === "loading" ? (
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+              {Array.from({ length: 5 }).map((_, index) => (
+                <ListingCardSkeleton key={index} />
+              ))}
+            </div>
+          ) : catalog.status === "error" ? (
+            <StatePanel
+              variant="error"
+              title={t("collections.collectionsPage.loadErrorTitle")}
+              description={t(
+                "collections.collectionsPage.loadErrorDescription",
+              )}
+              action={
+                <Button
+                  variant="primary"
+                  onClick={() => setRetry((value) => value + 1)}
+                >
+                  {t("common.retry")}
+                </Button>
+              }
+            />
+          ) : filteredCollections.length ? (
+            <div
+              className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5"
+              data-testid="collections-grid"
+            >
+              {filteredCollections.map((collection) => (
+                <Link
+                  key={collection.id}
+                  to={routes.collections.detail(collection.slug)}
+                  className="group overflow-hidden rounded-card border border-border-base bg-bg-surface shadow-xs motion-surface hover:-translate-y-0.5 hover:border-primary-border hover:shadow-md"
+                >
+                  <Image
+                    src={collection.coverImageUrl}
+                    alt=""
+                    sizes={IMAGE_SIZES.compact}
+                    className="aspect-4/3 w-full object-cover motion-surface group-hover:scale-105"
+                  />
+                  <div className="p-3">
+                    <p className="text-micro font-semibold text-text-secondary">
+                      {collection.itemCountLabel} annonces
+                    </p>
+                    <h2 className="mt-1 line-clamp-2 text-sm font-bold text-text-main">
+                      {collection.shortTitle}
+                    </h2>
+                    <span className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-primary">
+                      Explorer <ArrowRight className="h-icon-xs w-icon-xs" />
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <EmptyState
+              icon={<Search className="h-icon-xl w-icon-xl" />}
+              title={t("collections.collectionsPage.aucuneCollectionTrouvee")}
+              description={t(
+                "collections.collectionsPage.decouvrezDesUniversThematiquesPenses",
+              )}
+              action={null}
+            />
+          )}
+        </Container>
+      )}
     </div>
   );
 };

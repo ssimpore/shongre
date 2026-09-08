@@ -4,8 +4,6 @@
  * transaction modes, fulfillment capabilities, and draft lifecycles.
  */
 
-import { ListingFamily, FulfillmentMode } from "../taxonomy/taxonomy.types";
-
 type ListingMarketStatus =
   "active" | "pending" | "suspended" | "rejected" | "draft" | "paused";
 
@@ -91,45 +89,18 @@ export type PriceModel =
   | "on_request"
   | "hourly"
   | "daily"
+  | "weekly"
   | "monthly"
-  | "rent_plus_charges";
+  | "total"
+  | "rent_plus_charges"
+  | "unpriced";
 
 export type TransactionMode =
   "CONTACT_ONLY" | "DIRECT_PURCHASE" | "RESERVATION";
 
-export type PackageSizeTier =
-  | "small" // < 500g (e.g. smartphone, jewelry, t-shirt)
-  | "medium" // < 2kg (e.g. shoes, tablet, small decor)
-  | "large" // < 5kg (e.g. coat, small appliances, laptop)
-  | "xlarge" // < 30kg (e.g. large box, bike parts, audio amp)
-  | "heavy"; // > 30kg (furniture, sofa, machine)
-
-export interface PackageSpecs {
-  sizeTier: PackageSizeTier;
-  weightGrams?: number;
-  lengthCm?: number;
-  widthCm?: number;
-  heightCm?: number;
-}
-
-interface SellerTransactionChoice {
-  allowContact: boolean;
-  allowDirectPurchase: boolean;
-  allowReservation: boolean;
-  reservationType?: "instant" | "request";
-}
-
 interface SellerFulfillmentChoice {
   allowHandDelivery: boolean;
   allowParcelShipping: boolean;
-  allowBulkyDelivery: boolean;
-  allowSellerDelivery: boolean;
-  allowStorePickup: boolean;
-  packageSpecs?: PackageSpecs;
-  sellerDeliveryRadiusKm?: number;
-  sellerDeliveryFee?: number;
-  freeDeliveryThreshold?: number;
-  storePickupAddress?: string;
 }
 
 interface PublicationPriceConfig {
@@ -163,7 +134,6 @@ export interface PublicationDraftState {
   taxonomyVersion?: "4.0.0";
   taxonomySlug?: string;
   listingIntent: ListingIntent;
-  listingFamily?: ListingFamily;
   title: string;
   description: string;
   condition: string;
@@ -175,7 +145,6 @@ export interface PublicationDraftState {
     alt?: string;
   }[];
   pricing: PublicationPriceConfig;
-  transaction: SellerTransactionChoice;
   fulfillment: SellerFulfillmentChoice;
   fulfillmentTypes?: import("@shongre/contracts/digital-products").FulfillmentType[];
   digitalFulfillment?: import("@shongre/contracts/digital-products").DigitalFulfillmentVersionInput;
@@ -190,7 +159,6 @@ export interface PublicationDraftState {
     longitude?: number;
     hideExactAddress: boolean;
   };
-  boostPackage?: string;
   currentStep: number;
   updatedAt: string;
 }
@@ -202,17 +170,6 @@ export interface TransactionCapabilitiesResult {
   defaultModes: TransactionMode[];
   directPurchaseDisabledReason?: string;
   reservationDisabledReason?: string;
-}
-
-export interface FulfillmentCapabilitiesResult {
-  allowHandDelivery: boolean;
-  allowParcelShipping: boolean;
-  allowBulkyDelivery: boolean;
-  allowSellerDelivery: boolean;
-  allowStorePickup: boolean;
-  allowDigital: boolean;
-  allowService: boolean;
-  allowedModes: FulfillmentMode[];
 }
 
 export interface DeliveryQuote {

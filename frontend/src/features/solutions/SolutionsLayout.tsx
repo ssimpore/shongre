@@ -14,7 +14,7 @@ import { useTranslation } from "../../i18n/I18nProvider";
 import { applicationHref } from "../../platform/applications/use-application-href";
 import { AppScrollRestoration } from "../../app/router/AppScrollRestoration";
 import { CookieConsent } from "../../app/layouts/CookieConsent";
-import { DemoRoleSwitcher } from "../../app/layouts/DemoRoleSwitcher";
+import { EnvironmentToolbar } from "../../app/layouts/EnvironmentToolbar";
 import { LazyPreferencesModal } from "../../app/layouts/LazyPreferencesModal";
 import { useConsent } from "../../app/providers/ConsentProvider";
 import { useAuth } from "../../app/providers/AuthProvider";
@@ -430,7 +430,7 @@ export function SolutionsLayout() {
     <div className="flex min-h-screen flex-col bg-bg-surface text-text-main">
       <SkipLink />
       <AppScrollRestoration />
-      <DemoRoleSwitcher utility={<AnalyticsRuntime />} />
+      <EnvironmentToolbar utility={<AnalyticsRuntime />} />
       <SolutionsHeader />
       <main id="main-content" tabIndex={-1} className="flex-1">
         <Outlet />

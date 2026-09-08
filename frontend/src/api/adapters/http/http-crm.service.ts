@@ -24,12 +24,12 @@ import type {
   CrmTask,
   CrmTaskInput,
 } from "@shongre/contracts/crm";
+import { apiOperation } from "./generated-api-operation";
 import type {
   CrmListOptions,
   CrmPage,
   CrmServiceContract,
 } from "../../contracts/crm.contract";
-import { httpClient } from "./http-client";
 
 function listParams(options: CrmListOptions) {
   return {
@@ -41,37 +41,41 @@ function listParams(options: CrmListOptions) {
 
 export class HttpCrmService implements CrmServiceContract {
   getDashboard() {
-    return httpClient.get<CrmDashboard>("/crm/dashboard");
+    return apiOperation<CrmDashboard, "getCrmDashboard">("getCrmDashboard", {});
   }
 
   listAccounts(options: CrmListOptions = {}) {
-    return httpClient.get<CrmPage<CrmAccount>>("/crm/accounts", {
-      params: listParams(options),
-    });
+    return apiOperation<CrmPage<CrmAccount>, "listCrmAccounts">(
+      "listCrmAccounts",
+      { query: listParams(options) },
+    );
   }
 
   getAccount(id: string) {
-    return httpClient.get<CrmAccount>(
-      `/crm/accounts/${encodeURIComponent(id)}`,
-    );
+    return apiOperation<CrmAccount, "getCrmAccount">("getCrmAccount", {
+      path: { accountId: id },
+    });
   }
 
   async findAccountDuplicates(input: CrmAccountDuplicateCheck) {
-    const response = await httpClient.post<{ items: CrmDuplicateMatch[] }>(
-      "/crm/account-duplicates/check",
-      input,
-    );
+    const response = await apiOperation<
+      { items: CrmDuplicateMatch[] },
+      "checkCrmAccountDuplicates"
+    >("checkCrmAccountDuplicates", { body: input });
     return response.items;
   }
 
   getAccountShongreIntelligence(id: string) {
-    return httpClient.get<CrmShongreIntelligence>(
-      `/crm/accounts/${encodeURIComponent(id)}/shongre`,
-    );
+    return apiOperation<
+      CrmShongreIntelligence,
+      "getCrmAccountShongreIntelligence"
+    >("getCrmAccountShongreIntelligence", { path: { accountId: id } });
   }
 
   createAccount(input: CrmAccountInput) {
-    return httpClient.post<CrmAccount>("/crm/accounts", input);
+    return apiOperation<CrmAccount, "createCrmAccount">("createCrmAccount", {
+      body: input,
+    });
   }
 
   updateAccount(
@@ -79,26 +83,29 @@ export class HttpCrmService implements CrmServiceContract {
     expectedVersion: number,
     changes: Partial<CrmAccountInput>,
   ) {
-    return httpClient.patch<CrmAccount>(
-      `/crm/accounts/${encodeURIComponent(id)}`,
-      { expectedVersion, changes },
-    );
-  }
-
-  listContacts(options: CrmListOptions = {}) {
-    return httpClient.get<CrmPage<CrmContact>>("/crm/contacts", {
-      params: listParams(options),
+    return apiOperation<CrmAccount, "updateCrmAccount">("updateCrmAccount", {
+      path: { accountId: id },
+      body: { expectedVersion, changes },
     });
   }
 
-  getContact(id: string) {
-    return httpClient.get<CrmContact>(
-      `/crm/contacts/${encodeURIComponent(id)}`,
+  listContacts(options: CrmListOptions = {}) {
+    return apiOperation<CrmPage<CrmContact>, "listCrmContacts">(
+      "listCrmContacts",
+      { query: listParams(options) },
     );
   }
 
+  getContact(id: string) {
+    return apiOperation<CrmContact, "getCrmContact">("getCrmContact", {
+      path: { contactId: id },
+    });
+  }
+
   createContact(input: CrmContactInput) {
-    return httpClient.post<CrmContact>("/crm/contacts", input);
+    return apiOperation<CrmContact, "createCrmContact">("createCrmContact", {
+      body: input,
+    });
   }
 
   updateContact(
@@ -106,68 +113,78 @@ export class HttpCrmService implements CrmServiceContract {
     expectedVersion: number,
     changes: Partial<CrmContactInput>,
   ) {
-    return httpClient.patch<CrmContact>(
-      `/crm/contacts/${encodeURIComponent(id)}`,
-      { expectedVersion, changes },
-    );
+    return apiOperation<CrmContact, "updateCrmContact">("updateCrmContact", {
+      path: { contactId: id },
+      body: { expectedVersion, changes },
+    });
   }
 
   async listPipelines() {
-    const response = await httpClient.get<{ items: CrmPipeline[] }>(
-      "/crm/pipelines",
-    );
+    const response = await apiOperation<
+      { items: CrmPipeline[] },
+      "listCrmPipelines"
+    >("listCrmPipelines", {});
     return response.items;
   }
 
   createPipeline(input: CrmPipelineInput) {
-    return httpClient.post<CrmPipeline>("/crm/pipelines", input);
-  }
-
-  updatePipeline(id: string, expectedVersion: number, input: CrmPipelineInput) {
-    return httpClient.patch<CrmPipeline>(
-      `/crm/pipelines/${encodeURIComponent(id)}`,
-      { expectedVersion, input },
-    );
-  }
-
-  listOpportunities(options: CrmListOptions = {}) {
-    return httpClient.get<CrmPage<CrmOpportunity>>("/crm/opportunities", {
-      params: listParams(options),
+    return apiOperation<CrmPipeline, "createCrmPipeline">("createCrmPipeline", {
+      body: input,
     });
   }
 
+  updatePipeline(id: string, expectedVersion: number, input: CrmPipelineInput) {
+    return apiOperation<CrmPipeline, "updateCrmPipeline">("updateCrmPipeline", {
+      path: { pipelineId: id },
+      body: { expectedVersion, input },
+    });
+  }
+
+  listOpportunities(options: CrmListOptions = {}) {
+    return apiOperation<CrmPage<CrmOpportunity>, "listCrmOpportunities">(
+      "listCrmOpportunities",
+      { query: listParams(options) },
+    );
+  }
+
   getOpportunity(id: string) {
-    return httpClient.get<CrmOpportunity>(
-      `/crm/opportunities/${encodeURIComponent(id)}`,
+    return apiOperation<CrmOpportunity, "getCrmOpportunity">(
+      "getCrmOpportunity",
+      { path: { opportunityId: id } },
     );
   }
 
   createOpportunity(input: CrmOpportunityInput) {
-    return httpClient.post<CrmOpportunity>("/crm/opportunities", input);
+    return apiOperation<CrmOpportunity, "createCrmOpportunity">(
+      "createCrmOpportunity",
+      { body: input },
+    );
   }
 
   transitionOpportunity(id: string, input: CrmOpportunityTransition) {
-    return httpClient.post<CrmOpportunity>(
-      `/crm/opportunities/${encodeURIComponent(id)}/transition`,
-      input,
+    return apiOperation<CrmOpportunity, "transitionCrmOpportunity">(
+      "transitionCrmOpportunity",
+      { path: { opportunityId: id }, body: input },
     );
   }
 
   listTasks(options: CrmListOptions = {}) {
-    return httpClient.get<CrmPage<CrmTask>>("/crm/tasks", {
-      params: listParams(options),
+    return apiOperation<CrmPage<CrmTask>, "listCrmTasks">("listCrmTasks", {
+      query: listParams(options),
     });
   }
 
   createTask(input: CrmTaskInput) {
-    return httpClient.post<CrmTask>("/crm/tasks", input);
+    return apiOperation<CrmTask, "createCrmTask">("createCrmTask", {
+      body: input,
+    });
   }
 
   completeTask(id: string, expectedVersion: number, result?: string) {
-    return httpClient.post<CrmTask>(
-      `/crm/tasks/${encodeURIComponent(id)}/complete`,
-      { expectedVersion, result },
-    );
+    return apiOperation<CrmTask, "completeCrmTask">("completeCrmTask", {
+      path: { taskId: id },
+      body: { expectedVersion, result },
+    });
   }
 
   async listActivities(
@@ -175,10 +192,10 @@ export class HttpCrmService implements CrmServiceContract {
     entityId: string,
     limit = 100,
   ) {
-    const response = await httpClient.get<{ items: CrmActivity[] }>(
-      "/crm/activities",
-      { params: { entityType, entityId, limit } },
-    );
+    const response = await apiOperation<
+      { items: CrmActivity[] },
+      "listCrmActivities"
+    >("listCrmActivities", { query: { entityType, entityId, limit } });
     return response.items;
   }
 
@@ -189,17 +206,22 @@ export class HttpCrmService implements CrmServiceContract {
     > &
       Partial<Pick<CrmActivity, "description" | "occurredAt">>,
   ) {
-    return httpClient.post<CrmActivity>("/crm/activities", input);
-  }
-
-  listProducts(options: CrmListOptions = {}) {
-    return httpClient.get<CrmPage<CrmProduct>>("/crm/products", {
-      params: listParams(options),
+    return apiOperation<CrmActivity, "createCrmActivity">("createCrmActivity", {
+      body: input,
     });
   }
 
+  listProducts(options: CrmListOptions = {}) {
+    return apiOperation<CrmPage<CrmProduct>, "listCrmProducts">(
+      "listCrmProducts",
+      { query: listParams(options) },
+    );
+  }
+
   createProduct(input: CrmProductInput) {
-    return httpClient.post<CrmProduct>("/crm/products", input);
+    return apiOperation<CrmProduct, "createCrmProduct">("createCrmProduct", {
+      body: input,
+    });
   }
 
   updateProduct(
@@ -207,48 +229,56 @@ export class HttpCrmService implements CrmServiceContract {
     expectedVersion: number,
     changes: Partial<CrmProductInput>,
   ) {
-    return httpClient.patch<CrmProduct>(
-      `/crm/products/${encodeURIComponent(id)}`,
-      { expectedVersion, changes },
-    );
+    return apiOperation<CrmProduct, "updateCrmProduct">("updateCrmProduct", {
+      path: { productId: id },
+      body: { expectedVersion, changes },
+    });
   }
 
   listQuotes(options: CrmListOptions & { opportunityId?: string } = {}) {
-    return httpClient.get<CrmPage<CrmQuote>>("/crm/quotes", {
-      params: { ...listParams(options), opportunityId: options.opportunityId },
+    return apiOperation<CrmPage<CrmQuote>, "listCrmQuotes">("listCrmQuotes", {
+      query: { ...listParams(options), opportunityId: options.opportunityId },
     });
   }
 
   createQuote(input: CrmQuoteInput) {
-    return httpClient.post<CrmQuote>("/crm/quotes", input);
+    return apiOperation<CrmQuote, "createCrmQuote">("createCrmQuote", {
+      body: input,
+    });
   }
 
   async listCustomFields(
     entityType?: "account" | "contact" | "opportunity" | "task",
   ) {
-    const response = await httpClient.get<{ items: CrmCustomField[] }>(
-      "/crm/custom-fields",
-      { params: { entityType } },
-    );
+    const response = await apiOperation<
+      { items: CrmCustomField[] },
+      "listCrmCustomFields"
+    >("listCrmCustomFields", { query: { entityType } });
     return response.items;
   }
 
   createCustomField(input: CrmCustomFieldInput) {
-    return httpClient.post<CrmCustomField>("/crm/custom-fields", input);
+    return apiOperation<CrmCustomField, "createCrmCustomField">(
+      "createCrmCustomField",
+      { body: input },
+    );
   }
 
   async listSavedViews(
     entityType?: "account" | "contact" | "opportunity" | "task",
   ) {
-    const response = await httpClient.get<{ items: CrmSavedView[] }>(
-      "/crm/saved-views",
-      { params: { entityType } },
-    );
+    const response = await apiOperation<
+      { items: CrmSavedView[] },
+      "listCrmSavedViews"
+    >("listCrmSavedViews", { query: { entityType } });
     return response.items;
   }
 
   createSavedView(input: CrmSavedViewInput) {
-    return httpClient.post<CrmSavedView>("/crm/saved-views", input);
+    return apiOperation<CrmSavedView, "createCrmSavedView">(
+      "createCrmSavedView",
+      { body: input },
+    );
   }
 
   updateSavedView(
@@ -256,16 +286,16 @@ export class HttpCrmService implements CrmServiceContract {
     expectedVersion: number,
     input: CrmSavedViewInput,
   ) {
-    return httpClient.put<CrmSavedView>(
-      `/crm/saved-views/${encodeURIComponent(id)}`,
-      { expectedVersion, input },
+    return apiOperation<CrmSavedView, "updateCrmSavedView">(
+      "updateCrmSavedView",
+      { path: { savedViewId: id }, body: { expectedVersion, input } },
     );
   }
 
   async deleteSavedView(id: string, expectedVersion: number) {
-    await httpClient.delete<{ deleted: boolean }>(
-      `/crm/saved-views/${encodeURIComponent(id)}`,
-      { params: { expectedVersion } },
+    await apiOperation<{ deleted: boolean }, "deleteCrmSavedView">(
+      "deleteCrmSavedView",
+      { path: { savedViewId: id }, query: { expectedVersion } },
     );
   }
 }

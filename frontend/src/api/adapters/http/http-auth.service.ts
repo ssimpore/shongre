@@ -14,7 +14,7 @@ import {
   type DomainHandoffStartResult,
   type DomainHandoffExchangeResult,
 } from "../../contracts/auth.contract";
-import { httpClient } from "./http-client";
+import { apiOperation } from "./generated-api-operation";
 import {
   type AuthResult,
   type UserProfile,
@@ -32,19 +32,25 @@ export class HttpAuthService implements AuthServiceContract {
   beginDomainHandoff(
     input: DomainHandoffStartInput,
   ): Promise<DomainHandoffStartResult> {
-    return httpClient.post("/auth/domain-handoff/start", input);
+    return apiOperation("postAuthDomainHandoffStart", { body: input });
   }
 
   exchangeDomainHandoff(input: {
     code: string;
     targetCountry: string;
   }): Promise<DomainHandoffExchangeResult> {
-    return httpClient.post("/auth/domain-handoff/exchange", input);
+    return apiOperation<
+      DomainHandoffExchangeResult,
+      "postAuthDomainHandoffExchange"
+    >("postAuthDomainHandoffExchange", { body: input });
   }
 
   async getCurrentUser(): Promise<UserProfile | null> {
     try {
-      return await httpClient.get<UserProfile | null>("/auth/me");
+      return await apiOperation<UserProfile | null, "getAuthMe">(
+        "getAuthMe",
+        {},
+      );
     } catch {
       return null;
     }
@@ -52,9 +58,9 @@ export class HttpAuthService implements AuthServiceContract {
 
   async login(credentials: LoginCredentials): Promise<AuthResult> {
     try {
-      const response = await httpClient.post<BackendAuthResponse>(
-        "/auth/login",
-        credentials,
+      const response = await apiOperation<BackendAuthResponse, "postAuthLogin">(
+        "postAuthLogin",
+        { body: credentials },
       );
       if (response.requiresMfa && response.tempMfaToken) {
         return {
@@ -76,10 +82,10 @@ export class HttpAuthService implements AuthServiceContract {
 
   async loginWithMFA(tempMfaToken: string, code: string): Promise<AuthResult> {
     try {
-      const response = await httpClient.post<BackendAuthResponse>(
-        "/auth/mfa/challenge",
-        { tempMfaToken, code },
-      );
+      const response = await apiOperation<
+        BackendAuthResponse,
+        "postAuthMfaChallenge"
+      >("postAuthMfaChallenge", { body: { tempMfaToken, code } });
       if (!response.user) throw new Error("Réponse de connexion incomplète.");
       return { success: true, user: response.user };
     } catch (error) {
@@ -92,35 +98,37 @@ export class HttpAuthService implements AuthServiceContract {
   }
 
   getMfaStatus(): Promise<MfaStatusView> {
-    return httpClient.get<MfaStatusView>("/auth/mfa");
+    return apiOperation<MfaStatusView, "getAuthMfa">("getAuthMfa", {});
   }
 
   beginMfaEnrollment(): Promise<MfaSetupView> {
-    return httpClient.post<MfaSetupView>("/auth/mfa/setup");
+    return apiOperation<MfaSetupView, "postAuthMfaSetup">(
+      "postAuthMfaSetup",
+      {},
+    );
   }
 
   async confirmMfaEnrollment(code: string): Promise<void> {
-    await httpClient.post("/auth/mfa/confirm", { code });
+    await apiOperation("postAuthMfaConfirm", { body: { code } });
   }
 
   async verifySessionMfa(code: string): Promise<void> {
-    await httpClient.post("/auth/mfa/session-confirm", { code });
+    await apiOperation("postAuthMfaSessionConfirm", { body: { code } });
   }
 
   async disableMfa(code: string): Promise<void> {
-    await httpClient.request("/auth/mfa", {
-      method: "DELETE",
-      body: JSON.stringify({ code }),
-    });
+    await apiOperation("deleteAuthMfa", { body: { code } });
   }
 
   async registerIndividual(
     input: RegisterIndividualInput,
   ): Promise<AuthResult> {
     try {
-      const response = await httpClient.post<BackendAuthResponse>(
-        "/auth/register",
-        {
+      const response = await apiOperation<
+        BackendAuthResponse,
+        "postAuthRegister"
+      >("postAuthRegister", {
+        body: {
           email: input.email,
           name: input.name,
           password: input.password,
@@ -129,7 +137,7 @@ export class HttpAuthService implements AuthServiceContract {
           postalCode: input.postalCode,
           country: input.country,
         },
-      );
+      });
       return { success: true, user: response.user };
     } catch (error) {
       return {
@@ -144,9 +152,11 @@ export class HttpAuthService implements AuthServiceContract {
     input: RegisterProfessionalInput,
   ): Promise<AuthResult> {
     try {
-      const response = await httpClient.post<BackendAuthResponse>(
-        "/auth/register",
-        {
+      const response = await apiOperation<
+        BackendAuthResponse,
+        "postAuthRegister"
+      >("postAuthRegister", {
+        body: {
           email: input.email,
           name: input.name,
           password: input.password,
@@ -163,7 +173,7 @@ export class HttpAuthService implements AuthServiceContract {
           country: input.country,
           productIntent: input.requestedProduct,
         },
-      );
+      });
       return { success: true, user: response.user };
     } catch (error) {
       return {
@@ -177,19 +187,21 @@ export class HttpAuthService implements AuthServiceContract {
   async updateProfile(updates: AuthProfileUpdate): Promise<UserProfile> {
     const currentUser = await this.getCurrentUser();
     if (!currentUser) throw new Error("Vous devez être connecté.");
-    return httpClient.put<UserProfile>(
-      `/users/${encodeURIComponent(currentUser.id)}`,
-      updates,
-    );
+    return apiOperation<UserProfile, "putUsersById">("putUsersById", {
+      path: { id: currentUser.id },
+      body: updates,
+    });
   }
 
   async upgradeToProfessional(
     input: ProfessionalAccountUpgradeInput,
   ): Promise<AuthResult> {
     try {
-      const user = await httpClient.post<UserProfile>(
-        "/account/upgrade-to-professional",
-        {
+      const user = await apiOperation<
+        UserProfile,
+        "postAccountUpgradeToProfessional"
+      >("postAccountUpgradeToProfessional", {
+        body: {
           companyName: input.companyName,
           businessIdentifier: input.sirenSiret,
           legalForm: input.legalForm,
@@ -197,7 +209,7 @@ export class HttpAuthService implements AuthServiceContract {
           businessAddress: input.businessAddress,
           phone: input.phone,
         },
-      );
+      });
       return { success: true, user };
     } catch (error) {
       return {
@@ -211,44 +223,40 @@ export class HttpAuthService implements AuthServiceContract {
   }
 
   async logout(): Promise<void> {
-    await httpClient.post("/auth/logout");
+    await apiOperation("postAuthLogout", {});
   }
 
   async logoutAll(keepCurrent = false): Promise<void> {
-    await httpClient.post("/auth/logout-all", { keepCurrent });
+    await apiOperation("postAuthLogoutAll", { body: { keepCurrent } });
   }
 
   async switchRole(role: UserRole): Promise<UserProfile> {
-    const response = await httpClient.post<BackendAuthResponse>(
-      "/auth/switch-role",
-      { role },
-    );
+    const response = await apiOperation<
+      BackendAuthResponse,
+      "postAuthSwitchRole"
+    >("postAuthSwitchRole", { body: { role } });
     if (!response.user) throw new Error("Profil utilisateur indisponible.");
     return response.user;
   }
 
-  async switchDemoUser(): Promise<UserProfile | null> {
-    return null;
-  }
-
   async verifyPhone(phone: string, code: string): Promise<boolean> {
-    const response = await httpClient.post<{ verified: boolean }>(
-      "/auth/verify-phone",
-      { phone, code },
-    );
+    const response = await apiOperation<
+      { verified: boolean },
+      "postAuthVerifyPhone"
+    >("postAuthVerifyPhone", { body: { phone, code } });
     return response.verified;
   }
 
   async verifyEmail(token: string): Promise<boolean> {
-    const response = await httpClient.post<{ verified: boolean }>(
-      "/auth/verify-email",
-      { token },
-    );
+    const response = await apiOperation<
+      { verified: boolean },
+      "postAuthVerifyEmail"
+    >("postAuthVerifyEmail", { body: { token } });
     return response.verified;
   }
 
   async resendEmailVerification(email: string) {
-    await httpClient.post("/auth/verify-email/resend", { email });
+    await apiOperation("postAuthVerifyEmailResend", { body: { email } });
     return {
       success: true,
       message: "Si ce compte existe, un email de validation a été envoyé.",
@@ -256,10 +264,10 @@ export class HttpAuthService implements AuthServiceContract {
   }
 
   async requestPasswordReset(email: string) {
-    const response = await httpClient.post<{ accepted: true }>(
-      "/auth/password/forgot",
-      { email },
-    );
+    const response = await apiOperation<
+      { accepted: true },
+      "postAuthPasswordForgot"
+    >("postAuthPasswordForgot", { body: { email } });
     return {
       success: response.accepted,
       message: "Si ce compte existe, un lien de réinitialisation a été envoyé.",
@@ -267,22 +275,31 @@ export class HttpAuthService implements AuthServiceContract {
   }
 
   async resetPassword(token: string, newPassword: string) {
-    await httpClient.post("/auth/password/reset", { token, newPassword });
+    await apiOperation("postAuthPasswordReset", {
+      body: { token, newPassword },
+    });
     return { success: true, message: "Votre mot de passe a été modifié." };
   }
 
   async getSocialAuthAvailability() {
-    return httpClient.get<
-      Record<SocialAuthProvider, boolean> & { linking: boolean }
-    >("/auth/oauth/providers");
+    return apiOperation<
+      Record<SocialAuthProvider, boolean> & { linking: boolean },
+      "getAuthOauthProviders"
+    >("getAuthOauthProviders", {});
   }
 
   async startSocialAuth(
     input: SocialAuthStartInput,
   ): Promise<{ authorizationUrl: string }> {
-    return httpClient.post(`/auth/oauth/${input.provider}/start`, {
-      ...input,
-      clientKind: "web",
+    return apiOperation<
+      { authorizationUrl: string },
+      "postAuthOauthByProviderStart"
+    >("postAuthOauthByProviderStart", {
+      path: { provider: input.provider },
+      body: {
+        ...input,
+        clientKind: "web",
+      },
     });
   }
 
@@ -290,41 +307,48 @@ export class HttpAuthService implements AuthServiceContract {
     email: string;
     accountType?: "individual" | "professional";
   }): Promise<void> {
-    await httpClient.post("/auth/oauth/complete-profile", input);
+    await apiOperation("postAuthOauthCompleteProfile", { body: input });
   }
 
   async getSecurityOverview(): Promise<AuthSecurityOverview> {
-    return httpClient.get("/auth/security");
+    return apiOperation<AuthSecurityOverview, "getAuthSecurity">(
+      "getAuthSecurity",
+      {},
+    );
   }
 
   async reauthenticate(password: string): Promise<void> {
-    await httpClient.post("/auth/reauthenticate", { password });
+    await apiOperation("postAuthReauthenticate", { body: { password } });
   }
 
   async unlinkProvider(provider: SocialAuthProvider): Promise<void> {
-    await httpClient.delete(`/auth/identities/${provider}`);
+    await apiOperation("deleteAuthIdentitiesByProvider", {
+      path: { provider: provider },
+    });
   }
 
   async changePassword(
     currentPassword: string,
     newPassword: string,
   ): Promise<void> {
-    await httpClient.post("/auth/password/change", {
-      currentPassword,
-      newPassword,
+    await apiOperation("postAuthPasswordChange", {
+      body: {
+        currentPassword,
+        newPassword,
+      },
     });
   }
 
   async addPassword(newPassword: string): Promise<void> {
-    await httpClient.post("/auth/password/add", { newPassword });
+    await apiOperation("postAuthPasswordAdd", { body: { newPassword } });
   }
 
   async revokeSession(sessionId: string): Promise<void> {
-    await httpClient.delete(`/auth/sessions/${encodeURIComponent(sessionId)}`);
+    await apiOperation("deleteAuthSessionsById", { path: { id: sessionId } });
   }
 
   async deleteAccount(password: string, reason?: string): Promise<void> {
-    await httpClient.post("/account/delete", { password, reason });
+    await apiOperation("postAccountDelete", { body: { password, reason } });
   }
 }
 

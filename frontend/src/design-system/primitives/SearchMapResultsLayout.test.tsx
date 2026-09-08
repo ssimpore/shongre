@@ -20,4 +20,20 @@ describe("search map results layout", () => {
     expect(html).toContain('data-search-map-panel="true"');
     expect(html).toContain("sm:h-search-map-tall");
   });
+
+  it("can preserve result cards as the narrow-screen fallback", () => {
+    const html = renderToStaticMarkup(
+      <SearchMapResultsLayout
+        results={<div>Cards</div>}
+        map={<div>Map</div>}
+        resultsLabel="Résultats"
+        narrowView="results"
+      />,
+    );
+
+    expect(html).toMatch(
+      /data-search-map-results-list="true"[^>]*class="[^"]*block/,
+    );
+    expect(html).toMatch(/data-search-map-panel="true"[^>]*class="[^"]*hidden/);
+  });
 });

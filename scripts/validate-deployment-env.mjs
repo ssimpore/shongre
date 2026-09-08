@@ -113,8 +113,7 @@ for (const key of [
   "PUBLIC_FR_URL",
   "PUBLIC_INTL_URL",
   "API_URL",
-  "NEXT_PUBLIC_DATA_MODE",
-  "NEXT_PUBLIC_ENABLE_MOCK_STORAGE",
+  "NEXT_PUBLIC_API_URL",
 ]) {
   requireValue(frontend, key, undefined, "frontend env");
 }
@@ -128,13 +127,6 @@ requireValue(
 );
 
 if (["development", "staging", "production"].includes(expectedEnvironment)) {
-  requireValue(frontend, "NEXT_PUBLIC_DATA_MODE", "api", "frontend env");
-  requireValue(
-    frontend,
-    "NEXT_PUBLIC_ENABLE_MOCK_STORAGE",
-    "false",
-    "frontend env",
-  );
   requireValue(backend, "BACKEND_DATA_MODE", "database", "backend env");
   requireValue(backend, "DATABASE_INFRA_MODE", "hosted", "backend env");
   for (const key of [
@@ -199,13 +191,6 @@ const modes = {
 };
 const expectedModes = modes[expectedEnvironment];
 if (expectedModes) {
-  requireValue(frontend, "NEXT_PUBLIC_DATA_MODE", "api", "frontend env");
-  requireValue(
-    frontend,
-    "NEXT_PUBLIC_ENABLE_MOCK_STORAGE",
-    "false",
-    "frontend env",
-  );
   const applicationOrigins = [
     "SHONGRE_MARKETPLACE_ORIGIN",
     "SHONGRE_SOLUTIONS_ORIGIN",

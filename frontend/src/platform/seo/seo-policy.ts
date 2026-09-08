@@ -730,7 +730,7 @@ export function resolveSeoPolicy({
     const professional = isProSeller(data.seller);
     const segment = professional ? "boutique" : "profil";
     const canonicalPath = `/${segment}/${encodeURIComponent(data.seller.slug || data.seller.id)}`;
-    const name = data.seller.companyName || data.seller.name;
+    const name = data.seller.name;
     const enoughInventory =
       data.listings.length >= PROGRAMMATIC_SEO_THRESHOLDS.sellerInventory;
     const codes = Array.from(
@@ -1159,7 +1159,7 @@ export function structuredDataForPolicy(
         url: policy.canonicalUrl,
         mainEntity: {
           "@type": professional ? "Organization" : "Person",
-          name: seller.companyName || seller.name,
+          name: seller.name,
           url: policy.canonicalUrl,
           ...(image ? { image } : {}),
           ...(seller.city
@@ -1178,7 +1178,7 @@ export function structuredDataForPolicy(
         ...(professional
           ? [{ name: "Professionnels", path: "/professionnels" }]
           : []),
-        { name: seller.companyName || seller.name },
+        { name: seller.name },
       ]),
     ];
   }

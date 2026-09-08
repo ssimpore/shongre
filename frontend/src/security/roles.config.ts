@@ -7,7 +7,7 @@ import type {
 } from "../types";
 
 export interface RoleMetadata {
-  /** Compatibility key for existing persisted demo profiles. */
+  /** Stable presentation key matching the canonical platform role. */
   id: PlatformRole;
   title: string;
   shortLabel: string;

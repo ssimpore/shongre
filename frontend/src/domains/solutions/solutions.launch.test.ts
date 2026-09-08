@@ -1,16 +1,37 @@
 import { describe, expect, it } from "vitest";
 import { createApplicationRegistry } from "../../platform/applications/application-registry";
-import { DEMO_SOLUTIONS } from "../../api/adapters/demo/demo-solutions.data";
 import { resolveSolutionLaunch } from "./solutions.launch";
+import type { SolutionDefinition } from "./solutions.types";
 
 const applications = createApplicationRegistry({
   environment: "test",
   marketplaceOrigin: "http://localhost:3000",
 });
 
-const facturation = structuredClone(
-  DEMO_SOLUTIONS.find((value) => value.slug === "facturation")!,
-);
+const facturation: SolutionDefinition = {
+  id: "solution-facturation",
+  name: "Facturation",
+  slug: "facturation",
+  shortDescription: "Facturation professionnelle",
+  description: "Facturation professionnelle",
+  icon: "facturation",
+  category: "gestion",
+  lifecycle: "AVAILABLE",
+  markets: ["FR"],
+  languages: ["fr"],
+  audiences: ["professional"],
+  capabilities: ["invoice.manage"],
+  launchApplicationId: "facturation",
+  launchPath: "/",
+  requiresAuthentication: false,
+  requiresEntitlement: false,
+  releaseNotes: [],
+  sortOrder: 1,
+  catalogVisible: true,
+  featured: false,
+  createdAt: "2026-01-01T00:00:00.000Z",
+  updatedAt: "2026-01-01T00:00:00.000Z",
+};
 
 describe("resolveSolutionLaunch", () => {
   it("resolves a safe local application target", () => {

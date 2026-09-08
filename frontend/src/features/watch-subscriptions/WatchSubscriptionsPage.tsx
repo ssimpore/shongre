@@ -35,7 +35,11 @@ const typePresentation = {
   saved_search: { labelKey: "watch.type.savedSearch", icon: Search },
 } as const;
 
-export const WatchSubscriptionsPage = () => {
+export const WatchSubscriptionsPage = ({
+  canonicalPath = "/compte/alertes",
+}: {
+  canonicalPath?: string;
+} = {}) => {
   const { t, locale } = useTranslation();
   const { currentUser } = useAuth();
   const { activeMarket } = useMarketLocation();
@@ -48,7 +52,7 @@ export const WatchSubscriptionsPage = () => {
   usePageMeta({
     title: t("watch.meta.title"),
     description: t("watch.meta.description"),
-    canonicalPath: "/compte/alertes",
+    canonicalPath,
     noIndex: true,
   });
 

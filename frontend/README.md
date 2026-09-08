@@ -2,10 +2,8 @@
 
 The Shongre frontend is a Next.js App Router marketplace interface supporting both individual (_Particuliers_) and professional sellers (_Professionnels_).
 
-It features a dual-mode service architecture that allows running either:
-
-1. **Standalone Demo Mode** (`NEXT_PUBLIC_DATA_MODE=demo`): Fully deterministic, in-memory local fixtures, no backend or database required.
-2. **Live HTTP API Mode** (`NEXT_PUBLIC_DATA_MODE=api`): Connects over HTTP REST to the environment-defined backend URL.
+It uses one HTTP service architecture connected to the environment-defined
+Shongre backend URL. There is no browser fixture or data-mode fallback.
 
 ---
 
@@ -20,14 +18,14 @@ Pages & Views (src/features/, src/app/)
                ▼
    API & Service Contracts (src/api/contracts/)
                │
-      ┌────────┴────────┐
-      ▼                 ▼
-Demo Adapters     HTTP Adapters
-(src/api/adapters/demo/)   (src/api/adapters/http/)
-      │                 │
-      ▼                 ▼
-Deterministic Fixtures  Shongre Backend API
-& StorageService        & Supabase
+               │
+               ▼
+        HTTP Adapters
+   (src/api/adapters/http/)
+               │
+               ▼
+      Shongre Backend API
+           & Supabase
 ```
 
 `src/api/contracts/` owns UI-facing service/view-model interfaces, not a second
@@ -76,10 +74,10 @@ Initialize the repository environment from the root:
 ```bash
 make env
 make dev       # connected API + local Supabase
-make frontend  # explicit standalone demo UI
+make frontend  # API-only Web client (the configured API must be available)
 ```
 
-The data mode is configured centrally in `src/api/client/api-client.config.ts`.
+The API request base URL is configured centrally in `src/api/client/api-client.config.ts`.
 Deployment origins and `APP_ENV` come from the typed environment projection in
 `src/platform/market/market-infrastructure.ts`. The Next server validates them
 at container startup and injects a safe `window.__SHONGRE_RUNTIME_CONFIG__`
@@ -102,17 +100,11 @@ source kit remains private to the repository; see
 [`docs/architecture/brand-assets.md`](../docs/architecture/brand-assets.md).
 
 ```env
-# Canonical local/hosted mode. Explicit demo commands override this per process.
-NEXT_PUBLIC_DATA_MODE=api
-
-# Backend API Endpoint (Used when NEXT_PUBLIC_DATA_MODE=api)
+# Backend API endpoint
 NEXT_PUBLIC_API_URL=<environment-defined API origin and prefix>
 ```
 
-### Selecting Modes
-
-- **Demo Mode**: `make frontend` — explicitly selects deterministic browser adapters; no backend is required.
-- **API Mode**: `make dev` — calls the backend REST API over HTTP with request IDs and token transport, using local Supabase for persistence.
+Use `make dev` to run the Web client, backend, worker, and local Supabase stack.
 
 The process environment is authoritative. Connected builds cannot be switched
 to demo mode from browser storage or the UI.

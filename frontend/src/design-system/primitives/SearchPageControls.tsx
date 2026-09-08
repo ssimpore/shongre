@@ -22,7 +22,7 @@ export function SearchActiveFiltersBar({
     <div
       data-search-active-filters
       className={cn(
-        "mb-4 flex flex-wrap items-center gap-1.5 rounded-card border border-border-base bg-bg-surface px-3 py-2.5 shadow-xs sm:mb-6 sm:px-4",
+        "mb-4 flex flex-wrap items-center gap-1.5 rounded-listing-card border border-border-base bg-bg-surface px-3 py-2.5 shadow-xs sm:mb-6 sm:px-4",
         className,
       )}
     >
@@ -85,7 +85,7 @@ export function SearchResultsToolbar({
       id={id}
       data-search-results-toolbar
       className={cn(
-        "mb-4 flex scroll-mt-24 flex-wrap items-center justify-between gap-x-3 gap-y-2 rounded-card border border-border-base bg-bg-surface p-2 shadow-xs sm:p-4 lg:flex-nowrap",
+        "mb-4 flex scroll-mt-24 flex-wrap items-center justify-between gap-x-3 gap-y-2 rounded-listing-card border border-border-base bg-bg-surface p-2 shadow-xs sm:p-4 lg:flex-nowrap",
         className,
       )}
     >

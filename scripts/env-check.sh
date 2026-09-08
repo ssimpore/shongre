@@ -20,10 +20,11 @@ fi
 required=(
   APP_ENV ENVIRONMENT_ID API_ENVIRONMENT_ID DATABASE_ENVIRONMENT_ID SUPABASE_ENVIRONMENT_ID STORAGE_ENVIRONMENT_ID
   PUBLIC_FR_URL PUBLIC_INTL_URL API_URL FRONTEND_HOST FRONTEND_PORT E2E_FRONTEND_PORT BACKEND_HOST BACKEND_PORT EXPO_HOST SUPABASE_HOST API_PREFIX
-  NEXT_PUBLIC_DATA_MODE NEXT_PUBLIC_ENABLE_MOCK_STORAGE BACKEND_DATA_MODE DATABASE_INFRA_MODE
+  BACKEND_DATA_MODE DATABASE_INFRA_MODE
   NEXT_PUBLIC_APP_ENV NEXT_PUBLIC_ENVIRONMENT_ID NEXT_PUBLIC_FR_URL NEXT_PUBLIC_INTL_URL NEXT_PUBLIC_API_URL
   EXPO_PUBLIC_APP_ENV EXPO_PUBLIC_ENVIRONMENT_ID EXPO_PUBLIC_FR_URL EXPO_PUBLIC_INTL_URL EXPO_PUBLIC_API_URL
   PAYMENT_MODE EMAIL_MODE AI_MODE ANALYTICS_MODE
+  REDIS_URL
   EXPO_METRO_PORT EXPO_WEB_PORT STORYBOOK_PORT SUPABASE_API_PORT
   SUPABASE_DB_PORT SUPABASE_SHADOW_PORT SUPABASE_REALTIME_PORT
   SUPABASE_STUDIO_PORT SUPABASE_INBUCKET_PORT SUPABASE_SMTP_PORT
@@ -49,10 +50,6 @@ case "${APP_ENV:-}" in
   local|test|preview|development|staging|production) ;;
   *) shongre_fail "APP_ENV must be local, test, preview, development, staging, or production"; failed=1 ;;
 esac
-case "$NEXT_PUBLIC_DATA_MODE" in
-  demo|api) ;;
-  *) shongre_fail "NEXT_PUBLIC_DATA_MODE must be demo or api"; failed=1 ;;
-esac
 case "${BACKEND_DATA_MODE:-}" in
   demo|database) ;;
   *) shongre_fail "BACKEND_DATA_MODE must be demo or database"; failed=1 ;;
@@ -64,11 +61,6 @@ esac
 case "${SEO_GPTBOT_TRAINING_POLICY:-deny}" in
   allow|deny) ;;
   *) shongre_fail "SEO_GPTBOT_TRAINING_POLICY must be allow or deny"; failed=1 ;;
-esac
-
-case "${SHONGRE_EXPLICIT_DEMO:-false}" in
-  true|false) ;;
-  *) shongre_fail "SHONGRE_EXPLICIT_DEMO must be true or false"; failed=1 ;;
 esac
 
 case "$APP_ENV" in
@@ -85,13 +77,7 @@ case "$APP_ENV" in
     expected_database_infra_mode=hosted
     ;;
 esac
-backend_data_mode_matches=false
-if [[ "$APP_ENV" == "local" && "${SHONGRE_EXPLICIT_DEMO:-false}" == "true" && "$BACKEND_DATA_MODE" == "demo" ]]; then
-  backend_data_mode_matches=true
-elif [[ "$BACKEND_DATA_MODE" == "$expected_backend_data_mode" ]]; then
-  backend_data_mode_matches=true
-fi
-if [[ "$backend_data_mode_matches" != true ]]; then
+if [[ "$BACKEND_DATA_MODE" != "$expected_backend_data_mode" ]]; then
   shongre_fail "BACKEND_DATA_MODE must be $expected_backend_data_mode for APP_ENV=$APP_ENV"
   failed=1
 fi
@@ -99,32 +85,6 @@ if [[ "$DATABASE_INFRA_MODE" != "$expected_database_infra_mode" ]]; then
   shongre_fail "DATABASE_INFRA_MODE must be $expected_database_infra_mode for APP_ENV=$APP_ENV"
   failed=1
 fi
-if [[ "$APP_ENV" == "local" && "${SHONGRE_EXPLICIT_DEMO:-false}" == "true" ]]; then
-  for pair in \
-    "NEXT_PUBLIC_DATA_MODE:demo" \
-    "NEXT_PUBLIC_ENABLE_MOCK_STORAGE:true" \
-    "BACKEND_DATA_MODE:demo"; do
-    name="${pair%%:*}"
-    expected="${pair#*:}"
-    if [[ "${!name:-}" != "$expected" ]]; then
-      shongre_fail "$name must be $expected for the explicit local demo stack"
-      failed=1
-    fi
-  done
-elif [[ "$APP_ENV" == "local" || "$APP_ENV" == "development" || "$APP_ENV" == "staging" || "$APP_ENV" == "production" ]]; then
-  for pair in \
-    "NEXT_PUBLIC_DATA_MODE:api" \
-    "NEXT_PUBLIC_ENABLE_MOCK_STORAGE:false" \
-    "BACKEND_DATA_MODE:database"; do
-    name="${pair%%:*}"
-    expected="${pair#*:}"
-    if [[ "${!name:-}" != "$expected" ]]; then
-      shongre_fail "$name must be $expected for the connected $APP_ENV environment"
-      failed=1
-    fi
-  done
-fi
-
 case "$SHONGRE_ENV:$APP_ENV" in
   local:local|test:test|preview:preview|development:development|staging:staging|production:production) ;;
   *)
@@ -349,8 +309,8 @@ if [[ "${API_PREFIX:-}" != "/api/v1" ]]; then
   shongre_fail "API_PREFIX is fixed at /api/v1 by the canonical OpenAPI contract"
   failed=1
 fi
-if [[ "$NEXT_PUBLIC_DATA_MODE" == "api" && -z "${NEXT_PUBLIC_API_URL:-}" ]]; then
-  shongre_fail "NEXT_PUBLIC_API_URL is required when NEXT_PUBLIC_DATA_MODE=api"
+if [[ -z "${NEXT_PUBLIC_API_URL:-}" ]]; then
+  shongre_fail "NEXT_PUBLIC_API_URL is required for the Web client"
   failed=1
 fi
 if [[ -z "${EXPO_PUBLIC_API_URL:-}" ]]; then

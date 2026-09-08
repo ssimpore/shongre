@@ -10,9 +10,7 @@ import {
   type ProfessionalVertical,
 } from "@shongre/contracts/access-control";
 import { getCountryConfig } from "@shongre/contracts/market-country";
-import { isProSeller } from "../domains/user/user.domain";
 import type { Permission, UserProfile } from "../types";
-import { PRO_PLANS, type ProPlan } from "../configuration/plans.config";
 import {
   canAccessRoutePolicy,
   type RoutePolicyId,
@@ -37,40 +35,8 @@ export interface AuthorizationContextOptions {
   accountTypes?: readonly AccountType[];
   professionalVerticals?: readonly ProfessionalVertical[];
   requiredVerification?: readonly AuthorizationVerificationDimension[];
-  entitlement?: CommercialEntitlement;
   featureFlag?: string;
   enabledFeatureFlags?: readonly string[];
-}
-
-export type CommercialEntitlement =
-  | "storefrontCustomization"
-  | "prioritySupport"
-  | "bulkImportExport"
-  | "automaticRelisting";
-
-type FeatureAvailabilityState =
-  | "available"
-  | "unavailable"
-  | "restricted"
-  | "plan_locked"
-  | "verification_required"
-  | "status_blocked"
-  | "market_unavailable";
-
-export interface FeatureRequirement {
-  capability: Permission;
-  entitlement?: CommercialEntitlement;
-  accountTypes?: readonly AccountType[];
-  professionalVerticals?: readonly ProfessionalVertical[];
-  requiresVerification?: boolean;
-  country?: string;
-  featureFlag?: string;
-  enabledFeatureFlags?: readonly string[];
-}
-
-interface FeatureAvailability {
-  state: FeatureAvailabilityState;
-  capability: Permission;
 }
 
 class AuthorizationError extends Error {
@@ -191,16 +157,6 @@ class AuthorizationService {
       : user?.country
         ? [user.country]
         : [];
-    const plan = this.getUserPlan(user);
-    const entitlements = user
-      ? ([
-          plan.storefrontCustomization && "storefrontCustomization",
-          plan.prioritySupport && "prioritySupport",
-          plan.bulkImportExport && "bulkImportExport",
-          plan.automaticRelisting && "automaticRelisting",
-        ].filter(Boolean) as CommercialEntitlement[])
-      : [];
-
     return evaluateAuthorization(
       {
         subject: user,
@@ -220,7 +176,6 @@ class AuthorizationService {
           ),
           payout: user?.bankPayoutVerification?.status === "verified",
         },
-        entitlements,
         featureFlags: options?.enabledFeatureFlags,
       },
       {
@@ -228,7 +183,6 @@ class AuthorizationService {
         accountTypes: options?.accountTypes,
         professionalVerticals: options?.professionalVerticals,
         requiredVerification: options?.requiredVerification,
-        entitlement: options?.entitlement,
         featureFlag: options?.featureFlag,
         market: targetCountry
           ? {
@@ -308,74 +262,6 @@ class AuthorizationService {
       { subject: user, marketCodes: countries },
       { code: countryCode, enabled: true },
     );
-  }
-
-  getUserPlan(user: UserProfile | null): ProPlan {
-    const persistedPlanId =
-      user?.activePlanId || (isProSeller(user) ? "pro_business" : "free");
-    const planId =
-      persistedPlanId === "pro_starter" || persistedPlanId === "pro_enterprise"
-        ? "pro_business"
-        : persistedPlanId;
-    return PRO_PLANS.find((plan) => plan.id === planId) || PRO_PLANS[0];
-  }
-
-  hasEntitlement(
-    user: UserProfile | null,
-    entitlement: CommercialEntitlement,
-  ): boolean {
-    if (!user || canonicalAccessContext(user).accountType !== "professional") {
-      return false;
-    }
-    return Boolean(this.getUserPlan(user)[entitlement]);
-  }
-
-  getFeatureAvailability(
-    user: UserProfile | null,
-    requirement: FeatureRequirement,
-  ): FeatureAvailability {
-    const decision = this.decision(user, requirement.capability, undefined, {
-      country: requirement.country,
-      accountTypes: requirement.accountTypes,
-      professionalVerticals: requirement.professionalVerticals,
-      requiredVerification: requirement.requiresVerification
-        ? ["identity"]
-        : undefined,
-      entitlement: requirement.entitlement,
-      featureFlag: requirement.featureFlag,
-      enabledFeatureFlags: requirement.enabledFeatureFlags,
-    });
-    const stateByReason: Partial<
-      Record<
-        NonNullable<AuthorizationDecision["denialReason"]>,
-        FeatureAvailabilityState
-      >
-    > = {
-      account_status: "status_blocked",
-      verification_required: "verification_required",
-      entitlement_required: "plan_locked",
-      market_scope: "market_unavailable",
-      market_unavailable: "market_unavailable",
-      account_type: "unavailable",
-      professional_vertical: "unavailable",
-      feature_disabled: "unavailable",
-    };
-    return {
-      state: decision.allowed
-        ? "available"
-        : (stateByReason[decision.denialReason!] ?? "restricted"),
-      capability: requirement.capability,
-    };
-  }
-
-  getMaxListingsQuota(user: UserProfile | null): number {
-    if (!user) return 0;
-    return this.getUserPlan(user).maxActiveListings;
-  }
-
-  getMaxPhotosQuota(user: UserProfile | null): number {
-    if (!user) return 8;
-    return this.getUserPlan(user).photosPerListing;
   }
 }
 

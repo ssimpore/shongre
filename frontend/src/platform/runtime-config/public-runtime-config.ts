@@ -5,8 +5,6 @@ import {
   type ShongreApplicationRegistry,
 } from "../applications/application-registry";
 
-type PublicDataMode = "demo" | "api";
-
 export interface PublicRuntimeConfig {
   appEnvironment: AppEnvironment;
   environmentId: string;
@@ -15,8 +13,6 @@ export interface PublicRuntimeConfig {
   apiBaseUrl: string;
   publicMediaAssetBaseUrl: string;
   publicCategoryMediaBaseUrl: string;
-  dataMode: PublicDataMode;
-  mockStorageEnabled: boolean;
   stripePublishableKey: string;
   release: string;
   applications: ShongreApplicationRegistry;
@@ -79,26 +75,6 @@ function nodeFallback(): PublicRuntimeConfig {
     (preferServerRuntime ? serverAppEnvironment : publicAppEnvironment) ||
     serverAppEnvironment ||
     (nodeEnvironmentValue("NODE_ENV") === "test" ? "test" : "local");
-  const configuredDataMode = nodeEnvironmentValue("NEXT_PUBLIC_DATA_MODE");
-  const dataMode =
-    configuredDataMode || (appEnvironment === "test" ? "demo" : "");
-  if (dataMode !== "demo" && dataMode !== "api") {
-    throw new Error(
-      "[Runtime Config] NEXT_PUBLIC_DATA_MODE must be explicitly set to demo or api.",
-    );
-  }
-
-  const configuredMockStorage = nodeEnvironmentValue(
-    "NEXT_PUBLIC_ENABLE_MOCK_STORAGE",
-  );
-  const mockStorageValue =
-    configuredMockStorage || (appEnvironment === "test" ? "true" : "");
-  if (mockStorageValue !== "true" && mockStorageValue !== "false") {
-    throw new Error(
-      "[Runtime Config] NEXT_PUBLIC_ENABLE_MOCK_STORAGE must be explicitly set to true or false.",
-    );
-  }
-
   const allowsLocalDefaults =
     appEnvironment === "local" || appEnvironment === "test";
   const configuredLocalOrigin = allowsLocalDefaults ? localWebOrigin() : "";
@@ -116,15 +92,12 @@ function nodeFallback(): PublicRuntimeConfig {
     configuredLocalOrigin;
   const publicApiBaseUrl = nodeEnvironmentValue("NEXT_PUBLIC_API_URL");
   const serverApiOrigin = nodeEnvironmentValue("API_URL");
-  const serverApiBaseUrl =
-    dataMode === "api" && serverApiOrigin
-      ? new URL("/api/v1", serverApiOrigin).toString().replace(/\/$/, "")
-      : "";
+  const serverApiBaseUrl = serverApiOrigin
+    ? new URL("/api/v1", serverApiOrigin).toString().replace(/\/$/, "")
+    : "";
   const apiBaseUrl =
-    dataMode === "api"
-      ? (preferServerRuntime ? serverApiBaseUrl : publicApiBaseUrl) ||
-        serverApiBaseUrl
-      : "";
+    (preferServerRuntime ? serverApiBaseUrl : publicApiBaseUrl) ||
+    serverApiBaseUrl;
   const applications = createApplicationRegistry({
     environment: appEnvironment as AppEnvironment,
     marketplaceOrigin:
@@ -154,8 +127,6 @@ function nodeFallback(): PublicRuntimeConfig {
     publicCategoryMediaBaseUrl: nodeEnvironmentValue(
       "PUBLIC_CATEGORY_MEDIA_BASE_URL",
     ),
-    dataMode,
-    mockStorageEnabled: mockStorageValue === "true",
     stripePublishableKey: nodeEnvironmentValue(
       "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY",
     ),
@@ -227,7 +198,7 @@ export function getPublicRuntimeConfig(): PublicRuntimeConfig {
   return nodeFallback();
 }
 
-/** Replace legacy external demo imagery with the environment-owned copy. */
+/** Replace legacy external imagery with the environment-owned copy. */
 export function resolveOwnedPublicMediaUrl(value: string): string {
   let source: URL;
   try {
@@ -246,7 +217,7 @@ export function resolveOwnedPublicMediaUrl(value: string): string {
     );
   if (!validPhotoId) return value;
   const runtime = getPublicRuntimeConfig();
-  if (runtime.dataMode !== "api" || !runtime.publicMediaAssetBaseUrl) {
+  if (!runtime.publicMediaAssetBaseUrl) {
     return value;
   }
   return `${runtime.publicMediaAssetBaseUrl.replace(/\/$/, "")}/${photoId}.jpg`;
@@ -256,9 +227,6 @@ export function resolveCategoryPublicMediaUrl(slug: string): string {
   const normalizedSlug = slug.trim().toLocaleLowerCase("fr-FR");
   if (!/^[a-z0-9-]+$/.test(normalizedSlug)) return "";
   const runtime = getPublicRuntimeConfig();
-  if (runtime.dataMode === "api") {
-    if (!runtime.publicCategoryMediaBaseUrl) return "";
-    return `${runtime.publicCategoryMediaBaseUrl.replace(/\/$/, "")}/${normalizedSlug}.jpg`;
-  }
-  return `/images/categories/${normalizedSlug}.jpg`;
+  if (!runtime.publicCategoryMediaBaseUrl) return "";
+  return `${runtime.publicCategoryMediaBaseUrl.replace(/\/$/, "")}/${normalizedSlug}.jpg`;
 }

@@ -40,15 +40,13 @@ import { useAuthorization } from "../../security/useAuthorization";
 import { Container, Image, SkipLink } from "../../design-system";
 import { AppScrollRestoration } from "../../app/router/AppScrollRestoration";
 import { useTranslation } from "../../i18n/I18nProvider";
-import { DataModeSettingsControl } from "../../app/layouts/DataModeSettingsControl";
-import { useDataMode } from "../../app/providers/DataModeProvider";
 import { BrandIcon } from "../../design-system/primitives/BrandLogo";
+import { getPublicRuntimeConfig } from "../../platform/runtime-config/public-runtime-config";
 
 export const AdminLayout: React.FC = () => {
   const { activeMarket } = useMarketLocation();
   const { t } = useTranslation();
   const { currentUser, role: platformRole } = useAuth();
-  const { mode } = useDataMode();
   const { canAccessRoute } = useAuthorization();
   const location = useLocation();
   const [isSectionMenuOpen, setIsSectionMenuOpen] = useState(false);
@@ -343,24 +341,15 @@ export const AdminLayout: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-            <div
-              className={`hidden items-center gap-1.5 rounded-control border px-2 py-1 text-micro font-bold uppercase tracking-wide sm:inline-flex ${
-                mode === "demo"
-                  ? "border-primary-on-dark-border bg-primary-overlay text-primary-on-inverse-soft"
-                  : "border-success-border bg-success-surface text-success"
-              }`}
-            >
+            <div className="hidden items-center gap-1.5 rounded-control border border-success-border bg-success-surface px-2 py-1 text-micro font-bold uppercase tracking-wide text-success sm:inline-flex">
               <span
-                className={`h-1.5 w-1.5 rounded-pill ${
-                  mode === "demo" ? "bg-primary" : "bg-success"
-                }`}
+                className="h-1.5 w-1.5 rounded-pill bg-success"
                 aria-hidden="true"
               />
-              {mode === "demo"
-                ? t("shell.demoRoleSwitcher.modeDemo")
-                : t("shell.dataMode.modeLive")}
+              {t("shell.environment.label", {
+                environment: getPublicRuntimeConfig().appEnvironment,
+              })}
             </div>
-            <DataModeSettingsControl />
 
             {/* User identity & badge */}
             <div className="flex items-center gap-2.5">

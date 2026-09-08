@@ -1,5 +1,5 @@
 import { writeFileSync } from "node:fs";
-import { createHttpServer } from "../../src/app/server/index.js";
+import { createBackendApplication } from "../../src/app/server/index.js";
 import { config } from "../../src/app/config/index.js";
 import { seedDemoCredentials } from "../../src/app/bootstrap/seed-demo-credentials.js";
 import { repositories } from "../../src/infrastructure/database/repositories/index.js";
@@ -24,16 +24,14 @@ for (const engine of ["chromium", "firefox", "webkit"]) {
     status: "completed",
   });
 }
-const server = createHttpServer();
-server.listen(0, "127.0.0.1", () => {
-  const address = server.address();
-  if (!address || typeof address === "string")
-    throw new Error("Missing test listener");
-  writeFileSync(process.env.E2E_API_PORT_FILE!, String(address.port), {
-    mode: 0o600,
-  });
+const app = await createBackendApplication();
+await app.listen(0, "127.0.0.1");
+const address = app.getHttpServer().address();
+if (!address || typeof address === "string")
+  throw new Error("Missing test listener");
+writeFileSync(process.env.E2E_API_PORT_FILE!, String(address.port), {
+  mode: 0o600,
 });
 process.once("SIGTERM", () => {
-  server.closeAllConnections();
-  server.close();
+  void app.close();
 });

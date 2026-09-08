@@ -41,16 +41,3 @@ export interface SolutionLaunchDecision {
   /** Backend-authored, locale-specific catalog content; UI fallbacks stay in i18n. */
   message?: string;
 }
-
-export type SolutionsDemoScenario =
-  | "default"
-  | "empty"
-  | "error"
-  | "maintenance"
-  | "coming_soon"
-  | "beta_restricted"
-  | "entitlement_required"
-  | "market_unavailable"
-  | "retired"
-  | "admin_draft"
-  | "transition_error";

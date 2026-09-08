@@ -50,7 +50,7 @@ interface FavoritesContextValue {
   /** Returns the resulting state, so callers can react without re-reading. */
   toggleFavorite: (listingId: string) => Promise<boolean>;
   clearFavorites: () => Promise<void>;
-  /** False for ordinary Staff sessions; true for customers and Staff demo sandboxes. */
+  /** False for Staff sessions and true for customer sessions. */
   canModifyFavorites: boolean;
 }
 
@@ -72,7 +72,7 @@ const EMPTY_FAVORITE_LISTINGS: Listing[] = [];
  * the header and the page disagreeing about the same fact.
  *
  * Reads and writes go through the listings service contract, so this keeps
- * working unchanged when the demo adapter is swapped for the HTTP one.
+ * working through the shared HTTP service boundary.
  */
 export const FavoritesProvider: React.FC<{ children: React.ReactNode }> = ({
   children,

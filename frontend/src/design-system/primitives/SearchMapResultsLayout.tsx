@@ -4,6 +4,7 @@ export interface SearchMapResultsLayoutProps {
   results: ReactNode;
   map: ReactNode;
   resultsLabel: string;
+  narrowView?: "map" | "results";
   className?: string;
 }
 
@@ -16,6 +17,7 @@ export function SearchMapResultsLayout({
   results,
   map,
   resultsLabel,
+  narrowView = "map",
   className = "",
 }: SearchMapResultsLayoutProps) {
   return (
@@ -26,13 +28,17 @@ export function SearchMapResultsLayout({
       <section
         data-search-map-results-list="true"
         aria-label={resultsLabel}
-        className="search-map-results-list hidden h-search-map-panel min-w-0 overflow-y-auto overscroll-contain pr-1 xl:block"
+        className={`search-map-results-list min-w-0 ${
+          narrowView === "map" ? "hidden" : "block"
+        } xl:block xl:h-search-map-panel xl:overflow-y-auto xl:overscroll-contain xl:pr-1`}
       >
         {results}
       </section>
       <div
         data-search-map-panel="true"
-        className="h-search-map min-h-112 min-w-0 sm:h-search-map-tall xl:sticky xl:top-24 xl:h-search-map-panel"
+        className={`${
+          narrowView === "results" ? "hidden" : "block"
+        } h-search-map min-h-112 min-w-0 sm:h-search-map-tall xl:sticky xl:top-24 xl:block xl:h-search-map-panel`}
       >
         {map}
       </div>

@@ -1,4 +1,4 @@
-import { httpClient } from "./http-client";
+import { apiOperation } from "./generated-api-operation";
 
 export interface HttpUploadFile {
   name: string;
@@ -9,14 +9,19 @@ export interface HttpUploadFile {
 
 export async function uploadPublicImage(file: HttpUploadFile) {
   if (!file.body) throw new Error("Le contenu du fichier est manquant.");
-  const prepared = await httpClient.post<{
-    assetId: string;
-    signedUrl: string;
-    contentType: string;
-  }>("/media/listings/uploads", {
-    fileName: file.name,
-    contentType: file.type,
-    sizeBytes: file.size,
+  const prepared = await apiOperation<
+    {
+      assetId: string;
+      signedUrl: string;
+      contentType: string;
+    },
+    "postMediaListingsUploads"
+  >("postMediaListingsUploads", {
+    body: {
+      fileName: file.name,
+      contentType: file.type,
+      sizeBytes: file.size,
+    },
   });
   const uploaded = await fetch(prepared.signedUrl, {
     method: "PUT",
@@ -24,21 +29,27 @@ export async function uploadPublicImage(file: HttpUploadFile) {
     body: file.body,
   });
   if (!uploaded.ok) throw new Error("Le téléversement du fichier a échoué.");
-  return httpClient.post<{ assetId: string; url: string }>(
-    `/media/listings/uploads/${prepared.assetId}/complete`,
-  );
+  return apiOperation<
+    { assetId: string; url: string },
+    "postMediaListingsUploadsByIdComplete"
+  >("postMediaListingsUploadsByIdComplete", { path: { id: prepared.assetId } });
 }
 
 export async function uploadPrivateDocument(file: HttpUploadFile) {
   if (!file.body) throw new Error("Le contenu du fichier est manquant.");
-  const prepared = await httpClient.post<{
-    assetId: string;
-    signedUrl: string;
-    contentType: string;
-  }>("/media/private-documents/uploads", {
-    fileName: file.name,
-    contentType: file.type,
-    sizeBytes: file.size,
+  const prepared = await apiOperation<
+    {
+      assetId: string;
+      signedUrl: string;
+      contentType: string;
+    },
+    "postMediaPrivateDocumentsUploads"
+  >("postMediaPrivateDocumentsUploads", {
+    body: {
+      fileName: file.name,
+      contentType: file.type,
+      sizeBytes: file.size,
+    },
   });
   const uploaded = await fetch(prepared.signedUrl, {
     method: "PUT",
@@ -46,8 +57,13 @@ export async function uploadPrivateDocument(file: HttpUploadFile) {
     body: file.body,
   });
   if (!uploaded.ok) throw new Error("Le téléversement du document a échoué.");
-  return httpClient.post<{
-    assetId: string;
-    privateStorageKey: string;
-  }>(`/media/private-documents/uploads/${prepared.assetId}/complete`);
+  return apiOperation<
+    {
+      assetId: string;
+      privateStorageKey: string;
+    },
+    "postMediaPrivateDocumentsUploadsByIdComplete"
+  >("postMediaPrivateDocumentsUploadsByIdComplete", {
+    path: { id: prepared.assetId },
+  });
 }

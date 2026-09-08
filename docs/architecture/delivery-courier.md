@@ -189,7 +189,7 @@ make openapi-check
 make migrations-check
 npm run test:unit --workspace=backend -- tests/unit/delivery-marketplace.test.ts
 npm run test:rls --workspace=backend
-npm run test --workspace=frontend -- src/api/adapters/demo/demo-delivery.service.test.ts
+npm run test --workspace=frontend -- src/api/adapters/http/http-critical-boundaries.test.ts
 npm run test --workspace=mobile -- tests/delivery.service.test.ts
 PLAYWRIGHT_BASE_URL="$PUBLIC_FR_URL" npm run test:e2e --workspace=frontend -- e2e/delivery.spec.ts --project=chromium
 make cross-platform-check

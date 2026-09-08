@@ -16,6 +16,12 @@ const baseListing: ListingCardView = {
   conditionLabel: "Bon état",
   characteristics: ["Velours", "Trois places"],
   publishedAt: "2026-09-02T12:00:00.000Z",
+  photoCount: 4,
+  deliveryAvailable: true,
+  fulfillmentTypes: ["PHYSICAL"],
+  requiresPhysicalDelivery: true,
+  onlinePaymentAvailable: true,
+  isNegotiable: true,
   seller: {
     id: "agency",
     name: "Agence Canopée",
@@ -40,16 +46,22 @@ const baseListing: ListingCardView = {
 
 const labels: ListingCardLabels = {
   boosted: "Boosté",
+  delivery: "Livraison",
+  digitalFulfillment: "Accès numérique",
   free: "Gratuit",
+  negotiable: "Négociable",
   onRequest: "Prix sur demande",
+  onlinePayment: "Paiement en ligne",
   imageUnavailable: "Image indisponible",
+  photos: (count) => `${count} photos`,
   rating: (rating, count) => `Note ${rating} sur 5, ${count} avis`,
+  verifiedSeller: "Vendeur vérifié",
+  verifiedSellerShort: "Vérifié",
 };
 
 const identityLabels = {
   pro: "Pro",
   proAccessibility: "Vendeur professionnel",
-  verified: "Profil vérifié",
 };
 
 function renderCard(listing: ListingCardView = baseListing) {
@@ -94,22 +106,40 @@ describe("canonical web listing card", () => {
     expect(html).toContain("Boosté");
     expect(html).toContain("lucide-zap");
     expect(html).toContain("lucide-star");
+    expect(html).toContain('data-listing-card-capabilities="true"');
+    expect(html).toContain('data-listing-capability="online_payment"');
+    expect(html).toContain('data-listing-capability="delivery"');
+    expect(html).toContain('data-listing-capability="negotiable"');
+    expect(html).toContain('data-listing-card-photo-count="true"');
+    expect(html).toContain('aria-label="4 photos"');
     expect(html).toContain("fill-primary text-primary");
     expect(html).toContain('aria-label="Retirer des favoris"');
     expect(html).toContain("listing-card-media");
     expect(html).toContain("focus-within:ring-inset");
+    expect(html).not.toContain('data-ui-verification-badge="true"');
+    expect(html).not.toContain("Vendeur vérifié");
   });
 
-  it("omits every old secondary zone and never exposes seller identity copy", () => {
+  it("keeps vertical cards compact without exposing the full seller identity", () => {
     const html = renderCard();
+    const titleStart = html.indexOf('data-listing-card-title="true"');
+    const titleEnd = html.indexOf("</h3>", titleStart);
+    const titleMarkup = html.slice(titleStart, titleEnd);
 
     expect(html).not.toContain("Agence Canopée");
     expect(html).not.toContain('data-listing-card-characteristics="true"');
-    expect(html).not.toContain('data-listing-card-photo-count="true"');
+    expect(html).toContain('data-listing-card-photo-count="true"');
     expect(html).not.toContain('data-listing-card-delivery-overlay="true"');
     expect(html).not.toContain('data-listing-card-seller-avatar="true"');
     expect(html).not.toContain('data-listing-card-original-price="true"');
-    expect(html).not.toContain('data-listing-card-negotiable="true"');
+    expect(html).toContain('data-listing-capability="negotiable"');
+    expect(html).toContain("py-1.5");
+    expect(titleMarkup).not.toContain("line-clamp");
+    expect(titleMarkup).toContain(baseListing.title);
+    expect(titleMarkup).toContain("text-xs");
+    expect(titleMarkup).toContain("listing-card-title-vertical");
+    expect(titleMarkup).toContain("font-semibold");
+    expect(titleMarkup).not.toContain("truncate");
   });
 
   it("shows a brand separator only when a real brand exists", () => {
@@ -119,6 +149,31 @@ describe("canonical web listing card", () => {
     expect(withBrand).toMatch(/Maison[\s\S]*?·[\s\S]*?IKEA/);
     expect(withoutBrand).not.toMatch(/Maison[\s\S]*?·[\s\S]*?IKEA/);
     expect(withoutBrand).not.toContain("IKEA");
+  });
+
+  it("lets long prices and seller facts wrap without truncating the price", () => {
+    const html = renderCard({
+      ...baseListing,
+      price: { amountMinor: 123_456_789_000, currency: "EUR" },
+    });
+    const priceStart = html.indexOf('data-listing-card-current-price="true"');
+    const priceMarkup = html.slice(
+      html.lastIndexOf("<span", priceStart),
+      html.indexOf("</span>", priceStart),
+    );
+    const summaryStart = html.indexOf(
+      'data-listing-card-seller-summary="true"',
+    );
+    const summaryMarkup = html.slice(
+      summaryStart,
+      html.indexOf(">", summaryStart),
+    );
+
+    expect(priceMarkup).toContain("flex-auto");
+    expect(priceMarkup).toContain("break-words");
+    expect(priceMarkup).not.toContain("truncate");
+    expect(summaryMarkup).toContain("flex-wrap");
+    expect(summaryMarkup).not.toContain("overflow-hidden");
   });
 
   it("localizes a real rating independently from professional status", () => {
@@ -140,6 +195,34 @@ describe("canonical web listing card", () => {
     expect(html).toContain("4,9");
     expect(html).toContain("1 234");
     expect(html.match(/lucide-star/g)).toHaveLength(1);
+  });
+
+  it("places private-seller verification beside rating instead of over media", () => {
+    const html = renderCard({
+      ...baseListing,
+      publisherType: "private",
+      seller: {
+        ...baseListing.seller!,
+        sellerType: "individual",
+        isIdentityVerified: true,
+        isBusinessVerified: false,
+      },
+    });
+    const media = html.indexOf('data-listing-card-media="true"');
+    const content = html.indexOf('data-listing-card-content="true"');
+    const priceRow = html.indexOf('data-listing-card-price-row="true"');
+    const verificationBadge = html.indexOf('data-ui-verification-badge="true"');
+    const title = html.indexOf('data-listing-card-title="true"');
+
+    expect(verificationBadge).toBeGreaterThan(priceRow);
+    expect(verificationBadge).toBeLessThan(title);
+    expect(html.slice(media, content)).not.toContain(
+      'data-ui-verification-badge="true"',
+    );
+    expect(html).toContain("Vendeur vérifié");
+    expect(html).toContain(">Vérifié<");
+    expect(html).toContain("text-overline");
+    expect(html).not.toContain('data-ui-pro-badge="true"');
   });
 
   it("compacts a long visual review count while retaining its accessible value", () => {
@@ -270,8 +353,18 @@ describe("canonical web listing card", () => {
     expect(html).toContain('data-listing-card-seller-identity="true"');
     expect(html).toContain('data-listing-card-seller-avatar="true"');
     expect(html).toContain("Agence Canopée");
-    expect(html).toContain("Profil vérifié");
+    expect(html).toContain("Paiement en ligne");
+    expect(html).toContain("Livraison");
+    expect(html).toContain("Négociable");
+    expect(html).not.toContain('data-ui-verification-badge="true"');
+    expect(html).not.toContain("Vendeur vérifié");
     expect(html).toMatch(/aria-label="[^"]*Velours[^"]*Agence Canopée/);
+    const titleStart = html.indexOf('data-listing-card-title="true"');
+    const titleEnd = html.indexOf("</h3>", titleStart);
+    const titleMarkup = html.slice(titleStart, titleEnd);
+    expect(titleMarkup).toContain("truncate");
+    expect(titleMarkup).toContain("text-card-title");
+    expect(titleMarkup).not.toContain("line-clamp-2");
   });
 
   it("does not reserve empty horizontal detail zones", () => {
@@ -292,6 +385,27 @@ describe("canonical web listing card", () => {
 
     expect(html).not.toContain('data-listing-card-characteristics="true"');
     expect(html).not.toContain('data-listing-card-seller-identity="true"');
+  });
+
+  it("omits capability and media-detail zones when no applicable data exists", () => {
+    const html = renderCard({
+      ...baseListing,
+      photoCount: 1,
+      deliveryAvailable: false,
+      fulfillmentTypes: ["PHYSICAL"],
+      requiresPhysicalDelivery: true,
+      onlinePaymentAvailable: false,
+      isNegotiable: false,
+      seller: {
+        ...baseListing.seller!,
+        isIdentityVerified: false,
+        isBusinessVerified: false,
+      },
+    });
+
+    expect(html).not.toContain('data-listing-card-capabilities="true"');
+    expect(html).not.toContain('data-listing-card-media-details="true"');
+    expect(html).not.toContain('data-listing-card-photo-count="true"');
   });
 
   it("keeps the richer decision fields and seller identity in hero mode", () => {
@@ -320,7 +434,8 @@ describe("canonical web listing card", () => {
     expect(html).toContain('data-listing-card-seller-avatar="true"');
     expect(html).toContain("Agence Canopée");
     expect(html).toContain("Répond généralement sous 2 h");
-    expect(html).toContain("Profil vérifié");
+    expect(html).not.toContain('data-ui-verification-badge="true"');
+    expect(html).not.toContain("Vendeur vérifié");
   });
 
   it("renders a static preview without navigation or favorite mutation", () => {

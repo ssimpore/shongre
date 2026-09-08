@@ -4,8 +4,8 @@
 
 - Contract version: `1.0.0`
 - API base path: `/api/v1`
-- Operations: **526**
-- Specification SHA-256: `4bd4b244a7e6dee4`
+- Operations: **529**
+- Specification SHA-256: `b5d3134bcd0d1674`
 
 ## account
 
@@ -392,6 +392,7 @@
 | `POST` | `/education/organizations/{organizationId}/locations` | `postEducationOrganizationsByOrganizationIdLocations` | `permission` | `course.organization.manage.own` | `200` |
 | `POST` | `/education/organizations/{organizationId}/members` | `postEducationOrganizationsByOrganizationIdMembers` | `permission` | `course.organization.manage.own` | `200` |
 | `GET` | `/education/organizations/{organizationId}/workspace` | `getEducationOrganizationsByOrganizationIdWorkspace` | `permission` | `course.organization.manage.own` | `200` |
+| `GET` | `/education/organizations/workspace` | `getEducationCurrentOrganizationWorkspace` | `permission` | `course.organization.manage.own` | `200` |
 | `POST` | `/education/search` | `postEducationSearch` | `public` | — | `200` |
 | `PUT` | `/education/tutors/{id}/favorite` | `putEducationTutorsByIdFavorite` | `permission` | `favorite.manage.own` | `200` |
 | `GET` | `/education/tutors/{id}` | `getEducationTutorsById` | `public` | — | `200` |
@@ -403,6 +404,7 @@
 | `GET` | `/education/workflow-drafts/tutor-onboarding` | `getEducationWorkflowdraftsTutoronboarding` | `permission` | `course.profile.manage.own` | `200` |
 | `PUT` | `/education/workflow-drafts/tutor-onboarding` | `putEducationWorkflowdraftsTutoronboarding` | `permission` | `course.profile.manage.own` | `200` |
 | `GET` | `/education/workspace/{tutorProfileId}` | `getEducationWorkspaceByTutorProfileId` | `permission` | `course.lead.read.own` | `200` |
+| `GET` | `/education/workspace` | `getEducationCurrentTutorWorkspace` | `permission` | `course.lead.read.own` | `200` |
 
 ## employment
 
@@ -800,6 +802,7 @@
 | --- | --- | --- | --- | --- | --- |
 | `GET` | `/users/{id}` | `getUsersById` | `public` | — | `200` |
 | `PUT` | `/users/{id}` | `putUsersById` | `permission` | `profile.update.own` | `200` |
+| `GET` | `/users/professionals` | `getProfessionalUsers` | `public` | — | `200` |
 
 ## verification
 

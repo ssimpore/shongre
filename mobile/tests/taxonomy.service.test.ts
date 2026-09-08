@@ -106,7 +106,7 @@ describe("API-backed mobile taxonomy service", () => {
     ).resolves.toEqual(tree);
     expect(apiRequest).toHaveBeenCalledWith(
       "/taxonomy/v4/tree?locale=fr-FR&version=4.0.0",
-      {},
+      expect.objectContaining({ method: "GET", headers: expect.any(Headers) }),
       "FR",
     );
   });
@@ -135,13 +135,13 @@ describe("API-backed mobile taxonomy service", () => {
     expect(apiRequest).toHaveBeenNthCalledWith(
       1,
       "/taxonomy/v4/resolve?category=vehicles.cars.suv&sellerType=individual&locale=fr-FR&version=4.0.0&listingTypeId=vehicles.cars.suv.listing",
-      {},
+      expect.objectContaining({ method: "GET", headers: expect.any(Headers) }),
       "FR",
     );
     expect(apiRequest).toHaveBeenNthCalledWith(
       2,
       "/taxonomy/v4/options/OS_VEHICLE_MODEL?version=4.0.0&parentOptionId=OS_VEHICLE_BRAND%3Arenault&limit=5",
-      {},
+      expect.objectContaining({ method: "GET", headers: expect.any(Headers) }),
       "FR",
     );
   });

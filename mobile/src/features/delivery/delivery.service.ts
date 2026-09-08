@@ -11,51 +11,20 @@ import type {
   DeliverySearchInput,
   DeliverySelectedCourierAssignment,
 } from "@shongre/contracts/delivery";
+import { apiOperation } from "@/api/generated-api-operation";
 import type { operations } from "@shongre/contracts/openapi";
-import { apiRequest } from "@/api/http-client";
-
-type AvailabilityResponse =
-  operations["getDeliveryAvailability"]["responses"][200]["content"]["application/json"];
-type SearchResponse =
-  operations["getDeliveryRequests"]["responses"][200]["content"]["application/json"];
-type PublicRequestResponse =
-  operations["getDeliveryRequest"]["responses"][200]["content"]["application/json"];
-type FavoriteCollectionResponse =
-  operations["getDeliveryFavorites"]["responses"][200]["content"]["application/json"];
-type FavoriteResponse =
-  operations["putDeliveryRequestFavorite"]["responses"][200]["content"]["application/json"];
 type FavoriteRequest =
   operations["putDeliveryRequestFavorite"]["requestBody"]["content"]["application/json"];
-type CourierProfileResponse =
-  operations["getDeliveryCourierProfile"]["responses"][200]["content"]["application/json"];
-type SavedCourierProfileResponse =
-  operations["putDeliveryCourierProfile"]["responses"][200]["content"]["application/json"];
 type SavedCourierProfileRequest =
   operations["putDeliveryCourierProfile"]["requestBody"]["content"]["application/json"];
-type CreatedRequestResponse =
-  operations["postDeliveryRequest"]["responses"][201]["content"]["application/json"];
 type CreatedRequestRequest =
   operations["postDeliveryRequest"]["requestBody"]["content"]["application/json"];
-type PublishedRequestResponse =
-  operations["postDeliveryRequestPublish"]["responses"][200]["content"]["application/json"];
 type PublishedRequestRequest =
   operations["postDeliveryRequestPublish"]["requestBody"]["content"]["application/json"];
-type OwnRequestsResponse =
-  operations["getOwnDeliveryRequests"]["responses"][200]["content"]["application/json"];
-type OwnApplicationsResponse =
-  operations["getOwnDeliveryApplications"]["responses"][200]["content"]["application/json"];
-type OwnRequestResponse =
-  operations["getOwnDeliveryRequest"]["responses"][200]["content"]["application/json"];
-type ApplicationResponse =
-  operations["postDeliveryApplication"]["responses"][201]["content"]["application/json"];
 type ApplicationRequest =
   operations["postDeliveryApplication"]["requestBody"]["content"]["application/json"];
-type AcceptedApplicationResponse =
-  operations["postDeliveryApplicationAccept"]["responses"][200]["content"]["application/json"];
 type AcceptedApplicationRequest =
   operations["postDeliveryApplicationAccept"]["requestBody"]["content"]["application/json"];
-type TransitionResponse =
-  operations["postDeliveryRequestTransition"]["responses"][200]["content"]["application/json"];
 type TransitionRequest =
   operations["postDeliveryRequestTransition"]["requestBody"]["content"]["application/json"];
 
@@ -129,24 +98,25 @@ export interface MobileDeliveryService {
 
 export class HttpMobileDeliveryService implements MobileDeliveryService {
   async availability(marketCode: string): Promise<DeliveryFeatureAvailability> {
-    return (await apiRequest<AvailabilityResponse>(
-      `/delivery/availability?marketCode=${encodeURIComponent(marketCode)}`,
+    return (await apiOperation(
+      "getDeliveryAvailability",
       {},
       marketCode,
     )) as DeliveryFeatureAvailability;
   }
 
   async search(input: DeliverySearchInput): Promise<DeliveryPublicRequest[]> {
-    const query = new URLSearchParams({
-      marketCode: input.marketCode,
-      limit: String(input.limit),
-    });
-    if (input.pickupPostalCode)
-      query.set("pickupPostalCode", input.pickupPostalCode);
-    if (input.vehicleType) query.set("vehicleType", input.vehicleType);
-    const result = await apiRequest<SearchResponse>(
-      `/delivery/requests?${query.toString()}`,
-      {},
+    const result = await apiOperation(
+      "getDeliveryRequests",
+      {
+        query: {
+          limit: String(input.limit),
+          ...(input.pickupPostalCode
+            ? { pickupPostalCode: input.pickupPostalCode }
+            : {}),
+          ...(input.vehicleType ? { vehicleType: input.vehicleType } : {}),
+        },
+      },
       input.marketCode,
     );
     return [...result.items] as DeliveryPublicRequest[];
@@ -156,9 +126,9 @@ export class HttpMobileDeliveryService implements MobileDeliveryService {
     requestId: string,
     marketCode: string,
   ): Promise<DeliveryPublicRequest> {
-    return (await apiRequest<PublicRequestResponse>(
-      `/delivery/requests/${encodeURIComponent(requestId)}?marketCode=${encodeURIComponent(marketCode)}`,
-      {},
+    return (await apiOperation(
+      "getDeliveryRequest",
+      { path: { requestId } },
       marketCode,
     )) as DeliveryPublicRequest;
   }
@@ -167,11 +137,7 @@ export class HttpMobileDeliveryService implements MobileDeliveryService {
     _userId: string,
     marketCode: string,
   ): Promise<string[]> {
-    const result = await apiRequest<FavoriteCollectionResponse>(
-      "/delivery/favorites",
-      {},
-      marketCode,
-    );
+    const result = await apiOperation("getDeliveryFavorites", {}, marketCode);
     return [...result.requestIds];
   }
 
@@ -182,9 +148,9 @@ export class HttpMobileDeliveryService implements MobileDeliveryService {
     isFavorite: boolean,
   ): Promise<boolean> {
     const payload: FavoriteRequest = { isFavorite };
-    const result = await apiRequest<FavoriteResponse>(
-      `/delivery/requests/${encodeURIComponent(requestId)}/favorite`,
-      { method: "PUT", body: JSON.stringify(payload) },
+    const result = await apiOperation(
+      "putDeliveryRequestFavorite",
+      { path: { requestId: requestId }, body: payload },
       marketCode,
     );
     return result.isFavorite;
@@ -194,8 +160,8 @@ export class HttpMobileDeliveryService implements MobileDeliveryService {
     _actor: MobileDeliveryActor,
     marketCode: string,
   ): Promise<DeliveryCourierProfile | null> {
-    return (await apiRequest<CourierProfileResponse>(
-      `/delivery/courier/profile?marketCode=${encodeURIComponent(marketCode)}`,
+    return (await apiOperation(
+      "getDeliveryCourierProfile",
       {},
       marketCode,
     )) as DeliveryCourierProfile | null;
@@ -207,9 +173,9 @@ export class HttpMobileDeliveryService implements MobileDeliveryService {
     input: DeliveryCourierProfileInput,
   ): Promise<DeliveryCourierProfile> {
     const payload: SavedCourierProfileRequest = { marketCode, ...input };
-    return (await apiRequest<SavedCourierProfileResponse>(
-      "/delivery/courier/profile",
-      { method: "PUT", body: JSON.stringify(payload) },
+    return (await apiOperation(
+      "putDeliveryCourierProfile",
+      { body: payload },
       marketCode,
     )) as DeliveryCourierProfile;
   }
@@ -219,20 +185,17 @@ export class HttpMobileDeliveryService implements MobileDeliveryService {
     input: DeliveryRequestDraftInput,
   ): Promise<DeliveryPrivateRequest> {
     const createPayload: CreatedRequestRequest = input;
-    const draft = await apiRequest<CreatedRequestResponse>(
-      "/delivery/requests",
-      { method: "POST", body: JSON.stringify(createPayload) },
+    const draft = await apiOperation(
+      "postDeliveryRequest",
+      { body: createPayload },
       input.marketCode,
     );
     const publishPayload: PublishedRequestRequest = {
       marketCode: input.marketCode,
     };
-    return (await apiRequest<PublishedRequestResponse>(
-      `/delivery/requests/${encodeURIComponent(draft.id)}/publish`,
-      {
-        method: "POST",
-        body: JSON.stringify(publishPayload),
-      },
+    return (await apiOperation(
+      "postDeliveryRequestPublish",
+      { path: { requestId: draft.id }, body: publishPayload },
       input.marketCode,
     )) as DeliveryPrivateRequest;
   }
@@ -241,8 +204,8 @@ export class HttpMobileDeliveryService implements MobileDeliveryService {
     _actor: MobileDeliveryActor,
     marketCode: string,
   ): Promise<DeliveryPrivateRequest[]> {
-    return (await apiRequest<OwnRequestsResponse>(
-      `/delivery/me/requests?marketCode=${encodeURIComponent(marketCode)}`,
+    return (await apiOperation(
+      "getOwnDeliveryRequests",
       {},
       marketCode,
     )) as DeliveryPrivateRequest[];
@@ -252,8 +215,8 @@ export class HttpMobileDeliveryService implements MobileDeliveryService {
     _actor: MobileDeliveryActor,
     marketCode: string,
   ): Promise<DeliveryApplication[]> {
-    return (await apiRequest<OwnApplicationsResponse>(
-      `/delivery/me/applications?marketCode=${encodeURIComponent(marketCode)}`,
+    return (await apiOperation(
+      "getOwnDeliveryApplications",
       {},
       marketCode,
     )) as DeliveryApplication[];
@@ -264,9 +227,9 @@ export class HttpMobileDeliveryService implements MobileDeliveryService {
     requestId: string,
     marketCode: string,
   ): Promise<DeliveryPrivateRequest | DeliverySelectedCourierAssignment> {
-    return (await apiRequest<OwnRequestResponse>(
-      `/delivery/me/requests/${encodeURIComponent(requestId)}?marketCode=${encodeURIComponent(marketCode)}`,
-      {},
+    return (await apiOperation(
+      "getOwnDeliveryRequest",
+      { path: { requestId } },
       marketCode,
     )) as DeliveryPrivateRequest | DeliverySelectedCourierAssignment;
   }
@@ -278,9 +241,9 @@ export class HttpMobileDeliveryService implements MobileDeliveryService {
     input: DeliveryApplicationInput,
   ): Promise<DeliveryApplication> {
     const payload: ApplicationRequest = { marketCode, ...input };
-    return (await apiRequest<ApplicationResponse>(
-      `/delivery/requests/${encodeURIComponent(requestId)}/applications`,
-      { method: "POST", body: JSON.stringify(payload) },
+    return (await apiOperation(
+      "postDeliveryApplication",
+      { path: { requestId: requestId }, body: payload },
       marketCode,
     )) as DeliveryApplication;
   }
@@ -296,9 +259,12 @@ export class HttpMobileDeliveryService implements MobileDeliveryService {
       marketCode,
       expectedVersion,
     };
-    return (await apiRequest<AcceptedApplicationResponse>(
-      `/delivery/requests/${encodeURIComponent(requestId)}/applications/${encodeURIComponent(applicationId)}/accept`,
-      { method: "POST", body: JSON.stringify(payload) },
+    return (await apiOperation(
+      "postDeliveryApplicationAccept",
+      {
+        path: { requestId: requestId, applicationId: applicationId },
+        body: payload,
+      },
       marketCode,
     )) as DeliveryPrivateRequest;
   }
@@ -315,12 +281,9 @@ export class HttpMobileDeliveryService implements MobileDeliveryService {
       status,
       expectedVersion,
     };
-    return (await apiRequest<TransitionResponse>(
-      `/delivery/requests/${encodeURIComponent(requestId)}/transition`,
-      {
-        method: "POST",
-        body: JSON.stringify(payload),
-      },
+    return (await apiOperation(
+      "postDeliveryRequestTransition",
+      { path: { requestId: requestId }, body: payload },
       marketCode,
     )) as DeliveryPrivateRequest | DeliverySelectedCourierAssignment;
   }

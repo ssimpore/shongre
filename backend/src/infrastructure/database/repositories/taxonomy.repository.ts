@@ -3,6 +3,10 @@ import type {
   TaxonomyHeaderNavigationConfiguration,
   TaxonomyHeaderNavigationUpdate,
 } from "@shongre/contracts/taxonomy";
+import {
+  taxonomyHeaderNavigationLinkSchema,
+  taxonomyHeaderNavigationUpdateSchema,
+} from "@shongre/contracts/taxonomy";
 import type { Category } from "../../../shared/types/index.js";
 import { TAXONOMY_V4_PRIVATE_BUNDLE } from "../../../modules/taxonomy/generated/taxonomy-v4.private.js";
 import { AppError } from "../../../shared/errors/app-error.js";
@@ -316,6 +320,22 @@ export class DemoTaxonomyRepository implements ITaxonomyRepository {
         marketCode,
         revision: 1,
         updatedAt: "2026-08-01T08:00:00.000Z",
+        links: [
+          {
+            target: "category_overview",
+            labels: { "fr-FR": "Autres", "en-GB": "Other" },
+            shortLabels: { "fr-FR": "Autres", "en-GB": "Other" },
+            isActive: true,
+            displayOrder: DEFAULT_HEADER_CATEGORY_IDS.length,
+          },
+          {
+            target: "promotions",
+            labels: { "fr-FR": "Promotions", "en-GB": "Deals" },
+            shortLabels: { "fr-FR": "Promotions", "en-GB": "Deals" },
+            isActive: true,
+            displayOrder: DEFAULT_HEADER_CATEGORY_IDS.length + 1,
+          },
+        ],
         items: DEFAULT_HEADER_CATEGORY_IDS.flatMap(
           (categoryId, displayOrder) => {
             const category = categoriesById.get(categoryId);
@@ -377,7 +397,10 @@ export class DemoTaxonomyRepository implements ITaxonomyRepository {
         availability?.marketplaceEnabled === true
       );
     });
-    return structuredClone({ ...stored, items });
+    const links = (stored.links ?? []).filter(
+      (link) => includeInactive || link.isActive,
+    );
+    return structuredClone({ ...stored, items, links });
   }
 
   async replaceHeaderNavigation(
@@ -407,6 +430,8 @@ export class DemoTaxonomyRepository implements ITaxonomyRepository {
       }
     });
     const revision = input.expectedRevision + 1;
+    const links = input.links ?? current?.links ?? [];
+    taxonomyHeaderNavigationUpdateSchema.parse({ ...input, links });
     const items = input.items.flatMap((item) => {
       const category = categoriesById.get(item.categoryId);
       return category
@@ -418,6 +443,7 @@ export class DemoTaxonomyRepository implements ITaxonomyRepository {
       revision,
       updatedAt: new Date().toISOString(),
       items,
+      links: structuredClone(links),
     });
     return revision;
   }
@@ -565,7 +591,7 @@ export class PostgresTaxonomyRepository implements ITaxonomyRepository {
   ): Promise<TaxonomyHeaderNavigationConfiguration> {
     try {
       const supabase = getSupabaseAdminClient();
-      const [configurationResult, itemResult] = await Promise.all([
+      const [configurationResult, itemResult, linkResult] = await Promise.all([
         (supabase.from("taxonomy_header_configurations" as any) as any)
           .select("revision,updated_at")
           .eq("market_code", marketCode)
@@ -574,7 +600,25 @@ export class PostgresTaxonomyRepository implements ITaxonomyRepository {
           .select("category_id,is_active,display_order")
           .eq("market_code", marketCode)
           .order("display_order", { ascending: true }),
+        supabase
+          .from("taxonomy_header_links")
+          .select("target,labels,short_labels,is_active,display_order")
+          .eq("market_code", marketCode)
+          .order("display_order", { ascending: true }),
       ]);
+      if (linkResult.error)
+        databaseFailure("taxonomy.getHeaderNavigation.links", linkResult.error);
+      const links = (linkResult.data ?? [])
+        .filter((link) => includeInactive || link.is_active)
+        .map((link) =>
+          taxonomyHeaderNavigationLinkSchema.parse({
+            target: link.target,
+            labels: link.labels,
+            shortLabels: link.short_labels,
+            isActive: link.is_active,
+            displayOrder: link.display_order,
+          }),
+        );
       if (configurationResult.error) {
         databaseFailure(
           "taxonomy.getHeaderNavigation.configuration",
@@ -596,6 +640,7 @@ export class PostgresTaxonomyRepository implements ITaxonomyRepository {
           revision: Number(configurationResult.data?.revision ?? 0),
           updatedAt: configurationResult.data?.updated_at ?? null,
           items: [],
+          links,
         };
       }
 
@@ -676,6 +721,7 @@ export class PostgresTaxonomyRepository implements ITaxonomyRepository {
         revision: Number(configurationResult.data?.revision ?? 0),
         updatedAt: configurationResult.data?.updated_at ?? null,
         items,
+        links,
       };
     } catch (error) {
       databaseFailure("taxonomy.getHeaderNavigation", error);
@@ -689,15 +735,16 @@ export class PostgresTaxonomyRepository implements ITaxonomyRepository {
   ): Promise<number> {
     try {
       const supabase = getSupabaseAdminClient();
-      const { data, error } = await (supabase.rpc as any)(
-        "replace_taxonomy_header_categories",
+      const { data, error } = await supabase.rpc(
+        "replace_taxonomy_header_navigation",
         {
           p_market_code: input.marketCode,
           p_expected_revision: input.expectedRevision,
           p_items: input.items,
           p_actor_profile_id: actorProfileId,
           p_change_reason: input.changeReason,
-          p_request_id: requestId ?? null,
+          p_request_id: requestId,
+          p_links: input.links,
         },
       );
       if (error?.code === "40001") {

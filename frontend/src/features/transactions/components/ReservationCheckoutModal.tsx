@@ -24,7 +24,7 @@ export const ReservationCheckoutModal: React.FC<
     `${listing.city} (${listing.postalCode})`,
   );
   const [isProcessing, setIsProcessing] = useState(false);
-  const [isDemoComplete, setIsDemoComplete] = useState(false);
+  const [isComplete, setIsComplete] = useState(false);
   const [orderNumber, setOrderNumber] = useState("");
   const [error, setError] = useState<string | null>(null);
   const operationKey = useRef(
@@ -49,10 +49,9 @@ export const ReservationCheckoutModal: React.FC<
         return;
       }
       setOrderNumber(result.orderNumber ?? result.id);
-      setIsDemoComplete(true);
-      if (result.demoTransaction) {
-        onReservationComplete(result.demoTransaction);
-      }
+      setIsComplete(true);
+      const order = await services.orders.getOrderById(result.id);
+      if (order) onReservationComplete(order);
     } catch (caught) {
       setError(
         caught instanceof Error
@@ -68,14 +67,14 @@ export const ReservationCheckoutModal: React.FC<
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={isDemoComplete ? "Réservation enregistrée" : "Réserver l’annonce"}
+      title={isComplete ? "Réservation enregistrée" : "Réserver l’annonce"}
       description={
-        isDemoComplete
-          ? "La réservation de démonstration est disponible dans vos achats."
+        isComplete
+          ? "La réservation est disponible dans vos achats."
           : "Le montant de l’acompte est calculé par Shongre selon le marché, puis réglé sur la page sécurisée du prestataire."
       }
     >
-      {isDemoComplete ? (
+      {isComplete ? (
         <div className="space-y-5 py-4 text-center">
           <CheckCircle2 className="mx-auto h-14 w-14 text-success" />
           <p className="text-sm text-text-supporting">

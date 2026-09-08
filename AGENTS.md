@@ -14,7 +14,7 @@ optional approaches.
 - [Working method and instruction maintenance](#working-method-and-instruction-maintenance)
 - [Repository ownership and dependency boundaries](#repository-ownership-and-dependency-boundaries)
 - [Developer CLI, environments, and local processes](#developer-cli-environments-and-local-processes)
-- [Client architecture, API-only mobile, and deterministic Web demo mode](#client-architecture-api-only-mobile-and-deterministic-web-demo-mode)
+- [API-only client architecture](#api-only-client-architecture)
 - [Backend, OpenAPI, and domain ownership](#backend-openapi-and-domain-ownership)
 - [Database, migrations, and storage](#database-migrations-and-storage)
 - [Identity, authorization, security, and privacy](#identity-authorization-security-and-privacy)
@@ -189,15 +189,11 @@ scripts/ + Makefile    repository-level tooling
 - Every runtime binding must carry the configured environment fingerprint.
   Hosted Supabase configuration must validate the expected project and
   environment rather than relying on table prefixes or schemas for isolation.
-- Data modes and provider modes must be explicit and fail closed. Never silently
+- Backend data modes and provider modes must be explicit and fail closed. Never silently
   switch between demo, database, sandbox, or live behavior.
 - Local is the only developer profile whose backend may use local database
   infrastructure. Preview, development, staging, and production use isolated
-  hosted infrastructure. Web must use API mode with mock storage disabled in
-  development, staging, and production. Mobile is API-only in every
-  environment. `make frontend` remains the explicit standalone local Web demo
-  surface, and `make demo` may select deterministic Web/backend adapters for
-  its command-scoped local stack.
+  hosted infrastructure. Web and mobile are API-only in every environment.
 - Development, staging, and production runtime secrets must be injected by the
   environment-specific secret store. Their startup and host deployment
   preflights must reject missing/short authentication secrets, local database
@@ -215,13 +211,12 @@ scripts/ + Makefile    repository-level tooling
   `APP_ENV=local`, a proven loopback target, and the canonical local Supabase
   workdir. Remote operations require a separate protected workflow.
 
-## Client architecture, API-only mobile, and deterministic Web demo mode
+## API-only client architecture
 
-Web and mobile keep the same service boundary but have different transport
-selection rules:
+Web and mobile keep the same service boundary and one transport rule:
 
 ```text
-Web:    component → hook/controller → service contract → demo or HTTP adapter
+Web:    component → hook/controller → service contract → HTTP → /api/v1
 Mobile: component → hook/controller → service contract → HTTP → /api/v1
 ```
 
@@ -234,29 +229,23 @@ Mobile: component → hook/controller → service contract → HTTP → /api/v1
   access Supabase tables, RPCs, or Auth directly. A short-lived backend-issued
   signed upload URL may be used only by the dedicated upload transport, without
   credentials, redirects, or a second business API.
-- All connected local product development must use an API-mode Web client
-  (`NEXT_PUBLIC_DATA_MODE=api`), the API-only mobile client, and a database-mode
-  backend (`BACKEND_DATA_MODE=database`, `DATABASE_INFRA_MODE=local`) backed by
-  the repository-owned local Supabase stack, with mock storage disabled. Public
-  media may use backend-projected Supabase Storage URLs. Web demo adapters must
-  remain usable with backend infrastructure stopped, but may be selected only
-  by explicit `make frontend`, `make demo`, or Web test workflows; connected
-  Web builds must ignore browser-persisted demo preferences and never expose a
-  runtime path back to demo mode.
+- All local product development must use the API-only Web and mobile clients
+  and a database-mode backend (`BACKEND_DATA_MODE=database`,
+  `DATABASE_INFRA_MODE=local`) backed by
+  the repository-owned local Supabase stack. Public media may use
+  backend-projected Supabase Storage URLs. Frontend demo adapters, fixture
+  repositories, data-mode selectors, mock-storage flags, and runtime fallback
+  from API failures must not exist.
 - Local development uses the repository-owned Supabase stack for the backend and
-  worker while `make frontend` remains an explicitly standalone demo UI. The
-  canonical local sequence is `make install`, `make supabase-up`,
+  worker. The canonical local sequence is `make install`, `make supabase-up`,
   `make db-migrate`, `make db-seed`, then `make backend` and/or `make worker`;
   `make dev` performs that connected Web sequence in one command, validating
   configuration and infrastructure before stopping tracked application processes,
   reusing a healthy stack only when its environment and migration fingerprint
-  matches, and forcing Web
-  API and backend database mode with mock storage disabled, migrating,
-  idempotently seeding, and
-  launching the API, worker, and Web app. The local seed mirrors the versioned
-  standalone demo snapshot into production-shaped tables, imports the complete
+  matches, forcing backend database mode, migrating, idempotently seeding, and
+  launching the API, worker, and Web app. The backend-owned local seed imports production-shaped tables, the complete
   generated taxonomy v4 projection and market availability, restores the
-  database-owned header order, and copies every demo media source into local
+  database-owned header order, and copies every backend-fixture media source into local
   public Supabase Storage. In connected mode, category collections,
   navigation, filters, and category media must come through the API/runtime
   Storage configuration without a static client fallback. Intentional fixture
@@ -267,24 +256,24 @@ Mobile: component → hook/controller → service contract → HTTP → /api/v1
   source, Make recipes, and package scripts must not duplicate them. Do not
   reintroduce `infra-*`, `db-start`, or legacy `supabase-start` aliases for
   local Supabase lifecycle operations.
-- Do not connect a client task to the real backend or a live provider unless the
-  task explicitly authorizes it. Existing HTTP adapters may remain behind the
-  service registry and generated OpenAPI types.
+- Do not point a client task at production or a live provider unless the task
+  explicitly authorizes it. HTTP adapters remain behind the service registry
+  and generated OpenAPI types.
 - Components must not branch on data mode, call Supabase business tables/RPCs,
   construct `/api/v1` requests ad hoc, or contain fake backend behavior.
-- Keep Web service-registry domains lazily loaded in both demo and HTTP modes. A
+- Keep Web service-registry domains lazily loaded. A
   new registry entry must not eagerly import every adapter into the application
   shell, and service-contract methods must remain Promise-based so deferred
   domain loading preserves the public boundary. Mobile service implementations
   must be HTTP-only and use generated OpenAPI path/operation types.
-- Web/backend demo adapters must be asynchronous, deterministic, and
+- Backend test adapters must be asynchronous, deterministic, and
   contract-compatible.
   Important payment, moderation, verification, subscription, fraud, messaging,
   inventory, and error outcomes must use reproducible scenarios rather than
   uncontrolled `Math.random()` or component timers.
-- Reuse the existing Web/backend persona/scenario infrastructure. Do not create
-  a second Web demo-mode switch or independent fixture system.
-- Web/backend demo mutations must use the owned store/repository abstraction.
+- Reuse the existing backend test persona/scenario infrastructure. Do not create
+  a client fixture system.
+- Backend test mutations must use the owned store/repository abstraction.
   State that can vary by user and market must be keyed by both; components must
   not mutate shared fixture arrays.
 - Never put payment credentials, KYC data, provider secrets, or other sensitive
@@ -304,6 +293,16 @@ Mobile: component → hook/controller → service contract → HTTP → /api/v1
 
 ## Backend, OpenAPI, and domain ownership
 
+- The backend HTTP runtime uses NestJS with the Fastify adapter. The Nest shell
+  owns transport lifecycle, readiness, exception handling, and WebSocket
+  integration; the existing domain `api/*.routes.ts` registrars remain the
+  canonical operation owners. Do not move their handlers into a giant Nest
+  controller or reintroduce domain logic into the composition root.
+- Redis is the BullMQ execution transport and realtime fan-out boundary.
+  PostgreSQL domain outboxes/inboxes, leases, attempts, and idempotency remain
+  authoritative; queue jobs are schema-versioned wake/schedule messages and
+  must never contain secrets or replace atomic domain persistence. API and
+  worker reuse process-scoped connections and shut them down gracefully.
 - `backend/` is a domain-oriented TypeScript/Node modular monolith. HTTP
   registration belongs in the owning `backend/src/modules/*/api/` directory;
   `backend/src/api/v1/router.ts` composes those registrations and owns only the
@@ -357,7 +356,7 @@ Mobile: component → hook/controller → service contract → HTTP → /api/v1
   appropriate.
 - Realtime is optional and must be abstracted. Use it only where it materially
   improves UX, such as messaging or selected status updates; do not subscribe
-  clients broadly to high-volume tables. Demo mode must not require realtime.
+  clients broadly to high-volume tables. Local test adapters must not require realtime.
 
 ## Database, migrations, and storage
 
@@ -388,7 +387,8 @@ Mobile: component → hook/controller → service contract → HTTP → /api/v1
   over centrally managed, audited rates and must preserve the original money.
   A market default must be enabled and explicitly supported; missing, invalid,
   or stale rates fail closed rather than implying parity. Currency preferences
-  remain separate from market and locale, and demo rates remain deterministic.
+  remain separate from market and locale, and backend test rates remain
+  deterministic.
 - Separate public media from private message, payment, and verification
   documents. Storage keys are not proof of ownership; private uploads require
   authenticated, authorized, documented flows and malware/quarantine controls
@@ -448,11 +448,11 @@ Mobile: component → hook/controller → service contract → HTTP → /api/v1
   never bridge the two planes. Active Staff receive only their least-privilege
   internal role and approved internal overrides, while inactive Staff receive
   neither plane. Staff sessions may remain signed in while browsing public
-  marketplace discovery, but are read-only by default. The direct, audited
-  `staff.marketplace.demo` capability may unlock customer-flow simulation only
-  through clearly labelled, isolated client demo adapters; it never grants API,
-  provider, notification, payment, messaging, or production publication
-  authority. Membership and capability-override changes require active Staff,
+  marketplace discovery, but are read-only by default. The retained legacy
+  `staff.marketplace.demo` capability must never unlock customer routes or
+  mutations in API-only clients and grants no API, provider, notification,
+  payment, messaging, or publication authority. Membership and
+  capability-override changes require active Staff,
   MFA, recent authentication, self/owner governance, session revocation, and an
   audit trail; capability overrides additionally require
   `admin.permissions.manage`.
@@ -673,7 +673,11 @@ France-only happy path is insufficient for market-sensitive work.
   rather than category condition trees. Header category-bar selection,
   activation, and display order are market-scoped taxonomy configuration managed
   through the authorized admin service; clients consume its public projection
-  and must not hardcode an editorial category list. Fulfillment behavior is an
+  and must not hardcode an editorial category list. Overview and promotion links
+  share that revisioned configuration through typed navigation targets; their
+  localized labels, activation, and order are database-owned, including in
+  mobile Web navigation. Failed or empty configuration must not append client
+  fallback links. Fulfillment behavior is an
   explicit typed listing and order model; never infer physical or digital
   fulfillment from a category ID, slug, name, label, or translated copy.
 - A listing is stored once and may have explicit market publications. The shared
@@ -691,8 +695,8 @@ France-only happy path is insufficient for market-sensitive work.
   contracts include market, taxonomy, attributes, price, condition, seller type,
   location/radius, delivery/payment, sort, and bounded pagination.
 - Backend search owns production ranking and authoritative geo/radius filtering.
-  Demo adapters may simulate them. Keep the `SearchService` boundary so search
-  infrastructure can evolve without rewriting clients.
+  Keep the `SearchService` boundary so search infrastructure can evolve without
+  rewriting clients.
 - High-volume collections must be bounded and backend-shaped. Prefer cursor or
   keyset pagination where deep offsets become expensive, and prevent duplicate
   items during incremental loading.
@@ -733,9 +737,8 @@ France-only happy path is insufficient for market-sensitive work.
   access is granted only from an idempotently processed authoritative payment
   state and uses versioned fulfillment evidence plus short-lived scoped grants;
   redirects, query parameters, client state, and seller actions are never proof
-  of payment. Demo UI must
-  clearly represent simulated outcomes and never claim that a live payment
-  occurred.
+  of payment. Backend test scenarios must clearly identify simulated outcomes
+  and never claim that a live payment occurred.
 - Messaging, notifications, reports, and blocking use centralized services and
   support explicit permission, loading, empty, error, retry, and blocked states.
   New UGC surfaces must reuse reporting/blocking controls and add abuse and
@@ -768,14 +771,18 @@ France-only happy path is insufficient for market-sensitive work.
   variation points; applications must not recreate them with generic badge
   variants, direct `BadgeCheck` icons, copied SVGs, local wrappers, or CSS
   overrides.
-- The canonical compact `ListingCardView` anatomy is photo overlays, then
-  category/universe with optional real brand, price with independent Pro and
-  seller-rating facts, title, and location/date. The shared Web/native listing
-  card must not add seller avatars/names, descriptions, characteristic chips,
-  photo counts, delivery labels, multiple stars, original-price rows, or local
-  category-specific markup. Missing brand, reviews, active promotion, price, or
-  photo stays absent or uses the shared neutral media fallback; applications
-  must never invent a replacement fact.
+- The canonical `ListingCardView` anatomy is media with applicable promotion,
+  capability, and multi-photo evidence; category/universe with optional real
+  brand; price with independent Pro and seller-rating facts; title; and
+  location/date. The shared Web/native listing card derives payment, delivery,
+  digital fulfillment, negotiability, and seller-verification presentation only
+  from explicit public listing and seller projections: cards use concise labels
+  where they fit and may condense them to accessible icons, while horizontal
+  cards may show the existing decision and seller summaries. Listing detail
+  expands every available card fact and category attribute. Missing brand,
+  reviews, active promotion, price, capability, or photo stays absent or uses
+  the shared neutral media fallback; applications must never invent a
+  replacement fact or add local category-specific card markup.
 - Web application typography uses the single Nunito Sans Variable loader in
   `frontend/app/layout.tsx`. Tailwind `font-sans` resolves through the generated
   `--font-family-sans` design token; Web components inherit it and must not load
@@ -851,7 +858,7 @@ France-only happy path is insufficient for market-sensitive work.
   preload unused assets. Image pixel budgets must account for device pixel
   ratio. Keep font files/weights minimal and respect licensing.
 - State should remain local unless it is truly global, such as session, market,
-  locale, demo scenario, or global notifications. URL-owned state must support
+  locale, or global notifications. URL-owned state must support
   refresh, sharing, bookmarking, and back/forward navigation.
 
 ## Web rendering, SEO, and public discovery
@@ -1086,9 +1093,9 @@ France-only happy path is insufficient for market-sensitive work.
   conventions; do not create a second test framework.
 - Test behavior, not only rendering. Relevant changes should cover happy,
   loading, empty, error/retry, permission, ownership, market, lifecycle,
-  concurrency, mobile/desktop, keyboard, and demo-persona states.
-- Web client tests must work with the backend stopped in demo mode. Mobile tests
-  must work through mocked HTTP or an isolated local API and must not ship or
+  concurrency, mobile/desktop, keyboard, and representative persona states.
+- Web and mobile unit tests must work with the backend stopped by mocking the
+  HTTP transport or using an isolated local API; neither client may ship or
   select a runtime demo implementation.
   Backend changes require appropriate unit, contract, integration, security,
   RLS, migration, idempotency, and concurrency coverage.
@@ -1111,7 +1118,7 @@ France-only happy path is insufficient for market-sensitive work.
 - Browser E2E runs against the repository's isolated Webpack production build,
   not the interactive development server. Keep bounded concurrency and isolate
   multi-route/persona sweeps according to existing test-runner conventions.
-  `make test-web-api-transport` additionally owns an isolated test/demo API and
+  `make test-web-api-transport` additionally owns an isolated test API and
   verifies first-party sessions with an API-mode Web build. Hosted staging
   certification requires all public and authenticated journeys for the exact
   release, dedicated staging accounts, sandbox providers and real Staff MFA;

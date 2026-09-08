@@ -8,7 +8,6 @@ import {
   CreateSupportRequestInput,
 } from "./support.types";
 import type { SupportCaseStatus } from "@shongre/contracts/support";
-import { deterministicCode } from "../../utilities/deterministic-id";
 
 interface SupportStatusInfo {
   label: string;
@@ -17,13 +16,6 @@ interface SupportStatusInfo {
 }
 
 class SupportService {
-  /**
-   * Generates a unique, friendly support ticket reference (e.g. SHG-849201).
-   */
-  generateReference(): string {
-    return deterministicCode("SHG-", 6, [], "0123456789");
-  }
-
   /**
    * Localized human-readable status details.
    */

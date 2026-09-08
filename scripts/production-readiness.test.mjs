@@ -31,8 +31,6 @@ const valid = {
   CORS_ORIGIN: "https://fr.shongre.invalid,https://intl.shongre.invalid",
   BACKEND_DATA_MODE: "database",
   DATABASE_INFRA_MODE: "hosted",
-  NEXT_PUBLIC_DATA_MODE: "api",
-  NEXT_PUBLIC_ENABLE_MOCK_STORAGE: "false",
   NEXT_PUBLIC_ENABLE_AI_FEATURES: "false",
   PAYMENT_MODE: "live",
   EMAIL_MODE: "live",
@@ -51,6 +49,7 @@ const valid = {
   ENABLE_APPLE_AUTH: "false",
   ENABLE_FACEBOOK_AUTH: "false",
   DATABASE_URL: "postgresql://ci:ci@db.shongre.invalid:5432/shongre",
+  REDIS_URL: "rediss://ci:secret@redis.shongre.invalid:6380",
   SUPABASE_PROJECT_REF: "production-ref",
   EXPECTED_SUPABASE_PROJECT_REF: "production-ref",
   SUPABASE_URL: "https://production-ref.supabase.co",
@@ -107,8 +106,6 @@ function run(overrides, expectedStatus) {
 run({}, 0);
 run({ ENABLE_SOCIAL_AUTH: "true" }, 1);
 run({ STRIPE_SECRET_KEY: "sk_test_wrong_mode" }, 1);
-run({ NEXT_PUBLIC_DATA_MODE: "demo" }, 1);
-run({ NEXT_PUBLIC_ENABLE_MOCK_STORAGE: "true" }, 1);
 run({ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: "pk_test_wrong_mode" }, 1);
 run({ DIGITAL_FULFILLMENT_ENCRYPTION_KEY_BASE64: "not-a-32-byte-key" }, 1);
 run({ SHONGRE_FACTURATION_ORIGIN: "https://solutions.shongre.invalid" }, 1);

@@ -4,7 +4,7 @@ import React from "react";
 import { AlertCircle, Home, Search, ArrowRight } from "lucide-react";
 import { Button } from "../../design-system/primitives/Button";
 import { CategoryIcon } from "../../design-system/primitives/CategoryIcon";
-import { getTaxonomyLabel } from "../../domains/taxonomy/taxonomy.service";
+import { getTaxonomyLabel } from "../../domains/taxonomy/taxonomy.labels";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useRootTaxonomyCategories } from "../../hooks/useRootTaxonomyCategories";
 import { useTranslation } from "../../i18n/I18nProvider";

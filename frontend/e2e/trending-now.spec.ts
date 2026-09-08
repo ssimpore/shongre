@@ -143,49 +143,6 @@ test.describe("Admin-managed homepage discovery", () => {
     }
   });
 
-  test("opens a collection from the homepage discovery rail", async ({
-    page,
-  }) => {
-    await usePersona(page, "guest");
-    await page.goto("/", { waitUntil: "domcontentloaded" });
-    await waitForStableLayout(page);
-
-    const firstCollection = page
-      .getByTestId("home-collection-explorer")
-      .getByRole("link", { name: /^Explorer la collection / })
-      .first();
-    await expect(firstCollection).toBeVisible();
-    await firstCollection.click();
-
-    await expect(page).toHaveURL(/\/collections\//);
-  });
-
-  test("uses a horizontal collection rail on mobile without page overflow", async ({
-    page,
-  }) => {
-    await page.setViewportSize({ width: 390, height: 844 });
-    await usePersona(page, "guest");
-    await page.goto("/", { waitUntil: "domcontentloaded" });
-    await waitForStableLayout(page);
-
-    const cards = page
-      .getByTestId("home-collection-explorer")
-      .getByRole("link", { name: /^Explorer la collection / });
-    await expect(cards).toHaveCount(5);
-
-    const positions = await cards.evaluateAll((elements) =>
-      elements.slice(0, 3).map((element) => {
-        const rect = element.getBoundingClientRect();
-        return { top: Math.round(rect.top), left: Math.round(rect.left) };
-      }),
-    );
-
-    expect(positions[0].top).toBe(positions[1].top);
-    expect(positions[0].left).toBeLessThan(positions[1].left);
-    expect(positions[1].top).toBe(positions[2].top);
-    await expectNoHorizontalOverflow(page, "homepage collection rail");
-  });
-
   test("keeps one Pro action and routes it to the Pro information page", async ({
     page,
   }) => {

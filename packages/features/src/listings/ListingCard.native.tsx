@@ -13,16 +13,18 @@ import { formatRelativeTime } from "@shongre/shared";
 import {
   Badge,
   Card,
-  Heading,
   ProBadge,
   SemanticIcon,
   Text,
+  VerificationBadge,
 } from "@shongre/ui/native";
 import {
   getListingCardPriceText,
+  getListingCapabilityPresentation,
   getListingPromotionBadges,
   getListingSellerRatingPresentation,
   listingAccessibilityLabel,
+  type ListingCapabilityPresentation,
 } from "./presentation";
 import { useListingPromotionRefresh } from "./use-listing-promotion-refresh";
 
@@ -34,16 +36,27 @@ export interface ListingCardProps {
   favoriteAction?: ReactNode;
   labels: {
     boosted: string;
+    delivery: string;
+    digitalFulfillment: string;
     free: string;
+    negotiable: string;
     onRequest: string;
+    onlinePayment: string;
     rating: (rating: string, count: string) => string;
     imageUnavailable: string;
+    photos: (count: number) => string;
+    verifiedSeller: string;
   };
   identityLabels: {
     pro: string;
     proAccessibility: string;
   };
 }
+
+type ListingNonVerificationCapability = Exclude<
+  ListingCapabilityPresentation,
+  { kind: "verified_seller" }
+>;
 
 export function ListingCard({
   listing,
@@ -60,6 +73,14 @@ export function ListingCard({
 
   const price = getListingCardPriceText(listing, locale, labels);
   const badges = getListingPromotionBadges(listing, labels.boosted);
+  const capabilities = getListingCapabilityPresentation(listing, labels);
+  const verifiedCapability = capabilities.find(
+    (capability) => capability.kind === "verified_seller",
+  );
+  const capabilityBadges = capabilities.filter(
+    (capability): capability is ListingNonVerificationCapability =>
+      capability.kind !== "verified_seller",
+  );
   const horizontal = variant === "list";
   const categoryLine = [listing.categoryLabel, listing.brandLabel]
     .map((part) => part?.trim())
@@ -85,6 +106,7 @@ export function ListingCard({
   const isProfessional =
     listing.publisherType === "professional" ||
     listing.seller?.sellerType === "pro";
+  const showVerifiedBadge = !isProfessional && Boolean(verifiedCapability);
 
   return (
     <Card padding="none" style={styles.card}>
@@ -97,6 +119,15 @@ export function ListingCard({
           badges[0]?.label,
           isProfessional ? identityLabels.proAccessibility : undefined,
           published,
+          [
+            ...capabilityBadges.map(({ label }) => label),
+            ...(showVerifiedBadge && verifiedCapability
+              ? [verifiedCapability.label]
+              : []),
+            ...(listing.photoCount && listing.photoCount > 1
+              ? [labels.photos(listing.photoCount)]
+              : []),
+          ],
         )}
         onPress={onPress}
         style={({ pressed }) => [
@@ -129,6 +160,24 @@ export function ListingCard({
               />
             </View>
           )}
+          {listing.photoCount !== undefined && listing.photoCount > 1 ? (
+            <View pointerEvents="none" style={styles.photoCount}>
+              <Badge
+                variant="inverse"
+                size="xs"
+                accessibilityLabel={labels.photos(listing.photoCount)}
+                icon={
+                  <SemanticIcon
+                    name="camera"
+                    size="xs"
+                    color={nativeColors.text.inverse}
+                  />
+                }
+              >
+                {new Intl.NumberFormat(locale).format(listing.photoCount)}
+              </Badge>
+            </View>
+          ) : null}
         </View>
 
         <View style={styles.body}>
@@ -144,7 +193,7 @@ export function ListingCard({
                 </Text>
               ) : null}
             </View>
-            {isProfessional || rating ? (
+            {isProfessional || showVerifiedBadge || rating ? (
               <View style={styles.sellerSummary}>
                 {isProfessional ? (
                   <ProBadge
@@ -152,6 +201,13 @@ export function ListingCard({
                     accessibilityLabel={identityLabels.proAccessibility}
                     size="xs"
                     tone="primary"
+                  />
+                ) : null}
+                {showVerifiedBadge && verifiedCapability ? (
+                  <VerificationBadge
+                    label={verifiedCapability.label}
+                    accessibilityLabel={verifiedCapability.label}
+                    size="xs"
                   />
                 ) : null}
                 {rating ? (
@@ -184,9 +240,37 @@ export function ListingCard({
             ) : null}
           </View>
 
-          <Heading size="heading-xs" numberOfLines={1}>
+          <Text
+            size={horizontal ? "label-md" : "label-sm"}
+            weight="bold"
+            accessibilityRole="header"
+            numberOfLines={horizontal ? 1 : 2}
+          >
             {listing.title}
-          </Heading>
+          </Text>
+          {capabilityBadges.length > 0 ? (
+            <View style={styles.capabilities}>
+              {capabilityBadges
+                .slice(0, horizontal ? capabilityBadges.length : 3)
+                .map((capability) => (
+                  <Badge
+                    key={capability.kind}
+                    variant="neutral"
+                    size="xs"
+                    accessibilityLabel={capability.label}
+                    icon={
+                      <SemanticIcon
+                        name={capability.icon}
+                        size="xs"
+                        color={nativeColors.text.emphasis}
+                      />
+                    }
+                  >
+                    {capability.label}
+                  </Badge>
+                ))}
+            </View>
+          ) : null}
           <Text size="caption" tone="muted" numberOfLines={1}>
             {metaLine}
           </Text>
@@ -275,5 +359,15 @@ const styles = StyleSheet.create({
     position: "absolute",
     right: nativeSpacing.md,
     top: nativeSpacing.md,
+  },
+  photoCount: {
+    position: "absolute",
+    right: nativeSpacing.md,
+    bottom: nativeSpacing.md,
+  },
+  capabilities: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: nativeSpacing.xs,
   },
 });

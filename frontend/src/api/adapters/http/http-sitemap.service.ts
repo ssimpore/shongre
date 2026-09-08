@@ -1,6 +1,6 @@
 import type { operations } from "@shongre/contracts/openapi";
 import type { Listing } from "../../../types";
-import { httpClient } from "./http-client";
+import { apiOperation } from "./generated-api-operation";
 import { mapBackendListing } from "./http-listings.service";
 
 type BackendSitemapListingPage =
@@ -15,17 +15,17 @@ export async function fetchPublicSitemapListingPage(input: {
   snapshotAt: string;
   pageInfo: { hasNextPage: boolean; nextCursor?: string };
 }> {
-  const result = await httpClient.get<BackendSitemapListingPage>(
-    "/discovery/sitemap-listings",
-    {
-      credentials: "omit",
-      params: {
-        marketCode: input.marketCode,
-        cursor: input.cursor,
-        limit: input.limit ?? 500,
-      },
+  const result = await apiOperation<
+    BackendSitemapListingPage,
+    "getDiscoverySitemapListings"
+  >("getDiscoverySitemapListings", {
+    credentials: "omit",
+    query: {
+      marketCode: input.marketCode,
+      cursor: input.cursor,
+      limit: input.limit ?? 500,
     },
-  );
+  });
   return {
     ...result,
     items: result.items.map(mapBackendListing),

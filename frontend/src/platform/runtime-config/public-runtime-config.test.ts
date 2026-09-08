@@ -11,8 +11,6 @@ const injected: PublicRuntimeConfig = {
     "https://storage-staging.shongre.invalid/listing-media/editorial",
   publicCategoryMediaBaseUrl:
     "https://storage-staging.shongre.invalid/listing-media/categories",
-  dataMode: "api",
-  mockStorageEnabled: false,
   stripePublishableKey: "pk_test_staging",
   release: "a".repeat(40),
   applications: {
@@ -108,8 +106,6 @@ describe("public runtime configuration", () => {
     vi.stubEnv("PUBLIC_FR_URL", "https://shongre.fr");
     vi.stubEnv("PUBLIC_INTL_URL", "https://shongre.com");
     vi.stubEnv("API_URL", "https://api.shongre.com");
-    vi.stubEnv("NEXT_PUBLIC_DATA_MODE", "api");
-    vi.stubEnv("NEXT_PUBLIC_ENABLE_MOCK_STORAGE", "false");
     vi.stubEnv("SHONGRE_MARKETPLACE_ORIGIN", "https://shongre.fr");
     vi.stubEnv("SHONGRE_SOLUTIONS_ORIGIN", "https://solutions.shongre.com");
     vi.stubEnv("SHONGRE_PROSPECTS_ORIGIN", "https://prospects.shongre.com");

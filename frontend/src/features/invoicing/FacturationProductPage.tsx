@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { Container } from "../../design-system";
 import { useAuth } from "../../app/providers/AuthProvider";
+import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { routes } from "../../configuration/routes";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useTranslation } from "../../i18n/I18nProvider";
@@ -28,6 +29,7 @@ const secondaryCtaClass =
 export function FacturationProductPage() {
   const { t } = useTranslation();
   const { currentUser } = useAuth();
+  const { activeMarket, availableMarkets } = useMarketLocation();
   const { canAccessRoute } = useAuthorization();
 
   usePageMeta({
@@ -62,7 +64,7 @@ export function FacturationProductPage() {
     totalLabel: t("invoicing.product.previewSubtotal"),
     taxLabel: t("invoicing.product.previewTax"),
     marketLabel: t("invoicing.product.previewMarket"),
-    marketValue: t("invoicing.product.previewMarketValue"),
+    marketValue: `${activeMarket.name} · ${activeMarket.currency}`,
     documentLabel: t("invoicing.product.previewDocument"),
     documentNotice: t("invoicing.product.previewDocumentNotice"),
   };
@@ -71,7 +73,6 @@ export function FacturationProductPage() {
     [Calculator, t("invoicing.product.trustExact")],
     [Globe2, t("invoicing.product.trustMarkets")],
     [LockKeyhole, t("invoicing.product.trustFinalization")],
-    [ShieldCheck, t("invoicing.product.trustDemo")],
   ] as const;
 
   const workflowSteps = [
@@ -107,11 +108,12 @@ export function FacturationProductPage() {
     t("invoicing.product.finalizationDocument"),
   ];
 
-  const markets = [
-    ["FR", t("invoicing.product.marketFrance"), "EUR", "fr-FR"],
-    ["BE", t("invoicing.product.marketBelgium"), "EUR", "fr-BE"],
-    ["CH", t("invoicing.product.marketSwitzerland"), "CHF", "fr-CH"],
-  ] as const;
+  const markets = availableMarkets.map((market) => [
+    market.code,
+    market.name,
+    market.currency,
+    market.defaultLocale,
+  ]);
 
   return (
     <div className="overflow-hidden bg-bg-surface pb-14">
@@ -142,7 +144,7 @@ export function FacturationProductPage() {
                   className="mt-0.5 h-icon-sm w-icon-sm shrink-0 text-success"
                   aria-hidden="true"
                 />
-                {t("invoicing.product.demoNotice")}
+                {t("invoicing.product.apiNotice")}
               </p>
             </div>
 

@@ -112,6 +112,24 @@ primitives now delegate to `@shongre/ui`; listing-card consumers delegate to
 autocomplete, data tables, responsive galleries, SEO metadata, and admin grids
 remain local because their structure and interaction are Web-specific.
 
+Compact Web listing cards use the existing 13px title and 16px price tokens,
+reserve at least two title lines, and keep category/location copy secondary.
+Vertical titles wrap in full rather than being clamped while space remains.
+The shared card permits long titles, prices and seller facts to wrap without
+clipping; its token-backed height is a minimum. The visible verification label is concise
+while its accessible name retains the complete seller-verification meaning.
+Horizontal cards retain their larger type and richer decision information.
+
+The Web header rail and mobile category menu consume the market-scoped taxonomy
+header configuration. Its category selection and `links` (typed
+`category_overview` / `promotions` destinations) share ordering, activation,
+revision checks, and the protected admin editor. Localized link labels live in
+`taxonomy_header_links`, not UI message catalogues. No additional entries are
+appended on missing or failed API configuration. The existing category-only SQL
+operation remains the atomic inner operation of
+`replace_taxonomy_header_navigation`; omitted `links` preserve stored links for
+existing API clients, while an explicit empty array removes them.
+
 Every Expo route was audited: home, search, publication, message list and thread,
 account overview, alerts, favourites, billing, delivery, digital purchases,
 digital selling, notification preferences, login, listing detail, settings, and

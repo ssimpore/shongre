@@ -38,13 +38,9 @@ test.describe("Homepage administration", () => {
     await expect(
       universe.getByRole("button", { name: "Descendre home_garden" }),
     ).toBeVisible();
+    await collections.getByRole("checkbox", { name: "Véhicules" }).check();
     await expect(
-      collections.getByTestId("homepage-collection-selection-pepites-semaine"),
-    ).toBeVisible();
-    await expect(
-      collections.getByRole("button", {
-        name: /Descendre Pépites de la semaine/,
-      }),
+      collections.getByTestId("homepage-collection-selection-vehicules"),
     ).toBeVisible();
 
     await trending.getByRole("button", { name: /Descendre/ }).click();

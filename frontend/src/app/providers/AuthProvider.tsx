@@ -89,19 +89,11 @@ interface AuthContextType {
   }) => Promise<AuthResult>;
   refreshUser: () => Promise<void>;
   switchRole: (role: UserRole) => Promise<void>;
-  switchDemoUser: (userKey: string) => Promise<void>;
   updateProfile: (updates: AuthProfileUpdate) => Promise<void>;
   can: (
     permission: Permission,
     resource?: ResourceOwnershipContext | any,
     options?: AuthorizationContextOptions,
-  ) => boolean;
-  hasEntitlement: (
-    entitlement:
-      | "storefrontCustomization"
-      | "prioritySupport"
-      | "bulkImportExport"
-      | "automaticRelisting",
   ) => boolean;
   canAccessMarket: (countryCode?: string) => boolean;
   logout: () => Promise<void>;
@@ -304,12 +296,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     announceAuthChange(user ? "login" : "logout");
   };
 
-  const switchDemoUser = async (userKey: string) => {
-    const user = await services.auth.switchDemoUser(userKey);
-    setCurrentUser(user);
-    announceAuthChange(user ? "login" : "logout");
-  };
-
   const updateProfile = async (updates: AuthProfileUpdate) => {
     if (!currentUser) return;
     const updated = await services.auth.updateProfile(updates);
@@ -322,16 +308,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     options?: AuthorizationContextOptions,
   ): boolean => {
     return authorizationService.can(currentUser, permission, resource, options);
-  };
-
-  const hasEntitlement = (
-    entitlement:
-      | "storefrontCustomization"
-      | "prioritySupport"
-      | "bulkImportExport"
-      | "automaticRelisting",
-  ): boolean => {
-    return authorizationService.hasEntitlement(currentUser, entitlement);
   };
 
   const canAccessMarket = (countryCode?: string): boolean => {
@@ -372,10 +348,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         upgradeToPro,
         refreshUser,
         switchRole,
-        switchDemoUser,
         updateProfile,
         can,
-        hasEntitlement,
         canAccessMarket,
         logout,
         loginAs,

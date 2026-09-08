@@ -1,17 +1,8 @@
 import type { Category } from "../types";
 
-/**
- * Shared search copy.
- *
- * Search appears on four surfaces (desktop header, homepage hero, the search page
- * itself, and the mobile drawer). Each had its own placeholder wording, so the
- * same action was described four different ways. The wording lives here so the
- * surfaces stay consistent; only the length varies with the available width.
- */
+/** Shared search copy for wide and compact search controls. */
 export const SEARCH_PLACEHOLDER = {
-  /** Wide surfaces: header, hero, search page. */
   full: "Que recherchez-vous ? (ex : vélo gravel, iPhone 15, canapé chêne…)",
-  /** Narrow surfaces: mobile drawer, compact filter bars. */
   compact: "Que recherchez-vous ?",
 } as const;
 
@@ -22,185 +13,6 @@ export interface PopularSearchKeyword {
   subCategorySlug?: string;
   isTrending?: boolean;
 }
-
-const POPULAR_SEARCH_KEYWORDS: PopularSearchKeyword[] = [
-  // Véhicules & Mobilité
-  {
-    keyword: "Vélo gravel",
-    categorySlug: "loisirs",
-    subCategorySlug: "loisirs.velos",
-    isTrending: true,
-  },
-  {
-    keyword: "Vélo électrique urbain",
-    categorySlug: "loisirs",
-    subCategorySlug: "loisirs.velos",
-  },
-  {
-    keyword: "Peugeot 208",
-    categorySlug: "vehicules",
-    subCategorySlug: "vehicles.cars",
-    isTrending: true,
-  },
-  {
-    keyword: "Renault Clio V",
-    categorySlug: "vehicules",
-    subCategorySlug: "vehicles.cars",
-  },
-  {
-    keyword: "Volkswagen Golf",
-    categorySlug: "vehicules",
-    subCategorySlug: "vehicles.cars",
-  },
-  {
-    keyword: "Scooter 125cc",
-    categorySlug: "vehicules",
-    subCategorySlug: "vehicles.motorcycles",
-  },
-  {
-    keyword: "BMW Série 1",
-    categorySlug: "vehicules",
-    subCategorySlug: "vehicles.cars",
-  },
-
-  // Tech & Multimédia
-  {
-    keyword: "iPhone 15 Pro",
-    categorySlug: "multimedia",
-    subCategorySlug: "multimedia.smartphones",
-    isTrending: true,
-  },
-  {
-    keyword: "iPhone 14 128Go",
-    categorySlug: "multimedia",
-    subCategorySlug: "multimedia.smartphones",
-  },
-  {
-    keyword: "MacBook Pro M3",
-    categorySlug: "multimedia",
-    subCategorySlug: "multimedia.computers",
-    isTrending: true,
-  },
-  {
-    keyword: "PlayStation 5",
-    categorySlug: "multimedia",
-    subCategorySlug: "multimedia.gaming",
-    isTrending: true,
-  },
-  {
-    keyword: "Nintendo Switch OLED",
-    categorySlug: "multimedia",
-    subCategorySlug: "multimedia.gaming",
-  },
-  {
-    keyword: "iPad Air M2",
-    categorySlug: "multimedia",
-    subCategorySlug: "multimedia.computers",
-  },
-  {
-    keyword: "Casque Sony WH-1000XM5",
-    categorySlug: "multimedia",
-    subCategorySlug: "multimedia.audio",
-  },
-
-  // Maison & Jardin
-  {
-    keyword: "Canapé d’angle convertible",
-    categorySlug: "maison",
-    subCategorySlug: "maison.mobilier",
-    isTrending: true,
-  },
-  {
-    keyword: "Table chêne massif",
-    categorySlug: "maison",
-    subCategorySlug: "maison.mobilier",
-  },
-  {
-    keyword: "Buffet enfilade vintage",
-    categorySlug: "maison",
-    subCategorySlug: "maison.mobilier",
-  },
-  {
-    keyword: "Tondeuse thermique autoportée",
-    categorySlug: "maison",
-    subCategorySlug: "maison.bricolage",
-  },
-  {
-    keyword: "Perceuse sans fil Bosch",
-    categorySlug: "maison",
-    subCategorySlug: "maison.bricolage",
-  },
-  {
-    keyword: "Plafonnier design scandinave",
-    categorySlug: "maison",
-    subCategorySlug: "maison.deco",
-  },
-
-  // Immobilier
-  {
-    keyword: "Appartement T3 avec balcon",
-    categorySlug: "immobilier",
-    subCategorySlug: "real_estate.sales",
-    isTrending: true,
-  },
-  {
-    keyword: "Maison avec jardin",
-    categorySlug: "immobilier",
-    subCategorySlug: "real_estate.sales",
-  },
-  {
-    keyword: "Studio meublé centre ville",
-    categorySlug: "immobilier",
-    subCategorySlug: "real_estate.rentals",
-  },
-
-  // Mode & Accessoires
-  {
-    keyword: "Montre Seiko automatique",
-    categorySlug: "mode",
-    subCategorySlug: "mode.accessoires",
-    isTrending: true,
-  },
-  {
-    keyword: "Veste Barbour vintage",
-    categorySlug: "mode",
-    subCategorySlug: "mode.vetements-homme",
-  },
-  {
-    keyword: "Sneakers Nike Dunk",
-    categorySlug: "mode",
-    subCategorySlug: "mode.chaussures",
-    isTrending: true,
-  },
-  {
-    keyword: "Manteau en laine mérinos",
-    categorySlug: "mode",
-    subCategorySlug: "mode.vetements-femme",
-  },
-
-  // Loisirs & Matériel
-  {
-    keyword: "Guitare acoustique Yamaha",
-    categorySlug: "loisirs",
-    subCategorySlug: "loisirs.musique",
-  },
-  {
-    keyword: "Poussette Cybex compacte",
-    categorySlug: "loisirs",
-    subCategorySlug: "loisirs.puericulture",
-    isTrending: true,
-  },
-  {
-    keyword: "Planche de surf hybride",
-    categorySlug: "loisirs",
-    subCategorySlug: "loisirs.sport",
-  },
-  {
-    keyword: "Set Lego Star Wars collector",
-    categorySlug: "loisirs",
-    subCategorySlug: "loisirs.jeux",
-  },
-];
 
 export interface CategorySuggestion {
   id: string;
@@ -215,115 +27,86 @@ export interface CategorySuggestion {
 }
 
 export interface AutocompleteResults {
-  /** Matched taxonomy categories and subcategories */
   categories: CategorySuggestion[];
-  /** Matched keywords from trending/popular registry */
   keywords: PopularSearchKeyword[];
-  /** Default recommended trending searches when input is blank */
   trending: PopularSearchKeyword[];
 }
 
 /**
- * Resolves search autocomplete suggestions given an input string and optional active category.
+ * Combines API-owned keyword suggestions with API-owned taxonomy nodes. This
+ * helper intentionally contains no marketplace examples or popularity data.
  */
 export function getSearchSuggestions(
   rawInput: string,
-  activeCategorySlug?: string,
+  _activeCategorySlug?: string,
   categories: readonly Category[] = [],
   limit = 5,
+  keywordSuggestions: readonly string[] = [],
+  popularKeywords: readonly string[] = [],
 ): AutocompleteResults {
   const query = rawInput.trim().toLowerCase();
-
-  // Top trending defaults
-  const trending = POPULAR_SEARCH_KEYWORDS.filter((k) => k.isTrending).slice(
-    0,
-    4,
-  );
+  const trending = popularKeywords.slice(0, 4).map((keyword) => ({
+    keyword,
+    isTrending: true,
+  }));
 
   if (!query) {
-    return {
-      categories: [],
-      keywords: [],
-      trending,
-    };
+    return { categories: [], keywords: [], trending };
   }
 
-  // 1. Search in Categories and Subcategories
   const matchedCategories: CategorySuggestion[] = [];
-
   const compactLabelFor = (node: {
     name: string;
     label?: string;
     shortLabel?: string;
   }) => node.shortLabel || node.label || node.name;
 
-  categories.forEach((cat) => {
-    const catNameLower = cat.name.toLowerCase();
-    const catSlugLower = cat.slug.toLowerCase();
-    const compactLabel = compactLabelFor(cat);
-    const compactLower = compactLabel.toLowerCase();
-
-    // Match parent category
+  categories.forEach((category) => {
+    const compactLabel = compactLabelFor(category);
     if (
-      catNameLower.includes(query) ||
-      catSlugLower.includes(query) ||
-      compactLower.includes(query)
+      category.name.toLowerCase().includes(query) ||
+      category.slug.toLowerCase().includes(query) ||
+      compactLabel.toLowerCase().includes(query)
     ) {
       matchedCategories.push({
-        id: cat.id,
-        name: cat.name,
-        slug: cat.slug,
+        id: category.id,
+        name: category.name,
+        slug: category.slug,
         compactLabel,
         isSubCategory: false,
-        categoryObj: cat,
+        categoryObj: category,
       });
     }
 
-    // Match subcategories
-    if (cat.subCategories && cat.subCategories.length > 0) {
-      cat.subCategories.forEach((sub) => {
-        const subNameLower = sub.name.toLowerCase();
-        const subSlugLower = sub.slug.toLowerCase();
-        const subCompactLabel = compactLabelFor(sub);
-        const subCompactLower = subCompactLabel.toLowerCase();
-
-        if (
-          subNameLower.includes(query) ||
-          subSlugLower.includes(query) ||
-          subCompactLower.includes(query)
-        ) {
-          matchedCategories.push({
-            id: sub.id,
-            name: sub.name,
-            slug: sub.slug,
-            compactLabel: subCompactLabel,
-            parentName: compactLabelFor(cat),
-            parentSlug: cat.slug,
-            isSubCategory: true,
-            categoryObj: cat,
-          });
-        }
-      });
-    }
+    category.subCategories?.forEach((subcategory) => {
+      const subcategoryLabel = compactLabelFor(subcategory);
+      if (
+        subcategory.name.toLowerCase().includes(query) ||
+        subcategory.slug.toLowerCase().includes(query) ||
+        subcategoryLabel.toLowerCase().includes(query)
+      ) {
+        matchedCategories.push({
+          id: subcategory.id,
+          name: subcategory.name,
+          slug: subcategory.slug,
+          compactLabel: subcategoryLabel,
+          parentName: compactLabel,
+          parentSlug: category.slug,
+          isSubCategory: true,
+          categoryObj: category,
+        });
+      }
+    });
   });
 
-  // 2. Search in Popular Keywords
-  let matchedKeywords = POPULAR_SEARCH_KEYWORDS.filter((item) =>
-    item.keyword.toLowerCase().includes(query),
-  );
-
-  // If an active category is set, prioritize keywords in that category
-  if (activeCategorySlug) {
-    matchedKeywords.sort((a, b) => {
-      const aMatch = a.categorySlug === activeCategorySlug ? 1 : 0;
-      const bMatch = b.categorySlug === activeCategorySlug ? 1 : 0;
-      return bMatch - aMatch;
-    });
-  }
+  const keywords = keywordSuggestions
+    .filter((keyword) => keyword.toLowerCase().includes(query))
+    .slice(0, limit)
+    .map((keyword) => ({ keyword }));
 
   return {
     categories: matchedCategories.slice(0, limit),
-    keywords: matchedKeywords.slice(0, limit),
+    keywords,
     trending,
   };
 }

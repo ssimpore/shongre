@@ -4,91 +4,6 @@ import { useTranslation } from "../../i18n/I18nProvider";
 import type { MessageKey } from "../../i18n/messages.fr";
 import { SolutionIcon } from "./SolutionIcon";
 
-/**
- * Sample rows for the decorative product mock.
- *
- * Every label used to be a French literal — "Rechercher…", "Chiffre
- * d'affaires", "Émise" — on a surface whose every other string ships
- * translated, so the mockups stayed French on the English catalogue.
- *
- * A cell is either a message key or a literal, because both kinds genuinely
- * appear here: company names, invoice numbers, scores and cities are the same
- * in any language, while categories, statuses and listing titles are not.
- */
-type Cell = { key: MessageKey } | { text: string };
-
-interface PreviewRow {
-  id: string;
-  label: Cell;
-  category: Cell;
-  /** Rendered instead of `amountMinor` when the column is not money. */
-  value?: Cell;
-  amountMinor?: number;
-  status: Cell;
-}
-
-const marketplaceRows: readonly PreviewRow[] = [
-  {
-    id: "listing-house",
-    label: { key: "solutions.preview.listing.familyHome" },
-    category: { key: "solutions.preview.category.realEstate" },
-    value: { text: "Écully" },
-    status: { key: "solutions.preview.status.featured" },
-  },
-  {
-    id: "listing-bike",
-    label: { key: "solutions.preview.listing.cargoBike" },
-    category: { key: "solutions.preview.category.mobility" },
-    value: { text: "Lyon" },
-    status: { key: "solutions.preview.status.new" },
-  },
-];
-
-const rows: Record<SolutionIconId, readonly PreviewRow[]> = {
-  prospects: [
-    {
-      id: "prospect-atelier",
-      label: { text: "Atelier Lumière" },
-      category: { key: "solutions.preview.category.design" },
-      value: { text: "82" },
-      status: { key: "solutions.preview.status.new" },
-    },
-    {
-      id: "prospect-greenov",
-      label: { text: "Greenov" },
-      category: { key: "solutions.preview.category.energy" },
-      value: { text: "76" },
-      status: { key: "solutions.preview.status.contacted" },
-    },
-    {
-      id: "prospect-techmind",
-      label: { text: "Techmind" },
-      category: { key: "solutions.preview.category.software" },
-      value: { text: "71" },
-      status: { key: "solutions.preview.status.followUp" },
-    },
-  ],
-  facturation: [
-    {
-      id: "invoice-0012",
-      label: { text: "F-2026-0012" },
-      category: { text: "Atelier Lumière" },
-      amountMinor: 125000,
-      status: { key: "solutions.preview.status.issued" },
-    },
-    {
-      id: "invoice-0011",
-      label: { text: "F-2026-0011" },
-      category: { text: "Maison Sève" },
-      amountMinor: 84000,
-      status: { key: "solutions.preview.status.paid" },
-    },
-  ],
-  marketplace: marketplaceRows,
-  pilotage: [],
-  apps: marketplaceRows,
-};
-
 const previewTitleKeys: Record<SolutionIconId, MessageKey> = {
   prospects: "solutions.preview.title.prospects",
   facturation: "solutions.preview.title.invoices",
@@ -110,15 +25,8 @@ export function SolutionPreview({
   icon: SolutionIconId;
   variant?: "catalog" | "detail";
 }) {
-  const { t, locale } = useTranslation();
+  const { t } = useTranslation();
   const detail = variant === "detail";
-  const cell = (value: Cell) => ("key" in value ? t(value.key) : value.text);
-  const money = (amountMinor: number) =>
-    new Intl.NumberFormat(locale, {
-      style: "currency",
-      currency: "EUR",
-      minimumFractionDigits: 2,
-    }).format(amountMinor / 100);
 
   return (
     <div
@@ -176,27 +84,15 @@ export function SolutionPreview({
                 {t("solutions.preview.search")}
               </div>
               <div className="mt-2 divide-y divide-border-subtle">
-                {rows[icon].map((row) => (
+                {[0, 1, 2].map((row) => (
                   <div
-                    key={row.id}
+                    key={row}
                     className={`grid grid-cols-4 gap-2 border-b border-border-subtle text-micro ${detail ? "py-4" : "py-1"}`}
                   >
-                    <span className="truncate font-semibold text-text-main">
-                      {cell(row.label)}
-                    </span>
-                    <span className="truncate text-text-muted">
-                      {cell(row.category)}
-                    </span>
-                    <span className="text-right font-bold text-text-main">
-                      {row.amountMinor !== undefined
-                        ? money(row.amountMinor)
-                        : row.value
-                          ? cell(row.value)
-                          : null}
-                    </span>
-                    <span className="text-right text-text-muted">
-                      {cell(row.status)}
-                    </span>
+                    <span className="h-2 rounded-full bg-border-base" />
+                    <span className="h-2 rounded-full bg-bg-muted" />
+                    <span className="ml-auto h-2 w-2/3 rounded-full bg-border-base" />
+                    <span className="ml-auto h-2 w-1/2 rounded-full bg-bg-muted" />
                   </div>
                 ))}
               </div>

@@ -141,7 +141,7 @@ export const HeroBoostedScroll: React.FC<HeroBoostedScrollProps> = ({
 
     // The service order remains authoritative inside each group. The Hero only
     // lifts listings carrying the shared market-resolved promotion projection;
-    // legacy `isBoosted` flags, seller type, discounts and fixture ids are not
+    // legacy `isBoosted` flags, seller type, discounts and record ids are not
     // ranking evidence.
     return [...promoted, ...organic].slice(0, MAX_FEATURED_LISTINGS);
   }, [activeMarket.code, allListings, convertMoney, currentLocale]);

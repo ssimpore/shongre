@@ -15,7 +15,7 @@ import { Button } from "../../design-system/primitives/Button";
 import { Badge } from "../../design-system/primitives/Badge";
 import { Select } from "../../design-system";
 import { services } from "../../api/client/service-registry";
-import type { CountryMarketDefinition } from "../../configuration/market.config";
+import type { CountryMarketDefinition } from "../../api/contracts/markets.contract";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { useToast } from "../../app/providers/ToastProvider";
 import { useTranslation } from "../../i18n/I18nProvider";

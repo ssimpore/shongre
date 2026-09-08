@@ -6,7 +6,7 @@ import React from "react";
 import { ShieldCheck, Star, MapPin, Clock } from "lucide-react";
 import { ProBadge, VerificationBadge } from "@shongre/ui/web";
 import { Link } from "react-router-dom";
-import { UserProfile } from "../../types";
+import { PublicSellerProfile } from "../../types";
 import { Avatar } from "./Badge";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { routes } from "../../configuration/routes";
@@ -16,7 +16,7 @@ import {
 } from "../utils/controlMetrics";
 
 export interface SellerCardProps {
-  user: UserProfile;
+  user: PublicSellerProfile;
   className?: string;
 }
 
@@ -29,7 +29,7 @@ export const SellerCard: React.FC<SellerCardProps> = ({
   const profileUrl = routes.seller.publicPage({
     id: user.id,
     slug: user.slug,
-    storeSlug: user.storeSlug,
+    storeSlug: user.slug,
     isProfessional: isPro,
   });
 
@@ -53,7 +53,7 @@ export const SellerCard: React.FC<SellerCardProps> = ({
               to={profileUrl}
               className={`text-sm sm:text-base font-bold text-text-main hover:text-primary ${CONTROL_MOTION_CLASS} ${CONTROL_FOCUS_CLASS} truncate`}
             >
-              {user.companyName || user.name}
+              {user.name}
             </Link>
             {isPro && (
               <ProBadge
@@ -80,11 +80,15 @@ export const SellerCard: React.FC<SellerCardProps> = ({
                 ({user.reviewCount} avis)
               </span>
             </Link>
-            <span>•</span>
-            <span className="flex items-center gap-1 text-text-muted">
-              <MapPin className="w-icon-xs h-icon-xs" />
-              {user.city}
-            </span>
+            {user.city ? (
+              <>
+                <span>•</span>
+                <span className="flex items-center gap-1 text-text-muted">
+                  <MapPin className="w-icon-xs h-icon-xs" />
+                  {user.city}
+                </span>
+              </>
+            ) : null}
           </div>
 
           {user.bio && (
@@ -96,10 +100,12 @@ export const SellerCard: React.FC<SellerCardProps> = ({
       </div>
 
       <div className="mt-3.5 pt-3 border-t border-border-subtle grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-text-muted">
-        <div className="flex items-center gap-1.5 min-w-0">
-          <Clock className="w-icon-sm h-icon-sm text-text-disabled shrink-0" />
-          <span className="truncate">Répond {user.responseTimeText}</span>
-        </div>
+        {user.responseTimeText ? (
+          <div className="flex items-center gap-1.5 min-w-0">
+            <Clock className="w-icon-sm h-icon-sm text-text-disabled shrink-0" />
+            <span className="truncate">Répond {user.responseTimeText}</span>
+          </div>
+        ) : null}
         <div className="flex items-center gap-1.5 min-w-0">
           <ShieldCheck className="w-icon-sm h-icon-sm text-text-disabled shrink-0" />
           <span className="truncate">

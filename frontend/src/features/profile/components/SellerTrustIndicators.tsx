@@ -2,11 +2,11 @@ import React from "react";
 import { CheckCircle2, Clock, Info, Truck } from "lucide-react";
 import { VerifiedIcon } from "@shongre/ui/web";
 import { isProSeller } from "../../../domains/user/user.domain";
-import type { UserProfile } from "../../../types";
+import type { PublicSellerProfile } from "../../../types";
 import { useTranslation } from "../../../i18n/I18nProvider";
 
 export interface SellerTrustIndicatorsProps {
-  seller: UserProfile;
+  seller: PublicSellerProfile;
 }
 
 /** Public, narrowly scoped signals. This component never produces a trust score. */
@@ -15,33 +15,24 @@ export const SellerTrustIndicators: React.FC<SellerTrustIndicatorsProps> = ({
 }) => {
   const { t } = useTranslation();
   const isPro = isProSeller(seller);
-  const isIdentityVerified = seller.identityVerification?.status === "verified";
-  const isBusinessVerified =
-    seller.professionalVerification?.status === "verified";
-  const hasVerifiedIdentity = isIdentityVerified || isBusinessVerified;
-  const hasConfirmedContact = seller.isEmailVerified || seller.isPhoneVerified;
+  const isBusinessVerified = seller.isBusinessVerified;
+  const hasVerifiedIdentity = seller.isVerified || isBusinessVerified;
   const primarySignal =
     isPro && isBusinessVerified
       ? {
           title: "Entreprise vérifiée",
           description: "L’immatriculation professionnelle a été contrôlée.",
         }
-      : isIdentityVerified
+      : seller.isVerified
         ? {
             title: "Identité vérifiée",
             description: "L’identité du titulaire du compte a été contrôlée.",
           }
-        : hasConfirmedContact
-          ? {
-              title: "Coordonnée confirmée",
-              description:
-                "Au moins un moyen de contact du compte a été confirmé.",
-            }
-          : {
-              title: "Aucun signal supplémentaire",
-              description:
-                "Aucune vérification publique supplémentaire n’est affichée.",
-            };
+        : {
+            title: "Aucun signal supplémentaire",
+            description:
+              "Aucune vérification publique supplémentaire n’est affichée.",
+          };
 
   return (
     <section className="rounded-3xl border border-border-disabled/60 bg-surface-soft p-5 shadow-sm sm:p-6">
@@ -106,9 +97,10 @@ export const SellerTrustIndicators: React.FC<SellerTrustIndicatorsProps> = ({
       <div className="mt-4 flex gap-2 rounded-xl bg-surface-muted p-3 text-xs text-text-supporting">
         <Clock className="h-icon-md w-icon-md shrink-0" aria-hidden="true" />
         <p>
-          Taux de réponse : {seller.responseRatePercent ?? 0}%{" "}
-          {seller.responseTimeText || ""}. Ces signaux décrivent des contrôles
-          précis ; ils ne garantissent ni le vendeur ni le produit.
+          Taux de réponse : {seller.responseRatePercent}%{" "}
+          {seller.responseTimeText ? `· ${seller.responseTimeText}. ` : ""}Ces
+          signaux décrivent des contrôles précis ; ils ne garantissent ni le
+          vendeur ni le produit.
         </p>
       </div>
     </section>

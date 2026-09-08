@@ -39,7 +39,6 @@ import type {
   LocationSelectorValue,
 } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
-import { storageService } from "../../services/storage.service";
 // Leaflet reads `window` when its module body runs, so a static import puts the
 // map engine in the server graph: every render of /immo threw
 // "window is not defined" and the route silently degraded to a client-only
@@ -663,23 +662,6 @@ export const ImmoSearchPage: React.FC = () => {
             : {}),
         },
       });
-      storageService.saveSearch(
-        {
-          id,
-          title,
-          filters: {
-            query: query.query,
-            city: query.city,
-            categorySlug: catalog.activation.categoryIds[0],
-            marketCode: activeMarket.code,
-          },
-          createdAt: new Date().toISOString(),
-          hasNotifications: true,
-          matchCount: total,
-        },
-        currentUser.id,
-        activeMarket.code,
-      );
       toast.success(t("watch.immo.success"));
     } catch (reason) {
       toast.error(
@@ -835,6 +817,7 @@ export const ImmoSearchPage: React.FC = () => {
             {view === "map" ? (
               <SearchMapResultsLayout
                 resultsLabel="Biens immobiliers sur la carte"
+                narrowView="results"
                 results={
                   loading ? (
                     <ListingGrid variant="list">

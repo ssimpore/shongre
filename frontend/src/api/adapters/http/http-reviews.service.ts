@@ -3,23 +3,27 @@ import {
   SubmitReviewInput,
   OrderReviewEligibility,
 } from "../../contracts/reviews.contract";
-import { httpClient } from "./http-client";
+import { apiOperation } from "./generated-api-operation";
 import { ReviewItem } from "../../../types";
 
 export class HttpReviewsService implements ReviewsServiceContract {
   async getOrderEligibility(orderId: string): Promise<OrderReviewEligibility> {
-    return httpClient.get<OrderReviewEligibility>(
-      `/orders/${encodeURIComponent(orderId)}/review`,
+    return apiOperation<OrderReviewEligibility, "getOrderReviewEligibility">(
+      "getOrderReviewEligibility",
+      { path: { id: orderId } },
     );
   }
   async getUserReviews(userId: string): Promise<ReviewItem[]> {
-    return httpClient.get<ReviewItem[]>(
-      `/reviews/user/${encodeURIComponent(userId)}`,
+    return apiOperation<ReviewItem[], "getReviewsUserByUserId">(
+      "getReviewsUserByUserId",
+      { path: { userId: userId } },
     );
   }
 
   async submitReview(input: SubmitReviewInput): Promise<ReviewItem> {
-    return httpClient.post<ReviewItem>("/reviews/submit", input);
+    return apiOperation<ReviewItem, "postReviewsSubmit">("postReviewsSubmit", {
+      body: input,
+    });
   }
 }
 

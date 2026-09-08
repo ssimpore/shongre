@@ -77,13 +77,15 @@ after publication/activation, and serves a same-market last valid value only
 inside the configured five-minute stale-if-error window. It never caches
 quotes, entitlements, eligibility, subscriptions, permissions, or balances.
 
-Redis is intentionally absent. Introduce a Redis-compatible shared cache only
-after at least two API replicas show repeated origin/database work that the CDN
-and request coalescing cannot absorb, or when measured invalidation cannot meet
-the SLO. Keys must begin with the configured cache-key version and include every
-applicable market, locale, tenant, organization, principal/role, and permission
-version. Use single-flight locking with a bounded lease and never make Redis
-authoritative.
+Redis is the canonical BullMQ transport and cross-replica realtime fan-out. It
+is not an authoritative business store and is not yet a general response cache.
+Introduce shared response/catalog caching only after at least two API replicas
+show repeated origin/database work that the CDN and request coalescing cannot
+absorb, or measured invalidation cannot meet the SLO. Cache keys must begin with
+the configured cache-key version and include every applicable market, locale,
+tenant, organization, principal/role, and permission version. Use single-flight
+locking with a bounded lease; losing Redis may pause queue wakeups/realtime and
+readiness, but must not erase an accepted domain mutation.
 
 Server-rendered listing, category, search, employment, automotive, education,
 and real-estate data resolve through the same lazy service registry as their
@@ -155,20 +157,23 @@ remain below 80% of the database connection limit, and alert before saturation.
 ## Asynchronous work and backpressure
 
 Email, notifications, provider webhooks, media scanning/cleanup, analytics,
-search indexing, CRM/marketing work, and lifecycle expiry use durable PostgreSQL
-queues/outboxes and worker leases. Search requests append privacy-safe discovery
-events to `discovery_search_event_outbox`; the worker leases bounded batches with
-`SKIP LOCKED`, writes the analytics projection idempotently, retries with
-backoff, and dead-letters after the configured attempt limit. Request latency
-does not depend on analytics persistence. Do not move these paths back to
-request timers or process memory. Scale workers by queue age and provider
-quotas, not CPU alone.
+search indexing, CRM/marketing work, and lifecycle expiry use BullMQ for
+scheduled execution and prompt domain wakeups while durable PostgreSQL
+queues/outboxes, worker leases, attempts, and dead letters remain authoritative.
+Search requests append privacy-safe discovery events to
+`discovery_search_event_outbox`; a BullMQ-scheduled processor leases bounded
+batches with `SKIP LOCKED`, writes the analytics projection idempotently,
+retries with backoff, and dead-letters after the configured attempt limit.
+Request latency does not depend on analytics persistence. Do not move these
+paths back to request timers or process memory. Scale independent worker
+replicas by BullMQ age/depth, database backlog age, and provider quotas—not CPU
+alone.
 
 ## Latest connected local evidence
 
 The 2026-09-07 comparison used a production Next build connected to the local
-database-mode backend and repository-owned Supabase (`NEXT_PUBLIC_DATA_MODE=api`,
-mock storage disabled). It is regression evidence only:
+database-mode backend and repository-owned Supabase through the API-only Web
+client. It is regression evidence only:
 
 - executable JavaScript fell from 437.3 KiB to 345.8 KiB gzip and from 1,656.8
   KiB to 1,263.1 KiB raw; the largest gzip chunk fell from 100.1 KiB to 84.3

@@ -29,7 +29,6 @@ export interface OrderCheckoutResult {
   orderNumber?: string;
   status: string;
   checkout?: { id: string; url: string; status: string };
-  demoTransaction?: Transaction;
 }
 
 export interface DirectPurchaseQuote {

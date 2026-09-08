@@ -1,164 +1,143 @@
-import { describe, it, expect } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { collectionService } from "./collection.service";
-import { ALL_COLLECTIONS } from "./collection.data";
-import { Listing } from "../../types";
+import { PAGE_SIZES } from "../../configuration/pagination.config";
 
-describe("CollectionService", () => {
-  it("returns all collection pillars", () => {
-    const pillars = collectionService.getPillars();
-    expect(pillars.length).toBeGreaterThan(5);
-    expect(pillars.some((p) => p.id === "editorial")).toBe(true);
-    expect(pillars.some((p) => p.id === "budget")).toBe(true);
-    expect(pillars.some((p) => p.id === "style")).toBe(true);
+const api = vi.hoisted(() => ({ tree: vi.fn(), search: vi.fn() }));
+vi.mock("../../api/client/service-registry", () => ({
+  services: {
+    taxonomy: { getV4Tree: api.tree },
+    search: { search: api.search },
+  },
+}));
+
+const marketContext = { countryCode: "FR" };
+const root = {
+  id: "electronics",
+  slug: "electronique",
+  parentId: null,
+  labels: { "fr-FR": "Électronique", "en-GB": "Electronics" },
+  shortLabels: {},
+  description: "",
+};
+const listing = {
+  id: "api-listing",
+  title: "Published listing",
+  coverImageUrl: "https://media.example.test/listing.jpg",
+};
+
+describe("API-driven collections", () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+    api.tree.mockResolvedValue({ items: [root] });
+    api.search.mockResolvedValue({ total: 12, items: [listing] });
   });
 
-  it("retrieves collections by pillar", () => {
-    const all = collectionService.getCollections("all");
-    expect(all.length).toBe(ALL_COLLECTIONS.length);
+  it("keeps the shared browser and SSR page size within the search API contract", async () => {
+    // The canonical GET /listings/search contract accepts limits from 1 to 50.
+    api.search.mockImplementation(async ({ limit }: { limit: number }) => {
+      if (limit < 1 || limit > 50) throw new Error("Invalid search page size");
+      return { total: 12, items: [listing] };
+    });
+    await expect(
+      collectionService.getCollection(
+        root.slug,
+        marketContext,
+        "fr-FR",
+        PAGE_SIZES.collectionListings,
+      ),
+    ).resolves.toMatchObject({ listings: [listing] });
+  });
 
-    const budgetCols = collectionService.getCollections("budget");
-    expect(budgetCols.length).toBeGreaterThan(0);
-    budgetCols.forEach((col) => {
-      expect(col.pillarId).toBe("budget");
+  it("uses API root taxonomy, inventory counts and listing media", async () => {
+    api.tree.mockResolvedValue({
+      items: [
+        root,
+        {
+          ...root,
+          id: "phones",
+          slug: "telephones",
+          parentId: root.id,
+          shortLabels: { "en-GB": "Phones" },
+        },
+      ],
+    });
+    const collections = await collectionService.getCollections(
+      marketContext,
+      "en-GB",
+    );
+    expect(collections).toEqual([
+      expect.objectContaining({
+        id: root.id,
+        slug: root.slug,
+        title: "Electronics",
+        listingCount: 12,
+        itemCountLabel: "12",
+        coverImageUrl: listing.coverImageUrl,
+        tags: ["Phones"],
+      }),
+    ]);
+    expect(api.tree).toHaveBeenCalledWith({ marketContext, locale: "en-GB" });
+    expect(api.search).toHaveBeenCalledExactlyOnceWith({
+      marketCode: "FR",
+      categorySlug: root.slug,
+      sortBy: "date_desc",
+      limit: 1,
     });
   });
 
-  it("retrieves a single collection by slug", () => {
-    const col = collectionService.getCollection("moins-de-50");
-    expect(col).toBeDefined();
-    expect(col?.title).toContain("moins de 50 €");
+  it("does not fabricate a collection when inventory or its image is absent", async () => {
+    api.search.mockResolvedValueOnce({ total: 0, items: [] });
+    await expect(
+      collectionService.getCollections(marketContext, "fr-FR"),
+    ).resolves.toEqual([]);
+    api.search.mockResolvedValueOnce({
+      total: 12,
+      items: [{ id: "without-image" }],
+    });
+    await expect(
+      collectionService.getCollections(marketContext, "fr-FR"),
+    ).resolves.toEqual([]);
   });
 
-  it("filters listings accurately for a budget collection (moins-de-50)", () => {
-    const col = collectionService.getCollection("moins-de-50")!;
-    const mockListings: Listing[] = [
-      {
-        id: "1",
-        title: "T-shirt vintage",
-        price: 25,
-        status: "active",
-      } as Listing,
-      {
-        id: "2",
-        title: "Vélo de course",
-        price: 350,
-        status: "active",
-      } as Listing,
-      {
-        id: "3",
-        title: "Livre déco",
-        price: 15,
-        status: "active",
-      } as Listing,
-    ];
-
-    const results = collectionService.filterListingsForCollection(
-      col,
-      mockListings,
-    );
-    expect(results.some((l) => l.id === "1")).toBe(true);
-    expect(results.some((l) => l.id === "3")).toBe(true);
-    expect(results.some((l) => l.id === "2")).toBe(false);
+  it("propagates API failures instead of returning fallback data", async () => {
+    const error = new Error("API unavailable");
+    api.search.mockRejectedValue(error);
+    await expect(
+      collectionService.getCollections(marketContext, "fr-FR"),
+    ).rejects.toBe(error);
+    await expect(
+      collectionService.getCollection(root.slug, marketContext, "fr-FR", 24),
+    ).rejects.toBe(error);
   });
 
-  it("keeps the discount collection ID compatible while exposing its canonical slug", () => {
-    const col = collectionService.getCollection("bons-plans")!;
-    expect(col.slug).toBe("offres-prix-reduit");
-    expect(col.title).toBe("Offres à prix réduit");
-
-    expect(collectionService.getCollection("offres-prix-reduit")).toBe(col);
-
-    const mockListings: Listing[] = [
-      {
-        id: "1",
-        title: "Manteau Sézane",
-        price: 195,
-        originalPrice: 320,
-        status: "active",
-      } as Listing,
-      {
-        id: "2",
-        title: "Livre",
-        price: 10,
-        status: "active",
-      } as Listing,
-    ];
-
-    const results = collectionService.filterListingsForCollection(
-      col,
-      mockListings,
-    );
-    expect(results.some((l) => l.id === "1")).toBe(true);
-    expect(results.some((l) => l.id === "2")).toBe(false);
+  it("does not resolve an obsolete editorial slug absent from API taxonomy", async () => {
+    await expect(
+      collectionService.getCollection(
+        "pepites-semaine",
+        marketContext,
+        "fr-FR",
+        24,
+      ),
+    ).resolves.toBeNull();
+    expect(api.search).not.toHaveBeenCalled();
   });
 
-  it("filters listings for free donation collection (dons-gratuit)", () => {
-    const col = collectionService.getCollection("dons-gratuit")!;
-    const mockListings: Listing[] = [
-      {
-        id: "1",
-        title: "Lot de pots",
-        price: 0,
-        isFreeDonation: true,
-        status: "active",
-      } as Listing,
-      {
-        id: "2",
-        title: "Chaise",
-        price: 50,
-        isFreeDonation: false,
-        status: "active",
-      } as Listing,
-    ];
-
-    const results = collectionService.filterListingsForCollection(
-      col,
-      mockListings,
-    );
-    expect(results.some((l) => l.id === "1")).toBe(true);
-    expect(results.some((l) => l.id === "2")).toBe(false);
-  });
-
-  it("keeps only proven, current promotions for the requested market", () => {
-    const collection = collectionService.getCollection("vedettes")!;
-    const startsAt = new Date(Date.now() - 60_000).toISOString();
-    const endsAt = new Date(Date.now() + 60_000).toISOString();
-    const promoted = {
-      id: "promoted-fr",
-      title: "Annonce mise en avant",
-      price: 100,
-      status: "active",
+  it("resolves collection details from the same API inventory", async () => {
+    await expect(
+      collectionService.getCollection(root.slug, marketContext, "fr-FR", 24),
+    ).resolves.toEqual({
+      collection: expect.objectContaining({
+        slug: root.slug,
+        title: "Électronique",
+        listingCount: 12,
+      }),
+      listings: [listing],
+    });
+    expect(api.search).toHaveBeenCalledExactlyOnceWith({
       marketCode: "FR",
-      promotionState: "active",
-      promotionType: "featured",
-      promotionSource: "purchase",
-      promotionSourceId: "opaque-proof",
-      promotionStartAt: startsAt,
-      promotionEndAt: endsAt,
-    } as Listing;
-
-    const results = collectionService.filterListingsForCollection(
-      collection,
-      [
-        promoted,
-        {
-          ...promoted,
-          id: "legacy",
-          promotionState: undefined,
-          isBoosted: true,
-        },
-        { ...promoted, id: "wrong-market", marketCode: "BE" },
-        { ...promoted, id: "missing-proof", promotionSourceId: undefined },
-        {
-          ...promoted,
-          id: "expired",
-          promotionStartAt: new Date(Date.now() - 120_000).toISOString(),
-          promotionEndAt: new Date(Date.now() - 60_000).toISOString(),
-        },
-      ],
-      { marketCode: "FR" },
-    );
-
-    expect(results.map((listing) => listing.id)).toEqual(["promoted-fr"]);
+      categorySlug: root.slug,
+      sortBy: "date_desc",
+      limit: 24,
+    });
   });
 });

@@ -1,6 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { httpClient } from "./http-client";
 
+const captureOperationalFailure = vi.hoisted(() => vi.fn());
+
 vi.mock("../../client/api-client.config", () => ({
   apiClientConfig: { apiBaseUrl: "/api/v1" },
   resolveApiRequestBaseUrl: (value: string) => value,
@@ -9,7 +11,7 @@ vi.mock("../../../domains/market/market-routing", () => ({
   currentBrowserMarketCode: () => "FR",
 }));
 vi.mock("../../../services/telemetry.service", () => ({
-  telemetryService: { captureException: vi.fn() },
+  telemetryService: { captureOperationalFailure },
 }));
 
 const transport = vi.fn();
@@ -19,6 +21,7 @@ const denied = () =>
 beforeEach(() => {
   cookieDocument.cookie = "";
   transport.mockReset();
+  captureOperationalFailure.mockReset();
   vi.stubGlobal("document", cookieDocument);
   vi.stubGlobal("fetch", transport);
 });
@@ -28,6 +31,27 @@ afterEach(() => {
 });
 
 describe("session-aware HTTP retries", () => {
+  it("reports an unsuccessful API response as an operational failure", async () => {
+    transport.mockResolvedValueOnce(
+      Response.json(
+        { error: { code: "NOT_FOUND", message: "Annonce introuvable" } },
+        { status: 404 },
+      ),
+    );
+
+    await expect(httpClient.get("/listings/missing")).rejects.toMatchObject({
+      code: "NOT_FOUND",
+    });
+    expect(captureOperationalFailure).toHaveBeenCalledWith(
+      expect.any(Error),
+      "api-request",
+      expect.objectContaining({
+        route: "/listings/missing",
+        statusCode: 404,
+      }),
+    );
+  });
+
   it("keeps the deadline active until the response body completes", async () => {
     vi.useFakeTimers();
     transport.mockImplementation(async (_url, init: RequestInit) => ({

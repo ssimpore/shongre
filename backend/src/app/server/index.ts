@@ -1,9 +1,28 @@
-import { createServer, IncomingMessage, ServerResponse } from "http";
+import "reflect-metadata";
+import { IncomingMessage, ServerResponse } from "http";
 import { randomUUID } from "crypto";
+import {
+  All,
+  ArgumentsHost,
+  Catch,
+  Controller,
+  type ExceptionFilter,
+  Inject,
+  Module,
+  Req,
+  Res,
+} from "@nestjs/common";
+import { NestFactory } from "@nestjs/core";
+import { WsAdapter } from "@nestjs/platform-ws";
+import {
+  FastifyAdapter,
+  type NestFastifyApplication,
+} from "@nestjs/platform-fastify";
+import type { FastifyReply, FastifyRequest } from "fastify";
 import { colors } from "@shongre/design-tokens";
 import { buildApiUrl, config } from "../config/index.js";
 import { bootstrapApp } from "../bootstrap/index.js";
-import { apiV1Router } from "../../api/v1/router.js";
+import { apiV1Router, type ParsedRequestBody } from "../../api/v1/router.js";
 import { requestContext } from "../../infrastructure/observability/request-context.js";
 import { AppError } from "../../shared/errors/app-error.js";
 import {
@@ -11,6 +30,9 @@ import {
   renderApiDocumentation,
 } from "../../infrastructure/http/openapi-documentation.js";
 import { logger } from "../../infrastructure/logging/logger.js";
+import { QueueModule } from "../../infrastructure/queue/queue.module.js";
+import { RedisHealthService } from "../../infrastructure/queue/redis-health.service.js";
+import { RealtimeModule } from "../../infrastructure/realtime/realtime.module.js";
 
 function renderBackendHomePage(
   port: number,
@@ -212,211 +234,385 @@ function renderBackendHomePage(
 </html>`;
 }
 
-export function createHttpServer() {
-  const server = createServer(
-    async (req: IncomingMessage, res: ServerResponse) => {
-      const startedAt = performance.now();
-      const suppliedRequestId = String(req.headers["x-request-id"] || "");
-      const requestId = /^[A-Za-z0-9._-]{1,128}$/.test(suppliedRequestId)
-        ? suppliedRequestId
-        : randomUUID();
-      return requestContext.run({ requestId }, async () => {
-        const context = requestContext.getStore()!;
-        res.setHeader("X-Request-Id", requestId);
-        res.once("finish", () => {
-          logger.info("http_request_completed", {
-            requestId,
-            operationId: context.operationId,
-            marketCode: context.marketCode,
-            method: req.method || "GET",
-            path: context.route || "[operational-or-unmatched]",
-            statusCode: res.statusCode,
-            durationMs: Math.round(performance.now() - startedAt),
-            cacheControl: String(res.getHeader("Cache-Control") || ""),
-            cacheTagCount: String(res.getHeader("Cache-Tag") || "")
-              .split(",")
-              .filter(Boolean).length,
-            contentEncoding: String(
-              res.getHeader("Content-Encoding") || "identity",
-            ),
-            responseBytes: Number(res.getHeader("Content-Length") || 0),
-          });
-        });
+function resolveRequestId(value: unknown): string {
+  const supplied = String(value || "");
+  return /^[A-Za-z0-9._-]{1,128}$/.test(supplied) ? supplied : randomUUID();
+}
 
-        // Set CORS headers
-        const requestOrigin = String(req.headers.origin || "");
-        const configuredOrigins = new Set([
-          ...config.corsOrigin
-            .split(",")
-            .map((value) => value.trim())
-            .filter(Boolean),
-          ...config.oauthAllowedReturnOrigins,
-        ]);
-        if (requestOrigin && configuredOrigins.has(requestOrigin)) {
-          res.setHeader("Access-Control-Allow-Origin", requestOrigin);
-          res.setHeader("Access-Control-Allow-Credentials", "true");
-          res.setHeader("Vary", "Origin");
-        }
-        res.setHeader(
-          "Access-Control-Allow-Methods",
-          "GET, POST, PUT, DELETE, OPTIONS, PATCH",
-        );
-        res.setHeader(
-          "Access-Control-Allow-Headers",
-          "Content-Type, Authorization, Accept, X-CSRF-Token, X-Shongre-Client, X-Shongre-Market, X-Request-Id, Idempotency-Key, If-None-Match",
-        );
-        res.setHeader("Referrer-Policy", "no-referrer");
-        res.setHeader("X-Content-Type-Options", "nosniff");
-        res.setHeader("X-Frame-Options", "DENY");
-        res.setHeader(
-          "Permissions-Policy",
-          "camera=(), microphone=(), geolocation=()",
-        );
-        res.setHeader("Cross-Origin-Resource-Policy", "same-site");
-        if (config.environment.environment === "production") {
-          res.setHeader(
-            "Strict-Transport-Security",
-            "max-age=31536000; includeSubDomains",
-          );
-        }
-        res.setHeader("Cache-Control", "no-store");
+function sendTransportError(
+  error: unknown,
+  request: FastifyRequest,
+  reply: FastifyReply,
+): void {
+  const transportError = error as {
+    statusCode?: number;
+    code?: string;
+    name?: string;
+    getStatus?: () => number;
+  };
+  const requestId = resolveRequestId(request.headers["x-request-id"]);
+  const candidateStatus = Number(
+    transportError.getStatus?.() || transportError.statusCode || 500,
+  );
+  const statusCode =
+    candidateStatus >= 400 && candidateStatus < 500 ? candidateStatus : 500;
+  const message =
+    statusCode === 413
+      ? "Corps de requête trop volumineux."
+      : statusCode < 500
+        ? "La requête est invalide."
+        : "Une erreur interne est survenue.";
+  logger[statusCode < 500 ? "warn" : "error"]("http_transport_rejected", {
+    requestId,
+    method: request.method,
+    path: request.url,
+    statusCode,
+    errorCode: transportError.code,
+    errorName: transportError.name,
+  });
+  reply
+    .header("X-Request-Id", requestId)
+    .header("Cache-Control", "no-store")
+    .header("Referrer-Policy", "no-referrer")
+    .header("X-Content-Type-Options", "nosniff")
+    .header("X-Frame-Options", "DENY")
+    .header("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
+    .header("Cross-Origin-Resource-Policy", "same-site")
+    .status(statusCode)
+    .send(
+      new AppError({
+        code: statusCode < 500 ? "BAD_REQUEST" : "INTERNAL_ERROR",
+        statusCode,
+        message,
+      }).toJSON(requestId),
+    );
+}
 
-        if (req.method === "OPTIONS") {
-          res.writeHead(204);
-          res.end();
-          return;
-        }
+@Catch()
+class TransportExceptionFilter implements ExceptionFilter {
+  catch(error: unknown, host: ArgumentsHost): void {
+    sendTransportError(
+      error,
+      host.switchToHttp().getRequest<FastifyRequest>(),
+      host.switchToHttp().getResponse<FastifyReply>(),
+    );
+  }
+}
 
-        const acceptHeader = req.headers.accept || "";
+function rejectMalformedPath(
+  path: string,
+  request: IncomingMessage,
+  response: ServerResponse,
+): void {
+  const requestId = resolveRequestId(request.headers["x-request-id"]);
+  logger.warn("http_transport_rejected", {
+    requestId,
+    method: request.method,
+    path,
+    statusCode: 400,
+    errorCode: "FST_ERR_BAD_URL",
+  });
+  const body = JSON.stringify(
+    new AppError({
+      code: "BAD_REQUEST",
+      statusCode: 400,
+      message: "Le chemin de la requête est invalide.",
+    }).toJSON(requestId),
+  );
+  response.writeHead(400, {
+    "Content-Type": "application/json; charset=utf-8",
+    "Content-Length": Buffer.byteLength(body),
+    "X-Request-Id": requestId,
+    "Cache-Control": "no-store",
+    "Referrer-Policy": "no-referrer",
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "DENY",
+    "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+    "Cross-Origin-Resource-Policy": "same-site",
+  });
+  response.end(body);
+}
 
-        if (req.method === "GET" && req.url === "/api/openapi.json") {
-          res.writeHead(200, { "Content-Type": "application/json" });
-          res.end(JSON.stringify(await openApiDocument()));
-          return;
-        }
-        if (req.method === "GET" && req.url === "/api/docs") {
-          res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
-          res.end(await renderApiDocumentation());
-          return;
-        }
-
-        // Backend Home Page (HTML in browser, JSON otherwise)
-        if (req.url === "/") {
-          if (acceptHeader.includes("text/html")) {
-            res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
-            res.end(
-              renderBackendHomePage(
-                config.port,
-                config.apiPrefix,
-                config.frontendUrl,
-              ),
-            );
-            return;
-          }
-          res.writeHead(200, { "Content-Type": "application/json" });
-          res.end(
-            JSON.stringify({
-              status: "ok",
-              service: "shongre-backend",
-              version: config.version,
-              environment: config.environment.environment,
-              release: config.release,
-              port: config.port,
-              home: config.publicApiUrl,
-              api: buildApiUrl("/"),
-              health: new URL(
-                "/health",
-                config.environment.urls.api,
-              ).toString(),
-            }),
-          );
-          return;
-        }
-
-        // Liveness is deliberately shallow: it answers whether this process can
-        // serve HTTP, without ejecting every replica during a dependency outage.
-        if (
-          req.url === "/health" ||
-          req.url === "/health/live" ||
-          req.url === "/livez" ||
-          req.url === "/api/health"
-        ) {
-          res.writeHead(200, { "Content-Type": "application/json" });
-          res.end(
-            JSON.stringify({
-              status: "ok",
-              service: "shongre-backend",
-              version: config.version,
-              environment: config.environment.environment,
-              release: config.release,
-            }),
-          );
-          return;
-        }
-
-        // Readiness is dependency-aware and returns a failing status so the
-        // orchestrator does not route traffic before the database is usable.
-        if (
-          req.url === "/readyz" ||
-          req.url === "/api/ready" ||
-          req.url === "/health/ready"
-        ) {
-          const databaseReady =
-            await import("../../infrastructure/database/db-client.js").then(
-              ({ db }) => db.healthCheck(),
-            );
-          const statusCode = databaseReady ? 200 : 503;
-          res.writeHead(statusCode, { "Content-Type": "application/json" });
-          res.end(
-            JSON.stringify({
-              status: databaseReady ? "ready" : "not_ready",
-              service: "shongre-backend",
-              version: config.version,
-              environment: config.environment.environment,
-              release: config.release,
-              dependencies: { database: databaseReady ? "up" : "down" },
-            }),
-          );
-          return;
-        }
-
-        // Delegate to API v1 Router
-        await apiV1Router.handleRequest(req, res).catch((error: unknown) => {
-          // Parsing and dispatch failures must remain request-local, including
-          // failures before the router can select an operation.
-          const invalidUrl =
-            error instanceof TypeError &&
-            "code" in error &&
-            error.code === "ERR_INVALID_URL";
-          if (!invalidUrl)
-            logger.error("http_dispatch_failed", {
-              errorName: error instanceof Error ? error.name : "UnknownError",
-              operationId: context.operationId,
-              requestId,
-            });
-          if (res.headersSent) {
-            res.destroy();
-            return;
-          }
-          res.writeHead(invalidUrl ? 400 : 500, {
-            "Content-Type": "application/json",
-            "Cache-Control": "no-store",
-          });
-          res.end(
-            JSON.stringify(
-              new AppError({
-                code: invalidUrl ? "BAD_REQUEST" : "INTERNAL_ERROR",
-                message: invalidUrl
-                  ? "Le chemin de la requête est invalide."
-                  : "Une erreur interne est survenue.",
-              }).toJSON(requestId),
-            ),
-          );
-        });
+export async function handleHttpRequest(
+  req: IncomingMessage,
+  res: ServerResponse,
+  parsedRequestBody?: ParsedRequestBody,
+  redisHealth: RedisHealthService = new RedisHealthService(),
+): Promise<void> {
+  const startedAt = performance.now();
+  const requestId = resolveRequestId(req.headers["x-request-id"]);
+  return requestContext.run({ requestId }, async () => {
+    const context = requestContext.getStore()!;
+    res.setHeader("X-Request-Id", requestId);
+    res.once("finish", () => {
+      logger.info("http_request_completed", {
+        requestId,
+        operationId: context.operationId,
+        marketCode: context.marketCode,
+        method: req.method || "GET",
+        path: context.route || "[operational-or-unmatched]",
+        statusCode: res.statusCode,
+        durationMs: Math.round(performance.now() - startedAt),
+        cacheControl: String(res.getHeader("Cache-Control") || ""),
+        cacheTagCount: String(res.getHeader("Cache-Tag") || "")
+          .split(",")
+          .filter(Boolean).length,
+        contentEncoding: String(
+          res.getHeader("Content-Encoding") || "identity",
+        ),
+        responseBytes: Number(res.getHeader("Content-Length") || 0),
       });
+    });
+
+    // Set CORS headers
+    const requestOrigin = String(req.headers.origin || "");
+    const configuredOrigins = new Set([
+      ...config.corsOrigin
+        .split(",")
+        .map((value) => value.trim())
+        .filter(Boolean),
+      ...config.oauthAllowedReturnOrigins,
+    ]);
+    if (requestOrigin && configuredOrigins.has(requestOrigin)) {
+      res.setHeader("Access-Control-Allow-Origin", requestOrigin);
+      res.setHeader("Access-Control-Allow-Credentials", "true");
+      res.setHeader("Vary", "Origin");
+    }
+    res.setHeader(
+      "Access-Control-Allow-Methods",
+      "GET, POST, PUT, DELETE, OPTIONS, PATCH",
+    );
+    res.setHeader(
+      "Access-Control-Allow-Headers",
+      "Content-Type, Authorization, Accept, X-CSRF-Token, X-Shongre-Client, X-Shongre-Market, X-Request-Id, Idempotency-Key, If-None-Match",
+    );
+    res.setHeader("Referrer-Policy", "no-referrer");
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    res.setHeader("X-Frame-Options", "DENY");
+    res.setHeader(
+      "Permissions-Policy",
+      "camera=(), microphone=(), geolocation=()",
+    );
+    res.setHeader("Cross-Origin-Resource-Policy", "same-site");
+    if (config.environment.environment === "production") {
+      res.setHeader(
+        "Strict-Transport-Security",
+        "max-age=31536000; includeSubDomains",
+      );
+    }
+    res.setHeader("Cache-Control", "no-store");
+
+    if (req.method === "OPTIONS") {
+      res.writeHead(204);
+      res.end();
+      return;
+    }
+
+    const acceptHeader = req.headers.accept || "";
+
+    if (req.method === "GET" && req.url === "/api/openapi.json") {
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify(await openApiDocument()));
+      return;
+    }
+    if (req.method === "GET" && req.url === "/api/docs") {
+      res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+      res.end(await renderApiDocumentation());
+      return;
+    }
+
+    // Backend Home Page (HTML in browser, JSON otherwise)
+    if (req.url === "/") {
+      if (acceptHeader.includes("text/html")) {
+        res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+        res.end(
+          renderBackendHomePage(
+            config.port,
+            config.apiPrefix,
+            config.frontendUrl,
+          ),
+        );
+        return;
+      }
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(
+        JSON.stringify({
+          status: "ok",
+          service: "shongre-backend",
+          version: config.version,
+          environment: config.environment.environment,
+          release: config.release,
+          port: config.port,
+          home: config.publicApiUrl,
+          api: buildApiUrl("/"),
+          health: new URL("/health", config.environment.urls.api).toString(),
+        }),
+      );
+      return;
+    }
+
+    // Liveness is deliberately shallow: it answers whether this process can
+    // serve HTTP, without ejecting every replica during a dependency outage.
+    if (
+      req.url === "/health" ||
+      req.url === "/health/live" ||
+      req.url === "/livez" ||
+      req.url === "/api/health"
+    ) {
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(
+        JSON.stringify({
+          status: "ok",
+          service: "shongre-backend",
+          version: config.version,
+          environment: config.environment.environment,
+          release: config.release,
+        }),
+      );
+      return;
+    }
+
+    // Readiness is dependency-aware and returns a failing status so the
+    // orchestrator does not route traffic before the database is usable.
+    if (
+      req.url === "/readyz" ||
+      req.url === "/api/ready" ||
+      req.url === "/health/ready"
+    ) {
+      const [databaseReady, redisReady] = await Promise.all([
+        import("../../infrastructure/database/db-client.js").then(({ db }) =>
+          db.healthCheck(),
+        ),
+        redisHealth.check(),
+      ]);
+      const ready = databaseReady && redisReady;
+      const statusCode = ready ? 200 : 503;
+      res.writeHead(statusCode, { "Content-Type": "application/json" });
+      res.end(
+        JSON.stringify({
+          status: ready ? "ready" : "not_ready",
+          service: "shongre-backend",
+          version: config.version,
+          environment: config.environment.environment,
+          release: config.release,
+          dependencies: {
+            database: databaseReady ? "up" : "down",
+            redis: redisReady ? "up" : "down",
+          },
+        }),
+      );
+      return;
+    }
+
+    // Delegate to API v1 Router
+    await apiV1Router
+      .handleRequest(req, res, parsedRequestBody)
+      .catch((error: unknown) => {
+        // Parsing and dispatch failures must remain request-local, including
+        // failures before the router can select an operation.
+        const invalidUrl =
+          error instanceof TypeError &&
+          "code" in error &&
+          error.code === "ERR_INVALID_URL";
+        if (!invalidUrl)
+          logger.error("http_dispatch_failed", {
+            errorName: error instanceof Error ? error.name : "UnknownError",
+            operationId: context.operationId,
+            requestId,
+          });
+        if (res.headersSent) {
+          res.destroy();
+          return;
+        }
+        res.writeHead(invalidUrl ? 400 : 500, {
+          "Content-Type": "application/json",
+          "Cache-Control": "no-store",
+        });
+        res.end(
+          JSON.stringify(
+            new AppError({
+              code: invalidUrl ? "BAD_REQUEST" : "INTERNAL_ERROR",
+              message: invalidUrl
+                ? "Le chemin de la requête est invalide."
+                : "Une erreur interne est survenue.",
+            }).toJSON(requestId),
+          ),
+        );
+      });
+  });
+}
+
+type FastifyRequestWithRawBody = FastifyRequest & { rawBody?: Buffer };
+
+@Controller()
+class HttpTransportController {
+  constructor(
+    @Inject(RedisHealthService)
+    private readonly redisHealth: RedisHealthService,
+  ) {}
+
+  @All("*")
+  async dispatch(
+    @Req() request: FastifyRequestWithRawBody,
+    @Res() reply: FastifyReply,
+  ): Promise<void> {
+    const parsedRequestBody = ["POST", "PUT", "PATCH", "DELETE"].includes(
+      request.method,
+    )
+      ? {
+          body: request.body ?? null,
+          rawBody: request.rawBody?.toString("utf8") || "",
+        }
+      : undefined;
+    // Existing operation handlers write to ServerResponse directly. Hijacking
+    // prevents Fastify from serializing a second response while the migration
+    // retains the domain-owned route registry and response policies.
+    reply.hijack();
+    await handleHttpRequest(
+      request.raw,
+      reply.raw,
+      parsedRequestBody,
+      this.redisHealth,
+    );
+  }
+}
+
+@Module({
+  imports: [QueueModule, RealtimeModule],
+  controllers: [HttpTransportController],
+})
+class BackendApplicationModule {}
+
+export async function createBackendApplication(): Promise<NestFastifyApplication> {
+  const parserBodyLimit = config.maxRequestBodyBytes + 64 * 1_024;
+  const adapter = new FastifyAdapter({
+    bodyLimit: parserBodyLimit,
+    requestTimeout: config.requestTimeoutMs,
+    routerOptions: { onBadUrl: rejectMalformedPath },
+  });
+  const fastify = adapter.getInstance();
+  const jsonParser = fastify.getDefaultJsonParser("error", "error");
+  adapter.useBodyParser(
+    "application/json",
+    true,
+    { bodyLimit: parserBodyLimit },
+    (request, body, done) => {
+      if (Buffer.isBuffer(body) && body.length === 0) {
+        done(null, null);
+        return;
+      }
+      jsonParser(request, body.toString("utf8"), done);
     },
   );
-
+  const app = await NestFactory.create<NestFastifyApplication>(
+    BackendApplicationModule,
+    adapter,
+    { logger: false, rawBody: true },
+  );
+  app.useGlobalFilters(new TransportExceptionFilter());
+  app.useWebSocketAdapter(new WsAdapter(app));
+  await app.init();
+  const server = app.getHttpServer();
   server.requestTimeout = config.requestTimeoutMs;
   server.headersTimeout = Math.min(
     config.requestTimeoutMs,
@@ -424,21 +620,14 @@ export function createHttpServer() {
   );
   server.keepAliveTimeout = config.performance.keepAliveTimeoutMs;
   server.maxRequestsPerSocket = config.performance.maxRequestsPerSocket;
-
-  return server;
+  return app;
 }
 
 export async function startServer() {
   await bootstrapApp();
-  const server = createHttpServer();
-
-  await new Promise<void>((resolve, reject) => {
-    server.once("error", reject);
-    server.listen(config.port, config.host, () => {
-      server.off("error", reject);
-      resolve();
-    });
-  });
+  const app = await createBackendApplication();
+  await app.listen(config.port, config.host);
+  const server = app.getHttpServer();
 
   {
     console.log(
@@ -456,34 +645,33 @@ export async function startServer() {
   }
 
   let stopping = false;
-  const shutdown = (signal: NodeJS.Signals) => {
+  const shutdown = async (signal: NodeJS.Signals) => {
     if (stopping) return;
     stopping = true;
     logger.info("graceful_shutdown_started", { signal });
     const forceTimer = setTimeout(() => {
       logger.error("graceful_shutdown_deadline_exceeded", { signal });
-      server.closeAllConnections();
+      server.closeAllConnections?.();
       process.exitCode = 1;
     }, config.shutdownGraceMs);
     forceTimer.unref();
-    server.close((error) => {
+    try {
+      await app.close();
       clearTimeout(forceTimer);
-      if (error) {
-        logger.error("graceful_shutdown_failed", {
-          signal,
-          error: error.message,
-        });
-        process.exitCode = 1;
-      } else {
-        logger.info("graceful_shutdown_completed", { signal });
-      }
-    });
-    server.closeIdleConnections();
+      logger.info("graceful_shutdown_completed", { signal });
+    } catch (error) {
+      clearTimeout(forceTimer);
+      logger.error("graceful_shutdown_failed", {
+        signal,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      process.exitCode = 1;
+    }
   };
   process.once("SIGTERM", shutdown);
   process.once("SIGINT", shutdown);
 
-  return server;
+  return app;
 }
 
 // Start immediately if executed directly

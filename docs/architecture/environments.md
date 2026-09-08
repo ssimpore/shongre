@@ -54,8 +54,8 @@ match exactly.
 | Analytics           | off                        | test                     | test                 | development          | staging                  | production                   |
 | Search indexing     | disabled                   | disabled                 | disabled             | disabled             | disabled                 | enabled                      |
 | Real customers      | no                         | no                       | no                   | no                   | no                       | yes                          |
-| Web data mode       | API                        | demo                     | demo or isolated API | API                  | API                      | API                          |
-| Web mock storage    | disabled                   | enabled                  | explicit             | disabled             | disabled                 | disabled                     |
+| Web transport       | API                        | isolated API             | isolated API         | API                  | API                      | API                          |
+| Web mock storage    | unavailable                | unavailable              | unavailable          | unavailable          | unavailable              | unavailable                  |
 | Mobile transport    | API                        | API                      | isolated API         | API                  | API                      | API                          |
 
 The table describes deployment intent. Executable enforcement comes from the
@@ -66,11 +66,10 @@ Local is the only developer environment allowed to bind the backend to local
 database infrastructure. Test uses an isolated local/ephemeral database or the
 deterministic backend adapter. Preview and every shared environment use hosted,
 environment-owned infrastructure. Canonical local development, development,
-staging, and production run Web in API mode with mock storage disabled. Mobile
-always uses the API, including test and preview; local mobile development
-reaches the database-mode backend backed by local Supabase. The standalone demo
-surface remains the explicit local Web `make frontend` workflow, and mobile has
-no data-mode selector or fallback.
+staging, and production run Web through the API. Mobile always uses the API,
+including test and preview; local client development reaches the database-mode
+backend backed by local Supabase. Neither client has a data-mode selector,
+fixture fallback, or mock-storage path.
 Shared development, staging, and production runtimes also require their own JWT,
 MFA, handover, provider-credential, and digital-fulfillment keys at startup;
 fixed local development keys are never accepted there.

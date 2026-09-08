@@ -8,7 +8,6 @@ import type { UserProfile } from "../../types";
 
 export type HeaderAccountMenuItemId =
   | "admin"
-  | "demo_workspace"
   | "account"
   | "listings"
   | "favorites"
@@ -26,14 +25,12 @@ export interface HeaderAccountMenuItem {
   marketplaceAction?: string;
   emphasis?: "primary" | "warning";
   separatorBefore?: boolean;
-  isDemo?: boolean;
 }
 
 interface HeaderAccountMenuContext {
   user: UserProfile;
   canAccessRoute: (policyId: RoutePolicyId) => boolean;
   hasCapability: (capability: Capability) => boolean;
-  canUseDemoMarketplace: boolean;
   listingCount: number;
   favoriteCount: number;
 }
@@ -91,7 +88,6 @@ export function resolveHeaderAccountMenuItems({
   user,
   canAccessRoute,
   hasCapability,
-  canUseDemoMarketplace,
   listingCount,
   favoriteCount,
 }: HeaderAccountMenuContext): HeaderAccountMenuItem[] {
@@ -105,17 +101,6 @@ export function resolveHeaderAccountMenuItems({
         id: "admin",
         to: routes.admin.overview(),
         labelKey: "meta.adminOverview.title",
-      });
-    }
-
-    if (canUseDemoMarketplace && canAccessRoute("accountOverview")) {
-      items.push({
-        id: "demo_workspace",
-        to: routes.workspace.overview(),
-        labelKey: "shell.header.accountMenu.demoWorkspace",
-        emphasis: "warning",
-        separatorBefore: items.length > 0,
-        isDemo: true,
       });
     }
 

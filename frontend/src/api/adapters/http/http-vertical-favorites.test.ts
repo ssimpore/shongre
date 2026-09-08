@@ -2,18 +2,17 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { HttpCoursesService } from "./http-courses.service";
 import { HttpDeliveryService } from "./http-delivery.service";
 import { HttpEmploymentService } from "./http-employment.service";
-import { httpClient } from "./http-client";
+import { apiOperation } from "./generated-api-operation";
 
-afterEach(() => vi.restoreAllMocks());
+vi.mock("./generated-api-operation", () => ({ apiOperation: vi.fn() }));
+
+afterEach(() => vi.mocked(apiOperation).mockReset());
 
 describe("HTTP vertical favorite market boundaries", () => {
   it("uses explicit market-scoped desired state for Education favorites", async () => {
-    const get = vi
-      .spyOn(httpClient, "get")
-      .mockResolvedValue({ tutorProfileIds: ["tutor-1"] });
-    const put = vi
-      .spyOn(httpClient, "put")
-      .mockResolvedValue({ isFavorite: true });
+    vi.mocked(apiOperation)
+      .mockResolvedValueOnce({ tutorProfileIds: ["tutor-1"] })
+      .mockResolvedValueOnce({ isFavorite: true });
     const service = new HttpCoursesService();
 
     await expect(service.getSavedTutorIds("ignored", "BE")).resolves.toEqual([
@@ -23,27 +22,28 @@ describe("HTTP vertical favorite market boundaries", () => {
       service.setSavedTutor("ignored", "tutor-1", "BE", true),
     ).resolves.toBe(true);
 
-    expect(get).toHaveBeenCalledWith("/education/favorites", {
+    expect(apiOperation).toHaveBeenNthCalledWith(1, "getEducationFavorites", {
       headers: { "X-Shongre-Market": "BE" },
     });
-    expect(put).toHaveBeenCalledWith(
-      "/education/tutors/tutor-1/favorite",
-      { isFavorite: true },
-      { headers: { "X-Shongre-Market": "BE" } },
+    expect(apiOperation).toHaveBeenNthCalledWith(
+      2,
+      "putEducationTutorsByIdFavorite",
+      {
+        path: { id: "tutor-1" },
+        body: { isFavorite: true },
+        headers: { "X-Shongre-Market": "BE" },
+      },
     );
   });
 
   it("uses explicit market-scoped desired state for Employment favorites", async () => {
-    const get = vi
-      .spyOn(httpClient, "get")
-      .mockImplementation(async (path) =>
-        path === "/employment/favorites"
-          ? { jobIds: ["job-1"] }
+    vi.mocked(apiOperation).mockImplementation(async (operationId) =>
+      operationId === "getEmploymentFavorites"
+        ? { jobIds: ["job-1"] }
+        : operationId === "putEmploymentJobsByIdSave"
+          ? { isFavorite: false }
           : ({ savedJobs: [] } as never),
-      );
-    const put = vi
-      .spyOn(httpClient, "put")
-      .mockResolvedValue({ isFavorite: false });
+    );
     const service = new HttpEmploymentService();
 
     await service.getCandidateWorkspace("BE");
@@ -56,32 +56,32 @@ describe("HTTP vertical favorite market boundaries", () => {
       service.setSavedJob("ignored", "job-1", "BE", false),
     ).resolves.toBe(false);
 
-    expect(get).toHaveBeenCalledWith("/employment/candidate/workspace", {
-      headers: { "X-Shongre-Market": "BE" },
-    });
-    expect(get).toHaveBeenCalledWith("/employment/favorites", {
-      headers: { "X-Shongre-Market": "BE" },
-    });
-    expect(get).toHaveBeenCalledWith("/employment/jobs/job-1", {
-      headers: { "X-Shongre-Market": "BE" },
-    });
-    expect(get).toHaveBeenCalledWith("/employment/jobs/job-1/similar", {
-      headers: { "X-Shongre-Market": "BE" },
-    });
-    expect(put).toHaveBeenCalledWith(
-      "/employment/jobs/job-1/save",
-      { isFavorite: false },
+    expect(apiOperation).toHaveBeenCalledWith(
+      "getEmploymentCandidateWorkspace",
       { headers: { "X-Shongre-Market": "BE" } },
     );
+    expect(apiOperation).toHaveBeenCalledWith("getEmploymentFavorites", {
+      headers: { "X-Shongre-Market": "BE" },
+    });
+    expect(apiOperation).toHaveBeenCalledWith("getEmploymentJobsById", {
+      path: { id: "job-1" },
+      headers: { "X-Shongre-Market": "BE" },
+    });
+    expect(apiOperation).toHaveBeenCalledWith("getEmploymentJobsByIdSimilar", {
+      path: { id: "job-1" },
+      headers: { "X-Shongre-Market": "BE" },
+    });
+    expect(apiOperation).toHaveBeenCalledWith("putEmploymentJobsByIdSave", {
+      path: { id: "job-1" },
+      body: { isFavorite: false },
+      headers: { "X-Shongre-Market": "BE" },
+    });
   });
 
   it("uses explicit market-scoped desired state for Delivery favorites", async () => {
-    const get = vi
-      .spyOn(httpClient, "get")
-      .mockResolvedValue({ requestIds: ["request-1"] });
-    const put = vi
-      .spyOn(httpClient, "put")
-      .mockResolvedValue({ isFavorite: true });
+    vi.mocked(apiOperation)
+      .mockResolvedValueOnce({ requestIds: ["request-1"] })
+      .mockResolvedValueOnce({ isFavorite: true });
     const service = new HttpDeliveryService();
 
     await expect(
@@ -91,13 +91,17 @@ describe("HTTP vertical favorite market boundaries", () => {
       service.setFavoriteRequest("ignored", "request-1", "CH", true),
     ).resolves.toBe(true);
 
-    expect(get).toHaveBeenCalledWith("/delivery/favorites", {
+    expect(apiOperation).toHaveBeenNthCalledWith(1, "getDeliveryFavorites", {
       headers: { "X-Shongre-Market": "CH" },
     });
-    expect(put).toHaveBeenCalledWith(
-      "/delivery/requests/request-1/favorite",
-      { isFavorite: true },
-      { headers: { "X-Shongre-Market": "CH" } },
+    expect(apiOperation).toHaveBeenNthCalledWith(
+      2,
+      "putDeliveryRequestFavorite",
+      {
+        path: { requestId: "request-1" },
+        body: { isFavorite: true },
+        headers: { "X-Shongre-Market": "CH" },
+      },
     );
   });
 });

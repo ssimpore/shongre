@@ -85,6 +85,11 @@ interface RouteDef {
   denyStaffMarketplace: boolean;
 }
 
+export interface ParsedRequestBody {
+  body: unknown;
+  rawBody: string;
+}
+
 export class ApiV1Router implements RouteRegistrar {
   private routes: RouteDef[] = [];
 
@@ -214,6 +219,7 @@ export class ApiV1Router implements RouteRegistrar {
   async handleRequest(
     req: IncomingMessage,
     res: ServerResponse,
+    parsedRequestBody?: ParsedRequestBody,
   ): Promise<void> {
     const rawUrl = req.url || "/";
     const parsedUrl = new URL(rawUrl, "http://request.invalid");
@@ -256,7 +262,25 @@ export class ApiV1Router implements RouteRegistrar {
         }
         let body: any = null;
         if (["POST", "PUT", "PATCH", "DELETE"].includes(method)) {
-          body = await this.readRequestBody(req);
+          if (parsedRequestBody) {
+            if (
+              Buffer.byteLength(parsedRequestBody.rawBody) >
+              config.maxRequestBodyBytes
+            ) {
+              throw new AppError({
+                code: "BAD_REQUEST",
+                statusCode: 413,
+                message: "Corps de requête trop volumineux.",
+              });
+            }
+            body = parsedRequestBody.body;
+            // Webhook signature verification must see the original bytes that
+            // Fastify captured before parsing, never re-serialized JSON.
+            (req as IncomingMessage & { rawBody?: string }).rawBody =
+              parsedRequestBody.rawBody;
+          } else {
+            body = await this.readRequestBody(req);
+          }
           if (route.requestBodyRequired && body === null) {
             throw new AppError({
               code: "BAD_REQUEST",

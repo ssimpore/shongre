@@ -58,6 +58,9 @@ case "$mode" in
 esac
 
 # Infrastructure/configuration checks happen before tracked applications stop.
+if [[ "$APP_ENV" == local ]]; then
+  "$SHONGRE_ROOT/scripts/redis.sh" up
+fi
 if [[ "$BACKEND_DATA_MODE" == database && "$DATABASE_INFRA_MODE" == local ]]; then
   "$SHONGRE_ROOT/scripts/supabase.sh" up
   set -a

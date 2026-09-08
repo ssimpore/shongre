@@ -4,7 +4,7 @@
  *
  * The responsive and accessibility suites do not enumerate the router: they
  * iterate `e2e/routes.ts`. That indirection is deliberate — a route needs a
- * persona and, when it is dynamic, a real fixture id — but it meant the two
+ * persona and, when it is dynamic, a representative API resource id — but it meant the two
  * lists silently drifted apart. At the point this check was written the router
  * declared 160 routes and the matrix exercised 69 of them, so 57% of the
  * product had never been checked for horizontal overflow, axe violations or
@@ -98,7 +98,7 @@ if (uncovered.length > 0) {
     "  route is never checked for overflow, axe violations or accessible names.",
   );
   console.error(
-    "  Add it with a persona (and a real fixture id if it is dynamic), or record",
+    "  Add it with a persona (and a representative API resource id if it is dynamic), or record",
   );
   console.error("  it in UNTESTABLE here with the reason it cannot render.\n");
   for (const route of uncovered) console.error(`  ${route}`);

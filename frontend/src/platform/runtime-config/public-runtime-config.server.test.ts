@@ -11,8 +11,6 @@ function configureProductionRuntime(): void {
     PUBLIC_FR_URL: "https://shongre.fr",
     PUBLIC_INTL_URL: "https://shongre.com",
     API_URL: "https://api.shongre.fr",
-    NEXT_PUBLIC_DATA_MODE: "api",
-    NEXT_PUBLIC_ENABLE_MOCK_STORAGE: "false",
     PUBLIC_MEDIA_ASSET_BASE_URL:
       "https://storage.shongre.invalid/listing-media/editorial",
     PUBLIC_CATEGORY_MEDIA_BASE_URL:
@@ -33,8 +31,6 @@ function configureLocalRuntime(): void {
     PUBLIC_FR_URL: "http://127.0.0.1:3000",
     PUBLIC_INTL_URL: "http://127.0.0.1:3000",
     API_URL: "http://127.0.0.1:4000",
-    NEXT_PUBLIC_DATA_MODE: "api",
-    NEXT_PUBLIC_ENABLE_MOCK_STORAGE: "false",
     PUBLIC_MEDIA_ASSET_BASE_URL:
       "http://127.0.0.1:54321/storage/v1/object/public/listing-media/local-seed/demo-library",
     PUBLIC_CATEGORY_MEDIA_BASE_URL:
@@ -51,8 +47,6 @@ describe("server public runtime configuration", () => {
 
     expect(createPublicRuntimeConfig()).toMatchObject({
       appEnvironment: "production",
-      dataMode: "api",
-      mockStorageEnabled: false,
       stripePublishableKey: "pk_live_TestOnly123",
       apiBaseUrl: "https://api.shongre.fr/api/v1",
     });
@@ -63,20 +57,8 @@ describe("server public runtime configuration", () => {
 
     expect(createPublicRuntimeConfig()).toMatchObject({
       appEnvironment: "local",
-      dataMode: "api",
-      mockStorageEnabled: false,
       apiBaseUrl: "http://127.0.0.1:4000/api/v1",
     });
-  });
-
-  it("rejects an implicit local Demo configuration", () => {
-    configureLocalRuntime();
-    vi.stubEnv("NEXT_PUBLIC_DATA_MODE", "demo");
-    vi.stubEnv("NEXT_PUBLIC_ENABLE_MOCK_STORAGE", "true");
-
-    expect(() => createPublicRuntimeConfig()).toThrow(
-      /Connected local.*NEXT_PUBLIC_DATA_MODE=api.*NEXT_PUBLIC_ENABLE_MOCK_STORAGE=false/,
-    );
   });
 
   it("rejects connected Web configuration without owned media prefixes", () => {
@@ -85,29 +67,6 @@ describe("server public runtime configuration", () => {
 
     expect(() => createPublicRuntimeConfig()).toThrow(
       /PUBLIC_CATEGORY_MEDIA_BASE_URL is required/,
-    );
-  });
-
-  it("accepts Demo only when the local command marks it explicit", () => {
-    configureLocalRuntime();
-    vi.stubEnv("SHONGRE_EXPLICIT_DEMO", "true");
-    vi.stubEnv("NEXT_PUBLIC_DATA_MODE", "demo");
-    vi.stubEnv("NEXT_PUBLIC_ENABLE_MOCK_STORAGE", "true");
-
-    expect(createPublicRuntimeConfig()).toMatchObject({
-      appEnvironment: "local",
-      dataMode: "demo",
-      mockStorageEnabled: true,
-    });
-  });
-
-  it("rejects demo data and mock storage in production", () => {
-    configureProductionRuntime();
-    vi.stubEnv("NEXT_PUBLIC_DATA_MODE", "demo");
-    vi.stubEnv("NEXT_PUBLIC_ENABLE_MOCK_STORAGE", "true");
-
-    expect(() => createPublicRuntimeConfig()).toThrow(
-      /NEXT_PUBLIC_DATA_MODE=api.*NEXT_PUBLIC_ENABLE_MOCK_STORAGE=false/,
     );
   });
 

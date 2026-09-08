@@ -7,12 +7,9 @@ import {
   type AuthUser,
   type LoginRequest,
 } from "@shongre/contracts";
+import { apiOperation } from "@/api/generated-api-operation";
 import type { operations } from "@shongre/contracts/openapi";
-import {
-  apiRequest,
-  isMobileApiError,
-  sessionStorage,
-} from "@/api/http-client";
+import { isMobileApiError, sessionStorage } from "@/api/http-client";
 import { requireMobileCustomer } from "./staff-access";
 
 export interface AuthService {
@@ -40,36 +37,18 @@ export type MobileLoginResult =
       expiresAt: string;
     };
 
-type AuthMeResponse =
-  operations["getAuthMe"]["responses"][200]["content"]["application/json"];
 type LoginRequestWire =
   operations["postAuthLogin"]["requestBody"]["content"]["application/json"];
-type LoginResponse =
-  operations["postAuthLogin"]["responses"][200]["content"]["application/json"];
 type MfaRequest =
   operations["postAuthMfaChallenge"]["requestBody"]["content"]["application/json"];
-type MfaResponse =
-  operations["postAuthMfaChallenge"]["responses"][200]["content"]["application/json"];
 type OAuthStartRequest =
   operations["postAuthOauthByProviderStart"]["requestBody"]["content"]["application/json"];
-type OAuthStartResponse =
-  operations["postAuthOauthByProviderStart"]["responses"][200]["content"]["application/json"];
-type OAuthProvidersResponse =
-  operations["getAuthOauthProviders"]["responses"][200]["content"]["application/json"];
 type OAuthExchangeRequest =
   operations["postAuthOauthNativeExchange"]["requestBody"]["content"]["application/json"];
-type OAuthExchangeResponse =
-  operations["postAuthOauthNativeExchange"]["responses"][200]["content"]["application/json"];
 type OAuthCompletionRequest =
   operations["postAuthOauthCompleteProfile"]["requestBody"]["content"]["application/json"];
-type OAuthCompletionResponse =
-  operations["postAuthOauthCompleteProfile"]["responses"][200]["content"]["application/json"];
-type LogoutResponse =
-  operations["postAuthLogout"]["responses"][200]["content"]["application/json"];
 type AccountDeletionRequestWire =
   operations["postAccountDelete"]["requestBody"]["content"]["application/json"];
-type AccountDeletionResponse =
-  operations["postAccountDelete"]["responses"][200]["content"]["application/json"];
 
 function record(value: unknown): Record<string, unknown> {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
@@ -108,7 +87,7 @@ export class HttpAuthService implements AuthService {
     const session = await sessionStorage.read();
     if (!session) return null;
     try {
-      const user = await apiRequest<AuthMeResponse>("/auth/me");
+      const user = await apiOperation("getAuthMe", {});
       if (user === null) {
         await sessionStorage.clear();
         return null;
@@ -126,10 +105,7 @@ export class HttpAuthService implements AuthService {
   async login(input: LoginRequest): Promise<MobileLoginResult> {
     const credentials = loginRequestSchema.parse(input);
     const payload: LoginRequestWire = { ...credentials };
-    const response = await apiRequest<LoginResponse>("/auth/login", {
-      method: "POST",
-      body: JSON.stringify(payload),
-    });
+    const response = await apiOperation("postAuthLogin", { body: payload });
     const candidate = record(response);
     if (candidate.requiresMfa === true) {
       if (
@@ -149,9 +125,8 @@ export class HttpAuthService implements AuthService {
 
   async completeMfa(tempMfaToken: string, code: string): Promise<AuthUser> {
     const payload: MfaRequest = { tempMfaToken, code };
-    const response = await apiRequest<MfaResponse>("/auth/mfa/challenge", {
-      method: "POST",
-      body: JSON.stringify(payload),
+    const response = await apiOperation("postAuthMfaChallenge", {
+      body: payload,
     });
     return storeSession(response);
   }
@@ -162,13 +137,10 @@ export class HttpAuthService implements AuthService {
       clientKind: "native",
       returnTo: "/compte",
     };
-    const response = await apiRequest<OAuthStartResponse>(
-      `/auth/oauth/${provider}/start`,
-      {
-        method: "POST",
-        body: JSON.stringify(payload),
-      },
-    );
+    const response = await apiOperation("postAuthOauthByProviderStart", {
+      path: { provider: provider },
+      body: payload,
+    });
     const authorizationUrl = record(response).authorizationUrl;
     if (typeof authorizationUrl !== "string") {
       throw new Error("La connexion externe est indisponible.");
@@ -177,9 +149,7 @@ export class HttpAuthService implements AuthService {
   }
 
   async getSocialProviders(): Promise<Record<SocialProvider, boolean>> {
-    const response = record(
-      await apiRequest<OAuthProvidersResponse>("/auth/oauth/providers"),
-    );
+    const response = record(await apiOperation("getAuthOauthProviders", {}));
     if (
       typeof response.google !== "boolean" ||
       typeof response.apple !== "boolean" ||
@@ -196,10 +166,9 @@ export class HttpAuthService implements AuthService {
 
   async completeSocialLogin(exchangeCode: string): Promise<AuthUser> {
     const payload: OAuthExchangeRequest = { code: exchangeCode };
-    const response = await apiRequest<OAuthExchangeResponse>(
-      "/auth/oauth/native-exchange",
-      { method: "POST", body: JSON.stringify(payload) },
-    );
+    const response = await apiOperation("postAuthOauthNativeExchange", {
+      body: payload,
+    });
     return storeSession(response);
   }
 
@@ -212,15 +181,12 @@ export class HttpAuthService implements AuthService {
       email,
       accountType: "individual",
     };
-    await apiRequest<OAuthCompletionResponse>("/auth/oauth/complete-profile", {
-      method: "POST",
-      body: JSON.stringify(payload),
-    });
+    await apiOperation("postAuthOauthCompleteProfile", { body: payload });
   }
 
   async logout(): Promise<void> {
     try {
-      await apiRequest<LogoutResponse>("/auth/logout", { method: "POST" });
+      await apiOperation("postAuthLogout", {});
     } finally {
       await sessionStorage.clear();
     }
@@ -229,10 +195,7 @@ export class HttpAuthService implements AuthService {
   async deleteAccount(input: AccountDeletionRequest): Promise<void> {
     const parsed = accountDeletionRequestSchema.parse(input);
     const body: AccountDeletionRequestWire = parsed;
-    await apiRequest<AccountDeletionResponse>("/account/delete", {
-      method: "POST",
-      body: JSON.stringify(body),
-    });
+    await apiOperation("postAccountDelete", { body: body });
     await sessionStorage.clear();
   }
 }

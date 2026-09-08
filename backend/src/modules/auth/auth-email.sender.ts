@@ -1,5 +1,6 @@
 import { config } from "../../app/config/index.js";
 import { createHash } from "node:crypto";
+import nodemailer from "nodemailer";
 
 export type AuthEmailTemplate = "verify_email" | "password_reset";
 
@@ -16,7 +17,24 @@ export class AuthEmailSender {
     template: AuthEmailTemplate;
     actionUrl: string;
   }): Promise<void> {
-    if (config.emailMode === "console") return;
+    if (config.emailMode === "console") {
+      if (
+        config.environment.environment === "local" &&
+        config.localMailSmtpUrl
+      ) {
+        const subject =
+          input.template === "verify_email"
+            ? "Confirmez votre adresse e-mail Shongre"
+            : "Réinitialisez votre mot de passe Shongre";
+        await nodemailer.createTransport(config.localMailSmtpUrl).sendMail({
+          from: "Shongre local <no-reply@local.shongre.invalid>",
+          to: input.to,
+          subject,
+          text: `${subject}\n\n${input.actionUrl}`,
+        });
+      }
+      return;
+    }
     if (config.emailMode === "sandbox") {
       const recipient = input.to.trim().toLowerCase();
       const allowed = config.emailRecipientAllowlist.some((entry) => {

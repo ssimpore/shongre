@@ -20021,6 +20021,42 @@
         "x-shongre-permission": "course.profile.manage.own"
       }
     },
+    "/education/organizations/workspace": {
+      "get": {
+        "operationId": "getEducationCurrentOrganizationWorkspace",
+        "tags": ["education"],
+        "summary": "Get the authenticated user's organization workspace",
+        "parameters": [
+          { "$ref": "#/components/parameters/MarketContext" },
+          { "$ref": "#/components/parameters/RequestId" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "headers": {
+              "X-Request-Id": { "$ref": "#/components/headers/RequestId" }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/JsonValue" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "422": { "$ref": "#/components/responses/UnprocessableEntity" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-source": "backend/src/modules/courses/api/courses.routes.ts",
+        "x-shongre-permission": "course.organization.manage.own"
+      }
+    },
     "/education/organizations/{organizationId}/locations": {
       "post": {
         "operationId": "postEducationOrganizationsByOrganizationIdLocations",
@@ -20974,6 +21010,42 @@
         "x-shongre-access": "permission",
         "x-shongre-source": "backend/src/modules/courses/api/courses.routes.ts",
         "x-shongre-permission": "course.profile.manage.own"
+      }
+    },
+    "/education/workspace": {
+      "get": {
+        "operationId": "getEducationCurrentTutorWorkspace",
+        "tags": ["education"],
+        "summary": "Get the authenticated user's tutor workspace",
+        "parameters": [
+          { "$ref": "#/components/parameters/MarketContext" },
+          { "$ref": "#/components/parameters/RequestId" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "headers": {
+              "X-Request-Id": { "$ref": "#/components/headers/RequestId" }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/JsonValue" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "422": { "$ref": "#/components/responses/UnprocessableEntity" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "x-shongre-access": "permission",
+        "x-shongre-source": "backend/src/modules/courses/api/courses.routes.ts",
+        "x-shongre-permission": "course.lead.read.own"
       }
     },
     "/education/workspace/{tutorProfileId}": {
@@ -35578,6 +35650,49 @@
         "x-shongre-source": "backend/src/modules/taxonomy/api/taxonomy.routes.ts"
       }
     },
+    "/users/professionals": {
+      "get": {
+        "operationId": "getProfessionalUsers",
+        "tags": ["users"],
+        "summary": "List public professional seller profiles",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/MarketContext"
+          },
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Public professional profiles in the resolved market.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PublicSellerProfile"
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [],
+        "x-shongre-access": "public",
+        "x-shongre-deny-staff-marketplace": false,
+        "x-shongre-source": "backend/src/modules/users/api/users.routes.ts"
+      }
+    },
     "/users/{id}": {
       "get": {
         "operationId": "getUsersById",
@@ -35608,7 +35723,10 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/JsonValue"
+                  "oneOf": [
+                    { "$ref": "#/components/schemas/PublicSellerProfile" },
+                    { "type": "null" }
+                  ]
                 }
               }
             }
@@ -47053,11 +47171,44 @@
           }
         }
       },
+      "TaxonomyHeaderNavigationLink": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "target",
+          "labels",
+          "shortLabels",
+          "isActive",
+          "displayOrder"
+        ],
+        "properties": {
+          "target": {
+            "type": "string",
+            "enum": ["category_overview", "promotions"]
+          },
+          "labels": {
+            "$ref": "#/components/schemas/TaxonomyV4LocalizedLabels"
+          },
+          "shortLabels": {
+            "$ref": "#/components/schemas/TaxonomyV4LocalizedShortLabels"
+          },
+          "isActive": { "type": "boolean" },
+          "displayOrder": { "type": "integer", "minimum": 0 }
+        }
+      },
       "TaxonomyHeaderNavigationConfiguration": {
         "type": "object",
         "additionalProperties": false,
         "required": ["marketCode", "revision", "updatedAt", "items"],
         "properties": {
+          "links": {
+            "description": "Market-managed navigation destinations rendered in the same ordered rail as taxonomy categories. Absent means no additional links.",
+            "type": "array",
+            "maxItems": 2,
+            "items": {
+              "$ref": "#/components/schemas/TaxonomyHeaderNavigationLink"
+            }
+          },
           "marketCode": {
             "$ref": "#/components/schemas/MarketCode"
           },
@@ -47109,6 +47260,14 @@
         "additionalProperties": false,
         "required": ["marketCode", "expectedRevision", "changeReason", "items"],
         "properties": {
+          "links": {
+            "description": "Replaces the market-managed navigation links in the same revisioned transaction. Omission preserves the stored links for existing clients.",
+            "type": "array",
+            "maxItems": 2,
+            "items": {
+              "$ref": "#/components/schemas/TaxonomyHeaderNavigationLink"
+            }
+          },
           "marketCode": {
             "$ref": "#/components/schemas/MarketCode"
           },

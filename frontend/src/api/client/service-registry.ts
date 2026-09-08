@@ -1,5 +1,3 @@
-import { apiClientConfig, type DataMode } from "./api-client.config";
-import { dataModeService } from "./data-mode.service";
 import type { AdminServiceContract } from "../contracts/admin.contract";
 import type { AnalyticsServiceContract } from "../contracts/analytics.contract";
 import type { AiServiceContract } from "../contracts/ai.contract";
@@ -38,6 +36,7 @@ import type { TaxonomyServiceContract } from "../contracts/taxonomy.contract";
 import type { TrendingServiceContract } from "../contracts/trending.contract";
 import type { VerificationServiceContract } from "../contracts/verification.contract";
 import type { WorkspaceServiceContract } from "../contracts/workspace.contract";
+import type { UsersServiceContract } from "../contracts/users.contract";
 
 export interface ServiceRegistry {
   listings: ListingsServiceContract;
@@ -78,165 +77,11 @@ export interface ServiceRegistry {
   analytics: AnalyticsServiceContract;
   invoicing: InvoicingServiceContract;
   solutions: SolutionsServiceContract;
+  users: UsersServiceContract;
 }
 
 type ServiceLoaders = {
   [Key in keyof ServiceRegistry]: () => Promise<ServiceRegistry[Key]>;
-};
-
-const demoServiceLoaders: ServiceLoaders = {
-  listings: () =>
-    import("../adapters/demo/demo-listings.service").then(
-      ({ demoListingsService }) => demoListingsService,
-    ),
-  homepage: () =>
-    import("../adapters/demo/demo-homepage.service").then(
-      ({ demoHomepageService }) => demoHomepageService,
-    ),
-  search: () =>
-    import("../adapters/demo/demo-search.service").then(
-      ({ demoSearchService }) => demoSearchService,
-    ),
-  auth: () =>
-    import("../adapters/demo/demo-auth.service").then(
-      ({ demoAuthService }) => demoAuthService,
-    ),
-  markets: () =>
-    import("../adapters/demo/demo-markets.service").then(
-      ({ demoMarketsService }) => demoMarketsService,
-    ),
-  taxonomy: () =>
-    import("../adapters/demo/demo-taxonomy.service").then(
-      ({ demoTaxonomyService }) => demoTaxonomyService,
-    ),
-  messaging: () =>
-    import("../adapters/demo/demo-messaging.service").then(
-      ({ demoMessagingService }) => demoMessagingService,
-    ),
-  notifications: () =>
-    import("../adapters/demo/demo-notifications.service").then(
-      ({ demoNotificationsService }) => demoNotificationsService,
-    ),
-  watchSubscriptions: () =>
-    import("../adapters/demo/demo-watch-subscriptions.service").then(
-      ({ demoWatchSubscriptionsService }) => demoWatchSubscriptionsService,
-    ),
-  orders: () =>
-    import("../adapters/demo/demo-orders.service").then(
-      ({ demoOrdersService }) => demoOrdersService,
-    ),
-  payments: () =>
-    import("../adapters/demo/demo-payments.service").then(
-      ({ demoPaymentsService }) => demoPaymentsService,
-    ),
-  promotions: () =>
-    import("../adapters/demo/demo-promotions.service").then(
-      ({ demoPromotionsService }) => demoPromotionsService,
-    ),
-  verification: () =>
-    import("../adapters/demo/demo-verification.service").then(
-      ({ demoVerificationService }) => demoVerificationService,
-    ),
-  workspace: () =>
-    import("../adapters/demo/demo-workspace.service").then(
-      ({ demoWorkspaceService }) => demoWorkspaceService,
-    ),
-  admin: () =>
-    import("../adapters/demo/demo-admin.service").then(
-      ({ demoAdminService }) => demoAdminService,
-    ),
-  reviews: () =>
-    import("../adapters/demo/demo-reviews.service").then(
-      ({ demoReviewsService }) => demoReviewsService,
-    ),
-  ai: () =>
-    import("../adapters/demo/demo-ai.service").then(
-      ({ demoAiService }) => demoAiService,
-    ),
-  trending: () =>
-    import("../adapters/demo/demo-trending.service").then(
-      ({ demoTrendingService }) => demoTrendingService,
-    ),
-  courses: () =>
-    import("../adapters/demo/demo-courses.service").then(
-      ({ demoCoursesService }) => demoCoursesService,
-    ),
-  currencies: () =>
-    import("../adapters/demo/demo-currencies.service").then(
-      ({ demoCurrenciesService }) => demoCurrenciesService,
-    ),
-  auto: () =>
-    import("../adapters/demo/demo-auto.service").then(
-      ({ demoAutoService }) => demoAutoService,
-    ),
-  realEstate: () =>
-    import("../adapters/demo/demo-real-estate.service").then(
-      ({ demoRealEstateService }) => demoRealEstateService,
-    ),
-  employment: () =>
-    import("../adapters/demo/demo-employment.service").then(
-      ({ demoEmploymentService }) => demoEmploymentService,
-    ),
-  delivery: () =>
-    import("../adapters/demo/demo-delivery.service").then(
-      ({ demoDeliveryService }) => demoDeliveryService,
-    ),
-  digitalProducts: () =>
-    import("../adapters/demo/demo-digital-products.service").then(
-      ({ demoDigitalProductsService }) => demoDigitalProductsService,
-    ),
-  businessRules: () =>
-    import("../adapters/demo/demo-business-rules.service").then(
-      ({ demoBusinessRulesService }) => demoBusinessRulesService,
-    ),
-  finance: () =>
-    import("../adapters/demo/demo-finance.service").then(
-      ({ demoFinanceService }) => demoFinanceService,
-    ),
-  commissions: () =>
-    import("../adapters/demo/demo-commission.service").then(
-      ({ demoCommissionService }) => demoCommissionService,
-    ),
-  providerControlPlane: () =>
-    import("../adapters/demo/demo-provider-control-plane.service").then(
-      ({ demoProviderControlPlaneService }) => demoProviderControlPlaneService,
-    ),
-  support: () =>
-    import("../adapters/demo/demo-support.service").then(
-      ({ demoSupportService }) => demoSupportService,
-    ),
-  featureFlags: () =>
-    import("../adapters/demo/demo-feature-flag.service").then(
-      ({ demoFeatureFlagService }) => demoFeatureFlagService,
-    ),
-  moderation: () =>
-    import("../adapters/demo/demo-moderation.service").then(
-      ({ demoModerationService }) => demoModerationService,
-    ),
-  crm: () =>
-    import("../adapters/demo/demo-crm.service").then(
-      ({ demoCrmService }) => demoCrmService,
-    ),
-  crmProspecting: () =>
-    import("../adapters/demo/demo-prospecting.service").then(
-      ({ demoCrmProspectingService }) => demoCrmProspectingService,
-    ),
-  marketing: () =>
-    import("../adapters/demo/demo-marketing.service").then(
-      ({ demoMarketingService }) => demoMarketingService,
-    ),
-  analytics: () =>
-    import("../adapters/demo/demo-analytics.service").then(
-      ({ demoAnalyticsService }) => demoAnalyticsService,
-    ),
-  invoicing: () =>
-    import("../adapters/demo/demo-invoicing.service").then(
-      ({ demoInvoicingService }) => demoInvoicingService,
-    ),
-  solutions: () =>
-    import("../adapters/demo/demo-solutions.service").then(
-      ({ demoSolutionsService }) => demoSolutionsService,
-    ),
 };
 
 const httpServiceLoaders: ServiceLoaders = {
@@ -392,14 +237,18 @@ const httpServiceLoaders: ServiceLoaders = {
     import("../adapters/http/http-solutions.service").then(
       ({ httpSolutionsService }) => httpSolutionsService,
     ),
+  users: () =>
+    import("../adapters/http/http-users.service").then(
+      ({ httpUsersService }) => httpUsersService,
+    ),
 };
 
 /**
  * Defers adapter code until a domain is actually used.
  *
  * Every service contract is Promise-based, so the proxy can preserve the
- * public method signatures while keeping unrelated fixtures and provider
- * adapters out of the initial route bundle. The resolved singleton is cached
+ * public method signatures while keeping unrelated domain adapters out of the
+ * initial route bundle. The resolved singleton is cached
  * per domain, and methods retain their original receiver for class state.
  */
 function createLazyService<Service extends object>(
@@ -439,39 +288,20 @@ function createLazyService<Service extends object>(
   });
 }
 
-export function createServiceRegistry(
-  mode: DataMode = dataModeService.getActiveMode(),
-): ServiceRegistry {
-  const loaders = mode === "demo" ? demoServiceLoaders : httpServiceLoaders;
-  const absentByService: Partial<
-    Record<keyof ServiceRegistry, ReadonlySet<PropertyKey>>
-  > =
-    mode === "api"
-      ? {
-          auth: new Set<PropertyKey>(["completeDemoSocialAuth"]),
-          notifications: new Set<PropertyKey>(["simulateNotification"]),
-        }
-      : {};
-
+export function createServiceRegistry(): ServiceRegistry {
   return Object.fromEntries(
-    (Object.keys(loaders) as Array<keyof ServiceRegistry>).map((key) => [
-      key,
-      createLazyService(
-        () => loaders[key]() as Promise<ServiceRegistry[keyof ServiceRegistry]>,
-        absentByService[key],
-      ),
-    ]),
+    (Object.keys(httpServiceLoaders) as Array<keyof ServiceRegistry>).map(
+      (key) => [
+        key,
+        createLazyService(
+          () =>
+            httpServiceLoaders[key]() as Promise<
+              ServiceRegistry[keyof ServiceRegistry]
+            >,
+        ),
+      ],
+    ),
   ) as unknown as ServiceRegistry;
 }
 
-// Keep module evaluation deterministic across server and browser. A persisted
-// runtime override is restored by DataModeProvider after hydration.
-export const services: ServiceRegistry = createServiceRegistry(
-  apiClientConfig.dataMode,
-);
-
-/** Rebinds the stable registry object before the provider tree is refreshed. */
-export function activateServiceRegistry(mode: DataMode): ServiceRegistry {
-  Object.assign(services, createServiceRegistry(mode));
-  return services;
-}
+export const services: ServiceRegistry = createServiceRegistry();

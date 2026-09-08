@@ -17,21 +17,13 @@ import {
   Search,
   Check,
   ChevronRight,
-  Clock,
   Store,
   Package,
   Globe,
 } from "lucide-react";
-import { getTaxonomyLabel } from "../../domains/taxonomy/taxonomy.service";
-import { publicationResolver } from "../../domains/publication/publication.resolver";
-import { transactionCapabilitiesService } from "../../domains/transaction/transaction.capabilities";
-import { fulfillmentResolver } from "../../domains/fulfillment/fulfillment.resolver";
-import { publicationService } from "../../domains/publication/publication.service";
-import { marketService } from "../../domains/market/market.service";
 import {
   PublicationDraftState,
   ListingIntent,
-  PackageSizeTier,
   PriceModel,
 } from "../../domains/publication/publication.types";
 import { Button } from "../../design-system/primitives/Button";
@@ -48,7 +40,6 @@ import { useAuth } from "../../app/providers/AuthProvider";
 import { useToast } from "../../app/providers/ToastProvider";
 import { services } from "../../api/client/service-registry";
 import { ListingAssistanceResult } from "../../api/contracts/ai.contract";
-import type { ListingBoostOption } from "../../configuration/plans.config";
 import { plural } from "../../utilities/formatters";
 import { Image } from "../../design-system/primitives/Image";
 import { ProgressBar } from "../../design-system/primitives/ProgressBar";
@@ -76,8 +67,6 @@ import {
 import { analyticsService } from "../../services/analytics.service";
 import { PublishPreparationScreen } from "./PublishPreparationScreen";
 import { TaxonomyV4Field } from "./TaxonomyV4Field";
-import { useMarketPromotions } from "../../domains/monetization/useMarketPromotions";
-import { useRegionalFormatters } from "../../hooks/useRegionalFormatters";
 import { isProSeller } from "../../domains/user/user.domain";
 import {
   isCurrentTaxonomyV4Schema,
@@ -88,7 +77,6 @@ import { DigitalFulfillmentEditor } from "./DigitalFulfillmentEditor";
 import { useListingOnboardingController } from "./useListingOnboardingController";
 import { ListingOnboardingStatus } from "./ListingOnboardingStatus";
 import { ListingIntentIcon } from "./ListingIntentIcon";
-import { storageService } from "../../services/storage.service";
 import {
   groupTaxonomyPublicationFields,
   localizedTaxonomyLabel,
@@ -127,14 +115,13 @@ const PHASES = [
     hint: "Paiement, expédition et localisation",
     // 9 (marchés & visibilité) sits behind an "options avancées" disclosure and
     // 10 is the inline review, rather than two more full screens.
-    panels: [6, 7, 8, 9, 10],
+    panels: [7, 8, 9, 10],
   },
 ];
 
 const ADVANCED_PANEL = 9;
 const REVIEW_PANEL = 10;
 type PhaseOneStage = "intent" | "category" | "details";
-const SKIP_PREPARATION_STORAGE_KEY = "shongre_publish_skip_preparation_v1";
 const WEB_MANAGED_V4_ATTRIBUTES = new Set([
   "title",
   "description",
@@ -144,7 +131,6 @@ const WEB_MANAGED_V4_ATTRIBUTES = new Set([
   "price_type",
   "currency",
   "seller_type",
-  "condition",
   "country",
   "postal_code",
   "city",
@@ -152,19 +138,24 @@ const WEB_MANAGED_V4_ATTRIBUTES = new Set([
   "location_country",
   "location_postcode",
   "location_city",
-  "item_condition",
 ]);
 
-const PRICE_MODEL_LABELS: Record<PriceModel, string> = {
-  fixed: "Prix fixe",
-  negotiable: "Prix négociable",
-  free: "Gratuit",
-  on_request: "Sur demande / sur devis",
-  hourly: "Tarif horaire",
-  daily: "Tarif journalier",
-  monthly: "Montant mensuel",
-  rent_plus_charges: "Loyer + charges",
-};
+const PRICE_MODELS = new Set<PriceModel>([
+  "fixed",
+  "negotiable",
+  "free",
+  "on_request",
+  "hourly",
+  "daily",
+  "weekly",
+  "monthly",
+  "total",
+  "rent_plus_charges",
+  "unpriced",
+]);
+
+const isPriceModel = (value: string): value is PriceModel =>
+  PRICE_MODELS.has(value as PriceModel);
 
 const hasMeaningfulDraftContent = (draft: PublicationDraftState) =>
   Boolean(
@@ -178,10 +169,15 @@ const hasMeaningfulDraftContent = (draft: PublicationDraftState) =>
 
 export const PublishWizard: React.FC = () => {
   const { t } = useTranslation(deliveryCatalogueFr);
-  const { currencySymbol, marketContext, currentLocale, formatPrice } =
-    useMarketLocation();
-  const marketPromotions = useMarketPromotions();
-  const { formatMoney } = useRegionalFormatters();
+  const {
+    activeMarket,
+    availableMarkets,
+    currencySymbol,
+    effectiveConfig,
+    marketContext,
+    currentLocale,
+    formatPrice,
+  } = useMarketLocation();
   usePageMeta({
     title: t("meta.publishWizard.title"),
     description: t("meta.publishWizard.description"),
@@ -194,13 +190,12 @@ export const PublishWizard: React.FC = () => {
   const taxonomySellerType =
     accountType === "professional" ? "professional" : "individual";
   const toast = useToast();
-  const defaultMarket = marketService.getDefaultMarket();
+  const defaultMarket = activeMarket;
   const activeMarketCode =
     marketContext?.kind === "market" && marketContext.countryCode
       ? marketContext.countryCode
-      : defaultMarket.code;
-  const defaultMarketConfig =
-    marketService.getEffectiveConfig(activeMarketCode);
+      : activeMarket.code;
+  const defaultMarketConfig = effectiveConfig;
   const defaultMarketCode = activeMarketCode;
   const defaultCurrency = defaultMarketConfig.localization.defaultCurrency;
 
@@ -212,17 +207,9 @@ export const PublishWizard: React.FC = () => {
   const [aiPromptKeyword] = useState("");
   const [, setAiGeneratedTips] = useState<string[]>([]);
   const [categorySearchQuery, setCategorySearchQuery] = useState("");
-  const [visibilityOffers, setVisibilityOffers] = useState<
-    ListingBoostOption[]
-  >([]);
-  const [visibilityOffersState, setVisibilityOffersState] = useState<
-    "loading" | "ready" | "error"
-  >("loading");
   const [isDraftHydrated, setIsDraftHydrated] = useState(false);
   const [hasSavedDraft, setHasSavedDraft] = useState(false);
-  const [skipPreparation, setSkipPreparation] = useState(() =>
-    storageService.get(SKIP_PREPARATION_STORAGE_KEY, false),
-  );
+  const [skipPreparation, setSkipPreparation] = useState(false);
   const [isPreparationVisible, setIsPreparationVisible] =
     useState(!skipPreparation);
   const [hasEnteredWizard, setHasEnteredWizard] = useState(skipPreparation);
@@ -254,9 +241,7 @@ export const PublishWizard: React.FC = () => {
   const [draft, setDraft] = useState<PublicationDraftState>(() => {
     const initialMarkets = [defaultMarketCode];
     const primaryMarketCode = defaultMarketCode;
-    const primaryCurrency =
-      marketService.getEffectiveConfig(primaryMarketCode).localization
-        .defaultCurrency;
+    const primaryCurrency = defaultCurrency;
 
     return {
       marketCode: primaryMarketCode,
@@ -283,18 +268,9 @@ export const PublishWizard: React.FC = () => {
         isNegotiable: false,
         isFreeDonation: false,
       },
-      transaction: {
-        allowContact: true,
-        allowDirectPurchase: true,
-        allowReservation: true,
-      },
       fulfillment: {
         allowHandDelivery: true,
         allowParcelShipping: false,
-        allowBulkyDelivery: true,
-        allowSellerDelivery: false,
-        allowStorePickup: false,
-        packageSpecs: { sizeTier: "medium" },
       },
       fulfillmentTypes: ["PHYSICAL"],
       proInventory: {
@@ -374,26 +350,6 @@ export const PublishWizard: React.FC = () => {
     target?.focus();
   }, [currentStep, isPreparationVisible, phaseOneStage]);
 
-  useEffect(() => {
-    let active = true;
-    setVisibilityOffersState("loading");
-    marketPromotions
-      .getAvailableBoosts()
-      .then((offers) => {
-        if (!active) return;
-        setVisibilityOffers(offers);
-        setVisibilityOffersState("ready");
-      })
-      .catch(() => {
-        if (!active) return;
-        setVisibilityOffers([]);
-        setVisibilityOffersState("error");
-      });
-    return () => {
-      active = false;
-    };
-  }, [marketPromotions]);
-
   const updateDraft = (updates: Partial<PublicationDraftState>) => {
     setDraft((prev) => ({ ...prev, ...updates }));
   };
@@ -424,24 +380,6 @@ export const PublishWizard: React.FC = () => {
     });
   };
 
-  // Compile Schema dynamically
-  const schema = useMemo(() => {
-    if (!draft.taxonomyNodeId) return null;
-    return publicationResolver.resolve({
-      taxonomyNodeId: draft.taxonomyNodeId,
-      marketCode: draft.marketCode,
-      sellerRole: currentUser?.role,
-      listingIntent: draft.listingIntent,
-      currentValues: draft.attributes,
-    });
-  }, [
-    draft.taxonomyNodeId,
-    draft.marketCode,
-    currentUser?.role,
-    draft.listingIntent,
-    draft.attributes,
-  ]);
-
   const activeV4Schema = isCurrentTaxonomyV4Schema(
     v4Schema,
     draft.taxonomyNodeId,
@@ -450,6 +388,45 @@ export const PublishWizard: React.FC = () => {
   )
     ? v4Schema
     : null;
+  const selectedTaxonomyNode = activeV4Schema?.category ?? null;
+  const selectedTaxonomyRoot = onboarding.model?.path[0] ?? null;
+  const resolvedListingIntent = activeV4Schema?.listingType.intent;
+  const isJobListing = ["JOB_OFFER", "JOB_SEEK"].includes(
+    resolvedListingIntent ?? "",
+  );
+  const isServiceListing = [
+    "SERVICE_OFFER",
+    "SERVICE_REQUEST",
+    "COURSE_OFFER",
+  ].includes(resolvedListingIntent ?? "");
+  const isRealEstateListing = selectedTaxonomyRoot?.id === "real_estate";
+  const isProductLike =
+    Boolean(activeV4Schema) &&
+    !isJobListing &&
+    !isServiceListing &&
+    !isRealEstateListing;
+  const priceModelOptions = useMemo(
+    () =>
+      (
+        activeV4Schema?.attributes.find(
+          ({ definition }) => definition.id === "price_type",
+        )?.options ?? []
+      ).flatMap((option) =>
+        isPriceModel(option.key)
+          ? [
+              {
+                value: option.key,
+                label: localizedTaxonomyLabel(option.labels, currentLocale),
+              },
+            ]
+          : [],
+      ),
+    [activeV4Schema, currentLocale],
+  );
+  const currentPriceModelLabel =
+    priceModelOptions.find(
+      (option) => option.value === draft.pricing.priceModel,
+    )?.label ?? draft.pricing.priceModel;
   const taxonomyPublicationFieldGroups = useMemo(
     () =>
       activeV4Schema
@@ -463,39 +440,28 @@ export const PublishWizard: React.FC = () => {
   );
 
   useEffect(() => {
-    if (!schema) return;
+    if (priceModelOptions.length === 0) return;
     setDraft((current) => {
-      const listingIntent = schema.supportedIntents.includes(
-        current.listingIntent,
-      )
-        ? current.listingIntent
-        : schema.defaultIntent;
-      const priceModel = schema.supportedPriceModels.includes(
-        current.pricing.priceModel,
+      const priceModel = priceModelOptions.some(
+        (option) => option.value === current.pricing.priceModel,
       )
         ? current.pricing.priceModel
-        : schema.defaultPriceModel;
-      if (
-        listingIntent === current.listingIntent &&
-        priceModel === current.pricing.priceModel &&
-        current.listingFamily === schema.listingFamily
-      ) {
-        return current;
-      }
+        : priceModelOptions[0]!.value;
+      if (priceModel === current.pricing.priceModel) return current;
       return {
         ...current,
-        listingIntent,
-        listingFamily: schema.listingFamily,
         pricing: {
           ...current.pricing,
           priceModel,
-          amount: priceModel === "on_request" ? 0 : current.pricing.amount,
+          amount: ["free", "on_request", "unpriced"].includes(priceModel)
+            ? 0
+            : current.pricing.amount,
           isFreeDonation: priceModel === "free",
           isNegotiable: priceModel === "negotiable",
         },
       };
     });
-  }, [schema]);
+  }, [priceModelOptions]);
 
   useEffect(() => {
     let active = true;
@@ -739,45 +705,8 @@ export const PublishWizard: React.FC = () => {
     scrollToTop();
   };
 
-  const minimumPhotoCount = schema?.mediaGuidance?.minimumPhotoCount ?? 1;
-  const maximumPhotoCount = schema?.mediaGuidance?.maxPhotoCount ?? 8;
-  const isProductLike =
-    schema?.listingFamily === "physical_product" ||
-    schema?.listingFamily === "vehicle" ||
-    schema?.listingFamily === "professional_equipment";
-
-  // Resolve Transaction & Fulfillment capabilities
-  const transactionCaps = useMemo(() => {
-    return transactionCapabilitiesService.resolve({
-      taxonomyNodeId: draft.taxonomyNodeId,
-      marketCode: draft.marketCode,
-      sellerType: isProSeller(currentUser) ? "pro" : "individual",
-      listingIntent: draft.listingIntent,
-      price: draft.pricing.amount,
-      stock: draft.proInventory?.stock,
-    });
-  }, [
-    draft.taxonomyNodeId,
-    draft.marketCode,
-    currentUser?.role,
-    draft.listingIntent,
-    draft.pricing.amount,
-    draft.proInventory?.stock,
-  ]);
-
-  const fulfillmentCaps = useMemo(() => {
-    return fulfillmentResolver.resolveCapabilities({
-      taxonomyNodeId: draft.taxonomyNodeId,
-      marketCode: draft.marketCode,
-      sellerType: isProSeller(currentUser) ? "pro" : "individual",
-      price: draft.pricing.amount,
-    });
-  }, [
-    draft.taxonomyNodeId,
-    draft.marketCode,
-    currentUser?.role,
-    draft.pricing.amount,
-  ]);
+  const minimumPhotoCount = PUBLICATION_CONSTRAINTS.imageCount.min;
+  const maximumPhotoCount = PUBLICATION_CONSTRAINTS.imageCount.max;
 
   // Category Search Results
   const categorySearchResults = useMemo(() => {
@@ -853,8 +782,11 @@ export const PublishWizard: React.FC = () => {
         await services.ai.generateListingAssistance({
           rawInput: promptToUse,
           condition: draft.condition as any,
-          categoryHint: schema?.node
-            ? getTaxonomyLabel(schema.node, "compact")
+          categoryHint: selectedTaxonomyNode
+            ? localizedTaxonomyLabel(
+                selectedTaxonomyNode.shortLabels,
+                currentLocale,
+              )
             : undefined,
           existingTitle: draft.title,
           existingPrice: draft.pricing.amount,
@@ -1061,18 +993,6 @@ export const PublishWizard: React.FC = () => {
       sellerType: taxonomySellerType,
       optionsByAttribute: v4CascadeOptions,
     });
-    const validation = publicationService.validateDraft(
-      publishDraft,
-      currentUser,
-    );
-    if (!validation.isValid) {
-      toast.error(
-        validation.errors[0]?.message ||
-          "Veuillez corriger les erreurs avant de publier.",
-      );
-      return;
-    }
-
     if (!currentUser) {
       toast.info(
         "Créez un compte léger pour conserver votre brouillon et publier.",
@@ -1087,9 +1007,6 @@ export const PublishWizard: React.FC = () => {
         currentUser.accountType === "professional"
           ? "publish_professional_listing"
           : "publish_listing",
-        ...(draft.transaction.allowDirectPurchase
-          ? (["accept_online_payment"] as const)
-          : []),
       ] as const;
       for (const requestedAction of actions) {
         const requirement =
@@ -1100,19 +1017,11 @@ export const PublishWizard: React.FC = () => {
               jurisdiction: draft.location.countryCode || defaultMarketCode,
               marketCode: draft.marketCode,
               categoryId: draft.taxonomyNodeId,
-              transactionContext: draft.transaction.allowDirectPurchase
-                ? {
-                    transactionType: "direct_purchase",
-                    contractConclusionMode: "platform",
-                    paymentFlow: "psp_marketplace",
-                    amountMinor: Math.round(draft.pricing.amount * 100),
-                    currency: draft.pricing.currency,
-                  }
-                : {
-                    transactionType: "classified",
-                    contractConclusionMode: "off_platform",
-                    paymentFlow: "none",
-                  },
+              transactionContext: {
+                transactionType: "classified",
+                contractConclusionMode: "off_platform",
+                paymentFlow: "none",
+              },
             },
           );
         if (!requirement.allowed) {
@@ -1157,7 +1066,6 @@ export const PublishWizard: React.FC = () => {
         skipNextTime={skipPreparation}
         onSkipNextTimeChange={(checked) => {
           setSkipPreparation(checked);
-          storageService.set(SKIP_PREPARATION_STORAGE_KEY, checked);
         }}
       />
     );
@@ -1534,58 +1442,20 @@ export const PublishWizard: React.FC = () => {
               className="text-xl sm:text-2xl font-bold text-text-main focus:outline-none"
             >
               Caractéristiques techniques
-              {schema?.node
-                ? ` · ${getTaxonomyLabel(schema.node, "compact")}`
+              {selectedTaxonomyNode
+                ? ` · ${localizedTaxonomyLabel(selectedTaxonomyNode.shortLabels, currentLocale)}`
                 : ""}
             </h2>
             <p className="text-xs sm:text-sm text-text-tertiary mt-1">
-              {schema?.node
-                ? schema.listingFamily === "job"
+              {selectedTaxonomyNode
+                ? isJobListing
                   ? "Précisez la disponibilité du poste et les critères utiles aux candidats."
-                  : schema.listingFamily === "service"
+                  : isServiceListing
                     ? "Précisez la disponibilité de la prestation et les critères utiles aux clients."
                     : "Renseignez l'état du bien et les critères spécifiques pour optimiser la recherche."
                 : "Choisissez une catégorie ci-dessus pour voir les critères correspondants."}
             </p>
           </div>
-
-          {/* Condition Scheme Selector */}
-          {schema &&
-            activeV4Schema &&
-            !activeV4Schema.attributes.some(({ definition }) =>
-              ["property_condition", "equipment_condition"].includes(
-                definition.id,
-              ),
-            ) && (
-              <div>
-                <label className="text-xs font-semibold text-text-emphasis uppercase tracking-wider block mb-2">
-                  {schema?.listingFamily === "job"
-                    ? "Disponibilité du poste"
-                    : schema?.listingFamily === "service"
-                      ? "Disponibilité de la prestation"
-                      : t("publishing.publishWizard.etatDuBienProduit")}
-                </label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {(schema?.conditionScheme || []).map((c) => (
-                    <button
-                      key={c.value}
-                      type="button"
-                      onClick={() => updateDraft({ condition: c.value })}
-                      className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
-                        draft.condition === c.value
-                          ? "border-primary bg-primary-light text-primary font-semibold ring-1 ring-primary"
-                          : "border-border-base bg-bg-surface hover:bg-surface-soft text-text-strong"
-                      }`}
-                    >
-                      <div className="text-xs font-bold">{c.label}</div>
-                      <div className="text-micro text-text-tertiary mt-0.5">
-                        {c.description}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
 
           {/* Dynamic Attributes Grid */}
           {v4SchemaState === "loading" && (
@@ -1888,23 +1758,23 @@ export const PublishWizard: React.FC = () => {
         <div className="bg-bg-surface rounded-2xl border border-border-base p-6 sm:p-8 space-y-6 shadow-xs">
           <div>
             <h2 className="text-xl sm:text-2xl font-bold text-text-main">
-              {schema?.listingFamily === "job"
+              {isJobListing
                 ? "Rémunération"
-                : schema?.listingFamily === "service"
+                : isServiceListing
                   ? "Tarification de la prestation"
-                  : schema?.listingFamily === "real_estate"
+                  : isRealEstateListing
                     ? "Prix ou loyer"
                     : t("publishing.publishWizard.prixDeVenteStock")}
             </h2>
             <p className="text-xs sm:text-sm text-text-tertiary mt-1">
-              {schema?.listingFamily === "job"
+              {isJobListing
                 ? "Indiquez une fourchette ou choisissez de communiquer la rémunération sur demande."
-                : `Définissez votre tarification en ${schema?.currency.symbol || currencySymbol}.`}
+                : `Définissez votre tarification en ${currencySymbol}.`}
             </p>
           </div>
 
           <div className="space-y-4">
-            {schema && schema.supportedPriceModels.length > 1 && (
+            {priceModelOptions.length > 1 && (
               <FormField label="Mode de tarification" required>
                 <Select
                   size="compact"
@@ -1917,19 +1787,20 @@ export const PublishWizard: React.FC = () => {
                       pricing: {
                         ...draft.pricing,
                         priceModel,
-                        amount:
-                          priceModel === "on_request" || priceModel === "free"
-                            ? 0
-                            : draft.pricing.amount,
+                        amount: ["free", "on_request", "unpriced"].includes(
+                          priceModel,
+                        )
+                          ? 0
+                          : draft.pricing.amount,
                         isFreeDonation: priceModel === "free",
                         isNegotiable: priceModel === "negotiable",
                       },
                     });
                   }}
                 >
-                  {schema.supportedPriceModels.map((model) => (
-                    <option key={model} value={model}>
-                      {PRICE_MODEL_LABELS[model]}
+                  {priceModelOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
                     </option>
                   ))}
                 </Select>
@@ -1937,10 +1808,11 @@ export const PublishWizard: React.FC = () => {
             )}
 
             {draft.pricing.priceModel !== "free" &&
-              draft.pricing.priceModel !== "on_request" && (
+              draft.pricing.priceModel !== "on_request" &&
+              draft.pricing.priceModel !== "unpriced" && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <FormField
-                    label={`${PRICE_MODEL_LABELS[draft.pricing.priceModel]} (${schema?.currency.symbol || currencySymbol})`}
+                    label={`${currentPriceModelLabel} (${currencySymbol})`}
                     required
                   >
                     <Input
@@ -2040,147 +1912,6 @@ export const PublishWizard: React.FC = () => {
       )}
 
       {/* ========================================================================= */}
-      {/* STEP 6: TRANSACTIONS & MODES */}
-      {/* ========================================================================= */}
-      {showsPanel(6) && (
-        <div className="bg-bg-surface rounded-2xl border border-border-base p-6 sm:p-8 space-y-6 shadow-xs">
-          <div>
-            <h2 className="text-xl sm:text-2xl font-bold text-text-main">
-              {t("publishing.publishWizard.commentSouhaitezVousVendre")}
-            </h2>
-            <p className="text-xs sm:text-sm text-text-tertiary mt-1">
-              {t("publishing.publishWizard.activezLesOptionsDeTransaction")}
-            </p>
-          </div>
-
-          <div className="space-y-3">
-            {/* Contact Direct */}
-            <div className="p-4 rounded-xl border border-border-base bg-bg-base/40 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-surface-muted flex items-center justify-center text-text-emphasis">
-                  <Bot className="w-icon-md h-icon-md" />
-                </div>
-                <div>
-                  <div className="text-xs font-bold text-text-main">
-                    Contact direct & Messagerie
-                  </div>
-                  <div className="text-micro text-text-tertiary">
-                    {t("publishing.publishWizard.lesAcheteursPeuventVousPoser")}
-                  </div>
-                </div>
-              </div>
-              <Checkbox
-                aria-label={t(
-                  "publishing.publishWizard.autoriserLeContactDirectEt",
-                )}
-                checked={draft.transaction.allowContact}
-                onChange={(e) =>
-                  updateDraft({
-                    transaction: {
-                      ...draft.transaction,
-                      allowContact: e.target.checked,
-                    },
-                  })
-                }
-              />
-            </div>
-
-            {/* Direct Online Purchase */}
-            <div
-              className={`p-4 rounded-xl border transition-all ${
-                transactionCaps.canDirectPurchase
-                  ? "border-border-base bg-bg-base/40"
-                  : "border-border-disabled bg-surface-soft opacity-60"
-              } flex items-center justify-between`}
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-success-surface text-success flex items-center justify-center">
-                  <ShieldCheck className="w-icon-md h-icon-md" />
-                </div>
-                <div>
-                  <div className="text-xs font-bold text-text-main flex items-center gap-2">
-                    <span>
-                      {t("publishing.publishWizard.achatEnLigneDirectSans")}
-                    </span>
-                    <span className="text-micro bg-success-surface text-success font-bold px-1.5 py-0.5 rounded">
-                      {t("publishing.publishWizard.sequestreGaranti")}
-                    </span>
-                  </div>
-                  <div className="text-micro text-text-tertiary">
-                    {t(
-                      "publishing.publishWizard.lAcheteurPeutPayerImmediatement",
-                    )}
-                  </div>
-                </div>
-              </div>
-              <Checkbox
-                aria-label={t(
-                  "publishing.publishWizard.autoriserLePaiementSecuriseDirect",
-                )}
-                disabled={
-                  Boolean(draft.digitalFulfillment) ||
-                  !transactionCaps.canDirectPurchase
-                }
-                checked={
-                  Boolean(draft.digitalFulfillment) ||
-                  (draft.transaction.allowDirectPurchase &&
-                    transactionCaps.canDirectPurchase)
-                }
-                onChange={(e) =>
-                  updateDraft({
-                    transaction: {
-                      ...draft.transaction,
-                      allowDirectPurchase: e.target.checked,
-                    },
-                  })
-                }
-              />
-            </div>
-
-            {/* Reservation */}
-            {!draft.digitalFulfillment ? (
-              <div
-                className={`p-4 rounded-xl border transition-all ${
-                  transactionCaps.canReserve
-                    ? "border-border-base bg-bg-base/40"
-                    : "border-border-disabled bg-surface-soft opacity-60"
-                } flex items-center justify-between`}
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-primary-light text-primary flex items-center justify-center">
-                    <Clock className="w-icon-md h-icon-md" />
-                  </div>
-                  <div>
-                    <div className="text-xs font-bold text-text-main">
-                      {t("publishing.publishWizard.reservationAvecAcompte")}
-                    </div>
-                    <div className="text-micro text-text-tertiary">
-                      {t("publishing.publishWizard.permetALAcheteurDe")}
-                    </div>
-                  </div>
-                </div>
-                <Checkbox
-                  disabled={!transactionCaps.canReserve}
-                  checked={
-                    draft.transaction.allowReservation &&
-                    transactionCaps.canReserve
-                  }
-                  onChange={(e) =>
-                    updateDraft({
-                      transaction: {
-                        ...draft.transaction,
-                        allowReservation: e.target.checked,
-                      },
-                    })
-                  }
-                />
-              </div>
-            ) : null}
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================================= */}
       {/* STEP 7: FULFILLMENT & SHIPPING */}
       {/* ========================================================================= */}
       {showsPanel(7) && (
@@ -2198,21 +1929,11 @@ export const PublishWizard: React.FC = () => {
                 selectedMarkets: digitalFulfillment
                   ? [draft.marketCode]
                   : draft.selectedMarkets,
-                transaction: digitalFulfillment
-                  ? {
-                      ...draft.transaction,
-                      allowDirectPurchase: true,
-                      allowReservation: false,
-                    }
-                  : draft.transaction,
                 fulfillment: digitalFulfillment
                   ? {
                       ...draft.fulfillment,
                       allowHandDelivery: false,
                       allowParcelShipping: false,
-                      allowBulkyDelivery: false,
-                      allowSellerDelivery: false,
-                      allowStorePickup: false,
                     }
                   : {
                       ...draft.fulfillment,
@@ -2255,7 +1976,7 @@ export const PublishWizard: React.FC = () => {
               </div>
 
               {/* Parcel Shipping */}
-              {fulfillmentCaps.allowParcelShipping && (
+              {deliveryAvailability.state === "enabled" && (
                 <div className="p-4 rounded-xl border border-border-base bg-bg-base/40 space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -2287,100 +2008,6 @@ export const PublishWizard: React.FC = () => {
                       }
                     />
                   </div>
-
-                  {draft.fulfillment.allowParcelShipping && (
-                    <div className="pt-3 border-t border-border-subtle">
-                      <label className="text-xs font-semibold text-text-emphasis block mb-1.5">
-                        {t(
-                          "publishing.publishWizard.gabaritDuColisPoidsEstime",
-                        )}
-                      </label>
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-                        {[
-                          {
-                            id: "small",
-                            label: "Petit (< 500g)",
-                            desc: "T-shirt, smartphone",
-                          },
-                          {
-                            id: "medium",
-                            label: "Moyen (< 2kg)",
-                            desc: "Chaussures, tablette",
-                          },
-                          {
-                            id: "large",
-                            label: "Grand (< 5kg)",
-                            desc: "Manteau, cafetière",
-                          },
-                          {
-                            id: "xlarge",
-                            label: "Très grand (< 30kg)",
-                            desc: "Ampli, petit meuble",
-                          },
-                        ].map((pkg) => (
-                          <button
-                            key={pkg.id}
-                            type="button"
-                            onClick={() =>
-                              updateDraft({
-                                fulfillment: {
-                                  ...draft.fulfillment,
-                                  packageSpecs: {
-                                    sizeTier: pkg.id as PackageSizeTier,
-                                  },
-                                },
-                              })
-                            }
-                            className={`p-2.5 rounded-lg border text-left cursor-pointer transition-colors ${
-                              draft.fulfillment.packageSpecs?.sizeTier ===
-                              pkg.id
-                                ? "bg-surface-inverse text-text-inverse font-semibold"
-                                : "bg-bg-surface text-text-strong border-border-base hover:bg-surface-soft"
-                            }`}
-                          >
-                            <div className="text-xs font-bold">{pkg.label}</div>
-                            <div className="text-micro opacity-70 mt-0.5">
-                              {pkg.desc}
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Bulky Delivery */}
-              {fulfillmentCaps.allowBulkyDelivery && (
-                <div className="p-4 rounded-xl border border-border-base bg-bg-base/40 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-warning-surface text-warning flex items-center justify-center">
-                      <Truck className="w-icon-md h-icon-md" />
-                    </div>
-                    <div>
-                      <div className="text-xs font-bold text-text-main">
-                        {t(
-                          "publishing.publishWizard.transportDeMeublesGrosColis",
-                        )}
-                      </div>
-                      <div className="text-micro text-text-tertiary">
-                        {t(
-                          "publishing.publishWizard.idealPourCanapesTablesElectromenager",
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  <Checkbox
-                    checked={draft.fulfillment.allowBulkyDelivery}
-                    onChange={(e) =>
-                      updateDraft({
-                        fulfillment: {
-                          ...draft.fulfillment,
-                          allowBulkyDelivery: e.target.checked,
-                        },
-                      })
-                    }
-                  />
                 </div>
               )}
             </div>
@@ -2492,15 +2119,9 @@ export const PublishWizard: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => {
-                    const allEligible = marketService
-                      .getActiveMarkets()
-                      .filter((m) =>
-                        marketService.isCategoryEnabledInMarket(
-                          m.code,
-                          schema?.node?.slug ||
-                            schema?.ancestors[0]?.slug ||
-                            "",
-                        ),
+                    const allEligible = availableMarkets
+                      .filter((market) =>
+                        ["active", "beta"].includes(market.status),
                       )
                       .map((m) => m.code);
                     updateDraft({
@@ -2534,24 +2155,19 @@ export const PublishWizard: React.FC = () => {
 
             {/* Markets Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {marketService.getMarkets().map((m) => {
-                const categorySlug =
-                  schema?.node?.slug || schema?.ancestors[0]?.slug || "";
-                const isCatEnabled = marketService.isCategoryEnabledInMarket(
-                  m.code,
-                  categorySlug,
-                );
+              {availableMarkets.map((m) => {
                 const isSelected = (
                   draft.selectedMarkets || [defaultMarketCode]
                 ).includes(m.code);
                 const isPrimary = m.isDefault;
-                const effectiveCfg = marketService.getEffectiveConfig(m.code);
-                const isUnavailable = !isCatEnabled && !isSelected;
+                const effectiveCfg = m.configuration;
+                const isUnavailable =
+                  !["active", "beta"].includes(m.status) && !isSelected;
 
                 const toggleMarket = () => {
                   if (isUnavailable) {
                     toast.error(
-                      `La catégorie "${schema?.node ? getTaxonomyLabel(schema.node, "compact") : "actuelle"}" n'est pas encore ouverte sur le marché ${m.name}.`,
+                      `Le marché ${m.name} n’est pas ouvert à la publication.`,
                     );
                     return;
                   }
@@ -2591,7 +2207,7 @@ export const PublishWizard: React.FC = () => {
                     className={`p-4 rounded-xl border transition-all duration-fast cursor-pointer flex flex-col justify-between focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
                       isSelected
                         ? "border-primary bg-primary-surface-faint ring-1 ring-primary shadow-xs"
-                        : isCatEnabled
+                        : !isUnavailable
                           ? "border-border-base bg-bg-surface hover:bg-surface-soft"
                           : "border-border-disabled bg-surface-soft/70 opacity-60 cursor-not-allowed"
                     }`}
@@ -2636,7 +2252,7 @@ export const PublishWizard: React.FC = () => {
                             )}
                           </span>
                         )}
-                        {isCatEnabled ? (
+                        {!isUnavailable ? (
                           <span className="text-micro bg-success-surface text-success font-bold px-2 py-0.5 rounded-full">
                             {t("publishing.publishWizard.categorieEligible")}
                           </span>
@@ -2689,81 +2305,6 @@ export const PublishWizard: React.FC = () => {
               </div>
             </div>
           </div>
-
-          {/* VISIBILITY BOOST OPTIONS */}
-          <div className="bg-bg-surface rounded-2xl border border-border-base p-6 sm:p-8 space-y-6 shadow-xs">
-            <div>
-              <h2 className="text-xl sm:text-2xl font-bold text-text-main">
-                {t(
-                  "publishing.publishWizard.optionsDeVisibiliteBoostFacultatif",
-                )}
-              </h2>
-              <p className="text-xs sm:text-sm text-text-tertiary mt-1">
-                {t("publishing.publishWizard.multipliezVosVuesEnPositionnant")}
-              </p>
-            </div>
-
-            {visibilityOffersState === "error" && (
-              <div className="rounded-xl border border-warning-border bg-warning-surface p-3 text-xs text-warning">
-                {t("publishing.publishWizard.paidOptionsUnavailable")}
-              </div>
-            )}
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {[
-                {
-                  id: "standard",
-                  name:
-                    schema?.publication.standardPolicy.label ||
-                    "Publication standard gratuite",
-                  description: t("publishing.publishWizard.standardIncludes", {
-                    photos:
-                      schema?.publication.standardPolicy.mediaAllowance || 12,
-                    days: schema?.publication.standardPolicy.durationDays || 60,
-                  }),
-                },
-                ...visibilityOffers,
-              ].map((pack) => (
-                <button
-                  key={pack.id}
-                  type="button"
-                  onClick={() =>
-                    updateDraft({
-                      boostPackage:
-                        pack.id === "standard" ? undefined : pack.id,
-                    })
-                  }
-                  className={`p-4 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
-                    (pack.id === "standard" && !draft.boostPackage) ||
-                    draft.boostPackage === pack.id
-                      ? "border-primary bg-primary-surface-soft ring-1 ring-primary"
-                      : "border-border-base bg-bg-surface hover:bg-surface-soft"
-                  }`}
-                >
-                  <div>
-                    <div className="text-xs font-bold text-text-main">
-                      {pack.name}
-                    </div>
-                    <div className="text-micro text-text-tertiary mt-1">
-                      {pack.description}
-                    </div>
-                  </div>
-                  <div className="text-sm font-bold text-primary mt-3">
-                    {pack.id === "standard"
-                      ? t("publishing.publishWizard.free")
-                      : "price" in pack
-                        ? formatMoney(pack.price)
-                        : t("publishing.publishWizard.paidOptionsUnavailable")}
-                  </div>
-                </button>
-              ))}
-            </div>
-            {visibilityOffersState === "loading" && (
-              <p className="text-xs text-text-tertiary" role="status">
-                {t("publishing.publishWizard.loadingOptionalOffers")}
-              </p>
-            )}
-          </div>
         </div>
       )}
 
@@ -2792,8 +2333,11 @@ export const PublishWizard: React.FC = () => {
                     {t("publishing.publishWizard.categorie")}
                   </span>
                   <span className="font-bold text-text-main">
-                    {schema?.node
-                      ? getTaxonomyLabel(schema.node, "compact")
+                    {selectedTaxonomyNode
+                      ? localizedTaxonomyLabel(
+                          selectedTaxonomyNode.shortLabels,
+                          currentLocale,
+                        )
                       : ""}
                   </span>
                 </div>
@@ -2818,7 +2362,9 @@ export const PublishWizard: React.FC = () => {
                   <div className="flex flex-wrap items-center gap-1.5 justify-end">
                     {(draft.selectedMarkets || [defaultMarketCode]).map(
                       (mCode) => {
-                        const m = marketService.getMarketByCode(mCode);
+                        const m = availableMarkets.find(
+                          (market) => market.code === mCode,
+                        );
                         return (
                           <span
                             key={mCode}
@@ -2831,20 +2377,6 @@ export const PublishWizard: React.FC = () => {
                       },
                     )}
                   </div>
-                </div>
-                <div className="flex justify-between items-center pb-2 border-b border-border-subtle">
-                  <span className="text-text-tertiary">
-                    {t("publishing.publishWizard.modesDeTransaction")}
-                  </span>
-                  <span className="font-semibold text-text-strong">
-                    {[
-                      draft.transaction.allowDirectPurchase && "Achat en ligne",
-                      draft.transaction.allowReservation && "Réservation",
-                      draft.transaction.allowContact && "Contact",
-                    ]
-                      .filter(Boolean)
-                      .join(" • ")}
-                  </span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-text-tertiary">Localisation</span>
@@ -2885,17 +2417,23 @@ export const PublishWizard: React.FC = () => {
                   originalPrice: draft.pricing.originalPrice,
                   isNegotiable: draft.pricing.isNegotiable,
                   isFreeDonation: draft.pricing.isFreeDonation,
-                  categorySlug: schema?.ancestors[0]?.slug || "maison-deco",
-                  subCategorySlug: schema?.node.slug || "mobilier",
-                  categoryLabel: schema?.ancestors[0]
-                    ? getTaxonomyLabel(schema.ancestors[0], "compact")
-                    : "Maison",
-                  subCategoryLabel: schema?.node
-                    ? getTaxonomyLabel(schema.node, "compact")
-                    : "Mobilier",
+                  categorySlug: selectedTaxonomyRoot?.slug || "",
+                  subCategorySlug: selectedTaxonomyNode?.slug || "",
+                  categoryLabel: selectedTaxonomyRoot
+                    ? localizedTaxonomyLabel(
+                        selectedTaxonomyRoot.shortLabels,
+                        currentLocale,
+                      )
+                    : "",
+                  subCategoryLabel: selectedTaxonomyNode
+                    ? localizedTaxonomyLabel(
+                        selectedTaxonomyNode.shortLabels,
+                        currentLocale,
+                      )
+                    : "",
                   condition: draft.condition as any,
-                  sellerId: currentUser?.id || "demo",
-                  sellerName: currentUser?.name || "Vendeur Shongre",
+                  sellerId: currentUser?.id || "",
+                  sellerName: currentUser?.name || "",
                   sellerType: isProSeller(currentUser) ? "pro" : "individual",
                   sellerRating: currentUser?.rating ?? 0,
                   sellerReviewCount: currentUser?.reviewCount ?? 0,
@@ -2918,9 +2456,7 @@ export const PublishWizard: React.FC = () => {
                       available: draft.fulfillment.allowParcelShipping,
                     },
                   ],
-                  isOnlinePaymentAvailable:
-                    draft.transaction.allowDirectPurchase,
-                  isReservable: draft.transaction.allowReservation,
+                  isOnlinePaymentAvailable: false,
                   attributes: draft.attributes,
                   status: "active",
                   marketCodes: draft.selectedMarkets || [defaultMarketCode],

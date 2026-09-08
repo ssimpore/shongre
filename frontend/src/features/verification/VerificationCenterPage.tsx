@@ -482,7 +482,6 @@ export const VerificationCenterPage: React.FC = () => {
       />
       {currentUser ? (
         <PhoneVerificationModal
-          userId={currentUser.id}
           initialPhone={currentUser.phone}
           isOpen={activeModal === "phone"}
           onClose={() => setActiveModal(null)}

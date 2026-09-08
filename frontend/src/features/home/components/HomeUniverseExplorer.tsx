@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import type { TaxonomyV4Node } from "@shongre/contracts";
 import { themeColors } from "@shongre/design-tokens";
 import { RefreshCw, ScanSearch } from "lucide-react";
 import { routes } from "../../../configuration/routes";
@@ -14,21 +15,31 @@ import type {
   HomepageSectionView,
   HomepageUniverseGroup,
 } from "../../../domains/homepage/homepage.types";
-import { taxonomyService } from "../../../domains/taxonomy/taxonomy.service";
-import type { TaxonomyNode } from "../../../domains/taxonomy/taxonomy.types";
+import { services } from "../../../api/client/service-registry";
+import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
+import { localizedTaxonomyLabel } from "../../../domains/publication/publication.onboarding";
 import { useTranslation } from "../../../i18n/I18nProvider";
 import { HomeSectionAction } from "./HomeSectionAction";
 import { HomeSectionHeading } from "./HomeSectionHeading";
 
-interface ResolvedUniverseGroup extends HomepageUniverseGroup {
-  root: TaxonomyNode;
+export interface ResolvedUniverseGroup extends HomepageUniverseGroup {
+  root: TaxonomyV4Node;
 }
+
+export const resolveUniverseGroups = (
+  section: HomepageSectionView,
+  taxonomyNodes: ReadonlyMap<string, TaxonomyV4Node>,
+): ResolvedUniverseGroup[] =>
+  (section.universeGroups || []).flatMap((group) => {
+    const root = taxonomyNodes.get(group.categoryId);
+    return root ? [{ ...group, root }] : [];
+  });
 
 const UniverseRail: React.FC<{ group: ResolvedUniverseGroup }> = ({
   group,
 }) => {
   const { locale, t } = useTranslation();
-  const groupLabel = taxonomyService.getLabel(group.root, { locale });
+  const groupLabel = localizedTaxonomyLabel(group.root.labels, locale);
   const headingId = `home-universe-${group.root.slug}-title`;
   const railLabel = t("home.homeUniverseExplorer.railLabel", {
     category: groupLabel,
@@ -43,7 +54,8 @@ const UniverseRail: React.FC<{ group: ResolvedUniverseGroup }> = ({
       <div className="mb-3 flex items-center justify-between gap-3 sm:mb-4">
         <div className="flex min-w-0 items-center gap-3">
           <CategoryIcon
-            category={group.root}
+            category={group.root.slug}
+            iconName={group.root.iconName}
             color={themeColors.primary}
             size="md"
             withBackground
@@ -88,11 +100,53 @@ export const HomeUniverseExplorer: React.FC<{
   section: HomepageSectionView;
   onRetry: () => void;
 }> = ({ section, onRetry }) => {
-  const { t } = useTranslation();
-  const groups = (section.universeGroups || []).flatMap((group) => {
-    const root = taxonomyService.getNode(group.categoryId);
-    return root ? [{ ...group, root }] : [];
-  });
+  const { locale, t } = useTranslation();
+  const { marketContext } = useMarketLocation();
+  const [taxonomyNodes, setTaxonomyNodes] = useState<
+    ReadonlyMap<string, TaxonomyV4Node>
+  >(new Map());
+  const [taxonomyState, setTaxonomyState] = useState<
+    "loading" | "ready" | "error"
+  >("loading");
+  const [taxonomyRetryKey, setTaxonomyRetryKey] = useState(0);
+
+  useEffect(() => {
+    let active = true;
+    if (!marketContext || marketContext.kind !== "market") {
+      setTaxonomyNodes(new Map());
+      setTaxonomyState("error");
+      return () => {
+        active = false;
+      };
+    }
+    setTaxonomyState("loading");
+    void services.taxonomy
+      .getV4Tree({
+        marketContext,
+        locale,
+        taxonomyVersion: "4.0.0",
+      })
+      .then((response) => {
+        if (!active) return;
+        setTaxonomyNodes(
+          new Map(response.items.map((node) => [node.id, node])),
+        );
+        setTaxonomyState("ready");
+      })
+      .catch(() => {
+        if (!active) return;
+        setTaxonomyNodes(new Map());
+        setTaxonomyState("error");
+      });
+    return () => {
+      active = false;
+    };
+  }, [locale, marketContext, taxonomyRetryKey]);
+
+  const groups = useMemo(
+    () => resolveUniverseGroups(section, taxonomyNodes),
+    [section.universeGroups, taxonomyNodes],
+  );
 
   if (section.status === "error") {
     return (
@@ -119,6 +173,34 @@ export const HomeUniverseExplorer: React.FC<{
       </Container>
     );
   }
+  if (taxonomyState === "error") {
+    return (
+      <Container
+        as="section"
+        aria-labelledby="home-universe-explorer-title"
+        className={homepageVisibilityClass(section)}
+      >
+        <StatePanel
+          variant="offline"
+          title={t("common.error")}
+          description={t(
+            "categories.categoriesPage.catalogueIndisponibleDescription",
+          )}
+          action={
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => setTaxonomyRetryKey((value) => value + 1)}
+              leftIcon={<RefreshCw className="h-icon-md w-icon-md" />}
+            >
+              {t("common.retry")}
+            </Button>
+          }
+        />
+      </Container>
+    );
+  }
+  if (taxonomyState === "loading") return null;
   if (!groups.length) return null;
 
   return (

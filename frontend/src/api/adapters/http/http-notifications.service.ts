@@ -1,5 +1,5 @@
 import { NotificationsServiceContract } from "../../contracts/notifications.contract";
-import { httpClient } from "./http-client";
+import { apiOperation } from "./generated-api-operation";
 import type {
   Notification,
   NotificationCategory,
@@ -60,32 +60,46 @@ const mapNotification = (item: BackendNotification): Notification => ({
 
 export class HttpNotificationsService implements NotificationsServiceContract {
   async getUserNotifications(_userId: string): Promise<Notification[]> {
-    const items = await httpClient.get<BackendNotification[]>("/notifications");
+    const items = await apiOperation<BackendNotification[], "getNotifications">(
+      "getNotifications",
+      {},
+    );
     return items.map(mapNotification);
   }
 
   async getUnreadCount(_userId: string): Promise<number> {
-    const res = await httpClient.get<{ count: number }>(
-      "/notifications/unread-count",
-    );
+    const res = await apiOperation<
+      { count: number },
+      "getNotificationsUnreadCount"
+    >("getNotificationsUnreadCount", {});
     return res.count;
   }
 
   async markAsRead(notificationId: string): Promise<void> {
-    return httpClient.post<void>(`/notifications/${notificationId}/read`);
+    return apiOperation<void, "postNotificationsByIdRead">(
+      "postNotificationsByIdRead",
+      { path: { id: notificationId } },
+    );
   }
 
   async markAllAsRead(_userId: string): Promise<void> {
-    return httpClient.post<void>("/notifications/read-all");
+    return apiOperation<void, "postNotificationsReadAll">(
+      "postNotificationsReadAll",
+      {},
+    );
   }
 
   async deleteNotification(notificationId: string): Promise<void> {
-    return httpClient.delete<void>(`/notifications/${notificationId}`);
+    return apiOperation<void, "deleteNotificationsById">(
+      "deleteNotificationsById",
+      { path: { id: notificationId } },
+    );
   }
 
   async getPreferences(_userId: string): Promise<NotificationPreferences> {
-    return httpClient.get<NotificationPreferences>(
-      "/notifications/preferences",
+    return apiOperation<NotificationPreferences, "getNotificationPreferences">(
+      "getNotificationPreferences",
+      {},
     );
   }
 
@@ -93,9 +107,9 @@ export class HttpNotificationsService implements NotificationsServiceContract {
     _userId: string,
     preferences: NotificationPreferences,
   ): Promise<NotificationPreferences> {
-    return httpClient.put<NotificationPreferences>(
-      "/notifications/preferences",
-      preferences,
+    return apiOperation<NotificationPreferences, "putNotificationPreferences">(
+      "putNotificationPreferences",
+      { body: preferences },
     );
   }
 }

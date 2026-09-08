@@ -21,16 +21,14 @@ for (const envPath of localFiles) {
   }
 }
 
-if (!process.env.NEXT_PUBLIC_DATA_MODE) {
-  throw new Error(
-    "NEXT_PUBLIC_DATA_MODE is required. Use `make dev` for API mode or `make frontend` for the explicit demo UI.",
-  );
-}
 process.env.NEXT_PUBLIC_APP_ENV ??= process.env.APP_ENV;
 process.env.NEXT_PUBLIC_ENVIRONMENT_ID ??= process.env.ENVIRONMENT_ID;
 process.env.NEXT_PUBLIC_FR_URL ??= process.env.PUBLIC_FR_URL;
 process.env.NEXT_PUBLIC_INTL_URL ??= process.env.PUBLIC_INTL_URL;
 process.env.NEXT_PUBLIC_API_URL ??= `${process.env.API_URL || ""}${process.env.API_PREFIX || "/api/v1"}`;
+if (!process.env.NEXT_PUBLIC_API_URL) {
+  throw new Error("NEXT_PUBLIC_API_URL is required for the Web client.");
+}
 
 const command = process.argv[2] ?? "dev";
 // NODE_ENV controls Next's compiler, never the selected Shongre data plane.

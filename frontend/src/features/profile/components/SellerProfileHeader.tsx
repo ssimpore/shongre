@@ -2,7 +2,7 @@ import {
   isProSeller,
   showsVerifiedBadge,
 } from "../../../domains/user/user.domain";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ProBadge, VerificationBadge } from "@shongre/ui/web";
 
 import {
@@ -11,7 +11,6 @@ import {
   Calendar,
   MessageSquare,
   Share2,
-  Heart,
   MoreVertical,
   Flag,
   Ban,
@@ -19,20 +18,19 @@ import {
   Edit3,
   List,
 } from "lucide-react";
-import { UserProfile } from "../../../types";
+import { PublicSellerProfile } from "../../../types";
 import { Avatar } from "../../../design-system/primitives/Badge";
 import { Button } from "../../../design-system/primitives/Button";
 import { IconButton } from "../../../design-system/primitives/IconButton";
 import { useAuth } from "../../../app/providers/AuthProvider";
 import { useToast } from "../../../app/providers/ToastProvider";
-import { userRepository } from "../../../repositories/user.repository";
-import { Image } from "../../../design-system/primitives/Image";
+import { services } from "../../../api/client/service-registry";
 import { useTranslation } from "../../../i18n/I18nProvider";
 import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
 import { publicRouteUrl } from "../../../domains/market/market-routing";
 
 export interface SellerProfileHeaderProps {
-  seller: UserProfile;
+  seller: PublicSellerProfile;
   activeListingsCount: number;
   onTabChange: (tab: "catalog" | "reviews" | "about") => void;
   isOwnProfile: boolean;
@@ -49,43 +47,39 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
   onOpenReportModal,
 }) => {
   const { t } = useTranslation();
-  const { isAuthenticated } = useAuth();
+  const { currentUser } = useAuth();
   const { marketContext, activeMarket } = useMarketLocation();
   const toast = useToast();
 
-  const [isFollowing, setIsFollowing] = useState(() =>
-    userRepository.isFollowing(seller.id),
-  );
-  const [isBlocked, setIsBlocked] = useState(() =>
-    userRepository.isBlocked(seller.id),
-  );
+  const [isBlocked, setIsBlocked] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const isPro = isProSeller(seller);
-  const displayName = isPro ? seller.companyName || seller.name : seller.name;
+  const displayName = seller.name;
 
   // Format member seniority
   const memberYear = seller.createdAt
     ? new Date(seller.createdAt).getFullYear()
-    : "2024";
+    : null;
 
-  const handleFollowToggle = () => {
-    if (!isAuthenticated) {
-      toast.info(
-        "Connectez-vous pour suivre ce vendeur et recevoir ses nouveautés.",
-      );
+  useEffect(() => {
+    if (!currentUser) {
+      setIsBlocked(false);
       return;
     }
-    const nextState = userRepository.toggleFollow(seller.id);
-    setIsFollowing(nextState);
-    if (nextState) {
-      toast.success(
-        `Vous suivez désormais ${displayName}. Vous serez notifié de ses nouvelles annonces.`,
-      );
-    } else {
-      toast.info(`Vous ne suivez plus ${displayName}.`);
-    }
-  };
+    let active = true;
+    services.messaging
+      .getBlockedUserIds(currentUser.id)
+      .then((ids) => {
+        if (active) setIsBlocked(ids.includes(seller.id));
+      })
+      .catch(() => {
+        if (active) setIsBlocked(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [currentUser, seller.id]);
 
   const handleShare = async () => {
     const shareUrl = publicRouteUrl({
@@ -116,20 +110,26 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
     }
   };
 
-  const handleBlockToggle = () => {
-    if (!isAuthenticated) {
+  const handleBlockToggle = async () => {
+    if (!currentUser) {
       toast.info("Connectez-vous pour bloquer un utilisateur.");
       return;
     }
-    const nextBlocked = userRepository.toggleBlock(seller.id);
-    setIsBlocked(nextBlocked);
-    setIsMenuOpen(false);
-    if (nextBlocked) {
-      toast.warning(
-        `${displayName} a été bloqué. Ses messages et offres seront masqués.`,
-      );
-    } else {
-      toast.success(`${displayName} a été débloqué.`);
+    try {
+      if (isBlocked) {
+        await services.messaging.unblockUser(currentUser.id, seller.id);
+        setIsBlocked(false);
+        toast.success(`${displayName} a été débloqué.`);
+      } else {
+        await services.messaging.blockUser(currentUser.id, seller.id);
+        setIsBlocked(true);
+        toast.warning(
+          `${displayName} a été bloqué. Ses messages et offres seront masqués.`,
+        );
+      }
+      setIsMenuOpen(false);
+    } catch {
+      toast.error("Cette préférence n’a pas pu être enregistrée.");
     }
   };
 
@@ -138,19 +138,9 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
       {/* Cover Header for Pro or decorative header for Individual */}
       {isPro ? (
         <div className="relative h-48 sm:h-64 w-full bg-gradient-to-r from-surface-inverse via-surface-inverse-hover to-rating-inverse-deep overflow-hidden">
-          {seller.storeBannerUrl ? (
-            <Image
-              src={seller.storeBannerUrl}
-              alt={`Bannière de ${displayName}`}
-              sizes="100vw"
-              className="w-full h-full object-cover opacity-80 mix-blend-overlay"
-              referrerPolicy="no-referrer"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center opacity-30">
-              <Building2 className="w-24 h-24 text-text-inverse" />
-            </div>
-          )}
+          <div className="w-full h-full flex items-center justify-center opacity-30">
+            <Building2 className="w-24 h-24 text-text-inverse" />
+          </div>
           <div className="absolute inset-0 bg-gradient-to-t from-surface-overlay-deep/60 via-transparent to-surface-overlay-deep/10" />
 
           <div className="absolute top-4 right-4 flex items-center gap-2 flex-wrap">
@@ -239,27 +229,27 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
                   </span>
                 </button>
 
-                <span className="shrink-0 text-text-inverse-muted">•</span>
-
-                {/* Location */}
-                <span className="flex shrink-0 items-center gap-1.5 text-text-supporting">
-                  <MapPin className="h-icon-sm w-icon-sm shrink-0 text-text-inverse-subtle sm:h-4 sm:w-4" />
-                  {seller.city}{" "}
-                  {seller.postalCode
-                    ? `(${seller.postalCode.slice(0, 2)})`
-                    : ""}
-                </span>
-
-                <span className="shrink-0 text-text-inverse-muted">•</span>
-
-                {/* Seniority */}
-                <span className="flex shrink-0 items-center gap-1.5 text-text-tertiary">
-                  <Calendar className="h-icon-sm w-icon-sm shrink-0 text-text-inverse-subtle sm:h-4 sm:w-4" />
-                  <span className="sm:hidden">Depuis {memberYear}</span>
-                  <span className="hidden sm:inline">
-                    Membre depuis {memberYear}
-                  </span>
-                </span>
+                {seller.city ? (
+                  <>
+                    <span className="shrink-0 text-text-inverse-muted">•</span>
+                    <span className="flex shrink-0 items-center gap-1.5 text-text-supporting">
+                      <MapPin className="h-icon-sm w-icon-sm shrink-0 text-text-inverse-subtle sm:h-4 sm:w-4" />
+                      {seller.city}
+                    </span>
+                  </>
+                ) : null}
+                {memberYear ? (
+                  <>
+                    <span className="shrink-0 text-text-inverse-muted">•</span>
+                    <span className="flex shrink-0 items-center gap-1.5 text-text-tertiary">
+                      <Calendar className="h-icon-sm w-icon-sm shrink-0 text-text-inverse-subtle sm:h-4 sm:w-4" />
+                      <span className="sm:hidden">Depuis {memberYear}</span>
+                      <span className="hidden sm:inline">
+                        Membre depuis {memberYear}
+                      </span>
+                    </span>
+                  </>
+                ) : null}
               </div>
             </div>
           </div>
@@ -313,20 +303,6 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
                   </span>
                 </Button>
 
-                <Button
-                  variant={isFollowing ? "secondary" : "outline"}
-                  size="md"
-                  onClick={handleFollowToggle}
-                  leftIcon={
-                    <Heart
-                      className={`w-icon-md h-icon-md ${isFollowing ? "fill-primary text-primary" : ""}`}
-                    />
-                  }
-                  className="hidden sm:inline-flex"
-                >
-                  {isFollowing ? "Abonné" : "Suivre"}
-                </Button>
-
                 <IconButton
                   variant="outline"
                   size="md"
@@ -358,16 +334,6 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
                     >
                       <button
                         type="button"
-                        onClick={handleFollowToggle}
-                        className="w-full sm:hidden flex items-center gap-3 px-4 py-3 text-sm font-semibold text-text-emphasis hover:bg-surface-soft text-left"
-                      >
-                        <Heart
-                          className={`w-icon-md h-icon-md ${isFollowing ? "fill-primary text-primary" : ""}`}
-                        />
-                        {isFollowing ? "Ne plus suivre" : "Suivre ce vendeur"}
-                      </button>
-                      <button
-                        type="button"
                         onClick={handleShare}
                         className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-text-emphasis hover:bg-surface-soft text-left"
                       >
@@ -388,7 +354,7 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
                       </button>
                       <button
                         type="button"
-                        onClick={handleBlockToggle}
+                        onClick={() => void handleBlockToggle()}
                         className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-danger hover:bg-danger-surface text-left"
                       >
                         <Ban className="w-icon-md h-icon-md text-danger" />
@@ -435,14 +401,16 @@ export const SellerProfileHeader: React.FC<SellerProfileHeaderProps> = ({
             </span>
           </div>
 
-          <div className="bg-surface-soft p-4 rounded-2xl border border-border-disabled/60 shadow-2xs">
-            <span className="font-bold block text-text-main text-lg truncate mb-0.5">
-              {seller.responseTimeText || "Rapide"}
-            </span>
-            <span className="text-xs">
-              {t("profile.sellerProfileHeader.delaiMoyen")}
-            </span>
-          </div>
+          {seller.responseTimeText ? (
+            <div className="bg-surface-soft p-4 rounded-2xl border border-border-disabled/60 shadow-2xs">
+              <span className="font-bold block text-text-main text-lg truncate mb-0.5">
+                {seller.responseTimeText}
+              </span>
+              <span className="text-xs">
+                {t("profile.sellerProfileHeader.delaiMoyen")}
+              </span>
+            </div>
+          ) : null}
 
           <div className="bg-surface-soft p-4 rounded-2xl border border-border-disabled/60 shadow-2xs">
             <span className="font-bold block text-text-main text-lg mb-0.5">

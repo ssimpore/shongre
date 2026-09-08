@@ -9,13 +9,13 @@ import type {
   DigitalSellerProfile,
   FulfillmentType,
 } from "@shongre/contracts/digital-products";
+import { apiOperation } from "./generated-api-operation";
 import type {
   ConsumedDigitalAccess,
   DigitalProductsServiceContract,
   DigitalSecretInput,
   DigitalAccessReportType,
 } from "../../contracts/digital-products.contract";
-import { httpClient } from "./http-client";
 
 const marketHeaders = (marketCode: string) => ({
   "X-Shongre-Market": marketCode,
@@ -23,14 +23,15 @@ const marketHeaders = (marketCode: string) => ({
 
 export class HttpDigitalProductsService implements DigitalProductsServiceContract {
   getPolicy(marketCode: string) {
-    return httpClient.get<DigitalPolicyProjection>("/digital/policy", {
-      headers: marketHeaders(marketCode),
-    });
+    return apiOperation<DigitalPolicyProjection, "getDigitalPolicy">(
+      "getDigitalPolicy",
+      { headers: marketHeaders(marketCode) },
+    );
   }
 
   getSellerProfile(marketCode: string, _sellerId: string) {
-    return httpClient.get<DigitalSellerProfile | null>(
-      "/digital/seller-profile",
+    return apiOperation<DigitalSellerProfile | null, "getDigitalSellerProfile">(
+      "getDigitalSellerProfile",
       { headers: marketHeaders(marketCode) },
     );
   }
@@ -41,10 +42,12 @@ export class HttpDigitalProductsService implements DigitalProductsServiceContrac
     fulfillmentTypes: FulfillmentType[],
     acceptedPolicyVersion: number,
   ) {
-    return httpClient.put<DigitalSellerProfile>(
-      "/digital/seller-profile",
-      { fulfillmentTypes, acceptedPolicyVersion },
-      { headers: marketHeaders(marketCode) },
+    return apiOperation<DigitalSellerProfile, "putDigitalSellerProfile">(
+      "putDigitalSellerProfile",
+      {
+        body: { fulfillmentTypes, acceptedPolicyVersion },
+        headers: marketHeaders(marketCode),
+      },
     );
   }
 
@@ -58,11 +61,15 @@ export class HttpDigitalProductsService implements DigitalProductsServiceContrac
       replacesAssetId?: string;
     },
   ) {
-    return httpClient.post<{
-      asset: DigitalAssetProjection;
-      signedUploadUrl: string;
-      expiresAt: string;
-    }>("/digital/assets/uploads", input, {
+    return apiOperation<
+      {
+        asset: DigitalAssetProjection;
+        signedUploadUrl: string;
+        expiresAt: string;
+      },
+      "postDigitalAssetUpload"
+    >("postDigitalAssetUpload", {
+      body: input,
       headers: marketHeaders(marketCode),
     });
   }
@@ -98,32 +105,39 @@ export class HttpDigitalProductsService implements DigitalProductsServiceContrac
   }
 
   completePrivateUpload(marketCode: string, assetId: string) {
-    return httpClient.post<DigitalAssetProjection>(
-      `/digital/assets/uploads/${assetId}/complete`,
-      undefined,
-      { headers: marketHeaders(marketCode) },
-    );
+    return apiOperation<
+      DigitalAssetProjection,
+      "postDigitalAssetUploadComplete"
+    >("postDigitalAssetUploadComplete", {
+      path: { id: assetId },
+      headers: marketHeaders(marketCode),
+    });
   }
 
   getAsset(marketCode: string, assetId: string) {
-    return httpClient.get<DigitalAssetProjection>(
-      `/digital/assets/${assetId}`,
-      { headers: marketHeaders(marketCode) },
+    return apiOperation<DigitalAssetProjection, "getDigitalAsset">(
+      "getDigitalAsset",
+      { path: { id: assetId }, headers: marketHeaders(marketCode) },
     );
   }
 
   async removeAsset(marketCode: string, assetId: string) {
-    await httpClient.delete(`/digital/assets/${assetId}`, {
+    await apiOperation("deleteDigitalAsset", {
+      path: { id: assetId },
       headers: marketHeaders(marketCode),
     });
   }
 
   createProtectedAccess(marketCode: string, input: DigitalSecretInput) {
-    return httpClient.post<{
-      id: string;
-      destinationDomain: string | null;
-      masked: true;
-    }>("/digital/access-secrets", input, {
+    return apiOperation<
+      {
+        id: string;
+        destinationDomain: string | null;
+        masked: true;
+      },
+      "postDigitalAccessSecret"
+    >("postDigitalAccessSecret", {
+      body: input,
       headers: marketHeaders(marketCode),
     });
   }
@@ -134,11 +148,13 @@ export class HttpDigitalProductsService implements DigitalProductsServiceContrac
       DigitalProductsServiceContract["createCredentialBatch"]
     >[1],
   ) {
-    return httpClient.post<{ id: string; version: number }>(
-      "/digital/credential-batches",
-      input,
-      { headers: marketHeaders(marketCode) },
-    );
+    return apiOperation<
+      { id: string; version: number },
+      "postDigitalCredentialBatch"
+    >("postDigitalCredentialBatch", {
+      body: input,
+      headers: marketHeaders(marketCode),
+    });
   }
 
   importCredentialInventory(
@@ -148,21 +164,26 @@ export class HttpDigitalProductsService implements DigitalProductsServiceContrac
       DigitalProductsServiceContract["importCredentialInventory"]
     >[2],
   ) {
-    return httpClient.post<
+    return apiOperation<
       Awaited<
         ReturnType<DigitalProductsServiceContract["getCredentialInventory"]>
-      >
-    >(`/digital/credential-batches/${batchId}/credentials`, input, {
+      >,
+      "postDigitalCredentialInventory"
+    >("postDigitalCredentialInventory", {
+      path: { id: batchId },
+      body: input,
       headers: marketHeaders(marketCode),
     });
   }
 
   getCredentialInventory(marketCode: string, batchId: string) {
-    return httpClient.get<
+    return apiOperation<
       Awaited<
         ReturnType<DigitalProductsServiceContract["getCredentialInventory"]>
-      >
-    >(`/digital/credential-batches/${batchId}/inventory`, {
+      >,
+      "getDigitalCredentialInventory"
+    >("getDigitalCredentialInventory", {
+      path: { id: batchId },
       headers: marketHeaders(marketCode),
     });
   }
@@ -172,37 +193,45 @@ export class HttpDigitalProductsService implements DigitalProductsServiceContrac
     listingId: string,
     input: DigitalFulfillmentVersionInput,
   ) {
-    return httpClient.post<
+    return apiOperation<
       DigitalFulfillmentVersionInput & {
         id: string;
         version: number;
         status: string;
         moderationStatus: string;
-      }
-    >(`/digital/listings/${listingId}/fulfillment-versions`, input, {
+      },
+      "postDigitalFulfillmentVersion"
+    >("postDigitalFulfillmentVersion", {
+      path: { id: listingId },
+      body: input,
       headers: marketHeaders(marketCode),
     });
   }
 
   async listSellerProvisioningTasks(marketCode: string, _sellerId: string) {
-    const result = await httpClient.get<{ items: DigitalProvisioningTask[] }>(
-      "/digital/seller/provisioning-tasks",
-      { headers: marketHeaders(marketCode) },
-    );
+    const result = await apiOperation<
+      { items: DigitalProvisioningTask[] },
+      "getDigitalSellerProvisioningTasks"
+    >("getDigitalSellerProvisioningTasks", {
+      headers: marketHeaders(marketCode),
+    });
     return result.items;
   }
 
   async listEntitlements(marketCode: string, _buyerId: string) {
-    const result = await httpClient.get<{
-      items: DigitalEntitlementProjection[];
-    }>("/digital/entitlements", { headers: marketHeaders(marketCode) });
+    const result = await apiOperation<
+      {
+        items: DigitalEntitlementProjection[];
+      },
+      "getDigitalEntitlements"
+    >("getDigitalEntitlements", { headers: marketHeaders(marketCode) });
     return result.items;
   }
 
   getEntitlement(marketCode: string, _buyerId: string, entitlementId: string) {
-    return httpClient.get<DigitalEntitlementProjection>(
-      `/digital/entitlements/${entitlementId}`,
-      { headers: marketHeaders(marketCode) },
+    return apiOperation<DigitalEntitlementProjection, "getDigitalEntitlement">(
+      "getDigitalEntitlement",
+      { path: { id: entitlementId }, headers: marketHeaders(marketCode) },
     );
   }
 
@@ -212,10 +241,13 @@ export class HttpDigitalProductsService implements DigitalProductsServiceContrac
     entitlementId: string,
     assetId: string,
   ) {
-    return httpClient.post<DigitalAccessGrant>(
-      `/digital/entitlements/${entitlementId}/download-grants`,
-      { assetId },
-      { headers: marketHeaders(marketCode) },
+    return apiOperation<DigitalAccessGrant, "postDigitalDownloadGrant">(
+      "postDigitalDownloadGrant",
+      {
+        path: { id: entitlementId },
+        body: { assetId },
+        headers: marketHeaders(marketCode),
+      },
     );
   }
 
@@ -224,16 +256,16 @@ export class HttpDigitalProductsService implements DigitalProductsServiceContrac
     _buyerId: string,
     entitlementId: string,
   ) {
-    return httpClient.post<DigitalAccessGrant>(
-      `/digital/entitlements/${entitlementId}/reveal-grants`,
-      undefined,
-      { headers: marketHeaders(marketCode) },
+    return apiOperation<DigitalAccessGrant, "postDigitalRevealGrant">(
+      "postDigitalRevealGrant",
+      { path: { id: entitlementId }, headers: marketHeaders(marketCode) },
     );
   }
 
   consumeAccessGrant(_buyerId: string, grantId: string) {
-    return httpClient.post<ConsumedDigitalAccess>(
-      `/digital/access-grants/${grantId}/consume`,
+    return apiOperation<ConsumedDigitalAccess, "postDigitalAccessGrantConsume">(
+      "postDigitalAccessGrantConsume",
+      { path: { id: grantId } },
     );
   }
 
@@ -242,11 +274,11 @@ export class HttpDigitalProductsService implements DigitalProductsServiceContrac
     entitlementId: string,
     input: DigitalSecretInput,
   ) {
-    await httpClient.post(
-      `/digital/entitlements/${entitlementId}/provision`,
-      input,
-      { headers: marketHeaders(marketCode) },
-    );
+    await apiOperation("postDigitalProvisionedAccess", {
+      path: { id: entitlementId },
+      body: input,
+      headers: marketHeaders(marketCode),
+    });
   }
 
   reportInvalidAccess(
@@ -256,23 +288,28 @@ export class HttpDigitalProductsService implements DigitalProductsServiceContrac
     reportType: DigitalAccessReportType,
     description: string,
   ) {
-    return httpClient.post<{ id: string; status: "OPEN" }>(
-      `/digital/entitlements/${entitlementId}/reports`,
-      { reportType, description },
-      { headers: marketHeaders(marketCode) },
-    );
+    return apiOperation<
+      { id: string; status: "OPEN" },
+      "postDigitalAccessReport"
+    >("postDigitalAccessReport", {
+      path: { id: entitlementId },
+      body: { reportType, description },
+      headers: marketHeaders(marketCode),
+    });
   }
 
   getAdminOverview(marketCode: string) {
-    return httpClient.get<
-      Awaited<ReturnType<DigitalProductsServiceContract["getAdminOverview"]>>
-    >("/digital/admin/overview", { headers: marketHeaders(marketCode) });
+    return apiOperation<
+      Awaited<ReturnType<DigitalProductsServiceContract["getAdminOverview"]>>,
+      "getDigitalAdminOverview"
+    >("getDigitalAdminOverview", { headers: marketHeaders(marketCode) });
   }
 
   getAdminPolicy(marketCode: string) {
-    return httpClient.get<DigitalMarketPolicy>("/digital/admin/policy", {
-      headers: marketHeaders(marketCode),
-    });
+    return apiOperation<DigitalMarketPolicy, "getDigitalAdminPolicy">(
+      "getDigitalAdminPolicy",
+      { headers: marketHeaders(marketCode) },
+    );
   }
 
   createAdminPolicyDraft(
@@ -280,18 +317,20 @@ export class HttpDigitalProductsService implements DigitalProductsServiceContrac
     policy: DigitalMarketPolicy,
     reason: string,
   ) {
-    return httpClient.post<DigitalMarketPolicy>(
-      "/digital/admin/policy",
-      { policy, reason },
-      { headers: marketHeaders(marketCode) },
+    return apiOperation<DigitalMarketPolicy, "postDigitalAdminPolicyDraft">(
+      "postDigitalAdminPolicyDraft",
+      { body: { policy, reason }, headers: marketHeaders(marketCode) },
     );
   }
 
   activateAdminPolicy(marketCode: string, policyId: string, reason: string) {
-    return httpClient.post<DigitalMarketPolicy>(
-      `/digital/admin/policies/${policyId}/activate`,
-      { reason },
-      { headers: marketHeaders(marketCode) },
+    return apiOperation<DigitalMarketPolicy, "postDigitalAdminPolicyActivate">(
+      "postDigitalAdminPolicyActivate",
+      {
+        path: { id: policyId },
+        body: { reason },
+        headers: marketHeaders(marketCode),
+      },
     );
   }
 
@@ -300,10 +339,13 @@ export class HttpDigitalProductsService implements DigitalProductsServiceContrac
     assetId: string,
     decision: "APPROVED" | "REJECTED",
   ) {
-    return httpClient.post<DigitalAssetProjection>(
-      `/digital/admin/assets/${assetId}/moderation`,
-      { decision },
-      { headers: marketHeaders(marketCode) },
+    return apiOperation<DigitalAssetProjection, "postDigitalAssetModeration">(
+      "postDigitalAssetModeration",
+      {
+        path: { id: assetId },
+        body: { decision },
+        headers: marketHeaders(marketCode),
+      },
     );
   }
 
@@ -312,10 +354,13 @@ export class HttpDigitalProductsService implements DigitalProductsServiceContrac
     fulfillmentVersionId: string,
     decision: "APPROVED" | "REJECTED",
   ) {
-    return httpClient.post<unknown>(
-      `/digital/admin/fulfillment-versions/${fulfillmentVersionId}/moderation`,
-      { decision },
-      { headers: marketHeaders(marketCode) },
+    return apiOperation<unknown, "postDigitalFulfillmentModeration">(
+      "postDigitalFulfillmentModeration",
+      {
+        path: { id: fulfillmentVersionId },
+        body: { decision },
+        headers: marketHeaders(marketCode),
+      },
     );
   }
 
@@ -327,7 +372,9 @@ export class HttpDigitalProductsService implements DigitalProductsServiceContrac
       entitlementStatus?: "ACCESS_AVAILABLE" | "REVOKED" | "UNAVAILABLE";
     },
   ) {
-    await httpClient.post(`/digital/admin/reports/${reportId}/resolve`, input, {
+    await apiOperation("postDigitalAccessReportResolve", {
+      path: { id: reportId },
+      body: input,
       headers: marketHeaders(marketCode),
     });
   }

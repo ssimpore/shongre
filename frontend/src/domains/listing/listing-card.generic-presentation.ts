@@ -9,6 +9,7 @@ import type { Listing } from "../../types";
 import { getListingCategoryLabel } from "../taxonomy/listing-category.display";
 import { resolveListingPhotoUrl } from "./listing-media";
 import { resolveGenericListingPrice } from "./listing-price.presentation";
+import { majorToMinorAmount } from "@shongre/shared/money";
 
 export interface GenericListingCardPricing {
   currentPrice: Money;
@@ -372,6 +373,25 @@ export function projectGenericListingCardView(
         label.toLocaleLowerCase(locale) !==
           brandLabel.toLocaleLowerCase(locale),
     );
+  const originalPrice =
+    typeof listing.originalPrice === "number" &&
+    Number.isFinite(listing.originalPrice) &&
+    listing.originalPrice > 0 &&
+    currency
+      ? {
+          amountMinor: majorToMinorAmount(listing.originalPrice, currency),
+          currency,
+        }
+      : undefined;
+  const displayedOriginalPrice = originalPrice
+    ? convertMoney?.(originalPrice).display || originalPrice
+    : undefined;
+  const deliveryAvailable = listing.deliveryOptions.some(
+    (option) =>
+      option.available &&
+      option.type !== "hand_delivery" &&
+      option.type !== "digital",
+  );
 
   return {
     id: listing.id,
@@ -379,6 +399,7 @@ export function projectGenericListingCardView(
     price: price.kind === "amount" ? price.money : undefined,
     priceLabel: pricing ? undefined : price.label,
     priceKind: price.kind,
+    originalPrice: displayedOriginalPrice,
     imageUrl: resolveListingPhotoUrl(
       listing.coverImageUrl || listing.photos?.[0],
     ),
@@ -393,6 +414,13 @@ export function projectGenericListingCardView(
     characteristics: characteristicPresentation.map(({ label }) => label),
     characteristicIcons: characteristicPresentation.map(({ icon }) => icon),
     publishedAt: listing.publishedAt,
+    photoCount: listing.photos.length,
+    deliveryAvailable,
+    fulfillmentTypes: listing.fulfillmentTypes,
+    requiresPhysicalDelivery: listing.requiresPhysicalDelivery,
+    productVersion: listing.productVersion,
+    onlinePaymentAvailable: listing.isOnlinePaymentAvailable === true,
+    isNegotiable: listing.isNegotiable === true,
     seller: {
       id: listing.sellerId,
       name: listing.sellerName,
@@ -406,8 +434,11 @@ export function projectGenericListingCardView(
       organizationLogoUrl: listing.publisherOrganizationLogoUrl,
       branchName: listing.publisherBranchName,
       isBusinessVerified:
-        listing.publisherVerificationStatus === "business_verified",
-      responseTimeLabel: listing.sellerResponseTimeLabel,
+        listing.publisherVerificationStatus === "business_verified" ||
+        listing.sellerProfile?.isBusinessVerified === true,
+      responseTimeLabel:
+        listing.sellerResponseTimeLabel ||
+        listing.sellerProfile?.responseTimeText,
     },
     isUrgent: promotion?.type === "urgent_badge",
     isFeatured: Boolean(promotion && promotion.type !== "urgent_badge"),

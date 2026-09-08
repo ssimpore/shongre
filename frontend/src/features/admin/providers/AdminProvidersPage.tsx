@@ -1,40 +1,31 @@
-import React, { useEffect, useMemo, useState } from "react";
 import type {
   ProviderControlPlaneSnapshot,
   ProviderDiagnosticResult,
 } from "@shongre/contracts/provider-platform";
-import {
-  Cpu,
-  LayoutDashboard,
-  Layers,
-  Globe,
-  Sliders,
-  RefreshCw,
-  Clock,
-} from "lucide-react";
-import { providerService } from "../../../domains/providers/provider.service";
-import { ProviderOverviewDashboard } from "./components/ProviderOverviewDashboard";
-import { ProviderCatalogTable } from "./components/ProviderCatalogTable";
-import { ProviderMarketMatrix } from "./components/ProviderMarketMatrix";
-import { ProviderRoutingManager } from "./components/ProviderRoutingManager";
-import { ProviderAuditLogsTab } from "./components/ProviderAuditLogsTab";
-import { Modal } from "../../../design-system/primitives/Modal";
-import { Button } from "../../../design-system/primitives/Button";
-import { useToast } from "../../../app/providers/ToastProvider";
-import { useTranslation } from "../../../i18n/I18nProvider";
-import { usePageMeta } from "../../../hooks/usePageMeta";
+import { Activity, Cpu, ExternalLink, RefreshCw } from "lucide-react";
+import React, { useCallback, useEffect, useState } from "react";
 import { services } from "../../../api/client/service-registry";
-import type {
-  ProviderConfiguration,
-  ProviderHealthStatus,
-} from "../../../domains/providers/provider.types";
-import { PROVIDER_CONFIGURATION_CONSTRAINTS } from "../../../domains/providers/provider.types";
-import { ProviderCapabilityLabel } from "./components/ProviderCapabilityLabel";
-
-type MainTab = "overview" | "catalog" | "matrix" | "routing" | "audit";
+import { useToast } from "../../../app/providers/ToastProvider";
+import { Badge } from "../../../design-system/primitives/Badge";
+import { Button } from "../../../design-system/primitives/Button";
+import { Modal } from "../../../design-system/primitives/Modal";
+import { StatePanel } from "../../../design-system/primitives/StatePanel";
+import { usePageMeta } from "../../../hooks/usePageMeta";
+import { useTranslation } from "../../../i18n/I18nProvider";
 
 export const AdminProvidersPage: React.FC = () => {
   const { t } = useTranslation();
+  const toast = useToast();
+  const [snapshot, setSnapshot] = useState<ProviderControlPlaneSnapshot | null>(
+    null,
+  );
+  const [error, setError] = useState<string | null>(null);
+  const [testingProviderId, setTestingProviderId] = useState<string | null>(
+    null,
+  );
+  const [diagnostic, setDiagnostic] = useState<ProviderDiagnosticResult | null>(
+    null,
+  );
   usePageMeta({
     title: t("meta.adminProviders.title"),
     description: t("meta.adminProviders.description"),
@@ -42,355 +33,221 @@ export const AdminProvidersPage: React.FC = () => {
     noIndex: true,
   });
 
-  const toast = useToast();
-  const [activeTab, setActiveTab] = useState<MainTab>("overview");
-  const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
-
-  // Quick Test Modal state
-  const [testModalProviderId, setTestModalProviderId] = useState<string | null>(
-    null,
-  );
-  const [isTesting, setIsTesting] = useState(false);
-  const [testResult, setTestResult] = useState<ProviderDiagnosticResult | null>(
-    null,
-  );
-  const [controlPlane, setControlPlane] =
-    useState<ProviderControlPlaneSnapshot | null>(null);
-  const [controlPlaneError, setControlPlaneError] = useState<string | null>(
-    null,
-  );
+  const load = useCallback(async () => {
+    setError(null);
+    try {
+      setSnapshot(await services.providerControlPlane.getSnapshot());
+    } catch (caught) {
+      setError(
+        caught instanceof Error
+          ? caught.message
+          : "Le control plane est indisponible.",
+      );
+    }
+  }, []);
 
   useEffect(() => {
-    let mounted = true;
-    setControlPlaneError(null);
-    services.providerControlPlane
-      .getSnapshot()
-      .then((snapshot) => {
-        if (mounted) setControlPlane(snapshot);
-      })
-      .catch((error) => {
-        if (!mounted) return;
-        setControlPlaneError(
-          error instanceof Error
-            ? error.message
-            : "Control plane indisponible.",
-        );
-      });
-    return () => {
-      mounted = false;
-    };
-  }, [refreshTrigger]);
+    void load();
+  }, [load]);
 
-  const providers = useMemo(() => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const definitions = new Map(
-      controlPlane?.providers.map(({ definition }) => [
-        definition.id,
-        definition,
-      ]) || [],
-    );
-    return providerService.getProviders().map((provider) => ({
-      ...provider,
-      operational: definitions.get(provider.id) || provider.operational,
-    }));
-  }, [controlPlane, refreshTrigger]);
-
-  const configurations = useMemo(() => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const merged = { ...providerService.getConfigurations() };
-    const healthMap: Record<string, ProviderHealthStatus> = {
-      HEALTHY: "healthy",
-      DEGRADED: "degraded",
-      PARTIAL_OUTAGE: "degraded",
-      OUTAGE: "unavailable",
-      MISCONFIGURED: "unavailable",
-      DISABLED: "unavailable",
-      UNKNOWN: "unknown",
-    };
-    for (const entry of controlPlane?.providers || []) {
-      const current = merged[entry.definition.id];
-      const runtime = entry.runtime;
-      const projected: ProviderConfiguration = {
-        providerId: entry.definition.id,
-        enabled: runtime.enabled,
-        environment: runtime.environment,
-        priority:
-          current?.priority || PROVIDER_CONFIGURATION_CONSTRAINTS.priority.min,
-        credentialStatus: runtime.configured
-          ? "configured"
-          : entry.definition.requiredEnvironmentVariables.length === 0
-            ? "not_required"
-            : "not_configured",
-        health: healthMap[runtime.health] || "unknown",
-        healthLastCheckedAt: runtime.lastCheckedAt,
-        healthMessage: runtime.message,
-        settings: {},
-        marketOverrides: current?.marketOverrides || {},
-        updatedAt: runtime.lastCheckedAt || controlPlane!.generatedAt,
-        version: current?.version || 1,
-      };
-      merged[entry.definition.id] = projected;
-    }
-    return merged;
-  }, [controlPlane, refreshTrigger]);
-
-  const handleRefresh = () => {
-    setRefreshTrigger((prev) => prev + 1);
-    toast.info("Données des intégrations actualisées.");
-  };
-
-  const handleOpenTestModal = (providerId: string) => {
-    setTestModalProviderId(providerId);
-    setTestResult(null);
-  };
-
-  const handleExecuteQuickTest = async () => {
-    if (!testModalProviderId) return;
-    setIsTesting(true);
+  const runDiagnostic = async (providerId: string) => {
+    setTestingProviderId(providerId);
+    setDiagnostic(null);
     try {
-      const res =
-        await services.providerControlPlane.testProvider(testModalProviderId);
-      setTestResult(res);
-      if (res.success) {
-        toast.success(
-          `Diagnostic réussi pour ${testModalProviderId} (${res.latencyMs} ms).`,
-        );
-      } else {
-        toast.info(res.message);
-      }
+      const result =
+        await services.providerControlPlane.testProvider(providerId);
+      setDiagnostic(result);
+      toast.info(result.message);
+    } catch (caught) {
+      toast.error(
+        caught instanceof Error ? caught.message : "Diagnostic indisponible.",
+      );
     } finally {
-      setIsTesting(false);
+      setTestingProviderId(null);
     }
   };
-
-  const activeTestProvider = testModalProviderId
-    ? providerService.getProvider(testModalProviderId)
-    : null;
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
-      <div className="bg-bg-surface p-5 rounded-control border border-border-disabled shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <header className="flex flex-col gap-4 rounded-card border border-border-base bg-bg-surface p-6 shadow-xs sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs font-bold uppercase tracking-wider text-primary">
-              {t("admin.adminProvidersPage.administrationSystemeIntegrations")}
-            </span>
-            <span className="text-text-inverse-muted">•</span>
-            <span className="text-xs font-medium text-text-tertiary">
-              Control plane v3
-            </span>
-          </div>
-          <h1 className="text-xl sm:text-2xl font-bold text-text-main tracking-tight flex items-center gap-2.5">
-            <Cpu className="w-icon-xl h-icon-xl text-primary" />
+          <p className="text-xs font-bold uppercase tracking-wider text-primary">
+            Intégrations serveur
+          </p>
+          <h1 className="mt-1 flex items-center gap-2 text-2xl font-bold text-text-main">
+            <Cpu className="h-icon-xl w-icon-xl text-primary" />
             {t("admin.adminProvidersPage.fournisseursIntegrationsExternes")}
           </h1>
-          <p className="text-xs text-text-secondary mt-1 max-w-2xl">
-            {t(
-              "admin.adminProvidersPage.inventaireDeCodeConfigurationRuntimeEtPreuvesDeSanteSans",
-            )}
+          <p className="mt-1 text-xs text-text-secondary">
+            Inventaire, configuration effective et santé rapportés par le
+            backend.
           </p>
         </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => void load()}
+          leftIcon={<RefreshCw className="h-icon-sm w-icon-sm" />}
+        >
+          Actualiser
+        </Button>
+      </header>
 
-        <div className="flex items-center gap-2 shrink-0">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleRefresh}
-            leftIcon={<RefreshCw className="w-icon-sm h-icon-sm" />}
-            className="text-xs h-control-md font-semibold"
-          >
-            Actualiser
-          </Button>
-        </div>
-      </div>
-
-      {controlPlaneError && (
+      {error ? (
+        <StatePanel
+          variant="error"
+          title="Control plane indisponible"
+          description={error}
+          action={<Button onClick={() => void load()}>Réessayer</Button>}
+        />
+      ) : !snapshot ? (
         <div
-          role="alert"
-          className="rounded-lg border border-danger-border bg-danger-surface px-4 py-3 text-xs text-danger"
-        >
-          {t("admin.adminProvidersPage.leControlPlaneBackendNEstPasJoignable")}{" "}
-          {controlPlaneError}
-        </div>
-      )}
-
-      {/* Main Tab Navigation Bar */}
-      <div className="bg-bg-surface rounded-control border border-border-disabled shadow-xs p-1.5 flex flex-wrap gap-1">
-        <button
-          type="button"
-          onClick={() => setActiveTab("overview")}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all ${
-            activeTab === "overview"
-              ? "bg-primary text-text-inverse shadow-xs"
-              : "text-text-secondary hover:text-text-main hover:bg-surface-muted"
-          }`}
-        >
-          <LayoutDashboard className="w-icon-sm h-icon-sm" />
-          <span>Vue d'ensemble</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveTab("catalog")}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all ${
-            activeTab === "catalog"
-              ? "bg-primary text-text-inverse shadow-xs"
-              : "text-text-secondary hover:text-text-main hover:bg-surface-muted"
-          }`}
-        >
-          <Layers className="w-icon-sm h-icon-sm" />
-          <span>
-            {t("admin.adminProvidersPage.catalogueDesIntegrations")}
-            {providers.length})
-          </span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveTab("matrix")}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all ${
-            activeTab === "matrix"
-              ? "bg-primary text-text-inverse shadow-xs"
-              : "text-text-secondary hover:text-text-main hover:bg-surface-muted"
-          }`}
-        >
-          <Globe className="w-icon-sm h-icon-sm" />
-          <span>{t("admin.adminProvidersPage.matriceMultiMarches")}</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveTab("routing")}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all ${
-            activeTab === "routing"
-              ? "bg-primary text-text-inverse shadow-xs"
-              : "text-text-secondary hover:text-text-main hover:bg-surface-muted"
-          }`}
-        >
-          <Sliders className="w-icon-sm h-icon-sm" />
-          <span>Routage & Secours</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveTab("audit")}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all ${
-            activeTab === "audit"
-              ? "bg-primary text-text-inverse shadow-xs"
-              : "text-text-secondary hover:text-text-main hover:bg-surface-muted"
-          }`}
-        >
-          <Clock className="w-icon-sm h-icon-sm" />
-          <span>Journal d'Audit</span>
-        </button>
-      </div>
-
-      {/* Tab Content */}
-      {activeTab === "overview" && (
-        <ProviderOverviewDashboard
-          providers={providers}
-          configurations={configurations}
-          onSelectCategory={(cat) => setSelectedCategory(cat)}
-          onNavigateToTab={(t) => setActiveTab(t)}
+          className="min-h-48 animate-pulse rounded-card bg-bg-subtle"
+          role="status"
         />
-      )}
-
-      {activeTab === "catalog" && (
-        <ProviderCatalogTable
-          providers={providers}
-          configurations={configurations}
-          selectedCategory={selectedCategory}
-          onSelectCategory={(cat) => setSelectedCategory(cat)}
-          onOpenTestModal={handleOpenTestModal}
-        />
-      )}
-
-      {activeTab === "matrix" && <ProviderMarketMatrix />}
-
-      {activeTab === "routing" && <ProviderRoutingManager />}
-
-      {activeTab === "audit" && <ProviderAuditLogsTab />}
-
-      {/* Quick Test Diagnostic Modal */}
-      {testModalProviderId && activeTestProvider && (
-        <Modal
-          isOpen={Boolean(testModalProviderId)}
-          onClose={() => setTestModalProviderId(null)}
-          title={`Diagnostic Rapide : ${activeTestProvider.name}`}
-          maxWidth="md"
-        >
-          <div className="space-y-4 p-1">
-            <p className="text-xs text-text-secondary">
-              {t(
-                "admin.adminProvidersPage.leBackendExecuteUniquementUnProbeNonDestructifEnregistreEn",
-              )}
-            </p>
-
-            <div className="p-3 bg-surface-soft rounded-lg border border-border-disabled text-xs space-y-1">
-              <div>
-                <span className="text-text-tertiary">Code : </span>
-                <strong className="font-mono text-text-strong">
-                  {activeTestProvider.code}
-                </strong>
-              </div>
-              <div>
-                <span className="text-text-tertiary">
-                  {t("admin.adminProvidersPage.capacitesAnnoncees")}
-                </span>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {activeTestProvider.capabilities.map((capability) => (
-                    <ProviderCapabilityLabel
-                      key={capability}
-                      capability={capability}
-                      compact
-                      className="max-w-64 rounded border border-border-disabled bg-bg-surface px-2 py-1 text-text-strong"
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {testResult && (
+      ) : (
+        <>
+          <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+            {[
+              ["Découverts", snapshot.summary.discovered],
+              ["Implémentés", snapshot.summary.implemented],
+              ["Actifs", snapshot.summary.active],
+              ["Prêts production", snapshot.summary.productionReady],
+              [
+                "Capacités critiques manquantes",
+                snapshot.summary.missingCriticalCapabilities,
+              ],
+            ].map(([label, value]) => (
               <div
-                className={`p-3 rounded-lg border text-xs font-mono ${
-                  testResult.success
-                    ? "bg-success-inverse text-success-on-inverse border-success-strong"
-                    : "bg-critical-inverse text-critical-surface border-critical"
-                }`}
+                key={label}
+                className="rounded-card border border-border-base bg-bg-surface p-4 shadow-xs"
               >
-                <div className="font-bold mb-1">
-                  {testResult.success
-                    ? "✓ PREUVE LIVE ENREGISTRÉE"
-                    : "ℹ AUCUNE PREUVE LIVE"}{" "}
-                  ({testResult.latencyMs} ms)
-                </div>
-                <p className="text-micro">{testResult.message}</p>
+                <p className="text-micro font-bold uppercase text-text-tertiary">
+                  {label}
+                </p>
+                <p className="mt-1 text-xl font-bold text-text-main">{value}</p>
               </div>
-            )}
+            ))}
+          </section>
 
-            <div className="flex items-center justify-end gap-3 pt-3 border-t border-border-soft">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setTestModalProviderId(null)}
-              >
-                Fermer
-              </Button>
-              <Button
-                variant="primary"
-                size="sm"
-                isLoading={isTesting}
-                onClick={handleExecuteQuickTest}
-                className="font-semibold"
-              >
-                {t("admin.adminProvidersPage.lancerLeTest")}
-              </Button>
+          <section className="overflow-hidden rounded-card border border-border-base bg-bg-surface shadow-xs">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="border-b border-border-base bg-surface-muted font-bold text-text-emphasis">
+                  <tr>
+                    <th scope="col" className="p-3">
+                      Fournisseur
+                    </th>
+                    <th scope="col" className="p-3">
+                      Catégorie
+                    </th>
+                    <th scope="col" className="p-3">
+                      Cycle de vie
+                    </th>
+                    <th scope="col" className="p-3">
+                      Santé
+                    </th>
+                    <th scope="col" className="p-3 text-right">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border-subtle">
+                  {snapshot.providers.map((entry) => (
+                    <tr key={entry.definition.id}>
+                      <td className="p-3">
+                        <p className="font-bold text-text-main">
+                          {entry.definition.displayName}
+                        </p>
+                        <p className="font-mono text-micro text-text-tertiary">
+                          {entry.definition.id}
+                        </p>
+                      </td>
+                      <td className="p-3 text-text-secondary">
+                        {entry.definition.category}
+                      </td>
+                      <td className="p-3">
+                        <Badge variant="neutral">
+                          {entry.definition.lifecycle}
+                        </Badge>
+                      </td>
+                      <td className="p-3">
+                        <Badge
+                          variant={
+                            entry.runtime.health === "HEALTHY"
+                              ? "success"
+                              : "warning"
+                          }
+                        >
+                          {entry.runtime.health}
+                        </Badge>
+                      </td>
+                      <td className="p-3">
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            isLoading={
+                              testingProviderId === entry.definition.id
+                            }
+                            onClick={() =>
+                              void runDiagnostic(entry.definition.id)
+                            }
+                            leftIcon={
+                              <Activity className="h-icon-sm w-icon-sm" />
+                            }
+                          >
+                            Tester
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            to={`/admin/fournisseurs/${entry.definition.id}`}
+                            rightIcon={
+                              <ExternalLink className="h-icon-sm w-icon-sm" />
+                            }
+                          >
+                            Détail
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          </div>
-        </Modal>
+          </section>
+        </>
       )}
+
+      <Modal
+        isOpen={diagnostic !== null}
+        onClose={() => setDiagnostic(null)}
+        title="Résultat du diagnostic"
+        maxWidth="lg"
+      >
+        {diagnostic ? (
+          <div className="space-y-4 text-xs">
+            <Badge variant={diagnostic.success ? "success" : "warning"}>
+              {diagnostic.health}
+            </Badge>
+            <p className="text-text-secondary">{diagnostic.message}</p>
+            <ul className="space-y-2">
+              {diagnostic.checks.map((check) => (
+                <li
+                  key={check.name}
+                  className="rounded-control border border-border-base p-3"
+                >
+                  <strong>
+                    {check.status} · {check.name}
+                  </strong>
+                  <p className="mt-1 text-text-secondary">{check.message}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+      </Modal>
     </div>
   );
 };

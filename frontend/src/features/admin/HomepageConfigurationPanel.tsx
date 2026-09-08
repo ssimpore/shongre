@@ -30,8 +30,7 @@ import {
   Textarea,
 } from "../../design-system/primitives/FormField";
 import { useTranslation } from "../../i18n/I18nProvider";
-import { taxonomyService } from "../../domains/taxonomy/taxonomy.service";
-import { collectionService } from "../../domains/collection/collection.service";
+import type { Category } from "../../types";
 
 const SECTION_LABELS: Record<HomepageSectionType, string> = {
   hero: "En-tête et recherche",
@@ -51,8 +50,6 @@ const OFFER_LABELS = {
   professional_discount: "Remise professionnelle",
 } as const;
 
-const ROOT_CATEGORIES = taxonomyService.getRootCategories();
-const AVAILABLE_COLLECTIONS = collectionService.getCollections("all");
 const THRESHOLD_SECTION_TYPES = new Set<HomepageSectionType>([
   "recent_searches",
   "trending",
@@ -78,6 +75,7 @@ export const HomepageConfigurationPanel: React.FC<
   const toast = useToast();
   const [configuration, setConfiguration] =
     useState<HomepageConfiguration | null>(null);
+  const [rootCategories, setRootCategories] = useState<Category[]>([]);
   const [preview, setPreview] = useState<HomepageExperience | null>(null);
   const [previewViewport, setPreviewViewport] = useState<"mobile" | "desktop">(
     "desktop",
@@ -93,8 +91,12 @@ export const HomepageConfigurationPanel: React.FC<
   const load = async () => {
     setIsLoading(true);
     try {
-      const draft = await services.homepage.getHomepageDraft(query);
+      const [draft, categories] = await Promise.all([
+        services.homepage.getHomepageDraft(query),
+        services.taxonomy.getRootCategories(),
+      ]);
       setConfiguration(draft);
+      setRootCategories(categories);
       setPreview(await services.homepage.previewHomepage(draft, query));
     } catch {
       toast.error(
@@ -531,7 +533,7 @@ export const HomepageConfigurationPanel: React.FC<
                       </p>
                     </div>
                     <div className="flex flex-wrap gap-4">
-                      {ROOT_CATEGORIES.map((category) => {
+                      {rootCategories.map((category) => {
                         const subsections =
                           section.settings.universeSubsections || [];
                         const selected = subsections.some(
@@ -540,9 +542,7 @@ export const HomepageConfigurationPanel: React.FC<
                         return (
                           <Checkbox
                             key={category.id}
-                            label={taxonomyService.getLabel(category, {
-                              locale,
-                            })}
+                            label={category.name}
                             checked={selected}
                             disabled={selected && subsections.length === 1}
                             onChange={(event) =>
@@ -577,8 +577,9 @@ export const HomepageConfigurationPanel: React.FC<
                       {[...(section.settings.universeSubsections || [])]
                         .sort((left, right) => left.order - right.order)
                         .map((subsection, subsectionIndex, ordered) => {
-                          const category = taxonomyService.getNode(
-                            subsection.categoryId,
+                          const category = rootCategories.find(
+                            (candidate) =>
+                              candidate.id === subsection.categoryId,
                           );
                           return (
                             <div
@@ -588,9 +589,7 @@ export const HomepageConfigurationPanel: React.FC<
                             >
                               <div className="mb-3 flex flex-wrap items-center gap-2">
                                 <strong className="min-w-0 flex-1 text-sm text-text-main">
-                                  {taxonomyService.getLabel(category, {
-                                    locale,
-                                  }) || subsection.categoryId}
+                                  {category?.name || subsection.categoryId}
                                 </strong>
                                 <Button
                                   type="button"
@@ -838,10 +837,10 @@ export const HomepageConfigurationPanel: React.FC<
                       )}
                     </h3>
                     <div className="flex flex-wrap gap-4">
-                      {AVAILABLE_COLLECTIONS.map((collection) => (
+                      {rootCategories.map((collection) => (
                         <Checkbox
                           key={collection.slug}
-                          label={collection.title}
+                          label={collection.name}
                           checked={(
                             section.settings.collectionSlugs || []
                           ).includes(collection.slug)}
@@ -868,8 +867,9 @@ export const HomepageConfigurationPanel: React.FC<
                     <div className="space-y-2">
                       {(section.settings.collectionSlugs || []).map(
                         (slug, collectionIndex, ordered) => {
-                          const collection =
-                            collectionService.getCollection(slug);
+                          const collection = rootCategories.find(
+                            (candidate) => candidate.slug === slug,
+                          );
                           return (
                             <div
                               key={slug}
@@ -877,14 +877,14 @@ export const HomepageConfigurationPanel: React.FC<
                               className="flex items-center gap-2 rounded-control border border-border-base bg-bg-surface p-2"
                             >
                               <span className="min-w-0 flex-1 truncate text-sm font-semibold text-text-main">
-                                {collection?.title || slug}
+                                {collection?.name || slug}
                               </span>
                               <Button
                                 type="button"
                                 variant="ghost"
                                 size="sm"
                                 disabled={collectionIndex === 0}
-                                aria-label={`Monter ${collection?.title || slug}`}
+                                aria-label={`Monter ${collection?.name || slug}`}
                                 onClick={() =>
                                   reorderCollection(
                                     section.key,
@@ -905,7 +905,7 @@ export const HomepageConfigurationPanel: React.FC<
                                 disabled={
                                   collectionIndex === ordered.length - 1
                                 }
-                                aria-label={`Descendre ${collection?.title || slug}`}
+                                aria-label={`Descendre ${collection?.name || slug}`}
                                 onClick={() =>
                                   reorderCollection(
                                     section.key,

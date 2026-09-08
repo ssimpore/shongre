@@ -30,20 +30,6 @@ export function createPublicRuntimeConfig(): PublicRuntimeConfig {
     publicInternationalUrl: process.env.PUBLIC_INTL_URL,
     apiUrl: process.env.API_URL,
   });
-  const dataMode = process.env.NEXT_PUBLIC_DATA_MODE;
-  if (dataMode !== "demo" && dataMode !== "api") {
-    throw new Error(
-      `[Web Config] NEXT_PUBLIC_DATA_MODE must be demo or api, received "${dataMode}".`,
-    );
-  }
-
-  const mockStorageValue = process.env.NEXT_PUBLIC_ENABLE_MOCK_STORAGE;
-  if (mockStorageValue !== "true" && mockStorageValue !== "false") {
-    throw new Error(
-      "[Web Config] NEXT_PUBLIC_ENABLE_MOCK_STORAGE must be true or false.",
-    );
-  }
-  const mockStorageEnabled = mockStorageValue === "true";
   const publicMediaAssetBaseUrl = process.env.PUBLIC_MEDIA_ASSET_BASE_URL ?? "";
   const publicCategoryMediaBaseUrl =
     process.env.PUBLIC_CATEGORY_MEDIA_BASE_URL ?? "";
@@ -58,24 +44,15 @@ export function createPublicRuntimeConfig(): PublicRuntimeConfig {
   ) {
     throw new Error(`[Web Config] Invalid ANALYTICS_MODE "${analyticsMode}".`);
   }
-  const connectedEnvironment =
-    environment.environment === "development" ||
-    environment.environment === "staging" ||
-    environment.environment === "production" ||
-    (environment.environment === "local" &&
-      process.env.SHONGRE_EXPLICIT_DEMO !== "true");
-  if (connectedEnvironment) {
+  if (environment.environment !== "test") {
     const errors: string[] = [];
-    if (dataMode !== "api") errors.push("NEXT_PUBLIC_DATA_MODE=api");
-    if (mockStorageEnabled)
-      errors.push("NEXT_PUBLIC_ENABLE_MOCK_STORAGE=false");
     if (!publicMediaAssetBaseUrl)
       errors.push("PUBLIC_MEDIA_ASSET_BASE_URL is required");
     if (!publicCategoryMediaBaseUrl)
       errors.push("PUBLIC_CATEGORY_MEDIA_BASE_URL is required");
     if (errors.length > 0) {
       throw new Error(
-        `[Web Config] Connected ${environment.environment} runtime configuration is unsafe: ${errors.join(", ")}.`,
+        `[Web Config] ${environment.environment} runtime configuration is unsafe: ${errors.join(", ")}.`,
       );
     }
   }
@@ -119,8 +96,6 @@ export function createPublicRuntimeConfig(): PublicRuntimeConfig {
     apiBaseUrl: apiBaseUrl(environment.urls.api),
     publicMediaAssetBaseUrl,
     publicCategoryMediaBaseUrl,
-    dataMode,
-    mockStorageEnabled,
     stripePublishableKey,
     release:
       process.env.RELEASE_SHA ||

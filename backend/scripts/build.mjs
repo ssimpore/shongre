@@ -1,4 +1,4 @@
-import { mkdir, rm } from "node:fs/promises";
+import { mkdir, readFile, rm } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { build } from "esbuild";
@@ -6,6 +6,14 @@ import { build } from "esbuild";
 const scriptDirectory = dirname(fileURLToPath(import.meta.url));
 const backendRoot = resolve(scriptDirectory, "..");
 const outputDirectory = resolve(backendRoot, "dist");
+const backendPackage = JSON.parse(
+  await readFile(resolve(backendRoot, "package.json"), "utf8"),
+);
+const externalRuntimeDependencies = Object.keys(
+  backendPackage.dependencies ?? {},
+)
+  .filter((dependency) => !dependency.startsWith("@shongre/"))
+  .flatMap((dependency) => [dependency, `${dependency}/*`]);
 
 // The backend imports workspace packages whose development exports are
 // TypeScript source files. Bundling the application produces an executable ESM
@@ -28,6 +36,6 @@ await build({
   target: "node22",
   sourcemap: true,
   packages: "bundle",
-  external: ["@supabase/supabase-js", "dotenv"],
+  external: externalRuntimeDependencies,
   logLevel: "info",
 });

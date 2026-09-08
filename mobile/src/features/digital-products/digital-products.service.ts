@@ -9,56 +9,28 @@ import type {
   DigitalSellerProfile,
   FulfillmentType,
 } from "@shongre/contracts/digital-products";
+import { apiOperation } from "@/api/generated-api-operation";
 import type { operations } from "@shongre/contracts/openapi";
-import { apiRequest } from "@/api/http-client";
 import { uploadSelectedFile } from "@/api/signed-upload";
 
-type PolicyResponse =
-  operations["getDigitalPolicy"]["responses"][200]["content"]["application/json"];
-type SellerProfileResponse =
-  operations["getDigitalSellerProfile"]["responses"][200]["content"]["application/json"];
-type SavedSellerProfileResponse =
-  operations["putDigitalSellerProfile"]["responses"][200]["content"]["application/json"];
 type SavedSellerProfileRequest =
   operations["putDigitalSellerProfile"]["requestBody"]["content"]["application/json"];
-type UploadResponse =
-  operations["postDigitalAssetUpload"]["responses"][200]["content"]["application/json"];
 type UploadRequest =
   operations["postDigitalAssetUpload"]["requestBody"]["content"]["application/json"];
-type CompletedUploadResponse =
-  operations["postDigitalAssetUploadComplete"]["responses"][200]["content"]["application/json"];
-type AccessSecretResponse =
-  operations["postDigitalAccessSecret"]["responses"][200]["content"]["application/json"];
 type AccessSecretRequest =
   operations["postDigitalAccessSecret"]["requestBody"]["content"]["application/json"];
-type CredentialBatchResponse =
-  operations["postDigitalCredentialBatch"]["responses"][200]["content"]["application/json"];
 type CredentialBatchRequest =
   operations["postDigitalCredentialBatch"]["requestBody"]["content"]["application/json"];
-type CredentialInventoryResponse =
-  operations["postDigitalCredentialInventory"]["responses"][200]["content"]["application/json"];
 type CredentialInventoryRequest =
   operations["postDigitalCredentialInventory"]["requestBody"]["content"]["application/json"];
-type EntitlementsResponse =
-  operations["getDigitalEntitlements"]["responses"][200]["content"]["application/json"];
-type ProvisioningTasksResponse =
-  operations["getDigitalSellerProvisioningTasks"]["responses"][200]["content"]["application/json"];
-type DownloadGrantResponse =
-  operations["postDigitalDownloadGrant"]["responses"][200]["content"]["application/json"];
 type DownloadGrantRequest =
   operations["postDigitalDownloadGrant"]["requestBody"]["content"]["application/json"];
-type RevealGrantResponse =
-  operations["postDigitalRevealGrant"]["responses"][200]["content"]["application/json"];
 type ConsumedGrantResponse =
   operations["postDigitalAccessGrantConsume"]["responses"][200]["content"]["application/json"];
 type ProvisionedAccessRequest =
   operations["postDigitalProvisionedAccess"]["requestBody"]["content"]["application/json"];
-type ProvisionedAccessResponse =
-  operations["postDigitalProvisionedAccess"]["responses"][200]["content"]["application/json"];
 type AccessReportRequest =
   operations["postDigitalAccessReport"]["requestBody"]["content"]["application/json"];
-type AccessReportResponse =
-  operations["postDigitalAccessReport"]["responses"][200]["content"]["application/json"];
 
 export type MobileConsumedDigitalAccess = ConsumedGrantResponse;
 
@@ -142,8 +114,8 @@ export interface MobileDigitalProductsService {
 
 export class HttpMobileDigitalProductsService implements MobileDigitalProductsService {
   async getPolicy(marketCode: string): Promise<DigitalPolicyProjection> {
-    return (await apiRequest<PolicyResponse>(
-      "/digital/policy",
+    return (await apiOperation(
+      "getDigitalPolicy",
       {},
       marketCode,
     )) as DigitalPolicyProjection;
@@ -153,8 +125,8 @@ export class HttpMobileDigitalProductsService implements MobileDigitalProductsSe
     marketCode: string,
     _sellerId: string,
   ): Promise<DigitalSellerProfile | null> {
-    return (await apiRequest<SellerProfileResponse>(
-      "/digital/seller-profile",
+    return (await apiOperation(
+      "getDigitalSellerProfile",
       {},
       marketCode,
     )) as DigitalSellerProfile | null;
@@ -170,12 +142,9 @@ export class HttpMobileDigitalProductsService implements MobileDigitalProductsSe
       fulfillmentTypes,
       acceptedPolicyVersion,
     };
-    return (await apiRequest<SavedSellerProfileResponse>(
-      "/digital/seller-profile",
-      {
-        method: "PUT",
-        body: JSON.stringify(payload),
-      },
+    return (await apiOperation(
+      "putDigitalSellerProfile",
+      { body: payload },
       marketCode,
     )) as DigitalSellerProfile;
   }
@@ -190,12 +159,9 @@ export class HttpMobileDigitalProductsService implements MobileDigitalProductsSe
       contentType: file.contentType,
       sizeBytes: file.sizeBytes,
     };
-    const initialized = await apiRequest<UploadResponse>(
-      "/digital/assets/uploads",
-      {
-        method: "POST",
-        body: JSON.stringify(payload),
-      },
+    const initialized = await apiOperation(
+      "postDigitalAssetUpload",
+      { body: payload },
       marketCode,
     );
     await uploadSelectedFile({
@@ -205,9 +171,9 @@ export class HttpMobileDigitalProductsService implements MobileDigitalProductsSe
       contentType: file.contentType,
       sizeBytes: file.sizeBytes,
     });
-    return (await apiRequest<CompletedUploadResponse>(
-      `/digital/assets/uploads/${initialized.asset.id}/complete`,
-      { method: "POST" },
+    return (await apiOperation(
+      "postDigitalAssetUploadComplete",
+      { path: { id: initialized.asset.id } },
       marketCode,
     )) as DigitalAssetProjection;
   }
@@ -217,9 +183,9 @@ export class HttpMobileDigitalProductsService implements MobileDigitalProductsSe
     input: Parameters<MobileDigitalProductsService["protectAccess"]>[1],
   ): Promise<{ id: string; destinationDomain: string | null; masked: true }> {
     const payload: AccessSecretRequest = input;
-    return (await apiRequest<AccessSecretResponse>(
-      "/digital/access-secrets",
-      { method: "POST", body: JSON.stringify(payload) },
+    return (await apiOperation(
+      "postDigitalAccessSecret",
+      { body: payload },
       marketCode,
     )) as { id: string; destinationDomain: string | null; masked: true };
   }
@@ -236,12 +202,9 @@ export class HttpMobileDigitalProductsService implements MobileDigitalProductsSe
       allocationMode,
       credentialKinds,
     };
-    const batch = await apiRequest<CredentialBatchResponse>(
-      "/digital/credential-batches",
-      {
-        method: "POST",
-        body: JSON.stringify(batchPayload),
-      },
+    const batch = await apiOperation(
+      "postDigitalCredentialBatch",
+      { body: batchPayload },
       marketCode,
     );
     const inventoryPayload: CredentialInventoryRequest = {
@@ -250,12 +213,9 @@ export class HttpMobileDigitalProductsService implements MobileDigitalProductsSe
         fields: [{ kind: "LICENSE_KEY", label: "Clé de licence", value }],
       })),
     };
-    const inventory = await apiRequest<CredentialInventoryResponse>(
-      `/digital/credential-batches/${batch.id}/credentials`,
-      {
-        method: "POST",
-        body: JSON.stringify(inventoryPayload),
-      },
+    const inventory = await apiOperation(
+      "postDigitalCredentialInventory",
+      { path: { id: batch.id }, body: inventoryPayload },
       marketCode,
     );
     return { batchId: batch.id, availableCount: inventory.availableCount };
@@ -265,11 +225,7 @@ export class HttpMobileDigitalProductsService implements MobileDigitalProductsSe
     marketCode: string,
     _buyerId: string,
   ): Promise<DigitalEntitlementProjection[]> {
-    const result = await apiRequest<EntitlementsResponse>(
-      "/digital/entitlements",
-      {},
-      marketCode,
-    );
+    const result = await apiOperation("getDigitalEntitlements", {}, marketCode);
     return [...result.items] as DigitalEntitlementProjection[];
   }
 
@@ -277,8 +233,8 @@ export class HttpMobileDigitalProductsService implements MobileDigitalProductsSe
     marketCode: string,
     _sellerId: string,
   ): Promise<DigitalProvisioningTask[]> {
-    const result = await apiRequest<ProvisioningTasksResponse>(
-      "/digital/seller/provisioning-tasks",
+    const result = await apiOperation(
+      "getDigitalSellerProvisioningTasks",
       {},
       marketCode,
     );
@@ -293,9 +249,9 @@ export class HttpMobileDigitalProductsService implements MobileDigitalProductsSe
     >[2],
   ): Promise<void> {
     const payload: ProvisionedAccessRequest = input;
-    await apiRequest<ProvisionedAccessResponse>(
-      `/digital/entitlements/${encodeURIComponent(entitlementId)}/provision`,
-      { method: "POST", body: JSON.stringify(payload) },
+    await apiOperation(
+      "postDigitalProvisionedAccess",
+      { path: { id: entitlementId }, body: payload },
       marketCode,
     );
   }
@@ -307,9 +263,9 @@ export class HttpMobileDigitalProductsService implements MobileDigitalProductsSe
     assetId: string,
   ): Promise<DigitalAccessGrant> {
     const payload: DownloadGrantRequest = { assetId };
-    return (await apiRequest<DownloadGrantResponse>(
-      `/digital/entitlements/${encodeURIComponent(entitlementId)}/download-grants`,
-      { method: "POST", body: JSON.stringify(payload) },
+    return (await apiOperation(
+      "postDigitalDownloadGrant",
+      { path: { id: entitlementId }, body: payload },
       marketCode,
     )) as DigitalAccessGrant;
   }
@@ -319,9 +275,9 @@ export class HttpMobileDigitalProductsService implements MobileDigitalProductsSe
     _buyerId: string,
     entitlementId: string,
   ): Promise<DigitalAccessGrant> {
-    return (await apiRequest<RevealGrantResponse>(
-      `/digital/entitlements/${encodeURIComponent(entitlementId)}/reveal-grants`,
-      { method: "POST" },
+    return (await apiOperation(
+      "postDigitalRevealGrant",
+      { path: { id: entitlementId } },
       marketCode,
     )) as DigitalAccessGrant;
   }
@@ -330,10 +286,9 @@ export class HttpMobileDigitalProductsService implements MobileDigitalProductsSe
     _buyerId: string,
     grantId: string,
   ): Promise<MobileConsumedDigitalAccess> {
-    return apiRequest<ConsumedGrantResponse>(
-      `/digital/access-grants/${encodeURIComponent(grantId)}/consume`,
-      { method: "POST" },
-    );
+    return apiOperation("postDigitalAccessGrantConsume", {
+      path: { id: grantId },
+    });
   }
 
   async reportAccess(
@@ -345,12 +300,9 @@ export class HttpMobileDigitalProductsService implements MobileDigitalProductsSe
       reportType: "INVALID_CREDENTIALS",
       description,
     };
-    await apiRequest<AccessReportResponse>(
-      `/digital/entitlements/${encodeURIComponent(entitlementId)}/reports`,
-      {
-        method: "POST",
-        body: JSON.stringify(payload),
-      },
+    await apiOperation(
+      "postDigitalAccessReport",
+      { path: { id: entitlementId }, body: payload },
       marketCode,
     );
   }

@@ -1,4 +1,5 @@
 import type { DeliveryServiceContract } from "../../contracts/delivery.contract";
+import { apiOperation } from "./generated-api-operation";
 import type {
   DeliveryApplication,
   DeliveryCourierProfile,
@@ -8,34 +9,34 @@ import type {
   DeliveryPublicRequestPage,
   DeliverySelectedCourierAssignment,
 } from "@shongre/contracts/delivery";
-import { httpClient } from "./http-client";
 
 export class HttpDeliveryService implements DeliveryServiceContract {
   getAvailability(marketCode: string) {
-    return httpClient.get<DeliveryFeatureAvailability>(
-      "/delivery/availability",
-      { params: { marketCode } },
+    return apiOperation<DeliveryFeatureAvailability, "getDeliveryAvailability">(
+      "getDeliveryAvailability",
+      { query: { marketCode } },
     );
   }
   search(input: Parameters<DeliveryServiceContract["search"]>[0]) {
-    return httpClient.get<DeliveryPublicRequestPage>("/delivery/requests", {
-      params: input,
-    });
+    return apiOperation<DeliveryPublicRequestPage, "getDeliveryRequests">(
+      "getDeliveryRequests",
+      { query: input },
+    );
   }
   getPublicRequest(requestId: string, marketCode: string) {
-    return httpClient.get<DeliveryPublicRequest>(
-      `/delivery/requests/${encodeURIComponent(requestId)}`,
-      { params: { marketCode } },
+    return apiOperation<DeliveryPublicRequest, "getDeliveryRequest">(
+      "getDeliveryRequest",
+      { path: { requestId: requestId }, query: { marketCode } },
     );
   }
   async getFavoriteRequestIds(
     _actor: Parameters<DeliveryServiceContract["getFavoriteRequestIds"]>[0],
     marketCode: string,
   ) {
-    const result = await httpClient.get<{ requestIds: string[] }>(
-      "/delivery/favorites",
-      { headers: { "X-Shongre-Market": marketCode } },
-    );
+    const result = await apiOperation<
+      { requestIds: string[] },
+      "getDeliveryFavorites"
+    >("getDeliveryFavorites", { headers: { "X-Shongre-Market": marketCode } });
     return result.requestIds;
   }
   async setFavoriteRequest(
@@ -44,65 +45,79 @@ export class HttpDeliveryService implements DeliveryServiceContract {
     marketCode: string,
     isFavorite: boolean,
   ) {
-    const result = await httpClient.put<{ isFavorite: boolean }>(
-      `/delivery/requests/${encodeURIComponent(requestId)}/favorite`,
-      { isFavorite },
-      { headers: { "X-Shongre-Market": marketCode } },
-    );
+    const result = await apiOperation<
+      { isFavorite: boolean },
+      "putDeliveryRequestFavorite"
+    >("putDeliveryRequestFavorite", {
+      path: { requestId: requestId },
+      body: { isFavorite },
+      headers: { "X-Shongre-Market": marketCode },
+    });
     return result.isFavorite;
   }
   getCourierProfile(
     _actor: Parameters<DeliveryServiceContract["getCourierProfile"]>[0],
     marketCode: string,
   ) {
-    return httpClient.get<DeliveryCourierProfile | null>(
-      "/delivery/courier/profile",
-      { params: { marketCode } },
-    );
+    return apiOperation<
+      DeliveryCourierProfile | null,
+      "getDeliveryCourierProfile"
+    >("getDeliveryCourierProfile", { query: { marketCode } });
   }
   saveCourierProfile(
     _actor: Parameters<DeliveryServiceContract["saveCourierProfile"]>[0],
     marketCode: string,
     input: Parameters<DeliveryServiceContract["saveCourierProfile"]>[2],
   ) {
-    return httpClient.put<DeliveryCourierProfile>("/delivery/courier/profile", {
-      marketCode,
-      ...input,
-    });
+    return apiOperation<DeliveryCourierProfile, "putDeliveryCourierProfile">(
+      "putDeliveryCourierProfile",
+      {
+        body: {
+          marketCode,
+          ...input,
+        },
+      },
+    );
   }
   createDraft(
     _actor: Parameters<DeliveryServiceContract["createDraft"]>[0],
     input: Parameters<DeliveryServiceContract["createDraft"]>[1],
   ) {
-    return httpClient.post<DeliveryPrivateRequest>("/delivery/requests", input);
+    return apiOperation<DeliveryPrivateRequest, "postDeliveryRequest">(
+      "postDeliveryRequest",
+      { body: input },
+    );
   }
   publishRequest(
     _actor: Parameters<DeliveryServiceContract["publishRequest"]>[0],
     requestId: string,
     marketCode: string,
   ) {
-    return httpClient.post<DeliveryPrivateRequest>(
-      `/delivery/requests/${encodeURIComponent(requestId)}/publish`,
-      { marketCode },
+    return apiOperation<DeliveryPrivateRequest, "postDeliveryRequestPublish">(
+      "postDeliveryRequestPublish",
+      { path: { requestId: requestId }, body: { marketCode } },
     );
   }
   listOwnRequests(
     _actor: Parameters<DeliveryServiceContract["listOwnRequests"]>[0],
     marketCode: string,
   ) {
-    return httpClient.get<DeliveryPrivateRequest[]>("/delivery/me/requests", {
-      params: { marketCode },
-    });
+    return apiOperation<DeliveryPrivateRequest[], "getOwnDeliveryRequests">(
+      "getOwnDeliveryRequests",
+      { query: { marketCode } },
+    );
   }
   getPrivateRequest(
     _actor: Parameters<DeliveryServiceContract["getPrivateRequest"]>[0],
     requestId: string,
     marketCode: string,
   ) {
-    return httpClient.get<
-      DeliveryPrivateRequest | DeliverySelectedCourierAssignment
-    >(`/delivery/me/requests/${encodeURIComponent(requestId)}`, {
-      params: { marketCode },
+    return apiOperation<
+      DeliveryPrivateRequest | DeliverySelectedCourierAssignment,
+      "getOwnDeliveryRequest"
+    >("getOwnDeliveryRequest", {
+      path: { requestId: requestId },
+      query: { marketCode },
     });
   }
   submitApplication(
@@ -111,26 +126,27 @@ export class HttpDeliveryService implements DeliveryServiceContract {
     marketCode: string,
     input: Parameters<DeliveryServiceContract["submitApplication"]>[3],
   ) {
-    return httpClient.post<DeliveryApplication>(
-      `/delivery/requests/${encodeURIComponent(requestId)}/applications`,
-      { marketCode, ...input },
+    return apiOperation<DeliveryApplication, "postDeliveryApplication">(
+      "postDeliveryApplication",
+      { path: { requestId: requestId }, body: { marketCode, ...input } },
     );
   }
   listOwnApplications(
     _actor: Parameters<DeliveryServiceContract["listOwnApplications"]>[0],
     marketCode: string,
   ) {
-    return httpClient.get<DeliveryApplication[]>("/delivery/me/applications", {
-      params: { marketCode },
-    });
+    return apiOperation<DeliveryApplication[], "getOwnDeliveryApplications">(
+      "getOwnDeliveryApplications",
+      { query: { marketCode } },
+    );
   }
   withdrawApplication(
     _actor: Parameters<DeliveryServiceContract["withdrawApplication"]>[0],
     applicationId: string,
   ) {
-    return httpClient.post<DeliveryApplication>(
-      `/delivery/applications/${encodeURIComponent(applicationId)}/withdraw`,
-      {},
+    return apiOperation<DeliveryApplication, "postDeliveryApplicationWithdraw">(
+      "postDeliveryApplicationWithdraw",
+      { path: { applicationId: applicationId }, body: {} },
     );
   }
   acceptApplication(
@@ -140,10 +156,13 @@ export class HttpDeliveryService implements DeliveryServiceContract {
     marketCode: string,
     expectedVersion: number,
   ) {
-    return httpClient.post<DeliveryPrivateRequest>(
-      `/delivery/requests/${encodeURIComponent(requestId)}/applications/${encodeURIComponent(applicationId)}/accept`,
-      { marketCode, expectedVersion },
-    );
+    return apiOperation<
+      DeliveryPrivateRequest,
+      "postDeliveryApplicationAccept"
+    >("postDeliveryApplicationAccept", {
+      path: { requestId: requestId, applicationId: applicationId },
+      body: { marketCode, expectedVersion },
+    });
   }
   transition(
     _actor: Parameters<DeliveryServiceContract["transition"]>[0],
@@ -153,13 +172,17 @@ export class HttpDeliveryService implements DeliveryServiceContract {
     expectedVersion: number,
     note?: string,
   ) {
-    return httpClient.post<
-      DeliveryPrivateRequest | DeliverySelectedCourierAssignment
-    >(`/delivery/requests/${encodeURIComponent(requestId)}/transition`, {
-      marketCode,
-      status,
-      expectedVersion,
-      note,
+    return apiOperation<
+      DeliveryPrivateRequest | DeliverySelectedCourierAssignment,
+      "postDeliveryRequestTransition"
+    >("postDeliveryRequestTransition", {
+      path: { requestId: requestId },
+      body: {
+        marketCode,
+        status,
+        expectedVersion,
+        note,
+      },
     });
   }
   suspendUnsafe(
@@ -169,10 +192,13 @@ export class HttpDeliveryService implements DeliveryServiceContract {
     reason: string,
     expectedVersion?: number,
   ) {
-    return httpClient.post<DeliveryPublicRequest>(
-      `/admin/delivery/requests/${encodeURIComponent(requestId)}/suspend`,
-      { marketCode, reason, expectedVersion },
-    );
+    return apiOperation<
+      DeliveryPublicRequest,
+      "postAdminDeliveryRequestSuspend"
+    >("postAdminDeliveryRequestSuspend", {
+      path: { requestId: requestId },
+      body: { marketCode, reason, expectedVersion },
+    });
   }
 }
 

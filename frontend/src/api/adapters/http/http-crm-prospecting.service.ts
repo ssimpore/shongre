@@ -10,6 +10,7 @@ import type {
   ProspectingProfileInput,
   ProspectingUsage,
 } from "../../contracts/crm-prospecting.contract";
+import { apiOperation } from "./generated-api-operation";
 import {
   leadSourceDefinitionSchema,
   prospectDiscoveryResultSchema,
@@ -19,7 +20,6 @@ import {
   prospectingUsageSchema,
 } from "@shongre/contracts/prospecting";
 import { z } from "zod";
-import { httpClient } from "./http-client";
 
 const profileListSchema = z.object({
   items: z.array(prospectingProfileSchema),
@@ -31,35 +31,45 @@ const sourceListSchema = z.object({
 /** Live adapter for the canonical CRM prospecting OpenAPI operations. */
 export class HttpCrmProspectingService implements CrmProspectingServiceContract {
   async listProfiles(): Promise<ProspectingProfile[]> {
-    const response = await httpClient.get<unknown>("/crm/prospecting/profiles");
+    const response = await apiOperation<unknown, "listProspectingProfiles">(
+      "listProspectingProfiles",
+      {},
+    );
     return profileListSchema.parse(response).items;
   }
   async createProfile(
     input: ProspectingProfileInput,
   ): Promise<ProspectingProfile> {
     return prospectingProfileSchema.parse(
-      await httpClient.post<unknown>("/crm/prospecting/profiles", input),
+      await apiOperation<unknown, "createProspectingProfile">(
+        "createProspectingProfile",
+        { body: input },
+      ),
     );
   }
   async listSources(marketCode: string): Promise<LeadSourceDefinition[]> {
-    const response = await httpClient.get<unknown>("/crm/prospecting/sources", {
-      params: { marketCode },
-    });
+    const response = await apiOperation<unknown, "listProspectingSources">(
+      "listProspectingSources",
+      { query: { marketCode } },
+    );
     return sourceListSchema.parse(response).items;
   }
   async discover(
     input: ProspectDiscoveryRequest,
   ): Promise<ProspectDiscoveryResult> {
     return prospectDiscoveryResultSchema.parse(
-      await httpClient.post<unknown>("/crm/prospecting/discover", input),
+      await apiOperation<unknown, "discoverProspects">("discoverProspects", {
+        body: input,
+      }),
     );
   }
   async getOpportunityBrief(
     candidateId: string,
   ): Promise<ProspectOpportunityBrief> {
     return prospectOpportunityBriefSchema.parse(
-      await httpClient.get<unknown>(
-        `/crm/prospecting/candidates/${encodeURIComponent(candidateId)}/brief`,
+      await apiOperation<unknown, "getProspectOpportunityBrief">(
+        "getProspectOpportunityBrief",
+        { path: { candidateId: candidateId } },
       ),
     );
   }
@@ -67,14 +77,18 @@ export class HttpCrmProspectingService implements CrmProspectingServiceContract 
     input: ProspectImportRequest,
   ): Promise<ProspectImportResult> {
     return prospectImportResultSchema.parse(
-      await httpClient.post<unknown>("/crm/prospecting/imports", input),
+      await apiOperation<unknown, "importProspectCandidate">(
+        "importProspectCandidate",
+        { body: input },
+      ),
     );
   }
   async getUsage(marketCode: string): Promise<ProspectingUsage> {
     return prospectingUsageSchema.parse(
-      await httpClient.get<unknown>("/crm/prospecting/usage", {
-        params: { marketCode },
-      }),
+      await apiOperation<unknown, "getProspectingUsage">(
+        "getProspectingUsage",
+        { query: { marketCode } },
+      ),
     );
   }
 }

@@ -21,7 +21,6 @@ import {
   Input,
   ListingCardSkeleton,
   ListingGrid,
-  ListingRail,
   LocationSelector,
   SearchActiveFiltersBar,
   SearchMapResultsLayout,
@@ -38,7 +37,6 @@ import type {
 } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useTranslation } from "../../i18n/I18nProvider";
-import { storageService } from "../../services/storage.service";
 import { routes } from "../../configuration/routes";
 import { JobCard } from "./components/JobCard";
 import { usePublicRouteData } from "../../app/providers/PublicRouteDataProvider";
@@ -46,10 +44,6 @@ import {
   pageMetaForPolicy,
   resolveSeoPolicy,
 } from "../../platform/seo/seo-policy";
-import {
-  employmentRecentJobsStorageKey,
-  selectRecentEmploymentJobs,
-} from "./employment-recent-jobs";
 import { resolvePublicMapCoordinates } from "../../configuration/geoCoordinates";
 import type { SearchMapItem } from "../search/SearchResultsMap";
 
@@ -261,7 +255,6 @@ const EmploymentFilters: React.FC<{
 
 export const EmploymentSearchPage: React.FC = () => {
   const { t } = useTranslation();
-  const recentlyViewedLabel = t("employment.search.recentlyViewed");
   const { currentUser } = useAuth();
   const { activeMarket, marketContext } = useMarketLocation();
   const toast = useToast();
@@ -296,7 +289,6 @@ export const EmploymentSearchPage: React.FC = () => {
       ? requestedView
       : "grid";
   const [savingAlert, setSavingAlert] = useState(false);
-  const [recentJobIds, setRecentJobIds] = useState<string[]>([]);
   const accountId = currentUser?.id;
   const savedScope = `${accountId || "guest"}:${activeMarket.code}`;
   const [savedState, setSavedState] = useState<{
@@ -310,18 +302,6 @@ export const EmploymentSearchPage: React.FC = () => {
   );
   const savedJobsLoadState =
     savedState.scope === savedScope ? savedState.loadState : "loading";
-
-  useEffect(() => {
-    const recentKey = employmentRecentJobsStorageKey(
-      currentUser?.id,
-      activeMarket.code,
-    );
-    setRecentJobIds(storageService.get<string[]>(recentKey, []).slice(0, 4));
-  }, [activeMarket.code, currentUser?.id]);
-  const recentJobs = useMemo(
-    () => selectRecentEmploymentJobs(recentJobIds, items),
-    [items, recentJobIds],
-  );
 
   const loadSavedJobs = useCallback(async () => {
     const scope = savedScope;
@@ -702,29 +682,6 @@ export const EmploymentSearchPage: React.FC = () => {
       </section>
 
       <Container className="py-5 sm:py-6">
-        {recentJobs.length > 0 && !params.toString() && (
-          <section className="mb-7" aria-labelledby="employment-recent-title">
-            <h2
-              id="employment-recent-title"
-              className="text-lg font-bold text-text-main"
-            >
-              {recentlyViewedLabel}
-            </h2>
-            <ListingRail label={recentlyViewedLabel} className="mt-3">
-              {recentJobs.map((job) => (
-                <JobCard
-                  key={job.id}
-                  job={{ ...job, saved: savedJobIds.has(job.id) }}
-                  catalog={catalog}
-                  onSave={save}
-                  favoriteLoadState={savedJobsLoadState}
-                  onFavoriteRetry={loadSavedJobs}
-                  compact
-                />
-              ))}
-            </ListingRail>
-          </section>
-        )}
         <SearchResultsToolbar
           resultLabel={loading ? "Recherche…" : `${total} offres`}
           resultDescription={

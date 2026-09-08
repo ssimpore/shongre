@@ -5,7 +5,7 @@ import {
   DirectPurchaseQuote,
   OrderCheckoutResult,
 } from "../../contracts/orders.contract";
-import { httpClient } from "./http-client";
+import { apiOperation } from "./generated-api-operation";
 import { Transaction } from "../../../types";
 
 type BackendOrder = {
@@ -78,69 +78,81 @@ const mapOrder = (order: BackendOrder): Transaction => ({
 
 export class HttpOrdersService implements OrdersServiceContract {
   async getOrderById(orderId: string): Promise<Transaction | null> {
-    const order = await httpClient.get<BackendOrder | null>(
-      `/orders/${orderId}`,
+    const order = await apiOperation<BackendOrder | null, "getOrdersById">(
+      "getOrdersById",
+      { path: { id: orderId } },
     );
     return order ? mapOrder(order) : null;
   }
 
   async getPurchases(_userId: string): Promise<Transaction[]> {
-    return (await httpClient.get<BackendOrder[]>("/orders/purchases")).map(
-      mapOrder,
-    );
+    return (
+      await apiOperation<BackendOrder[], "getOrdersPurchases">(
+        "getOrdersPurchases",
+        {},
+      )
+    ).map(mapOrder);
   }
 
   async getSales(_userId: string): Promise<Transaction[]> {
-    return (await httpClient.get<BackendOrder[]>("/orders/sales")).map(
-      mapOrder,
-    );
+    return (
+      await apiOperation<BackendOrder[], "getOrdersSales">("getOrdersSales", {})
+    ).map(mapOrder);
   }
 
   async quoteDirectPurchase(input: {
     listingId: string;
     deliveryMethod: Transaction["deliveryMethod"];
   }): Promise<DirectPurchaseQuote> {
-    return httpClient.post<DirectPurchaseQuote>(
-      "/orders/direct-purchase/quote",
-      input,
+    return apiOperation<DirectPurchaseQuote, "postOrdersDirectPurchaseQuote">(
+      "postOrdersDirectPurchaseQuote",
+      { body: input },
     );
   }
 
   async createDirectPurchase(
     input: CreateDirectPurchaseInput,
   ): Promise<OrderCheckoutResult> {
-    return httpClient.post<OrderCheckoutResult>(
-      "/orders/direct-purchase",
-      input,
+    return apiOperation<OrderCheckoutResult, "postOrdersDirectPurchase">(
+      "postOrdersDirectPurchase",
+      { body: input },
     );
   }
 
   async createReservation(
     input: CreateReservationInput,
   ): Promise<OrderCheckoutResult> {
-    return httpClient.post<OrderCheckoutResult>("/orders/reservation", input);
+    return apiOperation<OrderCheckoutResult, "postOrdersReservation">(
+      "postOrdersReservation",
+      { body: input },
+    );
   }
 
   async issueHandoverCode(orderId: string) {
-    return httpClient.post<{ code: string; expiresAt: string }>(
-      `/orders/${orderId}/handover-code`,
-    );
+    return apiOperation<
+      { code: string; expiresAt: string },
+      "postOrdersByIdHandoverCode"
+    >("postOrdersByIdHandoverCode", { path: { id: orderId } });
   }
 
   async confirmHandoverPIN(
     orderId: string,
     enteredPin: string,
   ): Promise<{ success: boolean; message: string }> {
-    return httpClient.post<{ success: boolean; message: string }>(
-      `/orders/${orderId}/confirm-pin`,
-      { pin: enteredPin },
-    );
+    return apiOperation<
+      { success: boolean; message: string },
+      "postOrdersByIdConfirmPin"
+    >("postOrdersByIdConfirmPin", {
+      path: { id: orderId },
+      body: { pin: enteredPin },
+    });
   }
 
   async confirmDeliveryReceived(orderId: string): Promise<Transaction> {
     return mapOrder(
-      await httpClient.post<BackendOrder>(
-        `/orders/${orderId}/confirm-delivery`,
+      await apiOperation<BackendOrder, "postOrdersByIdConfirmDelivery">(
+        "postOrdersByIdConfirmDelivery",
+        { path: { id: orderId } },
       ),
     );
   }
@@ -150,13 +162,19 @@ export class HttpOrdersService implements OrdersServiceContract {
     input: { carrierName: string; trackingNumber: string },
   ): Promise<Transaction> {
     return mapOrder(
-      await httpClient.post<BackendOrder>(`/orders/${orderId}/ship`, input),
+      await apiOperation<BackendOrder, "postOrdersByIdShip">(
+        "postOrdersByIdShip",
+        { path: { id: orderId }, body: input },
+      ),
     );
   }
 
   async cancelUnpaidOrder(orderId: string): Promise<Transaction> {
     return mapOrder(
-      await httpClient.post<BackendOrder>(`/orders/${orderId}/cancel`),
+      await apiOperation<BackendOrder, "postOrdersByIdCancel">(
+        "postOrdersByIdCancel",
+        { path: { id: orderId } },
+      ),
     );
   }
 
@@ -166,10 +184,16 @@ export class HttpOrdersService implements OrdersServiceContract {
     details: string,
   ): Promise<Transaction> {
     return mapOrder(
-      await httpClient.post<BackendOrder>(`/orders/${orderId}/dispute`, {
-        reason,
-        details,
-      }),
+      await apiOperation<BackendOrder, "postOrdersByIdDispute">(
+        "postOrdersByIdDispute",
+        {
+          path: { id: orderId },
+          body: {
+            reason,
+            details,
+          },
+        },
+      ),
     );
   }
 }

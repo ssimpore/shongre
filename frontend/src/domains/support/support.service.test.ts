@@ -2,11 +2,6 @@ import { describe, it, expect } from "vitest";
 import { supportService } from "./support.service";
 
 describe("SupportService", () => {
-  it("generates a valid Shongre reference code", () => {
-    const ref = supportService.generateReference();
-    expect(ref).toMatch(/^SHG-\d{6}$/);
-  });
-
   it("formats status information into clear French copy", () => {
     const submitted = supportService.getStatusInfo("submitted");
     expect(submitted.label).toBe("Demande envoyée");

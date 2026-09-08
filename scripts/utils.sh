@@ -23,6 +23,22 @@ shongre_require_command() {
   return 1
 }
 
+shongre_require_docker_daemon() {
+  # Probe the server API without the optional plugin discovery done by info.
+  if ! node --input-type=module -e '
+    import { spawnSync } from "node:child_process";
+    const result = spawnSync("docker", ["version", "--format", "{{.Server.Version}}"], {
+      stdio: "ignore",
+      timeout: 10_000,
+    });
+    process.exit(result.status === 0 ? 0 : 1);
+  '; then
+    shongre_fail "Docker daemon is unavailable or did not respond within 10 seconds"
+    shongre_info "restart Docker Desktop and verify that its data store is writable"
+    return 1
+  fi
+}
+
 shongre_pid_is_running() {
   local pid="$1"
   [[ "$pid" =~ ^[0-9]+$ ]] && kill -0 "$pid" >/dev/null 2>&1
@@ -98,9 +114,12 @@ shongre_stop_process_tree() {
   for process_pid in "${process_pids[@]}"; do
     shongre_pid_is_running "$process_pid" || continue
     if ! shongre_pid_belongs_to_project "$process_pid" "$service_name"; then
-      shongre_pid_is_running "$process_pid" || continue
-      shongre_fail "PID ownership changed while stopping $service_name; refusing SIGKILL for $process_pid"
-      return 1
+      # The original leaf exited after SIGTERM and the PID either became a
+      # zombie (no cwd) or was immediately reused. It is no longer part of the
+      # validated project tree, so never signal it and continue terminating
+      # only the still-owned parent/watcher processes captured above.
+      shongre_warn "PID $process_pid is no longer project-owned; skipping SIGKILL"
+      continue
     fi
     shongre_warn "SIGTERM timed out; sending SIGKILL to exact project PID $process_pid"
     kill -KILL "$process_pid" 2>/dev/null || true

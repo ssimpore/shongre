@@ -3,7 +3,7 @@ import {
   SearchServiceContract,
   MarketScopedSearchFilters,
 } from "../../contracts/search.contract";
-import { httpClient } from "./http-client";
+import { apiOperation } from "./generated-api-operation";
 import { mapBackendListing } from "./http-listings.service";
 import type { operations } from "@shongre/contracts/openapi";
 import {
@@ -24,45 +24,57 @@ export class HttpSearchService implements SearchServiceContract {
   ): Promise<SearchResponse> {
     const normalized = normalizeSearchFilters(params);
     const getParams = canonicalSearchGetParams(normalized);
+    // Public discovery is intentionally anonymous. Omitting credentials keeps
+    // cookie-bearing sessions out of shared caches while allowing this public
+    // projection to benefit from CDN caching.
     const requestOptions = {
       signal: options?.signal,
-      // Public discovery is intentionally anonymous. Omitting credentials keeps
-      // cookie-bearing sessions out of shared caches while allowing this public
-      // projection to benefit from CDN caching.
       credentials: "omit" as const,
     };
     const result =
       encodedSearchQueryLength(getParams) <= MAX_CACHEABLE_SEARCH_QUERY_LENGTH
-        ? await httpClient.get<BackendSearchResponse>("/listings/search", {
-            ...requestOptions,
-            params: getParams,
-          })
-        : await httpClient.post<BackendSearchResponse>(
-            "/listings/search",
-            normalized,
-            requestOptions,
+        ? await apiOperation<BackendSearchResponse, "getListingsSearch">(
+            "getListingsSearch",
+            {
+              ...requestOptions,
+              query: getParams,
+            },
+          )
+        : await apiOperation<BackendSearchResponse, "postListingsSearch">(
+            "postListingsSearch",
+            {
+              ...requestOptions,
+              body: normalized,
+            },
           );
     return { ...result, items: result.items.map(mapBackendListing) };
   }
 
-  async getPopularKeywords(_marketCode: string): Promise<string[]> {
-    return [
-      "Vélo gravel",
-      "iPhone 15 Pro",
-      "Canapé Togo",
-      "Montre Seiko",
-      "PlayStation 5",
-      "Appartement Paris",
-    ];
+  async getPopularKeywords(marketCode: string): Promise<string[]> {
+    const response = await this.search({
+      marketCode,
+      sortBy: "relevance",
+      limit: 8,
+    });
+    return Array.from(
+      new Set(response.items.map((listing) => listing.title.trim())),
+    ).filter(Boolean);
   }
 
   async getSearchSuggestions(
     query: string,
     marketCode: string,
   ): Promise<string[]> {
-    const popular = await this.getPopularKeywords(marketCode);
-    if (!query) return popular;
-    return popular.filter((k) => k.toLowerCase().includes(query.toLowerCase()));
+    if (!query.trim()) return this.getPopularKeywords(marketCode);
+    const response = await this.search({
+      marketCode,
+      query: query.trim(),
+      sortBy: "relevance",
+      limit: 8,
+    });
+    return Array.from(
+      new Set(response.items.map((listing) => listing.title.trim())),
+    ).filter(Boolean);
   }
 }
 

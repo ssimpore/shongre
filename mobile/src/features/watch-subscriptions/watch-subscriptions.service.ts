@@ -7,21 +7,13 @@ import {
   type UpdateWatchSubscriptionInput,
   type WatchSubscription,
 } from "@shongre/contracts/watch-subscriptions";
+import { apiOperation } from "@/api/generated-api-operation";
 import type { operations } from "@shongre/contracts/openapi";
-import { apiRequest } from "@/api/http-client";
 
-type ListResponse =
-  operations["getWatchSubscriptions"]["responses"][200]["content"]["application/json"];
 type CreateRequest =
   operations["postWatchSubscription"]["requestBody"]["content"]["application/json"];
-type CreateResponse =
-  operations["postWatchSubscription"]["responses"][201]["content"]["application/json"];
 type UpdateRequest =
   operations["patchWatchSubscription"]["requestBody"]["content"]["application/json"];
-type UpdateResponse =
-  operations["patchWatchSubscription"]["responses"][200]["content"]["application/json"];
-type DeleteResponse =
-  operations["deleteWatchSubscription"]["responses"][200]["content"]["application/json"];
 
 export interface WatchSubscriptionsService {
   list(userId: string, marketCode: string): Promise<WatchSubscription[]>;
@@ -43,11 +35,7 @@ export class HttpWatchSubscriptionsService implements WatchSubscriptionsService 
     _userId: string,
     marketCode: string,
   ): Promise<WatchSubscription[]> {
-    const result = await apiRequest<ListResponse>(
-      "/watch-subscriptions",
-      {},
-      marketCode,
-    );
+    const result = await apiOperation("getWatchSubscriptions", {}, marketCode);
     return watchSubscriptionListSchema.parse(result).items;
   }
   async createOrReplace(
@@ -57,9 +45,9 @@ export class HttpWatchSubscriptionsService implements WatchSubscriptionsService 
     const parsed = createWatchSubscriptionInputSchema.parse(input);
     const payload: CreateRequest = parsed;
     return watchSubscriptionSchema.parse(
-      await apiRequest<CreateResponse>(
-        "/watch-subscriptions",
-        { method: "POST", body: JSON.stringify(payload) },
+      await apiOperation(
+        "postWatchSubscription",
+        { body: payload },
         parsed.marketCode,
       ),
     );
@@ -73,17 +61,17 @@ export class HttpWatchSubscriptionsService implements WatchSubscriptionsService 
     const parsed = updateWatchSubscriptionInputSchema.parse(input);
     const payload: UpdateRequest = parsed;
     return watchSubscriptionSchema.parse(
-      await apiRequest<UpdateResponse>(
-        `/watch-subscriptions/${encodeURIComponent(id)}`,
-        { method: "PATCH", body: JSON.stringify(payload) },
+      await apiOperation(
+        "patchWatchSubscription",
+        { path: { id: id }, body: payload },
         marketCode,
       ),
     );
   }
   async remove(_userId: string, marketCode: string, id: string): Promise<void> {
-    await apiRequest<DeleteResponse>(
-      `/watch-subscriptions/${encodeURIComponent(id)}`,
-      { method: "DELETE" },
+    await apiOperation(
+      "deleteWatchSubscription",
+      { path: { id: id } },
       marketCode,
     );
   }

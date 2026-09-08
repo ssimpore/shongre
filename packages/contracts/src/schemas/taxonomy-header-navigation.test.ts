@@ -9,7 +9,43 @@ const items = [
   { categoryId: "real_estate", isActive: false, displayOrder: 1 },
 ];
 
+const promotionLink = {
+  target: "promotions",
+  labels: { "fr-FR": "Promotions", "en-GB": "Deals" },
+  shortLabels: { "fr-FR": "Promotions", "en-GB": "Deals" },
+  isActive: true,
+  displayOrder: 2,
+};
+
 describe("taxonomy header navigation contracts", () => {
+  it("accepts localized backend-managed links in the category ordering", () => {
+    const update = taxonomyHeaderNavigationUpdateSchema.parse({
+      marketCode: "FR",
+      expectedRevision: 1,
+      changeReason: "Activer les offres dans la navigation publiée.",
+      items,
+      links: [promotionLink],
+    });
+    expect(update.links).toEqual([promotionLink]);
+  });
+
+  it.each([
+    [{ ...promotionLink, target: "external_url" }],
+    [{ ...promotionLink, labels: { "en-GB": "Deals" } }],
+    [{ ...promotionLink, displayOrder: 0 }],
+    [promotionLink, { ...promotionLink, displayOrder: 3 }],
+  ])("rejects unsupported or conflicting navigation links (%#)", (...links) => {
+    expect(
+      taxonomyHeaderNavigationUpdateSchema.safeParse({
+        marketCode: "FR",
+        expectedRevision: 1,
+        changeReason: "Vérification des contraintes de navigation.",
+        items,
+        links,
+      }).success,
+    ).toBe(false);
+  });
+
   it("accepts an ordered, revisioned, market-scoped update", () => {
     expect(
       taxonomyHeaderNavigationUpdateSchema.parse({

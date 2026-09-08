@@ -62,6 +62,14 @@ require_metro() {
 }
 
 require_infrastructure_when_configured() {
+  if [[ "$APP_ENV" == local ]]; then
+    if "$SHONGRE_ROOT/scripts/redis.sh" status >/dev/null 2>&1; then
+      shongre_pass "local Redis"
+    else
+      shongre_fail "local Redis is required; run make redis-up"
+      failed=1
+    fi
+  fi
   [[ "$BACKEND_DATA_MODE" == "database" ]] || {
     shongre_info "Supabase is not required while BACKEND_DATA_MODE=$BACKEND_DATA_MODE"
     return

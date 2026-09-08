@@ -939,9 +939,6 @@ async function main(): Promise<void> {
     "backend/src/modules/business-rules/business-rules.service.ts": [
       'from "@shongre/brand/document"',
     ],
-    "frontend/src/api/adapters/demo/demo-business-rules.service.ts": [
-      'from "@shongre/brand/document"',
-    ],
   })) {
     const contents = await readFile(
       absoluteRepositoryPath(configuration),

@@ -23,8 +23,8 @@ describe("API-backed mobile delivery service", () => {
       new HttpMobileDeliveryService().availability("CH"),
     ).resolves.toMatchObject({ marketCode: "CH", enabled: false });
     expect(apiRequest).toHaveBeenCalledWith(
-      "/delivery/availability?marketCode=CH",
-      {},
+      "/delivery/availability",
+      expect.objectContaining({ method: "GET", headers: expect.any(Headers) }),
       "CH",
     );
   });
@@ -44,13 +44,21 @@ describe("API-backed mobile delivery service", () => {
     expect(apiRequest).toHaveBeenNthCalledWith(
       1,
       "/delivery/requests",
-      { method: "POST", body: JSON.stringify(input) },
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify(input),
+        headers: expect.any(Headers),
+      }),
       "FR",
     );
     expect(apiRequest).toHaveBeenNthCalledWith(
       2,
       "/delivery/requests/request-1/publish",
-      { method: "POST", body: JSON.stringify({ marketCode: "FR" }) },
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({ marketCode: "FR" }),
+        headers: expect.any(Headers),
+      }),
       "FR",
     );
   });

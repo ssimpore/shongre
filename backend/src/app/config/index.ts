@@ -59,6 +59,8 @@ export interface AppConfig {
   maxRequestBodyBytes: number;
   requestTimeoutMs: number;
   shutdownGraceMs: number;
+  redisUrl: string;
+  queueConcurrency: number;
   workerHealthFile: string;
   workerGroups: string[];
   performance: {
@@ -129,6 +131,7 @@ export interface AppConfig {
   emailPasswordAuthEnabled: boolean;
   authEmailDeliveryUrl: string;
   authEmailDeliveryToken: string;
+  localMailSmtpUrl: string;
   googleOAuth: OAuthProviderConfig;
   appleOAuth: AppleOAuthProviderConfig;
   facebookOAuth: FacebookOAuthProviderConfig;
@@ -724,6 +727,39 @@ function validateProviderCredentialModes(candidate: AppConfig): void {
   }
 }
 
+function validateRedisConfiguration(candidate: AppConfig): void {
+  let redisUrl: URL;
+  try {
+    redisUrl = new URL(candidate.redisUrl);
+  } catch {
+    throw new Error("[Config Error] REDIS_URL must be an absolute Redis URL.");
+  }
+  if (!["redis:", "rediss:"].includes(redisUrl.protocol)) {
+    throw new Error("[Config Error] REDIS_URL must use redis:// or rediss://.");
+  }
+  if (
+    !["local", "test"].includes(candidate.environment.environment) &&
+    redisUrl.protocol !== "rediss:"
+  ) {
+    throw new Error(
+      `[Config Error] REDIS_URL must use TLS in ${candidate.environment.environment}.`,
+    );
+  }
+  if (isProduction(candidate.environment.environment) && !redisUrl.password) {
+    throw new Error(
+      "[Config Error] Production REDIS_URL must include managed-service credentials.",
+    );
+  }
+  if (
+    candidate.localMailSmtpUrl &&
+    candidate.environment.environment !== "local"
+  ) {
+    throw new Error(
+      "[Config Error] LOCAL_MAIL_SMTP_URL may be configured only for APP_ENV=local.",
+    );
+  }
+}
+
 function requiredRuntimeValue(name: string): string {
   const value = process.env[name];
   if (!value)
@@ -792,6 +828,11 @@ const candidateConfig: AppConfig = {
   shutdownGraceMs: positiveInteger(
     "SHUTDOWN_GRACE_MS",
     SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS.http.shutdownGraceMs,
+  ),
+  redisUrl: requiredRuntimeValue("REDIS_URL"),
+  queueConcurrency: positiveInteger(
+    "QUEUE_CONCURRENCY",
+    SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS.queues.concurrency,
   ),
   performance: {
     headersTimeoutMs: positiveInteger(
@@ -1021,6 +1062,7 @@ const candidateConfig: AppConfig = {
   emailPasswordAuthEnabled: envFlag("ENABLE_EMAIL_PASSWORD_AUTH", true),
   authEmailDeliveryUrl: process.env.AUTH_EMAIL_DELIVERY_URL || "",
   authEmailDeliveryToken: process.env.AUTH_EMAIL_DELIVERY_TOKEN || "",
+  localMailSmtpUrl: process.env.LOCAL_MAIL_SMTP_URL || "",
   googleOAuth: {
     enabled: envFlag("ENABLE_GOOGLE_AUTH", false),
     clientId: process.env.GOOGLE_OAUTH_CLIENT_ID || "",
@@ -1173,6 +1215,7 @@ validateManagedRuntimeConfiguration(candidateConfig);
 validateProductionRuntimeConfiguration(candidateConfig);
 validateCorsConfiguration(candidateConfig);
 validateProviderCredentialModes(candidateConfig);
+validateRedisConfiguration(candidateConfig);
 validateIndexNowConfiguration(candidateConfig);
 assertEnvironmentSafety({
   config: candidateConfig.environment,

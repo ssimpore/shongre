@@ -1,8 +1,6 @@
 import React from "react";
-import { FileKey2, MapPin, Package, Truck, Store } from "lucide-react";
+import { FileKey2, MapPin, Package, Truck } from "lucide-react";
 import { Listing } from "../../../types";
-import { fulfillmentResolver } from "../../../domains/fulfillment/fulfillment.resolver";
-import { TaxonomyMigration } from "../../../domains/taxonomy/taxonomy.migration";
 import { useTranslation } from "../../../i18n/I18nProvider";
 import { digitalMessagesFr } from "../../../i18n/digital.catalogue.fr";
 import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
@@ -53,16 +51,18 @@ export const ListingFulfillmentSummary: React.FC<
             <p className="mt-1 text-sm font-bold text-primary">
               {t("digital.common.noShipping")}
             </p>
-            <ul className="mt-3 flex flex-wrap gap-2">
-              {labels.map((label) => (
-                <li
-                  key={label}
-                  className="rounded-full border border-primary-border bg-bg-surface px-3 py-1 text-xs font-bold text-text-main"
-                >
-                  {label}
-                </li>
-              ))}
-            </ul>
+            {labels.length > 0 ? (
+              <ul className="mt-3 flex flex-wrap gap-2">
+                {labels.map((label) => (
+                  <li
+                    key={label}
+                    className="rounded-full border border-primary-border bg-bg-surface px-3 py-1 text-xs font-bold text-text-main"
+                  >
+                    {label}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
             {listing.productVersion ? (
               <p className="mt-3 text-xs text-text-secondary">
                 {t("digital.purchases.version", {
@@ -76,44 +76,34 @@ export const ListingFulfillmentSummary: React.FC<
     );
   }
 
-  const caps = fulfillmentResolver.resolveCapabilities({
-    taxonomyNodeId:
-      TaxonomyMigration.resolveCanonicalNode(
-        listing.subCategorySlug || listing.categorySlug,
-      )?.id ||
-      listing.subCategorySlug ||
-      listing.categorySlug,
-    sellerType: listing.sellerType,
-    price: listing.price,
-  });
-
   const deliveryOpts = listing.deliveryOptions || [];
-  const hasHandDelivery =
-    caps.allowHandDelivery &&
-    deliveryOpts.some((d) => d.type === "hand_delivery" && d.available);
-  const hasParcel =
-    caps.allowParcelShipping &&
-    deliveryOpts.some(
-      (d) =>
-        (d.type === "relay_point" || d.type === "home_delivery") && d.available,
-    );
+  const hasHandDelivery = deliveryOpts.some(
+    (d) => d.type === "hand_delivery" && d.available,
+  );
+  const hasParcel = deliveryOpts.some(
+    (d) =>
+      (d.type === "relay_point" ||
+        d.type === "home_delivery" ||
+        d.type === "express") &&
+      d.available,
+  );
   const parcelPrices = deliveryOpts
     .filter(
       (delivery) =>
         (delivery.type === "relay_point" ||
-          delivery.type === "home_delivery") &&
+          delivery.type === "home_delivery" ||
+          delivery.type === "express") &&
         delivery.available &&
         typeof delivery.price === "number",
     )
     .map((delivery) => delivery.price as number);
   const parcelPrice = parcelPrices.length ? Math.min(...parcelPrices) : null;
-  const hasBulky =
-    caps.allowBulkyDelivery &&
-    deliveryOpts.some((d) => d.type === "custom_carrier" && d.available);
-  const hasStorePickup = caps.allowStorePickup && listing.sellerType === "pro";
+  const hasBulky = deliveryOpts.some(
+    (d) => (d.type === "custom_carrier" || d.type === "cocolis") && d.available,
+  );
 
   // If no fulfillment modes apply (e.g. Real estate, jobs, digital services)
-  if (!hasHandDelivery && !hasParcel && !hasBulky && !hasStorePickup) {
+  if (!hasHandDelivery && !hasParcel && !hasBulky) {
     return null;
   }
 
@@ -174,15 +164,15 @@ export const ListingFulfillmentSummary: React.FC<
                 </div>
               </div>
             </div>
-            <div className="text-xs sm:text-sm font-bold text-text-main">
-              {parcelPrice === null
-                ? t("listings.listingFulfillmentSummary.aPartirDe399")
-                : parcelPrice === 0
+            {parcelPrice !== null ? (
+              <div className="text-xs sm:text-sm font-bold text-text-main">
+                {parcelPrice === 0
                   ? "Gratuit"
                   : formatPrice(parcelPrice, {
                       sourceCurrency: listing.currency,
                     })}
-            </div>
+              </div>
+            ) : null}
           </div>
         )}
 
@@ -208,30 +198,6 @@ export const ListingFulfillmentSummary: React.FC<
             </div>
             <div className="text-xs sm:text-sm font-bold text-text-main">
               {t("listings.listingFulfillmentSummary.surDevisTransport")}
-            </div>
-          </div>
-        )}
-
-        {/* Store Pickup (Pro) */}
-        {hasStorePickup && (
-          <div className="p-3.5 rounded-xl bg-bg-base/60 border border-border-base flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-success-surface text-success flex items-center justify-center shrink-0">
-                <Store className="w-icon-md h-icon-md" />
-              </div>
-              <div>
-                <div className="text-xs sm:text-sm font-bold text-text-main">
-                  Retrait en boutique
-                </div>
-                <div className="text-micro text-text-tertiary">
-                  {t(
-                    "listings.listingFulfillmentSummary.retraitDirectDansLeMagasin",
-                  )}
-                </div>
-              </div>
-            </div>
-            <div className="text-xs sm:text-sm font-bold text-success">
-              Gratuit
             </div>
           </div>
         )}

@@ -2,46 +2,59 @@ import type {
   ProviderControlPlaneSnapshot,
   ProviderDiagnosticResult,
 } from "@shongre/contracts/provider-platform";
+import { apiOperation } from "./generated-api-operation";
 import type {
   ProviderConnection,
   ProviderConnectionInput,
   ProviderCredentialRotation,
 } from "@shongre/contracts/provider-connections";
 import type { ProviderControlPlaneServiceContract } from "../../contracts/provider-control-plane.contract";
-import { httpClient } from "./http-client";
 
 export class HttpProviderControlPlaneService implements ProviderControlPlaneServiceContract {
   async listConnections(): Promise<ProviderConnection[]> {
-    const response = await httpClient.get<{ items: ProviderConnection[] }>(
-      "/provider-connections",
-    );
+    const response = await apiOperation<
+      { items: ProviderConnection[] },
+      "listProviderConnections"
+    >("listProviderConnections", {});
     return response.items;
   }
 
   createConnection(
     input: ProviderConnectionInput,
   ): Promise<ProviderConnection> {
-    return httpClient.post("/provider-connections", input);
+    return apiOperation<ProviderConnection, "createProviderConnection">(
+      "createProviderConnection",
+      { body: input },
+    );
   }
 
   rotateCredential(
     connectionId: string,
     input: ProviderCredentialRotation,
   ): Promise<ProviderConnection> {
-    return httpClient.put(
-      `/provider-connections/${encodeURIComponent(connectionId)}/credential`,
-      input,
-    );
+    return apiOperation<
+      ProviderConnection,
+      "rotateProviderConnectionCredential"
+    >("rotateProviderConnectionCredential", {
+      path: { connectionId: connectionId },
+      body: input,
+    });
   }
 
   getSnapshot(): Promise<ProviderControlPlaneSnapshot> {
-    return httpClient.get("/admin/providers/control-plane");
+    return apiOperation<
+      ProviderControlPlaneSnapshot,
+      "getAdminProvidersControlPlane"
+    >("getAdminProvidersControlPlane", {});
   }
 
   testProvider(providerId: string): Promise<ProviderDiagnosticResult> {
-    return httpClient.post(
-      `/admin/providers/${encodeURIComponent(providerId)}/test`,
-    );
+    return apiOperation<
+      ProviderDiagnosticResult,
+      "postAdminProvidersByProviderIdTest"
+    >("postAdminProvidersByProviderIdTest", {
+      path: { providerId: providerId },
+    });
   }
 }
 

@@ -54,6 +54,104 @@ export interface ListingSellerRatingPresentation {
   visualReviewCount: string;
 }
 
+export type ListingCapabilityIcon =
+  "file" | "shield" | "tag" | "truck" | "verified";
+
+export type ListingCapabilityKind =
+  | "digital_fulfillment"
+  | "delivery"
+  | "negotiable"
+  | "online_payment"
+  | "verified_seller";
+
+export interface ListingCapabilityLabels {
+  delivery: string;
+  digitalFulfillment: string;
+  negotiable: string;
+  onlinePayment: string;
+  verifiedSeller: string;
+}
+
+export type ListingCapabilityPresentation =
+  | {
+      icon: Exclude<ListingCapabilityIcon, "verified">;
+      kind: Exclude<ListingCapabilityKind, "verified_seller">;
+      label: string;
+    }
+  | {
+      icon: "verified";
+      kind: "verified_seller";
+      label: string;
+    };
+
+/**
+ * Buyer-facing capabilities come only from explicit listing and public seller
+ * projections. Taxonomy eligibility and legacy prominence flags are not proof
+ * that a particular listing offers a service.
+ */
+export function getListingCapabilityPresentation(
+  listing: Pick<
+    ListingCardView,
+    | "deliveryAvailable"
+    | "fulfillmentTypes"
+    | "isNegotiable"
+    | "onlinePaymentAvailable"
+    | "requiresPhysicalDelivery"
+    | "seller"
+  >,
+  labels: ListingCapabilityLabels,
+): ListingCapabilityPresentation[] {
+  const capabilities: ListingCapabilityPresentation[] = [];
+
+  if (listing.onlinePaymentAvailable === true) {
+    capabilities.push({
+      icon: "shield",
+      kind: "online_payment",
+      label: labels.onlinePayment,
+    });
+  }
+
+  if (listing.deliveryAvailable === true) {
+    capabilities.push({
+      icon: "truck",
+      kind: "delivery",
+      label: labels.delivery,
+    });
+  }
+
+  const hasDigitalFulfillment =
+    listing.requiresPhysicalDelivery === false &&
+    listing.fulfillmentTypes?.some((type) => type !== "PHYSICAL") === true;
+  if (hasDigitalFulfillment) {
+    capabilities.push({
+      icon: "file",
+      kind: "digital_fulfillment",
+      label: labels.digitalFulfillment,
+    });
+  }
+
+  if (listing.isNegotiable === true) {
+    capabilities.push({
+      icon: "tag",
+      kind: "negotiable",
+      label: labels.negotiable,
+    });
+  }
+
+  if (
+    listing.seller?.isBusinessVerified === true ||
+    listing.seller?.isIdentityVerified === true
+  ) {
+    capabilities.push({
+      icon: "verified",
+      kind: "verified_seller",
+      label: labels.verifiedSeller,
+    });
+  }
+
+  return capabilities;
+}
+
 /** Preserve the full localized count for accessibility while compacting only
  * unusually long visual counters inside the narrow card row. */
 export function getListingSellerRatingPresentation(
@@ -99,6 +197,7 @@ export function listingAccessibilityLabel(
   promotionLabel?: string,
   professionalLabel?: string,
   publishedLabel?: string,
+  capabilityLabels: readonly string[] = [],
 ): string {
   return [
     listing.title,
@@ -108,6 +207,7 @@ export function listingAccessibilityLabel(
     promotionLabel,
     professionalLabel,
     sellerRatingLabel,
+    ...capabilityLabels,
     listing.city,
     publishedLabel,
   ]

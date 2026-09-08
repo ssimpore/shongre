@@ -20,8 +20,7 @@ function findMarketplaceActionTarget(event: Event): Element | null {
 /**
  * Stops read-only Staff before React Router, form handlers, service adapters,
  * or provider SDKs receive a protected marketplace action. This is a UX
- * safeguard only: demo adapters and the API independently authorize the same
- * operation.
+ * safeguard only: the API independently authorizes the same operation.
  */
 export const StaffMarketplaceActionGuard: React.FC<{
   children: React.ReactNode;

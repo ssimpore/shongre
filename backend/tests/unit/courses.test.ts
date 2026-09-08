@@ -13,6 +13,23 @@ const createService = () => {
 };
 
 describe("Shongre Education course domain service", () => {
+  it("resolves authenticated workspaces without client-supplied resource ids", async () => {
+    const { service } = createService();
+
+    await expect(
+      service.getCurrentTutorWorkspace("user_tutor_sophie", "FR"),
+    ).resolves.toMatchObject({ tutor: { id: "tutor_sophie" } });
+    await expect(
+      service.getCurrentTutorWorkspace("user_tutor_sophie", "BE"),
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
+    await expect(
+      service.getCurrentOrganizationWorkspace("user_course_member_1", "FR"),
+    ).resolves.toHaveProperty("organization.marketCode", "FR");
+    await expect(
+      service.getCurrentOrganizationWorkspace("unknown_user", "FR"),
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
+  });
+
   it("persists only non-sensitive workflow criteria and account-market favorites", async () => {
     const { service } = createService();
     await service.saveWorkflowDraft("user_learner", "FR", "learner_request", {

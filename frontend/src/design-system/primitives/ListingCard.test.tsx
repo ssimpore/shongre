@@ -1,6 +1,4 @@
 import { describe, it, expect } from "vitest";
-import { listingDisplayResolver } from "../../domains/listing/listing.display";
-import { taxonomyService } from "../../domains/taxonomy/taxonomy.service";
 import { Listing } from "../../types";
 import { projectGenericListingCardView } from "../../domains/listing/listing-card.generic-presentation";
 
@@ -63,9 +61,47 @@ describe("Listing Display & Card Data Presentation", () => {
 
     expect(card.imageUrl).toBe(mockListing.photos[0]?.url);
     expect(card.price).toEqual({ amountMinor: 15_000, currency: "EUR" });
+    expect(card.originalPrice).toEqual({
+      amountMinor: 19_000,
+      currency: "EUR",
+    });
+    expect(card.photoCount).toBe(1);
+    expect(card.onlinePaymentAvailable).toBe(true);
+    expect(card.isNegotiable).toBe(false);
+    expect(card.deliveryAvailable).toBe(false);
+    expect(card.seller?.isIdentityVerified).toBe(true);
     expect(card.isFeatured).toBe(false);
     expect(card.isUrgent).toBe(false);
     expect(card.promotion).toBeUndefined();
+  });
+
+  it("projects only explicitly available delivery and digital fulfillment", () => {
+    const deliverable = projectGenericListingCardView(
+      {
+        ...mockListing,
+        deliveryOptions: [
+          { type: "hand_delivery", available: true, price: 0 },
+          { type: "relay_point", available: true, price: 4.9 },
+        ],
+      },
+      "fr-FR",
+      "FR",
+    );
+    const digital = projectGenericListingCardView(
+      {
+        ...mockListing,
+        deliveryOptions: [{ type: "digital", available: true }],
+        fulfillmentTypes: ["FILE_DOWNLOAD"],
+        requiresPhysicalDelivery: false,
+      },
+      "fr-FR",
+      "FR",
+    );
+
+    expect(deliverable.deliveryAvailable).toBe(true);
+    expect(digital.deliveryAvailable).toBe(false);
+    expect(digital.fulfillmentTypes).toEqual(["FILE_DOWNLOAD"]);
+    expect(digital.requiresPhysicalDelivery).toBe(false);
   });
 
   it("carries an explicit promotion projection to every shared card consumer", () => {
@@ -136,14 +172,5 @@ describe("Listing Display & Card Data Presentation", () => {
     expect(card.promotion).toBeUndefined();
     expect(card.discovery).toBeUndefined();
     expect(card.isFeatured).toBe(false);
-  });
-
-  it("resolves summary attributes accurately for listing cards", () => {
-    const node = taxonomyService.getNode(mockListing.subCategorySlug);
-    const attrs = listingDisplayResolver.resolveSummaryAttributes(
-      mockListing,
-      node,
-    );
-    expect(Array.isArray(attrs)).toBe(true);
   });
 });

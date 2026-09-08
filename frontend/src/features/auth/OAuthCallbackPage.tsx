@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { AlertCircle, ArrowRight, CheckCircle2, Mail } from "lucide-react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { services } from "../../api/client/service-registry";
-import type { SocialAuthProvider } from "../../api/contracts/auth.contract";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { Button } from "../../design-system/primitives/Button";
 import { usePageMeta } from "../../hooks/usePageMeta";
@@ -18,19 +17,12 @@ type CallbackState =
   | "email_required"
   | "error";
 
-function socialProvider(value: string | null): SocialAuthProvider | null {
-  return value === "google" || value === "apple" || value === "facebook"
-    ? value
-    : null;
-}
-
 export function OAuthCallbackPage() {
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { refreshUser } = useAuth();
   const processed = useRef(false);
-  const provider = socialProvider(searchParams.get("provider"));
   const status = searchParams.get("status") || "error";
   const returnTo = resolveSafeReturn(searchParams.get("returnTo"), "/compte");
   const onboarding =
@@ -86,14 +78,6 @@ export function OAuthCallbackPage() {
 
     void (async () => {
       try {
-        if (searchParams.get("demo") === "true") {
-          if (!provider || !services.auth.completeDemoSocialAuth)
-            throw new Error("invalid_demo_callback");
-          await services.auth.completeDemoSocialAuth({
-            provider,
-            intent: searchParams.get("intent") === "link" ? "link" : "sign_in",
-          });
-        }
         await refreshUser();
         setView("success");
         window.setTimeout(() => navigate(destination, { replace: true }), 650);
@@ -101,7 +85,7 @@ export function OAuthCallbackPage() {
         setView("error");
       }
     })();
-  }, [destination, navigate, provider, refreshUser, searchParams, status]);
+  }, [destination, navigate, refreshUser, searchParams, status]);
 
   const completeProfile = async (event: React.FormEvent) => {
     event.preventDefault();

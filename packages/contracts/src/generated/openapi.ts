@@ -4062,6 +4062,23 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/education/organizations/workspace": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** Get the authenticated user's organization workspace */
+        readonly get: operations["getEducationCurrentOrganizationWorkspace"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/education/search": {
         readonly parameters: {
             readonly query?: never;
@@ -4168,6 +4185,23 @@ export interface paths {
          * @description Implemented by backend/src/api/v1/router.ts.
          */
         readonly delete: operations["deleteEducationWorkflowdraftsTutoronboarding"];
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/education/workspace": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** Get the authenticated user's tutor workspace */
+        readonly get: operations["getEducationCurrentTutorWorkspace"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
         readonly options?: never;
         readonly head?: never;
         readonly patch?: never;
@@ -8091,6 +8125,23 @@ export interface paths {
         readonly get: operations["getUsersById"];
         /** PUT /users/:id */
         readonly put: operations["putUsersById"];
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/users/professionals": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** List public professional seller profiles */
+        readonly get: operations["getProfessionalUsers"];
+        readonly put?: never;
         readonly post?: never;
         readonly delete?: never;
         readonly options?: never;
@@ -12099,14 +12150,26 @@ export interface components {
         };
         readonly TaxonomyHeaderNavigationConfiguration: {
             readonly items: readonly components["schemas"]["TaxonomyHeaderCategoryItem"][];
+            /** @description Market-managed navigation destinations rendered in the same ordered rail as taxonomy categories. Absent means no additional links. */
+            readonly links?: readonly components["schemas"]["TaxonomyHeaderNavigationLink"][];
             readonly marketCode: components["schemas"]["MarketCode"];
             readonly revision: number;
             readonly updatedAt: string | null;
+        };
+        readonly TaxonomyHeaderNavigationLink: {
+            readonly displayOrder: number;
+            readonly isActive: boolean;
+            readonly labels: components["schemas"]["TaxonomyV4LocalizedLabels"];
+            readonly shortLabels: components["schemas"]["TaxonomyV4LocalizedShortLabels"];
+            /** @enum {string} */
+            readonly target: "category_overview" | "promotions";
         };
         readonly TaxonomyHeaderNavigationUpdate: {
             readonly changeReason: string;
             readonly expectedRevision: number;
             readonly items: readonly components["schemas"]["TaxonomyHeaderCategoryUpdate"][];
+            /** @description Replaces the market-managed navigation links in the same revisioned transaction. Omission preserves the stored links for existing clients. */
+            readonly links?: readonly components["schemas"]["TaxonomyHeaderNavigationLink"][];
             readonly marketCode: components["schemas"]["MarketCode"];
         };
         readonly TaxonomyLegacyAttribute: {
@@ -21654,6 +21717,40 @@ export interface operations {
             readonly 500: components["responses"]["InternalError"];
         };
     };
+    readonly getEducationCurrentOrganizationWorkspace: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
     readonly postEducationSearch: {
         readonly parameters: {
             readonly query?: never;
@@ -21984,6 +22081,40 @@ export interface operations {
             readonly header?: {
                 /** @description Caller correlation id. The server returns the accepted or generated value. */
                 readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Successful response. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getEducationCurrentTutorWorkspace: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
             };
             readonly path?: never;
             readonly cookie?: never;
@@ -30875,7 +31006,7 @@ export interface operations {
                     readonly [name: string]: unknown;
                 };
                 content: {
-                    readonly "application/json": components["schemas"]["JsonValue"];
+                    readonly "application/json": components["schemas"]["PublicSellerProfile"] | null;
                 };
             };
             readonly 400: components["responses"]["BadRequest"];
@@ -30922,6 +31053,36 @@ export interface operations {
             readonly 404: components["responses"]["NotFound"];
             readonly 409: components["responses"]["Conflict"];
             readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getProfessionalUsers: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Public professional profiles in the resolved market. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": readonly components["schemas"]["PublicSellerProfile"][];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 404: components["responses"]["NotFound"];
             readonly 429: components["responses"]["TooManyRequests"];
             readonly 500: components["responses"]["InternalError"];
         };

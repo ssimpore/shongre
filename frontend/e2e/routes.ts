@@ -14,8 +14,7 @@ export interface RouteUnderTest {
  * 404-page assertion — so the fixture id is pinned here on purpose.
  */
 export const DEMO_LISTING_ID = "list-117";
-export const DEMO_DELIVERY_REQUEST_ID =
-  "418711cb-aee0-4fa3-a102-8ec6ea2a2cb8";
+export const DEMO_DELIVERY_REQUEST_ID = "418711cb-aee0-4fa3-a102-8ec6ea2a2cb8";
 
 export const PUBLIC_ROUTES: RouteUnderTest[] = [
   { path: "/", name: "homepage", persona: "guest" },
@@ -32,7 +31,7 @@ export const PUBLIC_ROUTES: RouteUnderTest[] = [
   },
   { path: "/collections", name: "collections", persona: "guest" },
   {
-    path: "/collections/pepites-semaine",
+    path: "/collections/vehicules",
     name: "collection-detail",
     persona: "guest",
   },
@@ -81,11 +80,6 @@ export const PUBLIC_ROUTES: RouteUnderTest[] = [
   {
     path: "/bons-plans",
     name: "deals-legacy-redirect",
-    persona: "guest",
-  },
-  {
-    path: "/collections/bons-plans",
-    name: "discount-collection-legacy-redirect",
     persona: "guest",
   },
   {

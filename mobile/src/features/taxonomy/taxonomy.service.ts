@@ -7,15 +7,7 @@ import {
   taxonomyV4ResolvedSchemaSchema,
   taxonomyV4TreeResponseSchema,
 } from "@shongre/contracts";
-import type { operations } from "@shongre/contracts/openapi";
-import { apiRequest } from "@/api/http-client";
-
-type TreeResponse =
-  operations["getTaxonomyV4Tree"]["responses"][200]["content"]["application/json"];
-type ResolvedResponse =
-  operations["resolveTaxonomyV4PublicationSchema"]["responses"][200]["content"]["application/json"];
-type OptionsResponse =
-  operations["getTaxonomyV4Options"]["responses"][200]["content"]["application/json"];
+import { apiOperation } from "@/api/generated-api-operation";
 
 export interface MobileTaxonomyService {
   tree(input: {
@@ -41,9 +33,9 @@ export class HttpMobileTaxonomyService implements MobileTaxonomyService {
     locale: string;
   }): Promise<TaxonomyV4TreeResponse> {
     return taxonomyV4TreeResponseSchema.parse(
-      await apiRequest<TreeResponse>(
-        `/taxonomy/v4/tree?locale=${encodeURIComponent(input.locale)}&version=4.0.0`,
-        {},
+      await apiOperation(
+        "getTaxonomyV4Tree",
+        { query: { locale: input.locale, version: "4.0.0" } },
         input.marketContext.countryCode ?? undefined,
       ),
     );
@@ -52,18 +44,21 @@ export class HttpMobileTaxonomyService implements MobileTaxonomyService {
   async resolve(
     input: ResolveTaxonomyV4PublicInput,
   ): Promise<TaxonomyV4ResolvedSchema> {
-    const query = new URLSearchParams({
-      category: input.categoryIdentity,
-      sellerType: input.sellerType,
-      locale: input.locale,
-      version: input.taxonomyVersion ?? "4.0.0",
-    });
-    if (input.listingTypeId) query.set("listingTypeId", input.listingTypeId);
-    if (input.intent) query.set("intent", input.intent);
     return taxonomyV4ResolvedSchemaSchema.parse(
-      await apiRequest<ResolvedResponse>(
-        `/taxonomy/v4/resolve?${query.toString()}`,
-        {},
+      await apiOperation(
+        "resolveTaxonomyV4PublicationSchema",
+        {
+          query: {
+            category: input.categoryIdentity,
+            sellerType: input.sellerType,
+            locale: input.locale,
+            version: (input.taxonomyVersion ?? "4.0.0") as "4.0.0",
+            ...(input.listingTypeId
+              ? { listingTypeId: input.listingTypeId }
+              : {}),
+            ...(input.intent ? { intent: input.intent } : {}),
+          },
+        },
         input.marketContext.countryCode ?? undefined,
       ),
     );
@@ -77,15 +72,21 @@ export class HttpMobileTaxonomyService implements MobileTaxonomyService {
     cursor?: string;
     limit?: number;
   }): Promise<TaxonomyV4OptionPage> {
-    const query = new URLSearchParams({ version: "4.0.0" });
-    if (input.parentOptionId) query.set("parentOptionId", input.parentOptionId);
-    if (input.query) query.set("q", input.query);
-    if (input.cursor) query.set("cursor", input.cursor);
-    if (input.limit) query.set("limit", String(input.limit));
     return taxonomyV4OptionPageSchema.parse(
-      await apiRequest<OptionsResponse>(
-        `/taxonomy/v4/options/${encodeURIComponent(input.optionSetId)}?${query.toString()}`,
-        {},
+      await apiOperation(
+        "getTaxonomyV4Options",
+        {
+          path: { optionSetId: input.optionSetId },
+          query: {
+            version: "4.0.0",
+            ...(input.parentOptionId
+              ? { parentOptionId: input.parentOptionId }
+              : {}),
+            ...(input.query ? { q: input.query } : {}),
+            ...(input.cursor ? { cursor: input.cursor } : {}),
+            ...(input.limit ? { limit: input.limit } : {}),
+          },
+        },
         input.marketContext.countryCode ?? undefined,
       ),
     );
