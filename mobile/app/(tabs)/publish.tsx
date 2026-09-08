@@ -454,6 +454,7 @@ export default function PublishScreen() {
           request,
           page: await taxonomyService.lookupOptions({
             marketContext,
+            taxonomyRevision: resolvedSchema.revision,
             optionSetId: request.optionSetId,
             parentOptionId: request.parentOptionId,
             limit: 200,
@@ -808,6 +809,7 @@ export default function PublishScreen() {
       categoryId: activeCategoryId,
       listingTypeId: activeListingTypeId,
       listingIntent: resolvedSchema?.listingType.intent,
+      taxonomyRevision: resolvedSchema?.revision,
       taxonomyVersion: "4.0.0",
       attributes: resolvedAttributes,
       marketCode: activeMarket.code,

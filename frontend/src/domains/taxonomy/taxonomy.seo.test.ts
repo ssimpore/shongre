@@ -1,15 +1,40 @@
+import { getTaxonomyV4PublicBundle } from "@shongre/contracts/taxonomy-v4-public";
+import { taxonomyV4TreeResponseSchema } from "@shongre/contracts/taxonomy";
 import { describe, expect, it } from "vitest";
 import { DELIVERY_TAXONOMY_CATEGORY_ID } from "@shongre/contracts/delivery";
 import {
-  listTaxonomySeoRecords,
   resolveLocalizedTaxonomySeoText,
-  resolveTaxonomySeoRecord,
-  taxonomyBranchSlugs,
+  resolveTaxonomySeoRecord as resolve,
   taxonomyNodeIsIndexableInMarket,
   taxonomySlugsForListing,
 } from "./taxonomy.seo";
 
-describe("generated taxonomy SEO projection", () => {
+const bundle = getTaxonomyV4PublicBundle();
+const tree = taxonomyV4TreeResponseSchema.parse({
+  taxonomyVersion: "4.0.0",
+  compilerVersion: bundle.metadata.compilerVersion,
+  checksum: bundle.metadata.normalizedSha256,
+  revision: 1,
+  marketCode: "FR",
+  locale: "fr-FR",
+  items: bundle.categories,
+  listingTypes: bundle.listingTypes,
+  aliases: bundle.aliases,
+  seo: bundle.projections.seo,
+});
+const resolveTaxonomySeoRecord = (id: string) => resolve(id, tree);
+const listTaxonomySeoRecords = () =>
+  tree.items.flatMap((node) => {
+    const item = resolve(node.id, tree);
+    return item ? [item] : [];
+  });
+
+describe("API taxonomy SEO projection", () => {
+  it("does not reconstruct missing API data", () => {
+    expect(resolve("vehicles")).toBeNull();
+    expect(taxonomySlugsForListing({})).toEqual([]);
+  });
+
   it("covers every current taxonomy node with a unique canonical route", () => {
     const records = listTaxonomySeoRecords();
     expect(records).toHaveLength(302);
@@ -81,15 +106,15 @@ describe("generated taxonomy SEO projection", () => {
   });
 
   it("expands listing inventory through every canonical taxonomy ancestor", () => {
-    expect(taxonomyBranchSlugs("home_garden.furniture.sofas")).toEqual([
-      "maison-jardin",
-      "ameublement",
-      "canapes-and-fauteuils",
-    ]);
     expect(
       taxonomySlugsForListing({
-        categorySlug: "maison-jardin",
-        subCategorySlug: "canapes-and-fauteuils",
+        taxonomy: {
+          path: [
+            { slug: "maison-jardin" },
+            { slug: "ameublement" },
+            { slug: "canapes-and-fauteuils" },
+          ],
+        },
       }),
     ).toEqual(["maison-jardin", "ameublement", "canapes-and-fauteuils"]);
   });

@@ -1,3 +1,4 @@
+import { taxonomyV4Service } from "../taxonomy/taxonomy.runtime.js";
 import {
   DELIVERY_FEATURE_FLAG_KEY,
   DELIVERY_TAXONOMY_CATEGORY_ID,
@@ -36,10 +37,7 @@ import {
   AnalyticsService,
   analyticsService,
 } from "../analytics/analytics.service.js";
-import {
-  TaxonomyV4Service,
-  taxonomyV4Service,
-} from "../taxonomy/taxonomy.v4.service.js";
+import {} from "../taxonomy/taxonomy.v4.service.js";
 
 const DELIVERY_ERROR_CODES = new Set<ErrorCode>([
   "DELIVERY_FEATURE_UNAVAILABLE",
@@ -110,7 +108,7 @@ export class DeliveryService {
   constructor(
     private readonly repository: DeliveryRepository = repositories.delivery,
     private readonly flags: FeatureFlagService = featureFlagService,
-    private readonly taxonomy: TaxonomyV4Service = taxonomyV4Service,
+    private readonly taxonomy = taxonomyV4Service,
     private readonly orders: OrdersService = ordersService,
     private readonly analytics: AnalyticsService = analyticsService,
   ) {}
@@ -142,7 +140,7 @@ export class DeliveryService {
     }
     try {
       if (country) {
-        this.taxonomy.resolve({
+        (await this.taxonomy.snapshot()).resolve({
           marketContext: context,
           categoryIdentity: DELIVERY_TAXONOMY_CATEGORY_ID,
           intent: "SERVICE_REQUEST",
@@ -271,7 +269,14 @@ export class DeliveryService {
         code: "DELIVERY_MARKET_MISMATCH",
         message: "Le marché de recherche ne correspond pas au site utilisé.",
       });
-    return this.repository.searchPublic(query);
+    const result = await this.repository.searchPublic(query);
+    const taxonomy = (await taxonomyV4Service.snapshot()).projectIdentity(
+      DELIVERY_TAXONOMY_CATEGORY_ID,
+    );
+    return {
+      ...result,
+      items: result.items.map((item) => ({ ...item, taxonomy })),
+    };
   }
 
   async getPublicRequest(
@@ -290,7 +295,12 @@ export class DeliveryService {
         code: "NOT_FOUND",
         message: "Demande introuvable.",
       });
-    return publicRequest(request);
+    return {
+      ...publicRequest(request),
+      taxonomy: (await taxonomyV4Service.snapshot()).projectIdentity(
+        DELIVERY_TAXONOMY_CATEGORY_ID,
+      ),
+    };
   }
 
   async getFavoriteRequestIds(principal: Principal, context: MarketContext) {
@@ -313,7 +323,14 @@ export class DeliveryService {
       principal.userId,
       marketCode,
     );
-    return this.repository.getPublicRequestsByIds(requestIds, marketCode);
+    const items = await this.repository.getPublicRequestsByIds(
+      requestIds,
+      marketCode,
+    );
+    const taxonomy = (await taxonomyV4Service.snapshot()).projectIdentity(
+      DELIVERY_TAXONOMY_CATEGORY_ID,
+    );
+    return items.map((item) => ({ ...item, taxonomy }));
   }
 
   async setFavoriteRequest(
@@ -677,7 +694,12 @@ export class DeliveryService {
       logger.warn(
         `Staff actor ${principal.userId} suspended delivery request ${request.id}`,
       );
-      return publicRequest(request);
+      return {
+        ...publicRequest(request),
+        taxonomy: (await taxonomyV4Service.snapshot()).projectIdentity(
+          DELIVERY_TAXONOMY_CATEGORY_ID,
+        ),
+      };
     } catch (error) {
       deliveryError(error, "DELIVERY_ASSIGNMENT_CONFLICT");
     }

@@ -129,6 +129,7 @@ export const publicationInputSchema = z
     listingTypeId: z.string().min(1).optional(),
     listingIntent: taxonomyV4ListingIntentSchema.optional(),
     taxonomyVersion: z.literal("4.0.0").optional(),
+    taxonomyRevision: z.number().int().positive().optional(),
     attributes: z.record(z.string(), z.unknown()).default({}),
     marketCode: marketCodeSchema,
     selectedMarkets: z.array(marketCodeSchema).min(1).optional(),

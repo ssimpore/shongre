@@ -1,3 +1,6 @@
+import { format } from "prettier";
+import { taxonomyCoverage, taxonomyCoverageMarkdown } from "./coverage.js";
+import { taxonomyPrivateBundleSchema } from "../../src/modules/taxonomy/taxonomy.bundle.js";
 import { createHash } from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
@@ -2527,6 +2530,62 @@ function generateSeedSql(source: NormalizedSource): string {
     );
   }
 
+  // Complete the relational draft before materializing its immutable publication.
+  for (const category of source.categories) {
+    const discovery = {
+      search: source.projections.search.filter(
+        (row) => row.categoryId === category.id,
+      ),
+      seo: source.projections.seo.filter(
+        (row) => row.categoryId === category.id,
+      ),
+    };
+    lines.push(
+      `UPDATE public.categories SET taxonomy_description = ${sqlNullable(category.description)}, discovery_projection = ${jsonLiteral(discovery)} WHERE id = ${sqlLiteral(category.id)};`,
+    );
+  }
+  for (const type of source.listingTypes) {
+    const presentation = Object.fromEntries(
+      (
+        ["filters", "cardFields", "detailFields", "publicationFlow"] as const
+      ).map((key) => [
+        key,
+        source.projections[key].filter((row) => row.listingTypeId === type.id),
+      ]),
+    );
+    lines.push(
+      `UPDATE public.taxonomy_listing_types SET market_availability = ${jsonLiteral(type.marketAvailability)}, presentation = ${jsonLiteral(presentation)} WHERE id = ${sqlLiteral(type.id)};`,
+    );
+  }
+  for (const attribute of source.attributes) {
+    lines.push(
+      `UPDATE public.taxonomy_attributes SET source_data_type = ${sqlLiteral(attribute.sourceDataType)}, scope = ${sqlLiteral(attribute.scope)}, cardinality = ${sqlNullable(attribute.cardinality)}, default_value = ${sqlNullable(attribute.defaultValue)}, card_visible = ${attribute.cardVisible}, detail_visible = ${attribute.detailVisible}, is_seo_relevant = ${attribute.seoRelevant}, seller_eligibility = ${jsonLiteral(attribute.sellerEligibility)}, market_availability = ${jsonLiteral(attribute.marketAvailability)}, localized_help_text = ${jsonLiteral(attribute.helpText)}, placeholder = ${jsonLiteral(attribute.placeholder)} WHERE id = ${sqlLiteral(attribute.id)};`,
+    );
+  }
+  const editorialMetadata = {
+    metadata: source.metadata,
+    verticals: source.verticals,
+    countryPolicyDrafts: source.countryPolicyDrafts,
+    policies: source.policies,
+    referenceData: source.referenceData,
+    crosswalk: source.crosswalk,
+    quarantine: source.quarantine,
+    verification: source.verification,
+    resolver: {
+      precedence: [
+        "base_attribute",
+        "publication_flow_template",
+        "listing_type_add_exclude_override",
+        "seller_policy",
+        "market_effective_override",
+        "regulatory_validation",
+      ],
+    },
+  };
+  lines.push(
+    `INSERT INTO public.taxonomy_configuration(singleton, editorial_metadata) VALUES (true, ${jsonLiteral(editorialMetadata)}) ON CONFLICT (singleton) DO UPDATE SET editorial_metadata = EXCLUDED.editorial_metadata, draft_snapshot = NULL, draft_snapshot_revision = NULL, draft_snapshot_checksum = NULL, updated_at = NOW();`,
+  );
+
   lines.push(
     "",
     "-- Synchronize stale rows from earlier local taxonomy imports without deleting listing data.",
@@ -2535,6 +2594,8 @@ function generateSeedSql(source: NormalizedSource): string {
     `UPDATE public.taxonomy_options SET is_active = FALSE, updated_at = NOW() WHERE id NOT IN (${sqlIdList(source.options.map((row) => row.id))});`,
     `UPDATE public.taxonomy_attribute_bindings SET effective_until = COALESCE(effective_until, NOW()), updated_at = NOW() WHERE id NOT IN (${sqlIdList(source.bindings.map((row) => row.id))});`,
     "",
+    "-- A local import publishes only its database-derived, complete revision.",
+    "DO $local$ BEGIN PERFORM public.publish_taxonomy_revision(draft_revision, encode(sha256(convert_to(public.read_taxonomy_draft()::text, 'UTF8')), 'hex'), NULL, 'Reviewed local taxonomy import') FROM public.taxonomy_configuration WHERE singleton; END $local$;",
     "COMMIT;",
     "",
   );
@@ -2548,7 +2609,32 @@ function buildImportReport(source: NormalizedSource) {
     workbookSha256: source.metadata.workbookSha256,
     normalizedSha256: source.metadata.normalizedSha256,
     sourceCounts: source.verification.sourceCounts,
-    normalizedCounts: source.verification.normalizedCounts,
+    normalizedCounts: {
+      ...source.verification.normalizedCounts,
+      verticals: source.verticals.length,
+      taxonomyNodes: source.categories.length,
+      roots: source.categories.filter((row) => !row.parentId).length,
+      publishableLeaves: source.categories.filter((row) => row.publishable)
+        .length,
+      listingTypes: source.listingTypes.length,
+      publicationFlows: new Set(
+        source.listingTypes.map((row) => row.publicationFlow),
+      ).size,
+      attributes: source.attributes.length,
+      attributeGroups: source.attributeGroups.length,
+      optionSets: source.optionSets.length,
+      options: source.options.length,
+      optionParentLinks: source.optionParentLinks.length,
+      bindings: source.bindings.length,
+      dependencies: source.dependencies.length,
+      filters: source.projections.filters.length,
+      detailFields: source.projections.detailFields.length,
+      cardFields: source.projections.cardFields.length,
+      publicationFlow: source.projections.publicationFlow.length,
+      validationRules: source.validationRules.length,
+      aliases: source.aliases.length,
+      referenceData: source.referenceData.length,
+    },
     templateResolution: source.verification.templateResolution,
     comparison: source.verification.comparison,
     advisorySheetCounts: source.verification.advisorySheetCounts,
@@ -2590,26 +2676,8 @@ function buildPrivateBundleModule(privateBundle: unknown): string {
   return [
     "// Generated by backend/scripts/taxonomy/compile.ts. Do not edit.",
     'import { gunzipSync } from "node:zlib";',
-    'import type { TaxonomyV4PublicBundle } from "@shongre/contracts/taxonomy";',
-    "",
-    "export type TaxonomyV4PrivateBundle = Pick<TaxonomyV4PublicBundle,",
-    '  | "categories" | "listingTypes" | "attributes" | "attributeGroups"',
-    '  | "optionSets" | "options" | "optionParentLinks" | "bindings"',
-    '  | "projections" | "aliases"',
-    "> & {",
-    '  metadata: Omit<TaxonomyV4PublicBundle["metadata"], "pagination">;',
-    '  dependencies: Array<TaxonomyV4PublicBundle["dependencyRules"][number] & { effect: string }> ;',
-    '  validationRules: Array<TaxonomyV4PublicBundle["validationRules"][number] & { expression: string; status: string }> ;',
-    "  verticals: Array<Record<string, unknown>>;",
-    "  countryPolicyDrafts: Array<Record<string, unknown>>;",
-    "  sellerRules: Array<Record<string, unknown>>;",
-    "  policies: Record<string, unknown>;",
-    "  referenceData: Array<Record<string, unknown>>;",
-    "  crosswalk: Record<string, unknown>;",
-    "  resolver: { precedence: string[] };",
-    "  quarantine: Record<string, unknown>;",
-    "  verification: Record<string, unknown>;",
-    "};",
+    'import type { TaxonomyV4PrivateBundle } from "../taxonomy.bundle.js";',
+    'export type { TaxonomyV4PrivateBundle } from "../taxonomy.bundle.js";',
     "",
     `const compressedBundle = ${JSON.stringify(compressed)};`,
     "",
@@ -2840,6 +2908,21 @@ async function compileFromNormalizedSource(check: boolean) {
       ],
     },
   };
+  const validatedBundle = taxonomyPrivateBundleSchema.parse(privateBundle);
+  const coverage = taxonomyCoverage(validatedBundle);
+  await writeOrCheck(
+    path.join(
+      REPOSITORY_ROOT,
+      "docs/architecture/generated/taxonomy-coverage.json",
+    ),
+    `${JSON.stringify(coverage)}\n`,
+    check,
+  );
+  await writeOrCheck(
+    path.join(REPOSITORY_ROOT, "docs/architecture/taxonomy-field-matrix.md"),
+    await format(taxonomyCoverageMarkdown(coverage), { parser: "markdown" }),
+    check,
+  );
   await writeOrCheck(
     PRIVATE_BUNDLE_PATH,
     buildPrivateBundleModule(privateBundle),

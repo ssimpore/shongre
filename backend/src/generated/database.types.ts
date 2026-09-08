@@ -3317,6 +3317,7 @@ export type Database = {
           condition_scheme: string | null;
           created_at: string;
           description: string | null;
+          discovery_projection: Json;
           filter_facet_ids: string[];
           icon_name: string;
           id: string;
@@ -3347,6 +3348,7 @@ export type Database = {
           summary_attribute_ids: string[];
           supported_intents: string[];
           synonyms: string[];
+          taxonomy_description: string | null;
           taxonomy_version_id: string | null;
           updated_at: string;
         };
@@ -3359,6 +3361,7 @@ export type Database = {
           condition_scheme?: string | null;
           created_at?: string;
           description?: string | null;
+          discovery_projection?: Json;
           filter_facet_ids?: string[];
           icon_name?: string;
           id: string;
@@ -3389,6 +3392,7 @@ export type Database = {
           summary_attribute_ids?: string[];
           supported_intents?: string[];
           synonyms?: string[];
+          taxonomy_description?: string | null;
           taxonomy_version_id?: string | null;
           updated_at?: string;
         };
@@ -3401,6 +3405,7 @@ export type Database = {
           condition_scheme?: string | null;
           created_at?: string;
           description?: string | null;
+          discovery_projection?: Json;
           filter_facet_ids?: string[];
           icon_name?: string;
           id?: string;
@@ -3431,6 +3436,7 @@ export type Database = {
           summary_attribute_ids?: string[];
           supported_intents?: string[];
           synonyms?: string[];
+          taxonomy_description?: string | null;
           taxonomy_version_id?: string | null;
           updated_at?: string;
         };
@@ -30558,11 +30564,15 @@ export type Database = {
       taxonomy_attributes: {
         Row: {
           attribute_group_id: string | null;
+          card_visible: boolean;
+          cardinality: string | null;
           code: string;
           created_at: string;
           data_type: string;
+          default_value: string | null;
           dependencies: Json;
           deprecated: boolean;
+          detail_visible: boolean;
           display_order: number;
           field_role: string;
           help_text: string | null;
@@ -30576,10 +30586,16 @@ export type Database = {
           is_sortable: boolean;
           label: string;
           labels: Json;
+          localized_help_text: Json;
+          market_availability: Json | null;
           option_set_id: string | null;
           options: Json;
+          placeholder: Json;
           privacy: string;
           publication_group: string;
+          scope: string | null;
+          seller_eligibility: Json | null;
+          source_data_type: string | null;
           ui_component: string | null;
           unit: string | null;
           updated_at: string;
@@ -30587,11 +30603,15 @@ export type Database = {
         };
         Insert: {
           attribute_group_id?: string | null;
+          card_visible?: boolean;
+          cardinality?: string | null;
           code: string;
           created_at?: string;
           data_type: string;
+          default_value?: string | null;
           dependencies?: Json;
           deprecated?: boolean;
+          detail_visible?: boolean;
           display_order?: number;
           field_role?: string;
           help_text?: string | null;
@@ -30605,10 +30625,16 @@ export type Database = {
           is_sortable?: boolean;
           label: string;
           labels?: Json;
+          localized_help_text?: Json;
+          market_availability?: Json | null;
           option_set_id?: string | null;
           options?: Json;
+          placeholder?: Json;
           privacy?: string;
           publication_group?: string;
+          scope?: string | null;
+          seller_eligibility?: Json | null;
+          source_data_type?: string | null;
           ui_component?: string | null;
           unit?: string | null;
           updated_at?: string;
@@ -30616,11 +30642,15 @@ export type Database = {
         };
         Update: {
           attribute_group_id?: string | null;
+          card_visible?: boolean;
+          cardinality?: string | null;
           code?: string;
           created_at?: string;
           data_type?: string;
+          default_value?: string | null;
           dependencies?: Json;
           deprecated?: boolean;
+          detail_visible?: boolean;
           display_order?: number;
           field_role?: string;
           help_text?: string | null;
@@ -30634,10 +30664,16 @@ export type Database = {
           is_sortable?: boolean;
           label?: string;
           labels?: Json;
+          localized_help_text?: Json;
+          market_availability?: Json | null;
           option_set_id?: string | null;
           options?: Json;
+          placeholder?: Json;
           privacy?: string;
           publication_group?: string;
+          scope?: string | null;
+          seller_eligibility?: Json | null;
+          source_data_type?: string | null;
           ui_component?: string | null;
           unit?: string | null;
           updated_at?: string;
@@ -30702,6 +30738,47 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "public_profiles";
             referencedColumns: ["id"];
+          },
+        ];
+      };
+      taxonomy_configuration: {
+        Row: {
+          draft_revision: number;
+          draft_snapshot: Json | null;
+          draft_snapshot_checksum: string | null;
+          draft_snapshot_revision: number | null;
+          editorial_metadata: Json;
+          published_revision: number | null;
+          singleton: boolean;
+          updated_at: string;
+        };
+        Insert: {
+          draft_revision?: number;
+          draft_snapshot?: Json | null;
+          draft_snapshot_checksum?: string | null;
+          draft_snapshot_revision?: number | null;
+          editorial_metadata: Json;
+          published_revision?: number | null;
+          singleton?: boolean;
+          updated_at?: string;
+        };
+        Update: {
+          draft_revision?: number;
+          draft_snapshot?: Json | null;
+          draft_snapshot_checksum?: string | null;
+          draft_snapshot_revision?: number | null;
+          editorial_metadata?: Json;
+          published_revision?: number | null;
+          singleton?: boolean;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "taxonomy_configuration_publication_fk";
+            columns: ["published_revision"];
+            isOneToOne: false;
+            referencedRelation: "taxonomy_publications";
+            referencedColumns: ["revision"];
           },
         ];
       };
@@ -30923,6 +31000,8 @@ export type Database = {
           intent: string;
           intent_labels: Json;
           labels: Json;
+          market_availability: Json | null;
+          presentation: Json;
           publication_flow: string;
           seller_eligibility: Json;
           seo_indexable: boolean;
@@ -30939,6 +31018,8 @@ export type Database = {
           intent: string;
           intent_labels: Json;
           labels: Json;
+          market_availability?: Json | null;
+          presentation?: Json;
           publication_flow: string;
           seller_eligibility?: Json;
           seo_indexable?: boolean;
@@ -30955,6 +31036,8 @@ export type Database = {
           intent?: string;
           intent_labels?: Json;
           labels?: Json;
+          market_availability?: Json | null;
+          presentation?: Json;
           publication_flow?: string;
           seller_eligibility?: Json;
           seo_indexable?: boolean;
@@ -31212,6 +31295,64 @@ export type Database = {
             columns: ["option_set_id"];
             isOneToOne: false;
             referencedRelation: "taxonomy_option_sets";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      taxonomy_publications: {
+        Row: {
+          change_reason: string;
+          checksum: string;
+          draft_revision: number;
+          published_at: string;
+          published_by: string | null;
+          request_id: string | null;
+          revision: number;
+          snapshot: Json;
+          taxonomy_version_id: string;
+        };
+        Insert: {
+          change_reason: string;
+          checksum: string;
+          draft_revision: number;
+          published_at?: string;
+          published_by?: string | null;
+          request_id?: string | null;
+          revision?: never;
+          snapshot: Json;
+          taxonomy_version_id: string;
+        };
+        Update: {
+          change_reason?: string;
+          checksum?: string;
+          draft_revision?: number;
+          published_at?: string;
+          published_by?: string | null;
+          request_id?: string | null;
+          revision?: never;
+          snapshot?: Json;
+          taxonomy_version_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "taxonomy_publications_published_by_fkey";
+            columns: ["published_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "taxonomy_publications_published_by_fkey";
+            columns: ["published_by"];
+            isOneToOne: false;
+            referencedRelation: "public_profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "taxonomy_publications_taxonomy_version_id_fkey";
+            columns: ["taxonomy_version_id"];
+            isOneToOne: false;
+            referencedRelation: "taxonomy_versions";
             referencedColumns: ["id"];
           },
         ];
@@ -34304,6 +34445,11 @@ export type Database = {
         };
         Returns: Json[];
       };
+      get_taxonomy_draft: { Args: never; Returns: Json };
+      get_taxonomy_publication: {
+        Args: { p_if_revision?: number };
+        Returns: Json;
+      };
       get_unread_message_count: {
         Args: { p_user_id: string };
         Returns: number;
@@ -34774,6 +34920,16 @@ export type Database = {
         };
         Returns: string;
       };
+      publish_taxonomy_revision: {
+        Args: {
+          p_actor_profile_id: string;
+          p_change_reason: string;
+          p_expected_checksum: string;
+          p_expected_revision: number;
+          p_request_id?: string;
+        };
+        Returns: number;
+      };
       purge_completed_indexnow_events: {
         Args: { p_limit?: number; p_retention_days?: number };
         Returns: number;
@@ -34782,6 +34938,7 @@ export type Database = {
         Args: { p_before: string; p_limit?: number };
         Returns: number;
       };
+      read_taxonomy_draft: { Args: never; Returns: Json };
       recognize_due_finance_revenue: {
         Args: { p_as_of?: string; p_batch_size?: number };
         Returns: number;
@@ -34966,6 +35123,7 @@ export type Database = {
         Args: { p_listing_id: string; p_market_code: string };
         Returns: undefined;
       };
+      refresh_taxonomy_draft_snapshot: { Args: never; Returns: undefined };
       reindex_multilingual_search_batch: {
         Args: { p_limit?: number };
         Returns: Json;
@@ -35100,6 +35258,16 @@ export type Database = {
       retire_staff_marketplace_inventory: {
         Args: { p_user_id: string };
         Returns: undefined;
+      };
+      rollback_taxonomy_revision: {
+        Args: {
+          p_actor_profile_id: string;
+          p_change_reason: string;
+          p_expected_revision: number;
+          p_request_id?: string;
+          p_target_revision: number;
+        };
+        Returns: number;
       };
       rotate_provider_credential: {
         Args: {
@@ -35633,6 +35801,16 @@ export type Database = {
           isOneToOne: false;
           isSetofReturn: true;
         };
+      };
+      update_taxonomy_draft: {
+        Args: {
+          p_actor_profile_id: string;
+          p_change_reason: string;
+          p_changes: Json;
+          p_expected_revision: number;
+          p_request_id?: string;
+        };
+        Returns: number;
       };
       upgrade_account_to_professional: {
         Args: {

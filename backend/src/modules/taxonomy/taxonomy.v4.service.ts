@@ -6,10 +6,7 @@ import type {
   TaxonomyV4Node,
   TaxonomyV4ResolvedPublication,
 } from "@shongre/contracts/taxonomy";
-import {
-  TAXONOMY_V4_PRIVATE_BUNDLE,
-  type TaxonomyV4PrivateBundle,
-} from "./generated/taxonomy-v4.private.js";
+import type { TaxonomyV4PrivateBundle } from "./taxonomy.bundle.js";
 
 export type TaxonomyV4SellerType = "individual" | "professional";
 
@@ -86,6 +83,7 @@ export interface TaxonomyV4ValidationResult {
 
 export interface TaxonomyV4OptionLookupInput {
   optionSetId: string;
+  marketContext?: MarketContext;
   parentOptionId?: string;
   query?: string;
   cursor?: string;
@@ -215,7 +213,11 @@ export class TaxonomyV4Service {
   private readonly attributesById: Map<string, TaxonomyV4Attribute>;
   private readonly publicAttributeIds: Set<string>;
 
-  constructor(bundle: TaxonomyV4PrivateBundle = TAXONOMY_V4_PRIVATE_BUNDLE) {
+  constructor(
+    bundle: TaxonomyV4PrivateBundle,
+    readonly revision?: number,
+    private readonly checksum = bundle.metadata.normalizedSha256,
+  ) {
     this.bundle = bundle;
     this.categoriesById = new Map(
       bundle.categories.map((category) => [category.id, category]),
@@ -248,11 +250,75 @@ export class TaxonomyV4Service {
     );
   }
 
+  projectIdentity(identity: string, rawBrand?: unknown) {
+    const category = this.findCategory(identity);
+    if (!category) return undefined;
+    const labels = (values: Record<string, string>) => ({
+      ...values,
+      "fr-FR": values["fr-FR"] ?? "",
+    });
+    const path: {
+      id: string;
+      slug: string;
+      labels: ReturnType<typeof labels>;
+    }[] = [];
+    const seen = new Set<string>();
+    let current: TaxonomyV4Node | undefined = category;
+    while (current && !seen.has(current.id)) {
+      seen.add(current.id);
+      path.unshift({
+        id: current.id,
+        slug: current.slug,
+        labels: labels({ ...current.labels, ...current.shortLabels }),
+      });
+      current = current.parentId
+        ? this.findCategory(current.parentId)
+        : undefined;
+    }
+    const root = path[0];
+    if (!root) return undefined;
+    const brandSets = new Set(
+      this.bundle.attributes
+        .filter((field) =>
+          ["brand", "phone_reference_brand"].includes(field.code),
+        )
+        .map((field) => field.optionSetId),
+    );
+    const brand =
+      rawBrand == null
+        ? undefined
+        : this.bundle.options.find(
+            (option) =>
+              brandSets.has(option.optionSetId) &&
+              [option.key, option.id, ...Object.values(option.labels)].some(
+                (value) =>
+                  value.toLocaleLowerCase("fr-FR") ===
+                  String(rawBrand).toLocaleLowerCase("fr-FR"),
+              ),
+          );
+    return {
+      revision: this.revision ?? 1,
+      categoryId: category.id,
+      categorySlug: category.slug,
+      categoryLabels: labels({ ...category.labels, ...category.shortLabels }),
+      rootId: root.id,
+      rootSlug: root.slug,
+      rootLabels: root.labels,
+      path,
+      ...(brand ? { brandLabels: labels(brand.labels) } : {}),
+    };
+  }
+
+  getBundle(): TaxonomyV4PrivateBundle {
+    return this.bundle;
+  }
+
   getMetadata() {
     return {
       taxonomyVersion: this.bundle.metadata.taxonomyVersion,
       compilerVersion: this.bundle.metadata.compilerVersion,
-      checksum: this.bundle.metadata.normalizedSha256,
+      checksum: this.checksum,
+      revision: this.revision,
     } as const;
   }
 
@@ -383,6 +449,7 @@ export class TaxonomyV4Service {
     );
     const dependencyRules = this.bundle.dependencies.filter(
       (rule) =>
+        rule.status === "draft" &&
         PUBLIC_EFFECTS.has(rule.effect) &&
         scopeMatches(category.sourceKey, rule.scopes) &&
         [rule.trigger, ...rule.targets].every(
@@ -405,6 +472,7 @@ export class TaxonomyV4Service {
 
     return {
       taxonomyVersion: "4.0.0",
+      revision: this.revision,
       category,
       listingType,
       attributes,
@@ -576,26 +644,28 @@ export class TaxonomyV4Service {
             (link) => link.optionId === option.id,
           );
           if (parentLinks.length > 0) {
+            const parentOptions = parentLinks.flatMap((link) =>
+              this.bundle.options.filter(
+                (candidate) => candidate.id === link.parentOptionId,
+              ),
+            );
             const parentSetIds = new Set(
-              parentLinks.map((link) => link.parentOptionId.split(":", 1)[0]),
+              parentOptions.map((option) => option.optionSetId),
             );
-            const parentAttributes = schema.attributes.filter(
-              ({ definition: candidate }) =>
-                candidate.optionSetId &&
-                parentSetIds.has(candidate.optionSetId),
-            );
-            const hasValidParent = parentAttributes.some(
-              ({ definition: parent }) => {
-                const parentValue = input.attributes[parent.id];
-                const parentValues = Array.isArray(parentValue)
-                  ? parentValue.map(String)
-                  : [String(parentValue ?? "")];
-                return parentLinks.some((link) =>
-                  parentValues.includes(
-                    link.parentOptionId.split(":").slice(1).join(":"),
-                  ),
+            // Alternatives within one set are OR; independent dimensions are AND.
+            const hasValidParent = [...parentSetIds].every((setId) =>
+              schema.attributes.some(({ definition: parent }) => {
+                if (parent.optionSetId !== setId) return false;
+                const value = input.attributes[parent.id];
+                const selected = Array.isArray(value)
+                  ? value.map(String)
+                  : [String(value ?? "")];
+                return parentOptions.some(
+                  (option) =>
+                    option.optionSetId === setId &&
+                    selected.includes(option.key),
                 );
-              },
+              }),
             );
             if (!hasValidParent) {
               issues.push({
@@ -626,6 +696,28 @@ export class TaxonomyV4Service {
   }
 
   lookupOptions(input: TaxonomyV4OptionLookupInput) {
+    const marketCode = input.marketContext
+      ? this.requireMarket(input.marketContext)
+      : undefined;
+    if (
+      !this.bundle.attributes.some(
+        (field) =>
+          this.publicAttributeIds.has(field.id) &&
+          field.optionSetId === input.optionSetId &&
+          (!marketCode ||
+            field.marketAvailability.some(
+              (market) =>
+                market.marketCode === marketCode &&
+                market.status === "active" &&
+                market.marketplaceEnabled,
+            )),
+      )
+    ) {
+      throw new TaxonomyV4Error(
+        "TAXONOMY_OPTION_QUERY_INVALID",
+        "Ce référentiel public est indisponible.",
+      );
+    }
     const limit = input.limit ?? 50;
     if (!Number.isInteger(limit) || limit < 1 || limit > 200) {
       throw new TaxonomyV4Error(
@@ -669,6 +761,7 @@ export class TaxonomyV4Service {
           : undefined,
       total: matches.length,
       taxonomyVersion: "4.0.0" as const,
+      revision: this.revision,
     };
   }
 
@@ -682,7 +775,7 @@ export class TaxonomyV4Service {
     return marketContext.countryCode;
   }
 
-  private resolveCategory(identity: string): TaxonomyV4Node {
+  findCategory(identity: string): TaxonomyV4Node | undefined {
     const normalized = identity.trim().toLocaleLowerCase("fr-FR");
     const alias = this.bundle.aliases.find(
       (entry) => entry.alias === normalized,
@@ -692,13 +785,29 @@ export class TaxonomyV4Service {
       this.categoriesBySource.get(identity) ??
       this.categoriesBySlug.get(normalized) ??
       (alias ? this.categoriesById.get(alias.canonicalCategoryId) : undefined);
-    if (!category) {
+    return category;
+  }
+
+  isDescendant(identity: string, ancestorIdentity: string): boolean {
+    const ancestor = this.findCategory(ancestorIdentity);
+    let node = this.findCategory(identity);
+    const visited = new Set<string>();
+    while (node && !visited.has(node.id)) {
+      if (node.id === ancestor?.id) return true;
+      visited.add(node.id);
+      node = node.parentId ? this.categoriesById.get(node.parentId) : undefined;
+    }
+    return false;
+  }
+
+  private resolveCategory(identity: string): TaxonomyV4Node {
+    const node = this.findCategory(identity);
+    if (!node)
       throw new TaxonomyV4Error(
         "TAXONOMY_CATEGORY_NOT_FOUND",
         "Catégorie introuvable.",
       );
-    }
-    return category;
+    return node;
   }
 
   private resolveListingType(
@@ -741,5 +850,3 @@ export class TaxonomyV4Service {
     return candidates[0];
   }
 }
-
-export const taxonomyV4Service = new TaxonomyV4Service();

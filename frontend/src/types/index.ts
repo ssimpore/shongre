@@ -311,6 +311,7 @@ export interface ListingPricePresentation {
 }
 
 export interface Listing {
+  taxonomy?: import("@shongre/contracts/openapi").components["schemas"]["ListingTaxonomyProjection"];
   id: string;
   title: string;
   description: string;

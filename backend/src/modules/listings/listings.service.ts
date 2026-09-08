@@ -1,3 +1,4 @@
+import { taxonomyV4Service } from "../taxonomy/taxonomy.runtime.js";
 import {
   DeliveryType,
   Listing,
@@ -48,11 +49,7 @@ import type {
   DigitalFulfillmentVersionInput,
   FulfillmentType,
 } from "@shongre/contracts/digital-products";
-import {
-  taxonomyV4Service,
-  TaxonomyV4Error,
-  TaxonomyV4Service,
-} from "../taxonomy/taxonomy.v4.service.js";
+import { TaxonomyV4Error } from "../taxonomy/taxonomy.v4.service.js";
 import {
   digitalProductsService,
   DigitalProductsService,
@@ -79,6 +76,7 @@ export interface PublicationDraftInput {
   listingTypeId?: string;
   intent?: TaxonomyV4ListingIntent;
   taxonomyVersion?: "4.0.0";
+  taxonomyRevision?: number;
   marketCode?: string;
   selectedMarkets?: string[];
   marketPublications?: Record<
@@ -339,7 +337,7 @@ export class ListingsService {
     private discovery: UnifiedDiscoveryService = unifiedDiscoveryService,
     private markets: IMarketRepository = repositories.markets,
     private storage: StorageService = storageService,
-    private taxonomyV4: TaxonomyV4Service = taxonomyV4Service,
+    private taxonomyV4 = taxonomyV4Service,
     private digitalProducts: DigitalProductsService = digitalProductsService,
   ) {}
 
@@ -347,7 +345,10 @@ export class ListingsService {
     filter?: SearchFilters,
   ): Promise<{ listings: PublicListing[]; total: number }> {
     const res = await this.discovery.search(filter || {});
-    return { listings: res.items.map(toPublicListing), total: res.total };
+    return {
+      listings: await this.projectListings(res.items),
+      total: res.total,
+    };
   }
 
   async getSitemapListings(
@@ -392,7 +393,7 @@ export class ListingsService {
           })
         : undefined;
     return {
-      items: hydratedItems.map(toPublicListing),
+      items: await this.projectListings(hydratedItems),
       snapshotAt: page.snapshotAt,
       pageInfo: {
         hasNextPage: Boolean(nextCursor),
@@ -414,9 +415,15 @@ export class ListingsService {
       requireMarketCode(marketCode),
     );
     return {
-      listings: result.items.map(toPublicListing),
+      listings: await this.projectListings(result.items),
       total: result.total,
     };
+  }
+
+  private async projectListings(items: Listing[]): Promise<PublicListing[]> {
+    if (!items.length) return [];
+    const taxonomy = await this.taxonomyV4.snapshot();
+    return items.map((item) => toPublicListing(item, taxonomy));
   }
 
   async getListingById(
@@ -427,7 +434,9 @@ export class ListingsService {
       id,
       requireMarketCode(marketCode),
     );
-    return listing ? toPublicListing(listing) : null;
+    return listing
+      ? toPublicListing(listing, await this.taxonomyV4.snapshot())
+      : null;
   }
 
   async getListingCharacteristics(
@@ -445,25 +454,28 @@ export class ListingsService {
         statusCode: 404,
         message: "Annonce introuvable.",
       });
-    return projectListingCharacteristics({
-      categoryId: listing.categoryId,
-      listingTypeId: listing.listingTypeId,
-      intent: listing.listingIntent,
-      sellerType: (
-        listing.publisherType
-          ? listing.publisherType === "professional"
-          : listing.seller?.accountType === "professional"
-      )
-        ? "professional"
-        : "individual",
-      marketCode,
-      locale,
-      attributes: {
-        ...listing.attributes,
-        ...(listing.brand ? { brand: listing.brand } : {}),
-        ...(listing.model ? { model: listing.model } : {}),
+    return projectListingCharacteristics(
+      {
+        categoryId: listing.categoryId,
+        listingTypeId: listing.listingTypeId,
+        intent: listing.listingIntent,
+        sellerType: (
+          listing.publisherType
+            ? listing.publisherType === "professional"
+            : listing.seller?.accountType === "professional"
+        )
+          ? "professional"
+          : "individual",
+        marketCode,
+        locale,
+        attributes: {
+          ...listing.attributes,
+          ...(listing.brand ? { brand: listing.brand } : {}),
+          ...(listing.model ? { model: listing.model } : {}),
+        },
       },
-    });
+      (await this.taxonomyV4.snapshot()).getBundle(),
+    );
   }
 
   async getPublicListingCards(
@@ -475,14 +487,14 @@ export class ListingsService {
       requireMarketCode(marketCode),
     );
     return {
-      listings: listings.map(toPublicListing),
+      listings: await this.projectListings(listings),
       total: listings.length,
     };
   }
 
   async searchListings(params: SearchFilters) {
     const result = await this.discovery.search(params);
-    return { ...result, items: result.items.map(toPublicListing) };
+    return { ...result, items: await this.projectListings(result.items) };
   }
 
   async createListingDraft(userId: string, marketCode: string): Promise<any> {
@@ -792,7 +804,8 @@ export class ListingsService {
         });
       }
       try {
-        const resolvedTaxonomy = this.taxonomyV4.resolve({
+        const taxonomy = await this.taxonomyV4.snapshot(draft.taxonomyRevision);
+        const resolvedTaxonomy = taxonomy.resolve({
           marketContext: taxonomyContext.marketContext,
           categoryIdentity: draft.categoryId,
           listingTypeId: draft.listingTypeId,
@@ -819,7 +832,7 @@ export class ListingsService {
           },
           taxonomyContext.sellerType,
         );
-        const validation = this.taxonomyV4.validate({
+        const validation = taxonomy.validate({
           marketContext: taxonomyContext.marketContext,
           categoryIdentity: draft.categoryId,
           listingTypeId: draft.listingTypeId,
@@ -1182,7 +1195,7 @@ export class ListingsService {
           errorCode: error instanceof Error ? error.name : "unknown",
         }),
       );
-    return toPublicListing(hydrated || saved);
+    return toPublicListing(hydrated || saved, await this.taxonomyV4.snapshot());
   }
 
   async updateSellerListing(
@@ -1236,7 +1249,7 @@ export class ListingsService {
       }
     }
     const saved = await this.listingRepo.update(id, authoritativeUpdates);
-    return toPublicListing(saved);
+    return toPublicListing(saved, await this.taxonomyV4.snapshot());
   }
 
   private parseSellerUpdate(input: unknown): SellerListingUpdate {
@@ -1343,7 +1356,7 @@ export class ListingsService {
     }
     const sold = await this.listingRepo.update(id, { status: "sold" });
     logger.info("Listing marked sold", { listingId: id });
-    return toPublicListing(sold);
+    return toPublicListing(sold, await this.taxonomyV4.snapshot());
   }
 
   // userId is required rather than defaulted. These previously fell back to
@@ -1380,7 +1393,7 @@ export class ListingsService {
       // storage so it can reappear after republication, but expose only ids for
       // which this same response can provide a public card projection.
       listingIds: listings.map((listing) => listing.id),
-      listings: listings.map(toPublicListing),
+      listings: await this.projectListings(listings),
     };
   }
 }

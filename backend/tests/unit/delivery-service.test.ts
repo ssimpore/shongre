@@ -107,7 +107,11 @@ function serviceWith(
   return new DeliveryService(
     repository,
     { evaluatePublic: vi.fn().mockResolvedValue({ enabled: true }) } as never,
-    { resolve: vi.fn().mockReturnValue({}) } as never,
+    {
+      snapshot: vi
+        .fn()
+        .mockResolvedValue({ resolve: vi.fn().mockReturnValue({}) }),
+    } as never,
     {
       getOrderById: vi.fn().mockResolvedValue({
         id: draftInput.sourceOrderId,

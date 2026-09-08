@@ -18,7 +18,20 @@ describe("generic listing-card presentation", () => {
 
   it("localizes a canonical brand option key", () => {
     expect(
-      getGenericListingBrandLabel({ attributes: { brand: "citroen" } }),
+      getGenericListingBrandLabel({
+        attributes: { brand: "citroen" },
+        taxonomy: {
+          revision: 7,
+          categoryId: "vehicles.cars",
+          categorySlug: "voitures",
+          categoryLabels: { "fr-FR": "Voitures" },
+          rootId: "vehicles",
+          rootSlug: "vehicules",
+          rootLabels: { "fr-FR": "Véhicules" },
+          path: [],
+          brandLabels: { "fr-FR": "Citroën" },
+        },
+      }),
     ).toBe("Citroën");
   });
 
@@ -40,81 +53,43 @@ describe("generic listing-card presentation", () => {
     );
   });
 
-  it("projects real-estate decision fields in hero order from real attributes", () => {
-    expect(
-      getGenericListingCardCharacteristicPresentation(
-        {
-          categorySlug: "immobilier",
-          subCategorySlug: "real_estate.sales.apartments",
-          attributes: {
-            rooms: 4,
-            living_area: 92,
-            dpe_class: "B",
+  it("uses published ordering and localized values without a static attribute fallback", () => {
+    const listing = {
+      attributes: { fuel: "diesel", mileage: 999 },
+      taxonomy: {
+        revision: 12,
+        categoryId: "vehicles.cars",
+        categorySlug: "voitures",
+        categoryLabels: { "fr-FR": "Voitures" },
+        rootId: "vehicles",
+        rootSlug: "vehicules",
+        rootLabels: { "fr-FR": "Véhicules" },
+        path: [],
+        cardCharacteristics: [
+          {
+            code: "fuel",
+            labels: { "fr-FR": "Énergie" },
+            values: { "fr-FR": "Électrique", "en-US": "Electric" },
           },
-        },
-        "fr-FR",
-      ),
+          {
+            code: "mileage",
+            labels: { "fr-FR": "Distance" },
+            values: { "fr-FR": "10 km", "en-US": "10 km" },
+          },
+        ],
+      },
+    };
+    expect(
+      getGenericListingCardCharacteristicPresentation(listing, "en-GB"),
     ).toEqual([
-      { icon: "layout-grid", label: "4 pièces" },
-      { icon: "ruler", label: "92 m²" },
-      { icon: "home", label: "DPE B" },
+      { icon: "tag", label: "Electric" },
+      { icon: "tag", label: "10 km" },
     ]);
-  });
-
-  it("uses category-aware fields and a bounded fallback for other universes", () => {
     expect(
       getGenericListingCardCharacteristicPresentation(
-        {
-          categorySlug: "emploi",
-          subCategorySlug: "jobs.offers.it_data",
-          attributes: {
-            contractType: "CDI",
-            workingArrangement: "Télétravail hybride",
-            profession: "Développement Web",
-          },
-        },
+        { ...listing, taxonomy: undefined },
         "fr-FR",
       ),
-    ).toEqual([
-      { icon: "briefcase", label: "CDI" },
-      { icon: "laptop", label: "Télétravail hybride" },
-      { icon: "briefcase", label: "Développement Web" },
-    ]);
-
-    expect(
-      getGenericListingCardCharacteristicPresentation(
-        {
-          categorySlug: "education",
-          subCategorySlug: "cours-particuliers",
-          attributes: {
-            subject: "Mathématiques",
-            deliveryModes: ["online", "in_person"],
-            audience_level: "teenagers",
-          },
-        },
-        "fr-FR",
-      ),
-    ).toEqual([
-      { icon: "book-open", label: "Mathématiques" },
-      { icon: "laptop", label: "En ligne, En présentiel" },
-      { icon: "book-open", label: "Adolescents" },
-    ]);
-
-    expect(
-      getGenericListingCardCharacteristicPresentation(
-        {
-          categorySlug: "collection",
-          subCategorySlug: "collection.divers",
-          attributes: {
-            canonicalPath: "/annonce/collection-1",
-            material: "wood",
-            size: "large",
-            year: 1987,
-            extra: "ignored-after-three",
-          },
-        },
-        "fr-FR",
-      ),
-    ).toHaveLength(3);
+    ).toEqual([]);
   });
 });

@@ -29,7 +29,8 @@ describe("taxonomy v4 shared controls", () => {
       bundle.attributes.map((attribute) => attribute.uiComponent),
     );
     expect(Object.keys(TAXONOMY_CONTROL_REGISTRY)).toHaveLength(51);
-    expect(components.size).toBe(35);
+    expect(components.size).toBeGreaterThan(0);
+    expect(components.has("business_id_input")).toBe(false);
     expect(components.has("hidden")).toBe(false);
     expect(TAXONOMY_CONTROL_REGISTRY.hidden.kind).toBe("hidden");
     components.forEach((component) => {

@@ -1,3 +1,4 @@
+import { listingTaxonomyProjectionSchema } from "./taxonomy";
 import { z } from "zod";
 import { marketCodeSchema, moneySchema } from "./primitives";
 import { marketResolvedListingPromotionSchema } from "./discovery";
@@ -377,6 +378,7 @@ export const priceEstimateSchema = z.object({
 export type PriceEstimate = z.infer<typeof priceEstimateSchema>;
 
 export const vehiclePublicSchema = z.object({
+  taxonomy: listingTaxonomyProjectionSchema.optional(),
   id: z.string().min(1),
   schemaVersion: autoSchemaVersionSchema,
   vertical: autoVerticalSchema,

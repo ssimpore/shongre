@@ -1,3 +1,5 @@
+import { localizeTaxonomyLabels } from "@shongre/contracts/taxonomy-labels";
+import { activeDataLocale } from "../../../i18n/localized";
 import { apiOperation } from "./generated-api-operation";
 import {
   BulkListingImportTemplate,
@@ -92,7 +94,7 @@ export const mapBackendListing = (listing: BackendListing): Listing => {
     : listing.seller?.accountType === "professional"
       ? "pro"
       : "individual";
-  const categoryParts = listing.categoryId.split(".");
+  const locale = activeDataLocale();
   const priceType = listing.attributes?.price_type;
   const attributes = {
     ...(listing.attributes ?? {}),
@@ -122,10 +124,14 @@ export const mapBackendListing = (listing: BackendListing): Listing => {
     fulfillmentTypes: [...(listing.fulfillmentTypes ?? [])],
     requiresPhysicalDelivery: listing.requiresPhysicalDelivery,
     productVersion: listing.productVersion,
-    categorySlug: categoryParts[0] || listing.categoryId,
-    subCategorySlug: listing.categoryId,
-    categoryLabel: categoryParts[0] || listing.categoryId,
-    subCategoryLabel: categoryParts.at(-1) || listing.categoryId,
+    taxonomy: listing.taxonomy,
+    categorySlug: listing.taxonomy?.rootSlug ?? "",
+    subCategorySlug: listing.taxonomy?.categorySlug ?? "",
+    categoryLabel: localizeTaxonomyLabels(listing.taxonomy?.rootLabels, locale),
+    subCategoryLabel: localizeTaxonomyLabels(
+      listing.taxonomy?.categoryLabels,
+      locale,
+    ),
     listingTypeId: listing.listingTypeId,
     listingIntent: listing.listingIntent,
     condition: listing.condition as Listing["condition"],

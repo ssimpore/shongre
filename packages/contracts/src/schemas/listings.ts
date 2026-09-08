@@ -52,7 +52,8 @@ export const listingCardSchema = z
     imageUrl: z.string().url().optional(),
     city: z.string(),
     marketCode: marketCodeSchema,
-    categoryLabel: z.string().min(1),
+    // A historical unmapped category has no invented display label.
+    categoryLabel: z.string(),
     brandLabel: z.string().min(1).optional(),
     conditionLabel: z.string(),
     /** Taxonomy-configured decision fields, already formatted for display. */

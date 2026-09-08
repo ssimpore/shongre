@@ -1,3 +1,4 @@
+import { listingTaxonomyProjectionSchema } from "./taxonomy";
 import { z } from "zod";
 import { marketCodeSchema, moneySchema } from "./primitives";
 import { marketResolvedListingPromotionSchema } from "./discovery";
@@ -241,6 +242,7 @@ export const screeningQuestionSchema = z.object({
 export type ScreeningQuestion = z.infer<typeof screeningQuestionSchema>;
 
 export const jobPostingCardSchema = z.object({
+  taxonomy: listingTaxonomyProjectionSchema.optional(),
   id: z.string().min(1),
   slug: z.string().min(1),
   schemaVersion: z.number().int().positive(),

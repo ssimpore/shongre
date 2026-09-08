@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { resolveMarketContext } from "@shongre/contracts";
-import { DemoTaxonomyRepository } from "../../src/infrastructure/database/repositories/taxonomy.repository.js";
+import { TestTaxonomyRepository } from "../../src/infrastructure/database/repositories/taxonomy.repository.js";
 import { TaxonomyService } from "../../src/modules/taxonomy/taxonomy.service.js";
 
 const infrastructure = {
@@ -20,7 +20,7 @@ describe("taxonomy header navigation", () => {
   it.each(["FR", "BE", "CH"] as const)(
     "persists labels, visibility and ordering for links in %s",
     async (marketCode) => {
-      const service = new TaxonomyService(new DemoTaxonomyRepository());
+      const service = new TaxonomyService(new TestTaxonomyRepository());
       const marketContext = context(marketCode);
       const initial = await service.getHeaderNavigation(marketContext, true);
       const otherContext = context(marketCode === "FR" ? "BE" : "FR");
@@ -74,7 +74,7 @@ describe("taxonomy header navigation", () => {
   );
 
   it("preserves stored links for category-only consumers and allows explicit removal", async () => {
-    const service = new TaxonomyService(new DemoTaxonomyRepository());
+    const service = new TaxonomyService(new TestTaxonomyRepository());
     const marketContext = context("FR");
     const initial = await service.getHeaderNavigation(marketContext, true);
     const saved = await service.saveHeaderNavigation(
@@ -101,7 +101,7 @@ describe("taxonomy header navigation", () => {
   });
 
   it("rejects unapproved destinations, duplicate ordering and unopened markets", async () => {
-    const service = new TaxonomyService(new DemoTaxonomyRepository());
+    const service = new TaxonomyService(new TestTaxonomyRepository());
     const link = {
       target: "promotions" as const,
       labels: { "fr-FR": "Promotions" },
@@ -157,7 +157,7 @@ describe("taxonomy header navigation", () => {
     }
   });
   it("persists selection, activation, and order without changing the taxonomy", async () => {
-    const service = new TaxonomyService(new DemoTaxonomyRepository());
+    const service = new TaxonomyService(new TestTaxonomyRepository());
     const france = context("FR");
     const initial = await service.getHeaderNavigation(france, true);
 
@@ -191,7 +191,7 @@ describe("taxonomy header navigation", () => {
   });
 
   it("isolates configurations by market and rejects stale revisions", async () => {
-    const service = new TaxonomyService(new DemoTaxonomyRepository());
+    const service = new TaxonomyService(new TestTaxonomyRepository());
     const france = context("FR");
     const belgium = context("BE");
     const initialFrance = await service.getHeaderNavigation(france, true);
@@ -224,7 +224,7 @@ describe("taxonomy header navigation", () => {
   });
 
   it("rejects nested categories and active categories in a coming-soon market", async () => {
-    const service = new TaxonomyService(new DemoTaxonomyRepository());
+    const service = new TaxonomyService(new TestTaxonomyRepository());
     const france = context("FR");
     const senegal = context("SN");
 

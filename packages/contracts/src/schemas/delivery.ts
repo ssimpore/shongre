@@ -1,3 +1,4 @@
+import { listingTaxonomyProjectionSchema } from "./taxonomy";
 import { z } from "zod";
 import type { CountryConfig } from "../market-country";
 import { marketCodeSchema, moneySchema } from "./primitives";
@@ -227,6 +228,7 @@ export const deliveryRequestDraftInputSchema = z.object({
 });
 
 export const deliveryPublicRequestSchema = z.object({
+  taxonomy: listingTaxonomyProjectionSchema.optional(),
   id: deliveryIdSchema,
   slug: z.string().min(1),
   marketCode: marketCodeSchema,

@@ -34,6 +34,7 @@ export interface ResolveTaxonomyV4PublicInput {
   intent?: TaxonomyV4ListingIntent;
   sellerType: "individual" | "professional";
   locale: string;
+  taxonomyRevision?: number;
   taxonomyVersion?: string;
 }
 

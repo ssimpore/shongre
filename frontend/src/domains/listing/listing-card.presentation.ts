@@ -8,7 +8,7 @@ import type {
 } from "@shongre/contracts/listings";
 import type { MarketCode, Money } from "@shongre/contracts/primitives";
 import type { MoneyConversionProjection } from "@shongre/contracts/currency";
-import { getTaxonomyV4CardRootLabel } from "@shongre/contracts/taxonomy-v4-card";
+import { localizeTaxonomyLabels } from "@shongre/contracts/taxonomy-labels";
 import type { VehiclePublic } from "@shongre/contracts/auto";
 import type {
   EmploymentCatalog,
@@ -24,12 +24,6 @@ import {
   getListingPeriodLabel,
   getListingPriceCopy,
 } from "./listing-price.presentation";
-
-const STRUCTURED_CATEGORY_ROOTS = {
-  property: "real_estate",
-  vehicle: "vehicles",
-  employment: "jobs",
-} as const;
 
 interface ListingDecisionDetail {
   label: string;
@@ -159,15 +153,6 @@ function presentVehicleResponseTime(
   return `${isFrench(locale) ? "Répond en" : "Replies in"} ${duration}`;
 }
 
-function structuredCategoryLabel(
-  root: (typeof STRUCTURED_CATEGORY_ROOTS)[keyof typeof STRUCTURED_CATEGORY_ROOTS],
-  locale: string,
-): string {
-  const label = getTaxonomyV4CardRootLabel(root, locale);
-  if (!label) throw new Error(`Unknown structured taxonomy root: ${root}`);
-  return label;
-}
-
 function formatMoney(
   money: Money,
   locale: string,
@@ -264,8 +249,8 @@ export function presentPropertyListingCard(
     imageUrl: property.media.photos[0],
     city: property.address.publicLabel,
     marketCode,
-    categoryLabel: structuredCategoryLabel(
-      STRUCTURED_CATEGORY_ROOTS.property,
+    categoryLabel: localizeTaxonomyLabels(
+      property.taxonomy?.rootLabels,
       locale,
     ),
     conditionLabel: "",
@@ -318,10 +303,7 @@ export function presentVehicleListingCard(
     imageUrl: vehicle.mediaUrls[0],
     city: vehicle.locationLabel,
     marketCode,
-    categoryLabel: structuredCategoryLabel(
-      STRUCTURED_CATEGORY_ROOTS.vehicle,
-      locale,
-    ),
+    categoryLabel: localizeTaxonomyLabels(vehicle.taxonomy?.rootLabels, locale),
     brandLabel: vehicle.makeLabel,
     conditionLabel: "",
     publisherType:
@@ -380,10 +362,7 @@ export function presentEmploymentListingCard(
     imageUrl: job.employer.logoUrl,
     city: job.primaryLocation.label,
     marketCode,
-    categoryLabel: structuredCategoryLabel(
-      STRUCTURED_CATEGORY_ROOTS.employment,
-      locale,
-    ),
+    categoryLabel: localizeTaxonomyLabels(job.taxonomy?.rootLabels, locale),
     conditionLabel: "",
     publisherType: job.employer.organizationId ? "professional" : "private",
     ...decisionDetails,

@@ -1,3 +1,4 @@
+import { TaxonomyRevisionEditor } from "./taxonomy/components/TaxonomyRevisionEditor";
 import { Layers, ListOrdered } from "lucide-react";
 import React from "react";
 import { usePageMeta } from "../../hooks/usePageMeta";
@@ -30,6 +31,8 @@ export const AdminTaxonomyPage: React.FC = () => {
           </div>
         </div>
       </header>
+
+      <TaxonomyRevisionEditor />
 
       <section
         aria-labelledby="taxonomy-header-navigation-title"

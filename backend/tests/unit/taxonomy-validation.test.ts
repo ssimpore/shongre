@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { DemoTaxonomyRepository } from "../../src/infrastructure/database/repositories/taxonomy.repository.js";
+import { TestTaxonomyRepository } from "../../src/infrastructure/database/repositories/taxonomy.repository.js";
 import { TaxonomyService } from "../../src/modules/taxonomy/taxonomy.service.js";
 import { TaxonomyValidationService } from "../../src/modules/taxonomy/taxonomy.validation.js";
 
 describe("taxonomy publication validation", () => {
   const validation = new TaxonomyValidationService(
-    new TaxonomyService(new DemoTaxonomyRepository()),
+    new TaxonomyService(new TestTaxonomyRepository()),
   );
 
   it("rejects missing required vehicle fields and rogue attributes", async () => {

@@ -17,7 +17,7 @@ import {
 } from "./market.repository.js";
 import {
   ITaxonomyRepository,
-  DemoTaxonomyRepository,
+  TestTaxonomyRepository,
   PostgresTaxonomyRepository,
 } from "./taxonomy.repository.js";
 import {
@@ -241,7 +241,7 @@ export function createRepositoryContainer(
     listings: new DemoListingRepository(),
     markets: new DemoMarketRepository(),
     currencies: new DemoCurrencyRepository(),
-    taxonomy: new DemoTaxonomyRepository(),
+    taxonomy: new TestTaxonomyRepository(),
     orders: new DemoOrderRepository(),
     verification: new DemoVerificationRepository(),
     compliance: new DemoComplianceRepository(),

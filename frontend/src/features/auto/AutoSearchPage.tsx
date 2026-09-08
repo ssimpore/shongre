@@ -41,7 +41,7 @@ import { formatAutoMoney, fuelLabels } from "./auto-format";
 import { formatCurrencySymbol } from "../../utilities/formatters";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useTranslation } from "../../i18n/I18nProvider";
-import { CANONICAL_TAXONOMY_IDS } from "@shongre/contracts/taxonomy-catalog";
+import { CANONICAL_TAXONOMY_IDS } from "@shongre/contracts/taxonomy-domain-ids";
 import { routes } from "../../configuration/routes";
 import { useAutoVehicleFavorites } from "./useAutoVehicleFavorites";
 import { resolvePublicMapCoordinates } from "../../configuration/geoCoordinates";

@@ -1,3 +1,4 @@
+import type { TaxonomyV4TreeResponse } from "@shongre/contracts/taxonomy";
 import type {
   EmploymentCatalog,
   JobPostingCard,
@@ -38,6 +39,7 @@ interface EmploymentSearchPublicRouteData {
 }
 
 interface ListingSearchPublicRouteData {
+  taxonomy?: TaxonomyV4TreeResponse;
   kind: "listing_search";
   pathname: string;
   items: Listing[];

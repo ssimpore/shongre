@@ -244,8 +244,8 @@ Mobile: component → hook/controller → service contract → HTTP → /api/v1
   reusing a healthy stack only when its environment and migration fingerprint
   matches, forcing backend database mode, migrating, idempotently seeding, and
   launching the API, worker, and Web app. The backend-owned local seed imports production-shaped tables, the complete
-  generated taxonomy v4 projection and market availability, restores the
-  database-owned header order, and copies every backend-fixture media source into local
+  generated taxonomy v4 projection and market availability, initializes missing
+  database-owned header configuration without overwriting editorial changes, and copies every backend-fixture media source into local
   public Supabase Storage. In connected mode, category collections,
   navigation, filters, and category media must come through the API/runtime
   Storage configuration without a static client fallback. Intentional fixture
@@ -661,13 +661,27 @@ France-only happy path is insufficient for market-sensitive work.
   exporter when that platform-wide boundary exists, never as a separate export
   system.
 
-- Taxonomy is hierarchical, variable-depth, market-aware, and metadata-driven.
-  The normalized v4 source is backend-owned and compiled through the root
-  `taxonomy-import`, `taxonomy-compile`, and `taxonomy-check` targets; runtime
-  clients consume generated private or public-safe projections and must never
-  parse Excel or maintain a second category/attribute catalogue. The master
-  workbook compiler expands reusable `FLOW_TEMPLATE` rows with listing-type
-  `ADD`/`EXCLUDE` overrides and must reject duplicate effective bindings.
+- Taxonomy content is authoritative in backend-owned PostgreSQL authoring tables
+  and immutable published revisions. Web, native, SSR and backend runtime readers
+  use the published database projection through the repository/API boundary;
+  compiled catalogues are controlled import/export or explicit isolated test
+  inputs, never application runtime fallbacks. The current public hierarchy
+  contract supports levels 0–2; deeper nesting requires a compatibility migration.
+  The root `taxonomy-import`, `taxonomy-compile` and `taxonomy-check` targets own
+  import artifacts and coverage evidence. Normalized/workbook inputs must not
+  overwrite an authored database. Local seeding bootstraps missing taxonomy and
+  header configuration and preserves editor revisions; the explicit bootstrap
+  importer refuses databases with editorial changes. Admin mutations require
+  taxonomy permission, MFA and recent authentication, optimistic revision checks
+  and audit records. Publication validates the exact database snapshot; rollback
+  preserves immutable history. Runtime caches check the publication pointer and
+  fail closed on database errors. Authoring commands and reviewed migrations
+  must advance the draft revision and configuration timestamp together. The
+  private draft snapshot cache is valid only for its authoring revision; commands
+  rebuild it atomically and controlled imports invalidate it. Revision zero is
+  never cached in application memory. Taxonomy-dependent HTTP responses remain
+  uncached until external purge delivery is acknowledged. Reusable flow bindings
+  must remain unique, and structural coverage never implies domain approval.
   Unapproved country, seller, and regulatory policy remains quarantined or
   disabled. Publication fields and search filters use reusable field definitions
   rather than category condition trees. Existing-listing characteristics use

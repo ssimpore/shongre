@@ -1,3 +1,4 @@
+import { useRootTaxonomyCategories } from "../../hooks/useRootTaxonomyCategories";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { ScrollableRegion, Select } from "../../design-system";
 import type {
@@ -15,7 +16,6 @@ import {
   isCommercialProductPurchasable,
   MONETIZATION_ADMIN_CONSTRAINTS,
 } from "@shongre/contracts/monetization";
-import { CANONICAL_TAXONOMY_IDS } from "@shongre/contracts/taxonomy-catalog";
 import {
   AlertTriangle,
   BadgeEuro,
@@ -208,9 +208,15 @@ export const AdminMonetizationPage: React.FC = () => {
   const [selectedProductId, setSelectedProductId] = useState<string | null>(
     null,
   );
+  const {
+    categories: taxonomyCategories,
+    isLoading: taxonomyLoading,
+    error: taxonomyError,
+    reload: reloadTaxonomy,
+  } = useRootTaxonomyCategories(`${activeMarket.code}:${currentLocale}`);
   const [simulation, setSimulation] = useState({
     userType: "individual" as "individual" | "professional" | "organization",
-    categoryId: CANONICAL_TAXONOMY_IDS.vehicles as string,
+    categoryId: "",
     usageLevel: 0,
   });
   const [evaluation, setEvaluation] = useState<RuleEvaluationResult | null>(
@@ -2108,6 +2114,7 @@ export const AdminMonetizationPage: React.FC = () => {
                     className="mt-1 w-full"
                     labelledByAncestor
                     value={simulation.categoryId}
+                    disabled={taxonomyLoading || Boolean(taxonomyError)}
                     onChange={(event) =>
                       setSimulation((current) => ({
                         ...current,
@@ -2115,20 +2122,24 @@ export const AdminMonetizationPage: React.FC = () => {
                       }))
                     }
                   >
-                    <option value={CANONICAL_TAXONOMY_IDS.vehicles}>
-                      Auto
+                    <option value="">
+                      {t("publishing.publishWizard.categorie")}
                     </option>
-                    <option value={CANONICAL_TAXONOMY_IDS.realEstate}>
-                      Immobilier
-                    </option>
-                    <option value={CANONICAL_TAXONOMY_IDS.courses}>
-                      {t("verticals.education.adminCategory")}
-                    </option>
-                    <option value={CANONICAL_TAXONOMY_IDS.electronics}>
-                      {t("admin.adminMonetizationPage.generique")}
-                    </option>
+                    {taxonomyCategories.map((category) => (
+                      <option key={category.id} value={category.id}>
+                        {category.name}
+                      </option>
+                    ))}
                   </Select>
                 </label>
+                {taxonomyError && (
+                  <div className="col-span-2" role="alert">
+                    <p>{t("common.error")}</p>
+                    <Button size="sm" onClick={reloadTaxonomy}>
+                      {t("common.retry")}
+                    </Button>
+                  </div>
+                )}
                 <label className="col-span-2 text-micro font-semibold text-text-secondary">
                   Utilisation actuelle
                   <input

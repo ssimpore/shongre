@@ -6,29 +6,10 @@ import type { PublicCacheProfileName } from "@shongre/contracts/performance";
 import { config } from "../../app/config/index.js";
 
 const PUBLIC_RESPONSE_PROFILES = {
-  getListings: "discovery",
-  getListingsSearch: "discovery",
-  getDiscoverySitemapListings: "discovery",
-  getListingsById: "discovery",
-  getHome: "discovery",
-  getHomeTrending: "discovery",
   getSolutions: "catalog",
   getSolutionBySlug: "catalog",
-  getAutoCatalog: "catalog",
   getBusinessRulesCatalog: "catalog",
   getEducationCatalog: "catalog",
-  getEmploymentCatalog: "catalog",
-  getRealEstateCatalog: "catalog",
-  getTaxonomyHeaderNavigation: "catalog",
-  getTaxonomyV4Tree: "catalog",
-  resolveTaxonomyV4PublicationSchema: "catalog",
-  getTaxonomyV4Options: "catalog",
-  getTaxonomyNodesById: "catalog",
-  getTaxonomyNodesByIdAttributes: "catalog",
-  getTaxonomyNodesByIdChildren: "catalog",
-  getTaxonomyRoot: "catalog",
-  getTaxonomySearchFilters: "catalog",
-  getTaxonomySlugBySlug: "catalog",
   getCurrencyCatalog: "reference",
   getMarkets: "reference",
   getMarketsByCode: "reference",
@@ -50,6 +31,11 @@ export function resolvePublicResponseProfile(
 ): PublicCacheProfileName | null {
   if (
     input.method !== "GET" ||
+    // The existing invalidation adapter only emits tags. Until purge delivery is
+    // acknowledged, taxonomy-derived responses must not serve stale revisions.
+    /Taxonomy|Listing|Home|Trending|Auto|Employment|RealEstate/.test(
+      input.operationId,
+    ) ||
     input.accessKind !== "public" ||
     input.hasCredentials
   ) {
@@ -121,6 +107,16 @@ export function cacheInvalidationTags(input: {
   }
   const domain = cacheDomain(input.operationId);
   if (domain === "public") return [];
+  if (domain === "taxonomy")
+    return [
+      ...new Set(
+        ["taxonomy", "discovery", "auto", "employment", "real-estate"].flatMap(
+          (dependency) => [
+            `shongre-${normalizedTagPart(config.performance.publicCache.cacheKeyVersion)}-${dependency}`,
+          ],
+        ),
+      ),
+    ];
   return publicCacheTags(input);
 }
 

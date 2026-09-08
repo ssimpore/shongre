@@ -6234,6 +6234,78 @@ export function postAdminDeliveryRequestSuspend(
     "application/json",
   );
 }
+export function getAdminTaxonomyDraft(
+  transport: ApiTransport,
+  input: ApiInput<"getAdminTaxonomyDraft">,
+): Promise<ApiResponse<"getAdminTaxonomyDraft">> {
+  return executeApiOperation<"getAdminTaxonomyDraft">(
+    transport,
+    "GET",
+    "/admin/taxonomy/draft",
+    input,
+    "application/json",
+  );
+}
+export function updateAdminTaxonomyDraft(
+  transport: ApiTransport,
+  input: ApiInput<"updateAdminTaxonomyDraft">,
+): Promise<ApiResponse<"updateAdminTaxonomyDraft">> {
+  return executeApiOperation<"updateAdminTaxonomyDraft">(
+    transport,
+    "PUT",
+    "/admin/taxonomy/draft",
+    input,
+    "application/json",
+  );
+}
+export function getAdminTaxonomyPreview(
+  transport: ApiTransport,
+  input: ApiInput<"getAdminTaxonomyPreview">,
+): Promise<ApiResponse<"getAdminTaxonomyPreview">> {
+  return executeApiOperation<"getAdminTaxonomyPreview">(
+    transport,
+    "GET",
+    "/admin/taxonomy/preview",
+    input,
+    "application/json",
+  );
+}
+export function publishAdminTaxonomyRevision(
+  transport: ApiTransport,
+  input: ApiInput<"publishAdminTaxonomyRevision">,
+): Promise<ApiResponse<"publishAdminTaxonomyRevision">> {
+  return executeApiOperation<"publishAdminTaxonomyRevision">(
+    transport,
+    "POST",
+    "/admin/taxonomy/publish",
+    input,
+    "application/json",
+  );
+}
+export function rollbackAdminTaxonomyRevision(
+  transport: ApiTransport,
+  input: ApiInput<"rollbackAdminTaxonomyRevision">,
+): Promise<ApiResponse<"rollbackAdminTaxonomyRevision">> {
+  return executeApiOperation<"rollbackAdminTaxonomyRevision">(
+    transport,
+    "POST",
+    "/admin/taxonomy/rollback",
+    input,
+    "application/json",
+  );
+}
+export function getAdminTaxonomyHistory(
+  transport: ApiTransport,
+  input: ApiInput<"getAdminTaxonomyHistory">,
+): Promise<ApiResponse<"getAdminTaxonomyHistory">> {
+  return executeApiOperation<"getAdminTaxonomyHistory">(
+    transport,
+    "GET",
+    "/admin/taxonomy/history",
+    input,
+    "application/json",
+  );
+}
 export const generatedApiOperations = {
   getDigitalPolicy,
   getDigitalSellerProfile,
@@ -6752,6 +6824,12 @@ export const generatedApiOperations = {
   postDeliveryRequestTransition,
   getAdminDeliveryRequests,
   postAdminDeliveryRequestSuspend,
+  getAdminTaxonomyDraft,
+  updateAdminTaxonomyDraft,
+  getAdminTaxonomyPreview,
+  publishAdminTaxonomyRevision,
+  rollbackAdminTaxonomyRevision,
+  getAdminTaxonomyHistory,
 } as const;
 export type GeneratedApiOperationId = keyof typeof generatedApiOperations;
 type AnyGeneratedApiOperation = (

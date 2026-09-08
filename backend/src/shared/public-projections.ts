@@ -1,3 +1,5 @@
+import { projectListingCardCharacteristics } from "../modules/taxonomy/taxonomy.characteristics.js";
+import type { TaxonomyV4Service } from "../modules/taxonomy/taxonomy.v4.service.js";
 import type {
   Listing,
   PublicListing,
@@ -47,7 +49,43 @@ export function toPublicSellerProfile(
   };
 }
 
-export function toPublicListing(listing: Listing): PublicListing {
+export function toPublicListing(
+  listing: Listing,
+  taxonomy: TaxonomyV4Service,
+): PublicListing {
+  const bundle = taxonomy.getBundle();
+  const taxonomyProjection = taxonomy.projectIdentity(
+    listing.categoryId,
+    listing.attributes?.phone_reference_brand ??
+      listing.brand ??
+      listing.attributes?.brand,
+  );
+  const publicFieldsByKey = new Set(
+    bundle.attributes
+      .filter(
+        (field) =>
+          field.privacy === "public" &&
+          bundle.attributeGroups.some(
+            (group) => group.id === field.groupId && group.public,
+          ),
+      )
+      .flatMap((field) => [field.id, field.code]),
+  );
+  // Preserve established public historical values and domain routing metadata.
+  // These keys are not new publication fields or taxonomy definitions.
+  for (const key of [
+    "year",
+    "fuel",
+    "gearbox",
+    "critair",
+    "frameSize",
+    "canonicalPath",
+    "verticalEntityId",
+    "verticalSchemaVersion",
+    "verticalType",
+  ])
+    publicFieldsByKey.add(key);
+
   const {
     seller,
     publisherStatus: _publisherStatus,
@@ -89,6 +127,27 @@ export function toPublicListing(listing: Listing): PublicListing {
   });
   return {
     ...publicFields,
+    ...(taxonomyProjection
+      ? {
+          taxonomy: {
+            ...taxonomyProjection,
+            cardCharacteristics: projectListingCardCharacteristics(
+              {
+                categoryId: taxonomyProjection.categoryId,
+                listingTypeId: listing.listingTypeId,
+                intent: listing.listingIntent,
+                marketCode: listing.marketCode,
+                sellerType:
+                  listing.publisherType === "professional"
+                    ? "professional"
+                    : "individual",
+                attributes: listing.attributes ?? {},
+              },
+              bundle,
+            ),
+          },
+        }
+      : {}),
     ...publicPromotionProof,
     ...(publicMarketPublications
       ? { marketPublications: publicMarketPublications }
@@ -98,7 +157,8 @@ export function toPublicListing(listing: Listing): PublicListing {
       !listing.fulfillmentModel || listing.fulfillmentModel === "PHYSICAL",
     attributes: Object.fromEntries(
       Object.entries(attributes || {}).filter(
-        ([key]) => !INTERNAL_ATTRIBUTE_KEYS.has(key),
+        ([key]) =>
+          publicFieldsByKey.has(key) && !INTERNAL_ATTRIBUTE_KEYS.has(key),
       ),
     ),
     ...(publicSeller ? { seller: publicSeller } : {}),

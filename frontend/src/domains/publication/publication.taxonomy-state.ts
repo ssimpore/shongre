@@ -84,6 +84,7 @@ export function sanitizePublicationDraftForSubmission(input: {
     taxonomyPath: input.draft.taxonomyPath,
     listingTypeId: input.schema.listingType.id,
     taxonomyVersion: "4.0.0",
+    taxonomyRevision: input.schema.revision,
     attributes: reconciled.values,
   };
 }

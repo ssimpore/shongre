@@ -16,17 +16,7 @@ export interface CanonicalTaxonomyIdentity {
   supportedIntents: string[];
 }
 
-export const CANONICAL_TAXONOMY_IDS = {
-  vehicles: "vehicles",
-  vehicleCars: "vehicles.cars",
-  realEstate: "real_estate",
-  realEstateSales: "real_estate.sales",
-  realEstateRentals: "real_estate.rentals",
-  jobs: "jobs",
-  jobOffers: "jobs.offers",
-  courses: "services.tutoring",
-  electronics: "electronics",
-} as const;
+export { CANONICAL_TAXONOMY_IDS } from "../taxonomy-domain-ids";
 
 type TaxonomyIdentityTuple = readonly [
   id: string,

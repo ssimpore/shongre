@@ -1,3 +1,4 @@
+import type { TaxonomyV4TreeResponse } from "@shongre/contracts/taxonomy";
 import { PAGE_SIZES } from "../../configuration/pagination.config";
 import { routes } from "../../configuration/routes";
 import React, { useState, useEffect, useMemo, useRef } from "react";
@@ -132,6 +133,28 @@ export const SearchPage: React.FC = () => {
   );
   const initialData =
     publicRouteData?.kind === "listing_search" ? publicRouteData : null;
+  const [taxonomySnapshot, setTaxonomySnapshot] = useState<
+    TaxonomyV4TreeResponse | undefined
+  >(initialData?.taxonomy);
+  useEffect(() => {
+    let active = true;
+    setTaxonomySnapshot(undefined);
+    void services.taxonomy
+      .getV4Tree({
+        marketContext: { countryCode: activeMarket.code },
+        locale: currentLocale,
+      })
+      .then((tree) => {
+        if (active) setTaxonomySnapshot(tree);
+      })
+      .catch(() => {
+        if (active) setTaxonomySnapshot(undefined);
+      });
+    return () => {
+      active = false;
+    };
+  }, [activeMarket.code, currentLocale, location.pathname]);
+
   const formatPriceBound = (value: number) =>
     `${value.toLocaleString(currentLocale)} ${currencySymbol}`;
 
@@ -772,6 +795,7 @@ export const SearchPage: React.FC = () => {
       status: "found" as const,
       data: {
         kind: "listing_search" as const,
+        taxonomy: taxonomySnapshot,
         pathname: categoryRouteSlug
           ? `/categorie/${categoryRouteSlug}`
           : "/recherche",
@@ -798,6 +822,7 @@ export const SearchPage: React.FC = () => {
     activeMarket.code,
     categoryRouteSlug,
     initialData?.availableCountryCodes,
+    taxonomySnapshot,
     listings,
     marketContext,
     page,

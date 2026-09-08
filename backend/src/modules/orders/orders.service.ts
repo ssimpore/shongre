@@ -1,3 +1,4 @@
+import { taxonomyV4Service } from "../taxonomy/taxonomy.runtime.js";
 import {
   createHmac,
   randomBytes,
@@ -120,14 +121,18 @@ export class OrdersService {
   }
 
   async getPurchases(userId: string): Promise<Transaction[]> {
-    return (await this.orderRepo.getPurchases(userId)).map((order) =>
-      this.toParticipantOrder(order),
+    return Promise.all(
+      (await this.orderRepo.getPurchases(userId)).map((order) =>
+        this.toParticipantOrder(order),
+      ),
     );
   }
 
   async getSales(userId: string): Promise<Transaction[]> {
-    return (await this.orderRepo.getSales(userId)).map((order) =>
-      this.toParticipantOrder(order),
+    return Promise.all(
+      (await this.orderRepo.getSales(userId)).map((order) =>
+        this.toParticipantOrder(order),
+      ),
     );
   }
 
@@ -604,7 +609,7 @@ export class OrdersService {
       order.refundProviderId
     ) {
       return {
-        order: this.toParticipantOrder(order),
+        order: await this.toParticipantOrder(order),
         commissionReversal: null,
         providerRefund: {
           id: order.refundProviderId,
@@ -689,7 +694,7 @@ export class OrdersService {
       });
     }
     return {
-      order: this.toParticipantOrder(finalizedOrder),
+      order: await this.toParticipantOrder(finalizedOrder),
       commissionReversal,
       providerRefund: refund,
     };
@@ -1212,7 +1217,7 @@ export class OrdersService {
         listingId: order.listingId,
         transactionType: order.transactionType,
       });
-      return { ...this.toParticipantOrder(updated), checkout };
+      return { ...(await this.toParticipantOrder(updated)), checkout };
     } catch (error) {
       logger.error("order_checkout_creation_failed", {
         orderId: order.id,
@@ -1484,7 +1489,7 @@ export class OrdersService {
     return { order: updated, commissionReversal };
   }
 
-  private toParticipantOrder(order: OrderRecord): Transaction {
+  private async toParticipantOrder(order: OrderRecord): Promise<Transaction> {
     const {
       checkoutIdempotencyKey: _checkoutIdempotencyKey,
       checkoutSessionId: _checkoutSessionId,
@@ -1511,7 +1516,14 @@ export class OrdersService {
     } = order;
     return {
       ...participantOrder,
-      ...(listing ? { listing: toPublicListing(listing) } : {}),
+      ...(listing
+        ? {
+            listing: toPublicListing(
+              listing,
+              await taxonomyV4Service.snapshot(),
+            ),
+          }
+        : {}),
     };
   }
 }

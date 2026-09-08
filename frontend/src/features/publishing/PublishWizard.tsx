@@ -492,13 +492,15 @@ export const PublishWizard: React.FC = () => {
         setDraft((current) => {
           if (
             current.listingTypeId === resolved.listingType.id &&
-            current.taxonomyVersion === "4.0.0"
+            current.taxonomyVersion === "4.0.0" &&
+            current.taxonomyRevision === resolved.revision
           ) {
             return current;
           }
           return {
             ...current,
             listingTypeId: resolved.listingType.id,
+            taxonomyRevision: resolved.revision,
             taxonomyVersion: "4.0.0",
           };
         });
@@ -599,6 +601,7 @@ export const PublishWizard: React.FC = () => {
             limit: 200,
             locale: currentLocale,
             taxonomyVersion: "4.0.0",
+            taxonomyRevision: v4Schema?.revision,
           }),
         })),
     )

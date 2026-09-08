@@ -58,7 +58,9 @@
     "./openapi": "./src/openapi.ts",
     "./market-country": "./src/market-country.ts",
     "./primitives": "./src/schemas/primitives.ts",
-    "./api-client": "./src/generated/api-client.ts"
+    "./api-client": "./src/generated/api-client.ts",
+    "./taxonomy-labels": "./src/taxonomy-labels.ts",
+    "./taxonomy-domain-ids": "./src/taxonomy-domain-ids.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

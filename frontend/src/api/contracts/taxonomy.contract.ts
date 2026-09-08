@@ -1,3 +1,4 @@
+import type { components } from "@shongre/contracts/openapi";
 import { Category } from "../../types";
 import {
   TaxonomyNode,
@@ -14,6 +15,24 @@ import type {
 } from "@shongre/contracts";
 
 export interface TaxonomyServiceContract {
+  getAdminDraft(input: {
+    resource?: components["schemas"]["TaxonomyAdminResource"];
+    offset?: number;
+    limit?: number;
+    q?: string;
+  }): Promise<components["schemas"]["TaxonomyDraftPage"]>;
+  updateAdminDraft(
+    input: components["schemas"]["TaxonomyDraftUpdate"],
+  ): Promise<components["schemas"]["TaxonomyRevisionReview"]>;
+  previewAdminDraft(): Promise<components["schemas"]["TaxonomyRevisionReview"]>;
+  publishAdminDraft(
+    input: components["schemas"]["TaxonomyRevisionAction"],
+  ): Promise<components["schemas"]["TaxonomyRevisionReview"]>;
+  rollbackAdminRevision(
+    input: components["schemas"]["TaxonomyRevisionAction"],
+  ): Promise<components["schemas"]["TaxonomyRevisionReview"]>;
+  getAdminHistory(): Promise<components["schemas"]["TaxonomyRevisionHistory"]>;
+
   getRootCategories(): Promise<Category[]>;
   getNodeById(id: string): Promise<TaxonomyNode | null>;
   getNodeBySlug(slug: string): Promise<TaxonomyNode | null>;
@@ -42,6 +61,7 @@ export interface TaxonomyServiceContract {
   lookupV4Options(input: {
     marketContext: MarketContext;
     optionSetId: string;
+    taxonomyRevision?: number;
     parentOptionId?: string;
     query?: string;
     cursor?: string;

@@ -1,29 +1,11 @@
+import { localizeTaxonomyLabels as localized } from "@shongre/contracts/taxonomy-labels";
 import type { components } from "@shongre/contracts/openapi";
 import type { TaxonomyV4Attribute } from "@shongre/contracts/taxonomy";
-import { TAXONOMY_V4_PRIVATE_BUNDLE as taxonomy } from "./generated/taxonomy-v4.private.js";
+import type { TaxonomyV4PrivateBundle } from "./taxonomy.bundle.js";
 
 type Characteristics = components["schemas"]["ListingCharacteristics"];
 type Group = Characteristics["groups"][number];
-type Option = (typeof taxonomy.options)[number];
-
-const categories = new Map(taxonomy.categories.map((row) => [row.id, row]));
-const definitions = new Map(taxonomy.attributes.map((row) => [row.id, row]));
-const groups = new Map(taxonomy.attributeGroups.map((row) => [row.id, row]));
-const bindingsByType = new Map<
-  string,
-  Array<(typeof taxonomy.bindings)[number]>
->();
-for (const row of taxonomy.bindings) {
-  const entries = bindingsByType.get(row.listingTypeId) ?? [];
-  entries.push(row);
-  bindingsByType.set(row.listingTypeId, entries);
-}
-const optionsBySet = new Map<string, Option[]>();
-for (const row of taxonomy.options) {
-  const entries = optionsBySet.get(row.optionSetId) ?? [];
-  entries.push(row);
-  optionsBySet.set(row.optionSetId, entries);
-}
+type Option = TaxonomyV4PrivateBundle["options"][number];
 
 // Existing vehicle records use these persisted keys. Keep translation at the
 // backend read boundary until those records are migrated; never infer values.
@@ -33,19 +15,6 @@ const storedVehicleKeys: Readonly<Record<string, string>> = {
   transmission: "gearbox",
   critair_class: "critair",
 };
-
-function localized(labels: Readonly<Record<string, string>>, locale: string) {
-  const language = locale.split("-")[0];
-  return (
-    labels[locale] ||
-    Object.entries(labels).find(
-      ([key]) => key.split("-")[0] === language,
-    )?.[1] ||
-    labels["fr-FR"] ||
-    Object.values(labels)[0] ||
-    ""
-  );
-}
 
 function comparable(value: string) {
   return value.trim().normalize("NFKC").toLocaleLowerCase("fr-FR");
@@ -98,15 +67,79 @@ function formatValue(
   return text;
 }
 
-export function projectListingCharacteristics(input: {
-  categoryId: string;
-  listingTypeId?: string;
-  intent?: string;
-  sellerType: "individual" | "professional";
-  marketCode: string;
-  locale: string;
-  attributes: Readonly<Record<string, unknown>>;
-}): Characteristics {
+function buildCharacteristicsIndex(taxonomy: TaxonomyV4PrivateBundle) {
+  const categories = new Map(taxonomy.categories.map((row) => [row.id, row]));
+  const definitions = new Map(taxonomy.attributes.map((row) => [row.id, row]));
+  const groups = new Map(taxonomy.attributeGroups.map((row) => [row.id, row]));
+  const bindingsByType = new Map<
+    string,
+    Array<(typeof taxonomy.bindings)[number]>
+  >();
+  for (const row of taxonomy.bindings) {
+    const entries = bindingsByType.get(row.listingTypeId) ?? [];
+    entries.push(row);
+    bindingsByType.set(row.listingTypeId, entries);
+  }
+  const optionsBySet = new Map<string, Option[]>();
+  for (const row of taxonomy.options) {
+    const entries = optionsBySet.get(row.optionSetId) ?? [];
+    entries.push(row);
+    optionsBySet.set(row.optionSetId, entries);
+  }
+
+  const cardsByType = new Map<
+    string,
+    TaxonomyV4PrivateBundle["projections"]["cardFields"]
+  >();
+  for (const row of taxonomy.projections.cardFields) {
+    const entries = cardsByType.get(row.listingTypeId) ?? [];
+    entries.push(row);
+    cardsByType.set(row.listingTypeId, entries);
+  }
+  return {
+    categories,
+    definitions,
+    groups,
+    bindingsByType,
+    optionsBySet,
+    cardsByType,
+  };
+}
+const indexedSnapshots = new WeakMap<
+  TaxonomyV4PrivateBundle,
+  ReturnType<typeof buildCharacteristicsIndex>
+>();
+function characteristicsIndex(taxonomy: TaxonomyV4PrivateBundle) {
+  let index = indexedSnapshots.get(taxonomy);
+  if (!index) {
+    index = buildCharacteristicsIndex(taxonomy);
+    indexedSnapshots.set(taxonomy, index);
+  }
+  return index;
+}
+
+export function projectListingCharacteristics(
+  input: {
+    categoryId: string;
+    listingTypeId?: string;
+    intent?: string;
+    sellerType: "individual" | "professional";
+    marketCode: string;
+    locale: string;
+    attributes: Readonly<Record<string, unknown>>;
+    surface?: "detail" | "card";
+  },
+  taxonomy: TaxonomyV4PrivateBundle,
+): Characteristics {
+  const {
+    categories,
+    definitions,
+    groups,
+    bindingsByType,
+    optionsBySet,
+    cardsByType,
+  } = characteristicsIndex(taxonomy);
+
   const categoryId = categories.has(input.categoryId)
     ? input.categoryId
     : taxonomy.aliases.find((alias) => alias.alias === input.categoryId)
@@ -120,16 +153,11 @@ export function projectListingCharacteristics(input: {
   )
     return { groups: [] };
 
-  const sellerAllowed = (eligibility: {
-    individualAllowed: boolean;
-    professionalAllowed: boolean;
-  }) =>
-    input.sellerType === "professional"
-      ? eligibility.professionalAllowed
-      : eligibility.individualAllowed;
   const belongsToBranch = (id: string): boolean => {
     let node = categories.get(id);
-    while (node) {
+    const visited = new Set<string>();
+    while (node && !visited.has(node.id)) {
+      visited.add(node.id);
       if (node.id === category.id) return true;
       node = node.parentId ? categories.get(node.parentId) : undefined;
     }
@@ -140,7 +168,6 @@ export function projectListingCharacteristics(input: {
       belongsToBranch(type.categoryId) &&
       (!input.listingTypeId || type.id === input.listingTypeId) &&
       (!input.intent || type.intent === input.intent) &&
-      sellerAllowed(type.sellerEligibility) &&
       type.marketAvailability.some(
         (market) =>
           market.marketCode === input.marketCode && market.marketplaceEnabled,
@@ -154,13 +181,24 @@ export function projectListingCharacteristics(input: {
           .filter((binding) => {
             const definition = definitions.get(binding.attributeId);
             return (
-              binding.detailVisible &&
-              sellerAllowed(binding.sellerEligibility) &&
+              (input.surface === "card"
+                ? binding.cardVisible
+                : binding.detailVisible) &&
               groups.get(binding.groupId)?.public &&
-              definition?.detailVisible &&
+              definition &&
+              (input.surface === "card"
+                ? definition.cardVisible
+                : definition.detailVisible) &&
+              (input.surface !== "card" ||
+                (cardsByType.get(type.id) ?? []).some(
+                  (projection) =>
+                    projection.field.kind === "attribute" &&
+                    [definition.id, definition.code].includes(
+                      projection.field.key,
+                    ),
+                )) &&
               definition.privacy === "public" &&
               groups.get(definition.groupId)?.public &&
-              sellerAllowed(definition.sellerEligibility) &&
               definition.marketAvailability.some(
                 (market) =>
                   market.marketCode === input.marketCode &&
@@ -200,7 +238,18 @@ export function projectListingCharacteristics(input: {
         : [],
       input.locale,
     );
-    const label = localized(definition.labels, input.locale);
+    const cardProjection =
+      input.surface === "card"
+        ? (cardsByType.get(types[0].id) ?? []).find(
+            (row) =>
+              row.field.kind === "attribute" &&
+              [definition.id, definition.code].includes(row.field.key),
+          )
+        : undefined;
+    const label = localized(
+      cardProjection?.labels ?? definition.labels,
+      input.locale,
+    );
     if (!formatted || !label) continue;
     const projected = result.get(group.id) ?? {
       id: group.id,
@@ -215,4 +264,74 @@ export function projectListingCharacteristics(input: {
       (a, b) => groups.get(a.id)!.sortOrder - groups.get(b.id)!.sortOrder,
     ),
   };
+}
+
+/** Public card values derive from the same historical read bindings as details. */
+export function projectListingCardCharacteristics(
+  input: Omit<
+    Parameters<typeof projectListingCharacteristics>[0],
+    "locale" | "surface"
+  >,
+  taxonomy: TaxonomyV4PrivateBundle,
+): NonNullable<
+  components["schemas"]["ListingTaxonomyProjection"]["cardCharacteristics"]
+> {
+  const category = taxonomy.categories.find(
+    (row) => row.id === input.categoryId,
+  );
+  if (!category) return [];
+  const locales = [...new Set(["fr-FR", ...Object.keys(category.labels)])];
+  const rows = new Map<
+    string,
+    {
+      code: string;
+      labels: Record<string, string> & { "fr-FR": string };
+      values: Record<string, string> & { "fr-FR": string };
+    }
+  >();
+  for (const locale of locales) {
+    const projection = projectListingCharacteristics(
+      { ...input, locale, surface: "card" },
+      taxonomy,
+    );
+    for (const group of projection.groups)
+      for (const item of group.items) {
+        const row = rows.get(item.code) ?? {
+          code: item.code,
+          labels: { "fr-FR": "" },
+          values: { "fr-FR": "" },
+        };
+        row.labels[locale] = item.label;
+        row.values[locale] = item.value;
+        rows.set(item.code, row);
+      }
+  }
+  // All applicable types must share a field to expose it on an ambiguous historical
+  // category. Its first declared presentation supplies the deterministic order.
+  const { categories } = characteristicsIndex(taxonomy);
+  const belongsToCategory = (id: string) => {
+    const visited = new Set<string>();
+    let current = categories.get(id);
+    while (current && !visited.has(current.id)) {
+      if (current.id === category.id) return true;
+      visited.add(current.id);
+      current = current.parentId ? categories.get(current.parentId) : undefined;
+    }
+    return false;
+  };
+  const ranks = new Map<string, number>();
+  for (const row of taxonomy.projections.cardFields) {
+    if (
+      row.field.kind !== "attribute" ||
+      (input.listingTypeId && row.listingTypeId !== input.listingTypeId)
+    )
+      continue;
+    if (!belongsToCategory(row.categoryId)) continue;
+    if (!ranks.has(row.field.key)) ranks.set(row.field.key, row.sortOrder);
+  }
+  return [...rows.values()].sort(
+    (a, b) =>
+      (ranks.get(a.code) ?? Number.MAX_SAFE_INTEGER) -
+      (ranks.get(b.code) ?? Number.MAX_SAFE_INTEGER),
+  );
 }

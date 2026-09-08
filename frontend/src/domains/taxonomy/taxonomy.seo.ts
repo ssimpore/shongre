@@ -2,7 +2,7 @@ import type {
   TaxonomyV4Node,
   TaxonomyV4PublicBundle,
 } from "@shongre/contracts/taxonomy";
-import { getTaxonomyV4PublicBundle } from "@shongre/contracts/taxonomy-v4-public";
+import type { TaxonomyV4TreeResponse } from "@shongre/contracts/taxonomy";
 
 type TaxonomySeoProjection =
   TaxonomyV4PublicBundle["projections"]["seo"][number];
@@ -12,42 +12,25 @@ export interface TaxonomySeoRecord {
   projection: TaxonomySeoProjection;
 }
 
-const bundle = getTaxonomyV4PublicBundle();
-const nodeById = new Map(bundle.categories.map((node) => [node.id, node]));
-const nodeIdBySlug = new Map(
-  bundle.categories.map((node) => [node.slug, node.id]),
-);
-const nodeIdByAlias = new Map(
-  bundle.aliases.map((alias) => [
-    alias.alias.toLocaleLowerCase("fr-FR"),
-    alias.canonicalCategoryId,
-  ]),
-);
-const projectionByCategoryId = new Map(
-  bundle.projections.seo.map((projection) => [
-    projection.categoryId,
-    projection,
-  ]),
-);
-
-export function listTaxonomySeoRecords(): readonly TaxonomySeoRecord[] {
-  return bundle.categories.flatMap((node) => {
-    const projection = projectionByCategoryId.get(node.id);
-    return projection ? [{ node, projection }] : [];
-  });
-}
-
-/** Resolve canonical identities and generated compatibility aliases. */
+/** A request-scoped API snapshot keeps aliases, labels and indexing on one revision. */
 export function resolveTaxonomySeoRecord(
   idOrSlug: string | null | undefined,
+  tree?: TaxonomyV4TreeResponse,
 ): TaxonomySeoRecord | null {
-  if (!idOrSlug) return null;
-  const node =
-    nodeById.get(idOrSlug) ??
-    nodeById.get(nodeIdBySlug.get(idOrSlug) ?? "") ??
-    nodeById.get(nodeIdByAlias.get(idOrSlug.toLocaleLowerCase("fr-FR")) ?? "");
+  if (!idOrSlug || !tree) return null;
+  const alias = tree.aliases?.find(
+    (row) =>
+      row.alias.toLocaleLowerCase("fr-FR") ===
+      idOrSlug.toLocaleLowerCase("fr-FR"),
+  );
+  const node = tree.items.find(
+    (row) =>
+      row.id === idOrSlug ||
+      row.slug === idOrSlug ||
+      row.id === alias?.canonicalCategoryId,
+  );
   if (!node) return null;
-  const projection = projectionByCategoryId.get(node.id);
+  const projection = tree.seo?.find((row) => row.categoryId === node.id);
   return projection ? { node, projection } : null;
 }
 
@@ -91,31 +74,9 @@ export function taxonomyNodeIsIndexableInMarket(
   );
 }
 
-/** Return canonical ancestor slugs from the root through the selected node. */
-export function taxonomyBranchSlugs(
-  idOrSlug: string | null | undefined,
-): string[] {
-  const record = resolveTaxonomySeoRecord(idOrSlug);
-  if (!record) return [];
-  const branch: string[] = [];
-  const visited = new Set<string>();
-  let current: TaxonomyV4Node | undefined = record.node;
-  while (current && !visited.has(current.id)) {
-    visited.add(current.id);
-    branch.unshift(current.slug);
-    current = current.parentId ? nodeById.get(current.parentId) : undefined;
-  }
-  return branch;
-}
-
+/** Ancestors are projected by the backend from the same publication as the listing. */
 export function taxonomySlugsForListing(listing: {
-  categorySlug?: string;
-  subCategorySlug?: string;
+  taxonomy?: { path: readonly { slug: string }[] };
 }): string[] {
-  return Array.from(
-    new Set([
-      ...taxonomyBranchSlugs(listing.categorySlug),
-      ...taxonomyBranchSlugs(listing.subCategorySlug),
-    ]),
-  );
+  return [...new Set(listing.taxonomy?.path.map((node) => node.slug) ?? [])];
 }

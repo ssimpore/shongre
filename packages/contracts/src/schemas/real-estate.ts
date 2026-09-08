@@ -1,3 +1,4 @@
+import { listingTaxonomyProjectionSchema } from "./taxonomy";
 import { z } from "zod";
 import { marketCodeSchema, moneySchema } from "./primitives";
 import { marketResolvedListingPromotionSchema } from "./discovery";
@@ -360,6 +361,7 @@ export const propertyPublicSchema = propertyPrivateSchema
     address: propertyAddressSchema.omit({ exactAddress: true }),
     isFavorite: z.boolean().default(false),
     recentlyViewedAt: z.string().optional(),
+    taxonomy: listingTaxonomyProjectionSchema.optional(),
   });
 export type PropertyPublic = z.infer<typeof propertyPublicSchema>;
 

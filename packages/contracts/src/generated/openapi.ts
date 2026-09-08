@@ -1066,6 +1066,24 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/admin/taxonomy/draft": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** getAdminTaxonomyDraft */
+        readonly get: operations["getAdminTaxonomyDraft"];
+        /** updateAdminTaxonomyDraft */
+        readonly put: operations["updateAdminTaxonomyDraft"];
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/admin/taxonomy/header-navigation": {
         readonly parameters: {
             readonly query?: never;
@@ -1078,6 +1096,74 @@ export interface paths {
         /** Atomically replace the market header category configuration */
         readonly put: operations["putAdminTaxonomyHeaderNavigation"];
         readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/admin/taxonomy/history": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** getAdminTaxonomyHistory */
+        readonly get: operations["getAdminTaxonomyHistory"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/admin/taxonomy/preview": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** getAdminTaxonomyPreview */
+        readonly get: operations["getAdminTaxonomyPreview"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/admin/taxonomy/publish": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** publishAdminTaxonomyRevision */
+        readonly post: operations["publishAdminTaxonomyRevision"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/admin/taxonomy/rollback": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /** rollbackAdminTaxonomyRevision */
+        readonly post: operations["rollbackAdminTaxonomyRevision"];
         readonly delete?: never;
         readonly options?: never;
         readonly head?: never;
@@ -8579,6 +8665,7 @@ export interface components {
             readonly seller: components["schemas"]["AutoVehicleSellerSummary"];
             readonly slug: string;
             readonly sortDate: string;
+            readonly taxonomy?: components["schemas"]["ListingTaxonomyProjection"];
             readonly technical: components["schemas"]["AutoVehicleTechnical"];
             readonly title: string;
             readonly trimLabel?: string;
@@ -9522,6 +9609,7 @@ export interface components {
             };
             readonly slug: string;
             readonly status: components["schemas"]["DeliveryRequestStatus"];
+            readonly taxonomy?: components["schemas"]["ListingTaxonomyProjection"];
             readonly title: string;
             readonly version: number;
         };
@@ -10033,6 +10121,7 @@ export interface components {
             readonly slug: string;
             readonly specializationId?: string;
             readonly specializationLabel?: string;
+            readonly taxonomy?: components["schemas"]["ListingTaxonomyProjection"];
             readonly title: string;
             readonly workingArrangementId: string;
             readonly workingArrangementLabel: string;
@@ -10096,6 +10185,7 @@ export interface components {
             readonly slug: string;
             readonly specializationId?: string;
             readonly specializationLabel?: string;
+            readonly taxonomy?: components["schemas"]["ListingTaxonomyProjection"];
             readonly title: string;
             readonly travelRequirementId?: string;
             readonly trialPeriodInformation?: string;
@@ -10652,6 +10742,27 @@ export interface components {
         readonly ListingPromotionSource: "purchase" | "subscription_credit" | "admin_grant";
         /** @enum {string} */
         readonly ListingPromotionType: "urgent_badge" | "search_bump" | "featured" | "top_placement" | "sponsored_search" | "homepage_spotlight" | "category_spotlight" | "local_spotlight" | "seller_spotlight";
+        readonly ListingTaxonomyProjection: {
+            readonly brandLabels?: components["schemas"]["TaxonomyV4LocalizedLabels"];
+            /** @description Public stored values selected and ordered by the published card presentation for this listing and market. Labels and formatted values are localized by the backend. */
+            readonly cardCharacteristics?: readonly {
+                readonly code: string;
+                readonly labels: components["schemas"]["TaxonomyV4LocalizedLabels"];
+                readonly values: components["schemas"]["TaxonomyV4LocalizedLabels"];
+            }[];
+            readonly categoryId: string;
+            readonly categoryLabels: components["schemas"]["TaxonomyV4LocalizedLabels"];
+            readonly categorySlug: string;
+            readonly path: readonly {
+                readonly id: string;
+                readonly labels: components["schemas"]["TaxonomyV4LocalizedLabels"];
+                readonly slug: string;
+            }[];
+            readonly revision: number;
+            readonly rootId: string;
+            readonly rootLabels: components["schemas"]["TaxonomyV4LocalizedLabels"];
+            readonly rootSlug: string;
+        };
         /**
          * @example FR
          * @example BE
@@ -11781,6 +11892,7 @@ export interface components {
             /** @enum {string} */
             readonly status: "draft" | "published" | "reserved" | "sold" | "archived" | "rejected" | "flagged";
             readonly storeId?: string;
+            readonly taxonomy?: components["schemas"]["ListingTaxonomyProjection"];
             readonly title: string;
             /** Format: date-time */
             readonly updatedAt: string;
@@ -11975,6 +12087,7 @@ export interface components {
             readonly seller: components["schemas"]["RealEstatePropertySeller"];
             readonly slug: string;
             readonly sortDate: string;
+            readonly taxonomy?: components["schemas"]["ListingTaxonomyProjection"];
             readonly title: string;
             /** @enum {string} */
             readonly transactionType: "sale" | "long_term_rental" | "seasonal_rental" | "shared_accommodation" | "life_annuity" | "other";
@@ -12165,6 +12278,31 @@ export interface components {
             /** @constant */
             readonly success: true;
         };
+        /** @enum {string} */
+        readonly TaxonomyAdminResource: "categories" | "listingTypes" | "attributes" | "attributeGroups" | "optionSets" | "options" | "optionParentLinks" | "bindings" | "dependencies" | "validationRules" | "aliases" | "referenceData" | "presentations" | "discovery";
+        readonly TaxonomyDraftPage: {
+            readonly checksum: string;
+            readonly offset: number;
+            readonly publishedRevision: number | null;
+            readonly records: readonly {
+                readonly [key: string]: unknown;
+            }[];
+            readonly resource: components["schemas"]["TaxonomyAdminResource"];
+            readonly resources: readonly {
+                readonly count: number;
+                readonly resource: components["schemas"]["TaxonomyAdminResource"];
+            }[];
+            readonly revision: number;
+            readonly total: number;
+        };
+        readonly TaxonomyDraftUpdate: {
+            readonly changeReason: string;
+            readonly expectedRevision: number;
+            readonly records: readonly {
+                readonly [key: string]: unknown;
+            }[];
+            readonly resource: components["schemas"]["TaxonomyAdminResource"];
+        };
         readonly TaxonomyHeaderCategoryItem: {
             readonly categoryId: string;
             readonly displayOrder: number;
@@ -12232,9 +12370,11 @@ export interface components {
             readonly iconName?: string;
             readonly id: string;
             readonly isActive?: boolean;
+            readonly labels?: components["schemas"]["TaxonomyV4LocalizedLabels"];
             readonly name: string;
             readonly parentId?: string | null;
             readonly shortLabel?: string;
+            readonly shortLabels?: components["schemas"]["TaxonomyV4LocalizedLabels"];
             readonly slug: string;
             readonly sortOrder?: number;
             readonly subcategories?: readonly components["schemas"]["TaxonomyLegacyCategory"][];
@@ -12256,6 +12396,49 @@ export interface components {
             readonly attribute: components["schemas"]["TaxonomyLegacyAttribute"];
             /** @enum {string} */
             readonly facetType: "multi_select" | "range" | "boolean" | "keyword";
+        };
+        readonly TaxonomyReviewIssue: {
+            readonly code: string;
+            readonly id: string;
+            readonly message: string;
+            readonly resource: string;
+        };
+        readonly TaxonomyRevisionAction: {
+            readonly changeReason: string;
+            readonly expectedRevision: number;
+            readonly targetRevision?: number;
+        };
+        readonly TaxonomyRevisionHistory: {
+            readonly events?: readonly {
+                readonly action: string;
+                readonly createdAt: string;
+                readonly reason: string;
+            }[];
+            readonly records: readonly {
+                readonly changeReason: string;
+                readonly checksum: string;
+                readonly draftRevision: number;
+                /** Format: date-time */
+                readonly publishedAt: string;
+                readonly revision: number;
+            }[];
+        };
+        readonly TaxonomyRevisionReview: {
+            readonly checksum: string;
+            readonly counts: {
+                readonly [key: string]: number;
+            };
+            readonly impact?: {
+                readonly attributeIds: readonly string[];
+                readonly categoryIds: readonly string[];
+                readonly listingTypeIds: readonly string[];
+                readonly optionIds: readonly string[];
+            };
+            readonly issues: readonly components["schemas"]["TaxonomyReviewIssue"][];
+            readonly publishedRevision: number | null;
+            readonly revision: number;
+            readonly valid: boolean;
+            readonly warnings: readonly components["schemas"]["TaxonomyReviewIssue"][];
         };
         readonly TaxonomyV4Attribute: {
             readonly cardinality?: string;
@@ -12406,6 +12589,7 @@ export interface components {
         readonly TaxonomyV4OptionPage: {
             readonly items: readonly components["schemas"]["TaxonomyV4Option"][];
             readonly nextCursor?: string;
+            readonly revision?: number;
             /** @enum {string} */
             readonly taxonomyVersion: "4.0.0";
             readonly total: number;
@@ -12440,6 +12624,7 @@ export interface components {
                 readonly search: components["schemas"]["TaxonomyV4ProjectionField"] | null;
                 readonly seo: components["schemas"]["TaxonomyV4ProjectionField"] | null;
             };
+            readonly revision?: number;
             /** @enum {string} */
             readonly taxonomyVersion: "4.0.0";
             readonly validationRules: readonly components["schemas"]["TaxonomyV4ValidationRule"][];
@@ -12448,13 +12633,37 @@ export interface components {
             readonly individualAllowed: boolean;
             readonly professionalAllowed: boolean;
         };
+        readonly TaxonomyV4SeoProjection: {
+            readonly canonicalStrategy: string;
+            readonly categoryId: string;
+            readonly descriptionTemplate: components["schemas"]["TaxonomyV4LocalizedLabels"];
+            readonly facetUrlPattern?: string;
+            readonly h1: components["schemas"]["TaxonomyV4LocalizedLabels"];
+            readonly indexable: boolean;
+            readonly indexableFacets: readonly string[];
+            readonly locationUrlPattern?: string;
+            readonly sitemap: {
+                readonly eligible: boolean;
+                readonly policy: string;
+            };
+            readonly structuredData: readonly string[];
+            readonly titleTemplate: components["schemas"]["TaxonomyV4LocalizedLabels"];
+            readonly urlPattern: string;
+        };
         readonly TaxonomyV4TreeResponse: {
+            readonly aliases?: readonly {
+                readonly alias: string;
+                readonly canonicalCategoryId: string;
+                readonly kind: string;
+            }[];
             readonly checksum: string;
             readonly compilerVersion: string;
             readonly items: readonly components["schemas"]["TaxonomyV4Node"][];
             readonly listingTypes: readonly components["schemas"]["TaxonomyV4ListingType"][];
             readonly locale: string;
             readonly marketCode: components["schemas"]["MarketCode"];
+            readonly revision?: number;
+            readonly seo?: readonly components["schemas"]["TaxonomyV4SeoProjection"][];
             /** @enum {string} */
             readonly taxonomyVersion: "4.0.0";
         };
@@ -15049,6 +15258,81 @@ export interface operations {
             readonly 500: components["responses"]["InternalError"];
         };
     };
+    readonly getAdminTaxonomyDraft: {
+        readonly parameters: {
+            readonly query?: {
+                readonly limit?: number;
+                readonly offset?: number;
+                readonly q?: string;
+                readonly resource?: components["schemas"]["TaxonomyAdminResource"];
+            };
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Selected categories including inactive entries and their display order. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["TaxonomyDraftPage"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly updateAdminTaxonomyDraft: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["TaxonomyDraftUpdate"];
+            };
+        };
+        readonly responses: {
+            /** @description Saved configuration with its new revision. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["TaxonomyRevisionReview"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
     readonly getAdminTaxonomyHeaderNavigation: {
         readonly parameters: {
             readonly query?: never;
@@ -15107,6 +15391,146 @@ export interface operations {
                 };
                 content: {
                     readonly "application/json": components["schemas"]["TaxonomyHeaderNavigationConfiguration"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getAdminTaxonomyHistory: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Selected categories including inactive entries and their display order. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["TaxonomyRevisionHistory"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getAdminTaxonomyPreview: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Selected categories including inactive entries and their display order. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["TaxonomyRevisionReview"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly publishAdminTaxonomyRevision: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["TaxonomyRevisionAction"];
+            };
+        };
+        readonly responses: {
+            /** @description Saved configuration with its new revision. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["TaxonomyRevisionReview"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly rollbackAdminTaxonomyRevision: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["TaxonomyRevisionAction"];
+            };
+        };
+        readonly responses: {
+            /** @description Saved configuration with its new revision. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["TaxonomyRevisionReview"];
                 };
             };
             readonly 400: components["responses"]["BadRequest"];
@@ -24989,6 +25413,7 @@ export interface operations {
                         readonly marketCode: components["schemas"]["MarketCode"];
                         readonly postalCode: string;
                         readonly price: number;
+                        readonly taxonomyRevision?: number;
                         /** @constant */
                         readonly taxonomyVersion?: "4.0.0";
                         /** @description Compact title for a new product listing. Existing listing titles and saved drafts are not truncated; an over-limit draft must be edited before publication. */
@@ -30753,9 +31178,11 @@ export interface operations {
     readonly getTaxonomyNodesById: {
         readonly parameters: {
             readonly query?: never;
-            readonly header?: {
+            readonly header: {
                 /** @description Caller correlation id. The server returns the accepted or generated value. */
                 readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
             };
             readonly path: {
                 readonly id: string;
@@ -30787,9 +31214,11 @@ export interface operations {
     readonly getTaxonomyNodesByIdAttributes: {
         readonly parameters: {
             readonly query?: never;
-            readonly header?: {
+            readonly header: {
                 /** @description Caller correlation id. The server returns the accepted or generated value. */
                 readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
             };
             readonly path: {
                 readonly id: string;
@@ -30821,9 +31250,11 @@ export interface operations {
     readonly getTaxonomyNodesByIdChildren: {
         readonly parameters: {
             readonly query?: never;
-            readonly header?: {
+            readonly header: {
                 /** @description Caller correlation id. The server returns the accepted or generated value. */
                 readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
             };
             readonly path: {
                 readonly id: string;
@@ -30855,9 +31286,11 @@ export interface operations {
     readonly getTaxonomyRoot: {
         readonly parameters: {
             readonly query?: never;
-            readonly header?: {
+            readonly header: {
                 /** @description Caller correlation id. The server returns the accepted or generated value. */
                 readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
             };
             readonly path?: never;
             readonly cookie?: never;
@@ -30889,9 +31322,11 @@ export interface operations {
             readonly query?: {
                 readonly nodeId?: string;
             };
-            readonly header?: {
+            readonly header: {
                 /** @description Caller correlation id. The server returns the accepted or generated value. */
                 readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
             };
             readonly path?: never;
             readonly cookie?: never;
@@ -30921,9 +31356,11 @@ export interface operations {
     readonly getTaxonomySlugBySlug: {
         readonly parameters: {
             readonly query?: never;
-            readonly header?: {
+            readonly header: {
                 /** @description Caller correlation id. The server returns the accepted or generated value. */
                 readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
             };
             readonly path: {
                 readonly slug: string;
@@ -30960,6 +31397,8 @@ export interface operations {
                 readonly locale?: string;
                 readonly parentOptionId?: string;
                 readonly q?: string;
+                /** @description Expected published revision; a changed revision returns 409. */
+                readonly revision?: number;
                 readonly version?: "4.0.0";
             };
             readonly header: {
@@ -31001,6 +31440,8 @@ export interface operations {
                 readonly intent?: components["schemas"]["TaxonomyV4ListingIntent"];
                 readonly listingTypeId?: string;
                 readonly locale: string;
+                /** @description Expected published revision; a changed revision returns 409. */
+                readonly revision?: number;
                 readonly sellerCapability?: readonly string[];
                 readonly sellerType: "individual" | "professional";
                 readonly version?: "4.0.0";

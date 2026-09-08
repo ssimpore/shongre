@@ -1,5 +1,7 @@
+import { z } from "zod";
 import { AppError } from "../../../shared/errors/app-error.js";
-import { TaxonomyV4Error, taxonomyV4Service } from "../taxonomy.v4.service.js";
+import { TaxonomyV4Error } from "../taxonomy.v4.service.js";
+import { taxonomyV4Service } from "../taxonomy.runtime.js";
 import { type RouteRegistrar, PUBLIC } from "../../../api/v1/route-contract.js";
 import { taxonomyService } from "../taxonomy.service.js";
 import { requireApiMarketContext } from "../../markets/request-market-context.js";
@@ -44,33 +46,79 @@ function taxonomyV4Result<T>(operation: () => T): T {
 }
 
 export function registerTaxonomyRoutes(routes: RouteRegistrar): void {
-  routes.addRoute("GET", "/taxonomy/root", PUBLIC, async () =>
-    taxonomyService.getRootCategories(),
+  routes.addRoute("GET", "/taxonomy/root", PUBLIC, async ({ marketCode }) =>
+    (
+      await taxonomyService.publicProjection(
+        requireApiMarketContext(marketCode),
+      )
+    ).getRootCategories(),
   );
-  routes.addRoute("GET", "/taxonomy/nodes/:id", PUBLIC, async ({ params }) =>
-    taxonomyService.getNodeById(params.id),
+  routes.addRoute(
+    "GET",
+    "/taxonomy/nodes/:id",
+    PUBLIC,
+    async ({ params, marketCode }) =>
+      (
+        await taxonomyService.publicProjection(
+          requireApiMarketContext(marketCode),
+        )
+      ).getNode(params.id),
   );
-  routes.addRoute("GET", "/taxonomy/slug/:slug", PUBLIC, async ({ params }) =>
-    taxonomyService.getNodeBySlug(params.slug),
+  routes.addRoute(
+    "GET",
+    "/taxonomy/slug/:slug",
+    PUBLIC,
+    async ({ params, marketCode }) =>
+      (
+        await taxonomyService.publicProjection(
+          requireApiMarketContext(marketCode),
+        )
+      ).getNode(params.slug),
   );
   routes.addRoute(
     "GET",
     "/taxonomy/nodes/:id/children",
     PUBLIC,
-    async ({ params }) => taxonomyService.getChildren(params.id),
+    async ({ params, marketCode }) =>
+      (
+        await taxonomyService.publicProjection(
+          requireApiMarketContext(marketCode),
+        )
+      ).getChildren(params.id),
   );
   routes.addRoute(
     "GET",
     "/taxonomy/nodes/:id/attributes",
     PUBLIC,
-    async ({ params }) => taxonomyService.getAttributesForCategory(params.id),
+    async ({ params, marketCode }) =>
+      (
+        await taxonomyService.publicProjection(
+          requireApiMarketContext(marketCode),
+        )
+      ).publicAttributesForCategory(params.id),
   );
   routes.addRoute(
     "GET",
     "/taxonomy/search-filters",
     PUBLIC,
-    async ({ query }) =>
-      taxonomyService.resolveSearchFilters(query.get("nodeId") || undefined),
+    async ({ query, marketCode }) => {
+      const projection = await taxonomyService.publicProjection(
+        requireApiMarketContext(marketCode),
+      );
+      return projection
+        .publicAttributesForCategory(query.get("nodeId") || "root")
+        .filter((attribute) => attribute.filterable !== false)
+        .map((attribute) => ({
+          attribute,
+          facetType: ["select", "multi_select"].includes(attribute.dataType)
+            ? "multi_select"
+            : ["number", "year", "range"].includes(attribute.dataType)
+              ? "range"
+              : attribute.dataType === "boolean"
+                ? "boolean"
+                : "keyword",
+        }));
+    },
   );
   routes.addRoute(
     "GET",
@@ -96,12 +144,25 @@ export function registerTaxonomyRoutes(routes: RouteRegistrar): void {
           message: "Locale de taxonomie invalide.",
         });
       }
+      const taxonomy = await taxonomyV4Service.snapshot(
+        query.has("revision")
+          ? z.coerce.number().int().positive().parse(query.get("revision"))
+          : undefined,
+      );
+      const items = taxonomyV4Result(() => taxonomy.listTree(marketContext));
+      const visibleIds = new Set(items.map((node) => node.id));
       return taxonomyV4Result(() => ({
-        ...taxonomyV4Service.getMetadata(),
+        ...taxonomy.getMetadata(),
         marketCode: marketContext.countryCode!,
         locale,
-        items: taxonomyV4Service.listTree(marketContext),
-        listingTypes: taxonomyV4Service.listListingTypes(marketContext),
+        items,
+        listingTypes: taxonomy.listListingTypes(marketContext),
+        aliases: taxonomy
+          .getBundle()
+          .aliases.filter((alias) => visibleIds.has(alias.canonicalCategoryId)),
+        seo: taxonomy
+          .getBundle()
+          .projections.seo.filter((row) => visibleIds.has(row.categoryId)),
       }));
     },
   );
@@ -135,8 +196,13 @@ export function registerTaxonomyRoutes(routes: RouteRegistrar): void {
       const intent = intentValue
         ? taxonomyV4ListingIntentSchema.parse(intentValue)
         : undefined;
+      const taxonomy = await taxonomyV4Service.snapshot(
+        query.has("revision")
+          ? z.coerce.number().int().positive().parse(query.get("revision"))
+          : undefined,
+      );
       return taxonomyV4Result(() =>
-        taxonomyV4Service.resolve({
+        taxonomy.resolve({
           marketContext: requireApiMarketContext(marketCode),
           categoryIdentity,
           listingTypeId: query.get("listingTypeId") || undefined,
@@ -156,11 +222,17 @@ export function registerTaxonomyRoutes(routes: RouteRegistrar): void {
     async ({ marketCode, params, query }) => {
       requireTaxonomyV4Version(query.get("version"));
       const marketContext = requireApiMarketContext(marketCode);
+      const taxonomy = await taxonomyV4Service.snapshot(
+        query.has("revision")
+          ? z.coerce.number().int().positive().parse(query.get("revision"))
+          : undefined,
+      );
       return taxonomyV4Result(() => {
         // Option availability is taxonomy-version and market scoped even when
         // the current authored option set is shared by all active markets.
-        taxonomyV4Service.listTree(marketContext);
-        return taxonomyV4Service.lookupOptions({
+        taxonomy.listTree(marketContext);
+        return taxonomy.lookupOptions({
+          marketContext,
           optionSetId: params.optionSetId,
           parentOptionId: query.get("parentOptionId") || undefined,
           query: query.get("q") || undefined,

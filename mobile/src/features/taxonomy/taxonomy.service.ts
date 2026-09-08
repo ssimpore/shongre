@@ -20,6 +20,7 @@ export interface MobileTaxonomyService {
   lookupOptions(input: {
     marketContext: ResolveTaxonomyV4PublicInput["marketContext"];
     optionSetId: string;
+    taxonomyRevision?: number;
     parentOptionId?: string;
     query?: string;
     cursor?: string;
@@ -49,6 +50,7 @@ export class HttpMobileTaxonomyService implements MobileTaxonomyService {
         "resolveTaxonomyV4PublicationSchema",
         {
           query: {
+            revision: input.taxonomyRevision,
             category: input.categoryIdentity,
             sellerType: input.sellerType,
             locale: input.locale,
@@ -67,6 +69,7 @@ export class HttpMobileTaxonomyService implements MobileTaxonomyService {
   async lookupOptions(input: {
     marketContext: ResolveTaxonomyV4PublicInput["marketContext"];
     optionSetId: string;
+    taxonomyRevision?: number;
     parentOptionId?: string;
     query?: string;
     cursor?: string;
@@ -78,6 +81,7 @@ export class HttpMobileTaxonomyService implements MobileTaxonomyService {
         {
           path: { optionSetId: input.optionSetId },
           query: {
+            revision: input.taxonomyRevision,
             version: "4.0.0",
             ...(input.parentOptionId
               ? { parentOptionId: input.parentOptionId }

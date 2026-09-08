@@ -6,15 +6,11 @@ import {
   type ListingCardView,
 } from "@shongre/contracts";
 import {
-  DELIVERY_TAXONOMY_CATEGORY_ID,
   deliveryDiscoveryListingId,
   type DeliveryPublicRequest,
 } from "@shongre/contracts/delivery";
 import type { components } from "@shongre/contracts/openapi";
-import {
-  getTaxonomyV4CardBrandLabel,
-  getTaxonomyV4CardRootLabel,
-} from "@shongre/contracts/taxonomy-v4-card";
+import { localizeTaxonomyLabels } from "@shongre/contracts/taxonomy-labels";
 import { formatCompactMoney, majorToMinorAmount } from "@shongre/shared/money";
 import { messagesFr } from "@/i18n/messages.fr";
 
@@ -39,9 +35,7 @@ export function mapDeliveryRequestListing(
     priceKind: request.budget ? "amount" : "on_request",
     city: `${request.pickupLocality.city} → ${request.dropoffLocality.city}`,
     marketCode: request.marketCode,
-    categoryLabel:
-      getTaxonomyV4CardRootLabel(DELIVERY_TAXONOMY_CATEGORY_ID, locale) ||
-      DELIVERY_TAXONOMY_CATEGORY_ID,
+    categoryLabel: localizeTaxonomyLabels(request.taxonomy?.rootLabels, locale),
     conditionLabel: "Service",
     publishedAt: request.publishedAt,
     publisherType: "private",
@@ -117,12 +111,16 @@ export function mapBackendListing(item: BackendListing): ListingCardView {
     photoCount: item.images.length,
     city: item.city,
     marketCode: item.marketCode,
-    categoryLabel:
-      getTaxonomyV4CardRootLabel(item.categoryId, locale) || item.categoryId,
-    brandLabel: rawBrand
-      ? getTaxonomyV4CardBrandLabel(rawBrand, locale) || rawBrand
-      : undefined,
+    categoryLabel: localizeTaxonomyLabels(item.taxonomy?.rootLabels, locale),
+    brandLabel:
+      localizeTaxonomyLabels(item.taxonomy?.brandLabels, locale) || rawBrand,
     conditionLabel: item.condition,
+    characteristics: (item.taxonomy?.cardCharacteristics ?? [])
+      .map((row) => localizeTaxonomyLabels(row.values, locale))
+      .filter(
+        (value, index, values) => value && values.indexOf(value) === index,
+      )
+      .slice(0, 3),
     publisherType: item.publisherType,
     publishedAt: item.publishedAt,
     deliveryAvailable: item.allowedDelivery.length > 0,

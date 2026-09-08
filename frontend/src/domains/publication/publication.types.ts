@@ -131,6 +131,7 @@ export interface PublicationDraftState {
   taxonomyNodeId: string;
   taxonomyPath?: string[];
   listingTypeId?: string;
+  taxonomyRevision?: number;
   taxonomyVersion?: "4.0.0";
   taxonomySlug?: string;
   listingIntent: ListingIntent;

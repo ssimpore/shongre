@@ -240,6 +240,7 @@ export type PublicListing = Omit<
   | "marketPublications"
 > & {
   seller?: PublicSellerProfile;
+  taxonomy?: import("@shongre/contracts/openapi").components["schemas"]["ListingTaxonomyProjection"];
   /** Backend-resolved source kind plus a one-way public proof identifier. */
   promotionSource?: Listing["promotionSource"];
   promotionSourceId?: string;
@@ -298,6 +299,7 @@ export interface Transaction {
   buyer?: PublicSellerProfile;
   sellerId: string;
   seller?: PublicSellerProfile;
+  taxonomy?: import("@shongre/contracts/openapi").components["schemas"]["ListingTaxonomyProjection"];
   status:
     | "initiated"
     | "payment_pending"
@@ -418,6 +420,8 @@ export interface Category {
   id: string;
   slug: string;
   name: string;
+  labels?: Record<string, string>;
+  shortLabels?: Record<string, string>;
   shortLabel?: string;
   parentId?: string | null;
   iconName?: string;

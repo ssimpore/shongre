@@ -20027,31 +20027,62 @@
         "tags": ["education"],
         "summary": "Get the authenticated user's organization workspace",
         "parameters": [
-          { "$ref": "#/components/parameters/MarketContext" },
-          { "$ref": "#/components/parameters/RequestId" }
+          {
+            "$ref": "#/components/parameters/MarketContext"
+          },
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
         ],
         "responses": {
           "200": {
             "description": "Successful response.",
             "headers": {
-              "X-Request-Id": { "$ref": "#/components/headers/RequestId" }
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
             },
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/JsonValue" }
+                "schema": {
+                  "$ref": "#/components/schemas/JsonValue"
+                }
               }
             }
           },
-          "400": { "$ref": "#/components/responses/BadRequest" },
-          "401": { "$ref": "#/components/responses/Unauthorized" },
-          "403": { "$ref": "#/components/responses/Forbidden" },
-          "404": { "$ref": "#/components/responses/NotFound" },
-          "409": { "$ref": "#/components/responses/Conflict" },
-          "422": { "$ref": "#/components/responses/UnprocessableEntity" },
-          "429": { "$ref": "#/components/responses/TooManyRequests" },
-          "500": { "$ref": "#/components/responses/InternalError" }
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
         },
-        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
         "x-shongre-access": "permission",
         "x-shongre-source": "backend/src/modules/courses/api/courses.routes.ts",
         "x-shongre-permission": "course.organization.manage.own"
@@ -21018,31 +21049,62 @@
         "tags": ["education"],
         "summary": "Get the authenticated user's tutor workspace",
         "parameters": [
-          { "$ref": "#/components/parameters/MarketContext" },
-          { "$ref": "#/components/parameters/RequestId" }
+          {
+            "$ref": "#/components/parameters/MarketContext"
+          },
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
         ],
         "responses": {
           "200": {
             "description": "Successful response.",
             "headers": {
-              "X-Request-Id": { "$ref": "#/components/headers/RequestId" }
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
             },
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/JsonValue" }
+                "schema": {
+                  "$ref": "#/components/schemas/JsonValue"
+                }
               }
             }
           },
-          "400": { "$ref": "#/components/responses/BadRequest" },
-          "401": { "$ref": "#/components/responses/Unauthorized" },
-          "403": { "$ref": "#/components/responses/Forbidden" },
-          "404": { "$ref": "#/components/responses/NotFound" },
-          "409": { "$ref": "#/components/responses/Conflict" },
-          "422": { "$ref": "#/components/responses/UnprocessableEntity" },
-          "429": { "$ref": "#/components/responses/TooManyRequests" },
-          "500": { "$ref": "#/components/responses/InternalError" }
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
         },
-        "security": [{ "CookieAuth": [] }, { "BearerAuth": [] }],
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
         "x-shongre-access": "permission",
         "x-shongre-source": "backend/src/modules/courses/api/courses.routes.ts",
         "x-shongre-permission": "course.lead.read.own"
@@ -25254,18 +25316,29 @@
         "summary": "Read localized public characteristics of a visible listing",
         "description": "Projects saved, applicable public values using backend taxonomy metadata. This read does not validate publication eligibility or infer a new category. Empty groups and unknown or private attributes are omitted.",
         "parameters": [
-          { "$ref": "#/components/parameters/MarketContext" },
-          { "$ref": "#/components/parameters/RequestId" },
+          {
+            "$ref": "#/components/parameters/MarketContext"
+          },
+          {
+            "$ref": "#/components/parameters/RequestId"
+          },
           {
             "name": "id",
             "in": "path",
             "required": true,
-            "schema": { "type": "string", "minLength": 1 }
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
           },
           {
             "name": "locale",
             "in": "query",
-            "schema": { "type": "string", "minLength": 2, "maxLength": 35 },
+            "schema": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 35
+            },
             "description": "BCP 47 display locale; defaults to the requested market locale."
           }
         ],
@@ -25273,7 +25346,9 @@
           "200": {
             "description": "Public characteristics; groups is empty when no applicable values are recorded.",
             "headers": {
-              "X-Request-Id": { "$ref": "#/components/headers/RequestId" }
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
             },
             "content": {
               "application/json": {
@@ -25283,14 +25358,30 @@
               }
             }
           },
-          "400": { "$ref": "#/components/responses/BadRequest" },
-          "401": { "$ref": "#/components/responses/Unauthorized" },
-          "403": { "$ref": "#/components/responses/Forbidden" },
-          "404": { "$ref": "#/components/responses/NotFound" },
-          "409": { "$ref": "#/components/responses/Conflict" },
-          "422": { "$ref": "#/components/responses/UnprocessableEntity" },
-          "429": { "$ref": "#/components/responses/TooManyRequests" },
-          "500": { "$ref": "#/components/responses/InternalError" }
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
         },
         "security": [],
         "x-shongre-access": "public",
@@ -26061,6 +26152,10 @@
                       },
                       "digitalFulfillment": {
                         "$ref": "#/components/schemas/JsonValue"
+                      },
+                      "taxonomyRevision": {
+                        "type": "integer",
+                        "minimum": 1
                       }
                     }
                   }
@@ -35125,6 +35220,16 @@
           },
           {
             "$ref": "#/components/parameters/RequestId"
+          },
+          {
+            "name": "revision",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "description": "Expected published revision; a changed revision returns 409."
           }
         ],
         "responses": {
@@ -35248,6 +35353,16 @@
           },
           {
             "$ref": "#/components/parameters/RequestId"
+          },
+          {
+            "name": "revision",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "description": "Expected published revision; a changed revision returns 409."
           }
         ],
         "responses": {
@@ -35308,6 +35423,9 @@
           },
           {
             "$ref": "#/components/parameters/RequestId"
+          },
+          {
+            "$ref": "#/components/parameters/MarketContext"
           }
         ],
         "responses": {
@@ -35381,6 +35499,9 @@
           },
           {
             "$ref": "#/components/parameters/RequestId"
+          },
+          {
+            "$ref": "#/components/parameters/MarketContext"
           }
         ],
         "responses": {
@@ -35450,6 +35571,9 @@
           },
           {
             "$ref": "#/components/parameters/RequestId"
+          },
+          {
+            "$ref": "#/components/parameters/MarketContext"
           }
         ],
         "responses": {
@@ -35510,6 +35634,9 @@
         "parameters": [
           {
             "$ref": "#/components/parameters/RequestId"
+          },
+          {
+            "$ref": "#/components/parameters/MarketContext"
           }
         ],
         "responses": {
@@ -35578,6 +35705,9 @@
           },
           {
             "$ref": "#/components/parameters/RequestId"
+          },
+          {
+            "$ref": "#/components/parameters/MarketContext"
           }
         ],
         "responses": {
@@ -35647,6 +35777,9 @@
           },
           {
             "$ref": "#/components/parameters/RequestId"
+          },
+          {
+            "$ref": "#/components/parameters/MarketContext"
           }
         ],
         "responses": {
@@ -35735,10 +35868,18 @@
               }
             }
           },
-          "400": { "$ref": "#/components/responses/BadRequest" },
-          "404": { "$ref": "#/components/responses/NotFound" },
-          "429": { "$ref": "#/components/responses/TooManyRequests" },
-          "500": { "$ref": "#/components/responses/InternalError" }
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
         },
         "security": [],
         "x-shongre-access": "public",
@@ -35777,8 +35918,12 @@
               "application/json": {
                 "schema": {
                   "oneOf": [
-                    { "$ref": "#/components/schemas/PublicSellerProfile" },
-                    { "type": "null" }
+                    {
+                      "$ref": "#/components/schemas/PublicSellerProfile"
+                    },
+                    {
+                      "type": "null"
+                    }
                   ]
                 }
               }
@@ -39245,6 +39390,450 @@
         "x-shongre-runtime": "server",
         "x-shongre-source": "backend/src/app/server/index.ts"
       }
+    },
+    "/admin/taxonomy/draft": {
+      "get": {
+        "operationId": "getAdminTaxonomyDraft",
+        "tags": ["admin-taxonomy"],
+        "summary": "getAdminTaxonomyDraft",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/MarketContext"
+          },
+          {
+            "$ref": "#/components/parameters/RequestId"
+          },
+          {
+            "name": "resource",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/TaxonomyAdminResource"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "maxLength": 200
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Selected categories including inactive entries and their display order.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaxonomyDraftPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "taxonomy.manage",
+        "x-shongre-source": "backend/src/modules/taxonomy/api/taxonomy-admin.routes.ts"
+      },
+      "put": {
+        "operationId": "updateAdminTaxonomyDraft",
+        "tags": ["admin-taxonomy"],
+        "summary": "updateAdminTaxonomyDraft",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/MarketContext"
+          },
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Saved configuration with its new revision.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaxonomyRevisionReview"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "taxonomy.manage",
+        "x-shongre-source": "backend/src/modules/taxonomy/api/taxonomy-admin.routes.ts",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaxonomyDraftUpdate"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/taxonomy/preview": {
+      "get": {
+        "operationId": "getAdminTaxonomyPreview",
+        "tags": ["admin-taxonomy"],
+        "summary": "getAdminTaxonomyPreview",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/MarketContext"
+          },
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Selected categories including inactive entries and their display order.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaxonomyRevisionReview"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "taxonomy.manage",
+        "x-shongre-source": "backend/src/modules/taxonomy/api/taxonomy-admin.routes.ts"
+      }
+    },
+    "/admin/taxonomy/publish": {
+      "post": {
+        "operationId": "publishAdminTaxonomyRevision",
+        "tags": ["admin-taxonomy"],
+        "summary": "publishAdminTaxonomyRevision",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/MarketContext"
+          },
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Saved configuration with its new revision.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaxonomyRevisionReview"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "taxonomy.manage",
+        "x-shongre-source": "backend/src/modules/taxonomy/api/taxonomy-admin.routes.ts",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaxonomyRevisionAction"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/taxonomy/rollback": {
+      "post": {
+        "operationId": "rollbackAdminTaxonomyRevision",
+        "tags": ["admin-taxonomy"],
+        "summary": "rollbackAdminTaxonomyRevision",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/MarketContext"
+          },
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Saved configuration with its new revision.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaxonomyRevisionReview"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "taxonomy.manage",
+        "x-shongre-source": "backend/src/modules/taxonomy/api/taxonomy-admin.routes.ts",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaxonomyRevisionAction"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/taxonomy/history": {
+      "get": {
+        "operationId": "getAdminTaxonomyHistory",
+        "tags": ["admin-taxonomy"],
+        "summary": "getAdminTaxonomyHistory",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/MarketContext"
+          },
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Selected categories including inactive entries and their display order.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaxonomyRevisionHistory"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "taxonomy.manage",
+        "x-shongre-source": "backend/src/modules/taxonomy/api/taxonomy-admin.routes.ts"
+      }
     }
   },
   "components": {
@@ -39363,11 +39952,15 @@
           },
           "topListings": {
             "type": "array",
-            "items": { "$ref": "#/components/schemas/PublicListing" }
+            "items": {
+              "$ref": "#/components/schemas/PublicListing"
+            }
           },
           "revenueByCurrency": {
             "type": "array",
-            "items": { "$ref": "#/components/schemas/MonetizationMoney" }
+            "items": {
+              "$ref": "#/components/schemas/MonetizationMoney"
+            }
           }
         }
       },
@@ -44110,6 +44703,9 @@
           },
           "updatedAt": {
             "type": "string"
+          },
+          "taxonomy": {
+            "$ref": "#/components/schemas/ListingTaxonomyProjection"
           }
         }
       },
@@ -44632,6 +45228,9 @@
           },
           "recentlyViewedAt": {
             "type": "string"
+          },
+          "taxonomy": {
+            "$ref": "#/components/schemas/ListingTaxonomyProjection"
           }
         }
       },
@@ -44976,6 +45575,9 @@
           },
           "saved": {
             "type": "boolean"
+          },
+          "taxonomy": {
+            "$ref": "#/components/schemas/ListingTaxonomyProjection"
           }
         }
       },
@@ -45277,6 +45879,9 @@
           "candidateFeeRequired": {
             "type": "boolean",
             "const": false
+          },
+          "taxonomy": {
+            "$ref": "#/components/schemas/ListingTaxonomyProjection"
           }
         }
       },
@@ -45644,8 +46249,14 @@
               "additionalProperties": false,
               "required": ["id", "label", "items"],
               "properties": {
-                "id": { "type": "string", "minLength": 1 },
-                "label": { "type": "string", "minLength": 1 },
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "label": {
+                  "type": "string",
+                  "minLength": 1
+                },
                 "items": {
                   "type": "array",
                   "minItems": 1,
@@ -45654,9 +46265,18 @@
                     "additionalProperties": false,
                     "required": ["code", "label", "value"],
                     "properties": {
-                      "code": { "type": "string", "minLength": 1 },
-                      "label": { "type": "string", "minLength": 1 },
-                      "value": { "type": "string", "minLength": 1 }
+                      "code": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "label": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "value": {
+                        "type": "string",
+                        "minLength": 1
+                      }
                     }
                   }
                 }
@@ -45964,6 +46584,9 @@
           },
           "requiresPhysicalDelivery": {
             "type": "boolean"
+          },
+          "taxonomy": {
+            "$ref": "#/components/schemas/ListingTaxonomyProjection"
           }
         }
       },
@@ -47174,6 +47797,10 @@
                 ]
               }
             }
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1
           }
         }
       },
@@ -47220,6 +47847,35 @@
             "items": {
               "$ref": "#/components/schemas/TaxonomyV4ListingType"
             }
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "aliases": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["alias", "canonicalCategoryId", "kind"],
+              "properties": {
+                "alias": {
+                  "type": "string"
+                },
+                "canonicalCategoryId": {
+                  "type": "string"
+                },
+                "kind": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "seo": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TaxonomyV4SeoProjection"
+            }
           }
         }
       },
@@ -47246,6 +47902,10 @@
           "taxonomyVersion": {
             "type": "string",
             "enum": ["4.0.0"]
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 1
           }
         }
       },
@@ -47313,8 +47973,13 @@
           "shortLabels": {
             "$ref": "#/components/schemas/TaxonomyV4LocalizedShortLabels"
           },
-          "isActive": { "type": "boolean" },
-          "displayOrder": { "type": "integer", "minimum": 0 }
+          "isActive": {
+            "type": "boolean"
+          },
+          "displayOrder": {
+            "type": "integer",
+            "minimum": 0
+          }
         }
       },
       "TaxonomyHeaderNavigationConfiguration": {
@@ -47451,6 +48116,12 @@
             "items": {
               "$ref": "#/components/schemas/TaxonomyLegacyCategory"
             }
+          },
+          "labels": {
+            "$ref": "#/components/schemas/TaxonomyV4LocalizedLabels"
+          },
+          "shortLabels": {
+            "$ref": "#/components/schemas/TaxonomyV4LocalizedLabels"
           }
         },
         "additionalProperties": true
@@ -56117,6 +56788,9 @@
           "version": {
             "type": "integer",
             "minimum": 1
+          },
+          "taxonomy": {
+            "$ref": "#/components/schemas/ListingTaxonomyProjection"
           }
         }
       },
@@ -56350,6 +57024,444 @@
             "properties": {
               "database": {
                 "enum": ["up", "down"]
+              }
+            }
+          }
+        }
+      },
+      "TaxonomyAdminResource": {
+        "type": "string",
+        "enum": [
+          "categories",
+          "listingTypes",
+          "attributes",
+          "attributeGroups",
+          "optionSets",
+          "options",
+          "optionParentLinks",
+          "bindings",
+          "dependencies",
+          "validationRules",
+          "aliases",
+          "referenceData",
+          "presentations",
+          "discovery"
+        ]
+      },
+      "TaxonomyDraftPage": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "revision",
+          "publishedRevision",
+          "checksum",
+          "resource",
+          "total",
+          "offset",
+          "records",
+          "resources"
+        ],
+        "properties": {
+          "revision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "publishedRevision": {
+            "type": ["integer", "null"]
+          },
+          "checksum": {
+            "type": "string"
+          },
+          "resource": {
+            "$ref": "#/components/schemas/TaxonomyAdminResource"
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "offset": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "records": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "resources": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["resource", "count"],
+              "properties": {
+                "resource": {
+                  "$ref": "#/components/schemas/TaxonomyAdminResource"
+                },
+                "count": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          }
+        }
+      },
+      "TaxonomyDraftUpdate": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["expectedRevision", "resource", "records", "changeReason"],
+        "properties": {
+          "expectedRevision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "resource": {
+            "$ref": "#/components/schemas/TaxonomyAdminResource"
+          },
+          "records": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 200,
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "changeReason": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 1000
+          }
+        }
+      },
+      "TaxonomyRevisionAction": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["expectedRevision", "changeReason"],
+        "properties": {
+          "expectedRevision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "changeReason": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 1000
+          },
+          "targetRevision": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      },
+      "TaxonomyReviewIssue": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["code", "resource", "id", "message"],
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "resource": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "TaxonomyRevisionReview": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "revision",
+          "publishedRevision",
+          "checksum",
+          "valid",
+          "issues",
+          "warnings",
+          "counts"
+        ],
+        "properties": {
+          "revision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "publishedRevision": {
+            "type": ["integer", "null"]
+          },
+          "checksum": {
+            "type": "string"
+          },
+          "valid": {
+            "type": "boolean"
+          },
+          "issues": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TaxonomyReviewIssue"
+            }
+          },
+          "warnings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TaxonomyReviewIssue"
+            }
+          },
+          "counts": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "impact": {
+            "type": "object",
+            "required": [
+              "categoryIds",
+              "listingTypeIds",
+              "attributeIds",
+              "optionIds"
+            ],
+            "properties": {
+              "categoryIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "listingTypeIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "attributeIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "optionIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "TaxonomyRevisionHistory": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["records"],
+        "properties": {
+          "records": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "revision",
+                "draftRevision",
+                "checksum",
+                "publishedAt",
+                "changeReason"
+              ],
+              "properties": {
+                "revision": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "draftRevision": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "checksum": {
+                  "type": "string"
+                },
+                "publishedAt": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "changeReason": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["action", "createdAt", "reason"],
+              "properties": {
+                "action": {
+                  "type": "string"
+                },
+                "createdAt": {
+                  "type": "string"
+                },
+                "reason": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "TaxonomyV4SeoProjection": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "categoryId",
+          "urlPattern",
+          "h1",
+          "titleTemplate",
+          "descriptionTemplate",
+          "indexable",
+          "canonicalStrategy",
+          "indexableFacets",
+          "structuredData",
+          "sitemap"
+        ],
+        "properties": {
+          "categoryId": {
+            "type": "string"
+          },
+          "urlPattern": {
+            "type": "string"
+          },
+          "locationUrlPattern": {
+            "type": "string"
+          },
+          "facetUrlPattern": {
+            "type": "string"
+          },
+          "h1": {
+            "$ref": "#/components/schemas/TaxonomyV4LocalizedLabels"
+          },
+          "titleTemplate": {
+            "$ref": "#/components/schemas/TaxonomyV4LocalizedLabels"
+          },
+          "descriptionTemplate": {
+            "$ref": "#/components/schemas/TaxonomyV4LocalizedLabels"
+          },
+          "indexable": {
+            "type": "boolean"
+          },
+          "canonicalStrategy": {
+            "type": "string"
+          },
+          "indexableFacets": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "structuredData": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "sitemap": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["eligible", "policy"],
+            "properties": {
+              "eligible": {
+                "type": "boolean"
+              },
+              "policy": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "ListingTaxonomyProjection": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "revision",
+          "categoryId",
+          "categorySlug",
+          "categoryLabels",
+          "rootId",
+          "rootSlug",
+          "rootLabels",
+          "path"
+        ],
+        "properties": {
+          "revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "categoryId": {
+            "type": "string"
+          },
+          "categorySlug": {
+            "type": "string"
+          },
+          "categoryLabels": {
+            "$ref": "#/components/schemas/TaxonomyV4LocalizedLabels"
+          },
+          "rootId": {
+            "type": "string"
+          },
+          "rootSlug": {
+            "type": "string"
+          },
+          "rootLabels": {
+            "$ref": "#/components/schemas/TaxonomyV4LocalizedLabels"
+          },
+          "brandLabels": {
+            "$ref": "#/components/schemas/TaxonomyV4LocalizedLabels"
+          },
+          "path": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["id", "slug", "labels"],
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "slug": {
+                  "type": "string"
+                },
+                "labels": {
+                  "$ref": "#/components/schemas/TaxonomyV4LocalizedLabels"
+                }
+              }
+            }
+          },
+          "cardCharacteristics": {
+            "type": "array",
+            "description": "Public stored values selected and ordered by the published card presentation for this listing and market. Labels and formatted values are localized by the backend.",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["code", "labels", "values"],
+              "properties": {
+                "code": {
+                  "type": "string"
+                },
+                "labels": {
+                  "$ref": "#/components/schemas/TaxonomyV4LocalizedLabels"
+                },
+                "values": {
+                  "$ref": "#/components/schemas/TaxonomyV4LocalizedLabels"
+                }
               }
             }
           }

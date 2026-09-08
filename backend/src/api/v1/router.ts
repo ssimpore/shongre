@@ -1,3 +1,4 @@
+import { registerTaxonomyAdminRoutes } from "../../modules/taxonomy/api/taxonomy-admin.routes.js";
 import { enrichRequestContext } from "../../infrastructure/observability/request-context.js";
 import {
   type RouteAccess,
@@ -103,6 +104,7 @@ export class ApiV1Router implements RouteRegistrar {
     registerListingsRoutes(this);
     registerHomepageRoutes(this);
     registerTaxonomyRoutes(this);
+    registerTaxonomyAdminRoutes(this);
     registerCoursesRoutes(this);
     registerRealEstateRoutes(this);
     registerAutoRoutes(this);

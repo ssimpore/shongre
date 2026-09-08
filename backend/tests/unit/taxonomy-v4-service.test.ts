@@ -1,3 +1,4 @@
+import { TAXONOMY_V4_PRIVATE_BUNDLE } from "../../src/modules/taxonomy/generated/taxonomy-v4.private.js";
 import { resolveMarketContext } from "@shongre/contracts";
 import { describe, expect, it } from "vitest";
 import {
@@ -16,7 +17,7 @@ function market(hostname: string, pathname = "/") {
 }
 
 describe("TaxonomyV4Service", () => {
-  const service = new TaxonomyV4Service();
+  const service = new TaxonomyV4Service(TAXONOMY_V4_PRIVATE_BUNDLE);
 
   it.each([
     ["shongre.fr", "/", "FR"],
@@ -143,7 +144,7 @@ describe("TaxonomyV4Service", () => {
       professional.attributes.some(
         ({ definition }) => definition.id === "siret",
       ),
-    ).toBe(true);
+    ).toBe(false);
     expect(
       individual.attributes.every(
         ({ definition }) => definition.privacy !== "G_INTERNAL",

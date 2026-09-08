@@ -12,8 +12,8 @@ describe("generated taxonomy v4 public projection", () => {
     expect(bundle.metadata.sourceCounts).toEqual({
       categories: 302,
       listingTypes: 213,
-      attributes: 343,
-      bindings: 10_853,
+      attributes: 349,
+      bindings: 10_859,
     });
     expect(bundle.categories).toHaveLength(302);
     expect(
@@ -23,21 +23,21 @@ describe("generated taxonomy v4 public projection", () => {
       bundle.categories.filter((category) => category.publishable),
     ).toHaveLength(213);
     expect(bundle.listingTypes).toHaveLength(213);
-    expect(bundle.attributes).toHaveLength(335);
+    expect(bundle.attributes).toHaveLength(340);
     expect(bundle.attributeGroups).toHaveLength(56);
     expect(
       bundle.attributeGroups.some((group) => group.id === "G_INTERNAL"),
     ).toBe(false);
-    expect(bundle.optionSets).toHaveLength(104);
-    expect(bundle.options).toHaveLength(725);
-    expect(bundle.optionParentLinks).toHaveLength(75);
-    expect(bundle.bindings).toHaveLength(10_851);
-    expect(bundle.dependencyRules).toHaveLength(203);
-    expect(bundle.validationRules).toHaveLength(499);
-    expect(bundle.projections.filters).toHaveLength(2_725);
-    expect(bundle.projections.cardFields).toHaveLength(1_410);
-    expect(bundle.projections.detailFields).toHaveLength(10_159);
-    expect(bundle.projections.publicationFlow).toHaveLength(1_636);
+    expect(bundle.optionSets).toHaveLength(109);
+    expect(bundle.options).toHaveLength(746);
+    expect(bundle.optionParentLinks).toHaveLength(92);
+    expect(bundle.bindings).toHaveLength(10742);
+    expect(bundle.dependencyRules).toHaveLength(199);
+    expect(bundle.validationRules).toHaveLength(498);
+    expect(bundle.projections.filters).toHaveLength(2730);
+    expect(bundle.projections.cardFields).toHaveLength(1410);
+    expect(bundle.projections.detailFields).toHaveLength(10050);
+    expect(bundle.projections.publicationFlow).toHaveLength(1636);
     expect(bundle.projections.search).toHaveLength(213);
     expect(bundle.projections.seo).toHaveLength(302);
     expect(

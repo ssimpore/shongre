@@ -1,5 +1,12 @@
+import { TAXONOMY_V4_PRIVATE_BUNDLE } from "../../src/modules/taxonomy/generated/taxonomy-v4.private.js";
 import { describe, expect, it } from "vitest";
-import { projectListingCharacteristics } from "../../src/modules/taxonomy/taxonomy.characteristics.js";
+import {
+  projectListingCardCharacteristics,
+  projectListingCharacteristics as project,
+} from "../../src/modules/taxonomy/taxonomy.characteristics.js";
+
+const projectListingCharacteristics = (input: Parameters<typeof project>[0]) =>
+  project(input, TAXONOMY_V4_PRIVATE_BUNDLE);
 
 const vehicle = {
   categoryId: "vehicles.cars",
@@ -140,9 +147,15 @@ describe("backend listing characteristics", () => {
     expect(result.map((item) => item.code)).not.toContain("fuel_type");
   });
 
-  it("restricts professional attributes to the server-resolved seller type", () => {
+  it("preserves public historical facts independently of new seller eligibility", () => {
     const input = { ...vehicle, attributes: { vat_deductible: false } };
-    expect(projectListingCharacteristics(input)).toEqual({ groups: [] });
+    expect(
+      projectListingCharacteristics(input).groups.flatMap(
+        (group) => group.items,
+      ),
+    ).toEqual([
+      expect.objectContaining({ code: "vat_deductible", value: "Non" }),
+    ]);
     expect(
       projectListingCharacteristics({
         ...input,
@@ -151,5 +164,47 @@ describe("backend listing characteristics", () => {
     ).toEqual([
       expect.objectContaining({ code: "vat_deductible", value: "Non" }),
     ]);
+  });
+});
+
+describe("published card characteristics", () => {
+  it("uses published labels, ordering and visibility while preserving market and privacy boundaries", () => {
+    const bundle = structuredClone(TAXONOMY_V4_PRIVATE_BUNDLE);
+    const input = {
+      ...vehicle,
+      categoryId: "vehicles.cars.city_cars",
+      listingTypeId: "vehicles.cars.city_cars.listing",
+    };
+    const mileage = bundle.projections.cardFields.find(
+      (row) =>
+        row.listingTypeId === input.listingTypeId &&
+        row.field.key === "mileage",
+    )!;
+    mileage.sortOrder = -1;
+    mileage.labels["en-US"] = "Recorded distance";
+    const rows = projectListingCardCharacteristics(input, bundle);
+    expect(rows[0]).toMatchObject({
+      code: "mileage",
+      labels: { "en-US": "Recorded distance" },
+      values: { "en-US": "28,500 km" },
+    });
+    expect(rows.find((row) => row.code === "fuel_type")?.values["en-US"]).toBe(
+      "Petrol",
+    );
+    expect(rows.some((row) => row.code === "vin_private")).toBe(false);
+    expect(
+      projectListingCardCharacteristics({ ...input, marketCode: "SN" }, bundle),
+    ).toEqual([]);
+    const next = structuredClone(bundle);
+    next.bindings.find(
+      (row) =>
+        row.listingTypeId === input.listingTypeId &&
+        row.attributeId === "mileage",
+    )!.cardVisible = false;
+    expect(
+      projectListingCardCharacteristics(input, next).some(
+        (row) => row.code === "mileage",
+      ),
+    ).toBe(false);
   });
 });

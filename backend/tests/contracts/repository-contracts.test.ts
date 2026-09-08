@@ -6,7 +6,7 @@ import {
   PostgresListingRepository,
   DemoMarketRepository,
   PostgresMarketRepository,
-  DemoTaxonomyRepository,
+  TestTaxonomyRepository,
   PostgresTaxonomyRepository,
   DemoOrderRepository,
   PostgresOrderRepository,
@@ -306,7 +306,7 @@ describe("Repository Contract & Dual-Mode Compatibility Tests", () => {
   });
 
   describe("Taxonomy Repository Contract", () => {
-    const demoRepo = new DemoTaxonomyRepository();
+    const demoRepo = new TestTaxonomyRepository();
     const postgresRepo = new PostgresTaxonomyRepository();
 
     it("resolves root categories and hierarchical children in Demo mode", async () => {
@@ -418,7 +418,7 @@ describe("Repository Contract & Dual-Mode Compatibility Tests", () => {
       expect(container.users instanceof DemoUserRepository).toBe(true);
       expect(container.listings instanceof DemoListingRepository).toBe(true);
       expect(container.markets instanceof DemoMarketRepository).toBe(true);
-      expect(container.taxonomy instanceof DemoTaxonomyRepository).toBe(true);
+      expect(container.taxonomy instanceof TestTaxonomyRepository).toBe(true);
       expect(container.orders instanceof DemoOrderRepository).toBe(true);
       expect(container.verification instanceof DemoVerificationRepository).toBe(
         true,

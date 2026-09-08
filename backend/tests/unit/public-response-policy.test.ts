@@ -14,7 +14,7 @@ describe("public response policy", () => {
         accessKind: "public",
         hasCredentials: false,
       }),
-    ).toBe("discovery");
+    ).toBeNull();
     expect(
       resolvePublicResponseProfile({
         method: "GET",

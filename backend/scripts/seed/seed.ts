@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { runPsqlFile } from "../database/psql.js";
+import { runPsql, runPsqlFile } from "../database/psql.js";
 import { seedLocalDevelopmentData } from "./local-development-data.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -51,10 +51,19 @@ async function runSeed() {
     );
   }
 
-  runPsqlFile(databaseUrl, taxonomySeedSqlPath, {
-    singleTransaction: false,
-  });
-  console.log("Canonical taxonomy v4 applied to local Supabase.");
+  const hasPublication =
+    runPsql(
+      databaseUrl,
+      "SELECT EXISTS(SELECT 1 FROM public.taxonomy_configuration WHERE published_revision IS NOT NULL)",
+    ) === "t";
+  if (!hasPublication) {
+    runPsqlFile(databaseUrl, taxonomySeedSqlPath, { singleTransaction: false });
+    console.log("Bootstrapped the local database taxonomy.");
+  } else {
+    console.log(
+      "Preserved the database-owned taxonomy and editorial revisions.",
+    );
+  }
   runPsqlFile(databaseUrl, seedSqlPath);
   console.log("Canonical reference data applied in one transaction.");
   const summary = await seedLocalDevelopmentData();

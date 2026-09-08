@@ -1,3 +1,5 @@
+import { taxonomyV4Service } from "./taxonomy.runtime.js";
+import { createTaxonomyProjection } from "../../infrastructure/database/repositories/taxonomy.projection.js";
 import { Category } from "../../shared/types/index.js";
 import {
   taxonomyHeaderNavigationUpdateSchema,
@@ -10,17 +12,39 @@ import {
   repositories,
   TaxonomyAttribute,
   TaxonomyNode,
-  CANONICAL_DEMO_CATEGORIES,
 } from "../../infrastructure/database/repositories/index.js";
 import { AppError } from "../../shared/errors/app-error.js";
 
 export type { TaxonomyAttribute, TaxonomyNode };
-export const CANONICAL_CATEGORIES: Category[] = CANONICAL_DEMO_CATEGORIES;
 
 export class TaxonomyService {
   constructor(
     private taxonomyRepo: ITaxonomyRepository = repositories.taxonomy,
   ) {}
+
+  async publicProjection(context: MarketContext) {
+    if (context.kind !== "market")
+      throw new AppError({
+        code: "CONFLICT",
+        statusCode: 409,
+        message: "Ce marché n’est pas encore ouvert.",
+      });
+    const snapshot = await taxonomyV4Service.snapshot();
+    const bundle = snapshot.getBundle();
+    return createTaxonomyProjection({
+      ...bundle,
+      categories: snapshot.listTree(context),
+      listingTypes: snapshot.listListingTypes(context),
+      attributes: bundle.attributes.filter((field) =>
+        field.marketAvailability.some(
+          (market) =>
+            market.marketCode === context.countryCode &&
+            market.status === "active" &&
+            market.marketplaceEnabled,
+        ),
+      ),
+    });
+  }
 
   async getRootCategories(): Promise<Category[]> {
     return this.taxonomyRepo.getRootCategories();

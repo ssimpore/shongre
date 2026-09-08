@@ -2,7 +2,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 import { tmpdir } from "node:os";
-import { runPsqlFile } from "../database/psql.js";
+import { runPsql, runPsqlFile } from "../database/psql.js";
 
 const directory = dirname(fileURLToPath(import.meta.url));
 const seedPath = resolve(
@@ -26,7 +26,20 @@ if (process.env.TAXONOMY_IMPORT_APPROVAL !== "local") {
   throw new Error("TAXONOMY_IMPORT_APPROVAL=local is required.");
 }
 
+if (
+  runPsql(
+    databaseUrl,
+    "SELECT COALESCE((SELECT draft_revision FROM public.taxonomy_configuration WHERE singleton), 0)",
+  ) !== "0"
+) {
+  throw new Error(
+    "The database has editorial revisions. Use the revision-checked admin import; bootstrap import cannot overwrite authored taxonomy.",
+  );
+}
+
 const tables = [
+  "taxonomy_configuration",
+  "taxonomy_publications",
   "categories",
   "taxonomy_attributes",
   "taxonomy_attribute_groups",

@@ -393,7 +393,7 @@ async function resolveUncached(
       page: 1,
       sortBy: "date_desc",
     };
-    const [result, marketInventory] = await Promise.all([
+    const [result, marketInventory, taxonomy] = await Promise.all([
       getServerListings(filters),
       Promise.all(
         COUNTRY_REGISTRY.filter(
@@ -411,11 +411,18 @@ async function resolveUncached(
           }),
         })),
       ),
+      serverServices.taxonomy.getV4Tree({
+        marketContext: { countryCode },
+        locale: COUNTRY_REGISTRY.find(
+          (country) => country.code === countryCode,
+        )!.defaultLocale,
+      }),
     ]);
     return {
       status: "found",
       data: {
         kind: "listing_search",
+        taxonomy,
         pathname,
         items: result.listings,
         total: result.total,

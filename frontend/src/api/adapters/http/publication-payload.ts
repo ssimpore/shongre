@@ -17,6 +17,7 @@ export function publicationPayload(draft: PublicationDraftState) {
     listingTypeId: draft.listingTypeId,
     intent: draft.listingIntent,
     taxonomyVersion: draft.taxonomyVersion,
+    taxonomyRevision: draft.taxonomyRevision,
     attributes: {
       ...draft.attributes,
       title: draft.title,

@@ -5793,6 +5793,62 @@ export const messagesFr = {
     "Profil de prévisualisation",
   "admin.taxonomyNodeEditor.estPermanentTouteModificationDeNomOuDePositionPreserve":
     "est permanent. Toute modification de nom ou de position préserve la validité des annonces sans risque de rupture.",
+  "admin.taxonomyEditor.title": "Révisions du référentiel",
+  "admin.taxonomyEditor.description":
+    "Modifiez le brouillon partagé, examinez les contrôles puis publiez une révision commune aux parcours.",
+  "admin.taxonomyEditor.failed": "Impossible de charger la taxonomie.",
+  "admin.taxonomyEditor.invalidRecords":
+    "Le fichier doit contenir des objets de taxonomie.",
+  "admin.taxonomyEditor.saved":
+    "Brouillon enregistré. La révision publique reste disponible jusqu’à publication.",
+  "admin.taxonomyEditor.published": "Révision publiée.",
+  "admin.taxonomyEditor.restored": "Révision publique restaurée.",
+  "admin.taxonomyEditor.conflict":
+    "La révision a changé pendant l’export. Rechargez puis recommencez.",
+  "admin.taxonomyEditor.reload": "Recharger",
+  "admin.taxonomyEditor.loading": "Chargement…",
+  "admin.taxonomyEditor.draftRevision": "Brouillon",
+  "admin.taxonomyEditor.publishedRevision": "Publication",
+  "admin.taxonomyEditor.resource": "Ressource",
+  "admin.taxonomyEditor.record": "Enregistrement",
+  "admin.taxonomyEditor.empty": "Aucun enregistrement.",
+  "admin.taxonomyEditor.previous": "Précédent",
+  "admin.taxonomyEditor.next": "Suivant",
+  "admin.taxonomyEditor.add": "Ajouter",
+  "admin.taxonomyEditor.export": "Exporter la ressource",
+  "admin.taxonomyEditor.import": "Importer un fichier",
+  "admin.taxonomyEditor.importReady":
+    "Import chargé dans l’éditeur. Vérifiez les définitions avant l’enregistrement.",
+  "admin.taxonomyEditor.definition": "Définition structurée (JSON)",
+  "admin.taxonomyEditor.importLimit":
+    "Les imports sont enregistrés dans le brouillon par lots de 200. En cas d’erreur, rechargez pour voir les lots enregistrés. Vérifiez l’ensemble avant publication.",
+  "admin.taxonomyEditor.reason": "Motif de la modification",
+  "admin.taxonomyEditor.save": "Enregistrer le brouillon",
+  "admin.taxonomyEditor.preview": "Contrôler le brouillon",
+  "admin.taxonomyEditor.publish": "Publier la révision",
+  "admin.taxonomyEditor.valid": "Structure valide",
+  "admin.taxonomyEditor.invalid": "Erreurs de structure à corriger",
+  "admin.taxonomyEditor.impact":
+    "Impact — catégories / types d’annonce / champs / options :",
+  "admin.taxonomyEditor.contentReview":
+    "Les contrôles de structure ne certifient pas l’exhaustivité métier ni les règles juridiques. Examinez les avertissements.",
+  "admin.taxonomyEditor.history": "Historique des publications",
+  "admin.taxonomyEditor.restore": "Restaurer",
+  "admin.taxonomyEditor.resource.categories": "Hiérarchie",
+  "admin.taxonomyEditor.resource.listingTypes": "Types d’annonce",
+  "admin.taxonomyEditor.resource.attributes": "Champs réutilisables",
+  "admin.taxonomyEditor.resource.attributeGroups": "Groupes de champs",
+  "admin.taxonomyEditor.resource.optionSets": "Jeux d’options",
+  "admin.taxonomyEditor.resource.options": "Options et références",
+  "admin.taxonomyEditor.resource.optionParentLinks":
+    "Dépendances entre options",
+  "admin.taxonomyEditor.resource.bindings": "Règles des champs par catégorie",
+  "admin.taxonomyEditor.resource.dependencies": "Conditions de formulaire",
+  "admin.taxonomyEditor.resource.validationRules": "Règles de validation",
+  "admin.taxonomyEditor.resource.aliases": "Identités historiques",
+  "admin.taxonomyEditor.resource.referenceData": "Sources et statut de revue",
+  "admin.taxonomyEditor.resource.presentations": "Présentation et parcours",
+  "admin.taxonomyEditor.resource.discovery": "Recherche et référencement",
   "admin.taxonomyV4GovernanceTab.gouvernanceDuSchemaV4Genere":
     "Gouvernance du schéma v4 généré",
   "admin.taxonomyV4GovernanceTab.projectionPubliqueEnLectureSeuleLesReglesPriveesJuridiquesEt":

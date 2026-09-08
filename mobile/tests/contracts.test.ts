@@ -19,6 +19,24 @@ const backendListing: BackendListing = {
   marketCode: "FR",
   condition: "good",
   categoryId: "electronics.telephony.smartphones",
+  taxonomy: {
+    revision: 1,
+    categoryId: "electronics.smartphones.phones",
+    categorySlug: "telephones",
+    categoryLabels: { "fr-FR": "Téléphones" },
+    rootId: "electronics",
+    rootSlug: "electronique",
+    rootLabels: { "fr-FR": "Électronique" },
+    path: [],
+    brandLabels: { "fr-FR": "Citroën" },
+    cardCharacteristics: [
+      {
+        code: "storage",
+        labels: { "fr-FR": "Stockage" },
+        values: { "fr-FR": "128 Go" },
+      },
+    ],
+  },
   publisherType: "private",
   attributes: {},
   images: [],
@@ -33,6 +51,12 @@ const backendListing: BackendListing = {
 };
 
 describe("mobile public contracts", () => {
+  it("keeps an unmapped historical listing without inventing a category label", () => {
+    expect(
+      mapBackendListing({ ...backendListing, taxonomy: undefined })
+        .categoryLabel,
+    ).toBe("");
+  });
   it("maps backend major-unit prices into integer minor units", () => {
     const listing = mapBackendListing({
       ...backendListing,
@@ -53,6 +77,7 @@ describe("mobile public contracts", () => {
     });
     expect(listing.price).toEqual({ amountMinor: 299, currency: "EUR" });
     expect(listing.categoryLabel).toBe("Électronique");
+    expect(listing.characteristics).toEqual(["128 Go"]);
     expect(listing.brandLabel).toBe("Citroën");
     expect(listing.imageUrl).toBeUndefined();
     expect(listing.publishedAt).toBeUndefined();

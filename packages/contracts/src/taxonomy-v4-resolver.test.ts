@@ -78,7 +78,7 @@ describe("TaxonomyV4PublicResolver", () => {
       professional.attributes.some(
         ({ definition }) => definition.id === "siret",
       ),
-    ).toBe(true);
+    ).toBe(false);
     expect(() =>
       resolver.resolve({
         marketContext: market("shongre.fr"),

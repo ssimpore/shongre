@@ -1,3 +1,5 @@
+import { CANONICAL_TAXONOMY_IDS } from "@shongre/contracts/taxonomy-domain-ids";
+import { taxonomyV4Service } from "../taxonomy/taxonomy.runtime.js";
 import { createHash, randomUUID } from "node:crypto";
 import type {
   AutoAddOn,
@@ -63,7 +65,14 @@ export class AutoService {
     ) {
       return { items: [], total: 0, pageInfo: { hasNextPage: false } };
     }
-    return this.repo.search(query);
+    const result = await this.repo.search(query);
+    const taxonomy = (await taxonomyV4Service.snapshot()).projectIdentity(
+      CANONICAL_TAXONOMY_IDS.vehicles,
+    );
+    return {
+      ...result,
+      items: result.items.map((item) => ({ ...item, taxonomy })),
+    };
   }
 
   async getPublicVehicle(idOrSlug: string, marketCode?: string) {
@@ -94,7 +103,12 @@ export class AutoService {
       createdAt: _created,
       ...publicVehicle
     } = vehicle;
-    return publicVehicle;
+    return {
+      ...publicVehicle,
+      taxonomy: (await taxonomyV4Service.snapshot()).projectIdentity(
+        CANONICAL_TAXONOMY_IDS.vehicles,
+      ),
+    };
   }
 
   getFavoriteVehicleIds(userId: string, marketCode: string) {

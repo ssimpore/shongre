@@ -1,3 +1,5 @@
+import { localizeTaxonomyLabels } from "@shongre/contracts/taxonomy-labels";
+import { activeDataLocale } from "../../../i18n/localized";
 import { TaxonomyServiceContract } from "../../contracts/taxonomy.contract";
 import { apiOperation } from "./generated-api-operation";
 import { Category } from "../../../types";
@@ -19,20 +21,25 @@ import type { components } from "@shongre/contracts/openapi";
 type BackendCategory = components["schemas"]["TaxonomyLegacyCategory"];
 
 function mapBackendCategory(category: BackendCategory): Category {
+  const locale = activeDataLocale();
+  const name = localizeTaxonomyLabels(category.labels, locale) || category.name;
   return {
     id: category.id,
     slug: category.slug,
-    name: category.name,
-    label: category.name,
-    shortLabel: category.shortLabel,
+    name,
+    label: name,
+    shortLabel:
+      localizeTaxonomyLabels(category.shortLabels, locale) ||
+      category.shortLabel,
     iconName: category.iconName ?? "Package",
-    description: category.name,
+    description: name,
     subCategories: (category.subcategories ?? []).map((child) => ({
       id: child.id,
       slug: child.slug,
-      name: child.name,
-      label: child.name,
-      shortLabel: child.shortLabel,
+      name: localizeTaxonomyLabels(child.labels, locale) || child.name,
+      label: localizeTaxonomyLabels(child.labels, locale) || child.name,
+      shortLabel:
+        localizeTaxonomyLabels(child.shortLabels, locale) || child.shortLabel,
       parentSlug: category.slug,
       iconName: child.iconName,
       attributesSchema: [],
@@ -41,6 +48,47 @@ function mapBackendCategory(category: BackendCategory): Category {
 }
 
 export class HttpTaxonomyService implements TaxonomyServiceContract {
+  getAdminDraft(
+    input: Parameters<TaxonomyServiceContract["getAdminDraft"]>[0],
+  ) {
+    return apiOperation<
+      components["schemas"]["TaxonomyDraftPage"],
+      "getAdminTaxonomyDraft"
+    >("getAdminTaxonomyDraft", { query: input });
+  }
+  updateAdminDraft(input: components["schemas"]["TaxonomyDraftUpdate"]) {
+    return apiOperation<
+      components["schemas"]["TaxonomyRevisionReview"],
+      "updateAdminTaxonomyDraft"
+    >("updateAdminTaxonomyDraft", { body: input });
+  }
+  previewAdminDraft() {
+    return apiOperation<
+      components["schemas"]["TaxonomyRevisionReview"],
+      "getAdminTaxonomyPreview"
+    >("getAdminTaxonomyPreview", {});
+  }
+  publishAdminDraft(input: components["schemas"]["TaxonomyRevisionAction"]) {
+    return apiOperation<
+      components["schemas"]["TaxonomyRevisionReview"],
+      "publishAdminTaxonomyRevision"
+    >("publishAdminTaxonomyRevision", { body: input });
+  }
+  rollbackAdminRevision(
+    input: components["schemas"]["TaxonomyRevisionAction"],
+  ) {
+    return apiOperation<
+      components["schemas"]["TaxonomyRevisionReview"],
+      "rollbackAdminTaxonomyRevision"
+    >("rollbackAdminTaxonomyRevision", { body: input });
+  }
+  getAdminHistory() {
+    return apiOperation<
+      components["schemas"]["TaxonomyRevisionHistory"],
+      "getAdminTaxonomyHistory"
+    >("getAdminTaxonomyHistory", {});
+  }
+
   private marketHeaders(marketContext: Pick<MarketContext, "countryCode">) {
     return {
       "X-Shongre-Market": marketContext.countryCode ?? "",
@@ -153,6 +201,7 @@ export class HttpTaxonomyService implements TaxonomyServiceContract {
       "resolveTaxonomyV4PublicationSchema"
     >("resolveTaxonomyV4PublicationSchema", {
       query: {
+        revision: input.taxonomyRevision,
         category: input.categoryIdentity,
         listingTypeId: input.listingTypeId,
         intent: input.intent,
@@ -167,6 +216,7 @@ export class HttpTaxonomyService implements TaxonomyServiceContract {
   async lookupV4Options(input: {
     marketContext: MarketContext;
     optionSetId: string;
+    taxonomyRevision?: number;
     parentOptionId?: string;
     query?: string;
     cursor?: string;
@@ -179,6 +229,7 @@ export class HttpTaxonomyService implements TaxonomyServiceContract {
       {
         path: { optionSetId: input.optionSetId },
         query: {
+          revision: input.taxonomyRevision,
           parentOptionId: input.parentOptionId,
           q: input.query,
           cursor: input.cursor,

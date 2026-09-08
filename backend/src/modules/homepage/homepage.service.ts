@@ -7,10 +7,8 @@ import {
   type HomepageUniverseSubsection,
   type ResolvedHomepageSection,
 } from "@shongre/contracts/homepage";
-import {
-  isTaxonomyV4DescendantOf,
-  resolveTaxonomyV4Identity,
-} from "@shongre/contracts/taxonomy-v4-identity";
+import { taxonomyV4Service } from "../taxonomy/taxonomy.runtime.js";
+import type { TaxonomyV4Service } from "../taxonomy/taxonomy.v4.service.js";
 import { majorToMinorAmount } from "@shongre/shared";
 import type {
   IHomepageRepository,
@@ -99,17 +97,21 @@ const listingBelongsToMarket = (listing: Listing, marketCode: string) => {
   );
 };
 
-const listingBelongsToCategory = (listing: Listing, categoryId: string) =>
-  isTaxonomyV4DescendantOf(listing.categoryId, categoryId);
+const listingBelongsToCategory = (
+  listing: Listing,
+  categoryId: string,
+  taxonomy: TaxonomyV4Service,
+) => taxonomy.isDescendant(listing.categoryId, categoryId);
 
 function validateConfiguration(
   input: HomepageConfiguration,
+  taxonomy: TaxonomyV4Service,
 ): HomepageConfiguration {
   const configuration = homepageConfigurationSchema.parse(input);
   for (const section of configuration.sections) {
     if (section.type !== "universe_explorer") continue;
     for (const subsection of section.settings.universeSubsections || []) {
-      const category = resolveTaxonomyV4Identity(subsection.categoryId);
+      const category = taxonomy.findCategory(subsection.categoryId);
       if (!category || category.parentId) {
         throw new AppError({
           code: "VALIDATION_ERROR",
@@ -140,11 +142,12 @@ const thresholdMetadata = (eligibleListingCount: number, minimum: number) => {
   };
 };
 
-export function selectHomepageDeals(
+function selectHomepageDeals(
   listings: Listing[],
   marketCode: string,
   settings: HomepageSectionSettings,
   limit: number,
+  taxonomy: TaxonomyV4Service,
   now = new Date(),
 ): HomepageDealItem[] {
   if (
@@ -220,7 +223,7 @@ export function selectHomepageDeals(
       }
       return [
         {
-          listing: toPublicListing(listing),
+          listing: toPublicListing(listing, taxonomy),
           offer: {
             type,
             state: "active",
@@ -268,12 +271,15 @@ export class HomepageService {
     return this.homepageRepo.getDraft(marketCode.toUpperCase(), locale);
   }
 
-  saveDraft(input: {
+  async saveDraft(input: {
     configuration: HomepageConfiguration;
     actorId: string;
     changeReason: string;
   }): Promise<HomepageConfiguration> {
-    const configuration = validateConfiguration(input.configuration);
+    const configuration = validateConfiguration(
+      input.configuration,
+      await taxonomyV4Service.snapshot(),
+    );
     if (configuration.state !== "draft") {
       throw new AppError({
         code: "VALIDATION_ERROR",
@@ -302,7 +308,11 @@ export class HomepageService {
   }
 
   async preview(configuration: HomepageConfiguration, query: HomepageQuery) {
-    return this.resolve(validateConfiguration(configuration), query, true);
+    return this.resolve(
+      validateConfiguration(configuration, await taxonomyV4Service.snapshot()),
+      query,
+      true,
+    );
   }
 
   async getPublished(query: HomepageQuery) {
@@ -319,6 +329,7 @@ export class HomepageService {
     includeSuppressed = false,
   ) {
     const query = normalizeScope(input);
+    const taxonomy = await taxonomyV4Service.snapshot();
     if (
       configuration.marketCode !== query.marketCode ||
       configuration.locale !== query.locale
@@ -396,6 +407,7 @@ export class HomepageService {
               query.marketCode,
               section.settings,
               Math.max(section.maxItems, section.minimumListingCount),
+              taxonomy,
               query.now,
             );
             const threshold = thresholdMetadata(
@@ -432,7 +444,9 @@ export class HomepageService {
               ...threshold,
               listings: threshold.suppressed
                 ? []
-                : eligible.slice(0, section.maxItems).map(toPublicListing),
+                : eligible
+                    .slice(0, section.maxItems)
+                    .map((listing) => toPublicListing(listing, taxonomy)),
             };
           }
           if (section.type === "universe_explorer") {
@@ -452,7 +466,11 @@ export class HomepageService {
               .slice(0, section.maxItems)
               .map((subsection): HomepageUniverseGroup => {
                 const matching = eligible.filter((listing) =>
-                  listingBelongsToCategory(listing, subsection.categoryId),
+                  listingBelongsToCategory(
+                    listing,
+                    subsection.categoryId,
+                    taxonomy,
+                  ),
                 );
                 const suppressed =
                   matching.length < subsection.minimumListingCount;
@@ -465,7 +483,7 @@ export class HomepageService {
                     ? []
                     : matching
                         .slice(0, subsection.maxItems)
-                        .map(toPublicListing),
+                        .map((listing) => toPublicListing(listing, taxonomy)),
                 };
               });
             const universeGroups = includeSuppressed

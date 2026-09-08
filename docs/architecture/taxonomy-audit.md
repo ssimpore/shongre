@@ -1,169 +1,84 @@
-# Taxonomy v4 architecture and migration record
+# Taxonomy authority and coverage audit
 
-Status: implemented in-repository on 2026-08-29. Taxonomy v4 remains a draft
-database version until an authorized operator publishes it. Demo remains the
-default client data mode; no hosted database or live provider was changed.
+Audit date: 2026-09-08. **The comprehensive marketplace taxonomy request is not yet complete.** The central publication boundary and admin revision workflow are implemented and exercised against local PostgreSQL. The leaf matrix records structural coverage separately from domain approval and full journey verification. No hosted database, live provider or production data was changed.
 
-## One source and deterministic outputs
+## Baseline and current import
 
-`backend/taxonomy/v4/taxonomy-v4.normalized.json` is the single reviewed,
-backend-owned taxonomy source in the repository. The reviewed master workbook
-is an explicit import input, never a runtime dependency. The import records its
-SHA-256 checksum, validates all required sheets and relationships, and rewrites
-the normalized source deterministically.
+The implementation supports three category levels (`level` 0–2), not arbitrary depth. The initial controlled import contained 19 roots, 302 nodes, 213 publishable leaves/listing types, 22 flows, 343 attributes, 56 groups, 105 option sets, 732 options, 75 parent links, 10,853 bindings, 203 dependencies, 535 validation declarations, 291 aliases, 108 country-policy drafts and 42 reference-review records. Earlier documentation claiming 294 nodes/208 leaves and demo clients was stale.
 
-`backend/scripts/taxonomy/master-compiler.ts` owns workbook normalization and
-artifact generation; `backend/scripts/taxonomy/compile.ts` is its stable CLI
-entry point. `backend/taxonomy/v4/crosswalk.reviewed.json` is migration evidence,
-not another category catalogue. Generated private/public bundles, local seed SQL,
-and the import report are read-only outputs:
+The current import preserves all category, listing-type and URL identities. It adds six phone fields, five option sets, 21 options, 17 parent links, six bindings and 14 dependencies. Counts are derived by `make taxonomy-compile` in [the import report](generated/taxonomy-v4-import-report.json), not copied from the original workbook's historical count fields. [The leaf matrix](taxonomy-field-matrix.md) and [detailed coverage](generated/taxonomy-coverage.json) record every leaf's fields, types, units, allowed values, dependencies, seller/market rules, privacy, projections and unresolved outcomes. Definitions/options are shared dictionaries; each leaf references those exact definitions.
 
-- `backend/src/modules/taxonomy/generated/taxonomy-v4.private.ts`;
-- `packages/contracts/src/fixtures/generated/taxonomy-v4.public.{json,ts}`;
-- `backend/supabase/seed/taxonomy-v4.generated.sql`;
-- `docs/architecture/generated/taxonomy-v4-import-report.json`.
+## Database publication boundary
 
-The old v3 fixture is retained only as a compatibility snapshot for explicit
-legacy crosswalk and established vertical-contract consumers. It does not drive
-runtime taxonomy navigation, publication schemas, search projections, admin
-inspection, or mobile. Remove it only after all persisted references and its
-remaining named consumers have migrated.
+`taxonomy_configuration` identifies a draft revision and one immutable published snapshot in `taxonomy_publications`. Existing relational category, field, option, dependency, binding and availability tables own authoring data. Additive columns retain attributes, localized help, units, market overrides and presentation metadata previously lost during import. `read_taxonomy_draft()` derives the publication document from these rows; ancillary editorial metadata stores provenance and quarantined review records, not a second category/field catalogue.
 
-The supported workflow is:
+The backend `PublishedTaxonomyService` reads through `PostgresTaxonomyPublicationRepository`. Concurrent requests share one database read; the resolver cache is keyed by the returned revision/checksum. Each subsequent read checks the authoritative pointer. A failed read does not return the previously cached version. Each resolve, validation or listing batch uses a single immutable snapshot. Publication and rollback serialize against the draft revision; publication additionally verifies the exact database checksum that was reviewed. Rollback changes the published pointer and advances the editor revision while preserving the draft for deliberate review. A private database draft snapshot and checksum are derived atomically with authoring commands and valid only for their authoring revision; controlled imports invalidate this cache. This avoids rebuilding the full relational document on every admin read or publication. Backend draft reads coalesce concurrent requests and check the database revision/timestamp before reusing parsed data. Revision zero is never cached in application memory.
 
-```bash
-make taxonomy-import TAXONOMY_WORKBOOK=/absolute/path/to/workbook.xlsx
-make taxonomy-compile
-make taxonomy-check
-```
+Web/mobile use generated `/api/v1` operations. Tree responses include published aliases, SEO projections and revision. Listing responses carry category/ancestor/brand labels from the same published database. HTTP adapters localize this data. Public category navigation resolves published labels and availability. Existing listing characteristics use stored values and public read bindings independently of eligibility for new sellers. Raw SIRET input is now private taxonomy data, and private/internal attributes are excluded from generic public listings.
 
-`taxonomy-check` recompiles from the normalized source, fails on generated drift,
-and runs the Web coverage gate.
+Taxonomy, discovery and dependent vertical HTTP responses use `no-store`. The existing cache invalidation adapter only emits tags and logs requests; it has no acknowledged external purge delivery. Accordingly, these responses cannot rely on stale-while-revalidate or stale-if-error. Publication/rollback emit taxonomy and dependent domain tags through that adapter. CDN purge delivery remains an operations gap before shared caching can be re-enabled. Native/Web publication and cascading option requests carry the resolved revision; a changed revision returns a conflict requiring review.
 
-## Reviewed public terminology
+## Authoring and import safety
 
-The public terminology screening completed on 2026-08-29 keeps all ordinary,
-descriptive marketplace labels and the existing hierarchy unchanged. Two
-narrow public-facing changes are recorded in the normalized source:
+The existing protected admin taxonomy page now includes a revision editor for categories, types, fields, groups, sets/options, parent links, bindings, dependencies, validation declarations, aliases, reference reviews and presentation/discovery projections. It supports pagination, JSON record editing, export/import, previews, affected definition/type counts, publication, audit history and rollback. The backend requires `taxonomy.manage`; mutations also require recent authentication, and the normal staff/MFA guards remain in place. Existing identities, option keys, field types, units and option-set ownership cannot be silently changed by the editor.
 
-- `vehicles.nautical.personal_watercraft` keeps its stable identity, listing
-  flow, bindings, attributes and market availability, while its French label
-  and slug use `Scooters des mers & motos nautiques` and
-  `scooters-des-mers-et-motos-nautiques`;
-- the legacy `deals_donations` identity keeps resolving for stored data, but its
-  maintained compatibility slug is `dons-et-objets-gratuits`; the former slug
-  is excluded from generated public aliases and retired by migration `00080`.
+Imports save revision-checked batches of at most 200 records into the draft. If a later batch fails, earlier draft batches remain visible for review; nothing is published automatically. This is **not an atomic whole-file import**. Structural preview is distinct from subject-matter approval. Validation expressions are not a general-purpose executable rule language: unsupported activation and unapproved policy remain blocked. The editor does not yet provide a complete template authoring UX, stored-listing impact/backfill analysis, or deletion of obsolete parent links.
 
-The Web keeps fixed same-site redirects for the retired taxonomy paths. The
-discount collection also keeps its internal `bons-plans` ID for saved state,
-while its canonical public title and route are `Offres à prix réduit` and
-`/offres-prix-reduit`. Redirects preserve query strings and market-aware URL
-construction; old terms are not emitted in canonical links or sitemaps.
+Workbooks, the normalized source and generated private/public bundles are controlled import/test/export inputs. Application consumers do not load these bundles. Explicit isolated backend test scenarios may inject fixtures; local application mode uses PostgreSQL. The local seed bootstraps missing taxonomy/header configuration and preserves existing publications and editor revisions. The explicit bootstrap importer refuses to overwrite a database with editorial revisions. Changes to an authored database must use the revision-checked admin workflow or a reviewed migration.
 
-This is conservative risk screening, not a conclusion of non-infringement.
-The original workbook binary is not stored in this repository, so the recorded
-workbook checksum and normalized source are the available provenance evidence.
-Any future workbook import must be followed by the same terminology review, and
-high-risk naming decisions still require qualified French/EU counsel.
+## Phone classification and evidence
 
-## Master workbook result
+The existing `electronics.smartphones.phones` leaf remains unchanged as a category. The optional reference selection follows Apple → iPhone → iPhone 15 A3090 → capacity/finish variant. The 15 imported variants cover 128/256/512 GB and black/blue/green/yellow/pink, with nano-SIM/eSIM identified in the variant label. These facts and the 2023 introduction were verified against [Apple's iPhone 15 specifications](https://support.apple.com/fr-fr/111831) on the audit date. Other regional hardware, brands and generations are not represented as verified. No carrier support, warranty eligibility or legal approval is inferred.
 
-The imported workbook checksum is
-`47dfc844bc66504276c1467e8e2d03227370fc66fd831f17a61815d5722c0cf0`.
-Core sheets 01–21 supply the normalized model; summary and sheets 22–30 are
-advisory evidence only.
+Manufacturer variant choices are separate from seller-reported condition, battery health, carrier lock, accessories, warranty and repair history. Selecting the verified model hides unconstrained brand/model/storage/color inputs; incompatible values fail backend validation. Existing stored values remain available to historical detail rendering. Dependent option validation now requires all independent parent dimensions, while allowing alternatives within each dimension. Phone bindings for clothing/gaming-only fields are hidden from publication without deleting their historical definitions.
 
-| Resource               |     Workbook/source |                                         Normalized/runtime |
-| ---------------------- | ------------------: | ---------------------------------------------------------: |
-| Verticals              |                  18 |                                                   18 roots |
-| Category rows          |                 276 |                         294 nodes including vertical roots |
-| Publishable leaves     |                 208 |                                                        208 |
-| Listing types          |                 208 |                            208 across 20 publication flows |
-| Attributes             |                 323 |                               323 private; 317 public-safe |
-| Attribute groups       |                  56 |                                                         56 |
-| Option rows            |                 732 |              732 private; 725 public-safe; 75 parent links |
-| Compact bindings       |               1,194 |                         10,751 resolved effective bindings |
-| Dependencies           |                 122 |                                     203 normalized effects |
-| Validation rows        | 505 + 30 regulatory | 535 private; regulatory rows disabled pending legal review |
-| Filter rows            |                 242 |                                      2,704 resolved facets |
-| Card/detail rows       |           130 / 790 |                             1,402 / 10,059 resolved fields |
-| Publication-flow rows  |                 846 |                                      1,612 resolved fields |
-| Search/SEO projections |       341 / derived |                                                  208 / 294 |
+This limited reference import does **not** complete the phone domain: generic brand/model suggestions elsewhere still contain automotive-oriented data, other phone manufacturers/models need verified imports, and complete specification projections/region-specific options need further work. Most existing leaves use shared templates without a documented domain completeness decision. Identical French and English help prose is flagged for localization review. No leaf is marked fully complete on structural counts alone.
 
-The compiler expands `FLOW_TEMPLATE` rows, then applies listing-type `ADD` and
-`EXCLUDE` overrides. The result has exactly 10,751 unique category/type/attribute
-relationships and no duplicate effective binding. It also consolidates 34
-repeated filter templates by flow and attribute, retaining the earliest
-canonical display definition. Radius remains part of the existing search
-contract rather than a second duplicate city facet.
+## Consumers and outcomes
 
-All 108 workbook country-policy rows remain quarantined draft policy. The
-placeholder market code `FUTURE` is not added to the market registry. All 47
-seller-policy rows are disabled pending policy review, and all 30 regulatory
-rules are disabled pending legal approval. Runtime availability continues to
-come from the canonical market registry: FR, BE, and CH active; SN and BF coming
-soon and non-indexable.
+| Consumer/journey                                             | Owning implementation and source                                                         | Outcome                                                                                                                                                                                                                                                                                                                                 |
+| ------------------------------------------------------------ | ---------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Public tree, onboarding category selector                    | `taxonomy.routes.ts`, Web `useListingOnboardingController`, native `taxonomy.service.ts` | Published PostgreSQL → API; market-scoped; full onboarding journey verification pending                                                                                                                                                                                                                                                 |
+| Legacy roots/nodes/children/search filters                   | `TaxonomyService.publicProjection`, `taxonomy.projection.ts`                             | Published snapshot; no compiled lookup; explicit market boundary                                                                                                                                                                                                                                                                        |
+| Header/overview navigation                                   | `taxonomy.repository.ts`, header service/admin tab                                       | Published category labels/availability; separately revisioned database header ordering; DB/API update verified                                                                                                                                                                                                                          |
+| Admin taxonomy                                               | `TaxonomyRevisionEditor`, governance/API/repository                                      | Draft, preview, publication, conflicts, audit and rollback implemented; structured editor, whole-file atomic import and comprehensive impact UX remain incomplete                                                                                                                                                                       |
+| Web publication/edit/draft recovery                          | `PublishWizard`, publication reconciliation, HTTP payload                                | API schema and revision propagated; previous selection reconciliation retained; browser verification and every-flow journey coverage pending                                                                                                                                                                                            |
+| Native publication                                           | `mobile/app/(tabs)/publish.tsx`, native transport                                        | API-only schema/options and expected revision; full simulator/device journey verification pending                                                                                                                                                                                                                                       |
+| Backend listing publication                                  | `ListingsService`, taxonomy resolver                                                     | Database snapshot validation; no compiled runtime default; schema smoke covers all 22 flows                                                                                                                                                                                                                                             |
+| Existing listing details                                     | `taxonomy.characteristics.ts`, listing characteristics API, shared detail UI             | Stored public values and retired options preserved; seller eligibility no longer suppresses public history; privacy regression tests                                                                                                                                                                                                    |
+| Generic listing cards                                        | backend public projection and Web/native listing adapters                                | Category/brand labels and public card characteristics use API projections. Static generic field ordering, value dictionaries, unit formatting and fallback enumeration were removed. Backend card projections use published visibility/order/labels, historical values and market/privacy boundaries; Web and native mapping tests pass |
+| Automotive/property/employment cards                         | owning backend services, `listing-card.presentation.ts`                                  | Root labels projected through API; vertical-specific field labels/order still have presentation mappings                                                                                                                                                                                                                                |
+| Homepage sections/deals                                      | backend `HomepageService`                                                                | Category membership resolves published parent links; obsolete client homepage resolver and its orphaned test removed                                                                                                                                                                                                                    |
+| Discovery/search                                             | `DiscoveryService`, PostgreSQL repositories                                              | Identity resolution uses database publication; persisted search/filter integration and all leaf-specific relevance require further verification                                                                                                                                                                                         |
+| Saved searches/alerts/recommendations                        | existing discovery/search services                                                       | Stored identifiers retained; no remapping; end-to-end delivery and historical search verification pending                                                                                                                                                                                                                               |
+| Favorites, orders, workspace analytics                       | listings/orders/workspace API projections                                                | Public listing labels/privacy use published taxonomy; related tests/typechecks run; complete journeys pending                                                                                                                                                                                                                           |
+| Delivery discovery                                           | delivery/listings/discovery services                                                     | Stable domain identity retained; API category projection added; delivery authorization tests pass; native favorite/assignment display verification pending                                                                                                                                                                              |
+| SEO, breadcrumbs, sitemap                                    | `taxonomy.seo.ts`, SEO policy, server route loader, sitemap catalogue                    | Static bundle removed; category SEO uses API tree; sitemap ancestors use listing API path; no record synthesized on missing data; client navigation refetches the tree when the market, locale or pathname changes and clears failed data                                                                                               |
+| Monetization simulation category choice                      | `AdminMonetizationPage`                                                                  | Hardcoded four-category list replaced by API roots                                                                                                                                                                                                                                                                                      |
+| Registration/pro onboarding, interests, activity/store setup | auth/professional/store domain routes and existing contracts                             | Stable selections preserved; full taxonomy mapping/persistence audit and complete journeys still outstanding                                                                                                                                                                                                                            |
+| Seller inventories, duplication/renewal/bulk publication     | publication/listing/workspace domains                                                    | Existing identifiers retained; complete taxonomy reconciliation/journey verification outstanding                                                                                                                                                                                                                                        |
+| Moderation/support/notifications/integrations                | owning domain services and API contracts                                                 | Public projection changes shared where used; consumer-by-consumer journey and audit mapping verification outstanding                                                                                                                                                                                                                    |
+| Vertical reference catalogues                                | `auto_*`, employment dictionaries, property/education catalogue repositories             | Database-backed but independently administered; duplicated reference definitions and publication-version reconciliation remain unresolved                                                                                                                                                                                               |
+| Controlled import/local fixture tools                        | backend compiler, seed, import-local                                                     | Explicit tooling only; guarded loopback import, idempotence and preservation of editor revisions                                                                                                                                                                                                                                        |
 
-## Compatibility and migration safety
+The isolated production-browser selection `make frontend-test-e2e E2E_ARGS="--project=chromium marketplace-api-journey.spec.ts listing-characteristics.spec.ts"` passes all four tests: desktop/mobile-width characteristic rendering, API failure/retry, and publication → buyer favorites/messages → reload. It uses the explicit backend-owned isolated test scenario; the separate four-test local database suite proves persistence through PostgreSQL and the rendered production admin.
 
-The reviewed crosswalk covers 294 master identities, all 61 legacy v3 nodes,
-and all 154 nodes from the superseded v4 source. Of the previous v4 identities,
-40 remain exact, 30 are reviewed renames, and 84 have explicit compatibility
-redirects; none is left to an automatic broad match. The deterministic demo
-dry-run resolves all 19 seeded listings without an ambiguous category.
+This table covers the requested journey families. It is not evidence that every file or screen in those families has been exhaustively verified.
 
-Legacy listing drafts are mapped at the application boundary to master field
-names and options, including `listing_intent`, `price_type`, `condition`,
-`currency`, `city`, and `postal_code`. Web/native semantic control registries
-cover every workbook UI component. Choice-like fields without a materialized
-closed option set use the existing text fallback and surface an admin warning,
-not an empty control or a false publication blocker.
+## Migrations and verification
 
-Migration `backend/supabase/migrations/00078_taxonomy_v4.sql` is expand-only.
-Generated local seed SQL uses deterministic upserts, deprecates stale categories,
-disables stale listing types/options, and expires stale bindings. It never
-deletes listings, truncates tables, or deletes taxonomy rows. The guarded
-`make db-seed` path (and therefore `make dev`) applies this generated projection
-before local scenario data and restores market-scoped header navigation. The
-explicit commands remain available for inspecting or repairing only a proven
-loopback database target:
+Forward additive migrations `00120_taxonomy_published_revisions.sql`, `00121_taxonomy_draft_commands.sql`, `00122_taxonomy_snapshot_integrity.sql` and `00123_taxonomy_draft_snapshot_cache.sql` were prepared and applied only to the repository-owned local database. Generated database types and OpenAPI artifacts were regenerated. No applied migration was rewritten. Existing rows, aliases, saved selections and URLs were preserved. Test edits were restored to the prior database publication and draft category; their audit records remain intentionally retained.
 
-```bash
-make taxonomy-db-dry-run
-make taxonomy-db-import
-```
+Verified so far:
 
-Migration `backend/supabase/migrations/00080_public_taxonomy_terminology.sql`
-is a forward-only compatibility update. It keeps `deals_donations`, updates only
-its public slug and SEO path, retires the former alias, and fails closed if the
-replacement slug is already owned. It does not rewrite listings or delete data.
+- Controlled import succeeds with an empty second-run diff; local seed retains authored taxonomy/header state.
+- `make taxonomy-db-test ENVIRONMENT=local`: authorized draft update → read/export → preview → publication → public tree/header → conflict → rollback, plus guest/customer/unverified-MFA rejection.
+- Taxonomy tests cover all 213 leaf schemas and 22 declared flows, phone parent validation, public historical/card projections, malformed presentation references and refusal of stale snapshots after database failures. Schema coverage does not certify complete journeys.
+- Full suites pass with the card and cache changes: 1,088 backend, 681 Web, 84 native and 282 contract tests, plus shared-system tests. Four opt-in database tests run separately below; two pre-existing optional RLS tests are skipped by their environment gates.
+- All four opt-in database tests pass, including fresh-reader draft cache consistency, anonymous table/RPC denial and immutable publication protection. With a healthy local API and the production Web artifact, the rendered editor saved and published a revision, the homepage navigation reflected it, and the 390-pixel editor rendered without horizontal overflow or page errors. Cleanup restored the original draft label and published pointer. Earlier runs exposed read/write deadlines under host contention and a development API that had exited during rebuild; the draft cache and explicit browser readiness checks address cold reads and unavailable prerequisites. Sustained concurrent import/write performance remains unverified.
 
-Hosted publication, data backfill, search/cache revalidation, and policy
-activation require the protected operational workflow and current legal,
-provider, and market-readiness evidence.
+Outstanding verification is explicitly listed above. A green compiler or schema test is not a substitute for Web/native onboarding → publication → search → detail → editing across every flow. Domain reference coverage, translations, policies and market approvals require concrete reviewed data; unknown values are not approvals.
 
-## Runtime boundary and verification
+The final OpenAPI/client/inventory, taxonomy generation, migration ordering, local fixture, capability inventory, repository hygiene, formatter and secret checks pass. Web/mobile lint and the native source reachability check pass. The Web production build and backend package build pass. The Web bundle report contains **0 KiB of generated taxonomy data**. Android SDK configuration checks pass. The cross-platform gate reaches Expo Doctor and fails its upstream dependency validation: the unchanged baseline uses `expo` 57.0.20 and `expo-router` 57.0.19 while the checker expects patches 57.0.21 and 57.0.20. The iOS SDK check fails because the selected developer directory contains Command Line Tools, without Xcode or an iPhoneOS SDK. Dependencies and machine-wide developer selection were not changed. These limits and the missing complete device journeys prevent cross-platform/release certification.
 
-The authoritative backend resolver remains
-`backend/src/modules/taxonomy/taxonomy.v4.service.ts`. Public contracts are owned
-by `packages/contracts/src/schemas/taxonomy.ts`; OpenAPI remains the only HTTP
-specification. Web and mobile consume the generated public-safe projection
-through the shared resolver/service boundary. Private expressions, seller draft
-policy, internal fields, and unapproved regulatory data do not enter the public
-bundle or local storage.
-
-Minimum verification:
-
-```bash
-make taxonomy-check
-make migrations-check
-make openapi-check
-make typecheck
-make frontend-test
-make backend-test
-make mobile-check
-```
-
-The executable coverage gate currently proves 208/208 active publishable leaves
-complete across the generated schema, publication, card/detail, filter,
-comparison, market, alias, Web, and mobile boundaries.
+Intentionally retained: generated import/test inputs; historical category, option and URL identities; the `frameSize` public value and vehicle persisted-key mappings until reviewed data migrations exist; legacy public `listingFamily` transport behavior; and independently administered vertical catalogues pending identity reconciliation. Private/internal listing values remain excluded. Test publications/audit history remain immutable after the original pointer is restored.

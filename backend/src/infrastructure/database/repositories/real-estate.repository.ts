@@ -31,7 +31,7 @@ import type {
   VerticalOffer,
 } from "@shongre/contracts/vertical";
 import { verticalCheckoutSchema } from "@shongre/contracts/vertical";
-import { CANONICAL_TAXONOMY_IDS } from "@shongre/contracts/taxonomy-catalog";
+import { CANONICAL_TAXONOMY_IDS } from "@shongre/contracts/taxonomy-domain-ids";
 import { getSupabaseAdminClient } from "../../supabase/supabase-client.js";
 import type { MarketResolvedListingPromotion } from "@shongre/contracts/discovery";
 import {

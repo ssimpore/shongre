@@ -17,7 +17,7 @@ const toSubCategory = (
   attributesSchema: [],
 });
 
-/** Test projection built from the generated public API contract, never fixtures. */
+/** Explicit generated import fixture for isolated unit tests; never a runtime fallback. */
 export const taxonomyV4TestCategories: Category[] = bundle.categories
   .filter((node) => !node.parentId && node.status === "active")
   .sort((left, right) => left.sortOrder - right.sortOrder)

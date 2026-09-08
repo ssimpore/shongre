@@ -1,6 +1,11 @@
 import { z } from "zod";
 import { marketCodeSchema } from "./primitives";
 
+export const TAXONOMY_ADMIN_CONSTRAINTS = {
+  changeReason: { min: 3, max: 1000 },
+  updateBatchSize: 200,
+} as const;
+
 export const TAXONOMY_PUBLICATION_CONSTRAINTS = {
   durationDays: { min: 1, max: 365, default: 60, step: 1 },
   mediaAllowance: { min: 1, max: 50, default: 12, step: 1 },
@@ -676,6 +681,7 @@ export const taxonomyV4SeoProjectionSchema = z.object({
 });
 
 export const taxonomyV4ResolvedPublicationSchema = z.object({
+  revision: z.number().int().positive().optional(),
   taxonomyVersion: z.literal("4.0.0"),
   category: taxonomyV4NodeSchema,
   listingType: taxonomyV4ListingTypeSchema,
@@ -707,6 +713,17 @@ export const taxonomyV4ResolvedSchemaSchema =
   });
 
 export const taxonomyV4TreeResponseSchema = z.object({
+  revision: z.number().int().positive().optional(),
+  aliases: z
+    .array(
+      z.object({
+        alias: z.string(),
+        canonicalCategoryId: z.string(),
+        kind: z.string(),
+      }),
+    )
+    .optional(),
+  seo: z.array(taxonomyV4SeoProjectionSchema).optional(),
   taxonomyVersion: z.literal("4.0.0"),
   compilerVersion: z.string().min(1),
   checksum: z.string().regex(/^[a-f0-9]{64}$/),
@@ -717,6 +734,7 @@ export const taxonomyV4TreeResponseSchema = z.object({
 });
 
 export const taxonomyV4OptionPageSchema = z.object({
+  revision: z.number().int().positive().optional(),
   items: z.array(taxonomyV4OptionSchema).max(200),
   nextCursor: z.string().regex(/^\d+$/).optional(),
   total: z.number().int().nonnegative(),
@@ -917,3 +935,30 @@ export type TaxonomyHeaderNavigationUpdate = z.infer<
 export type TaxonomyV4PublicBundle = z.infer<
   typeof taxonomyV4PublicBundleSchema
 >;
+
+export const listingTaxonomyProjectionSchema = z.object({
+  revision: z.number().int().positive(),
+  categoryId: z.string(),
+  categorySlug: z.string(),
+  categoryLabels: z.record(z.string(), z.string()),
+  rootId: z.string(),
+  rootSlug: z.string(),
+  rootLabels: z.record(z.string(), z.string()),
+  path: z.array(
+    z.object({
+      id: z.string(),
+      slug: z.string(),
+      labels: z.record(z.string(), z.string()),
+    }),
+  ),
+  brandLabels: z.record(z.string(), z.string()).optional(),
+  cardCharacteristics: z
+    .array(
+      z.object({
+        code: z.string(),
+        labels: z.record(z.string(), z.string()),
+        values: z.record(z.string(), z.string()),
+      }),
+    )
+    .optional(),
+});

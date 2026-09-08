@@ -74,12 +74,14 @@ status and release gates are documented in
 - `BACKEND_DATA_MODE=demo` (explicit demo/test only): Domain services consume `Demo*Repository` implementations backed by deterministic in-memory collections.
 - `BACKEND_DATA_MODE=database` (canonical local and hosted runtime): Domain services consume `Postgres*Repository` implementations querying PostgreSQL tables via Supabase clients with typed schema rows.
 
+Taxonomy runtime content uses immutable database publications, including locally; the compiled bundle is an explicit test/import input. See [the taxonomy audit](../../docs/architecture/taxonomy-audit.md) for the publication boundary and remaining coverage gaps.
+
 ### 2.2 Repository Container (`src/infrastructure/database/repositories/`)
 
 - `IUserRepository` $\to$ `DemoUserRepository` / `PostgresUserRepository`
 - `IListingRepository` $\to$ `DemoListingRepository` / `PostgresListingRepository`
 - `IMarketRepository` $\to$ `DemoMarketRepository` / `PostgresMarketRepository`
-- `ITaxonomyRepository` $\to$ `DemoTaxonomyRepository` / `PostgresTaxonomyRepository`
+- `ITaxonomyRepository` $\to$ `TestTaxonomyRepository` (isolated tests only) / `PostgresTaxonomyRepository`
 - `IOrderRepository` $\to$ `DemoOrderRepository` / `PostgresOrderRepository`
 - `IMonetizationRepository` $\to$ `DemoMonetizationRepository` / `PostgresMonetizationRepository`
 - `IVerificationRepository` $\to$ `DemoVerificationRepository` / `PostgresVerificationRepository`

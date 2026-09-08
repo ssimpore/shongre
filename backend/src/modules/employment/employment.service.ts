@@ -1,3 +1,4 @@
+import { taxonomyV4Service } from "../taxonomy/taxonomy.runtime.js";
 import { randomUUID } from "node:crypto";
 import type {
   CandidateDataExport,
@@ -24,7 +25,7 @@ import {
 import type { VerticalCheckout } from "@shongre/contracts/vertical";
 import { verticalCheckoutSchema } from "@shongre/contracts/vertical";
 import { applyMonetizationToEmploymentCatalog } from "@shongre/contracts/vertical-monetization-adapters";
-import { CANONICAL_TAXONOMY_IDS } from "@shongre/contracts/taxonomy-catalog";
+import { CANONICAL_TAXONOMY_IDS } from "@shongre/contracts/taxonomy-domain-ids";
 import {
   EmploymentRepository,
   repositories,
@@ -158,7 +159,13 @@ export class EmploymentService {
         locationProvided: Boolean(query.location),
       },
     });
-    return result;
+    const taxonomy = (await taxonomyV4Service.snapshot()).projectIdentity(
+      CANONICAL_TAXONOMY_IDS.jobs,
+    );
+    return {
+      ...result,
+      items: result.items.map((item) => ({ ...item, taxonomy })),
+    };
   }
 
   async getPublicJob(idOrSlug: string, marketCode?: string) {
@@ -182,7 +189,12 @@ export class EmploymentService {
       jobId: job.id,
       employerId: job.employer.id,
     });
-    return publicEmployer(job);
+    return {
+      ...publicEmployer(job),
+      taxonomy: (await taxonomyV4Service.snapshot()).projectIdentity(
+        CANONICAL_TAXONOMY_IDS.jobs,
+      ),
+    };
   }
 
   async getSimilarJobs(idOrSlug: string) {
@@ -199,7 +211,10 @@ export class EmploymentService {
         limit: 5,
       }),
     );
-    return result.items.filter((item) => item.id !== job.id).slice(0, 3);
+    return result.items
+      .filter((item) => item.id !== job.id)
+      .slice(0, 3)
+      .map((item) => ({ ...item, taxonomy: job.taxonomy }));
   }
 
   async getOrCreateOwnDraft(

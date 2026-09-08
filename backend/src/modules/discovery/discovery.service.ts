@@ -7,7 +7,7 @@ import {
   runUnifiedDiscovery,
   scoreOrganicListing,
 } from "@shongre/shared";
-import { resolveTaxonomyV4Identity } from "@shongre/contracts/taxonomy-v4-identity";
+import { taxonomyV4Service } from "../taxonomy/taxonomy.runtime.js";
 import {
   discoveryConfigurationSchema,
   discoveryChangeReasonSchema,
@@ -572,14 +572,10 @@ export class UnifiedDiscoveryService {
     const snapshotAt = cursor?.snapshotAt || new Date().toISOString();
     const requestedCategory =
       filters.categoryId || filters.subCategorySlug || filters.categorySlug;
-    const categoryId = filters.categoryId
-      ? filters.categoryId
-      : requestedCategory
-        ? requestedCategory.includes(".")
-          ? requestedCategory
-          : resolveTaxonomyV4Identity(requestedCategory)?.id ||
-            requestedCategory
-        : undefined;
+    const taxonomy = await taxonomyV4Service.snapshot();
+    const categoryId = requestedCategory
+      ? (taxonomy.findCategory(requestedCategory)?.id ?? requestedCategory)
+      : undefined;
     const candidateFilters: SearchFilters = {
       ...filters,
       categoryId,

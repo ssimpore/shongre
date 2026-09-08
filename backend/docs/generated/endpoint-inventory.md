@@ -4,8 +4,8 @@
 
 - Contract version: `1.0.0`
 - API base path: `/api/v1`
-- Operations: **530**
-- Specification SHA-256: `ed34a8614bae6b23`
+- Operations: **536**
+- Specification SHA-256: `be8ddac93795fde5`
 
 ## account
 
@@ -137,8 +137,14 @@
 
 | Method | Path | Operation ID | Access | Permission | Success |
 | --- | --- | --- | --- | --- | --- |
+| `GET` | `/admin/taxonomy/draft` | `getAdminTaxonomyDraft` | `permission` | `taxonomy.manage` | `200` |
+| `PUT` | `/admin/taxonomy/draft` | `updateAdminTaxonomyDraft` | `permission` | `taxonomy.manage` | `200` |
 | `GET` | `/admin/taxonomy/header-navigation` | `getAdminTaxonomyHeaderNavigation` | `permission` | `taxonomy.manage` | `200` |
 | `PUT` | `/admin/taxonomy/header-navigation` | `putAdminTaxonomyHeaderNavigation` | `permission` | `taxonomy.manage` | `200` |
+| `GET` | `/admin/taxonomy/history` | `getAdminTaxonomyHistory` | `permission` | `taxonomy.manage` | `200` |
+| `GET` | `/admin/taxonomy/preview` | `getAdminTaxonomyPreview` | `permission` | `taxonomy.manage` | `200` |
+| `POST` | `/admin/taxonomy/publish` | `publishAdminTaxonomyRevision` | `permission` | `taxonomy.manage` | `200` |
+| `POST` | `/admin/taxonomy/rollback` | `rollbackAdminTaxonomyRevision` | `permission` | `taxonomy.manage` | `200` |
 
 ## admin-trending
 

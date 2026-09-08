@@ -23,6 +23,7 @@ describe("structured category listing-card presentation", () => {
   it("projects real property price, seller and promotion data", () => {
     const property = {
       id: "property-1",
+      taxonomy: { rootLabels: { "fr-FR": "Immobilier" } },
       title: "Appartement lumineux",
       propertyType: "apartment",
       financials: {
@@ -172,6 +173,7 @@ describe("structured category listing-card presentation", () => {
   it("projects buyer decision facts for the vehicle universe", () => {
     const vehicle = {
       id: "vehicle-1",
+      taxonomy: { rootLabels: { "fr-FR": "Véhicules", "en-US": "Vehicles" } },
       title: "Peugeot 3008",
       makeLabel: "Peugeot",
       price: { amountMinor: 2_490_000, currency: "EUR" },
@@ -233,6 +235,7 @@ describe("structured category listing-card presentation", () => {
   it("presents the real job salary range and employer reputation", () => {
     const job = {
       id: "job-1",
+      taxonomy: { rootLabels: { "fr-FR": "Emploi" } },
       title: "Développeur front-end",
       employer: {
         id: "employer",

@@ -555,7 +555,12 @@ export function resolveSeoPolicy({
   const categoryMatch = pathname.match(/^\/categorie\/([^/]+)$/);
   if (categoryMatch) {
     const slug = decodeURIComponent(categoryMatch[1]);
-    const taxonomyRecord = resolveTaxonomySeoRecord(slug);
+    const taxonomyRecord = resolveTaxonomySeoRecord(
+      slug,
+      routeData.status === "found" && routeData.data.kind === "listing_search"
+        ? routeData.data.taxonomy
+        : undefined,
+    );
     const node = taxonomyRecord?.node;
     const projection = taxonomyRecord?.projection;
     const data =

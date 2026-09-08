@@ -1,3 +1,4 @@
+import { taxonomyV4Service } from "../taxonomy/taxonomy.runtime.js";
 import { createHash, randomUUID } from "node:crypto";
 import type {
   AgencyWorkspace,
@@ -24,7 +25,7 @@ import {
 } from "@shongre/contracts/real-estate";
 import type { VerticalCheckout } from "@shongre/contracts/vertical";
 import { verticalCheckoutSchema } from "@shongre/contracts/vertical";
-import { CANONICAL_TAXONOMY_IDS } from "@shongre/contracts/taxonomy-catalog";
+import { CANONICAL_TAXONOMY_IDS } from "@shongre/contracts/taxonomy-domain-ids";
 import {
   IRealEstateRepository,
   repositories,
@@ -124,7 +125,13 @@ export class RealEstateService {
         usesMapBounds: Boolean(query.boundingBox),
       },
     });
-    return result;
+    const taxonomy = (await taxonomyV4Service.snapshot()).projectIdentity(
+      CANONICAL_TAXONOMY_IDS.realEstate,
+    );
+    return {
+      ...result,
+      items: result.items.map((item) => ({ ...item, taxonomy })),
+    };
   }
 
   async getPublicProperty(idOrSlug: string, marketCode?: string) {
@@ -145,7 +152,12 @@ export class RealEstateService {
       propertyId: property.id,
       organizationId: property.organizationId,
     });
-    return publicProperty(property);
+    return {
+      ...publicProperty(property),
+      taxonomy: (await taxonomyV4Service.snapshot()).projectIdentity(
+        CANONICAL_TAXONOMY_IDS.realEstate,
+      ),
+    };
   }
 
   async getComparableProperties(propertyId: string) {
@@ -166,19 +178,26 @@ export class RealEstateService {
       sort: "relevance",
       limit: 10,
     });
+    const taxonomy = (await taxonomyV4Service.snapshot()).projectIdentity(
+      CANONICAL_TAXONOMY_IDS.realEstate,
+    );
     return result.items
       .filter((candidate) => candidate.id !== propertyId)
-      .slice(0, 3);
+      .slice(0, 3)
+      .map((item) => ({ ...item, taxonomy }));
   }
 
   async getRecentlyViewed(userId: string) {
+    const taxonomy = (await taxonomyV4Service.snapshot()).projectIdentity(
+      CANONICAL_TAXONOMY_IDS.realEstate,
+    );
     return (await this.repo.getRecentlyViewed(userId))
       .filter(
         (property) =>
           property.lifecycle === "published" &&
           property.moderationStatus === "approved",
       )
-      .map(publicProperty);
+      .map((item) => ({ ...publicProperty(item), taxonomy }));
   }
 
   async markRecentlyViewed(userId: string, propertyId: string) {

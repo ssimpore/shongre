@@ -1,16 +1,15 @@
 -- Deterministic local header configuration. Production and other hosted
 -- environments are administered through the protected taxonomy API instead.
+CREATE TEMP TABLE new_local_header_markets ON COMMIT DROP AS
+SELECT code AS market_code FROM public.markets
+WHERE code IN ('FR', 'BE', 'CH') AND NOT EXISTS (
+  SELECT 1 FROM public.taxonomy_header_configurations configuration WHERE configuration.market_code = markets.code
+);
+
 INSERT INTO public.taxonomy_header_configurations (market_code, revision)
 SELECT market_code, 1
-FROM (VALUES ('FR'), ('BE'), ('CH')) AS configured_markets(market_code)
-JOIN public.markets ON public.markets.code = configured_markets.market_code
-ON CONFLICT (market_code) DO UPDATE
-SET revision = GREATEST(public.taxonomy_header_configurations.revision, 1),
-    updated_by = NULL,
-    updated_at = NOW();
-
-DELETE FROM public.taxonomy_header_categories
-WHERE market_code IN ('FR', 'BE', 'CH');
+FROM new_local_header_markets
+ON CONFLICT (market_code) DO NOTHING;
 
 INSERT INTO public.taxonomy_header_categories (
     market_code,
@@ -55,7 +54,7 @@ FROM (VALUES
     ('CH', 'leisure_culture', 8),
     ('CH', 'education', 9)
 ) AS default_items(market_code, category_id, display_order)
-JOIN public.taxonomy_header_configurations configuration
+JOIN new_local_header_markets configuration
     ON configuration.market_code = default_items.market_code
 JOIN public.categories category
     ON category.id = default_items.category_id
@@ -63,10 +62,9 @@ JOIN public.categories category
    AND category.status = 'active'
    AND category.is_active = TRUE;
 
-DELETE FROM public.taxonomy_header_links WHERE market_code IN ('FR', 'BE', 'CH');
 INSERT INTO public.taxonomy_header_links (market_code, target, labels, short_labels, is_active, display_order)
 SELECT configuration.market_code, link.target, link.labels, link.labels, TRUE, link.display_order
-FROM public.taxonomy_header_configurations configuration
+FROM new_local_header_markets configuration
 CROSS JOIN (VALUES
     ('category_overview', '{"fr-FR":"Autres","en-GB":"Other"}'::jsonb, 10),
     ('promotions', '{"fr-FR":"Promotions","en-GB":"Deals"}'::jsonb, 11)

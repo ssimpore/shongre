@@ -474,7 +474,9 @@ describe("API v1 Endpoints Integration", () => {
   });
 
   it("GET /api/v1/taxonomy/root returns categories", async () => {
-    const res = await fetch(`${baseUrl}/api/v1/taxonomy/root`);
+    const res = await fetch(`${baseUrl}/api/v1/taxonomy/root`, {
+      headers: { "X-Shongre-Market": "FR" },
+    });
     expect(res.status).toBe(200);
     const categories = await res.json();
     expect(Array.isArray(categories)).toBe(true);

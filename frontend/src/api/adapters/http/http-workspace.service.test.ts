@@ -10,6 +10,16 @@ const backendListing = {
   id: "listing-workspace-1",
   sellerId: "user-1",
   categoryId: "fashion.womens.clothing",
+  taxonomy: {
+    revision: 1,
+    categoryId: "fashion.womens.clothing",
+    categorySlug: "vetements-femme",
+    categoryLabels: { "fr-FR": "Vêtements femme" },
+    rootId: "fashion",
+    rootSlug: "mode",
+    rootLabels: { "fr-FR": "Mode" },
+    path: [],
+  },
   title: "Manteau en laine",
   description: "Manteau en excellent état.",
   price: 120,
@@ -67,7 +77,7 @@ describe("HttpWorkspaceService", () => {
     expect(summary.recentListings[0]).toMatchObject({
       id: "listing-workspace-1",
       status: "active",
-      categorySlug: "fashion",
+      categorySlug: "mode",
       coverImageUrl: "http://127.0.0.1:54321/storage/listing.jpg",
     });
   });

@@ -1,3 +1,4 @@
+import { taxonomyV4Service } from "../../taxonomy/taxonomy.runtime.js";
 import { z } from "zod";
 import { AppError } from "../../../shared/errors/app-error.js";
 import {
@@ -466,8 +467,9 @@ export function registerListingsRoutes(routes: RouteRegistrar): void {
           requireApiMarketContext(marketCode),
         ),
       ]);
+      const taxonomy = await taxonomyV4Service.snapshot();
       const deliveryListings = deliveryRequests.map((request) =>
-        toPublicListing(deliveryRequestToDiscoveryListing(request)),
+        toPublicListing(deliveryRequestToDiscoveryListing(request), taxonomy),
       );
       return {
         listingIds: [

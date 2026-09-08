@@ -102,6 +102,7 @@ export class HttpListingsService implements ListingsService {
         listingTypeId: draft.listingTypeId,
         intent: draft.listingIntent,
         taxonomyVersion: draft.taxonomyVersion,
+        taxonomyRevision: draft.taxonomyRevision,
         marketCode: draft.marketCode,
         city: draft.city,
         postalCode: draft.postalCode,
