@@ -1,3 +1,4 @@
+import { testListingPath } from "./fixtures";
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { colors as semanticColors } from "@shongre/design-tokens";
 import { usePersona } from "./personas";
@@ -1238,7 +1239,9 @@ test.describe("design-token runtime contracts @serial", () => {
         };
       });
 
-    await page.goto("/annonce/list-112", { waitUntil: "domcontentloaded" });
+    await page.goto(testListingPath("list-112"), {
+      waitUntil: "domcontentloaded",
+    });
     await waitForStableLayout(page);
 
     const desktopActions = page

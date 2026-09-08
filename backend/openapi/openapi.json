@@ -25247,6 +25247,57 @@
         "x-shongre-source": "backend/src/modules/listings/api/listings.routes.ts"
       }
     },
+    "/listings/{id}/characteristics": {
+      "get": {
+        "operationId": "getListingCharacteristics",
+        "tags": ["listings"],
+        "summary": "Read localized public characteristics of a visible listing",
+        "description": "Projects saved, applicable public values using backend taxonomy metadata. This read does not validate publication eligibility or infer a new category. Empty groups and unknown or private attributes are omitted.",
+        "parameters": [
+          { "$ref": "#/components/parameters/MarketContext" },
+          { "$ref": "#/components/parameters/RequestId" },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "minLength": 1 }
+          },
+          {
+            "name": "locale",
+            "in": "query",
+            "schema": { "type": "string", "minLength": 2, "maxLength": 35 },
+            "description": "BCP 47 display locale; defaults to the requested market locale."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Public characteristics; groups is empty when no applicable values are recorded.",
+            "headers": {
+              "X-Request-Id": { "$ref": "#/components/headers/RequestId" }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListingCharacteristics"
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "403": { "$ref": "#/components/responses/Forbidden" },
+          "404": { "$ref": "#/components/responses/NotFound" },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "422": { "$ref": "#/components/responses/UnprocessableEntity" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" },
+          "500": { "$ref": "#/components/responses/InternalError" }
+        },
+        "security": [],
+        "x-shongre-access": "public",
+        "x-shongre-deny-staff-marketplace": false,
+        "x-shongre-source": "backend/src/modules/listings/api/listings.routes.ts"
+      }
+    },
     "/listings/{id}": {
       "delete": {
         "operationId": "deleteListingsById",
@@ -25949,7 +26000,9 @@
                     "properties": {
                       "title": {
                         "type": "string",
-                        "minLength": 1
+                        "minLength": 1,
+                        "maxLength": 50,
+                        "description": "Compact title for a new product listing. Existing listing titles and saved drafts are not truncated; an over-limit draft must be edited before publication."
                       },
                       "description": {
                         "type": "string",
@@ -36611,7 +36664,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/JsonValue"
+                  "$ref": "#/components/schemas/WorkspaceProAnalytics"
                 }
               }
             }
@@ -39283,6 +39336,41 @@
       }
     },
     "schemas": {
+      "WorkspaceProAnalytics": {
+        "type": "object",
+        "required": [
+          "monthlyRevenue",
+          "monthlyViews",
+          "conversionRate",
+          "topListings",
+          "revenueByCurrency"
+        ],
+        "properties": {
+          "monthlyRevenue": {
+            "type": "number",
+            "deprecated": true,
+            "description": "Legacy major-unit aggregate, without currency. Retained for v1 compatibility; display clients must use revenueByCurrency. Removal requires v2."
+          },
+          "monthlyViews": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Cumulative views of the bounded catalogue sample, not a monthly audience series."
+          },
+          "conversionRate": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Completed current-month sales divided by cumulative sampled catalogue views, times 100; not an event-cohort conversion rate."
+          },
+          "topListings": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/PublicListing" }
+          },
+          "revenueByCurrency": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/MonetizationMoney" }
+          }
+        }
+      },
       "MarketplaceReview": {
         "type": "object",
         "additionalProperties": false,
@@ -45540,6 +45628,39 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/JsonValue"
+            }
+          }
+        }
+      },
+      "ListingCharacteristics": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["groups"],
+        "properties": {
+          "groups": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["id", "label", "items"],
+              "properties": {
+                "id": { "type": "string", "minLength": 1 },
+                "label": { "type": "string", "minLength": 1 },
+                "items": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["code", "label", "value"],
+                    "properties": {
+                      "code": { "type": "string", "minLength": 1 },
+                      "label": { "type": "string", "minLength": 1 },
+                      "value": { "type": "string", "minLength": 1 }
+                    }
+                  }
+                }
+              }
             }
           }
         }

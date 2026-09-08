@@ -76,7 +76,10 @@ const amenityLabels: Record<string, string> = {
 
 export const ImmoPropertyDetailPage: React.FC = () => {
   const { slug = "" } = useParams<{ slug: string }>();
-  const { currentUser } = useAuth();
+  const { currentUser, effectivePermissions } = useAuth();
+  const canRecordRecentlyViewed = effectivePermissions.includes(
+    "marketplace.customer.access",
+  );
   const { activeMarket, currentLocale, convertMoney } = useMarketLocation();
   const { t } = useTranslation();
   const toast = useToast();
@@ -89,7 +92,7 @@ export const ImmoPropertyDetailPage: React.FC = () => {
   const [error, setError] = useState(false);
   const [sending, setSending] = useState(false);
   const [sentLeadId, setSentLeadId] = useState<string>();
-  const [appointmentAt, setAppointmentAt] = useState("2026-08-26T14:30");
+  const [appointmentAt, setAppointmentAt] = useState("");
   const originalListingHeaderRef = useRef<HTMLDivElement>(null);
   const [form, setForm] = useState<LeadForm>({
     type: "information",
@@ -107,25 +110,39 @@ export const ImmoPropertyDetailPage: React.FC = () => {
   );
 
   useEffect(() => {
+    let cancelled = false;
     setLoading(true);
+    setError(false);
+    setProperty(null);
+    setComparables([]);
     services.realEstate
       .getProperty(slug, activeMarket.code)
-      .then(async (result) => {
+      .then((result) => {
+        if (cancelled) return;
         setProperty(result);
-        await services.realEstate.markRecentlyViewed(
-          currentUser?.id || "guest",
-          result.id,
-        );
-        setComparables(
-          await services.realEstate.getComparableProperties(
-            result.id,
-            activeMarket.code,
-          ),
-        );
+        // Account history and recommendations must not gate public discovery.
+        if (currentUser && canRecordRecentlyViewed) {
+          void services.realEstate
+            .markRecentlyViewed(currentUser.id, result.id)
+            .catch(() => undefined);
+        }
+        void services.realEstate
+          .getComparableProperties(result.id, activeMarket.code)
+          .then((items) => {
+            if (!cancelled) setComparables(items);
+          })
+          .catch(() => undefined);
       })
-      .catch(() => setError(true))
-      .finally(() => setLoading(false));
-  }, [activeMarket.code, currentUser?.id, slug]);
+      .catch(() => {
+        if (!cancelled) setError(true);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [activeMarket.code, canRecordRecentlyViewed, currentUser?.id, slug]);
 
   usePageMeta({
     title: property?.title || "Bien immobilier",
@@ -247,10 +264,18 @@ export const ImmoPropertyDetailPage: React.FC = () => {
 
   const requestVisit = async () => {
     if (!sentLeadId) return;
+    const startsAt = new Date(appointmentAt);
+    if (
+      !Number.isFinite(startsAt.getTime()) ||
+      startsAt.getTime() <= Date.now()
+    ) {
+      toast.error(t("immo.propertyDetail.chooseFutureAppointment"));
+      return;
+    }
     try {
       await services.realEstate.requestAppointment(
         sentLeadId,
-        new Date(appointmentAt).toISOString(),
+        startsAt.toISOString(),
       );
       toast.success("Créneau demandé. L’annonceur doit encore le confirmer.");
     } catch {

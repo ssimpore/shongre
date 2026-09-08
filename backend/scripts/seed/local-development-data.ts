@@ -194,7 +194,7 @@ function readSeedJson<T>(filePath: string): T {
   return JSON.parse(fs.readFileSync(filePath, "utf8")) as T;
 }
 
-const marketplaceFixture = readSeedJson<LegacyDemoFixture>(
+export const marketplaceFixture = readSeedJson<LegacyDemoFixture>(
   marketplaceFixturePath,
 );
 const demoMediaManifest = readSeedJson<DemoMediaManifest>(
@@ -1088,6 +1088,156 @@ async function removeLegacyMarketplaceSeed(): Promise<void> {
   if (result.error) throw result.error;
 }
 
+/** Shared scenario projection for local PostgreSQL and isolated API browser tests. */
+export function createSeedListing(
+  source: Record<string, any>,
+  options: {
+    listingId: string;
+    profileId: (sourceId: string) => string;
+    availableCategoryIds: ReadonlySet<string>;
+    images: readonly string[];
+    marketplaceOrganizationId?: string;
+  },
+): Listing {
+  const mappedId = options.listingId;
+  const category = listingCategory(source, options.availableCategoryIds);
+  const marketCode = String(source.marketCode || "FR").toUpperCase();
+  const currency = String(source.currency || "EUR").toUpperCase();
+  const price = Number(source.price || 0);
+  const photos = [...options.images];
+  const marketPublications = (
+    source.marketPublications?.length
+      ? source.marketPublications
+      : [
+          {
+            marketCode,
+            status: "active",
+            isPrimary: true,
+            publishedAt: source.publishedAt || source.createdAt,
+            customPrice: price,
+            currency,
+            complianceChecked: true,
+          },
+        ]
+  ).map((publication: Record<string, any>) => ({
+    marketCode: String(publication.marketCode || marketCode).toUpperCase(),
+    status:
+      publication.status === "pending"
+        ? ("pending_review" as const)
+        : publication.status,
+    isPrimary:
+      publication.isPrimary ??
+      String(publication.marketCode || marketCode).toUpperCase() === marketCode,
+    priceMinor: Math.round(Number(publication.customPrice ?? price) * 100),
+    currency: String(publication.currency || currency).toUpperCase(),
+    complianceState:
+      publication.complianceChecked === false
+        ? ("pending" as const)
+        : ("approved" as const),
+    availableServices: {
+      ...Object.fromEntries(
+        (source.deliveryOptions || [])
+          .filter((option: Record<string, any>) => option.available)
+          .map((option: Record<string, any>) => [option.type, true]),
+      ),
+      online_payment: Boolean(source.isOnlinePaymentAvailable),
+    },
+    publishedAt: publication.publishedAt || source.createdAt,
+    sortDate: publication.publishedAt || source.createdAt,
+  }));
+  const promotionType = listingPromotionType(
+    source.promotionType || source.boostType,
+  );
+  const listing: Listing = {
+    id: mappedId,
+    sellerId: options.profileId(source.sellerId),
+    publisherType:
+      source.publisherType ||
+      (source.sellerType === "pro" ? "professional" : "private"),
+    publisherUserId: options.profileId(
+      source.publisherUserId || source.sellerId,
+    ),
+    publisherOrganizationId:
+      source.sellerType === "pro"
+        ? options.marketplaceOrganizationId
+        : undefined,
+    publisherVerificationStatus:
+      source.publisherVerificationStatus ||
+      (source.sellerType === "pro"
+        ? "business_verified"
+        : source.sellerIsVerified
+          ? "identity_verified"
+          : "unverified"),
+    categoryId: category.id,
+    title: source.title,
+    description: source.description,
+    price,
+    originalPrice: source.originalPrice,
+    currency,
+    status: listingStatus(source.status),
+    condition: source.condition || "not_applicable",
+    brand: source.attributes?.brand,
+    model: source.attributes?.model,
+    marketCode,
+    marketCodes: source.marketCodes || [marketCode],
+    marketPublications,
+    city: source.city,
+    postalCode: source.postalCode,
+    department: source.department,
+    region: source.region,
+    country: source.country || marketCode,
+    latitude: source.latitude,
+    longitude: source.longitude,
+    allowedDelivery: (source.deliveryOptions || [])
+      .filter((option: Record<string, any>) => option.available)
+      .map((option: Record<string, any>) => option.type)
+      .filter((type: string) => type !== "custom_carrier"),
+    shippingCost: Number(
+      (source.deliveryOptions || []).find(
+        (option: Record<string, any>) => option.available && option.price,
+      )?.price || 0,
+    ),
+    images: photos,
+    isUrgent: promotionType === "urgent_badge",
+    isFeatured: Boolean(source.isBoosted && promotionType !== "urgent_badge"),
+    promotionState:
+      source.promotionState || (source.isBoosted ? "active" : "inactive"),
+    promotionType,
+    promotionSource:
+      source.promotionSource || (source.isBoosted ? "admin_grant" : undefined),
+    promotionSourceId:
+      source.promotionSourceId ||
+      (source.isBoosted
+        ? localSeedUuid("listing-promotion", source.id)
+        : undefined),
+    promotionLabel: source.promotionLabel,
+    promotionStartAt:
+      source.promotionStartAt ||
+      (source.isBoosted ? source.createdAt : undefined),
+    promotionEndAt:
+      source.promotionEndAt ||
+      (source.isBoosted ? FIXED_EXPIRES_AT : undefined),
+    publishedAt: source.publishedAt || source.createdAt,
+    materiallyUpdatedAt: source.materiallyUpdatedAt,
+    organicFreshnessAt: source.organicFreshnessAt || source.createdAt,
+    viewCount: Number(source.viewsCount ?? source.viewCount ?? 0),
+    favoriteCount: Number(source.favoritesCount ?? 0),
+    attributes: {
+      ...(source.attributes || {}),
+      categoryPath: category.path,
+      legacyCategorySlug: source.categorySlug,
+      legacySubCategorySlug: source.subCategorySlug,
+      isNegotiable: Boolean(source.isNegotiable),
+      isFreeDonation: Boolean(source.isFreeDonation),
+      contactCount: Number(source.contactCount || 0),
+    },
+    createdAt: source.createdAt,
+    updatedAt: source.updatedAt,
+    expiresAt: FIXED_EXPIRES_AT,
+  };
+  return listing;
+}
+
 async function seedGenericListings(
   listingUrls: ReadonlyMap<string, readonly string[]>,
   marketplaceOrganizationId: string,
@@ -1102,139 +1252,14 @@ async function seedGenericListings(
   );
   for (const source of marketplaceFixture.listings) {
     const mappedId = listingId(source.id);
-    const category = listingCategory(source, availableCategoryIds);
-    const marketCode = String(source.marketCode || "FR").toUpperCase();
-    const currency = String(source.currency || "EUR").toUpperCase();
-    const price = Number(source.price || 0);
     const photos = [...(listingUrls.get(source.id) || [])];
-    const marketPublications = (
-      source.marketPublications?.length
-        ? source.marketPublications
-        : [
-            {
-              marketCode,
-              status: "active",
-              isPrimary: true,
-              publishedAt: source.publishedAt || source.createdAt,
-              customPrice: price,
-              currency,
-              complianceChecked: true,
-            },
-          ]
-    ).map((publication: Record<string, any>) => ({
-      marketCode: String(publication.marketCode || marketCode).toUpperCase(),
-      status:
-        publication.status === "pending"
-          ? ("pending_review" as const)
-          : publication.status,
-      isPrimary:
-        publication.isPrimary ??
-        String(publication.marketCode || marketCode).toUpperCase() ===
-          marketCode,
-      priceMinor: Math.round(Number(publication.customPrice ?? price) * 100),
-      currency: String(publication.currency || currency).toUpperCase(),
-      complianceState:
-        publication.complianceChecked === false
-          ? ("pending" as const)
-          : ("approved" as const),
-      availableServices: {
-        ...Object.fromEntries(
-          (source.deliveryOptions || [])
-            .filter((option: Record<string, any>) => option.available)
-            .map((option: Record<string, any>) => [option.type, true]),
-        ),
-        online_payment: Boolean(source.isOnlinePaymentAvailable),
-      },
-      publishedAt: publication.publishedAt || source.createdAt,
-      sortDate: publication.publishedAt || source.createdAt,
-    }));
-    const promotionType = listingPromotionType(
-      source.promotionType || source.boostType,
-    );
-    const listing: Listing = {
-      id: mappedId,
-      sellerId: profileId(source.sellerId),
-      publisherType:
-        source.publisherType ||
-        (source.sellerType === "pro" ? "professional" : "private"),
-      publisherUserId: profileId(source.publisherUserId || source.sellerId),
-      publisherOrganizationId:
-        source.sellerType === "pro" ? marketplaceOrganizationId : undefined,
-      publisherVerificationStatus:
-        source.publisherVerificationStatus ||
-        (source.sellerType === "pro"
-          ? "business_verified"
-          : source.sellerIsVerified
-            ? "identity_verified"
-            : "unverified"),
-      categoryId: category.id,
-      title: source.title,
-      description: source.description,
-      price,
-      originalPrice: source.originalPrice,
-      currency,
-      status: listingStatus(source.status),
-      condition: source.condition || "not_applicable",
-      brand: source.attributes?.brand,
-      model: source.attributes?.model,
-      marketCode,
-      marketCodes: source.marketCodes || [marketCode],
-      marketPublications,
-      city: source.city,
-      postalCode: source.postalCode,
-      department: source.department,
-      region: source.region,
-      country: source.country || marketCode,
-      latitude: source.latitude,
-      longitude: source.longitude,
-      allowedDelivery: (source.deliveryOptions || [])
-        .filter((option: Record<string, any>) => option.available)
-        .map((option: Record<string, any>) => option.type)
-        .filter((type: string) => type !== "custom_carrier"),
-      shippingCost: Number(
-        (source.deliveryOptions || []).find(
-          (option: Record<string, any>) => option.available && option.price,
-        )?.price || 0,
-      ),
+    const listing = createSeedListing(source, {
+      listingId: mappedId,
+      profileId,
       images: photos,
-      isUrgent: promotionType === "urgent_badge",
-      isFeatured: Boolean(source.isBoosted && promotionType !== "urgent_badge"),
-      promotionState:
-        source.promotionState || (source.isBoosted ? "active" : "inactive"),
-      promotionType,
-      promotionSource:
-        source.promotionSource ||
-        (source.isBoosted ? "admin_grant" : undefined),
-      promotionSourceId:
-        source.promotionSourceId ||
-        (source.isBoosted
-          ? localSeedUuid("listing-promotion", source.id)
-          : undefined),
-      promotionLabel: source.promotionLabel,
-      promotionStartAt:
-        source.promotionStartAt ||
-        (source.isBoosted ? source.createdAt : undefined),
-      promotionEndAt:
-        source.promotionEndAt ||
-        (source.isBoosted ? FIXED_EXPIRES_AT : undefined),
-      publishedAt: source.publishedAt || source.createdAt,
-      materiallyUpdatedAt: source.materiallyUpdatedAt,
-      organicFreshnessAt: source.organicFreshnessAt || source.createdAt,
-      viewCount: Number(source.viewsCount ?? source.viewCount ?? 0),
-      favoriteCount: Number(source.favoritesCount ?? 0),
-      attributes: {
-        ...(source.attributes || {}),
-        categoryPath: category.path,
-        legacyCategorySlug: source.categorySlug,
-        legacySubCategorySlug: source.subCategorySlug,
-        isNegotiable: Boolean(source.isNegotiable),
-        isFreeDonation: Boolean(source.isFreeDonation),
-        contactCount: Number(source.contactCount || 0),
-      },
-      createdAt: source.createdAt,
-      updatedAt: source.updatedAt,
-      expiresAt: FIXED_EXPIRES_AT,
-    };
+      availableCategoryIds,
+      marketplaceOrganizationId,
+    });
     await repository.save(listing);
     const deleteResult = await client
       .from("listing_media")

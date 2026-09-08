@@ -1,3 +1,4 @@
+import { testListingPath } from "./fixtures";
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { ALL_ROUTES, PUBLIC_ROUTES } from "./routes";
@@ -82,7 +83,7 @@ test.describe("accessible names at phone width", () => {
     { path: "/deposer", persona: "individual_seller" },
     { path: "/", persona: "guest" },
     { path: "/recherche", persona: "guest" },
-    { path: "/annonce/list-117", persona: "guest" },
+    { path: testListingPath("list-117"), persona: "guest" },
   ] as const;
 
   for (const route of ROUTES_WITH_COLLAPSING_LABELS) {

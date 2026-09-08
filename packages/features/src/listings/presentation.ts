@@ -55,7 +55,7 @@ export interface ListingSellerRatingPresentation {
 }
 
 export type ListingCapabilityIcon =
-  "file" | "shield" | "tag" | "truck" | "verified";
+  "file" | "payment" | "tag" | "truck" | "verified";
 
 export type ListingCapabilityKind =
   | "digital_fulfillment"
@@ -105,7 +105,7 @@ export function getListingCapabilityPresentation(
 
   if (listing.onlinePaymentAvailable === true) {
     capabilities.push({
-      icon: "shield",
+      icon: "payment",
       kind: "online_payment",
       label: labels.onlinePayment,
     });

@@ -3,6 +3,43 @@ import { getSupabaseAdminClient } from "../../supabase/supabase-client.js";
 import { databaseFailure } from "./repository-error.js";
 import { PostgresListingRepository } from "./listing.repository.js";
 import { PostgresOrderRepository } from "./order.repository.js";
+import type { components } from "@shongre/contracts/openapi";
+import type { Money } from "@shongre/contracts";
+import { majorToMinorAmount } from "@shongre/shared/money";
+
+export type ProAnalytics = Omit<
+  components["schemas"]["WorkspaceProAnalytics"],
+  "topListings"
+> & { topListings: Listing[] };
+
+export function revenueByCurrency(
+  orders: ReadonlyArray<{
+    currency: string;
+    itemAmount: number;
+    itemAmountMinor?: number;
+  }>,
+): Money[] {
+  const totals = new Map<string, number>();
+  for (const order of orders) {
+    // Legacy major-unit orders are normalized only at this repository boundary.
+    const currency = order.currency.toUpperCase();
+    const amountMinor =
+      order.itemAmountMinor ?? majorToMinorAmount(order.itemAmount, currency);
+    const total = (totals.get(currency) ?? 0) + amountMinor;
+    if (
+      !/^[A-Z]{3}$/.test(currency) ||
+      !Number.isSafeInteger(amountMinor) ||
+      amountMinor < 0 ||
+      !Number.isSafeInteger(total)
+    ) {
+      throw new Error("Invalid workspace revenue projection");
+    }
+    totals.set(currency, total);
+  }
+  return [...totals]
+    .sort(([left], [right]) => left.localeCompare(right))
+    .map(([currency, amountMinor]) => ({ currency, amountMinor }));
+}
 
 export interface UserWorkspaceSummary {
   totalListingsCount: number;
@@ -22,12 +59,7 @@ export interface IWorkspaceRepository {
     userId: string,
     marketCode: string,
   ): Promise<UserWorkspaceSummary>;
-  getProAnalytics(sellerId: string): Promise<{
-    monthlyRevenue: number;
-    monthlyViews: number;
-    conversionRate: number;
-    topListings: Listing[];
-  }>;
+  getProAnalytics(sellerId: string): Promise<ProAnalytics>;
 }
 
 export class DemoWorkspaceRepository implements IWorkspaceRepository {
@@ -49,14 +81,10 @@ export class DemoWorkspaceRepository implements IWorkspaceRepository {
     };
   }
 
-  async getProAnalytics(_sellerId: string): Promise<{
-    monthlyRevenue: number;
-    monthlyViews: number;
-    conversionRate: number;
-    topListings: Listing[];
-  }> {
+  async getProAnalytics(_sellerId: string): Promise<ProAnalytics> {
     return {
       monthlyRevenue: 3840.0,
+      revenueByCurrency: [{ amountMinor: 384000, currency: "EUR" }],
       monthlyViews: 12450,
       conversionRate: 3.2,
       topListings: [],
@@ -181,12 +209,7 @@ export class PostgresWorkspaceRepository implements IWorkspaceRepository {
     }
   }
 
-  async getProAnalytics(sellerId: string): Promise<{
-    monthlyRevenue: number;
-    monthlyViews: number;
-    conversionRate: number;
-    topListings: Listing[];
-  }> {
+  async getProAnalytics(sellerId: string): Promise<ProAnalytics> {
     try {
       const startOfMonth = new Date();
       startOfMonth.setUTCDate(1);
@@ -206,6 +229,7 @@ export class PostgresWorkspaceRepository implements IWorkspaceRepository {
       );
 
       return {
+        revenueByCurrency: revenueByCurrency(monthlySales),
         monthlyRevenue: monthlySales.reduce(
           (sum, order) => sum + order.itemAmount,
           0,

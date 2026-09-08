@@ -3,6 +3,7 @@ import type { HomepageSectionView } from "../../../domains/homepage/homepage.typ
 import { HomeCollectionExplorer } from "./HomeCollectionExplorer";
 import { HomeDiscoverySections } from "./HomeDiscoverySections";
 import { HomeProCtaSection } from "./HomeProCtaSection";
+import { HomeRecentSearches } from "./HomeRecentSearches";
 import { HomeUniverseExplorer } from "./HomeUniverseExplorer";
 
 export const HomeBelowFold: React.FC<{
@@ -10,8 +11,11 @@ export const HomeBelowFold: React.FC<{
   onRetry: () => void;
 }> = ({ sections, onRetry }) => {
   return (
-    <div className="space-y-8 sm:space-y-12">
+    <>
       {sections.flatMap((section) => {
+        if (section.type === "recent_searches") {
+          return [<HomeRecentSearches key={section.key} section={section} />];
+        }
         if (
           section.type === "trending" ||
           section.type === "deals" ||
@@ -44,6 +48,6 @@ export const HomeBelowFold: React.FC<{
         }
         return [];
       })}
-    </div>
+    </>
   );
 };

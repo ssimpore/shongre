@@ -33,6 +33,15 @@ describe("homepage configuration contract", () => {
       configuration.sections.find((item) => item.key === "deals"),
     ).toMatchObject({ maxItems: 6 });
     expect(
+      configuration.sections.find((item) => item.key === "collections"),
+    ).toMatchObject({
+      enabled: true,
+      settings: { selectionMode: "automatic", collectionSlugs: [] },
+    });
+    expect(
+      configuration.sections.find((item) => item.key === "recent_searches"),
+    ).toMatchObject({ enabled: true, maxItems: 6 });
+    expect(
       configuration.sections.find((item) => item.key === "universe_explorer"),
     ).toMatchObject({
       minimumListingCount: 1,

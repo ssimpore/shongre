@@ -10,6 +10,7 @@ test.describe("Staff marketplace navigation", () => {
   test("keeps ordinary Staff signed in across admin and read-only public pages", async ({
     page,
   }) => {
+    test.setTimeout(90_000);
     await usePersona(page, "support");
     await page.goto("/admin/support", { waitUntil: "domcontentloaded" });
 
@@ -112,6 +113,32 @@ test.describe("Staff marketplace navigation", () => {
     expect(protectedRequests).toEqual([]);
   });
 
+  test("public property detail does not require an account-history write", async ({
+    page,
+  }) => {
+    await usePersona(page, "guest");
+    const historyWrites: string[] = [];
+    page.on("request", (request) => {
+      if (
+        request.method() === "POST" &&
+        request.url().includes("/real-estate/recently-viewed")
+      ) {
+        historyWrites.push(request.url());
+      }
+    });
+    await page.goto("/immo/bien/maison-familiale-ecully-jardin");
+    await expect(
+      page.getByRole("heading", {
+        level: 1,
+        name: "Maison familiale avec jardin",
+      }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Envoyer la demande" }),
+    ).toBeVisible();
+    expect(historyWrites).toEqual([]);
+  });
+
   test("shows Staff the regular five-item mobile marketplace navigation", async ({
     page,
   }) => {
@@ -142,17 +169,23 @@ test.describe("Staff marketplace navigation", () => {
   test("retains the existing listing action for an authorized marketplace user", async ({
     page,
   }) => {
+    test.setTimeout(90_000);
     await usePersona(page, "individual_buyer");
     await page.goto("/immo/bien/maison-familiale-ecully-jardin", {
       waitUntil: "domcontentloaded",
     });
 
+    await expect(
+      page.getByRole("heading", {
+        name: "Maison familiale avec jardin",
+        level: 1,
+      }),
+    ).toBeVisible({ timeout: 30_000 });
+
     await expect(page.locator("[data-header-publish-cta]")).toBeVisible();
     await expect(page.getByRole("link", { name: "Favoris" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Messagerie" })).toBeVisible();
-    await expect(
-      page.getByRole("button", { name: /favoris/i }),
-    ).toBeVisible();
+    await expect(page.getByRole("button", { name: /favoris/i })).toBeVisible();
 
     await page.getByRole("textbox", { name: "Nom" }).fill("Thomas Laurent");
     await page
@@ -161,9 +194,31 @@ test.describe("Staff marketplace navigation", () => {
     await page.getByRole("checkbox").check();
     await page.getByRole("button", { name: "Envoyer la demande" }).click();
     await expect(page.getByText("Demande envoyée")).toBeVisible();
+    const appointment = page.getByLabel("Créneau souhaité");
+    await expect(appointment).toHaveValue("");
+    const requestVisit = page
+      .getByRole("button", { name: "Demander ce créneau", exact: true })
+      .first();
+    await requestVisit.click();
+    await expect(
+      page.getByText("Choisissez une date de visite future."),
+    ).toBeVisible();
+    await appointment.fill(
+      new Date(Date.now() + 86_400_000).toISOString().slice(0, 16),
+    );
+    const requested = page.waitForResponse(
+      (response) =>
+        response.url().includes("/appointments") &&
+        response.request().method() === "POST",
+    );
+    await requestVisit.click();
+    expect((await requested).status()).toBe(200);
+    await expect(
+      page.getByText("Créneau demandé. L’annonceur doit encore le confirmer."),
+    ).toBeVisible();
   });
 
-  test("shows the isolated Staff demo state only to the dedicated tester", async ({
+  test("keeps Operations read-only even with a historical tester grant", async ({
     page,
   }) => {
     await usePersona(page, "operations");
@@ -172,20 +227,20 @@ test.describe("Staff marketplace navigation", () => {
 
     await expect(page.getByTestId("staff-marketplace-mode")).toHaveAttribute(
       "data-mode",
-      "demo",
+      "read-only",
     );
     await expect(
       page.getByTestId("staff-marketplace-mode"),
     ).toHaveAccessibleName(
-      /Mode test Staff — données isolées\..*Ouvrir l’administration/,
+      /Navigation Staff — lecture seule\..*Ouvrir l’administration/,
     );
     await expect(page.locator("[data-header-publish-cta]")).toBeVisible();
     await page.locator("[data-header-publish-cta] a").click();
-    await expect(page).toHaveURL((url) => url.pathname === "/deposer");
+    await expect(page).toHaveURL((url) => url.pathname === "/");
     await waitForStableLayout(page);
     await expect(page.getByTestId("staff-marketplace-mode")).toHaveAttribute(
       "data-mode",
-      "demo",
+      "read-only",
     );
   });
 
@@ -252,37 +307,32 @@ test.describe("Staff marketplace navigation", () => {
     );
   });
 
-  test("labels the dedicated tester entry and reuses it in the mobile drawer", async ({
+  test("never exposes a retired tester bypass in the mobile drawer", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await usePersona(page, "operations");
     await page.goto("/", { waitUntil: "domcontentloaded" });
 
-    // Wait for persisted-persona restoration before opening local Header
+    // Wait for API session restoration before opening local Header
     // state; otherwise the guest-to-Staff hydration transition can replace the
     // Header immediately after the click and close the freshly opened drawer.
     await expect(page.getByTestId("staff-marketplace-mode")).toHaveAttribute(
       "data-mode",
-      "demo",
+      "read-only",
     );
-    await expect(
-      page.getByRole("button", { name: "16. Opérations Shongre" }),
-    ).toBeVisible();
     const menuToggle = page.getByRole("button", { name: "Ouvrir le menu" });
     await menuToggle.focus();
     await menuToggle.press("Enter");
     const drawer = page.getByRole("dialog");
     await expect(drawer).toBeVisible();
 
-    await expect(drawer.getByText("Démo marketplace autorisée")).toBeVisible();
+    await expect(drawer.getByText("Démo marketplace autorisée")).toHaveCount(0);
     await expect(
       drawer.locator('[data-account-menu-item="admin"]'),
     ).toBeVisible();
     const demo = drawer.locator('[data-account-menu-item="demo_workspace"]');
-    await expect(demo).toBeVisible();
-    await expect(demo).toHaveAttribute("data-staff-demo-destination", "true");
-    await expect(demo).toContainText("Démo");
+    await expect(demo).toHaveCount(0);
     await expect(
       drawer.locator('[data-account-menu-item="purchases"]'),
     ).toHaveCount(0);

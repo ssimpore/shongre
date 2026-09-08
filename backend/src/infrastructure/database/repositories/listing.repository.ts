@@ -477,7 +477,12 @@ export class DemoListingRepository implements IListingRepository {
       });
     }
     if (filters.categoryId) {
-      result = result.filter((l) => l.categoryId === filters.categoryId);
+      const categoryId = filters.categoryId;
+      result = result.filter(
+        (listing) =>
+          listing.categoryId === categoryId ||
+          listing.categoryId.startsWith(`${categoryId}.`),
+      );
     }
     if (filters.sellerId) {
       result = result.filter((l) => l.sellerId === filters.sellerId);

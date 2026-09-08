@@ -1,9 +1,13 @@
 import { Listing, SearchFilters } from "../../types";
 import { PublicationDraftState } from "../../domains/publication/publication.types";
 import type { Money } from "@shongre/contracts";
+import type { components } from "@shongre/contracts/openapi";
+
+export type ListingCharacteristicsData =
+  components["schemas"]["ListingCharacteristics"];
 
 export type BulkImportValidationCode =
-  "TITLE_REQUIRED" | "TITLE_TOO_SHORT" | "PRICE_INVALID";
+  "TITLE_REQUIRED" | "TITLE_TOO_SHORT" | "TITLE_TOO_LONG" | "PRICE_INVALID";
 
 export interface BulkListingImportRow {
   id: string;
@@ -49,6 +53,11 @@ export interface ListingsServiceContract {
     filter?: SearchFilters,
   ): Promise<{ listings: Listing[]; total: number }>;
   getListingById(id: string): Promise<Listing | null>;
+  getCharacteristics(
+    id: string,
+    marketCode: string,
+    locale: string,
+  ): Promise<ListingCharacteristicsData>;
   getOwnListings(
     userId: string,
     marketCode: string,

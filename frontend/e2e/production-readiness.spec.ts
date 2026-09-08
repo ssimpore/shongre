@@ -1,3 +1,4 @@
+import { testListingPath } from "./fixtures";
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 import { expectNoHorizontalOverflow, waitForStableLayout } from "./overflow";
@@ -86,7 +87,9 @@ test("does not cover listing media and reveals honest sticky purchase controls o
 }) => {
   await usePersona(page, "individual_buyer");
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/annonce/list-112", { waitUntil: "domcontentloaded" });
+  await page.goto(testListingPath("list-112"), {
+    waitUntil: "domcontentloaded",
+  });
   await waitForStableLayout(page);
 
   await expect(page.getByTestId("listing-mobile-actions")).toHaveCount(0);

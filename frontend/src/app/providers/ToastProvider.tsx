@@ -5,6 +5,7 @@ import React, {
   useCallback,
   useEffect,
   useRef,
+  useMemo,
 } from "react";
 import { CheckCircle2, AlertCircle, Info, X } from "lucide-react";
 import { useTranslation } from "../../i18n/I18nProvider";
@@ -72,6 +73,12 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
     [showToast],
   );
 
+  // Notification state must not invalidate consumers' data-loading effects.
+  const value = useMemo(
+    () => ({ showToast, success, error, info, warning }),
+    [showToast, success, error, info, warning],
+  );
+
   const removeToast = (id: string) => {
     const timer = dismissalTimers.current.get(id);
     if (timer !== undefined) {
@@ -82,7 +89,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   return (
-    <ToastContext.Provider value={{ showToast, success, error, info, warning }}>
+    <ToastContext.Provider value={value}>
       {children}
       {/* Clears the mobile tab bar so toasts never sit on top of navigation;
           falls back to a plain inset once the bar is gone at md.

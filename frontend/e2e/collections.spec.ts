@@ -8,6 +8,54 @@ test.beforeEach(async ({ page }) => {
 });
 
 test.describe("API-backed collections", () => {
+  for (const width of [1408, 390]) {
+    test(`matches listing-card corners across collection surfaces at ${width}px`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width, height: 900 });
+      const errors: string[] = [];
+      page.on("pageerror", (error) => errors.push(error.message));
+      page.on("console", (message) => {
+        if (message.type() === "error") errors.push(message.text());
+      });
+      await page.goto("/");
+      await expect(page).toHaveTitle(/Shongre/i);
+      const listing = page.locator("[data-listing-card]").first();
+      await expect(listing).toBeVisible();
+      const radius = await listing.evaluate(
+        (element) => getComputedStyle(element).borderRadius,
+      );
+      const collections = page.getByTestId("home-collection-explorer");
+      await collections.scrollIntoViewIfNeeded();
+      const homeCards = collections.getByRole("link", {
+        name: /^Explorer la collection/,
+      });
+      await expect(homeCards.first()).toBeVisible();
+      for (const card of await homeCards.all()) {
+        await expect(card).toHaveCSS("border-radius", radius);
+        await expect(card).toHaveCSS("overflow", "hidden");
+      }
+      await expectNoHorizontalOverflow(page, "homepage collections");
+      await collections
+        .getByRole("link", { name: /^Voir (toutes les collections|tout)$/ })
+        .click();
+      await expect(page).toHaveURL(/\/collections$/);
+      const cards = page.getByTestId("collections-grid").getByRole("link");
+      await expect(cards.first()).toBeVisible();
+      for (const card of await cards.all()) {
+        await expect(card).toHaveCSS("border-radius", radius);
+        await expect(card).toHaveCSS("overflow", "hidden");
+      }
+      await expectNoHorizontalOverflow(page, "collection catalog");
+      await cards.first().click();
+      await expect(page).toHaveURL(/\/collections\/[a-z0-9-]+$/);
+      await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+      await expect(listing).toBeVisible();
+      await expect(listing).toHaveCSS("border-radius", radius);
+      expect(errors).toEqual([]);
+    });
+  }
+
   test("renders only live taxonomy collections with inventory", async ({
     page,
   }) => {

@@ -3302,6 +3302,17 @@ export const OPENAPI_OPERATIONS = {
     successStatus: 200,
     queryParameters: {},
   },
+  "GET /listings/:id/characteristics": {
+    operationId: "getListingCharacteristics",
+    access: "public",
+    permission: null,
+    denyStaffMarketplace: false,
+    requestBodyRequired: false,
+    successStatus: 200,
+    queryParameters: {
+      locale: "string",
+    },
+  },
   "GET /listings/:id": {
     operationId: "getListingsById",
     access: "public",

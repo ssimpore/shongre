@@ -1,11 +1,25 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { PUBLICATION_CONSTRAINTS } from "@shongre/contracts/publication";
 
 const specification = JSON.parse(
   readFileSync(new URL("../../openapi/openapi.json", import.meta.url), "utf8"),
 );
 
 describe("public listings OpenAPI contract", () => {
+  it("bounds new product titles without restricting existing listing projections", () => {
+    const draft =
+      specification.paths["/listings/publish"].post.requestBody.content[
+        "application/json"
+      ].schema.properties.draft;
+    expect(draft.properties.title.maxLength).toBe(
+      PUBLICATION_CONSTRAINTS.title.maxLength,
+    );
+    expect(
+      specification.components.schemas.PublicListing.properties.title,
+    ).not.toHaveProperty("maxLength");
+  });
+
   it("uses explicit projections for collection, detail and ranked search", () => {
     expect(
       specification.paths["/listings"].get.responses["200"].content[

@@ -393,7 +393,7 @@ mobile-check: mobile-lint mobile-typecheck mobile-test mobile-api-only-check mob
 ##@ Infrastructure & database
 infra-check: ## Validate Dockerfiles, manifests, runbooks, and generated config
 	@scripts/infra.sh check
-	@node --test scripts/local-development-contract.test.mjs
+	@node --test scripts/local-development-contract.test.mjs scripts/e2e-filter.test.mjs
 supabase-up: ## Start the repository-owned local Supabase stack
 	@scripts/supabase.sh up
 supabase-down: ## Stop the repository-owned local Supabase stack

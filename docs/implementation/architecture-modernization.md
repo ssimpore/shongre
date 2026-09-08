@@ -9,6 +9,64 @@ markets, money movement, or unconfigured external providers. Those remain under
 the stricter release evidence in
 [`../architecture/production-capability-matrix.md`](../architecture/production-capability-matrix.md).
 
+## Compact product title policy
+
+Generic product onboarding now limits newly published titles to 50 characters
+through `PUBLICATION_CONSTRAINTS.title.maxLength`. Web and native inputs expose
+the same limit and counter; the canonical OpenAPI publication request, backend
+publication service and professional CSV import enforce the boundary. Errors
+identify the title field. Existing public listings, stored titles and drafts are
+not shortened or migrated; over-limit restored or assisted drafts must be edited
+explicitly before publication. Dedicated vertical onboarding and digital-version
+titles retain their separate contracts.
+
+The value is a rounded-down practical limit, not a universal text-fit guarantee.
+At the current homepage dimensions (208 × 402px cards, 182px title width,
+13px/18px Nunito Sans), the selected 73-character laser title occupies four lines.
+Cards with wrapping seller facts have less title room; sampled ordinary French
+text fit approximately 55 characters there. Chromium and WebKit measurements at
+1408px and 390px viewports informed rounding down to 50. Wide capitals, emoji and
+enlarged fonts can require more room. The existing shared adaptive card height
+and full-title wrapping remain necessary and unchanged.
+
+Release/migration scope (product-title policy revision 2): this tightens the
+new-publication request contract
+(the shared native input previously allowed 120; Web/API had no matching cap).
+Treat deployment as a coordinated product-title policy migration, shipping the
+Web/native counter and validation before enforcing the backend cap in a hosted
+environment. Older client submissions must receive the stable validation error
+and prompt an edit, never data truncation. This local implementation does not
+certify hosted rollout or older deployed native-client readiness. Revision 1 is
+the previous shared 120-character client policy; revision 2 is the unified
+50-character publication policy. The hosted release owner must verify supported
+native versions and draft-error recovery before activating revision 2, or retain
+the previous release. No database migration or existing-data rewrite is required.
+
+Verification for this policy uses boundary/over-limit contract, backend unit,
+authenticated API and native HTTP-adapter tests, plus
+`frontend/e2e/publication-title-limit.spec.ts` for desktop/mobile counters,
+restored draft preservation, input limits and step progression. This check also
+guards a reachable title step: an unused unstable translation callback was
+removed from the wizard's schema-request effect dependencies, which otherwise
+restarted the request on every render and blocked the title step. The shared toast
+context now retains its callback-object identity across notification changes;
+otherwise a validation notification restarted draft hydration and could overwrite
+the seller's correction. The browser regression verifies that draft reads do not
+restart when the validation notification appears or disappears. The isolated
+production browser build substitutes for `frontend-build` in the shared-system
+gate (`make -o frontend-build ui-check cross-platform-check`) to preserve the
+running interactive dev server's build directory. Full native/shared completion
+remains blocked by the existing Expo/Expo Router patch-version doctor findings;
+this change does not upgrade unrelated dependencies.
+
+The final isolated production run passed all four title-flow checks in Chromium
+and WebKit at 1408px and 390px widths, including console/overlay health and
+notification-safe draft correction. `make frontend-test` passed 686 tests;
+Web lint/type checks, backend unit/contract/integration checks, shared contract
+checks and `make openapi-check` passed. Native lint/types and 83 tests passed
+before the Expo doctor gate. Test processes were cleaned up; the interactive
+Web/API/worker processes and existing inventory were retained.
+
 ## Final architecture
 
 ```mermaid
@@ -194,10 +252,11 @@ header/request deadlines, generated-client bundle limits, bounded search
 candidates, queue retention, and provider/database timeouts use typed central
 performance defaults.
 
-## Certification evidence
+## Historical local/container certification evidence
 
-The certification ran every required lifecycle command rather than inferring
-success from source inspection. Highlights:
+The earlier certification ran every required lifecycle command rather than
+inferring success from source inspection. These counts belong to that checkpoint,
+not the current browser follow-up. Highlights:
 
 - `make install`: lockfile install of 1,245 packages, zero npm audit findings;
 - `make test`: 438 test files, 2,677 passing tests, two intentional
@@ -239,6 +298,63 @@ attempt.
   defects and are never fabricated by this certificate.
 - `OPENAPI_BASE_REF` is supplied in CI for the base-branch compatibility check;
   an unset local value cannot prove repository-history compatibility.
+- `/workspace/pro-analytics/{sellerId}` retains the deprecated numeric
+  `monthlyRevenue` and historical ratio for v1 compatibility. Web does not
+  present either as currency-safe revenue or an event-cohort conversion rate.
+  `revenueByCurrency` is the typed integer-money projection; removal of the
+  legacy wire fields requires v2. The catalogue view count is a bounded sample,
+  not a complete time-series analytics implementation.
+
+## Browser/API verification follow-up — 2026-09-08
+
+The current follow-up fixes the API-backed browser test boundary and the Pro
+dashboard response mapping. It preserves the existing local database and the
+interactive development server. No database reset, reseed, hosted deployment,
+provider activation or signing operation was performed in this follow-up.
+
+- API-only browser personas use first-party cookies, real Staff MFA and private
+  ephemeral recovery codes. A negative test proves local storage cannot grant
+  identity or revive the retired switcher.
+- Backend-owned seed projection and UUID identifiers power the browser listing
+  scenario. Home, detail, search and account tests no longer rely on identifiers
+  rejected by the production public-card contract.
+- The test runner uses the canonical France origin for direct navigation and
+  partitions filtered regular/serial runs without duplicate execution.
+- Pro analytics now has an OpenAPI schema and generated response type. The
+  shared listing mapper handles top listings, integer revenue stays separated
+  by currency, and unsupported weekly trends and conversion cards are removed.
+  A business-verification badge requires verified backend profile state.
+- The Pro action queue distinguishes unknown messaging state from zero and does
+  not infer an empty inventory from an empty analytics sample. Prices reuse the
+  shared category-aware price presentation. Revenue describes completed orders
+  last updated in the current UTC month, not a new accounting or payout report.
+- Public property loading is independent of optional account history and
+  recommendations. Only authorized customer accounts record recently viewed
+  properties; late responses are ignored after navigation. Buyers must choose
+  a future visit time rather than inheriting an expired date.
+- Stale title/rating, focus, taxonomy-navigation and course-plan test assumptions
+  have been aligned with current behavior without weakening authorization.
+- Buyer/seller API publication, persisted favourites, mobile message composer,
+  reload and outsider-access checks pass against the isolated API.
+
+Current outcome: **targeted follow-up verified; complete release certification
+not issued**. The core non-E2E suites passed 2,226 tests (two intentional
+disposable-database skips), and the final selected Chromium/WebKit run passed
+36 browser checks. The isolated production build passed; the normal build
+target was excluded from `make -o frontend-build check-all` to preserve the
+interactive dev server. That gate reached the SDK check and failed on the
+system's Command Line Tools selection. A command-scoped Xcode beta selection
+then passed the cross-platform gate, reusing its already-passing prerequisites.
+No system toolchain selection was changed. Final `make smoke` passed without
+stopping the user's Web server, API, worker or database.
+
+Pro dashboard desktop/phone screenshots and console checks confirm the new
+metric labels and verified-profile presentation without blank/error content or
+horizontal overflow. Test artifacts remain outside the repository.
+The exhaustive browser matrix, supported-host Firefox, signed mobile artifacts
+and hosted certification were not completed here. Provider/mobile preflights
+and environment-owned blockers are recorded in the current follow-up of the
+[capability matrix](../architecture/production-capability-matrix.md#current-verification-follow-up--2026-09-08).
 
 ## API-only cleanup verification
 
@@ -290,6 +406,264 @@ full-volume backup. Only the invalid 5,115-byte incremental AOF tail was
 truncated. The recoverable archive is ignored at
 `.runtime/redis-recovery.gT0ww5/redis-data-before-repair.tar.gz`; PostgreSQL
 remains authoritative for domain jobs and marketplace records.
+
+## Homepage recent searches and collection restoration
+
+The homepage again renders the published `recent_searches` section instead of
+discarding it. The header, search page, and homepage share one browser-local
+history hook, partitioned by account and market. Empty history renders no sample
+queries or empty section wrapper. History is hidden during session restoration,
+validates persisted values, synchronizes between mounted consumers/tabs, and
+supports replay and removal. The unscoped v1 key is not adopted because its
+contents cannot be attributed safely; its stored contents are left untouched.
+
+Collections now honor explicit automatic versus manual selection. Automatic
+selection uses the existing API taxonomy/inventory projection, including real
+counts and cover images. Manual selection preserves configured order and never
+falls back when empty. Minimum eligible-listing thresholds apply to each
+collection's inventory, not the number of collection cards. Loading and retry
+states do not introduce fallback inventory. The administration panel exposes
+both modes through the existing audited configuration workflow.
+
+Forward migration `00119_restore_automatic_homepage_collections.sql` repairs only
+published, enabled collection sections with no explicit selection mode and no
+selected slugs. Drafts, disabled sections, manual/custom selections, and historical
+section rows are preserved. It also replaces only the exact retired default
+editorial subtitle with neutral category-discovery copy. No schema or generated
+database type changes are needed. The migration is applied locally: the homepage
+API returns revision 5 with `selectionMode: automatic` and the recent-search
+section enabled. No dev process was stopped and no marketplace data was deleted.
+
+Verification includes the full frontend suite (671 tests), contracts (281),
+frontend lint/type/design-system/navigation/SEO checks, 12 focused restoration
+tests, and the transactional PostgreSQL regression:
+
+```bash
+make db-shell < backend/tests/rls/homepage-automatic-collections.sql
+```
+
+That regression creates temporary scenarios and rolls everything back, proving
+manual/disabled/draft isolation, historical preservation, and repeat-application
+idempotence. The full backend suite passed 1,066 tests with two intentional skips;
+one existing OpenAPI inventory test exceeded its five-second deadline under host
+load, then passed in isolation with the two new migration tests (six checks).
+The browser run also exposed an exact-category-only filter in the backend test
+repository. It now matches PostgreSQL's exact-or-descendant semantics; the added
+prefix-boundary regression and existing repository/discovery tests passed (33
+checks). This does not introduce a frontend fixture or alter the database path.
+
+Browser verification passed all three flows in Chromium and all three in
+WebKit: desktop (1408px), mobile (390px), and authenticated account isolation.
+The flows exercise search submission, homepage history, replay, removal and
+reload, shared autocomplete state, collection cover images, and collection
+detail navigation, with no console errors or horizontal overflow in passing
+runs. The initial WebKit attempts exposed test-readiness assumptions: the
+regression now waits for the authenticated account menu before searching and
+allows a bounded 30-second cold-readiness window, without changing application
+timeouts or weakening session-restoration privacy.
+
+```bash
+API_PUBLIC_RATE_LIMIT=1000 SHONGRE_E2E_API_TRANSPORT=1 make frontend-test-e2e \
+  E2E_ARGS='home-restored-sections.spec.ts --workers=1 --project=chromium --project=webkit'
+```
+
+The rate-limit override belongs only to the isolated test API's rapid page-load
+sequence; no local/shared/production setting is persisted. Browser plugin was
+not available, so the existing Playwright workflow was used. The live
+database-backed homepage also rendered real recent history and five collection
+cards at both viewport sizes. Cold live-dev interactions during concurrent
+builds hit proxy/action timeouts; the dev process was deliberately kept running
+as requested, and production-build interactions were verified separately.
+Screenshots and failed-attempt evidence are outside the repository under
+`/tmp/shongre-home-restoration.DyNoJ8/`. Firefox and remote deployment were not
+tested in this restoration task.
+Final `make smoke` passed for the Web app, API, worker/heartbeat, Redis and local
+Supabase; repository hygiene and formatting checks also passed.
+
+The homepage collection rail and `/collections` catalog now use the existing
+`rounded-listing-card` token instead of the larger general-card radius. The
+homepage loading placeholder follows the same geometry; media remains clipped
+to each card. This is a presentation-only change: inventory, navigation,
+selection rules, and the separate collection-detail hero are unchanged. The
+collection browser regression compares computed radii with actual listing
+cards at desktop (1408px) and mobile (390px), following homepage → catalog →
+collection detail.
+Verification passed: `make frontend-test` (672 tests), `make frontend-lint`,
+formatting and repository hygiene, the isolated production build, and all 12
+Chromium/WebKit checks in `collections.spec.ts`. A live Playwright check at
+`http://127.0.0.1:3000/` measured matching 10px corners at both viewport sizes,
+with working collection links and no console errors or horizontal overflow.
+`make smoke` passed after retrying the Web probe that timed out during the
+concurrent build. The dev server stayed running. Screenshots are outside the
+repository under `/tmp/shongre-collection-radius.XopQw5/`; Firefox and remote
+deployment were not retested for this styling change. No obsolete component,
+token, or dependency was introduced or left behind.
+
+## Listing online-payment icon
+
+Listing capabilities now select the shared `payment` glyph (credit card) on
+Web and native instead of using the shield. Backend eligibility and localized
+labels are unchanged. The obsolete payment-to-shield mapping was removed;
+the generic shared shield API remains available for security semantics.
+
+Verification passed for the five Web card variants, all 48 shared-feature tests,
+18 UI tests, 66 shared-utility tests, 281 contract tests, token/brand checks,
+Web/native type checks, and repository hygiene. The isolated production build
+and both Chromium payment-icon flows (1408px and 390px) passed. The first
+browser attempt incorrectly expected the compact badge's `aria-label` on the
+text-labeled hero variant; the corrected test checks accessible text and the
+decorative glyph without changing application behavior. The existing responsive
+suite excludes WebKit, so a separate live Playwright check verified both widths
+in Chromium and WebKit at `http://127.0.0.1:3000/`, including listing-detail
+navigation, no page overflow and no console errors.
+
+`make ui-check cross-platform-check -o frontend-build` used the separate isolated
+production build to avoid touching the running dev server. Its Expo Doctor step
+stopped the complete gate on existing dependency patch mismatches (`expo`
+57.0.20 versus expected ~57.0.21 and `expo-router` 57.0.19 versus ~57.0.20);
+dependencies were left unchanged. `make contracts-check shared-check` passed
+separately. Physical native-device rendering and Firefox were not retested.
+Browser plugin was unavailable; screenshots and failed-test evidence remain
+outside the repository under `/tmp/shongre-payment-icon.yalanX/`.
+
+## Backend-driven listing characteristics
+
+The listing-detail page now reads `GET /api/v1/listings/{id}/characteristics`
+through the generated HTTP operation. The listing domain checks public listing
+visibility in the requested market before the taxonomy domain projects saved
+values, public detail bindings, localized labels, units, and option labels.
+The page no longer invokes publication eligibility to render an existing record.
+Missing values and unknown/private fields produce no placeholder rows.
+
+Stored parent categories use only fields common to applicable descendant listing
+types, without selecting or persisting a guessed leaf. A backend-only read mapping
+retains the existing vehicle keys `year`, `fuel`, `gearbox`, and `critair` until
+those persisted records are migrated; canonical fields take precedence. Labels
+and options still come from the canonical taxonomy, never a frontend catalogue.
+Publication validation remains strict. No database mutation or reset is needed.
+
+The obsolete client-side schema-to-characteristics projector was removed. Data,
+loading, empty and retry states remain explicit; public category-label loading is
+independent. Verification passed: all 675 frontend tests, 18 focused backend
+characteristics/publication tests, the public HTTP integration scenario (guest
+and Staff reads, wrong market, invalid locale, draft visibility), Web/backend
+lint, contract type checking, OpenAPI drift checks, and repository hygiene.
+The isolated production build and all six Chromium/WebKit browser checks passed
+at 1408px and 390px, including retry recovery and no publication-resolver request.
+Live database-backed checks also verified all seven saved facts on the reported
+Peugeot listing, no initial console errors or horizontal overflow, and working
+retry recovery in both engines. A one-shot injected failure was initially
+consumed by a development remount; keeping the simulated outage active until
+the retry action made the test deterministic without changing application logic.
+
+The Browser plugin was unavailable, so verification used Playwright. Screenshots
+and temporary scripts stay outside Git under `/tmp/shongre-characteristics.hs4PUC/`.
+The existing Web dev server stayed running; no local database records were
+modified. Firefox, native consumers, and remote deployments were not retested.
+The first smoke check overlapped an API watcher restart and failed its API
+probes; readiness recovered to HTTP 200 without stopping any live process, and
+the final `make smoke` passed every API, Web, worker, Redis and Supabase probe.
+
+## Equal-width authentication actions
+
+The shared Web `RequireAuth` prompt now uses equal grid columns instead of
+content-sized desktop actions. Sign-in and registration remain side by side on
+desktop and full-width stacked on mobile. The obsolete `sm:w-auto` overrides
+were removed; no new component, token, dependency, or authentication behavior
+was introduced. Both destinations retain the requested path, query, and hash.
+
+Verification passed: all 678 frontend tests, frontend lint, formatting,
+repository hygiene, final smoke checks, and the isolated production build with
+four Chromium/WebKit E2E checks at 1408px and 390px. Live checks on
+`/compte/messages` also confirmed equal widths, 44px heights, keyboard sign-in,
+registration navigation, no horizontal overflow, and no console errors in both
+engines. The dev server stayed running. Browser was unavailable; Playwright
+evidence remains outside Git under `/tmp/shongre-auth-buttons.HLEiOO/`.
+Firefox and native surfaces were not retested for this Web-only layout change.
+
+## Compact category catalogue cards
+
+`CategoriesPage` now follows the collection catalogue's two-/three-/five-column
+grid, 4:3 media, compact typography and padding, and `rounded-listing-card`
+corners. Cards keep the API-projected compact category label and section count,
+with one keyboard-accessible link for the entire card. Subcategories remain
+searchable in the catalogue and selectable on category result pages; the former
+chip rows, duplicate card links, hidden-chip counter, and unused counter
+translations were removed. Loading placeholders reserve the same compact
+anatomy. No taxonomy data, API behavior, visual tokens, or dependencies changed.
+
+Coverage includes projected labels/counts, loading/error/empty states, collection
+geometry comparisons, category/subcategory filtering, empty-search recovery,
+keyboard navigation, and overflow checks. Browser was unavailable; live
+Playwright evidence stays outside Git under
+`/tmp/shongre-category-cards.ameE9L/`. Fresh live browser sessions initially hit
+the API rate limit; subsequent viewport checks reuse a session without changing
+runtime rate limits. The Web dev server remains running.
+
+All 682 frontend tests, frontend lint, formatting, repository hygiene and the
+local stack smoke checks passed. Live Chromium/WebKit checks passed at 1408,
+768, 390 and 320px with loaded photos, working filters and keyboard navigation,
+and no overflow or console errors. The initial production layout test incorrectly
+required an image where the isolated API scenario legitimately omits category
+media; it now measures the reserved media frame, covering the neutral fallback
+as well. The broader alias spec also retains an unrelated failing assertion for
+the absent “Niveau Laser Rotatif” listing; catalogue verification selects only
+the affected alias check. Firefox, native surfaces and hosted deployments were
+not retested for this Web-only change.
+
+The corrected isolated production build and all ten focused Chromium/WebKit
+checks passed, including desktop subcategory selection. The run uses
+`make frontend-test-e2e` with `category-card-layout.spec.ts` and the catalogue
+check from `category-aliases.spec.ts`, selected by
+`--grep=category.cards|category.catalogue`; test-only API rate limiting is scoped
+to that isolated command. Initial failure artifacts and final test output remain
+outside Git with the live screenshots.
+
+## Unified homepage listing-rail geometry
+
+The homepage now scopes its existing `ListingRail`/shared `ListingCard` consumers
+inside one `ListingRailGroup`. Previously, widths already matched at 208px, but
+each rail stretched independently: the live recent-listing rail was about 388px
+high while deals were about 402px. The group publishes a content-measured minimum
+for every rail cell, retaining the canonical width/media tokens and complete
+titles, prices, seller facts and metadata. It neither creates another card
+variant nor changes backend projections. Hero, collection and recent-search
+surfaces retain their distinct presentation.
+
+The Web sizing helper measures natural media/text rows rather than stretched
+card heights, batches observer notifications into animation frames, handles
+content growth/shrinkage and removed cards, and cleans up on unmount. Deferred
+sections remain deferred; their rendering-state event schedules measurement
+after layout rather than relying on earlier intersection notifications. Entering
+sections contribute their natural height,
+and cached measurements keep already-visited rails aligned. The obsolete
+fixed-height universe assertion now follows the shared measurement. No shared
+package, visual token or native implementation changed.
+
+All 686 frontend tests, frontend lint, repository hygiene and `make smoke`
+passed. Live Chromium and WebKit checks found every recent/deal/universe card
+at 208 × 402px on both 1408px and 390px viewports, with no clipping, overlap or
+console errors; rail scrolling and keyboard detail navigation passed. A
+Chromium development font-preload warning was non-blocking. Browser was
+unavailable, so Playwright evidence is kept outside Git under
+`/tmp/shongre-home-rails.rZfoV8/`. Browser checks explicitly reveal a deferred
+section and await rendering before scrolling its first card; measuring skipped
+descendants had produced misleading WebKit results.
+
+The new `home-listing-rail-layout.spec.ts` passed all eight cases against the
+running local Web/API (Chromium and WebKit at 320, 390, 768 and 1408px). It checks
+all rail widths/heights, full titles, overflow, desktop title growth/shrinkage,
+scroll controls, keyboard detail navigation and console errors. The direct
+Playwright run used `PLAYWRIGHT_BASE_URL=http://127.0.0.1:3000`, one worker and
+`--output=/tmp/shongre-home-rails.rZfoV8/live-test-results`; it did not launch or
+restart the interactive server or mutate backend listings.
+
+The canonical isolated production run compiled successfully but stalled during
+TypeScript validation for more than 15 minutes under host resource pressure.
+Only that exact test process tree was stopped and its disposable checkout was
+cleaned up; production E2E certification remains incomplete. The interactive
+Web, API, worker, Redis and local Supabase services stayed running and passed
+the smoke check.
 
 ## Canonical commands
 

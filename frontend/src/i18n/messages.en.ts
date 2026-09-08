@@ -852,6 +852,16 @@ export const messagesEn: MessageCatalogue = {
   "home.homeRecentSearches.touteLaFrance": "All France",
   "home.homeRecentSearches.supprimerCetteRecherche": "Delete this search",
   // --- home.homeCollectionsSection ---
+  "home.homeCollectionsSection.unavailable":
+    "Collections are temporarily unavailable",
+  "home.homeCollectionsSection.retryDescription":
+    "Try again to load categories and their available listings.",
+  "home.homeCollectionsSection.listingCountOne": "{formattedCount} listing",
+  "home.homeCollectionsSection.listingCountMany": "{formattedCount} listings",
+  "admin.homepageConfigurationPanel.automaticCollections":
+    "Automatic: categories with listings",
+  "admin.homepageConfigurationPanel.manualCollections":
+    "Manual: choose and order categories",
   "home.homeCollectionsSection.tendanceEnCeMoment": "Trending right now",
   "home.homeCollectionsSection.laPieceManquante": "The missing part",
   "home.homeCollectionsSection.aVeloEnFamille": "Family biking",
@@ -1163,6 +1173,10 @@ export const messagesEn: MessageCatalogue = {
   "publishing.publishWizard.invalidDynamicField":
     "This answer is no longer compatible with your choices.",
   "publishing.publishWizard.titreDeLAnnonce": "Listing title",
+  "publishing.publishWizard.titleHint":
+    "{count}/{max} characters · Product, brand and model. Put additional details in the description.",
+  "publishing.publishWizard.titleTooLong":
+    "Shorten the title to {max} characters or fewer before continuing.",
   "publishing.publishWizard.exCanapeScandinave3Places":
     "e.g. Scandinavian 3-seater sofa, beige bouclé fabric",
   "publishing.publishWizard.descriptionDetaillee": "Detailed description",
@@ -1241,11 +1255,14 @@ export const messagesEn: MessageCatalogue = {
     "Manage publication countries",
   "sellerworkspace.myListingsPage.boosterLAnnonce": "Boost listing",
   "sellerworkspace.myListingsPage.supprimerLAnnonce": "Delete listing",
-  "sellerworkspace.proDashboardPage.tauxDeConversion": "Conversion rate",
-  "sellerworkspace.proDashboardPage.surLesFichesArticles": "On item pages",
-  "sellerworkspace.proDashboardPage.volumeDeVentesEstime":
-    "Estimated sales volume",
-  "sellerworkspace.proDashboardPage.ceMoisCi": "This month",
+  "sellerworkspace.proDashboardPage.catalogueSampleViews":
+    "Analysed catalogue views",
+  "sellerworkspace.proDashboardPage.catalogueSampleDescription":
+    "Cumulative views of the analysed listings, not a weekly audience trend.",
+  "sellerworkspace.proDashboardPage.completedSalesThisMonth":
+    "Completed sales this month",
+  "sellerworkspace.proDashboardPage.completedSalesScope":
+    "Completed orders last updated in the current UTC month. Excludes fees and refunds.",
   "sellerworkspace.proStorefrontEditorPage.numeroSiret14Chiffres":
     "SIRET number (14 digits)",
   "sellerworkspace.proStorefrontEditorPage.presentationDeLEntrepriseSavoir":
@@ -2624,7 +2641,7 @@ export const messagesEn: MessageCatalogue = {
   "categories.categoriesPage.rubriques": "{count} sections",
   "categories.categoriesPage.rubriques_one": "{count} section",
   "categories.categoriesPage.rubriques_other": "{count} sections",
-  "categories.categoriesPage.rubriquesSupplementaires": "+{count}",
+  "categories.categoriesPage.explorer": "Explore",
   "categories.categoriesPage.explorerLaCategorie": "Explore {category}",
   "categories.categoriesPage.pourLaRecherche": "for “{query}”",
   "categories.categoriesPage.aucuneCategorieNeCorrespond":
@@ -3146,10 +3163,8 @@ export const messagesEn: MessageCatalogue = {
   "sellerworkspace.proDashboardPage.tableauDeBordVendeurPro":
     "Pro seller dashboard",
   "sellerworkspace.proDashboardPage.suiviDesPerformancesDeVotre":
-    "Tracking your catalogue's performance and customer conversion",
+    "Track your business catalogue and completed sales",
   "sellerworkspace.proDashboardPage.facturesRecus": "Invoices & receipts",
-  "sellerworkspace.proDashboardPage.evolutionDeLAudience7":
-    "Audience trend (last 7 days)",
   "sellerworkspace.proDashboardPage.articlesPharesDeVotreBoutique":
     "Your store's top items",
   "sellerworkspace.proPlansPage.developpezVosVentesAvecNos":
@@ -3678,9 +3693,6 @@ export const messagesEn: MessageCatalogue = {
   "admin.capabilities.updateError": "Permissions could not be updated.",
   "admin.capabilities.saveAction": "Save permissions",
   "admin.capabilities.manageAction": "Manage permissions",
-  "sellerworkspace.proDashboardPage.pasEncoreDeDonnees": "No data yet",
-  "sellerworkspace.proDashboardPage.totalVuesUniques":
-    "Total: {count} unique views",
   "errors.notFoundPage.explorerLesCategories": "Browse categories",
   "errors.notFoundPage.toutesLesCategories": "All categories",
   // --- Shongre Jobs -------------------------------------------------------
@@ -3980,6 +3992,8 @@ export const messagesEn: MessageCatalogue = {
     "Property summary and primary action",
   "immo.propertyDetail.sendRequest": "Send request",
   "immo.propertyDetail.requestAppointment": "Request this time",
+  "immo.propertyDetail.chooseFutureAppointment":
+    "Choose a future viewing date.",
 
   "admin.solutions.catalogTableLabel": "Solutions catalogue table",
   "admin.monetization.firstTableLabel": "Commission grid table",
@@ -4177,14 +4191,12 @@ export const messagesEn: MessageCatalogue = {
   "sellerworkspace.proDashboardPage.actionQueueTitle": "To do",
   "sellerworkspace.proDashboardPage.actionQueueDescription":
     "Your highest-priority business actions in one place.",
-  "sellerworkspace.proDashboardPage.answerContacts": "Reply to contacts",
-  "sellerworkspace.proDashboardPage.contactsAwaiting": "contacts to review",
-  "sellerworkspace.proDashboardPage.publishFirstListing":
-    "Publish your first listing",
-  "sellerworkspace.proDashboardPage.publishFirstListingDescription":
-    "Make your storefront visible and start receiving enquiries.",
-  "sellerworkspace.proDashboardPage.actionQueueEmpty":
-    "Everything is up to date. No priority action.",
+  "sellerworkspace.proDashboardPage.answerContacts": "Read messages",
+  "sellerworkspace.proDashboardPage.contactsAwaiting": "unread messages",
+  "sellerworkspace.proDashboardPage.manageListings": "Manage my listings",
+  "sellerworkspace.proDashboardPage.manageListingsDescription":
+    "Review listing statuses and keep your catalogue up to date.",
+  "sellerworkspace.proDashboardPage.actionQueueEmpty": "No unread messages.",
   "admin.adminOverviewPage.actionQueueTitle": "To do",
   "admin.adminOverviewPage.actionQueueDescription":
     "Only cases allowed by your role and territorial scope.",

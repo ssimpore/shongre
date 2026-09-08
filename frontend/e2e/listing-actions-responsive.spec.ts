@@ -1,3 +1,4 @@
+import { testListingPath } from "./fixtures";
 import { expect, test } from "@playwright/test";
 import { expectNoHorizontalOverflow, waitForStableLayout } from "./overflow";
 import { usePersona } from "./personas";
@@ -21,7 +22,9 @@ test("aligns listing breadcrumbs and secondary actions on one row", async ({
   await usePersona(page, "guest");
   await seedConsentDecision(page);
   await page.setViewportSize({ width: 1408, height: 795 });
-  await page.goto("/annonce/list-113", { waitUntil: "domcontentloaded" });
+  await page.goto(testListingPath("list-113"), {
+    waitUntil: "domcontentloaded",
+  });
   await waitForStableLayout(page);
 
   const toolbar = page.getByTestId("listing-detail-toolbar");
@@ -63,7 +66,9 @@ test("keeps every listing-detail commerce action full-width and readable", async
 
   for (const width of [1024, 1065, 1280, 1440]) {
     await page.setViewportSize({ width, height: 844 });
-    await page.goto("/annonce/list-113", { waitUntil: "domcontentloaded" });
+    await page.goto(testListingPath("list-113"), {
+      waitUntil: "domcontentloaded",
+    });
     await waitForStableLayout(page);
 
     const actionGroup = page.getByTestId("listing-desktop-actions");
@@ -93,7 +98,9 @@ test("keeps every listing-detail commerce action full-width and readable", async
   }
 
   await page.setViewportSize({ width: 1065, height: 701 });
-  await page.goto("/annonce/list-113", { waitUntil: "domcontentloaded" });
+  await page.goto(testListingPath("list-113"), {
+    waitUntil: "domcontentloaded",
+  });
   await waitForStableLayout(page);
   await page
     .getByRole("button", { name: "Offre de prix", exact: true })
@@ -109,7 +116,9 @@ test("uses the payment icon for every direct-purchase entry point", async ({
   await usePersona(page, "individual_buyer");
   await seedConsentDecision(page);
   await page.setViewportSize({ width: 1408, height: 701 });
-  await page.goto("/annonce/list-109", { waitUntil: "domcontentloaded" });
+  await page.goto(testListingPath("list-109"), {
+    waitUntil: "domcontentloaded",
+  });
   await waitForStableLayout(page);
 
   const purchaseActions = page.locator(
@@ -138,7 +147,9 @@ test("keeps the listing owner workspace action contained at the narrow desktop b
   await usePersona(page, "individual_seller");
   await seedConsentDecision(page);
   await page.setViewportSize({ width: 1055, height: 701 });
-  await page.goto("/annonce/list-109", { waitUntil: "domcontentloaded" });
+  await page.goto(testListingPath("list-109"), {
+    waitUntil: "domcontentloaded",
+  });
   await waitForStableLayout(page);
 
   const manageListings = page.getByRole("link", {

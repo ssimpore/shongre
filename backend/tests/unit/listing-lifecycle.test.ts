@@ -1,5 +1,6 @@
 import { beforeEach, describe, it, expect } from "vitest";
 import { DELIVERY_TAXONOMY_CATEGORY_ID } from "@shongre/contracts/delivery";
+import { PUBLICATION_CONSTRAINTS } from "@shongre/contracts/publication";
 import { listingsService } from "../../src/modules/listings/listings.service.js";
 import { ordersService } from "../../src/modules/orders/orders.service.js";
 import {
@@ -57,6 +58,46 @@ describe("Listing & Order Lifecycle", () => {
       isValid: true,
       price: { amountMinor: 28_050, currency: "EUR" },
     });
+  });
+
+  it("rejects an overlong new title before publication and preserves the submitted copy", async () => {
+    const draft = {
+      title: "W".repeat(PUBLICATION_CONSTRAINTS.title.maxLength + 1),
+      categoryId: "electronics.smartphones.phones",
+      marketCode: "FR",
+    };
+    await expect(
+      listingsService.publishListing(draft, "user_camille"),
+    ).rejects.toMatchObject({
+      code: "VALIDATION_ERROR",
+      details: {
+        field: "title",
+        maxLength: PUBLICATION_CONSTRAINTS.title.maxLength,
+      },
+    });
+    expect(draft.title).toHaveLength(
+      PUBLICATION_CONSTRAINTS.title.maxLength + 1,
+    );
+  });
+
+  it("flags overlong CSV titles and never trusts a forged valid-row flag", async () => {
+    const title = "É".repeat(PUBLICATION_CONSTRAINTS.title.maxLength);
+    const parsed = await listingsService.parseBulkImportCsv({
+      marketCode: "FR",
+      content: `Titre;Categorie;SousCategorie;Prix;Etat;Stock;Ville;CodePostal;Description\n${title};home_garden;furniture;280;very_good;2;Lyon;69002;Bois massif\n${title}!;home_garden;furniture;280;very_good;2;Lyon;69002;Bois massif`,
+    });
+    expect(parsed[0]).toMatchObject({ title, isValid: true });
+    expect(parsed[1]).toMatchObject({
+      title: `${title}!`,
+      isValid: false,
+      validationErrorCode: "TITLE_TOO_LONG",
+    });
+    await expect(
+      listingsService.publishBulkListings("user_nadia", {
+        marketCode: "FR",
+        rows: [{ ...parsed[1], isValid: true }],
+      }),
+    ).rejects.toMatchObject({ code: "VALIDATION_ERROR" });
   });
 
   it("publishes a valid listing with automated safety assessment", async () => {

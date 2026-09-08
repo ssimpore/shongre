@@ -1,3 +1,4 @@
+import { testListingPath } from "./fixtures";
 import { expect, test } from "@playwright/test";
 import { expectNoHorizontalOverflow, waitForStableLayout } from "./overflow";
 import { useEstablishedConsent, usePersona } from "./personas";
@@ -76,24 +77,38 @@ test.describe("Homepage universe explorer", () => {
     }
     for (const group of [home, vehicles, fashion]) {
       await group.scrollIntoViewIfNeeded();
-      const heights = await group
-        .locator("[data-listing-card]")
-        .evaluateAll((elements) =>
-          elements.map((element) =>
-            Math.round(element.getBoundingClientRect().height),
+      await expect
+        .poll(() =>
+          group.locator("[data-listing-card]").evaluateAll((elements) =>
+            elements.every((element) => {
+              const sharedHeight = Number.parseFloat(
+                getComputedStyle(
+                  element.closest(".listing-rail-group")!,
+                ).getPropertyValue("--listing-rail-measured-height"),
+              );
+              return (
+                Math.abs(
+                  element.getBoundingClientRect().height -
+                    Math.max(
+                      sharedHeight,
+                      Number.parseFloat(getComputedStyle(element).minHeight),
+                    ),
+                ) < 1
+              );
+            }),
           ),
-        );
-      expect(new Set(heights)).toEqual(new Set([384]));
+        )
+        .toBe(true);
     }
 
     await expect(
       home.getByRole("link", {
         name: /Don : Lot de 15 Pots de Fleurs en Terre Cuite/i,
       }),
-    ).toHaveAttribute("href", "/annonce/list-110");
+    ).toHaveAttribute("href", testListingPath("list-110"));
     await expect(
       fashion.getByRole("link", { name: /Manteau Long en Laine Sézane/i }),
-    ).toHaveAttribute("href", "/annonce/list-105");
+    ).toHaveAttribute("href", testListingPath("list-105"));
 
     await expect(home.getByRole("link", { name: "Voir tout" })).toHaveAttribute(
       "href",

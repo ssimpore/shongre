@@ -1,36 +1,49 @@
-import { expect, test } from '@playwright/test';
-import { usePersona } from './personas';
-import { waitForStableLayout } from './overflow';
+import { expect, test } from "@playwright/test";
+import { usePersona } from "./personas";
+import { waitForStableLayout } from "./overflow";
 
-test.describe('compact taxonomy aliases', () => {
+test.describe("compact taxonomy aliases", () => {
   test.beforeEach(async ({ page }) => {
-    await usePersona(page, 'guest');
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await usePersona(page, "guest");
+    await page.goto("/", { waitUntil: "domcontentloaded" });
     await waitForStableLayout(page);
   });
 
-  test('uses short labels in autocomplete and listing cards', async ({ page }) => {
-    const search = page.getByRole('combobox');
-    await search.fill('Outils pro');
-    const categoryOption = page.getByRole('option').first();
-    await expect(categoryOption).toContainText('Outils pro');
+  test("uses short labels in autocomplete and listing cards", async ({
+    page,
+  }) => {
+    const search = page.getByRole("combobox");
+    await search.fill("Outils pro");
+    const categoryOption = page.getByRole("option").first();
+    await expect(categoryOption).toContainText("Outils pro");
 
-    await page.goto('/categorie/materiel-professionnel', {
-      waitUntil: 'domcontentloaded',
+    await page.goto("/categorie/materiel-professionnel", {
+      waitUntil: "domcontentloaded",
     });
     await waitForStableLayout(page);
 
-    const professionalListing = page.locator('article').filter({ hasText: 'Niveau Laser Rotatif' }).first();
-    await expect(professionalListing.getByText('Outils pro', { exact: true })).toBeVisible();
+    const professionalListing = page
+      .locator("article")
+      .filter({ hasText: "Niveau Laser Rotatif" })
+      .first();
+    await expect(
+      professionalListing.getByText("Outils pro", { exact: true }),
+    ).toBeVisible();
   });
 
-  test('uses short labels in the category catalogue', async ({ page }) => {
-    await page.goto('/categories', { waitUntil: 'domcontentloaded' });
+  test("uses short labels in the category catalogue", async ({ page }) => {
+    await page.goto("/categories", { waitUntil: "domcontentloaded" });
     await waitForStableLayout(page);
 
-    const catalogue = page.locator('main#main-content');
-    await expect(catalogue.getByRole('link', { name: 'Voitures', exact: true })).toBeVisible();
-    await expect(catalogue.getByRole('link', { name: 'Outils pro', exact: true })).toBeVisible();
-    await expect(catalogue.getByRole('link', { name: 'Maison', exact: true })).toBeVisible();
+    const catalogue = page.locator("main#main-content");
+    await expect(
+      catalogue.getByRole("heading", { name: "Véhicules", exact: true }),
+    ).toBeVisible();
+    await expect(
+      catalogue.getByRole("heading", { name: "Outils pro", exact: true }),
+    ).toBeVisible();
+    await expect(
+      catalogue.getByRole("heading", { name: "Maison", exact: true }),
+    ).toBeVisible();
   });
 });

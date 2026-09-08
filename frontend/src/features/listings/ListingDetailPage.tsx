@@ -70,7 +70,7 @@ import { useTranslation } from "../../i18n/I18nProvider";
 import { getListingCategoryLabel } from "../../domains/taxonomy/listing-category.display";
 import { projectGenericListingCardView } from "../../domains/listing/listing-card.generic-presentation";
 import type { WatchSubscription } from "@shongre/contracts/watch-subscriptions";
-import type { TaxonomyV4ResolvedSchema } from "@shongre/contracts/taxonomy";
+import type { ListingCharacteristicsData } from "../../api/contracts/listings.contract";
 import { majorToMinorAmount } from "@shongre/shared/money";
 import {
   getListingCapabilityPresentation,
@@ -234,13 +234,14 @@ export const ListingDetailPage: React.FC = () => {
   );
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const [isLoading, setIsLoading] = useState(!initialData);
-  const [taxonomySchema, setTaxonomySchema] =
-    useState<TaxonomyV4ResolvedSchema | null>(null);
-  const [taxonomyState, setTaxonomyState] = useState<
+  const [characteristics, setCharacteristics] =
+    useState<ListingCharacteristicsData | null>(null);
+  const [characteristicsState, setCharacteristicsState] = useState<
     "loading" | "ready" | "error"
   >("loading");
-  const [taxonomyRetryKey, setTaxonomyRetryKey] = useState(0);
+  const [characteristicsRetryKey, setCharacteristicsRetryKey] = useState(0);
   const [taxonomyRootLabel, setTaxonomyRootLabel] = useState("");
+  const [taxonomySubLabel, setTaxonomySubLabel] = useState("");
 
   // Modal Dialog States
   const [isDirectPurchaseModalOpen, setIsDirectPurchaseModalOpen] =
@@ -351,70 +352,72 @@ export const ListingDetailPage: React.FC = () => {
       .finally(() => setIsLoading(false));
   }, [countryCode, id, initialData]);
 
+  const characteristicsListingId = listing?.id;
+  const categorySlug = listing?.categorySlug;
+  const subCategorySlug = listing?.subCategorySlug;
+
   useEffect(() => {
     let active = true;
-    if (!listing || !marketContext) {
-      setTaxonomySchema(null);
-      setTaxonomyRootLabel("");
-      setTaxonomyState("error");
-      return () => {
-        active = false;
-      };
-    }
-
-    setTaxonomySchema(null);
     setTaxonomyRootLabel("");
-    setTaxonomyState("loading");
-    void services.taxonomy
-      .getNodeById(listing.categorySlug)
-      .then((node) => {
-        if (!active || !node) return;
-        setTaxonomyRootLabel(
-          node.shortLabel?.trim() || node.label?.trim() || node.name.trim(),
-        );
-      })
-      .catch(() => undefined);
-    void services.taxonomy
-      .resolveV4({
-        marketContext,
-        categoryIdentity: listing.subCategorySlug || listing.categorySlug,
-        listingTypeId: listing.listingTypeId,
-        intent: listing.listingIntent,
-        sellerType:
-          listing.publisherType === "professional" ||
-          listing.sellerType === "pro"
-            ? "professional"
-            : "individual",
-        locale: currentLocale,
-        taxonomyVersion: "4.0.0",
-      })
-      .then((resolved) => {
-        if (!active) return;
-        setTaxonomySchema(resolved);
-        setTaxonomyState("ready");
-      })
-      .catch(() => {
-        if (!active) return;
-        setTaxonomySchema(null);
-        setTaxonomyState("error");
-      });
-
+    setTaxonomySubLabel("");
+    const loadLabel = async (
+      identity: string | undefined,
+      setLabel: (value: string) => void,
+    ) => {
+      if (!identity) return;
+      try {
+        const node = await services.taxonomy.getNodeById(identity);
+        if (active && node)
+          setLabel(
+            localizedTaxonomyLabel(node.shortLabels ?? {}, currentLocale) ||
+              localizedTaxonomyLabel(node.labels ?? {}, currentLocale) ||
+              node.name,
+          );
+      } catch {
+        // Listing-projected category labels remain usable if navigation is unavailable.
+      }
+    };
+    void loadLabel(categorySlug, setTaxonomyRootLabel);
+    void loadLabel(subCategorySlug, setTaxonomySubLabel);
     return () => {
       active = false;
     };
-  }, [currentLocale, listing, marketContext, taxonomyRetryKey]);
+  }, [categorySlug, subCategorySlug, countryCode, currentLocale]);
+
+  useEffect(() => {
+    let active = true;
+    setCharacteristics(null);
+    setCharacteristicsState("loading");
+    if (!characteristicsListingId || !countryCode)
+      return () => {
+        active = false;
+      };
+    void services.listings
+      .getCharacteristics(characteristicsListingId, countryCode, currentLocale)
+      .then((data) => {
+        if (!active) return;
+        setCharacteristics(data);
+        setCharacteristicsState("ready");
+      })
+      .catch(() => {
+        if (!active) return;
+        setCharacteristicsState("error");
+      });
+    return () => {
+      active = false;
+    };
+  }, [
+    characteristicsListingId,
+    countryCode,
+    currentLocale,
+    characteristicsRetryKey,
+  ]);
 
   const displayCategoryLabel = listing
     ? taxonomyRootLabel || getListingCategoryLabel(listing, currentLocale)
     : "";
   const displaySubCategoryLabel = listing
-    ? taxonomySchema
-      ? localizedTaxonomyLabel(
-          taxonomySchema.category.shortLabels,
-          currentLocale,
-        ) ||
-        localizedTaxonomyLabel(taxonomySchema.category.labels, currentLocale)
-      : listing.subCategoryLabel.trim()
+    ? taxonomySubLabel || listing.subCategoryLabel.trim()
     : "";
 
   // An absent public capability is never inferred from taxonomy, seller type,
@@ -1160,11 +1163,11 @@ export const ListingDetailPage: React.FC = () => {
           {/* 3. GROUPED TECHNICAL CHARACTERISTICS */}
           <React.Suspense fallback={<DetailSectionFallback />}>
             <ListingCharacteristics
-              listing={listing}
-              schema={taxonomySchema}
-              state={taxonomyState}
-              locale={currentLocale}
-              onRetry={() => setTaxonomyRetryKey((current) => current + 1)}
+              data={characteristics}
+              state={characteristicsState}
+              onRetry={() =>
+                setCharacteristicsRetryKey((current) => current + 1)
+              }
             />
           </React.Suspense>
 

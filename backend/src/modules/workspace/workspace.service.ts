@@ -1,4 +1,5 @@
-import { Listing } from "../../shared/types/index.js";
+import type { components } from "@shongre/contracts/openapi";
+import { toPublicListing } from "../../shared/public-projections.js";
 import {
   IWorkspaceRepository,
   repositories,
@@ -19,13 +20,16 @@ export class WorkspaceService {
     return this.workspaceRepo.getUserWorkspaceSummary(userId, marketCode);
   }
 
-  async getProAnalytics(sellerId: string): Promise<{
-    monthlyRevenue: number;
-    monthlyViews: number;
-    conversionRate: number;
-    topListings: Listing[];
-  }> {
-    return this.workspaceRepo.getProAnalytics(sellerId);
+  async getProAnalytics(sellerId: string): Promise<
+    Omit<components["schemas"]["WorkspaceProAnalytics"], "topListings"> & {
+      topListings: ReturnType<typeof toPublicListing>[];
+    }
+  > {
+    const snapshot = await this.workspaceRepo.getProAnalytics(sellerId);
+    return {
+      ...snapshot,
+      topListings: snapshot.topListings.map(toPublicListing),
+    };
   }
 }
 

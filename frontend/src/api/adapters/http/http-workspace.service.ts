@@ -32,10 +32,14 @@ export class HttpWorkspaceService implements WorkspaceServiceContract {
   }
 
   async getProAnalytics(sellerId: string): Promise<ProAnalyticsSnapshot> {
-    return apiOperation<
-      ProAnalyticsSnapshot,
-      "getWorkspaceProAnalyticsBySellerId"
-    >("getWorkspaceProAnalyticsBySellerId", { path: { sellerId: sellerId } });
+    const snapshot = await apiOperation("getWorkspaceProAnalyticsBySellerId", {
+      path: { sellerId },
+    });
+    return {
+      revenueByCurrency: snapshot.revenueByCurrency,
+      catalogueSampleViews: snapshot.monthlyViews,
+      topListings: snapshot.topListings.map(mapBackendListing),
+    };
   }
 }
 

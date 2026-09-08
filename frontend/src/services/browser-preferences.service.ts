@@ -4,13 +4,30 @@ import { DEFAULT_MARKET_CODE } from "../configuration/market-baseline";
 const GUEST_KEY = "guest";
 const KEYS = {
   favorites: "shongre_favorites_v3",
-  recentSearches: "shongre_recent_searches_v1",
+  recentSearches: "shongre_recent_searches_v2",
   location: "shongre_location_preference_v1",
   activeMarket: "shongre_active_market_v1",
   locale: "shongre_user_locale_v1",
   legacyCurrency: "shongre_user_currency_v1",
   currencyPreferences: "shongre_user_currency_preferences_v2",
 } as const;
+
+export const RECENT_SEARCHES_CHANGED_EVENT = "shongre:recent-searches-changed";
+const RECENT_SEARCH_LIMIT = 8;
+
+function normalizeRecentSearches(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  const unique = new Map<string, string>();
+  for (const item of value) {
+    if (typeof item !== "string") continue;
+    const query = item.trim();
+    if (!query || query.length > 200 || unique.has(query.toLowerCase()))
+      continue;
+    unique.set(query.toLowerCase(), query);
+    if (unique.size === RECENT_SEARCH_LIMIT) break;
+  }
+  return [...unique.values()];
+}
 
 class BrowserPreferencesService {
   private readonly memory = new Map<string, string>();
@@ -145,17 +162,64 @@ class BrowserPreferencesService {
     return !exists;
   }
 
-  getRecentSearches(): string[] {
-    return this.get<string[]>(KEYS.recentSearches, []);
+  recentSearchesKey(subject: string | undefined, marketCode: string): string {
+    return `${KEYS.recentSearches}:${JSON.stringify([subject || GUEST_KEY, marketCode.toUpperCase()])}`;
   }
 
-  addRecentSearch(query: string): void {
-    const normalized = query.trim();
-    if (!normalized) return;
-    const searches = this.getRecentSearches().filter(
-      (value) => value.toLocaleLowerCase() !== normalized.toLocaleLowerCase(),
+  getRecentSearches(subject: string | undefined, marketCode: string): string[] {
+    // Unscoped v1 history has no ownership metadata and cannot be attributed to
+    // the current account or market safely.
+    return normalizeRecentSearches(
+      this.get<unknown>(this.recentSearchesKey(subject, marketCode), []),
     );
-    this.set(KEYS.recentSearches, [normalized, ...searches].slice(0, 8));
+  }
+
+  private writeRecentSearches(
+    searches: string[],
+    subject: string | undefined,
+    marketCode: string,
+  ): void {
+    const key = this.recentSearchesKey(subject, marketCode);
+    this.set(key, searches);
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(
+        new CustomEvent(RECENT_SEARCHES_CHANGED_EVENT, { detail: key }),
+      );
+    }
+  }
+
+  addRecentSearch(
+    query: string,
+    subject: string | undefined,
+    marketCode: string,
+  ): void {
+    if (!normalizeRecentSearches([query]).length) return;
+    this.writeRecentSearches(
+      normalizeRecentSearches([
+        query,
+        ...this.getRecentSearches(subject, marketCode),
+      ]),
+      subject,
+      marketCode,
+    );
+  }
+
+  removeRecentSearch(
+    query: string,
+    subject: string | undefined,
+    marketCode: string,
+  ): void {
+    this.writeRecentSearches(
+      this.getRecentSearches(subject, marketCode).filter(
+        (value) => value !== query,
+      ),
+      subject,
+      marketCode,
+    );
+  }
+
+  clearRecentSearches(subject: string | undefined, marketCode: string): void {
+    this.writeRecentSearches([], subject, marketCode);
   }
 }
 

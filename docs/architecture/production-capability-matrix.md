@@ -1,7 +1,7 @@
 # Shongre production capability matrix
 
 Initial audit date: 2026-08-25
-Current launch review: 2026-09-07
+Current launch review: 2026-09-08
 Scope: Web, mobile, backend API/worker, PostgreSQL/Supabase migrations, shared
 packages, infrastructure, CI/CD, security, compliance, operations and
 documentation.
@@ -11,7 +11,7 @@ adds the evidence-backed closure assessment below it. The initial matrix is
 intentionally not rewritten: it remains the before-state against which the
 implementation can be audited.
 
-## Architecture discovered
+## Architecture discovered (initial audit)
 
 Shongre is not a Django application. It is an npm-workspace TypeScript
 monorepo composed of:
@@ -65,7 +65,7 @@ evidence.
 
 Current generated repository inventory: 529 OpenAPI operations across 468
 paths, including 520 runtime routes, and 118 ordered migrations through
-`00118_taxonomy_header_links.sql`. There are 369 non-E2E test source files.
+`00118_taxonomy_header_links.sql`. There are 371 non-E2E test source files.
 <!-- capability-inventory:end -->
 
 Statuses in this ledger are intentionally stricter than feature-development
@@ -84,14 +84,14 @@ statuses:
 | ------------------------------------------------------------------------- | ------------------------ | ---------------------------- | ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
 | Repository architecture and dependency boundaries                         | IMPLEMENTED + VERIFIED   | Engineering                  | `AGENTS.md`, workspace layout, boundary checks                                | `make check` passed locally; the protected pipeline must still run `make check-all` on the immutable release candidate                                                                                            | Blocks if any canonical gate fails                                  |
 | Six isolated environment profiles                                         | IMPLEMENTED + VERIFIED   | Platform                     | `.env.*`, `scripts/env-check.sh`, environment contract                        | `make env-matrix-check` passed 2026-09-01                                                                                                                                                                         | Blocks if a profile or fingerprint can cross environments           |
-| Production Web runtime safety                                             | IMPLEMENTED + VERIFIED   | Web / Platform               | Runtime startup guard, production readiness script, focused tests             | API mode, mock storage off, live publishable key; focused tests passed 2026-09-01                                                                                                                                 | Prevents a demo-only customer deployment                            |
+| Production Web runtime safety                                             | IMPLEMENTED + VERIFIED   | Web / Platform               | Runtime startup guard, production readiness script, focused tests             | HTTP-only clients, startup environment validation and fail-closed providers; focused tests passed 2026-09-01                                                                                                      | Prevents a demo-only customer deployment                            |
 | Split marketplace / Solutions / Prospects / Facturation routing           | IMPLEMENTED + UNVERIFIED | Web / Platform               | Application registry, Solutions API/HTTP adapter, hosted smoke certificate    | Configure four real distinct HTTPS origins and pass the mandatory hosted certificate                                                                                                                              | **Blocks all-application launch**                                   |
-| Canonical OpenAPI and generated clients                                   | IMPLEMENTED + VERIFIED   | Backend                      | `backend/openapi/openapi.json`, generated contracts, router                   | `make openapi-check` validates all 521 operations and generated artifacts                                                                                                                                         | Blocks transport changes and API deployment                         |
+| Canonical OpenAPI and generated clients                                   | IMPLEMENTED + VERIFIED   | Backend                      | `backend/openapi/openapi.json`, generated contracts, router                   | `make openapi-check` validates all 529 operations and generated artifacts                                                                                                                                         | Blocks transport changes and API deployment                         |
 | PostgreSQL schema, RLS, and migrations                                    | PARTIAL                  | Data / Backend               | 113 fresh-replayed migrations and 13 real-role/lifecycle SQL assertions       | Reconcile deployed checksums and retain protected full-stack replay/generated-type evidence; see the dated evidence below                                                                                         | **Blocks production data and every write path**                     |
 | Authentication, sessions, RBAC, Staff separation, MFA                     | PARTIAL                  | Identity / Security          | Auth services, Staff capability policy, security tests                        | Full API-mode login/reset/reauth/MFA/OAuth rehearsal; social auth remains disabled                                                                                                                                | Blocks customer and privileged access until rehearsed               |
 | Markets, location, country consent, and URL switching                     | IMPLEMENTED + VERIFIED   | Marketplace                  | Canonical country registry, market context, location service boundary         | Contract, Web, backend and market-boundary suites passed in the 2,113-test canonical run on 2026-09-03                                                                                                            | Blocks multi-market launch on any future failure                    |
 | Market-aware pricing, checkout, subscriptions, promotions, and evidence   | IMPLEMENTED + VERIFIED   | Monetization / Finance       | Versioned commercial policy, minor-unit contracts, immutable evidence changes | Unit, integration, concurrency and market-isolation suites passed in the 2,113-test canonical run on 2026-09-03                                                                                                   | Blocks paid operations on any inconsistency                         |
-| Public/customer/Pro Web journeys                                          | PARTIAL                  | Web / Product                | Service registry, demo and HTTP adapters, browser suites                      | Chromium passed 1,078 regular checks with 91 intentional skips plus all 52 serial audits; focused WebKit passed 47 regular and 2 serial checks; deployed API-mode and protected full cross-engine evidence remain | **Blocks complete Web launch**                                      |
+| Public/customer/Pro Web journeys                                          | PARTIAL                  | Web / Product                | API-only service registry, HTTP adapters and authenticated browser suites     | Chromium passed 1,078 regular checks with 91 intentional skips plus all 52 serial audits; focused WebKit passed 47 regular and 2 serial checks; deployed API-mode and protected full cross-engine evidence remain | **Blocks complete Web launch**                                      |
 | iOS / Android application                                                 | PARTIAL                  | Mobile / Release             | Expo app, contracts, store checks                                             | Mobile checks passed; full Xcode/iphoneos SDK, signed devices, metadata, privacy and reviewer evidence remain                                                                                                     | Blocks mobile-store launch; does not authorize Web release          |
 | Stripe payments, refunds, Connect payouts, Identity                       | BLOCKED — EXTERNAL       | Payments / Finance           | Provider adapter, webhook and idempotency code                                | Sandbox certification, duplicate-webhook drill, dispute/chargeback drill, reconciliation and period close                                                                                                         | **Blocks all paid operations**                                      |
 | Email, SMS, push, business registry, KYC, geocoding, AI, search providers | BLOCKED — EXTERNAL       | Platform / Trust             | Provider registry/control plane and release evidence contract                 | Select approved providers, inject isolated secrets, and record every required staging smoke marker                                                                                                                | Keep each unapproved capability disabled                            |
@@ -391,7 +391,79 @@ The labels below have deliberately narrow meanings:
 |  79 | Final verification                      | PARTIAL · VERIFIED · TESTED                     | Formatting, lint, types, 496-operation OpenAPI and 95 static migrations pass. Chromium passed 25/25 core journeys plus the watch-management accessibility check; full migration replay, protected cross-engine execution, deployed API-mode smoke and full Xcode remain required. |
 |  80 | Final engineering deliverable           | IMPLEMENTED · VERIFIED                          | This closure matrix and the linked completion report provide the required before/after and residual-gate record.                                                                                                                                                                  |
 
-## Current validation record
+## Current verification follow-up — 2026-09-08
+
+Status: **targeted repository follow-up verified; hosted release remains NO-GO**.
+The historical counts below are not the result of the current checkout's gate.
+
+- Browser personas now authenticate through the isolated HTTP API, including
+  single-use Staff MFA. The retired local-storage switcher and its tests have
+  been replaced by API-session, reload, logout and impersonation checks.
+- The browser scenario reuses the backend local seed projection and UUIDs.
+  Existing backend transaction fixtures remain intentionally available; no
+  client fixtures, demo credentials or failure fallback are shipped.
+- The isolated browser origin matches the configured France host. Serial and
+  regular test phases intersect requested filters and cannot run the same test
+  in both phases.
+- A real Pro dashboard wire-contract mismatch was found. Its adapter now maps
+  public listings and currency-labelled revenue; unavailable weekly series,
+  contact totals and per-listing conversion are not fabricated. Catalogue
+  views are labelled as the analysed sample, not a full monthly audience.
+- Public property detail no longer fails when account-history recording is
+  forbidden or optional recommendations fail. Guest/Staff history writes are
+  not attempted, and stale route responses cannot replace the current property.
+  Visit requests no longer start with an expired hardcoded date.
+- The core gate passed formatting, lint, types, generated contracts, static
+  migration/environment/infrastructure checks and secret/hostname scans.
+  All nine non-E2E workspace suites passed 2,226 tests: Web 660, backend 1,065,
+  mobile 82, contracts 281 and the remaining shared packages 138. Two tests
+  requiring a disposable migration database remain intentionally skipped.
+  The focused critical rerun passed 441 backend, 63 Web and 34 shared checks;
+  these are subsets, not additional unique tests.
+- Provider safety checks passed 24 tests. Mobile checks passed 82 tests and
+  Expo Doctor passed 21 checks. These do not certify real provider delivery or
+  signed store artifacts.
+- The default iOS preflight failed because the system selects Command Line
+  Tools. A scoped rerun with
+  `DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer` passed all four
+  SDK checks (Xcode 27.0 / iPhoneOS 27.0); no system selection was changed.
+  This beta SDK check is not signed-artifact or App Store certification.
+  The complete cross-platform source boundary check passed for 961 files.
+  `make -o frontend-build check-all` initially stopped at that SDK gate after completing
+  the core and critical suites. The normal Web build target was deliberately
+  excluded to preserve the interactive dev server; the isolated E2E production
+  build passed separately. The full browser matrix is not implied by this gate.
+  With the scoped Xcode selection, rerunning the cross-platform gate passed
+  both iOS (4/4) and Android (4/4) SDK checks. Already-passing prerequisites
+  were reused with `make -o ui-check -o contracts-check -o shared-check cross-platform-check`.
+  Android release preflight reports 17 passing checks and 8 manual gates,
+  including signed-artifact and device/store evidence.
+- Production configuration preflight fails closed on 39 absent or incomplete
+  environment-owned values. No hosted rollout or provider activation occurred.
+- The final isolated API-only production browser run passed all 36 selected
+  checks: 16 regular and 2 serial checks in each of Chromium and WebKit.
+  Coverage includes publication, persisted favourites, mobile message sending
+  and reload, outsider denial, public property reads, future visit requests,
+  Staff read-only behavior, Pro analytics, three-origin cookie/CSRF transport,
+  transaction reviews, scroll restoration, and admin/CRM navigation.
+  The 19 Chromium persona/security checks passed in the preceding broader run.
+  Earlier cold-load failures and a duplicate-message selector were investigated
+  and corrected; only the final selected rerun is reported as wholly passing.
+- Pro dashboard page identity, meaningful content, desktop/phone layout,
+  screenshots and interaction checks passed with no captured page exceptions
+  or console errors. Browser plugin was unavailable, so the repository's
+  regular Playwright workflow was used at `http://fr.localhost:3110`.
+- Final `make smoke` passed for Web, API readiness, anonymous listings, worker
+  heartbeat/database coordination, Redis and local Supabase. An earlier attempt
+  timed out during host contention; the final check passed without restarting
+  the user's dev stack.
+- This is not a full current-release certificate: the exhaustive browser
+  matrix, Firefox on a supported host, two disposable-database checks, signed
+  mobile artifacts, hosted providers and deployed recovery evidence remain
+  separate protected release gates. Earlier container certification is
+  historical evidence, not a new container rollout in this follow-up.
+
+## Earlier validation record (historical, not current-release evidence)
 
 - `make check` passed after the launch configuration changes.
 - the complete non-E2E suite passed 2,117 tests across 348 files: Web 954/147,
@@ -424,10 +496,9 @@ The labels below have deliberately narrow meanings:
   authorization, idempotency, and market-isolation suites passed. Migration
   `00088` also applied and completed create/retry/update/transition/reorder
   behavior against an isolated PostgreSQL 17 instance.
-- full fresh-history replay remains red at known legacy migration `00030`; the
-  new migration is not the cause. Because deployed checksums are unavailable,
-  the already-versioned file was not edited and generated database types were
-  not hand-modified.
+- At that earlier checkpoint, fresh-history replay failed at legacy migration
+  `00030`. The later local/container certification supersedes that failure;
+  hosted migration ledger reconciliation remains required.
 
 ## Final release blockers
 
@@ -454,8 +525,8 @@ No source change can legitimately replace the following evidence:
   launch;
 - Stripe/Connect/Identity sandbox certification, dispute/chargeback drills and
   reconciled finance period-close evidence;
-- a clean live PostgreSQL/Supabase application through migration 00088 on the
-  intended engine, followed by query-plan and RLS smoke evidence;
+- a clean application of the complete current migration history on the intended
+  hosted PostgreSQL/Supabase environment, followed by query-plan and RLS smoke evidence;
 - deployed backup/object-storage restore evidence with measured RPO/RTO, plus
   log/trace drains, dashboards, alerts and on-call notification delivery;
 - legal and operations approval for DSA/DAC7/trader traceability, retention,

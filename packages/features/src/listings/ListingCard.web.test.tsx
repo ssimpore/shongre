@@ -78,6 +78,25 @@ function renderCard(listing: ListingCardView = baseListing) {
 }
 
 describe("canonical web listing card", () => {
+  it.each(["grid", "list", "compact", "showcase", "hero"] as const)(
+    "uses a payment-card glyph with the online-payment label in the %s variant",
+    (variant) => {
+      const html = renderToStaticMarkup(
+        <ListingCard
+          listing={baseListing}
+          href="/annonce/listing-card-test"
+          variant={variant}
+          labels={labels}
+          identityLabels={identityLabels}
+        />,
+      );
+      expect(html).toContain('data-listing-capability="online_payment"');
+      expect(html).toContain('title="Paiement en ligne"');
+      expect(html).toContain("lucide-credit-card");
+      expect(html).not.toContain("lucide-shield-check");
+    },
+  );
+
   it("renders the compact shared anatomy in the specified order", () => {
     const dateNow = vi
       .spyOn(Date, "now")

@@ -1,36 +1,23 @@
-import React, { useMemo } from "react";
+import React from "react";
 import { Tag, Zap, Home, Car, Cpu, Sliders } from "lucide-react";
-import type { TaxonomyV4ResolvedSchema } from "@shongre/contracts/taxonomy";
-import type { Listing } from "../../../types";
+import type { ListingCharacteristicsData } from "../../../api/contracts/listings.contract";
 
 export interface ListingCharacteristicsProps {
-  listing: Listing;
-  schema: TaxonomyV4ResolvedSchema | null;
+  data: ListingCharacteristicsData | null;
   state: "loading" | "ready" | "error";
-  locale: string;
   onRetry: () => void;
   className?: string;
 }
 
-interface CharacteristicItem {
-  code: string;
-  label: string;
-  value: string;
-}
-
-interface CharacteristicGroup {
-  groupKey: string;
-  groupTitle: string;
-  items: CharacteristicItem[];
-}
-
 const GROUP_ICONS: Record<string, React.ReactNode> = {
-  general: <Tag className="w-icon-md h-icon-md text-primary" />,
-  technical: <Cpu className="w-icon-md h-icon-md text-info" />,
-  engine: <Car className="w-icon-md h-icon-md text-warning" />,
-  property: <Home className="w-icon-md h-icon-md text-success" />,
-  energy: <Zap className="w-icon-md h-icon-md text-rating-strong-bright" />,
-  dimensions: <Sliders className="w-icon-md h-icon-md text-automation" />,
+  "grp.characteristics": <Tag className="w-icon-md h-icon-md text-primary" />,
+  "grp.vehicle_technical": <Cpu className="w-icon-md h-icon-md text-info" />,
+  "grp.vehicle_identity": <Car className="w-icon-md h-icon-md text-warning" />,
+  "grp.property_specs": <Home className="w-icon-md h-icon-md text-success" />,
+  "grp.property_energy": (
+    <Zap className="w-icon-md h-icon-md text-rating-strong-bright" />
+  ),
+  "grp.dimensions": <Sliders className="w-icon-md h-icon-md text-automation" />,
 };
 
 const DPE_COLORS: Record<string, string> = {
@@ -43,139 +30,13 @@ const DPE_COLORS: Record<string, string> = {
   G: "bg-danger text-text-inverse",
 };
 
-function localizedLabel(
-  labels: Readonly<Record<string, string | undefined>>,
-  locale: string,
-): string {
-  return (
-    labels[locale] ||
-    labels[locale.split("-")[0]] ||
-    labels["fr-FR"] ||
-    Object.values(labels).find(Boolean) ||
-    ""
-  );
-}
-
-function formatValue(
-  value: unknown,
-  locale: string,
-  unit: string | undefined,
-  options: TaxonomyV4ResolvedSchema["attributes"][number]["options"],
-): string {
-  if (Array.isArray(value)) {
-    return value
-      .map((entry) => formatValue(entry, locale, unit, options))
-      .filter(Boolean)
-      .join(", ");
-  }
-  if (typeof value === "boolean") {
-    return value
-      ? locale.toLowerCase().startsWith("fr")
-        ? "Oui"
-        : "Yes"
-      : locale.toLowerCase().startsWith("fr")
-        ? "Non"
-        : "No";
-  }
-  const option = options.find(
-    (candidate) =>
-      candidate.id === String(value) || candidate.key === String(value),
-  );
-  if (option) return localizedLabel(option.labels, locale);
-  if (typeof value === "number") {
-    const formatted = new Intl.NumberFormat(locale).format(value);
-    return unit ? `${formatted} ${unit}` : formatted;
-  }
-  if (value === undefined || value === null) return "";
-  return String(value).trim();
-}
-
-function projectGroups(
-  listing: Listing,
-  schema: TaxonomyV4ResolvedSchema,
-  locale: string,
-): CharacteristicGroup[] {
-  const definitions = new Map(
-    schema.attributes.map((attribute) => [attribute.definition.id, attribute]),
-  );
-  const seen = new Set<string>();
-  const groups = new Map<string, CharacteristicGroup>();
-
-  for (const field of schema.projections.detailFields) {
-    if (field.field?.kind !== "attribute") continue;
-    const resolved = definitions.get(field.field.key);
-    if (!resolved) continue;
-    const { definition } = resolved;
-    const value =
-      listing.attributes[definition.code] ??
-      listing.attributes[definition.id] ??
-      listing.attributes[field.field.key];
-    const formattedValue = formatValue(
-      value,
-      locale,
-      definition.unit,
-      resolved.options,
-    );
-    if (!formattedValue) continue;
-
-    const groupKey = field.sectionId || resolved.binding.groupId || "general";
-    const group = groups.get(groupKey) ?? {
-      groupKey,
-      groupTitle:
-        localizedLabel(field.sectionLabels, locale) ||
-        localizedLabel(definition.labels, locale),
-      items: [],
-    };
-    group.items.push({
-      code: definition.code,
-      label: localizedLabel(field.labels, locale),
-      value: formattedValue,
-    });
-    groups.set(groupKey, group);
-    seen.add(definition.id);
-  }
-
-  for (const resolved of schema.attributes) {
-    const { definition, binding } = resolved;
-    if (!definition.detailVisible || seen.has(definition.id)) continue;
-    const value =
-      listing.attributes[definition.code] ?? listing.attributes[definition.id];
-    const formattedValue = formatValue(
-      value,
-      locale,
-      definition.unit,
-      resolved.options,
-    );
-    if (!formattedValue) continue;
-    const groupKey = binding.groupId || definition.groupId || "general";
-    const group = groups.get(groupKey) ?? {
-      groupKey,
-      groupTitle: localizedLabel(definition.labels, locale),
-      items: [],
-    };
-    group.items.push({
-      code: definition.code,
-      label: localizedLabel(definition.labels, locale),
-      value: formattedValue,
-    });
-    groups.set(groupKey, group);
-  }
-
-  return [...groups.values()].filter((group) => group.items.length > 0);
-}
-
 export const ListingCharacteristics: React.FC<ListingCharacteristicsProps> = ({
-  listing,
-  schema,
+  data,
   state,
-  locale,
   onRetry,
   className = "",
 }) => {
-  const groups = useMemo(
-    () => (schema ? projectGroups(listing, schema, locale) : []),
-    [listing, locale, schema],
-  );
+  const groups = data?.groups ?? [];
 
   if (state === "loading") {
     return (
@@ -204,15 +65,18 @@ export const ListingCharacteristics: React.FC<ListingCharacteristicsProps> = ({
   if (groups.length === 0) return null;
 
   return (
-    <div className={`space-y-6 ${className}`}>
+    <div
+      data-listing-characteristics="true"
+      className={`space-y-6 ${className}`}
+    >
       {groups.map((group) => (
         <div
-          key={group.groupKey}
+          key={group.id}
           className="space-y-4 rounded-card border border-border-base bg-bg-surface p-5 shadow-xs sm:p-6"
         >
           <div className="flex items-center gap-2.5 border-b border-border-soft pb-3">
-            {GROUP_ICONS[group.groupKey] ?? GROUP_ICONS.general}
-            <h2 className="font-bold text-text-main">{group.groupTitle}</h2>
+            {GROUP_ICONS[group.id] ?? GROUP_ICONS["grp.characteristics"]}
+            <h2 className="font-bold text-text-main">{group.label}</h2>
           </div>
           <dl className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2">
             {group.items.map((item) => {
@@ -221,7 +85,7 @@ export const ListingCharacteristics: React.FC<ListingCharacteristicsProps> = ({
                 setsValidDpe(item.value);
               return (
                 <div
-                  key={`${group.groupKey}-${item.code}`}
+                  key={`${group.id}-${item.code}`}
                   className="flex min-w-0 items-center justify-between gap-3 border-b border-border-soft py-2 last:border-b-0"
                 >
                   <dt className="text-sm text-text-supporting">{item.label}</dt>
@@ -229,7 +93,7 @@ export const ListingCharacteristics: React.FC<ListingCharacteristicsProps> = ({
                     className={
                       isDpe
                         ? `rounded-md px-2 py-1 text-sm font-bold ${DPE_COLORS[item.value]}`
-                        : "text-right text-sm font-semibold text-text-main"
+                        : "min-w-0 break-words text-right text-sm font-semibold text-text-main"
                     }
                   >
                     {item.value}

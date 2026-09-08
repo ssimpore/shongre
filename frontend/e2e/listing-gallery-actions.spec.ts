@@ -1,3 +1,4 @@
+import { testListingPath } from "./fixtures";
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { usePersona } from "./personas";
 import { expectNoHorizontalOverflow, waitForStableLayout } from "./overflow";
@@ -45,7 +46,9 @@ test("listing, property and vehicle details share the same favorite gallery acti
     { width: 390, height: 844 },
   ]) {
     await page.setViewportSize(viewport);
-    await page.goto("/annonce/list-105", { waitUntil: "domcontentloaded" });
+    await page.goto(testListingPath("list-105"), {
+      waitUntil: "domcontentloaded",
+    });
     await waitForStableLayout(page);
 
     const listingGallery = page.getByRole("group", {
@@ -132,7 +135,9 @@ test("listing details place the primary summary immediately below the media", as
     { width: 390, height: 844 },
   ]) {
     await page.setViewportSize(viewport);
-    await page.goto("/annonce/list-103", { waitUntil: "domcontentloaded" });
+    await page.goto(testListingPath("list-103"), {
+      waitUntil: "domcontentloaded",
+    });
     await waitForStableLayout(page);
 
     const gallery = page.getByRole("group", {
@@ -150,7 +155,7 @@ test("listing details place the primary summary immediately below the media", as
       if (!headingElement) return null;
       return Boolean(
         galleryElement.compareDocumentPosition(headingElement) &
-          Node.DOCUMENT_POSITION_FOLLOWING,
+        Node.DOCUMENT_POSITION_FOLLOWING,
       );
     });
     expect(order, `summary should follow media at ${viewport.width}px`).toBe(

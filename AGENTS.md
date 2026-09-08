@@ -670,7 +670,11 @@ France-only happy path is insufficient for market-sensitive work.
   `ADD`/`EXCLUDE` overrides and must reject duplicate effective bindings.
   Unapproved country, seller, and regulatory policy remains quarantined or
   disabled. Publication fields and search filters use reusable field definitions
-  rather than category condition trees. Header category-bar selection,
+  rather than category condition trees. Existing-listing characteristics use
+  the public, market-scoped listing read projection, never the publication
+  eligibility resolver. Public detail bindings and recorded values determine
+  output; broader stored categories must not be silently replaced with a
+  guessed publishable leaf. Header category-bar selection,
   activation, and display order are market-scoped taxonomy configuration managed
   through the authorized admin service; clients consume its public projection
   and must not hardcode an editorial category list. Overview and promotion links
@@ -687,7 +691,12 @@ France-only happy path is insufficient for market-sensitive work.
 - Publication should be progressive and preserve non-sensitive draft state
   across authentication, verification, payment/promotion flow, navigation,
   refresh, and temporary failure. Never persist KYC or payment secrets with a
-  draft.
+  draft. Generic product onboarding uses `PUBLICATION_CONSTRAINTS.title` for
+  the Web/native input limit and counter, with matching OpenAPI and backend
+  publication/bulk-import validation. Preserve existing titles and over-limit
+  saved or assisted drafts; require an explicit edit before publication rather
+  than silently truncating them. Character limits do not replace accessible
+  full-title wrapping on listing cards.
 - Keep creation, publication, bump/sort, reservation, sale, and expiry timestamps
   semantically distinct. “Remonter l’annonce” must not be presented as a new
   publication date.
@@ -758,7 +767,12 @@ France-only happy path is insufficient for market-sensitive work.
   thresholds must never be hardcoded in homepage components. Public resolution
   omits content below its published thresholds; authorized previews may expose
   suppressed-state metadata, and drafts affect live discovery only after an
-  explicit audited publication.
+  explicit audited publication. Collections use the published selection mode:
+  automatic selects API taxonomy roots with eligible inventory; manual preserves
+  the configured slug order and never falls back to automatic when empty.
+  Recent-search chips and autocomplete share browser-local UX history scoped by
+  account and market, hidden during session restoration; never fabricate history
+  or assign unscoped legacy history to the current identity.
 
 ## UI, accessibility, and performance
 
@@ -802,9 +816,13 @@ France-only happy path is insufficient for market-sensitive work.
   records to `ListingCardView`; generic listings resolve the universe label and
   optional brand from the canonical taxonomy and listing attributes. Do not add
   category-specific card markup or conditional fields in page components.
-  Profile results, hero media slides,
-  operational rows, and map popups may remain specialized when they are not
-  listing-card equivalents.
+  Related homepage listing rails use `ListingRail` inside one `ListingRailGroup`
+  from the Web design-system primitives: widths stay token-owned, and a scoped
+  measured minimum aligns natural card heights across sections without clipping
+  titles or seller facts. Measurement must preserve deferred section rendering
+  and release observers when the group unmounts.
+  Profile results, hero media slides, operational rows, and map popups may
+  remain specialized when they are not listing-card equivalents.
 - Marketplace results pages must use the canonical Web `SearchResultsToolbar`,
   `FilterPanel`, and `FilterPanelToggle` primitives for results controls,
   desktop sidebar, collapse/restore disclosure, and mobile drawer. The optional
@@ -1116,7 +1134,12 @@ France-only happy path is insufficient for market-sensitive work.
   behavior; use `make check-all` for E2E, cross-platform, or complete workflow
   changes.
 - Browser E2E runs against the repository's isolated Webpack production build,
-  not the interactive development server. Keep bounded concurrency and isolate
+  not the interactive development server. Its backend-owned scenario exposes
+  production-shaped listing UUIDs and authenticates personas through HTTP;
+  Staff complete real MFA with private, single-use test recovery codes.
+  Local storage must never establish test identity. The browser base URL must
+  match the configured market origin, and regular/serial filters must intersect
+  the caller's selection without duplicating tests. Keep bounded concurrency and isolate
   multi-route/persona sweeps according to existing test-runner conventions.
   `make test-web-api-transport` additionally owns an isolated test API and
   verifies first-party sessions with an API-mode Web build. Hosted staging

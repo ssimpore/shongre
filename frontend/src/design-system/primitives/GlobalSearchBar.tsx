@@ -16,8 +16,7 @@ import {
   SearchAutocomplete,
   AutocompleteSelection,
 } from "./SearchAutocomplete";
-import { browserPreferencesService } from "../../services/browser-preferences.service";
-import { telemetryService } from "../../services/telemetry.service";
+import { useRecentSearches } from "../../hooks/useRecentSearches";
 import { useTranslation } from "../../i18n/I18nProvider";
 import {
   DROPDOWN_PANEL_CLASSES,
@@ -104,7 +103,8 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
   // Autocomplete state
   const [isAutocompleteOpen, setIsAutocompleteOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
-  const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const { recentSearches, rememberSearch, removeSearch, clearSearches } =
+    useRecentSearches();
   const [keywordSuggestions, setKeywordSuggestions] = useState<string[]>([]);
   const [popularKeywords, setPopularKeywords] = useState<string[]>([]);
 
@@ -128,15 +128,6 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
   const categoryDropdownRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const searchContainerRef = useRef<HTMLDivElement>(null);
-
-  // Sync recent searches from storage
-  useEffect(() => {
-    try {
-      setRecentSearches(browserPreferencesService.getRecentSearches());
-    } catch {
-      setRecentSearches([]);
-    }
-  }, [isAutocompleteOpen]);
 
   // Sync state with props when initial values change
   useEffect(() => {
@@ -344,12 +335,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
         : selectedSubCategorySlug;
 
     if (finalQuery) {
-      try {
-        browserPreferencesService.addRecentSearch(finalQuery);
-        setRecentSearches(browserPreferencesService.getRecentSearches());
-      } catch (e) {
-        telemetryService.captureException(e, "recent-search-write");
-      }
+      rememberSearch(finalQuery);
     }
 
     setIsAutocompleteOpen(false);
@@ -417,23 +403,12 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
 
   const handleClearRecentSearch = (searchItem: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    try {
-      const updated = recentSearches.filter((s) => s !== searchItem);
-      browserPreferencesService.setByKey("shongre_recent_searches_v1", updated);
-      setRecentSearches(updated);
-    } catch (err) {
-      telemetryService.captureException(err, "recent-search-remove");
-    }
+    removeSearch(searchItem);
   };
 
   const handleClearAllRecentSearches = (e: React.MouseEvent) => {
     e.stopPropagation();
-    try {
-      browserPreferencesService.setByKey("shongre_recent_searches_v1", []);
-      setRecentSearches([]);
-    } catch (err) {
-      telemetryService.captureException(err, "recent-search-clear");
-    }
+    clearSearches();
   };
 
   const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {

@@ -14,26 +14,10 @@ export interface UserWorkspaceSummary {
   recentPurchases: Transaction[];
 }
 
-interface ProAnalyticsDay {
-  date: string;
-  views: number;
-  leads: number;
-}
-
-interface ProListingPerformance {
-  listing: Listing;
-  conversionRate: number;
-}
-
 export interface ProAnalyticsSnapshot {
-  monthlyRevenue: Money;
-  monthlyViews: number;
-  contactsCount: number;
-  conversionRate: number;
-  weeklyViewsChangePercent: number;
-  weeklyContactsChangePercent: number;
-  weeklyStats: ProAnalyticsDay[];
-  topListings: ProListingPerformance[];
+  revenueByCurrency: Money[];
+  catalogueSampleViews: number;
+  topListings: Listing[];
 }
 
 export interface WorkspaceServiceContract {

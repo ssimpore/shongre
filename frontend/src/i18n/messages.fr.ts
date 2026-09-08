@@ -945,6 +945,16 @@ export const messagesFr = {
     "Supprimer cette recherche",
 
   // --- home.homeCollectionsSection ---
+  "home.homeCollectionsSection.unavailable":
+    "Les collections sont momentanément indisponibles",
+  "home.homeCollectionsSection.retryDescription":
+    "Réessayez pour charger les catégories et leurs annonces disponibles.",
+  "home.homeCollectionsSection.listingCountOne": "{formattedCount} annonce",
+  "home.homeCollectionsSection.listingCountMany": "{formattedCount} annonces",
+  "admin.homepageConfigurationPanel.automaticCollections":
+    "Automatique : catégories avec des annonces",
+  "admin.homepageConfigurationPanel.manualCollections":
+    "Manuelle : choisir et ordonner les catégories",
   "home.homeCollectionsSection.tendanceEnCeMoment": "Tendance en ce moment",
   "home.homeCollectionsSection.laPieceManquante": "La pièce manquante",
   "home.homeCollectionsSection.aVeloEnFamille": "À vélo en famille",
@@ -1287,6 +1297,10 @@ export const messagesFr = {
   "publishing.publishWizard.exCanapeDAngleIphone":
     "ex: Canapé d'angle, iPhone 15, Voitures, Vélos...",
   "publishing.publishWizard.titreDeLAnnonce": "Titre de l'annonce",
+  "publishing.publishWizard.titleHint":
+    "{count}/{max} caractères · Produit, marque et modèle. Placez les détails dans la description.",
+  "publishing.publishWizard.titleTooLong":
+    "Raccourcissez le titre à {max} caractères maximum avant de continuer.",
   "publishing.publishWizard.exCanapeScandinave3Places":
     "ex: Canapé scandinave 3 places tissu bouclette beige",
   "publishing.publishWizard.descriptionDetaillee": "Description détaillée",
@@ -1383,12 +1397,14 @@ export const messagesFr = {
   "sellerworkspace.myListingsPage.supprimerLAnnonce": "Supprimer l'annonce",
 
   // --- sellerworkspace.proDashboardPage ---
-  "sellerworkspace.proDashboardPage.tauxDeConversion": "Taux de conversion",
-  "sellerworkspace.proDashboardPage.surLesFichesArticles":
-    "Sur les fiches articles",
-  "sellerworkspace.proDashboardPage.volumeDeVentesEstime":
-    "Volume de ventes estimé",
-  "sellerworkspace.proDashboardPage.ceMoisCi": "Ce mois-ci",
+  "sellerworkspace.proDashboardPage.catalogueSampleViews":
+    "Vues du catalogue analysé",
+  "sellerworkspace.proDashboardPage.catalogueSampleDescription":
+    "Vues cumulées des annonces analysées, hors évolution hebdomadaire.",
+  "sellerworkspace.proDashboardPage.completedSalesThisMonth":
+    "Ventes terminées ce mois-ci",
+  "sellerworkspace.proDashboardPage.completedSalesScope":
+    "Commandes terminées dont la dernière mise à jour est dans le mois courant (UTC). Hors frais et remboursements.",
 
   // --- sellerworkspace.proStorefrontEditorPage ---
   "sellerworkspace.proStorefrontEditorPage.numeroSiret14Chiffres":
@@ -3098,7 +3114,7 @@ export const messagesFr = {
   "categories.categoriesPage.rubriques": "{count} rubriques",
   "categories.categoriesPage.rubriques_one": "{count} rubrique",
   "categories.categoriesPage.rubriques_other": "{count} rubriques",
-  "categories.categoriesPage.rubriquesSupplementaires": "+{count}",
+  "categories.categoriesPage.explorer": "Explorer",
   "categories.categoriesPage.explorerLaCategorie": "Explorer {category}",
   "categories.categoriesPage.pourLaRecherche": "pour « {query} »",
   "categories.categoriesPage.aucuneCategorieNeCorrespond":
@@ -3772,10 +3788,8 @@ export const messagesFr = {
   "sellerworkspace.proDashboardPage.tableauDeBordVendeurPro":
     "Tableau de bord Vendeur Pro",
   "sellerworkspace.proDashboardPage.suiviDesPerformancesDeVotre":
-    "Suivi des performances de votre catalogue commercial et conversion clients",
+    "Suivi de votre catalogue commercial et de vos ventes terminées",
   "sellerworkspace.proDashboardPage.facturesRecus": "Factures & Reçus",
-  "sellerworkspace.proDashboardPage.evolutionDeLAudience7":
-    "Évolution de l'audience (7 derniers jours)",
   "sellerworkspace.proDashboardPage.articlesPharesDeVotreBoutique":
     "Articles phares de votre boutique",
 
@@ -4374,10 +4388,6 @@ export const messagesFr = {
     "Les permissions n’ont pas pu être mises à jour.",
   "admin.capabilities.saveAction": "Enregistrer les permissions",
   "admin.capabilities.manageAction": "Gérer les permissions",
-  "sellerworkspace.proDashboardPage.pasEncoreDeDonnees":
-    "Pas encore de données",
-  "sellerworkspace.proDashboardPage.totalVuesUniques":
-    "Total : {count} vues uniques",
   "errors.notFoundPage.explorerLesCategories": "Explorer les catégories",
   "errors.notFoundPage.toutesLesCategories": "Toutes les catégories",
   // --- Shongre Emploi -----------------------------------------------------
@@ -4708,6 +4718,8 @@ export const messagesFr = {
     "Résumé du bien et action principale",
   "immo.propertyDetail.sendRequest": "Envoyer la demande",
   "immo.propertyDetail.requestAppointment": "Demander ce créneau",
+  "immo.propertyDetail.chooseFutureAppointment":
+    "Choisissez une date de visite future.",
 
   "admin.solutions.catalogTableLabel": "Tableau du catalogue de solutions",
   "admin.monetization.firstTableLabel": "Tableau des grilles de commission",
@@ -5827,14 +5839,12 @@ export const messagesFr = {
   "sellerworkspace.proDashboardPage.actionQueueTitle": "À traiter",
   "sellerworkspace.proDashboardPage.actionQueueDescription":
     "Les actions prioritaires de votre activité, réunies au même endroit.",
-  "sellerworkspace.proDashboardPage.answerContacts": "Répondre aux contacts",
-  "sellerworkspace.proDashboardPage.contactsAwaiting": "contacts à consulter",
-  "sellerworkspace.proDashboardPage.publishFirstListing":
-    "Publier votre première annonce",
-  "sellerworkspace.proDashboardPage.publishFirstListingDescription":
-    "Rendez votre vitrine visible et commencez à recevoir des demandes.",
-  "sellerworkspace.proDashboardPage.actionQueueEmpty":
-    "Tout est à jour. Aucune action prioritaire.",
+  "sellerworkspace.proDashboardPage.answerContacts": "Consulter les messages",
+  "sellerworkspace.proDashboardPage.contactsAwaiting": "messages non lus",
+  "sellerworkspace.proDashboardPage.manageListings": "Gérer mes annonces",
+  "sellerworkspace.proDashboardPage.manageListingsDescription":
+    "Consultez les statuts de vos annonces et mettez votre catalogue à jour.",
+  "sellerworkspace.proDashboardPage.actionQueueEmpty": "Aucun message non lu.",
   "admin.adminOverviewPage.actionQueueTitle": "À traiter",
   "admin.adminOverviewPage.actionQueueDescription":
     "Uniquement les dossiers autorisés par votre rôle et votre périmètre.",

@@ -1,5 +1,25 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { ScrollRail } from "./ScrollRail";
+import { observeListingRailSizing } from "./listing-rail-sizing";
+
+/** Related rails share their largest natural card body without truncating copy. */
+export function ListingRailGroup({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  const root = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (root.current) return observeListingRailSizing(root.current);
+  }, []);
+  return (
+    <div ref={root} className={`listing-rail-group ${className}`}>
+      {children}
+    </div>
+  );
+}
 
 export interface ListingRailProps {
   /** `ListingCard`s. Each is wrapped in the fixed-width, snapping rail cell. */

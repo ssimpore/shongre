@@ -8,6 +8,7 @@ import type { NestFastifyApplication } from "@nestjs/platform-fastify";
 import { generateTotpCode } from "../../src/modules/auth/mfa.service.js";
 import { config } from "../../src/app/config/index.js";
 import { repositories } from "../../src/infrastructure/database/repositories/index.js";
+import { PUBLICATION_CONSTRAINTS } from "@shongre/contracts/publication";
 
 describe("API v1 Endpoints Integration", () => {
   let app: NestFastifyApplication;
@@ -69,6 +70,30 @@ describe("API v1 Endpoints Integration", () => {
     "Content-Type": "application/json",
   });
 
+  it("rejects overlong product titles through the authenticated publication API", async () => {
+    const response = await fetch(`${baseUrl}/api/v1/listings/publish`, {
+      method: "POST",
+      headers: { ...auth(buyerToken), "X-Shongre-Market": "FR" },
+      body: JSON.stringify({
+        draft: {
+          title: "W".repeat(PUBLICATION_CONSTRAINTS.title.maxLength + 1),
+          categoryId: "electronics.smartphones.phones",
+          marketCode: "FR",
+        },
+      }),
+    });
+    expect(response.status).toBe(400);
+    expect(await response.json()).toMatchObject({
+      error: {
+        code: "VALIDATION_ERROR",
+        details: {
+          field: "title",
+          maxLength: PUBLICATION_CONSTRAINTS.title.maxLength,
+        },
+      },
+    });
+  });
+
   beforeAll(async () => {
     // The demo personas need password hashes before login can verify anything.
     await seedDemoCredentials();
@@ -88,6 +113,89 @@ describe("API v1 Endpoints Integration", () => {
 
   afterAll(async () => {
     await app.close();
+  });
+
+  it("reads public listing characteristics with the listing's market and visibility boundary", async () => {
+    const original = await repositories.listings.findById("list_1");
+    expect(original).not.toBeNull();
+    const id = "characteristics-public-vehicle";
+    await repositories.listings.save({
+      ...original!,
+      id,
+      categoryId: "vehicles.cars",
+      brand: "Peugeot",
+      model: "208",
+      attributes: {
+        year: 2022,
+        fuel: "essence",
+        gearbox: "manuelle",
+        mileage: 28500,
+        vin_private: "never-public",
+        contactCount: 19,
+      },
+    });
+    const endpoint = `${baseUrl}/api/v1/listings/${id}/characteristics`;
+    try {
+      for (const headers of [
+        { "X-Shongre-Market": "FR" },
+        { ...auth(adminToken), "X-Shongre-Market": "FR" },
+      ]) {
+        const response = await fetch(`${endpoint}?locale=fr-FR`, { headers });
+        expect(response.status).toBe(200);
+        const body = await response.json();
+        expect(body.groups.flatMap((group: any) => group.items)).toContainEqual(
+          { code: "fuel_type", label: "Énergie / Carburant", value: "Essence" },
+        );
+        expect(JSON.stringify(body)).not.toMatch(
+          /vin_private|never-public|contactCount/,
+        );
+      }
+      const wrongMarket = await fetch(endpoint, {
+        headers: { "X-Shongre-Market": "CH" },
+      });
+      expect(wrongMarket.status).toBe(404);
+      expect(
+        (
+          await fetch(`${endpoint}?locale=invalid_locale`, {
+            headers: { "X-Shongre-Market": "FR" },
+          })
+        ).status,
+      ).toBe(400);
+      await repositories.listings.update(id, { status: "draft" });
+      expect(
+        (await fetch(endpoint, { headers: { "X-Shongre-Market": "FR" } }))
+          .status,
+      ).toBe(404);
+    } finally {
+      await repositories.listings.delete(id);
+    }
+  });
+
+  it("returns currency-labelled workspace analytics only to the authorized seller", async () => {
+    const token = await login("contact@atelier-nordique.fr");
+    const url = `${baseUrl}/api/v1/workspace/pro-analytics/user_pro_atelier`;
+    const response = await fetch(url, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    expect(response.status).toBe(200);
+    const snapshot = await response.json();
+    expect(snapshot.revenueByCurrency).toEqual([
+      { amountMinor: 384000, currency: "EUR" },
+    ]);
+    expect(Number.isInteger(snapshot.monthlyViews)).toBe(true);
+    expect(Array.isArray(snapshot.topListings)).toBe(true);
+    expect((await fetch(url)).status).toBe(401);
+    expect([403, 404]).toContain(
+      (await fetch(url, { headers: { Authorization: `Bearer ${buyerToken}` } }))
+        .status,
+    );
+    expect([403, 404]).toContain(
+      (
+        await fetch(`${baseUrl}/api/v1/workspace/pro-analytics/user_camille`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+      ).status,
+    );
   });
 
   it("GET /health returns 200 OK", async () => {

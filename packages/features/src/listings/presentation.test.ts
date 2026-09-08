@@ -159,7 +159,7 @@ describe("compact card value presentation", () => {
         labels,
       ),
     ).toEqual([
-      { icon: "shield", kind: "online_payment", label: "Paiement en ligne" },
+      { icon: "payment", kind: "online_payment", label: "Paiement en ligne" },
       { icon: "truck", kind: "delivery", label: "Livraison" },
       { icon: "tag", kind: "negotiable", label: "Négociable" },
       {

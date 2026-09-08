@@ -4,10 +4,10 @@ Runs the API-only frontend against the isolated backend test transport. No live
 Supabase, Stripe, or KYC provider is involved.
 
 ```bash
-npm run test:e2e              # everything, every configured browser
-npm run test:e2e:responsive   # overflow matrix only (Chromium)
-npm run test:e2e:a11y         # axe + keyboard/focus (Chromium)
-npm run test:e2e:ui           # interactive runner
+make frontend-test-e2e
+make frontend-test-e2e E2E_ARGS='responsive.spec.ts --project=chromium'
+make frontend-test-e2e E2E_ARGS='accessibility.spec.ts --project=chromium'
+make test-web-api-transport
 ```
 
 ## What each spec holds the line on
@@ -27,8 +27,25 @@ without touching either spec.
 
 ## Personas
 
-`personas.ts` describes the API test identities used by journey setup. The
-frontend never reads personas from local storage.
+`personas.ts` signs the backend-owned scenario accounts in through the first-party
+HTTP API and checks `/auth/me`. Staff complete the real MFA challenge using
+single-use recovery codes. The runner creates a private, ephemeral account
+manifest and atomic code claims, then removes them with the isolated API. No
+test credentials enter the application bundle or checked-in files. The retired
+local-storage switcher is covered only by a negative impersonation regression.
+
+The isolated API reuses the local database seed's listing projection and source
+scenario. Backend test repositories remain deliberate test infrastructure;
+these checks do not certify hosted providers or PostgreSQL persistence.
+`fixtures.ts` resolves source listing keys to the same UUIDs as the local seed;
+do not put retired synthetic listing IDs in browser URLs. Direct navigation uses
+the isolated canonical France origin, not the bare listener hostname.
+
+`api-personas.spec.ts` verifies authentication, MFA, authorization and logout.
+`marketplace-api-journey.spec.ts` verifies publication, persistent favourites,
+mobile messaging and account isolation through the API. User `--grep` and
+`--grep-invert` filters intersect the runner's regular/serial partition so tests
+cannot execute twice or silently lose their requested filter.
 
 ## Browsers
 
@@ -36,8 +53,6 @@ Chromium runs the full suite. WebKit and Firefox run the journey and
 accessibility specs, where engine differences actually bite (sticky headers,
 `dvh`, focus handling in overlays).
 
-> **Firefox on macOS 26+/Darwin 27:** Playwright's bundled Firefox currently
-> fails to start its headless compositor on this host
-> (`RenderCompositorSWGL failed mapping default framebuffer`) and times out on
-> any navigation, including `about:blank`. It is kept in the project list so CI
-> covers it; locally, use `--project=chromium --project=webkit`.
+The runner disables Firefox by default on Darwin 27 because of the recorded
+local launch failure. Firefox remains configured for supported hosts and CI;
+`FORCE_FIREFOX_E2E=1` requests a local retest. Chromium and WebKit remain available.

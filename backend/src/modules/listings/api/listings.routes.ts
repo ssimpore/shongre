@@ -211,6 +211,33 @@ export function registerListingsRoutes(routes: RouteRegistrar): void {
   );
   routes.addRoute(
     "GET",
+    "/listings/:id/characteristics",
+    PUBLIC,
+    async ({ params, marketCode, query }) => {
+      const market = requireOpenApiRequestMarket(marketCode);
+      let locale = z
+        .string()
+        .min(2)
+        .max(35)
+        .parse(query.get("locale") ?? requireApiMarketContext(market).locale);
+      try {
+        [locale] = Intl.getCanonicalLocales(locale);
+      } catch {
+        throw new AppError({
+          code: "VALIDATION_ERROR",
+          statusCode: 400,
+          message: "Locale invalide.",
+        });
+      }
+      return listingsService.getListingCharacteristics(
+        params.id,
+        market,
+        locale,
+      );
+    },
+  );
+  routes.addRoute(
+    "GET",
     "/listings/:id",
     PUBLIC,
     async ({ params, marketCode }) => {

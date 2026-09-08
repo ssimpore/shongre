@@ -7,6 +7,7 @@ import {
   Check,
   ChevronLeft,
   ChevronRight,
+  CreditCard,
   Database,
   FileText,
   Fuel,
@@ -60,6 +61,7 @@ export type IconName =
   | "map-pin"
   | "menu"
   | "message"
+  | "payment"
   | "plus"
   | "refresh"
   | "ruler"
@@ -110,6 +112,7 @@ const icons: Record<
   "map-pin": MapPin,
   menu: Menu,
   message: MessageCircle,
+  payment: CreditCard,
   plus: Plus,
   refresh: RefreshCw,
   ruler: Ruler,

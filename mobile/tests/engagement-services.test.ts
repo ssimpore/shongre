@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { PUBLICATION_CONSTRAINTS } from "@shongre/contracts/publication";
 
 vi.mock("@/api/http-client", () => ({ apiRequest: vi.fn() }));
 
@@ -37,6 +38,45 @@ const listing = {
 
 describe("API-backed mobile engagement services", () => {
   beforeEach(() => vi.clearAllMocks());
+
+  it("preserves a boundary title and rejects overlong publication before HTTP", async () => {
+    const title = "é".repeat(PUBLICATION_CONSTRAINTS.title.maxLength);
+    const input = {
+      title,
+      description: "Description du produit",
+      amountMinor: 12000,
+      currency: "EUR",
+      categoryId: "electronics.smartphones.phones",
+      marketCode: "FR",
+      city: "Lyon",
+      postalCode: "69002",
+      condition: "good",
+      attributes: {},
+      images: [],
+    };
+    const actor = {
+      id: "account-a",
+      email: "seller@example.test",
+      name: "Seller",
+      role: "individual_seller",
+      accountType: "individual" as const,
+      status: "active" as const,
+      capabilities: ["listing.create" as const],
+    };
+    const service = new HttpListingsService();
+    await expect(
+      service.publish({ ...input, title: `${title}!` }, actor),
+    ).rejects.toThrow();
+    expect(apiRequest).not.toHaveBeenCalled();
+    vi.mocked(apiRequest).mockResolvedValueOnce({ ...listing, title });
+    await expect(service.publish(input, actor)).resolves.toMatchObject({
+      title,
+    });
+    expect(
+      JSON.parse(vi.mocked(apiRequest).mock.calls[0][1]!.body as string).draft
+        .title,
+    ).toBe(title);
+  });
 
   it("maps favorites returned for the exact market", async () => {
     vi.mocked(apiRequest).mockResolvedValueOnce({

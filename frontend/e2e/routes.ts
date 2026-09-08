@@ -1,3 +1,4 @@
+import { testListingId } from "./fixtures";
 import { PersonaName } from "./personas";
 
 export interface RouteUnderTest {
@@ -9,11 +10,10 @@ export interface RouteUnderTest {
 }
 
 /**
- * `list-117` is a seeded demo listing. A numeric id such as `/annonce/1` renders
- * the not-found page, which quietly turns a listing-detail assertion into a
- * 404-page assertion — so the fixture id is pinned here on purpose.
+ * The backend resolves scenario keys to production-shaped UUIDs. Keep test
+ * navigation aligned with the same identifiers used by public card batches.
  */
-export const DEMO_LISTING_ID = "list-117";
+export const DEMO_LISTING_ID = testListingId("list-117");
 export const DEMO_DELIVERY_REQUEST_ID = "418711cb-aee0-4fa3-a102-8ec6ea2a2cb8";
 
 export const PUBLIC_ROUTES: RouteUnderTest[] = [

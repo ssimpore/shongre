@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
-import { usePersona } from "./personas";
+import { useEstablishedConsent, usePersona } from "./personas";
 import { DEMO_LISTING_ID } from "./routes";
-import { waitForStableLayout } from "./overflow";
+import { expectNoHorizontalOverflow, waitForStableLayout } from "./overflow";
 
 /**
  * The journeys that have to keep working, checked on Chromium, Firefox and
@@ -38,6 +38,7 @@ test.describe("public browsing", () => {
     const card = page
       .locator("div.w-listing-card")
       .getByRole("article")
+      .filter({ has: page.locator('[aria-label^="Note "]') })
       .first();
     await expect(card).toBeVisible();
     await expect(
@@ -132,6 +133,11 @@ test.describe("public browsing", () => {
       .getByRole("button", { name: /effacer le texte/i })
       .first()
       .click();
+    // Clearing keeps keyboard focus in search so the user can type again.
+    await expect(search).toHaveValue("");
+    await expect(search).toBeFocused();
+    await expect(publish).toHaveAttribute("aria-hidden", "true");
+    await page.locator("#main-content").focus();
     await expect(publish).toHaveAttribute("aria-hidden", "false");
     await expect
       .poll(() =>
@@ -167,6 +173,7 @@ test.describe("public browsing", () => {
   }) => {
     await usePersona(page, "guest");
     await page.goto(`/annonce/${DEMO_LISTING_ID}`);
+    await waitForStableLayout(page);
 
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
     await expect(page.locator("body")).toContainText("€");
@@ -240,18 +247,15 @@ test.describe("navigation shell", () => {
     await page.evaluate(() => window.scrollTo(0, 1200));
     await page.waitForTimeout(200);
 
-    // Listings sit in a horizontal rail, so bringing the 7th card into view
-    // scrolls the rail sideways *and* carries the page back up to the rail. The
-    // position worth restoring is therefore the one the page actually holds at
-    // navigation time, not the offset asked for above — which is why this reads
-    // it rather than asserting a fixed number that only held while the results
-    // were a tall grid. Restoration itself is unchanged: measured 153 -> 153.
+    // Focus before measuring: pointer actionability can scroll the card again
+    // after scrollIntoViewIfNeeded, changing the actual departure position.
     const link = page.locator('a[href^="/annonce/"]').nth(6);
     await link.scrollIntoViewIfNeeded();
+    await link.focus();
     const departure = await page.evaluate(() => window.scrollY);
     expect(departure).toBeGreaterThan(50);
 
-    await link.click();
+    await link.press("Enter");
     await page.waitForURL(/\/annonce\//);
     await waitForStableLayout(page);
     // Poll rather than sample once: WebKit applies the scroll a frame or two
@@ -263,6 +267,7 @@ test.describe("navigation shell", () => {
 
     await page.goBack();
     await page.waitForURL(/\/recherche/);
+    await waitForStableLayout(page);
     await expect
       .poll(() => page.evaluate(() => window.scrollY), { timeout: 5000 })
       .toBeGreaterThan(departure - 50);
@@ -330,11 +335,51 @@ test.describe("seller", () => {
 test.describe("pro workspace", () => {
   test("the dashboard and subscription pages render for a pro seller", async ({
     page,
-  }) => {
+  }, testInfo) => {
+    test.setTimeout(90_000);
+    const runtimeErrors: string[] = [];
+    page.on("pageerror", (error) => runtimeErrors.push(error.message));
+    const consoleErrors: string[] = [];
+    page.on("console", (message) => {
+      if (message.type() === "error") consoleErrors.push(message.text());
+    });
+    await useEstablishedConsent(page);
     await usePersona(page, "pro_seller");
 
     await page.goto("/compte/pro/tableau-de-bord");
+    await expect(
+      page.getByRole("button", { name: /^Menu du compte/ }),
+    ).toBeVisible({ timeout: 30_000 });
+    await expect(page).toHaveURL(/\/compte\/pro\/tableau-de-bord$/);
+    await expect(page).toHaveTitle(/Tableau de bord vendeur Pro/);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    await expect(
+      page.getByText("Vues du catalogue analysé", { exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByText("Ventes terminées ce mois-ci", { exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: /Gérer mes annonces/ }),
+    ).toBeVisible();
+    await expect(
+      page.getByText("Publier votre première annonce", { exact: true }),
+    ).toHaveCount(0);
+    await expect(
+      page.getByText(/undefined|NaN|Unexpected Application Error/),
+    ).toHaveCount(0);
+    await page.screenshot({
+      path: testInfo.outputPath("pro-dashboard.png"),
+      fullPage: false,
+    });
+    await page.setViewportSize({ width: 390, height: 844 });
+    await expectNoHorizontalOverflow(page, "mobile Pro dashboard");
+    await page.screenshot({
+      path: testInfo.outputPath("pro-dashboard-mobile.png"),
+      fullPage: false,
+    });
+    expect(runtimeErrors).toEqual([]);
+    expect(consoleErrors).toEqual([]);
 
     await page.goto("/compte/pro/abonnements");
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
@@ -449,38 +494,38 @@ test.describe("admin console", () => {
     ).toBeVisible();
   });
 
-  test("taxonomy nodes can be selected without a pointer", async ({ page }) => {
+  test("taxonomy navigation can be edited without a pointer", async ({
+    page,
+  }) => {
     await usePersona(page, "admin");
     await page.goto("/admin/taxonomie");
     await waitForStableLayout(page);
 
-    const node = page.getByRole("button", { name: /^Véhicules/i }).first();
+    const node = page.getByRole("switch", {
+      name: "Activer ou désactiver Véhicules",
+    });
     await expect(node).toBeVisible();
+    const initial = await node.isChecked();
     await node.focus();
-    await node.press("Enter");
-    await expect(node).toHaveAttribute("aria-pressed", "true");
+    await node.press("Space");
+    await expect(node).toBeChecked({ checked: !initial });
+    await node.press("Space");
+    await expect(node).toBeChecked({ checked: initial });
   });
 });
 
 test.describe("watch subscriptions", () => {
-  test("saves a search as a market-scoped alert", async ({ page }) => {
+  test("saves a search as a market-scoped alert", async ({
+    page,
+  }, testInfo) => {
     await usePersona(page, "individual_buyer");
-    await page.addInitScript(() => {
-      const marker = "shongre_e2e_watch_storage_cleared";
-      if (window.sessionStorage.getItem(marker)) return;
-      window.localStorage.removeItem("shongre_saved_searches_v2");
-      for (const key of Object.keys(window.localStorage)) {
-        if (key.startsWith("shongre_watch_subscriptions_v1:")) {
-          window.localStorage.removeItem(key);
-        }
-      }
-      window.sessionStorage.setItem(marker, "true");
-    });
-    await page.goto("/recherche?query=velo");
+    const query = `velo-${testInfo.project.name}`;
+    await page.goto(`/recherche?query=${query}`);
     await waitForStableLayout(page);
 
     await page
       .getByRole("button", { name: "Sauvegarder cette recherche" })
+      .first()
       .click();
     await expect(
       page.getByText("Recherche enregistrée avec alertes activées."),
@@ -489,27 +534,25 @@ test.describe("watch subscriptions", () => {
     await page.goto("/compte/alertes");
     const alert = page.locator("article").filter({
       has: page.getByRole("heading", {
-        name: "Recherche « velo »",
+        name: `Recherche « ${query} »`,
         level: 2,
       }),
     });
     await expect(alert).toBeVisible();
     await expect(alert.getByText("Recherche sauvegardée")).toBeVisible();
+    await alert.getByRole("button", { name: /^Supprimer l’alerte/ }).click();
+    await expect(alert).toHaveCount(0);
   });
 
   test("creates a price alert from a listing and manages its cadence", async ({
     page,
   }) => {
     await usePersona(page, "individual_buyer");
-    await page.addInitScript(() => {
-      for (const key of Object.keys(window.localStorage)) {
-        if (key.startsWith("shongre_watch_subscriptions_v1:")) {
-          window.localStorage.removeItem(key);
-        }
-      }
-    });
     await page.goto(`/annonce/${DEMO_LISTING_ID}`);
     await waitForStableLayout(page);
+    const listingTitle = await page
+      .getByRole("heading", { level: 1 })
+      .innerText();
 
     const priceAlert = page.getByRole("button", {
       name: "Alerte prix",
@@ -522,7 +565,13 @@ test.describe("watch subscriptions", () => {
     await expect(
       page.getByRole("heading", { name: "Mes alertes suivies" }),
     ).toBeVisible();
-    const card = page.locator("article", { hasText: /.+/ }).first();
+    const card = page.locator("article").filter({
+      has: page.getByRole("heading", {
+        level: 2,
+        name: listingTitle,
+        exact: true,
+      }),
+    });
     await expect(card).toBeVisible();
     const cadence = card.getByLabel("Fréquence de l’alerte");
     await cadence.selectOption("weekly");
@@ -530,6 +579,10 @@ test.describe("watch subscriptions", () => {
     await expect(
       page.getByText("Préférences d’alerte mises à jour."),
     ).toBeVisible();
+    await page.reload();
+    await expect(cadence).toHaveValue("weekly");
+    await card.getByRole("button", { name: /^Supprimer l’alerte/ }).click();
+    await expect(card).toHaveCount(0);
   });
 });
 

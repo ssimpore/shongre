@@ -1,5 +1,9 @@
 /** Mobile UI copy remains keyed even while French is the only shipped locale. */
 export const messagesFr = {
+  "publication.titleHint":
+    "{count}/{max} caractères · Produit, marque et modèle. Placez les détails dans la description.",
+  "publication.titleTooLong":
+    "Raccourcissez le titre à {max} caractères maximum avant de continuer.",
   "ui.identityStatus.pro.short": "Pro",
   "ui.identityStatus.pro.account": "Compte professionnel",
   "ui.identityStatus.pro.seller": "Vendeur professionnel",

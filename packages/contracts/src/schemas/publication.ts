@@ -4,7 +4,7 @@ import { taxonomyV4ListingIntentSchema } from "./taxonomy";
 import { digitalFulfillmentVersionInputSchema } from "./digital-products";
 
 export const PUBLICATION_CONSTRAINTS = {
-  title: { minLength: 3, maxLength: 120 },
+  title: { minLength: 3, maxLength: 50 },
   description: { maxLength: 4_000 },
   stockQuantity: { min: 1 },
   imageCount: { min: 0, max: 12 },

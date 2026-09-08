@@ -23,6 +23,7 @@ import {
   TaxonomyValidationService,
 } from "../taxonomy/taxonomy.validation.js";
 import { taxonomyService } from "../taxonomy/taxonomy.service.js";
+import { projectListingCharacteristics } from "../taxonomy/taxonomy.characteristics.js";
 import {
   publisherEntitlementsService,
   PublisherEntitlementsService,
@@ -39,6 +40,7 @@ import type {
   TaxonomyV4ListingIntent,
 } from "@shongre/contracts";
 import {
+  PUBLICATION_CONSTRAINTS,
   toApplicationListingCondition,
   toTaxonomyV4ItemCondition,
 } from "@shongre/contracts";
@@ -209,7 +211,7 @@ export interface SellerListingUpdate {
 }
 
 type BulkImportValidationCode =
-  "TITLE_REQUIRED" | "TITLE_TOO_SHORT" | "PRICE_INVALID";
+  "TITLE_REQUIRED" | "TITLE_TOO_SHORT" | "TITLE_TOO_LONG" | "PRICE_INVALID";
 type BulkListingImportRow = {
   id: string;
   title: string;
@@ -428,6 +430,42 @@ export class ListingsService {
     return listing ? toPublicListing(listing) : null;
   }
 
+  async getListingCharacteristics(
+    id: string,
+    marketCode: string,
+    locale: string,
+  ) {
+    const listing = await this.listingRepo.findPublicById(
+      id,
+      requireMarketCode(marketCode),
+    );
+    if (!listing)
+      throw new AppError({
+        code: "NOT_FOUND",
+        statusCode: 404,
+        message: "Annonce introuvable.",
+      });
+    return projectListingCharacteristics({
+      categoryId: listing.categoryId,
+      listingTypeId: listing.listingTypeId,
+      intent: listing.listingIntent,
+      sellerType: (
+        listing.publisherType
+          ? listing.publisherType === "professional"
+          : listing.seller?.accountType === "professional"
+      )
+        ? "professional"
+        : "individual",
+      marketCode,
+      locale,
+      attributes: {
+        ...listing.attributes,
+        ...(listing.brand ? { brand: listing.brand } : {}),
+        ...(listing.model ? { model: listing.model } : {}),
+      },
+    });
+  }
+
   async getPublicListingCards(
     listingIds: readonly string[],
     marketCode: string,
@@ -527,9 +565,11 @@ export class ListingsService {
         ? ("TITLE_REQUIRED" as const)
         : title.length < 5
           ? ("TITLE_TOO_SHORT" as const)
-          : !Number.isFinite(amount) || amount <= 0
-            ? ("PRICE_INVALID" as const)
-            : undefined;
+          : title.length > PUBLICATION_CONSTRAINTS.title.maxLength
+            ? ("TITLE_TOO_LONG" as const)
+            : !Number.isFinite(amount) || amount <= 0
+              ? ("PRICE_INVALID" as const)
+              : undefined;
       return [
         {
           id: `bulk-row-${index + 1}`,
@@ -564,7 +604,16 @@ export class ListingsService {
     };
     const marketCode = requireMarketCode(body.marketCode);
     const rows = Array.isArray(body.rows) ? body.rows : [];
-    if (!rows.length || rows.length > 500 || rows.some((row) => !row.isValid))
+    if (
+      !rows.length ||
+      rows.length > 500 ||
+      rows.some(
+        (row) =>
+          !row.isValid ||
+          typeof row.title !== "string" ||
+          row.title.length > PUBLICATION_CONSTRAINTS.title.maxLength,
+      )
+    )
       throw new AppError({
         code: "VALIDATION_ERROR",
         message: "L’import doit contenir entre 1 et 500 lignes valides.",
@@ -631,6 +680,19 @@ export class ListingsService {
       throw new AppError({
         code: "VALIDATION_ERROR",
         message: "Titre et catégorie obligatoires pour publier une annonce.",
+      });
+    }
+    if (
+      typeof draft.title !== "string" ||
+      draft.title.length > PUBLICATION_CONSTRAINTS.title.maxLength
+    ) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: `Le titre ne doit pas dépasser ${PUBLICATION_CONSTRAINTS.title.maxLength} caractères.`,
+        details: {
+          field: "title",
+          maxLength: PUBLICATION_CONSTRAINTS.title.maxLength,
+        },
       });
     }
     if (draft.categoryId === DELIVERY_TAXONOMY_CATEGORY_ID) {

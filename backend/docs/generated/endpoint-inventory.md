@@ -4,8 +4,8 @@
 
 - Contract version: `1.0.0`
 - API base path: `/api/v1`
-- Operations: **529**
-- Specification SHA-256: `b5d3134bcd0d1674`
+- Operations: **530**
+- Specification SHA-256: `ed34a8614bae6b23`
 
 ## account
 
@@ -507,6 +507,7 @@
 
 | Method | Path | Operation ID | Access | Permission | Success |
 | --- | --- | --- | --- | --- | --- |
+| `GET` | `/listings/{id}/characteristics` | `getListingCharacteristics` | `public` | — | `200` |
 | `PUT` | `/listings/{id}/favorite` | `putListingsByIdFavorite` | `permission` | `favorite.manage.own` | `200` |
 | `POST` | `/listings/{id}/mark-sold` | `postListingsByIdMarkSold` | `permission` | `listing.update.own` | `200` |
 | `DELETE` | `/listings/{id}` | `deleteListingsById` | `permission` | `listing.delete.own` | `200` |

@@ -42,13 +42,13 @@ export const RequireAuth: React.FC<RequireAuthProps> = ({ children }) => {
           {t("security.requireAuth.cettePageEstReserveeAux")}
         </p>
 
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:inline-grid sm:grid-cols-2">
           <Button
             to={routes.auth.login(returnTo)}
             variant="primary"
             size="md"
             rightIcon={<ArrowRight className="w-icon-md h-icon-md" />}
-            className="w-full sm:w-auto"
+            className="w-full"
           >
             Se connecter
           </Button>
@@ -57,7 +57,7 @@ export const RequireAuth: React.FC<RequireAuthProps> = ({ children }) => {
             variant="outline"
             size="md"
             leftIcon={<UserPlus className="w-icon-md h-icon-md" />}
-            className="w-full sm:w-auto"
+            className="w-full"
           >
             {t("security.requireAuth.creerUnCompte")}
           </Button>

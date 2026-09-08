@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { IMAGE_SIZES } from "@shongre/shared";
 import { Link } from "react-router-dom";
-import { ChevronRight, Search } from "lucide-react";
+import { ArrowRight, ChevronRight, Search } from "lucide-react";
 import { getTaxonomyLabel } from "../../domains/taxonomy/taxonomy.labels";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useRootTaxonomyCategories } from "../../hooks/useRootTaxonomyCategories";
@@ -28,94 +28,43 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, priority }) => {
   const { t } = useTranslation();
   const categoryLabel = getTaxonomyLabel(category, "compact");
   const subCategories = category.subCategories ?? [];
-  const visibleSubCategories = subCategories.slice(0, 3);
-  const hiddenSubCategoryCount = Math.max(
-    subCategories.length - visibleSubCategories.length,
-    0,
-  );
   const visualSrc = resolveCategoryPublicMediaUrl(category.slug);
 
   return (
-    <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-border-base bg-bg-surface shadow-xs transition duration-normal hover:-translate-y-0.5 hover:border-primary-border hover:shadow-md focus-within:border-primary-border focus-within:ring-2 focus-within:ring-primary-ring motion-reduce:transform-none">
-      <Link
-        to={`/categorie/${category.slug}`}
-        className="relative block aspect-16/10 overflow-hidden bg-bg-subtle focus-visible:outline-none"
-        aria-label={t("categories.categoriesPage.explorerLaCategorie", {
-          category: categoryLabel,
-        })}
-      >
+    <Link
+      to={`/categorie/${category.slug}`}
+      className="group flex h-full min-w-0 flex-col overflow-hidden rounded-listing-card border border-border-base bg-bg-surface shadow-xs motion-surface hover:-translate-y-0.5 hover:border-primary-border hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+      aria-label={t("categories.categoriesPage.explorerLaCategorie", {
+        category: categoryLabel,
+      })}
+    >
+      <div className="aspect-4/3 shrink-0 overflow-hidden bg-bg-subtle">
         <Image
           src={visualSrc}
           alt=""
           width={800}
           height={500}
           priority={priority}
-          sizes={IMAGE_SIZES.card}
-          className="h-full w-full object-cover transition duration-slow group-hover:scale-105 motion-reduce:transform-none"
+          sizes={IMAGE_SIZES.compact}
+          className="h-full w-full object-cover motion-surface group-hover:scale-105"
         />
-        <span className="pointer-events-none absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-surface-overlay-deep/25 to-transparent" />
-      </Link>
-
-      <div className="flex flex-1 flex-col p-4 sm:p-5">
-        <div>
-          <Link
-            to={`/categorie/${category.slug}`}
-            className="inline-flex rounded-sm text-lg font-bold leading-tight text-text-deep transition-colors hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-          >
-            {categoryLabel}
-          </Link>
-          <p className="mt-1 text-xs font-semibold text-text-tertiary">
-            {t("categories.categoriesPage.rubriques", {
-              count: subCategories.length,
-            })}
-          </p>
-        </div>
-
-        {visibleSubCategories.length > 0 && (
-          <div
-            className="mt-4 flex flex-wrap gap-1.5"
-            aria-label={categoryLabel}
-          >
-            {visibleSubCategories.map((subCategory) => (
-              <Link
-                key={subCategory.id}
-                to={`/categorie/${category.slug}?subCategory=${subCategory.slug}`}
-                className="inline-flex min-h-7 max-w-full items-center rounded-control border border-border-base bg-bg-base px-2.5 py-1 text-micro font-semibold text-text-supporting transition-colors hover:border-primary-border hover:bg-primary-light hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-                title={getTaxonomyLabel(subCategory, "compact")}
-              >
-                <span className="truncate">
-                  {getTaxonomyLabel(subCategory, "compact")}
-                </span>
-              </Link>
-            ))}
-            {hiddenSubCategoryCount > 0 && (
-              <span className="inline-flex min-h-7 items-center px-1 text-micro font-bold text-text-tertiary">
-                {t("categories.categoriesPage.rubriquesSupplementaires", {
-                  count: hiddenSubCategoryCount,
-                })}
-              </span>
-            )}
-          </div>
-        )}
-
-        <div className="mt-auto pt-5">
-          <Link
-            to={`/categorie/${category.slug}`}
-            className="flex min-h-9 items-center justify-between border-t border-border-subtle pt-3 text-xs font-bold text-text-strong transition-colors hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-          >
-            <span>
-              {t("categories.categoriesPage.explorerLaCategorie", {
-                category: categoryLabel,
-              })}
-            </span>
-            <ChevronRight
-              aria-hidden="true"
-              className="h-icon-md w-icon-md transition-transform group-hover:translate-x-0.5 motion-reduce:transform-none"
-            />
-          </Link>
-        </div>
       </div>
-    </article>
+
+      <div className="p-3">
+        <p className="text-micro font-semibold text-text-secondary">
+          {t("categories.categoriesPage.rubriques", {
+            count: subCategories.length,
+          })}
+        </p>
+        <h2 className="mt-1 text-sm font-bold text-text-main">
+          {categoryLabel}
+        </h2>
+        <span className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-primary">
+          {t("categories.categoriesPage.explorer")}
+          <ArrowRight aria-hidden="true" className="h-icon-xs w-icon-xs" />
+        </span>
+      </div>
+    </Link>
   );
 };
 
@@ -245,11 +194,21 @@ export const CategoriesPage: React.FC = () => {
 
         {categoriesLoading ? (
           <div
-            className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4"
+            className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5"
             aria-busy="true"
           >
-            {Array.from({ length: 8 }, (_, index) => (
-              <Skeleton key={index} className="aspect-4/3 rounded-2xl" />
+            {Array.from({ length: 5 }, (_, index) => (
+              <div
+                key={index}
+                className="overflow-hidden rounded-listing-card border border-border-base bg-bg-surface shadow-xs"
+              >
+                <Skeleton className="aspect-4/3 rounded-none" />
+                <div className="p-3">
+                  <Skeleton className="h-4 w-1/2" />
+                  <Skeleton className="mt-1 h-5 w-3/4" />
+                  <Skeleton className="mt-3 h-4 w-1/3" />
+                </div>
+              </div>
             ))}
           </div>
         ) : categoriesError ? (
@@ -267,12 +226,15 @@ export const CategoriesPage: React.FC = () => {
             className="mx-auto max-w-md"
           />
         ) : filteredCategories.length > 0 ? (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
+          <div
+            className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5"
+            data-testid="categories-grid"
+          >
             {filteredCategories.map((category, index) => (
               <CategoryCard
                 key={category.id}
                 category={category}
-                priority={index < 4}
+                priority={index < 5}
               />
             ))}
           </div>

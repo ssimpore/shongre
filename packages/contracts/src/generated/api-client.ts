@@ -4086,6 +4086,18 @@ export function postListingsCards(
     "application/json",
   );
 }
+export function getListingCharacteristics(
+  transport: ApiTransport,
+  input: ApiInput<"getListingCharacteristics">,
+): Promise<ApiResponse<"getListingCharacteristics">> {
+  return executeApiOperation<"getListingCharacteristics">(
+    transport,
+    "GET",
+    "/listings/{id}/characteristics",
+    input,
+    "application/json",
+  );
+}
 export function getListingsById(
   transport: ApiTransport,
   input: ApiInput<"getListingsById">,
@@ -6562,6 +6574,7 @@ export const generatedApiOperations = {
   getDiscoverySitemapListings,
   getListings,
   postListingsCards,
+  getListingCharacteristics,
   getListingsById,
   putListingsById,
   deleteListingsById,

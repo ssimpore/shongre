@@ -522,7 +522,6 @@ export const PublishWizard: React.FC = () => {
     draft.taxonomyNodeId,
     marketContext,
     taxonomySellerType,
-    t,
     v4RetryKey,
   ]);
 
@@ -873,6 +872,10 @@ export const PublishWizard: React.FC = () => {
     } else if (phase === 2) {
       if (!draft.title.trim())
         return "Veuillez renseigner un titre pour votre annonce.";
+      if (draft.title.length > PUBLICATION_CONSTRAINTS.title.maxLength)
+        return t("publishing.publishWizard.titleTooLong", {
+          max: PUBLICATION_CONSTRAINTS.title.maxLength,
+        });
       if (!draft.description.trim())
         return "Veuillez renseigner une description détaillée.";
     }
@@ -1723,13 +1726,24 @@ export const PublishWizard: React.FC = () => {
           <FormField
             label={t("publishing.publishWizard.titreDeLAnnonce")}
             required
-            hint="Indiquez le produit, la marque et le modèle précis"
+            hint={t("publishing.publishWizard.titleHint", {
+              count: draft.title.length,
+              max: PUBLICATION_CONSTRAINTS.title.maxLength,
+            })}
+            error={
+              draft.title.length > PUBLICATION_CONSTRAINTS.title.maxLength
+                ? t("publishing.publishWizard.titleTooLong", {
+                    max: PUBLICATION_CONSTRAINTS.title.maxLength,
+                  })
+                : undefined
+            }
           >
             <Input
               placeholder={t(
                 "publishing.publishWizard.exCanapeScandinave3Places",
               )}
               value={draft.title}
+              maxLength={PUBLICATION_CONSTRAINTS.title.maxLength}
               onChange={(e) => updateDraft({ title: e.target.value })}
             />
           </FormField>

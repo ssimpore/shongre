@@ -57,11 +57,17 @@ export PLAYWRIGHT_NO_COPY_PROMPT=1
 [[ "$APP_ENV" == "test" ]] || { shongre_fail "browser tests require APP_ENV=test"; exit 1; }
   export PUBLIC_FR_URL="http://fr.localhost:${E2E_FRONTEND_PORT}"
   export PUBLIC_INTL_URL="http://intl.localhost:${E2E_FRONTEND_PORT}"
+  # Exercise direct navigation on the same canonical market host as SSR.
+  # The bare listener host is not a France route alias when origins are split.
+  export E2E_BASE_URL="$PUBLIC_FR_URL"
+  export PLAYWRIGHT_BASE_URL="$E2E_BASE_URL"
+  export SHONGRE_MARKETPLACE_ORIGIN="$E2E_BASE_URL"
   export NEXT_PUBLIC_FR_URL="$PUBLIC_FR_URL"
   export NEXT_PUBLIC_INTL_URL="$PUBLIC_INTL_URL"
   export SHONGRE_FACTURATION_ORIGIN="http://facturation.localhost:${E2E_FRONTEND_PORT}"
   export DEMO_ACCOUNT_PASSWORD="$(node -e 'process.stdout.write(require("node:crypto").randomBytes(24).toString("base64url"))')"
   export E2E_API_PORT_FILE="$e2e_root/api-port"
+  export E2E_ACCOUNTS_FILE="$e2e_root/accounts.json"
   NODE_ENV=test BACKEND_DATA_MODE=demo \
     TSX_TSCONFIG_PATH="$SHONGRE_ROOT/backend/tsconfig.json" \
     node --import tsx backend/tests/fixtures/browser-api-server.ts >"$e2e_root/api.log" 2>&1 &
@@ -125,7 +131,7 @@ e2e_server_pid=$!
 
 server_ready=0
 for _ in {1..60}; do
-  if curl --silent --fail --max-time 2 "$E2E_BASE_URL" >/dev/null 2>&1; then
+  if curl --silent --fail --max-time 2 "http://${FRONTEND_HOST}:${E2E_FRONTEND_PORT}/healthz" >/dev/null 2>&1; then
     server_ready=1
     break
   fi
@@ -145,8 +151,17 @@ shongre_info "phase 1/2: regular browser tests with engine-safe parallelism"
 
 requested_projects=()
 forwarded_args=()
+requested_grep=""
+requested_grep_invert=""
 while [[ "$#" -gt 0 ]]; do
   case "$1" in
+    --grep | -g | --grep-invert)
+      [[ "$#" -ge 2 ]] || { shongre_fail "$1 requires a pattern"; exit 1; }
+      if [[ "$1" == "--grep-invert" ]]; then requested_grep_invert="$2"; else requested_grep="$2"; fi
+      shift 2
+      ;;
+    --grep=*) requested_grep="${1#--grep=}"; shift ;;
+    --grep-invert=*) requested_grep_invert="${1#--grep-invert=}"; shift ;;
     --project)
       if [[ "$#" -lt 2 ]]; then
         shongre_fail "--project requires a Playwright project name"
@@ -206,6 +221,7 @@ if [[ "$firefox_can_launch" == "0" ]] && project_is_requested firefox; then
 fi
 
 targeted_run=0
+[[ -z "$requested_grep" && -z "$requested_grep_invert" ]] || targeted_run=1
 if [[ "${#forwarded_args[@]}" -gt 0 ]]; then
   for argument in "${forwarded_args[@]}"; do
     case "$argument" in
@@ -233,13 +249,20 @@ run_playwright_project() {
   local workers="$2"
   local grep_mode="$3"
   shift 3
+  local phase="regular"
+  [[ "$grep_mode" != "--grep" ]] || phase="serial"
+  local phase_filter
+  phase_filter="$(node --input-type=module -e '
+    import { e2eFilter } from "./scripts/lib/e2e-filter.mjs";
+    process.stdout.write(e2eFilter(...process.argv.slice(1)));
+  ' "$phase" "$requested_grep" "$requested_grep_invert")"
   if [[ "${#forwarded_args[@]}" -gt 0 ]]; then
     npm run test:e2e --workspace=frontend -- \
-      "$grep_mode" '@serial' --project="$project" --workers="$workers" \
+      --grep "$phase_filter" --project="$project" --workers="$workers" \
       --pass-with-no-tests "$@" "${forwarded_args[@]}"
   else
     npm run test:e2e --workspace=frontend -- \
-      "$grep_mode" '@serial' --project="$project" --workers="$workers" \
+      --grep "$phase_filter" --project="$project" --workers="$workers" \
       --pass-with-no-tests "$@"
   fi
 }

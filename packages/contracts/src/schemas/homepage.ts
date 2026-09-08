@@ -288,8 +288,7 @@ const DEFAULT_SUBTITLES: Partial<Record<HomepageSectionType, string>> = {
   deals: "Des réductions et offres actives sélectionnées pour votre marché.",
   recent_listings: "Les dernières offres publiées près de chez vous.",
   universe_explorer: "Trouvez rapidement ce qui vous intéresse",
-  collections:
-    "Des sélections thématiques préparées pour dénicher des pépites uniques, durables et vérifiées.",
+  collections: "Explorez les annonces disponibles par catégorie.",
   pro_cta:
     "Ouvrez votre vitrine officielle, présentez votre catalogue et pilotez votre activité professionnelle.",
 };
@@ -362,6 +361,7 @@ export function createDefaultHomepageConfiguration(input: {
           }
         : type === "collections"
           ? {
+              selectionMode: "automatic",
               collectionSlugs: [],
             }
           : type === "trending"

@@ -10,6 +10,27 @@ import { httpClient } from "./http-client";
 
 afterEach(() => vi.restoreAllMocks());
 
+it("reads characteristics from the generated listing operation with explicit market and locale", async () => {
+  const data = { groups: [] };
+  const request = vi.spyOn(httpClient, "request").mockResolvedValue(data);
+  expect(
+    await new HttpListingsService().getCharacteristics(
+      "saved-listing",
+      "BE",
+      "fr-BE",
+    ),
+  ).toEqual(data);
+  expect(request).toHaveBeenCalledWith(
+    expect.stringContaining(
+      "/listings/saved-listing/characteristics?locale=fr-BE",
+    ),
+    expect.objectContaining({ method: "GET" }),
+  );
+  expect(
+    new Headers(request.mock.calls[0]?.[1]?.headers).get("X-Shongre-Market"),
+  ).toBe("BE");
+});
+
 const draft: PublicationDraftState = {
   marketCode: "FR",
   taxonomyNodeId: "electronics.computers.laptops",

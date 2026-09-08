@@ -52,6 +52,7 @@ import { NoResultsFound } from "../../design-system/primitives/NoResultsFound";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useToast } from "../../app/providers/ToastProvider";
 import { browserPreferencesService } from "../../services/browser-preferences.service";
+import { useRecentSearches } from "../../hooks/useRecentSearches";
 import { analyticsService } from "../../services/analytics.service";
 import { CategoryIcon } from "../../design-system/primitives/CategoryIcon";
 import { FilterChip } from "../../design-system/primitives/FilterChip";
@@ -309,6 +310,8 @@ export const SearchPage: React.FC = () => {
   const searchError = searchQuery.isError && !searchQuery.data;
   const hasNextPage = Boolean(searchQuery.data?.pageInfo?.hasNextPage);
 
+  const { rememberSearch } = useRecentSearches();
+
   // Search lifecycle telemetry follows the canonical query key, not component
   // renders. React Query owns deduplication, cancellation and stale protection.
   useEffect(() => {
@@ -329,7 +332,7 @@ export const SearchPage: React.FC = () => {
       });
     }
     if (query) {
-      browserPreferencesService.addRecentSearch(query);
+      rememberSearch(query);
     }
   }, [
     searchKey,
@@ -341,6 +344,7 @@ export const SearchPage: React.FC = () => {
     delivery,
     sortBy,
     radiusKm,
+    rememberSearch,
   ]);
 
   useEffect(() => {

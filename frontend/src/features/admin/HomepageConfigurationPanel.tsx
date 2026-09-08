@@ -836,94 +836,131 @@ export const HomepageConfigurationPanel: React.FC<
                         "admin.homepageConfigurationPanel.collectionsAffichees",
                       )}
                     </h3>
-                    <div className="flex flex-wrap gap-4">
-                      {rootCategories.map((collection) => (
-                        <Checkbox
-                          key={collection.slug}
-                          label={collection.name}
-                          checked={(
-                            section.settings.collectionSlugs || []
-                          ).includes(collection.slug)}
-                          onChange={(event) =>
-                            replaceSection(section.key, (current) => {
-                              const selected =
-                                current.settings.collectionSlugs || [];
-                              return {
-                                ...current,
-                                settings: {
-                                  ...current.settings,
-                                  collectionSlugs: event.target.checked
-                                    ? [...selected, collection.slug]
-                                    : selected.filter(
-                                        (slug) => slug !== collection.slug,
-                                      ),
-                                },
-                              };
-                            })
-                          }
-                        />
-                      ))}
-                    </div>
-                    <div className="space-y-2">
-                      {(section.settings.collectionSlugs || []).map(
-                        (slug, collectionIndex, ordered) => {
-                          const collection = rootCategories.find(
-                            (candidate) => candidate.slug === slug,
-                          );
-                          return (
-                            <div
-                              key={slug}
-                              data-testid={`homepage-collection-selection-${slug}`}
-                              className="flex items-center gap-2 rounded-control border border-border-base bg-bg-surface p-2"
-                            >
-                              <span className="min-w-0 flex-1 truncate text-sm font-semibold text-text-main">
-                                {collection?.name || slug}
-                              </span>
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                disabled={collectionIndex === 0}
-                                aria-label={`Monter ${collection?.name || slug}`}
-                                onClick={() =>
-                                  reorderCollection(
-                                    section.key,
-                                    collectionIndex,
-                                    -1,
-                                  )
-                                }
-                                leftIcon={
-                                  <ArrowUp className="h-icon-sm w-icon-sm" />
-                                }
-                              >
-                                Monter
-                              </Button>
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                disabled={
-                                  collectionIndex === ordered.length - 1
-                                }
-                                aria-label={`Descendre ${collection?.name || slug}`}
-                                onClick={() =>
-                                  reorderCollection(
-                                    section.key,
-                                    collectionIndex,
-                                    1,
-                                  )
-                                }
-                                leftIcon={
-                                  <ArrowDown className="h-icon-sm w-icon-sm" />
-                                }
-                              >
-                                Descendre
-                              </Button>
-                            </div>
-                          );
-                        },
-                      )}
-                    </div>
+                    <FormField
+                      label={t("admin.adminTrendingPage.modeDeSelection")}
+                    >
+                      <Select
+                        labelledByAncestor
+                        value={
+                          section.settings.selectionMode === "automatic"
+                            ? "automatic"
+                            : "manual"
+                        }
+                        onChange={(event) =>
+                          replaceSection(section.key, (current) => ({
+                            ...current,
+                            settings: {
+                              ...current.settings,
+                              selectionMode: event.target.value as
+                                "automatic" | "manual",
+                            },
+                          }))
+                        }
+                      >
+                        <option value="automatic">
+                          {t(
+                            "admin.homepageConfigurationPanel.automaticCollections",
+                          )}
+                        </option>
+                        <option value="manual">
+                          {t(
+                            "admin.homepageConfigurationPanel.manualCollections",
+                          )}
+                        </option>
+                      </Select>
+                    </FormField>
+                    {section.settings.selectionMode !== "automatic" ? (
+                      <>
+                        <div className="flex flex-wrap gap-4">
+                          {rootCategories.map((collection) => (
+                            <Checkbox
+                              key={collection.slug}
+                              label={collection.name}
+                              checked={(
+                                section.settings.collectionSlugs || []
+                              ).includes(collection.slug)}
+                              onChange={(event) =>
+                                replaceSection(section.key, (current) => {
+                                  const selected =
+                                    current.settings.collectionSlugs || [];
+                                  return {
+                                    ...current,
+                                    settings: {
+                                      ...current.settings,
+                                      collectionSlugs: event.target.checked
+                                        ? [...selected, collection.slug]
+                                        : selected.filter(
+                                            (slug) => slug !== collection.slug,
+                                          ),
+                                    },
+                                  };
+                                })
+                              }
+                            />
+                          ))}
+                        </div>
+                        <div className="space-y-2">
+                          {(section.settings.collectionSlugs || []).map(
+                            (slug, collectionIndex, ordered) => {
+                              const collection = rootCategories.find(
+                                (candidate) => candidate.slug === slug,
+                              );
+                              return (
+                                <div
+                                  key={slug}
+                                  data-testid={`homepage-collection-selection-${slug}`}
+                                  className="flex items-center gap-2 rounded-control border border-border-base bg-bg-surface p-2"
+                                >
+                                  <span className="min-w-0 flex-1 truncate text-sm font-semibold text-text-main">
+                                    {collection?.name || slug}
+                                  </span>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    disabled={collectionIndex === 0}
+                                    aria-label={`Monter ${collection?.name || slug}`}
+                                    onClick={() =>
+                                      reorderCollection(
+                                        section.key,
+                                        collectionIndex,
+                                        -1,
+                                      )
+                                    }
+                                    leftIcon={
+                                      <ArrowUp className="h-icon-sm w-icon-sm" />
+                                    }
+                                  >
+                                    Monter
+                                  </Button>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    disabled={
+                                      collectionIndex === ordered.length - 1
+                                    }
+                                    aria-label={`Descendre ${collection?.name || slug}`}
+                                    onClick={() =>
+                                      reorderCollection(
+                                        section.key,
+                                        collectionIndex,
+                                        1,
+                                      )
+                                    }
+                                    leftIcon={
+                                      <ArrowDown className="h-icon-sm w-icon-sm" />
+                                    }
+                                  >
+                                    Descendre
+                                  </Button>
+                                </div>
+                              );
+                            },
+                          )}
+                        </div>
+                      </>
+                    ) : null}
                   </div>
                 ) : null}
                 {section.type === "deals" ? (

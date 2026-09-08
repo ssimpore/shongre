@@ -5,6 +5,7 @@ import * as DocumentPicker from "expo-document-picker";
 import { useRouter } from "expo-router";
 import {
   publicationInputSchema,
+  PUBLICATION_CONSTRAINTS,
   toApplicationListingCondition,
   toTaxonomyV4ItemCondition,
 } from "@shongre/contracts";
@@ -39,6 +40,7 @@ import { TaxonomyV4Field } from "@/features/taxonomy/TaxonomyV4Field";
 import { taxonomyService } from "@/features/taxonomy/taxonomy.service";
 import { mobileDigitalProductsService } from "@/features/digital-products/digital-products.service";
 import { mobileDigitalDraftStore } from "@/features/digital-products/digital-draft.store";
+import { messagesFr } from "@/i18n/messages.fr";
 
 const NATIVE_MANAGED_FIELDS = new Set([
   "title",
@@ -970,7 +972,18 @@ export default function PublishScreen() {
         label="Titre"
         value={title}
         onChangeText={setTitle}
-        maxLength={120}
+        maxLength={PUBLICATION_CONSTRAINTS.title.maxLength}
+        hint={messagesFr["publication.titleHint"]
+          .replace("{count}", String(title.length))
+          .replace("{max}", String(PUBLICATION_CONSTRAINTS.title.maxLength))}
+        error={
+          title.length > PUBLICATION_CONSTRAINTS.title.maxLength
+            ? messagesFr["publication.titleTooLong"].replace(
+                "{max}",
+                String(PUBLICATION_CONSTRAINTS.title.maxLength),
+              )
+            : undefined
+        }
         placeholder="Décrivez précisément l’objet"
       />
       <FormField

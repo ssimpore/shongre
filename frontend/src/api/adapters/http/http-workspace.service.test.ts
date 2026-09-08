@@ -72,3 +72,41 @@ describe("HttpWorkspaceService", () => {
     });
   });
 });
+
+it("uses currency-labelled API totals without inventing contacts, weekly trends or per-listing conversion", async () => {
+  vi.mocked(apiOperation).mockResolvedValue({
+    monthlyRevenue: 999,
+    monthlyViews: 32,
+    conversionRate: 3.2,
+    revenueByCurrency: [{ amountMinor: 1290, currency: "EUR" }],
+    topListings: [],
+  });
+  expect(await new HttpWorkspaceService().getProAnalytics("seller")).toEqual({
+    catalogueSampleViews: 32,
+    revenueByCurrency: [{ amountMinor: 1290, currency: "EUR" }],
+    topListings: [],
+  });
+  expect(apiOperation).toHaveBeenCalledWith(
+    "getWorkspaceProAnalyticsBySellerId",
+    { path: { sellerId: "seller" } },
+  );
+});
+
+it("maps top listings through the shared public listing adapter", async () => {
+  vi.mocked(apiOperation).mockResolvedValue({
+    monthlyRevenue: 0,
+    monthlyViews: 12,
+    conversionRate: 0,
+    revenueByCurrency: [],
+    topListings: [backendListing],
+  });
+  const snapshot = await new HttpWorkspaceService().getProAnalytics("user-1");
+  expect(snapshot.topListings[0]).toMatchObject({
+    id: backendListing.id,
+    status: "active",
+    title: backendListing.title,
+    coverImageUrl: backendListing.images[0],
+  });
+  expect(snapshot).not.toHaveProperty("weeklyStats");
+  expect(snapshot).not.toHaveProperty("conversionRate");
+});

@@ -1,3 +1,4 @@
+import { testListingPath } from "./fixtures";
 import { expect, test } from "@playwright/test";
 import { usePersona } from "./personas";
 import { expectNoHorizontalOverflow, waitForStableLayout } from "./overflow";
@@ -20,7 +21,9 @@ test.describe("listing mobile action hierarchy", () => {
   }) => {
     await usePersona(page, "guest");
     await page.setViewportSize({ width: 444, height: 795 });
-    await page.goto("/annonce/list-112", { waitUntil: "domcontentloaded" });
+    await page.goto(testListingPath("list-112"), {
+      waitUntil: "domcontentloaded",
+    });
     await waitForStableLayout(page);
 
     await revealStickyActions(page);
@@ -58,7 +61,9 @@ test.describe("listing mobile action hierarchy", () => {
   }) => {
     await usePersona(page, "guest");
     await page.setViewportSize({ width: 320, height: 844 });
-    await page.goto("/annonce/list-112", { waitUntil: "domcontentloaded" });
+    await page.goto(testListingPath("list-112"), {
+      waitUntil: "domcontentloaded",
+    });
     await waitForStableLayout(page);
 
     await revealStickyActions(page);
@@ -87,7 +92,9 @@ test.describe("listing mobile action hierarchy", () => {
   test("keeps four-action layouts in two balanced rows", async ({ page }) => {
     await usePersona(page, "guest");
     await page.setViewportSize({ width: 444, height: 844 });
-    await page.goto("/annonce/list-109", { waitUntil: "domcontentloaded" });
+    await page.goto(testListingPath("list-109"), {
+      waitUntil: "domcontentloaded",
+    });
     await waitForStableLayout(page);
 
     await revealStickyActions(page);

@@ -1,12 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { VerificationBadge } from "@shongre/ui/web";
 import {
-  TrendingUp,
   Eye,
-  MessageSquare,
   DollarSign,
   ArrowUpRight,
-  BarChart2,
   FileText,
   CircleAlert,
 } from "lucide-react";
@@ -22,16 +19,16 @@ import { usePageMeta } from "../../hooks/usePageMeta";
 import { services } from "../../api/client/service-registry";
 import type { ProAnalyticsSnapshot } from "../../api/contracts/workspace.contract";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
-import { ProgressBar } from "../../design-system/primitives/ProgressBar";
 import { StatePanel } from "../../design-system/primitives/StatePanel";
 import { useRegionalFormatters } from "../../hooks/useRegionalFormatters";
 import { resolveListingPhotoUrl } from "../../domains/listing/listing-media";
+import { formatListingPricePresentation } from "../../domains/listing/listing-price.presentation";
 
 type AnalyticsLoadState = "loading" | "success" | "error";
 
 export const ProDashboardPage: React.FC = () => {
   const { t, locale } = useTranslation();
-  const { formatPrice } = useMarketLocation();
+  const { formatPrice, convertMoney } = useMarketLocation();
   const { formatMoney } = useRegionalFormatters();
   usePageMeta({
     title: t("meta.proDashboard.title"),
@@ -43,7 +40,9 @@ export const ProDashboardPage: React.FC = () => {
   const { currentUser } = useAuth();
   const [isBillingModalOpen, setIsBillingModalOpen] = useState(false);
   const [analytics, setAnalytics] = useState<ProAnalyticsSnapshot | null>(null);
-  const [unreadContactCount, setUnreadContactCount] = useState(0);
+  const [unreadContactCount, setUnreadContactCount] = useState<number | null>(
+    null,
+  );
   const [loadState, setLoadState] = useState<AnalyticsLoadState>("loading");
   const [reloadToken, setReloadToken] = useState(0);
 
@@ -54,39 +53,36 @@ export const ProDashboardPage: React.FC = () => {
     }
     let cancelled = false;
     setLoadState("loading");
-    Promise.all([
-      services.workspace.getProAnalytics(currentUser.id),
-      services.messaging.getUserConversations(currentUser.id),
-    ])
-      .then(([snapshot, conversations]) => {
+    setAnalytics(null);
+    setUnreadContactCount(null);
+    services.workspace
+      .getProAnalytics(currentUser.id)
+      .then((snapshot) => {
         if (cancelled) return;
         setAnalytics(snapshot);
-        setUnreadContactCount(
-          conversations.reduce(
-            (total, conversation) => total + conversation.unreadCount,
-            0,
-          ),
-        );
         setLoadState("success");
       })
       .catch(() => {
         if (!cancelled) setLoadState("error");
       });
+    void services.messaging
+      .getUserConversations(currentUser.id)
+      .then((conversations) => {
+        if (!cancelled)
+          setUnreadContactCount(
+            conversations.reduce(
+              (total, conversation) => total + conversation.unreadCount,
+              0,
+            ),
+          );
+      })
+      .catch(() => undefined);
     return () => {
       cancelled = true;
     };
   }, [currentUser?.id, reloadToken]);
 
   const hasCatalogue = Boolean(analytics?.topListings.length);
-  const weeklyStats = analytics?.weeklyStats || [];
-  const maximumWeeklyViews = Math.max(
-    ...weeklyStats.map((item) => item.views),
-    1,
-  );
-  const formatDay = (date: string) =>
-    new Intl.DateTimeFormat(locale, { weekday: "short", timeZone: "UTC" })
-      .format(new Date(`${date}T12:00:00Z`))
-      .replace(".", "");
 
   return (
     <div className="space-y-6">
@@ -97,9 +93,11 @@ export const ProDashboardPage: React.FC = () => {
             <h1 className="text-xl sm:text-2xl font-bold text-text-main">
               {t("sellerworkspace.proDashboardPage.tableauDeBordVendeurPro")}
             </h1>
-            <VerificationBadge
-              label={t("ui.identityStatus.verification.siret")}
-            />
+            {currentUser?.professionalVerification?.status === "verified" && (
+              <VerificationBadge
+                label={t("ui.identityStatus.verification.professional")}
+              />
+            )}
           </div>
           <p className="text-xs sm:text-sm text-text-tertiary mt-0.5">
             {t("sellerworkspace.proDashboardPage.suiviDesPerformancesDeVotre")}
@@ -181,12 +179,14 @@ export const ProDashboardPage: React.FC = () => {
                   {t("sellerworkspace.proDashboardPage.actionQueueDescription")}
                 </p>
               </div>
-              <Badge variant="neutral" size="sm">
-                {unreadContactCount + (hasCatalogue ? 0 : 1)}
-              </Badge>
+              {unreadContactCount !== null && (
+                <Badge variant="neutral" size="sm">
+                  {unreadContactCount}
+                </Badge>
+              )}
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
-              {unreadContactCount > 0 && (
+              {unreadContactCount !== null && unreadContactCount > 0 && (
                 <Link
                   to={routes.workspace.messages()}
                   className="surface-interactive rounded-control border border-border-base bg-bg-surface p-4"
@@ -203,27 +203,23 @@ export const ProDashboardPage: React.FC = () => {
                   </p>
                 </Link>
               )}
-              {!hasCatalogue && (
-                <Link
-                  to={routes.listing.publish()}
-                  className="surface-interactive rounded-control border border-border-base bg-bg-surface p-4"
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="text-sm font-bold text-text-main">
-                      {t(
-                        "sellerworkspace.proDashboardPage.publishFirstListing",
-                      )}
-                    </span>
-                    <ArrowUpRight className="h-icon-sm w-icon-sm text-primary" />
-                  </div>
-                  <p className="mt-1 text-xs text-text-tertiary">
-                    {t(
-                      "sellerworkspace.proDashboardPage.publishFirstListingDescription",
-                    )}
-                  </p>
-                </Link>
-              )}
-              {unreadContactCount === 0 && hasCatalogue && (
+              <Link
+                to={routes.workspace.listings()}
+                className="surface-interactive rounded-control border border-border-base bg-bg-surface p-4"
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-sm font-bold text-text-main">
+                    {t("sellerworkspace.proDashboardPage.manageListings")}
+                  </span>
+                  <ArrowUpRight className="h-icon-sm w-icon-sm text-primary" />
+                </div>
+                <p className="mt-1 text-xs text-text-tertiary">
+                  {t(
+                    "sellerworkspace.proDashboardPage.manageListingsDescription",
+                  )}
+                </p>
+              </Link>
+              {unreadContactCount === 0 && (
                 <p className="rounded-control border border-success-border bg-bg-surface p-4 text-sm font-semibold text-success sm:col-span-2">
                   {t("sellerworkspace.proDashboardPage.actionQueueEmpty")}
                 </p>
@@ -231,142 +227,57 @@ export const ProDashboardPage: React.FC = () => {
             </div>
           </section>
 
-          {/* KPI Cards */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="motion-surface rounded-control border border-border-base bg-bg-surface p-4 shadow-xs hover:shadow-sm">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="rounded-card border border-border-base bg-bg-surface p-4 shadow-xs">
               <div className="flex items-center justify-between text-text-tertiary text-xs font-semibold mb-1">
-                <span>Vues totales catalogue</span>
+                <span>
+                  {t("sellerworkspace.proDashboardPage.catalogueSampleViews")}
+                </span>
                 <Eye className="w-icon-md h-icon-md text-primary" />
               </div>
               <div className="text-2xl font-bold text-text-main">
-                {(analytics?.monthlyViews || 0).toLocaleString(locale)}
+                {analytics?.catalogueSampleViews.toLocaleString(locale)}
               </div>
-              {hasCatalogue ? (
-                <div className="text-xs text-success font-bold flex items-center gap-1 mt-1">
-                  <TrendingUp
-                    className="w-icon-xs h-icon-xs"
-                    aria-hidden="true"
-                  />
-                  +{analytics?.weeklyViewsChangePercent.toLocaleString(locale)}%
-                  cette semaine
+              <p className="text-xs text-text-tertiary mt-1">
+                {t(
+                  "sellerworkspace.proDashboardPage.catalogueSampleDescription",
+                )}
+              </p>
+            </div>
+            {analytics?.revenueByCurrency.map((revenue) => (
+              <div
+                key={revenue.currency}
+                className="rounded-card border border-border-base bg-bg-surface p-4 shadow-xs"
+              >
+                <div className="flex items-center justify-between text-text-tertiary text-xs font-semibold mb-1">
+                  <span>
+                    {t(
+                      "sellerworkspace.proDashboardPage.completedSalesThisMonth",
+                    )}
+                  </span>
+                  <DollarSign className="w-icon-md h-icon-md text-success" />
                 </div>
-              ) : (
-                <div className="text-xs text-text-tertiary mt-1">
-                  {t("sellerworkspace.proDashboardPage.pasEncoreDeDonnees")}
+                <div className="text-2xl font-bold text-text-main">
+                  {formatMoney(revenue)}
                 </div>
-              )}
-            </div>
-
-            <div className="motion-surface rounded-control border border-border-base bg-bg-surface p-4 shadow-xs hover:shadow-sm">
-              <div className="flex items-center justify-between text-text-tertiary text-xs font-semibold mb-1">
-                <span>Demandes & Contacts</span>
-                <MessageSquare className="w-icon-md h-icon-md text-info" />
+                <p className="mt-1 text-xs text-text-tertiary">
+                  {t("sellerworkspace.proDashboardPage.completedSalesScope")}
+                </p>
               </div>
-              <div className="text-2xl font-bold text-text-main">
-                {analytics?.contactsCount.toLocaleString(locale) || "0"}
-              </div>
-              {hasCatalogue ? (
-                <div className="text-xs text-success font-bold flex items-center gap-1 mt-1">
-                  <TrendingUp
-                    className="w-icon-xs h-icon-xs"
-                    aria-hidden="true"
-                  />
-                  +
-                  {analytics?.weeklyContactsChangePercent.toLocaleString(
-                    locale,
-                  )}
-                  %
-                </div>
-              ) : (
-                <div className="text-xs text-text-tertiary mt-1">
-                  {t("sellerworkspace.proDashboardPage.pasEncoreDeDonnees")}
-                </div>
-              )}
-            </div>
-
-            <div className="motion-surface rounded-control border border-border-base bg-bg-surface p-4 shadow-xs hover:shadow-sm">
-              <div className="flex items-center justify-between text-text-tertiary text-xs font-semibold mb-1">
-                <span>
-                  {t("sellerworkspace.proDashboardPage.tauxDeConversion")}
-                </span>
-                <BarChart2 className="w-icon-md h-icon-md text-rating-strong" />
-              </div>
-              <div className="text-2xl font-bold text-text-main">
-                {hasCatalogue ? `${analytics?.conversionRate}%` : "—"}
-              </div>
-              <div className="text-xs text-text-tertiary mt-1">
-                {hasCatalogue
-                  ? t("sellerworkspace.proDashboardPage.surLesFichesArticles")
-                  : t("sellerworkspace.proDashboardPage.pasEncoreDeDonnees")}
-              </div>
-            </div>
-
-            <div className="motion-surface rounded-control border border-border-base bg-bg-surface p-4 shadow-xs hover:shadow-sm">
-              <div className="flex items-center justify-between text-text-tertiary text-xs font-semibold mb-1">
-                <span>
-                  {t("sellerworkspace.proDashboardPage.volumeDeVentesEstime")}
-                </span>
-                <DollarSign className="w-icon-md h-icon-md text-success" />
-              </div>
-              <div className="text-2xl font-bold text-text-main">
-                {analytics ? formatMoney(analytics.monthlyRevenue) : "—"}
-              </div>
-              <div className="text-xs text-text-tertiary mt-1">
-                {hasCatalogue
-                  ? t("sellerworkspace.proDashboardPage.ceMoisCi")
-                  : t("sellerworkspace.proDashboardPage.pasEncoreDeDonnees")}
-              </div>
-            </div>
-          </div>
-
-          {/* Analytics Chart Bar Visualizer */}
-          <div className="space-y-4 rounded-card border border-border-base bg-bg-surface p-6 shadow-sm">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <h2 className="text-sm sm:text-base font-bold text-text-main">
-                {t("sellerworkspace.proDashboardPage.evolutionDeLAudience7")}
-              </h2>
-              {/* Summed from the series rendered below rather than written out
-              again, so the caption cannot drift from the bars it describes. */}
-              <span className="text-xs text-text-tertiary">
-                {t("sellerworkspace.proDashboardPage.totalVuesUniques", {
-                  count: weeklyStats.reduce((sum, d) => sum + d.views, 0),
-                })}
-              </span>
-            </div>
-
-            <div className="space-y-2 border-b border-border-subtle pb-3 pt-4">
-              {weeklyStats.map((item) => {
-                return (
-                  <div key={item.date} className="flex items-center gap-2">
-                    <span className="w-16 shrink-0 text-xs font-bold text-text-tertiary capitalize">
-                      {formatDay(item.date)}
-                    </span>
-                    <ProgressBar
-                      value={item.views}
-                      max={maximumWeeklyViews}
-                      label={`${item.views} vues ${formatDay(item.date)}`}
-                      className="flex-1"
-                    />
-                    <span className="w-16 shrink-0 text-right text-micro font-bold text-text-supporting">
-                      {item.views}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
+            ))}
           </div>
 
           {/* Top performing articles */}
-          <div className="space-y-4 rounded-card border border-border-base bg-bg-surface p-6 shadow-sm">
-            <h2 className="text-sm sm:text-base font-bold text-text-main">
-              {t(
-                "sellerworkspace.proDashboardPage.articlesPharesDeVotreBoutique",
-              )}
-            </h2>
+          {hasCatalogue && (
+            <div className="space-y-4 rounded-card border border-border-base bg-bg-surface p-6 shadow-sm">
+              <h2 className="text-sm sm:text-base font-bold text-text-main">
+                {t(
+                  "sellerworkspace.proDashboardPage.articlesPharesDeVotreBoutique",
+                )}
+              </h2>
 
-            <div className="divide-y divide-border-subtle">
-              {(analytics?.topListings || []).map(
-                ({ listing, conversionRate }) => (
+              <div className="divide-y divide-border-subtle">
+                {(analytics?.topListings || []).map((listing) => (
                   <div
                     key={listing.id}
                     className="py-3 flex items-center justify-between gap-4"
@@ -386,34 +297,37 @@ export const ProDashboardPage: React.FC = () => {
                           {listing.title}
                         </div>
                         <div className="text-xs text-text-tertiary">
-                          {formatPrice(listing.price)}
+                          {formatListingPricePresentation(
+                            listing.pricePresentation,
+                            locale,
+                            convertMoney,
+                          ) ??
+                            formatPrice(listing.price, {
+                              sourceCurrency: listing.currency,
+                              isFreeDonation: listing.isFreeDonation,
+                            })}
                         </div>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-6 text-xs text-text-supporting shrink-0">
-                      <div className="text-right">
-                        <div className="font-bold text-text-main">
-                          {listing.viewsCount ?? listing.viewCount ?? 0}
-                        </div>
-                        <div className="text-micro text-text-tertiary">
-                          Vues
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-bold text-success">
-                          {conversionRate}%
-                        </div>
-                        <div className="text-micro text-text-tertiary">
-                          Conversion
+                    {(listing.viewsCount ?? listing.viewCount) !==
+                      undefined && (
+                      <div className="flex items-center gap-6 text-xs text-text-supporting shrink-0">
+                        <div className="text-right">
+                          <div className="font-bold text-text-main">
+                            {listing.viewsCount ?? listing.viewCount}
+                          </div>
+                          <div className="text-micro text-text-tertiary">
+                            Vues
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    )}
                   </div>
-                ),
-              )}
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           <BillingHistoryModal
             isOpen={isBillingModalOpen}

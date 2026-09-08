@@ -20,6 +20,7 @@ import type {
 } from "../../../api/contracts/listings.contract";
 import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
 import { useRegionalFormatters } from "../../../hooks/useRegionalFormatters";
+import { PUBLICATION_CONSTRAINTS } from "@shongre/contracts/publication";
 
 interface BulkImportModalProps {
   isOpen: boolean;
@@ -126,6 +127,10 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({
         return t("sellerworkspace.bulkImportModal.validationTitleRequired");
       case "TITLE_TOO_SHORT":
         return t("sellerworkspace.bulkImportModal.validationTitleTooShort");
+      case "TITLE_TOO_LONG":
+        return t("publishing.publishWizard.titleTooLong", {
+          max: PUBLICATION_CONSTRAINTS.title.maxLength,
+        });
       case "PRICE_INVALID":
         return t("sellerworkspace.bulkImportModal.validationPriceInvalid");
       default:

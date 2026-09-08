@@ -1,42 +1,34 @@
-import { Page } from "@playwright/test";
+import { mkdirSync } from "node:fs";
+import { expect, type Page } from "@playwright/test";
+import { browserApi } from "./browser-api";
+import { readBrowserFixtures } from "./fixtures";
 
-/**
- * Demo personas, addressed the way the app itself stores them.
- *
- * `storageService` reads `shongre_current_user_key_v1` on boot, so seeding
- * localStorage before the first paint is equivalent to picking the persona in
- * the demo switcher — without driving the UI for it in every test.
- */
+/** References to the backend-owned scenario, never client-selected authority. */
 const PERSONAS = {
-  guest: { key: "guest", role: "guest" },
-  individual_buyer: { key: "buyer_thomas", role: "individual_buyer" },
-  individual_seller: { key: "seller_camille", role: "individual_seller" },
-  pro_seller: { key: "pro_atelier", role: "pro_seller" },
-  standalone_prospects: { key: "standalone_trial_owner", role: "pro_seller" },
-  standalone_facturation: {
-    key: "standalone_facturation_owner",
-    role: "pro_seller",
-  },
-  pro_immo: { key: "pro_immo_clara", role: "pro_seller" },
-  pro_auto: { key: "pro_auto_michel", role: "pro_seller" },
-  pro_courses: { key: "pro_courses_sophie", role: "pro_seller" },
-  pro_employment: { key: "pro_employment_clara", role: "pro_seller" },
-  moderator: { key: "moderator_claire", role: "moderator" },
-  trust_safety: { key: "trust_nadia", role: "operations" },
-  support: { key: "support_hugo", role: "support" },
-  operations: { key: "ops_elena", role: "operations" },
-  finance: { key: "finance_marc", role: "finance" },
-  commercial: { key: "commercial_lea", role: "commercial" },
-  admin: { key: "admin_antoine", role: "admin" },
+  guest: null,
+  individual_buyer: "user_thomas",
+  individual_seller: "user_camille",
+  pro_seller: "user_pro_atelier",
+  standalone_prospects: "user_standalone_trial_owner",
+  standalone_facturation: "user_standalone_facturation_owner",
+  pro_immo: "user_immo_clara",
+  pro_auto: "user_dealer_owner",
+  pro_courses: "user_tutor_sophie",
+  pro_employment: "user_employment_clara",
+  moderator: "user_mod_claire",
+  trust_safety: "user_trust_nadia",
+  compliance: "user_compliance_samia",
+  support: "user_support_hugo",
+  operations: "user_ops_elena",
+  finance: "user_finance_marc",
+  commercial: "user_commercial_lea",
+  admin: "user_admin_antoine",
+  super_admin: "user_super_admin_alex",
 } as const;
 
 export type PersonaName = keyof typeof PERSONAS;
 
-/**
- * Seeds an explicit refusal so a test aimed at another application surface is
- * not actually testing through the pinned first-visit consent region. Consent
- * itself has a dedicated suite which deliberately omits this helper.
- */
+/** Explicit refusal for tests which do not exercise first-visit consent. */
 export async function useEstablishedConsent(page: Page): Promise<void> {
   await page.addInitScript(() => {
     window.localStorage.setItem(
@@ -50,23 +42,62 @@ export async function useEstablishedConsent(page: Page): Promise<void> {
   });
 }
 
-/** Seeds the persona before any app code runs, for every navigation on `page`. */
+function claimRecoveryCode(file: string, id: string, codes: string[]): string {
+  // Atomic claims survive worker restarts and prevent cross-worker reuse.
+  // The runner removes these private directories with its API fixture.
+  for (const [index, code] of codes.entries()) {
+    try {
+      mkdirSync(`${file}.${id}.${index}`, { mode: 0o700 });
+      return code;
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== "EEXIST") throw error;
+    }
+  }
+  throw new Error("The isolated Staff MFA recovery fixture is exhausted.");
+}
+
+/** Authenticate through first-party HTTP cookies, including real Staff MFA. */
 export async function usePersona(
   page: Page,
   persona: PersonaName,
 ): Promise<void> {
-  const { key, role } = PERSONAS[persona];
-  await page.addInitScript(
-    ([userKey, userRole]) => {
-      window.localStorage.setItem(
-        "shongre_current_user_key_v1",
-        JSON.stringify(userKey),
-      );
-      window.localStorage.setItem(
-        "shongre_current_role_v1",
-        JSON.stringify(userRole),
-      );
-    },
-    [key, role],
-  );
+  await page
+    .context()
+    .clearCookies({ name: /^shongre_(access|refresh|csrf)$/ });
+  const id = PERSONAS[persona];
+  if (!id) return;
+  const file = process.env.E2E_ACCOUNTS_FILE;
+  const origin = process.env.E2E_BASE_URL;
+  if (
+    process.env.APP_ENV !== "test" ||
+    !file ||
+    !origin ||
+    !process.env.DEMO_ACCOUNT_PASSWORD
+  ) {
+    throw new Error(
+      "Personas require the isolated API runner: make frontend-test-e2e.",
+    );
+  }
+  const { accounts } = readBrowserFixtures();
+  const account = accounts[id];
+  if (!account) throw new Error(`Missing backend test account for ${persona}.`);
+  await page.goto(new URL("/healthz", origin).href, { waitUntil: "load" });
+  const login = await browserApi(page, "/auth/login", {
+    method: "POST",
+    body: { email: account.email, password: process.env.DEMO_ACCOUNT_PASSWORD },
+  });
+  expect(login.status, `API login for ${persona}`).toBe(200);
+  if (login.body.requiresMfa) {
+    const challenge = await browserApi(page, "/auth/mfa/challenge", {
+      method: "POST",
+      body: {
+        tempMfaToken: login.body.tempMfaToken,
+        code: claimRecoveryCode(file, id, account.recoveryCodes),
+      },
+    });
+    expect(challenge.status, `MFA challenge for ${persona}`).toBe(200);
+  }
+  const session = await browserApi(page, "/auth/me");
+  expect(session.status).toBe(200);
+  expect(session.body.id, `Verified API identity for ${persona}`).toBe(id);
 }

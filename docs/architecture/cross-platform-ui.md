@@ -119,6 +119,10 @@ The shared card permits long titles, prices and seller facts to wrap without
 clipping; its token-backed height is a minimum. The visible verification label is concise
 while its accessible name retains the complete seller-verification meaning.
 Horizontal cards retain their larger type and richer decision information.
+Online-payment capabilities use the shared `payment` semantic icon, mapped to
+the credit-card glyph on Web and native. The existing localized payment label
+and explicit backend availability check remain unchanged; the generic `shield`
+icon stays available for security semantics, not payment-card presentation.
 
 The Web header rail and mobile category menu consume the market-scoped taxonomy
 header configuration. Its category selection and `links` (typed

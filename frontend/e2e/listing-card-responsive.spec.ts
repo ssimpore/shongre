@@ -1,3 +1,4 @@
+import { testListingPath } from "./fixtures";
 import { expect, test, type Locator, type Page } from "@playwright/test";
 import { expectNoHorizontalOverflow, waitForStableLayout } from "./overflow";
 import { useEstablishedConsent, usePersona } from "./personas";
@@ -87,6 +88,54 @@ test.beforeEach(async ({ page }) => {
 });
 
 test.describe("canonical listing cards", () => {
+  for (const width of [1408, 390]) {
+    test(`online payment uses an accessible payment-card glyph at ${width}px`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width, height: 900 });
+      const errors: string[] = [];
+      page.on("pageerror", (error) => errors.push(error.message));
+      page.on("console", (message) => {
+        if (message.type() === "error") errors.push(message.text());
+      });
+      await openAsGuest(page, "/");
+      await expect(page).toHaveTitle(/Shongre/i);
+      const card = page
+        .locator('[data-listing-card="true"]')
+        .filter({
+          has: page.locator('[data-listing-capability="online_payment"]'),
+        })
+        .first();
+      await card.scrollIntoViewIfNeeded();
+      const payment = card.locator(
+        '[data-listing-capability="online_payment"]',
+      );
+      await expect(payment).toHaveText("Paiement en ligne");
+      await expect(payment).toHaveAttribute("title", "Paiement en ligne");
+      await expect(payment.locator("svg.lucide-credit-card")).toBeVisible();
+      await expect(payment.locator("svg.lucide-credit-card")).toHaveAttribute(
+        "aria-hidden",
+        "true",
+      );
+      await expect(payment.locator("svg.lucide-shield-check")).toHaveCount(0);
+      await expectNoHorizontalOverflow(page, `payment icon @ ${width}px`);
+      const title = await card
+        .locator('[data-listing-card-title="true"]')
+        .innerText();
+      const link = card.getByRole("link").first();
+      const destination = new URL(
+        (await link.getAttribute("href"))!,
+        page.url(),
+      );
+      await link.click();
+      await expect(page).toHaveURL(destination.href);
+      await expect(
+        page.getByRole("heading", { level: 1, name: title, exact: true }),
+      ).toBeVisible();
+      expect(errors).toEqual([]);
+    });
+  }
+
   for (const width of REQUESTED_WIDTHS) {
     test(`homepage cards stay compact and contained at ${width}px`, async ({
       page,
@@ -110,7 +159,7 @@ test.describe("canonical listing cards", () => {
 
     const branded = page
       .locator('[data-listing-card="true"]', {
-        has: page.locator('a[href="/annonce/list-113"]'),
+        has: page.locator(`a[href="${testListingPath("list-113")}"]`),
       })
       .first();
     await branded.scrollIntoViewIfNeeded();
@@ -144,6 +193,16 @@ test.describe("canonical listing cards", () => {
       branded.locator('[data-listing-capability="online_payment"]'),
     ).toHaveAttribute("aria-label", "Paiement en ligne");
     await expect(
+      branded.locator(
+        '[data-listing-capability="online_payment"] svg.lucide-credit-card',
+      ),
+    ).toBeVisible();
+    await expect(
+      branded.locator(
+        '[data-listing-capability="online_payment"] svg.lucide-shield-check',
+      ),
+    ).toHaveCount(0);
+    await expect(
       branded.locator('[data-listing-capability="delivery"]'),
     ).toHaveAttribute("aria-label", "Livraison");
     await expect(
@@ -167,7 +226,7 @@ test.describe("canonical listing cards", () => {
 
     const professional = page
       .locator('[data-listing-card="true"]', {
-        has: page.locator('a[href="/annonce/list-115"]'),
+        has: page.locator(`a[href="${testListingPath("list-115")}"]`),
       })
       .first();
     await professional.scrollIntoViewIfNeeded();
@@ -215,7 +274,7 @@ test.describe("canonical listing cards", () => {
 
     const card = page
       .locator('[data-listing-card="true"]', {
-        has: page.locator('a[href="/annonce/list-113"]'),
+        has: page.locator(`a[href="${testListingPath("list-113")}"]`),
       })
       .first();
     await card.scrollIntoViewIfNeeded();
@@ -236,8 +295,8 @@ test.describe("canonical listing cards", () => {
     ).toHaveText("Vérifié");
     await expectCardContentContained(card, "generic list capability card");
 
-    await card.locator('a[href="/annonce/list-113"]').click();
-    await expect(page).toHaveURL(/\/annonce\/list-113$/);
+    await card.locator(`a[href="${testListingPath("list-113")}"]`).click();
+    await expect(page).toHaveURL(new RegExp(`${testListingPath("list-113")}$`));
     const detailCapabilities = page.getByTestId("listing-detail-capabilities");
     await expect(detailCapabilities).toBeVisible();
     await expect(detailCapabilities).toContainText("Paiement en ligne");
@@ -269,7 +328,7 @@ test.describe("canonical listing cards", () => {
 
     const standard = page
       .locator('[data-listing-card="true"]', {
-        has: page.locator('a[href="/annonce/list-113"]'),
+        has: page.locator(`a[href="${testListingPath("list-113")}"]`),
       })
       .first();
     await standard.scrollIntoViewIfNeeded();
@@ -288,7 +347,7 @@ test.describe("canonical listing cards", () => {
 
     const card = page
       .locator('[data-listing-card="true"]', {
-        has: page.locator('a[href="/annonce/list-113"]'),
+        has: page.locator(`a[href="${testListingPath("list-113")}"]`),
       })
       .first();
     await card.scrollIntoViewIfNeeded();
@@ -311,10 +370,14 @@ test.describe("canonical listing cards", () => {
       ),
     );
 
-    await card.locator('a[href="/annonce/list-113"]').focus();
-    await expect(card.locator('a[href="/annonce/list-113"]')).toBeFocused();
-    await card.locator('a[href="/annonce/list-113"]').press("Enter");
-    await expect(page).toHaveURL(/\/annonce\/list-113$/);
+    await card.locator(`a[href="${testListingPath("list-113")}"]`).focus();
+    await expect(
+      card.locator(`a[href="${testListingPath("list-113")}"]`),
+    ).toBeFocused();
+    await card
+      .locator(`a[href="${testListingPath("list-113")}"]`)
+      .press("Enter");
+    await expect(page).toHaveURL(new RegExp(`${testListingPath("list-113")}$`));
   });
 
   test("wraps the full compact title while safely truncating secondary fields", async ({

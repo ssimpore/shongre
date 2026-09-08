@@ -329,7 +329,7 @@ export const CollectionsPage: React.FC = () => {
                 <Link
                   key={collection.id}
                   to={routes.collections.detail(collection.slug)}
-                  className="group overflow-hidden rounded-card border border-border-base bg-bg-surface shadow-xs motion-surface hover:-translate-y-0.5 hover:border-primary-border hover:shadow-md"
+                  className="group overflow-hidden rounded-listing-card border border-border-base bg-bg-surface shadow-xs motion-surface hover:-translate-y-0.5 hover:border-primary-border hover:shadow-md"
                 >
                   <Image
                     src={collection.coverImageUrl}

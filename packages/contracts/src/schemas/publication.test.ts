@@ -1,8 +1,35 @@
 import { describe, expect, it } from "vitest";
 import {
+  PUBLICATION_CONSTRAINTS,
+  publicationInputSchema,
   toApplicationListingCondition,
   toTaxonomyV4ItemCondition,
 } from "./publication";
+
+describe("product publication title limit", () => {
+  const input = {
+    description: "Description du produit avec ses accessoires.",
+    amountMinor: 1000,
+    currency: "EUR",
+    categoryId: "electronics.smartphones.phones",
+    marketCode: "FR",
+    condition: "good",
+    city: "Lyon",
+    postalCode: "69002",
+  };
+  it("accepts the full boundary and rejects one extra character without trimming data", () => {
+    expect(PUBLICATION_CONSTRAINTS.title.maxLength).toBe(50);
+    const title = "é".repeat(PUBLICATION_CONSTRAINTS.title.maxLength);
+    expect(publicationInputSchema.parse({ ...input, title }).title).toBe(title);
+    const rejected = publicationInputSchema.safeParse({
+      ...input,
+      title: `${title}!`,
+    });
+    expect(rejected.success).toBe(false);
+    if (!rejected.success)
+      expect(rejected.error.issues[0].path).toEqual(["title"]);
+  });
+});
 
 describe("taxonomy v4 publication compatibility", () => {
   it.each([

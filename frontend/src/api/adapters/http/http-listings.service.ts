@@ -227,6 +227,17 @@ export class HttpListingsService implements ListingsServiceContract {
     }
   }
 
+  async getCharacteristics(id: string, marketCode: string, locale: string) {
+    return apiOperation<
+      components["schemas"]["ListingCharacteristics"],
+      "getListingCharacteristics"
+    >("getListingCharacteristics", {
+      path: { id },
+      query: { locale },
+      headers: { "X-Shongre-Market": marketCode },
+    });
+  }
+
   async getOwnListings(_userId: string, marketCode: string) {
     const result = await apiOperation<
       BackendOwnedListingCollection,

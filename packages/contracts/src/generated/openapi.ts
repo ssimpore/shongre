@@ -5299,6 +5299,26 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/listings/{id}/characteristics": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /**
+         * Read localized public characteristics of a visible listing
+         * @description Projects saved, applicable public values using backend taxonomy metadata. This read does not validate publication eligibility or infer a new category. Empty groups and unknown or private attributes are omitted.
+         */
+        readonly get: operations["getListingCharacteristics"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/listings/{id}/favorite": {
         readonly parameters: {
             readonly query?: never;
@@ -10576,6 +10596,17 @@ export interface components {
         readonly JsonValue: null | boolean | number | string | readonly unknown[] | {
             readonly [key: string]: unknown;
         };
+        readonly ListingCharacteristics: {
+            readonly groups: readonly {
+                readonly id: string;
+                readonly items: readonly {
+                    readonly code: string;
+                    readonly label: string;
+                    readonly value: string;
+                }[];
+                readonly label: string;
+            }[];
+        };
         readonly ListingDiscoveryPresentation: {
             readonly isSponsored: boolean;
             readonly organicPositionContext?: number;
@@ -12547,6 +12578,19 @@ export interface components {
         };
         /** @enum {string} */
         readonly WatchTargetType: "listing_price" | "seller" | "saved_search";
+        readonly WorkspaceProAnalytics: {
+            /** @description Completed current-month sales divided by cumulative sampled catalogue views, times 100; not an event-cohort conversion rate. */
+            readonly conversionRate: number;
+            /**
+             * @deprecated
+             * @description Legacy major-unit aggregate, without currency. Retained for v1 compatibility; display clients must use revenueByCurrency. Removal requires v2.
+             */
+            readonly monthlyRevenue: number;
+            /** @description Cumulative views of the bounded catalogue sample, not a monthly audience series. */
+            readonly monthlyViews: number;
+            readonly revenueByCurrency: readonly components["schemas"]["MonetizationMoney"][];
+            readonly topListings: readonly components["schemas"]["PublicListing"][];
+        };
     };
     responses: {
         /** @description Malformed request. */
@@ -24655,6 +24699,45 @@ export interface operations {
             readonly 500: components["responses"]["InternalError"];
         };
     };
+    readonly getListingCharacteristics: {
+        readonly parameters: {
+            readonly query?: {
+                /** @description BCP 47 display locale; defaults to the requested market locale. */
+                readonly locale?: string;
+            };
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path: {
+                readonly id: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Public characteristics; groups is empty when no applicable values are recorded. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ListingCharacteristics"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
     readonly putListingsByIdFavorite: {
         readonly parameters: {
             readonly query?: never;
@@ -24908,6 +24991,7 @@ export interface operations {
                         readonly price: number;
                         /** @constant */
                         readonly taxonomyVersion?: "4.0.0";
+                        /** @description Compact title for a new product listing. Existing listing titles and saved drafts are not truncated; an over-limit draft must be edited before publication. */
                         readonly title: string;
                     };
                 };
@@ -31478,7 +31562,7 @@ export interface operations {
                     readonly [name: string]: unknown;
                 };
                 content: {
-                    readonly "application/json": components["schemas"]["JsonValue"];
+                    readonly "application/json": components["schemas"]["WorkspaceProAnalytics"];
                 };
             };
             readonly 400: components["responses"]["BadRequest"];
