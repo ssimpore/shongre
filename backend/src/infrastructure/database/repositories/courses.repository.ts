@@ -1,3 +1,4 @@
+import { taxonomyV1Service } from "../../../modules/taxonomy/taxonomy.runtime.js";
 import type {
   CourseCatalog,
   CourseLead,
@@ -8,7 +9,6 @@ import type {
   CourseOrganizationMember,
   CourseOrganizationWorkspace,
   CoursePlan,
-  CourseSubject,
   LearnerRequest,
   TutorProfile,
   TutorPublicProfile,
@@ -24,7 +24,6 @@ import {
   coursePublicOfferSchema,
   courseOrganizationSchema,
   coursePlanSchema,
-  courseSubjectSchema,
   learnerRequestSchema,
   tutorProfileSchema,
   tutorPublicProfileSchema,
@@ -72,9 +71,9 @@ const DEMO_COURSE_PROMOTION_PROOFS: Readonly<
 const clone = <T>(value: T): T => structuredClone(value);
 
 function catalogForMarket(
-  catalog: CourseCatalog,
+  catalog: Omit<CourseCatalog, "subjects" | "levels">,
   marketCode: string,
-): CourseCatalog {
+): Omit<CourseCatalog, "subjects" | "levels"> {
   const normalizedMarketCode = requireMarketCode(marketCode);
   const cloned = clone(catalog);
   if (normalizedMarketCode === cloned.config.marketCode) return cloned;
@@ -86,8 +85,6 @@ function catalogForMarket(
       marketCode: normalizedMarketCode,
       isEnabled: false,
     },
-    subjects: [],
-    levels: [],
     plans: [],
     addOns: [],
   };
@@ -264,54 +261,6 @@ const DEFAULT_COURSE_PLANS: CoursePlan[] = [
     },
   },
 ];
-
-const LEVELS: CourseCatalog["levels"] = [
-  { id: "primary", label: "Primaire", sortOrder: 10, isActive: true },
-  { id: "middle_school", label: "Collège", sortOrder: 20, isActive: true },
-  { id: "high_school", label: "Lycée", sortOrder: 30, isActive: true },
-  {
-    id: "higher_education",
-    label: "Études supérieures",
-    sortOrder: 40,
-    isActive: true,
-  },
-  {
-    id: "adult",
-    label: "Adulte / Professionnel",
-    sortOrder: 50,
-    isActive: true,
-  },
-];
-
-const SUBJECT_LABELS: Array<[string, string]> = [
-  ["primary-support", "Soutien scolaire primaire"],
-  ["secondary-support", "Soutien scolaire secondaire"],
-  ["mathematics", "Mathématiques"],
-  ["physics-chemistry", "Physique et chimie"],
-  ["languages", "Langues"],
-  ["french", "Français"],
-  ["computer-science", "Informatique et programmation"],
-  ["data-ai", "Data et intelligence artificielle"],
-  ["music", "Musique"],
-  ["arts", "Arts"],
-  ["exam-preparation", "Préparation aux examens"],
-  ["higher-education", "Études supérieures"],
-  ["professional-skills", "Compétences professionnelles"],
-  ["sports-coaching", "Sport et coaching"],
-  ["other", "Autres matières"],
-];
-
-const SUBJECTS: CourseCatalog["subjects"] = SUBJECT_LABELS.map(
-  ([slug, label], index) => ({
-    id: `subject_${slug.replaceAll("-", "_")}`,
-    slug,
-    marketCode: "FR",
-    label,
-    levelIds: LEVELS.map((level) => level.id),
-    sortOrder: (index + 1) * 10,
-    isActive: true,
-  }),
-);
 
 const QUALIFIED = {
   id: "qualification_math_degree",
@@ -727,10 +676,8 @@ const DEMO_COURSE_ORGANIZATION_MEMBERS: CourseOrganizationMember[] = [
   },
 ];
 
-const DEFAULT_COURSE_CATALOG: CourseCatalog = {
+const DEFAULT_COURSE_CATALOG: Omit<CourseCatalog, "subjects" | "levels"> = {
   config: DEFAULT_COURSE_MARKET_CONFIG,
-  subjects: SUBJECTS,
-  levels: LEVELS,
   plans: DEFAULT_COURSE_PLANS,
   addOns: [
     {
@@ -789,7 +736,6 @@ export interface ICoursesRepository {
     marketCode: string,
     config: CourseMarketConfig,
   ): Promise<CourseMarketConfig>;
-  saveSubject(subject: CourseSubject): Promise<CourseSubject>;
   savePlan(plan: CoursePlan): Promise<CoursePlan>;
   searchTutors(query: TutorSearchQuery): Promise<TutorSearchResponse>;
   getTutorProfile(idOrSlug: string): Promise<TutorProfile | null>;
@@ -969,11 +915,14 @@ function toPublicOffer(offer: CourseOffer): CoursePublicOffer {
 }
 
 function toSearchItem(
+  taxonomy: Awaited<ReturnType<typeof taxonomyV1Service.snapshot>>,
   tutor: TutorProfile,
   offer: CourseOffer,
   marketCode = offer.marketCodes[0],
 ): TutorSearchItem {
-  const subject = SUBJECTS.find((item) => item.id === offer.subjectId);
+  const subject = taxonomy
+    .getReferences("course_subjects", marketCode, true)
+    .find((item) => item.id === offer.subjectId);
   const fromPrice = offer.pricingOptions
     .filter((price) => price.isActive)
     .sort((a, b) => a.price.amountMinor - b.price.amountMinor)[0]?.price || {
@@ -985,7 +934,10 @@ function toSearchItem(
     offer: clone(toPublicOffer(offer)),
     subjectLabel: subject?.label || offer.subjectId,
     levelLabels: offer.levelIds.map(
-      (id) => LEVELS.find((level) => level.id === id)?.label || id,
+      (id) =>
+        taxonomy
+          .getReferences("course_subject_levels", marketCode, true)
+          .find((level) => level.id === id)?.label || id,
     ),
     fromPrice,
     distanceKm:
@@ -1042,12 +994,23 @@ export class DemoCoursesRepository implements ICoursesRepository {
     marketCode: string,
     includeInactive = false,
   ): Promise<CourseCatalog> {
-    const catalog = catalogForMarket(this.catalog, marketCode);
+    const taxonomy = await taxonomyV1Service.snapshot();
+    const catalog = {
+      ...catalogForMarket(this.catalog, marketCode),
+      subjects: taxonomy.getReferences(
+        "course_subjects",
+        marketCode,
+        includeInactive,
+      ),
+      levels: taxonomy.getReferences(
+        "course_subject_levels",
+        marketCode,
+        includeInactive,
+      ),
+    };
     if (includeInactive) return catalog;
     return {
       ...catalog,
-      subjects: catalog.subjects.filter((subject) => subject.isActive),
-      levels: catalog.levels.filter((level) => level.isActive),
       plans: catalog.plans.filter((plan) => plan.isActive),
       addOns: catalog.addOns.filter((addOn) => addOn.isActive),
     };
@@ -1124,16 +1087,6 @@ export class DemoCoursesRepository implements ICoursesRepository {
     return clone(next);
   }
 
-  async saveSubject(subject: CourseSubject): Promise<CourseSubject> {
-    const parsed = courseSubjectSchema.parse(subject);
-    const index = this.catalog.subjects.findIndex(
-      (item) => item.id === parsed.id,
-    );
-    if (index < 0) throw new Error("Course subject not found");
-    this.catalog.subjects[index] = clone(parsed);
-    return clone(parsed);
-  }
-
   async savePlan(plan: CoursePlan): Promise<CoursePlan> {
     const parsed = coursePlanSchema.parse(plan);
     const index = this.catalog.plans.findIndex((item) => item.id === parsed.id);
@@ -1143,6 +1096,7 @@ export class DemoCoursesRepository implements ICoursesRepository {
   }
 
   async searchTutors(query: TutorSearchQuery): Promise<TutorSearchResponse> {
+    const taxonomy = await taxonomyV1Service.snapshot();
     let matched = Array.from(this.offers.values())
       .filter((offer) => offer.status === "published")
       .filter((offer) => offer.marketCodes.includes(query.marketCode))
@@ -1154,13 +1108,13 @@ export class DemoCoursesRepository implements ICoursesRepository {
     matched.sort((a, b) => {
       if (query.sort === "price_asc")
         return (
-          toSearchItem(a.tutor, a.offer).fromPrice.amountMinor -
-          toSearchItem(b.tutor, b.offer).fromPrice.amountMinor
+          toSearchItem(taxonomy, a.tutor, a.offer).fromPrice.amountMinor -
+          toSearchItem(taxonomy, b.tutor, b.offer).fromPrice.amountMinor
         );
       if (query.sort === "price_desc")
         return (
-          toSearchItem(b.tutor, b.offer).fromPrice.amountMinor -
-          toSearchItem(a.tutor, a.offer).fromPrice.amountMinor
+          toSearchItem(taxonomy, b.tutor, b.offer).fromPrice.amountMinor -
+          toSearchItem(taxonomy, a.tutor, a.offer).fromPrice.amountMinor
         );
       if (query.sort === "rating")
         return (b.tutor.rating || 0) - (a.tutor.rating || 0);
@@ -1179,7 +1133,7 @@ export class DemoCoursesRepository implements ICoursesRepository {
     const page = matched.slice(offset, offset + limit);
     return {
       items: page.map(({ tutor, offer }) =>
-        toSearchItem(tutor, offer, query.marketCode),
+        toSearchItem(taxonomy, tutor, offer, query.marketCode),
       ),
       total: matched.length,
       pageInfo: {
@@ -1370,33 +1324,16 @@ export class PostgresCoursesRepository implements ICoursesRepository {
     marketCode: string,
     includeInactive = false,
   ): Promise<CourseCatalog> {
+    const taxonomy = await taxonomyV1Service.snapshot();
     const supabase = getSupabaseAdminClient() as any;
     const active = (query: any) =>
       includeInactive ? query : query.eq("is_active", true);
-    const [
-      configResult,
-      subjectsResult,
-      levelsResult,
-      plansResult,
-      addOnsResult,
-    ] = await Promise.all([
+    const [configResult, plansResult, addOnsResult] = await Promise.all([
       supabase
         .from("course_market_configs")
         .select("config_payload")
         .eq("market_code", marketCode)
         .maybeSingle(),
-      active(
-        supabase
-          .from("course_subjects")
-          .select("public_payload")
-          .eq("market_code", marketCode),
-      ).order("sort_order"),
-      active(
-        supabase
-          .from("course_subject_levels")
-          .select("public_payload")
-          .eq("market_code", marketCode),
-      ).order("sort_order"),
       active(
         supabase
           .from("course_plans")
@@ -1413,10 +1350,16 @@ export class PostgresCoursesRepository implements ICoursesRepository {
     if (configResult.error) throw configResult.error;
     return {
       config: courseMarketConfigSchema.parse(configResult.data?.config_payload),
-      subjects: (subjectsResult.data || []).map(
-        (row: any) => row.public_payload,
+      subjects: taxonomy.getReferences(
+        "course_subjects",
+        marketCode,
+        includeInactive,
       ),
-      levels: (levelsResult.data || []).map((row: any) => row.public_payload),
+      levels: taxonomy.getReferences(
+        "course_subject_levels",
+        marketCode,
+        includeInactive,
+      ),
       plans: (plansResult.data || []).map((row: any) =>
         coursePlanSchema.parse(row.public_payload),
       ),
@@ -1526,39 +1469,6 @@ export class PostgresCoursesRepository implements ICoursesRepository {
         { onConflict: "market_code" },
       );
     if (error) throw error;
-    return parsed;
-  }
-
-  async saveSubject(subject: CourseSubject): Promise<CourseSubject> {
-    const parsed = courseSubjectSchema.parse(subject);
-    const supabase = getSupabaseAdminClient() as any;
-    const { error } = await supabase
-      .from("course_subjects")
-      .update({
-        label: parsed.label,
-        is_active: parsed.isActive,
-        public_payload: parsed,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", parsed.id)
-      .eq("market_code", parsed.marketCode);
-    if (error) throw error;
-    await supabase
-      .from("course_subject_allowed_levels")
-      .delete()
-      .eq("subject_id", parsed.id);
-    if (parsed.levelIds.length) {
-      const { error: levelsError } = await supabase
-        .from("course_subject_allowed_levels")
-        .insert(
-          parsed.levelIds.map((levelId) => ({
-            subject_id: parsed.id,
-            level_id: levelId,
-            market_code: parsed.marketCode,
-          })),
-        );
-      if (levelsError) throw levelsError;
-    }
     return parsed;
   }
 

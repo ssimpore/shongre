@@ -1,3 +1,4 @@
+import { localizeTaxonomyLabels } from "@shongre/contracts/taxonomy-labels";
 import React, { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
@@ -44,8 +45,7 @@ import { PropertyCard } from "./components/PropertyCard";
 import {
   formatImmoMoney,
   pricePeriodSuffix,
-  propertyTypeLabels,
-  transactionLabels,
+  formatImmoField,
 } from "./immo-format";
 import { useTranslation } from "../../i18n/I18nProvider";
 import {
@@ -62,16 +62,6 @@ type LeadForm = {
   message: string;
   preferredContactChannel: PropertyLead["preferredContactChannel"];
   consent: boolean;
-};
-
-const amenityLabels: Record<string, string> = {
-  lift: "Ascenseur",
-  balcony: "Balcon",
-  terrace: "Terrasse",
-  garden: "Jardin",
-  parking: "Parking",
-  cellar: "Cave",
-  accessible: "Accessible PMR",
 };
 
 export const ImmoPropertyDetailPage: React.FC = () => {
@@ -147,7 +137,7 @@ export const ImmoPropertyDetailPage: React.FC = () => {
   usePageMeta({
     title: property?.title || "Bien immobilier",
     description: property
-      ? `${propertyTypeLabels[property.propertyType]} de ${property.characteristics.livingAreaSquareMeters} m² à ${property.address.publicLabel}, proposé à ${formatImmoMoney(property.financials.price, currentLocale)}.`
+      ? `${formatImmoField(property, "property_type", currentLocale)} de ${property.characteristics.livingAreaSquareMeters} m² à ${property.address.publicLabel}, proposé à ${formatImmoMoney(property.financials.price, currentLocale)}.`
       : "Découvrez ce bien immobilier et contactez son annonceur.",
     canonicalPath: `/immo/bien/${slug}`,
     type: "product",
@@ -324,7 +314,7 @@ export const ImmoPropertyDetailPage: React.FC = () => {
     <div className="bg-bg-subtle pb-14">
       <PropertyStickyHeader
         originalHeaderRef={originalListingHeaderRef}
-        eyebrow={`${transactionLabels[property.transactionType]} · ${propertyTypeLabels[property.propertyType]} · ${property.address.publicLabel}`}
+        eyebrow={`${formatImmoField(property, "property_transaction", currentLocale)} · ${formatImmoField(property, "property_type", currentLocale)} · ${property.address.publicLabel}`}
         title={property.title}
         price={formattedPrice}
         phase={sentLeadId ? "appointment" : "lead"}
@@ -333,7 +323,8 @@ export const ImmoPropertyDetailPage: React.FC = () => {
       />
       <Container className="py-5">
         <nav aria-label="Fil d’Ariane" className="mb-4 text-xs text-text-muted">
-          Immobilier / {propertyTypeLabels[property.propertyType]} /{" "}
+          Immobilier /{" "}
+          {formatImmoField(property, "property_type", currentLocale)} /{" "}
           {property.address.city}
         </nav>
         <div className="grid items-start gap-5 lg:grid-cols-content-aside-lg">
@@ -404,8 +395,17 @@ export const ImmoPropertyDetailPage: React.FC = () => {
                 >
                   <div>
                     <p className="text-xs font-bold uppercase tracking-wide text-primary">
-                      {transactionLabels[property.transactionType]} ·{" "}
-                      {propertyTypeLabels[property.propertyType]}
+                      {formatImmoField(
+                        property,
+                        "property_transaction",
+                        currentLocale,
+                      )}{" "}
+                      ·{" "}
+                      {formatImmoField(
+                        property,
+                        "property_type",
+                        currentLocale,
+                      )}
                     </p>
                     <h1 className="mt-1 text-xl font-bold text-text-main sm:text-2xl">
                       {property.title}
@@ -452,11 +452,18 @@ export const ImmoPropertyDetailPage: React.FC = () => {
               <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-text-secondary">
                 {property.description}
               </p>
-              <div className="mt-5 flex flex-wrap gap-2">
-                {property.characteristics.amenities.map((item) => (
-                  <Badge key={item}>{amenityLabels[item] || item}</Badge>
+              <dl className="mt-5 grid gap-3 sm:grid-cols-2">
+                {property.taxonomy?.detailCharacteristics?.map((field) => (
+                  <div key={field.code}>
+                    <dt className="text-xs text-text-muted">
+                      {localizeTaxonomyLabels(field.labels, currentLocale)}
+                    </dt>
+                    <dd className="text-sm font-semibold">
+                      {localizeTaxonomyLabels(field.values, currentLocale)}
+                    </dd>
+                  </div>
                 ))}
-              </div>
+              </dl>
             </section>
 
             <section className="grid gap-4 sm:grid-cols-2">

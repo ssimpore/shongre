@@ -1,0 +1,4312 @@
+[
+  {
+    "id": "auto_vehicle_types:FR:agricultural",
+    "namespace": "auto_vehicle_types",
+    "marketCode": "FR",
+    "key": "agricultural",
+    "values": {
+      "slug": "agricoles",
+      "type": "agricultural",
+      "label": "Matériel agricole",
+      "is_active": true,
+      "sort_order": 70,
+      "description": "Tracteurs et équipements agricoles",
+      "market_code": "FR",
+      "public_payload": {
+        "slug": "agricoles",
+        "type": "agricultural",
+        "label": "Matériel agricole",
+        "iconName": "Tractor",
+        "isActive": true,
+        "sortOrder": 70,
+        "description": "Tracteurs et équipements agricoles",
+        "schemaVersion": 1,
+        "filterFieldIds": [
+          "make",
+          "model",
+          "modelYear",
+          "mileage",
+          "fuelType",
+          "transmission",
+          "price"
+        ],
+        "requiredFieldIds": [
+          "make",
+          "model",
+          "modelYear",
+          "mileage",
+          "fuelType",
+          "price"
+        ]
+      },
+      "schema_version": 1,
+      "filter_field_ids": [
+        "make",
+        "model",
+        "modelYear",
+        "mileage",
+        "fuelType",
+        "transmission",
+        "price"
+      ],
+      "required_field_ids": [
+        "make",
+        "model",
+        "modelYear",
+        "mileage",
+        "fuelType",
+        "price"
+      ]
+    }
+  },
+  {
+    "id": "auto_vehicle_types:FR:parts",
+    "namespace": "auto_vehicle_types",
+    "marketCode": "FR",
+    "key": "parts",
+    "values": {
+      "slug": "pieces-accessoires",
+      "type": "parts",
+      "label": "Pièces & accessoires",
+      "is_active": true,
+      "sort_order": 90,
+      "description": "Pièces, pneus et équipements",
+      "market_code": "FR",
+      "public_payload": {
+        "slug": "pieces-accessoires",
+        "type": "parts",
+        "label": "Pièces & accessoires",
+        "iconName": "Wrench",
+        "isActive": true,
+        "sortOrder": 90,
+        "description": "Pièces, pneus et équipements",
+        "schemaVersion": 1,
+        "filterFieldIds": ["condition", "price"],
+        "requiredFieldIds": ["condition", "price"]
+      },
+      "schema_version": 1,
+      "filter_field_ids": ["condition", "price"],
+      "required_field_ids": ["condition", "price"]
+    }
+  },
+  {
+    "id": "auto_vehicle_types:FR:car",
+    "namespace": "auto_vehicle_types",
+    "marketCode": "FR",
+    "key": "car",
+    "values": {
+      "slug": "voitures",
+      "type": "car",
+      "label": "Voitures",
+      "is_active": true,
+      "sort_order": 10,
+      "description": "Voitures particulières neuves et d’occasion",
+      "market_code": "FR",
+      "public_payload": {
+        "slug": "voitures",
+        "type": "car",
+        "label": "Voitures",
+        "iconName": "CarFront",
+        "isActive": true,
+        "sortOrder": 10,
+        "description": "Voitures particulières neuves et d’occasion",
+        "schemaVersion": 1,
+        "filterFieldIds": [
+          "make",
+          "model",
+          "modelYear",
+          "mileage",
+          "fuelType",
+          "transmission",
+          "price"
+        ],
+        "requiredFieldIds": [
+          "make",
+          "model",
+          "modelYear",
+          "mileage",
+          "fuelType",
+          "price"
+        ]
+      },
+      "schema_version": 1,
+      "filter_field_ids": [
+        "make",
+        "model",
+        "modelYear",
+        "mileage",
+        "fuelType",
+        "transmission",
+        "price"
+      ],
+      "required_field_ids": [
+        "make",
+        "model",
+        "modelYear",
+        "mileage",
+        "fuelType",
+        "price"
+      ]
+    }
+  },
+  {
+    "id": "auto_vehicle_types:FR:motorcycle",
+    "namespace": "auto_vehicle_types",
+    "marketCode": "FR",
+    "key": "motorcycle",
+    "values": {
+      "slug": "motos-scooters",
+      "type": "motorcycle",
+      "label": "Motos & scooters",
+      "is_active": true,
+      "sort_order": 20,
+      "description": "Deux-roues motorisés",
+      "market_code": "FR",
+      "public_payload": {
+        "slug": "motos-scooters",
+        "type": "motorcycle",
+        "label": "Motos & scooters",
+        "iconName": "Bike",
+        "isActive": true,
+        "sortOrder": 20,
+        "description": "Deux-roues motorisés",
+        "schemaVersion": 1,
+        "filterFieldIds": [
+          "make",
+          "model",
+          "modelYear",
+          "mileage",
+          "fuelType",
+          "transmission",
+          "price"
+        ],
+        "requiredFieldIds": [
+          "make",
+          "model",
+          "modelYear",
+          "mileage",
+          "fuelType",
+          "price"
+        ]
+      },
+      "schema_version": 1,
+      "filter_field_ids": [
+        "make",
+        "model",
+        "modelYear",
+        "mileage",
+        "fuelType",
+        "transmission",
+        "price"
+      ],
+      "required_field_ids": [
+        "make",
+        "model",
+        "modelYear",
+        "mileage",
+        "fuelType",
+        "price"
+      ]
+    }
+  },
+  {
+    "id": "auto_vehicle_types:FR:utility",
+    "namespace": "auto_vehicle_types",
+    "marketCode": "FR",
+    "key": "utility",
+    "values": {
+      "slug": "utilitaires",
+      "type": "utility",
+      "label": "Vans & utilitaires",
+      "is_active": true,
+      "sort_order": 30,
+      "description": "Véhicules utilitaires légers",
+      "market_code": "FR",
+      "public_payload": {
+        "slug": "utilitaires",
+        "type": "utility",
+        "label": "Vans & utilitaires",
+        "iconName": "Truck",
+        "isActive": true,
+        "sortOrder": 30,
+        "description": "Véhicules utilitaires légers",
+        "schemaVersion": 1,
+        "filterFieldIds": [
+          "make",
+          "model",
+          "modelYear",
+          "mileage",
+          "fuelType",
+          "transmission",
+          "price"
+        ],
+        "requiredFieldIds": [
+          "make",
+          "model",
+          "modelYear",
+          "mileage",
+          "fuelType",
+          "price"
+        ]
+      },
+      "schema_version": 1,
+      "filter_field_ids": [
+        "make",
+        "model",
+        "modelYear",
+        "mileage",
+        "fuelType",
+        "transmission",
+        "price"
+      ],
+      "required_field_ids": [
+        "make",
+        "model",
+        "modelYear",
+        "mileage",
+        "fuelType",
+        "price"
+      ]
+    }
+  },
+  {
+    "id": "auto_vehicle_types:FR:truck",
+    "namespace": "auto_vehicle_types",
+    "marketCode": "FR",
+    "key": "truck",
+    "values": {
+      "slug": "poids-lourds",
+      "type": "truck",
+      "label": "Poids lourds",
+      "is_active": true,
+      "sort_order": 40,
+      "description": "Camions et véhicules industriels",
+      "market_code": "FR",
+      "public_payload": {
+        "slug": "poids-lourds",
+        "type": "truck",
+        "label": "Poids lourds",
+        "iconName": "Truck",
+        "isActive": true,
+        "sortOrder": 40,
+        "description": "Camions et véhicules industriels",
+        "schemaVersion": 1,
+        "filterFieldIds": [
+          "make",
+          "model",
+          "modelYear",
+          "mileage",
+          "fuelType",
+          "transmission",
+          "price"
+        ],
+        "requiredFieldIds": [
+          "make",
+          "model",
+          "modelYear",
+          "mileage",
+          "fuelType",
+          "price"
+        ]
+      },
+      "schema_version": 1,
+      "filter_field_ids": [
+        "make",
+        "model",
+        "modelYear",
+        "mileage",
+        "fuelType",
+        "transmission",
+        "price"
+      ],
+      "required_field_ids": [
+        "make",
+        "model",
+        "modelYear",
+        "mileage",
+        "fuelType",
+        "price"
+      ]
+    }
+  },
+  {
+    "id": "auto_vehicle_types:FR:motorhome",
+    "namespace": "auto_vehicle_types",
+    "marketCode": "FR",
+    "key": "motorhome",
+    "values": {
+      "slug": "camping-cars-caravanes",
+      "type": "motorhome",
+      "label": "Camping-cars & caravanes",
+      "is_active": true,
+      "sort_order": 50,
+      "description": "Véhicules de loisirs",
+      "market_code": "FR",
+      "public_payload": {
+        "slug": "camping-cars-caravanes",
+        "type": "motorhome",
+        "label": "Camping-cars & caravanes",
+        "iconName": "Caravan",
+        "isActive": true,
+        "sortOrder": 50,
+        "description": "Véhicules de loisirs",
+        "schemaVersion": 1,
+        "filterFieldIds": [
+          "make",
+          "model",
+          "modelYear",
+          "mileage",
+          "fuelType",
+          "transmission",
+          "price"
+        ],
+        "requiredFieldIds": [
+          "make",
+          "model",
+          "modelYear",
+          "mileage",
+          "fuelType",
+          "price"
+        ]
+      },
+      "schema_version": 1,
+      "filter_field_ids": [
+        "make",
+        "model",
+        "modelYear",
+        "mileage",
+        "fuelType",
+        "transmission",
+        "price"
+      ],
+      "required_field_ids": [
+        "make",
+        "model",
+        "modelYear",
+        "mileage",
+        "fuelType",
+        "price"
+      ]
+    }
+  },
+  {
+    "id": "auto_vehicle_types:FR:boat",
+    "namespace": "auto_vehicle_types",
+    "marketCode": "FR",
+    "key": "boat",
+    "values": {
+      "slug": "bateaux",
+      "type": "boat",
+      "label": "Bateaux",
+      "is_active": false,
+      "sort_order": 60,
+      "description": "Navigation de plaisance — activation par marché",
+      "market_code": "FR",
+      "public_payload": {
+        "slug": "bateaux",
+        "type": "boat",
+        "label": "Bateaux",
+        "iconName": "ShipWheel",
+        "isActive": false,
+        "sortOrder": 60,
+        "description": "Navigation de plaisance — activation par marché",
+        "schemaVersion": 1,
+        "filterFieldIds": [
+          "make",
+          "model",
+          "modelYear",
+          "mileage",
+          "fuelType",
+          "transmission",
+          "price"
+        ],
+        "requiredFieldIds": [
+          "make",
+          "model",
+          "modelYear",
+          "mileage",
+          "fuelType",
+          "price"
+        ]
+      },
+      "schema_version": 1,
+      "filter_field_ids": [
+        "make",
+        "model",
+        "modelYear",
+        "mileage",
+        "fuelType",
+        "transmission",
+        "price"
+      ],
+      "required_field_ids": [
+        "make",
+        "model",
+        "modelYear",
+        "mileage",
+        "fuelType",
+        "price"
+      ]
+    }
+  },
+  {
+    "id": "auto_vehicle_types:FR:other",
+    "namespace": "auto_vehicle_types",
+    "marketCode": "FR",
+    "key": "other",
+    "values": {
+      "slug": "autres-vehicules",
+      "type": "other",
+      "label": "Autres véhicules",
+      "is_active": true,
+      "sort_order": 100,
+      "description": "Véhicules hors catégories principales",
+      "market_code": "FR",
+      "public_payload": {
+        "slug": "autres-vehicules",
+        "type": "other",
+        "label": "Autres véhicules",
+        "iconName": "CircleEllipsis",
+        "isActive": true,
+        "sortOrder": 100,
+        "description": "Véhicules hors catégories principales",
+        "schemaVersion": 1,
+        "filterFieldIds": [
+          "make",
+          "model",
+          "modelYear",
+          "mileage",
+          "fuelType",
+          "transmission",
+          "price"
+        ],
+        "requiredFieldIds": [
+          "make",
+          "model",
+          "modelYear",
+          "mileage",
+          "fuelType",
+          "price"
+        ]
+      },
+      "schema_version": 1,
+      "filter_field_ids": [
+        "make",
+        "model",
+        "modelYear",
+        "mileage",
+        "fuelType",
+        "transmission",
+        "price"
+      ],
+      "required_field_ids": [
+        "make",
+        "model",
+        "modelYear",
+        "mileage",
+        "fuelType",
+        "price"
+      ]
+    }
+  },
+  {
+    "id": "auto_vehicle_types:FR:construction",
+    "namespace": "auto_vehicle_types",
+    "marketCode": "FR",
+    "key": "construction",
+    "values": {
+      "slug": "construction",
+      "type": "construction",
+      "label": "Engins de chantier",
+      "is_active": true,
+      "sort_order": 80,
+      "description": "Construction et travaux publics",
+      "market_code": "FR",
+      "public_payload": {
+        "slug": "construction",
+        "type": "construction",
+        "label": "Engins de chantier",
+        "iconName": "Construction",
+        "isActive": true,
+        "sortOrder": 80,
+        "description": "Construction et travaux publics",
+        "schemaVersion": 1,
+        "filterFieldIds": [
+          "make",
+          "model",
+          "modelYear",
+          "mileage",
+          "fuelType",
+          "transmission",
+          "price"
+        ],
+        "requiredFieldIds": [
+          "make",
+          "model",
+          "modelYear",
+          "mileage",
+          "fuelType",
+          "price"
+        ]
+      },
+      "schema_version": 1,
+      "filter_field_ids": [
+        "make",
+        "model",
+        "modelYear",
+        "mileage",
+        "fuelType",
+        "transmission",
+        "price"
+      ],
+      "required_field_ids": [
+        "make",
+        "model",
+        "modelYear",
+        "mileage",
+        "fuelType",
+        "price"
+      ]
+    }
+  },
+  {
+    "id": "auto_attribute_definitions:FR:bodyType",
+    "namespace": "auto_attribute_definitions",
+    "marketCode": "FR",
+    "key": "bodyType",
+    "values": {
+      "id": "bodyType",
+      "unit": null,
+      "label": "Carrosserie",
+      "options": [
+        {
+          "label": "SUV",
+          "value": "SUV",
+          "sortOrder": 10
+        },
+        {
+          "label": "Berline",
+          "value": "sedan",
+          "sortOrder": 20
+        }
+      ],
+      "is_active": true,
+      "is_public": true,
+      "field_type": "single_select",
+      "sort_order": 10,
+      "is_required": false,
+      "market_code": "FR",
+      "is_filterable": true,
+      "vehicle_types": ["car", "utility"],
+      "public_payload": {
+        "id": "bodyType",
+        "label": "Carrosserie",
+        "options": [
+          {
+            "label": "SUV",
+            "value": "SUV",
+            "sortOrder": 10
+          },
+          {
+            "label": "Berline",
+            "value": "sedan",
+            "sortOrder": 20
+          }
+        ],
+        "isActive": true,
+        "isPublic": true,
+        "fieldType": "single_select",
+        "sortOrder": 10,
+        "isRequired": false,
+        "marketCode": "FR",
+        "isFilterable": true,
+        "vehicleTypes": ["car", "utility"],
+        "schemaVersion": 1
+      },
+      "schema_version": 1
+    }
+  },
+  {
+    "id": "auto_attribute_definitions:FR:batteryCapacityKwh",
+    "namespace": "auto_attribute_definitions",
+    "marketCode": "FR",
+    "key": "batteryCapacityKwh",
+    "values": {
+      "id": "batteryCapacityKwh",
+      "unit": "kWh",
+      "label": "Capacité de batterie",
+      "options": null,
+      "is_active": true,
+      "is_public": true,
+      "field_type": "number",
+      "sort_order": 20,
+      "is_required": false,
+      "market_code": "FR",
+      "is_filterable": true,
+      "vehicle_types": ["car", "utility", "motorcycle"],
+      "public_payload": {
+        "id": "batteryCapacityKwh",
+        "unit": "kWh",
+        "label": "Capacité de batterie",
+        "isActive": true,
+        "isPublic": true,
+        "fieldType": "number",
+        "sortOrder": 20,
+        "isRequired": false,
+        "marketCode": "FR",
+        "isFilterable": true,
+        "vehicleTypes": ["car", "utility", "motorcycle"],
+        "schemaVersion": 1
+      },
+      "schema_version": 1
+    }
+  },
+  {
+    "id": "auto_attribute_definitions:FR:electricRangeKm",
+    "namespace": "auto_attribute_definitions",
+    "marketCode": "FR",
+    "key": "electricRangeKm",
+    "values": {
+      "id": "electricRangeKm",
+      "unit": "km",
+      "label": "Autonomie électrique",
+      "options": null,
+      "is_active": true,
+      "is_public": true,
+      "field_type": "number",
+      "sort_order": 30,
+      "is_required": false,
+      "market_code": "FR",
+      "is_filterable": true,
+      "vehicle_types": ["car", "utility", "motorcycle"],
+      "public_payload": {
+        "id": "electricRangeKm",
+        "unit": "km",
+        "label": "Autonomie électrique",
+        "isActive": true,
+        "isPublic": true,
+        "fieldType": "number",
+        "sortOrder": 30,
+        "isRequired": false,
+        "marketCode": "FR",
+        "isFilterable": true,
+        "vehicleTypes": ["car", "utility", "motorcycle"],
+        "schemaVersion": 1
+      },
+      "schema_version": 1
+    }
+  },
+  {
+    "id": "auto_attribute_definitions:FR:chargingPowerKw",
+    "namespace": "auto_attribute_definitions",
+    "marketCode": "FR",
+    "key": "chargingPowerKw",
+    "values": {
+      "id": "chargingPowerKw",
+      "unit": "kW",
+      "label": "Puissance de recharge",
+      "options": null,
+      "is_active": true,
+      "is_public": true,
+      "field_type": "number",
+      "sort_order": 40,
+      "is_required": false,
+      "market_code": "FR",
+      "is_filterable": true,
+      "vehicle_types": ["car", "utility", "motorcycle"],
+      "public_payload": {
+        "id": "chargingPowerKw",
+        "unit": "kW",
+        "label": "Puissance de recharge",
+        "isActive": true,
+        "isPublic": true,
+        "fieldType": "number",
+        "sortOrder": 40,
+        "isRequired": false,
+        "marketCode": "FR",
+        "isFilterable": true,
+        "vehicleTypes": ["car", "utility", "motorcycle"],
+        "schemaVersion": 1
+      },
+      "schema_version": 1
+    }
+  },
+  {
+    "id": "auto_attribute_definitions:FR:critAirClass",
+    "namespace": "auto_attribute_definitions",
+    "marketCode": "FR",
+    "key": "critAirClass",
+    "values": {
+      "id": "critAirClass",
+      "unit": null,
+      "label": "Classe Crit’Air",
+      "options": [
+        {
+          "label": "Électrique / Hydrogène",
+          "value": "0",
+          "sortOrder": 10
+        },
+        {
+          "label": "Crit’Air 1",
+          "value": "1",
+          "sortOrder": 20
+        },
+        {
+          "label": "Crit’Air 2",
+          "value": "2",
+          "sortOrder": 30
+        }
+      ],
+      "is_active": true,
+      "is_public": true,
+      "field_type": "single_select",
+      "sort_order": 50,
+      "is_required": false,
+      "market_code": "FR",
+      "is_filterable": true,
+      "vehicle_types": ["car", "utility", "truck", "motorhome"],
+      "public_payload": {
+        "id": "critAirClass",
+        "label": "Classe Crit’Air",
+        "options": [
+          {
+            "label": "Électrique / Hydrogène",
+            "value": "0",
+            "sortOrder": 10
+          },
+          {
+            "label": "Crit’Air 1",
+            "value": "1",
+            "sortOrder": 20
+          },
+          {
+            "label": "Crit’Air 2",
+            "value": "2",
+            "sortOrder": 30
+          }
+        ],
+        "isActive": true,
+        "isPublic": true,
+        "fieldType": "single_select",
+        "sortOrder": 50,
+        "isRequired": false,
+        "marketCode": "FR",
+        "isFilterable": true,
+        "vehicleTypes": ["car", "utility", "truck", "motorhome"],
+        "schemaVersion": 1
+      },
+      "schema_version": 1
+    }
+  },
+  {
+    "id": "auto_catalog_entries:FR:peugeot",
+    "namespace": "auto_catalog_entries",
+    "marketCode": "FR",
+    "key": "peugeot",
+    "values": {
+      "id": "peugeot",
+      "kind": "make",
+      "slug": "peugeot",
+      "label": "Peugeot",
+      "ends_year": null,
+      "is_active": true,
+      "parent_id": null,
+      "market_code": "FR",
+      "starts_year": null,
+      "vehicle_types": ["car", "utility"],
+      "public_payload": {
+        "id": "peugeot",
+        "kind": "make",
+        "slug": "peugeot",
+        "label": "Peugeot",
+        "isActive": true,
+        "vehicleTypes": ["car", "utility"]
+      }
+    }
+  },
+  {
+    "id": "auto_catalog_entries:FR:bmw",
+    "namespace": "auto_catalog_entries",
+    "marketCode": "FR",
+    "key": "bmw",
+    "values": {
+      "id": "bmw",
+      "kind": "make",
+      "slug": "bmw",
+      "label": "BMW",
+      "ends_year": null,
+      "is_active": true,
+      "parent_id": null,
+      "market_code": "FR",
+      "starts_year": null,
+      "vehicle_types": ["car", "motorcycle"],
+      "public_payload": {
+        "id": "bmw",
+        "kind": "make",
+        "slug": "bmw",
+        "label": "BMW",
+        "isActive": true,
+        "vehicleTypes": ["car", "motorcycle"]
+      }
+    }
+  },
+  {
+    "id": "auto_catalog_entries:FR:renault",
+    "namespace": "auto_catalog_entries",
+    "marketCode": "FR",
+    "key": "renault",
+    "values": {
+      "id": "renault",
+      "kind": "make",
+      "slug": "renault",
+      "label": "Renault",
+      "ends_year": null,
+      "is_active": true,
+      "parent_id": null,
+      "market_code": "FR",
+      "starts_year": null,
+      "vehicle_types": ["car", "utility", "truck"],
+      "public_payload": {
+        "id": "renault",
+        "kind": "make",
+        "slug": "renault",
+        "label": "Renault",
+        "isActive": true,
+        "vehicleTypes": ["car", "utility", "truck"]
+      }
+    }
+  },
+  {
+    "id": "auto_catalog_entries:FR:renault-captur",
+    "namespace": "auto_catalog_entries",
+    "marketCode": "FR",
+    "key": "renault-captur",
+    "values": {
+      "id": "renault-captur",
+      "kind": "model",
+      "slug": "captur",
+      "label": "Captur",
+      "ends_year": null,
+      "is_active": true,
+      "parent_id": "renault",
+      "market_code": "FR",
+      "starts_year": null,
+      "vehicle_types": ["car"],
+      "public_payload": {
+        "id": "renault-captur",
+        "kind": "model",
+        "slug": "captur",
+        "label": "Captur",
+        "isActive": true,
+        "parentId": "renault",
+        "vehicleTypes": ["car"]
+      }
+    }
+  },
+  {
+    "id": "auto_catalog_entries:FR:citroen",
+    "namespace": "auto_catalog_entries",
+    "marketCode": "FR",
+    "key": "citroen",
+    "values": {
+      "id": "citroen",
+      "kind": "make",
+      "slug": "citroen",
+      "label": "Citroën",
+      "ends_year": null,
+      "is_active": true,
+      "parent_id": null,
+      "market_code": "FR",
+      "starts_year": null,
+      "vehicle_types": ["car", "utility"],
+      "public_payload": {
+        "id": "citroen",
+        "kind": "make",
+        "slug": "citroen",
+        "label": "Citroën",
+        "isActive": true,
+        "vehicleTypes": ["car", "utility"]
+      }
+    }
+  },
+  {
+    "id": "auto_catalog_entries:FR:peugeot-3008",
+    "namespace": "auto_catalog_entries",
+    "marketCode": "FR",
+    "key": "peugeot-3008",
+    "values": {
+      "id": "peugeot-3008",
+      "kind": "model",
+      "slug": "3008",
+      "label": "3008",
+      "ends_year": null,
+      "is_active": true,
+      "parent_id": "peugeot",
+      "market_code": "FR",
+      "starts_year": null,
+      "vehicle_types": ["car"],
+      "public_payload": {
+        "id": "peugeot-3008",
+        "kind": "model",
+        "slug": "3008",
+        "label": "3008",
+        "isActive": true,
+        "parentId": "peugeot",
+        "vehicleTypes": ["car"]
+      }
+    }
+  },
+  {
+    "id": "auto_catalog_entries:FR:peugeot-208",
+    "namespace": "auto_catalog_entries",
+    "marketCode": "FR",
+    "key": "peugeot-208",
+    "values": {
+      "id": "peugeot-208",
+      "kind": "model",
+      "slug": "208",
+      "label": "208",
+      "ends_year": null,
+      "is_active": true,
+      "parent_id": "peugeot",
+      "market_code": "FR",
+      "starts_year": null,
+      "vehicle_types": ["car"],
+      "public_payload": {
+        "id": "peugeot-208",
+        "kind": "model",
+        "slug": "208",
+        "label": "208",
+        "isActive": true,
+        "parentId": "peugeot",
+        "vehicleTypes": ["car"]
+      }
+    }
+  },
+  {
+    "id": "auto_catalog_entries:FR:bmw-x3",
+    "namespace": "auto_catalog_entries",
+    "marketCode": "FR",
+    "key": "bmw-x3",
+    "values": {
+      "id": "bmw-x3",
+      "kind": "model",
+      "slug": "x3",
+      "label": "X3",
+      "ends_year": null,
+      "is_active": true,
+      "parent_id": "bmw",
+      "market_code": "FR",
+      "starts_year": null,
+      "vehicle_types": ["car"],
+      "public_payload": {
+        "id": "bmw-x3",
+        "kind": "model",
+        "slug": "x3",
+        "label": "X3",
+        "isActive": true,
+        "parentId": "bmw",
+        "vehicleTypes": ["car"]
+      }
+    }
+  },
+  {
+    "id": "auto_catalog_entries:FR:citroen-c3",
+    "namespace": "auto_catalog_entries",
+    "marketCode": "FR",
+    "key": "citroen-c3",
+    "values": {
+      "id": "citroen-c3",
+      "kind": "model",
+      "slug": "c3",
+      "label": "C3",
+      "ends_year": null,
+      "is_active": true,
+      "parent_id": "citroen",
+      "market_code": "FR",
+      "starts_year": null,
+      "vehicle_types": ["car"],
+      "public_payload": {
+        "id": "citroen-c3",
+        "kind": "model",
+        "slug": "c3",
+        "label": "C3",
+        "isActive": true,
+        "parentId": "citroen",
+        "vehicleTypes": ["car"]
+      }
+    }
+  },
+  {
+    "id": "real_estate_property_types:FR:apartment",
+    "namespace": "real_estate_property_types",
+    "marketCode": "FR",
+    "key": "apartment",
+    "values": {
+      "slug": "appartements",
+      "type": "apartment",
+      "label": "Appartement",
+      "icon_name": "Building2",
+      "is_active": true,
+      "sort_order": 10,
+      "description": "Studios et appartements",
+      "market_code": "FR",
+      "schema_version": 1,
+      "filter_field_ids": [
+        "price",
+        "livingArea",
+        "rooms",
+        "bedrooms",
+        "furnished",
+        "dpe",
+        "amenities"
+      ],
+      "transaction_types": [
+        "sale",
+        "long_term_rental",
+        "seasonal_rental",
+        "shared_accommodation"
+      ],
+      "required_field_ids": ["price", "livingArea", "rooms", "address", "dpe"]
+    }
+  },
+  {
+    "id": "real_estate_property_types:FR:house",
+    "namespace": "real_estate_property_types",
+    "marketCode": "FR",
+    "key": "house",
+    "values": {
+      "slug": "maisons",
+      "type": "house",
+      "label": "Maison",
+      "icon_name": "House",
+      "is_active": true,
+      "sort_order": 20,
+      "description": "Maisons individuelles et villas",
+      "market_code": "FR",
+      "schema_version": 1,
+      "filter_field_ids": [
+        "price",
+        "livingArea",
+        "landArea",
+        "rooms",
+        "bedrooms",
+        "dpe",
+        "amenities"
+      ],
+      "transaction_types": [
+        "sale",
+        "long_term_rental",
+        "seasonal_rental",
+        "life_annuity"
+      ],
+      "required_field_ids": [
+        "price",
+        "livingArea",
+        "landArea",
+        "rooms",
+        "address",
+        "dpe"
+      ]
+    }
+  },
+  {
+    "id": "real_estate_property_types:FR:land",
+    "namespace": "real_estate_property_types",
+    "marketCode": "FR",
+    "key": "land",
+    "values": {
+      "slug": "terrains",
+      "type": "land",
+      "label": "Terrain",
+      "icon_name": "LandPlot",
+      "is_active": true,
+      "sort_order": 30,
+      "description": "Terrains constructibles et de loisirs",
+      "market_code": "FR",
+      "schema_version": 1,
+      "filter_field_ids": ["price", "landArea"],
+      "transaction_types": ["sale"],
+      "required_field_ids": ["price", "landArea", "address"]
+    }
+  },
+  {
+    "id": "real_estate_property_types:FR:parking_garage",
+    "namespace": "real_estate_property_types",
+    "marketCode": "FR",
+    "key": "parking_garage",
+    "values": {
+      "slug": "parkings-garages",
+      "type": "parking_garage",
+      "label": "Parking ou garage",
+      "icon_name": "SquareParking",
+      "is_active": true,
+      "sort_order": 40,
+      "description": "Stationnements et boxes",
+      "market_code": "FR",
+      "schema_version": 1,
+      "filter_field_ids": ["price"],
+      "transaction_types": ["sale", "long_term_rental"],
+      "required_field_ids": ["price", "address"]
+    }
+  },
+  {
+    "id": "real_estate_property_types:FR:office",
+    "namespace": "real_estate_property_types",
+    "marketCode": "FR",
+    "key": "office",
+    "values": {
+      "slug": "bureaux",
+      "type": "office",
+      "label": "Bureau",
+      "icon_name": "BriefcaseBusiness",
+      "is_active": true,
+      "sort_order": 60,
+      "description": "Bureaux et espaces de travail",
+      "market_code": "FR",
+      "schema_version": 1,
+      "filter_field_ids": ["price", "livingArea"],
+      "transaction_types": ["sale", "long_term_rental"],
+      "required_field_ids": ["price", "livingArea", "address"]
+    }
+  },
+  {
+    "id": "real_estate_property_types:FR:commercial",
+    "namespace": "real_estate_property_types",
+    "marketCode": "FR",
+    "key": "commercial",
+    "values": {
+      "slug": "locaux-commerciaux",
+      "type": "commercial",
+      "label": "Local commercial",
+      "icon_name": "Store",
+      "is_active": true,
+      "sort_order": 50,
+      "description": "Commerces et locaux professionnels",
+      "market_code": "FR",
+      "schema_version": 1,
+      "filter_field_ids": ["price", "livingArea"],
+      "transaction_types": ["sale", "long_term_rental"],
+      "required_field_ids": ["price", "livingArea", "address"]
+    }
+  },
+  {
+    "id": "real_estate_property_types:FR:building",
+    "namespace": "real_estate_property_types",
+    "marketCode": "FR",
+    "key": "building",
+    "values": {
+      "slug": "immeubles",
+      "type": "building",
+      "label": "Immeuble",
+      "icon_name": "Landmark",
+      "is_active": true,
+      "sort_order": 70,
+      "description": "Immeubles complets",
+      "market_code": "FR",
+      "schema_version": 1,
+      "filter_field_ids": ["price", "livingArea", "dpe"],
+      "transaction_types": ["sale"],
+      "required_field_ids": ["price", "livingArea", "address", "dpe"]
+    }
+  },
+  {
+    "id": "real_estate_property_types:FR:new_development",
+    "namespace": "real_estate_property_types",
+    "marketCode": "FR",
+    "key": "new_development",
+    "values": {
+      "slug": "programmes-neufs",
+      "type": "new_development",
+      "label": "Programme neuf",
+      "icon_name": "Blocks",
+      "is_active": true,
+      "sort_order": 80,
+      "description": "Programmes et lots neufs",
+      "market_code": "FR",
+      "schema_version": 1,
+      "filter_field_ids": ["price", "livingArea", "rooms"],
+      "transaction_types": ["sale"],
+      "required_field_ids": ["price", "livingArea", "address"]
+    }
+  },
+  {
+    "id": "real_estate_property_types:FR:holiday_rental",
+    "namespace": "real_estate_property_types",
+    "marketCode": "FR",
+    "key": "holiday_rental",
+    "values": {
+      "slug": "locations-vacances",
+      "type": "holiday_rental",
+      "label": "Location saisonnière",
+      "icon_name": "Palmtree",
+      "is_active": true,
+      "sort_order": 90,
+      "description": "Locations de courte durée",
+      "market_code": "FR",
+      "schema_version": 1,
+      "filter_field_ids": ["price", "livingArea", "rooms", "amenities"],
+      "transaction_types": ["seasonal_rental"],
+      "required_field_ids": ["price", "livingArea", "rooms", "address"]
+    }
+  },
+  {
+    "id": "real_estate_property_types:FR:room_shared",
+    "namespace": "real_estate_property_types",
+    "marketCode": "FR",
+    "key": "room_shared",
+    "values": {
+      "slug": "chambres-colocation",
+      "type": "room_shared",
+      "label": "Chambre ou colocation",
+      "icon_name": "BedDouble",
+      "is_active": true,
+      "sort_order": 100,
+      "description": "Chambres et logements partagés",
+      "market_code": "FR",
+      "schema_version": 1,
+      "filter_field_ids": ["price", "livingArea", "furnished", "amenities"],
+      "transaction_types": ["shared_accommodation", "long_term_rental"],
+      "required_field_ids": ["price", "livingArea", "address", "furnished"]
+    }
+  },
+  {
+    "id": "real_estate_property_types:FR:other",
+    "namespace": "real_estate_property_types",
+    "marketCode": "FR",
+    "key": "other",
+    "values": {
+      "slug": "autres-biens",
+      "type": "other",
+      "label": "Autre bien",
+      "icon_name": "CircleEllipsis",
+      "is_active": true,
+      "sort_order": 110,
+      "description": "Types administrables hors catalogue principal",
+      "market_code": "FR",
+      "schema_version": 1,
+      "filter_field_ids": ["price"],
+      "transaction_types": ["sale", "long_term_rental", "other"],
+      "required_field_ids": ["price", "address"]
+    }
+  },
+  {
+    "id": "real_estate_attribute_definitions:FR:livingArea",
+    "namespace": "real_estate_attribute_definitions",
+    "marketCode": "FR",
+    "key": "livingArea",
+    "values": {
+      "id": "livingArea",
+      "unit": "m²",
+      "label": "Surface habitable",
+      "options": null,
+      "privacy": "public",
+      "help_text": "Surface selon les règles applicables au marché.",
+      "is_active": true,
+      "field_type": "number",
+      "sort_order": 10,
+      "is_required": true,
+      "market_code": "FR",
+      "is_filterable": true,
+      "property_types": [
+        "apartment",
+        "house",
+        "land",
+        "parking_garage",
+        "commercial",
+        "office",
+        "building",
+        "new_development",
+        "holiday_rental",
+        "room_shared",
+        "other"
+      ],
+      "schema_version": 1,
+      "transaction_types": [
+        "sale",
+        "long_term_rental",
+        "seasonal_rental",
+        "shared_accommodation",
+        "life_annuity",
+        "other"
+      ]
+    }
+  },
+  {
+    "id": "real_estate_attribute_definitions:FR:landArea",
+    "namespace": "real_estate_attribute_definitions",
+    "marketCode": "FR",
+    "key": "landArea",
+    "values": {
+      "id": "landArea",
+      "unit": "m²",
+      "label": "Surface du terrain",
+      "options": null,
+      "privacy": "public",
+      "help_text": null,
+      "is_active": true,
+      "field_type": "number",
+      "sort_order": 20,
+      "is_required": false,
+      "market_code": "FR",
+      "is_filterable": true,
+      "property_types": [
+        "apartment",
+        "house",
+        "land",
+        "parking_garage",
+        "commercial",
+        "office",
+        "building",
+        "new_development",
+        "holiday_rental",
+        "room_shared",
+        "other"
+      ],
+      "schema_version": 1,
+      "transaction_types": [
+        "sale",
+        "long_term_rental",
+        "seasonal_rental",
+        "shared_accommodation",
+        "life_annuity",
+        "other"
+      ]
+    }
+  },
+  {
+    "id": "real_estate_attribute_definitions:FR:rooms",
+    "namespace": "real_estate_attribute_definitions",
+    "marketCode": "FR",
+    "key": "rooms",
+    "values": {
+      "id": "rooms",
+      "unit": null,
+      "label": "Nombre de pièces",
+      "options": null,
+      "privacy": "public",
+      "help_text": null,
+      "is_active": true,
+      "field_type": "number",
+      "sort_order": 30,
+      "is_required": true,
+      "market_code": "FR",
+      "is_filterable": true,
+      "property_types": [
+        "apartment",
+        "house",
+        "land",
+        "parking_garage",
+        "commercial",
+        "office",
+        "building",
+        "new_development",
+        "holiday_rental",
+        "room_shared",
+        "other"
+      ],
+      "schema_version": 1,
+      "transaction_types": [
+        "sale",
+        "long_term_rental",
+        "seasonal_rental",
+        "shared_accommodation",
+        "life_annuity",
+        "other"
+      ]
+    }
+  },
+  {
+    "id": "real_estate_attribute_definitions:FR:bedrooms",
+    "namespace": "real_estate_attribute_definitions",
+    "marketCode": "FR",
+    "key": "bedrooms",
+    "values": {
+      "id": "bedrooms",
+      "unit": null,
+      "label": "Chambres",
+      "options": null,
+      "privacy": "public",
+      "help_text": null,
+      "is_active": true,
+      "field_type": "number",
+      "sort_order": 40,
+      "is_required": false,
+      "market_code": "FR",
+      "is_filterable": true,
+      "property_types": [
+        "apartment",
+        "house",
+        "land",
+        "parking_garage",
+        "commercial",
+        "office",
+        "building",
+        "new_development",
+        "holiday_rental",
+        "room_shared",
+        "other"
+      ],
+      "schema_version": 1,
+      "transaction_types": [
+        "sale",
+        "long_term_rental",
+        "seasonal_rental",
+        "shared_accommodation",
+        "life_annuity",
+        "other"
+      ]
+    }
+  },
+  {
+    "id": "real_estate_attribute_definitions:FR:bathrooms",
+    "namespace": "real_estate_attribute_definitions",
+    "marketCode": "FR",
+    "key": "bathrooms",
+    "values": {
+      "id": "bathrooms",
+      "unit": null,
+      "label": "Salles de bain",
+      "options": null,
+      "privacy": "public",
+      "help_text": null,
+      "is_active": true,
+      "field_type": "number",
+      "sort_order": 50,
+      "is_required": false,
+      "market_code": "FR",
+      "is_filterable": false,
+      "property_types": [
+        "apartment",
+        "house",
+        "land",
+        "parking_garage",
+        "commercial",
+        "office",
+        "building",
+        "new_development",
+        "holiday_rental",
+        "room_shared",
+        "other"
+      ],
+      "schema_version": 1,
+      "transaction_types": [
+        "sale",
+        "long_term_rental",
+        "seasonal_rental",
+        "shared_accommodation",
+        "life_annuity",
+        "other"
+      ]
+    }
+  },
+  {
+    "id": "real_estate_attribute_definitions:FR:furnished",
+    "namespace": "real_estate_attribute_definitions",
+    "marketCode": "FR",
+    "key": "furnished",
+    "values": {
+      "id": "furnished",
+      "unit": null,
+      "label": "Meublé",
+      "options": null,
+      "privacy": "public",
+      "help_text": null,
+      "is_active": true,
+      "field_type": "boolean",
+      "sort_order": 60,
+      "is_required": false,
+      "market_code": "FR",
+      "is_filterable": true,
+      "property_types": [
+        "apartment",
+        "house",
+        "land",
+        "parking_garage",
+        "commercial",
+        "office",
+        "building",
+        "new_development",
+        "holiday_rental",
+        "room_shared",
+        "other"
+      ],
+      "schema_version": 1,
+      "transaction_types": [
+        "sale",
+        "long_term_rental",
+        "seasonal_rental",
+        "shared_accommodation",
+        "life_annuity",
+        "other"
+      ]
+    }
+  },
+  {
+    "id": "real_estate_attribute_definitions:FR:dpe",
+    "namespace": "real_estate_attribute_definitions",
+    "marketCode": "FR",
+    "key": "dpe",
+    "values": {
+      "id": "dpe",
+      "unit": null,
+      "label": "Classe DPE",
+      "options": [
+        {
+          "label": "A",
+          "value": "A",
+          "sortOrder": 10
+        },
+        {
+          "label": "B",
+          "value": "B",
+          "sortOrder": 20
+        },
+        {
+          "label": "C",
+          "value": "C",
+          "sortOrder": 30
+        },
+        {
+          "label": "D",
+          "value": "D",
+          "sortOrder": 40
+        },
+        {
+          "label": "E",
+          "value": "E",
+          "sortOrder": 50
+        },
+        {
+          "label": "F",
+          "value": "F",
+          "sortOrder": 60
+        },
+        {
+          "label": "G",
+          "value": "G",
+          "sortOrder": 70
+        }
+      ],
+      "privacy": "public",
+      "help_text": "Affichée uniquement lorsque requise et renseignée.",
+      "is_active": true,
+      "field_type": "single_select",
+      "sort_order": 70,
+      "is_required": false,
+      "market_code": "FR",
+      "is_filterable": true,
+      "property_types": [
+        "apartment",
+        "house",
+        "land",
+        "parking_garage",
+        "commercial",
+        "office",
+        "building",
+        "new_development",
+        "holiday_rental",
+        "room_shared",
+        "other"
+      ],
+      "schema_version": 1,
+      "transaction_types": [
+        "sale",
+        "long_term_rental",
+        "seasonal_rental",
+        "shared_accommodation",
+        "life_annuity",
+        "other"
+      ]
+    }
+  },
+  {
+    "id": "real_estate_attribute_definitions:FR:ges",
+    "namespace": "real_estate_attribute_definitions",
+    "marketCode": "FR",
+    "key": "ges",
+    "values": {
+      "id": "ges",
+      "unit": null,
+      "label": "Classe GES",
+      "options": [
+        {
+          "label": "A",
+          "value": "A",
+          "sortOrder": 10
+        },
+        {
+          "label": "B",
+          "value": "B",
+          "sortOrder": 20
+        },
+        {
+          "label": "C",
+          "value": "C",
+          "sortOrder": 30
+        },
+        {
+          "label": "D",
+          "value": "D",
+          "sortOrder": 40
+        },
+        {
+          "label": "E",
+          "value": "E",
+          "sortOrder": 50
+        },
+        {
+          "label": "F",
+          "value": "F",
+          "sortOrder": 60
+        },
+        {
+          "label": "G",
+          "value": "G",
+          "sortOrder": 70
+        }
+      ],
+      "privacy": "public",
+      "help_text": null,
+      "is_active": true,
+      "field_type": "single_select",
+      "sort_order": 80,
+      "is_required": false,
+      "market_code": "FR",
+      "is_filterable": true,
+      "property_types": [
+        "apartment",
+        "house",
+        "land",
+        "parking_garage",
+        "commercial",
+        "office",
+        "building",
+        "new_development",
+        "holiday_rental",
+        "room_shared",
+        "other"
+      ],
+      "schema_version": 1,
+      "transaction_types": [
+        "sale",
+        "long_term_rental",
+        "seasonal_rental",
+        "shared_accommodation",
+        "life_annuity",
+        "other"
+      ]
+    }
+  },
+  {
+    "id": "real_estate_attribute_definitions:FR:coOwnership",
+    "namespace": "real_estate_attribute_definitions",
+    "marketCode": "FR",
+    "key": "coOwnership",
+    "values": {
+      "id": "coOwnership",
+      "unit": null,
+      "label": "Copropriété",
+      "options": null,
+      "privacy": "public",
+      "help_text": null,
+      "is_active": true,
+      "field_type": "boolean",
+      "sort_order": 90,
+      "is_required": false,
+      "market_code": "FR",
+      "is_filterable": true,
+      "property_types": [
+        "apartment",
+        "house",
+        "land",
+        "parking_garage",
+        "commercial",
+        "office",
+        "building",
+        "new_development",
+        "holiday_rental",
+        "room_shared",
+        "other"
+      ],
+      "schema_version": 1,
+      "transaction_types": [
+        "sale",
+        "long_term_rental",
+        "seasonal_rental",
+        "shared_accommodation",
+        "life_annuity",
+        "other"
+      ]
+    }
+  },
+  {
+    "id": "real_estate_attribute_definitions:FR:coOwnershipLots",
+    "namespace": "real_estate_attribute_definitions",
+    "marketCode": "FR",
+    "key": "coOwnershipLots",
+    "values": {
+      "id": "coOwnershipLots",
+      "unit": null,
+      "label": "Nombre de lots",
+      "options": null,
+      "privacy": "public",
+      "help_text": null,
+      "is_active": true,
+      "field_type": "number",
+      "sort_order": 100,
+      "is_required": false,
+      "market_code": "FR",
+      "is_filterable": false,
+      "property_types": [
+        "apartment",
+        "house",
+        "land",
+        "parking_garage",
+        "commercial",
+        "office",
+        "building",
+        "new_development",
+        "holiday_rental",
+        "room_shared",
+        "other"
+      ],
+      "schema_version": 1,
+      "transaction_types": [
+        "sale",
+        "long_term_rental",
+        "seasonal_rental",
+        "shared_accommodation",
+        "life_annuity",
+        "other"
+      ]
+    }
+  },
+  {
+    "id": "real_estate_attribute_definitions:FR:riskInformationStatus",
+    "namespace": "real_estate_attribute_definitions",
+    "marketCode": "FR",
+    "key": "riskInformationStatus",
+    "values": {
+      "id": "riskInformationStatus",
+      "unit": null,
+      "label": "Information sur les risques",
+      "options": [
+        {
+          "label": "Disponible",
+          "value": "available",
+          "sortOrder": 10
+        },
+        {
+          "label": "En attente",
+          "value": "pending",
+          "sortOrder": 20
+        },
+        {
+          "label": "Non applicable",
+          "value": "not_applicable",
+          "sortOrder": 30
+        }
+      ],
+      "privacy": "public",
+      "help_text": null,
+      "is_active": true,
+      "field_type": "single_select",
+      "sort_order": 110,
+      "is_required": false,
+      "market_code": "FR",
+      "is_filterable": false,
+      "property_types": [
+        "apartment",
+        "house",
+        "land",
+        "parking_garage",
+        "commercial",
+        "office",
+        "building",
+        "new_development",
+        "holiday_rental",
+        "room_shared",
+        "other"
+      ],
+      "schema_version": 1,
+      "transaction_types": [
+        "sale",
+        "long_term_rental",
+        "seasonal_rental",
+        "shared_accommodation",
+        "life_annuity",
+        "other"
+      ]
+    }
+  },
+  {
+    "id": "real_estate_attribute_definitions:FR:professionalIdentity",
+    "namespace": "real_estate_attribute_definitions",
+    "marketCode": "FR",
+    "key": "professionalIdentity",
+    "values": {
+      "id": "professionalIdentity",
+      "unit": null,
+      "label": "Identification professionnelle",
+      "options": null,
+      "privacy": "public",
+      "help_text": "Référence déclarée par le professionnel.",
+      "is_active": true,
+      "field_type": "text",
+      "sort_order": 120,
+      "is_required": false,
+      "market_code": "FR",
+      "is_filterable": false,
+      "property_types": [
+        "apartment",
+        "house",
+        "land",
+        "parking_garage",
+        "commercial",
+        "office",
+        "building",
+        "new_development",
+        "holiday_rental",
+        "room_shared",
+        "other"
+      ],
+      "schema_version": 1,
+      "transaction_types": [
+        "sale",
+        "long_term_rental",
+        "seasonal_rental",
+        "shared_accommodation",
+        "life_annuity",
+        "other"
+      ]
+    }
+  },
+  {
+    "id": "real_estate_attribute_definitions:FR:diagnostics",
+    "namespace": "real_estate_attribute_definitions",
+    "marketCode": "FR",
+    "key": "diagnostics",
+    "values": {
+      "id": "diagnostics",
+      "unit": null,
+      "label": "Diagnostics et documents",
+      "options": null,
+      "privacy": "reviewer_only",
+      "help_text": "Les fichiers restent privés.",
+      "is_active": true,
+      "field_type": "document_status",
+      "sort_order": 130,
+      "is_required": false,
+      "market_code": "FR",
+      "is_filterable": false,
+      "property_types": [
+        "apartment",
+        "house",
+        "land",
+        "parking_garage",
+        "commercial",
+        "office",
+        "building",
+        "new_development",
+        "holiday_rental",
+        "room_shared",
+        "other"
+      ],
+      "schema_version": 1,
+      "transaction_types": [
+        "sale",
+        "long_term_rental",
+        "seasonal_rental",
+        "shared_accommodation",
+        "life_annuity",
+        "other"
+      ]
+    }
+  },
+  {
+    "id": "real_estate_attribute_definitions:FR:amenities",
+    "namespace": "real_estate_attribute_definitions",
+    "marketCode": "FR",
+    "key": "amenities",
+    "values": {
+      "id": "amenities",
+      "unit": null,
+      "label": "Équipements",
+      "options": [
+        {
+          "label": "Ascenseur",
+          "value": "lift",
+          "sortOrder": 10
+        },
+        {
+          "label": "Balcon",
+          "value": "balcony",
+          "sortOrder": 20
+        },
+        {
+          "label": "Terrasse",
+          "value": "terrace",
+          "sortOrder": 30
+        },
+        {
+          "label": "Jardin",
+          "value": "garden",
+          "sortOrder": 40
+        },
+        {
+          "label": "Parking",
+          "value": "parking",
+          "sortOrder": 50
+        },
+        {
+          "label": "Cave",
+          "value": "cellar",
+          "sortOrder": 60
+        },
+        {
+          "label": "Accessible PMR",
+          "value": "accessible",
+          "sortOrder": 70
+        }
+      ],
+      "privacy": "public",
+      "help_text": null,
+      "is_active": true,
+      "field_type": "multi_select",
+      "sort_order": 140,
+      "is_required": false,
+      "market_code": "FR",
+      "is_filterable": true,
+      "property_types": [
+        "apartment",
+        "house",
+        "land",
+        "parking_garage",
+        "commercial",
+        "office",
+        "building",
+        "new_development",
+        "holiday_rental",
+        "room_shared",
+        "other"
+      ],
+      "schema_version": 1,
+      "transaction_types": [
+        "sale",
+        "long_term_rental",
+        "seasonal_rental",
+        "shared_accommodation",
+        "life_annuity",
+        "other"
+      ]
+    }
+  },
+  {
+    "id": "real_estate_field_rules:FR:10000000-0000-0000-0000-000000000001",
+    "namespace": "real_estate_field_rules",
+    "marketCode": "FR",
+    "key": "10000000-0000-0000-0000-000000000001",
+    "values": {
+      "id": "10000000-0000-0000-0000-000000000001",
+      "field_id": "dpe",
+      "is_active": true,
+      "market_code": "FR",
+      "requirement": "required",
+      "property_type": null,
+      "schema_version": 1,
+      "transaction_type": null,
+      "condition_payload": {
+        "path": "energy.dpeClass",
+        "excludedPropertyTypes": ["land", "parking_garage"]
+      }
+    }
+  },
+  {
+    "id": "real_estate_field_rules:FR:10000000-0000-0000-0000-000000000002",
+    "namespace": "real_estate_field_rules",
+    "marketCode": "FR",
+    "key": "10000000-0000-0000-0000-000000000002",
+    "values": {
+      "id": "10000000-0000-0000-0000-000000000002",
+      "field_id": "ges",
+      "is_active": true,
+      "market_code": "FR",
+      "requirement": "required",
+      "property_type": null,
+      "schema_version": 1,
+      "transaction_type": null,
+      "condition_payload": {
+        "path": "energy.gesClass",
+        "excludedPropertyTypes": ["land", "parking_garage"]
+      }
+    }
+  },
+  {
+    "id": "real_estate_field_rules:FR:10000000-0000-0000-0000-000000000003",
+    "namespace": "real_estate_field_rules",
+    "marketCode": "FR",
+    "key": "10000000-0000-0000-0000-000000000003",
+    "values": {
+      "id": "10000000-0000-0000-0000-000000000003",
+      "field_id": "coOwnershipLots",
+      "is_active": true,
+      "market_code": "FR",
+      "requirement": "required",
+      "property_type": "apartment",
+      "schema_version": 1,
+      "transaction_type": null,
+      "condition_payload": {
+        "path": "regulatory.coOwnershipLots",
+        "whenPath": "regulatory.coOwnershipApplicable",
+        "whenEquals": true
+      }
+    }
+  },
+  {
+    "id": "real_estate_field_rules:FR:10000000-0000-0000-0000-000000000004",
+    "namespace": "real_estate_field_rules",
+    "marketCode": "FR",
+    "key": "10000000-0000-0000-0000-000000000004",
+    "values": {
+      "id": "10000000-0000-0000-0000-000000000004",
+      "field_id": "riskInformationStatus",
+      "is_active": true,
+      "market_code": "FR",
+      "requirement": "required",
+      "property_type": null,
+      "schema_version": 1,
+      "transaction_type": null,
+      "condition_payload": {
+        "path": "regulatory.riskInformationStatus"
+      }
+    }
+  },
+  {
+    "id": "real_estate_field_rules:FR:10000000-0000-0000-0000-000000000005",
+    "namespace": "real_estate_field_rules",
+    "marketCode": "FR",
+    "key": "10000000-0000-0000-0000-000000000005",
+    "values": {
+      "id": "10000000-0000-0000-0000-000000000005",
+      "field_id": "professionalIdentity",
+      "is_active": true,
+      "market_code": "FR",
+      "requirement": "required",
+      "property_type": null,
+      "schema_version": 1,
+      "transaction_type": null,
+      "condition_payload": {
+        "path": "seller.professionalIdentity",
+        "sellerTypes": ["agency", "developer", "property_manager"]
+      }
+    }
+  },
+  {
+    "id": "course_subjects:FR:subject_primary_support",
+    "namespace": "course_subjects",
+    "marketCode": "FR",
+    "key": "subject_primary_support",
+    "values": {
+      "id": "subject_primary_support",
+      "slug": "primary-support",
+      "label": "Soutien scolaire primaire",
+      "icon_name": null,
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 10,
+      "description": null,
+      "market_code": "FR",
+      "public_payload": {
+        "id": "subject_primary_support",
+        "slug": "primary-support",
+        "label": "Soutien scolaire primaire",
+        "isActive": true,
+        "levelIds": [
+          "primary",
+          "middle_school",
+          "high_school",
+          "higher_education",
+          "adult"
+        ],
+        "sortOrder": 10,
+        "marketCode": "FR"
+      },
+      "required_fields": [
+        "title",
+        "description",
+        "levels",
+        "deliveryModes",
+        "pricing",
+        "availability"
+      ]
+    }
+  },
+  {
+    "id": "course_subjects:FR:subject_secondary_support",
+    "namespace": "course_subjects",
+    "marketCode": "FR",
+    "key": "subject_secondary_support",
+    "values": {
+      "id": "subject_secondary_support",
+      "slug": "secondary-support",
+      "label": "Soutien scolaire secondaire",
+      "icon_name": null,
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 20,
+      "description": null,
+      "market_code": "FR",
+      "public_payload": {
+        "id": "subject_secondary_support",
+        "slug": "secondary-support",
+        "label": "Soutien scolaire secondaire",
+        "isActive": true,
+        "levelIds": [
+          "primary",
+          "middle_school",
+          "high_school",
+          "higher_education",
+          "adult"
+        ],
+        "sortOrder": 20,
+        "marketCode": "FR"
+      },
+      "required_fields": [
+        "title",
+        "description",
+        "levels",
+        "deliveryModes",
+        "pricing",
+        "availability"
+      ]
+    }
+  },
+  {
+    "id": "course_subjects:FR:subject_higher_education",
+    "namespace": "course_subjects",
+    "marketCode": "FR",
+    "key": "subject_higher_education",
+    "values": {
+      "id": "subject_higher_education",
+      "slug": "higher-education",
+      "label": "Études supérieures",
+      "icon_name": null,
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 120,
+      "description": null,
+      "market_code": "FR",
+      "public_payload": {
+        "id": "subject_higher_education",
+        "slug": "higher-education",
+        "label": "Études supérieures",
+        "isActive": true,
+        "levelIds": [
+          "primary",
+          "middle_school",
+          "high_school",
+          "higher_education",
+          "adult"
+        ],
+        "sortOrder": 120,
+        "marketCode": "FR"
+      },
+      "required_fields": [
+        "title",
+        "description",
+        "levels",
+        "deliveryModes",
+        "pricing",
+        "availability"
+      ]
+    }
+  },
+  {
+    "id": "course_subjects:FR:subject_professional_skills",
+    "namespace": "course_subjects",
+    "marketCode": "FR",
+    "key": "subject_professional_skills",
+    "values": {
+      "id": "subject_professional_skills",
+      "slug": "professional-skills",
+      "label": "Compétences professionnelles",
+      "icon_name": null,
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 130,
+      "description": null,
+      "market_code": "FR",
+      "public_payload": {
+        "id": "subject_professional_skills",
+        "slug": "professional-skills",
+        "label": "Compétences professionnelles",
+        "isActive": true,
+        "levelIds": [
+          "primary",
+          "middle_school",
+          "high_school",
+          "higher_education",
+          "adult"
+        ],
+        "sortOrder": 130,
+        "marketCode": "FR"
+      },
+      "required_fields": [
+        "title",
+        "description",
+        "levels",
+        "deliveryModes",
+        "pricing",
+        "availability"
+      ]
+    }
+  },
+  {
+    "id": "course_subjects:FR:subject_physics_chemistry",
+    "namespace": "course_subjects",
+    "marketCode": "FR",
+    "key": "subject_physics_chemistry",
+    "values": {
+      "id": "subject_physics_chemistry",
+      "slug": "physics-chemistry",
+      "label": "Physique et chimie",
+      "icon_name": null,
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 40,
+      "description": null,
+      "market_code": "FR",
+      "public_payload": {
+        "id": "subject_physics_chemistry",
+        "slug": "physics-chemistry",
+        "label": "Physique et chimie",
+        "isActive": true,
+        "levelIds": [
+          "primary",
+          "middle_school",
+          "high_school",
+          "higher_education",
+          "adult"
+        ],
+        "sortOrder": 40,
+        "marketCode": "FR"
+      },
+      "required_fields": [
+        "title",
+        "description",
+        "levels",
+        "deliveryModes",
+        "pricing",
+        "availability"
+      ]
+    }
+  },
+  {
+    "id": "course_subjects:FR:subject_languages",
+    "namespace": "course_subjects",
+    "marketCode": "FR",
+    "key": "subject_languages",
+    "values": {
+      "id": "subject_languages",
+      "slug": "languages",
+      "label": "Langues",
+      "icon_name": null,
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 50,
+      "description": null,
+      "market_code": "FR",
+      "public_payload": {
+        "id": "subject_languages",
+        "slug": "languages",
+        "label": "Langues",
+        "isActive": true,
+        "levelIds": [
+          "primary",
+          "middle_school",
+          "high_school",
+          "higher_education",
+          "adult"
+        ],
+        "sortOrder": 50,
+        "marketCode": "FR"
+      },
+      "required_fields": [
+        "title",
+        "description",
+        "levels",
+        "deliveryModes",
+        "pricing",
+        "availability"
+      ]
+    }
+  },
+  {
+    "id": "course_subjects:FR:subject_french",
+    "namespace": "course_subjects",
+    "marketCode": "FR",
+    "key": "subject_french",
+    "values": {
+      "id": "subject_french",
+      "slug": "french",
+      "label": "Français",
+      "icon_name": null,
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 60,
+      "description": null,
+      "market_code": "FR",
+      "public_payload": {
+        "id": "subject_french",
+        "slug": "french",
+        "label": "Français",
+        "isActive": true,
+        "levelIds": [
+          "primary",
+          "middle_school",
+          "high_school",
+          "higher_education",
+          "adult"
+        ],
+        "sortOrder": 60,
+        "marketCode": "FR"
+      },
+      "required_fields": [
+        "title",
+        "description",
+        "levels",
+        "deliveryModes",
+        "pricing",
+        "availability"
+      ]
+    }
+  },
+  {
+    "id": "course_subjects:FR:subject_computer_science",
+    "namespace": "course_subjects",
+    "marketCode": "FR",
+    "key": "subject_computer_science",
+    "values": {
+      "id": "subject_computer_science",
+      "slug": "computer-science",
+      "label": "Informatique et programmation",
+      "icon_name": null,
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 70,
+      "description": null,
+      "market_code": "FR",
+      "public_payload": {
+        "id": "subject_computer_science",
+        "slug": "computer-science",
+        "label": "Informatique et programmation",
+        "isActive": true,
+        "levelIds": [
+          "primary",
+          "middle_school",
+          "high_school",
+          "higher_education",
+          "adult"
+        ],
+        "sortOrder": 70,
+        "marketCode": "FR"
+      },
+      "required_fields": [
+        "title",
+        "description",
+        "levels",
+        "deliveryModes",
+        "pricing",
+        "availability"
+      ]
+    }
+  },
+  {
+    "id": "course_subjects:FR:subject_data_ai",
+    "namespace": "course_subjects",
+    "marketCode": "FR",
+    "key": "subject_data_ai",
+    "values": {
+      "id": "subject_data_ai",
+      "slug": "data-ai",
+      "label": "Data et intelligence artificielle",
+      "icon_name": null,
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 80,
+      "description": null,
+      "market_code": "FR",
+      "public_payload": {
+        "id": "subject_data_ai",
+        "slug": "data-ai",
+        "label": "Data et intelligence artificielle",
+        "isActive": true,
+        "levelIds": [
+          "primary",
+          "middle_school",
+          "high_school",
+          "higher_education",
+          "adult"
+        ],
+        "sortOrder": 80,
+        "marketCode": "FR"
+      },
+      "required_fields": [
+        "title",
+        "description",
+        "levels",
+        "deliveryModes",
+        "pricing",
+        "availability"
+      ]
+    }
+  },
+  {
+    "id": "course_subjects:FR:subject_music",
+    "namespace": "course_subjects",
+    "marketCode": "FR",
+    "key": "subject_music",
+    "values": {
+      "id": "subject_music",
+      "slug": "music",
+      "label": "Musique",
+      "icon_name": null,
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 90,
+      "description": null,
+      "market_code": "FR",
+      "public_payload": {
+        "id": "subject_music",
+        "slug": "music",
+        "label": "Musique",
+        "isActive": true,
+        "levelIds": [
+          "primary",
+          "middle_school",
+          "high_school",
+          "higher_education",
+          "adult"
+        ],
+        "sortOrder": 90,
+        "marketCode": "FR"
+      },
+      "required_fields": [
+        "title",
+        "description",
+        "levels",
+        "deliveryModes",
+        "pricing",
+        "availability"
+      ]
+    }
+  },
+  {
+    "id": "course_subjects:FR:subject_mathematics",
+    "namespace": "course_subjects",
+    "marketCode": "FR",
+    "key": "subject_mathematics",
+    "values": {
+      "id": "subject_mathematics",
+      "slug": "mathematics",
+      "label": "Mathématiques",
+      "icon_name": null,
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 30,
+      "description": null,
+      "market_code": "FR",
+      "public_payload": {
+        "id": "subject_mathematics",
+        "slug": "mathematics",
+        "label": "Mathématiques",
+        "isActive": true,
+        "levelIds": [
+          "primary",
+          "middle_school",
+          "high_school",
+          "higher_education",
+          "adult"
+        ],
+        "sortOrder": 30,
+        "marketCode": "FR"
+      },
+      "required_fields": [
+        "title",
+        "description",
+        "levels",
+        "deliveryModes",
+        "pricing",
+        "availability"
+      ]
+    }
+  },
+  {
+    "id": "course_subjects:FR:subject_arts",
+    "namespace": "course_subjects",
+    "marketCode": "FR",
+    "key": "subject_arts",
+    "values": {
+      "id": "subject_arts",
+      "slug": "arts",
+      "label": "Arts",
+      "icon_name": null,
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 100,
+      "description": null,
+      "market_code": "FR",
+      "public_payload": {
+        "id": "subject_arts",
+        "slug": "arts",
+        "label": "Arts",
+        "isActive": true,
+        "levelIds": [
+          "primary",
+          "middle_school",
+          "high_school",
+          "higher_education",
+          "adult"
+        ],
+        "sortOrder": 100,
+        "marketCode": "FR"
+      },
+      "required_fields": [
+        "title",
+        "description",
+        "levels",
+        "deliveryModes",
+        "pricing",
+        "availability"
+      ]
+    }
+  },
+  {
+    "id": "course_subjects:FR:subject_exam_preparation",
+    "namespace": "course_subjects",
+    "marketCode": "FR",
+    "key": "subject_exam_preparation",
+    "values": {
+      "id": "subject_exam_preparation",
+      "slug": "exam-preparation",
+      "label": "Préparation aux examens",
+      "icon_name": null,
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 110,
+      "description": null,
+      "market_code": "FR",
+      "public_payload": {
+        "id": "subject_exam_preparation",
+        "slug": "exam-preparation",
+        "label": "Préparation aux examens",
+        "isActive": true,
+        "levelIds": [
+          "primary",
+          "middle_school",
+          "high_school",
+          "higher_education",
+          "adult"
+        ],
+        "sortOrder": 110,
+        "marketCode": "FR"
+      },
+      "required_fields": [
+        "title",
+        "description",
+        "levels",
+        "deliveryModes",
+        "pricing",
+        "availability"
+      ]
+    }
+  },
+  {
+    "id": "course_subjects:FR:subject_sports_coaching",
+    "namespace": "course_subjects",
+    "marketCode": "FR",
+    "key": "subject_sports_coaching",
+    "values": {
+      "id": "subject_sports_coaching",
+      "slug": "sports-coaching",
+      "label": "Sport et coaching",
+      "icon_name": null,
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 140,
+      "description": null,
+      "market_code": "FR",
+      "public_payload": {
+        "id": "subject_sports_coaching",
+        "slug": "sports-coaching",
+        "label": "Sport et coaching",
+        "isActive": true,
+        "levelIds": [
+          "primary",
+          "middle_school",
+          "high_school",
+          "higher_education",
+          "adult"
+        ],
+        "sortOrder": 140,
+        "marketCode": "FR"
+      },
+      "required_fields": [
+        "title",
+        "description",
+        "levels",
+        "deliveryModes",
+        "pricing",
+        "availability"
+      ]
+    }
+  },
+  {
+    "id": "course_subjects:FR:subject_other",
+    "namespace": "course_subjects",
+    "marketCode": "FR",
+    "key": "subject_other",
+    "values": {
+      "id": "subject_other",
+      "slug": "other",
+      "label": "Autres matières",
+      "icon_name": null,
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 150,
+      "description": null,
+      "market_code": "FR",
+      "public_payload": {
+        "id": "subject_other",
+        "slug": "other",
+        "label": "Autres matières",
+        "isActive": true,
+        "levelIds": [
+          "primary",
+          "middle_school",
+          "high_school",
+          "higher_education",
+          "adult"
+        ],
+        "sortOrder": 150,
+        "marketCode": "FR"
+      },
+      "required_fields": [
+        "title",
+        "description",
+        "levels",
+        "deliveryModes",
+        "pricing",
+        "availability"
+      ]
+    }
+  },
+  {
+    "id": "course_subject_levels:FR:primary",
+    "namespace": "course_subject_levels",
+    "marketCode": "FR",
+    "key": "primary",
+    "values": {
+      "id": "primary",
+      "label": "Primaire",
+      "is_active": true,
+      "sort_order": 10,
+      "market_code": "FR",
+      "public_payload": {
+        "id": "primary",
+        "label": "Primaire",
+        "isActive": true,
+        "sortOrder": 10
+      }
+    }
+  },
+  {
+    "id": "course_subject_levels:FR:middle_school",
+    "namespace": "course_subject_levels",
+    "marketCode": "FR",
+    "key": "middle_school",
+    "values": {
+      "id": "middle_school",
+      "label": "Collège",
+      "is_active": true,
+      "sort_order": 20,
+      "market_code": "FR",
+      "public_payload": {
+        "id": "middle_school",
+        "label": "Collège",
+        "isActive": true,
+        "sortOrder": 20
+      }
+    }
+  },
+  {
+    "id": "course_subject_levels:FR:high_school",
+    "namespace": "course_subject_levels",
+    "marketCode": "FR",
+    "key": "high_school",
+    "values": {
+      "id": "high_school",
+      "label": "Lycée",
+      "is_active": true,
+      "sort_order": 30,
+      "market_code": "FR",
+      "public_payload": {
+        "id": "high_school",
+        "label": "Lycée",
+        "isActive": true,
+        "sortOrder": 30
+      }
+    }
+  },
+  {
+    "id": "course_subject_levels:FR:higher_education",
+    "namespace": "course_subject_levels",
+    "marketCode": "FR",
+    "key": "higher_education",
+    "values": {
+      "id": "higher_education",
+      "label": "Études supérieures",
+      "is_active": true,
+      "sort_order": 40,
+      "market_code": "FR",
+      "public_payload": {
+        "id": "higher_education",
+        "label": "Études supérieures",
+        "isActive": true,
+        "sortOrder": 40
+      }
+    }
+  },
+  {
+    "id": "course_subject_levels:FR:adult",
+    "namespace": "course_subject_levels",
+    "marketCode": "FR",
+    "key": "adult",
+    "values": {
+      "id": "adult",
+      "label": "Adulte / Professionnel",
+      "is_active": true,
+      "sort_order": 50,
+      "market_code": "FR",
+      "public_payload": {
+        "id": "adult",
+        "label": "Adulte / Professionnel",
+        "isActive": true,
+        "sortOrder": 50
+      }
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.sector.technology",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.sector.technology",
+    "values": {
+      "id": "employment.fr.sector.technology",
+      "code": "technology",
+      "kind": "sector",
+      "slug": "technologie-numerique",
+      "label": "Technologie & Numérique",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 10,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.sector.commerce",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.sector.commerce",
+    "values": {
+      "id": "employment.fr.sector.commerce",
+      "code": "commerce",
+      "kind": "sector",
+      "slug": "commerce-vente",
+      "label": "Commerce & Vente",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 20,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.sector.health_social",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.sector.health_social",
+    "values": {
+      "id": "employment.fr.sector.health_social",
+      "code": "health_social",
+      "kind": "sector",
+      "slug": "sante-social",
+      "label": "Santé & Social",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 30,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.sector.hospitality",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.sector.hospitality",
+    "values": {
+      "id": "employment.fr.sector.hospitality",
+      "code": "hospitality",
+      "kind": "sector",
+      "slug": "hotellerie-restauration",
+      "label": "Hôtellerie & Restauration",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 40,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.sector.industry",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.sector.industry",
+    "values": {
+      "id": "employment.fr.sector.industry",
+      "code": "industry",
+      "kind": "sector",
+      "slug": "industrie-ingenierie",
+      "label": "Industrie & Ingénierie",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 50,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.sector.construction",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.sector.construction",
+    "values": {
+      "id": "employment.fr.sector.construction",
+      "code": "construction",
+      "kind": "sector",
+      "slug": "btp-construction",
+      "label": "BTP & Construction",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 60,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.sector.transport",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.sector.transport",
+    "values": {
+      "id": "employment.fr.sector.transport",
+      "code": "transport",
+      "kind": "sector",
+      "slug": "transport-logistique",
+      "label": "Transport & Logistique",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 70,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.sector.education",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.sector.education",
+    "values": {
+      "id": "employment.fr.sector.education",
+      "code": "education",
+      "kind": "sector",
+      "slug": "education-formation",
+      "label": "Éducation & Formation",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 80,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.sector.finance",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.sector.finance",
+    "values": {
+      "id": "employment.fr.sector.finance",
+      "code": "finance",
+      "kind": "sector",
+      "slug": "finance-juridique",
+      "label": "Finance, Comptabilité & Juridique",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 90,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.job_family.engineering",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.job_family.engineering",
+    "values": {
+      "id": "employment.fr.job_family.engineering",
+      "code": "engineering",
+      "kind": "job_family",
+      "slug": "ingenierie",
+      "label": "Ingénierie",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": "employment.fr.sector.technology",
+      "sort_order": 100,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.job_family.product",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.job_family.product",
+    "values": {
+      "id": "employment.fr.job_family.product",
+      "code": "product",
+      "kind": "job_family",
+      "slug": "produit-design",
+      "label": "Produit & Design",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": "employment.fr.sector.technology",
+      "sort_order": 110,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.job_family.sales",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.job_family.sales",
+    "values": {
+      "id": "employment.fr.job_family.sales",
+      "code": "sales",
+      "kind": "job_family",
+      "slug": "vente-relation-client",
+      "label": "Vente & Relation client",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": "employment.fr.sector.commerce",
+      "sort_order": 120,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.job_family.care",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.job_family.care",
+    "values": {
+      "id": "employment.fr.job_family.care",
+      "code": "care",
+      "kind": "job_family",
+      "slug": "soins-accompagnement",
+      "label": "Soins & Accompagnement",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": "employment.fr.sector.health_social",
+      "sort_order": 130,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.job_family.operations",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.job_family.operations",
+    "values": {
+      "id": "employment.fr.job_family.operations",
+      "code": "operations",
+      "kind": "job_family",
+      "slug": "operations-logistique",
+      "label": "Opérations & Logistique",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": "employment.fr.sector.transport",
+      "sort_order": 140,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.profession.frontend_engineer",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.profession.frontend_engineer",
+    "values": {
+      "id": "employment.fr.profession.frontend_engineer",
+      "code": "frontend_engineer",
+      "kind": "profession",
+      "slug": "developpeur-front-end",
+      "label": "Développeur·se front-end",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": "employment.fr.job_family.engineering",
+      "sort_order": 150,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.profession.data_analyst",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.profession.data_analyst",
+    "values": {
+      "id": "employment.fr.profession.data_analyst",
+      "code": "data_analyst",
+      "kind": "profession",
+      "slug": "data-analyst",
+      "label": "Data analyst",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": "employment.fr.job_family.engineering",
+      "sort_order": 160,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.profession.product_designer",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.profession.product_designer",
+    "values": {
+      "id": "employment.fr.profession.product_designer",
+      "code": "product_designer",
+      "kind": "profession",
+      "slug": "product-designer",
+      "label": "Product designer",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": "employment.fr.job_family.product",
+      "sort_order": 170,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.profession.sales_advisor",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.profession.sales_advisor",
+    "values": {
+      "id": "employment.fr.profession.sales_advisor",
+      "code": "sales_advisor",
+      "kind": "profession",
+      "slug": "conseiller-vente",
+      "label": "Conseiller·ère de vente",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": "employment.fr.job_family.sales",
+      "sort_order": 180,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.profession.care_assistant",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.profession.care_assistant",
+    "values": {
+      "id": "employment.fr.profession.care_assistant",
+      "code": "care_assistant",
+      "kind": "profession",
+      "slug": "auxiliaire-vie",
+      "label": "Auxiliaire de vie",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": "employment.fr.job_family.care",
+      "sort_order": 190,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.profession.warehouse_operator",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.profession.warehouse_operator",
+    "values": {
+      "id": "employment.fr.profession.warehouse_operator",
+      "code": "warehouse_operator",
+      "kind": "profession",
+      "slug": "operateur-logistique",
+      "label": "Opérateur·rice logistique",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": "employment.fr.job_family.operations",
+      "sort_order": 200,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.specialization.react",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.specialization.react",
+    "values": {
+      "id": "employment.fr.specialization.react",
+      "code": "react",
+      "kind": "specialization",
+      "slug": "react-typescript",
+      "label": "React & TypeScript",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": "employment.fr.profession.frontend_engineer",
+      "sort_order": 210,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.specialization.business_intelligence",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.specialization.business_intelligence",
+    "values": {
+      "id": "employment.fr.specialization.business_intelligence",
+      "code": "business_intelligence",
+      "kind": "specialization",
+      "slug": "business-intelligence",
+      "label": "Business intelligence",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": "employment.fr.profession.data_analyst",
+      "sort_order": 220,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.skill.typescript",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.skill.typescript",
+    "values": {
+      "id": "employment.fr.skill.typescript",
+      "code": "typescript",
+      "kind": "skill",
+      "slug": "typescript",
+      "label": "TypeScript",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 230,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.skill.react",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.skill.react",
+    "values": {
+      "id": "employment.fr.skill.react",
+      "code": "react",
+      "kind": "skill",
+      "slug": "react",
+      "label": "React",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 240,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.skill.sql",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.skill.sql",
+    "values": {
+      "id": "employment.fr.skill.sql",
+      "code": "sql",
+      "kind": "skill",
+      "slug": "sql",
+      "label": "SQL",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 250,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.skill.figma",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.skill.figma",
+    "values": {
+      "id": "employment.fr.skill.figma",
+      "code": "figma",
+      "kind": "skill",
+      "slug": "figma",
+      "label": "Figma",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 260,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.skill.customer_service",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.skill.customer_service",
+    "values": {
+      "id": "employment.fr.skill.customer_service",
+      "code": "customer_service",
+      "kind": "skill",
+      "slug": "relation-client",
+      "label": "Relation client",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 270,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.skill.care_support",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.skill.care_support",
+    "values": {
+      "id": "employment.fr.skill.care_support",
+      "code": "care_support",
+      "kind": "skill",
+      "slug": "accompagnement",
+      "label": "Accompagnement",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 280,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.seniority.entry",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.seniority.entry",
+    "values": {
+      "id": "employment.fr.seniority.entry",
+      "code": "entry",
+      "kind": "seniority",
+      "slug": "debutant",
+      "label": "Débutant accepté",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 290,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.seniority.intermediate",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.seniority.intermediate",
+    "values": {
+      "id": "employment.fr.seniority.intermediate",
+      "code": "intermediate",
+      "kind": "seniority",
+      "slug": "intermediaire",
+      "label": "Intermédiaire",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 300,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.seniority.experienced",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.seniority.experienced",
+    "values": {
+      "id": "employment.fr.seniority.experienced",
+      "code": "experienced",
+      "kind": "seniority",
+      "slug": "confirme",
+      "label": "Confirmé",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 310,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.seniority.senior",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.seniority.senior",
+    "values": {
+      "id": "employment.fr.seniority.senior",
+      "code": "senior",
+      "kind": "seniority",
+      "slug": "senior",
+      "label": "Senior / Expert",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 320,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.contract_type.permanent",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.contract_type.permanent",
+    "values": {
+      "id": "employment.fr.contract_type.permanent",
+      "code": "permanent",
+      "kind": "contract_type",
+      "slug": "contrat-duree-indeterminee",
+      "label": "Emploi permanent",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 330,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.contract_type.fixed_term",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.contract_type.fixed_term",
+    "values": {
+      "id": "employment.fr.contract_type.fixed_term",
+      "code": "fixed_term",
+      "kind": "contract_type",
+      "slug": "contrat-duree-determinee",
+      "label": "Emploi à durée déterminée",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 340,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.contract_type.temporary",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.contract_type.temporary",
+    "values": {
+      "id": "employment.fr.contract_type.temporary",
+      "code": "temporary",
+      "kind": "contract_type",
+      "slug": "travail-temporaire",
+      "label": "Travail temporaire",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 350,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.contract_type.internship",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.contract_type.internship",
+    "values": {
+      "id": "employment.fr.contract_type.internship",
+      "code": "internship",
+      "kind": "contract_type",
+      "slug": "stage",
+      "label": "Stage",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 360,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.contract_type.apprenticeship",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.contract_type.apprenticeship",
+    "values": {
+      "id": "employment.fr.contract_type.apprenticeship",
+      "code": "apprenticeship",
+      "kind": "contract_type",
+      "slug": "alternance",
+      "label": "Apprentissage / alternance",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 370,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.contract_type.seasonal",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.contract_type.seasonal",
+    "values": {
+      "id": "employment.fr.contract_type.seasonal",
+      "code": "seasonal",
+      "kind": "contract_type",
+      "slug": "emploi-saisonnier",
+      "label": "Emploi saisonnier",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 380,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.contract_type.freelance",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.contract_type.freelance",
+    "values": {
+      "id": "employment.fr.contract_type.freelance",
+      "code": "freelance",
+      "kind": "contract_type",
+      "slug": "mission-freelance",
+      "label": "Mission freelance",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 390,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.contract_type.public_sector",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.contract_type.public_sector",
+    "values": {
+      "id": "employment.fr.contract_type.public_sector",
+      "code": "public_sector",
+      "kind": "contract_type",
+      "slug": "secteur-public",
+      "label": "Opportunité secteur public",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 400,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.salary_frequency.hour",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.salary_frequency.hour",
+    "values": {
+      "id": "employment.fr.salary_frequency.hour",
+      "code": "hour",
+      "kind": "salary_frequency",
+      "slug": "heure",
+      "label": "Par heure",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 410,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.salary_frequency.month",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.salary_frequency.month",
+    "values": {
+      "id": "employment.fr.salary_frequency.month",
+      "code": "month",
+      "kind": "salary_frequency",
+      "slug": "mois",
+      "label": "Par mois",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 420,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.salary_frequency.year",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.salary_frequency.year",
+    "values": {
+      "id": "employment.fr.salary_frequency.year",
+      "code": "year",
+      "kind": "salary_frequency",
+      "slug": "annee",
+      "label": "Par an",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 430,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.working_arrangement.onsite",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.working_arrangement.onsite",
+    "values": {
+      "id": "employment.fr.working_arrangement.onsite",
+      "code": "onsite",
+      "kind": "working_arrangement",
+      "slug": "sur-site",
+      "label": "Sur site",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 440,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.working_arrangement.hybrid",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.working_arrangement.hybrid",
+    "values": {
+      "id": "employment.fr.working_arrangement.hybrid",
+      "code": "hybrid",
+      "kind": "working_arrangement",
+      "slug": "hybride",
+      "label": "Hybride",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 450,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.working_arrangement.remote",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.working_arrangement.remote",
+    "values": {
+      "id": "employment.fr.working_arrangement.remote",
+      "code": "remote",
+      "kind": "working_arrangement",
+      "slug": "teletravail",
+      "label": "Télétravail",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 460,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.work_schedule.full_time",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.work_schedule.full_time",
+    "values": {
+      "id": "employment.fr.work_schedule.full_time",
+      "code": "full_time",
+      "kind": "work_schedule",
+      "slug": "temps-plein",
+      "label": "Temps plein",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 470,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.work_schedule.part_time",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.work_schedule.part_time",
+    "values": {
+      "id": "employment.fr.work_schedule.part_time",
+      "code": "part_time",
+      "kind": "work_schedule",
+      "slug": "temps-partiel",
+      "label": "Temps partiel",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 480,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.work_schedule.day",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.work_schedule.day",
+    "values": {
+      "id": "employment.fr.work_schedule.day",
+      "code": "day",
+      "kind": "work_schedule",
+      "slug": "journee",
+      "label": "Journée",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 490,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.work_schedule.night",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.work_schedule.night",
+    "values": {
+      "id": "employment.fr.work_schedule.night",
+      "code": "night",
+      "kind": "work_schedule",
+      "slug": "nuit",
+      "label": "Nuit",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 500,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.work_schedule.weekend",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.work_schedule.weekend",
+    "values": {
+      "id": "employment.fr.work_schedule.weekend",
+      "code": "weekend",
+      "kind": "work_schedule",
+      "slug": "week-end",
+      "label": "Week-end",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 510,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.work_schedule.shift",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.work_schedule.shift",
+    "values": {
+      "id": "employment.fr.work_schedule.shift",
+      "code": "shift",
+      "kind": "work_schedule",
+      "slug": "equipe",
+      "label": "Travail en équipe",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 520,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.education_level.none",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.education_level.none",
+    "values": {
+      "id": "employment.fr.education_level.none",
+      "code": "none",
+      "kind": "education_level",
+      "slug": "sans-diplome",
+      "label": "Aucun diplôme requis",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 530,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.education_level.secondary",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.education_level.secondary",
+    "values": {
+      "id": "employment.fr.education_level.secondary",
+      "code": "secondary",
+      "kind": "education_level",
+      "slug": "secondaire",
+      "label": "Enseignement secondaire",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 540,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.education_level.bachelor",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.education_level.bachelor",
+    "values": {
+      "id": "employment.fr.education_level.bachelor",
+      "code": "bachelor",
+      "kind": "education_level",
+      "slug": "licence",
+      "label": "Licence / Bachelor",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 550,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.education_level.master",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.education_level.master",
+    "values": {
+      "id": "employment.fr.education_level.master",
+      "code": "master",
+      "kind": "education_level",
+      "slug": "master",
+      "label": "Master",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 560,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.language_level.basic",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.language_level.basic",
+    "values": {
+      "id": "employment.fr.language_level.basic",
+      "code": "basic",
+      "kind": "language_level",
+      "slug": "notions",
+      "label": "Notions",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 570,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.language_level.professional",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.language_level.professional",
+    "values": {
+      "id": "employment.fr.language_level.professional",
+      "code": "professional",
+      "kind": "language_level",
+      "slug": "professionnel",
+      "label": "Professionnel",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 580,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.language_level.fluent",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.language_level.fluent",
+    "values": {
+      "id": "employment.fr.language_level.fluent",
+      "code": "fluent",
+      "kind": "language_level",
+      "slug": "courant",
+      "label": "Courant",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 590,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.employer_type.private",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.employer_type.private",
+    "values": {
+      "id": "employment.fr.employer_type.private",
+      "code": "private",
+      "kind": "employer_type",
+      "slug": "particulier-employeur",
+      "label": "Particulier employeur",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 600,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.employer_type.small_business",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.employer_type.small_business",
+    "values": {
+      "id": "employment.fr.employer_type.small_business",
+      "code": "small_business",
+      "kind": "employer_type",
+      "slug": "petite-entreprise",
+      "label": "Petite entreprise",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 610,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.employer_type.company",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.employer_type.company",
+    "values": {
+      "id": "employment.fr.employer_type.company",
+      "code": "company",
+      "kind": "employer_type",
+      "slug": "entreprise",
+      "label": "Entreprise",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 620,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.employer_type.agency",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.employer_type.agency",
+    "values": {
+      "id": "employment.fr.employer_type.agency",
+      "code": "agency",
+      "kind": "employer_type",
+      "slug": "agence-recrutement",
+      "label": "Agence de recrutement",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 630,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.employer_type.staffing",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.employer_type.staffing",
+    "values": {
+      "id": "employment.fr.employer_type.staffing",
+      "code": "staffing",
+      "kind": "employer_type",
+      "slug": "agence-interim",
+      "label": "Agence de travail temporaire",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 640,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.employer_type.public",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.employer_type.public",
+    "values": {
+      "id": "employment.fr.employer_type.public",
+      "code": "public",
+      "kind": "employer_type",
+      "slug": "secteur-public",
+      "label": "Employeur public",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 650,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.screening_question_type.yes_no",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.screening_question_type.yes_no",
+    "values": {
+      "id": "employment.fr.screening_question_type.yes_no",
+      "code": "yes_no",
+      "kind": "screening_question_type",
+      "slug": "oui-non",
+      "label": "Oui / Non",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 660,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.screening_question_type.single_choice",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.screening_question_type.single_choice",
+    "values": {
+      "id": "employment.fr.screening_question_type.single_choice",
+      "code": "single_choice",
+      "kind": "screening_question_type",
+      "slug": "choix-unique",
+      "label": "Choix unique",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 670,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.screening_question_type.short_text",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.screening_question_type.short_text",
+    "values": {
+      "id": "employment.fr.screening_question_type.short_text",
+      "code": "short_text",
+      "kind": "screening_question_type",
+      "slug": "texte-court",
+      "label": "Réponse courte",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 680,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "employment_dictionary_entries:FR:employment.fr.screening_question_type.long_text",
+    "namespace": "employment_dictionary_entries",
+    "marketCode": "FR",
+    "key": "employment.fr.screening_question_type.long_text",
+    "values": {
+      "id": "employment.fr.screening_question_type.long_text",
+      "code": "long_text",
+      "kind": "screening_question_type",
+      "slug": "texte-long",
+      "label": "Réponse développée",
+      "aliases": [],
+      "version": 1,
+      "metadata": {},
+      "is_active": true,
+      "parent_id": null,
+      "sort_order": 690,
+      "description": null,
+      "market_code": "FR"
+    }
+  },
+  {
+    "id": "auto_attribute_definitions:FR:condition",
+    "namespace": "auto_attribute_definitions",
+    "marketCode": "FR",
+    "key": "condition",
+    "values": {
+      "id": "condition",
+      "market_code": "FR",
+      "label": "État",
+      "field_type": "single_select",
+      "vehicle_types": [
+        "agricultural",
+        "parts",
+        "car",
+        "motorcycle",
+        "utility",
+        "truck",
+        "motorhome",
+        "boat",
+        "other",
+        "construction"
+      ],
+      "options": [
+        {
+          "value": "new",
+          "label": "Neuf",
+          "sortOrder": 10
+        },
+        {
+          "value": "excellent",
+          "label": "Excellent",
+          "sortOrder": 20
+        },
+        {
+          "value": "good",
+          "label": "Bon",
+          "sortOrder": 30
+        },
+        {
+          "value": "fair",
+          "label": "Correct",
+          "sortOrder": 40
+        },
+        {
+          "value": "damaged",
+          "label": "Endommagé",
+          "sortOrder": 50
+        },
+        {
+          "value": "for_parts",
+          "label": "Pour pièces",
+          "sortOrder": 60
+        }
+      ],
+      "is_required": true,
+      "is_filterable": true,
+      "is_public": true,
+      "schema_version": 1,
+      "is_active": true,
+      "sort_order": 60,
+      "public_payload": {}
+    }
+  }
+]

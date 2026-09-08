@@ -1,4 +1,5 @@
-import { taxonomyV4Service } from "../taxonomy/taxonomy.runtime.js";
+import { requireApiMarketContext } from "../markets/request-market-context.js";
+import { taxonomyV1Service } from "../taxonomy/taxonomy.runtime.js";
 import {
   DeliveryType,
   Listing,
@@ -19,11 +20,6 @@ import {
   StorageService,
 } from "../../infrastructure/storage/storage-service.js";
 import { randomUUID } from "node:crypto";
-import {
-  taxonomyValidationService,
-  TaxonomyValidationService,
-} from "../taxonomy/taxonomy.validation.js";
-import { taxonomyService } from "../taxonomy/taxonomy.service.js";
 import { projectListingCharacteristics } from "../taxonomy/taxonomy.characteristics.js";
 import {
   publisherEntitlementsService,
@@ -38,18 +34,18 @@ import { getCurrencyMinorUnitDigits } from "@shongre/shared";
 import { analyticsService } from "../analytics/analytics.service.js";
 import type {
   MarketContext,
-  TaxonomyV4ListingIntent,
+  TaxonomyV1ListingIntent,
 } from "@shongre/contracts";
 import {
   PUBLICATION_CONSTRAINTS,
   toApplicationListingCondition,
-  toTaxonomyV4ItemCondition,
+  toTaxonomyV1ItemCondition,
 } from "@shongre/contracts";
 import type {
   DigitalFulfillmentVersionInput,
   FulfillmentType,
 } from "@shongre/contracts/digital-products";
-import { TaxonomyV4Error } from "../taxonomy/taxonomy.v4.service.js";
+import { TaxonomyV1Error } from "../taxonomy/taxonomy.v1.service.js";
 import {
   digitalProductsService,
   DigitalProductsService,
@@ -74,8 +70,8 @@ export interface PublicationDraftInput {
     | "unpriced";
   categoryId?: string;
   listingTypeId?: string;
-  intent?: TaxonomyV4ListingIntent;
-  taxonomyVersion?: "4.0.0";
+  intent?: TaxonomyV1ListingIntent;
+  taxonomyVersion?: "v1";
   taxonomyRevision?: number;
   marketCode?: string;
   selectedMarkets?: string[];
@@ -208,25 +204,14 @@ export interface SellerListingUpdate {
   attributes?: Record<string, unknown>;
 }
 
-type BulkImportValidationCode =
-  "TITLE_REQUIRED" | "TITLE_TOO_SHORT" | "TITLE_TOO_LONG" | "PRICE_INVALID";
-type BulkListingImportRow = {
-  id: string;
-  title: string;
-  description: string;
-  categorySlug: string;
-  subCategorySlug: string;
-  price: { amountMinor: number; currency: string };
-  condition: string;
-  stock: number;
-  city: string;
-  postalCode: string;
-  isValid: boolean;
-  validationErrorCode?: BulkImportValidationCode;
-};
+type BulkListingImportRow =
+  import("@shongre/contracts/openapi").components["schemas"]["BulkListingImportRow"];
+type BulkImportValidationCode = NonNullable<
+  BulkListingImportRow["validationErrorCode"]
+>;
 
-const BULK_IMPORT_TEMPLATE = `Titre;Categorie;SousCategorie;Prix;Etat;Stock;Ville;CodePostal;Description
-Table basse chêne massif;home_garden;furniture;180;very_good;2;Lyon;69002;Description détaillée du produit`;
+const BULK_IMPORT_TEMPLATE =
+  "Titre;Categorie;SousCategorie;Prix;Etat;Stock;Ville;CodePostal;Description;CaracteristiquesJSON;PhotosJSON\n";
 
 function splitCsvRow(line: string): string[] {
   const values: string[] = [];
@@ -292,7 +277,7 @@ function applicationManagedTaxonomyAttributes(
   const defaults = new Map(
     definitions.map((definition) => [definition.id, definition.defaultValue]),
   );
-  const condition = toTaxonomyV4ItemCondition(draft.condition);
+  const condition = toTaxonomyV1ItemCondition(draft.condition);
   const currency = market.currency;
   const candidates: Record<string, unknown> = {
     listing_intent:
@@ -332,12 +317,11 @@ export class ListingsService {
   constructor(
     private listingRepo: IListingRepository = repositories.listings,
     private ai: IAIProvider = providers.ai,
-    private taxonomyValidation: TaxonomyValidationService = taxonomyValidationService,
     private publisherEntitlements: PublisherEntitlementsService = publisherEntitlementsService,
     private discovery: UnifiedDiscoveryService = unifiedDiscoveryService,
     private markets: IMarketRepository = repositories.markets,
     private storage: StorageService = storageService,
-    private taxonomyV4 = taxonomyV4Service,
+    private taxonomyV1 = taxonomyV1Service,
     private digitalProducts: DigitalProductsService = digitalProductsService,
   ) {}
 
@@ -422,7 +406,7 @@ export class ListingsService {
 
   private async projectListings(items: Listing[]): Promise<PublicListing[]> {
     if (!items.length) return [];
-    const taxonomy = await this.taxonomyV4.snapshot();
+    const taxonomy = await this.taxonomyV1.snapshot();
     return items.map((item) => toPublicListing(item, taxonomy));
   }
 
@@ -435,7 +419,7 @@ export class ListingsService {
       requireMarketCode(marketCode),
     );
     return listing
-      ? toPublicListing(listing, await this.taxonomyV4.snapshot())
+      ? toPublicListing(listing, await this.taxonomyV1.snapshot())
       : null;
   }
 
@@ -474,7 +458,7 @@ export class ListingsService {
           ...(listing.model ? { model: listing.model } : {}),
         },
       },
-      (await this.taxonomyV4.snapshot()).getBundle(),
+      (await this.taxonomyV1.snapshot()).getBundle(),
     );
   }
 
@@ -529,7 +513,7 @@ export class ListingsService {
   }
 
   getBulkImportTemplate(locale: string) {
-    const language = locale.toLowerCase().startsWith("fr") ? "fr" : "fr";
+    const language = locale.toLowerCase().startsWith("fr") ? "fr" : "en";
     return {
       fileName: `modele_import_annonces_shongre_${language}.csv`,
       content: BULK_IMPORT_TEMPLATE,
@@ -568,12 +552,35 @@ export class ListingsService {
     const market = await this.markets.getEffective(
       requireMarketCode(body.marketCode),
     );
+    const taxonomy = await this.taxonomyV1.snapshot();
     return lines.slice(1).flatMap((line, index) => {
       if (!line.trim()) return [];
       const columns = splitCsvRow(line);
       const title = columns[0] || "";
       const amount = Number.parseFloat((columns[3] || "0").replace(",", "."));
-      const validationErrorCode = !title
+      const categoryIdentity = columns[2] || columns[1] || "";
+      const category = taxonomy.findCategory(categoryIdentity);
+      let attributes: BulkListingImportRow["attributes"] = {};
+      let images: string[] = [];
+      let attributesInvalid = false;
+      try {
+        const parsed: unknown = JSON.parse(columns[9] || "{}");
+        const photos: unknown = JSON.parse(columns[10] || "[]");
+        if (
+          !parsed ||
+          typeof parsed !== "object" ||
+          Array.isArray(parsed) ||
+          !Array.isArray(photos) ||
+          photos.length > 12 ||
+          photos.some((photo) => typeof photo !== "string")
+        )
+          throw new Error("Invalid import payload");
+        attributes = parsed as NonNullable<BulkListingImportRow["attributes"]>;
+        images = photos as string[];
+      } catch {
+        attributesInvalid = true;
+      }
+      const validationErrorCode: BulkImportValidationCode | undefined = !title
         ? ("TITLE_REQUIRED" as const)
         : title.length < 5
           ? ("TITLE_TOO_SHORT" as const)
@@ -581,17 +588,24 @@ export class ListingsService {
             ? ("TITLE_TOO_LONG" as const)
             : !Number.isFinite(amount) || amount <= 0
               ? ("PRICE_INVALID" as const)
-              : undefined;
+              : !category?.publishable
+                ? "CATEGORY_INVALID"
+                : attributesInvalid
+                  ? "ATTRIBUTES_INVALID"
+                  : undefined;
       return [
         {
           id: `bulk-row-${index + 1}`,
           title,
           description: columns[8] || "",
-          categorySlug: columns[1] || "home_garden",
-          subCategorySlug: columns[2] || columns[1] || "furniture",
+          categorySlug: columns[1] || "",
+          subCategorySlug: category?.id ?? categoryIdentity,
+          attributes,
+          images,
           price: {
             amountMinor: Math.round(
-              (Number.isFinite(amount) ? amount : 0) * 100,
+              (Number.isFinite(amount) ? amount : 0) *
+                10 ** getCurrencyMinorUnitDigits(market.currency),
             ),
             currency: market.currency,
           },
@@ -638,18 +652,35 @@ export class ListingsService {
         message: "Votre formule ne permet pas l’import de catalogue.",
         details: { reasonCode: inventoryDecision.reasonCode },
       });
+    const seller = await repositories.users.findById(userId);
+    if (!seller)
+      throw new AppError({ code: "NOT_FOUND", message: "Compte introuvable." });
+    const taxonomyContext = {
+      marketContext: requireApiMarketContext(marketCode),
+      sellerType: seller.accountType,
+    };
+    const taxonomy = await this.taxonomyV1.snapshot();
     const prepared = await Promise.all(
       rows.map(async (row) => {
-        const taxonomyNode =
-          (await taxonomyService.getNodeBySlug(row.subCategorySlug)) ||
-          (await taxonomyService.getNodeBySlug(row.categorySlug));
+        const taxonomyNode = taxonomy.findCategory(
+          row.subCategorySlug || row.categorySlug,
+        );
         if (!taxonomyNode)
           throw new AppError({
             code: "VALIDATION_ERROR",
             message: `La catégorie de la ligne ${row.id} est inconnue.`,
             details: { rowId: row.id },
           });
+        const resolved = taxonomy.resolve({
+          ...taxonomyContext,
+          categoryIdentity: taxonomyNode.id,
+          locale: taxonomyContext.marketContext.locale!,
+        });
         return {
+          taxonomyVersion: "v1",
+          taxonomyRevision: taxonomy.revision,
+          listingTypeId: resolved.listingType.id,
+          intent: resolved.listingType.intent,
           title: row.title,
           description: row.description,
           price:
@@ -659,8 +690,8 @@ export class ListingsService {
           marketCode,
           city: row.city,
           postalCode: row.postalCode,
-          images: [],
-          attributes: { stock_quantity: row.stock },
+          images: [...(row.images ?? [])],
+          attributes: { ...row.attributes, stock_quantity: row.stock },
           allowedDelivery: ["hand_delivery"],
           condition: row.condition,
         } satisfies PublicationDraftInput;
@@ -669,7 +700,9 @@ export class ListingsService {
     const published: PublicListing[] = [];
     try {
       for (const draft of prepared)
-        published.push(await this.publishListing(draft, userId));
+        published.push(
+          await this.publishListing(draft, userId, taxonomyContext),
+        );
       return published;
     } catch (error) {
       await Promise.allSettled(
@@ -791,20 +824,16 @@ export class ListingsService {
       });
     }
 
-    if (
-      draft.taxonomyVersion === "4.0.0" ||
-      draft.listingTypeId ||
-      draft.intent
-    ) {
+    {
       if (!taxonomyContext || !draft.listingTypeId || !draft.intent) {
         throw new AppError({
           code: "VALIDATION_ERROR",
           message:
-            "Le type d’annonce et le contexte de taxonomie v4 sont obligatoires.",
+            "Le type d’annonce et le contexte de taxonomie v1 sont obligatoires.",
         });
       }
       try {
-        const taxonomy = await this.taxonomyV4.snapshot(draft.taxonomyRevision);
+        const taxonomy = await this.taxonomyV1.snapshot(draft.taxonomyRevision);
         const resolvedTaxonomy = taxonomy.resolve({
           marketContext: taxonomyContext.marketContext,
           categoryIdentity: draft.categoryId,
@@ -814,13 +843,13 @@ export class ListingsService {
           sellerCapabilities: taxonomyContext.sellerCapabilities,
           fulfillmentTypes: draft.fulfillmentTypes,
           locale: taxonomyContext.marketContext.locale ?? "fr-FR",
-          taxonomyVersion: "4.0.0",
+          taxonomyVersion: "v1",
         });
         const acceptsCondition = resolvedTaxonomy.attributes.some(
           ({ definition }) => definition.id === "condition",
         );
         const canonicalCondition = acceptsCondition
-          ? toTaxonomyV4ItemCondition(draft.condition)
+          ? toTaxonomyV1ItemCondition(draft.condition)
           : undefined;
         const managedAttributes = applicationManagedTaxonomyAttributes(
           draft,
@@ -840,7 +869,7 @@ export class ListingsService {
           sellerType: taxonomyContext.sellerType,
           sellerCapabilities: taxonomyContext.sellerCapabilities,
           locale: taxonomyContext.marketContext.locale ?? "fr-FR",
-          taxonomyVersion: "4.0.0",
+          taxonomyVersion: "v1",
           attributes: {
             ...(draft.attributes || {}),
             ...managedAttributes,
@@ -858,38 +887,10 @@ export class ListingsService {
         }
       } catch (error) {
         if (error instanceof AppError) throw error;
-        if (error instanceof TaxonomyV4Error) {
+        if (error instanceof TaxonomyV1Error) {
           throw new AppError({ code: error.code, message: error.message });
         }
         throw error;
-      }
-    } else {
-      const definitions = await taxonomyService.getAttributesForCategory(
-        draft.categoryId,
-      );
-      const managedAttributes = applicationManagedTaxonomyAttributes(
-        draft,
-        priceType,
-        definitions,
-        { countryCode: marketCode, currency: primaryMarket.currency },
-        "individual",
-      );
-      const taxonomyValidation =
-        await this.taxonomyValidation.validateListingAttributes(
-          draft.categoryId,
-          {
-            ...(draft.attributes || {}),
-            ...managedAttributes,
-          },
-        );
-      if (!taxonomyValidation.isValid) {
-        throw new AppError({
-          code: "VALIDATION_ERROR",
-          message:
-            taxonomyValidation.issues[0]?.message ||
-            "Les caractéristiques de l’annonce sont invalides.",
-          details: { issues: taxonomyValidation.issues },
-        });
       }
     }
 
@@ -1195,7 +1196,7 @@ export class ListingsService {
           errorCode: error instanceof Error ? error.name : "unknown",
         }),
       );
-    return toPublicListing(hydrated || saved, await this.taxonomyV4.snapshot());
+    return toPublicListing(hydrated || saved, await this.taxonomyV1.snapshot());
   }
 
   async updateSellerListing(
@@ -1210,24 +1211,55 @@ export class ListingsService {
       });
     }
     const updates = this.parseSellerUpdate(input);
-    if (updates.attributes || updates.condition) {
-      const taxonomyValidation =
-        await this.taxonomyValidation.validateListingAttributes(
-          existing.categoryId,
-          {
-            ...(updates.attributes || existing.attributes || {}),
-            condition: updates.condition || existing.condition,
-          },
-        );
-      if (!taxonomyValidation.isValid) {
+    if (
+      updates.attributes ||
+      updates.condition ||
+      updates.brand ||
+      updates.model
+    ) {
+      const taxonomy = await this.taxonomyV1.snapshot();
+      const seller = await repositories.users.findById(existing.sellerId);
+      if (!seller)
+        throw new AppError({
+          code: "NOT_FOUND",
+          message: "Compte introuvable.",
+        });
+      const previousAttributes = {
+        ...(existing.attributes ?? {}),
+        ...(existing.brand ? { brand: existing.brand } : {}),
+        ...(existing.model ? { model: existing.model } : {}),
+        ...(existing.condition
+          ? { condition: toTaxonomyV1ItemCondition(existing.condition) }
+          : {}),
+      };
+      const attributes = {
+        ...previousAttributes,
+        ...(updates.attributes ?? {}),
+        ...(updates.brand ? { brand: updates.brand } : {}),
+        ...(updates.model ? { model: updates.model } : {}),
+        ...(updates.condition
+          ? { condition: toTaxonomyV1ItemCondition(updates.condition) }
+          : {}),
+      };
+      const validation = taxonomy.validateRecordedUpdate({
+        categoryIdentity: existing.categoryId,
+        listingTypeId: existing.listingTypeId,
+        intent: existing.listingIntent,
+        marketContext: requireApiMarketContext(existing.marketCode),
+        sellerType: seller.accountType,
+        locale: "fr-FR",
+        attributes,
+        previousAttributes,
+      });
+      if (!validation.valid)
         throw new AppError({
           code: "VALIDATION_ERROR",
           message:
-            taxonomyValidation.issues[0]?.message ||
-            "Les caractéristiques de l’annonce sont invalides.",
-          details: { issues: taxonomyValidation.issues },
+            validation.issues[0]?.message ?? "Caractéristiques invalides.",
+          details: { issues: validation.issues },
         });
-      }
+      if (updates.attributes)
+        updates.attributes = { ...existing.attributes, ...updates.attributes };
     }
 
     const materialChange =
@@ -1249,7 +1281,7 @@ export class ListingsService {
       }
     }
     const saved = await this.listingRepo.update(id, authoritativeUpdates);
-    return toPublicListing(saved, await this.taxonomyV4.snapshot());
+    return toPublicListing(saved, await this.taxonomyV1.snapshot());
   }
 
   private parseSellerUpdate(input: unknown): SellerListingUpdate {
@@ -1356,7 +1388,7 @@ export class ListingsService {
     }
     const sold = await this.listingRepo.update(id, { status: "sold" });
     logger.info("Listing marked sold", { listingId: id });
-    return toPublicListing(sold, await this.taxonomyV4.snapshot());
+    return toPublicListing(sold, await this.taxonomyV1.snapshot());
   }
 
   // userId is required rather than defaulted. These previously fell back to

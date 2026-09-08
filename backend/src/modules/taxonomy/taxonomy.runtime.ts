@@ -1,15 +1,14 @@
 import { AppError } from "../../shared/errors/app-error.js";
-import { config } from "../../app/config/index.js";
 import {
   PostgresTaxonomyPublicationRepository,
   type TaxonomyPublication,
 } from "../../infrastructure/database/repositories/taxonomy-publication.repository.js";
-import { TaxonomyV4Service } from "./taxonomy.v4.service.js";
+import { TaxonomyV1Service } from "./taxonomy.v1.service.js";
 
 export class PublishedTaxonomyService {
   private current?: {
     publication: TaxonomyPublication;
-    service: TaxonomyV4Service;
+    service: TaxonomyV1Service;
   };
 
   constructor(
@@ -18,7 +17,7 @@ export class PublishedTaxonomyService {
     },
   ) {}
 
-  async snapshot(expectedRevision?: number): Promise<TaxonomyV4Service> {
+  async snapshot(expectedRevision?: number): Promise<TaxonomyV1Service> {
     const publication = await this.repository.getPublished();
     if (
       expectedRevision !== undefined &&
@@ -33,7 +32,7 @@ export class PublishedTaxonomyService {
     if (this.current?.publication !== publication) {
       this.current = {
         publication,
-        service: new TaxonomyV4Service(
+        service: new TaxonomyV1Service(
           publication.bundle,
           publication.revision,
           publication.checksum,
@@ -44,23 +43,6 @@ export class PublishedTaxonomyService {
   }
 }
 
-const postgres = new PostgresTaxonomyPublicationRepository();
-export const taxonomyV4Service = new PublishedTaxonomyService({
-  async getPublished() {
-    if (
-      config.environment.environment === "test" &&
-      config.dataMode === "demo"
-    ) {
-      // Isolated backend test scenarios explicitly select fixture data. This
-      // branch cannot execute in local, preview, or any hosted application.
-      const { TAXONOMY_V4_PRIVATE_BUNDLE } =
-        await import("./generated/taxonomy-v4.private.js");
-      return {
-        revision: 1,
-        checksum: TAXONOMY_V4_PRIVATE_BUNDLE.metadata.normalizedSha256,
-        bundle: TAXONOMY_V4_PRIVATE_BUNDLE,
-      };
-    }
-    return postgres.getPublished();
-  },
-});
+export const taxonomyV1Service = new PublishedTaxonomyService(
+  new PostgresTaxonomyPublicationRepository(),
+);

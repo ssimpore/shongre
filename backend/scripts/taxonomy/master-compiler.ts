@@ -1,3 +1,5 @@
+import { TaxonomyV1Service } from "../../src/modules/taxonomy/taxonomy.v1.service.js";
+import { resolveMarketContext } from "@shongre/contracts/market-country";
 import { format } from "prettier";
 import { taxonomyCoverage, taxonomyCoverageMarkdown } from "./coverage.js";
 import { taxonomyPrivateBundleSchema } from "../../src/modules/taxonomy/taxonomy.bundle.js";
@@ -7,54 +9,46 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { gzipSync } from "node:zlib";
 import readWorkbook from "read-excel-file/node";
-import {
-  CANONICAL_TAXONOMY_ALIASES,
-  CANONICAL_TAXONOMY_IDENTITIES,
-} from "@shongre/contracts/taxonomy-catalog";
+import referenceEntries from "../../taxonomy/v1/reference-entries.json";
+import historicalIdentities from "../../taxonomy/history/v3-identities.json";
+const CANONICAL_TAXONOMY_IDENTITIES = historicalIdentities.identities;
+const CANONICAL_TAXONOMY_ALIASES = historicalIdentities.aliases;
 
 const REPOSITORY_ROOT = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   "../../..",
 );
-const VERSION = "4.0.0";
+const VERSION = "v1";
 const COMPILER_VERSION = "2.1.0";
 const SHORT_LABEL_MAX_LENGTH = 28;
 const LOCALE_KEY_PATTERN = /^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/;
 const NORMALIZED_SOURCE_PATH = path.join(
   REPOSITORY_ROOT,
-  "backend/taxonomy/v4/taxonomy-v4.normalized.json",
+  "backend/taxonomy/v1/taxonomy-v1.normalized.json",
 );
 const CROSSWALK_PATH = path.join(
   REPOSITORY_ROOT,
-  "backend/taxonomy/v4/crosswalk.reviewed.json",
+  "backend/taxonomy/v1/crosswalk.reviewed.json",
 );
 const PRIVATE_BUNDLE_PATH = path.join(
   REPOSITORY_ROOT,
-  "backend/src/modules/taxonomy/generated/taxonomy-v4.private.ts",
+  "backend/taxonomy/generated/taxonomy-v1.private.ts",
 );
 const PUBLIC_BUNDLE_PATH = path.join(
   REPOSITORY_ROOT,
-  "packages/contracts/src/fixtures/generated/taxonomy-v4.public.json",
+  "packages/contracts/src/testing/taxonomy-v1.generated.json",
 );
 const PUBLIC_BUNDLE_MODULE_PATH = path.join(
   REPOSITORY_ROOT,
-  "packages/contracts/src/fixtures/generated/taxonomy-v4.public.ts",
-);
-const IDENTITY_BUNDLE_MODULE_PATH = path.join(
-  REPOSITORY_ROOT,
-  "packages/contracts/src/fixtures/generated/taxonomy-v4.identity.ts",
-);
-const CARD_BUNDLE_MODULE_PATH = path.join(
-  REPOSITORY_ROOT,
-  "packages/contracts/src/fixtures/generated/taxonomy-v4.card.ts",
+  "packages/contracts/src/testing/taxonomy-v1.generated.ts",
 );
 const IMPORT_REPORT_PATH = path.join(
   REPOSITORY_ROOT,
-  "docs/architecture/generated/taxonomy-v4-import-report.json",
+  "docs/architecture/generated/taxonomy-v1-import-report.json",
 );
 const SEED_PATH = path.join(
   REPOSITORY_ROOT,
-  "backend/supabase/seed/taxonomy-v4.generated.sql",
+  "backend/supabase/seed/taxonomy-v1.generated.sql",
 );
 
 const CORE_SHEETS = [
@@ -1981,6 +1975,21 @@ function normalizeWorkbook(
     addAlias(alias, mapping.canonicalId, "v3_slug");
   }
 
+  // The former tutoring node covered all courses and training (00016/00030),
+  // so its v1 destination is the education root, never a guessed subject leaf.
+  for (const alias of [
+    "services.tutoring",
+    "cours-particuliers",
+    "cours-formations",
+    "courses",
+  ]) {
+    aliases.set(alias, {
+      alias,
+      canonicalCategoryId: "education",
+      kind: "slug",
+    });
+  }
+
   const countryPolicyDrafts = sheets["19_COUNTRY_RULES"].map((row) => {
     const countryCode = asString(row.country_code, "country_rule.country_code");
     return {
@@ -2397,21 +2406,6 @@ function buildPublicBundle(source: NormalizedSource) {
     validationRules: publicValidationRules,
     projections,
     aliases: source.aliases,
-    compatibility: {
-      supportedIntentsByCategory: Object.fromEntries(
-        source.categories.map((category) => [
-          category.id,
-          [
-            ...new Set(
-              source.listingTypes
-                .filter((listingType) => listingType.categoryId === category.id)
-                .map((listingType) => listingType.intent),
-            ),
-          ],
-        ]),
-      ),
-      v3Crosswalk: source.crosswalk.v3Nodes,
-    },
   };
 }
 
@@ -2437,6 +2431,7 @@ function generateSeedSql(source: NormalizedSource): string {
     `-- taxonomy=${VERSION} workbook_sha256=${source.metadata.workbookSha256}`,
     "-- This seed is imported only through the guarded local workflow.",
     "BEGIN;",
+    "INSERT INTO public.taxonomy_versions(version_number,status,description) VALUES (1,'published','Canonical taxonomy v1') ON CONFLICT (version_number) DO NOTHING;",
     "",
     "INSERT INTO public.taxonomy_imports (taxonomy_version, compiler_version, workbook_sha256, normalized_sha256, source_counts, status)",
     `VALUES (${sqlLiteral(VERSION)}, ${sqlLiteral(COMPILER_VERSION)}, ${sqlLiteral(source.metadata.workbookSha256)}, ${sqlLiteral(source.metadata.normalizedSha256)}, ${jsonLiteral(source.verification.sourceCounts)}, 'compiled')`,
@@ -2466,7 +2461,7 @@ function generateSeedSql(source: NormalizedSource): string {
   }
   lines.push(
     "",
-    "-- Retire legacy rows that still own a canonical v4 slug before inserting the reviewed identity.",
+    "-- Retire legacy rows that still own a canonical v1 slug before inserting the reviewed identity.",
   );
   for (const category of source.categories) {
     lines.push(
@@ -2541,7 +2536,7 @@ function generateSeedSql(source: NormalizedSource): string {
       ),
     };
     lines.push(
-      `UPDATE public.categories SET taxonomy_description = ${sqlNullable(category.description)}, discovery_projection = ${jsonLiteral(discovery)} WHERE id = ${sqlLiteral(category.id)};`,
+      `UPDATE public.categories SET taxonomy_version_id = (SELECT id FROM public.taxonomy_versions WHERE version_number = 1), taxonomy_description = ${sqlNullable(category.description)}, discovery_projection = ${jsonLiteral(discovery)} WHERE id = ${sqlLiteral(category.id)};`,
     );
   }
   for (const type of source.listingTypes) {
@@ -2568,7 +2563,6 @@ function generateSeedSql(source: NormalizedSource): string {
     countryPolicyDrafts: source.countryPolicyDrafts,
     policies: source.policies,
     referenceData: source.referenceData,
-    crosswalk: source.crosswalk,
     quarantine: source.quarantine,
     verification: source.verification,
     resolver: {
@@ -2676,14 +2670,14 @@ function buildPrivateBundleModule(privateBundle: unknown): string {
   return [
     "// Generated by backend/scripts/taxonomy/compile.ts. Do not edit.",
     'import { gunzipSync } from "node:zlib";',
-    'import type { TaxonomyV4PrivateBundle } from "../taxonomy.bundle.js";',
-    'export type { TaxonomyV4PrivateBundle } from "../taxonomy.bundle.js";',
+    'import type { TaxonomyV1PrivateBundle } from "../../src/modules/taxonomy/taxonomy.bundle.js";',
+    'export type { TaxonomyV1PrivateBundle } from "../../src/modules/taxonomy/taxonomy.bundle.js";',
     "",
     `const compressedBundle = ${JSON.stringify(compressed)};`,
     "",
-    "export const TAXONOMY_V4_PRIVATE_BUNDLE = JSON.parse(",
+    "export const TAXONOMY_V1_PRIVATE_BUNDLE = JSON.parse(",
     '  gunzipSync(Buffer.from(compressedBundle, "base64")).toString("utf8"),',
-    ") as TaxonomyV4PrivateBundle;",
+    ") as TaxonomyV1PrivateBundle;",
     "",
   ].join("\n");
 }
@@ -2695,11 +2689,11 @@ function buildPublicBundleModule(publicBundle: unknown): string {
   return [
     "// Generated by backend/scripts/taxonomy/compile.ts. Do not edit.",
     'import { gunzipSync, strFromU8 } from "fflate";',
-    'import type { TaxonomyV4PublicBundle } from "../../schemas/taxonomy";',
+    'import type { TaxonomyV1PublicBundle } from "../schemas/taxonomy";',
     "",
     `const compressedBundle = ${JSON.stringify(compressed)};`,
     'const base64Alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";',
-    "let cachedBundle: TaxonomyV4PublicBundle | undefined;",
+    "let cachedBundle: TaxonomyV1PublicBundle | undefined;",
     "",
     "function decodeBase64(value: string): Uint8Array {",
     '  const input = value.replace(/=+$/, "");',
@@ -2720,140 +2714,15 @@ function buildPublicBundleModule(publicBundle: unknown): string {
     "  return output;",
     "}",
     "",
-    "/** Lazily decodes the generated public/demo projection once per runtime. */",
-    "export function getTaxonomyV4PublicBundle(): TaxonomyV4PublicBundle {",
+    "/** Lazily decodes the generated HTTP test fixture once per test process. */",
+    "export function getTaxonomyV1PublicBundle(): TaxonomyV1PublicBundle {",
     "  if (!cachedBundle) {",
     "    cachedBundle = JSON.parse(",
     "      strFromU8(gunzipSync(decodeBase64(compressedBundle))),",
-    "    ) as TaxonomyV4PublicBundle;",
+    "    ) as TaxonomyV1PublicBundle;",
     "  }",
     "  return cachedBundle;",
     "}",
-    "",
-  ].join("\n");
-}
-
-function buildIdentityBundleModule(source: NormalizedSource): string {
-  const brandAttribute = source.attributes.find(
-    (attribute) => attribute.id === "brand",
-  );
-  assert(
-    brandAttribute?.privacy === "public" && brandAttribute.optionSetId,
-    "The public brand attribute must reference a canonical option set.",
-  );
-  const identityNodes = source.categories.map((category) => [
-    category.id,
-    category.sourceKey,
-    category.parentId ?? null,
-    category.slug,
-    category.labels,
-    category.shortLabels,
-  ]);
-  const aliases = source.aliases.map((alias) => [
-    alias.alias,
-    alias.canonicalCategoryId,
-  ]);
-  const brandOptions = source.options
-    .filter(
-      (option) =>
-        option.optionSetId === brandAttribute.optionSetId && option.active,
-    )
-    .map((option) => [option.key, option.labels]);
-
-  const tupleLines = (rows: unknown[][]) =>
-    rows.map((row) => `  ${JSON.stringify(row)},`).join("\n");
-
-  return [
-    "// Generated by backend/scripts/taxonomy/compile.ts. Do not edit.",
-    "",
-    "export type TaxonomyV4IdentityLabels = Readonly<Record<string, string>>;",
-    "export type TaxonomyV4IdentityNodeTuple = readonly [",
-    "  id: string,",
-    "  sourceKey: string,",
-    "  parentId: string | null,",
-    "  slug: string,",
-    "  labels: TaxonomyV4IdentityLabels,",
-    "  shortLabels: TaxonomyV4IdentityLabels,",
-    "];",
-    "export type TaxonomyV4IdentityAliasTuple = readonly [",
-    "  alias: string,",
-    "  canonicalCategoryId: string,",
-    "];",
-    "export type TaxonomyV4BrandOptionTuple = readonly [",
-    "  key: string,",
-    "  labels: TaxonomyV4IdentityLabels,",
-    "];",
-    "",
-    "export const TAXONOMY_V4_IDENTITY_NODES: readonly TaxonomyV4IdentityNodeTuple[] = [",
-    tupleLines(identityNodes),
-    "];",
-    "",
-    "export const TAXONOMY_V4_IDENTITY_ALIASES: readonly TaxonomyV4IdentityAliasTuple[] = [",
-    tupleLines(aliases),
-    "];",
-    "",
-    "export const TAXONOMY_V4_BRAND_OPTIONS: readonly TaxonomyV4BrandOptionTuple[] = [",
-    tupleLines(brandOptions),
-    "];",
-    "",
-  ].join("\n");
-}
-
-function buildCardBundleModule(source: NormalizedSource): string {
-  const brandAttribute = source.attributes.find(
-    (attribute) => attribute.id === "brand",
-  );
-  assert(
-    brandAttribute?.privacy === "public" && brandAttribute.optionSetId,
-    "The public brand attribute must reference a canonical option set.",
-  );
-  const roots = source.categories
-    .filter((category) => !category.parentId)
-    .map((category) => [
-      category.id,
-      category.sourceKey,
-      category.slug,
-      category.labels,
-      category.shortLabels,
-    ]);
-  const rootIds = new Set(roots.map(([id]) => id));
-  const rootAliases = source.aliases
-    .filter((alias) => rootIds.has(alias.canonicalCategoryId))
-    .map((alias) => [alias.alias, alias.canonicalCategoryId]);
-  const brandOptions = source.options
-    .filter(
-      (option) =>
-        option.optionSetId === brandAttribute.optionSetId && option.active,
-    )
-    .map((option) => [option.key, option.labels]);
-  const tupleLines = (rows: unknown[][]) =>
-    rows.map((row) => `  ${JSON.stringify(row)},`).join("\n");
-
-  return [
-    "// Generated by backend/scripts/taxonomy/compile.ts. Do not edit.",
-    "",
-    "export type TaxonomyV4CardLabels = Readonly<Record<string, string>>;",
-    "export type TaxonomyV4CardRootTuple = readonly [",
-    "  id: string,",
-    "  sourceKey: string,",
-    "  slug: string,",
-    "  labels: TaxonomyV4CardLabels,",
-    "  shortLabels: TaxonomyV4CardLabels,",
-    "];",
-    "export type TaxonomyV4CardAliasTuple = readonly [alias: string, rootId: string];",
-    "export type TaxonomyV4CardBrandTuple = readonly [key: string, labels: TaxonomyV4CardLabels];",
-    "",
-    "export const TAXONOMY_V4_CARD_ROOTS: readonly TaxonomyV4CardRootTuple[] = [",
-    tupleLines(roots),
-    "];",
-    "",
-    "export const TAXONOMY_V4_CARD_ROOT_ALIASES: readonly TaxonomyV4CardAliasTuple[] = [",
-    tupleLines(rootAliases),
-    "];",
-    "",
-    "export const TAXONOMY_V4_CARD_BRANDS: readonly TaxonomyV4CardBrandTuple[] = [",
-    tupleLines(brandOptions),
-    "];",
     "",
   ].join("\n");
 }
@@ -2897,6 +2766,8 @@ async function compileFromNormalizedSource(check: boolean) {
   const publicBundle = buildPublicBundle(compiledSource);
   const privateBundle = {
     ...compiledSource,
+    referenceEntries,
+    crosswalk: undefined,
     resolver: {
       precedence: [
         "base_attribute",
@@ -2909,6 +2780,62 @@ async function compileFromNormalizedSource(check: boolean) {
     },
   };
   const validatedBundle = taxonomyPrivateBundleSchema.parse(privateBundle);
+  const snapshot = new TaxonomyV1Service(validatedBundle, 1);
+  const context = (country: string) =>
+    resolveMarketContext({
+      hostname: country === "FR" ? "fixtures.fr.test" : "fixtures.global.test",
+      pathname: country === "FR" ? "/" : `/${country.toLowerCase()}`,
+      infrastructure: {
+        franceDomain: "fixtures.fr.test",
+        globalDomain: "fixtures.global.test",
+        canonicalProtocol: "https",
+      },
+    });
+  const responses = {
+    trees: Object.fromEntries(
+      ["FR", "BE", "CH"].map((code) => [
+        code,
+        {
+          ...snapshot.getMetadata(),
+          locale: `fr-${code}`,
+          marketCode: code,
+          items: snapshot.listTree(context(code)),
+          aliases: validatedBundle.aliases,
+          listingTypes: snapshot.listListingTypes(context(code)),
+        },
+      ]),
+    ),
+    schemas: Object.fromEntries(
+      [
+        ["real_estate.rentals.apartments", "professional"],
+        ["vehicles.cars.city_cars", "individual"],
+        ["electronics.computers.laptops", "individual"],
+        ["vehicles.nautical.motorboats", "individual"],
+      ].map(([category, seller]) => [
+        `${category}/${seller}`,
+        snapshot.resolve({
+          marketContext: context("FR"),
+          categoryIdentity: category,
+          sellerType: seller as "individual" | "professional",
+          locale: "fr-FR",
+        }),
+      ]),
+    ),
+    options: {
+      "model/brand:renault": snapshot.lookupOptions({
+        optionSetId: "model",
+        parentOptionId: "brand:renault",
+      }),
+    },
+  };
+  await writeOrCheck(
+    path.join(
+      REPOSITORY_ROOT,
+      "packages/contracts/src/testing/taxonomy-responses.generated.ts",
+    ),
+    `// Generated by taxonomy-compile using the sole backend resolver. Test input only.\nexport const recordedResponses: unknown = JSON.parse(${JSON.stringify(JSON.stringify(responses))});\n`,
+    check,
+  );
   const coverage = taxonomyCoverage(validatedBundle);
   await writeOrCheck(
     path.join(
@@ -2934,16 +2861,6 @@ async function compileFromNormalizedSource(check: boolean) {
     check,
   );
   await writeOrCheck(
-    IDENTITY_BUNDLE_MODULE_PATH,
-    buildIdentityBundleModule(compiledSource),
-    check,
-  );
-  await writeOrCheck(
-    CARD_BUNDLE_MODULE_PATH,
-    buildCardBundleModule(compiledSource),
-    check,
-  );
-  await writeOrCheck(
     PUBLIC_BUNDLE_PATH,
     `${JSON.stringify(publicBundle)}\n`,
     check,
@@ -2955,7 +2872,7 @@ async function compileFromNormalizedSource(check: boolean) {
     check,
   );
   console.log(
-    `${check ? "Verified" : "Generated"} taxonomy v4 master: ${compiledSource.categories.length} taxonomy nodes, ${compiledSource.listingTypes.length} listing types, ${compiledSource.attributes.length} attributes, ${compiledSource.bindings.length} resolved bindings.`,
+    `${check ? "Verified" : "Generated"} taxonomy v1 master: ${compiledSource.categories.length} taxonomy nodes, ${compiledSource.listingTypes.length} listing types, ${compiledSource.attributes.length} attributes, ${compiledSource.bindings.length} resolved bindings.`,
   );
 }
 

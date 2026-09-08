@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { TAXONOMY_V4_PRIVATE_BUNDLE as bundle } from "../../src/modules/taxonomy/generated/taxonomy-v4.private.js";
+import { TAXONOMY_V1_PRIVATE_BUNDLE as bundle } from "../../taxonomy/generated/taxonomy-v1.private.js";
 import { taxonomyImpact } from "../../src/modules/taxonomy/taxonomy.impact.js";
 import { TaxonomyGovernanceService } from "../../src/modules/taxonomy/taxonomy.governance.js";
 import { PostgresTaxonomyPublicationRepository } from "../../src/infrastructure/database/repositories/taxonomy-publication.repository.js";

@@ -41,12 +41,13 @@ import {
   ProgressBar,
   Select,
   Skeleton,
+  StatePanel,
   Textarea,
   Image,
 } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useTranslation } from "../../i18n/I18nProvider";
-import { formatImmoMoney } from "./immo-format";
+import { formatImmoMoney, immoOptions } from "./immo-format";
 // Same reason as ImmoSearchPage: the picker pulls in Leaflet, whose module body
 // touches `window`. Statically imported it reached the server graph through the
 // router and put the map engine in the first client chunk for every visitor,
@@ -89,6 +90,16 @@ const TOTAL_STEPS = REAL_ESTATE_CONSTRAINTS.publication.stepCount;
 type DraftData = PropertyPublicationDraftData;
 
 export const ImmoPublishWizardPage: React.FC = () => {
+  const { currentUser } = useAuth();
+  const { activeMarket } = useMarketLocation();
+  return (
+    <ImmoPublicationEditor
+      key={`${currentUser?.id ?? "guest"}:${activeMarket.code}`}
+    />
+  );
+};
+
+const ImmoPublicationEditor: React.FC = () => {
   const { t } = useTranslation();
   const { currentUser } = useAuth();
   const { activeMarket, currentLocale, convertMoney } = useMarketLocation();
@@ -102,6 +113,8 @@ export const ImmoPublishWizardPage: React.FC = () => {
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [data, setData] = useState<DraftData>(EMPTY_PROPERTY_PUBLICATION_DRAFT);
   const [catalog, setCatalog] = useState<RealEstateCatalog | null>(null);
+  const [loadError, setLoadError] = useState(false);
+  const [retry, setRetry] = useState(0);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -126,6 +139,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
   });
 
   useEffect(() => {
+    let active = true;
     Promise.all([
       services.realEstate.getCatalog(activeMarket.code),
       services.realEstate.getOrCreateDraft(
@@ -135,9 +149,13 @@ export const ImmoPublishWizardPage: React.FC = () => {
       ),
     ])
       .then(([nextCatalog, remote]) => {
+        if (!active) return;
         const restoredData = {
           ...EMPTY_PROPERTY_PUBLICATION_DRAFT,
           ...(remote.data as Partial<DraftData>),
+          currency:
+            (remote.data as Partial<DraftData>).currency ||
+            nextCatalog.config.currency,
         };
         setCatalog(nextCatalog);
         setDraftId(remote.id);
@@ -161,10 +179,13 @@ export const ImmoPublishWizardPage: React.FC = () => {
         );
         hydrated.current = true;
       })
-      .catch(() =>
-        toast.error("Le service de publication Immo est indisponible."),
-      );
-  }, [accountId, activeMarket.code, currentUser?.name, toast]);
+      .catch(() => {
+        if (active) setLoadError(true);
+      });
+    return () => {
+      active = false;
+    };
+  }, [accountId, activeMarket.code, currentUser?.name, retry]);
 
   useEffect(() => {
     if (!hasEnteredWizard || !hydrated.current || !draftId) return;
@@ -337,9 +358,14 @@ export const ImmoPublishWizardPage: React.FC = () => {
         if (result.privateStorageKey)
           setData((current) => ({
             ...current,
-            privateDocumentKeys: [
-              ...current.privateDocumentKeys,
-              result.privateStorageKey!,
+            documents: [
+              ...current.documents,
+              {
+                id: crypto.randomUUID(),
+                type: "other",
+                status: "uploaded",
+                privateStorageKey: result.privateStorageKey!,
+              },
             ],
           }));
       }
@@ -420,7 +446,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
       const result = await services.realEstate.submitDraft(draftId);
       setPublishedId(result.propertyId);
       toast.success(
-        "Annonce envoyée en validation. Aucun paiement réel n’a été effectué en mode démo.",
+        "Annonce envoyée en validation. Retrouvez son suivi dans votre compte.",
       );
     } catch (cause) {
       toast.error(
@@ -445,6 +471,25 @@ export const ImmoPublishWizardPage: React.FC = () => {
     }
     scrollToTop();
   };
+
+  if (loadError)
+    return (
+      <StatePanel
+        variant="error"
+        title="Publication indisponible"
+        description="Le catalogue ou le brouillon n’a pas pu être chargé."
+        action={
+          <Button
+            onClick={() => {
+              setLoadError(false);
+              setRetry((value) => value + 1);
+            }}
+          >
+            Réessayer
+          </Button>
+        }
+      />
+    );
 
   if (isPreparationVisible) {
     return (
@@ -590,16 +635,40 @@ export const ImmoPublishWizardPage: React.FC = () => {
                     className="mt-2 w-full"
                     labelledByAncestor
                     value={data.transactionType}
-                    onChange={(event) =>
-                      update("transactionType", event.target.value)
-                    }
+                    onChange={(event) => {
+                      const transactionType = event.target.value;
+                      const compatible = catalog.propertyTypes.some(
+                        (type) =>
+                          type.type === data.propertyType &&
+                          type.transactionTypes.some(
+                            (transaction) => transaction === transactionType,
+                          ),
+                      );
+                      setData((current) => ({
+                        ...current,
+                        transactionType,
+                        propertyType: compatible ? current.propertyType : "",
+                      }));
+                      if (data.propertyType && !compatible)
+                        toast.info(
+                          "Le projet a changé. Sélectionnez un type de bien compatible.",
+                        );
+                    }}
                   >
-                    <option value="sale">Vendre</option>
-                    <option value="long_term_rental">Louer à l’année</option>
-                    <option value="seasonal_rental">
-                      Location saisonnière
-                    </option>
-                    <option value="shared_accommodation">Colocation</option>
+                    <option value="">Sélectionnez un projet</option>
+                    {immoOptions(catalog, "property_transaction", currentLocale)
+                      .filter((option) =>
+                        catalog.propertyTypes.some((type) =>
+                          type.transactionTypes.some(
+                            (transaction) => transaction === option.value,
+                          ),
+                        ),
+                      )
+                      .map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
                   </Select>
                 </label>
                 <label className="text-xs font-semibold">
@@ -612,11 +681,18 @@ export const ImmoPublishWizardPage: React.FC = () => {
                       update("propertyType", event.target.value)
                     }
                   >
-                    {catalog.propertyTypes.map((type) => (
-                      <option key={type.type} value={type.type}>
-                        {type.label}
-                      </option>
-                    ))}
+                    <option value="">Sélectionnez un type de bien</option>
+                    {catalog.propertyTypes
+                      .filter((type) =>
+                        type.transactionTypes.some(
+                          (transaction) => transaction === data.transactionType,
+                        ),
+                      )
+                      .map((type) => (
+                        <option key={type.type} value={type.type}>
+                          {type.label}
+                        </option>
+                      ))}
                   </Select>
                 </label>
               </div>
@@ -681,9 +757,15 @@ export const ImmoPublishWizardPage: React.FC = () => {
                     )
                   }
                 >
-                  <option value="street">Rue approximative</option>
-                  <option value="district">Quartier</option>
-                  <option value="city">Commune</option>
+                  {immoOptions(catalog, "location_precision", currentLocale)
+                    .filter((option) =>
+                      ["street", "district", "city"].includes(option.value),
+                    )
+                    .map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
                 </Select>
               </label>
               <div>
@@ -789,30 +871,31 @@ export const ImmoPublishWizardPage: React.FC = () => {
                       update("condition", event.target.value)
                     }
                   >
-                    <option value="new">Neuf</option>
-                    <option value="excellent">Excellent état</option>
-                    <option value="good">Bon état</option>
-                    <option value="renovation_needed">Travaux à prévoir</option>
-                    <option value="to_renovate">À rénover</option>
+                    <option value="">Sélectionnez un état</option>
+                    {immoOptions(
+                      catalog,
+                      "property_condition",
+                      currentLocale,
+                    ).map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
                   </Select>
                 </label>
               </div>
               <fieldset>
                 <legend className="mb-2 text-xs font-bold">Équipements</legend>
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                  {[
-                    ["lift", "Ascenseur"],
-                    ["balcony", "Balcon"],
-                    ["terrace", "Terrasse"],
-                    ["garden", "Jardin"],
-                    ["parking", "Parking"],
-                    ["cellar", "Cave"],
-                  ].map(([id, label]) => (
+                  {(
+                    catalog.attributes.find((field) => field.id === "amenities")
+                      ?.options ?? []
+                  ).map(({ value, label }) => (
                     <Checkbox
-                      key={id}
+                      key={value}
                       label={label}
-                      checked={data.amenities.includes(id)}
-                      onChange={() => toggle("amenities", id)}
+                      checked={data.amenities.includes(value)}
+                      onChange={() => toggle("amenities", value)}
                     />
                   ))}
                 </div>
@@ -895,11 +978,13 @@ export const ImmoPublishWizardPage: React.FC = () => {
                       update("feesPaidBy", event.target.value)
                     }
                   >
-                    <option value="seller">du vendeur</option>
-                    <option value="buyer">de l’acquéreur</option>
-                    <option value="owner">du propriétaire</option>
-                    <option value="tenant">du locataire</option>
-                    <option value="shared">partagée</option>
+                    {immoOptions(catalog, "fees_paid_by", currentLocale).map(
+                      (option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ),
+                    )}
                   </Select>
                 </label>
               </div>
@@ -918,8 +1003,13 @@ export const ImmoPublishWizardPage: React.FC = () => {
                     onChange={(event) => update("dpeClass", event.target.value)}
                   >
                     <option value="">En attente</option>
-                    {["A", "B", "C", "D", "E", "F", "G"].map((item) => (
-                      <option key={item}>{item}</option>
+                    {(
+                      catalog.attributes.find((field) => field.id === "dpe")
+                        ?.options ?? []
+                    ).map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
                     ))}
                   </Select>
                 </label>
@@ -932,8 +1022,13 @@ export const ImmoPublishWizardPage: React.FC = () => {
                     onChange={(event) => update("gesClass", event.target.value)}
                   >
                     <option value="">En attente</option>
-                    {["A", "B", "C", "D", "E", "F", "G"].map((item) => (
-                      <option key={item}>{item}</option>
+                    {(
+                      catalog.attributes.find((field) => field.id === "ges")
+                        ?.options ?? []
+                    ).map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
                     ))}
                   </Select>
                 </label>
@@ -1042,7 +1137,7 @@ export const ImmoPublishWizardPage: React.FC = () => {
                   Ajouter un document
                 </label>
                 <p className="mt-3 text-xs font-bold">
-                  {data.privateDocumentKeys.length} document(s) protégé(s)
+                  {data.documents.length} document(s) protégé(s)
                 </p>
               </div>
             </div>
@@ -1103,7 +1198,15 @@ export const ImmoPublishWizardPage: React.FC = () => {
                 </div>
                 <div className="p-5">
                   <p className="text-xs font-bold uppercase text-primary">
-                    {data.transactionType === "sale" ? "Vente" : "Location"} ·{" "}
+                    {
+                      immoOptions(
+                        catalog,
+                        "property_transaction",
+                        currentLocale,
+                      ).find((option) => option.value === data.transactionType)
+                        ?.label
+                    }{" "}
+                    ·{" "}
                     {
                       catalog.propertyTypes.find(
                         (item) => item.type === data.propertyType,

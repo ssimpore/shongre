@@ -108,8 +108,14 @@ export async function buildMarketSitemapGroups(
 ): Promise<SitemapGroup[]> {
   if (context.kind !== "market" || !context.countryCode) return [];
   const countryCode = context.countryCode;
-  const { activeListings, sellers, jobs, employmentCatalog, collections } =
-    await listServerPublicSitemapData(countryCode);
+  const {
+    activeListings,
+    sellers,
+    jobs,
+    employmentCatalog,
+    collections,
+    taxonomy,
+  } = await listServerPublicSitemapData(countryCode);
   const inventoryLastModified = latestDate(
     activeListings.map(listingLastModified),
   );
@@ -125,6 +131,7 @@ export async function buildMarketSitemapGroups(
         status: "found",
         data: {
           kind: "listing_search",
+          taxonomy,
           pathname: "/recherche",
           items: activeListings,
           total: activeListings.length,
@@ -170,6 +177,7 @@ export async function buildMarketSitemapGroups(
         status: "found",
         data: {
           kind: "listing_search",
+          taxonomy,
           pathname: `/categorie/${slug}`,
           items: listings,
           total: listings.length,

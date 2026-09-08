@@ -3187,8 +3187,6 @@ export const messagesEn: MessageCatalogue = {
   "sellerworkspace.billingHistoryModal.aucuneFactureNeCorrespondA":
     "No invoice matches this filter.",
   "sellerworkspace.bulkImportModal.modeleCsvVierge": "Blank CSV template",
-  "sellerworkspace.bulkImportModal.chargerUnExemple4Articles":
-    "Load an example (4 items)",
   "sellerworkspace.bulkImportModal.parcourirUnFichierCsv":
     "Browse for a CSV file…",
   "sellerworkspace.bulkImportModal.utilisezNotreModeleAvecSeparateur":
@@ -3205,6 +3203,10 @@ export const messagesEn: MessageCatalogue = {
     "Title is required",
   "sellerworkspace.bulkImportModal.validationTitleTooShort":
     "Title must contain at least 5 characters",
+  "sellerworkspace.bulkImportModal.validationCategoryInvalid":
+    "Choose an available leaf category.",
+  "sellerworkspace.bulkImportModal.validationAttributesInvalid":
+    "The attributes or photo JSON is invalid.",
   "sellerworkspace.bulkImportModal.validationPriceInvalid": "Invalid price",
   "sellerworkspace.bulkImportModal.rowsDetected":
     "{total} rows detected ({valid} valid)",
@@ -4432,6 +4434,10 @@ export const messagesEn: MessageCatalogue = {
   "admin.taxonomyEditor.resource.dependencies": "Form conditions",
   "admin.taxonomyEditor.resource.validationRules": "Validation rules",
   "admin.taxonomyEditor.resource.aliases": "Historical identities",
+  "admin.taxonomy.editReferences": "Edit in taxonomy",
+  "admin.taxonomy.referenceActive": "Active",
+  "admin.taxonomy.referenceInactive": "Inactive",
+  "admin.taxonomyEditor.resource.referenceEntries": "Domain reference data",
   "admin.taxonomyEditor.resource.referenceData": "Sources and review status",
   "admin.taxonomyEditor.resource.presentations": "Presentation and journeys",
   "admin.taxonomyEditor.resource.discovery": "Search and indexing",

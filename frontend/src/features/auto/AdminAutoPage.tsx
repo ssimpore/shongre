@@ -16,7 +16,6 @@ import type {
   AutoAdminOverview,
   AutoAddOn,
   AutoPlan,
-  VehicleTypeConfig,
 } from "@shongre/contracts/auto";
 import { services } from "../../api/client/service-registry";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
@@ -82,32 +81,6 @@ export const AdminAutoPage: React.FC = () => {
         action={<Button onClick={load}>Réessayer</Button>}
       />
     );
-
-  const updateType = async (type: VehicleTypeConfig) => {
-    try {
-      const next = await services.auto.updateVehicleType(
-        activeMarket.code,
-        type.type,
-        {
-          isActive: !type.isActive,
-        },
-      );
-      setOverview({
-        ...overview,
-        catalog: {
-          ...overview.catalog,
-          vehicleTypes: overview.catalog.vehicleTypes.map((row) =>
-            row.type === next.type ? next : row,
-          ),
-        },
-      });
-      toast.success(`${type.label} ${next.isActive ? "activé" : "désactivé"}.`);
-    } catch (reason) {
-      toast.error(
-        reason instanceof Error ? reason.message : "Modification refusée.",
-      );
-    }
-  };
 
   const togglePlan = async (plan: AutoPlan) => {
     try {
@@ -260,18 +233,15 @@ export const AdminAutoPage: React.FC = () => {
                     {type.filterFieldIds.length} filtres
                   </p>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => updateType(type)}
-                  aria-label={`${type.isActive ? "Désactiver" : "Activer"} ${type.label}`}
-                  className={type.isActive ? "text-success" : "text-text-muted"}
+                <a
+                  className="text-primary underline"
+                  href={routes.admin.taxonomy()}
                 >
-                  {type.isActive ? (
-                    <ToggleRight className="h-icon-lg w-icon-lg" />
-                  ) : (
-                    <ToggleLeft className="h-icon-lg w-icon-lg" />
-                  )}
-                </button>
+                  {type.isActive
+                    ? t("admin.taxonomy.referenceActive")
+                    : t("admin.taxonomy.referenceInactive")}{" "}
+                  · {t("admin.taxonomy.editReferences")}
+                </a>
               </div>
             ))}
           </div>

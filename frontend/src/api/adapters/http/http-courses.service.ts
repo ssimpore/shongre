@@ -5,7 +5,6 @@ import type {
   CoursePublicOffer,
   CourseOrganizationWorkspace,
   CoursePlan,
-  CourseSubject,
   LearnerRequest,
   TutorProfile,
   TutorPublicProfile,
@@ -27,9 +26,6 @@ import type {
 import { apiOperation } from "./generated-api-operation";
 
 export class HttpCoursesService implements CoursesServiceContract {
-  private readonly tutorDraftMarkets = new Map<string, string>();
-  private readonly learnerDraftMarkets = new Map<string, string>();
-
   getCatalog(marketCode: string): Promise<CourseCatalog> {
     return apiOperation<CourseCatalog, "getEducationCatalog">(
       "getEducationCatalog",
@@ -93,12 +89,7 @@ export class HttpCoursesService implements CoursesServiceContract {
     );
   }
 
-  getTutorOnboardingDraft(
-    accountId: string,
-    marketCode: string,
-    _displayName?: string,
-  ): Promise<TutorOnboardingDraft> {
-    this.tutorDraftMarkets.set(accountId, marketCode);
+  getTutorOnboardingDraft(marketCode: string): Promise<TutorOnboardingDraft> {
     return apiOperation<
       TutorOnboardingDraft,
       "getEducationWorkflowdraftsTutoronboarding"
@@ -108,14 +99,14 @@ export class HttpCoursesService implements CoursesServiceContract {
   }
 
   saveTutorOnboardingDraft(
-    accountId: string,
+    marketCode: string,
     draft: TutorOnboardingDraft,
   ): Promise<void> {
     return apiOperation<void, "putEducationWorkflowdraftsTutoronboarding">(
       "putEducationWorkflowdraftsTutoronboarding",
       {
         body: {
-          marketCode: this.tutorDraftMarkets.get(accountId) || "FR",
+          marketCode,
           draft,
         },
       },
@@ -123,11 +114,9 @@ export class HttpCoursesService implements CoursesServiceContract {
   }
 
   submitTutorOnboarding(
-    accountId: string,
     marketCode: string,
     draft: TutorOnboardingDraft,
   ): Promise<{ profile: TutorProfile; offer: CourseOffer }> {
-    this.tutorDraftMarkets.set(accountId, marketCode);
     return apiOperation<
       { profile: TutorProfile; offer: CourseOffer },
       "postEducationOnboardingSubmit"
@@ -136,23 +125,19 @@ export class HttpCoursesService implements CoursesServiceContract {
     });
   }
 
-  async clearTutorOnboardingDraft(accountId: string): Promise<void> {
-    const market = this.tutorDraftMarkets.get(accountId) || "FR";
+  async clearTutorOnboardingDraft(marketCode: string): Promise<void> {
     await apiOperation<void, "deleteEducationWorkflowdraftsTutoronboarding">(
       "deleteEducationWorkflowdraftsTutoronboarding",
       {
-        query: { market },
+        query: { market: marketCode },
       },
     );
-    this.tutorDraftMarkets.delete(accountId);
   }
 
   getLearnerRequestDraft(
-    accountId: string,
     marketCode: string,
     subjectId?: string,
   ): Promise<LearnerRequestProgressDraft> {
-    this.learnerDraftMarkets.set(accountId, marketCode);
     return apiOperation<
       LearnerRequestProgressDraft,
       "getEducationWorkflowdraftsLearnerrequest"
@@ -162,29 +147,27 @@ export class HttpCoursesService implements CoursesServiceContract {
   }
 
   saveLearnerRequestDraft(
-    accountId: string,
+    marketCode: string,
     draft: LearnerRequestProgressDraft,
   ): Promise<void> {
     return apiOperation<void, "putEducationWorkflowdraftsLearnerrequest">(
       "putEducationWorkflowdraftsLearnerrequest",
       {
         body: {
-          marketCode: this.learnerDraftMarkets.get(accountId) || "FR",
+          marketCode,
           draft,
         },
       },
     );
   }
 
-  async clearLearnerRequestDraft(accountId: string): Promise<void> {
-    const market = this.learnerDraftMarkets.get(accountId) || "FR";
+  async clearLearnerRequestDraft(marketCode: string): Promise<void> {
     await apiOperation<void, "deleteEducationWorkflowdraftsLearnerrequest">(
       "deleteEducationWorkflowdraftsLearnerrequest",
       {
-        query: { market },
+        query: { market: marketCode },
       },
     );
-    this.learnerDraftMarkets.delete(accountId);
   }
 
   getCurrentTutorWorkspace(marketCode: string): Promise<TutorWorkspace> {
@@ -308,20 +291,6 @@ export class HttpCoursesService implements CoursesServiceContract {
     >("putEducationAdminMarketsByMarketCode", {
       path: { marketCode },
       body: config,
-    });
-  }
-
-  updateSubject(
-    marketCode: string,
-    subjectId: string,
-    patch: Partial<Pick<CourseSubject, "label" | "isActive" | "levelIds">>,
-  ): Promise<CourseSubject> {
-    return apiOperation<
-      CourseSubject,
-      "patchEducationAdminMarketsByMarketCodeSubjectsBySubjectId"
-    >("patchEducationAdminMarketsByMarketCodeSubjectsBySubjectId", {
-      path: { marketCode, subjectId },
-      body: patch,
     });
   }
 

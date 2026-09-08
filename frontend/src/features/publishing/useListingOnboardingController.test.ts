@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { resolveMarketContext } from "@shongre/contracts";
-import { getTaxonomyV4PublicBundle } from "@shongre/contracts/taxonomy-v4-public";
-import { TaxonomyV4PublicResolver } from "@shongre/contracts/taxonomy-v4-resolver";
+import { getTaxonomyV1PublicBundle } from "@shongre/contracts/testing/taxonomy";
+
 import { DELIVERY_TAXONOMY_CATEGORY_ID } from "@shongre/contracts/delivery";
 import { excludeExternallyManagedPublicationNodes } from "./useListingOnboardingController";
 
@@ -17,10 +17,16 @@ const market = resolveMarketContext({
 
 describe("generic listing onboarding taxonomy", () => {
   it("delegates delivery requests to their private domain without hiding moving offers", () => {
-    const tree = new TaxonomyV4PublicResolver(getTaxonomyV4PublicBundle()).tree(
-      market,
-      "fr-FR",
-    );
+    const bundle = getTaxonomyV1PublicBundle();
+    const tree = {
+      taxonomyVersion: "v1" as const,
+      compilerVersion: bundle.metadata.compilerVersion,
+      checksum: bundle.metadata.normalizedSha256,
+      marketCode: "FR" as const,
+      locale: market.locale!,
+      items: bundle.categories,
+      listingTypes: bundle.listingTypes,
+    };
     const genericTree = excludeExternallyManagedPublicationNodes(tree);
 
     expect(

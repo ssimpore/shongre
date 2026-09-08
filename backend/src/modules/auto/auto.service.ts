@@ -1,5 +1,6 @@
+import type { TaxonomyV1Service } from "../taxonomy/taxonomy.v1.service.js";
 import { CANONICAL_TAXONOMY_IDS } from "@shongre/contracts/taxonomy-domain-ids";
-import { taxonomyV4Service } from "../taxonomy/taxonomy.runtime.js";
+import { taxonomyV1Service } from "../taxonomy/taxonomy.runtime.js";
 import { createHash, randomUUID } from "node:crypto";
 import type {
   AutoAddOn,
@@ -10,7 +11,7 @@ import type {
   PartnerReferral,
   VehicleDraft,
   VehiclePrivate,
-  VehicleTypeConfig,
+  VehiclePublic,
 } from "@shongre/contracts/auto";
 import { applyMonetizationToAutoCatalog } from "@shongre/contracts/vertical-monetization-adapters";
 import {
@@ -23,7 +24,6 @@ import {
   vehicleDraftSchema,
   vehiclePrivateSchema,
   vehicleSearchQuerySchema,
-  vehicleTypeConfigSchema,
 } from "@shongre/contracts/auto";
 import {
   IAutoRepository,
@@ -36,6 +36,69 @@ import {
   BusinessRulesService,
 } from "../business-rules/business-rules.service.js";
 import { requireMarketCode } from "../../shared/market/market-code.js";
+
+function vehicleCardTaxonomy(
+  taxonomy: TaxonomyV1Service,
+  vehicle: VehiclePublic,
+  marketCode: string,
+) {
+  const referenceFields = taxonomy.getReferences(
+    "auto_attribute_definitions",
+    marketCode,
+    true,
+  );
+  return taxonomy.projectDomainListing(
+    CANONICAL_TAXONOMY_IDS.vehicles,
+    marketCode,
+    {
+      model_year: vehicle.technical.modelYear,
+      // The canonical mileage definition is in kilometres. Other counters remain
+      // in the public detail payload rather than acquiring the wrong unit.
+      mileage:
+        vehicle.technical.mileageUnit === "km"
+          ? vehicle.technical.mileage
+          : undefined,
+      fuel_type: vehicle.technical.fuelType,
+      transmission: vehicle.technical.transmission,
+      brand: vehicle.makeLabel,
+      body_type: vehicle.technical.bodyType,
+      power_hp: vehicle.technical.powerHp,
+      fiscal_power: vehicle.technical.fiscalPower,
+      battery_capacity_kwh: vehicle.technical.batteryCapacityKwh,
+      electric_range_km: vehicle.technical.electricRangeKm,
+      charging_power_kw: vehicle.technical.chargingPowerKw,
+      critair_class: vehicle.technical.critAirClass,
+      doors: vehicle.technical.doors,
+      seats: vehicle.technical.seats,
+      co2_emissions: vehicle.technical.co2GramsPerKm,
+      condition: vehicle.history.condition,
+      accident_status: vehicle.history.accidentStatus,
+      maintenance_book_status: vehicle.history.maintenanceBookStatus,
+      inspection_status: vehicle.history.inspectionStatus,
+      inspection_valid_until: vehicle.history.inspectionValidUntil,
+      previous_owners: vehicle.history.previousOwnerCount,
+      warranty_months: vehicle.history.warrantyMonths,
+    },
+    {
+      condition: {
+        "fr-FR":
+          referenceFields
+            .find((field) => field.id === "condition")
+            ?.options?.find(
+              (option) => option.value === vehicle.history.condition,
+            )?.label ?? "",
+      },
+      body_type: {
+        "fr-FR":
+          referenceFields
+            .find((field) => field.id === "bodyType")
+            ?.options?.find(
+              (option) => option.value === vehicle.technical.bodyType,
+            )?.label ?? "",
+      },
+    },
+  );
+}
 
 export class AutoService {
   constructor(
@@ -66,12 +129,13 @@ export class AutoService {
       return { items: [], total: 0, pageInfo: { hasNextPage: false } };
     }
     const result = await this.repo.search(query);
-    const taxonomy = (await taxonomyV4Service.snapshot()).projectIdentity(
-      CANONICAL_TAXONOMY_IDS.vehicles,
-    );
+    const taxonomy = await taxonomyV1Service.snapshot();
     return {
       ...result,
-      items: result.items.map((item) => ({ ...item, taxonomy })),
+      items: result.items.map((item) => ({
+        ...item,
+        taxonomy: vehicleCardTaxonomy(taxonomy, item, query.marketCode),
+      })),
     };
   }
 
@@ -105,8 +169,10 @@ export class AutoService {
     } = vehicle;
     return {
       ...publicVehicle,
-      taxonomy: (await taxonomyV4Service.snapshot()).projectIdentity(
-        CANONICAL_TAXONOMY_IDS.vehicles,
+      taxonomy: vehicleCardTaxonomy(
+        await taxonomyV1Service.snapshot(),
+        publicVehicle,
+        marketCode ?? vehicle.marketCodes[0],
       ),
     };
   }
@@ -269,12 +335,59 @@ export class AutoService {
     const now = new Date().toISOString();
     const vehicleId = randomUUID();
     const priceMinor = Number(data.priceMinor || 0);
-    const makeLabel = String(data.makeLabel || "Véhicule");
-    const modelLabel = String(data.modelLabel || "à identifier");
+    const catalog = await this.resolveCatalog(draft.marketCode);
+    const vehicleType = catalog.vehicleTypes.find(
+      (row) => row.type === data.vehicleType,
+    );
+    const make = catalog.vehicleCatalog.find(
+      (row) => row.id === data.makeId && row.kind === "make",
+    );
+    const model = catalog.vehicleCatalog.find(
+      (row) => row.id === data.modelId && row.kind === "model",
+    );
+    if (
+      !vehicleType ||
+      !make ||
+      !model ||
+      model.parentId !== make.id ||
+      !make.vehicleTypes.includes(vehicleType.type) ||
+      !model.vehicleTypes.includes(vehicleType.type) ||
+      (model.startsYear != null && Number(data.modelYear) < model.startsYear) ||
+      (model.endsYear != null && Number(data.modelYear) > model.endsYear) ||
+      !catalog.taxonomyOptions.optionSets.fuel_type.some(
+        (option) => option.key === data.fuelType,
+      ) ||
+      !catalog.taxonomyOptions.optionSets.transmission.some(
+        (option) => option.key === data.transmission,
+      ) ||
+      !catalog.attributes
+        .find((field) => field.id === "condition")
+        ?.options?.some((option) => option.value === data.condition) ||
+      (
+        [
+          ["accidentStatus", "accident_status"],
+          ["maintenanceBookStatus", "maintenance_book_status"],
+          ["inspectionStatus", "inspection_status"],
+          ["mileageUnit", "mileage_unit"],
+        ] as const
+      ).some(
+        ([field, optionSet]) =>
+          !catalog.taxonomyOptions.optionSets[optionSet]?.some(
+            (option) => option.key === data[field],
+          ),
+      )
+    ) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message:
+          "Vérifiez le type, la marque, le modèle et les caractéristiques du véhicule dans le référentiel publié.",
+      });
+    }
+    const makeLabel = make.label;
+    const modelLabel = model.label;
     const title = String(
       data.title || `${makeLabel} ${modelLabel} ${data.trimLabel || ""}`,
     ).trim();
-    const catalog = await this.resolveCatalog(draft.marketCode);
     const plan = catalog.plans.find(
       (row) => row.id === (data.planId || "auto_private_free"),
     );
@@ -883,41 +996,19 @@ export class AutoService {
       }),
     );
   }
-
-  async updateVehicleType(
+  async validateReferenceActivation(
     marketCode: string,
-    type: string,
-    input: Partial<
-      Pick<
-        VehicleTypeConfig,
-        | "label"
-        | "description"
-        | "isActive"
-        | "requiredFieldIds"
-        | "filterFieldIds"
-      >
-    >,
+    types: readonly { type: string; isActive: boolean }[],
   ) {
     const catalog = await this.resolveCatalog(marketCode, true);
-    const current = catalog.vehicleTypes.find((row) => row.type === type);
-    if (!current)
-      throw new AppError({
-        code: "NOT_FOUND",
-        message: "Type de véhicule introuvable.",
-      });
     if (
-      type === "boat" &&
-      input.isActive &&
+      types.some((type) => type.type === "boat" && type.isActive) &&
       !catalog.config.featureFlags.boatListingsEnabled
     )
       throw new AppError({
         code: "VALIDATION_ERROR",
         message: "Le drapeau marché Bateaux doit être activé avant ce type.",
       });
-    return this.repo.saveVehicleType(
-      vehicleTypeConfigSchema.parse({ ...current, ...input }),
-      marketCode,
-    );
   }
 }
 

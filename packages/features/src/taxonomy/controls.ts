@@ -1,8 +1,8 @@
 import type {
-  TaxonomyV4Attribute,
-  TaxonomyV4DependencyRule,
-  TaxonomyV4ResolvedSchema,
-  TaxonomyV4UiComponent,
+  TaxonomyV1Attribute,
+  TaxonomyV1DependencyRule,
+  TaxonomyV1ResolvedSchema,
+  TaxonomyV1UiComponent,
 } from "@shongre/contracts/taxonomy";
 
 export type TaxonomyControlKind =
@@ -108,10 +108,10 @@ export const TAXONOMY_CONTROL_REGISTRY = {
   document_status: control("readonly"),
   datetime_picker: control("date"),
   barcode_input: control("text"),
-} satisfies Record<TaxonomyV4UiComponent, TaxonomyControlDefinition>;
+} satisfies Record<TaxonomyV1UiComponent, TaxonomyControlDefinition>;
 
 export function resolveTaxonomyControl(
-  attribute: Pick<TaxonomyV4Attribute, "uiComponent">,
+  attribute: Pick<TaxonomyV1Attribute, "uiComponent">,
 ): TaxonomyControlDefinition {
   return TAXONOMY_CONTROL_REGISTRY[attribute.uiComponent];
 }
@@ -156,7 +156,7 @@ function hasValue(value: unknown): boolean {
 }
 
 function matchesRule(
-  rule: TaxonomyV4DependencyRule,
+  rule: TaxonomyV1DependencyRule,
   values: Readonly<Record<string, unknown>>,
   context: Readonly<Record<string, unknown>>,
 ): boolean {
@@ -200,7 +200,7 @@ function matchesRule(
 }
 
 function fieldContext(
-  schema: Pick<TaxonomyV4ResolvedSchema, "listingType" | "marketCode">,
+  schema: Pick<TaxonomyV1ResolvedSchema, "listingType" | "marketCode">,
   input: TaxonomyFieldContext,
 ): Readonly<Record<string, unknown>> {
   return {
@@ -214,7 +214,7 @@ function fieldContext(
 }
 
 function valueHasExpectedType(
-  attribute: TaxonomyV4Attribute,
+  attribute: TaxonomyV1Attribute,
   value: unknown,
 ): boolean {
   switch (attribute.dataType) {
@@ -246,7 +246,7 @@ function valueHasExpectedType(
 }
 
 function valueWithinRange(
-  attribute: TaxonomyV4Attribute,
+  attribute: TaxonomyV1Attribute,
   value: unknown,
 ): boolean {
   if (typeof value !== "number") return true;
@@ -256,11 +256,89 @@ function valueWithinRange(
   );
 }
 
+export interface TaxonomyOptionRequest {
+  attributeId: string;
+  parentAttributeId: string;
+  optionSetId: string;
+  parentOptionId?: string;
+}
+
+/** Requests are derived only from the API schema and current form answers. */
+export function buildTaxonomyOptionRequests(
+  schema: TaxonomyV1ResolvedSchema | null | undefined,
+  values: Readonly<Record<string, unknown>>,
+): TaxonomyOptionRequest[] {
+  if (!schema) return [];
+  const requests = schema.dependencyRules.flatMap((rule) => {
+    if (rule.effect !== "FILTER_OPTIONS" || rule.trigger.kind !== "attribute")
+      return [];
+    const parent = schema.attributes.find(
+      (field) => field.definition.id === rule.trigger.key,
+    );
+    if (!parent?.definition.optionSetId) return [];
+    const value = values[rule.trigger.key];
+    const selected = (Array.isArray(value) ? value : [value]).filter(hasValue);
+    return rule.targets.flatMap((target) => {
+      if (target.kind !== "attribute") return [];
+      const child = schema.attributes.find(
+        (field) => field.definition.id === target.key,
+      );
+      if (!child?.definition.optionSetId) return [];
+      return (selected.length ? selected : [undefined]).map((parentValue) => ({
+        attributeId: target.key,
+        parentAttributeId: rule.trigger.key,
+        optionSetId: child.definition.optionSetId!,
+        parentOptionId:
+          parentValue === undefined
+            ? undefined
+            : `${parent.definition.optionSetId}:${String(parentValue)}`,
+      }));
+    });
+  });
+  return [
+    ...new Map(
+      requests.map((request) => [JSON.stringify(request), request]),
+    ).values(),
+  ];
+}
+
+/** Alternatives within one parent are a union; independent parents intersect. */
+export function mergeTaxonomyOptionPages(
+  pages: readonly {
+    request: TaxonomyOptionRequest;
+    items: TaxonomyV1ResolvedSchema["attributes"][number]["options"];
+  }[],
+): Record<string, TaxonomyV1ResolvedSchema["attributes"][number]["options"]> {
+  type Option =
+    TaxonomyV1ResolvedSchema["attributes"][number]["options"][number];
+  const fields = new Map<string, Map<string, Map<string, Option>>>();
+  for (const { request, items } of pages) {
+    const parents =
+      fields.get(request.attributeId) ?? new Map<string, Map<string, Option>>();
+    const options =
+      parents.get(request.parentAttributeId) ?? new Map<string, Option>();
+    for (const option of items) options.set(option.id, option);
+    parents.set(request.parentAttributeId, options);
+    fields.set(request.attributeId, parents);
+  }
+  return Object.fromEntries(
+    [...fields].map(([attributeId, parents]) => {
+      const groups = [...parents.values()];
+      return [
+        attributeId,
+        [...groups[0].values()].filter((option) =>
+          groups.every((group) => group.has(option.id)),
+        ),
+      ];
+    }),
+  );
+}
+
 function allowedOptionKeys(
-  schema: TaxonomyV4ResolvedSchema,
+  schema: TaxonomyV1ResolvedSchema,
   attributeId: string,
   optionsByAttribute?: Readonly<
-    Record<string, TaxonomyV4ResolvedSchema["attributes"][number]["options"]>
+    Record<string, TaxonomyV1ResolvedSchema["attributes"][number]["options"]>
   >,
 ): Set<string> | null {
   const field = schema.attributes.find(
@@ -282,7 +360,7 @@ function valueUsesAllowedOptions(
 }
 
 function parseRuleValue(
-  attribute: TaxonomyV4Attribute,
+  attribute: TaxonomyV1Attribute,
   detail: string | undefined,
 ): unknown {
   if (detail === undefined) return undefined;
@@ -310,7 +388,7 @@ function parseRuleValue(
  */
 export function resolveTaxonomyFieldState(input: {
   schema: Pick<
-    TaxonomyV4ResolvedSchema,
+    TaxonomyV1ResolvedSchema,
     "attributes" | "dependencyRules" | "listingType" | "marketCode"
   >;
   attributeId: string;
@@ -355,13 +433,13 @@ export function resolveTaxonomyFieldState(input: {
  * cross the client service boundary.
  */
 export function reconcileTaxonomyValues(input: {
-  schema: TaxonomyV4ResolvedSchema;
+  schema: TaxonomyV1ResolvedSchema;
   values: Readonly<Record<string, unknown>>;
   sellerType: "individual" | "professional";
   fulfillmentTypes?: readonly string[];
   context?: Readonly<Record<string, unknown>>;
   optionsByAttribute?: Readonly<
-    Record<string, TaxonomyV4ResolvedSchema["attributes"][number]["options"]>
+    Record<string, TaxonomyV1ResolvedSchema["attributes"][number]["options"]>
   >;
 }): {
   values: Record<string, unknown>;
@@ -475,13 +553,13 @@ export function reconcileTaxonomyValues(input: {
 }
 
 export function validateTaxonomyValues(input: {
-  schema: TaxonomyV4ResolvedSchema;
+  schema: TaxonomyV1ResolvedSchema;
   values: Readonly<Record<string, unknown>>;
   sellerType: "individual" | "professional";
   fulfillmentTypes?: readonly string[];
   context?: Readonly<Record<string, unknown>>;
   optionsByAttribute?: Readonly<
-    Record<string, TaxonomyV4ResolvedSchema["attributes"][number]["options"]>
+    Record<string, TaxonomyV1ResolvedSchema["attributes"][number]["options"]>
   >;
 }): TaxonomyValueIssue[] {
   const issues: TaxonomyValueIssue[] = [];

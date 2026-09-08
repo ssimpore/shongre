@@ -1,0 +1,1269 @@
+{
+  "identities": [
+    {
+      "id": "vehicles",
+      "code": "VEH",
+      "slug": "vehicules",
+      "labels": {
+        "fr-FR": "Véhicules",
+        "en-US": "Vehicles"
+      },
+      "shortLabels": {
+        "fr-FR": "Véhicules",
+        "en-US": "Vehicles"
+      },
+      "iconName": "Car",
+      "sortOrder": 1,
+      "level": "category",
+      "publishable": false,
+      "listingFamily": "vehicle",
+      "supportedIntents": ["SELL", "GIVE", "EXCHANGE"]
+    },
+    {
+      "id": "vehicles.cars",
+      "code": "VEH_CARS",
+      "slug": "voitures",
+      "labels": {
+        "fr-FR": "Voitures d'occasion",
+        "en-US": "Used Cars"
+      },
+      "shortLabels": {
+        "fr-FR": "Voitures",
+        "en-US": "Cars"
+      },
+      "parentId": "vehicles",
+      "iconName": "Tag",
+      "sortOrder": 1,
+      "level": "subcategory",
+      "publishable": false,
+      "listingFamily": "vehicle",
+      "supportedIntents": ["SELL", "GIVE", "EXCHANGE"]
+    },
+    {
+      "id": "vehicles.cars.citadines",
+      "code": "VEH_CARS_CITADINE",
+      "slug": "citadines",
+      "labels": {
+        "fr-FR": "Citadines",
+        "en-US": "City cars"
+      },
+      "shortLabels": {
+        "fr-FR": "Citadines",
+        "en-US": "City cars"
+      },
+      "parentId": "vehicles.cars",
+      "iconName": "Tag",
+      "sortOrder": 1,
+      "level": "type",
+      "publishable": true,
+      "listingFamily": "vehicle",
+      "supportedIntents": ["SELL", "GIVE", "EXCHANGE"]
+    },
+    {
+      "id": "vehicles.cars.berlines",
+      "code": "VEH_CARS_BERLINE",
+      "slug": "berlines",
+      "labels": {
+        "fr-FR": "Berlines",
+        "en-US": "Sedans"
+      },
+      "shortLabels": {
+        "fr-FR": "Berlines",
+        "en-US": "Sedans"
+      },
+      "parentId": "vehicles.cars",
+      "iconName": "Tag",
+      "sortOrder": 2,
+      "level": "type",
+      "publishable": true,
+      "listingFamily": "vehicle",
+      "supportedIntents": ["SELL", "GIVE", "EXCHANGE"]
+    },
+    {
+      "id": "vehicles.cars.suv",
+      "code": "VEH_CARS_SUV",
+      "slug": "suv-4x4",
+      "labels": {
+        "fr-FR": "SUV & 4x4",
+        "en-US": "SUVs & 4x4"
+      },
+      "shortLabels": {
+        "fr-FR": "SUV & 4x4",
+        "en-US": "SUVs & 4x4"
+      },
+      "parentId": "vehicles.cars",
+      "iconName": "Tag",
+      "sortOrder": 3,
+      "level": "type",
+      "publishable": true,
+      "listingFamily": "vehicle",
+      "supportedIntents": ["SELL", "GIVE", "EXCHANGE"]
+    },
+    {
+      "id": "vehicles.cars.breaks",
+      "code": "VEH_CARS_BREAK",
+      "slug": "breaks",
+      "labels": {
+        "fr-FR": "Breaks",
+        "en-US": "Station wagons"
+      },
+      "shortLabels": {
+        "fr-FR": "Breaks",
+        "en-US": "Station wagons"
+      },
+      "parentId": "vehicles.cars",
+      "iconName": "Tag",
+      "sortOrder": 4,
+      "level": "type",
+      "publishable": true,
+      "listingFamily": "vehicle",
+      "supportedIntents": ["SELL", "GIVE", "EXCHANGE"]
+    },
+    {
+      "id": "vehicles.cars.coupes_cabriolets",
+      "code": "VEH_CARS_COUPE",
+      "slug": "coupes-cabriolets",
+      "labels": {
+        "fr-FR": "Coupés & Cabriolets",
+        "en-US": "Coupes & Convertibles"
+      },
+      "shortLabels": {
+        "fr-FR": "Coupés & Cabriolets",
+        "en-US": "Coupes & Convertibles"
+      },
+      "parentId": "vehicles.cars",
+      "iconName": "Tag",
+      "sortOrder": 5,
+      "level": "type",
+      "publishable": true,
+      "listingFamily": "vehicle",
+      "supportedIntents": ["SELL", "GIVE", "EXCHANGE"]
+    },
+    {
+      "id": "vehicles.cars.utilitaires",
+      "code": "VEH_CARS_UTILITAIRE",
+      "slug": "utilitaires-fourgons",
+      "labels": {
+        "fr-FR": "Utilitaires & Fourgons",
+        "en-US": "Vans & Commercial"
+      },
+      "shortLabels": {
+        "fr-FR": "Utilitaires & Fourgons",
+        "en-US": "Vans & Commercial"
+      },
+      "parentId": "vehicles.cars",
+      "iconName": "Tag",
+      "sortOrder": 6,
+      "level": "type",
+      "publishable": true,
+      "listingFamily": "vehicle",
+      "supportedIntents": ["SELL", "GIVE", "EXCHANGE"]
+    },
+    {
+      "id": "vehicles.motos",
+      "code": "VEH_MOTOS",
+      "slug": "motos-scooters",
+      "labels": {
+        "fr-FR": "Motos & Scooters",
+        "en-US": "Motorcycles & Scooters"
+      },
+      "shortLabels": {
+        "fr-FR": "Motos & Scooters",
+        "en-US": "Motorcycles"
+      },
+      "parentId": "vehicles",
+      "iconName": "Tag",
+      "sortOrder": 2,
+      "level": "subcategory",
+      "publishable": true,
+      "listingFamily": "vehicle",
+      "supportedIntents": ["SELL", "GIVE", "EXCHANGE"]
+    },
+    {
+      "id": "vehicles.cycles",
+      "code": "VEH_CYCLES",
+      "slug": "velos-trottinettes",
+      "labels": {
+        "fr-FR": "Vélos & Trottinettes électriques",
+        "en-US": "Bicycles & E-scooters"
+      },
+      "shortLabels": {
+        "fr-FR": "Vélos & Trottinettes",
+        "en-US": "Bikes & Scooters"
+      },
+      "parentId": "vehicles",
+      "iconName": "Tag",
+      "sortOrder": 3,
+      "level": "subcategory",
+      "publishable": true,
+      "listingFamily": "vehicle",
+      "supportedIntents": ["SELL", "GIVE", "EXCHANGE"]
+    },
+    {
+      "id": "vehicles.parts",
+      "code": "VEH_PARTS",
+      "slug": "equipement-pieces-auto-moto",
+      "labels": {
+        "fr-FR": "Équipements & Pièces Auto / Moto",
+        "en-US": "Auto & Moto Parts"
+      },
+      "shortLabels": {
+        "fr-FR": "Pièces auto & moto",
+        "en-US": "Auto & Moto Parts"
+      },
+      "parentId": "vehicles",
+      "iconName": "Tag",
+      "sortOrder": 4,
+      "level": "subcategory",
+      "publishable": true,
+      "listingFamily": "vehicle",
+      "supportedIntents": ["SELL", "GIVE", "EXCHANGE"]
+    },
+    {
+      "id": "real_estate",
+      "code": "RE",
+      "slug": "immobilier",
+      "labels": {
+        "fr-FR": "Immobilier",
+        "en-US": "Real Estate"
+      },
+      "shortLabels": {
+        "fr-FR": "Immobilier",
+        "en-US": "Real Estate"
+      },
+      "iconName": "Building",
+      "sortOrder": 2,
+      "level": "category",
+      "publishable": false,
+      "listingFamily": "real_estate",
+      "supportedIntents": ["SELL", "RENT"]
+    },
+    {
+      "id": "real_estate.sales",
+      "code": "RE_SALES",
+      "slug": "ventes-immobilieres",
+      "labels": {
+        "fr-FR": "Ventes immobilières",
+        "en-US": "Properties for Sale"
+      },
+      "shortLabels": {
+        "fr-FR": "Ventes immo",
+        "en-US": "For Sale"
+      },
+      "parentId": "real_estate",
+      "iconName": "Tag",
+      "sortOrder": 1,
+      "level": "subcategory",
+      "publishable": true,
+      "listingFamily": "real_estate",
+      "supportedIntents": ["SELL", "RENT"]
+    },
+    {
+      "id": "real_estate.rentals",
+      "code": "RE_RENTALS",
+      "slug": "locations-immobilieres",
+      "labels": {
+        "fr-FR": "Locations à l'année",
+        "en-US": "Long-term Rentals"
+      },
+      "shortLabels": {
+        "fr-FR": "Locations",
+        "en-US": "Rentals"
+      },
+      "parentId": "real_estate",
+      "iconName": "Tag",
+      "sortOrder": 2,
+      "level": "subcategory",
+      "publishable": true,
+      "listingFamily": "real_estate",
+      "supportedIntents": ["RENT"]
+    },
+    {
+      "id": "real_estate.commercial",
+      "code": "RE_COMMERCIAL",
+      "slug": "bureaux-commerces",
+      "labels": {
+        "fr-FR": "Bureaux & Commerces",
+        "en-US": "Commercial Properties"
+      },
+      "shortLabels": {
+        "fr-FR": "Bureaux & Commerces",
+        "en-US": "Commercial"
+      },
+      "parentId": "real_estate",
+      "iconName": "Tag",
+      "sortOrder": 3,
+      "level": "subcategory",
+      "publishable": true,
+      "listingFamily": "real_estate",
+      "supportedIntents": ["SELL", "RENT"]
+    },
+    {
+      "id": "real_estate.parking",
+      "code": "RE_PARKING",
+      "slug": "parkings-garages",
+      "labels": {
+        "fr-FR": "Parkings & Garages",
+        "en-US": "Parking & Garages"
+      },
+      "shortLabels": {
+        "fr-FR": "Parkings & Garages",
+        "en-US": "Parking"
+      },
+      "parentId": "real_estate",
+      "iconName": "Tag",
+      "sortOrder": 4,
+      "level": "subcategory",
+      "publishable": true,
+      "listingFamily": "real_estate",
+      "supportedIntents": ["SELL", "RENT"]
+    },
+    {
+      "id": "jobs",
+      "code": "JOB",
+      "slug": "emploi",
+      "labels": {
+        "fr-FR": "Emploi & Recrutement",
+        "en-US": "Jobs & Careers"
+      },
+      "shortLabels": {
+        "fr-FR": "Emploi",
+        "en-US": "Jobs"
+      },
+      "iconName": "Briefcase",
+      "sortOrder": 3,
+      "level": "category",
+      "publishable": false,
+      "listingFamily": "job",
+      "supportedIntents": ["JOB_OFFER"]
+    },
+    {
+      "id": "jobs.offers",
+      "code": "JOB_OFFERS",
+      "slug": "offres-d-emploi",
+      "labels": {
+        "fr-FR": "Offres d'emploi",
+        "en-US": "Job Offers"
+      },
+      "shortLabels": {
+        "fr-FR": "Offres d'emploi",
+        "en-US": "Job Offers"
+      },
+      "parentId": "jobs",
+      "iconName": "Tag",
+      "sortOrder": 1,
+      "level": "subcategory",
+      "publishable": true,
+      "listingFamily": "job",
+      "supportedIntents": ["JOB_OFFER"]
+    },
+    {
+      "id": "services",
+      "code": "SRV",
+      "slug": "services",
+      "labels": {
+        "fr-FR": "Services & Prestations",
+        "en-US": "Services"
+      },
+      "shortLabels": {
+        "fr-FR": "Services",
+        "en-US": "Services"
+      },
+      "iconName": "Wrench",
+      "sortOrder": 4,
+      "level": "category",
+      "publishable": false,
+      "listingFamily": "service",
+      "supportedIntents": ["OFFER_SERVICE"]
+    },
+    {
+      "id": "services.home_repairs",
+      "code": "SRV_HOME",
+      "slug": "bricolage-travaux",
+      "labels": {
+        "fr-FR": "Bricolage, Rénovation & Travaux",
+        "en-US": "Home Improvement"
+      },
+      "shortLabels": {
+        "fr-FR": "Bricolage & Travaux",
+        "en-US": "Home Repairs"
+      },
+      "parentId": "services",
+      "iconName": "Tag",
+      "sortOrder": 1,
+      "level": "subcategory",
+      "publishable": true,
+      "listingFamily": "service",
+      "supportedIntents": ["OFFER_SERVICE"]
+    },
+    {
+      "id": "services.tutoring",
+      "code": "SRV_TUTOR",
+      "slug": "cours-particuliers",
+      "labels": {
+        "fr-FR": "Cours particuliers & Formation",
+        "en-US": "Tutoring & Lessons"
+      },
+      "shortLabels": {
+        "fr-FR": "Éducation & Formation",
+        "en-US": "Tutoring"
+      },
+      "parentId": "services",
+      "iconName": "Tag",
+      "sortOrder": 2,
+      "level": "subcategory",
+      "publishable": true,
+      "listingFamily": "service",
+      "supportedIntents": ["OFFER_SERVICE"]
+    },
+    {
+      "id": "services.events",
+      "code": "SRV_EVENT",
+      "slug": "evenementiel-animation",
+      "labels": {
+        "fr-FR": "Événementiel, Photo & DJ",
+        "en-US": "Events & Entertainment"
+      },
+      "shortLabels": {
+        "fr-FR": "Événementiel & Photo",
+        "en-US": "Events"
+      },
+      "parentId": "services",
+      "iconName": "Tag",
+      "sortOrder": 3,
+      "level": "subcategory",
+      "publishable": true,
+      "listingFamily": "service",
+      "supportedIntents": ["OFFER_SERVICE"]
+    },
+    {
+      "id": "home_garden",
+      "code": "HOME",
+      "slug": "maison-jardin",
+      "labels": {
+        "fr-FR": "Maison, Meubles & Jardin",
+        "en-US": "Home & Garden"
+      },
+      "shortLabels": {
+        "fr-FR": "Maison",
+        "en-US": "Home & Garden"
+      },
+      "iconName": "Home",
+      "sortOrder": 5,
+      "level": "category",
+      "publishable": false,
+      "listingFamily": "physical_product",
+      "supportedIntents": ["SELL", "GIVE", "EXCHANGE"]
+    },
+    {
+      "id": "home_garden.furniture",
+      "code": "HOME_FURNITURE",
+      "slug": "mobilier",
+      "labels": {
+        "fr-FR": "Mobilier & Meubles",
+        "en-US": "Furniture"
+      },
+      "shortLabels": {
+        "fr-FR": "Mobilier",
+        "en-US": "Furniture"
+      },
+      "parentId": "home_garden",
+      "iconName": "Tag",
+      "sortOrder": 1,
+      "level": "subcategory",
+      "publishable": false,
+      "listingFamily": "physical_product",
+      "supportedIntents": ["SELL", "GIVE", "EXCHANGE"]
+    },
+    {
+      "id": "home_garden.furniture.sofas",
+      "code": "HOME_SOFAS",
+      "slug": "canapes-fauteuils",
+      "labels": {
+        "fr-FR": "Canapés & Fauteuils",
+        "en-US": "Sofas & Armchairs"
+      },
+      "shortLabels": {
+        "fr-FR": "Canapés & Fauteuils",
+        "en-US": "Sofas & Armchairs"
+      },
+      "parentId": "home_garden.furniture",
+      "iconName": "Tag",
+      "sortOrder": 1,
+      "level": "type",
+      "publishable": true,
+      "listingFamily": "physical_product",
+      "supportedIntents": ["SELL", "GIVE", "EXCHANGE"]
+    },
+    {
+      "id": "home_garden.furniture.tables",
+      "code": "HOME_TABLES",
+      "slug": "tables-chaises",
+      "labels": {
+        "fr-FR": "Tables & Chaises",
+        "en-US": "Tables & Chairs"
+      },
+      "shortLabels": {
+        "fr-FR": "Tables & Chaises",
+        "en-US": "Tables & Chairs"
+      },
+      "parentId": "home_garden.furniture",
+      "iconName": "Tag",
+      "sortOrder": 2,
+      "level": "type",
+      "publishable": true,
+      "listingFamily": "physical_product",
+      "supportedIntents": ["SELL", "GIVE", "EXCHANGE"]
+    },
+    {
+      "id": "home_garden.furniture.beds",
+      "code": "HOME_BEDS",
+      "slug": "lits-literie",
+      "labels": {
+        "fr-FR": "Lits & Literie",
+        "en-US": "Beds & Mattresses"
+      },
+      "shortLabels": {
+        "fr-FR": "Lits & Literie",
+        "en-US": "Beds & Mattresses"
+      },
+      "parentId": "home_garden.furniture",
+      "iconName": "Tag",
+      "sortOrder": 3,
+      "level": "type",
+      "publishable": true,
+      "listingFamily": "physical_product",
+      "supportedIntents": ["SELL", "GIVE", "EXCHANGE"]
+    },
+    {
+      "id": "home_garden.appliances",
+      "code": "HOME_APPLIANCES",
+      "slug": "electromenager",
+      "labels": {
+        "fr-FR": "Électroménager",
+        "en-US": "Home Appliances"
+      },
+      "shortLabels": {
+        "fr-FR": "Électroménager",
+        "en-US": "Appliances"
+      },
+      "parentId": "home_garden",
+      "iconName": "Tag",
+      "sortOrder": 2,
+      "level": "subcategory",
+      "publishable": true,
+      "listingFamily": "physical_product",
+      "supportedIntents": ["SELL", "GIVE", "EXCHANGE"]
+    },
+    {
+      "id": "home_garden.diy_garden",
+      "code": "HOME_DIY",
+      "slug": "bricolage-outillage-jardin",
+      "labels": {
+        "fr-FR": "Bricolage, Outillage & Jardin",
+        "en-US": "DIY & Gardening"
+      },
+      "shortLabels": {
+        "fr-FR": "Bricolage & Jardin",
+        "en-US": "DIY & Garden"
+      },
+      "parentId": "home_garden",
+      "iconName": "Tag",
+      "sortOrder": 3,
+      "level": "subcategory",
+      "publishable": true,
+      "listingFamily": "physical_product",
+      "supportedIntents": ["SELL", "GIVE", "EXCHANGE"]
+    },
+    {
+      "id": "electronics",
+      "code": "ELEC",
+      "slug": "multimedia-electronique",
+      "labels": {
+        "fr-FR": "Électronique & Multimédia",
+        "en-US": "Electronics & Tech"
+      },
+      "shortLabels": {
+        "fr-FR": "Multimédia",
+        "en-US": "Tech"
+      },
+      "iconName": "Smartphone",
+      "sortOrder": 6,
+      "level": "category",
+      "publishable": false,
+      "listingFamily": "physical_product",
+      "supportedIntents": ["SELL", "GIVE", "EXCHANGE"]
+    },
+    {
+      "id": "electronics.smartphones",
+      "code": "ELEC_PHONES",
+      "slug": "smartphones-telephones",
+      "labels": {
+        "fr-FR": "Smartphones & Téléphones",
+        "en-US": "Smartphones"
+      },
+      "shortLabels": {
+        "fr-FR": "Téléphones",
+        "en-US": "Phones"
+      },
+      "parentId": "electronics",
+      "iconName": "Tag",
+      "sortOrder": 1,
+      "level": "subcategory",
+      "publishable": true,
+      "listingFamily": "physical_product",
+      "supportedIntents": ["SELL", "GIVE", "EXCHANGE"]
+    },
+    {
+      "id": "electronics.computers",
+      "code": "ELEC_COMPUTERS",
+      "slug": "informatique-pc-portables",
+      "labels": {
+        "fr-FR": "Informatique & PC Portables",
+        "en-US": "Computers & Laptops"
+      },
+      "shortLabels": {
+        "fr-FR": "Informatique",
+        "en-US": "Computers"
+      },
+      "parentId": "electronics",
+      "iconName": "Tag",
+      "sortOrder": 2,
+      "level": "subcategory",
+      "publishable": true,
+      "listingFamily": "physical_product",
+      "supportedIntents": ["SELL", "GIVE", "EXCHANGE"]
+    },
+    {
+      "id": "electronics.gaming",
+      "code": "ELEC_GAMING",
+      "slug": "consoles-jeux-video",
+      "labels": {
+        "fr-FR": "Consoles & Jeux vidéo",
+        "en-US": "Video Games & Consoles"
+      },
+      "shortLabels": {
+        "fr-FR": "Jeux vidéo",
+        "en-US": "Gaming"
+      },
+      "parentId": "electronics",
+      "iconName": "Tag",
+      "sortOrder": 3,
+      "level": "subcategory",
+      "publishable": true,
+      "listingFamily": "physical_product",
+      "supportedIntents": ["SELL", "GIVE", "EXCHANGE"]
+    },
+    {
+      "id": "electronics.audio_hifi",
+      "code": "ELEC_AUDIO",
+      "slug": "audio-hi-fi-casques",
+      "labels": {
+        "fr-FR": "Audio, Hi-Fi & Casques",
+        "en-US": "Audio & Headphones"
+      },
+      "shortLabels": {
+        "fr-FR": "Audio & Hi-Fi",
+        "en-US": "Audio"
+      },
+      "parentId": "electronics",
+      "iconName": "Tag",
+      "sortOrder": 4,
+      "level": "subcategory",
+      "publishable": true,
+      "listingFamily": "physical_product",
+      "supportedIntents": ["SELL", "GIVE", "EXCHANGE"]
+    },
+    {
+      "id": "fashion",
+      "code": "FASH",
+      "slug": "mode-accessoires",
+      "labels": {
+        "fr-FR": "Mode & Accessoires",
+        "en-US": "Fashion & Accessories"
+      },
+      "shortLabels": {
+        "fr-FR": "Mode",
+        "en-US": "Fashion"
+      },
+      "iconName": "Shirt",
+      "sortOrder": 7,
+      "level": "category",
+      "publishable": false,
+      "listingFamily": "physical_product",
+      "supportedIntents": ["SELL", "GIVE", "EXCHANGE"]
+    },
+    {
+      "id": "fashion.women",
+      "code": "FASH_WOMEN",
+      "slug": "vetements-femme",
+      "labels": {
+        "fr-FR": "Vêtements Femme",
+        "en-US": "Women's Clothing"
+      },
+      "shortLabels": {
+        "fr-FR": "Mode Femme",
+        "en-US": "Women"
+      },
+      "parentId": "fashion",
+      "iconName": "Tag",
+      "sortOrder": 1,
+      "level": "subcategory",
+      "publishable": true,
+      "listingFamily": "physical_product",
+      "supportedIntents": ["SELL", "GIVE", "EXCHANGE"]
+    },
+    {
+      "id": "fashion.men",
+      "code": "FASH_MEN",
+      "slug": "vetements-homme",
+      "labels": {
+        "fr-FR": "Vêtements Homme",
+        "en-US": "Men's Clothing"
+      },
+      "shortLabels": {
+        "fr-FR": "Mode Homme",
+        "en-US": "Men"
+      },
+      "parentId": "fashion",
+      "iconName": "Tag",
+      "sortOrder": 2,
+      "level": "subcategory",
+      "publishable": true,
+      "listingFamily": "physical_product",
+      "supportedIntents": ["SELL", "GIVE", "EXCHANGE"]
+    },
+    {
+      "id": "fashion.shoes",
+      "code": "FASH_SHOES",
+      "slug": "chaussures",
+      "labels": {
+        "fr-FR": "Chaussures",
+        "en-US": "Shoes"
+      },
+      "shortLabels": {
+        "fr-FR": "Chaussures",
+        "en-US": "Shoes"
+      },
+      "parentId": "fashion",
+      "iconName": "Tag",
+      "sortOrder": 3,
+      "level": "subcategory",
+      "publishable": true,
+      "listingFamily": "physical_product",
+      "supportedIntents": ["SELL", "GIVE", "EXCHANGE"]
+    },
+    {
+      "id": "fashion.jewelry",
+      "code": "FASH_JEWELRY",
+      "slug": "montres-bijoux",
+      "labels": {
+        "fr-FR": "Montres & Bijoux",
+        "en-US": "Watches & Jewelry"
+      },
+      "shortLabels": {
+        "fr-FR": "Montres & Bijoux",
+        "en-US": "Watches & Jewelry"
+      },
+      "parentId": "fashion",
+      "iconName": "Tag",
+      "sortOrder": 4,
+      "level": "subcategory",
+      "publishable": true,
+      "listingFamily": "physical_product",
+      "supportedIntents": ["SELL", "GIVE", "EXCHANGE"]
+    },
+    {
+      "id": "baby_kids",
+      "code": "BABY",
+      "slug": "bebe-puericulture-enfants",
+      "labels": {
+        "fr-FR": "Bébé & Puériculture",
+        "en-US": "Baby & Kids"
+      },
+      "shortLabels": {
+        "fr-FR": "Bébé & Enfant",
+        "en-US": "Baby & Kids"
+      },
+      "iconName": "Baby",
+      "sortOrder": 8,
+      "level": "category",
+      "publishable": false,
+      "listingFamily": "physical_product",
+      "supportedIntents": ["SELL", "GIVE", "EXCHANGE"]
+    },
+    {
+      "id": "baby_kids.strollers",
+      "code": "BABY_STROLLERS",
+      "slug": "poussettes-sieges-auto",
+      "labels": {
+        "fr-FR": "Poussettes & Sièges auto",
+        "en-US": "Strollers & Car Seats"
+      },
+      "shortLabels": {
+        "fr-FR": "Poussettes & Sièges",
+        "en-US": "Strollers"
+      },
+      "parentId": "baby_kids",
+      "iconName": "Tag",
+      "sortOrder": 1,
+      "level": "subcategory",
+      "publishable": true,
+      "listingFamily": "physical_product",
+      "supportedIntents": ["SELL", "GIVE", "EXCHANGE"]
+    },
+    {
+      "id": "baby_kids.toys",
+      "code": "BABY_TOYS",
+      "slug": "jouets-jeux-eveil",
+      "labels": {
+        "fr-FR": "Jouets & Jeux d'éveil",
+        "en-US": "Toys & Games"
+      },
+      "shortLabels": {
+        "fr-FR": "Jouets & Éveil",
+        "en-US": "Toys"
+      },
+      "parentId": "baby_kids",
+      "iconName": "Tag",
+      "sortOrder": 2,
+      "level": "subcategory",
+      "publishable": true,
+      "listingFamily": "physical_product",
+      "supportedIntents": ["SELL", "GIVE", "EXCHANGE"]
+    },
+    {
+      "id": "leisure_culture",
+      "code": "LEIS",
+      "slug": "loisirs-culture",
+      "labels": {
+        "fr-FR": "Loisirs, Livres & Musique",
+        "en-US": "Leisure & Culture"
+      },
+      "shortLabels": {
+        "fr-FR": "Loisirs & Culture",
+        "en-US": "Leisure & Culture"
+      },
+      "iconName": "BookOpen",
+      "sortOrder": 9,
+      "level": "category",
+      "publishable": false,
+      "listingFamily": "physical_product",
+      "supportedIntents": ["SELL", "GIVE", "EXCHANGE"]
+    },
+    {
+      "id": "leisure_culture.instruments",
+      "code": "LEIS_MUSIC",
+      "slug": "instruments-de-musique",
+      "labels": {
+        "fr-FR": "Instruments de musique",
+        "en-US": "Musical Instruments"
+      },
+      "shortLabels": {
+        "fr-FR": "Instruments",
+        "en-US": "Instruments"
+      },
+      "parentId": "leisure_culture",
+      "iconName": "Tag",
+      "sortOrder": 1,
+      "level": "subcategory",
+      "publishable": true,
+      "listingFamily": "physical_product",
+      "supportedIntents": ["SELL", "GIVE", "EXCHANGE"]
+    },
+    {
+      "id": "leisure_culture.books",
+      "code": "LEIS_BOOKS",
+      "slug": "livres-bd-mangas",
+      "labels": {
+        "fr-FR": "Livres, BD & Mangas",
+        "en-US": "Books & Comics"
+      },
+      "shortLabels": {
+        "fr-FR": "Livres & BD",
+        "en-US": "Books"
+      },
+      "parentId": "leisure_culture",
+      "iconName": "Tag",
+      "sortOrder": 2,
+      "level": "subcategory",
+      "publishable": true,
+      "listingFamily": "physical_product",
+      "supportedIntents": ["SELL", "GIVE", "EXCHANGE"]
+    },
+    {
+      "id": "sports_outdoors",
+      "code": "SPORT",
+      "slug": "sports-plein-air",
+      "labels": {
+        "fr-FR": "Sports & Plein air",
+        "en-US": "Sports & Outdoors"
+      },
+      "shortLabels": {
+        "fr-FR": "Sports",
+        "en-US": "Sports"
+      },
+      "iconName": "Trophy",
+      "sortOrder": 10,
+      "level": "category",
+      "publishable": false,
+      "listingFamily": "physical_product",
+      "supportedIntents": ["SELL", "GIVE", "EXCHANGE"]
+    },
+    {
+      "id": "sports_outdoors.fitness",
+      "code": "SPORT_FITNESS",
+      "slug": "fitness-musculation",
+      "labels": {
+        "fr-FR": "Fitness & Musculation",
+        "en-US": "Fitness & Gym"
+      },
+      "shortLabels": {
+        "fr-FR": "Fitness",
+        "en-US": "Fitness"
+      },
+      "parentId": "sports_outdoors",
+      "iconName": "Tag",
+      "sortOrder": 1,
+      "level": "subcategory",
+      "publishable": true,
+      "listingFamily": "physical_product",
+      "supportedIntents": ["SELL", "GIVE", "EXCHANGE"]
+    },
+    {
+      "id": "sports_outdoors.outdoor",
+      "code": "SPORT_OUTDOOR",
+      "slug": "randonnee-camping-ski",
+      "labels": {
+        "fr-FR": "Randonnée, Camping & Ski",
+        "en-US": "Outdoor & Ski"
+      },
+      "shortLabels": {
+        "fr-FR": "Outdoor & Rando",
+        "en-US": "Outdoor"
+      },
+      "parentId": "sports_outdoors",
+      "iconName": "Tag",
+      "sortOrder": 2,
+      "level": "subcategory",
+      "publishable": true,
+      "listingFamily": "physical_product",
+      "supportedIntents": ["SELL", "GIVE", "EXCHANGE"]
+    },
+    {
+      "id": "sports_outdoors.water_sports",
+      "code": "SPORT_WATER",
+      "slug": "sports-nautiques",
+      "labels": {
+        "fr-FR": "Sports nautiques & Glisse",
+        "en-US": "Water Sports & Boardsports"
+      },
+      "shortLabels": {
+        "fr-FR": "Sports nautiques",
+        "en-US": "Water Sports"
+      },
+      "parentId": "sports_outdoors",
+      "iconName": "Tag",
+      "sortOrder": 3,
+      "level": "subcategory",
+      "publishable": true,
+      "listingFamily": "physical_product",
+      "supportedIntents": ["SELL", "GIVE", "EXCHANGE"]
+    },
+    {
+      "id": "pets",
+      "code": "PETS",
+      "slug": "animaux-accessoires",
+      "labels": {
+        "fr-FR": "Animaux & Accessoires",
+        "en-US": "Pets & Accessories"
+      },
+      "shortLabels": {
+        "fr-FR": "Animaux",
+        "en-US": "Pets"
+      },
+      "iconName": "Dog",
+      "sortOrder": 11,
+      "level": "category",
+      "publishable": false,
+      "listingFamily": "physical_product",
+      "supportedIntents": ["SELL", "GIVE", "EXCHANGE"]
+    },
+    {
+      "id": "pets.accessories",
+      "code": "PETS_ACC",
+      "slug": "accessoires-animaux",
+      "labels": {
+        "fr-FR": "Accessoires & Alimentation",
+        "en-US": "Pet Supplies"
+      },
+      "shortLabels": {
+        "fr-FR": "Accessoires & Soins",
+        "en-US": "Pet Supplies"
+      },
+      "parentId": "pets",
+      "iconName": "Tag",
+      "sortOrder": 1,
+      "level": "subcategory",
+      "publishable": true,
+      "listingFamily": "physical_product",
+      "supportedIntents": ["SELL", "GIVE", "EXCHANGE"]
+    },
+    {
+      "id": "professional_btp",
+      "code": "PRO_BTP",
+      "slug": "materiel-professionnel",
+      "labels": {
+        "fr-FR": "Matériel Professionnel & BTP",
+        "en-US": "Professional Equipment"
+      },
+      "shortLabels": {
+        "fr-FR": "Outils pro",
+        "en-US": "Pro Equipment"
+      },
+      "iconName": "HardHat",
+      "sortOrder": 12,
+      "level": "category",
+      "publishable": false,
+      "listingFamily": "professional_equipment",
+      "supportedIntents": ["SELL", "RENT"]
+    },
+    {
+      "id": "professional_btp.machinery",
+      "code": "PRO_MACHINERY",
+      "slug": "btp-chantier-engins",
+      "labels": {
+        "fr-FR": "BTP, Chantier & Engins",
+        "en-US": "Construction & Heavy Machinery"
+      },
+      "shortLabels": {
+        "fr-FR": "Engins & BTP",
+        "en-US": "Construction"
+      },
+      "parentId": "professional_btp",
+      "iconName": "Tag",
+      "sortOrder": 1,
+      "level": "subcategory",
+      "publishable": true,
+      "listingFamily": "professional_equipment",
+      "supportedIntents": ["SELL", "RENT"]
+    },
+    {
+      "id": "professional_btp.catering",
+      "code": "PRO_CATERING",
+      "slug": "restauration-hotellerie",
+      "labels": {
+        "fr-FR": "Restauration & Hôtellerie (CHR)",
+        "en-US": "Catering & Hospitality"
+      },
+      "shortLabels": {
+        "fr-FR": "Restauration CHR",
+        "en-US": "Catering"
+      },
+      "parentId": "professional_btp",
+      "iconName": "Tag",
+      "sortOrder": 2,
+      "level": "subcategory",
+      "publishable": true,
+      "listingFamily": "professional_equipment",
+      "supportedIntents": ["SELL", "RENT"]
+    },
+    {
+      "id": "agriculture",
+      "code": "AGRI",
+      "slug": "materiel-agricole-espaces-verts",
+      "labels": {
+        "fr-FR": "Agriculture & Espaces verts",
+        "en-US": "Agriculture & Farming"
+      },
+      "shortLabels": {
+        "fr-FR": "Agriculture",
+        "en-US": "Agriculture"
+      },
+      "iconName": "Tractor",
+      "sortOrder": 13,
+      "level": "category",
+      "publishable": false,
+      "listingFamily": "professional_equipment",
+      "supportedIntents": ["SELL", "RENT"]
+    },
+    {
+      "id": "agriculture.tractors",
+      "code": "AGRI_TRACTORS",
+      "slug": "tracteurs-materiel-recolte",
+      "labels": {
+        "fr-FR": "Tracteurs & Matériel de récolte",
+        "en-US": "Tractors & Harvesters"
+      },
+      "shortLabels": {
+        "fr-FR": "Tracteurs & Récolte",
+        "en-US": "Tractors"
+      },
+      "parentId": "agriculture",
+      "iconName": "Tag",
+      "sortOrder": 1,
+      "level": "subcategory",
+      "publishable": true,
+      "listingFamily": "professional_equipment",
+      "supportedIntents": ["SELL", "RENT"]
+    },
+    {
+      "id": "energy_transition",
+      "code": "ENERGY",
+      "slug": "energie-solaire-transition",
+      "labels": {
+        "fr-FR": "Énergie & Transition Écologique",
+        "en-US": "Solar Energy & EV"
+      },
+      "shortLabels": {
+        "fr-FR": "Énergie & Solaire",
+        "en-US": "Clean Energy"
+      },
+      "iconName": "Sun",
+      "sortOrder": 14,
+      "level": "category",
+      "publishable": false,
+      "listingFamily": "professional_equipment",
+      "supportedIntents": ["SELL", "RENT"]
+    },
+    {
+      "id": "energy_transition.solar",
+      "code": "ENERGY_SOLAR",
+      "slug": "panneaux-solaires-onduleurs",
+      "labels": {
+        "fr-FR": "Panneaux solaires & Onduleurs",
+        "en-US": "Solar Panels & Inverters"
+      },
+      "shortLabels": {
+        "fr-FR": "Panneaux solaires",
+        "en-US": "Solar Panels"
+      },
+      "parentId": "energy_transition",
+      "iconName": "Tag",
+      "sortOrder": 1,
+      "level": "subcategory",
+      "publishable": true,
+      "listingFamily": "professional_equipment",
+      "supportedIntents": ["SELL", "RENT"]
+    },
+    {
+      "id": "energy_transition.ev_charging",
+      "code": "ENERGY_EV",
+      "slug": "bornes-recharge-ve",
+      "labels": {
+        "fr-FR": "Bornes de recharge VE",
+        "en-US": "EV Charging Stations"
+      },
+      "shortLabels": {
+        "fr-FR": "Bornes de recharge",
+        "en-US": "EV Chargers"
+      },
+      "parentId": "energy_transition",
+      "iconName": "Tag",
+      "sortOrder": 2,
+      "level": "subcategory",
+      "publishable": true,
+      "listingFamily": "professional_equipment",
+      "supportedIntents": ["SELL", "RENT"]
+    },
+    {
+      "id": "pro_it_telecom",
+      "code": "PRO_IT",
+      "slug": "informatique-pro-serveurs",
+      "labels": {
+        "fr-FR": "Informatique Pro & Serveurs",
+        "en-US": "Enterprise IT & Servers"
+      },
+      "shortLabels": {
+        "fr-FR": "IT & Serveurs",
+        "en-US": "Enterprise IT"
+      },
+      "iconName": "Server",
+      "sortOrder": 15,
+      "level": "category",
+      "publishable": true,
+      "listingFamily": "professional_equipment",
+      "supportedIntents": ["SELL", "RENT"]
+    },
+    {
+      "id": "deals_donations",
+      "code": "DEALS",
+      "slug": "dons-et-objets-gratuits",
+      "labels": {
+        "fr-FR": "Dons & Solidarité",
+        "en-US": "Free Items & Donations"
+      },
+      "shortLabels": {
+        "fr-FR": "Dons & Gratuit",
+        "en-US": "Free Items"
+      },
+      "iconName": "Gift",
+      "sortOrder": 16,
+      "level": "category",
+      "publishable": true,
+      "listingFamily": "physical_product",
+      "supportedIntents": ["GIVE", "EXCHANGE"]
+    }
+  ],
+  "aliases": {
+    "vehicules": "vehicles",
+    "voitures": "vehicles.cars",
+    "cars": "vehicles.cars",
+    "motos": "vehicles.motos",
+    "motorcycles": "vehicles.motos",
+    "bicycles": "vehicles.cycles",
+    "velos": "vehicles.cycles",
+    "immobilier": "real_estate",
+    "real-estate": "real_estate",
+    "ventes-immobilieres": "real_estate.sales",
+    "real-estate-sale": "real_estate.sales",
+    "locations": "real_estate.rentals",
+    "real-estate-rent": "real_estate.rentals",
+    "multimedia": "electronics",
+    "smartphones": "electronics.smartphones",
+    "computers": "electronics.computers",
+    "gaming": "electronics.gaming",
+    "electronics.telephony.smartphones": "electronics.smartphones",
+    "informatique": "electronics.computers",
+    "consoles-jeux": "electronics.gaming",
+    "consoles-jeux-video": "electronics.gaming",
+    "maison-deco": "home_garden",
+    "home-garden": "home_garden",
+    "mobilier": "home_garden.furniture",
+    "furniture": "home_garden.furniture",
+    "electromenager": "home_garden.appliances",
+    "appliances": "home_garden.appliances",
+    "home.furniture.sofas": "home_garden.furniture.sofas",
+    "bricolage-jardin": "home_garden.diy_garden",
+    "mode": "fashion",
+    "mode-beaute": "fashion",
+    "mode-accessoires": "fashion",
+    "vetements-femme": "fashion.women",
+    "clothing-women": "fashion.women",
+    "vetements-homme": "fashion.men",
+    "clothing-men": "fashion.men",
+    "luxury-watches": "fashion.jewelry",
+    "loisirs-sport": "leisure_culture",
+    "leisure-sports": "leisure_culture",
+    "musical-instruments": "leisure_culture.instruments",
+    "instruments-musique": "leisure_culture.instruments",
+    "sport-equipment": "sports_outdoors.fitness",
+    "sports-plein-air": "sports_outdoors",
+    "materiel-pro": "professional_btp",
+    "professional": "professional_btp",
+    "materiel-professionnel-btp": "professional_btp",
+    "emploi": "jobs",
+    "animaux": "pets",
+    "sports": "sports_outdoors",
+    "sports-loisirs": "sports_outdoors",
+    "sports-hobbies": "sports_outdoors",
+    "sports-nautiques": "sports_outdoors.water_sports",
+    "famille": "baby_kids",
+    "equipement-bebe": "baby_kids.strollers",
+    "poussettes-siege-auto": "baby_kids.strollers",
+    "outillage-btp": "professional_btp.machinery",
+    "cours-formations": "services.tutoring",
+    "offres-emploi": "jobs.offers",
+    "dons-solidarite-bons-plans": "deals_donations"
+  }
+}

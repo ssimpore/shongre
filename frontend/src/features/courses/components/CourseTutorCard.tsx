@@ -33,13 +33,7 @@ export function presentCourseTutorCard(
   const activePricingOption = item.offer.pricingOptions
     .filter((option) => option.isActive)
     .sort((left, right) => left.price.amountMinor - right.price.amountMinor)[0];
-  const projected = projectCourseOffer(
-    item.tutor,
-    item.offer,
-    item.subjectLabel,
-    marketCode,
-    item.resolvedPromotion,
-  );
+  const projected = projectCourseOffer(item, marketCode);
   const price = activePricingOption?.price;
   const listing = projectGenericListingCardView(
     price
@@ -70,8 +64,13 @@ export function presentCourseTutorCard(
     convertMoney,
   );
 
+  const characteristics = [item.subjectLabel, ...item.levelLabels]
+    .filter(Boolean)
+    .slice(0, 3);
   return {
     ...listing,
+    characteristics,
+    characteristicIcons: characteristics.map(() => "book-open" as const),
     seller: listing.seller
       ? {
           ...listing.seller,

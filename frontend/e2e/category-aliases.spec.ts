@@ -1,3 +1,4 @@
+import { browserApi } from "./browser-api";
 import { expect, test } from "@playwright/test";
 import { usePersona } from "./personas";
 import { waitForStableLayout } from "./overflow";
@@ -17,11 +18,28 @@ test.describe("compact taxonomy aliases", () => {
     const categoryOption = page.getByRole("option").first();
     await expect(categoryOption).toContainText("Outils pro");
 
-    await page.goto("/categorie/materiel-professionnel", {
-      waitUntil: "domcontentloaded",
-    });
+    const tree = await browserApi(page, "/taxonomy/v1/tree?locale=fr-FR");
+    expect(tree.status).toBe(200);
+    expect(
+      tree.body.items.some(
+        (node: { id: string }) => node.id === "professional_equipment",
+      ),
+    ).toBe(true);
+    expect(
+      tree.body.seo?.some(
+        (row: { categoryId: string }) =>
+          row.categoryId === "professional_equipment",
+      ),
+    ).toBe(true);
+    const categoryResponse = await page.goto(
+      "/categorie/materiel-professionnel",
+      {
+        waitUntil: "domcontentloaded",
+      },
+    );
     await waitForStableLayout(page);
 
+    expect(categoryResponse?.status()).toBe(200);
     const professionalListing = page
       .locator("article")
       .filter({ hasText: "Niveau Laser Rotatif" })

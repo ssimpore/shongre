@@ -1,27 +1,28 @@
+import { taxonomyReferenceEntrySchema } from "./taxonomy.references.js";
 import { z } from "zod";
 import {
-  taxonomyV4PublicBundleSchema,
-  taxonomyV4MetadataSchema,
-  taxonomyV4DependencyRuleSchema,
-  taxonomyV4ValidationRuleSchema,
+  taxonomyV1PublicBundleSchema,
+  taxonomyV1MetadataSchema,
+  taxonomyV1DependencyRuleSchema,
+  taxonomyV1ValidationRuleSchema,
 } from "@shongre/contracts/taxonomy";
 
 /** The resolver accepts database projections and explicit test/import inputs. */
-export const taxonomyPrivateBundleSchema = taxonomyV4PublicBundleSchema
-  .omit({ dependencyRules: true, compatibility: true })
+export const taxonomyPrivateBundleSchema = taxonomyV1PublicBundleSchema
+  .omit({ dependencyRules: true })
   .extend({
-    metadata: taxonomyV4MetadataSchema.omit({
+    metadata: taxonomyV1MetadataSchema.omit({
       pagination: true,
       sourceCounts: true,
     }),
     dependencies: z.array(
-      taxonomyV4DependencyRuleSchema.extend({
+      taxonomyV1DependencyRuleSchema.extend({
         effect: z.string(),
         status: z.string(),
       }),
     ),
     validationRules: z.array(
-      taxonomyV4ValidationRuleSchema.extend({
+      taxonomyV1ValidationRuleSchema.extend({
         expression: z.string(),
         status: z.string(),
       }),
@@ -31,12 +32,12 @@ export const taxonomyPrivateBundleSchema = taxonomyV4PublicBundleSchema
     sellerRules: z.array(z.record(z.unknown())),
     policies: z.record(z.unknown()),
     referenceData: z.array(z.record(z.unknown())),
-    crosswalk: z.record(z.unknown()),
+    referenceEntries: z.array(taxonomyReferenceEntrySchema),
     resolver: z.object({ precedence: z.array(z.string()) }),
     quarantine: z.record(z.unknown()),
     verification: z.record(z.unknown()),
   });
 
-export type TaxonomyV4PrivateBundle = z.infer<
+export type TaxonomyV1PrivateBundle = z.infer<
   typeof taxonomyPrivateBundleSchema
 >;

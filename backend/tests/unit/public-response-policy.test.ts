@@ -41,6 +41,25 @@ describe("public response policy", () => {
     ).toBeNull();
   });
 
+  it("keeps course classifications fresh and invalidates their projection on taxonomy writes", () => {
+    expect(
+      resolvePublicResponseProfile({
+        method: "GET",
+        operationId: "getEducationCatalog",
+        accessKind: "public",
+        hasCredentials: false,
+      }),
+    ).toBeNull();
+    expect(
+      cacheInvalidationTags({
+        method: "POST",
+        operationId: "publishAdminTaxonomyRevision",
+        marketCode: "FR",
+        params: {},
+      }),
+    ).toContain("shongre-v1-education");
+  });
+
   it("creates versioned market/resource tags without user data", () => {
     const tags = publicCacheTags({
       operationId: "getListingsById",

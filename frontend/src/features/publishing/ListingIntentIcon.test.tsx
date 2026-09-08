@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { taxonomyV4ListingIntentSchema } from "@shongre/contracts";
+import { taxonomyV1ListingIntentSchema } from "@shongre/contracts";
 import {
   LISTING_INTENT_ICON_MAP,
   ListingIntentIcon,
@@ -8,7 +8,7 @@ import {
 
 describe("ListingIntentIcon", () => {
   it("allocates one dedicated icon to every supported listing intent", () => {
-    const intents = taxonomyV4ListingIntentSchema.options;
+    const intents = taxonomyV1ListingIntentSchema.options;
     const icons = intents.map((intent) => LISTING_INTENT_ICON_MAP[intent]);
 
     expect(icons.every(Boolean)).toBe(true);

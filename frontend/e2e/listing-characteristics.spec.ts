@@ -19,7 +19,7 @@ for (const width of [1408, 390]) {
     });
     const publicationRequests: string[] = [];
     page.on("request", (request) => {
-      if (request.url().includes("/taxonomy/v4/resolve"))
+      if (request.url().includes("/taxonomy/v1/resolve"))
         publicationRequests.push(request.url());
     });
     const responsePromise = page.waitForResponse((response) =>

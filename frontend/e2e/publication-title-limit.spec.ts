@@ -39,14 +39,20 @@ for (const width of [1408, 390]) {
         selectedMarkets: ["FR"],
         taxonomyNodeId: "electronics.smartphones.phones",
         listingTypeId: "electronics.smartphones.phones.listing",
-        taxonomyVersion: "4.0.0",
+        taxonomyVersion: "v1",
         taxonomyPath: [],
         listingIntent: "SELL",
         title: legacyTitle,
         description:
           "Téléphone en bon état, fourni avec sa boîte et ses accessoires.",
         condition: "good",
-        attributes: { condition: "good" },
+        attributes: {
+          condition: "good",
+          phone_reference_brand: "apple",
+          phone_reference_family: "iphone",
+          phone_reference_model: "iphone_15_a3090",
+          phone_reference_variant: "iphone15_a3090_128_black",
+        },
         photos: [],
         pricing: {
           priceModel: "fixed",
@@ -69,11 +75,41 @@ for (const width of [1408, 390]) {
       },
     });
     expect(saved.status).toBe(200);
+    let releaseOptions!: () => void;
+    const optionsReady = new Promise<void>((resolve) => {
+      releaseOptions = resolve;
+    });
+    let pendingOptions = 0;
+    await page.route(
+      "**/taxonomy/v1/options/phone_reference_*",
+      async (route) => {
+        pendingOptions += 1;
+        await optionsReady;
+        await route.continue();
+      },
+    );
     await page.goto("/deposer");
     await expect(page).toHaveURL(/\/deposer$/);
     await expect(page).toHaveTitle(/Shongre/i);
     await page.getByRole("button", { name: /reprendre/i }).click();
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    await expect.poll(() => pendingOptions).toBeGreaterThan(0);
+    const storedAttributes = async () =>
+      (await browserApi(page, "/listing-drafts/current")).body.attributes;
+    await expect.poll(storedAttributes).toMatchObject({
+      phone_reference_model: "iphone_15_a3090",
+      phone_reference_variant: "iphone15_a3090_128_black",
+    });
+    releaseOptions();
+    await expect(
+      page.getByRole("combobox", { name: "Modèle vérifié", exact: true }),
+    ).toHaveValue("iphone_15_a3090");
+    await expect(
+      page.getByRole("combobox", {
+        name: "Variante constructeur",
+        exact: true,
+      }),
+    ).toHaveValue("iphone15_a3090_128_black");
     const titleStep = page.getByRole("button", { name: /^2 Votre annonce/ });
     await expect(titleStep).toBeEnabled({ timeout: 30_000 });
     await titleStep.click();
@@ -114,6 +150,10 @@ for (const width of [1408, 390]) {
     });
     await page.getByRole("button", { name: /^Continuer/ }).click();
     await expect(page.getByText("Étape 3 / 3", { exact: true })).toBeVisible();
+    await expect.poll(storedAttributes).toMatchObject({
+      phone_reference_model: "iphone_15_a3090",
+      phone_reference_variant: "iphone15_a3090_128_black",
+    });
     expect(errors).toEqual([]);
   });
 }

@@ -1748,18 +1748,6 @@ export function patchAutoAdminMarketsByMarketCodePlansByPlanId(
     "application/json",
   );
 }
-export function patchAutoAdminMarketsByMarketCodeTypesByType(
-  transport: ApiTransport,
-  input: ApiInput<"patchAutoAdminMarketsByMarketCodeTypesByType">,
-): Promise<ApiResponse<"patchAutoAdminMarketsByMarketCodeTypesByType">> {
-  return executeApiOperation<"patchAutoAdminMarketsByMarketCodeTypesByType">(
-    transport,
-    "PATCH",
-    "/auto/admin/markets/{marketCode}/types/{type}",
-    input,
-    "application/json",
-  );
-}
 export function getAutoAdminOverview(
   transport: ApiTransport,
   input: ApiInput<"getAutoAdminOverview">,
@@ -3160,20 +3148,6 @@ export function patchEducationAdminMarketsByMarketCodePlansByPlanId(
     transport,
     "PATCH",
     "/education/admin/markets/{marketCode}/plans/{planId}",
-    input,
-    "application/json",
-  );
-}
-export function patchEducationAdminMarketsByMarketCodeSubjectsBySubjectId(
-  transport: ApiTransport,
-  input: ApiInput<"patchEducationAdminMarketsByMarketCodeSubjectsBySubjectId">,
-): Promise<
-  ApiResponse<"patchEducationAdminMarketsByMarketCodeSubjectsBySubjectId">
-> {
-  return executeApiOperation<"patchEducationAdminMarketsByMarketCodeSubjectsBySubjectId">(
-    transport,
-    "PATCH",
-    "/education/admin/markets/{marketCode}/subjects/{subjectId}",
     input,
     "application/json",
   );
@@ -5132,20 +5106,6 @@ export function patchRealEstateAdminMarketsByMarketCodeAddOnsByAddOnId(
     "application/json",
   );
 }
-export function patchRealEstateAdminMarketsByMarketCodeFieldRulesByRuleId(
-  transport: ApiTransport,
-  input: ApiInput<"patchRealEstateAdminMarketsByMarketCodeFieldRulesByRuleId">,
-): Promise<
-  ApiResponse<"patchRealEstateAdminMarketsByMarketCodeFieldRulesByRuleId">
-> {
-  return executeApiOperation<"patchRealEstateAdminMarketsByMarketCodeFieldRulesByRuleId">(
-    transport,
-    "PATCH",
-    "/real-estate/admin/markets/{marketCode}/field-rules/{ruleId}",
-    input,
-    "application/json",
-  );
-}
 export function patchRealEstateAdminMarketsByMarketCodeOffersByOfferId(
   transport: ApiTransport,
   input: ApiInput<"patchRealEstateAdminMarketsByMarketCodeOffersByOfferId">,
@@ -5156,18 +5116,6 @@ export function patchRealEstateAdminMarketsByMarketCodeOffersByOfferId(
     transport,
     "PATCH",
     "/real-estate/admin/markets/{marketCode}/offers/{offerId}",
-    input,
-    "application/json",
-  );
-}
-export function patchRealEstateAdminMarketsByMarketCodeTypesByType(
-  transport: ApiTransport,
-  input: ApiInput<"patchRealEstateAdminMarketsByMarketCodeTypesByType">,
-): Promise<ApiResponse<"patchRealEstateAdminMarketsByMarketCodeTypesByType">> {
-  return executeApiOperation<"patchRealEstateAdminMarketsByMarketCodeTypesByType">(
-    transport,
-    "PATCH",
-    "/real-estate/admin/markets/{marketCode}/types/{type}",
     input,
     "application/json",
   );
@@ -5562,122 +5510,38 @@ export function getSupportMetrics(
     "application/json",
   );
 }
-export function getTaxonomyHeaderNavigation(
+export function getTaxonomyV1Tree(
   transport: ApiTransport,
-  input: ApiInput<"getTaxonomyHeaderNavigation">,
-): Promise<ApiResponse<"getTaxonomyHeaderNavigation">> {
-  return executeApiOperation<"getTaxonomyHeaderNavigation">(
+  input: ApiInput<"getTaxonomyV1Tree">,
+): Promise<ApiResponse<"getTaxonomyV1Tree">> {
+  return executeApiOperation<"getTaxonomyV1Tree">(
     transport,
     "GET",
-    "/taxonomy/header-navigation",
+    "/taxonomy/v1/tree",
     input,
     "application/json",
   );
 }
-export function getTaxonomyV4Tree(
+export function resolveTaxonomyV1PublicationSchema(
   transport: ApiTransport,
-  input: ApiInput<"getTaxonomyV4Tree">,
-): Promise<ApiResponse<"getTaxonomyV4Tree">> {
-  return executeApiOperation<"getTaxonomyV4Tree">(
+  input: ApiInput<"resolveTaxonomyV1PublicationSchema">,
+): Promise<ApiResponse<"resolveTaxonomyV1PublicationSchema">> {
+  return executeApiOperation<"resolveTaxonomyV1PublicationSchema">(
     transport,
     "GET",
-    "/taxonomy/v4/tree",
+    "/taxonomy/v1/resolve",
     input,
     "application/json",
   );
 }
-export function resolveTaxonomyV4PublicationSchema(
+export function getTaxonomyV1Options(
   transport: ApiTransport,
-  input: ApiInput<"resolveTaxonomyV4PublicationSchema">,
-): Promise<ApiResponse<"resolveTaxonomyV4PublicationSchema">> {
-  return executeApiOperation<"resolveTaxonomyV4PublicationSchema">(
+  input: ApiInput<"getTaxonomyV1Options">,
+): Promise<ApiResponse<"getTaxonomyV1Options">> {
+  return executeApiOperation<"getTaxonomyV1Options">(
     transport,
     "GET",
-    "/taxonomy/v4/resolve",
-    input,
-    "application/json",
-  );
-}
-export function getTaxonomyV4Options(
-  transport: ApiTransport,
-  input: ApiInput<"getTaxonomyV4Options">,
-): Promise<ApiResponse<"getTaxonomyV4Options">> {
-  return executeApiOperation<"getTaxonomyV4Options">(
-    transport,
-    "GET",
-    "/taxonomy/v4/options/{optionSetId}",
-    input,
-    "application/json",
-  );
-}
-export function getTaxonomyNodesById(
-  transport: ApiTransport,
-  input: ApiInput<"getTaxonomyNodesById">,
-): Promise<ApiResponse<"getTaxonomyNodesById">> {
-  return executeApiOperation<"getTaxonomyNodesById">(
-    transport,
-    "GET",
-    "/taxonomy/nodes/{id}",
-    input,
-    "application/json",
-  );
-}
-export function getTaxonomyNodesByIdAttributes(
-  transport: ApiTransport,
-  input: ApiInput<"getTaxonomyNodesByIdAttributes">,
-): Promise<ApiResponse<"getTaxonomyNodesByIdAttributes">> {
-  return executeApiOperation<"getTaxonomyNodesByIdAttributes">(
-    transport,
-    "GET",
-    "/taxonomy/nodes/{id}/attributes",
-    input,
-    "application/json",
-  );
-}
-export function getTaxonomyNodesByIdChildren(
-  transport: ApiTransport,
-  input: ApiInput<"getTaxonomyNodesByIdChildren">,
-): Promise<ApiResponse<"getTaxonomyNodesByIdChildren">> {
-  return executeApiOperation<"getTaxonomyNodesByIdChildren">(
-    transport,
-    "GET",
-    "/taxonomy/nodes/{id}/children",
-    input,
-    "application/json",
-  );
-}
-export function getTaxonomyRoot(
-  transport: ApiTransport,
-  input: ApiInput<"getTaxonomyRoot">,
-): Promise<ApiResponse<"getTaxonomyRoot">> {
-  return executeApiOperation<"getTaxonomyRoot">(
-    transport,
-    "GET",
-    "/taxonomy/root",
-    input,
-    "application/json",
-  );
-}
-export function getTaxonomySearchFilters(
-  transport: ApiTransport,
-  input: ApiInput<"getTaxonomySearchFilters">,
-): Promise<ApiResponse<"getTaxonomySearchFilters">> {
-  return executeApiOperation<"getTaxonomySearchFilters">(
-    transport,
-    "GET",
-    "/taxonomy/search-filters",
-    input,
-    "application/json",
-  );
-}
-export function getTaxonomySlugBySlug(
-  transport: ApiTransport,
-  input: ApiInput<"getTaxonomySlugBySlug">,
-): Promise<ApiResponse<"getTaxonomySlugBySlug">> {
-  return executeApiOperation<"getTaxonomySlugBySlug">(
-    transport,
-    "GET",
-    "/taxonomy/slug/{slug}",
+    "/taxonomy/v1/options/{optionSetId}",
     input,
     "application/json",
   );
@@ -6306,6 +6170,54 @@ export function getAdminTaxonomyHistory(
     "application/json",
   );
 }
+export function getTaxonomyHeaderNavigation(
+  transport: ApiTransport,
+  input: ApiInput<"getTaxonomyHeaderNavigation">,
+): Promise<ApiResponse<"getTaxonomyHeaderNavigation">> {
+  return executeApiOperation<"getTaxonomyHeaderNavigation">(
+    transport,
+    "GET",
+    "/taxonomy/v1/header-navigation",
+    input,
+    "application/json",
+  );
+}
+export function getTaxonomyNodesById(
+  transport: ApiTransport,
+  input: ApiInput<"getTaxonomyNodesById">,
+): Promise<ApiResponse<"getTaxonomyNodesById">> {
+  return executeApiOperation<"getTaxonomyNodesById">(
+    transport,
+    "GET",
+    "/taxonomy/v1/nodes/{id}",
+    input,
+    "application/json",
+  );
+}
+export function getTaxonomyRoot(
+  transport: ApiTransport,
+  input: ApiInput<"getTaxonomyRoot">,
+): Promise<ApiResponse<"getTaxonomyRoot">> {
+  return executeApiOperation<"getTaxonomyRoot">(
+    transport,
+    "GET",
+    "/taxonomy/v1/root",
+    input,
+    "application/json",
+  );
+}
+export function getTaxonomySearchFilters(
+  transport: ApiTransport,
+  input: ApiInput<"getTaxonomySearchFilters">,
+): Promise<ApiResponse<"getTaxonomySearchFilters">> {
+  return executeApiOperation<"getTaxonomySearchFilters">(
+    transport,
+    "GET",
+    "/taxonomy/v1/search-filters",
+    input,
+    "application/json",
+  );
+}
 export const generatedApiOperations = {
   getDigitalPolicy,
   getDigitalSellerProfile,
@@ -6452,7 +6364,6 @@ export const generatedApiOperations = {
   putAutoAdminMarketsByMarketCode,
   patchAutoAdminMarketsByMarketCodeAddOnsByAddOnId,
   patchAutoAdminMarketsByMarketCodePlansByPlanId,
-  patchAutoAdminMarketsByMarketCodeTypesByType,
   getAutoAdminOverview,
   getAutoCatalog,
   postAutoDealersByOrganizationIdImports,
@@ -6570,7 +6481,6 @@ export const generatedApiOperations = {
   getEducationAdminCatalog,
   putEducationAdminMarketsByMarketCode,
   patchEducationAdminMarketsByMarketCodePlansByPlanId,
-  patchEducationAdminMarketsByMarketCodeSubjectsBySubjectId,
   postEducationBookings,
   getEducationCatalog,
   getEducationFavorites,
@@ -6733,9 +6643,7 @@ export const generatedApiOperations = {
   postPublicationEntitlements,
   putRealEstateAdminMarketsByMarketCode,
   patchRealEstateAdminMarketsByMarketCodeAddOnsByAddOnId,
-  patchRealEstateAdminMarketsByMarketCodeFieldRulesByRuleId,
   patchRealEstateAdminMarketsByMarketCodeOffersByOfferId,
-  patchRealEstateAdminMarketsByMarketCodeTypesByType,
   getRealEstateAdminOverview,
   postRealEstateAgenciesByOrganizationIdImports,
   patchRealEstateAgenciesByOrganizationIdLeadsByLeadId,
@@ -6768,16 +6676,9 @@ export const generatedApiOperations = {
   postSupportCasesByIdNotes,
   getSupportCasesMine,
   getSupportMetrics,
-  getTaxonomyHeaderNavigation,
-  getTaxonomyV4Tree,
-  resolveTaxonomyV4PublicationSchema,
-  getTaxonomyV4Options,
-  getTaxonomyNodesById,
-  getTaxonomyNodesByIdAttributes,
-  getTaxonomyNodesByIdChildren,
-  getTaxonomyRoot,
-  getTaxonomySearchFilters,
-  getTaxonomySlugBySlug,
+  getTaxonomyV1Tree,
+  resolveTaxonomyV1PublicationSchema,
+  getTaxonomyV1Options,
   getProfessionalUsers,
   getUsersById,
   putUsersById,
@@ -6830,6 +6731,10 @@ export const generatedApiOperations = {
   publishAdminTaxonomyRevision,
   rollbackAdminTaxonomyRevision,
   getAdminTaxonomyHistory,
+  getTaxonomyHeaderNavigation,
+  getTaxonomyNodesById,
+  getTaxonomyRoot,
+  getTaxonomySearchFilters,
 } as const;
 export type GeneratedApiOperationId = keyof typeof generatedApiOperations;
 type AnyGeneratedApiOperation = (

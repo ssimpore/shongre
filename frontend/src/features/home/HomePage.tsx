@@ -14,7 +14,6 @@ import { HomeHeroSection } from "./components/HomeHeroSection";
 import { Button, Container, StatePanel } from "../../design-system";
 import { RefreshCw } from "lucide-react";
 import { useTranslation } from "../../i18n/I18nProvider";
-import { ListingRailGroup } from "../../design-system/primitives/ListingRail";
 
 const HomeBelowFold = lazy(() =>
   import("./components/HomeBelowFold").then((module) => ({
@@ -120,7 +119,7 @@ export const HomePage: React.FC = () => {
     );
   }
   return (
-    <ListingRailGroup className="space-y-8 pb-16 sm:space-y-12">
+    <div className="space-y-8 pb-16 sm:space-y-12">
       {visibleExperience.sections.map((section) => {
         if (section.type === "hero") {
           return <HomeHeroSection key={section.key} section={section} />;
@@ -137,6 +136,6 @@ export const HomePage: React.FC = () => {
           </Suspense>
         );
       })}
-    </ListingRailGroup>
+    </div>
   );
 };

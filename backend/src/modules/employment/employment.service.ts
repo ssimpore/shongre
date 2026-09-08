@@ -1,4 +1,4 @@
-import { taxonomyV4Service } from "../taxonomy/taxonomy.runtime.js";
+import { taxonomyV1Service } from "../taxonomy/taxonomy.runtime.js";
 import { randomUUID } from "node:crypto";
 import type {
   CandidateDataExport,
@@ -159,7 +159,7 @@ export class EmploymentService {
         locationProvided: Boolean(query.location),
       },
     });
-    const taxonomy = (await taxonomyV4Service.snapshot()).projectIdentity(
+    const taxonomy = (await taxonomyV1Service.snapshot()).projectIdentity(
       CANONICAL_TAXONOMY_IDS.jobs,
     );
     return {
@@ -191,7 +191,7 @@ export class EmploymentService {
     });
     return {
       ...publicEmployer(job),
-      taxonomy: (await taxonomyV4Service.snapshot()).projectIdentity(
+      taxonomy: (await taxonomyV1Service.snapshot()).projectIdentity(
         CANONICAL_TAXONOMY_IDS.jobs,
       ),
     };
@@ -614,7 +614,42 @@ export class EmploymentService {
         code: "VALIDATION_ERROR",
         message: "Prévisualisez l’offre avant de l’envoyer.",
       });
-    const data = draft.data;
+    const data = { ...draft.data };
+    for (const [field, kind, labelField, required] of [
+      ["professionId", "profession", "professionLabel", true],
+      ["industryId", "sector", "industryLabel", true],
+      ["contractTypeId", "contract_type", "contractTypeLabel", true],
+      [
+        "workingArrangementId",
+        "working_arrangement",
+        "workingArrangementLabel",
+        true,
+      ],
+      ["workingTimeId", "work_schedule", undefined, true],
+      ["specializationId", "specialization", "specializationLabel", false],
+      ["requiredExperienceId", "seniority", undefined, false],
+      ["educationLevelId", "education_level", undefined, false],
+    ] as const) {
+      const id = data[field];
+      if (!required && !id) continue;
+      const entry = catalog.dictionaries.find(
+        (item) => item.id === id && item.kind === kind && item.isActive,
+      );
+      if (
+        !entry ||
+        (field === "specializationId" &&
+          entry.parentId &&
+          entry.parentId !== data.professionId)
+      ) {
+        throw new AppError({
+          code: "VALIDATION_ERROR",
+          message:
+            "Une sélection professionnelle n’est plus compatible avec le catalogue publié. Vérifiez le métier et ses caractéristiques.",
+        });
+      }
+      if (labelField) data[labelField] = entry.label;
+    }
+
     if (data.applicationMethod === "external") {
       let externalUrl: URL;
       try {

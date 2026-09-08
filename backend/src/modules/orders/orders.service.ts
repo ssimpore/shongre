@@ -1,4 +1,4 @@
-import { taxonomyV4Service } from "../taxonomy/taxonomy.runtime.js";
+import { taxonomyV1Service } from "../taxonomy/taxonomy.runtime.js";
 import {
   createHmac,
   randomBytes,
@@ -1520,7 +1520,7 @@ export class OrdersService {
         ? {
             listing: toPublicListing(
               listing,
-              await taxonomyV4Service.snapshot(),
+              await taxonomyV1Service.snapshot(),
             ),
           }
         : {}),

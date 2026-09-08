@@ -1,3 +1,5 @@
+import { TaxonomyV1Service } from "../../src/modules/taxonomy/taxonomy.v1.service.js";
+import "./install-taxonomy.js";
 import { writeFileSync } from "node:fs";
 import { randomBytes } from "node:crypto";
 import { createBackendApplication } from "../../src/app/server/index.js";
@@ -20,7 +22,7 @@ import {
   createSeedListing,
   marketplaceFixture,
 } from "../../scripts/seed/local-development-data.js";
-import { TAXONOMY_V4_PRIVATE_BUNDLE } from "../../src/modules/taxonomy/generated/taxonomy-v4.private.js";
+import { TAXONOMY_V1_PRIVATE_BUNDLE } from "../../taxonomy/generated/taxonomy-v1.private.js";
 import { localSeedUuid } from "../../scripts/seed/local-seed-identity.js";
 import type { UserProfile } from "../../src/shared/types/index.js";
 
@@ -86,7 +88,7 @@ for (const source of marketplaceFixture.users) {
   accounts[user.id] = { email: user.email, recoveryCodes };
 }
 const categoryIds = new Set(
-  TAXONOMY_V4_PRIVATE_BUNDLE.categories.map(({ id }) => id),
+  TAXONOMY_V1_PRIVATE_BUNDLE.categories.map(({ id }) => id),
 );
 if (!(repositories.listings instanceof DemoListingRepository)) {
   throw new Error("Browser scenario cannot replace a database repository.");
@@ -100,7 +102,7 @@ for (const source of marketplaceFixture.listings) {
   const listing = createSeedListing(source, {
     listingId: listingIds[source.id],
     profileId: (id) => id,
-    availableCategoryIds: categoryIds,
+    taxonomy: new TaxonomyV1Service(TAXONOMY_V1_PRIVATE_BUNDLE, 1),
     images: (source.photos || []).map((photo: { url: string }) => photo.url),
   });
   listing.seller =

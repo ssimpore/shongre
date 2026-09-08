@@ -149,7 +149,7 @@ export interface Listing {
   seller?: UserProfile;
   categoryId: string;
   listingTypeId?: string;
-  listingIntent?: import("@shongre/contracts").TaxonomyV4ListingIntent;
+  listingIntent?: import("@shongre/contracts").TaxonomyV1ListingIntent;
   title: string;
   description: string;
   price: number;
@@ -252,6 +252,8 @@ export type PublicListing = Omit<
 export interface SearchFilters {
   query?: string;
   categoryId?: string;
+  /** Internal expansion from the published taxonomy; never accepted from HTTP. */
+  categoryIds?: readonly string[];
   categorySlug?: string;
   subCategorySlug?: string;
   marketCode?: string;

@@ -59,7 +59,7 @@ const listingType = {
   seoIndexable: true,
 };
 const tree = {
-  taxonomyVersion: "4.0.0",
+  taxonomyVersion: "v1",
   compilerVersion: "test",
   checksum: "0".repeat(64),
   marketCode: "FR",
@@ -68,7 +68,7 @@ const tree = {
   listingTypes: [listingType],
 };
 const resolved = {
-  taxonomyVersion: "4.0.0",
+  taxonomyVersion: "v1",
   category,
   listingType,
   attributes: [],
@@ -89,7 +89,7 @@ const resolved = {
 const options = {
   items: [],
   total: 0,
-  taxonomyVersion: "4.0.0",
+  taxonomyVersion: "v1",
 };
 
 describe("API-backed mobile taxonomy service", () => {
@@ -105,7 +105,7 @@ describe("API-backed mobile taxonomy service", () => {
       }),
     ).resolves.toEqual(tree);
     expect(apiRequest).toHaveBeenCalledWith(
-      "/taxonomy/v4/tree?locale=fr-FR&version=4.0.0",
+      "/taxonomy/v1/tree?locale=fr-FR&version=v1",
       expect.objectContaining({ method: "GET", headers: expect.any(Headers) }),
       "FR",
     );
@@ -123,7 +123,7 @@ describe("API-backed mobile taxonomy service", () => {
       listingTypeId: "vehicles.cars.suv.listing",
       sellerType: "individual",
       locale: "fr-FR",
-      taxonomyVersion: "4.0.0",
+      taxonomyVersion: "v1",
     });
     await service.lookupOptions({
       marketContext,
@@ -134,13 +134,13 @@ describe("API-backed mobile taxonomy service", () => {
 
     expect(apiRequest).toHaveBeenNthCalledWith(
       1,
-      "/taxonomy/v4/resolve?category=vehicles.cars.suv&sellerType=individual&locale=fr-FR&version=4.0.0&listingTypeId=vehicles.cars.suv.listing",
+      "/taxonomy/v1/resolve?category=vehicles.cars.suv&sellerType=individual&locale=fr-FR&version=v1&listingTypeId=vehicles.cars.suv.listing",
       expect.objectContaining({ method: "GET", headers: expect.any(Headers) }),
       "FR",
     );
     expect(apiRequest).toHaveBeenNthCalledWith(
       2,
-      "/taxonomy/v4/options/OS_VEHICLE_MODEL?version=4.0.0&parentOptionId=OS_VEHICLE_BRAND%3Arenault&limit=5",
+      "/taxonomy/v1/options/OS_VEHICLE_MODEL?version=v1&parentOptionId=OS_VEHICLE_BRAND%3Arenault&limit=5",
       expect.objectContaining({ method: "GET", headers: expect.any(Headers) }),
       "FR",
     );

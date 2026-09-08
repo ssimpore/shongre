@@ -1,21 +1,21 @@
 import type {
-  TaxonomyV4Node,
-  TaxonomyV4PublicBundle,
+  TaxonomyV1Node,
+  TaxonomyV1PublicBundle,
 } from "@shongre/contracts/taxonomy";
-import type { TaxonomyV4TreeResponse } from "@shongre/contracts/taxonomy";
+import type { TaxonomyV1TreeResponse } from "@shongre/contracts/taxonomy";
 
 type TaxonomySeoProjection =
-  TaxonomyV4PublicBundle["projections"]["seo"][number];
+  TaxonomyV1PublicBundle["projections"]["seo"][number];
 
 export interface TaxonomySeoRecord {
-  node: TaxonomyV4Node;
+  node: TaxonomyV1Node;
   projection: TaxonomySeoProjection;
 }
 
 /** A request-scoped API snapshot keeps aliases, labels and indexing on one revision. */
 export function resolveTaxonomySeoRecord(
   idOrSlug: string | null | undefined,
-  tree?: TaxonomyV4TreeResponse,
+  tree?: TaxonomyV1TreeResponse,
 ): TaxonomySeoRecord | null {
   if (!idOrSlug || !tree) return null;
   const alias = tree.aliases?.find(
@@ -59,7 +59,7 @@ export function resolveLocalizedTaxonomySeoText(
 }
 
 export function taxonomyNodeIsIndexableInMarket(
-  node: TaxonomyV4Node,
+  node: TaxonomyV1Node,
   marketCode: string,
 ): boolean {
   const availability = node.marketAvailability.find(

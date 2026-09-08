@@ -1,4 +1,7 @@
-import { listingTaxonomyProjectionSchema } from "./taxonomy";
+import {
+  listingTaxonomyProjectionSchema,
+  taxonomyV1OptionSetsSchema,
+} from "./taxonomy";
 import { z } from "zod";
 import { marketCodeSchema, moneySchema } from "./primitives";
 import { marketResolvedListingPromotionSchema } from "./discovery";
@@ -750,6 +753,7 @@ export const autoMarketConfigSchema = z.object({
 export type AutoMarketConfig = z.infer<typeof autoMarketConfigSchema>;
 
 export const autoCatalogSchema = z.object({
+  taxonomyOptions: taxonomyV1OptionSetsSchema,
   config: autoMarketConfigSchema,
   vehicleTypes: z.array(vehicleTypeConfigSchema),
   attributes: z.array(vehicleAttributeDefinitionSchema),

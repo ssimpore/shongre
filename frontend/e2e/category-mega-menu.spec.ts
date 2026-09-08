@@ -1,6 +1,6 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test, type Page } from "@playwright/test";
-import { getTaxonomyV4PublicBundle } from "@shongre/contracts/taxonomy-v4-public";
+import { getTaxonomyV1PublicBundle } from "@shongre/contracts/testing/taxonomy";
 import { expectNoHorizontalOverflow, waitForStableLayout } from "./overflow";
 import { useEstablishedConsent } from "./personas";
 
@@ -14,7 +14,7 @@ const categoryNav = (page: Page) =>
   page.locator('header nav[aria-label="Filtres par catégorie"]');
 
 async function configureHeaderCategories(page: Page, categoryIds: string[]) {
-  await page.route("**/api/v1/taxonomy/header-navigation", async (route) => {
+  await page.route("**/api/v1/taxonomy/v1/header-navigation", async (route) => {
     const response = await route.fetch();
     const configuration = await response.json();
     await route.fulfill({
@@ -45,7 +45,7 @@ test.describe("desktop category mega-menu", () => {
     const responsePromise = page.waitForResponse(
       (response) =>
         new URL(response.url()).pathname ===
-          "/api/v1/taxonomy/header-navigation" && response.ok(),
+          "/api/v1/taxonomy/v1/header-navigation" && response.ok(),
     );
     await page.goto("/");
     const configuration = await (await responsePromise).json();
@@ -76,7 +76,7 @@ test.describe("desktop category mega-menu", () => {
   test("backend-managed utility links disappear on failure and recover through retry", async ({
     page,
   }) => {
-    await page.route("**/api/v1/taxonomy/header-navigation", (route) =>
+    await page.route("**/api/v1/taxonomy/v1/header-navigation", (route) =>
       route.fulfill({
         status: 503,
         contentType: "application/json",
@@ -89,7 +89,7 @@ test.describe("desktop category mega-menu", () => {
     const nav = categoryNav(page);
     await expect(nav.getByRole("status")).toHaveText("Navigation indisponible");
     await expect(nav.locator('[data-header-nav-item="true"]')).toHaveCount(0);
-    await page.unroute("**/api/v1/taxonomy/header-navigation");
+    await page.unroute("**/api/v1/taxonomy/v1/header-navigation");
     await nav.getByRole("button", { name: "Réessayer", exact: true }).click();
     await expect(
       nav.locator("#header-category-trigger-promotions"),
@@ -174,7 +174,7 @@ test.describe("desktop category mega-menu", () => {
     const responsePromise = page.waitForResponse(
       (response) =>
         new URL(response.url()).pathname ===
-          "/api/v1/taxonomy/header-navigation" && response.ok(),
+          "/api/v1/taxonomy/v1/header-navigation" && response.ok(),
     );
 
     await page.setViewportSize({ width: 1408, height: 800 });
@@ -297,7 +297,7 @@ test.describe("desktop category mega-menu", () => {
       .evaluateAll((sections) =>
         sections.map((section) => section.getAttribute("data-category-id")),
       );
-    const expectedOtherIds = getTaxonomyV4PublicBundle()
+    const expectedOtherIds = getTaxonomyV1PublicBundle()
       .categories.filter(
         (category) =>
           !category.parentId &&

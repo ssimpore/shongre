@@ -411,7 +411,7 @@ async function resolveUncached(
           }),
         })),
       ),
-      serverServices.taxonomy.getV4Tree({
+      serverServices.taxonomy.getV1Tree({
         marketContext: { countryCode },
         locale: COUNTRY_REGISTRY.find(
           (country) => country.code === countryCode,
@@ -535,5 +535,17 @@ export async function listServerPublicSitemapData(countryCode: string) {
     ),
   }));
 
-  return { activeListings, sellers, jobs, employmentCatalog, collections };
+  const taxonomy = await serverServices.taxonomy.getV1Tree({
+    marketContext: { countryCode },
+    locale: COUNTRY_REGISTRY.find((country) => country.code === countryCode)!
+      .defaultLocale,
+  });
+  return {
+    activeListings,
+    sellers,
+    jobs,
+    employmentCatalog,
+    collections,
+    taxonomy,
+  };
 }

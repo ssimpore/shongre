@@ -56,22 +56,24 @@ import {
   toApplicationListingCondition,
 } from "@shongre/contracts";
 import type {
-  TaxonomyV4ListingIntent,
-  TaxonomyV4ResolvedSchema,
+  TaxonomyV1ListingIntent,
+  TaxonomyV1ResolvedSchema,
 } from "@shongre/contracts";
 import {
+  buildTaxonomyOptionRequests,
+  mergeTaxonomyOptionPages,
   reconcileTaxonomyValues,
   resolveTaxonomyFieldState,
   validateTaxonomyValues,
 } from "@shongre/features";
 import { analyticsService } from "../../services/analytics.service";
 import { PublishPreparationScreen } from "./PublishPreparationScreen";
-import { TaxonomyV4Field } from "./TaxonomyV4Field";
+import { TaxonomyV1Field } from "./TaxonomyV1Field";
 import { isProSeller } from "../../domains/user/user.domain";
 import {
-  isCurrentTaxonomyV4Schema,
+  isCurrentTaxonomyV1Schema,
   sanitizePublicationDraftForSubmission,
-  toTaxonomyV4ListingIntent,
+  toTaxonomyV1ListingIntent,
 } from "../../domains/publication/publication.taxonomy-state";
 import { DigitalFulfillmentEditor } from "./DigitalFulfillmentEditor";
 import { useListingOnboardingController } from "./useListingOnboardingController";
@@ -122,7 +124,7 @@ const PHASES = [
 const ADVANCED_PANEL = 9;
 const REVIEW_PANEL = 10;
 type PhaseOneStage = "intent" | "category" | "details";
-const WEB_MANAGED_V4_ATTRIBUTES = new Set([
+const WEB_MANAGED_V1_ATTRIBUTES = new Set([
   "title",
   "description",
   "images",
@@ -214,25 +216,27 @@ export const PublishWizard: React.FC = () => {
     useState(!skipPreparation);
   const [hasEnteredWizard, setHasEnteredWizard] = useState(skipPreparation);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
-  const [v4Schema, setV4Schema] = useState<TaxonomyV4ResolvedSchema | null>(
+  const [v1Schema, setV1Schema] = useState<TaxonomyV1ResolvedSchema | null>(
     null,
   );
-  const [v4SchemaState, setV4SchemaState] = useState<
+  const [v1SchemaState, setV1SchemaState] = useState<
     "idle" | "loading" | "ready" | "error"
   >("idle");
-  const [v4SchemaError, setV4SchemaError] = useState("");
+  const [v1SchemaError, setV1SchemaError] = useState("");
   const [automaticUpdateAnnouncement, setAutomaticUpdateAnnouncement] =
     useState("");
   const [taxonomyFieldErrors, setTaxonomyFieldErrors] = useState<
     Record<string, string>
   >({});
-  const [v4RetryKey, setV4RetryKey] = useState(0);
-  const [v4CascadeOptions, setV4CascadeOptions] = useState<
-    Record<string, TaxonomyV4ResolvedSchema["attributes"][number]["options"]>
-  >({});
-  const [v4CascadeState, setV4CascadeState] = useState<
-    Record<string, "loading" | "ready" | "empty" | "error">
-  >({});
+  const [v1RetryKey, setV1RetryKey] = useState(0);
+  const [v1CascadeResult, setV1CascadeResult] = useState<{
+    key: string;
+    options: Record<
+      string,
+      TaxonomyV1ResolvedSchema["attributes"][number]["options"]
+    >;
+    failed: boolean;
+  }>({ key: "", options: {}, failed: false });
   const wizardHeadingRef = useRef<HTMLHeadingElement>(null);
   const phaseOneHeadingRef = useRef<HTMLHeadingElement>(null);
   const detailsHeadingRef = useRef<HTMLHeadingElement>(null);
@@ -355,7 +359,7 @@ export const PublishWizard: React.FC = () => {
   };
 
   const selectListingIntent = (listingIntent: ListingIntent) => {
-    onboarding.selectIntent(listingIntent as TaxonomyV4ListingIntent);
+    onboarding.selectIntent(listingIntent as TaxonomyV1ListingIntent);
     setPhaseOneStage("category");
     scrollToTop();
   };
@@ -380,17 +384,17 @@ export const PublishWizard: React.FC = () => {
     });
   };
 
-  const activeV4Schema = isCurrentTaxonomyV4Schema(
-    v4Schema,
+  const activeV1Schema = isCurrentTaxonomyV1Schema(
+    v1Schema,
     draft.taxonomyNodeId,
     draft.listingIntent,
     draft.listingTypeId,
   )
-    ? v4Schema
+    ? v1Schema
     : null;
-  const selectedTaxonomyNode = activeV4Schema?.category ?? null;
+  const selectedTaxonomyNode = activeV1Schema?.category ?? null;
   const selectedTaxonomyRoot = onboarding.model?.path[0] ?? null;
-  const resolvedListingIntent = activeV4Schema?.listingType.intent;
+  const resolvedListingIntent = activeV1Schema?.listingType.intent;
   const isJobListing = ["JOB_OFFER", "JOB_SEEK"].includes(
     resolvedListingIntent ?? "",
   );
@@ -401,14 +405,14 @@ export const PublishWizard: React.FC = () => {
   ].includes(resolvedListingIntent ?? "");
   const isRealEstateListing = selectedTaxonomyRoot?.id === "real_estate";
   const isProductLike =
-    Boolean(activeV4Schema) &&
+    Boolean(activeV1Schema) &&
     !isJobListing &&
     !isServiceListing &&
     !isRealEstateListing;
   const priceModelOptions = useMemo(
     () =>
       (
-        activeV4Schema?.attributes.find(
+        activeV1Schema?.attributes.find(
           ({ definition }) => definition.id === "price_type",
         )?.options ?? []
       ).flatMap((option) =>
@@ -421,7 +425,7 @@ export const PublishWizard: React.FC = () => {
             ]
           : [],
       ),
-    [activeV4Schema, currentLocale],
+    [activeV1Schema, currentLocale],
   );
   const currentPriceModelLabel =
     priceModelOptions.find(
@@ -429,14 +433,14 @@ export const PublishWizard: React.FC = () => {
     )?.label ?? draft.pricing.priceModel;
   const taxonomyPublicationFieldGroups = useMemo(
     () =>
-      activeV4Schema
+      activeV1Schema
         ? groupTaxonomyPublicationFields({
-            schema: activeV4Schema,
+            schema: activeV1Schema,
             locale: currentLocale,
-            excludedAttributeIds: WEB_MANAGED_V4_ATTRIBUTES,
+            excludedAttributeIds: WEB_MANAGED_V1_ATTRIBUTES,
           })
         : [],
-    [activeV4Schema, currentLocale],
+    [activeV1Schema, currentLocale],
   );
 
   useEffect(() => {
@@ -466,33 +470,33 @@ export const PublishWizard: React.FC = () => {
   useEffect(() => {
     let active = true;
     if (!draft.taxonomyNodeId || !marketContext) {
-      setV4Schema(null);
-      setV4SchemaState("idle");
+      setV1Schema(null);
+      setV1SchemaState("idle");
       return () => {
         active = false;
       };
     }
-    setV4Schema(null);
-    setV4SchemaState("loading");
-    setV4SchemaError("");
+    setV1Schema(null);
+    setV1SchemaState("loading");
+    setV1SchemaError("");
     void services.taxonomy
-      .resolveV4({
+      .resolveV1({
         marketContext,
         categoryIdentity: draft.taxonomyNodeId,
         listingTypeId: draft.listingTypeId,
-        intent: toTaxonomyV4ListingIntent(draft.listingIntent),
+        intent: toTaxonomyV1ListingIntent(draft.listingIntent),
         sellerType: taxonomySellerType,
         locale: currentLocale,
-        taxonomyVersion: "4.0.0",
+        taxonomyVersion: "v1",
       })
       .then((resolved) => {
         if (!active) return;
-        setV4Schema(resolved);
-        setV4SchemaState("ready");
+        setV1Schema(resolved);
+        setV1SchemaState("ready");
         setDraft((current) => {
           if (
             current.listingTypeId === resolved.listingType.id &&
-            current.taxonomyVersion === "4.0.0" &&
+            current.taxonomyVersion === "v1" &&
             current.taxonomyRevision === resolved.revision
           ) {
             return current;
@@ -501,14 +505,14 @@ export const PublishWizard: React.FC = () => {
             ...current,
             listingTypeId: resolved.listingType.id,
             taxonomyRevision: resolved.revision,
-            taxonomyVersion: "4.0.0",
+            taxonomyVersion: "v1",
           };
         });
       })
       .catch((reason: unknown) => {
         if (!active) return;
-        setV4SchemaState("error");
-        setV4SchemaError(
+        setV1SchemaState("error");
+        setV1SchemaError(
           reason instanceof Error
             ? reason.message
             : "Le schéma de cette annonce est indisponible.",
@@ -524,146 +528,114 @@ export const PublishWizard: React.FC = () => {
     draft.taxonomyNodeId,
     marketContext,
     taxonomySellerType,
-    v4RetryKey,
+    v1RetryKey,
   ]);
+
+  const v1OptionRequests = useMemo(
+    () => buildTaxonomyOptionRequests(activeV1Schema, draft.attributes),
+    [activeV1Schema, draft.attributes],
+  );
+  const v1OptionKey = JSON.stringify([
+    activeV1Schema?.revision,
+    activeV1Schema?.listingType.id,
+    marketContext?.countryCode,
+    currentLocale,
+    v1OptionRequests,
+  ]);
+  const v1CascadeOptions = useMemo(
+    () =>
+      v1CascadeResult.key === v1OptionKey
+        ? v1CascadeResult.options
+        : mergeTaxonomyOptionPages(
+            v1OptionRequests
+              .filter((request) => !request.parentOptionId)
+              .map((request) => ({ request, items: [] })),
+          ),
+    [v1CascadeResult, v1OptionKey, v1OptionRequests],
+  );
+  const v1CascadeState = useMemo(
+    () =>
+      Object.fromEntries(
+        v1OptionRequests.map((request) => [
+          request.attributeId,
+          v1OptionRequests.some(
+            (other) =>
+              other.attributeId === request.attributeId &&
+              !other.parentOptionId,
+          )
+            ? "empty"
+            : v1CascadeResult.key !== v1OptionKey
+              ? "loading"
+              : v1CascadeResult.failed
+                ? "error"
+                : v1CascadeOptions[request.attributeId]?.length
+                  ? "ready"
+                  : "empty",
+        ]),
+      ) as Record<string, "loading" | "ready" | "empty" | "error">,
+    [v1OptionRequests, v1OptionKey, v1CascadeResult, v1CascadeOptions],
+  );
+  const v1OptionsPending = Object.values(v1CascadeState).some(
+    (state) => state === "loading" || state === "error",
+  );
 
   useEffect(() => {
     let active = true;
-    if (!activeV4Schema || !marketContext) {
-      setV4CascadeOptions({});
-      setV4CascadeState({});
-      return () => {
-        active = false;
-      };
-    }
-    const requests = activeV4Schema.dependencyRules.flatMap((rule) => {
-      if (
-        rule.effect !== "FILTER_OPTIONS" ||
-        rule.trigger.kind !== "attribute"
-      ) {
-        return [];
-      }
-      const parent = activeV4Schema.attributes.find(
-        (field) => field.definition.id === rule.trigger.key,
-      );
-      const parentValue = draft.attributes[rule.trigger.key];
-      if (!parent?.definition.optionSetId) return [];
-      return rule.targets.flatMap((target) => {
-        if (target.kind !== "attribute") return [];
-        const child = activeV4Schema.attributes.find(
-          (field) => field.definition.id === target.key,
-        );
-        if (!child?.definition.optionSetId) return [];
-        return [
-          {
-            attributeId: target.key,
-            optionSetId: child.definition.optionSetId,
-            parentOptionId:
-              parentValue === undefined ||
-              parentValue === null ||
-              parentValue === ""
-                ? undefined
-                : `${parent.definition.optionSetId}:${String(parentValue)}`,
-          },
-        ];
-      });
-    });
-    if (requests.length === 0)
-      return () => {
-        active = false;
-      };
-    setV4CascadeState((current) => ({
-      ...current,
-      ...Object.fromEntries(
-        requests.map((request) => [
-          request.attributeId,
-          request.parentOptionId ? "loading" : "empty",
-        ]),
-      ),
-    }));
-    setV4CascadeOptions((current) => ({
-      ...current,
-      ...Object.fromEntries(
-        requests
-          .filter((request) => !request.parentOptionId)
-          .map((request) => [request.attributeId, []]),
-      ),
-    }));
-    void Promise.all(
-      requests
-        .filter((request) => request.parentOptionId)
-        .map(async (request) => ({
-          request,
-          page: await services.taxonomy.lookupV4Options({
-            marketContext,
-            optionSetId: request.optionSetId,
-            parentOptionId: request.parentOptionId,
-            limit: 200,
-            locale: currentLocale,
-            taxonomyVersion: "4.0.0",
-            taxonomyRevision: v4Schema?.revision,
-          }),
-        })),
+    if (
+      !activeV1Schema ||
+      !marketContext ||
+      !v1OptionRequests.some((request) => request.parentOptionId)
     )
-      .then((results) => {
-        if (!active) return;
-        setV4CascadeOptions((current) => ({
-          ...current,
-          ...Object.fromEntries(
-            results.map(({ request, page }) => [
-              request.attributeId,
-              page.items,
-            ]),
-          ),
-        }));
-        setV4CascadeState((current) => ({
-          ...current,
-          ...Object.fromEntries(
-            results.map(({ request, page }) => [
-              request.attributeId,
-              page.items.length > 0 ? "ready" : "empty",
-            ]),
-          ),
-        }));
-        setDraft((current) => {
-          let changed = false;
-          const attributes = { ...current.attributes };
-          results.forEach(({ request, page }) => {
-            const selected = attributes[request.attributeId];
-            if (
-              selected !== undefined &&
-              selected !== "" &&
-              !page.items.some((option) => option.key === String(selected))
-            ) {
-              delete attributes[request.attributeId];
-              changed = true;
-            }
+      return;
+    void Promise.all(
+      v1OptionRequests.map(async (request) => ({
+        request,
+        items: request.parentOptionId
+          ? (
+              await services.taxonomy.lookupV1Options({
+                marketContext,
+                optionSetId: request.optionSetId,
+                parentOptionId: request.parentOptionId,
+                limit: 200,
+                locale: currentLocale,
+                taxonomyVersion: "v1",
+                taxonomyRevision: activeV1Schema.revision,
+              })
+            ).items
+          : [],
+      })),
+    )
+      .then((pages) => {
+        if (active)
+          setV1CascadeResult({
+            key: v1OptionKey,
+            options: mergeTaxonomyOptionPages(pages),
+            failed: false,
           });
-          return changed ? { ...current, attributes } : current;
-        });
       })
       .catch(() => {
-        if (!active) return;
-        setV4CascadeState((current) => ({
-          ...current,
-          ...Object.fromEntries(
-            requests.map((request) => [request.attributeId, "error"]),
-          ),
-        }));
+        if (active)
+          setV1CascadeResult({ key: v1OptionKey, options: {}, failed: true });
       });
     return () => {
       active = false;
     };
-  }, [activeV4Schema, currentLocale, draft.attributes, marketContext]);
+  }, [
+    activeV1Schema,
+    marketContext,
+    currentLocale,
+    v1OptionRequests,
+    v1OptionKey,
+  ]);
 
   useEffect(() => {
-    if (!activeV4Schema) return;
+    if (!activeV1Schema || v1OptionsPending) return;
     const reconciliation = reconcileTaxonomyValues({
-      schema: activeV4Schema,
+      schema: activeV1Schema,
       values: draft.attributes,
       sellerType: taxonomySellerType,
       fulfillmentTypes: draft.fulfillmentTypes,
-      optionsByAttribute: v4CascadeOptions,
+      optionsByAttribute: v1CascadeOptions,
     });
     if (reconciliation.removed.length > 0) {
       setAutomaticUpdateAnnouncement(
@@ -692,16 +664,17 @@ export const PublishWizard: React.FC = () => {
       }));
     }
   }, [
-    activeV4Schema,
+    activeV1Schema,
     draft.attributes,
     draft.fulfillmentTypes,
     t,
     taxonomySellerType,
-    v4CascadeOptions,
+    v1CascadeOptions,
+    v1OptionsPending,
   ]);
 
   const selectTaxonomyNode = (nodeId: string) => {
-    setV4SchemaError("");
+    setV1SchemaError("");
     const isComplete = onboarding.selectSearchResult(nodeId);
     setPhaseOneStage(isComplete ? "details" : "category");
     scrollToTop();
@@ -826,15 +799,15 @@ export const PublishWizard: React.FC = () => {
     Boolean(PHASES[currentStep - 1]?.panels.includes(panel));
 
   const getDynamicTaxonomyIssues = () =>
-    activeV4Schema
+    activeV1Schema
       ? validateTaxonomyValues({
-          schema: activeV4Schema,
+          schema: activeV1Schema,
           values: draft.attributes,
           sellerType: taxonomySellerType,
           fulfillmentTypes: draft.fulfillmentTypes,
-          optionsByAttribute: v4CascadeOptions,
+          optionsByAttribute: v1CascadeOptions,
         }).filter(
-          ({ attributeId }) => !WEB_MANAGED_V4_ATTRIBUTES.has(attributeId),
+          ({ attributeId }) => !WEB_MANAGED_V1_ATTRIBUTES.has(attributeId),
         )
       : [];
 
@@ -864,9 +837,9 @@ export const PublishWizard: React.FC = () => {
     if (phase === 1) {
       if (!draft.taxonomyNodeId)
         return "Veuillez sélectionner une catégorie finale pour continuer.";
-      if (v4SchemaState === "loading")
+      if (v1SchemaState === "loading" || v1OptionsPending)
         return t("publishing.publishWizard.dynamicFieldsLoading");
-      if (v4SchemaState === "error" || !activeV4Schema)
+      if (v1SchemaState === "error" || !activeV1Schema)
         return t("publishing.publishWizard.dynamicFieldsError");
       if (getDynamicTaxonomyIssues().length > 0)
         return t("publishing.publishWizard.requiredDynamicField");
@@ -985,7 +958,7 @@ export const PublishWizard: React.FC = () => {
 
   // Final Publish Handler
   const handleFinalPublish = async () => {
-    if (!activeV4Schema || v4SchemaState !== "ready") {
+    if (!activeV1Schema || v1SchemaState !== "ready" || v1OptionsPending) {
       toast.error(t("publishing.publishWizard.dynamicFieldsError"));
       return;
     }
@@ -995,9 +968,9 @@ export const PublishWizard: React.FC = () => {
     }
     const publishDraft = sanitizePublicationDraftForSubmission({
       draft,
-      schema: activeV4Schema,
+      schema: activeV1Schema,
       sellerType: taxonomySellerType,
-      optionsByAttribute: v4CascadeOptions,
+      optionsByAttribute: v1CascadeOptions,
     });
     if (!currentUser) {
       toast.info(
@@ -1464,7 +1437,7 @@ export const PublishWizard: React.FC = () => {
           </div>
 
           {/* Dynamic Attributes Grid */}
-          {v4SchemaState === "loading" && (
+          {v1SchemaState === "loading" && (
             <div
               role="status"
               className="rounded-control bg-bg-base p-4 text-xs text-text-muted"
@@ -1472,26 +1445,26 @@ export const PublishWizard: React.FC = () => {
               {t("publishing.publishWizard.dynamicFieldsLoading")}
             </div>
           )}
-          {v4SchemaState === "error" && (
+          {v1SchemaState === "error" && (
             <div
               role="alert"
               className="rounded-control border border-danger-border bg-danger-surface p-4 text-xs text-danger"
             >
               <p>
-                {v4SchemaError ||
+                {v1SchemaError ||
                   t("publishing.publishWizard.dynamicFieldsError")}
               </p>
               <button
                 type="button"
                 className="mt-2 font-semibold underline"
-                onClick={() => setV4RetryKey((value) => value + 1)}
+                onClick={() => setV1RetryKey((value) => value + 1)}
               >
                 {t("common.retry")}
               </button>
             </div>
           )}
-          {v4SchemaState === "ready" &&
-            activeV4Schema &&
+          {v1SchemaState === "ready" &&
+            activeV1Schema &&
             taxonomyPublicationFieldGroups.length === 0 && (
               <div
                 role="status"
@@ -1500,13 +1473,13 @@ export const PublishWizard: React.FC = () => {
                 {t("publishing.publishWizard.dynamicFieldsEmpty")}
               </div>
             )}
-          {activeV4Schema && taxonomyPublicationFieldGroups.length > 0 && (
+          {activeV1Schema && taxonomyPublicationFieldGroups.length > 0 && (
             <div className="space-y-4 border-t border-border-subtle pt-4">
               {taxonomyPublicationFieldGroups.map((group) => {
                 const visibleFields = group.fields.filter(
                   (field) =>
                     resolveTaxonomyFieldState({
-                      schema: activeV4Schema,
+                      schema: activeV1Schema,
                       attributeId: field.definition.id,
                       values: draft.attributes,
                       sellerType: taxonomySellerType,
@@ -1533,7 +1506,7 @@ export const PublishWizard: React.FC = () => {
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       {visibleFields.map((field) => {
                         const fieldState = resolveTaxonomyFieldState({
-                          schema: activeV4Schema,
+                          schema: activeV1Schema,
                           attributeId: field.definition.id,
                           values: draft.attributes,
                           sellerType: taxonomySellerType,
@@ -1546,29 +1519,29 @@ export const PublishWizard: React.FC = () => {
                             }
                           : field;
                         const controlledField =
-                          field.definition.id in v4CascadeOptions
+                          field.definition.id in v1CascadeOptions
                             ? {
                                 ...resolvedField,
                                 options:
-                                  v4CascadeOptions[field.definition.id] ?? [],
+                                  v1CascadeOptions[field.definition.id] ?? [],
                               }
                             : resolvedField;
                         return (
-                          <TaxonomyV4Field
+                          <TaxonomyV1Field
                             key={field.definition.id}
                             field={controlledField}
                             locale={currentLocale}
                             value={draft.attributes[field.definition.id]}
                             disabled={fieldState.disabled}
                             state={
-                              v4CascadeState[field.definition.id] ??
+                              v1CascadeState[field.definition.id] ??
                               (field.definition.optionSetId &&
                               field.options.length === 0
                                 ? "empty"
                                 : "ready")
                             }
                             error={taxonomyFieldErrors[field.definition.id]}
-                            onRetry={() => setV4RetryKey((value) => value + 1)}
+                            onRetry={() => setV1RetryKey((value) => value + 1)}
                             onChange={(value) =>
                               updateAttribute(field.definition.id, value)
                             }

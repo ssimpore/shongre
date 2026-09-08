@@ -192,11 +192,4 @@ export function registerAutoRoutes(routes: RouteRegistrar): void {
     async ({ params, body }) =>
       autoService.updateAddOn(params.marketCode, params.addOnId, body),
   );
-  routes.addRoute(
-    "PATCH",
-    "/auto/admin/markets/:marketCode/types/:type",
-    permission("auto.admin.manage"),
-    async ({ params, body }) =>
-      autoService.updateVehicleType(params.marketCode, params.type, body),
-  );
 }

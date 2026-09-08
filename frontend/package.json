@@ -33,7 +33,7 @@
     "test:e2e:a11y": "playwright test accessibility.spec.ts --project=chromium",
     "test:e2e:ui": "playwright test --ui",
     "check:i18n": "node scripts/check-i18n-coverage.mjs",
-    "check:taxonomy": "node --import tsx ../backend/scripts/taxonomy/compile.ts --check",
+    "check:taxonomy": "node ../scripts/check-taxonomy-architecture.mjs && node --import tsx ../backend/scripts/taxonomy/compile.ts --check",
     "check:navigation": "node scripts/check-navigation-integrity.mjs",
     "check:routes": "node scripts/check-route-coverage.mjs",
     "check:bundle": "node --import tsx scripts/check-client-bundle-budget.mjs",

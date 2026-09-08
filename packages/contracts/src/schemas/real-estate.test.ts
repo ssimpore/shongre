@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { CANONICAL_TAXONOMY_IDS } from "../fixtures/taxonomy-catalog";
+import { CANONICAL_TAXONOMY_IDS } from "../taxonomy-domain-ids";
 import {
   REAL_ESTATE_SCHEMA_VERSION,
   propertyPrivateSchema,
@@ -186,6 +186,7 @@ describe("Shongre Immo contracts", () => {
         },
         regulatoryContentVersion: "fr-v1",
       },
+      taxonomyOptions: { revision: 1, optionSets: {} },
       propertyTypes: [],
       attributes: [],
       fieldRules: [],

@@ -6,7 +6,6 @@ import type {
   CoursePublicOffer,
   CourseOrganizationWorkspace,
   CoursePlan,
-  CourseSubject,
   LearnerRequest,
   TutorProfile,
   TutorPublicProfile,
@@ -87,31 +86,25 @@ export interface CoursesServiceContract {
   saveTutorProfile(profile: TutorProfileDraft): Promise<TutorProfile>;
   createCourseOffer(offer: CourseOfferDraft): Promise<CourseOffer>;
   submitLearnerRequest(request: LearnerRequestDraft): Promise<LearnerRequest>;
-  getTutorOnboardingDraft(
-    accountId: string,
-    marketCode: string,
-    displayName?: string,
-  ): Promise<TutorOnboardingDraft>;
+  getTutorOnboardingDraft(marketCode: string): Promise<TutorOnboardingDraft>;
   saveTutorOnboardingDraft(
-    accountId: string,
+    marketCode: string,
     draft: TutorOnboardingDraft,
   ): Promise<void>;
   submitTutorOnboarding(
-    accountId: string,
     marketCode: string,
     draft: TutorOnboardingDraft,
   ): Promise<{ profile: TutorProfile; offer: CourseOffer }>;
-  clearTutorOnboardingDraft(accountId: string): Promise<void>;
+  clearTutorOnboardingDraft(marketCode: string): Promise<void>;
   getLearnerRequestDraft(
-    accountId: string,
     marketCode: string,
     subjectId?: string,
   ): Promise<LearnerRequestProgressDraft>;
   saveLearnerRequestDraft(
-    accountId: string,
+    marketCode: string,
     draft: LearnerRequestProgressDraft,
   ): Promise<void>;
-  clearLearnerRequestDraft(accountId: string): Promise<void>;
+  clearLearnerRequestDraft(marketCode: string): Promise<void>;
   getCurrentTutorWorkspace(marketCode: string): Promise<TutorWorkspace>;
   getTutorWorkspace(tutorProfileId: string): Promise<TutorWorkspace>;
   getCurrentOrganizationWorkspace(
@@ -145,11 +138,6 @@ export interface CoursesServiceContract {
     marketCode: string,
     config: CourseMarketConfig,
   ): Promise<CourseMarketConfig>;
-  updateSubject(
-    marketCode: string,
-    subjectId: string,
-    patch: Partial<Pick<CourseSubject, "label" | "isActive" | "levelIds">>,
-  ): Promise<CourseSubject>;
   updatePlan(
     marketCode: string,
     planId: string,

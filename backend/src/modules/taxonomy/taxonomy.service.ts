@@ -1,6 +1,5 @@
-import { taxonomyV4Service } from "./taxonomy.runtime.js";
+import { taxonomyV1Service } from "./taxonomy.runtime.js";
 import { createTaxonomyProjection } from "../../infrastructure/database/repositories/taxonomy.projection.js";
-import { Category } from "../../shared/types/index.js";
 import {
   taxonomyHeaderNavigationUpdateSchema,
   type MarketContext,
@@ -29,7 +28,7 @@ export class TaxonomyService {
         statusCode: 409,
         message: "Ce marché n’est pas encore ouvert.",
       });
-    const snapshot = await taxonomyV4Service.snapshot();
+    const snapshot = await taxonomyV1Service.snapshot();
     const bundle = snapshot.getBundle();
     return createTaxonomyProjection({
       ...bundle,
@@ -44,50 +43,6 @@ export class TaxonomyService {
         ),
       ),
     });
-  }
-
-  async getRootCategories(): Promise<Category[]> {
-    return this.taxonomyRepo.getRootCategories();
-  }
-
-  async getNodeById(id: string): Promise<TaxonomyNode | null> {
-    return this.taxonomyRepo.getNodeById(id);
-  }
-
-  async getNodeBySlug(slug: string): Promise<TaxonomyNode | null> {
-    return this.taxonomyRepo.getNodeBySlug(slug);
-  }
-
-  async getChildren(nodeId: string): Promise<TaxonomyNode[]> {
-    return this.taxonomyRepo.getChildren(nodeId);
-  }
-
-  async getAttributesForCategory(
-    categoryId: string,
-  ): Promise<TaxonomyAttribute[]> {
-    return this.taxonomyRepo.getAttributesForCategory(categoryId);
-  }
-
-  async resolveSearchFilters(
-    nodeId?: string,
-  ): Promise<Array<{ attribute: TaxonomyAttribute; facetType: string }>> {
-    const attrs = await this.getAttributesForCategory(nodeId || "root");
-    return attrs
-      .filter((attribute) => attribute.filterable !== false)
-      .map((attribute) => ({
-        attribute,
-        facetType:
-          attribute.dataType === "select" ||
-          attribute.dataType === "multi_select"
-            ? "multi_select"
-            : attribute.dataType === "number" ||
-                attribute.dataType === "year" ||
-                attribute.dataType === "range"
-              ? "range"
-              : attribute.dataType === "boolean"
-                ? "boolean"
-                : "keyword",
-      }));
   }
 
   async getHeaderNavigation(

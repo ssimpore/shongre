@@ -77,7 +77,7 @@ const listing = (status: Listing["status"] = "published"): Listing => ({
   duplicateGroupId: "private-duplicate-id",
   safetyRiskScore: 84,
   attributes: {
-    frameSize: "M",
+    size: "M",
     confirmedReportCount: 4,
     mediaQualityScore: 0.5,
   },
@@ -147,7 +147,7 @@ describe("public marketplace projections", () => {
     expect(result?.seller).not.toHaveProperty("staffStatus");
     expect(result?.seller).not.toHaveProperty("staffRole");
     expect(result?.seller).not.toHaveProperty("customPermissions");
-    expect(result?.attributes).toEqual({ frameSize: "M" });
+    expect(result?.attributes).toEqual({ size: "M" });
   });
 
   it("returns favorite card projections in one exact market collection", async () => {

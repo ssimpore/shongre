@@ -1,16 +1,18 @@
+import {
+  propertyDraftToForm,
+  propertyDraftToTransport,
+} from "./property-draft.mapping";
 import type {
   AgencyWorkspace,
   PropertyAppointment,
   PropertyDraft,
   PropertyImport,
-  PropertyFieldRule,
   PropertyLead,
   PropertyLeadExport,
   PropertyLeadNote,
   PropertyPublic,
   PropertySearchQuery,
   PropertySearchResult,
-  PropertyTypeConfig,
   RealEstateAdminOverview,
   RealEstateCatalog,
   RealEstateMarketConfig,
@@ -77,25 +79,29 @@ export class HttpRealEstateService implements RealEstateServiceContract {
       },
     );
   }
-  getOrCreateDraft(
+  async getOrCreateDraft(
     _ownerUserId: string,
     marketCode: string,
     _sellerDisplayName?: string,
   ): Promise<PropertyDraft> {
-    return apiOperation<PropertyDraft, "postRealestateDrafts">(
-      "postRealestateDrafts",
-      {
-        body: {
-          marketCode,
+    return propertyDraftToForm(
+      await apiOperation<PropertyDraft, "postRealestateDrafts">(
+        "postRealestateDrafts",
+        {
+          body: {
+            marketCode,
+          },
         },
-      },
+      ),
     );
   }
   async getDraft(draftId: string) {
     try {
-      return await apiOperation<PropertyDraft, "getRealEstateDraftsById">(
-        "getRealEstateDraftsById",
-        { path: { id: draftId } },
+      return propertyDraftToForm(
+        await apiOperation<PropertyDraft, "getRealEstateDraftsById">(
+          "getRealEstateDraftsById",
+          { path: { id: draftId } },
+        ),
       );
     } catch (error: unknown) {
       if (
@@ -108,10 +114,12 @@ export class HttpRealEstateService implements RealEstateServiceContract {
       throw error;
     }
   }
-  saveDraft(draft: PropertyDraft) {
-    return apiOperation<PropertyDraft, "putRealEstateDraftsById">(
-      "putRealEstateDraftsById",
-      { path: { id: draft.id }, body: draft },
+  async saveDraft(draft: PropertyDraft) {
+    return propertyDraftToForm(
+      await apiOperation<PropertyDraft, "putRealEstateDraftsById">(
+        "putRealEstateDraftsById",
+        { path: { id: draft.id }, body: propertyDraftToTransport(draft) },
+      ),
     );
   }
   submitDraft(draftId: string) {
@@ -261,32 +269,6 @@ export class HttpRealEstateService implements RealEstateServiceContract {
       "patchRealEstateAdminMarketsByMarketCodeAddOnsByAddOnId"
     >("patchRealEstateAdminMarketsByMarketCodeAddOnsByAddOnId", {
       path: { marketCode: marketCode, addOnId: addOnId },
-      body: patch,
-    });
-  }
-  updatePropertyType(
-    marketCode: string,
-    type: string,
-    patch: Partial<PropertyTypeConfig>,
-  ) {
-    return apiOperation<
-      PropertyTypeConfig,
-      "patchRealEstateAdminMarketsByMarketCodeTypesByType"
-    >("patchRealEstateAdminMarketsByMarketCodeTypesByType", {
-      path: { marketCode: marketCode, type: type },
-      body: patch,
-    });
-  }
-  updateFieldRule(
-    marketCode: string,
-    ruleId: string,
-    patch: Partial<PropertyFieldRule>,
-  ) {
-    return apiOperation<
-      PropertyFieldRule,
-      "patchRealEstateAdminMarketsByMarketCodeFieldRulesByRuleId"
-    >("patchRealEstateAdminMarketsByMarketCodeFieldRulesByRuleId", {
-      path: { marketCode: marketCode, ruleId: ruleId },
       body: patch,
     });
   }

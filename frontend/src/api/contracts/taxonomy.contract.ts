@@ -6,12 +6,12 @@ import {
 } from "../../domains/taxonomy/taxonomy.types";
 import type {
   MarketContext,
-  ResolveTaxonomyV4PublicInput,
+  ResolveTaxonomyV1PublicInput,
   TaxonomyHeaderNavigationConfiguration,
   TaxonomyHeaderNavigationUpdate,
-  TaxonomyV4OptionPage,
-  TaxonomyV4ResolvedSchema,
-  TaxonomyV4TreeResponse,
+  TaxonomyV1OptionPage,
+  TaxonomyV1ResolvedSchema,
+  TaxonomyV1TreeResponse,
 } from "@shongre/contracts";
 
 export interface TaxonomyServiceContract {
@@ -35,9 +35,6 @@ export interface TaxonomyServiceContract {
 
   getRootCategories(): Promise<Category[]>;
   getNodeById(id: string): Promise<TaxonomyNode | null>;
-  getNodeBySlug(slug: string): Promise<TaxonomyNode | null>;
-  getChildren(nodeId: string): Promise<TaxonomyNode[]>;
-  getAttributesForCategory(categoryId: string): Promise<TaxonomyAttribute[]>;
   resolveSearchFilters(
     nodeId?: string,
   ): Promise<Array<{ attribute: TaxonomyAttribute; facetType: string }>>;
@@ -50,15 +47,15 @@ export interface TaxonomyServiceContract {
   saveHeaderNavigation(
     input: TaxonomyHeaderNavigationUpdate,
   ): Promise<TaxonomyHeaderNavigationConfiguration>;
-  getV4Tree(input: {
+  getV1Tree(input: {
     marketContext: Pick<MarketContext, "countryCode">;
     locale: string;
     taxonomyVersion?: string;
-  }): Promise<TaxonomyV4TreeResponse>;
-  resolveV4(
-    input: ResolveTaxonomyV4PublicInput,
-  ): Promise<TaxonomyV4ResolvedSchema>;
-  lookupV4Options(input: {
+  }): Promise<TaxonomyV1TreeResponse>;
+  resolveV1(
+    input: ResolveTaxonomyV1PublicInput,
+  ): Promise<TaxonomyV1ResolvedSchema>;
+  lookupV1Options(input: {
     marketContext: MarketContext;
     optionSetId: string;
     taxonomyRevision?: number;
@@ -68,5 +65,5 @@ export interface TaxonomyServiceContract {
     limit?: number;
     locale?: string;
     taxonomyVersion?: string;
-  }): Promise<TaxonomyV4OptionPage>;
+  }): Promise<TaxonomyV1OptionPage>;
 }

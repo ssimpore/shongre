@@ -1,4 +1,8 @@
-import type { PropertyPublic } from "@shongre/contracts/real-estate";
+import { localizeTaxonomyLabels } from "@shongre/contracts/taxonomy-labels";
+import type {
+  RealEstateCatalog,
+  PropertyPublic,
+} from "@shongre/contracts/real-estate";
 import {
   formatProjectedMoney,
   type MoneyDisplayConverter,
@@ -10,34 +14,33 @@ export const formatImmoMoney = (
   convertMoney?: MoneyDisplayConverter,
 ) => formatProjectedMoney(money, { locale, convertMoney });
 
-export const propertyTypeLabels: Record<
-  PropertyPublic["propertyType"],
-  string
-> = {
-  apartment: "Appartement",
-  house: "Maison",
-  land: "Terrain",
-  parking_garage: "Parking ou garage",
-  commercial: "Local commercial",
-  office: "Bureau",
-  building: "Immeuble",
-  new_development: "Programme neuf",
-  holiday_rental: "Location saisonnière",
-  room_shared: "Chambre ou colocation",
-  other: "Autre bien",
-};
+export function immoOptions(
+  catalog: RealEstateCatalog,
+  optionSetId: string,
+  locale: string,
+) {
+  return (catalog.taxonomyOptions.optionSets[optionSetId] ?? []).map(
+    (option) => ({
+      value: option.key,
+      label: localizeTaxonomyLabels(option.labels, locale),
+    }),
+  );
+}
 
-export const transactionLabels: Record<
-  PropertyPublic["transactionType"],
-  string
-> = {
-  sale: "Vente",
-  long_term_rental: "Location",
-  seasonal_rental: "Location saisonnière",
-  shared_accommodation: "Colocation",
-  life_annuity: "Viager",
-  other: "Autre projet",
-};
+export function formatImmoField(
+  property: PropertyPublic,
+  code: string,
+  locale: string,
+) {
+  return (
+    localizeTaxonomyLabels(
+      property.taxonomy?.detailCharacteristics?.find(
+        (field) => field.code === code,
+      )?.values,
+      locale,
+    ) || "—"
+  );
+}
 
 export const pricePeriodSuffix: Record<
   PropertyPublic["financials"]["period"],

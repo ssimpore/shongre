@@ -4,18 +4,14 @@ import type {
   TaxonomyHeaderNavigationUpdate,
 } from "@shongre/contracts/taxonomy";
 import { taxonomyHeaderNavigationLinkSchema } from "@shongre/contracts/taxonomy";
-import type { Category } from "../../../shared/types/index.js";
-import { config } from "../../../app/config/index.js";
 import { createTaxonomyProjection } from "./taxonomy.projection.js";
-import { taxonomyV4Service } from "../../../modules/taxonomy/taxonomy.runtime.js";
+import { taxonomyV1Service } from "../../../modules/taxonomy/taxonomy.runtime.js";
 import { AppError } from "../../../shared/errors/app-error.js";
 import { getSupabaseAdminClient } from "../../supabase/supabase-client.js";
 import { databaseFailure } from "./repository-error.js";
 
-/** Shared taxonomy field shape with legacy aliases retained for old adapters. */
+/** Narrow API filter projection derived from canonical v1 definitions. */
 export type TaxonomyAttribute = ContractTaxonomyAttribute & {
-  name?: string;
-  type?: ContractTaxonomyAttribute["dataType"];
   defaultValue?: unknown;
 };
 
@@ -34,18 +30,14 @@ export interface TaxonomyNode {
   status: "active" | "draft" | "disabled" | "deprecated" | "archived";
   level: "category" | "subcategory" | "type";
   publishable: boolean;
-  listingFamily: string;
   supportedIntents: string[];
   attributes?: TaxonomyAttribute[];
   children?: TaxonomyNode[];
 }
 
 export interface ITaxonomyRepository {
-  getRootCategories(): Promise<Category[]>;
   getNodeById(id: string): Promise<TaxonomyNode | null>;
   getNodeBySlug(slug: string): Promise<TaxonomyNode | null>;
-  getChildren(nodeId: string): Promise<TaxonomyNode[]>;
-  getAttributesForCategory(categoryId: string): Promise<TaxonomyAttribute[]>;
   getHeaderNavigation(
     marketCode: string,
     includeInactive: boolean,
@@ -57,66 +49,17 @@ export interface ITaxonomyRepository {
   ): Promise<number>;
 }
 
-export class TestTaxonomyRepository implements ITaxonomyRepository {
-  private instance?: Promise<ITaxonomyRepository>;
-  private get() {
-    if (config.environment.environment !== "test")
-      throw new Error("Taxonomy fixtures are restricted to isolated tests.");
-    return (this.instance ??= Promise.all([
-      import("./taxonomy.test-repository.js"),
-      import("../../../modules/taxonomy/generated/taxonomy-v4.private.js"),
-    ]).then(
-      ([{ createTestTaxonomyRepository }, { TAXONOMY_V4_PRIVATE_BUNDLE }]) =>
-        createTestTaxonomyRepository(TAXONOMY_V4_PRIVATE_BUNDLE),
-    ));
-  }
-  async getRootCategories() {
-    return (await this.get()).getRootCategories();
-  }
-  async getNodeById(id: string) {
-    return (await this.get()).getNodeById(id);
-  }
-  async getNodeBySlug(slug: string) {
-    return (await this.get()).getNodeBySlug(slug);
-  }
-  async getChildren(id: string) {
-    return (await this.get()).getChildren(id);
-  }
-  async getAttributesForCategory(id: string) {
-    return (await this.get()).getAttributesForCategory(id);
-  }
-  async getHeaderNavigation(market: string, includeInactive: boolean) {
-    return (await this.get()).getHeaderNavigation(market, includeInactive);
-  }
-  async replaceHeaderNavigation(
-    input: TaxonomyHeaderNavigationUpdate,
-    actor: string,
-    requestId?: string,
-  ) {
-    return (await this.get()).replaceHeaderNavigation(input, actor, requestId);
-  }
-}
-
 export class PostgresTaxonomyRepository implements ITaxonomyRepository {
   private async projection() {
     return createTaxonomyProjection(
-      (await taxonomyV4Service.snapshot()).getBundle(),
+      (await taxonomyV1Service.snapshot()).getBundle(),
     );
-  }
-  async getRootCategories() {
-    return (await this.projection()).getRootCategories();
   }
   async getNodeById(id: string) {
     return (await this.projection()).getNode(id);
   }
   async getNodeBySlug(slug: string) {
     return (await this.projection()).getNode(slug);
-  }
-  async getChildren(id: string) {
-    return (await this.projection()).getChildren(id);
-  }
-  async getAttributesForCategory(id: string) {
-    return (await this.projection()).publicAttributesForCategory(id);
   }
 
   async getHeaderNavigation(
@@ -178,7 +121,7 @@ export class PostgresTaxonomyRepository implements ITaxonomyRepository {
         };
       }
 
-      const published = (await taxonomyV4Service.snapshot()).getBundle();
+      const published = (await taxonomyV1Service.snapshot()).getBundle();
       const categoryRows = new Map(
         published.categories.map((category) => [category.id, category]),
       );

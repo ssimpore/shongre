@@ -89,6 +89,34 @@ describe("Shongre Immo commercial projection", () => {
 });
 
 describe("RealEstateService", () => {
+  it.each([
+    { propertyType: "not-published" },
+    { propertyType: "land", transactionType: "shared_accommodation" },
+    {
+      characteristics: {
+        ...completeData.characteristics,
+        amenities: ["invented"],
+      },
+    },
+  ])(
+    "rejects unpublished property selections while preserving the draft: %j",
+    async (change) => {
+      const { service } = setup();
+      await service.saveOwnDraft("owner-selection", "draft-selection", {
+        marketCode: "FR",
+        currentStep: 10,
+        completedSteps: [1, 2, 3, 4, 5, 6, 7, 8, 9],
+        data: { ...completeData, ...change },
+      });
+      await expect(
+        service.submitOwnDraft("owner-selection", "draft-selection"),
+      ).rejects.toMatchObject({ code: "VALIDATION_ERROR" });
+      expect(
+        (await service.getOwnDraft("owner-selection", "draft-selection")).data,
+      ).toMatchObject(change);
+    },
+  );
+
   it("never exposes exact address, documents, risk or moderation fields", async () => {
     const { service, repository } = setup();
     const privateProperty = await repository.getProperty(
@@ -106,6 +134,32 @@ describe("RealEstateService", () => {
       expect(property).not.toHaveProperty(field);
     expect(property.address.latitude).not.toBe(
       privateProperty?.address.latitude,
+    );
+  });
+
+  it("projects domain equipment and condition without losing the accessible reference", async () => {
+    const { service, repository } = setup();
+    const stored = (await repository.getProperty("property_apartment_lyon"))!;
+    await repository.saveProperty({
+      ...stored,
+      characteristics: {
+        ...stored.characteristics,
+        amenities: ["accessible"],
+        condition: "to_renovate",
+      },
+    });
+    const result = await service.getPublicProperty(stored.id);
+    expect(result.taxonomy?.detailCharacteristics).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: "amenities",
+          values: expect.objectContaining({ "fr-FR": "Accessible PMR" }),
+        }),
+        expect.objectContaining({
+          code: "property_condition",
+          values: expect.objectContaining({ "fr-FR": "À rénover" }),
+        }),
+      ]),
     );
   });
 

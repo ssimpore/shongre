@@ -21,7 +21,7 @@ import {
   CONTROL_MOTION_CLASS,
 } from "../../design-system/utils/controlMetrics";
 import { getTaxonomyLabel } from "../../domains/taxonomy/taxonomy.labels";
-import type { TaxonomyNode } from "../../domains/taxonomy/taxonomy.types";
+import type { TaxonomyNavigationNode as TaxonomyNode } from "../../domains/taxonomy/taxonomy.types";
 import { useTranslation } from "../../i18n/I18nProvider";
 import {
   filterCategoryNavigationOverview,
@@ -395,7 +395,7 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
       (left, right) => left.displayOrder - right.displayOrder,
     ),
   );
-  const fallbackHeaderCategories = useMemo(
+  const initialHeaderCategories = useMemo(
     () =>
       [...initialCategories].sort(
         (left, right) => left.displayOrder - right.displayOrder,
@@ -424,21 +424,18 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
       ),
     [disabledCategorySlugs, disabledSubCategorySlugs],
   );
-  const normalizedMarketCode = marketCode.toUpperCase();
   const navigationTreeScope = `${headerConfigurationScope}:${[...disabledKeys]
     .sort()
     .join(",")}`;
   const isAvailable = useCallback(
     (node: TaxonomyNode) => {
-      const marketStatus =
-        node.marketOverrides?.[normalizedMarketCode]?.status ?? node.status;
       return (
-        marketStatus === "active" &&
+        node.status === "active" &&
         !disabledKeys.has(node.id.toLowerCase()) &&
         !disabledKeys.has(node.slug.toLowerCase())
       );
     },
-    [disabledKeys, normalizedMarketCode],
+    [disabledKeys],
   );
 
   const clearOpenTimer = useCallback(() => {
@@ -643,14 +640,14 @@ export const HeaderCategoryNav: React.FC<HeaderCategoryNavProps> = ({
   );
 
   useEffect(() => {
-    setHeaderCategories(fallbackHeaderCategories);
+    setHeaderCategories(initialHeaderCategories);
     setHeaderLinks(initialLinks);
     setHeaderLoadFailed(false);
     setBranchesBySlug(new Map());
     setOverviewRoots([]);
     loadingMenuKeysRef.current.clear();
     headerConfigurationRequestRef.current = null;
-  }, [fallbackHeaderCategories, headerConfigurationScope, initialLinks]);
+  }, [initialHeaderCategories, headerConfigurationScope, initialLinks]);
 
   useEffect(() => {
     void loadHeaderConfiguration();

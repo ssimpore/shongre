@@ -1,4 +1,4 @@
-import type { TaxonomyV4ListingIntent } from "@shongre/contracts";
+import type { TaxonomyV1ListingIntent } from "@shongre/contracts";
 import {
   ArrowLeftRight,
   BriefcaseBusiness,
@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 
 export const LISTING_INTENT_ICON_MAP: Record<
-  TaxonomyV4ListingIntent,
+  TaxonomyV1ListingIntent,
   LucideIcon
 > = {
   SELL: CircleDollarSign,
@@ -38,7 +38,7 @@ export const LISTING_INTENT_ICON_MAP: Record<
 };
 
 interface ListingIntentIconProps {
-  intent: TaxonomyV4ListingIntent;
+  intent: TaxonomyV1ListingIntent;
   className?: string;
 }
 

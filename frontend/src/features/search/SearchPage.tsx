@@ -1,4 +1,4 @@
-import type { TaxonomyV4TreeResponse } from "@shongre/contracts/taxonomy";
+import type { TaxonomyV1TreeResponse } from "@shongre/contracts/taxonomy";
 import { PAGE_SIZES } from "../../configuration/pagination.config";
 import { routes } from "../../configuration/routes";
 import React, { useState, useEffect, useMemo, useRef } from "react";
@@ -134,13 +134,13 @@ export const SearchPage: React.FC = () => {
   const initialData =
     publicRouteData?.kind === "listing_search" ? publicRouteData : null;
   const [taxonomySnapshot, setTaxonomySnapshot] = useState<
-    TaxonomyV4TreeResponse | undefined
+    TaxonomyV1TreeResponse | undefined
   >(initialData?.taxonomy);
   useEffect(() => {
     let active = true;
     setTaxonomySnapshot(undefined);
     void services.taxonomy
-      .getV4Tree({
+      .getV1Tree({
         marketContext: { countryCode: activeMarket.code },
         locale: currentLocale,
       })

@@ -1,0 +1,17 @@
+{
+  "source": {
+    "taxonomyVersion": "4.0.0",
+    "normalizedSha256": "9e5978db88326923516ec1c92733e8b266a0369b3794187502039ca5ef6edda1"
+  },
+  "target": {
+    "taxonomyVersion": "v1",
+    "normalizedSha256": "473905ebb68805ad71c977fb6852c9d0ce0f68c54cc8897e8e4e914ea72746b6"
+  },
+  "changes": [
+    "Preserve all category, attribute, listing type and option identities",
+    "Remove historical crosswalks from runtime documents; retain reviewed import evidence",
+    "Migrate relational references and historical publication snapshots through ordered SQL migrations",
+    "Retain broad education scope for former tutoring/courses identities, documented by migrations 00016 and 00030; correction applied by 00125",
+    "Convert persisted vehicle year/fuel/gearbox/critair keys and cycle frameSize with collision checks and original-value audit evidence in 00125"
+  ]
+}

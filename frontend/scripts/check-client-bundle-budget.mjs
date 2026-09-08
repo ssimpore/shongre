@@ -70,9 +70,7 @@ const rows = [
     file: basename(diskPath),
     rawBytes: bytes.length,
     gzipBytes: gzipSync(bytes, { level: 9 }).length,
-    // The generated v4 projection is stored as one compressed base64 literal.
-    // Call sites also retain its exported function name, so that name alone
-    // would misclassify small executable chunks as the generated payload.
+    // Catalogue fixtures are forbidden in application bundles.
     isGeneratedTaxonomy: /[A-Za-z0-9+/]{500000,}={0,2}/.test(sourceText),
   };
 });
@@ -182,13 +180,11 @@ if (
   failures.push(
     `executable chunk ${largestExecutable.file} is ${kb(largestExecutable.gzipBytes)}; budget is ${kb(BUDGETS.executableChunkGzipBytes)}`,
   );
-if (
-  generatedTaxonomy &&
-  generatedTaxonomy.gzipBytes > BUDGETS.generatedTaxonomyChunkGzipBytes
-)
+if (generatedTaxonomy)
   failures.push(
-    `generated taxonomy chunk ${generatedTaxonomy.file} is ${kb(generatedTaxonomy.gzipBytes)}; budget is ${kb(BUDGETS.generatedTaxonomyChunkGzipBytes)}`,
+    `Forbidden embedded taxonomy catalogue in ${generatedTaxonomy.file}`,
   );
+
 for (const [route, routeRows] of Object.entries(routes)) {
   if (!routeRows.length) {
     failures.push(

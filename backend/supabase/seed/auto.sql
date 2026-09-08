@@ -1,4 +1,4 @@
--- Canonical deterministic catalogue seed for Shongre Auto (France).
+-- Deterministic business configuration seed for Shongre Auto (France).
 -- Paid offers, secure-sale and partner referrals remain disabled until their
 -- server providers, legal texts, webhooks and refund operations are approved.
 
@@ -49,81 +49,6 @@ ON CONFLICT (market_code) DO UPDATE SET
   boat_listings_enabled = EXCLUDED.boat_listings_enabled,
   config_payload = EXCLUDED.config_payload,
   updated_at = NOW();
-
-WITH types(type, slug, label, description, icon_name, active, sort_order) AS (
-  VALUES
-    ('car','voitures','Voitures','Voitures particulières neuves et d’occasion','CarFront',TRUE,10),
-    ('motorcycle','motos-scooters','Motos & scooters','Deux-roues motorisés','Bike',TRUE,20),
-    ('utility','utilitaires','Vans & utilitaires','Véhicules utilitaires légers','Truck',TRUE,30),
-    ('truck','poids-lourds','Poids lourds','Camions et véhicules industriels','Truck',TRUE,40),
-    ('motorhome','camping-cars-caravanes','Camping-cars & caravanes','Véhicules de loisirs','Caravan',TRUE,50),
-    ('boat','bateaux','Bateaux','Navigation de plaisance — activation par marché','ShipWheel',FALSE,60),
-    ('agricultural','agricoles','Matériel agricole','Tracteurs et équipements agricoles','Tractor',TRUE,70),
-    ('construction','construction','Engins de chantier','Construction et travaux publics','Construction',TRUE,80),
-    ('parts','pieces-accessoires','Pièces & accessoires','Pièces, pneus et équipements','Wrench',TRUE,90),
-    ('other','autres-vehicules','Autres véhicules','Véhicules hors catégories principales','CircleEllipsis',TRUE,100)
-)
-INSERT INTO public.auto_vehicle_types (
-  type, market_code, slug, label, description, schema_version,
-  required_field_ids, filter_field_ids, is_active, sort_order, public_payload
-)
-SELECT type, 'FR', slug, label, description, 1,
-  CASE WHEN type = 'parts' THEN ARRAY['condition','price'] ELSE ARRAY['make','model','modelYear','mileage','fuelType','price'] END,
-  CASE WHEN type = 'parts' THEN ARRAY['condition','price'] ELSE ARRAY['make','model','modelYear','mileage','fuelType','transmission','price'] END,
-  active, sort_order,
-  jsonb_build_object(
-    'type', type, 'slug', slug, 'label', label, 'description', description,
-    'iconName', icon_name, 'schemaVersion', 1, 'isActive', active,
-    'requiredFieldIds', CASE WHEN type = 'parts' THEN '["condition","price"]'::jsonb ELSE '["make","model","modelYear","mileage","fuelType","price"]'::jsonb END,
-    'filterFieldIds', CASE WHEN type = 'parts' THEN '["condition","price"]'::jsonb ELSE '["make","model","modelYear","mileage","fuelType","transmission","price"]'::jsonb END,
-    'sortOrder', sort_order
-  )
-FROM types
-ON CONFLICT (type, market_code) DO UPDATE SET label = EXCLUDED.label, description = EXCLUDED.description, is_active = EXCLUDED.is_active, public_payload = EXCLUDED.public_payload, updated_at = NOW();
-
-WITH attrs(id, label, field_type, unit, vehicle_types, required, filterable, sort_order, options) AS (
-  VALUES
-    ('bodyType','Carrosserie','single_select',NULL,ARRAY['car','utility'],FALSE,TRUE,10,'[{"value":"SUV","label":"SUV","sortOrder":10},{"value":"sedan","label":"Berline","sortOrder":20}]'::jsonb),
-    ('batteryCapacityKwh','Capacité de batterie','number','kWh',ARRAY['car','utility','motorcycle'],FALSE,TRUE,20,NULL),
-    ('electricRangeKm','Autonomie électrique','number','km',ARRAY['car','utility','motorcycle'],FALSE,TRUE,30,NULL),
-    ('chargingPowerKw','Puissance de recharge','number','kW',ARRAY['car','utility','motorcycle'],FALSE,TRUE,40,NULL),
-    ('critAirClass','Classe Crit’Air','single_select',NULL,ARRAY['car','utility','truck','motorhome'],FALSE,TRUE,50,'[{"value":"0","label":"Électrique / Hydrogène","sortOrder":10},{"value":"1","label":"Crit’Air 1","sortOrder":20},{"value":"2","label":"Crit’Air 2","sortOrder":30}]'::jsonb)
-)
-INSERT INTO public.auto_attribute_definitions (
-  id, market_code, label, field_type, unit, vehicle_types, options,
-  is_required, is_filterable, is_public, schema_version, is_active,
-  sort_order, public_payload
-)
-SELECT id, 'FR', label, field_type, unit, vehicle_types, options, required,
-  filterable, TRUE, 1, TRUE, sort_order,
-  jsonb_strip_nulls(jsonb_build_object(
-    'id', id, 'marketCode', 'FR', 'vehicleTypes', to_jsonb(vehicle_types),
-    'label', label, 'fieldType', field_type, 'unit', unit, 'options', options,
-    'isRequired', required, 'isFilterable', filterable, 'isPublic', TRUE,
-    'sortOrder', sort_order, 'schemaVersion', 1, 'isActive', TRUE
-  ))
-FROM attrs
-ON CONFLICT (id, market_code) DO UPDATE SET label = EXCLUDED.label, options = EXCLUDED.options, is_filterable = EXCLUDED.is_filterable, public_payload = EXCLUDED.public_payload, updated_at = NOW();
-
-WITH entries(id, kind, parent_id, slug, label, vehicle_types) AS (
-  VALUES
-    ('peugeot','make',NULL,'peugeot','Peugeot',ARRAY['car','utility']),
-    ('bmw','make',NULL,'bmw','BMW',ARRAY['car','motorcycle']),
-    ('renault','make',NULL,'renault','Renault',ARRAY['car','utility','truck']),
-    ('citroen','make',NULL,'citroen','Citroën',ARRAY['car','utility']),
-    ('peugeot-3008','model','peugeot','3008','3008',ARRAY['car']),
-    ('peugeot-208','model','peugeot','208','208',ARRAY['car']),
-    ('bmw-x3','model','bmw','x3','X3',ARRAY['car']),
-    ('renault-captur','model','renault','captur','Captur',ARRAY['car']),
-    ('citroen-c3','model','citroen','c3','C3',ARRAY['car'])
-)
-INSERT INTO public.auto_catalog_entries (
-  id, market_code, kind, parent_id, slug, label, vehicle_types, is_active, public_payload
-)
-SELECT id, 'FR', kind, parent_id, slug, label, vehicle_types, TRUE,
-  jsonb_strip_nulls(jsonb_build_object('id',id,'kind',kind,'parentId',parent_id,'vehicleTypes',to_jsonb(vehicle_types),'slug',slug,'label',label,'isActive',TRUE))
-FROM entries
-ON CONFLICT (id, market_code) DO UPDATE SET label = EXCLUDED.label, vehicle_types = EXCLUDED.vehicle_types, public_payload = EXCLUDED.public_payload, updated_at = NOW();
 
 WITH base(entitlements) AS (
   VALUES ('{"maxActiveVehicles":1,"maxPhotosPerVehicle":12,"maxVideosPerVehicle":0,"maxTeamMembers":1,"maxLocations":1,"monthlyPromotionCredits":0,"includedUrgentCredits":0,"includedBumpCredits":0,"includedFeaturedCredits":0,"inventoryCsvImport":false,"inventoryXmlImport":false,"inventoryApiSync":false,"leadAssignment":false,"leadReminders":false,"publicStorefront":false,"vehicleVideo":false,"vehicleView360":false,"detailedAnalytics":false,"networkAnalytics":false,"apiAccess":false,"centralizedBilling":false,"branchPermissions":false,"stockTransfers":false,"customPlan":false,"serviceLevelAgreement":false,"prioritySupport":false}'::jsonb)

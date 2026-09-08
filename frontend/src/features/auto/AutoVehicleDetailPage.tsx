@@ -1,21 +1,16 @@
+import { localizeTaxonomyLabels } from "@shongre/contracts/taxonomy-labels";
 import { PAGE_SIZES } from "../../configuration/pagination.config";
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
-  BatteryCharging,
-  CalendarDays,
-  CarFront,
   CheckCircle2,
   Clock3,
   FileCheck2,
-  Fuel,
   Gauge,
   GitCompareArrows,
   MapPin,
   MessageSquare,
-  ShieldCheck,
   TriangleAlert,
-  type LucideIcon,
 } from "lucide-react";
 import type { AutoLead, VehiclePublic } from "@shongre/contracts/auto";
 import { isActiveMarketResolvedListingPromotion } from "@shongre/contracts";
@@ -48,8 +43,7 @@ import { AutoVehicleCard } from "./components/AutoVehicleCard";
 import {
   formatAutoMileage,
   formatAutoMoney,
-  fuelLabels,
-  transmissionLabels,
+  formatAutoField,
 } from "./auto-format";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { useAutoVehicleFavorites } from "./useAutoVehicleFavorites";
@@ -129,7 +123,7 @@ export const AutoVehicleDetailPage: React.FC = () => {
   usePageMeta({
     title: vehicle?.title || "Véhicule d’occasion",
     description: vehicle
-      ? `${vehicle.technical.modelYear}, ${formatAutoMileage(vehicle, currentLocale)}, ${fuelLabels[vehicle.technical.fuelType]}. ${vehicle.locationLabel}.`
+      ? `${vehicle.technical.modelYear}, ${formatAutoMileage(vehicle, currentLocale)}, ${formatAutoField(vehicle, "fuel_type", currentLocale)}. ${vehicle.locationLabel}.`
       : "Découvrez les caractéristiques et informations de confiance de ce véhicule.",
     canonicalPath: `/auto/vehicule/${slug}`,
     type: "product",
@@ -148,7 +142,7 @@ export const AutoVehicleDetailPage: React.FC = () => {
               value: vehicle.technical.mileage,
               unitCode: vehicle.technical.mileageUnit === "km" ? "KMT" : "SMI",
             },
-            fuelType: fuelLabels[vehicle.technical.fuelType],
+            fuelType: formatAutoField(vehicle, "fuel_type", currentLocale),
             offers: {
               "@type": "Offer",
               price: vehicle.price.amountMinor / 100,
@@ -256,29 +250,6 @@ export const AutoVehicleDetailPage: React.FC = () => {
     ],
   ];
 
-  const characteristicRows: Array<[LucideIcon, string, React.ReactNode]> = [
-    [CalendarDays, "Année", vehicle.technical.modelYear],
-    [Gauge, "Kilométrage", formatAutoMileage(vehicle, currentLocale)],
-    [Fuel, "Énergie", fuelLabels[vehicle.technical.fuelType]],
-    [CarFront, "Boîte", transmissionLabels[vehicle.technical.transmission]],
-    [
-      Gauge,
-      "Puissance",
-      vehicle.technical.powerHp
-        ? `${vehicle.technical.powerHp} ch`
-        : "Non indiquée",
-    ],
-    [CarFront, "Carrosserie", vehicle.technical.bodyType || "Non indiquée"],
-    [ShieldCheck, "Crit’Air", vehicle.technical.critAirClass || "Non indiquée"],
-    [
-      BatteryCharging,
-      "Autonomie",
-      vehicle.technical.electricRangeKm
-        ? `${vehicle.technical.electricRangeKm} km`
-        : "Non applicable",
-    ],
-  ];
-
   const sellerPublicUrl = routes.seller.publicPage({
     id: vehicle.seller.id,
     slug: vehicle.seller.slug,
@@ -323,10 +294,7 @@ export const AutoVehicleDetailPage: React.FC = () => {
                       variant="floating"
                     />
                     <Link
-                      to={routes.auto.compare([
-                        vehicle.id,
-                        "vehicle_3008_petrol",
-                      ])}
+                      to={routes.auto.compare([vehicle.id])}
                       className="flex h-8 w-8 items-center justify-center rounded-control bg-bg-surface/90 text-text-secondary shadow-xs backdrop-blur-xs transition-colors hover:bg-bg-surface hover:text-text-main focus:outline-none focus:ring-2 focus:ring-primary"
                       aria-label="Comparer ce véhicule"
                     >
@@ -424,17 +392,13 @@ export const AutoVehicleDetailPage: React.FC = () => {
                 Caractéristiques principales
               </h2>
               <dl className="mt-4 grid grid-cols-2 gap-px overflow-hidden rounded-card border border-border-subtle bg-border-subtle sm:grid-cols-4">
-                {characteristicRows.map(([Icon, label, value]) => (
-                  <div key={label} className="bg-bg-surface p-4">
+                {vehicle.taxonomy?.detailCharacteristics?.map((field) => (
+                  <div key={field.code} className="bg-bg-surface p-4">
                     <dt className="flex items-center gap-1.5 text-micro font-bold uppercase tracking-wide text-text-muted">
-                      <Icon
-                        className="h-icon-xs w-icon-xs"
-                        aria-hidden="true"
-                      />{" "}
-                      {label}
+                      {localizeTaxonomyLabels(field.labels, currentLocale)}
                     </dt>
                     <dd className="mt-1.5 text-xs font-bold text-text-main">
-                      {value}
+                      {localizeTaxonomyLabels(field.values, currentLocale)}
                     </dd>
                   </div>
                 ))}
@@ -443,30 +407,9 @@ export const AutoVehicleDetailPage: React.FC = () => {
 
             <section className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs sm:p-6">
               <h2 className="text-base font-bold text-text-main">
-                État, historique et équipements
+                Équipements et description
               </h2>
               <div className="mt-4 grid gap-5 sm:grid-cols-2">
-                <div>
-                  <h3 className="text-xs font-bold">Historique déclaré</h3>
-                  <ul className="mt-2 space-y-2 text-xs text-text-secondary">
-                    <li className="flex gap-2">
-                      <CheckCircle2 className="h-icon-sm w-icon-sm text-success" />{" "}
-                      Carnet d’entretien{" "}
-                      {vehicle.history.maintenanceBookStatus === "complete"
-                        ? "complet"
-                        : "partiel"}
-                    </li>
-                    <li className="flex gap-2">
-                      <CheckCircle2 className="h-icon-sm w-icon-sm text-success" />{" "}
-                      {vehicle.history.previousOwnerCount ?? "Nombre de"}{" "}
-                      propriétaire précédent
-                    </li>
-                    <li className="flex gap-2">
-                      <CheckCircle2 className="h-icon-sm w-icon-sm text-success" />{" "}
-                      Aucun accident déclaré
-                    </li>
-                  </ul>
-                </div>
                 <div>
                   <h3 className="text-xs font-bold">Équipements</h3>
                   <ul className="mt-2 grid grid-cols-2 gap-2 text-xs text-text-secondary">

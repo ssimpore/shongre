@@ -40,7 +40,7 @@ const draft: PublicationDraftState = {
     "electronics.computers.laptops",
   ],
   listingTypeId: "electronics.computers.laptops.listing",
-  taxonomyVersion: "4.0.0",
+  taxonomyVersion: "v1",
   listingIntent: "SELL",
   title: "Ordinateur portable professionnel",
   description: "Ordinateur complet, testé et prêt à utiliser.",

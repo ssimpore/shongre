@@ -1,9 +1,9 @@
 import type { Category } from "../../../shared/types/index.js";
 import type { TaxonomyHeaderNavigationConfiguration } from "@shongre/contracts/taxonomy";
-import type { TaxonomyV4PrivateBundle } from "../../../modules/taxonomy/taxonomy.bundle.js";
+import type { TaxonomyV1PrivateBundle } from "../../../modules/taxonomy/taxonomy.bundle.js";
 import type { TaxonomyNode, TaxonomyAttribute } from "./taxonomy.repository.js";
 
-export function createTaxonomyProjection(bundle: TaxonomyV4PrivateBundle) {
+export function createTaxonomyProjection(bundle: TaxonomyV1PrivateBundle) {
   const categoriesById = new Map(
     bundle.categories.map((category) => [category.id, category]),
   );
@@ -34,28 +34,6 @@ export function createTaxonomyProjection(bundle: TaxonomyV4PrivateBundle) {
     return direct?.id ?? aliases.get(normalized) ?? identity;
   }
 
-  function rootIdFor(categoryId: string): string {
-    let current = categoriesById.get(categoryId);
-    while (current?.parentId) current = categoriesById.get(current.parentId);
-    return current?.id ?? categoryId;
-  }
-
-  function listingFamilyFor(categoryId: string): string {
-    const rootId = rootIdFor(categoryId);
-    if (rootId === "vehicles") return "vehicle";
-    if (rootId === "real_estate") return "real_estate";
-    if (rootId === "jobs") return "job";
-    if (rootId === "services" || rootId === "education") return "service";
-    if (
-      rootId === "professional_equipment" ||
-      rootId === "agriculture" ||
-      rootId === "energy_transition"
-    ) {
-      return "professional_equipment";
-    }
-    return "physical_product";
-  }
-
   function categoryToTaxonomyNode(
     category: (typeof bundle.categories)[number],
   ): TaxonomyNode {
@@ -79,7 +57,6 @@ export function createTaxonomyProjection(bundle: TaxonomyV4PrivateBundle) {
             ? "subcategory"
             : "type",
       publishable: category.publishable,
-      listingFamily: listingFamilyFor(category.id),
       supportedIntents: [
         ...new Set(
           bundle.listingTypes
@@ -106,13 +83,13 @@ export function createTaxonomyProjection(bundle: TaxonomyV4PrivateBundle) {
     };
   }
 
-  function categoryToLegacyCategory(
+  function categoryToSummary(
     category: (typeof bundle.categories)[number],
   ): Category {
     const children = bundle.categories
       .filter((candidate) => candidate.parentId === category.id)
       .sort((left, right) => left.sortOrder - right.sortOrder)
-      .map(categoryToLegacyCategory);
+      .map(categoryToSummary);
     return {
       id: category.id,
       slug: category.slug,
@@ -128,38 +105,40 @@ export function createTaxonomyProjection(bundle: TaxonomyV4PrivateBundle) {
     };
   }
 
-  function publicAttributesForCategory(
+  function searchAttributesForCategory(
     categoryIdentity: string,
   ): TaxonomyAttribute[] {
     const categoryId = canonicalCategoryId(categoryIdentity);
-    const defaultListingType = bundle.listingTypes
-      .filter(
-        (listingType) =>
-          listingType.categoryId === categoryId &&
-          listingType.status === "active" &&
-          listingType.sellerEligibility.individualAllowed,
-      )
-      .sort((left, right) => {
-        const intentOrder = ["SELL", "SERVICE_OFFER", "JOB_OFFER", "BOOK"];
-        const leftOrder = intentOrder.indexOf(left.intent);
-        const rightOrder = intentOrder.indexOf(right.intent);
-        return (
-          (leftOrder === -1 ? intentOrder.length : leftOrder) -
-            (rightOrder === -1 ? intentOrder.length : rightOrder) ||
-          left.id.localeCompare(right.id)
-        );
-      })[0];
+    const belongsToBranch = (id: string): boolean => {
+      const visited = new Set<string>();
+      let node = categoriesById.get(id);
+      while (node && !visited.has(node.id)) {
+        if (node.id === categoryId) return true;
+        visited.add(node.id);
+        node = node.parentId ? categoriesById.get(node.parentId) : undefined;
+      }
+      return false;
+    };
+    const typeIds = new Set(
+      bundle.listingTypes
+        .filter(
+          (type) =>
+            type.status === "active" && belongsToBranch(type.categoryId),
+        )
+        .map((type) => type.id),
+    );
+    const projectedFields = new Set(
+      bundle.projections.filters
+        .filter((filter) => typeIds.has(filter.listingTypeId))
+        .map((filter) => filter.attributeId),
+    );
     const bindings = bundle.bindings
       .filter(
         (binding) =>
-          binding.categoryId === categoryId &&
-          (!defaultListingType ||
-            binding.listingTypeId === defaultListingType.id) &&
-          binding.publicationVisible &&
-          binding.sellerEligibility.individualAllowed &&
-          publicAttributesById.has(binding.attributeId) &&
-          publicAttributesById.get(binding.attributeId)?.sellerEligibility
-            .individualAllowed,
+          typeIds.has(binding.listingTypeId) &&
+          binding.filterable &&
+          projectedFields.has(binding.attributeId) &&
+          publicAttributesById.has(binding.attributeId),
       )
       .sort((left, right) => left.sortOrder - right.sortOrder);
     const bindingByAttributeId = new Map(
@@ -188,11 +167,9 @@ export function createTaxonomyProjection(bundle: TaxonomyV4PrivateBundle) {
         {
           id: attribute.id,
           code: attribute.code,
-          name: attribute.code,
           label: attribute.labels["fr-FR"],
           labels: attribute.labels,
           dataType: attribute.dataType,
-          type: attribute.dataType,
           unit: attribute.unit,
           required: bindingByAttributeId.get(attribute.id)?.required ?? false,
           filterable: attribute.filterable,
@@ -216,12 +193,12 @@ export function createTaxonomyProjection(bundle: TaxonomyV4PrivateBundle) {
     canonicalCategoryId,
     categoryToTaxonomyNode,
     categoryToHeaderItem,
-    publicAttributesForCategory,
+    searchAttributesForCategory,
     getRootCategories: () =>
       bundle.categories
         .filter((node) => !node.parentId && node.status === "active")
         .sort((a, b) => a.sortOrder - b.sortOrder)
-        .map(categoryToLegacyCategory),
+        .map(categoryToSummary),
     getNode: (identity: string) => {
       const node = categoriesById.get(canonicalCategoryId(identity));
       return node ? categoryToTaxonomyNode(node) : null;

@@ -8,7 +8,7 @@ export * from "./markets/markets.service.js";
 export * from "./markets/market-detection.service.js";
 export * from "./currencies/index.js";
 export * from "./taxonomy/taxonomy.service.js";
-export * from "./taxonomy/taxonomy.v4.service.js";
+export * from "./taxonomy/taxonomy.v1.service.js";
 export * from "./listings/listings.service.js";
 export * from "./discovery/discovery.service.js";
 export * from "./publishers/publisher-entitlements.service.js";

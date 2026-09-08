@@ -51,7 +51,7 @@
     "openapi:breaking": "node backend/scripts/openapi/check-breaking-change.mjs",
     "taxonomy:import": "node --import tsx backend/scripts/taxonomy/compile.ts --import-workbook",
     "taxonomy:compile": "node --import tsx backend/scripts/taxonomy/compile.ts",
-    "taxonomy:check": "node --import tsx backend/scripts/taxonomy/compile.ts --check",
+    "taxonomy:check": "node --test scripts/check-taxonomy-architecture.test.mjs && node scripts/check-taxonomy-architecture.mjs && node --import tsx backend/scripts/taxonomy/compile.ts --check",
     "preview": "npm run start --workspace=frontend"
   },
   "overrides": {

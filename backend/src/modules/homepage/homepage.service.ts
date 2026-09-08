@@ -7,8 +7,8 @@ import {
   type HomepageUniverseSubsection,
   type ResolvedHomepageSection,
 } from "@shongre/contracts/homepage";
-import { taxonomyV4Service } from "../taxonomy/taxonomy.runtime.js";
-import type { TaxonomyV4Service } from "../taxonomy/taxonomy.v4.service.js";
+import { taxonomyV1Service } from "../taxonomy/taxonomy.runtime.js";
+import type { TaxonomyV1Service } from "../taxonomy/taxonomy.v1.service.js";
 import { majorToMinorAmount } from "@shongre/shared";
 import type {
   IHomepageRepository,
@@ -100,12 +100,12 @@ const listingBelongsToMarket = (listing: Listing, marketCode: string) => {
 const listingBelongsToCategory = (
   listing: Listing,
   categoryId: string,
-  taxonomy: TaxonomyV4Service,
+  taxonomy: TaxonomyV1Service,
 ) => taxonomy.isDescendant(listing.categoryId, categoryId);
 
 function validateConfiguration(
   input: HomepageConfiguration,
-  taxonomy: TaxonomyV4Service,
+  taxonomy: TaxonomyV1Service,
 ): HomepageConfiguration {
   const configuration = homepageConfigurationSchema.parse(input);
   for (const section of configuration.sections) {
@@ -147,7 +147,7 @@ function selectHomepageDeals(
   marketCode: string,
   settings: HomepageSectionSettings,
   limit: number,
-  taxonomy: TaxonomyV4Service,
+  taxonomy: TaxonomyV1Service,
   now = new Date(),
 ): HomepageDealItem[] {
   if (
@@ -278,7 +278,7 @@ export class HomepageService {
   }): Promise<HomepageConfiguration> {
     const configuration = validateConfiguration(
       input.configuration,
-      await taxonomyV4Service.snapshot(),
+      await taxonomyV1Service.snapshot(),
     );
     if (configuration.state !== "draft") {
       throw new AppError({
@@ -309,7 +309,7 @@ export class HomepageService {
 
   async preview(configuration: HomepageConfiguration, query: HomepageQuery) {
     return this.resolve(
-      validateConfiguration(configuration, await taxonomyV4Service.snapshot()),
+      validateConfiguration(configuration, await taxonomyV1Service.snapshot()),
       query,
       true,
     );
@@ -329,7 +329,7 @@ export class HomepageService {
     includeSuppressed = false,
   ) {
     const query = normalizeScope(input);
-    const taxonomy = await taxonomyV4Service.snapshot();
+    const taxonomy = await taxonomyV1Service.snapshot();
     if (
       configuration.marketCode !== query.marketCode ||
       configuration.locale !== query.locale

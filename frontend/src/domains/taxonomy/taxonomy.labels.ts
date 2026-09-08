@@ -1,16 +1,7 @@
 import { activeDataLocale } from "../../i18n/localized";
 import { TaxonomyLabelMode, TaxonomyLabelOptions } from "./taxonomy.types";
 
-/**
- * Label resolution for taxonomy nodes.
- *
- * Lives apart from the service because both the service *and* the canonical data
- * module need it: the data module projects the legacy `Category[]` shape and has
- * to localise while doing so, and the service imports that data. Keeping the
- * resolver in the service made those two import each other, and at module-init
- * one of them was still undefined — four suites failed with `Cannot read
- * properties of undefined`. A pure function with no state belongs in neither.
- */
+/** Localizes API projections without importing taxonomy content. */
 export function getTaxonomyLabel(
   node?: {
     label?: string;
@@ -28,12 +19,6 @@ export function getTaxonomyLabel(
       ? modeOrOptions === "compact"
       : Boolean(modeOrOptions.compact);
 
-  /* Falls back to the visitor's locale, not to French.
-     The node data already carries `labels['en-US']`, and this resolver already
-     knew how to read it — but the default was hard-coded to `fr-FR`, so every
-     caller that did not pass a locale explicitly (which is nearly all of them)
-     rendered the French label regardless of the interface language. The
-     translations were present and unreachable. */
   const locale =
     typeof modeOrOptions === "object" && modeOrOptions.locale
       ? modeOrOptions.locale
@@ -55,13 +40,13 @@ export function getTaxonomyLabel(
     if (locFull.length > 0) return locFull;
   }
 
-  // 3. Legacy flat projections do not always carry localized maps.
+  // 3. Compact projections do not always carry localized maps.
   if (isCompact && node.shortLabel && typeof node.shortLabel === "string") {
     const directShort = node.shortLabel.trim();
     if (directShort.length > 0) return directShort;
   }
 
-  // 4. Final canonical compatibility fallback.
+  // 4. Final display label.
   const canonical = (node.label ?? node.name ?? "").trim();
   return canonical;
 }

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import type { TaxonomyV4Node } from "@shongre/contracts";
+import type { TaxonomyV1Node } from "@shongre/contracts";
 import { themeColors } from "@shongre/design-tokens";
 import { RefreshCw, ScanSearch } from "lucide-react";
 import { routes } from "../../../configuration/routes";
@@ -23,12 +23,12 @@ import { HomeSectionAction } from "./HomeSectionAction";
 import { HomeSectionHeading } from "./HomeSectionHeading";
 
 export interface ResolvedUniverseGroup extends HomepageUniverseGroup {
-  root: TaxonomyV4Node;
+  root: TaxonomyV1Node;
 }
 
 export const resolveUniverseGroups = (
   section: HomepageSectionView,
-  taxonomyNodes: ReadonlyMap<string, TaxonomyV4Node>,
+  taxonomyNodes: ReadonlyMap<string, TaxonomyV1Node>,
 ): ResolvedUniverseGroup[] =>
   (section.universeGroups || []).flatMap((group) => {
     const root = taxonomyNodes.get(group.categoryId);
@@ -54,7 +54,6 @@ const UniverseRail: React.FC<{ group: ResolvedUniverseGroup }> = ({
       <div className="mb-3 flex items-center justify-between gap-3 sm:mb-4">
         <div className="flex min-w-0 items-center gap-3">
           <CategoryIcon
-            category={group.root.slug}
             iconName={group.root.iconName}
             color={themeColors.primary}
             size="md"
@@ -103,7 +102,7 @@ export const HomeUniverseExplorer: React.FC<{
   const { locale, t } = useTranslation();
   const { marketContext } = useMarketLocation();
   const [taxonomyNodes, setTaxonomyNodes] = useState<
-    ReadonlyMap<string, TaxonomyV4Node>
+    ReadonlyMap<string, TaxonomyV1Node>
   >(new Map());
   const [taxonomyState, setTaxonomyState] = useState<
     "loading" | "ready" | "error"
@@ -121,10 +120,10 @@ export const HomeUniverseExplorer: React.FC<{
     }
     setTaxonomyState("loading");
     void services.taxonomy
-      .getV4Tree({
+      .getV1Tree({
         marketContext,
         locale,
-        taxonomyVersion: "4.0.0",
+        taxonomyVersion: "v1",
       })
       .then((response) => {
         if (!active) return;

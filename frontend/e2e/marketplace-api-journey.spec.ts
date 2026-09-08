@@ -30,6 +30,11 @@ test("published inventory, buyer favourites and messages survive reload through 
         price: 1850,
         categoryId: "electronics.smartphones.phones",
         marketCode: "FR",
+        listingTypeId: "electronics.smartphones.phones.listing",
+        intent: "SELL",
+        taxonomyVersion: "v1",
+        taxonomyRevision: 1,
+        sellerType: "individual",
         condition: "tres-bon-etat",
         // Reuse the seller's backend-owned test media; hosted storage is certified separately.
         images: source.body.images,

@@ -1,4 +1,6 @@
 import { randomUUID } from "node:crypto";
+import { CANONICAL_TAXONOMY_IDS } from "@shongre/contracts/taxonomy-domain-ids";
+import { taxonomyV1Service } from "../taxonomy/taxonomy.runtime.js";
 import { config } from "../../app/config/index.js";
 import type {
   CourseBooking,
@@ -10,7 +12,6 @@ import type {
   CourseOrganizationWorkspace,
   CourseOrganizationMember,
   CoursePlan,
-  CourseSubject,
   LearnerRequest,
   TutorProfile,
   TutorPublicProfile,
@@ -25,7 +26,6 @@ import {
   courseMarketConfigSchema,
   courseOfferSchema,
   coursePlanSchema,
-  courseSubjectSchema,
   learnerRequestSchema,
   tutorProfileSchema,
   tutorSearchQuerySchema,
@@ -120,6 +120,32 @@ const slugify = (value: string) =>
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
+
+function assertCourseReferences(
+  catalog: CourseCatalog,
+  subjectIds: readonly string[],
+  levelIds: readonly string[],
+) {
+  const subjects = subjectIds.map((id) =>
+    catalog.subjects.find((subject) => subject.id === id && subject.isActive),
+  );
+  if (
+    !subjectIds.length ||
+    subjects.some((subject) => !subject) ||
+    !levelIds.length ||
+    levelIds.some(
+      (id) =>
+        !catalog.levels.some((level) => level.id === id && level.isActive) ||
+        !subjects.some((subject) => subject?.levelIds.includes(id)),
+    )
+  ) {
+    throw new AppError({
+      code: "VALIDATION_ERROR",
+      message:
+        "Choisissez des matières et des niveaux compatibles dans le catalogue publié de ce marché.",
+    });
+  }
+}
 
 export class CoursesService {
   constructor(
@@ -256,6 +282,8 @@ export class CoursesService {
         code: "VALIDATION_ERROR",
         message: "Sélectionnez au moins une matière.",
       });
+    assertCourseReferences(catalog, subjectIds, levelIds);
+    assertCourseReferences(catalog, [primarySubjectId], levelIds);
     const accountKind =
       draft.accountKind === "organization" ? "organization" : "individual";
     const organizationId =
@@ -276,7 +304,7 @@ export class CoursesService {
     const teachingApproach = textValue(draft.teachingApproach);
     const city = textValue(draft.city);
     const now = this.now().toISOString();
-    const profile = await this.saveOwnTutorProfile(userId, {
+    const profile = await this.saveOwnTutorProfile(userId, normalized, {
       organizationId,
       profileType:
         accountKind === "organization" ? "organization_member" : "individual",
@@ -426,7 +454,14 @@ export class CoursesService {
     const catalog = await this.resolveCatalog(query.marketCode);
     if (!catalog.config.isEnabled)
       return { items: [], total: 0, pageInfo: { hasNextPage: false } };
-    return this.courseRepo.searchTutors(query);
+    const result = await this.courseRepo.searchTutors(query);
+    const taxonomy = (await taxonomyV1Service.snapshot()).projectIdentity(
+      CANONICAL_TAXONOMY_IDS.courses,
+    );
+    return {
+      ...result,
+      items: result.items.map((item) => ({ ...item, taxonomy })),
+    };
   }
 
   async getTutorPublicProfile(
@@ -447,6 +482,7 @@ export class CoursesService {
 
   async saveOwnTutorProfile(
     userId: string,
+    marketCode: string,
     input: TutorProfileInput,
   ): Promise<TutorProfile> {
     const now = this.now().toISOString();
@@ -458,6 +494,18 @@ export class CoursesService {
         code: "FORBIDDEN",
         message: "Ce profil appartient à un autre compte.",
       });
+    }
+    if (
+      !existing ||
+      JSON.stringify(existing.subjectIds) !==
+        JSON.stringify(input.subjectIds) ||
+      JSON.stringify(existing.levelIds) !== JSON.stringify(input.levelIds)
+    ) {
+      assertCourseReferences(
+        await this.resolveCatalog(requireMarketCode(marketCode)),
+        input.subjectIds,
+        input.levelIds,
+      );
     }
     const profile = tutorProfileSchema.parse({
       ...input,
@@ -486,6 +534,13 @@ export class CoursesService {
       this.resolveCatalog(requireMarketCode(input.marketCodes[0])),
       this.courseRepo.getCourseOffers(tutor.id),
     ]);
+    for (const marketCode of input.marketCodes) {
+      const scopedCatalog =
+        marketCode === input.marketCodes[0]
+          ? catalog
+          : await this.resolveCatalog(requireMarketCode(marketCode));
+      assertCourseReferences(scopedCatalog, [input.subjectId], input.levelIds);
+    }
     const plan =
       catalog.plans.find((item) => item.id === tutor.planId) ||
       catalog.plans[0];
@@ -526,6 +581,7 @@ export class CoursesService {
         message: "Les demandes d’élèves ne sont pas activées sur ce marché.",
       });
     }
+    assertCourseReferences(catalog, [input.subjectId], [input.levelId]);
     const isMinor = input.learnerAgeBand !== "adult";
     if (isMinor && !input.guardianContact) {
       throw new AppError({
@@ -842,31 +898,6 @@ export class CoursesService {
       `Course market configuration updated for ${marketCode.toUpperCase()}`,
     );
     return this.courseRepo.saveMarketConfig(marketCode.toUpperCase(), next);
-  }
-
-  async updateSubject(
-    marketCode: string,
-    subjectId: string,
-    input: Partial<Pick<CourseSubject, "label" | "isActive" | "levelIds">>,
-  ): Promise<CourseSubject> {
-    const catalog = await this.resolveCatalog(marketCode, true);
-    const current = catalog.subjects.find(
-      (subject) => subject.id === subjectId,
-    );
-    if (!current)
-      throw new AppError({
-        code: "NOT_FOUND",
-        message: "Matière introuvable sur ce marché.",
-      });
-    const updated = courseSubjectSchema.parse({
-      ...current,
-      ...input,
-      marketCode: marketCode.toUpperCase(),
-    });
-    logger.info(
-      `Course subject ${subjectId} updated for ${marketCode.toUpperCase()}`,
-    );
-    return this.courseRepo.saveSubject(updated);
   }
 
   async updatePlan(

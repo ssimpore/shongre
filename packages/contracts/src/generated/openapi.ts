@@ -2168,23 +2168,6 @@ export interface paths {
         readonly patch: operations["patchAutoAdminMarketsByMarketCodePlansByPlanId"];
         readonly trace?: never;
     };
-    readonly "/auto/admin/markets/{marketCode}/types/{type}": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly get?: never;
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        /** PATCH /auto/admin/markets/:marketCode/types/:type */
-        readonly patch: operations["patchAutoAdminMarketsByMarketCodeTypesByType"];
-        readonly trace?: never;
-    };
     readonly "/auto/admin/overview": {
         readonly parameters: {
             readonly query?: never;
@@ -3953,23 +3936,6 @@ export interface paths {
         readonly head?: never;
         /** PATCH /education/admin/markets/:marketCode/plans/:planId */
         readonly patch: operations["patchEducationAdminMarketsByMarketCodePlansByPlanId"];
-        readonly trace?: never;
-    };
-    readonly "/education/admin/markets/{marketCode}/subjects/{subjectId}": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly get?: never;
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        /** PATCH /education/admin/markets/:marketCode/subjects/:subjectId */
-        readonly patch: operations["patchEducationAdminMarketsByMarketCodeSubjectsBySubjectId"];
         readonly trace?: never;
     };
     readonly "/education/bookings": {
@@ -7493,23 +7459,6 @@ export interface paths {
         readonly patch: operations["patchRealEstateAdminMarketsByMarketCodeAddOnsByAddOnId"];
         readonly trace?: never;
     };
-    readonly "/real-estate/admin/markets/{marketCode}/field-rules/{ruleId}": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly get?: never;
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        /** PATCH /real-estate/admin/markets/:marketCode/field-rules/:ruleId */
-        readonly patch: operations["patchRealEstateAdminMarketsByMarketCodeFieldRulesByRuleId"];
-        readonly trace?: never;
-    };
     readonly "/real-estate/admin/markets/{marketCode}/offers/{offerId}": {
         readonly parameters: {
             readonly query?: never;
@@ -7525,23 +7474,6 @@ export interface paths {
         readonly head?: never;
         /** PATCH /real-estate/admin/markets/:marketCode/offers/:offerId */
         readonly patch: operations["patchRealEstateAdminMarketsByMarketCodeOffersByOfferId"];
-        readonly trace?: never;
-    };
-    readonly "/real-estate/admin/markets/{marketCode}/types/{type}": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly get?: never;
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        /** PATCH /real-estate/admin/markets/:marketCode/types/:type */
-        readonly patch: operations["patchRealEstateAdminMarketsByMarketCodeTypesByType"];
         readonly trace?: never;
     };
     readonly "/real-estate/admin/overview": {
@@ -8050,7 +7982,7 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
-    readonly "/taxonomy/header-navigation": {
+    readonly "/taxonomy/v1/header-navigation": {
         readonly parameters: {
             readonly query?: never;
             readonly header?: never;
@@ -8067,7 +7999,7 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
-    readonly "/taxonomy/nodes/{id}": {
+    readonly "/taxonomy/v1/nodes/{id}": {
         readonly parameters: {
             readonly query?: never;
             readonly header?: never;
@@ -8084,15 +8016,15 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
-    readonly "/taxonomy/nodes/{id}/attributes": {
+    readonly "/taxonomy/v1/options/{optionSetId}": {
         readonly parameters: {
             readonly query?: never;
             readonly header?: never;
             readonly path?: never;
             readonly cookie?: never;
         };
-        /** GET /taxonomy/nodes/:id/attributes */
-        readonly get: operations["getTaxonomyNodesByIdAttributes"];
+        /** Look up a bounded page of options for autocomplete or a cascade */
+        readonly get: operations["getTaxonomyV1Options"];
         readonly put?: never;
         readonly post?: never;
         readonly delete?: never;
@@ -8101,15 +8033,15 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
-    readonly "/taxonomy/nodes/{id}/children": {
+    readonly "/taxonomy/v1/resolve": {
         readonly parameters: {
             readonly query?: never;
             readonly header?: never;
             readonly path?: never;
             readonly cookie?: never;
         };
-        /** GET /taxonomy/nodes/:id/children */
-        readonly get: operations["getTaxonomyNodesByIdChildren"];
+        /** Resolve the publication and presentation schema for one listing type */
+        readonly get: operations["resolveTaxonomyV1PublicationSchema"];
         readonly put?: never;
         readonly post?: never;
         readonly delete?: never;
@@ -8118,7 +8050,7 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
-    readonly "/taxonomy/root": {
+    readonly "/taxonomy/v1/root": {
         readonly parameters: {
             readonly query?: never;
             readonly header?: never;
@@ -8135,7 +8067,7 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
-    readonly "/taxonomy/search-filters": {
+    readonly "/taxonomy/v1/search-filters": {
         readonly parameters: {
             readonly query?: never;
             readonly header?: never;
@@ -8152,66 +8084,15 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
-    readonly "/taxonomy/slug/{slug}": {
+    readonly "/taxonomy/v1/tree": {
         readonly parameters: {
             readonly query?: never;
             readonly header?: never;
             readonly path?: never;
             readonly cookie?: never;
         };
-        /** GET /taxonomy/slug/:slug */
-        readonly get: operations["getTaxonomySlugBySlug"];
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
-    };
-    readonly "/taxonomy/v4/options/{optionSetId}": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        /** Look up a bounded page of options for autocomplete or a cascade */
-        readonly get: operations["getTaxonomyV4Options"];
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
-    };
-    readonly "/taxonomy/v4/resolve": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        /** Resolve the publication and presentation schema for one listing type */
-        readonly get: operations["resolveTaxonomyV4PublicationSchema"];
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
-    };
-    readonly "/taxonomy/v4/tree": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        /** Get the published taxonomy v4 tree for an explicit market */
-        readonly get: operations["getTaxonomyV4Tree"];
+        /** Get the published taxonomy v1 tree for an explicit market */
+        readonly get: operations["getTaxonomyV1Tree"];
         readonly put?: never;
         readonly post?: never;
         readonly delete?: never;
@@ -8594,6 +8475,116 @@ export interface components {
             readonly primary: number;
             readonly secondary?: number;
         };
+        readonly AutoCatalog: {
+            readonly addOns: readonly {
+                readonly creditQuantity?: number;
+                readonly description: string;
+                readonly id: string;
+                readonly isActive: boolean;
+                readonly marketCode: string;
+                readonly name: string;
+                readonly price: {
+                    readonly amountMinor: number;
+                    readonly currency: string;
+                };
+                readonly taxRateBps: number;
+                /** @enum {string} */
+                readonly type: "secure_sale" | "urgent" | "search_bump" | "featured" | "homepage_spotlight" | "category_spotlight" | "qualified_lead" | "sponsored_dealer" | "inspection_referral" | "warranty_referral" | "financing_referral" | "insurance_referral" | "delivery_referral" | "trade_in_referral" | "extra_vehicle_pack" | "lead_credit_pack";
+                readonly validityDays?: number;
+                /** @enum {string} */
+                readonly vehicleType?: "car" | "motorcycle" | "utility" | "truck" | "motorhome" | "boat" | "agricultural" | "construction" | "parts" | "other";
+            }[];
+            readonly attributes: readonly components["schemas"]["VehicleAttributeDefinition"][];
+            readonly config: {
+                readonly comparisonLimit: number;
+                readonly currency: string;
+                readonly defaultSearchRadiusKm: number;
+                readonly featureFlags: {
+                    readonly appointmentsEnabled: boolean;
+                    readonly boatListingsEnabled: boolean;
+                    readonly comparisonsEnabled: boolean;
+                    readonly dealerApiSyncEnabled: boolean;
+                    readonly dealerImportsEnabled: boolean;
+                    readonly deliveryReferralsEnabled: boolean;
+                    readonly financingReferralsEnabled: boolean;
+                    readonly inspectionReferralsEnabled: boolean;
+                    readonly insuranceReferralsEnabled: boolean;
+                    readonly paidOffersEnabled: boolean;
+                    readonly savedSearchesEnabled: boolean;
+                    readonly secureSaleEnabled: boolean;
+                    readonly structuredLeadsEnabled: boolean;
+                    readonly tradeInReferralsEnabled: boolean;
+                    readonly verticalEnabled: boolean;
+                    readonly warrantyReferralsEnabled: boolean;
+                };
+                readonly financingDisclaimer: string;
+                readonly isEnabled: boolean;
+                readonly leadRetentionDays: number;
+                readonly locale: string;
+                readonly marketCode: string;
+                readonly priceEstimateDisclaimer: string;
+                readonly safetyGuidance: readonly string[];
+                /** @enum {number} */
+                readonly schemaVersion: 1;
+                readonly timezone: string;
+                readonly updatedAt: string;
+                /** @enum {string} */
+                readonly vertical: "automotive";
+            };
+            readonly plans: readonly {
+                readonly annualPrice?: {
+                    readonly amountMinor: number;
+                    readonly currency: string;
+                };
+                /** @enum {string} */
+                readonly audience: "individual" | "dealer";
+                readonly description: string;
+                readonly durationDays?: number;
+                readonly entitlements: {
+                    readonly apiAccess: boolean;
+                    readonly branchPermissions: boolean;
+                    readonly centralizedBilling: boolean;
+                    readonly customPlan: boolean;
+                    readonly detailedAnalytics: boolean;
+                    readonly includedBumpCredits: number;
+                    readonly includedFeaturedCredits: number;
+                    readonly includedUrgentCredits: number;
+                    readonly inventoryApiSync: boolean;
+                    readonly inventoryCsvImport: boolean;
+                    readonly inventoryXmlImport: boolean;
+                    readonly leadAssignment: boolean;
+                    readonly leadReminders: boolean;
+                    readonly maxActiveVehicles: number;
+                    readonly maxLocations: number;
+                    readonly maxPhotosPerVehicle: number;
+                    readonly maxTeamMembers: number;
+                    readonly maxVideosPerVehicle: number;
+                    readonly monthlyPromotionCredits: number;
+                    readonly networkAnalytics: boolean;
+                    readonly prioritySupport: boolean;
+                    readonly publicStorefront: boolean;
+                    readonly serviceLevelAgreement: boolean;
+                    readonly stockTransfers: boolean;
+                    readonly vehicleVideo: boolean;
+                    readonly vehicleView360: boolean;
+                };
+                readonly id: string;
+                readonly isActive: boolean;
+                readonly isRecommended: boolean;
+                readonly marketCode: string;
+                readonly monthlyPrice?: {
+                    readonly amountMinor: number;
+                    readonly currency: string;
+                };
+                readonly name: string;
+                readonly taxRateBps: number;
+                readonly trialDays?: number;
+                readonly vehicleTypes?: readonly ("car" | "motorcycle" | "utility" | "truck" | "motorhome" | "boat" | "agricultural" | "construction" | "parts" | "other")[];
+            }[];
+            readonly taxonomyOptions: components["schemas"]["TaxonomyV1OptionSets"];
+            readonly vehicleCatalog: readonly components["schemas"]["VehicleCatalogEntry"][];
+            readonly vehicleTypes: readonly components["schemas"]["VehicleTypeConfig"][];
+        };
         /** @description Vehicle identifiers saved by the caller in the resolved market. */
         readonly AutoFavoriteCollection: {
             readonly vehicleIds: readonly string[];
@@ -8733,6 +8724,39 @@ export interface components {
             /** @enum {string} */
             readonly sellerIdentity: "not_submitted" | "pending" | "verified" | "rejected";
             readonly vinOnFile: boolean;
+        };
+        readonly BulkListingImportParse: {
+            readonly content: string;
+            readonly defaultCity?: string;
+            readonly defaultPostalCode?: string;
+            readonly marketCode: string;
+        };
+        readonly BulkListingImportPublish: {
+            readonly marketCode: string;
+            readonly rows: readonly components["schemas"]["BulkListingImportRow"][];
+        };
+        readonly BulkListingImportRow: {
+            readonly attributes?: {
+                readonly [key: string]: components["schemas"]["JsonValue"];
+            };
+            readonly categorySlug: string;
+            readonly city: string;
+            readonly condition: string;
+            readonly description: string;
+            readonly id: string;
+            readonly images?: readonly string[];
+            readonly isValid: boolean;
+            readonly postalCode: string;
+            readonly price: components["schemas"]["MonetizationMoney"];
+            readonly stock: number;
+            readonly subCategorySlug: string;
+            readonly title: string;
+            /** @enum {string} */
+            readonly validationErrorCode?: "TITLE_REQUIRED" | "TITLE_TOO_SHORT" | "TITLE_TOO_LONG" | "PRICE_INVALID" | "CATEGORY_INVALID" | "ATTRIBUTES_INVALID";
+        };
+        readonly BulkListingImportTemplate: {
+            readonly content: string;
+            readonly fileName: string;
         };
         /**
          * @description Canonical Shongre capability identifier from packages/contracts/src/access-control.ts.
@@ -8950,6 +8974,157 @@ export interface components {
                 readonly [key: string]: unknown;
             };
             readonly timezone?: string;
+        };
+        readonly CourseCatalog: {
+            readonly addOns: readonly {
+                readonly creditQuantity?: number;
+                readonly id: string;
+                readonly isActive: boolean;
+                readonly marketCode: string;
+                readonly name: string;
+                readonly price: {
+                    readonly amountMinor: number;
+                    readonly currency: string;
+                };
+                /** @enum {string} */
+                readonly type: "featured_subject" | "local_spotlight" | "search_bump" | "qualified_lead" | "profile_verification" | "promotional_credits";
+                readonly validityDays?: number;
+            }[];
+            readonly config: {
+                readonly cancellationWindowHours: number;
+                readonly currency: string;
+                readonly defaultLeadCreditCost: number;
+                readonly featureFlags: {
+                    readonly bookingEnabled: boolean;
+                    readonly learnerRequestsEnabled: boolean;
+                    readonly packagesEnabled: boolean;
+                    readonly paymentsEnabled: boolean;
+                    readonly payoutsEnabled: boolean;
+                    readonly qualifiedLeadsEnabled: boolean;
+                    readonly recurringLessonsEnabled: boolean;
+                };
+                readonly isEnabled: boolean;
+                readonly leadValidityHours: number;
+                readonly learnerRequestValidityDays: number;
+                readonly locale: string;
+                readonly marketCode: string;
+                readonly minimumMeaningfulReviewCount: number;
+                readonly minorAgeThreshold: number;
+                readonly safetyGuidance: readonly string[];
+                readonly schemaVersion: number;
+                readonly taxEligibilityWording: string;
+                readonly timezone: string;
+                readonly updatedAt: string;
+                /** @enum {string} */
+                readonly vertical: "tutoring";
+            };
+            readonly levels: readonly components["schemas"]["CourseSubjectLevel"][];
+            readonly plans: readonly {
+                readonly annualPrice?: {
+                    readonly amountMinor: number;
+                    readonly currency: string;
+                };
+                /** @enum {string} */
+                readonly audience: "individual" | "organization";
+                readonly description: string;
+                readonly entitlements: {
+                    readonly advancedAvailability: boolean;
+                    readonly bookingTools: boolean;
+                    readonly bulkCourseManagement: boolean;
+                    readonly centralLeadInbox: boolean;
+                    readonly detailedAnalytics: boolean;
+                    readonly featuredProfile: boolean;
+                    readonly introVideo: boolean;
+                    readonly leadManagement: boolean;
+                    readonly locations: number;
+                    readonly maxActiveOffers: number;
+                    readonly maxMonthlyLeads: number;
+                    readonly priorityPlacement: boolean;
+                    readonly profileMedia: boolean;
+                    readonly recurringPackages: boolean;
+                    readonly teamMembers: number;
+                    readonly visibilityCreditsMonthly: number;
+                };
+                readonly id: string;
+                readonly isActive: boolean;
+                readonly isRecommended: boolean;
+                readonly marketCode: string;
+                readonly monthlyPrice?: {
+                    readonly amountMinor: number;
+                    readonly currency: string;
+                };
+                readonly name: string;
+                readonly taxRateBps: number;
+            }[];
+            readonly subjects: readonly components["schemas"]["CourseSubject"][];
+        };
+        readonly CoursePublicOffer: {
+            readonly availabilitySummary: string;
+            /** @enum {string} */
+            readonly capacityStatus: "available" | "limited" | "full";
+            readonly createdAt: string;
+            readonly deliveryModes: readonly ("online" | "in_person" | "hybrid")[];
+            readonly description: string;
+            readonly goalIds: readonly string[];
+            readonly id: string;
+            readonly languages: readonly string[];
+            readonly levelIds: readonly string[];
+            readonly listingId?: string;
+            readonly marketCodes: readonly string[];
+            readonly organizationId?: string;
+            readonly pricingOptions: readonly {
+                readonly durationMinutes: number;
+                readonly id: string;
+                readonly isActive: boolean;
+                readonly label: string;
+                readonly lessonCount?: number;
+                readonly price: {
+                    readonly amountMinor: number;
+                    readonly currency: string;
+                };
+                /** @enum {string} */
+                readonly type: "hourly" | "trial" | "package";
+            }[];
+            readonly publishedAt?: string;
+            readonly schemaVersion: number;
+            readonly serviceArea?: {
+                readonly cityLabel: string;
+                readonly latitude?: number;
+                readonly longitude?: number;
+                readonly marketCode: string;
+                readonly postalCodePrefix?: string;
+                readonly publicLocationLabel: string;
+                readonly radiusKm: number;
+                readonly region?: string;
+            };
+            readonly slug: string;
+            /** @enum {string} */
+            readonly status: "draft" | "pending_review" | "published" | "paused" | "suspended" | "archived";
+            readonly subjectId: string;
+            readonly title: string;
+            readonly trialLessonAvailable: boolean;
+            readonly tutorProfileId: string;
+            readonly updatedAt: string;
+            /** @enum {string} */
+            readonly vertical: "tutoring";
+        };
+        readonly CourseSubject: {
+            readonly description?: string;
+            readonly iconName?: string;
+            readonly id: string;
+            readonly isActive: boolean;
+            readonly label: string;
+            readonly levelIds: readonly string[];
+            readonly marketCode: string;
+            readonly parentId?: string;
+            readonly slug: string;
+            readonly sortOrder: number;
+        };
+        readonly CourseSubjectLevel: {
+            readonly id: string;
+            readonly isActive: boolean;
+            readonly label: string;
+            readonly sortOrder: number;
         };
         readonly CreateSolutionInput: components["schemas"]["SolutionWritableFields"] & Record<string, never>;
         readonly CreateWatchSubscriptionInput: {
@@ -10075,6 +10250,149 @@ export interface components {
         readonly EducationFavoriteCollection: {
             readonly tutorProfileIds: readonly string[];
         };
+        readonly EmploymentCatalog: {
+            readonly activation: {
+                readonly categoryIds: readonly string[];
+                readonly featureFlags: {
+                    readonly [key: string]: boolean;
+                };
+                readonly isActive: boolean;
+                readonly marketCode: string;
+                readonly schemaVersion: number;
+                readonly subcategoryIds?: readonly string[];
+                /** @enum {string} */
+                readonly verticalType: "employment";
+            };
+            readonly addOns: readonly {
+                readonly categoryIds?: readonly string[];
+                readonly creditQuantity?: number;
+                readonly description: string;
+                readonly geographicAreaIds?: readonly string[];
+                readonly id: string;
+                readonly isActive: boolean;
+                readonly marketCode: string;
+                readonly name: string;
+                readonly price: {
+                    readonly amountMinor: number;
+                    readonly currency: string;
+                };
+                readonly scheduleModes?: readonly ("immediate" | "daily" | "scheduled")[];
+                readonly sortOrder: number;
+                readonly taxRateBps: number;
+                /** @enum {string} */
+                readonly type: "urgent" | "search_bump" | "featured" | "homepage_spotlight" | "local_spotlight" | "qualified_lead" | "sponsored_professional" | "additional_listing_credit" | "additional_team_seat" | "extended_analytics" | "distribution_integration" | "employer_brand_campaign";
+                readonly validityDays?: number;
+                /** @enum {string} */
+                readonly verticalType: "employment";
+            }[];
+            readonly complianceNotices: readonly {
+                readonly id: string;
+                readonly message: string;
+                readonly severity: string;
+            }[];
+            readonly config: {
+                readonly applicationResubmissionCooldownDays: number;
+                readonly applicationRetentionDays: number;
+                readonly currency: string;
+                readonly defaultPublicationDurationDays: number;
+                readonly draftRetentionDays: number;
+                readonly featureFlags: {
+                    readonly aiAssistanceEnabled: boolean;
+                    readonly apiSyncEnabled: boolean;
+                    readonly candidateSearchEnabled: boolean;
+                    readonly directApplicationsEnabled: boolean;
+                    readonly externalApplicationsEnabled: boolean;
+                    readonly importsEnabled: boolean;
+                    readonly interviewsEnabled: boolean;
+                    readonly paidVisibilityEnabled: boolean;
+                    readonly privateEmployersEnabled: boolean;
+                    readonly talentPoolEnabled: boolean;
+                    readonly verticalEnabled: boolean;
+                };
+                readonly isEnabled: boolean;
+                readonly locale: string;
+                readonly marketCode: string;
+                readonly prohibitedLanguagePolicyVersion: string;
+                readonly prohibitedLanguageRules: readonly {
+                    readonly explanation: string;
+                    readonly id: string;
+                    readonly neutralSuggestion: string;
+                    readonly terms: readonly string[];
+                }[];
+                readonly regulatoryContentVersion: string;
+                readonly requiredFieldIds?: readonly string[];
+                readonly riskRules: {
+                    readonly blockedExternalHostPatterns?: readonly string[];
+                    readonly salaryReviewMaximumMinorByFrequency?: {
+                        readonly [key: string]: number;
+                    };
+                };
+                readonly schemaVersion: number;
+                readonly talentPoolRetentionDays: number;
+                readonly timezone: string;
+            };
+            readonly defaultPipelineStages: readonly {
+                readonly candidateNotificationEnabled: boolean;
+                readonly candidateVisibleLabel: string;
+                readonly id: string;
+                readonly isRequiredSystemStage: boolean;
+                readonly label: string;
+                readonly pipelineId: string;
+                readonly sortOrder: number;
+                /** @enum {string} */
+                readonly systemState: "received" | "active" | "interview" | "offer" | "hired" | "rejected" | "withdrawn" | "archived";
+            }[];
+            readonly dictionaries: readonly components["schemas"]["EmploymentDictionaryEntry"][];
+            readonly offers: readonly {
+                /** @enum {string} */
+                readonly audience: "individual" | "professional" | "organization";
+                readonly description: string;
+                readonly entitlements: {
+                    readonly [key: string]: boolean | number | string | readonly string[];
+                };
+                readonly id: string;
+                readonly isActive: boolean;
+                readonly isRecommended: boolean;
+                /** @enum {string} */
+                readonly kind: "free" | "pack" | "subscription" | "custom";
+                readonly marketCode: string;
+                readonly name: string;
+                readonly prices: readonly {
+                    readonly amount: {
+                        readonly amountMinor: number;
+                        readonly currency: string;
+                    };
+                    /** @enum {string} */
+                    readonly billingPeriod: "once" | "month" | "year";
+                    readonly durationDays?: number;
+                    readonly id: string;
+                    readonly isActive: boolean;
+                    readonly taxRateBps: number;
+                    readonly trialDays?: number;
+                }[];
+                readonly sortOrder: number;
+                /** @enum {string} */
+                readonly verticalType: "employment";
+            }[];
+        };
+        readonly EmploymentDictionaryEntry: {
+            readonly aliases?: readonly string[];
+            readonly code: string;
+            readonly description?: string;
+            readonly id: string;
+            readonly isActive: boolean;
+            /** @enum {string} */
+            readonly kind: "sector" | "job_family" | "profession" | "specialization" | "skill" | "seniority" | "contract_type" | "salary_frequency" | "working_arrangement" | "work_schedule" | "education_level" | "language_level" | "employer_type" | "screening_question_type";
+            readonly label: string;
+            readonly marketCode: string;
+            readonly metadata?: {
+                readonly [key: string]: components["schemas"]["JsonValue"];
+            };
+            readonly parentId?: string;
+            readonly slug: string;
+            readonly sortOrder: number;
+            readonly version: number;
+        };
         readonly EmploymentEmployerSummary: {
             readonly branchId?: string;
             readonly description?: string;
@@ -10743,24 +11061,20 @@ export interface components {
         /** @enum {string} */
         readonly ListingPromotionType: "urgent_badge" | "search_bump" | "featured" | "top_placement" | "sponsored_search" | "homepage_spotlight" | "category_spotlight" | "local_spotlight" | "seller_spotlight";
         readonly ListingTaxonomyProjection: {
-            readonly brandLabels?: components["schemas"]["TaxonomyV4LocalizedLabels"];
-            /** @description Public stored values selected and ordered by the published card presentation for this listing and market. Labels and formatted values are localized by the backend. */
-            readonly cardCharacteristics?: readonly {
-                readonly code: string;
-                readonly labels: components["schemas"]["TaxonomyV4LocalizedLabels"];
-                readonly values: components["schemas"]["TaxonomyV4LocalizedLabels"];
-            }[];
+            readonly brandLabels?: components["schemas"]["TaxonomyV1LocalizedLabels"];
+            readonly cardCharacteristics?: readonly components["schemas"]["TaxonomyLocalizedCharacteristic"][];
             readonly categoryId: string;
-            readonly categoryLabels: components["schemas"]["TaxonomyV4LocalizedLabels"];
+            readonly categoryLabels: components["schemas"]["TaxonomyV1LocalizedLabels"];
             readonly categorySlug: string;
+            readonly detailCharacteristics?: readonly components["schemas"]["TaxonomyLocalizedCharacteristic"][];
             readonly path: readonly {
                 readonly id: string;
-                readonly labels: components["schemas"]["TaxonomyV4LocalizedLabels"];
+                readonly labels: components["schemas"]["TaxonomyV1LocalizedLabels"];
                 readonly slug: string;
             }[];
             readonly revision: number;
             readonly rootId: string;
-            readonly rootLabels: components["schemas"]["TaxonomyV4LocalizedLabels"];
+            readonly rootLabels: components["schemas"]["TaxonomyV1LocalizedLabels"];
             readonly rootSlug: string;
         };
         /**
@@ -11506,6 +11820,60 @@ export interface components {
             readonly versionNumber: number;
             readonly verticals: readonly components["schemas"]["JsonValue"][];
         };
+        readonly PropertyAttributeDefinition: {
+            /** @enum {string} */
+            readonly fieldType: "text" | "number" | "boolean" | "single_select" | "multi_select" | "date" | "money" | "document_status";
+            readonly helpText?: string;
+            readonly id: string;
+            readonly isActive: boolean;
+            readonly isFilterable: boolean;
+            readonly isRequired: boolean;
+            readonly label: string;
+            readonly marketCode: string;
+            readonly options?: readonly {
+                readonly label: string;
+                readonly sortOrder: number;
+                readonly value: string;
+            }[];
+            /** @enum {string} */
+            readonly privacy: "public" | "seller_only" | "reviewer_only";
+            readonly propertyTypes: readonly ("apartment" | "house" | "land" | "parking_garage" | "commercial" | "office" | "building" | "new_development" | "holiday_rental" | "room_shared" | "other")[];
+            readonly schemaVersion: number;
+            readonly sortOrder: number;
+            readonly transactionTypes: readonly ("sale" | "long_term_rental" | "seasonal_rental" | "shared_accommodation" | "life_annuity" | "other")[];
+            readonly unit?: string;
+        };
+        readonly PropertyFieldRule: {
+            readonly condition: {
+                readonly [key: string]: components["schemas"]["JsonValue"];
+            };
+            readonly fieldId: string;
+            readonly id: string;
+            readonly isActive: boolean;
+            readonly marketCode: string;
+            /** @enum {string} */
+            readonly propertyType?: "apartment" | "house" | "land" | "parking_garage" | "commercial" | "office" | "building" | "new_development" | "holiday_rental" | "room_shared" | "other";
+            /** @enum {string} */
+            readonly requirement: "required" | "recommended" | "optional" | "hidden";
+            readonly schemaVersion: number;
+            /** @enum {string} */
+            readonly transactionType?: "sale" | "long_term_rental" | "seasonal_rental" | "shared_accommodation" | "life_annuity" | "other";
+        };
+        readonly PropertyTypeConfig: {
+            readonly description: string;
+            readonly filterFieldIds: readonly string[];
+            readonly iconName: string;
+            readonly isActive: boolean;
+            readonly label: string;
+            readonly marketCode: string;
+            readonly requiredFieldIds: readonly string[];
+            readonly schemaVersion: number;
+            readonly slug: string;
+            readonly sortOrder: number;
+            readonly transactionTypes: readonly ("sale" | "long_term_rental" | "seasonal_rental" | "shared_accommodation" | "life_annuity" | "other")[];
+            /** @enum {string} */
+            readonly type: "apartment" | "house" | "land" | "parking_garage" | "commercial" | "office" | "building" | "new_development" | "holiday_rental" | "room_shared" | "other";
+        };
         readonly ProspectCandidate: {
             readonly company: {
                 readonly canonicalName: string;
@@ -11845,7 +12213,7 @@ export interface components {
             readonly isFeatured?: boolean;
             readonly isUrgent?: boolean;
             readonly latitude?: number;
-            readonly listingIntent?: components["schemas"]["TaxonomyV4ListingIntent"];
+            readonly listingIntent?: components["schemas"]["TaxonomyV1ListingIntent"];
             readonly listingTypeId?: string;
             readonly longitude?: number;
             readonly marketCode: components["schemas"]["MarketCode"];
@@ -11992,6 +12360,103 @@ export interface components {
             };
             /** Format: date-time */
             readonly snapshotAt: string;
+        };
+        readonly RealEstateCatalog: {
+            readonly activation: {
+                readonly categoryIds: readonly string[];
+                readonly featureFlags: {
+                    readonly [key: string]: boolean;
+                };
+                readonly isActive: boolean;
+                readonly marketCode: string;
+                readonly schemaVersion: number;
+                readonly subcategoryIds?: readonly string[];
+                /** @enum {string} */
+                readonly verticalType: "real_estate";
+            };
+            readonly addOns: readonly {
+                readonly categoryIds?: readonly string[];
+                readonly creditQuantity?: number;
+                readonly description: string;
+                readonly geographicAreaIds?: readonly string[];
+                readonly id: string;
+                readonly isActive: boolean;
+                readonly marketCode: string;
+                readonly name: string;
+                readonly price: {
+                    readonly amountMinor: number;
+                    readonly currency: string;
+                };
+                readonly scheduleModes?: readonly ("immediate" | "daily" | "scheduled")[];
+                readonly sortOrder: number;
+                readonly taxRateBps: number;
+                /** @enum {string} */
+                readonly type: "urgent" | "search_bump" | "featured" | "homepage_spotlight" | "local_spotlight" | "qualified_lead" | "sponsored_professional" | "additional_listing_credit" | "additional_team_seat" | "extended_analytics" | "distribution_integration" | "employer_brand_campaign";
+                readonly validityDays?: number;
+                /** @enum {string} */
+                readonly verticalType: "real_estate";
+            }[];
+            readonly attributes: readonly components["schemas"]["PropertyAttributeDefinition"][];
+            readonly config: {
+                readonly approximateLocationRadiusM: number;
+                readonly currency: string;
+                readonly defaultSearchRadiusKm: number;
+                readonly draftRetentionDays: number;
+                readonly featureFlags: {
+                    readonly appointmentsEnabled: boolean;
+                    readonly comparablesEnabled: boolean;
+                    readonly mapSearchEnabled: boolean;
+                    readonly paidOffersEnabled: boolean;
+                    readonly privateDocumentsEnabled: boolean;
+                    readonly professionalApiSyncEnabled: boolean;
+                    readonly professionalImportsEnabled: boolean;
+                    readonly recentlyViewedEnabled: boolean;
+                    readonly savedSearchesEnabled: boolean;
+                    readonly structuredLeadsEnabled: boolean;
+                    readonly verticalEnabled: boolean;
+                };
+                readonly isEnabled: boolean;
+                readonly leadRetentionDays: number;
+                readonly locale: string;
+                readonly marketCode: string;
+                readonly regulatoryContentVersion: string;
+                readonly schemaVersion: number;
+                readonly timezone: string;
+            };
+            readonly fieldRules: readonly components["schemas"]["PropertyFieldRule"][];
+            readonly offers: readonly {
+                /** @enum {string} */
+                readonly audience: "individual" | "professional" | "organization";
+                readonly description: string;
+                readonly entitlements: {
+                    readonly [key: string]: boolean | number | string | readonly string[];
+                };
+                readonly id: string;
+                readonly isActive: boolean;
+                readonly isRecommended: boolean;
+                /** @enum {string} */
+                readonly kind: "free" | "pack" | "subscription" | "custom";
+                readonly marketCode: string;
+                readonly name: string;
+                readonly prices: readonly {
+                    readonly amount: {
+                        readonly amountMinor: number;
+                        readonly currency: string;
+                    };
+                    /** @enum {string} */
+                    readonly billingPeriod: "once" | "month" | "year";
+                    readonly durationDays?: number;
+                    readonly id: string;
+                    readonly isActive: boolean;
+                    readonly taxRateBps: number;
+                    readonly trialDays?: number;
+                }[];
+                readonly sortOrder: number;
+                /** @enum {string} */
+                readonly verticalType: "real_estate";
+            }[];
+            readonly propertyTypes: readonly components["schemas"]["PropertyTypeConfig"][];
+            readonly taxonomyOptions: components["schemas"]["TaxonomyV1OptionSets"];
         };
         readonly RealEstatePropertyCharacteristics: {
             readonly accessibilityFeatures: readonly string[];
@@ -12279,7 +12744,7 @@ export interface components {
             readonly success: true;
         };
         /** @enum {string} */
-        readonly TaxonomyAdminResource: "categories" | "listingTypes" | "attributes" | "attributeGroups" | "optionSets" | "options" | "optionParentLinks" | "bindings" | "dependencies" | "validationRules" | "aliases" | "referenceData" | "presentations" | "discovery";
+        readonly TaxonomyAdminResource: "categories" | "listingTypes" | "attributes" | "attributeGroups" | "optionSets" | "options" | "optionParentLinks" | "bindings" | "dependencies" | "validationRules" | "aliases" | "referenceData" | "presentations" | "discovery" | "referenceEntries";
         readonly TaxonomyDraftPage: {
             readonly checksum: string;
             readonly offset: number;
@@ -12308,8 +12773,8 @@ export interface components {
             readonly displayOrder: number;
             readonly iconName: string;
             readonly isActive: boolean;
-            readonly labels: components["schemas"]["TaxonomyV4LocalizedLabels"];
-            readonly shortLabels: components["schemas"]["TaxonomyV4LocalizedShortLabels"];
+            readonly labels: components["schemas"]["TaxonomyV1LocalizedLabels"];
+            readonly shortLabels: components["schemas"]["TaxonomyV1LocalizedShortLabels"];
             readonly slug: string;
         };
         readonly TaxonomyHeaderCategoryUpdate: {
@@ -12328,8 +12793,8 @@ export interface components {
         readonly TaxonomyHeaderNavigationLink: {
             readonly displayOrder: number;
             readonly isActive: boolean;
-            readonly labels: components["schemas"]["TaxonomyV4LocalizedLabels"];
-            readonly shortLabels: components["schemas"]["TaxonomyV4LocalizedShortLabels"];
+            readonly labels: components["schemas"]["TaxonomyV1LocalizedLabels"];
+            readonly shortLabels: components["schemas"]["TaxonomyV1LocalizedShortLabels"];
             /** @enum {string} */
             readonly target: "category_overview" | "promotions";
         };
@@ -12341,61 +12806,10 @@ export interface components {
             readonly links?: readonly components["schemas"]["TaxonomyHeaderNavigationLink"][];
             readonly marketCode: components["schemas"]["MarketCode"];
         };
-        readonly TaxonomyLegacyAttribute: {
+        readonly TaxonomyLocalizedCharacteristic: {
             readonly code: string;
-            readonly dataType: string;
-            readonly filterable?: boolean;
-            readonly id: string;
-            readonly label: string;
-            readonly labels?: {
-                readonly [key: string]: string;
-            };
-            readonly name?: string;
-            readonly options?: readonly {
-                readonly [key: string]: unknown;
-            }[];
-            readonly required?: boolean;
-            readonly searchable?: boolean;
-            readonly sortable?: boolean;
-            readonly type?: string;
-            readonly unit?: string;
-            readonly validation?: {
-                readonly [key: string]: unknown;
-            };
-        } & {
-            readonly [key: string]: unknown;
-        };
-        /** @description Compatibility projection retained while v3 consumers migrate to taxonomy v4. */
-        readonly TaxonomyLegacyCategory: {
-            readonly iconName?: string;
-            readonly id: string;
-            readonly isActive?: boolean;
-            readonly labels?: components["schemas"]["TaxonomyV4LocalizedLabels"];
-            readonly name: string;
-            readonly parentId?: string | null;
-            readonly shortLabel?: string;
-            readonly shortLabels?: components["schemas"]["TaxonomyV4LocalizedLabels"];
-            readonly slug: string;
-            readonly sortOrder?: number;
-            readonly subcategories?: readonly components["schemas"]["TaxonomyLegacyCategory"][];
-        } & {
-            readonly [key: string]: unknown;
-        };
-        readonly TaxonomyLegacyNode: components["schemas"]["TaxonomyLegacyCategory"] & {
-            readonly code: string;
-            readonly labels: {
-                readonly [key: string]: string;
-            };
-            /** @enum {string} */
-            readonly level: "category" | "subcategory" | "type" | "subtype";
-            readonly listingFamily: string;
-            readonly publishable: boolean;
-            readonly supportedIntents: readonly string[];
-        };
-        readonly TaxonomyLegacySearchFilter: {
-            readonly attribute: components["schemas"]["TaxonomyLegacyAttribute"];
-            /** @enum {string} */
-            readonly facetType: "multi_select" | "range" | "boolean" | "keyword";
+            readonly labels: components["schemas"]["TaxonomyV1LocalizedLabels"];
+            readonly values: components["schemas"]["TaxonomyV1LocalizedLabels"];
         };
         readonly TaxonomyReviewIssue: {
             readonly code: string;
@@ -12440,7 +12854,7 @@ export interface components {
             readonly valid: boolean;
             readonly warnings: readonly components["schemas"]["TaxonomyReviewIssue"][];
         };
-        readonly TaxonomyV4Attribute: {
+        readonly TaxonomyV1Attribute: {
             readonly cardinality?: string;
             readonly cardVisible: boolean;
             readonly code: string;
@@ -12457,8 +12871,8 @@ export interface components {
             };
             readonly id: string;
             readonly immutableAfterPublication: boolean;
-            readonly labels: components["schemas"]["TaxonomyV4LocalizedLabels"];
-            readonly marketAvailability: readonly components["schemas"]["TaxonomyV4MarketAvailability"][];
+            readonly labels: components["schemas"]["TaxonomyV1LocalizedLabels"];
+            readonly marketAvailability: readonly components["schemas"]["TaxonomyV1MarketAvailability"][];
             readonly optionSetId?: string;
             readonly placeholder: {
                 readonly [key: string]: string;
@@ -12467,12 +12881,12 @@ export interface components {
             readonly privacy: "public" | "seller_only" | "moderator_only";
             readonly scope: string;
             readonly searchable: boolean;
-            readonly sellerEligibility: components["schemas"]["TaxonomyV4SellerEligibility"];
+            readonly sellerEligibility: components["schemas"]["TaxonomyV1SellerEligibility"];
             readonly seoRelevant: boolean;
             readonly sortable: boolean;
             /** @enum {string} */
             readonly sourceDataType: "select" | "multi_select" | "number" | "long_text" | "autocomplete" | "location" | "year" | "date_time" | "integer" | "decimal" | "money" | "percent" | "enum" | "enum_multi" | "string" | "text" | "phone" | "email" | "url" | "date" | "datetime" | "media" | "document" | "boolean" | "json";
-            readonly uiComponent: components["schemas"]["TaxonomyV4UiComponent"];
+            readonly uiComponent: components["schemas"]["TaxonomyV1UiComponent"];
             readonly unit?: string;
             readonly validation: {
                 readonly declarativeRules: readonly string[];
@@ -12480,7 +12894,7 @@ export interface components {
                 readonly min?: number;
             };
         };
-        readonly TaxonomyV4AttributeBinding: {
+        readonly TaxonomyV1AttributeBinding: {
             readonly attributeId: string;
             readonly cardVisible: boolean;
             readonly categoryId: string;
@@ -12488,19 +12902,47 @@ export interface components {
             readonly filterable: boolean;
             readonly groupId: string;
             readonly id: string;
-            readonly intent: components["schemas"]["TaxonomyV4ListingIntent"];
+            readonly intent: components["schemas"]["TaxonomyV1ListingIntent"];
             readonly listingTypeId: string;
             readonly overrideDefault?: string;
             readonly publicationVisible: boolean;
             readonly required: boolean;
             readonly scope: string;
             readonly searchable: boolean;
-            readonly sellerEligibility: components["schemas"]["TaxonomyV4SellerEligibility"];
+            readonly sellerEligibility: components["schemas"]["TaxonomyV1SellerEligibility"];
             readonly sortable: boolean;
             readonly sortOrder: number;
             readonly sourceLevel: string;
         };
-        readonly TaxonomyV4DependencyRule: {
+        readonly TaxonomyV1CategoryLookup: components["schemas"]["TaxonomyV1CategorySummary"] & {
+            readonly code: string;
+            readonly labels: {
+                readonly [key: string]: string;
+            };
+            /** @enum {string} */
+            readonly level: "category" | "subcategory" | "type";
+            readonly publishable: boolean;
+            /** @enum {string} */
+            readonly status: "active" | "draft" | "disabled" | "deprecated" | "archived";
+            readonly supportedIntents: readonly string[];
+        };
+        /** @description Compatibility projection retained while v3 consumers migrate to taxonomy v1. */
+        readonly TaxonomyV1CategorySummary: {
+            readonly iconName?: string;
+            readonly id: string;
+            readonly isActive?: boolean;
+            readonly labels?: components["schemas"]["TaxonomyV1LocalizedLabels"];
+            readonly name: string;
+            readonly parentId?: string | null;
+            readonly shortLabel?: string;
+            readonly shortLabels?: components["schemas"]["TaxonomyV1LocalizedLabels"];
+            readonly slug: string;
+            readonly sortOrder?: number;
+            readonly subcategories?: readonly components["schemas"]["TaxonomyV1CategorySummary"][];
+        } & {
+            readonly [key: string]: unknown;
+        };
+        readonly TaxonomyV1DependencyRule: {
             readonly detail?: string;
             /** @enum {string} */
             readonly effect: "SHOW" | "HIDE" | "REQUIRE" | "FILTER_OPTIONS" | "CLEAR_VALUE" | "SET_VALUE" | "SHOW_NOTICE" | "OPTIONAL";
@@ -12510,26 +12952,55 @@ export interface components {
             readonly scopes: readonly string[];
             /** @enum {string} */
             readonly status: "draft";
-            readonly targets: readonly components["schemas"]["TaxonomyV4FieldReference"][];
-            readonly trigger: components["schemas"]["TaxonomyV4FieldReference"];
+            readonly targets: readonly components["schemas"]["TaxonomyV1FieldReference"][];
+            readonly trigger: components["schemas"]["TaxonomyV1FieldReference"];
             readonly values: readonly string[];
         };
-        readonly TaxonomyV4FieldReference: {
+        readonly TaxonomyV1FieldReference: {
             readonly key: string;
             /** @enum {string} */
             readonly kind: "attribute" | "context" | "system";
         };
+        readonly TaxonomyV1FilterAttribute: {
+            readonly code: string;
+            /** @enum {string} */
+            readonly dataType: "select" | "multi_select" | "number" | "integer" | "decimal" | "percent" | "enum" | "multi_enum" | "string" | "text" | "long_text" | "phone" | "email" | "url" | "boolean" | "range" | "year" | "date" | "date_time" | "money" | "media" | "document" | "json" | "autocomplete" | "location";
+            readonly displayOrder?: number;
+            readonly filterable?: boolean;
+            readonly id: string;
+            readonly label: string;
+            readonly labels?: {
+                readonly [key: string]: string;
+            };
+            readonly options?: readonly {
+                readonly label: string;
+                readonly labels?: {
+                    readonly [key: string]: string;
+                };
+                readonly value: string;
+            }[];
+            /** @enum {string} */
+            readonly privacy?: "public" | "seller_only" | "moderator_only" | "private";
+            readonly required?: boolean;
+            readonly searchable?: boolean;
+            readonly sortable?: boolean;
+            readonly unit?: string;
+            readonly validation?: {
+                readonly max?: number;
+                readonly min?: number;
+            };
+        };
         /** @enum {string} */
-        readonly TaxonomyV4ListingIntent: "SELL" | "WANTED" | "DONATE" | "EXCHANGE" | "RENT_OUT" | "RENT_SEEK" | "SERVICE_REQUEST" | "SERVICE_OFFER" | "NOTICE" | "BOOK" | "COURSE_OFFER" | "JOB_OFFER" | "BUSINESS_SALE" | "JOB_SEEK";
-        readonly TaxonomyV4ListingType: {
+        readonly TaxonomyV1ListingIntent: "SELL" | "WANTED" | "DONATE" | "EXCHANGE" | "RENT_OUT" | "RENT_SEEK" | "SERVICE_REQUEST" | "SERVICE_OFFER" | "NOTICE" | "BOOK" | "COURSE_OFFER" | "JOB_OFFER" | "BUSINESS_SALE" | "JOB_SEEK";
+        readonly TaxonomyV1ListingType: {
             readonly categoryId: string;
             readonly id: string;
-            readonly intent: components["schemas"]["TaxonomyV4ListingIntent"];
-            readonly intentLabel: components["schemas"]["TaxonomyV4LocalizedLabels"];
-            readonly labels: components["schemas"]["TaxonomyV4LocalizedLabels"];
-            readonly marketAvailability: readonly components["schemas"]["TaxonomyV4MarketAvailability"][];
+            readonly intent: components["schemas"]["TaxonomyV1ListingIntent"];
+            readonly intentLabel: components["schemas"]["TaxonomyV1LocalizedLabels"];
+            readonly labels: components["schemas"]["TaxonomyV1LocalizedLabels"];
+            readonly marketAvailability: readonly components["schemas"]["TaxonomyV1MarketAvailability"][];
             readonly publicationFlow: string;
-            readonly sellerEligibility: components["schemas"]["TaxonomyV4SellerEligibility"];
+            readonly sellerEligibility: components["schemas"]["TaxonomyV1SellerEligibility"];
             readonly seoIndexable: boolean;
             readonly slug: string;
             readonly sourceKey: string;
@@ -12538,18 +13009,18 @@ export interface components {
             readonly verticalId: string;
         };
         /** @description Localized domain labels keyed by BCP 47 locale. French is always present. */
-        readonly TaxonomyV4LocalizedLabels: {
+        readonly TaxonomyV1LocalizedLabels: {
             readonly "fr-FR": string;
         } & {
             readonly [key: string]: string;
         };
         /** @description Localized compact category labels keyed by BCP 47 locale. French is always present and each value is limited to 28 characters. */
-        readonly TaxonomyV4LocalizedShortLabels: {
+        readonly TaxonomyV1LocalizedShortLabels: {
             readonly "fr-FR": string;
         } & {
             readonly [key: string]: string;
         };
-        readonly TaxonomyV4MarketAvailability: {
+        readonly TaxonomyV1MarketAvailability: {
             readonly indexable: boolean;
             /** @enum {string} */
             readonly marketCode: "FR" | "BE" | "CH" | "SN" | "BF";
@@ -12557,88 +13028,99 @@ export interface components {
             /** @enum {string} */
             readonly status: "active" | "coming_soon" | "unavailable";
         };
-        readonly TaxonomyV4Node: {
+        readonly TaxonomyV1Node: {
             readonly description?: string;
             readonly iconName: string;
             readonly id: string;
-            readonly labels: components["schemas"]["TaxonomyV4LocalizedLabels"];
+            readonly labels: components["schemas"]["TaxonomyV1LocalizedLabels"];
             readonly level: number;
-            readonly marketAvailability: readonly components["schemas"]["TaxonomyV4MarketAvailability"][];
+            readonly marketAvailability: readonly components["schemas"]["TaxonomyV1MarketAvailability"][];
             readonly parentId?: string;
             readonly publishable: boolean;
-            readonly sellerEligibility: components["schemas"]["TaxonomyV4SellerEligibility"];
+            readonly sellerEligibility: components["schemas"]["TaxonomyV1SellerEligibility"];
             readonly seo: {
                 readonly indexable: boolean;
             };
-            readonly shortLabels: components["schemas"]["TaxonomyV4LocalizedShortLabels"];
+            readonly shortLabels: components["schemas"]["TaxonomyV1LocalizedShortLabels"];
             readonly slug: string;
             readonly sortOrder: number;
             readonly sourceKey: string;
             /** @enum {string} */
             readonly status: "active" | "draft" | "disabled" | "deprecated" | "archived";
         };
-        readonly TaxonomyV4Option: {
+        readonly TaxonomyV1Option: {
             readonly active: boolean;
             readonly id: string;
             readonly key: string;
-            readonly labels: components["schemas"]["TaxonomyV4LocalizedLabels"];
+            readonly labels: components["schemas"]["TaxonomyV1LocalizedLabels"];
             readonly managedExternally: boolean;
             readonly optionSetId: string;
             readonly sortOrder: number;
         };
-        readonly TaxonomyV4OptionPage: {
-            readonly items: readonly components["schemas"]["TaxonomyV4Option"][];
+        readonly TaxonomyV1OptionPage: {
+            readonly items: readonly components["schemas"]["TaxonomyV1Option"][];
             readonly nextCursor?: string;
             readonly revision?: number;
             /** @enum {string} */
-            readonly taxonomyVersion: "4.0.0";
+            readonly taxonomyVersion: "v1";
             readonly total: number;
         };
-        readonly TaxonomyV4ProjectionField: {
+        readonly TaxonomyV1OptionSets: {
+            readonly optionSets: {
+                readonly [key: string]: readonly components["schemas"]["TaxonomyV1Option"][];
+            };
+            readonly revision: number;
+        };
+        readonly TaxonomyV1ProjectionField: {
             readonly attributeId?: string;
             readonly categoryId: string;
-            readonly field?: components["schemas"]["TaxonomyV4FieldReference"];
+            readonly field?: components["schemas"]["TaxonomyV1FieldReference"];
             readonly listingTypeId?: string;
             readonly sortOrder?: number;
         } & {
             readonly [key: string]: unknown;
         };
-        readonly TaxonomyV4ResolvedSchema: {
+        readonly TaxonomyV1ResolvedSchema: {
             readonly attributes: readonly {
-                readonly binding: components["schemas"]["TaxonomyV4AttributeBinding"];
-                readonly definition: components["schemas"]["TaxonomyV4Attribute"];
-                readonly options: readonly components["schemas"]["TaxonomyV4Option"][];
+                readonly binding: components["schemas"]["TaxonomyV1AttributeBinding"];
+                readonly definition: components["schemas"]["TaxonomyV1Attribute"];
+                readonly options: readonly components["schemas"]["TaxonomyV1Option"][];
             }[];
-            readonly category: components["schemas"]["TaxonomyV4Node"];
-            readonly dependencyRules: readonly components["schemas"]["TaxonomyV4DependencyRule"][];
+            readonly category: components["schemas"]["TaxonomyV1Node"];
+            readonly dependencyRules: readonly components["schemas"]["TaxonomyV1DependencyRule"][];
             readonly eligible: boolean;
             readonly ineligibilityCode?: string;
-            readonly listingType: components["schemas"]["TaxonomyV4ListingType"];
+            readonly listingType: components["schemas"]["TaxonomyV1ListingType"];
             readonly locale: string;
             readonly marketCode: components["schemas"]["MarketCode"];
             readonly projections: {
-                readonly cardFields: readonly components["schemas"]["TaxonomyV4ProjectionField"][];
-                readonly detailFields: readonly components["schemas"]["TaxonomyV4ProjectionField"][];
-                readonly filters: readonly components["schemas"]["TaxonomyV4ProjectionField"][];
-                readonly publicationFlow: readonly components["schemas"]["TaxonomyV4ProjectionField"][];
-                readonly search: components["schemas"]["TaxonomyV4ProjectionField"] | null;
-                readonly seo: components["schemas"]["TaxonomyV4ProjectionField"] | null;
+                readonly cardFields: readonly components["schemas"]["TaxonomyV1ProjectionField"][];
+                readonly detailFields: readonly components["schemas"]["TaxonomyV1ProjectionField"][];
+                readonly filters: readonly components["schemas"]["TaxonomyV1ProjectionField"][];
+                readonly publicationFlow: readonly components["schemas"]["TaxonomyV1ProjectionField"][];
+                readonly search: components["schemas"]["TaxonomyV1ProjectionField"] | null;
+                readonly seo: components["schemas"]["TaxonomyV1ProjectionField"] | null;
             };
             readonly revision?: number;
             /** @enum {string} */
-            readonly taxonomyVersion: "4.0.0";
-            readonly validationRules: readonly components["schemas"]["TaxonomyV4ValidationRule"][];
+            readonly taxonomyVersion: "v1";
+            readonly validationRules: readonly components["schemas"]["TaxonomyV1ValidationRule"][];
         };
-        readonly TaxonomyV4SellerEligibility: {
+        readonly TaxonomyV1SearchFilter: {
+            readonly attribute: components["schemas"]["TaxonomyV1FilterAttribute"];
+            /** @enum {string} */
+            readonly facetType: "multi_select" | "range" | "boolean" | "keyword";
+        };
+        readonly TaxonomyV1SellerEligibility: {
             readonly individualAllowed: boolean;
             readonly professionalAllowed: boolean;
         };
-        readonly TaxonomyV4SeoProjection: {
+        readonly TaxonomyV1SeoProjection: {
             readonly canonicalStrategy: string;
             readonly categoryId: string;
-            readonly descriptionTemplate: components["schemas"]["TaxonomyV4LocalizedLabels"];
+            readonly descriptionTemplate: components["schemas"]["TaxonomyV1LocalizedLabels"];
             readonly facetUrlPattern?: string;
-            readonly h1: components["schemas"]["TaxonomyV4LocalizedLabels"];
+            readonly h1: components["schemas"]["TaxonomyV1LocalizedLabels"];
             readonly indexable: boolean;
             readonly indexableFacets: readonly string[];
             readonly locationUrlPattern?: string;
@@ -12647,10 +13129,10 @@ export interface components {
                 readonly policy: string;
             };
             readonly structuredData: readonly string[];
-            readonly titleTemplate: components["schemas"]["TaxonomyV4LocalizedLabels"];
+            readonly titleTemplate: components["schemas"]["TaxonomyV1LocalizedLabels"];
             readonly urlPattern: string;
         };
-        readonly TaxonomyV4TreeResponse: {
+        readonly TaxonomyV1TreeResponse: {
             readonly aliases?: readonly {
                 readonly alias: string;
                 readonly canonicalCategoryId: string;
@@ -12658,23 +13140,23 @@ export interface components {
             }[];
             readonly checksum: string;
             readonly compilerVersion: string;
-            readonly items: readonly components["schemas"]["TaxonomyV4Node"][];
-            readonly listingTypes: readonly components["schemas"]["TaxonomyV4ListingType"][];
+            readonly items: readonly components["schemas"]["TaxonomyV1Node"][];
+            readonly listingTypes: readonly components["schemas"]["TaxonomyV1ListingType"][];
             readonly locale: string;
             readonly marketCode: components["schemas"]["MarketCode"];
             readonly revision?: number;
-            readonly seo?: readonly components["schemas"]["TaxonomyV4SeoProjection"][];
+            readonly seo?: readonly components["schemas"]["TaxonomyV1SeoProjection"][];
             /** @enum {string} */
-            readonly taxonomyVersion: "4.0.0";
+            readonly taxonomyVersion: "v1";
         };
         /** @enum {string} */
-        readonly TaxonomyV4UiComponent: "select" | "number_input" | "switch" | "text_input" | "money_input" | "checkbox_group" | "stepper" | "radio_group" | "autocomplete" | "date_picker" | "segmented_control" | "textarea" | "hidden" | "cascading_select" | "location_picker" | "readonly_text" | "size_grid" | "media_uploader" | "document_uploader" | "tag_input" | "slider" | "checkbox" | "date_range_picker" | "rich_textarea" | "hierarchical_select" | "multiselect" | "country_select" | "location_autocomplete" | "postal_code_input" | "address_autocomplete" | "hidden_geo" | "radius_input" | "image_uploader" | "video_uploader" | "file_uploader" | "url_input" | "schedule_editor" | "business_id_input" | "year_picker" | "secure_text_input" | "computed_readonly" | "energy_rating" | "time_picker" | "structured_textarea" | "tags_input" | "evidence_editor" | "status_badge" | "document_status" | "datetime_picker" | "barcode_input";
-        readonly TaxonomyV4ValidationRule: {
+        readonly TaxonomyV1UiComponent: "select" | "number_input" | "switch" | "text_input" | "money_input" | "checkbox_group" | "stepper" | "radio_group" | "autocomplete" | "date_picker" | "segmented_control" | "textarea" | "hidden" | "cascading_select" | "location_picker" | "readonly_text" | "size_grid" | "media_uploader" | "document_uploader" | "tag_input" | "slider" | "checkbox" | "date_range_picker" | "rich_textarea" | "hierarchical_select" | "multiselect" | "country_select" | "location_autocomplete" | "postal_code_input" | "address_autocomplete" | "hidden_geo" | "radius_input" | "image_uploader" | "video_uploader" | "file_uploader" | "url_input" | "schedule_editor" | "business_id_input" | "year_picker" | "secure_text_input" | "computed_readonly" | "energy_rating" | "time_picker" | "structured_textarea" | "tags_input" | "evidence_editor" | "status_badge" | "document_status" | "datetime_picker" | "barcode_input";
+        readonly TaxonomyV1ValidationRule: {
             readonly countries: readonly string[];
             /** @enum {string} */
             readonly enforcement: "backend" | "backend+frontend";
             readonly id: string;
-            readonly messages: components["schemas"]["TaxonomyV4LocalizedLabels"];
+            readonly messages: components["schemas"]["TaxonomyV1LocalizedLabels"];
             readonly ruleType: string;
             readonly scopes: readonly string[];
             readonly sellerScopes: readonly string[];
@@ -12682,11 +13164,132 @@ export interface components {
             readonly severity: "BLOCK" | "WARN" | "REVIEW";
             /** @enum {string} */
             readonly status: "draft";
-            readonly target: components["schemas"]["TaxonomyV4FieldReference"];
+            readonly target: components["schemas"]["TaxonomyV1FieldReference"];
         };
         readonly TransitionSolutionLifecycleInput: {
             readonly explanation: string;
             readonly lifecycle: components["schemas"]["SolutionLifecycle"];
+        };
+        readonly TutorPublicProfile: {
+            /** Format: uri */
+            readonly avatarUrl?: string;
+            readonly biography: string;
+            readonly deliveryModes: readonly ("online" | "in_person" | "hybrid")[];
+            readonly displayName: string;
+            readonly experienceYears: number;
+            readonly headline: string;
+            readonly id: string;
+            /** Format: uri */
+            readonly introductionVideoUrl?: string;
+            readonly isFeatured: boolean;
+            readonly languages: readonly string[];
+            readonly levelIds: readonly string[];
+            readonly mediaUrls: readonly string[];
+            readonly organizationId?: string;
+            /** @enum {string} */
+            readonly profileType: "individual" | "organization_member";
+            readonly qualifications: readonly {
+                /** @enum {string} */
+                readonly evidenceStatus: "self_declared" | "uploaded_private" | "provider_verified" | "shongre_verified";
+                readonly expiresAt?: string;
+                readonly id: string;
+                readonly issuedYear?: number;
+                readonly issuer?: string;
+                readonly label: string;
+                readonly publicDetailsAllowed: boolean;
+                readonly publicLabel: string;
+                /** @enum {string} */
+                readonly type: "degree" | "certification" | "employment" | "identity" | "criminal_record" | "professional_status" | "other";
+                /** @enum {string} */
+                readonly verificationStatus: "not_submitted" | "pending" | "verified" | "rejected" | "expired";
+                readonly verifiedAt?: string;
+            }[];
+            readonly rating?: number;
+            readonly ratingIsStatisticallyMeaningful: boolean;
+            readonly responseRatePercent?: number;
+            readonly responseTimeMinutes?: number;
+            readonly reviewCount: number;
+            readonly schemaVersion: number;
+            readonly serviceArea?: {
+                readonly cityLabel: string;
+                readonly latitude?: number;
+                readonly longitude?: number;
+                readonly marketCode: string;
+                readonly postalCodePrefix?: string;
+                readonly publicLocationLabel: string;
+                readonly radiusKm: number;
+                readonly region?: string;
+            };
+            readonly slug: string;
+            readonly subjectIds: readonly string[];
+            readonly taxEligibility: {
+                readonly evidenceExpiresAt?: string;
+                readonly publicWording: string;
+                /** @enum {string} */
+                readonly status: "not_submitted" | "pending" | "verified" | "rejected" | "expired";
+            };
+            readonly teachingApproach: string;
+            readonly verifications: {
+                /** @enum {string} */
+                readonly business: "not_submitted" | "pending" | "verified" | "rejected" | "expired";
+                /** @enum {string} */
+                readonly email: "not_submitted" | "pending" | "verified" | "rejected" | "expired";
+                /** @enum {string} */
+                readonly identity: "not_submitted" | "pending" | "verified" | "rejected" | "expired";
+                /** @enum {string} */
+                readonly payment: "not_submitted" | "pending" | "verified" | "rejected" | "expired";
+                /** @enum {string} */
+                readonly payout: "not_submitted" | "pending" | "verified" | "rejected" | "expired";
+                /** @enum {string} */
+                readonly personalServicesEligibility: "not_submitted" | "pending" | "verified" | "rejected" | "expired";
+                /** @enum {string} */
+                readonly phone: "not_submitted" | "pending" | "verified" | "rejected" | "expired";
+                /** @enum {string} */
+                readonly qualifications: "not_submitted" | "pending" | "verified" | "rejected" | "expired";
+                /** @enum {string} */
+                readonly representative: "not_submitted" | "pending" | "verified" | "rejected" | "expired";
+            };
+            /** @enum {string} */
+            readonly vertical: "tutoring";
+        };
+        readonly TutorSearchItem: {
+            readonly distanceKm?: number;
+            readonly fromPrice: {
+                readonly amountMinor: number;
+                readonly currency: string;
+            };
+            readonly isSaved: boolean;
+            readonly levelLabels: readonly string[];
+            readonly offer: components["schemas"]["CoursePublicOffer"];
+            readonly relevanceReasons: readonly string[];
+            readonly resolvedPromotion?: {
+                /** Format: date-time */
+                readonly endsAt: string;
+                readonly label?: string;
+                readonly marketCode: string;
+                /** Format: date-time */
+                readonly promotedAt?: string;
+                /** @enum {string} */
+                readonly source: "purchase" | "subscription_credit" | "admin_grant";
+                readonly sourceId: string;
+                /** Format: date-time */
+                readonly startsAt: string;
+                /** @enum {string} */
+                readonly state: "inactive" | "scheduled" | "active" | "expired" | "cancelled" | "refunded" | "failed";
+                /** @enum {string} */
+                readonly type: "urgent_badge" | "search_bump" | "featured" | "top_placement" | "sponsored_search" | "homepage_spotlight" | "category_spotlight" | "local_spotlight" | "seller_spotlight";
+            };
+            readonly subjectLabel: string;
+            readonly taxonomy?: components["schemas"]["ListingTaxonomyProjection"];
+            readonly tutor: components["schemas"]["TutorPublicProfile"];
+        };
+        readonly TutorSearchResponse: {
+            readonly items: readonly components["schemas"]["TutorSearchItem"][];
+            readonly pageInfo: {
+                readonly hasNextPage: boolean;
+                readonly nextCursor?: string;
+            };
+            readonly total: number;
         };
         readonly UpdateSolutionInput: {
             readonly audiences?: readonly string[];
@@ -12744,6 +13347,51 @@ export interface components {
             readonly totalListingsCount: number;
             readonly totalViewsCount: number;
             readonly unreadMessagesCount: number;
+        };
+        readonly VehicleAttributeDefinition: {
+            /** @enum {string} */
+            readonly fieldType: "text" | "number" | "boolean" | "single_select" | "multi_select" | "date";
+            readonly id: string;
+            readonly isActive: boolean;
+            readonly isFilterable: boolean;
+            readonly isPublic: boolean;
+            readonly isRequired: boolean;
+            readonly label: string;
+            readonly marketCode: string;
+            readonly options?: readonly {
+                readonly label: string;
+                readonly sortOrder: number;
+                readonly value: string;
+            }[];
+            readonly schemaVersion: number;
+            readonly sortOrder: number;
+            readonly unit?: string;
+            readonly vehicleTypes: readonly ("car" | "motorcycle" | "utility" | "truck" | "motorhome" | "boat" | "agricultural" | "construction" | "parts" | "other")[];
+        };
+        readonly VehicleCatalogEntry: {
+            readonly endsYear?: number;
+            readonly id: string;
+            readonly isActive: boolean;
+            /** @enum {string} */
+            readonly kind: "make" | "model" | "generation" | "trim";
+            readonly label: string;
+            readonly parentId?: string;
+            readonly slug: string;
+            readonly startsYear?: number;
+            readonly vehicleTypes: readonly ("car" | "motorcycle" | "utility" | "truck" | "motorhome" | "boat" | "agricultural" | "construction" | "parts" | "other")[];
+        };
+        readonly VehicleTypeConfig: {
+            readonly description: string;
+            readonly filterFieldIds: readonly string[];
+            readonly iconName: string;
+            readonly isActive: boolean;
+            readonly label: string;
+            readonly requiredFieldIds: readonly string[];
+            readonly schemaVersion: number;
+            readonly slug: string;
+            readonly sortOrder: number;
+            /** @enum {string} */
+            readonly type: "car" | "motorcycle" | "utility" | "truck" | "motorhome" | "boat" | "agricultural" | "construction" | "parts" | "other";
         };
         readonly WatchChannels: {
             readonly email: boolean;
@@ -17744,47 +18392,6 @@ export interface operations {
             readonly 500: components["responses"]["InternalError"];
         };
     };
-    readonly patchAutoAdminMarketsByMarketCodeTypesByType: {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: {
-                /** @description Caller correlation id. The server returns the accepted or generated value. */
-                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
-            };
-            readonly path: {
-                readonly marketCode: string;
-                readonly type: string;
-            };
-            readonly cookie?: never;
-        };
-        readonly requestBody: {
-            readonly content: {
-                readonly "application/json": {
-                    readonly [key: string]: unknown;
-                };
-            };
-        };
-        readonly responses: {
-            /** @description Successful response. */
-            readonly 200: {
-                headers: {
-                    readonly "X-Request-Id": components["headers"]["RequestId"];
-                    readonly [name: string]: unknown;
-                };
-                content: {
-                    readonly "application/json": components["schemas"]["JsonValue"];
-                };
-            };
-            readonly 400: components["responses"]["BadRequest"];
-            readonly 401: components["responses"]["Unauthorized"];
-            readonly 403: components["responses"]["Forbidden"];
-            readonly 404: components["responses"]["NotFound"];
-            readonly 409: components["responses"]["Conflict"];
-            readonly 422: components["responses"]["UnprocessableEntity"];
-            readonly 429: components["responses"]["TooManyRequests"];
-            readonly 500: components["responses"]["InternalError"];
-        };
-    };
     readonly getAutoAdminOverview: {
         readonly parameters: {
             readonly query?: {
@@ -17840,7 +18447,7 @@ export interface operations {
                     readonly [name: string]: unknown;
                 };
                 content: {
-                    readonly "application/json": components["schemas"]["JsonValue"];
+                    readonly "application/json": components["schemas"]["AutoCatalog"];
                 };
             };
             readonly 400: components["responses"]["BadRequest"];
@@ -21763,47 +22370,6 @@ export interface operations {
             readonly 500: components["responses"]["InternalError"];
         };
     };
-    readonly patchEducationAdminMarketsByMarketCodeSubjectsBySubjectId: {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: {
-                /** @description Caller correlation id. The server returns the accepted or generated value. */
-                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
-            };
-            readonly path: {
-                readonly marketCode: string;
-                readonly subjectId: string;
-            };
-            readonly cookie?: never;
-        };
-        readonly requestBody: {
-            readonly content: {
-                readonly "application/json": {
-                    readonly [key: string]: unknown;
-                };
-            };
-        };
-        readonly responses: {
-            /** @description Successful response. */
-            readonly 200: {
-                headers: {
-                    readonly "X-Request-Id": components["headers"]["RequestId"];
-                    readonly [name: string]: unknown;
-                };
-                content: {
-                    readonly "application/json": components["schemas"]["JsonValue"];
-                };
-            };
-            readonly 400: components["responses"]["BadRequest"];
-            readonly 401: components["responses"]["Unauthorized"];
-            readonly 403: components["responses"]["Forbidden"];
-            readonly 404: components["responses"]["NotFound"];
-            readonly 409: components["responses"]["Conflict"];
-            readonly 422: components["responses"]["UnprocessableEntity"];
-            readonly 429: components["responses"]["TooManyRequests"];
-            readonly 500: components["responses"]["InternalError"];
-        };
-    };
     readonly postEducationBookings: {
         readonly parameters: {
             readonly query?: never;
@@ -21866,7 +22432,7 @@ export interface operations {
                     readonly [name: string]: unknown;
                 };
                 content: {
-                    readonly "application/json": components["schemas"]["JsonValue"];
+                    readonly "application/json": components["schemas"]["CourseCatalog"];
                 };
             };
             readonly 400: components["responses"]["BadRequest"];
@@ -22244,7 +22810,7 @@ export interface operations {
                     readonly [name: string]: unknown;
                 };
                 content: {
-                    readonly "application/json": components["schemas"]["JsonValue"];
+                    readonly "application/json": components["schemas"]["TutorSearchResponse"];
                 };
             };
             readonly 400: components["responses"]["BadRequest"];
@@ -22294,9 +22860,11 @@ export interface operations {
     readonly putEducationTutorsById: {
         readonly parameters: {
             readonly query?: never;
-            readonly header?: {
+            readonly header: {
                 /** @description Caller correlation id. The server returns the accepted or generated value. */
                 readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
             };
             readonly path: {
                 readonly id: string;
@@ -23060,7 +23628,7 @@ export interface operations {
                     readonly [name: string]: unknown;
                 };
                 content: {
-                    readonly "application/json": components["schemas"]["JsonValue"];
+                    readonly "application/json": components["schemas"]["EmploymentCatalog"];
                 };
             };
             readonly 400: components["responses"]["BadRequest"];
@@ -25248,9 +25816,7 @@ export interface operations {
         };
         readonly requestBody: {
             readonly content: {
-                readonly "application/json": {
-                    readonly [key: string]: unknown;
-                };
+                readonly "application/json": components["schemas"]["BulkListingImportParse"];
             };
         };
         readonly responses: {
@@ -25261,7 +25827,7 @@ export interface operations {
                     readonly [name: string]: unknown;
                 };
                 content: {
-                    readonly "application/json": components["schemas"]["JsonValue"];
+                    readonly "application/json": readonly components["schemas"]["BulkListingImportRow"][];
                 };
             };
             readonly 400: components["responses"]["BadRequest"];
@@ -25286,9 +25852,7 @@ export interface operations {
         };
         readonly requestBody: {
             readonly content: {
-                readonly "application/json": {
-                    readonly [key: string]: unknown;
-                };
+                readonly "application/json": components["schemas"]["BulkListingImportPublish"];
             };
         };
         readonly responses: {
@@ -25299,7 +25863,7 @@ export interface operations {
                     readonly [name: string]: unknown;
                 };
                 content: {
-                    readonly "application/json": components["schemas"]["JsonValue"];
+                    readonly "application/json": readonly components["schemas"]["PublicListing"][];
                 };
             };
             readonly 400: components["responses"]["BadRequest"];
@@ -25331,7 +25895,7 @@ export interface operations {
                     readonly [name: string]: unknown;
                 };
                 content: {
-                    readonly "application/json": components["schemas"]["JsonValue"];
+                    readonly "application/json": components["schemas"]["BulkListingImportTemplate"];
                 };
             };
             readonly 400: components["responses"]["BadRequest"];
@@ -25408,14 +25972,14 @@ export interface operations {
                         readonly digitalFulfillment?: components["schemas"]["JsonValue"];
                         readonly fulfillmentTypes: readonly components["schemas"]["FulfillmentType"][];
                         readonly images: readonly string[];
-                        readonly intent?: components["schemas"]["TaxonomyV4ListingIntent"];
+                        readonly intent?: components["schemas"]["TaxonomyV1ListingIntent"];
                         readonly listingTypeId?: string;
                         readonly marketCode: components["schemas"]["MarketCode"];
                         readonly postalCode: string;
                         readonly price: number;
                         readonly taxonomyRevision?: number;
                         /** @constant */
-                        readonly taxonomyVersion?: "4.0.0";
+                        readonly taxonomyVersion?: "v1";
                         /** @description Compact title for a new product listing. Existing listing titles and saved drafts are not truncated; an over-limit draft must be edited before publication. */
                         readonly title: string;
                     };
@@ -29813,47 +30377,6 @@ export interface operations {
             readonly 500: components["responses"]["InternalError"];
         };
     };
-    readonly patchRealEstateAdminMarketsByMarketCodeFieldRulesByRuleId: {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: {
-                /** @description Caller correlation id. The server returns the accepted or generated value. */
-                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
-            };
-            readonly path: {
-                readonly marketCode: string;
-                readonly ruleId: string;
-            };
-            readonly cookie?: never;
-        };
-        readonly requestBody: {
-            readonly content: {
-                readonly "application/json": {
-                    readonly [key: string]: unknown;
-                };
-            };
-        };
-        readonly responses: {
-            /** @description Successful response. */
-            readonly 200: {
-                headers: {
-                    readonly "X-Request-Id": components["headers"]["RequestId"];
-                    readonly [name: string]: unknown;
-                };
-                content: {
-                    readonly "application/json": components["schemas"]["JsonValue"];
-                };
-            };
-            readonly 400: components["responses"]["BadRequest"];
-            readonly 401: components["responses"]["Unauthorized"];
-            readonly 403: components["responses"]["Forbidden"];
-            readonly 404: components["responses"]["NotFound"];
-            readonly 409: components["responses"]["Conflict"];
-            readonly 422: components["responses"]["UnprocessableEntity"];
-            readonly 429: components["responses"]["TooManyRequests"];
-            readonly 500: components["responses"]["InternalError"];
-        };
-    };
     readonly patchRealEstateAdminMarketsByMarketCodeOffersByOfferId: {
         readonly parameters: {
             readonly query?: never;
@@ -29864,47 +30387,6 @@ export interface operations {
             readonly path: {
                 readonly marketCode: string;
                 readonly offerId: string;
-            };
-            readonly cookie?: never;
-        };
-        readonly requestBody: {
-            readonly content: {
-                readonly "application/json": {
-                    readonly [key: string]: unknown;
-                };
-            };
-        };
-        readonly responses: {
-            /** @description Successful response. */
-            readonly 200: {
-                headers: {
-                    readonly "X-Request-Id": components["headers"]["RequestId"];
-                    readonly [name: string]: unknown;
-                };
-                content: {
-                    readonly "application/json": components["schemas"]["JsonValue"];
-                };
-            };
-            readonly 400: components["responses"]["BadRequest"];
-            readonly 401: components["responses"]["Unauthorized"];
-            readonly 403: components["responses"]["Forbidden"];
-            readonly 404: components["responses"]["NotFound"];
-            readonly 409: components["responses"]["Conflict"];
-            readonly 422: components["responses"]["UnprocessableEntity"];
-            readonly 429: components["responses"]["TooManyRequests"];
-            readonly 500: components["responses"]["InternalError"];
-        };
-    };
-    readonly patchRealEstateAdminMarketsByMarketCodeTypesByType: {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: {
-                /** @description Caller correlation id. The server returns the accepted or generated value. */
-                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
-            };
-            readonly path: {
-                readonly marketCode: string;
-                readonly type: string;
             };
             readonly cookie?: never;
         };
@@ -30189,7 +30671,7 @@ export interface operations {
                     readonly [name: string]: unknown;
                 };
                 content: {
-                    readonly "application/json": components["schemas"]["JsonValue"];
+                    readonly "application/json": components["schemas"]["RealEstateCatalog"];
                 };
             };
             readonly 400: components["responses"]["BadRequest"];
@@ -31198,7 +31680,7 @@ export interface operations {
                     readonly [name: string]: unknown;
                 };
                 content: {
-                    readonly "application/json": components["schemas"]["TaxonomyLegacyNode"] | null;
+                    readonly "application/json": components["schemas"]["TaxonomyV1CategoryLookup"] | null;
                 };
             };
             readonly 400: components["responses"]["BadRequest"];
@@ -31211,9 +31693,18 @@ export interface operations {
             readonly 500: components["responses"]["InternalError"];
         };
     };
-    readonly getTaxonomyNodesByIdAttributes: {
+    readonly getTaxonomyV1Options: {
         readonly parameters: {
-            readonly query?: never;
+            readonly query?: {
+                readonly cursor?: string;
+                readonly limit?: number;
+                readonly locale?: string;
+                readonly parentOptionId?: string;
+                readonly q?: string;
+                /** @description Expected published revision; a changed revision returns 409. */
+                readonly revision?: number;
+                readonly version?: "v1";
+            };
             readonly header: {
                 /** @description Caller correlation id. The server returns the accepted or generated value. */
                 readonly "X-Request-Id"?: components["parameters"]["RequestId"];
@@ -31221,25 +31712,23 @@ export interface operations {
                 readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
             };
             readonly path: {
-                readonly id: string;
+                readonly optionSetId: string;
             };
             readonly cookie?: never;
         };
         readonly requestBody?: never;
         readonly responses: {
-            /** @description Successful response. */
+            /** @description A stable bounded option page. */
             readonly 200: {
                 headers: {
                     readonly "X-Request-Id": components["headers"]["RequestId"];
                     readonly [name: string]: unknown;
                 };
                 content: {
-                    readonly "application/json": readonly components["schemas"]["TaxonomyLegacyAttribute"][];
+                    readonly "application/json": components["schemas"]["TaxonomyV1OptionPage"];
                 };
             };
             readonly 400: components["responses"]["BadRequest"];
-            readonly 401: components["responses"]["Unauthorized"];
-            readonly 403: components["responses"]["Forbidden"];
             readonly 404: components["responses"]["NotFound"];
             readonly 409: components["responses"]["Conflict"];
             readonly 422: components["responses"]["UnprocessableEntity"];
@@ -31247,35 +31736,42 @@ export interface operations {
             readonly 500: components["responses"]["InternalError"];
         };
     };
-    readonly getTaxonomyNodesByIdChildren: {
+    readonly resolveTaxonomyV1PublicationSchema: {
         readonly parameters: {
-            readonly query?: never;
+            readonly query: {
+                /** @description Canonical category id, workbook source key, canonical slug, or reviewed legacy alias. */
+                readonly category: string;
+                readonly intent?: components["schemas"]["TaxonomyV1ListingIntent"];
+                readonly listingTypeId?: string;
+                readonly locale: string;
+                /** @description Expected published revision; a changed revision returns 409. */
+                readonly revision?: number;
+                readonly sellerCapability?: readonly string[];
+                readonly sellerType: "individual" | "professional";
+                readonly version?: "v1";
+            };
             readonly header: {
                 /** @description Caller correlation id. The server returns the accepted or generated value. */
                 readonly "X-Request-Id"?: components["parameters"]["RequestId"];
                 /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
                 readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
             };
-            readonly path: {
-                readonly id: string;
-            };
+            readonly path?: never;
             readonly cookie?: never;
         };
         readonly requestBody?: never;
         readonly responses: {
-            /** @description Successful response. */
+            /** @description Resolved safe publication, validation, search, card, detail, and SEO projections. */
             readonly 200: {
                 headers: {
                     readonly "X-Request-Id": components["headers"]["RequestId"];
                     readonly [name: string]: unknown;
                 };
                 content: {
-                    readonly "application/json": readonly components["schemas"]["TaxonomyLegacyNode"][];
+                    readonly "application/json": components["schemas"]["TaxonomyV1ResolvedSchema"];
                 };
             };
             readonly 400: components["responses"]["BadRequest"];
-            readonly 401: components["responses"]["Unauthorized"];
-            readonly 403: components["responses"]["Forbidden"];
             readonly 404: components["responses"]["NotFound"];
             readonly 409: components["responses"]["Conflict"];
             readonly 422: components["responses"]["UnprocessableEntity"];
@@ -31304,7 +31800,7 @@ export interface operations {
                     readonly [name: string]: unknown;
                 };
                 content: {
-                    readonly "application/json": readonly components["schemas"]["TaxonomyLegacyCategory"][];
+                    readonly "application/json": readonly components["schemas"]["TaxonomyV1CategorySummary"][];
                 };
             };
             readonly 400: components["responses"]["BadRequest"];
@@ -31340,7 +31836,7 @@ export interface operations {
                     readonly [name: string]: unknown;
                 };
                 content: {
-                    readonly "application/json": readonly components["schemas"]["TaxonomyLegacySearchFilter"][];
+                    readonly "application/json": readonly components["schemas"]["TaxonomyV1SearchFilter"][];
                 };
             };
             readonly 400: components["responses"]["BadRequest"];
@@ -31353,133 +31849,11 @@ export interface operations {
             readonly 500: components["responses"]["InternalError"];
         };
     };
-    readonly getTaxonomySlugBySlug: {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header: {
-                /** @description Caller correlation id. The server returns the accepted or generated value. */
-                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
-                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
-                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
-            };
-            readonly path: {
-                readonly slug: string;
-            };
-            readonly cookie?: never;
-        };
-        readonly requestBody?: never;
-        readonly responses: {
-            /** @description Successful response. */
-            readonly 200: {
-                headers: {
-                    readonly "X-Request-Id": components["headers"]["RequestId"];
-                    readonly [name: string]: unknown;
-                };
-                content: {
-                    readonly "application/json": components["schemas"]["TaxonomyLegacyNode"] | null;
-                };
-            };
-            readonly 400: components["responses"]["BadRequest"];
-            readonly 401: components["responses"]["Unauthorized"];
-            readonly 403: components["responses"]["Forbidden"];
-            readonly 404: components["responses"]["NotFound"];
-            readonly 409: components["responses"]["Conflict"];
-            readonly 422: components["responses"]["UnprocessableEntity"];
-            readonly 429: components["responses"]["TooManyRequests"];
-            readonly 500: components["responses"]["InternalError"];
-        };
-    };
-    readonly getTaxonomyV4Options: {
-        readonly parameters: {
-            readonly query?: {
-                readonly cursor?: string;
-                readonly limit?: number;
-                readonly locale?: string;
-                readonly parentOptionId?: string;
-                readonly q?: string;
-                /** @description Expected published revision; a changed revision returns 409. */
-                readonly revision?: number;
-                readonly version?: "4.0.0";
-            };
-            readonly header: {
-                /** @description Caller correlation id. The server returns the accepted or generated value. */
-                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
-                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
-                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
-            };
-            readonly path: {
-                readonly optionSetId: string;
-            };
-            readonly cookie?: never;
-        };
-        readonly requestBody?: never;
-        readonly responses: {
-            /** @description A stable bounded option page. */
-            readonly 200: {
-                headers: {
-                    readonly "X-Request-Id": components["headers"]["RequestId"];
-                    readonly [name: string]: unknown;
-                };
-                content: {
-                    readonly "application/json": components["schemas"]["TaxonomyV4OptionPage"];
-                };
-            };
-            readonly 400: components["responses"]["BadRequest"];
-            readonly 404: components["responses"]["NotFound"];
-            readonly 409: components["responses"]["Conflict"];
-            readonly 422: components["responses"]["UnprocessableEntity"];
-            readonly 429: components["responses"]["TooManyRequests"];
-            readonly 500: components["responses"]["InternalError"];
-        };
-    };
-    readonly resolveTaxonomyV4PublicationSchema: {
-        readonly parameters: {
-            readonly query: {
-                /** @description Canonical category id, workbook source key, canonical slug, or reviewed legacy alias. */
-                readonly category: string;
-                readonly intent?: components["schemas"]["TaxonomyV4ListingIntent"];
-                readonly listingTypeId?: string;
-                readonly locale: string;
-                /** @description Expected published revision; a changed revision returns 409. */
-                readonly revision?: number;
-                readonly sellerCapability?: readonly string[];
-                readonly sellerType: "individual" | "professional";
-                readonly version?: "4.0.0";
-            };
-            readonly header: {
-                /** @description Caller correlation id. The server returns the accepted or generated value. */
-                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
-                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
-                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
-            };
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly requestBody?: never;
-        readonly responses: {
-            /** @description Resolved safe publication, validation, search, card, detail, and SEO projections. */
-            readonly 200: {
-                headers: {
-                    readonly "X-Request-Id": components["headers"]["RequestId"];
-                    readonly [name: string]: unknown;
-                };
-                content: {
-                    readonly "application/json": components["schemas"]["TaxonomyV4ResolvedSchema"];
-                };
-            };
-            readonly 400: components["responses"]["BadRequest"];
-            readonly 404: components["responses"]["NotFound"];
-            readonly 409: components["responses"]["Conflict"];
-            readonly 422: components["responses"]["UnprocessableEntity"];
-            readonly 429: components["responses"]["TooManyRequests"];
-            readonly 500: components["responses"]["InternalError"];
-        };
-    };
-    readonly getTaxonomyV4Tree: {
+    readonly getTaxonomyV1Tree: {
         readonly parameters: {
             readonly query?: {
                 readonly locale?: string;
-                readonly version?: "4.0.0";
+                readonly version?: "v1";
             };
             readonly header: {
                 /** @description Caller correlation id. The server returns the accepted or generated value. */
@@ -31499,7 +31873,7 @@ export interface operations {
                     readonly [name: string]: unknown;
                 };
                 content: {
-                    readonly "application/json": components["schemas"]["TaxonomyV4TreeResponse"];
+                    readonly "application/json": components["schemas"]["TaxonomyV1TreeResponse"];
                 };
             };
             readonly 400: components["responses"]["BadRequest"];

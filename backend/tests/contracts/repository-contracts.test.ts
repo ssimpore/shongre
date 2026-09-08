@@ -1,3 +1,5 @@
+import { createTaxonomyProjection } from "../../src/infrastructure/database/repositories/taxonomy.projection.js";
+import { TAXONOMY_V1_PRIVATE_BUNDLE } from "../../taxonomy/generated/taxonomy-v1.private.js";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import {
   DemoUserRepository,
@@ -6,7 +8,6 @@ import {
   PostgresListingRepository,
   DemoMarketRepository,
   PostgresMarketRepository,
-  TestTaxonomyRepository,
   PostgresTaxonomyRepository,
   DemoOrderRepository,
   PostgresOrderRepository,
@@ -256,7 +257,6 @@ describe("Repository Contract & Dual-Mode Compatibility Tests", () => {
       for (const method of [
         "getCatalog",
         "saveMarketConfig",
-        "saveSubject",
         "savePlan",
         "searchTutors",
         "getTutorProfile",
@@ -306,11 +306,11 @@ describe("Repository Contract & Dual-Mode Compatibility Tests", () => {
   });
 
   describe("Taxonomy Repository Contract", () => {
-    const demoRepo = new TestTaxonomyRepository();
+    const projection = createTaxonomyProjection(TAXONOMY_V1_PRIVATE_BUNDLE);
     const postgresRepo = new PostgresTaxonomyRepository();
 
     it("resolves root categories and hierarchical children in Demo mode", async () => {
-      const roots = await demoRepo.getRootCategories();
+      const roots = projection.getRootCategories();
       expect(roots.length).toBeGreaterThan(0);
       expect(roots.some((r) => r.id === "vehicles")).toBe(true);
       expect(
@@ -320,12 +320,12 @@ describe("Repository Contract & Dual-Mode Compatibility Tests", () => {
         "Maison",
       );
 
-      const children = await demoRepo.getChildren("vehicles");
+      const children = projection.getChildren("vehicles");
       expect(children.length).toBeGreaterThanOrEqual(3);
     });
 
     it("resolves dynamic category attributes in Demo mode", async () => {
-      const attrs = await demoRepo.getAttributesForCategory(
+      const attrs = projection.searchAttributesForCategory(
         "vehicles.cars.city_cars",
       );
       expect(attrs.some((a) => a.id === "mileage")).toBe(true);
@@ -333,11 +333,8 @@ describe("Repository Contract & Dual-Mode Compatibility Tests", () => {
     });
 
     it("PostgresTaxonomyRepository implements all interface methods cleanly", () => {
-      expect(typeof postgresRepo.getRootCategories).toBe("function");
       expect(typeof postgresRepo.getNodeById).toBe("function");
       expect(typeof postgresRepo.getNodeBySlug).toBe("function");
-      expect(typeof postgresRepo.getChildren).toBe("function");
-      expect(typeof postgresRepo.getAttributesForCategory).toBe("function");
       expect(typeof postgresRepo.getHeaderNavigation).toBe("function");
       expect(typeof postgresRepo.replaceHeaderNavigation).toBe("function");
     });
@@ -418,7 +415,9 @@ describe("Repository Contract & Dual-Mode Compatibility Tests", () => {
       expect(container.users instanceof DemoUserRepository).toBe(true);
       expect(container.listings instanceof DemoListingRepository).toBe(true);
       expect(container.markets instanceof DemoMarketRepository).toBe(true);
-      expect(container.taxonomy instanceof TestTaxonomyRepository).toBe(true);
+      expect(container.taxonomy instanceof PostgresTaxonomyRepository).toBe(
+        true,
+      );
       expect(container.orders instanceof DemoOrderRepository).toBe(true);
       expect(container.verification instanceof DemoVerificationRepository).toBe(
         true,

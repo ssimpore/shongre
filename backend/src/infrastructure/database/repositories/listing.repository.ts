@@ -476,12 +476,10 @@ export class DemoListingRepository implements IListingRepository {
         ];
       });
     }
-    if (filters.categoryId) {
-      const categoryId = filters.categoryId;
-      result = result.filter(
-        (listing) =>
-          listing.categoryId === categoryId ||
-          listing.categoryId.startsWith(`${categoryId}.`),
+    if (filters.categoryIds || filters.categoryId) {
+      const categoryIds = filters.categoryIds ?? [filters.categoryId!];
+      result = result.filter((listing) =>
+        categoryIds.includes(listing.categoryId),
       );
     }
     if (filters.sellerId) {
@@ -1276,7 +1274,9 @@ export class PostgresListingRepository implements IListingRepository {
           .eq("listing_market_publications.status", "active")
           .eq("listing_market_publications.compliance_state", "approved");
       }
-      if (filters.categoryId) {
+      if (filters.categoryIds) {
+        query = query.in("category_id", filters.categoryIds);
+      } else if (filters.categoryId) {
         query = query.eq("category_id", filters.categoryId);
       }
       if (filters.sellerId) {
@@ -1445,10 +1445,10 @@ export class PostgresListingRepository implements IListingRepository {
         );
       }
 
-      if (filters.categoryId) {
-        query = query.or(
-          `category_id.eq.${filters.categoryId},category_id.like.${filters.categoryId}.%`,
-          { referencedTable: "listings" },
+      if (filters.categoryIds || filters.categoryId) {
+        query = query.in(
+          "listings.category_id",
+          filters.categoryIds ?? [filters.categoryId!],
         );
       }
       const publisherType =

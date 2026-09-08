@@ -3,14 +3,12 @@ import type {
   PropertyAppointment,
   PropertyDraft,
   PropertyImport,
-  PropertyFieldRule,
   PropertyLead,
   PropertyLeadExport,
   PropertyLeadNote,
   PropertyPublic,
   PropertySearchQuery,
   PropertySearchResult,
-  PropertyTypeConfig,
   RealEstateAdminOverview,
   RealEstateCatalog,
   RealEstateMarketConfig,
@@ -67,7 +65,8 @@ export interface PropertyPublicationDraftData {
   title: string;
   description: string;
   mediaUrls: string[];
-  privateDocumentKeys: string[];
+  documents: import("@shongre/contracts/real-estate").PropertyDocument[];
+  currency: string;
   sellerType: string;
   sellerDisplayName: string;
   offerId: string;
@@ -107,7 +106,8 @@ export const EMPTY_PROPERTY_PUBLICATION_DRAFT: PropertyPublicationDraftData = {
   title: "",
   description: "",
   mediaUrls: [],
-  privateDocumentKeys: [],
+  documents: [],
+  currency: "",
   sellerType: "",
   sellerDisplayName: "",
   offerId: "",
@@ -190,14 +190,4 @@ export interface RealEstateServiceContract {
     addOnId: string,
     patch: Partial<VerticalAddOn>,
   ): Promise<VerticalAddOn>;
-  updatePropertyType(
-    marketCode: string,
-    type: string,
-    patch: Partial<PropertyTypeConfig>,
-  ): Promise<PropertyTypeConfig>;
-  updateFieldRule(
-    marketCode: string,
-    ruleId: string,
-    patch: Partial<PropertyFieldRule>,
-  ): Promise<PropertyFieldRule>;
 }

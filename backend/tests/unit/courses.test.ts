@@ -117,6 +117,27 @@ describe("Shongre Education course domain service", () => {
     });
   });
 
+  it.each([
+    { subjectId: "unpublished-subject", levelId: "middle_school" },
+    { subjectId: "subject_mathematics", levelId: "unpublished-level" },
+  ])(
+    "rejects noncanonical learner selections before routing a lead: %j",
+    async (selection) => {
+      const { service } = createService();
+      await expect(
+        service.submitLearnerRequest("learner", {
+          ...selection,
+          marketCode: "FR",
+          objective: "Préparer un examen de mathématiques",
+          preferredSchedule: ["samedi_matin"],
+          deliveryModes: ["online"],
+          desiredStartDate: "2026-10-01",
+          learnerAgeBand: "adult",
+        }),
+      ).rejects.toMatchObject({ code: "VALIDATION_ERROR" });
+    },
+  );
+
   it("requires a guardian and explicit consent context for every minor request", async () => {
     const { service } = createService();
     await expect(
@@ -204,6 +225,11 @@ describe("Shongre Education course domain service", () => {
 
     const search = await service.searchTutors({ marketCode: "FR", limit: 5 });
     expect(search.items[0].tutor).not.toHaveProperty("userId");
+    expect(search.items[0].taxonomy).toMatchObject({
+      rootId: "education",
+      categoryId: "education",
+      revision: 1,
+    });
   });
 
   it("exposes only explicit exact-listing promotion proof in tutor search", async () => {
@@ -268,29 +294,16 @@ describe("Shongre Education course domain service", () => {
     ).rejects.toThrow(/n’appartenez pas/i);
   });
 
-  it("updates market-scoped subjects without changing their identifier", async () => {
+  it("reads subjects from the canonical publication and respects market isolation", async () => {
     const { service } = createService();
-    const updated = await service.updateSubject("FR", "subject_mathematics", {
-      isActive: false,
-    });
-    expect(updated.id).toBe("subject_mathematics");
-    expect(updated.marketCode).toBe("FR");
-    expect(updated.isActive).toBe(false);
-
-    expect((await service.getCatalog("FR")).subjects).not.toContainEqual(
-      expect.objectContaining({ id: "subject_mathematics" }),
+    const { taxonomyV1Service } =
+      await import("../../src/modules/taxonomy/taxonomy.runtime.js");
+    const taxonomy = await taxonomyV1Service.snapshot();
+    expect((await service.getCatalog("FR")).subjects).toEqual(
+      taxonomy.getReferences("course_subjects", "FR"),
     );
-    expect((await service.getAdminCatalog("FR")).subjects).toContainEqual(
-      expect.objectContaining({ id: "subject_mathematics", isActive: false }),
-    );
-
-    const reactivated = await service.updateSubject(
-      "FR",
-      "subject_mathematics",
-      {
-        isActive: true,
-      },
-    );
-    expect(reactivated.isActive).toBe(true);
+    expect(
+      (await new DemoCoursesRepository().getCatalog("BE")).subjects,
+    ).toEqual([]);
   });
 });

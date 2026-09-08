@@ -1,25 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { ListingGrid } from "./ListingGrid";
-import { ListingRail, ListingRailGroup } from "./ListingRail";
+import { ListingRail } from "./ListingRail";
 
 describe("listing layout primitives", () => {
-  it("coordinates related rails without replacing their shared card cells", () => {
-    const html = renderToStaticMarkup(
-      <ListingRailGroup className="space-y-8">
-        <ListingRail label="Recent listings">
-          <div>Recent card</div>
-        </ListingRail>
-        <ListingRail label="Deals">
-          <div>Deal card</div>
-        </ListingRail>
-      </ListingRailGroup>,
-    );
-    expect(html).toContain('class="listing-rail-group space-y-8"');
-    expect(html.match(/listing-rail-track/g)).toHaveLength(2);
-    expect(html.match(/listing-rail-cell w-listing-card/g)).toHaveLength(2);
-    expect(html).not.toContain("--listing-rail-measured-height");
-  });
   it("keeps rail cells token-sized and stretchable for wrapped cards", () => {
     const html = renderToStaticMarkup(
       <ListingRail label="Annonces">

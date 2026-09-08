@@ -326,7 +326,7 @@ export interface Listing {
   categoryLabel: string;
   subCategoryLabel: string;
   listingTypeId?: string;
-  listingIntent?: import("@shongre/contracts/taxonomy").TaxonomyV4ListingIntent;
+  listingIntent?: import("@shongre/contracts/taxonomy").TaxonomyV1ListingIntent;
   condition: ListingCondition;
   sellerId: string;
   /** Public seller facts projected by the listing API; never an auth profile. */

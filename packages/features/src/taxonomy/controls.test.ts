@@ -1,15 +1,15 @@
+import { recordedTaxonomyResponses } from "@shongre/contracts/testing/taxonomy-responses";
 import { describe, expect, it } from "vitest";
-import { getTaxonomyV4PublicBundle } from "@shongre/contracts/taxonomy-v4-public";
-import {
-  resolveMarketContext,
-  TaxonomyV4PublicResolver,
-} from "@shongre/contracts";
+import { getTaxonomyV1PublicBundle } from "@shongre/contracts/testing/taxonomy";
+import { resolveMarketContext } from "@shongre/contracts";
 import {
   resolveTaxonomyControl,
   resolveTaxonomyFieldState,
   reconcileTaxonomyValues,
   TAXONOMY_CONTROL_REGISTRY,
   validateTaxonomyValues,
+  buildTaxonomyOptionRequests,
+  mergeTaxonomyOptionPages,
 } from "./controls";
 
 const marketContext = resolveMarketContext({
@@ -22,9 +22,82 @@ const marketContext = resolveMarketContext({
   },
 });
 
-describe("taxonomy v4 shared controls", () => {
+describe("taxonomy v1 shared controls", () => {
+  it("intersects independent parent responses while retaining alternatives and empty-parent constraints", () => {
+    const schema = recordedTaxonomyResponses.resolve({
+      marketContext,
+      categoryIdentity: "vehicles.cars.city_cars",
+      listingTypeId: "vehicles.cars.city_cars.listing",
+      sellerType: "individual",
+      locale: "fr-FR",
+    });
+    const request = buildTaxonomyOptionRequests(schema, {
+      brand: "renault",
+    }).find((row) => row.attributeId === "model")!;
+    expect(request).toMatchObject({
+      parentAttributeId: "brand",
+      parentOptionId: "brand:renault",
+    });
+    const missing = buildTaxonomyOptionRequests(schema, {}).find(
+      (row) => row.attributeId === "model",
+    )!;
+    expect(missing.parentOptionId).toBeUndefined();
+    const options = recordedTaxonomyResponses.lookupOptions({
+      optionSetId: "model",
+      parentOptionId: "brand:renault",
+    }).items;
+    const selected = options[0];
+    const unrelated = { ...selected, id: "model:other", key: "other" };
+    const pages = [
+      { request, items: [selected] },
+      {
+        request: { ...request, parentOptionId: "brand:alternative" },
+        items: [unrelated],
+      },
+      {
+        request: { ...request, parentAttributeId: "second_parent" },
+        items: [selected],
+      },
+    ];
+    const merged = mergeTaxonomyOptionPages(pages);
+    expect(merged.model).toEqual([selected]);
+    expect(
+      mergeTaxonomyOptionPages([
+        ...pages,
+        {
+          request: {
+            ...request,
+            parentAttributeId: "missing_parent",
+            parentOptionId: undefined,
+          },
+          items: [],
+        },
+      ]).model,
+    ).toEqual([]);
+    expect(
+      reconcileTaxonomyValues({
+        schema,
+        sellerType: "individual",
+        values: { brand: "renault", model: selected.key },
+        optionsByAttribute: merged,
+      }).values.model,
+    ).toBe(selected.key);
+    expect(
+      reconcileTaxonomyValues({
+        schema,
+        sellerType: "individual",
+        values: { brand: "renault", model: unrelated.key },
+        optionsByAttribute: merged,
+      }).removed,
+    ).toContainEqual({ attributeId: "model", reason: "invalid_option" });
+    expect(
+      buildTaxonomyOptionRequests(schema, {
+        brand: ["renault", "volkswagen"],
+      }).filter((row) => row.attributeId === "model"),
+    ).toHaveLength(2);
+  });
   it("maps every compiler-accepted UI component", () => {
-    const bundle = getTaxonomyV4PublicBundle();
+    const bundle = getTaxonomyV1PublicBundle();
     const components = new Set(
       bundle.attributes.map((attribute) => attribute.uiComponent),
     );
@@ -42,9 +115,7 @@ describe("taxonomy v4 shared controls", () => {
   });
 
   it("computes conditional visibility and required state deterministically", () => {
-    const schema = new TaxonomyV4PublicResolver(
-      getTaxonomyV4PublicBundle(),
-    ).resolve({
+    const schema = recordedTaxonomyResponses.resolve({
       marketContext,
       categoryIdentity: "real_estate.rentals.apartments",
       listingTypeId: "real_estate.rentals.apartments.listing",
@@ -78,9 +149,7 @@ describe("taxonomy v4 shared controls", () => {
   });
 
   it("preserves compatible values and removes hidden or invalid dependent values", () => {
-    const schema = new TaxonomyV4PublicResolver(
-      getTaxonomyV4PublicBundle(),
-    ).resolve({
+    const schema = recordedTaxonomyResponses.resolve({
       marketContext,
       categoryIdentity: "real_estate.rentals.apartments",
       listingTypeId: "real_estate.rentals.apartments.listing",
@@ -109,7 +178,7 @@ describe("taxonomy v4 shared controls", () => {
   });
 
   it("clears a cascade value that is incompatible with the selected parent", () => {
-    const resolver = new TaxonomyV4PublicResolver(getTaxonomyV4PublicBundle());
+    const resolver = recordedTaxonomyResponses;
     const schema = resolver.resolve({
       marketContext,
       categoryIdentity: "vehicles.cars.city_cars",
@@ -136,9 +205,7 @@ describe("taxonomy v4 shared controls", () => {
   });
 
   it("validates required fields from bindings and dependency rules", () => {
-    const schema = new TaxonomyV4PublicResolver(
-      getTaxonomyV4PublicBundle(),
-    ).resolve({
+    const schema = recordedTaxonomyResponses.resolve({
       marketContext,
       categoryIdentity: "real_estate.rentals.apartments",
       listingTypeId: "real_estate.rentals.apartments.listing",

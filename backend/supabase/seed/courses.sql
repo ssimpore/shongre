@@ -1,4 +1,4 @@
--- Canonical, deterministic course catalogue seed for Shongre Education.
+-- Deterministic course business configuration seed for Shongre Education.
 -- Phase 2 flags stay false until market-specific legal/provider validation.
 
 INSERT INTO public.course_market_configs (
@@ -38,62 +38,6 @@ ON CONFLICT (market_code) DO UPDATE SET
   config_payload = EXCLUDED.config_payload,
   is_enabled = EXCLUDED.is_enabled,
   updated_at = NOW();
-
-WITH levels(id, label, sort_order) AS (
-  VALUES
-    ('primary', 'Primaire', 10),
-    ('middle_school', 'Collège', 20),
-    ('high_school', 'Lycée', 30),
-    ('higher_education', 'Études supérieures', 40),
-    ('adult', 'Adulte / Professionnel', 50)
-)
-INSERT INTO public.course_subject_levels (id, market_code, label, sort_order, is_active, public_payload)
-SELECT id, 'FR', label, sort_order, TRUE,
-  jsonb_build_object('id', id, 'label', label, 'sortOrder', sort_order, 'isActive', TRUE)
-FROM levels
-ON CONFLICT (id, market_code) DO UPDATE SET
-  label = EXCLUDED.label, sort_order = EXCLUDED.sort_order,
-  public_payload = EXCLUDED.public_payload, updated_at = NOW();
-
-WITH subjects(id, slug, label, sort_order) AS (
-  VALUES
-    ('subject_primary_support', 'primary-support', 'Soutien scolaire primaire', 10),
-    ('subject_secondary_support', 'secondary-support', 'Soutien scolaire secondaire', 20),
-    ('subject_mathematics', 'mathematics', 'Mathématiques', 30),
-    ('subject_physics_chemistry', 'physics-chemistry', 'Physique et chimie', 40),
-    ('subject_languages', 'languages', 'Langues', 50),
-    ('subject_french', 'french', 'Français', 60),
-    ('subject_computer_science', 'computer-science', 'Informatique et programmation', 70),
-    ('subject_data_ai', 'data-ai', 'Data et intelligence artificielle', 80),
-    ('subject_music', 'music', 'Musique', 90),
-    ('subject_arts', 'arts', 'Arts', 100),
-    ('subject_exam_preparation', 'exam-preparation', 'Préparation aux examens', 110),
-    ('subject_higher_education', 'higher-education', 'Études supérieures', 120),
-    ('subject_professional_skills', 'professional-skills', 'Compétences professionnelles', 130),
-    ('subject_sports_coaching', 'sports-coaching', 'Sport et coaching', 140),
-    ('subject_other', 'other', 'Autres matières', 150)
-)
-INSERT INTO public.course_subjects (
-  id, market_code, slug, label, sort_order, is_active, required_fields, public_payload
-)
-SELECT id, 'FR', slug, label, sort_order, TRUE,
-  '["title","description","levels","deliveryModes","pricing","availability"]'::jsonb,
-  jsonb_build_object(
-    'id', id, 'slug', slug, 'marketCode', 'FR', 'label', label,
-    'levelIds', '["primary","middle_school","high_school","higher_education","adult"]'::jsonb,
-    'sortOrder', sort_order, 'isActive', TRUE
-  )
-FROM subjects
-ON CONFLICT (id, market_code) DO UPDATE SET
-  slug = EXCLUDED.slug, label = EXCLUDED.label, sort_order = EXCLUDED.sort_order,
-  public_payload = EXCLUDED.public_payload, updated_at = NOW();
-
-INSERT INTO public.course_subject_allowed_levels (subject_id, level_id, market_code)
-SELECT subject.id, level.id, 'FR'
-FROM public.course_subjects subject
-CROSS JOIN public.course_subject_levels level
-WHERE subject.market_code = 'FR' AND level.market_code = 'FR'
-ON CONFLICT DO NOTHING;
 
 WITH entitlement_sets(id, entitlements) AS (
   VALUES

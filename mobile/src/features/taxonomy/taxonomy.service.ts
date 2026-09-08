@@ -1,60 +1,60 @@
 import {
-  type ResolveTaxonomyV4PublicInput,
-  type TaxonomyV4OptionPage,
-  type TaxonomyV4ResolvedSchema,
-  type TaxonomyV4TreeResponse,
-  taxonomyV4OptionPageSchema,
-  taxonomyV4ResolvedSchemaSchema,
-  taxonomyV4TreeResponseSchema,
+  type ResolveTaxonomyV1PublicInput,
+  type TaxonomyV1OptionPage,
+  type TaxonomyV1ResolvedSchema,
+  type TaxonomyV1TreeResponse,
+  taxonomyV1OptionPageSchema,
+  taxonomyV1ResolvedSchemaSchema,
+  taxonomyV1TreeResponseSchema,
 } from "@shongre/contracts";
 import { apiOperation } from "@/api/generated-api-operation";
 
 export interface MobileTaxonomyService {
   tree(input: {
-    marketContext: ResolveTaxonomyV4PublicInput["marketContext"];
+    marketContext: ResolveTaxonomyV1PublicInput["marketContext"];
     locale: string;
-  }): Promise<TaxonomyV4TreeResponse>;
+  }): Promise<TaxonomyV1TreeResponse>;
   resolve(
-    input: ResolveTaxonomyV4PublicInput,
-  ): Promise<TaxonomyV4ResolvedSchema>;
+    input: ResolveTaxonomyV1PublicInput,
+  ): Promise<TaxonomyV1ResolvedSchema>;
   lookupOptions(input: {
-    marketContext: ResolveTaxonomyV4PublicInput["marketContext"];
+    marketContext: ResolveTaxonomyV1PublicInput["marketContext"];
     optionSetId: string;
     taxonomyRevision?: number;
     parentOptionId?: string;
     query?: string;
     cursor?: string;
     limit?: number;
-  }): Promise<TaxonomyV4OptionPage>;
+  }): Promise<TaxonomyV1OptionPage>;
 }
 
 export class HttpMobileTaxonomyService implements MobileTaxonomyService {
   async tree(input: {
-    marketContext: ResolveTaxonomyV4PublicInput["marketContext"];
+    marketContext: ResolveTaxonomyV1PublicInput["marketContext"];
     locale: string;
-  }): Promise<TaxonomyV4TreeResponse> {
-    return taxonomyV4TreeResponseSchema.parse(
+  }): Promise<TaxonomyV1TreeResponse> {
+    return taxonomyV1TreeResponseSchema.parse(
       await apiOperation(
-        "getTaxonomyV4Tree",
-        { query: { locale: input.locale, version: "4.0.0" } },
+        "getTaxonomyV1Tree",
+        { query: { locale: input.locale, version: "v1" } },
         input.marketContext.countryCode ?? undefined,
       ),
     );
   }
 
   async resolve(
-    input: ResolveTaxonomyV4PublicInput,
-  ): Promise<TaxonomyV4ResolvedSchema> {
-    return taxonomyV4ResolvedSchemaSchema.parse(
+    input: ResolveTaxonomyV1PublicInput,
+  ): Promise<TaxonomyV1ResolvedSchema> {
+    return taxonomyV1ResolvedSchemaSchema.parse(
       await apiOperation(
-        "resolveTaxonomyV4PublicationSchema",
+        "resolveTaxonomyV1PublicationSchema",
         {
           query: {
             revision: input.taxonomyRevision,
             category: input.categoryIdentity,
             sellerType: input.sellerType,
             locale: input.locale,
-            version: (input.taxonomyVersion ?? "4.0.0") as "4.0.0",
+            version: (input.taxonomyVersion ?? "v1") as "v1",
             ...(input.listingTypeId
               ? { listingTypeId: input.listingTypeId }
               : {}),
@@ -67,22 +67,22 @@ export class HttpMobileTaxonomyService implements MobileTaxonomyService {
   }
 
   async lookupOptions(input: {
-    marketContext: ResolveTaxonomyV4PublicInput["marketContext"];
+    marketContext: ResolveTaxonomyV1PublicInput["marketContext"];
     optionSetId: string;
     taxonomyRevision?: number;
     parentOptionId?: string;
     query?: string;
     cursor?: string;
     limit?: number;
-  }): Promise<TaxonomyV4OptionPage> {
-    return taxonomyV4OptionPageSchema.parse(
+  }): Promise<TaxonomyV1OptionPage> {
+    return taxonomyV1OptionPageSchema.parse(
       await apiOperation(
-        "getTaxonomyV4Options",
+        "getTaxonomyV1Options",
         {
           path: { optionSetId: input.optionSetId },
           query: {
             revision: input.taxonomyRevision,
-            version: "4.0.0",
+            version: "v1",
             ...(input.parentOptionId
               ? { parentOptionId: input.parentOptionId }
               : {}),

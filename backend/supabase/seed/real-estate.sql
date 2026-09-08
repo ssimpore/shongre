@@ -1,4 +1,4 @@
--- Deterministic France catalogue for Shongre Immo. Prices, quotas, taxes and
+-- Deterministic France business configuration for Shongre Immo. Prices, quotas, taxes and
 -- entitlements are data, not UI constants. Paid execution stays provider-gated.
 
 INSERT INTO public.vertical_market_activations (
@@ -32,96 +32,6 @@ ON CONFLICT (market_code) DO UPDATE SET
   feature_flags = EXCLUDED.feature_flags,
   regulatory_content_version = EXCLUDED.regulatory_content_version,
   updated_at = NOW();
-
-WITH types(type, slug, label, description, icon_name, transactions, required, filters, sort_order) AS (
-  VALUES
-    ('apartment','appartements','Appartement','Studios et appartements','Building2',ARRAY['sale','long_term_rental','seasonal_rental','shared_accommodation'],ARRAY['price','livingArea','rooms','address','dpe'],ARRAY['price','livingArea','rooms','bedrooms','furnished','dpe','amenities'],10),
-    ('house','maisons','Maison','Maisons individuelles et villas','House',ARRAY['sale','long_term_rental','seasonal_rental','life_annuity'],ARRAY['price','livingArea','landArea','rooms','address','dpe'],ARRAY['price','livingArea','landArea','rooms','bedrooms','dpe','amenities'],20),
-    ('land','terrains','Terrain','Terrains constructibles et de loisirs','LandPlot',ARRAY['sale'],ARRAY['price','landArea','address'],ARRAY['price','landArea'],30),
-    ('parking_garage','parkings-garages','Parking ou garage','Stationnements et boxes','SquareParking',ARRAY['sale','long_term_rental'],ARRAY['price','address'],ARRAY['price'],40),
-    ('commercial','locaux-commerciaux','Local commercial','Commerces et locaux professionnels','Store',ARRAY['sale','long_term_rental'],ARRAY['price','livingArea','address'],ARRAY['price','livingArea'],50),
-    ('office','bureaux','Bureau','Bureaux et espaces de travail','BriefcaseBusiness',ARRAY['sale','long_term_rental'],ARRAY['price','livingArea','address'],ARRAY['price','livingArea'],60),
-    ('building','immeubles','Immeuble','Immeubles complets','Landmark',ARRAY['sale'],ARRAY['price','livingArea','address','dpe'],ARRAY['price','livingArea','dpe'],70),
-    ('new_development','programmes-neufs','Programme neuf','Programmes et lots neufs','Blocks',ARRAY['sale'],ARRAY['price','livingArea','address'],ARRAY['price','livingArea','rooms'],80),
-    ('holiday_rental','locations-vacances','Location saisonnière','Locations de courte durée','Palmtree',ARRAY['seasonal_rental'],ARRAY['price','livingArea','rooms','address'],ARRAY['price','livingArea','rooms','amenities'],90),
-    ('room_shared','chambres-colocation','Chambre ou colocation','Chambres et logements partagés','BedDouble',ARRAY['shared_accommodation','long_term_rental'],ARRAY['price','livingArea','address','furnished'],ARRAY['price','livingArea','furnished','amenities'],100),
-    ('other','autres-biens','Autre bien','Types administrables hors catalogue principal','CircleEllipsis',ARRAY['sale','long_term_rental','other'],ARRAY['price','address'],ARRAY['price'],110)
-)
-INSERT INTO public.real_estate_property_types (
-  type, market_code, slug, label, description, icon_name,
-  transaction_types, required_field_ids, filter_field_ids, schema_version,
-  is_active, sort_order
-)
-SELECT type, 'FR', slug, label, description, icon_name, transactions,
-  required, filters, 1, TRUE, sort_order
-FROM types
-ON CONFLICT (type, market_code) DO UPDATE SET
-  label = EXCLUDED.label,
-  description = EXCLUDED.description,
-  transaction_types = EXCLUDED.transaction_types,
-  required_field_ids = EXCLUDED.required_field_ids,
-  filter_field_ids = EXCLUDED.filter_field_ids,
-  is_active = EXCLUDED.is_active,
-  updated_at = NOW();
-
-WITH attrs(id, label, help_text, field_type, unit, privacy, required, filterable, sort_order, options) AS (
-  VALUES
-    ('livingArea','Surface habitable','Surface selon les règles applicables au marché.','number','m²','public',TRUE,TRUE,10,NULL::jsonb),
-    ('landArea','Surface du terrain',NULL,'number','m²','public',FALSE,TRUE,20,NULL::jsonb),
-    ('rooms','Nombre de pièces',NULL,'number',NULL,'public',TRUE,TRUE,30,NULL::jsonb),
-    ('bedrooms','Chambres',NULL,'number',NULL,'public',FALSE,TRUE,40,NULL::jsonb),
-    ('bathrooms','Salles de bain',NULL,'number',NULL,'public',FALSE,FALSE,50,NULL::jsonb),
-    ('furnished','Meublé',NULL,'boolean',NULL,'public',FALSE,TRUE,60,NULL::jsonb),
-    ('dpe','Classe DPE','Affichée uniquement lorsque requise et renseignée.','single_select',NULL,'public',FALSE,TRUE,70,'[{"value":"A","label":"A","sortOrder":10},{"value":"B","label":"B","sortOrder":20},{"value":"C","label":"C","sortOrder":30},{"value":"D","label":"D","sortOrder":40},{"value":"E","label":"E","sortOrder":50},{"value":"F","label":"F","sortOrder":60},{"value":"G","label":"G","sortOrder":70}]'::jsonb),
-    ('ges','Classe GES',NULL,'single_select',NULL,'public',FALSE,TRUE,80,'[{"value":"A","label":"A","sortOrder":10},{"value":"B","label":"B","sortOrder":20},{"value":"C","label":"C","sortOrder":30},{"value":"D","label":"D","sortOrder":40},{"value":"E","label":"E","sortOrder":50},{"value":"F","label":"F","sortOrder":60},{"value":"G","label":"G","sortOrder":70}]'::jsonb),
-    ('coOwnership','Copropriété',NULL,'boolean',NULL,'public',FALSE,TRUE,90,NULL::jsonb),
-    ('coOwnershipLots','Nombre de lots',NULL,'number',NULL,'public',FALSE,FALSE,100,NULL::jsonb),
-    ('riskInformationStatus','Information sur les risques',NULL,'single_select',NULL,'public',FALSE,FALSE,110,'[{"value":"available","label":"Disponible","sortOrder":10},{"value":"pending","label":"En attente","sortOrder":20},{"value":"not_applicable","label":"Non applicable","sortOrder":30}]'::jsonb),
-    ('professionalIdentity','Identification professionnelle','Référence déclarée par le professionnel.','text',NULL,'public',FALSE,FALSE,120,NULL::jsonb),
-    ('diagnostics','Diagnostics et documents','Les fichiers restent privés.','document_status',NULL,'reviewer_only',FALSE,FALSE,130,NULL::jsonb),
-    ('amenities','Équipements',NULL,'multi_select',NULL,'public',FALSE,TRUE,140,'[{"value":"lift","label":"Ascenseur","sortOrder":10},{"value":"balcony","label":"Balcon","sortOrder":20},{"value":"terrace","label":"Terrasse","sortOrder":30},{"value":"garden","label":"Jardin","sortOrder":40},{"value":"parking","label":"Parking","sortOrder":50},{"value":"cellar","label":"Cave","sortOrder":60},{"value":"accessible","label":"Accessible PMR","sortOrder":70}]'::jsonb)
-)
-INSERT INTO public.real_estate_attribute_definitions (
-  id, market_code, property_types, transaction_types, label, help_text,
-  field_type, unit, options, privacy, is_required, is_filterable,
-  is_active, schema_version, sort_order
-)
-SELECT id, 'FR', ARRAY['apartment','house','land','parking_garage','commercial','office','building','new_development','holiday_rental','room_shared','other'],
-  ARRAY['sale','long_term_rental','seasonal_rental','shared_accommodation','life_annuity','other'],
-  label, help_text, field_type, unit, options, privacy, required, filterable,
-  TRUE, 1, sort_order
-FROM attrs
-ON CONFLICT (id, market_code) DO UPDATE SET
-  label = EXCLUDED.label,
-  help_text = EXCLUDED.help_text,
-  options = EXCLUDED.options,
-  privacy = EXCLUDED.privacy,
-  is_required = EXCLUDED.is_required,
-  is_filterable = EXCLUDED.is_filterable,
-  updated_at = NOW();
-
-WITH rules(id, property_type, transaction_type, field_id, requirement, condition_payload) AS (
-  VALUES
-    ('10000000-0000-0000-0000-000000000001'::uuid,NULL::varchar,NULL::varchar,'dpe','required','{"path":"energy.dpeClass","excludedPropertyTypes":["land","parking_garage"]}'::jsonb),
-    ('10000000-0000-0000-0000-000000000002'::uuid,NULL::varchar,NULL::varchar,'ges','required','{"path":"energy.gesClass","excludedPropertyTypes":["land","parking_garage"]}'::jsonb),
-    ('10000000-0000-0000-0000-000000000003'::uuid,'apartment',NULL::varchar,'coOwnershipLots','required','{"path":"regulatory.coOwnershipLots","whenPath":"regulatory.coOwnershipApplicable","whenEquals":true}'::jsonb),
-    ('10000000-0000-0000-0000-000000000004'::uuid,NULL::varchar,NULL::varchar,'riskInformationStatus','required','{"path":"regulatory.riskInformationStatus"}'::jsonb),
-    ('10000000-0000-0000-0000-000000000005'::uuid,NULL::varchar,NULL::varchar,'professionalIdentity','required','{"path":"seller.professionalIdentity","sellerTypes":["agency","developer","property_manager"]}'::jsonb)
-)
-INSERT INTO public.real_estate_field_rules (
-  id, market_code, property_type, transaction_type, field_id, requirement,
-  condition_payload, schema_version, is_active
-)
-SELECT id, 'FR', property_type, transaction_type, field_id, requirement,
-  condition_payload, 1, TRUE
-FROM rules
-ON CONFLICT (id) DO UPDATE SET
-  property_type = EXCLUDED.property_type,
-  transaction_type = EXCLUDED.transaction_type,
-  field_id = EXCLUDED.field_id,
-  requirement = EXCLUDED.requirement,
-  condition_payload = EXCLUDED.condition_payload,
-  is_active = EXCLUDED.is_active;
 
 WITH offers(id,audience,kind,name,description,recommended,sort_order) AS (
   VALUES

@@ -11,7 +11,6 @@ import type {
   VehiclePublic,
   VehicleSearchQuery,
   VehicleSearchResponse,
-  VehicleTypeConfig,
 } from "@shongre/contracts/auto";
 
 export type AutoLeadDraft = Pick<
@@ -173,18 +172,4 @@ export interface AutoServiceContract {
       >
     >,
   ): Promise<AutoAddOn>;
-  updateVehicleType(
-    marketCode: string,
-    type: string,
-    patch: Partial<
-      Pick<
-        VehicleTypeConfig,
-        | "label"
-        | "description"
-        | "isActive"
-        | "requiredFieldIds"
-        | "filterFieldIds"
-      >
-    >,
-  ): Promise<VehicleTypeConfig>;
 }

@@ -1176,11 +1176,11 @@
       "attributes": {
         "brand": "peugeot",
         "model": "208",
-        "year": 2022,
+        "model_year": 2022,
         "mileage": 28500,
-        "fuel": "essence",
-        "gearbox": "manuelle",
-        "critair": "1"
+        "fuel_type": "petrol",
+        "transmission": "manual",
+        "critair_class": "1"
       },
       "status": "active",
       "createdAt": "2026-08-14T09:15:00Z",
@@ -1321,7 +1321,7 @@
         }
       ],
       "isOnlinePaymentAvailable": true,
-      "attributes": { "bikeType": "gravel", "frameSize": "m" },
+      "attributes": { "bikeType": "gravel", "size": "m" },
       "status": "active",
       "createdAt": "2026-08-13T18:20:00Z",
       "updatedAt": "2026-08-13T18:20:00Z",

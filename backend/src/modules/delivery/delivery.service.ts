@@ -1,4 +1,4 @@
-import { taxonomyV4Service } from "../taxonomy/taxonomy.runtime.js";
+import { taxonomyV1Service } from "../taxonomy/taxonomy.runtime.js";
 import {
   DELIVERY_FEATURE_FLAG_KEY,
   DELIVERY_TAXONOMY_CATEGORY_ID,
@@ -37,7 +37,6 @@ import {
   AnalyticsService,
   analyticsService,
 } from "../analytics/analytics.service.js";
-import {} from "../taxonomy/taxonomy.v4.service.js";
 
 const DELIVERY_ERROR_CODES = new Set<ErrorCode>([
   "DELIVERY_FEATURE_UNAVAILABLE",
@@ -108,7 +107,7 @@ export class DeliveryService {
   constructor(
     private readonly repository: DeliveryRepository = repositories.delivery,
     private readonly flags: FeatureFlagService = featureFlagService,
-    private readonly taxonomy = taxonomyV4Service,
+    private readonly taxonomy = taxonomyV1Service,
     private readonly orders: OrdersService = ordersService,
     private readonly analytics: AnalyticsService = analyticsService,
   ) {}
@@ -270,7 +269,7 @@ export class DeliveryService {
         message: "Le marché de recherche ne correspond pas au site utilisé.",
       });
     const result = await this.repository.searchPublic(query);
-    const taxonomy = (await taxonomyV4Service.snapshot()).projectIdentity(
+    const taxonomy = (await taxonomyV1Service.snapshot()).projectIdentity(
       DELIVERY_TAXONOMY_CATEGORY_ID,
     );
     return {
@@ -297,7 +296,7 @@ export class DeliveryService {
       });
     return {
       ...publicRequest(request),
-      taxonomy: (await taxonomyV4Service.snapshot()).projectIdentity(
+      taxonomy: (await taxonomyV1Service.snapshot()).projectIdentity(
         DELIVERY_TAXONOMY_CATEGORY_ID,
       ),
     };
@@ -327,7 +326,7 @@ export class DeliveryService {
       requestIds,
       marketCode,
     );
-    const taxonomy = (await taxonomyV4Service.snapshot()).projectIdentity(
+    const taxonomy = (await taxonomyV1Service.snapshot()).projectIdentity(
       DELIVERY_TAXONOMY_CATEGORY_ID,
     );
     return items.map((item) => ({ ...item, taxonomy }));
@@ -696,7 +695,7 @@ export class DeliveryService {
       );
       return {
         ...publicRequest(request),
-        taxonomy: (await taxonomyV4Service.snapshot()).projectIdentity(
+        taxonomy: (await taxonomyV1Service.snapshot()).projectIdentity(
           DELIVERY_TAXONOMY_CATEGORY_ID,
         ),
       };

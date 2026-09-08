@@ -17,14 +17,29 @@ function stableValue(value: unknown): unknown {
   return value;
 }
 
-export async function importBaselineCommercialCatalog() {
+export async function importBaselineCommercialCatalog({
+  onlyIfMissing = false,
+}: { onlyIfMissing?: boolean } = {}) {
   const catalog = monetizationCatalogSchema.parse(
     BASELINE_MONETIZATION_CATALOG,
   );
   const hash = createHash("sha256")
     .update(JSON.stringify(stableValue(catalog)))
     .digest("hex");
-  const client = getSupabaseAdminClient() as any;
+  const client = getSupabaseAdminClient();
+  if (onlyIfMissing) {
+    const { data, error } = await client
+      .from("commercial_configuration_versions")
+      .select("id")
+      .eq("rule_set_id", "commercial-core")
+      .eq("market_code", catalog.marketCode)
+      .limit(1);
+    if (error) throw error;
+    if (data?.length) {
+      console.log("Preserved the database-owned commercial catalogue.");
+      return;
+    }
+  }
   const { error } = await client.rpc("install_commercial_catalog_release", {
     p_catalog: catalog,
     p_snapshot_hash: hash,

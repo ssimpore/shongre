@@ -5,7 +5,6 @@ import {
   CheckCircle2,
   AlertTriangle,
   FileSpreadsheet,
-  Sparkles,
 } from "lucide-react";
 import { Modal } from "../../../design-system/primitives/Modal";
 import { Button } from "../../../design-system/primitives/Button";
@@ -73,11 +72,6 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({
     }
   };
 
-  const handleLoadSample = async () => {
-    const template = await services.listings.getBulkImportTemplate(locale);
-    await parseCsv(template.content);
-  };
-
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -131,6 +125,10 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({
         return t("publishing.publishWizard.titleTooLong", {
           max: PUBLICATION_CONSTRAINTS.title.maxLength,
         });
+      case "CATEGORY_INVALID":
+        return t("sellerworkspace.bulkImportModal.validationCategoryInvalid");
+      case "ATTRIBUTES_INVALID":
+        return t("sellerworkspace.bulkImportModal.validationAttributesInvalid");
       case "PRICE_INVALID":
         return t("sellerworkspace.bulkImportModal.validationPriceInvalid");
       default:
@@ -159,16 +157,6 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({
               leftIcon={<Download className="w-icon-sm h-icon-sm" />}
             >
               {t("sellerworkspace.bulkImportModal.modeleCsvVierge")}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleLoadSample}
-              leftIcon={
-                <Sparkles className="w-icon-sm h-icon-sm text-primary" />
-              }
-            >
-              {t("sellerworkspace.bulkImportModal.chargerUnExemple4Articles")}
             </Button>
           </div>
 

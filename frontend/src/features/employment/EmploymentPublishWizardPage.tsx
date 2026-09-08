@@ -41,6 +41,7 @@ import {
   OnboardingPreparationPage,
   Select,
   Skeleton,
+  StatePanel,
   Textarea,
 } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
@@ -163,6 +164,16 @@ const hydrateDraftData = (value: Record<string, unknown>): DraftData => {
 };
 
 export const EmploymentPublishWizardPage: React.FC = () => {
+  const { currentUser } = useAuth();
+  const { activeMarket } = useMarketLocation();
+  return (
+    <EmploymentPublicationEditor
+      key={`${currentUser?.id ?? "guest"}:${activeMarket.code}`}
+    />
+  );
+};
+
+const EmploymentPublicationEditor: React.FC = () => {
   const { t } = useTranslation();
   const { currentUser, can } = useAuth();
   const { activeMarket, currentLocale, convertMoney } = useMarketLocation();
@@ -171,6 +182,8 @@ export const EmploymentPublishWizardPage: React.FC = () => {
   const toast = useToast();
   const accountId = currentUser?.id || "guest";
   const [draftId, setDraftId] = useState("");
+  const [loadError, setLoadError] = useState(false);
+  const [retry, setRetry] = useState(0);
   const [catalog, setCatalog] = useState<EmploymentCatalog | null>(null);
   const [employers, setEmployers] = useState<EmployerSummary[]>([]);
   const [step, setStep] = useState<number>(
@@ -200,6 +213,7 @@ export const EmploymentPublishWizardPage: React.FC = () => {
   });
 
   useEffect(() => {
+    let active = true;
     Promise.all([
       services.employment.getCatalog(activeMarket.code),
       services.employment.getOrCreateDraft(
@@ -212,6 +226,7 @@ export const EmploymentPublishWizardPage: React.FC = () => {
         : Promise.resolve([]),
     ])
       .then(([nextCatalog, remote, availableEmployers]) => {
+        if (!active) return;
         const restoredData = hydrateDraftData(remote.data);
         setCatalog(nextCatalog);
         setEmployers(availableEmployers);
@@ -251,10 +266,13 @@ export const EmploymentPublishWizardPage: React.FC = () => {
         }
         hydrated.current = true;
       })
-      .catch(() =>
-        toast.error("Le parcours Emploi est momentanément indisponible."),
-      );
-  }, [accountId, activeMarket.code, can, searchParams, toast]);
+      .catch(() => {
+        if (active) setLoadError(true);
+      });
+    return () => {
+      active = false;
+    };
+  }, [accountId, activeMarket.code, can, searchParams, retry]);
 
   const labelFor = (id: string) =>
     catalog?.dictionaries.find((entry) => entry.id === id)?.label || id;
@@ -467,6 +485,25 @@ export const EmploymentPublishWizardPage: React.FC = () => {
     scrollToTop();
   };
 
+  if (loadError)
+    return (
+      <StatePanel
+        variant="error"
+        title="Formulaire indisponible"
+        description="Le catalogue ou le brouillon n’a pas pu être chargé."
+        action={
+          <Button
+            onClick={() => {
+              setLoadError(false);
+              setRetry((value) => value + 1);
+            }}
+          >
+            Réessayer
+          </Button>
+        }
+      />
+    );
+
   if (isPreparationVisible) {
     return (
       <OnboardingPreparationPage
@@ -561,14 +598,38 @@ export const EmploymentPublishWizardPage: React.FC = () => {
       <Select
         aria-label={label}
         value={String(data[key])}
-        onChange={(event) => update(key, event.target.value as never)}
+        onChange={(event) => {
+          const value = event.target.value;
+          if (key === "professionId") {
+            const compatible =
+              catalog.dictionaries.find(
+                (entry) => entry.id === data.specializationId,
+              )?.parentId === value;
+            setData((current) => ({
+              ...current,
+              professionId: value,
+              specializationId: compatible ? current.specializationId : "",
+            }));
+            if (data.specializationId && !compatible)
+              toast.info(
+                "Le métier a changé. Sélectionnez une spécialisation compatible.",
+              );
+          } else update(key, value as never);
+        }}
       >
         <option value="">Sélectionner</option>
-        {optionsFor(catalog, kind).map((entry) => (
-          <option key={entry.id} value={entry.id}>
-            {entry.label}
-          </option>
-        ))}
+        {optionsFor(catalog, kind)
+          .filter(
+            (entry) =>
+              kind !== "specialization" ||
+              !entry.parentId ||
+              entry.parentId === data.professionId,
+          )
+          .map((entry) => (
+            <option key={entry.id} value={entry.id}>
+              {entry.label}
+            </option>
+          ))}
       </Select>
     </FormField>
   );

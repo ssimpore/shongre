@@ -8,7 +8,7 @@ import type {
   MonetizationEntitlement,
   MonetizationProduct,
 } from "../schemas/monetization";
-import { CANONICAL_TAXONOMY_IDS } from "./taxonomy-catalog";
+import { CANONICAL_TAXONOMY_IDS } from "../taxonomy-domain-ids";
 import {
   isCommercialAudienceCompatible,
   monetizationCatalogSchema,

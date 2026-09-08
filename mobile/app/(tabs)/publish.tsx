@@ -7,11 +7,11 @@ import {
   publicationInputSchema,
   PUBLICATION_CONSTRAINTS,
   toApplicationListingCondition,
-  toTaxonomyV4ItemCondition,
+  toTaxonomyV1ItemCondition,
 } from "@shongre/contracts";
 import type {
-  TaxonomyV4ResolvedSchema,
-  TaxonomyV4TreeResponse,
+  TaxonomyV1ResolvedSchema,
+  TaxonomyV1TreeResponse,
 } from "@shongre/contracts";
 import {
   digitalFulfillmentVersionInputSchema,
@@ -20,7 +20,12 @@ import {
   type DigitalPolicyProjection,
   type DigitalSellerProfile,
 } from "@shongre/contracts/digital-products";
-import { resolveTaxonomyFieldState } from "@shongre/features";
+import {
+  buildTaxonomyOptionRequests,
+  mergeTaxonomyOptionPages,
+  reconcileTaxonomyValues,
+  resolveTaxonomyFieldState,
+} from "@shongre/features";
 import { Button } from "@/components/Button";
 import { FormField } from "@/components/FormField";
 import { Screen } from "@/components/Screen";
@@ -36,7 +41,7 @@ import { useAuth } from "@/features/auth/AuthProvider";
 import { listingsService } from "@/features/listings/listings.service";
 import { useMarket } from "@/features/market/MarketProvider";
 import { permissionsService } from "@/services/permissions/permissions.service";
-import { TaxonomyV4Field } from "@/features/taxonomy/TaxonomyV4Field";
+import { TaxonomyV1Field } from "@/features/taxonomy/TaxonomyV1Field";
 import { taxonomyService } from "@/features/taxonomy/taxonomy.service";
 import { mobileDigitalProductsService } from "@/features/digital-products/digital-products.service";
 import { mobileDigitalDraftStore } from "@/features/digital-products/digital-draft.store";
@@ -63,6 +68,15 @@ const NATIVE_MANAGED_FIELDS = new Set([
 ]);
 
 export default function PublishScreen() {
+  const { user } = useAuth();
+  const { activeMarket } = useMarket();
+  const key = `${user?.id ?? "guest"}:${activeMarket.code}`;
+  const [scope, setScope] = useState({ key, changed: false });
+  if (scope.key !== key) setScope({ key, changed: true });
+  return <PublicationEditor key={key} scopeChanged={scope.changed} />;
+}
+
+function PublicationEditor({ scopeChanged }: { scopeChanged: boolean }) {
   const router = useRouter();
   const { user } = useAuth();
   const { activeMarket, marketContext } = useMarket();
@@ -70,7 +84,7 @@ export default function PublishScreen() {
   const treeRequestKey = `${activeMarket.code}:${activeMarket.defaultLocale}:${treeRetry}`;
   const [treeResult, setTreeResult] = useState<{
     key: string;
-    tree: TaxonomyV4TreeResponse | null;
+    tree: TaxonomyV1TreeResponse | null;
     error: string;
   }>({ key: "", tree: null, error: "" });
   const taxonomyTree =
@@ -149,7 +163,7 @@ export default function PublishScreen() {
   const schemaRequestKey = `${activeMarket.code}:${activeMarket.defaultLocale}:${activeCategoryId}:${activeListingTypeId}:${sellerType}:${schemaRetry}`;
   const [schemaResult, setSchemaResult] = useState<{
     key: string;
-    schema: TaxonomyV4ResolvedSchema | null;
+    schema: TaxonomyV1ResolvedSchema | null;
     error: string;
   }>({ key: "", schema: null, error: "" });
   const resolvedSchema =
@@ -166,6 +180,11 @@ export default function PublishScreen() {
           : "ready";
   const [images, setImages] = useState<string[]>([]);
   const [error, setError] = useState("");
+  const [taxonomyNotice, setTaxonomyNotice] = useState(
+    scopeChanged
+      ? "Le compte ou le marché a changé. Choisissez la catégorie et renseignez les informations pour ce contexte."
+      : "",
+  );
   const [publishing, setPublishing] = useState(false);
   const [loadedDigitalContext, setLoadedDigitalContext] = useState<{
     scope: string;
@@ -273,11 +292,13 @@ export default function PublishScreen() {
 
   useEffect(() => {
     if (!user) return;
+    let active = true;
     const draftKey = `${user.id}:${activeMarket.code}`;
     restoredDigitalDraftKey.current = "";
     void mobileDigitalDraftStore
       .read(user.id, activeMarket.code)
       .then((draft) => {
+        if (!active) return;
         if (draft) {
           setFulfillmentMode(draft.fulfillmentMode);
           setProductVersion(draft.productVersion);
@@ -295,6 +316,9 @@ export default function PublishScreen() {
         }
         restoredDigitalDraftKey.current = draftKey;
       });
+    return () => {
+      active = false;
+    };
   }, [activeMarket.code, user]);
 
   useEffect(() => {
@@ -344,7 +368,7 @@ export default function PublishScreen() {
         listingTypeId: activeListingTypeId,
         sellerType,
         locale: activeMarket.defaultLocale,
-        taxonomyVersion: "4.0.0",
+        taxonomyVersion: "v1",
       })
       .then((schema) => {
         if (!active) return;
@@ -374,58 +398,46 @@ export default function PublishScreen() {
     sellerType,
   ]);
 
-  const cascadeRequests = useMemo(() => {
-    if (!resolvedSchema) return [];
-    return resolvedSchema.dependencyRules.flatMap((rule) => {
-      if (
-        rule.effect !== "FILTER_OPTIONS" ||
-        rule.trigger.kind !== "attribute"
-      ) {
-        return [];
-      }
-      const parent = resolvedSchema.attributes.find(
-        (field) => field.definition.id === rule.trigger.key,
-      );
-      const parentValue = taxonomyAttributes[rule.trigger.key];
-      if (!parent?.definition.optionSetId) return [];
-      return rule.targets.flatMap((target) => {
-        if (target.kind !== "attribute") return [];
-        const child = resolvedSchema.attributes.find(
-          (field) => field.definition.id === target.key,
-        );
-        if (!child?.definition.optionSetId) return [];
-        return [
-          {
-            attributeId: target.key,
-            optionSetId: child.definition.optionSetId,
-            parentOptionId:
-              parentValue === undefined ||
-              parentValue === null ||
-              parentValue === ""
-                ? undefined
-                : `${parent.definition.optionSetId}:${String(parentValue)}`,
-          },
-        ];
-      });
-    });
-  }, [resolvedSchema, taxonomyAttributes]);
-  const cascadeRequestKey = JSON.stringify(cascadeRequests);
+  const cascadeRequests = useMemo(
+    () => buildTaxonomyOptionRequests(resolvedSchema, taxonomyAttributes),
+    [resolvedSchema, taxonomyAttributes],
+  );
+  const cascadeRequestKey = JSON.stringify([
+    resolvedSchema?.revision,
+    resolvedSchema?.listingType.id,
+    activeMarket.code,
+    activeMarket.defaultLocale,
+    cascadeRequests,
+  ]);
   const [cascadeResult, setCascadeResult] = useState<{
     key: string;
     options: Record<
       string,
-      TaxonomyV4ResolvedSchema["attributes"][number]["options"]
+      TaxonomyV1ResolvedSchema["attributes"][number]["options"]
     >;
     failed: boolean;
   }>({ key: "", options: {}, failed: false });
-  const cascadeOptions =
-    cascadeResult.key === cascadeRequestKey ? cascadeResult.options : {};
+  const cascadeOptions = useMemo(
+    () => ({
+      ...(cascadeResult.key === cascadeRequestKey ? cascadeResult.options : {}),
+      ...Object.fromEntries(
+        cascadeRequests
+          .filter((request) => !request.parentOptionId)
+          .map((request) => [request.attributeId, []]),
+      ),
+    }),
+    [cascadeRequestKey, cascadeRequests, cascadeResult],
+  );
   const cascadeState = useMemo(
     () =>
       Object.fromEntries(
         cascadeRequests.map((request) => [
           request.attributeId,
-          !request.parentOptionId
+          cascadeRequests.some(
+            (other) =>
+              other.attributeId === request.attributeId &&
+              !other.parentOptionId,
+          )
             ? "empty"
             : cascadeResult.key !== cascadeRequestKey
               ? "loading"
@@ -465,29 +477,16 @@ export default function PublishScreen() {
         if (!active) return;
         setCascadeResult({
           key: cascadeRequestKey,
-          options: Object.fromEntries(
-            results.map(({ request, page }) => [
-              request.attributeId,
-              page.items,
-            ]),
-          ),
+          options: mergeTaxonomyOptionPages([
+            ...results.map(({ request, page }) => ({
+              request,
+              items: page.items,
+            })),
+            ...cascadeRequests
+              .filter((request) => !request.parentOptionId)
+              .map((request) => ({ request, items: [] })),
+          ]),
           failed: false,
-        });
-        setTaxonomyAttributes((current) => {
-          let changed = false;
-          const next = { ...current };
-          results.forEach(({ request, page }) => {
-            const selected = next[request.attributeId];
-            if (
-              selected !== undefined &&
-              selected !== "" &&
-              !page.items.some((option) => option.key === String(selected))
-            ) {
-              delete next[request.attributeId];
-              changed = true;
-            }
-          });
-          return changed ? next : current;
         });
       })
       .catch(() => {
@@ -499,6 +498,29 @@ export default function PublishScreen() {
       active = false;
     };
   }, [cascadeRequestKey, cascadeRequests, marketContext, resolvedSchema]);
+
+  const dependentOptionsPending = Object.values(cascadeState).some(
+    (state) => state === "loading" || state === "error",
+  );
+  // Adjust values before rendering fields from a completed schema/options response.
+  // The equality guard bounds reconciliation to actual selection changes.
+  if (resolvedSchema && !dependentOptionsPending) {
+    const reconciled = reconcileTaxonomyValues({
+      schema: resolvedSchema,
+      values: taxonomyAttributes,
+      sellerType,
+      optionsByAttribute: cascadeOptions,
+    });
+    if (
+      JSON.stringify(reconciled.values) !== JSON.stringify(taxonomyAttributes)
+    ) {
+      setTaxonomyAttributes(reconciled.values);
+      if (reconciled.removed.length)
+        setTaxonomyNotice(
+          "Certaines caractéristiques ne s’appliquent plus. Vérifiez vos choix avant de publier.",
+        );
+    }
+  }
 
   const choosePhoto = async () => {
     const outcome = await permissionsService.requestPhotoSelection();
@@ -655,7 +677,8 @@ export default function PublishScreen() {
       treeState !== "ready" ||
       !activeCategoryId ||
       !activeListingTypeId ||
-      !resolvedSchema
+      !resolvedSchema ||
+      dependentOptionsPending
     ) {
       setError(
         "Attendez le chargement des catégories et du formulaire avant de publier.",
@@ -666,7 +689,7 @@ export default function PublishScreen() {
     const acceptedAttributeIds = new Set(
       resolvedSchema?.attributes.map((field) => field.definition.id) ?? [],
     );
-    const canonicalCondition = toTaxonomyV4ItemCondition("good");
+    const canonicalCondition = toTaxonomyV1ItemCondition("good");
     const listingIntent = resolvedSchema?.listingType.intent;
     const managedAttributes: Record<string, unknown> = {
       listing_intent: listingIntent?.toLocaleLowerCase("en-US"),
@@ -810,7 +833,7 @@ export default function PublishScreen() {
       listingTypeId: activeListingTypeId,
       listingIntent: resolvedSchema?.listingType.intent,
       taxonomyRevision: resolvedSchema?.revision,
-      taxonomyVersion: "4.0.0",
+      taxonomyVersion: "v1",
       attributes: resolvedAttributes,
       marketCode: activeMarket.code,
       city: isDigital ? "" : city,
@@ -910,6 +933,9 @@ export default function PublishScreen() {
                 setCategoryId("");
                 setListingTypeId("");
                 setTaxonomyAttributes({});
+                setTaxonomyNotice(
+                  "La catégorie a changé. Renseignez les caractéristiques correspondantes.",
+                );
               }}
               style={styles.categoryButton}
             />
@@ -936,6 +962,9 @@ export default function PublishScreen() {
                 setCategoryId(category.id);
                 setListingTypeId("");
                 setTaxonomyAttributes({});
+                setTaxonomyNotice(
+                  "La catégorie a changé. Renseignez les caractéristiques correspondantes.",
+                );
               }}
               style={styles.categoryButton}
             />
@@ -963,6 +992,9 @@ export default function PublishScreen() {
               onPress={() => {
                 setListingTypeId(listingType.id);
                 setTaxonomyAttributes({});
+                setTaxonomyNotice(
+                  "Le type d’annonce a changé. Vérifiez les caractéristiques.",
+                );
               }}
               style={styles.categoryButton}
             />
@@ -1315,7 +1347,7 @@ export default function PublishScreen() {
               }
             : resolvedField;
         return (
-          <TaxonomyV4Field
+          <TaxonomyV1Field
             key={field.definition.id}
             field={controlledField}
             locale={activeMarket.defaultLocale}
@@ -1357,6 +1389,11 @@ export default function PublishScreen() {
         variant="secondary"
       />
 
+      {taxonomyNotice ? (
+        <Text accessibilityRole="alert" style={styles.subtitle}>
+          {taxonomyNotice}
+        </Text>
+      ) : null}
       {error ? (
         <Text accessibilityRole="alert" style={styles.error}>
           {error}
@@ -1367,7 +1404,10 @@ export default function PublishScreen() {
         onPress={publish}
         loading={publishing}
         disabled={
-          publishing || treeState !== "ready" || schemaState !== "ready"
+          publishing ||
+          treeState !== "ready" ||
+          schemaState !== "ready" ||
+          dependentOptionsPending
         }
       />
     </Screen>

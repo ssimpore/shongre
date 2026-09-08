@@ -1,25 +1,5 @@
-import React, { useEffect, useRef } from "react";
+import React from "react";
 import { ScrollRail } from "./ScrollRail";
-import { observeListingRailSizing } from "./listing-rail-sizing";
-
-/** Related rails share their largest natural card body without truncating copy. */
-export function ListingRailGroup({
-  children,
-  className = "",
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
-  const root = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (root.current) return observeListingRailSizing(root.current);
-  }, []);
-  return (
-    <div ref={root} className={`listing-rail-group ${className}`}>
-      {children}
-    </div>
-  );
-}
 
 export interface ListingRailProps {
   /** `ListingCard`s. Each is wrapped in the fixed-width, snapping rail cell. */
@@ -31,14 +11,8 @@ export interface ListingRailProps {
 }
 
 /**
- * The one way listings are laid out: a single row that scrolls sideways.
- *
- * Every listing surface used to size its cards from a grid column, so the same
- * card was 286px on the home, 189px in "Reprendre ou vous en etiez", 276px in
- * "Meilleures offres" and something else again in search — a different object
- * on every screen. The width now comes from `--spacing-listing-card` instead of
- * from whatever column the card happens to land in, which is what makes one row
- * possible: a rail has no columns to inherit from.
+ * Token-width cards share their row's natural height through flex alignment.
+ * Other rails size independently, so long titles cannot stretch another section.
  *
  * The mobile bleed (`-mx-4 px-4`) is the shared homepage rail pattern — it
  * lets the row run to the screen edge on a phone

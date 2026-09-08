@@ -2,8 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import type {
   MarketContext,
-  TaxonomyV4ListingIntent,
-  TaxonomyV4TreeResponse,
+  TaxonomyV1ListingIntent,
+  TaxonomyV1TreeResponse,
 } from "@shongre/contracts";
 import { services } from "../../api/client/service-registry";
 import type { PublicationDraftState } from "../../domains/publication/publication.types";
@@ -12,15 +12,15 @@ import {
   searchListingOnboardingCategories,
   selectTaxonomyPathNode,
 } from "../../domains/publication/publication.onboarding";
-import { toTaxonomyV4ListingIntent } from "../../domains/publication/publication.taxonomy-state";
+import { toTaxonomyV1ListingIntent } from "../../domains/publication/publication.taxonomy-state";
 import { DELIVERY_TAXONOMY_CATEGORY_ID } from "@shongre/contracts/delivery";
 
 export type ListingOnboardingLoadState =
   "loading" | "ready" | "empty" | "error";
 
 export function excludeExternallyManagedPublicationNodes(
-  response: TaxonomyV4TreeResponse,
-): TaxonomyV4TreeResponse {
+  response: TaxonomyV1TreeResponse,
+): TaxonomyV1TreeResponse {
   return {
     ...response,
     items: response.items.filter(
@@ -39,7 +39,7 @@ export function useListingOnboardingController(input: {
   draft: PublicationDraftState;
   setDraft: Dispatch<SetStateAction<PublicationDraftState>>;
 }) {
-  const [tree, setTree] = useState<TaxonomyV4TreeResponse | null>(null);
+  const [tree, setTree] = useState<TaxonomyV1TreeResponse | null>(null);
   const [state, setState] = useState<ListingOnboardingLoadState>("loading");
   const [error, setError] = useState("");
   const [retryKey, setRetryKey] = useState(0);
@@ -58,10 +58,10 @@ export function useListingOnboardingController(input: {
     setState("loading");
     setError("");
     void services.taxonomy
-      .getV4Tree({
+      .getV1Tree({
         marketContext: input.marketContext,
         locale: input.locale,
-        taxonomyVersion: "4.0.0",
+        taxonomyVersion: "v1",
       })
       .then((response) => {
         if (!active) return;
@@ -92,7 +92,7 @@ export function useListingOnboardingController(input: {
       tree
         ? buildListingOnboardingModel({
             tree,
-            intent: toTaxonomyV4ListingIntent(input.draft.listingIntent),
+            intent: toTaxonomyV1ListingIntent(input.draft.listingIntent),
             sellerType: input.sellerType,
             selectedPath: input.draft.taxonomyPath,
             selectedCategoryId: input.draft.taxonomyNodeId,
@@ -115,7 +115,7 @@ export function useListingOnboardingController(input: {
     const currentPath = input.draft.taxonomyPath ?? [];
     const intentAvailable = model.intents.some(
       (option) =>
-        option.intent === toTaxonomyV4ListingIntent(input.draft.listingIntent),
+        option.intent === toTaxonomyV1ListingIntent(input.draft.listingIntent),
     );
     if (!intentAvailable && model.intents[0]) {
       input.setDraft((current) => ({
@@ -137,7 +137,7 @@ export function useListingOnboardingController(input: {
         taxonomyPath: normalizedPath,
         taxonomyNodeId: model.isComplete ? (model.path.at(-1)?.id ?? "") : "",
         listingTypeId: model.selectedListingType?.id,
-        taxonomyVersion: model.isComplete ? "4.0.0" : undefined,
+        taxonomyVersion: model.isComplete ? "v1" : undefined,
       }));
     }
   }, [
@@ -150,7 +150,7 @@ export function useListingOnboardingController(input: {
   ]);
 
   const selectIntent = useCallback(
-    (intent: TaxonomyV4ListingIntent) => {
+    (intent: TaxonomyV1ListingIntent) => {
       input.setDraft((current) => ({
         ...current,
         listingIntent: intent,
@@ -169,7 +169,7 @@ export function useListingOnboardingController(input: {
       const taxonomyPath = selectTaxonomyPathNode({ model, depth, nodeId });
       const next = buildListingOnboardingModel({
         tree,
-        intent: toTaxonomyV4ListingIntent(input.draft.listingIntent),
+        intent: toTaxonomyV1ListingIntent(input.draft.listingIntent),
         sellerType: input.sellerType,
         selectedPath: taxonomyPath,
         locale: input.locale,
@@ -179,7 +179,7 @@ export function useListingOnboardingController(input: {
         taxonomyPath,
         taxonomyNodeId: next.isComplete ? (next.path.at(-1)?.id ?? "") : "",
         listingTypeId: next.selectedListingType?.id,
-        taxonomyVersion: next.isComplete ? "4.0.0" : undefined,
+        taxonomyVersion: next.isComplete ? "v1" : undefined,
       }));
       return next.isComplete;
     },
@@ -205,7 +205,7 @@ export function useListingOnboardingController(input: {
       }
       const next = buildListingOnboardingModel({
         tree,
-        intent: toTaxonomyV4ListingIntent(input.draft.listingIntent),
+        intent: toTaxonomyV1ListingIntent(input.draft.listingIntent),
         sellerType: input.sellerType,
         selectedPath: path,
         locale: input.locale,
@@ -215,7 +215,7 @@ export function useListingOnboardingController(input: {
         taxonomyPath: path,
         taxonomyNodeId: next.isComplete ? nodeId : "",
         listingTypeId: next.selectedListingType?.id,
-        taxonomyVersion: next.isComplete ? "4.0.0" : undefined,
+        taxonomyVersion: next.isComplete ? "v1" : undefined,
       }));
       return next.isComplete;
     },

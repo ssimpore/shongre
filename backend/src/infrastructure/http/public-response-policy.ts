@@ -9,7 +9,6 @@ const PUBLIC_RESPONSE_PROFILES = {
   getSolutions: "catalog",
   getSolutionBySlug: "catalog",
   getBusinessRulesCatalog: "catalog",
-  getEducationCatalog: "catalog",
   getCurrencyCatalog: "reference",
   getMarkets: "reference",
   getMarketsByCode: "reference",
@@ -33,7 +32,7 @@ export function resolvePublicResponseProfile(
     input.method !== "GET" ||
     // The existing invalidation adapter only emits tags. Until purge delivery is
     // acknowledged, taxonomy-derived responses must not serve stale revisions.
-    /Taxonomy|Listing|Home|Trending|Auto|Employment|RealEstate/.test(
+    /Taxonomy|Listing|Home|Trending|Auto|Employment|RealEstate|Education|Course|Tutor/.test(
       input.operationId,
     ) ||
     input.accessKind !== "public" ||
@@ -110,11 +109,16 @@ export function cacheInvalidationTags(input: {
   if (domain === "taxonomy")
     return [
       ...new Set(
-        ["taxonomy", "discovery", "auto", "employment", "real-estate"].flatMap(
-          (dependency) => [
-            `shongre-${normalizedTagPart(config.performance.publicCache.cacheKeyVersion)}-${dependency}`,
-          ],
-        ),
+        [
+          "taxonomy",
+          "discovery",
+          "auto",
+          "employment",
+          "real-estate",
+          "education",
+        ].flatMap((dependency) => [
+          `shongre-${normalizedTagPart(config.performance.publicCache.cacheKeyVersion)}-${dependency}`,
+        ]),
       ),
     ];
   return publicCacheTags(input);

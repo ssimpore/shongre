@@ -1,3 +1,4 @@
+import { routes } from "../../configuration/routes";
 import React, { useEffect, useState } from "react";
 import {
   AlertTriangle,
@@ -7,10 +8,7 @@ import {
   Flag,
   Settings2,
 } from "lucide-react";
-import type {
-  PropertyFieldRule,
-  RealEstateAdminOverview,
-} from "@shongre/contracts/real-estate";
+import type { RealEstateAdminOverview } from "@shongre/contracts/real-estate";
 import type { VerticalAddOn, VerticalOffer } from "@shongre/contracts/vertical";
 import { VerifiedIcon } from "@shongre/ui/web";
 import { services } from "../../api/client/service-registry";
@@ -19,7 +17,6 @@ import {
   Badge,
   Button,
   ScrollableRegion,
-  Select,
   Skeleton,
   Switch,
 } from "../../design-system";
@@ -153,27 +150,6 @@ export const AdminImmoPage: React.FC = () => {
     } catch {
       toast.error("L’option n’a pas pu être mise à jour.");
     }
-  };
-  const updateFieldRule = async (
-    rule: PropertyFieldRule,
-    patch: Partial<PropertyFieldRule>,
-  ) => {
-    if (!overview) return;
-    const updated = await services.realEstate.updateFieldRule(
-      activeMarket.code,
-      rule.id,
-      patch,
-    );
-    setOverview({
-      ...overview,
-      catalog: {
-        ...overview.catalog,
-        fieldRules: overview.catalog.fieldRules.map((item) =>
-          item.id === updated.id ? updated : item,
-        ),
-      },
-    });
-    toast.success("Règle de publication mise à jour.");
   };
 
   if (!overview) return <Skeleton className="h-168 rounded-card" />;
@@ -627,27 +603,15 @@ export const AdminImmoPage: React.FC = () => {
                     {type.schemaVersion}
                   </p>
                 </div>
-                <Switch
-                  checked={type.isActive}
-                  aria-label={`Activer ${type.label}`}
-                  onChange={async (checked) => {
-                    const updated =
-                      await services.realEstate.updatePropertyType(
-                        activeMarket.code,
-                        type.type,
-                        { isActive: checked },
-                      );
-                    setOverview({
-                      ...overview,
-                      catalog: {
-                        ...overview.catalog,
-                        propertyTypes: overview.catalog.propertyTypes.map(
-                          (item) => (item.type === type.type ? updated : item),
-                        ),
-                      },
-                    });
-                  }}
-                />
+                <a
+                  className="text-primary underline"
+                  href={routes.admin.taxonomy()}
+                >
+                  {type.isActive
+                    ? t("admin.taxonomy.referenceActive")
+                    : t("admin.taxonomy.referenceInactive")}{" "}
+                  · {t("admin.taxonomy.editReferences")}
+                </a>
               </div>
             ))}
           </div>
@@ -684,32 +648,23 @@ export const AdminImmoPage: React.FC = () => {
                   <td className="p-3">{rule.propertyType || "Tous"}</td>
                   <td className="p-3">{rule.transactionType || "Toutes"}</td>
                   <td className="p-3">
-                    <Select
-                      className="w-auto"
-                      size="compact"
-                      aria-label={`Exigence pour ${rule.fieldId}`}
-                      value={rule.requirement}
-                      onChange={(event) =>
-                        updateFieldRule(rule, {
-                          requirement: event.target
-                            .value as PropertyFieldRule["requirement"],
-                        })
-                      }
+                    <a
+                      className="text-primary underline"
+                      href={routes.admin.taxonomy()}
                     >
-                      <option value="required">Obligatoire</option>
-                      <option value="recommended">Recommandé</option>
-                      <option value="optional">Facultatif</option>
-                      <option value="hidden">Masqué</option>
-                    </Select>
+                      {rule.requirement} · {t("admin.taxonomy.editReferences")}
+                    </a>
                   </td>
                   <td className="p-3">
-                    <Switch
-                      checked={rule.isActive}
-                      onChange={(checked) =>
-                        updateFieldRule(rule, { isActive: checked })
-                      }
-                      aria-label={`Activer la règle ${rule.fieldId}`}
-                    />
+                    <a
+                      className="text-primary underline"
+                      href={routes.admin.taxonomy()}
+                    >
+                      {rule.isActive
+                        ? t("admin.taxonomy.referenceActive")
+                        : t("admin.taxonomy.referenceInactive")}{" "}
+                      · {t("admin.taxonomy.editReferences")}
+                    </a>
                   </td>
                 </tr>
               ))}

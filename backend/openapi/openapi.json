@@ -11271,100 +11271,6 @@
         "x-shongre-permission": "auto.admin.manage"
       }
     },
-    "/auto/admin/markets/{marketCode}/types/{type}": {
-      "patch": {
-        "operationId": "patchAutoAdminMarketsByMarketCodeTypesByType",
-        "tags": ["auto"],
-        "summary": "PATCH /auto/admin/markets/:marketCode/types/:type",
-        "parameters": [
-          {
-            "name": "marketCode",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "minLength": 1
-            }
-          },
-          {
-            "name": "type",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "minLength": 1
-            }
-          },
-          {
-            "$ref": "#/components/parameters/RequestId"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response.",
-            "headers": {
-              "X-Request-Id": {
-                "$ref": "#/components/headers/RequestId"
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/JsonValue"
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "403": {
-            "$ref": "#/components/responses/Forbidden"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
-          },
-          "409": {
-            "$ref": "#/components/responses/Conflict"
-          },
-          "422": {
-            "$ref": "#/components/responses/UnprocessableEntity"
-          },
-          "429": {
-            "$ref": "#/components/responses/TooManyRequests"
-          },
-          "500": {
-            "$ref": "#/components/responses/InternalError"
-          }
-        },
-        "security": [
-          {
-            "CookieAuth": []
-          },
-          {
-            "BearerAuth": []
-          }
-        ],
-        "x-shongre-access": "permission",
-        "x-shongre-source": "backend/src/modules/auto/api/auto.routes.ts",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {},
-                "additionalProperties": true
-              }
-            }
-          }
-        },
-        "x-shongre-permission": "auto.admin.manage"
-      }
-    },
     "/auto/admin/overview": {
       "get": {
         "operationId": "getAutoAdminOverview",
@@ -11466,7 +11372,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/JsonValue"
+                  "$ref": "#/components/schemas/AutoCatalog"
                 }
               }
             }
@@ -19386,100 +19292,6 @@
         "x-shongre-permission": "course.admin.manage"
       }
     },
-    "/education/admin/markets/{marketCode}/subjects/{subjectId}": {
-      "patch": {
-        "operationId": "patchEducationAdminMarketsByMarketCodeSubjectsBySubjectId",
-        "tags": ["education"],
-        "summary": "PATCH /education/admin/markets/:marketCode/subjects/:subjectId",
-        "parameters": [
-          {
-            "name": "marketCode",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "minLength": 1
-            }
-          },
-          {
-            "name": "subjectId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "minLength": 1
-            }
-          },
-          {
-            "$ref": "#/components/parameters/RequestId"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response.",
-            "headers": {
-              "X-Request-Id": {
-                "$ref": "#/components/headers/RequestId"
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/JsonValue"
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "403": {
-            "$ref": "#/components/responses/Forbidden"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
-          },
-          "409": {
-            "$ref": "#/components/responses/Conflict"
-          },
-          "422": {
-            "$ref": "#/components/responses/UnprocessableEntity"
-          },
-          "429": {
-            "$ref": "#/components/responses/TooManyRequests"
-          },
-          "500": {
-            "$ref": "#/components/responses/InternalError"
-          }
-        },
-        "security": [
-          {
-            "CookieAuth": []
-          },
-          {
-            "BearerAuth": []
-          }
-        ],
-        "x-shongre-access": "permission",
-        "x-shongre-source": "backend/src/modules/courses/api/courses.routes.ts",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {},
-                "additionalProperties": true
-              }
-            }
-          }
-        },
-        "x-shongre-permission": "course.admin.manage"
-      }
-    },
     "/education/bookings": {
       "post": {
         "operationId": "postEducationBookings",
@@ -19592,7 +19404,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/JsonValue"
+                  "$ref": "#/components/schemas/CourseCatalog"
                 }
               }
             }
@@ -20352,7 +20164,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/JsonValue"
+                  "$ref": "#/components/schemas/TutorSearchResponse"
                 }
               }
             }
@@ -20481,6 +20293,9 @@
           },
           {
             "$ref": "#/components/parameters/RequestId"
+          },
+          {
+            "$ref": "#/components/parameters/MarketContext"
           }
         ],
         "responses": {
@@ -22033,7 +21848,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/JsonValue"
+                  "$ref": "#/components/schemas/EmploymentCatalog"
                 }
               }
             }
@@ -25802,7 +25617,10 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/JsonValue"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BulkListingImportRow"
+                  }
                 }
               }
             }
@@ -25847,9 +25665,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "properties": {},
-                "additionalProperties": true
+                "$ref": "#/components/schemas/BulkListingImportParse"
               }
             }
           }
@@ -25879,7 +25695,10 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/JsonValue"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PublicListing"
+                  }
                 }
               }
             }
@@ -25924,9 +25743,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "properties": {},
-                "additionalProperties": true
+                "$ref": "#/components/schemas/BulkListingImportPublish"
               }
             }
           }
@@ -25956,7 +25773,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/JsonValue"
+                  "$ref": "#/components/schemas/BulkListingImportTemplate"
                 }
               }
             }
@@ -26112,11 +25929,11 @@
                         "minLength": 1
                       },
                       "intent": {
-                        "$ref": "#/components/schemas/TaxonomyV4ListingIntent"
+                        "$ref": "#/components/schemas/TaxonomyV1ListingIntent"
                       },
                       "taxonomyVersion": {
                         "type": "string",
-                        "const": "4.0.0"
+                        "const": "v1"
                       },
                       "marketCode": {
                         "$ref": "#/components/schemas/MarketCode"
@@ -32276,100 +32093,6 @@
         "x-shongre-permission": "immo.admin.manage"
       }
     },
-    "/real-estate/admin/markets/{marketCode}/field-rules/{ruleId}": {
-      "patch": {
-        "operationId": "patchRealEstateAdminMarketsByMarketCodeFieldRulesByRuleId",
-        "tags": ["real-estate"],
-        "summary": "PATCH /real-estate/admin/markets/:marketCode/field-rules/:ruleId",
-        "parameters": [
-          {
-            "name": "marketCode",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "minLength": 1
-            }
-          },
-          {
-            "name": "ruleId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "minLength": 1
-            }
-          },
-          {
-            "$ref": "#/components/parameters/RequestId"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response.",
-            "headers": {
-              "X-Request-Id": {
-                "$ref": "#/components/headers/RequestId"
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/JsonValue"
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "403": {
-            "$ref": "#/components/responses/Forbidden"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
-          },
-          "409": {
-            "$ref": "#/components/responses/Conflict"
-          },
-          "422": {
-            "$ref": "#/components/responses/UnprocessableEntity"
-          },
-          "429": {
-            "$ref": "#/components/responses/TooManyRequests"
-          },
-          "500": {
-            "$ref": "#/components/responses/InternalError"
-          }
-        },
-        "security": [
-          {
-            "CookieAuth": []
-          },
-          {
-            "BearerAuth": []
-          }
-        ],
-        "x-shongre-access": "permission",
-        "x-shongre-source": "backend/src/modules/real-estate/api/real-estate.routes.ts",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {},
-                "additionalProperties": true
-              }
-            }
-          }
-        },
-        "x-shongre-permission": "immo.admin.manage"
-      }
-    },
     "/real-estate/admin/markets/{marketCode}/offers/{offerId}": {
       "patch": {
         "operationId": "patchRealEstateAdminMarketsByMarketCodeOffersByOfferId",
@@ -32387,100 +32110,6 @@
           },
           {
             "name": "offerId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "minLength": 1
-            }
-          },
-          {
-            "$ref": "#/components/parameters/RequestId"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response.",
-            "headers": {
-              "X-Request-Id": {
-                "$ref": "#/components/headers/RequestId"
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/JsonValue"
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "403": {
-            "$ref": "#/components/responses/Forbidden"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
-          },
-          "409": {
-            "$ref": "#/components/responses/Conflict"
-          },
-          "422": {
-            "$ref": "#/components/responses/UnprocessableEntity"
-          },
-          "429": {
-            "$ref": "#/components/responses/TooManyRequests"
-          },
-          "500": {
-            "$ref": "#/components/responses/InternalError"
-          }
-        },
-        "security": [
-          {
-            "CookieAuth": []
-          },
-          {
-            "BearerAuth": []
-          }
-        ],
-        "x-shongre-access": "permission",
-        "x-shongre-source": "backend/src/modules/real-estate/api/real-estate.routes.ts",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {},
-                "additionalProperties": true
-              }
-            }
-          }
-        },
-        "x-shongre-permission": "immo.admin.manage"
-      }
-    },
-    "/real-estate/admin/markets/{marketCode}/types/{type}": {
-      "patch": {
-        "operationId": "patchRealEstateAdminMarketsByMarketCodeTypesByType",
-        "tags": ["real-estate"],
-        "summary": "PATCH /real-estate/admin/markets/:marketCode/types/:type",
-        "parameters": [
-          {
-            "name": "marketCode",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "minLength": 1
-            }
-          },
-          {
-            "name": "type",
             "in": "path",
             "required": true,
             "schema": {
@@ -33096,7 +32725,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/JsonValue"
+                  "$ref": "#/components/schemas/RealEstateCatalog"
                 }
               }
             }
@@ -35011,65 +34640,11 @@
         "x-shongre-source": "backend/src/modules/support/api/support.routes.ts"
       }
     },
-    "/taxonomy/header-navigation": {
+    "/taxonomy/v1/tree": {
       "get": {
-        "operationId": "getTaxonomyHeaderNavigation",
+        "operationId": "getTaxonomyV1Tree",
         "tags": ["taxonomy"],
-        "summary": "Get the active ordered header categories for an explicit market",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/MarketContext"
-          },
-          {
-            "$ref": "#/components/parameters/RequestId"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Active root categories selected for the public market header.",
-            "headers": {
-              "X-Request-Id": {
-                "$ref": "#/components/headers/RequestId"
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TaxonomyHeaderNavigationConfiguration"
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
-          },
-          "409": {
-            "$ref": "#/components/responses/Conflict"
-          },
-          "422": {
-            "$ref": "#/components/responses/UnprocessableEntity"
-          },
-          "429": {
-            "$ref": "#/components/responses/TooManyRequests"
-          },
-          "500": {
-            "$ref": "#/components/responses/InternalError"
-          }
-        },
-        "security": [],
-        "x-shongre-access": "public",
-        "x-shongre-deny-staff-marketplace": false,
-        "x-shongre-source": "backend/src/modules/taxonomy/api/taxonomy.routes.ts"
-      }
-    },
-    "/taxonomy/v4/tree": {
-      "get": {
-        "operationId": "getTaxonomyV4Tree",
-        "tags": ["taxonomy"],
-        "summary": "Get the published taxonomy v4 tree for an explicit market",
+        "summary": "Get the published taxonomy v1 tree for an explicit market",
         "parameters": [
           {
             "$ref": "#/components/parameters/MarketContext"
@@ -35090,7 +34665,7 @@
             "required": false,
             "schema": {
               "type": "string",
-              "enum": ["4.0.0"]
+              "enum": ["v1"]
             }
           },
           {
@@ -35108,7 +34683,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TaxonomyV4TreeResponse"
+                  "$ref": "#/components/schemas/TaxonomyV1TreeResponse"
                 }
               }
             }
@@ -35138,9 +34713,9 @@
         "x-shongre-source": "backend/src/modules/taxonomy/api/taxonomy.routes.ts"
       }
     },
-    "/taxonomy/v4/resolve": {
+    "/taxonomy/v1/resolve": {
       "get": {
-        "operationId": "resolveTaxonomyV4PublicationSchema",
+        "operationId": "resolveTaxonomyV1PublicationSchema",
         "tags": ["taxonomy"],
         "summary": "Resolve the publication and presentation schema for one listing type",
         "parameters": [
@@ -35173,7 +34748,7 @@
             "in": "query",
             "required": false,
             "schema": {
-              "$ref": "#/components/schemas/TaxonomyV4ListingIntent"
+              "$ref": "#/components/schemas/TaxonomyV1ListingIntent"
             }
           },
           {
@@ -35215,7 +34790,7 @@
             "required": false,
             "schema": {
               "type": "string",
-              "enum": ["4.0.0"]
+              "enum": ["v1"]
             }
           },
           {
@@ -35243,7 +34818,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TaxonomyV4ResolvedSchema"
+                  "$ref": "#/components/schemas/TaxonomyV1ResolvedSchema"
                 }
               }
             }
@@ -35273,9 +34848,9 @@
         "x-shongre-source": "backend/src/modules/taxonomy/api/taxonomy.routes.ts"
       }
     },
-    "/taxonomy/v4/options/{optionSetId}": {
+    "/taxonomy/v1/options/{optionSetId}": {
       "get": {
-        "operationId": "getTaxonomyV4Options",
+        "operationId": "getTaxonomyV1Options",
         "tags": ["taxonomy"],
         "summary": "Look up a bounded page of options for autocomplete or a cascade",
         "parameters": [
@@ -35348,7 +34923,7 @@
             "required": false,
             "schema": {
               "type": "string",
-              "enum": ["4.0.0"]
+              "enum": ["v1"]
             }
           },
           {
@@ -35376,443 +34951,13 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TaxonomyV4OptionPage"
+                  "$ref": "#/components/schemas/TaxonomyV1OptionPage"
                 }
               }
             }
           },
           "400": {
             "$ref": "#/components/responses/BadRequest"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
-          },
-          "409": {
-            "$ref": "#/components/responses/Conflict"
-          },
-          "422": {
-            "$ref": "#/components/responses/UnprocessableEntity"
-          },
-          "429": {
-            "$ref": "#/components/responses/TooManyRequests"
-          },
-          "500": {
-            "$ref": "#/components/responses/InternalError"
-          }
-        },
-        "security": [],
-        "x-shongre-access": "public",
-        "x-shongre-deny-staff-marketplace": false,
-        "x-shongre-source": "backend/src/modules/taxonomy/api/taxonomy.routes.ts"
-      }
-    },
-    "/taxonomy/nodes/{id}": {
-      "get": {
-        "operationId": "getTaxonomyNodesById",
-        "tags": ["taxonomy"],
-        "summary": "GET /taxonomy/nodes/:id",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "minLength": 1
-            }
-          },
-          {
-            "$ref": "#/components/parameters/RequestId"
-          },
-          {
-            "$ref": "#/components/parameters/MarketContext"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response.",
-            "headers": {
-              "X-Request-Id": {
-                "$ref": "#/components/headers/RequestId"
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "oneOf": [
-                    {
-                      "$ref": "#/components/schemas/TaxonomyLegacyNode"
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ]
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "403": {
-            "$ref": "#/components/responses/Forbidden"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
-          },
-          "409": {
-            "$ref": "#/components/responses/Conflict"
-          },
-          "422": {
-            "$ref": "#/components/responses/UnprocessableEntity"
-          },
-          "429": {
-            "$ref": "#/components/responses/TooManyRequests"
-          },
-          "500": {
-            "$ref": "#/components/responses/InternalError"
-          }
-        },
-        "security": [],
-        "x-shongre-access": "public",
-        "x-shongre-deny-staff-marketplace": false,
-        "x-shongre-source": "backend/src/modules/taxonomy/api/taxonomy.routes.ts"
-      }
-    },
-    "/taxonomy/nodes/{id}/attributes": {
-      "get": {
-        "operationId": "getTaxonomyNodesByIdAttributes",
-        "tags": ["taxonomy"],
-        "summary": "GET /taxonomy/nodes/:id/attributes",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "minLength": 1
-            }
-          },
-          {
-            "$ref": "#/components/parameters/RequestId"
-          },
-          {
-            "$ref": "#/components/parameters/MarketContext"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response.",
-            "headers": {
-              "X-Request-Id": {
-                "$ref": "#/components/headers/RequestId"
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/TaxonomyLegacyAttribute"
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "403": {
-            "$ref": "#/components/responses/Forbidden"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
-          },
-          "409": {
-            "$ref": "#/components/responses/Conflict"
-          },
-          "422": {
-            "$ref": "#/components/responses/UnprocessableEntity"
-          },
-          "429": {
-            "$ref": "#/components/responses/TooManyRequests"
-          },
-          "500": {
-            "$ref": "#/components/responses/InternalError"
-          }
-        },
-        "security": [],
-        "x-shongre-access": "public",
-        "x-shongre-deny-staff-marketplace": false,
-        "x-shongre-source": "backend/src/modules/taxonomy/api/taxonomy.routes.ts"
-      }
-    },
-    "/taxonomy/nodes/{id}/children": {
-      "get": {
-        "operationId": "getTaxonomyNodesByIdChildren",
-        "tags": ["taxonomy"],
-        "summary": "GET /taxonomy/nodes/:id/children",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "minLength": 1
-            }
-          },
-          {
-            "$ref": "#/components/parameters/RequestId"
-          },
-          {
-            "$ref": "#/components/parameters/MarketContext"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response.",
-            "headers": {
-              "X-Request-Id": {
-                "$ref": "#/components/headers/RequestId"
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/TaxonomyLegacyNode"
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "403": {
-            "$ref": "#/components/responses/Forbidden"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
-          },
-          "409": {
-            "$ref": "#/components/responses/Conflict"
-          },
-          "422": {
-            "$ref": "#/components/responses/UnprocessableEntity"
-          },
-          "429": {
-            "$ref": "#/components/responses/TooManyRequests"
-          },
-          "500": {
-            "$ref": "#/components/responses/InternalError"
-          }
-        },
-        "security": [],
-        "x-shongre-access": "public",
-        "x-shongre-deny-staff-marketplace": false,
-        "x-shongre-source": "backend/src/modules/taxonomy/api/taxonomy.routes.ts"
-      }
-    },
-    "/taxonomy/root": {
-      "get": {
-        "operationId": "getTaxonomyRoot",
-        "tags": ["taxonomy"],
-        "summary": "GET /taxonomy/root",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/RequestId"
-          },
-          {
-            "$ref": "#/components/parameters/MarketContext"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response.",
-            "headers": {
-              "X-Request-Id": {
-                "$ref": "#/components/headers/RequestId"
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/TaxonomyLegacyCategory"
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "403": {
-            "$ref": "#/components/responses/Forbidden"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
-          },
-          "409": {
-            "$ref": "#/components/responses/Conflict"
-          },
-          "422": {
-            "$ref": "#/components/responses/UnprocessableEntity"
-          },
-          "429": {
-            "$ref": "#/components/responses/TooManyRequests"
-          },
-          "500": {
-            "$ref": "#/components/responses/InternalError"
-          }
-        },
-        "security": [],
-        "x-shongre-access": "public",
-        "x-shongre-deny-staff-marketplace": false,
-        "x-shongre-source": "backend/src/modules/taxonomy/api/taxonomy.routes.ts"
-      }
-    },
-    "/taxonomy/search-filters": {
-      "get": {
-        "operationId": "getTaxonomySearchFilters",
-        "tags": ["taxonomy"],
-        "summary": "GET /taxonomy/search-filters",
-        "parameters": [
-          {
-            "name": "nodeId",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "$ref": "#/components/parameters/RequestId"
-          },
-          {
-            "$ref": "#/components/parameters/MarketContext"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response.",
-            "headers": {
-              "X-Request-Id": {
-                "$ref": "#/components/headers/RequestId"
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/TaxonomyLegacySearchFilter"
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "403": {
-            "$ref": "#/components/responses/Forbidden"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
-          },
-          "409": {
-            "$ref": "#/components/responses/Conflict"
-          },
-          "422": {
-            "$ref": "#/components/responses/UnprocessableEntity"
-          },
-          "429": {
-            "$ref": "#/components/responses/TooManyRequests"
-          },
-          "500": {
-            "$ref": "#/components/responses/InternalError"
-          }
-        },
-        "security": [],
-        "x-shongre-access": "public",
-        "x-shongre-deny-staff-marketplace": false,
-        "x-shongre-source": "backend/src/modules/taxonomy/api/taxonomy.routes.ts"
-      }
-    },
-    "/taxonomy/slug/{slug}": {
-      "get": {
-        "operationId": "getTaxonomySlugBySlug",
-        "tags": ["taxonomy"],
-        "summary": "GET /taxonomy/slug/:slug",
-        "parameters": [
-          {
-            "name": "slug",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "minLength": 1
-            }
-          },
-          {
-            "$ref": "#/components/parameters/RequestId"
-          },
-          {
-            "$ref": "#/components/parameters/MarketContext"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response.",
-            "headers": {
-              "X-Request-Id": {
-                "$ref": "#/components/headers/RequestId"
-              }
-            },
-            "content": {
-              "application/json": {
-                "schema": {
-                  "oneOf": [
-                    {
-                      "$ref": "#/components/schemas/TaxonomyLegacyNode"
-                    },
-                    {
-                      "type": "null"
-                    }
-                  ]
-                }
-              }
-            }
-          },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "403": {
-            "$ref": "#/components/responses/Forbidden"
           },
           "404": {
             "$ref": "#/components/responses/NotFound"
@@ -39342,11 +38487,11 @@
               }
             }
           },
-          "500": {
-            "$ref": "#/components/responses/InternalError"
-          },
           "404": {
             "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
           }
         },
         "security": [],
@@ -39377,11 +38522,11 @@
               }
             }
           },
-          "500": {
-            "$ref": "#/components/responses/InternalError"
-          },
           "404": {
             "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
           }
         },
         "security": [],
@@ -39461,6 +38606,9 @@
           "403": {
             "$ref": "#/components/responses/Forbidden"
           },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
           "422": {
             "$ref": "#/components/responses/UnprocessableEntity"
           },
@@ -39469,9 +38617,6 @@
           },
           "500": {
             "$ref": "#/components/responses/InternalError"
-          },
-          "409": {
-            "$ref": "#/components/responses/Conflict"
           }
         },
         "security": [
@@ -39597,6 +38742,9 @@
           "403": {
             "$ref": "#/components/responses/Forbidden"
           },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
           "422": {
             "$ref": "#/components/responses/UnprocessableEntity"
           },
@@ -39605,9 +38753,6 @@
           },
           "500": {
             "$ref": "#/components/responses/InternalError"
-          },
-          "409": {
-            "$ref": "#/components/responses/Conflict"
           }
         },
         "security": [
@@ -39809,6 +38954,9 @@
           "403": {
             "$ref": "#/components/responses/Forbidden"
           },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
           "422": {
             "$ref": "#/components/responses/UnprocessableEntity"
           },
@@ -39817,9 +38965,6 @@
           },
           "500": {
             "$ref": "#/components/responses/InternalError"
-          },
-          "409": {
-            "$ref": "#/components/responses/Conflict"
           }
         },
         "security": [
@@ -39833,6 +38978,270 @@
         "x-shongre-access": "permission",
         "x-shongre-permission": "taxonomy.manage",
         "x-shongre-source": "backend/src/modules/taxonomy/api/taxonomy-admin.routes.ts"
+      }
+    },
+    "/taxonomy/v1/header-navigation": {
+      "get": {
+        "operationId": "getTaxonomyHeaderNavigation",
+        "tags": ["taxonomy"],
+        "summary": "Get the active ordered header categories for an explicit market",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/MarketContext"
+          },
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Active root categories selected for the public market header.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaxonomyHeaderNavigationConfiguration"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [],
+        "x-shongre-access": "public",
+        "x-shongre-deny-staff-marketplace": false,
+        "x-shongre-source": "backend/src/modules/taxonomy/api/taxonomy.routes.ts"
+      }
+    },
+    "/taxonomy/v1/nodes/{id}": {
+      "get": {
+        "operationId": "getTaxonomyNodesById",
+        "tags": ["taxonomy"],
+        "summary": "GET /taxonomy/nodes/:id",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "$ref": "#/components/parameters/RequestId"
+          },
+          {
+            "$ref": "#/components/parameters/MarketContext"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/TaxonomyV1CategoryLookup"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [],
+        "x-shongre-access": "public",
+        "x-shongre-deny-staff-marketplace": false,
+        "x-shongre-source": "backend/src/modules/taxonomy/api/taxonomy.routes.ts"
+      }
+    },
+    "/taxonomy/v1/root": {
+      "get": {
+        "operationId": "getTaxonomyRoot",
+        "tags": ["taxonomy"],
+        "summary": "GET /taxonomy/root",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RequestId"
+          },
+          {
+            "$ref": "#/components/parameters/MarketContext"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TaxonomyV1CategorySummary"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [],
+        "x-shongre-access": "public",
+        "x-shongre-deny-staff-marketplace": false,
+        "x-shongre-source": "backend/src/modules/taxonomy/api/taxonomy.routes.ts"
+      }
+    },
+    "/taxonomy/v1/search-filters": {
+      "get": {
+        "operationId": "getTaxonomySearchFilters",
+        "tags": ["taxonomy"],
+        "summary": "GET /taxonomy/search-filters",
+        "parameters": [
+          {
+            "name": "nodeId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/RequestId"
+          },
+          {
+            "$ref": "#/components/parameters/MarketContext"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TaxonomyV1SearchFilter"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [],
+        "x-shongre-access": "public",
+        "x-shongre-deny-staff-marketplace": false,
+        "x-shongre-source": "backend/src/modules/taxonomy/api/taxonomy.routes.ts"
       }
     }
   },
@@ -46366,7 +45775,7 @@
             "minLength": 1
           },
           "listingIntent": {
-            "$ref": "#/components/schemas/TaxonomyV4ListingIntent"
+            "$ref": "#/components/schemas/TaxonomyV1ListingIntent"
           },
           "title": {
             "type": "string",
@@ -46873,7 +46282,7 @@
           }
         }
       },
-      "TaxonomyV4LocalizedLabels": {
+      "TaxonomyV1LocalizedLabels": {
         "type": "object",
         "description": "Localized domain labels keyed by BCP 47 locale. French is always present.",
         "required": ["fr-FR"],
@@ -46888,7 +46297,7 @@
           "minLength": 1
         }
       },
-      "TaxonomyV4LocalizedShortLabels": {
+      "TaxonomyV1LocalizedShortLabels": {
         "type": "object",
         "description": "Localized compact category labels keyed by BCP 47 locale. French is always present and each value is limited to 28 characters.",
         "required": ["fr-FR"],
@@ -46908,7 +46317,7 @@
           "maxLength": 28
         }
       },
-      "TaxonomyV4MarketAvailability": {
+      "TaxonomyV1MarketAvailability": {
         "type": "object",
         "additionalProperties": false,
         "required": ["marketCode", "status", "marketplaceEnabled", "indexable"],
@@ -46929,7 +46338,7 @@
           }
         }
       },
-      "TaxonomyV4SellerEligibility": {
+      "TaxonomyV1SellerEligibility": {
         "type": "object",
         "additionalProperties": false,
         "required": ["individualAllowed", "professionalAllowed"],
@@ -46942,7 +46351,7 @@
           }
         }
       },
-      "TaxonomyV4Node": {
+      "TaxonomyV1Node": {
         "type": "object",
         "additionalProperties": false,
         "required": [
@@ -46983,10 +46392,10 @@
             "minLength": 1
           },
           "labels": {
-            "$ref": "#/components/schemas/TaxonomyV4LocalizedLabels"
+            "$ref": "#/components/schemas/TaxonomyV1LocalizedLabels"
           },
           "shortLabels": {
-            "$ref": "#/components/schemas/TaxonomyV4LocalizedShortLabels"
+            "$ref": "#/components/schemas/TaxonomyV1LocalizedShortLabels"
           },
           "description": {
             "type": "string"
@@ -47007,14 +46416,14 @@
             "type": "boolean"
           },
           "sellerEligibility": {
-            "$ref": "#/components/schemas/TaxonomyV4SellerEligibility"
+            "$ref": "#/components/schemas/TaxonomyV1SellerEligibility"
           },
           "marketAvailability": {
             "type": "array",
             "minItems": 5,
             "maxItems": 5,
             "items": {
-              "$ref": "#/components/schemas/TaxonomyV4MarketAvailability"
+              "$ref": "#/components/schemas/TaxonomyV1MarketAvailability"
             }
           },
           "seo": {
@@ -47029,7 +46438,7 @@
           }
         }
       },
-      "TaxonomyV4ListingIntent": {
+      "TaxonomyV1ListingIntent": {
         "type": "string",
         "enum": [
           "SELL",
@@ -47048,7 +46457,7 @@
           "JOB_SEEK"
         ]
       },
-      "TaxonomyV4ListingType": {
+      "TaxonomyV1ListingType": {
         "type": "object",
         "additionalProperties": false,
         "required": [
@@ -47088,20 +46497,20 @@
             "minLength": 1
           },
           "intent": {
-            "$ref": "#/components/schemas/TaxonomyV4ListingIntent"
+            "$ref": "#/components/schemas/TaxonomyV1ListingIntent"
           },
           "intentLabel": {
-            "$ref": "#/components/schemas/TaxonomyV4LocalizedLabels"
+            "$ref": "#/components/schemas/TaxonomyV1LocalizedLabels"
           },
           "labels": {
-            "$ref": "#/components/schemas/TaxonomyV4LocalizedLabels"
+            "$ref": "#/components/schemas/TaxonomyV1LocalizedLabels"
           },
           "slug": {
             "type": "string",
             "minLength": 1
           },
           "sellerEligibility": {
-            "$ref": "#/components/schemas/TaxonomyV4SellerEligibility"
+            "$ref": "#/components/schemas/TaxonomyV1SellerEligibility"
           },
           "status": {
             "type": "string",
@@ -47112,7 +46521,7 @@
             "minItems": 5,
             "maxItems": 5,
             "items": {
-              "$ref": "#/components/schemas/TaxonomyV4MarketAvailability"
+              "$ref": "#/components/schemas/TaxonomyV1MarketAvailability"
             }
           },
           "seoIndexable": {
@@ -47120,7 +46529,7 @@
           }
         }
       },
-      "TaxonomyV4UiComponent": {
+      "TaxonomyV1UiComponent": {
         "type": "string",
         "enum": [
           "select",
@@ -47175,7 +46584,7 @@
           "barcode_input"
         ]
       },
-      "TaxonomyV4Attribute": {
+      "TaxonomyV1Attribute": {
         "type": "object",
         "additionalProperties": false,
         "required": [
@@ -47213,7 +46622,7 @@
             "minLength": 1
           },
           "labels": {
-            "$ref": "#/components/schemas/TaxonomyV4LocalizedLabels"
+            "$ref": "#/components/schemas/TaxonomyV1LocalizedLabels"
           },
           "dataType": {
             "type": "string",
@@ -47276,7 +46685,7 @@
             ]
           },
           "uiComponent": {
-            "$ref": "#/components/schemas/TaxonomyV4UiComponent"
+            "$ref": "#/components/schemas/TaxonomyV1UiComponent"
           },
           "groupId": {
             "type": "string",
@@ -47337,14 +46746,14 @@
             "type": "boolean"
           },
           "sellerEligibility": {
-            "$ref": "#/components/schemas/TaxonomyV4SellerEligibility"
+            "$ref": "#/components/schemas/TaxonomyV1SellerEligibility"
           },
           "marketAvailability": {
             "type": "array",
             "minItems": 5,
             "maxItems": 5,
             "items": {
-              "$ref": "#/components/schemas/TaxonomyV4MarketAvailability"
+              "$ref": "#/components/schemas/TaxonomyV1MarketAvailability"
             }
           },
           "defaultRequired": {
@@ -47375,7 +46784,7 @@
           }
         }
       },
-      "TaxonomyV4AttributeBinding": {
+      "TaxonomyV1AttributeBinding": {
         "type": "object",
         "additionalProperties": false,
         "required": [
@@ -47408,7 +46817,7 @@
             "type": "string"
           },
           "intent": {
-            "$ref": "#/components/schemas/TaxonomyV4ListingIntent"
+            "$ref": "#/components/schemas/TaxonomyV1ListingIntent"
           },
           "attributeId": {
             "type": "string"
@@ -47448,14 +46857,14 @@
             "type": "boolean"
           },
           "sellerEligibility": {
-            "$ref": "#/components/schemas/TaxonomyV4SellerEligibility"
+            "$ref": "#/components/schemas/TaxonomyV1SellerEligibility"
           },
           "overrideDefault": {
             "type": "string"
           }
         }
       },
-      "TaxonomyV4Option": {
+      "TaxonomyV1Option": {
         "type": "object",
         "additionalProperties": false,
         "required": [
@@ -47478,7 +46887,7 @@
             "type": "string"
           },
           "labels": {
-            "$ref": "#/components/schemas/TaxonomyV4LocalizedLabels"
+            "$ref": "#/components/schemas/TaxonomyV1LocalizedLabels"
           },
           "sortOrder": {
             "type": "integer",
@@ -47492,7 +46901,7 @@
           }
         }
       },
-      "TaxonomyV4FieldReference": {
+      "TaxonomyV1FieldReference": {
         "type": "object",
         "additionalProperties": false,
         "required": ["kind", "key"],
@@ -47507,7 +46916,7 @@
           }
         }
       },
-      "TaxonomyV4DependencyRule": {
+      "TaxonomyV1DependencyRule": {
         "type": "object",
         "additionalProperties": false,
         "required": [
@@ -47531,7 +46940,7 @@
             }
           },
           "trigger": {
-            "$ref": "#/components/schemas/TaxonomyV4FieldReference"
+            "$ref": "#/components/schemas/TaxonomyV1FieldReference"
           },
           "operator": {
             "type": "string",
@@ -47573,7 +46982,7 @@
           "targets": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/TaxonomyV4FieldReference"
+              "$ref": "#/components/schemas/TaxonomyV1FieldReference"
             }
           },
           "detail": {
@@ -47585,7 +46994,7 @@
           }
         }
       },
-      "TaxonomyV4ValidationRule": {
+      "TaxonomyV1ValidationRule": {
         "type": "object",
         "additionalProperties": false,
         "required": [
@@ -47605,7 +47014,7 @@
             "type": "string"
           },
           "target": {
-            "$ref": "#/components/schemas/TaxonomyV4FieldReference"
+            "$ref": "#/components/schemas/TaxonomyV1FieldReference"
           },
           "scopes": {
             "type": "array",
@@ -47621,7 +47030,7 @@
             "enum": ["BLOCK", "WARN", "REVIEW"]
           },
           "messages": {
-            "$ref": "#/components/schemas/TaxonomyV4LocalizedLabels"
+            "$ref": "#/components/schemas/TaxonomyV1LocalizedLabels"
           },
           "countries": {
             "type": "array",
@@ -47645,7 +47054,7 @@
           }
         }
       },
-      "TaxonomyV4ProjectionField": {
+      "TaxonomyV1ProjectionField": {
         "type": "object",
         "additionalProperties": true,
         "required": ["categoryId"],
@@ -47660,7 +47069,7 @@
             "type": "string"
           },
           "field": {
-            "$ref": "#/components/schemas/TaxonomyV4FieldReference"
+            "$ref": "#/components/schemas/TaxonomyV1FieldReference"
           },
           "sortOrder": {
             "type": "integer",
@@ -47668,7 +47077,7 @@
           }
         }
       },
-      "TaxonomyV4ResolvedSchema": {
+      "TaxonomyV1ResolvedSchema": {
         "type": "object",
         "additionalProperties": false,
         "required": [
@@ -47686,13 +47095,13 @@
         "properties": {
           "taxonomyVersion": {
             "type": "string",
-            "enum": ["4.0.0"]
+            "enum": ["v1"]
           },
           "category": {
-            "$ref": "#/components/schemas/TaxonomyV4Node"
+            "$ref": "#/components/schemas/TaxonomyV1Node"
           },
           "listingType": {
-            "$ref": "#/components/schemas/TaxonomyV4ListingType"
+            "$ref": "#/components/schemas/TaxonomyV1ListingType"
           },
           "attributes": {
             "type": "array",
@@ -47702,15 +47111,15 @@
               "required": ["definition", "binding", "options"],
               "properties": {
                 "definition": {
-                  "$ref": "#/components/schemas/TaxonomyV4Attribute"
+                  "$ref": "#/components/schemas/TaxonomyV1Attribute"
                 },
                 "binding": {
-                  "$ref": "#/components/schemas/TaxonomyV4AttributeBinding"
+                  "$ref": "#/components/schemas/TaxonomyV1AttributeBinding"
                 },
                 "options": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/TaxonomyV4Option"
+                    "$ref": "#/components/schemas/TaxonomyV1Option"
                   }
                 }
               }
@@ -47719,13 +47128,13 @@
           "dependencyRules": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/TaxonomyV4DependencyRule"
+              "$ref": "#/components/schemas/TaxonomyV1DependencyRule"
             }
           },
           "validationRules": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/TaxonomyV4ValidationRule"
+              "$ref": "#/components/schemas/TaxonomyV1ValidationRule"
             }
           },
           "eligible": {
@@ -47755,31 +47164,31 @@
               "filters": {
                 "type": "array",
                 "items": {
-                  "$ref": "#/components/schemas/TaxonomyV4ProjectionField"
+                  "$ref": "#/components/schemas/TaxonomyV1ProjectionField"
                 }
               },
               "cardFields": {
                 "type": "array",
                 "items": {
-                  "$ref": "#/components/schemas/TaxonomyV4ProjectionField"
+                  "$ref": "#/components/schemas/TaxonomyV1ProjectionField"
                 }
               },
               "detailFields": {
                 "type": "array",
                 "items": {
-                  "$ref": "#/components/schemas/TaxonomyV4ProjectionField"
+                  "$ref": "#/components/schemas/TaxonomyV1ProjectionField"
                 }
               },
               "publicationFlow": {
                 "type": "array",
                 "items": {
-                  "$ref": "#/components/schemas/TaxonomyV4ProjectionField"
+                  "$ref": "#/components/schemas/TaxonomyV1ProjectionField"
                 }
               },
               "search": {
                 "oneOf": [
                   {
-                    "$ref": "#/components/schemas/TaxonomyV4ProjectionField"
+                    "$ref": "#/components/schemas/TaxonomyV1ProjectionField"
                   },
                   {
                     "type": "null"
@@ -47789,7 +47198,7 @@
               "seo": {
                 "oneOf": [
                   {
-                    "$ref": "#/components/schemas/TaxonomyV4ProjectionField"
+                    "$ref": "#/components/schemas/TaxonomyV1ProjectionField"
                   },
                   {
                     "type": "null"
@@ -47804,7 +47213,7 @@
           }
         }
       },
-      "TaxonomyV4TreeResponse": {
+      "TaxonomyV1TreeResponse": {
         "type": "object",
         "additionalProperties": false,
         "required": [
@@ -47819,7 +47228,7 @@
         "properties": {
           "taxonomyVersion": {
             "type": "string",
-            "enum": ["4.0.0"]
+            "enum": ["v1"]
           },
           "compilerVersion": {
             "type": "string"
@@ -47839,13 +47248,13 @@
           "items": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/TaxonomyV4Node"
+              "$ref": "#/components/schemas/TaxonomyV1Node"
             }
           },
           "listingTypes": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/TaxonomyV4ListingType"
+              "$ref": "#/components/schemas/TaxonomyV1ListingType"
             }
           },
           "revision": {
@@ -47874,12 +47283,12 @@
           "seo": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/TaxonomyV4SeoProjection"
+              "$ref": "#/components/schemas/TaxonomyV1SeoProjection"
             }
           }
         }
       },
-      "TaxonomyV4OptionPage": {
+      "TaxonomyV1OptionPage": {
         "type": "object",
         "additionalProperties": false,
         "required": ["items", "total", "taxonomyVersion"],
@@ -47888,7 +47297,7 @@
             "type": "array",
             "maxItems": 200,
             "items": {
-              "$ref": "#/components/schemas/TaxonomyV4Option"
+              "$ref": "#/components/schemas/TaxonomyV1Option"
             }
           },
           "nextCursor": {
@@ -47901,7 +47310,7 @@
           },
           "taxonomyVersion": {
             "type": "string",
-            "enum": ["4.0.0"]
+            "enum": ["v1"]
           },
           "revision": {
             "type": "integer",
@@ -47933,10 +47342,10 @@
             "maxLength": 180
           },
           "labels": {
-            "$ref": "#/components/schemas/TaxonomyV4LocalizedLabels"
+            "$ref": "#/components/schemas/TaxonomyV1LocalizedLabels"
           },
           "shortLabels": {
-            "$ref": "#/components/schemas/TaxonomyV4LocalizedShortLabels"
+            "$ref": "#/components/schemas/TaxonomyV1LocalizedShortLabels"
           },
           "iconName": {
             "type": "string",
@@ -47968,10 +47377,10 @@
             "enum": ["category_overview", "promotions"]
           },
           "labels": {
-            "$ref": "#/components/schemas/TaxonomyV4LocalizedLabels"
+            "$ref": "#/components/schemas/TaxonomyV1LocalizedLabels"
           },
           "shortLabels": {
-            "$ref": "#/components/schemas/TaxonomyV4LocalizedShortLabels"
+            "$ref": "#/components/schemas/TaxonomyV1LocalizedShortLabels"
           },
           "isActive": {
             "type": "boolean"
@@ -48075,9 +47484,9 @@
           }
         }
       },
-      "TaxonomyLegacyCategory": {
+      "TaxonomyV1CategorySummary": {
         "type": "object",
-        "description": "Compatibility projection retained while v3 consumers migrate to taxonomy v4.",
+        "description": "Compatibility projection retained while v3 consumers migrate to taxonomy v1.",
         "required": ["id", "slug", "name"],
         "properties": {
           "id": {
@@ -48114,22 +47523,22 @@
           "subcategories": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/TaxonomyLegacyCategory"
+              "$ref": "#/components/schemas/TaxonomyV1CategorySummary"
             }
           },
           "labels": {
-            "$ref": "#/components/schemas/TaxonomyV4LocalizedLabels"
+            "$ref": "#/components/schemas/TaxonomyV1LocalizedLabels"
           },
           "shortLabels": {
-            "$ref": "#/components/schemas/TaxonomyV4LocalizedLabels"
+            "$ref": "#/components/schemas/TaxonomyV1LocalizedLabels"
           }
         },
         "additionalProperties": true
       },
-      "TaxonomyLegacyNode": {
+      "TaxonomyV1CategoryLookup": {
         "allOf": [
           {
-            "$ref": "#/components/schemas/TaxonomyLegacyCategory"
+            "$ref": "#/components/schemas/TaxonomyV1CategorySummary"
           },
           {
             "type": "object",
@@ -48138,8 +47547,8 @@
               "labels",
               "level",
               "publishable",
-              "listingFamily",
-              "supportedIntents"
+              "supportedIntents",
+              "status"
             ],
             "properties": {
               "code": {
@@ -48153,25 +47562,32 @@
               },
               "level": {
                 "type": "string",
-                "enum": ["category", "subcategory", "type", "subtype"]
+                "enum": ["category", "subcategory", "type"]
               },
               "publishable": {
                 "type": "boolean"
-              },
-              "listingFamily": {
-                "type": "string"
               },
               "supportedIntents": {
                 "type": "array",
                 "items": {
                   "type": "string"
                 }
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "active",
+                  "draft",
+                  "disabled",
+                  "deprecated",
+                  "archived"
+                ]
               }
             }
           }
         ]
       },
-      "TaxonomyLegacyAttribute": {
+      "TaxonomyV1FilterAttribute": {
         "type": "object",
         "required": ["id", "code", "label", "dataType"],
         "properties": {
@@ -48179,9 +47595,6 @@
             "type": "string"
           },
           "code": {
-            "type": "string"
-          },
-          "name": {
             "type": "string"
           },
           "label": {
@@ -48194,10 +47607,34 @@
             }
           },
           "dataType": {
-            "type": "string"
-          },
-          "type": {
-            "type": "string"
+            "type": "string",
+            "enum": [
+              "select",
+              "multi_select",
+              "number",
+              "integer",
+              "decimal",
+              "percent",
+              "enum",
+              "multi_enum",
+              "string",
+              "text",
+              "long_text",
+              "phone",
+              "email",
+              "url",
+              "boolean",
+              "range",
+              "year",
+              "date",
+              "date_time",
+              "money",
+              "media",
+              "document",
+              "json",
+              "autocomplete",
+              "location"
+            ]
           },
           "unit": {
             "type": "string"
@@ -48218,23 +47655,51 @@
             "type": "array",
             "items": {
               "type": "object",
-              "additionalProperties": true
+              "required": ["value", "label"],
+              "properties": {
+                "value": {
+                  "type": "string"
+                },
+                "label": {
+                  "type": "string"
+                },
+                "labels": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                }
+              }
             }
           },
           "validation": {
             "type": "object",
-            "additionalProperties": true
+            "properties": {
+              "min": {
+                "type": "number"
+              },
+              "max": {
+                "type": "number"
+              }
+            }
+          },
+          "privacy": {
+            "type": "string",
+            "enum": ["public", "seller_only", "moderator_only", "private"]
+          },
+          "displayOrder": {
+            "type": "integer",
+            "minimum": 0
           }
-        },
-        "additionalProperties": true
+        }
       },
-      "TaxonomyLegacySearchFilter": {
+      "TaxonomyV1SearchFilter": {
         "type": "object",
         "additionalProperties": false,
         "required": ["attribute", "facetType"],
         "properties": {
           "attribute": {
-            "$ref": "#/components/schemas/TaxonomyLegacyAttribute"
+            "$ref": "#/components/schemas/TaxonomyV1FilterAttribute"
           },
           "facetType": {
             "type": "string",
@@ -57045,7 +56510,8 @@
           "aliases",
           "referenceData",
           "presentations",
-          "discovery"
+          "discovery",
+          "referenceEntries"
         ]
       },
       "TaxonomyDraftPage": {
@@ -57317,7 +56783,7 @@
           }
         }
       },
-      "TaxonomyV4SeoProjection": {
+      "TaxonomyV1SeoProjection": {
         "type": "object",
         "additionalProperties": false,
         "required": [
@@ -57346,13 +56812,13 @@
             "type": "string"
           },
           "h1": {
-            "$ref": "#/components/schemas/TaxonomyV4LocalizedLabels"
+            "$ref": "#/components/schemas/TaxonomyV1LocalizedLabels"
           },
           "titleTemplate": {
-            "$ref": "#/components/schemas/TaxonomyV4LocalizedLabels"
+            "$ref": "#/components/schemas/TaxonomyV1LocalizedLabels"
           },
           "descriptionTemplate": {
-            "$ref": "#/components/schemas/TaxonomyV4LocalizedLabels"
+            "$ref": "#/components/schemas/TaxonomyV1LocalizedLabels"
           },
           "indexable": {
             "type": "boolean"
@@ -57412,7 +56878,7 @@
             "type": "string"
           },
           "categoryLabels": {
-            "$ref": "#/components/schemas/TaxonomyV4LocalizedLabels"
+            "$ref": "#/components/schemas/TaxonomyV1LocalizedLabels"
           },
           "rootId": {
             "type": "string"
@@ -57421,10 +56887,10 @@
             "type": "string"
           },
           "rootLabels": {
-            "$ref": "#/components/schemas/TaxonomyV4LocalizedLabels"
+            "$ref": "#/components/schemas/TaxonomyV1LocalizedLabels"
           },
           "brandLabels": {
-            "$ref": "#/components/schemas/TaxonomyV4LocalizedLabels"
+            "$ref": "#/components/schemas/TaxonomyV1LocalizedLabels"
           },
           "path": {
             "type": "array",
@@ -57440,30 +56906,3598 @@
                   "type": "string"
                 },
                 "labels": {
-                  "$ref": "#/components/schemas/TaxonomyV4LocalizedLabels"
+                  "$ref": "#/components/schemas/TaxonomyV1LocalizedLabels"
                 }
               }
             }
           },
           "cardCharacteristics": {
             "type": "array",
-            "description": "Public stored values selected and ordered by the published card presentation for this listing and market. Labels and formatted values are localized by the backend.",
+            "items": {
+              "$ref": "#/components/schemas/TaxonomyLocalizedCharacteristic"
+            }
+          },
+          "detailCharacteristics": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TaxonomyLocalizedCharacteristic"
+            }
+          }
+        }
+      },
+      "BulkListingImportRow": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "title",
+          "description",
+          "categorySlug",
+          "subCategorySlug",
+          "price",
+          "condition",
+          "stock",
+          "city",
+          "postalCode",
+          "isValid"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "categorySlug": {
+            "type": "string"
+          },
+          "subCategorySlug": {
+            "type": "string"
+          },
+          "condition": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "postalCode": {
+            "type": "string"
+          },
+          "price": {
+            "$ref": "#/components/schemas/MonetizationMoney"
+          },
+          "stock": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "isValid": {
+            "type": "boolean"
+          },
+          "validationErrorCode": {
+            "type": "string",
+            "enum": [
+              "TITLE_REQUIRED",
+              "TITLE_TOO_SHORT",
+              "TITLE_TOO_LONG",
+              "PRICE_INVALID",
+              "CATEGORY_INVALID",
+              "ATTRIBUTES_INVALID"
+            ]
+          },
+          "attributes": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/JsonValue"
+            }
+          },
+          "images": {
+            "type": "array",
+            "maxItems": 12,
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "BulkListingImportTemplate": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["fileName", "content"],
+        "properties": {
+          "fileName": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          }
+        }
+      },
+      "BulkListingImportParse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["marketCode", "content"],
+        "properties": {
+          "marketCode": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          },
+          "defaultCity": {
+            "type": "string"
+          },
+          "defaultPostalCode": {
+            "type": "string"
+          }
+        }
+      },
+      "BulkListingImportPublish": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["marketCode", "rows"],
+        "properties": {
+          "marketCode": {
+            "type": "string"
+          },
+          "rows": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 500,
+            "items": {
+              "$ref": "#/components/schemas/BulkListingImportRow"
+            }
+          }
+        }
+      },
+      "AutoCatalog": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "config": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "vertical": {
+                "type": "string",
+                "enum": ["automotive"]
+              },
+              "schemaVersion": {
+                "type": "number",
+                "enum": [1]
+              },
+              "marketCode": {
+                "type": "string",
+                "maxLength": 2,
+                "minLength": 2,
+                "pattern": "^[A-Z]+$"
+              },
+              "locale": {
+                "type": "string",
+                "minLength": 1
+              },
+              "currency": {
+                "type": "string",
+                "maxLength": 3,
+                "minLength": 3
+              },
+              "timezone": {
+                "type": "string",
+                "minLength": 1
+              },
+              "isEnabled": {
+                "type": "boolean"
+              },
+              "comparisonLimit": {
+                "type": "integer",
+                "minimum": 2,
+                "maximum": 4
+              },
+              "defaultSearchRadiusKm": {
+                "type": "integer",
+                "exclusiveMinimum": 0
+              },
+              "leadRetentionDays": {
+                "type": "integer",
+                "exclusiveMinimum": 0
+              },
+              "featureFlags": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "verticalEnabled": {
+                    "type": "boolean"
+                  },
+                  "comparisonsEnabled": {
+                    "type": "boolean"
+                  },
+                  "savedSearchesEnabled": {
+                    "type": "boolean"
+                  },
+                  "structuredLeadsEnabled": {
+                    "type": "boolean"
+                  },
+                  "appointmentsEnabled": {
+                    "type": "boolean"
+                  },
+                  "dealerImportsEnabled": {
+                    "type": "boolean"
+                  },
+                  "dealerApiSyncEnabled": {
+                    "type": "boolean"
+                  },
+                  "paidOffersEnabled": {
+                    "type": "boolean"
+                  },
+                  "secureSaleEnabled": {
+                    "type": "boolean"
+                  },
+                  "financingReferralsEnabled": {
+                    "type": "boolean"
+                  },
+                  "insuranceReferralsEnabled": {
+                    "type": "boolean"
+                  },
+                  "inspectionReferralsEnabled": {
+                    "type": "boolean"
+                  },
+                  "warrantyReferralsEnabled": {
+                    "type": "boolean"
+                  },
+                  "deliveryReferralsEnabled": {
+                    "type": "boolean"
+                  },
+                  "tradeInReferralsEnabled": {
+                    "type": "boolean"
+                  },
+                  "boatListingsEnabled": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "verticalEnabled",
+                  "comparisonsEnabled",
+                  "savedSearchesEnabled",
+                  "structuredLeadsEnabled",
+                  "appointmentsEnabled",
+                  "dealerImportsEnabled",
+                  "dealerApiSyncEnabled",
+                  "paidOffersEnabled",
+                  "secureSaleEnabled",
+                  "financingReferralsEnabled",
+                  "insuranceReferralsEnabled",
+                  "inspectionReferralsEnabled",
+                  "warrantyReferralsEnabled",
+                  "deliveryReferralsEnabled",
+                  "tradeInReferralsEnabled",
+                  "boatListingsEnabled"
+                ]
+              },
+              "financingDisclaimer": {
+                "type": "string"
+              },
+              "priceEstimateDisclaimer": {
+                "type": "string"
+              },
+              "safetyGuidance": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "updatedAt": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "vertical",
+              "schemaVersion",
+              "marketCode",
+              "locale",
+              "currency",
+              "timezone",
+              "isEnabled",
+              "comparisonLimit",
+              "defaultSearchRadiusKm",
+              "leadRetentionDays",
+              "featureFlags",
+              "financingDisclaimer",
+              "priceEstimateDisclaimer",
+              "safetyGuidance",
+              "updatedAt"
+            ]
+          },
+          "vehicleTypes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VehicleTypeConfig"
+            }
+          },
+          "attributes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VehicleAttributeDefinition"
+            }
+          },
+          "vehicleCatalog": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VehicleCatalogEntry"
+            }
+          },
+          "plans": {
+            "type": "array",
             "items": {
               "type": "object",
               "additionalProperties": false,
-              "required": ["code", "labels", "values"],
               "properties": {
-                "code": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "marketCode": {
+                  "type": "string",
+                  "maxLength": 2,
+                  "minLength": 2,
+                  "pattern": "^[A-Z]+$"
+                },
+                "audience": {
+                  "type": "string",
+                  "enum": ["individual", "dealer"]
+                },
+                "vehicleTypes": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "car",
+                      "motorcycle",
+                      "utility",
+                      "truck",
+                      "motorhome",
+                      "boat",
+                      "agricultural",
+                      "construction",
+                      "parts",
+                      "other"
+                    ]
+                  },
+                  "minItems": 1
+                },
+                "name": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "description": {
                   "type": "string"
                 },
-                "labels": {
-                  "$ref": "#/components/schemas/TaxonomyV4LocalizedLabels"
+                "monthlyPrice": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "amountMinor": {
+                      "type": "integer"
+                    },
+                    "currency": {
+                      "type": "string",
+                      "maxLength": 3,
+                      "minLength": 3
+                    }
+                  },
+                  "required": ["amountMinor", "currency"]
                 },
-                "values": {
-                  "$ref": "#/components/schemas/TaxonomyV4LocalizedLabels"
+                "annualPrice": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "amountMinor": {
+                      "type": "integer"
+                    },
+                    "currency": {
+                      "type": "string",
+                      "maxLength": 3,
+                      "minLength": 3
+                    }
+                  },
+                  "required": ["amountMinor", "currency"]
+                },
+                "durationDays": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0
+                },
+                "trialDays": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "taxRateBps": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "isActive": {
+                  "type": "boolean"
+                },
+                "isRecommended": {
+                  "type": "boolean"
+                },
+                "entitlements": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "maxActiveVehicles": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "maxPhotosPerVehicle": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "maxVideosPerVehicle": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "maxTeamMembers": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "maxLocations": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "monthlyPromotionCredits": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "includedUrgentCredits": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "includedBumpCredits": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "includedFeaturedCredits": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "inventoryCsvImport": {
+                      "type": "boolean"
+                    },
+                    "inventoryXmlImport": {
+                      "type": "boolean"
+                    },
+                    "inventoryApiSync": {
+                      "type": "boolean"
+                    },
+                    "leadAssignment": {
+                      "type": "boolean"
+                    },
+                    "leadReminders": {
+                      "type": "boolean"
+                    },
+                    "publicStorefront": {
+                      "type": "boolean"
+                    },
+                    "vehicleVideo": {
+                      "type": "boolean"
+                    },
+                    "vehicleView360": {
+                      "type": "boolean"
+                    },
+                    "detailedAnalytics": {
+                      "type": "boolean"
+                    },
+                    "networkAnalytics": {
+                      "type": "boolean"
+                    },
+                    "apiAccess": {
+                      "type": "boolean"
+                    },
+                    "centralizedBilling": {
+                      "type": "boolean"
+                    },
+                    "branchPermissions": {
+                      "type": "boolean"
+                    },
+                    "stockTransfers": {
+                      "type": "boolean"
+                    },
+                    "customPlan": {
+                      "type": "boolean"
+                    },
+                    "serviceLevelAgreement": {
+                      "type": "boolean"
+                    },
+                    "prioritySupport": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "maxActiveVehicles",
+                    "maxPhotosPerVehicle",
+                    "maxVideosPerVehicle",
+                    "maxTeamMembers",
+                    "maxLocations",
+                    "monthlyPromotionCredits",
+                    "includedUrgentCredits",
+                    "includedBumpCredits",
+                    "includedFeaturedCredits",
+                    "inventoryCsvImport",
+                    "inventoryXmlImport",
+                    "inventoryApiSync",
+                    "leadAssignment",
+                    "leadReminders",
+                    "publicStorefront",
+                    "vehicleVideo",
+                    "vehicleView360",
+                    "detailedAnalytics",
+                    "networkAnalytics",
+                    "apiAccess",
+                    "centralizedBilling",
+                    "branchPermissions",
+                    "stockTransfers",
+                    "customPlan",
+                    "serviceLevelAgreement",
+                    "prioritySupport"
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "marketCode",
+                "audience",
+                "name",
+                "description",
+                "taxRateBps",
+                "isActive",
+                "isRecommended",
+                "entitlements"
+              ]
+            }
+          },
+          "addOns": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "marketCode": {
+                  "type": "string",
+                  "maxLength": 2,
+                  "minLength": 2,
+                  "pattern": "^[A-Z]+$"
+                },
+                "vehicleType": {
+                  "type": "string",
+                  "enum": [
+                    "car",
+                    "motorcycle",
+                    "utility",
+                    "truck",
+                    "motorhome",
+                    "boat",
+                    "agricultural",
+                    "construction",
+                    "parts",
+                    "other"
+                  ]
+                },
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "secure_sale",
+                    "urgent",
+                    "search_bump",
+                    "featured",
+                    "homepage_spotlight",
+                    "category_spotlight",
+                    "qualified_lead",
+                    "sponsored_dealer",
+                    "inspection_referral",
+                    "warranty_referral",
+                    "financing_referral",
+                    "insurance_referral",
+                    "delivery_referral",
+                    "trade_in_referral",
+                    "extra_vehicle_pack",
+                    "lead_credit_pack"
+                  ]
+                },
+                "name": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "description": {
+                  "type": "string"
+                },
+                "price": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "amountMinor": {
+                      "type": "integer"
+                    },
+                    "currency": {
+                      "type": "string",
+                      "maxLength": 3,
+                      "minLength": 3
+                    }
+                  },
+                  "required": ["amountMinor", "currency"]
+                },
+                "taxRateBps": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "validityDays": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0
+                },
+                "creditQuantity": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0
+                },
+                "isActive": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "id",
+                "marketCode",
+                "type",
+                "name",
+                "description",
+                "price",
+                "taxRateBps",
+                "isActive"
+              ]
+            }
+          },
+          "taxonomyOptions": {
+            "$ref": "#/components/schemas/TaxonomyV1OptionSets"
+          }
+        },
+        "required": [
+          "config",
+          "vehicleTypes",
+          "attributes",
+          "vehicleCatalog",
+          "plans",
+          "addOns",
+          "taxonomyOptions"
+        ]
+      },
+      "CourseCatalog": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "config": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "vertical": {
+                "type": "string",
+                "enum": ["tutoring"]
+              },
+              "schemaVersion": {
+                "type": "integer",
+                "exclusiveMinimum": 0
+              },
+              "marketCode": {
+                "type": "string",
+                "maxLength": 2,
+                "minLength": 2,
+                "pattern": "^[A-Z]+$"
+              },
+              "locale": {
+                "type": "string"
+              },
+              "currency": {
+                "type": "string",
+                "maxLength": 3,
+                "minLength": 3
+              },
+              "timezone": {
+                "type": "string"
+              },
+              "isEnabled": {
+                "type": "boolean"
+              },
+              "minimumMeaningfulReviewCount": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "minorAgeThreshold": {
+                "type": "integer",
+                "exclusiveMinimum": 0
+              },
+              "learnerRequestValidityDays": {
+                "type": "integer",
+                "exclusiveMinimum": 0
+              },
+              "leadValidityHours": {
+                "type": "integer",
+                "exclusiveMinimum": 0
+              },
+              "defaultLeadCreditCost": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "cancellationWindowHours": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "featureFlags": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "learnerRequestsEnabled": {
+                    "type": "boolean"
+                  },
+                  "qualifiedLeadsEnabled": {
+                    "type": "boolean"
+                  },
+                  "bookingEnabled": {
+                    "type": "boolean"
+                  },
+                  "paymentsEnabled": {
+                    "type": "boolean"
+                  },
+                  "payoutsEnabled": {
+                    "type": "boolean"
+                  },
+                  "packagesEnabled": {
+                    "type": "boolean"
+                  },
+                  "recurringLessonsEnabled": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "learnerRequestsEnabled",
+                  "qualifiedLeadsEnabled",
+                  "bookingEnabled",
+                  "paymentsEnabled",
+                  "payoutsEnabled",
+                  "packagesEnabled",
+                  "recurringLessonsEnabled"
+                ]
+              },
+              "taxEligibilityWording": {
+                "type": "string"
+              },
+              "safetyGuidance": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "updatedAt": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "vertical",
+              "schemaVersion",
+              "marketCode",
+              "locale",
+              "currency",
+              "timezone",
+              "isEnabled",
+              "minimumMeaningfulReviewCount",
+              "minorAgeThreshold",
+              "learnerRequestValidityDays",
+              "leadValidityHours",
+              "defaultLeadCreditCost",
+              "cancellationWindowHours",
+              "featureFlags",
+              "taxEligibilityWording",
+              "safetyGuidance",
+              "updatedAt"
+            ]
+          },
+          "subjects": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CourseSubject"
+            }
+          },
+          "levels": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CourseSubjectLevel"
+            }
+          },
+          "plans": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "marketCode": {
+                  "type": "string",
+                  "maxLength": 2,
+                  "minLength": 2,
+                  "pattern": "^[A-Z]+$"
+                },
+                "name": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "audience": {
+                  "type": "string",
+                  "enum": ["individual", "organization"]
+                },
+                "description": {
+                  "type": "string"
+                },
+                "monthlyPrice": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "amountMinor": {
+                      "type": "integer"
+                    },
+                    "currency": {
+                      "type": "string",
+                      "maxLength": 3,
+                      "minLength": 3
+                    }
+                  },
+                  "required": ["amountMinor", "currency"]
+                },
+                "annualPrice": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "amountMinor": {
+                      "type": "integer"
+                    },
+                    "currency": {
+                      "type": "string",
+                      "maxLength": 3,
+                      "minLength": 3
+                    }
+                  },
+                  "required": ["amountMinor", "currency"]
+                },
+                "taxRateBps": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "isActive": {
+                  "type": "boolean"
+                },
+                "isRecommended": {
+                  "type": "boolean"
+                },
+                "entitlements": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "maxActiveOffers": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "maxMonthlyLeads": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "teamMembers": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "locations": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "visibilityCreditsMonthly": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "featuredProfile": {
+                      "type": "boolean"
+                    },
+                    "priorityPlacement": {
+                      "type": "boolean"
+                    },
+                    "advancedAvailability": {
+                      "type": "boolean"
+                    },
+                    "detailedAnalytics": {
+                      "type": "boolean"
+                    },
+                    "profileMedia": {
+                      "type": "boolean"
+                    },
+                    "introVideo": {
+                      "type": "boolean"
+                    },
+                    "leadManagement": {
+                      "type": "boolean"
+                    },
+                    "bookingTools": {
+                      "type": "boolean"
+                    },
+                    "recurringPackages": {
+                      "type": "boolean"
+                    },
+                    "bulkCourseManagement": {
+                      "type": "boolean"
+                    },
+                    "centralLeadInbox": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "maxActiveOffers",
+                    "maxMonthlyLeads",
+                    "teamMembers",
+                    "locations",
+                    "visibilityCreditsMonthly",
+                    "featuredProfile",
+                    "priorityPlacement",
+                    "advancedAvailability",
+                    "detailedAnalytics",
+                    "profileMedia",
+                    "introVideo",
+                    "leadManagement",
+                    "bookingTools",
+                    "recurringPackages",
+                    "bulkCourseManagement",
+                    "centralLeadInbox"
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "marketCode",
+                "name",
+                "audience",
+                "description",
+                "taxRateBps",
+                "isActive",
+                "isRecommended",
+                "entitlements"
+              ]
+            }
+          },
+          "addOns": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "marketCode": {
+                  "type": "string",
+                  "maxLength": 2,
+                  "minLength": 2,
+                  "pattern": "^[A-Z]+$"
+                },
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "featured_subject",
+                    "local_spotlight",
+                    "search_bump",
+                    "qualified_lead",
+                    "profile_verification",
+                    "promotional_credits"
+                  ]
+                },
+                "name": {
+                  "type": "string"
+                },
+                "price": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "amountMinor": {
+                      "type": "integer"
+                    },
+                    "currency": {
+                      "type": "string",
+                      "maxLength": 3,
+                      "minLength": 3
+                    }
+                  },
+                  "required": ["amountMinor", "currency"]
+                },
+                "validityDays": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0
+                },
+                "creditQuantity": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0
+                },
+                "isActive": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "id",
+                "marketCode",
+                "type",
+                "name",
+                "price",
+                "isActive"
+              ]
+            }
+          }
+        },
+        "required": ["config", "subjects", "levels", "plans", "addOns"]
+      },
+      "EmploymentCatalog": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "activation": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "marketCode": {
+                "type": "string",
+                "maxLength": 2,
+                "minLength": 2,
+                "pattern": "^[A-Z]+$"
+              },
+              "verticalType": {
+                "type": "string",
+                "enum": ["employment"]
+              },
+              "categoryIds": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "minItems": 1
+              },
+              "subcategoryIds": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "schemaVersion": {
+                "type": "integer",
+                "exclusiveMinimum": 0
+              },
+              "isActive": {
+                "type": "boolean"
+              },
+              "featureFlags": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "boolean"
                 }
               }
+            },
+            "required": [
+              "marketCode",
+              "verticalType",
+              "categoryIds",
+              "schemaVersion",
+              "isActive",
+              "featureFlags"
+            ]
+          },
+          "config": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "marketCode": {
+                "type": "string",
+                "maxLength": 2,
+                "minLength": 2,
+                "pattern": "^[A-Z]+$"
+              },
+              "schemaVersion": {
+                "type": "integer",
+                "exclusiveMinimum": 0
+              },
+              "locale": {
+                "type": "string",
+                "minLength": 2
+              },
+              "currency": {
+                "type": "string",
+                "maxLength": 3,
+                "minLength": 3
+              },
+              "timezone": {
+                "type": "string",
+                "minLength": 1
+              },
+              "isEnabled": {
+                "type": "boolean"
+              },
+              "defaultPublicationDurationDays": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "draftRetentionDays": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "applicationRetentionDays": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "talentPoolRetentionDays": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "applicationResubmissionCooldownDays": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "regulatoryContentVersion": {
+                "type": "string",
+                "minLength": 1
+              },
+              "prohibitedLanguagePolicyVersion": {
+                "type": "string",
+                "minLength": 1
+              },
+              "prohibitedLanguageRules": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "terms": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 2
+                      },
+                      "minItems": 1
+                    },
+                    "explanation": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "neutralSuggestion": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "terms",
+                    "explanation",
+                    "neutralSuggestion"
+                  ]
+                }
+              },
+              "riskRules": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "blockedExternalHostPatterns": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "salaryReviewMaximumMinorByFrequency": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "integer",
+                      "exclusiveMinimum": 0
+                    }
+                  }
+                }
+              },
+              "requiredFieldIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "featureFlags": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "verticalEnabled": {
+                    "type": "boolean"
+                  },
+                  "privateEmployersEnabled": {
+                    "type": "boolean"
+                  },
+                  "directApplicationsEnabled": {
+                    "type": "boolean"
+                  },
+                  "externalApplicationsEnabled": {
+                    "type": "boolean"
+                  },
+                  "candidateSearchEnabled": {
+                    "type": "boolean"
+                  },
+                  "talentPoolEnabled": {
+                    "type": "boolean"
+                  },
+                  "interviewsEnabled": {
+                    "type": "boolean"
+                  },
+                  "paidVisibilityEnabled": {
+                    "type": "boolean"
+                  },
+                  "importsEnabled": {
+                    "type": "boolean"
+                  },
+                  "apiSyncEnabled": {
+                    "type": "boolean"
+                  },
+                  "aiAssistanceEnabled": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "verticalEnabled",
+                  "privateEmployersEnabled",
+                  "directApplicationsEnabled",
+                  "externalApplicationsEnabled",
+                  "candidateSearchEnabled",
+                  "talentPoolEnabled",
+                  "interviewsEnabled",
+                  "paidVisibilityEnabled",
+                  "importsEnabled",
+                  "apiSyncEnabled",
+                  "aiAssistanceEnabled"
+                ]
+              }
+            },
+            "required": [
+              "marketCode",
+              "schemaVersion",
+              "locale",
+              "currency",
+              "timezone",
+              "isEnabled",
+              "defaultPublicationDurationDays",
+              "draftRetentionDays",
+              "applicationRetentionDays",
+              "talentPoolRetentionDays",
+              "applicationResubmissionCooldownDays",
+              "regulatoryContentVersion",
+              "prohibitedLanguagePolicyVersion",
+              "prohibitedLanguageRules",
+              "riskRules",
+              "featureFlags"
+            ]
+          },
+          "dictionaries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EmploymentDictionaryEntry"
             }
+          },
+          "defaultPipelineStages": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "pipelineId": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "label": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "systemState": {
+                  "type": "string",
+                  "enum": [
+                    "received",
+                    "active",
+                    "interview",
+                    "offer",
+                    "hired",
+                    "rejected",
+                    "withdrawn",
+                    "archived"
+                  ]
+                },
+                "candidateVisibleLabel": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "sortOrder": {
+                  "type": "integer"
+                },
+                "candidateNotificationEnabled": {
+                  "type": "boolean"
+                },
+                "isRequiredSystemStage": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "id",
+                "pipelineId",
+                "label",
+                "systemState",
+                "candidateVisibleLabel",
+                "sortOrder",
+                "candidateNotificationEnabled",
+                "isRequiredSystemStage"
+              ]
+            }
+          },
+          "offers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "verticalType": {
+                  "type": "string",
+                  "enum": ["employment"]
+                },
+                "marketCode": {
+                  "type": "string",
+                  "maxLength": 2,
+                  "minLength": 2,
+                  "pattern": "^[A-Z]+$"
+                },
+                "audience": {
+                  "type": "string",
+                  "enum": ["individual", "professional", "organization"]
+                },
+                "kind": {
+                  "type": "string",
+                  "enum": ["free", "pack", "subscription", "custom"]
+                },
+                "name": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "description": {
+                  "type": "string"
+                },
+                "prices": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "amount": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "amountMinor": {
+                            "type": "integer"
+                          },
+                          "currency": {
+                            "type": "string",
+                            "maxLength": 3,
+                            "minLength": 3
+                          }
+                        },
+                        "required": ["amountMinor", "currency"]
+                      },
+                      "billingPeriod": {
+                        "type": "string",
+                        "enum": ["once", "month", "year"]
+                      },
+                      "durationDays": {
+                        "type": "integer",
+                        "exclusiveMinimum": 0
+                      },
+                      "trialDays": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "taxRateBps": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 10000
+                      },
+                      "isActive": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "amount",
+                      "billingPeriod",
+                      "taxRateBps",
+                      "isActive"
+                    ]
+                  }
+                },
+                "entitlements": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "anyOf": [
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    ]
+                  }
+                },
+                "isActive": {
+                  "type": "boolean"
+                },
+                "isRecommended": {
+                  "type": "boolean"
+                },
+                "sortOrder": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "id",
+                "verticalType",
+                "marketCode",
+                "audience",
+                "kind",
+                "name",
+                "description",
+                "prices",
+                "entitlements",
+                "isActive",
+                "isRecommended",
+                "sortOrder"
+              ]
+            }
+          },
+          "addOns": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "verticalType": {
+                  "type": "string",
+                  "enum": ["employment"]
+                },
+                "marketCode": {
+                  "type": "string",
+                  "maxLength": 2,
+                  "minLength": 2,
+                  "pattern": "^[A-Z]+$"
+                },
+                "categoryIds": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "geographicAreaIds": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "urgent",
+                    "search_bump",
+                    "featured",
+                    "homepage_spotlight",
+                    "local_spotlight",
+                    "qualified_lead",
+                    "sponsored_professional",
+                    "additional_listing_credit",
+                    "additional_team_seat",
+                    "extended_analytics",
+                    "distribution_integration",
+                    "employer_brand_campaign"
+                  ]
+                },
+                "name": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "description": {
+                  "type": "string"
+                },
+                "price": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "amountMinor": {
+                      "type": "integer"
+                    },
+                    "currency": {
+                      "type": "string",
+                      "maxLength": 3,
+                      "minLength": 3
+                    }
+                  },
+                  "required": ["amountMinor", "currency"]
+                },
+                "taxRateBps": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 10000
+                },
+                "validityDays": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0
+                },
+                "creditQuantity": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0
+                },
+                "scheduleModes": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": ["immediate", "daily", "scheduled"]
+                  }
+                },
+                "isActive": {
+                  "type": "boolean"
+                },
+                "sortOrder": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "id",
+                "verticalType",
+                "marketCode",
+                "type",
+                "name",
+                "description",
+                "price",
+                "taxRateBps",
+                "isActive",
+                "sortOrder"
+              ]
+            }
+          },
+          "complianceNotices": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "severity": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                }
+              },
+              "required": ["id", "severity", "message"]
+            }
+          }
+        },
+        "required": [
+          "activation",
+          "config",
+          "dictionaries",
+          "defaultPipelineStages",
+          "offers",
+          "addOns",
+          "complianceNotices"
+        ]
+      },
+      "RealEstateCatalog": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "activation": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "marketCode": {
+                "type": "string",
+                "maxLength": 2,
+                "minLength": 2,
+                "pattern": "^[A-Z]+$"
+              },
+              "verticalType": {
+                "type": "string",
+                "enum": ["real_estate"]
+              },
+              "categoryIds": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "minItems": 1
+              },
+              "subcategoryIds": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "schemaVersion": {
+                "type": "integer",
+                "exclusiveMinimum": 0
+              },
+              "isActive": {
+                "type": "boolean"
+              },
+              "featureFlags": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "required": [
+              "marketCode",
+              "verticalType",
+              "categoryIds",
+              "schemaVersion",
+              "isActive",
+              "featureFlags"
+            ]
+          },
+          "config": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "marketCode": {
+                "type": "string",
+                "maxLength": 2,
+                "minLength": 2,
+                "pattern": "^[A-Z]+$"
+              },
+              "schemaVersion": {
+                "type": "integer",
+                "exclusiveMinimum": 0
+              },
+              "locale": {
+                "type": "string",
+                "minLength": 2
+              },
+              "currency": {
+                "type": "string",
+                "maxLength": 3,
+                "minLength": 3
+              },
+              "timezone": {
+                "type": "string",
+                "minLength": 1
+              },
+              "isEnabled": {
+                "type": "boolean"
+              },
+              "defaultSearchRadiusKm": {
+                "type": "integer",
+                "exclusiveMinimum": 0
+              },
+              "leadRetentionDays": {
+                "type": "integer",
+                "exclusiveMinimum": 0
+              },
+              "draftRetentionDays": {
+                "type": "integer",
+                "exclusiveMinimum": 0
+              },
+              "approximateLocationRadiusM": {
+                "type": "integer",
+                "exclusiveMinimum": 0
+              },
+              "featureFlags": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "verticalEnabled": {
+                    "type": "boolean"
+                  },
+                  "mapSearchEnabled": {
+                    "type": "boolean"
+                  },
+                  "savedSearchesEnabled": {
+                    "type": "boolean"
+                  },
+                  "recentlyViewedEnabled": {
+                    "type": "boolean"
+                  },
+                  "comparablesEnabled": {
+                    "type": "boolean"
+                  },
+                  "structuredLeadsEnabled": {
+                    "type": "boolean"
+                  },
+                  "appointmentsEnabled": {
+                    "type": "boolean"
+                  },
+                  "paidOffersEnabled": {
+                    "type": "boolean"
+                  },
+                  "professionalImportsEnabled": {
+                    "type": "boolean"
+                  },
+                  "professionalApiSyncEnabled": {
+                    "type": "boolean"
+                  },
+                  "privateDocumentsEnabled": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "verticalEnabled",
+                  "mapSearchEnabled",
+                  "savedSearchesEnabled",
+                  "recentlyViewedEnabled",
+                  "comparablesEnabled",
+                  "structuredLeadsEnabled",
+                  "appointmentsEnabled",
+                  "paidOffersEnabled",
+                  "professionalImportsEnabled",
+                  "professionalApiSyncEnabled",
+                  "privateDocumentsEnabled"
+                ]
+              },
+              "regulatoryContentVersion": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "marketCode",
+              "schemaVersion",
+              "locale",
+              "currency",
+              "timezone",
+              "isEnabled",
+              "defaultSearchRadiusKm",
+              "leadRetentionDays",
+              "draftRetentionDays",
+              "approximateLocationRadiusM",
+              "featureFlags",
+              "regulatoryContentVersion"
+            ]
+          },
+          "propertyTypes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PropertyTypeConfig"
+            }
+          },
+          "attributes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PropertyAttributeDefinition"
+            }
+          },
+          "fieldRules": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PropertyFieldRule"
+            }
+          },
+          "offers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "verticalType": {
+                  "type": "string",
+                  "enum": ["real_estate"]
+                },
+                "marketCode": {
+                  "type": "string",
+                  "maxLength": 2,
+                  "minLength": 2,
+                  "pattern": "^[A-Z]+$"
+                },
+                "audience": {
+                  "type": "string",
+                  "enum": ["individual", "professional", "organization"]
+                },
+                "kind": {
+                  "type": "string",
+                  "enum": ["free", "pack", "subscription", "custom"]
+                },
+                "name": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "description": {
+                  "type": "string"
+                },
+                "prices": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "amount": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "amountMinor": {
+                            "type": "integer"
+                          },
+                          "currency": {
+                            "type": "string",
+                            "maxLength": 3,
+                            "minLength": 3
+                          }
+                        },
+                        "required": ["amountMinor", "currency"]
+                      },
+                      "billingPeriod": {
+                        "type": "string",
+                        "enum": ["once", "month", "year"]
+                      },
+                      "durationDays": {
+                        "type": "integer",
+                        "exclusiveMinimum": 0
+                      },
+                      "trialDays": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "taxRateBps": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 10000
+                      },
+                      "isActive": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "amount",
+                      "billingPeriod",
+                      "taxRateBps",
+                      "isActive"
+                    ]
+                  }
+                },
+                "entitlements": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "anyOf": [
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "number"
+                      },
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    ]
+                  }
+                },
+                "isActive": {
+                  "type": "boolean"
+                },
+                "isRecommended": {
+                  "type": "boolean"
+                },
+                "sortOrder": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "id",
+                "verticalType",
+                "marketCode",
+                "audience",
+                "kind",
+                "name",
+                "description",
+                "prices",
+                "entitlements",
+                "isActive",
+                "isRecommended",
+                "sortOrder"
+              ]
+            }
+          },
+          "addOns": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "verticalType": {
+                  "type": "string",
+                  "enum": ["real_estate"]
+                },
+                "marketCode": {
+                  "type": "string",
+                  "maxLength": 2,
+                  "minLength": 2,
+                  "pattern": "^[A-Z]+$"
+                },
+                "categoryIds": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "geographicAreaIds": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "urgent",
+                    "search_bump",
+                    "featured",
+                    "homepage_spotlight",
+                    "local_spotlight",
+                    "qualified_lead",
+                    "sponsored_professional",
+                    "additional_listing_credit",
+                    "additional_team_seat",
+                    "extended_analytics",
+                    "distribution_integration",
+                    "employer_brand_campaign"
+                  ]
+                },
+                "name": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "description": {
+                  "type": "string"
+                },
+                "price": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "amountMinor": {
+                      "type": "integer"
+                    },
+                    "currency": {
+                      "type": "string",
+                      "maxLength": 3,
+                      "minLength": 3
+                    }
+                  },
+                  "required": ["amountMinor", "currency"]
+                },
+                "taxRateBps": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 10000
+                },
+                "validityDays": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0
+                },
+                "creditQuantity": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0
+                },
+                "scheduleModes": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": ["immediate", "daily", "scheduled"]
+                  }
+                },
+                "isActive": {
+                  "type": "boolean"
+                },
+                "sortOrder": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "id",
+                "verticalType",
+                "marketCode",
+                "type",
+                "name",
+                "description",
+                "price",
+                "taxRateBps",
+                "isActive",
+                "sortOrder"
+              ]
+            }
+          },
+          "taxonomyOptions": {
+            "$ref": "#/components/schemas/TaxonomyV1OptionSets"
+          }
+        },
+        "required": [
+          "activation",
+          "config",
+          "propertyTypes",
+          "attributes",
+          "fieldRules",
+          "offers",
+          "addOns",
+          "taxonomyOptions"
+        ]
+      },
+      "VehicleTypeConfig": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "car",
+              "motorcycle",
+              "utility",
+              "truck",
+              "motorhome",
+              "boat",
+              "agricultural",
+              "construction",
+              "parts",
+              "other"
+            ]
+          },
+          "slug": {
+            "type": "string",
+            "minLength": 1
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": {
+            "type": "string"
+          },
+          "iconName": {
+            "type": "string"
+          },
+          "schemaVersion": {
+            "type": "integer",
+            "exclusiveMinimum": 0
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "requiredFieldIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "filterFieldIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "sortOrder": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "type",
+          "slug",
+          "label",
+          "description",
+          "iconName",
+          "schemaVersion",
+          "isActive",
+          "requiredFieldIds",
+          "filterFieldIds",
+          "sortOrder"
+        ]
+      },
+      "VehicleAttributeDefinition": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "marketCode": {
+            "type": "string",
+            "maxLength": 2,
+            "minLength": 2,
+            "pattern": "^[A-Z]+$"
+          },
+          "vehicleTypes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "car",
+                "motorcycle",
+                "utility",
+                "truck",
+                "motorhome",
+                "boat",
+                "agricultural",
+                "construction",
+                "parts",
+                "other"
+              ]
+            },
+            "minItems": 1
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1
+          },
+          "fieldType": {
+            "type": "string",
+            "enum": [
+              "text",
+              "number",
+              "boolean",
+              "single_select",
+              "multi_select",
+              "date"
+            ]
+          },
+          "unit": {
+            "type": "string"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "value": {
+                  "type": "string"
+                },
+                "label": {
+                  "type": "string"
+                },
+                "sortOrder": {
+                  "type": "integer"
+                }
+              },
+              "required": ["value", "label", "sortOrder"]
+            }
+          },
+          "isRequired": {
+            "type": "boolean"
+          },
+          "isFilterable": {
+            "type": "boolean"
+          },
+          "isPublic": {
+            "type": "boolean"
+          },
+          "sortOrder": {
+            "type": "integer"
+          },
+          "schemaVersion": {
+            "type": "integer",
+            "exclusiveMinimum": 0
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "marketCode",
+          "vehicleTypes",
+          "label",
+          "fieldType",
+          "isRequired",
+          "isFilterable",
+          "isPublic",
+          "sortOrder",
+          "schemaVersion",
+          "isActive"
+        ]
+      },
+      "VehicleCatalogEntry": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "kind": {
+            "type": "string",
+            "enum": ["make", "model", "generation", "trim"]
+          },
+          "parentId": {
+            "type": "string"
+          },
+          "vehicleTypes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "car",
+                "motorcycle",
+                "utility",
+                "truck",
+                "motorhome",
+                "boat",
+                "agricultural",
+                "construction",
+                "parts",
+                "other"
+              ]
+            },
+            "minItems": 1
+          },
+          "slug": {
+            "type": "string",
+            "minLength": 1
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1
+          },
+          "startsYear": {
+            "type": "integer",
+            "minimum": 1880,
+            "maximum": 2200
+          },
+          "endsYear": {
+            "type": "integer",
+            "minimum": 1880,
+            "maximum": 2200
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        },
+        "required": ["id", "kind", "vehicleTypes", "slug", "label", "isActive"]
+      },
+      "CourseSubject": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "slug": {
+            "type": "string",
+            "minLength": 1
+          },
+          "marketCode": {
+            "type": "string",
+            "maxLength": 2,
+            "minLength": 2,
+            "pattern": "^[A-Z]+$"
+          },
+          "parentId": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": {
+            "type": "string"
+          },
+          "iconName": {
+            "type": "string"
+          },
+          "levelIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "sortOrder": {
+            "type": "integer"
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "marketCode",
+          "label",
+          "levelIds",
+          "sortOrder",
+          "isActive"
+        ]
+      },
+      "CourseSubjectLevel": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1
+          },
+          "sortOrder": {
+            "type": "integer"
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        },
+        "required": ["id", "label", "sortOrder", "isActive"]
+      },
+      "EmploymentDictionaryEntry": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "marketCode": {
+            "type": "string",
+            "maxLength": 2,
+            "minLength": 2,
+            "pattern": "^[A-Z]+$"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "sector",
+              "job_family",
+              "profession",
+              "specialization",
+              "skill",
+              "seniority",
+              "contract_type",
+              "salary_frequency",
+              "working_arrangement",
+              "work_schedule",
+              "education_level",
+              "language_level",
+              "employer_type",
+              "screening_question_type"
+            ]
+          },
+          "parentId": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string",
+            "minLength": 1
+          },
+          "slug": {
+            "type": "string",
+            "minLength": 1
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": {
+            "type": "string"
+          },
+          "aliases": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/JsonValue"
+            }
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "sortOrder": {
+            "type": "integer"
+          },
+          "version": {
+            "type": "integer",
+            "exclusiveMinimum": 0
+          }
+        },
+        "required": [
+          "id",
+          "marketCode",
+          "kind",
+          "code",
+          "slug",
+          "label",
+          "isActive",
+          "sortOrder",
+          "version"
+        ]
+      },
+      "PropertyTypeConfig": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "apartment",
+              "house",
+              "land",
+              "parking_garage",
+              "commercial",
+              "office",
+              "building",
+              "new_development",
+              "holiday_rental",
+              "room_shared",
+              "other"
+            ]
+          },
+          "marketCode": {
+            "type": "string",
+            "maxLength": 2,
+            "minLength": 2,
+            "pattern": "^[A-Z]+$"
+          },
+          "slug": {
+            "type": "string",
+            "minLength": 1
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": {
+            "type": "string"
+          },
+          "iconName": {
+            "type": "string"
+          },
+          "transactionTypes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "sale",
+                "long_term_rental",
+                "seasonal_rental",
+                "shared_accommodation",
+                "life_annuity",
+                "other"
+              ]
+            },
+            "minItems": 1
+          },
+          "requiredFieldIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "filterFieldIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "schemaVersion": {
+            "type": "integer",
+            "exclusiveMinimum": 0
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "sortOrder": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "type",
+          "marketCode",
+          "slug",
+          "label",
+          "description",
+          "iconName",
+          "transactionTypes",
+          "requiredFieldIds",
+          "filterFieldIds",
+          "schemaVersion",
+          "isActive",
+          "sortOrder"
+        ]
+      },
+      "PropertyAttributeDefinition": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "marketCode": {
+            "type": "string",
+            "maxLength": 2,
+            "minLength": 2,
+            "pattern": "^[A-Z]+$"
+          },
+          "propertyTypes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "apartment",
+                "house",
+                "land",
+                "parking_garage",
+                "commercial",
+                "office",
+                "building",
+                "new_development",
+                "holiday_rental",
+                "room_shared",
+                "other"
+              ]
+            },
+            "minItems": 1
+          },
+          "transactionTypes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "sale",
+                "long_term_rental",
+                "seasonal_rental",
+                "shared_accommodation",
+                "life_annuity",
+                "other"
+              ]
+            },
+            "minItems": 1
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1
+          },
+          "helpText": {
+            "type": "string"
+          },
+          "fieldType": {
+            "type": "string",
+            "enum": [
+              "text",
+              "number",
+              "boolean",
+              "single_select",
+              "multi_select",
+              "date",
+              "money",
+              "document_status"
+            ]
+          },
+          "unit": {
+            "type": "string"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "value": {
+                  "type": "string"
+                },
+                "label": {
+                  "type": "string"
+                },
+                "sortOrder": {
+                  "type": "integer"
+                }
+              },
+              "required": ["value", "label", "sortOrder"]
+            }
+          },
+          "privacy": {
+            "type": "string",
+            "enum": ["public", "seller_only", "reviewer_only"]
+          },
+          "isRequired": {
+            "type": "boolean"
+          },
+          "isFilterable": {
+            "type": "boolean"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "schemaVersion": {
+            "type": "integer",
+            "exclusiveMinimum": 0
+          },
+          "sortOrder": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "marketCode",
+          "propertyTypes",
+          "transactionTypes",
+          "label",
+          "fieldType",
+          "privacy",
+          "isRequired",
+          "isFilterable",
+          "isActive",
+          "schemaVersion",
+          "sortOrder"
+        ]
+      },
+      "PropertyFieldRule": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "marketCode": {
+            "type": "string",
+            "maxLength": 2,
+            "minLength": 2,
+            "pattern": "^[A-Z]+$"
+          },
+          "propertyType": {
+            "type": "string",
+            "enum": [
+              "apartment",
+              "house",
+              "land",
+              "parking_garage",
+              "commercial",
+              "office",
+              "building",
+              "new_development",
+              "holiday_rental",
+              "room_shared",
+              "other"
+            ]
+          },
+          "transactionType": {
+            "type": "string",
+            "enum": [
+              "sale",
+              "long_term_rental",
+              "seasonal_rental",
+              "shared_accommodation",
+              "life_annuity",
+              "other"
+            ]
+          },
+          "fieldId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "requirement": {
+            "type": "string",
+            "enum": ["required", "recommended", "optional", "hidden"]
+          },
+          "condition": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/components/schemas/JsonValue"
+            }
+          },
+          "schemaVersion": {
+            "type": "integer",
+            "exclusiveMinimum": 0
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "marketCode",
+          "fieldId",
+          "requirement",
+          "condition",
+          "schemaVersion",
+          "isActive"
+        ]
+      },
+      "TutorSearchResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TutorSearchItem"
+            }
+          },
+          "pageInfo": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "hasNextPage": {
+                "type": "boolean"
+              },
+              "nextCursor": {
+                "type": "string"
+              }
+            },
+            "required": ["hasNextPage"]
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": ["items", "pageInfo", "total"]
+      },
+      "TutorSearchItem": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "tutor": {
+            "$ref": "#/components/schemas/TutorPublicProfile"
+          },
+          "offer": {
+            "$ref": "#/components/schemas/CoursePublicOffer"
+          },
+          "subjectLabel": {
+            "type": "string"
+          },
+          "levelLabels": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "fromPrice": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "amountMinor": {
+                "type": "integer"
+              },
+              "currency": {
+                "type": "string",
+                "maxLength": 3,
+                "minLength": 3
+              }
+            },
+            "required": ["amountMinor", "currency"]
+          },
+          "distanceKm": {
+            "type": "number",
+            "minimum": 0
+          },
+          "relevanceReasons": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "isSaved": {
+            "type": "boolean"
+          },
+          "resolvedPromotion": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "state": {
+                "type": "string",
+                "enum": [
+                  "inactive",
+                  "scheduled",
+                  "active",
+                  "expired",
+                  "cancelled",
+                  "refunded",
+                  "failed"
+                ]
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "urgent_badge",
+                  "search_bump",
+                  "featured",
+                  "top_placement",
+                  "sponsored_search",
+                  "homepage_spotlight",
+                  "category_spotlight",
+                  "local_spotlight",
+                  "seller_spotlight"
+                ]
+              },
+              "startsAt": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "endsAt": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "promotedAt": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "source": {
+                "type": "string",
+                "enum": ["purchase", "subscription_credit", "admin_grant"]
+              },
+              "sourceId": {
+                "type": "string",
+                "minLength": 1
+              },
+              "label": {
+                "type": "string",
+                "minLength": 1
+              },
+              "marketCode": {
+                "type": "string",
+                "maxLength": 2,
+                "minLength": 2,
+                "pattern": "^[A-Z]+$"
+              }
+            },
+            "required": [
+              "state",
+              "type",
+              "startsAt",
+              "endsAt",
+              "source",
+              "sourceId",
+              "marketCode"
+            ]
+          },
+          "taxonomy": {
+            "$ref": "#/components/schemas/ListingTaxonomyProjection"
+          }
+        },
+        "required": [
+          "tutor",
+          "offer",
+          "subjectLabel",
+          "levelLabels",
+          "fromPrice",
+          "relevanceReasons",
+          "isSaved"
+        ]
+      },
+      "TutorPublicProfile": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "schemaVersion": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": 0
+          },
+          "vertical": {
+            "type": "string",
+            "enum": ["tutoring"]
+          },
+          "organizationId": {
+            "type": "string"
+          },
+          "profileType": {
+            "type": "string",
+            "enum": ["individual", "organization_member"]
+          },
+          "slug": {
+            "type": "string",
+            "minLength": 1
+          },
+          "displayName": {
+            "type": "string",
+            "minLength": 2
+          },
+          "avatarUrl": {
+            "type": "string",
+            "format": "uri"
+          },
+          "headline": {
+            "type": "string",
+            "minLength": 10
+          },
+          "biography": {
+            "type": "string",
+            "minLength": 60
+          },
+          "teachingApproach": {
+            "type": "string",
+            "minLength": 30
+          },
+          "experienceYears": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 70
+          },
+          "subjectIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "levelIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "languages": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "deliveryModes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["online", "in_person", "hybrid"]
+            },
+            "minItems": 1
+          },
+          "serviceArea": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "marketCode": {
+                "type": "string",
+                "maxLength": 2,
+                "minLength": 2,
+                "pattern": "^[A-Z]+$"
+              },
+              "cityLabel": {
+                "type": "string"
+              },
+              "postalCodePrefix": {
+                "type": "string"
+              },
+              "region": {
+                "type": "string"
+              },
+              "latitude": {
+                "type": "number",
+                "minimum": -90,
+                "maximum": 90
+              },
+              "longitude": {
+                "type": "number",
+                "minimum": -180,
+                "maximum": 180
+              },
+              "radiusKm": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 250
+              },
+              "publicLocationLabel": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "marketCode",
+              "cityLabel",
+              "radiusKm",
+              "publicLocationLabel"
+            ]
+          },
+          "responseTimeMinutes": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "responseRatePercent": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "rating": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 5
+          },
+          "reviewCount": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "ratingIsStatisticallyMeaningful": {
+            "type": "boolean"
+          },
+          "mediaUrls": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "introductionVideoUrl": {
+            "type": "string",
+            "format": "uri"
+          },
+          "qualifications": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "degree",
+                    "certification",
+                    "employment",
+                    "identity",
+                    "criminal_record",
+                    "professional_status",
+                    "other"
+                  ]
+                },
+                "label": {
+                  "type": "string"
+                },
+                "issuer": {
+                  "type": "string"
+                },
+                "issuedYear": {
+                  "type": "integer",
+                  "minimum": 1900,
+                  "maximum": 2200
+                },
+                "evidenceStatus": {
+                  "type": "string",
+                  "enum": [
+                    "self_declared",
+                    "uploaded_private",
+                    "provider_verified",
+                    "shongre_verified"
+                  ]
+                },
+                "verificationStatus": {
+                  "type": "string",
+                  "enum": [
+                    "not_submitted",
+                    "pending",
+                    "verified",
+                    "rejected",
+                    "expired"
+                  ]
+                },
+                "verifiedAt": {
+                  "type": "string"
+                },
+                "expiresAt": {
+                  "type": "string"
+                },
+                "publicLabel": {
+                  "type": "string"
+                },
+                "publicDetailsAllowed": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "id",
+                "type",
+                "label",
+                "evidenceStatus",
+                "verificationStatus",
+                "publicLabel",
+                "publicDetailsAllowed"
+              ]
+            }
+          },
+          "verifications": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "email": {
+                "type": "string",
+                "enum": [
+                  "not_submitted",
+                  "pending",
+                  "verified",
+                  "rejected",
+                  "expired"
+                ]
+              },
+              "phone": {
+                "type": "string",
+                "enum": [
+                  "not_submitted",
+                  "pending",
+                  "verified",
+                  "rejected",
+                  "expired"
+                ]
+              },
+              "identity": {
+                "type": "string",
+                "enum": [
+                  "not_submitted",
+                  "pending",
+                  "verified",
+                  "rejected",
+                  "expired"
+                ]
+              },
+              "qualifications": {
+                "type": "string",
+                "enum": [
+                  "not_submitted",
+                  "pending",
+                  "verified",
+                  "rejected",
+                  "expired"
+                ]
+              },
+              "business": {
+                "type": "string",
+                "enum": [
+                  "not_submitted",
+                  "pending",
+                  "verified",
+                  "rejected",
+                  "expired"
+                ]
+              },
+              "representative": {
+                "type": "string",
+                "enum": [
+                  "not_submitted",
+                  "pending",
+                  "verified",
+                  "rejected",
+                  "expired"
+                ]
+              },
+              "payment": {
+                "type": "string",
+                "enum": [
+                  "not_submitted",
+                  "pending",
+                  "verified",
+                  "rejected",
+                  "expired"
+                ]
+              },
+              "payout": {
+                "type": "string",
+                "enum": [
+                  "not_submitted",
+                  "pending",
+                  "verified",
+                  "rejected",
+                  "expired"
+                ]
+              },
+              "personalServicesEligibility": {
+                "type": "string",
+                "enum": [
+                  "not_submitted",
+                  "pending",
+                  "verified",
+                  "rejected",
+                  "expired"
+                ]
+              }
+            },
+            "required": [
+              "email",
+              "phone",
+              "identity",
+              "qualifications",
+              "business",
+              "representative",
+              "payment",
+              "payout",
+              "personalServicesEligibility"
+            ]
+          },
+          "taxEligibility": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "not_submitted",
+                  "pending",
+                  "verified",
+                  "rejected",
+                  "expired"
+                ]
+              },
+              "publicWording": {
+                "type": "string"
+              },
+              "evidenceExpiresAt": {
+                "type": "string"
+              }
+            },
+            "required": ["status", "publicWording"]
+          },
+          "isFeatured": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "schemaVersion",
+          "vertical",
+          "profileType",
+          "slug",
+          "displayName",
+          "headline",
+          "biography",
+          "teachingApproach",
+          "experienceYears",
+          "subjectIds",
+          "levelIds",
+          "languages",
+          "deliveryModes",
+          "reviewCount",
+          "ratingIsStatisticallyMeaningful",
+          "mediaUrls",
+          "qualifications",
+          "verifications",
+          "taxEligibility",
+          "isFeatured"
+        ]
+      },
+      "CoursePublicOffer": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "listingId": {
+            "type": "string"
+          },
+          "tutorProfileId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "organizationId": {
+            "type": "string"
+          },
+          "schemaVersion": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": 0
+          },
+          "vertical": {
+            "type": "string",
+            "enum": ["tutoring"]
+          },
+          "slug": {
+            "type": "string",
+            "minLength": 1
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": {
+            "type": "string"
+          },
+          "subjectId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "levelIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1
+          },
+          "goalIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "languages": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1
+          },
+          "deliveryModes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["online", "in_person", "hybrid"]
+            },
+            "minItems": 1
+          },
+          "serviceArea": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "marketCode": {
+                "type": "string",
+                "maxLength": 2,
+                "minLength": 2,
+                "pattern": "^[A-Z]+$"
+              },
+              "cityLabel": {
+                "type": "string"
+              },
+              "postalCodePrefix": {
+                "type": "string"
+              },
+              "region": {
+                "type": "string"
+              },
+              "latitude": {
+                "type": "number",
+                "minimum": -90,
+                "maximum": 90
+              },
+              "longitude": {
+                "type": "number",
+                "minimum": -180,
+                "maximum": 180
+              },
+              "radiusKm": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 250
+              },
+              "publicLocationLabel": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "marketCode",
+              "cityLabel",
+              "radiusKm",
+              "publicLocationLabel"
+            ]
+          },
+          "pricingOptions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "type": {
+                  "type": "string",
+                  "enum": ["hourly", "trial", "package"]
+                },
+                "label": {
+                  "type": "string"
+                },
+                "price": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "amountMinor": {
+                      "type": "integer"
+                    },
+                    "currency": {
+                      "type": "string",
+                      "maxLength": 3,
+                      "minLength": 3
+                    }
+                  },
+                  "required": ["amountMinor", "currency"]
+                },
+                "durationMinutes": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "exclusiveMinimum": 0
+                },
+                "lessonCount": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "exclusiveMinimum": 0
+                },
+                "isActive": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "id",
+                "type",
+                "label",
+                "price",
+                "durationMinutes",
+                "isActive"
+              ]
+            },
+            "minItems": 1
+          },
+          "availabilitySummary": {
+            "type": "string"
+          },
+          "trialLessonAvailable": {
+            "type": "boolean"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "pending_review",
+              "published",
+              "paused",
+              "suspended",
+              "archived"
+            ]
+          },
+          "marketCodes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 2,
+              "minLength": 2,
+              "pattern": "^[A-Z]+$"
+            },
+            "minItems": 1
+          },
+          "capacityStatus": {
+            "type": "string",
+            "enum": ["available", "limited", "full"]
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          },
+          "publishedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "tutorProfileId",
+          "schemaVersion",
+          "vertical",
+          "slug",
+          "title",
+          "description",
+          "subjectId",
+          "levelIds",
+          "goalIds",
+          "languages",
+          "deliveryModes",
+          "pricingOptions",
+          "availabilitySummary",
+          "trialLessonAvailable",
+          "status",
+          "marketCodes",
+          "capacityStatus",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "TaxonomyV1OptionSets": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["revision", "optionSets"],
+        "properties": {
+          "revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "optionSets": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/TaxonomyV1Option"
+              }
+            }
+          }
+        }
+      },
+      "TaxonomyLocalizedCharacteristic": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["code", "labels", "values"],
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "labels": {
+            "$ref": "#/components/schemas/TaxonomyV1LocalizedLabels"
+          },
+          "values": {
+            "$ref": "#/components/schemas/TaxonomyV1LocalizedLabels"
           }
         }
       }

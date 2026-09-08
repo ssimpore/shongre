@@ -37,7 +37,7 @@ import type {
 } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { AutoVehicleCard } from "./components/AutoVehicleCard";
-import { formatAutoMoney, fuelLabels } from "./auto-format";
+import { formatAutoMoney, autoOptions } from "./auto-format";
 import { formatCurrencySymbol } from "../../utilities/formatters";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useTranslation } from "../../i18n/I18nProvider";
@@ -351,25 +351,17 @@ const AutoFilters: React.FC<FiltersProps> = ({
           Énergie
         </legend>
         <div className="space-y-1">
-          {(
-            [
-              "petrol",
-              "diesel",
-              "electric",
-              "hybrid",
-              "plug_in_hybrid",
-            ] as VehiclePublic["technical"]["fuelType"][]
-          ).map((fuel) => (
+          {autoOptions(catalog, "fuel_type", currentLocale).map((fuel) => (
             <label
-              key={fuel}
+              key={fuel.value}
               className="flex min-h-control-target cursor-pointer items-center gap-2 text-xs text-text-secondary"
             >
               <input
                 type="checkbox"
-                checked={fuels.includes(fuel)}
-                onChange={() => toggleFuel(fuel)}
+                checked={fuels.includes(fuel.value)}
+                onChange={() => toggleFuel(fuel.value)}
               />{" "}
-              {fuelLabels[fuel]}
+              {fuel.label}
             </label>
           ))}
         </div>
@@ -385,8 +377,7 @@ const AutoFilters: React.FC<FiltersProps> = ({
           onChange={(value) => update("transmission", value || undefined)}
           options={[
             { value: "", label: "Toutes" },
-            { value: "manual", label: "Manuelle" },
-            { value: "automatic", label: "Automatique" },
+            ...autoOptions(catalog, "transmission", currentLocale),
           ]}
         />
       </div>
@@ -844,6 +835,7 @@ export const AutoSearchPage: React.FC = () => {
             actions={
               <Button
                 data-marketplace-action="saved-search.create"
+                aria-label="Créer une alerte"
                 variant="outline"
                 size="sm"
                 leftIcon={<Bell className="h-icon-sm w-icon-sm" />}

@@ -3,7 +3,7 @@ import {
   PUBLICATION_CONSTRAINTS,
   publicationInputSchema,
   toApplicationListingCondition,
-  toTaxonomyV4ItemCondition,
+  toTaxonomyV1ItemCondition,
 } from "./publication";
 
 describe("product publication title limit", () => {
@@ -31,7 +31,7 @@ describe("product publication title limit", () => {
   });
 });
 
-describe("taxonomy v4 publication compatibility", () => {
+describe("taxonomy v1 publication compatibility", () => {
   it.each([
     ["new_with_tag", "new"],
     ["like_new", "like_new"],
@@ -42,12 +42,12 @@ describe("taxonomy v4 publication compatibility", () => {
     ["vehicle_to_repair", "damaged"],
     ["pro_refurbished", "like_new"],
   ])("maps %s to the workbook option %s", (source, expected) => {
-    expect(toTaxonomyV4ItemCondition(source)).toBe(expected);
+    expect(toTaxonomyV1ItemCondition(source)).toBe(expected);
   });
 
   it("does not invent a condition for unrelated application states", () => {
-    expect(toTaxonomyV4ItemCondition("not_applicable")).toBeUndefined();
-    expect(toTaxonomyV4ItemCondition(undefined)).toBeUndefined();
+    expect(toTaxonomyV1ItemCondition("not_applicable")).toBeUndefined();
+    expect(toTaxonomyV1ItemCondition(undefined)).toBeUndefined();
   });
 
   it.each([
@@ -55,7 +55,7 @@ describe("taxonomy v4 publication compatibility", () => {
     [{ property_condition: "a_rafraichir" }, "re_to_refresh"],
     [{ equipment_condition: "reconditionne" }, "pro_refurbished"],
   ])(
-    "projects an explicit v4 condition back to listing compatibility",
+    "projects an explicit v1 condition back to listing compatibility",
     (attributes, expected) => {
       expect(toApplicationListingCondition(attributes, "good")).toBe(expected);
     },

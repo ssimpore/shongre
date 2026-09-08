@@ -5,7 +5,8 @@ import { webBrandAssets } from "@shongre/brand/web";
 import type { CourseOffer, TutorProfile } from "@shongre/contracts/courses";
 import type { VehiclePrivate } from "@shongre/contracts/auto";
 import type { PropertyPrivate } from "@shongre/contracts/real-estate";
-import { resolveTaxonomyV4Identity } from "@shongre/contracts/taxonomy-v4-identity";
+import { taxonomyV1Service } from "../../src/modules/taxonomy/taxonomy.runtime.js";
+import type { TaxonomyV1Service } from "../../src/modules/taxonomy/taxonomy.v1.service.js";
 import { createDefaultHomepageConfiguration } from "@shongre/contracts/homepage";
 import {
   EMPLOYMENT_DEMO_JOBS,
@@ -1028,53 +1029,17 @@ function listingPromotionType(
     : undefined;
 }
 
-const CATEGORY_COMPATIBILITY_IDS: Readonly<Record<string, string>> = {
-  "accessoires-animaux": "pets.accessories",
-  "appartements-a-vendre": "real_estate.sales",
-  "cours-particuliers": "services.tutoring",
-  "engins-de-chantier": "professional_btp.machinery",
-  "equipement-bebe": "baby_kids",
-  "sports-nautiques": "sports_outdoors.water_sports",
-};
-
 function listingCategory(
   source: Record<string, any>,
-  availableCategoryIds: ReadonlySet<string>,
-): {
-  id: string;
-  path: string[];
-} {
-  const resolved =
-    resolveTaxonomyV4Identity(source.subCategorySlug) ||
-    resolveTaxonomyV4Identity(source.categorySlug);
-  const id = resolved?.id || source.subCategorySlug || source.categorySlug;
-  const segments = id.split(".");
-  const canonicalPath = segments.map((_, index) =>
-    segments.slice(0, index + 1).join("."),
-  );
-  const compatibilityId = CATEGORY_COMPATIBILITY_IDS[source.subCategorySlug];
-  const storageId = [
-    compatibilityId,
-    ...[...canonicalPath].reverse(),
-    source.subCategorySlug,
-    source.categorySlug,
-  ].find((candidate) => candidate && availableCategoryIds.has(candidate));
-  if (!storageId) {
-    throw new Error(
-      `No database category is compatible with ${source.categorySlug}/${source.subCategorySlug}.`,
-    );
-  }
-  return {
-    id: storageId,
-    path: [
-      source.categorySlug,
-      source.subCategorySlug,
-      ...canonicalPath,
-    ].filter(
-      (value, index, values) =>
-        Boolean(value) && values.indexOf(value) === index,
-    ),
-  };
+  taxonomy: Pick<TaxonomyV1Service, "findCategory" | "projectIdentity">,
+): { id: string; path: string[] } {
+  const identity = source.subCategorySlug || source.categorySlug;
+  const category = taxonomy.findCategory(identity);
+  if (!category)
+    throw new Error(`No database category is compatible with ${identity}.`);
+  const projection = taxonomy.projectIdentity(category.id);
+  if (!projection) throw new Error(`Missing taxonomy path for ${identity}.`);
+  return { id: category.id, path: projection.path.map((node) => node.id) };
 }
 
 async function removeLegacyMarketplaceSeed(): Promise<void> {
@@ -1094,13 +1059,13 @@ export function createSeedListing(
   options: {
     listingId: string;
     profileId: (sourceId: string) => string;
-    availableCategoryIds: ReadonlySet<string>;
+    taxonomy: Pick<TaxonomyV1Service, "findCategory" | "projectIdentity">;
     images: readonly string[];
     marketplaceOrganizationId?: string;
   },
 ): Listing {
   const mappedId = options.listingId;
-  const category = listingCategory(source, options.availableCategoryIds);
+  const category = listingCategory(source, options.taxonomy);
   const marketCode = String(source.marketCode || "FR").toUpperCase();
   const currency = String(source.currency || "EUR").toUpperCase();
   const price = Number(source.price || 0);
@@ -1245,11 +1210,7 @@ async function seedGenericListings(
   const repository = new PostgresListingRepository();
   const client = getSupabaseAdminClient() as any;
   await removeLegacyMarketplaceSeed();
-  const categoryResult = await client.from("categories").select("id");
-  if (categoryResult.error) throw categoryResult.error;
-  const availableCategoryIds = new Set<string>(
-    (categoryResult.data || []).map((category: any) => category.id),
-  );
+  const taxonomy = await taxonomyV1Service.snapshot();
   for (const source of marketplaceFixture.listings) {
     const mappedId = listingId(source.id);
     const photos = [...(listingUrls.get(source.id) || [])];
@@ -1257,7 +1218,7 @@ async function seedGenericListings(
       listingId: mappedId,
       profileId,
       images: photos,
-      availableCategoryIds,
+      taxonomy,
       marketplaceOrganizationId,
     });
     await repository.save(listing);
@@ -1859,7 +1820,7 @@ export async function seedLocalDevelopmentData(): Promise<LocalDevelopmentSeedSu
     );
   }
 
-  await importBaselineCommercialCatalog();
+  await importBaselineCommercialCatalog({ onlyIfMissing: true });
   const media = await seedPublicMedia();
   await seedProfiles(media.avatarUrls);
   const organizations = await seedOrganizations();

@@ -11,7 +11,6 @@ import type {
   VehiclePublic,
   VehicleSearchQuery,
   VehicleSearchResponse,
-  VehicleTypeConfig,
 } from "@shongre/contracts/auto";
 import { apiOperation } from "./generated-api-operation";
 import type {
@@ -213,28 +212,6 @@ export class HttpAutoService implements AutoServiceContract {
       "patchAutoAdminMarketsByMarketCodeAddOnsByAddOnId"
     >("patchAutoAdminMarketsByMarketCodeAddOnsByAddOnId", {
       path: { marketCode: marketCode, addOnId: addOnId },
-      body: patch,
-    });
-  }
-  updateVehicleType(
-    marketCode: string,
-    type: string,
-    patch: Partial<
-      Pick<
-        VehicleTypeConfig,
-        | "label"
-        | "description"
-        | "isActive"
-        | "requiredFieldIds"
-        | "filterFieldIds"
-      >
-    >,
-  ) {
-    return apiOperation<
-      VehicleTypeConfig,
-      "patchAutoAdminMarketsByMarketCodeTypesByType"
-    >("patchAutoAdminMarketsByMarketCodeTypesByType", {
-      path: { marketCode: marketCode, type: type },
       body: patch,
     });
   }

@@ -7,7 +7,7 @@ import { runPsql, runPsqlFile } from "../database/psql.js";
 const directory = dirname(fileURLToPath(import.meta.url));
 const seedPath = resolve(
   directory,
-  "../../supabase/seed/taxonomy-v4.generated.sql",
+  "../../supabase/seed/taxonomy-v1.generated.sql",
 );
 const dryRun = process.argv.includes("--dry-run");
 const databaseUrl = process.env.DATABASE_URL;
@@ -117,7 +117,7 @@ function inspectDiff(): string {
 
 const before = inspectDiff();
 if (dryRun) {
-  console.log(`Taxonomy v4 local dry-run diff: ${before}`);
+  console.log(`Taxonomy v1 local dry-run diff: ${before}`);
 } else {
   runPsqlFile(databaseUrl, seedPath);
   const secondRun = inspectDiff();
@@ -127,6 +127,6 @@ if (dryRun) {
     );
   }
   console.log(
-    `Taxonomy v4 local import applied. Empty second-run diff: ${secondRun}`,
+    `Taxonomy v1 local import applied. Empty second-run diff: ${secondRun}`,
   );
 }

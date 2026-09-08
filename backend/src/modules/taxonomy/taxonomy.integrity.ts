@@ -1,14 +1,17 @@
-import type { TaxonomyV4PrivateBundle } from "./taxonomy.bundle.js";
+import { inspectTaxonomyReferences } from "./taxonomy.references.js";
+import type { TaxonomyV1PrivateBundle } from "./taxonomy.bundle.js";
 import type { components } from "@shongre/contracts/openapi";
 
 type Issue = components["schemas"]["TaxonomyReviewIssue"];
 
 /** Structural validity is distinct from subject-matter and regulatory review. */
-export function inspectTaxonomy(bundle: TaxonomyV4PrivateBundle) {
+export function inspectTaxonomy(bundle: TaxonomyV1PrivateBundle) {
   const issues: Issue[] = [];
   const warnings: Issue[] = [];
   const add = (code: string, resource: string, id: string, message: string) =>
     issues.push({ code, resource, id, message });
+  for (const issue of inspectTaxonomyReferences(bundle.referenceEntries))
+    add("invalid_reference", "referenceEntries", issue.id, issue.message);
   const nodes = new Map(bundle.categories.map((row) => [row.id, row]));
   const types = new Map(bundle.listingTypes.map((row) => [row.id, row]));
   const fields = new Map(bundle.attributes.map((row) => [row.id, row]));

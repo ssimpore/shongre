@@ -1,3 +1,4 @@
+import { routes } from "../../configuration/routes";
 import React, { useEffect, useState } from "react";
 import {
   BarChart3,
@@ -17,7 +18,6 @@ import type {
   CourseFeatureFlags,
   CourseMarketConfig,
   CoursePlan,
-  CourseSubject,
 } from "@shongre/contracts/courses";
 import { COURSE_CONSTRAINTS } from "@shongre/contracts/courses";
 import { services } from "../../api/client/service-registry";
@@ -95,33 +95,6 @@ export const AdminCoursesPage: React.FC = () => {
       );
     } finally {
       setIsSaving(false);
-    }
-  };
-
-  const toggleSubject = async (subject: CourseSubject) => {
-    try {
-      const updated = await services.courses.updateSubject(
-        activeMarket.code,
-        subject.id,
-        { isActive: !subject.isActive },
-      );
-      setCatalog((current) =>
-        current
-          ? {
-              ...current,
-              subjects: current.subjects.map((item) =>
-                item.id === updated.id ? updated : item,
-              ),
-            }
-          : current,
-      );
-      toast.success(
-        `${updated.label} ${updated.isActive ? "activée" : "désactivée"}.`,
-      );
-    } catch (reason) {
-      toast.error(
-        reason instanceof Error ? reason.message : "Modification impossible.",
-      );
     }
   };
 
@@ -355,11 +328,15 @@ export const AdminCoursesPage: React.FC = () => {
                     {subject.levelIds.length} niveaux · {subject.slug}
                   </p>
                 </div>
-                <Switch
-                  label={`${subject.isActive ? "Désactiver" : "Activer"} ${subject.label}`}
-                  checked={subject.isActive}
-                  onChange={() => toggleSubject(subject)}
-                />
+                <a
+                  className="text-primary underline"
+                  href={routes.admin.taxonomy()}
+                >
+                  {subject.isActive
+                    ? t("admin.taxonomy.referenceActive")
+                    : t("admin.taxonomy.referenceInactive")}{" "}
+                  · {t("admin.taxonomy.editReferences")}
+                </a>
               </article>
             ))}
           </div>

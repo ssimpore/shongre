@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { marketCodeSchema } from "./primitives";
-import { taxonomyV4ListingIntentSchema } from "./taxonomy";
+import { taxonomyV1ListingIntentSchema } from "./taxonomy";
 import { digitalFulfillmentVersionInputSchema } from "./digital-products";
 
 export const PUBLICATION_CONSTRAINTS = {
@@ -10,7 +10,7 @@ export const PUBLICATION_CONSTRAINTS = {
   imageCount: { min: 0, max: 12 },
 } as const;
 
-const TAXONOMY_V4_ITEM_CONDITION_BY_APPLICATION_VALUE = {
+const TAXONOMY_V1_ITEM_CONDITION_BY_APPLICATION_VALUE = {
   neuf_avec_etiquette: "new",
   "neuf-avec-etiquette": "new",
   neuf_sans_etiquette: "new",
@@ -49,24 +49,24 @@ const TAXONOMY_V4_ITEM_CONDITION_BY_APPLICATION_VALUE = {
   pro_overhaul_needed: "damaged",
 } as const;
 
-export type TaxonomyV4ItemCondition =
-  (typeof TAXONOMY_V4_ITEM_CONDITION_BY_APPLICATION_VALUE)[keyof typeof TAXONOMY_V4_ITEM_CONDITION_BY_APPLICATION_VALUE];
+export type TaxonomyV1ItemCondition =
+  (typeof TAXONOMY_V1_ITEM_CONDITION_BY_APPLICATION_VALUE)[keyof typeof TAXONOMY_V1_ITEM_CONDITION_BY_APPLICATION_VALUE];
 
 /**
  * Maps the existing cross-client condition control to the canonical taxonomy
- * v4 option key. Categories without a `condition` binding must omit the result
+ * v1 option key. Categories without a `condition` binding must omit the result
  * rather than submitting an attribute that is not in their schema.
  */
-export function toTaxonomyV4ItemCondition(
+export function toTaxonomyV1ItemCondition(
   value: string | undefined,
-): TaxonomyV4ItemCondition | undefined {
+): TaxonomyV1ItemCondition | undefined {
   if (!value) return undefined;
-  return TAXONOMY_V4_ITEM_CONDITION_BY_APPLICATION_VALUE[
-    value as keyof typeof TAXONOMY_V4_ITEM_CONDITION_BY_APPLICATION_VALUE
+  return TAXONOMY_V1_ITEM_CONDITION_BY_APPLICATION_VALUE[
+    value as keyof typeof TAXONOMY_V1_ITEM_CONDITION_BY_APPLICATION_VALUE
   ];
 }
 
-const APPLICATION_CONDITION_BY_TAXONOMY_V4_VALUE: Record<string, string> = {
+const APPLICATION_CONDITION_BY_TAXONOMY_V1_VALUE: Record<string, string> = {
   new: "new_with_tag",
   like_new: "like_new",
   very_good: "very_good",
@@ -92,7 +92,7 @@ const APPLICATION_CONDITION_BY_TAXONOMY_V4_VALUE: Record<string, string> = {
   en_construction_vefa: "re_new",
 };
 
-/** Keeps the legacy listing projection aligned with an explicitly selected v4 condition. */
+/** Keeps the legacy listing projection aligned with an explicitly selected v1 condition. */
 export function toApplicationListingCondition(
   attributes: Record<string, unknown>,
   fallback: string,
@@ -108,7 +108,7 @@ export function toApplicationListingCondition(
     if (attributeId === "property_condition" && value === "neuf") {
       return "re_new";
     }
-    return APPLICATION_CONDITION_BY_TAXONOMY_V4_VALUE[value] ?? fallback;
+    return APPLICATION_CONDITION_BY_TAXONOMY_V1_VALUE[value] ?? fallback;
   }
   return fallback;
 }
@@ -127,8 +127,8 @@ export const publicationInputSchema = z
     currency: z.string().length(3),
     categoryId: z.string().min(1),
     listingTypeId: z.string().min(1).optional(),
-    listingIntent: taxonomyV4ListingIntentSchema.optional(),
-    taxonomyVersion: z.literal("4.0.0").optional(),
+    listingIntent: taxonomyV1ListingIntentSchema.optional(),
+    taxonomyVersion: z.literal("v1").optional(),
     taxonomyRevision: z.number().int().positive().optional(),
     attributes: z.record(z.string(), z.unknown()).default({}),
     marketCode: marketCodeSchema,

@@ -48,12 +48,13 @@ import {
   Select,
   SelectableCard,
   Skeleton,
+  StatePanel,
   Textarea,
   ScrollableRegion,
   Image,
 } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
-import { formatAutoMoney } from "./auto-format";
+import { formatAutoMoney, autoOptions } from "./auto-format";
 import { formatCurrencySymbol } from "../../utilities/formatters";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { motionDurationMs } from "@shongre/design-tokens";
@@ -90,6 +91,16 @@ const FIRST_STEP = AUTO_CONSTRAINTS.publication.firstStep;
 const TOTAL_STEPS = AUTO_CONSTRAINTS.publication.stepCount;
 
 export const AutoPublishWizardPage: React.FC = () => {
+  const { currentUser } = useAuth();
+  const { activeMarket } = useMarketLocation();
+  return (
+    <AutoPublicationEditor
+      key={`${currentUser?.id ?? "guest"}:${activeMarket.code}`}
+    />
+  );
+};
+
+const AutoPublicationEditor: React.FC = () => {
   const { t } = useTranslation();
   const { activeMarket, currentLocale, convertMoney } = useMarketLocation();
   const { currentUser } = useAuth();
@@ -97,6 +108,8 @@ export const AutoPublishWizardPage: React.FC = () => {
   const navigate = useNavigate();
   const accountId = currentUser?.id || "guest";
   const [catalog, setCatalog] = useState<AutoCatalog | null>(null);
+  const [loadError, setLoadError] = useState(false);
+  const [retry, setRetry] = useState(0);
   const [draftId, setDraftId] = useState("");
   const [step, setStep] = useState<number>(FIRST_STEP);
   const [data, setData] = useState<AutoDraftData>(
@@ -128,11 +141,13 @@ export const AutoPublishWizardPage: React.FC = () => {
   });
 
   useEffect(() => {
+    let active = true;
     Promise.all([
       services.auto.getCatalog(activeMarket.code),
       services.auto.getOrCreateDraft(accountId, activeMarket.code),
     ])
       .then(([nextCatalog, remote]) => {
+        if (!active) return;
         const restoredData = {
           ...(EMPTY_AUTO_DRAFT_DATA as AutoDraftData),
           ...(remote.data as Partial<AutoDraftData>),
@@ -154,10 +169,13 @@ export const AutoPublishWizardPage: React.FC = () => {
         );
         hydrated.current = true;
       })
-      .catch(() =>
-        toast.error("Le catalogue Auto est momentanément indisponible."),
-      );
-  }, [accountId, activeMarket.code, toast]);
+      .catch(() => {
+        if (active) setLoadError(true);
+      });
+    return () => {
+      active = false;
+    };
+  }, [accountId, activeMarket.code, retry]);
 
   useEffect(() => {
     if (!hasEnteredWizard || !hydrated.current || !draftId) return;
@@ -200,6 +218,33 @@ export const AutoPublishWizardPage: React.FC = () => {
     key: K,
     value: AutoDraftData[K],
   ) => setData((current) => ({ ...current, [key]: value }));
+  const selectVehicleType = (
+    vehicleType: AutoCatalog["vehicleTypes"][number]["type"],
+  ) => {
+    const compatible = catalog?.vehicleCatalog.some(
+      (entry) =>
+        entry.id === data.makeId && entry.vehicleTypes.includes(vehicleType),
+    );
+    const modelCompatible =
+      compatible &&
+      catalog?.vehicleCatalog.some(
+        (entry) =>
+          entry.id === data.modelId && entry.vehicleTypes.includes(vehicleType),
+      );
+    if ((data.makeId && !compatible) || (data.modelId && !modelCompatible)) {
+      toast.info(
+        "Le type de véhicule a changé. Vérifiez la marque et le modèle.",
+      );
+    }
+    setData((current) => ({
+      ...current,
+      vehicleType,
+      ...(!compatible ? { makeId: "", makeLabel: "" } : {}),
+      ...(!modelCompatible
+        ? { modelId: "", modelLabel: "", generationLabel: "", trimLabel: "" }
+        : {}),
+    }));
+  };
   const isElectric = ["electric", "plug_in_hybrid", "hybrid"].includes(
     String(data.fuelType),
   );
@@ -220,7 +265,10 @@ export const AutoPublishWizardPage: React.FC = () => {
       );
     if (step === PUBLISH_STEP.history)
       return Boolean(
-        data.condition && data.accidentStatus && data.maintenanceBookStatus,
+        data.condition &&
+        data.accidentStatus &&
+        data.maintenanceBookStatus &&
+        data.inspectionStatus,
       );
     if (step === PUBLISH_STEP.pricing)
       return (
@@ -380,6 +428,25 @@ export const AutoPublishWizardPage: React.FC = () => {
     scrollToTop();
   };
 
+  if (loadError)
+    return (
+      <StatePanel
+        variant="error"
+        title="Le catalogue Auto est momentanément indisponible."
+        description="Votre brouillon reste enregistré."
+        action={
+          <Button
+            onClick={() => {
+              setLoadError(false);
+              setRetry((value) => value + 1);
+            }}
+          >
+            {t("common.retry")}
+          </Button>
+        }
+      />
+    );
+
   if (isPreparationVisible) {
     return (
       <OnboardingPreparationPage
@@ -440,7 +507,7 @@ export const AutoPublishWizardPage: React.FC = () => {
         </h1>
         <p className="mt-2 text-sm text-text-secondary">
           L’annonce <strong>{completeId}</strong> est en attente de modération.
-          Aucun paiement réel n’a été effectué dans ce mode de démonstration.
+          Vous pourrez suivre sa validation depuis votre compte.
         </p>
         <div className="mt-6 flex justify-center gap-2">
           <Button to="/auto">Voir Shongre Auto</Button>
@@ -471,7 +538,7 @@ export const AutoPublishWizardPage: React.FC = () => {
               <SelectableCard
                 key={type.type}
                 selected={data.vehicleType === type.type}
-                onSelect={() => update("vehicleType", type.type)}
+                onSelect={() => selectVehicleType(type.type)}
                 className={`rounded-card border p-4 ${data.vehicleType === type.type ? "border-primary bg-primary-light" : "border-border-base bg-bg-surface"}`}
               >
                 <CarFront className="h-icon-lg w-icon-lg text-primary" />
@@ -501,12 +568,38 @@ export const AutoPublishWizardPage: React.FC = () => {
                   const entry = catalog.vehicleCatalog.find(
                     (row) => row.id === event.target.value,
                   );
-                  update("makeId", event.target.value);
-                  if (entry) update("makeLabel", entry.label);
+                  if (event.target.value === data.makeId) return;
+                  setData((current) => ({
+                    ...current,
+                    makeId: entry?.id ?? "",
+                    makeLabel: entry?.label ?? "",
+                    modelId: "",
+                    modelLabel: "",
+                    generationLabel: "",
+                    trimLabel: "",
+                  }));
+                  if (data.modelId)
+                    toast.info(
+                      "La marque a changé. Sélectionnez le modèle correspondant.",
+                    );
                 }}
               >
-                <option value="peugeot">Peugeot</option>
-                <option value="bmw">BMW</option>
+                <option value="">
+                  {t("publishing.publishWizard.selectionnerUneOption")}
+                </option>
+                {catalog.vehicleCatalog
+                  .filter(
+                    (row) =>
+                      row.kind === "make" &&
+                      row.vehicleTypes.some(
+                        (type) => type === data.vehicleType,
+                      ),
+                  )
+                  .map((row) => (
+                    <option key={row.id} value={row.id}>
+                      {row.label}
+                    </option>
+                  ))}
               </Select>
             </FormField>
             <FormField label="Modèle" required>
@@ -518,14 +611,26 @@ export const AutoPublishWizardPage: React.FC = () => {
                   const entry = catalog.vehicleCatalog.find(
                     (row) => row.id === event.target.value,
                   );
-                  update("modelId", event.target.value);
-                  if (entry) update("modelLabel", entry.label);
+                  setData((current) => ({
+                    ...current,
+                    modelId: entry?.id ?? "",
+                    modelLabel: entry?.label ?? "",
+                    generationLabel: "",
+                    trimLabel: "",
+                  }));
                 }}
               >
+                <option value="">
+                  {t("publishing.publishWizard.selectionnerUneOption")}
+                </option>
                 {catalog.vehicleCatalog
                   .filter(
                     (row) =>
-                      row.kind === "model" && row.parentId === data.makeId,
+                      row.kind === "model" &&
+                      row.parentId === data.makeId &&
+                      row.vehicleTypes.some(
+                        (type) => type === data.vehicleType,
+                      ),
                   )
                   .map((row) => (
                     <option key={row.id} value={row.id}>
@@ -640,13 +745,38 @@ export const AutoPublishWizardPage: React.FC = () => {
                 className="w-full"
                 labelledByAncestor
                 value={String(data.fuelType)}
-                onChange={(event) => update("fuelType", event.target.value)}
+                onChange={(event) => {
+                  const fuelType = event.target.value;
+                  const retainsBattery = [
+                    "electric",
+                    "plug_in_hybrid",
+                    "hybrid",
+                  ].includes(fuelType);
+                  setData((current) => ({
+                    ...current,
+                    fuelType,
+                    ...(!retainsBattery
+                      ? {
+                          batteryCapacityKwh: undefined,
+                          electricRangeKm: undefined,
+                          chargingPowerKw: undefined,
+                        }
+                      : {}),
+                  }));
+                  if (!retainsBattery && data.batteryCapacityKwh)
+                    toast.info(
+                      "L’énergie a changé. Les caractéristiques de batterie ont été retirées.",
+                    );
+                }}
               >
-                <option value="petrol">Essence</option>
-                <option value="diesel">Diesel</option>
-                <option value="electric">Électrique</option>
-                <option value="hybrid">Hybride</option>
-                <option value="plug_in_hybrid">Hybride rechargeable</option>
+                <option value="">Sélectionnez une option</option>
+                {autoOptions(catalog, "fuel_type", currentLocale).map(
+                  (option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ),
+                )}
               </Select>
             </FormField>
             <FormField label="Transmission" required>
@@ -656,8 +786,14 @@ export const AutoPublishWizardPage: React.FC = () => {
                 value={String(data.transmission)}
                 onChange={(event) => update("transmission", event.target.value)}
               >
-                <option value="manual">Manuelle</option>
-                <option value="automatic">Automatique</option>
+                <option value="">Sélectionnez une option</option>
+                {autoOptions(catalog, "transmission", currentLocale).map(
+                  (option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ),
+                )}
               </Select>
             </FormField>
             <FormField label="Carrosserie">
@@ -753,10 +889,15 @@ export const AutoPublishWizardPage: React.FC = () => {
                 value={String(data.condition)}
                 onChange={(event) => update("condition", event.target.value)}
               >
-                <option value="excellent">Excellent</option>
-                <option value="good">Bon</option>
-                <option value="fair">Correct</option>
-                <option value="damaged">Endommagé</option>
+                <option value="">Sélectionnez une option</option>
+                {(
+                  catalog.attributes.find((field) => field.id === "condition")
+                    ?.options ?? []
+                ).map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
               </Select>
             </FormField>
             <FormField label="Accidents connus" required>
@@ -768,10 +909,14 @@ export const AutoPublishWizardPage: React.FC = () => {
                   update("accidentStatus", event.target.value)
                 }
               >
-                <option value="none_declared">Aucun déclaré</option>
-                <option value="repaired">Réparé</option>
-                <option value="known_damage">Dommages connus</option>
-                <option value="unknown">Inconnu</option>
+                <option value="">Sélectionnez une option</option>
+                {autoOptions(catalog, "accident_status", currentLocale).map(
+                  (option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ),
+                )}
               </Select>
             </FormField>
             <FormField label="Propriétaires précédents">
@@ -794,10 +939,15 @@ export const AutoPublishWizardPage: React.FC = () => {
                   update("maintenanceBookStatus", event.target.value)
                 }
               >
-                <option value="complete">Complet</option>
-                <option value="partial">Partiel</option>
-                <option value="none">Absent</option>
-                <option value="unknown">Inconnu</option>
+                {autoOptions(
+                  catalog,
+                  "maintenance_book_status",
+                  currentLocale,
+                ).map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
               </Select>
             </FormField>
             <FormField label="Contrôle technique">
@@ -809,10 +959,13 @@ export const AutoPublishWizardPage: React.FC = () => {
                   update("inspectionStatus", event.target.value)
                 }
               >
-                <option value="valid">Valide</option>
-                <option value="due_soon">À renouveler bientôt</option>
-                <option value="expired">Expiré</option>
-                <option value="not_applicable">Non applicable</option>
+                {autoOptions(catalog, "inspection_status", currentLocale).map(
+                  (option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ),
+                )}
               </Select>
             </FormField>
             <FormField label="Valide jusqu’au">
@@ -1303,7 +1456,18 @@ export const AutoPublishWizardPage: React.FC = () => {
                 {data.makeLabel} {data.modelLabel}
               </p>
               <p className="text-micro text-text-muted">
-                {data.modelYear} · {data.fuelType} · {data.transmission}
+                {data.modelYear} ·{" "}
+                {
+                  autoOptions(catalog, "fuel_type", currentLocale).find(
+                    (option) => option.value === data.fuelType,
+                  )?.label
+                }{" "}
+                ·{" "}
+                {
+                  autoOptions(catalog, "transmission", currentLocale).find(
+                    (option) => option.value === data.transmission,
+                  )?.label
+                }
               </p>
             </div>
             <div className="rounded-card border border-border-base bg-bg-surface p-4 shadow-xs">

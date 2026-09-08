@@ -4,8 +4,8 @@
 
 - Contract version: `1.0.0`
 - API base path: `/api/v1`
-- Operations: **536**
-- Specification SHA-256: `be8ddac93795fde5`
+- Operations: **529**
+- Specification SHA-256: `1f958eac1102fc69`
 
 ## account
 
@@ -231,7 +231,6 @@
 | --- | --- | --- | --- | --- | --- |
 | `PATCH` | `/auto/admin/markets/{marketCode}/add-ons/{addOnId}` | `patchAutoAdminMarketsByMarketCodeAddOnsByAddOnId` | `permission` | `auto.admin.manage` | `200` |
 | `PATCH` | `/auto/admin/markets/{marketCode}/plans/{planId}` | `patchAutoAdminMarketsByMarketCodePlansByPlanId` | `permission` | `auto.admin.manage` | `200` |
-| `PATCH` | `/auto/admin/markets/{marketCode}/types/{type}` | `patchAutoAdminMarketsByMarketCodeTypesByType` | `permission` | `auto.admin.manage` | `200` |
 | `PUT` | `/auto/admin/markets/{marketCode}` | `putAutoAdminMarketsByMarketCode` | `permission` | `auto.admin.manage` | `200` |
 | `GET` | `/auto/admin/overview` | `getAutoAdminOverview` | `permission` | `auto.admin.manage` | `200` |
 | `GET` | `/auto/catalog` | `getAutoCatalog` | `public` | — | `200` |
@@ -386,7 +385,6 @@
 | --- | --- | --- | --- | --- | --- |
 | `GET` | `/education/admin/catalog` | `getEducationAdminCatalog` | `permission` | `course.admin.manage` | `200` |
 | `PATCH` | `/education/admin/markets/{marketCode}/plans/{planId}` | `patchEducationAdminMarketsByMarketCodePlansByPlanId` | `permission` | `course.admin.manage` | `200` |
-| `PATCH` | `/education/admin/markets/{marketCode}/subjects/{subjectId}` | `patchEducationAdminMarketsByMarketCodeSubjectsBySubjectId` | `permission` | `course.admin.manage` | `200` |
 | `PUT` | `/education/admin/markets/{marketCode}` | `putEducationAdminMarketsByMarketCode` | `permission` | `course.admin.manage` | `200` |
 | `POST` | `/education/bookings` | `postEducationBookings` | `permission` | `course.booking.create` | `200` |
 | `GET` | `/education/catalog` | `getEducationCatalog` | `public` | — | `200` |
@@ -729,9 +727,7 @@
 | Method | Path | Operation ID | Access | Permission | Success |
 | --- | --- | --- | --- | --- | --- |
 | `PATCH` | `/real-estate/admin/markets/{marketCode}/add-ons/{addOnId}` | `patchRealEstateAdminMarketsByMarketCodeAddOnsByAddOnId` | `permission` | `immo.admin.manage` | `200` |
-| `PATCH` | `/real-estate/admin/markets/{marketCode}/field-rules/{ruleId}` | `patchRealEstateAdminMarketsByMarketCodeFieldRulesByRuleId` | `permission` | `immo.admin.manage` | `200` |
 | `PATCH` | `/real-estate/admin/markets/{marketCode}/offers/{offerId}` | `patchRealEstateAdminMarketsByMarketCodeOffersByOfferId` | `permission` | `immo.admin.manage` | `200` |
-| `PATCH` | `/real-estate/admin/markets/{marketCode}/types/{type}` | `patchRealEstateAdminMarketsByMarketCodeTypesByType` | `permission` | `immo.admin.manage` | `200` |
 | `PUT` | `/real-estate/admin/markets/{marketCode}` | `putRealEstateAdminMarketsByMarketCode` | `permission` | `immo.admin.manage` | `200` |
 | `GET` | `/real-estate/admin/overview` | `getRealEstateAdminOverview` | `permission` | `immo.admin.manage` | `200` |
 | `POST` | `/real-estate/agencies/{organizationId}/imports` | `postRealEstateAgenciesByOrganizationIdImports` | `permission` | `immo.inventory.import.own` | `200` |
@@ -792,16 +788,13 @@
 
 | Method | Path | Operation ID | Access | Permission | Success |
 | --- | --- | --- | --- | --- | --- |
-| `GET` | `/taxonomy/header-navigation` | `getTaxonomyHeaderNavigation` | `public` | — | `200` |
-| `GET` | `/taxonomy/nodes/{id}/attributes` | `getTaxonomyNodesByIdAttributes` | `public` | — | `200` |
-| `GET` | `/taxonomy/nodes/{id}/children` | `getTaxonomyNodesByIdChildren` | `public` | — | `200` |
-| `GET` | `/taxonomy/nodes/{id}` | `getTaxonomyNodesById` | `public` | — | `200` |
-| `GET` | `/taxonomy/root` | `getTaxonomyRoot` | `public` | — | `200` |
-| `GET` | `/taxonomy/search-filters` | `getTaxonomySearchFilters` | `public` | — | `200` |
-| `GET` | `/taxonomy/slug/{slug}` | `getTaxonomySlugBySlug` | `public` | — | `200` |
-| `GET` | `/taxonomy/v4/options/{optionSetId}` | `getTaxonomyV4Options` | `public` | — | `200` |
-| `GET` | `/taxonomy/v4/resolve` | `resolveTaxonomyV4PublicationSchema` | `public` | — | `200` |
-| `GET` | `/taxonomy/v4/tree` | `getTaxonomyV4Tree` | `public` | — | `200` |
+| `GET` | `/taxonomy/v1/header-navigation` | `getTaxonomyHeaderNavigation` | `public` | — | `200` |
+| `GET` | `/taxonomy/v1/nodes/{id}` | `getTaxonomyNodesById` | `public` | — | `200` |
+| `GET` | `/taxonomy/v1/options/{optionSetId}` | `getTaxonomyV1Options` | `public` | — | `200` |
+| `GET` | `/taxonomy/v1/resolve` | `resolveTaxonomyV1PublicationSchema` | `public` | — | `200` |
+| `GET` | `/taxonomy/v1/root` | `getTaxonomyRoot` | `public` | — | `200` |
+| `GET` | `/taxonomy/v1/search-filters` | `getTaxonomySearchFilters` | `public` | — | `200` |
+| `GET` | `/taxonomy/v1/tree` | `getTaxonomyV1Tree` | `public` | — | `200` |
 
 ## users
 

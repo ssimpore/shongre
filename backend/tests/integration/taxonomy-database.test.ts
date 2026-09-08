@@ -1,4 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { fileURLToPath } from "node:url";
+import { runPsql } from "../../scripts/database/psql.js";
 import type { NestFastifyApplication } from "@nestjs/platform-fastify";
 import { config } from "../../src/app/config/index.js";
 import { createBackendApplication } from "../../src/app/server/index.js";
@@ -6,8 +8,10 @@ import { repositories } from "../../src/infrastructure/database/repositories/ind
 import { PostgresTaxonomyPublicationRepository } from "../../src/infrastructure/database/repositories/taxonomy-publication.repository.js";
 import { sessionService } from "../../src/modules/auth/session.service.js";
 import { TaxonomyGovernanceService } from "../../src/modules/taxonomy/taxonomy.governance.js";
-import { taxonomyV4Service } from "../../src/modules/taxonomy/taxonomy.runtime.js";
-import { taxonomyV4TreeResponseSchema } from "@shongre/contracts/taxonomy";
+import { taxonomyRecords } from "../../src/modules/taxonomy/taxonomy.editor.js";
+import { taxonomyReferenceEntrySchema } from "../../src/modules/taxonomy/taxonomy.references.js";
+import { taxonomyV1Service } from "../../src/modules/taxonomy/taxonomy.runtime.js";
+import { taxonomyV1TreeResponseSchema } from "@shongre/contracts/taxonomy";
 
 // Explicit opt-in to the repository-owned local stack; never a hosted test.
 const enabled = process.env.TAXONOMY_DATABASE_TEST === "local";
@@ -137,6 +141,55 @@ describe.skipIf(!enabled)(
       }
     }, 120_000);
 
+    it("seeds the current schema without changing editorial references or revisions", () => {
+      const seedPath = fileURLToPath(
+        new URL("../../supabase/seed/seed.sql", import.meta.url),
+      );
+      // Sentinel edits are isolated in this rolled-back connection, including
+      // every former vertical catalogue, so matching defaults cannot mask a reset.
+      const labelledTables = [
+        "auto_vehicle_types",
+        "auto_attribute_definitions",
+        "auto_catalog_entries",
+        "real_estate_property_types",
+        "real_estate_attribute_definitions",
+        "course_subjects",
+        "course_subject_levels",
+        "employment_dictionary_entries",
+      ];
+      const output = runPsql(
+        process.env.DATABASE_URL!,
+        `BEGIN;
+         ${labelledTables.map((table) => `UPDATE public.${table} SET label = label || ' [seed preservation test]';`).join("\n")}
+         UPDATE public.real_estate_field_rules SET is_active = NOT is_active;
+         CREATE TEMP TABLE seed_taxonomy_before AS
+         SELECT public.read_taxonomy_references() AS reference_entries,
+                public.read_taxonomy_draft() AS draft,
+                (SELECT jsonb_agg(to_jsonb(c)) FROM public.taxonomy_configuration c) AS configuration,
+                (SELECT md5(string_agg(md5(to_jsonb(p)::text), ',' ORDER BY p.revision)) FROM public.taxonomy_publications p) AS publications;
+         \\ir '${seedPath.replaceAll("'", "''")}'
+         UPDATE public.course_offers SET updated_at=updated_at;
+         DO $verify$ BEGIN
+           IF EXISTS (
+             SELECT 1 FROM public.course_offers offer
+             JOIN public.listings listing ON listing.id=offer.listing_id
+             WHERE listing.category_id<>'education'
+                OR listing.attributes->'categoryPath' IS DISTINCT FROM '["education"]'::JSONB
+           ) THEN RAISE EXCEPTION 'Course upsert regressed its canonical discovery category'; END IF;
+           IF EXISTS (
+             SELECT 1 FROM seed_taxonomy_before prior
+             WHERE prior.reference_entries IS DISTINCT FROM public.read_taxonomy_references()
+                OR prior.draft IS DISTINCT FROM public.read_taxonomy_draft()
+                OR prior.configuration IS DISTINCT FROM (SELECT jsonb_agg(to_jsonb(c)) FROM public.taxonomy_configuration c)
+                OR prior.publications IS DISTINCT FROM (SELECT md5(string_agg(md5(to_jsonb(p)::text), ',' ORDER BY p.revision)) FROM public.taxonomy_publications p)
+           ) THEN RAISE EXCEPTION 'Local seed changed database-owned taxonomy'; END IF;
+         END $verify$;
+         ROLLBACK;
+         SELECT 'editorial taxonomy preserved';`,
+      );
+      expect(output).toBe("editorial taxonomy preserved");
+    }, 120_000);
+
     it("rejects guests, customers and staff without verified MFA", async () => {
       for (const token of ["", buyerToken, unverifiedToken]) {
         const response = await call(
@@ -150,7 +203,7 @@ describe.skipIf(!enabled)(
     });
 
     it("round-trips edits, isolates drafts, publishes one revision, detects conflicts and rolls back", async () => {
-      const before = await taxonomyV4Service.snapshot();
+      const before = await taxonomyV1Service.snapshot();
       const row = original.bundle.categories.find(
         (item) => item.id === "electronics",
       )!;
@@ -188,7 +241,7 @@ describe.skipIf(!enabled)(
         coldDraft.bundle.categories.find((item) => item.id === row.id)
           ?.shortLabels["fr-FR"],
       ).toBe(label);
-      expect((await taxonomyV4Service.snapshot()).getMetadata()).toEqual(
+      expect((await taxonomyV1Service.snapshot()).getMetadata()).toEqual(
         before.getMetadata(),
       );
       const exported = await call(
@@ -212,13 +265,13 @@ describe.skipIf(!enabled)(
       });
       expect(published.status, await published.clone().text()).toBe(200);
       const response = await call(
-        "/taxonomy/v4/tree?locale=fr-FR",
+        "/taxonomy/v1/tree?locale=fr-FR",
         "GET",
         undefined,
         "",
       );
       expect(response.headers.get("cache-control")).toContain("no-store");
-      const tree = taxonomyV4TreeResponseSchema.parse(await response.json());
+      const tree = taxonomyV1TreeResponseSchema.parse(await response.json());
       expect(
         tree.items.find((item) => item.id === "electronics")?.shortLabels[
           "fr-FR"
@@ -226,9 +279,9 @@ describe.skipIf(!enabled)(
       ).toBe(label);
       expect(tree.revision).not.toBe(before.revision);
       testPublishedRevision = tree.revision!;
-      expect((await taxonomyV4Service.snapshot()).revision).toBe(tree.revision);
+      expect((await taxonomyV1Service.snapshot()).revision).toBe(tree.revision);
       const navigation = await call(
-        "/taxonomy/header-navigation",
+        "/taxonomy/v1/header-navigation",
         "GET",
         undefined,
         "",
@@ -244,7 +297,7 @@ describe.skipIf(!enabled)(
         changeReason: "Verify safe configuration rollback",
       });
       expect(rollback.status).toBe(200);
-      expect((await taxonomyV4Service.snapshot()).revision).toBe(
+      expect((await taxonomyV1Service.snapshot()).revision).toBe(
         before.revision,
       );
     }, 120_000);
@@ -259,6 +312,9 @@ describe.skipIf(!enabled)(
             .select("draft_revision")
         ).error?.code,
       ).toBe("42501");
+      expect(
+        (await anonymous.from("course_subjects").select("id")).error?.code,
+      ).toBe("42501");
       expect((await anonymous.rpc("get_taxonomy_draft")).error?.code).toBe(
         "42501",
       );
@@ -269,6 +325,71 @@ describe.skipIf(!enabled)(
         .eq("revision", testPublishedRevision);
       expect(mutation.error?.code).toBe("23000");
     });
+
+    it("publishes domain references through the same protected editor without exposing draft labels", async () => {
+      const current = await repository.getDraft();
+      const reference = taxonomyReferenceEntrySchema.parse(
+        taxonomyRecords(current.bundle, "referenceEntries").find(
+          (row) => row.namespace === "course_subjects",
+        ),
+      );
+      const label = String(reference.values.label);
+      const readSubject = async () => {
+        const response = await call("/education/catalog", "GET", undefined, "");
+        expect(response.status).toBe(200);
+        expect(response.headers.get("cache-control")).toContain("no-store");
+        return (await response.json()).subjects.find(
+          (row: { id: string }) => row.id === reference.key,
+        );
+      };
+      expect((await readSubject()).label).toBe(label);
+      try {
+        const saved = await call("/admin/taxonomy/draft", "PUT", {
+          resource: "referenceEntries",
+          expectedRevision: current.revision,
+          records: [
+            {
+              ...reference,
+              values: {
+                ...reference.values,
+                label: "Reference publication check",
+              },
+            },
+          ],
+          changeReason: "Verify canonical domain reference publication",
+        });
+        expect(saved.status, await saved.clone().text()).toBe(200);
+        const review = await saved.json();
+        expect(review.valid).toBe(true);
+        expect((await readSubject()).label).toBe(label);
+        const published = await call("/admin/taxonomy/publish", "POST", {
+          expectedRevision: review.revision,
+          changeReason: "Publish canonical reference test",
+        });
+        expect(published.status, await published.clone().text()).toBe(200);
+        expect((await readSubject()).label).toBe("Reference publication check");
+      } finally {
+        const draft = await repository.getDraft();
+        await governance.update(
+          {
+            resource: "referenceEntries",
+            expectedRevision: draft.revision,
+            records: [reference],
+            changeReason: "Restore reference after local test",
+          },
+          { actorId },
+        );
+        const restored = await repository.getDraft();
+        await governance.rollback(
+          {
+            expectedRevision: restored.revision,
+            targetRevision: original.publishedRevision,
+            changeReason: "Restore original local publication",
+          },
+          { actorId },
+        );
+      }
+    }, 120_000);
 
     it.skipIf(process.env.TAXONOMY_BROWSER_TEST !== "local")(
       "publishes through the rendered admin and updates desktop navigation",

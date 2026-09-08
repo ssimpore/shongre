@@ -244,12 +244,15 @@ test.describe("Shongre Auto", () => {
       mobileOverflow.scrollWidth - mobileOverflow.clientWidth;
     const scrollTowardsStart = mobileOverflow.scrollLeft > maxScrollLeft / 2;
     await expect(track).toHaveAttribute("role", "region");
-    await track.evaluate((element, direction) => {
-      element.scrollBy({
-        left: direction * Math.max(320, element.clientWidth * 0.75),
-        behavior: "auto",
-      });
-    }, scrollTowardsStart ? -1 : 1);
+    await track.evaluate(
+      (element, direction) => {
+        element.scrollBy({
+          left: direction * Math.max(320, element.clientWidth * 0.75),
+          behavior: "auto",
+        });
+      },
+      scrollTowardsStart ? -1 : 1,
+    );
     const observedScrollLeft = expect.poll(() =>
       track.evaluate((element) => element.scrollLeft),
     );
@@ -276,6 +279,7 @@ test.describe("Shongre Auto", () => {
     await expect(
       page.getByRole("heading", { level: 1, name: "Publier un véhicule" }),
     ).toBeVisible();
+    await page.getByRole("button", { name: /^Voitures / }).click();
     await page.getByRole("button", { name: "Continuer" }).click();
     await page.getByLabel("VIN").fill("VF3SECRET12345678");
     await page.getByLabel("Immatriculation").fill("BB-456-BB");

@@ -1,35 +1,35 @@
 import type {
-  TaxonomyV4ListingIntent,
-  TaxonomyV4ListingType,
-  TaxonomyV4Node,
-  TaxonomyV4ResolvedSchema,
-  TaxonomyV4TreeResponse,
+  TaxonomyV1ListingIntent,
+  TaxonomyV1ListingType,
+  TaxonomyV1Node,
+  TaxonomyV1ResolvedSchema,
+  TaxonomyV1TreeResponse,
 } from "@shongre/contracts";
 
 export type ListingOnboardingSellerType = "individual" | "professional";
 
 interface ListingOnboardingIntentOption {
-  intent: TaxonomyV4ListingIntent;
-  labels: TaxonomyV4ListingType["intentLabel"];
+  intent: TaxonomyV1ListingIntent;
+  labels: TaxonomyV1ListingType["intentLabel"];
 }
 
 interface ListingOnboardingCategoryLevel {
   depth: number;
   parentId?: string;
-  items: TaxonomyV4Node[];
+  items: TaxonomyV1Node[];
 }
 
 export interface ListingOnboardingModel {
   intents: ListingOnboardingIntentOption[];
-  path: TaxonomyV4Node[];
+  path: TaxonomyV1Node[];
   levels: ListingOnboardingCategoryLevel[];
-  eligibleListingTypes: TaxonomyV4ListingType[];
-  selectedListingType?: TaxonomyV4ListingType;
+  eligibleListingTypes: TaxonomyV1ListingType[];
+  selectedListingType?: TaxonomyV1ListingType;
   isComplete: boolean;
 }
 
 const sellerAllowed = (
-  eligibility: TaxonomyV4Node["sellerEligibility"],
+  eligibility: TaxonomyV1Node["sellerEligibility"],
   sellerType: ListingOnboardingSellerType,
 ) =>
   sellerType === "individual"
@@ -66,7 +66,7 @@ export function localizedTaxonomyLabel(
 }
 
 export function restoreTaxonomyPath(
-  items: readonly TaxonomyV4Node[],
+  items: readonly TaxonomyV1Node[],
   categoryId: string | undefined,
 ): string[] {
   if (!categoryId) return [];
@@ -83,11 +83,11 @@ export function restoreTaxonomyPath(
 }
 
 function normalizePath(
-  items: readonly TaxonomyV4Node[],
+  items: readonly TaxonomyV1Node[],
   path: readonly string[],
-): TaxonomyV4Node[] {
+): TaxonomyV1Node[] {
   const byId = new Map(items.map((item) => [item.id, item]));
-  const normalized: TaxonomyV4Node[] = [];
+  const normalized: TaxonomyV1Node[] = [];
   for (const id of path) {
     const node = byId.get(id);
     const expectedParent = normalized.at(-1)?.id;
@@ -98,8 +98,8 @@ function normalizePath(
 }
 
 export function buildListingOnboardingModel(input: {
-  tree: TaxonomyV4TreeResponse;
-  intent?: TaxonomyV4ListingIntent;
+  tree: TaxonomyV1TreeResponse;
+  intent?: TaxonomyV1ListingIntent;
   sellerType: ListingOnboardingSellerType;
   selectedPath?: readonly string[];
   selectedCategoryId?: string;
@@ -119,7 +119,7 @@ export function buildListingOnboardingModel(input: {
       ),
   );
   const intentById = new Map<
-    TaxonomyV4ListingIntent,
+    TaxonomyV1ListingIntent,
     ListingOnboardingIntentOption
   >();
   for (const listingType of sellerListingTypes) {
@@ -147,14 +147,24 @@ export function buildListingOnboardingModel(input: {
       node = node.parentId ? categoryById.get(node.parentId) : undefined;
     }
   }
+  const canonicalIdentity = (identity: string | undefined) =>
+    identity &&
+    (categoryById.has(identity)
+      ? identity
+      : (input.tree.aliases?.find((alias) => alias.alias === identity)
+          ?.canonicalCategoryId ?? identity));
+  const selectedPath = input.selectedPath?.map((id) => canonicalIdentity(id)!);
   const requestedPath =
     input.selectedPath && input.selectedPath.length > 0
-      ? input.selectedPath
-      : restoreTaxonomyPath(input.tree.items, input.selectedCategoryId);
+      ? restoreTaxonomyPath(input.tree.items, selectedPath?.at(-1))
+      : restoreTaxonomyPath(
+          input.tree.items,
+          canonicalIdentity(input.selectedCategoryId),
+        );
   const path = normalizePath(input.tree.items, requestedPath).filter((node) =>
     eligibleCategoryIds.has(node.id),
   );
-  const childrenByParent = new Map<string | undefined, TaxonomyV4Node[]>();
+  const childrenByParent = new Map<string | undefined, TaxonomyV1Node[]>();
   for (const item of input.tree.items) {
     if (
       !eligibleCategoryIds.has(item.id) ||
@@ -212,11 +222,11 @@ export function selectTaxonomyPathNode(input: {
 
 export function searchListingOnboardingCategories(input: {
   model: ListingOnboardingModel;
-  tree: TaxonomyV4TreeResponse;
+  tree: TaxonomyV1TreeResponse;
   query: string;
   locale: string;
   limit?: number;
-}): TaxonomyV4Node[] {
+}): TaxonomyV1Node[] {
   const query = input.query.trim().toLocaleLowerCase(input.locale);
   if (!query) return [];
   const eligible = new Set(
@@ -236,11 +246,11 @@ export function searchListingOnboardingCategories(input: {
 export interface TaxonomyPublicationFieldGroup {
   id: string;
   label: string;
-  fields: TaxonomyV4ResolvedSchema["attributes"];
+  fields: TaxonomyV1ResolvedSchema["attributes"];
 }
 
 export function groupTaxonomyPublicationFields(input: {
-  schema: TaxonomyV4ResolvedSchema;
+  schema: TaxonomyV1ResolvedSchema;
   locale: string;
   excludedAttributeIds?: ReadonlySet<string>;
 }): TaxonomyPublicationFieldGroup[] {

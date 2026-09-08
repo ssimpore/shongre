@@ -208,9 +208,9 @@ function renderBackendHomePage(
         <span class="link-name">Health Check</span>
         <span class="link-path">GET /health</span>
       </a>
-      <a class="link-item" href="${prefix}/taxonomy/root" target="_blank">
+      <a class="link-item" href="${prefix}/taxonomy/v1/root" target="_blank">
         <span class="link-name">Taxonomy Tree</span>
-        <span class="link-path">GET ${prefix}/taxonomy/root</span>
+        <span class="link-path">GET ${prefix}/taxonomy/v1/root</span>
       </a>
       <a class="link-item" href="${prefix}/listings" target="_blank">
         <span class="link-name">Listings Feed</span>

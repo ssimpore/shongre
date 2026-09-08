@@ -6,18 +6,6 @@ export const TAXONOMY_ADMIN_CONSTRAINTS = {
   updateBatchSize: 200,
 } as const;
 
-export const TAXONOMY_PUBLICATION_CONSTRAINTS = {
-  durationDays: { min: 1, max: 365, default: 60, step: 1 },
-  mediaAllowance: { min: 1, max: 50, default: 12, step: 1 },
-} as const;
-
-export const taxonomyLevelSchema = z.enum([
-  "category",
-  "subcategory",
-  "type",
-  "subtype",
-]);
-
 export const taxonomyNodeStatusSchema = z.enum([
   "active",
   "draft",
@@ -54,14 +42,6 @@ export const taxonomyAttributeDataTypeSchema = z.enum([
   "location",
 ]);
 
-export const taxonomyAttributeFieldRoleSchema = z.enum([
-  "required",
-  "recommended",
-  "optional",
-  "computed",
-  "system",
-]);
-
 export const taxonomyAttributeVisibilitySchema = z.enum([
   "public",
   "seller_only",
@@ -69,223 +49,8 @@ export const taxonomyAttributeVisibilitySchema = z.enum([
   "private",
 ]);
 
-export const taxonomyAttributeOptionSchema = z.object({
-  value: z.string().min(1),
-  label: z.string().min(1),
-  labels: z.record(z.string(), z.string()).optional(),
-});
-
-export const taxonomyAttributeDependencySchema = z.object({
-  attributeId: z.string().min(1),
-  operator: z.enum(["equals", "in", "not_equals"]),
-  value: z.unknown(),
-});
-
-export const taxonomyAttributeValidationSchema = z.object({
-  min: z.number().optional(),
-  max: z.number().optional(),
-  pattern: z.string().optional(),
-  step: z.number().positive().optional(),
-  placeholder: z.string().optional(),
-  minLength: z.number().int().nonnegative().optional(),
-  maxLength: z.number().int().nonnegative().optional(),
-  integer: z.boolean().optional(),
-});
-
-export const taxonomyAttributeSchema = z.object({
-  id: z.string().min(1),
-  code: z.string().min(1),
-  label: z.string().min(1),
-  labels: z.record(z.string(), z.string()).optional(),
-  helpText: z.string().optional(),
-  dataType: taxonomyAttributeDataTypeSchema,
-  unit: z.string().optional(),
-  fieldRole: taxonomyAttributeFieldRoleSchema.optional(),
-  privacy: taxonomyAttributeVisibilitySchema.optional(),
-  required: z.boolean().optional(),
-  filterable: z.boolean().optional(),
-  searchable: z.boolean().optional(),
-  sortable: z.boolean().optional(),
-  comparable: z.boolean().optional(),
-  seoRelevant: z.boolean().optional(),
-  deprecated: z.boolean().optional(),
-  options: z.array(taxonomyAttributeOptionSchema).optional(),
-  displayPrefix: z.string().optional(),
-  displayOptionLabels: z.record(z.string(), z.string()).optional(),
-  dependencies: z.array(taxonomyAttributeDependencySchema).optional(),
-  validation: taxonomyAttributeValidationSchema.optional(),
-  publicationGroup: z
-    .enum(["general", "specifications", "dimensions", "performance", "legal"])
-    .optional(),
-  displayOrder: z.number().int().nonnegative().optional(),
-});
-
-const taxonomyCapabilitiesSchema = z.object({
-  canSell: z.boolean(),
-  canGive: z.boolean(),
-  canExchange: z.boolean(),
-  canRent: z.boolean(),
-  reservationAllowed: z.boolean(),
-  securePaymentAllowed: z.boolean(),
-  negotiablePrice: z.boolean(),
-  fulfillmentModes: z.array(z.string()),
-});
-
-const taxonomyPresentationSchema = z.object({
-  cardAttributeIds: z.array(z.string()).optional(),
-  detailGroupOrder: z
-    .array(
-      z.enum([
-        "general",
-        "specifications",
-        "dimensions",
-        "performance",
-        "legal",
-      ]),
-    )
-    .optional(),
-  comparisonAttributeIds: z.array(z.string()).optional(),
-  sortOptions: z
-    .array(
-      z.enum(["relevance", "recent", "price_asc", "price_desc", "distance"]),
-    )
-    .optional(),
-});
-
-const taxonomyMediaGuidanceSchema = z.object({
-  minimumPhotoCount: z.number().int().nonnegative().optional(),
-  recommendedViews: z.array(z.string()).optional(),
-  maxPhotoCount: z.number().int().positive().optional(),
-});
-
-export const taxonomyPrimaryCtaSchema = z.enum([
-  "contact_seller",
-  "apply",
-  "request_quote",
-  "request_visit",
-  "request_test_drive",
-  "request_lesson",
-  "check_availability",
-  "propose_exchange",
-]);
-
-export const taxonomyPublicationStepSchema = z.enum([
-  "intent",
-  "taxonomy",
-  "essential",
-  "condition_history",
-  "price_compensation",
-  "fulfillment_location",
-  "media_documents",
-  "contact_preferences",
-  "preview",
-  "standard_or_upgrades",
-  "confirmation",
-]);
-
-const taxonomyStandardPublicationPolicySchema = z.object({
-  enabled: z.boolean(),
-  label: z.literal("Publication standard gratuite"),
-  eligibleSellerTypes: z.array(z.enum(["individual", "professional"])).min(1),
-  durationDays: z
-    .number()
-    .int()
-    .min(TAXONOMY_PUBLICATION_CONSTRAINTS.durationDays.min)
-    .max(TAXONOMY_PUBLICATION_CONSTRAINTS.durationDays.max),
-  mediaAllowance: z
-    .number()
-    .int()
-    .min(TAXONOMY_PUBLICATION_CONSTRAINTS.mediaAllowance.min)
-    .max(TAXONOMY_PUBLICATION_CONSTRAINTS.mediaAllowance.max),
-  includesMessaging: z.boolean(),
-  includesListingManagement: z.boolean(),
-  includesStandardStatistics: z.boolean(),
-  paidUpgradesOptional: z.literal(true),
-});
-
-const taxonomyPublicationConfigurationSchema = z.object({
-  steps: z.array(taxonomyPublicationStepSchema).min(1),
-  primaryCta: taxonomyPrimaryCtaSchema,
-  standardPolicy: taxonomyStandardPublicationPolicySchema,
-});
-
-const taxonomyModerationPolicySchema = z.object({
-  policyId: z.string().min(1),
-  reviewMode: z.enum(["standard", "enhanced", "manual"]),
-  prohibitedItemRuleIds: z.array(z.string().min(1)),
-  safetyNoticeKeys: z.array(z.string().min(1)),
-  sensitiveAttributeIds: z.array(z.string().min(1)),
-});
-
-export const taxonomyNodeSchema: z.ZodTypeAny = z.lazy(() =>
-  z.object({
-    id: z.string().min(1),
-    code: z.string().min(1),
-    slug: z.string().min(1),
-    parentId: z.string().optional(),
-    ancestorIds: z.array(z.string()).optional(),
-    level: taxonomyLevelSchema,
-    publishable: z.boolean().optional(),
-    listingFamily: z.string().optional(),
-    verticalType: z
-      .enum(["tutoring", "automotive", "real_estate", "employment"])
-      .optional(),
-    verticalSchemaVersion: z.number().int().positive().optional(),
-    supportedIntents: z.array(z.string()).optional(),
-    labels: z.record(z.string(), z.string()),
-    shortLabels: z.record(z.string(), z.string()).optional(),
-    name: z.string().min(1),
-    label: z.string().optional(),
-    shortLabel: z.string().optional(),
-    description: z.string().optional(),
-    iconName: z.string().optional(),
-    accentColor: z.string().optional(),
-    sortOrder: z.number().int(),
-    status: taxonomyNodeStatusSchema,
-    conditionScheme: z.string().optional(),
-    capabilities: taxonomyCapabilitiesSchema.partial().optional(),
-    sellerEligibility: z
-      .object({
-        individualAllowed: z.boolean().optional(),
-        proAllowed: z.boolean().optional(),
-        proVerificationRequired: z.boolean().optional(),
-        proKbisRequired: z.boolean().optional(),
-      })
-      .optional(),
-    attributeIds: z.array(z.string()).optional(),
-    attributeOverrides: z
-      .record(z.string(), z.record(z.string(), z.unknown()))
-      .optional(),
-    summaryAttributeIds: z.array(z.string()).optional(),
-    filterFacetIds: z.array(z.string()).optional(),
-    synonyms: z.array(z.string()).optional(),
-    aliases: z.array(z.string()).optional(),
-    seo: z
-      .object({
-        metaTitleTemplate: z.string().optional(),
-        metaDescriptionTemplate: z.string().optional(),
-        canonicalPath: z.string().optional(),
-        indexable: z.boolean().optional(),
-      })
-      .optional(),
-    presentation: taxonomyPresentationSchema.optional(),
-    mediaGuidance: taxonomyMediaGuidanceSchema.optional(),
-    taxonomyVersion: z.number().int().positive().optional(),
-    schemaVersion: z.number().int().positive().optional(),
-    schemaStatus: z.enum(["draft", "published", "deprecated"]).optional(),
-    publication: taxonomyPublicationConfigurationSchema.optional(),
-    moderation: taxonomyModerationPolicySchema.optional(),
-    children: z.array(taxonomyNodeSchema).optional(),
-  }),
-);
-
-export const taxonomyTreeSchema = z.array(taxonomyNodeSchema);
-export const taxonomyAttributesSchema = z.record(z.string(), z.unknown());
-
-export type TaxonomyLevel = z.infer<typeof taxonomyLevelSchema>;
-export type TaxonomyAttribute = z.infer<typeof taxonomyAttributeSchema>;
-export type TaxonomyNode = z.infer<typeof taxonomyNodeSchema>;
-export type TaxonomyTree = z.infer<typeof taxonomyTreeSchema>;
+export type TaxonomyAttribute =
+  import("../generated/openapi").components["schemas"]["TaxonomyV1FilterAttribute"];
 
 export const taxonomyLocalizedLabelsSchema = z
   .record(z.string().min(2), z.string().min(1))
@@ -312,7 +77,7 @@ export const taxonomyLocalizedShortLabelsSchema = z
     message: "A French taxonomy shortLabel is required.",
   });
 
-export const taxonomyV4UiComponentSchema = z.enum([
+export const taxonomyV1UiComponentSchema = z.enum([
   "select",
   "number_input",
   "switch",
@@ -366,25 +131,25 @@ export const taxonomyV4UiComponentSchema = z.enum([
   "barcode_input",
 ]);
 
-export const taxonomyV4MarketStatusSchema = z.enum([
+export const taxonomyV1MarketStatusSchema = z.enum([
   "active",
   "coming_soon",
   "unavailable",
 ]);
 
-export const taxonomyV4MarketAvailabilitySchema = z.object({
+export const taxonomyV1MarketAvailabilitySchema = z.object({
   marketCode: z.enum(["FR", "BE", "CH", "SN", "BF"]),
-  status: taxonomyV4MarketStatusSchema,
+  status: taxonomyV1MarketStatusSchema,
   marketplaceEnabled: z.boolean(),
   indexable: z.boolean(),
 });
 
-export const taxonomyV4SellerEligibilitySchema = z.object({
+export const taxonomyV1SellerEligibilitySchema = z.object({
   individualAllowed: z.boolean(),
   professionalAllowed: z.boolean(),
 });
 
-export const taxonomyV4NodeSchema = z.object({
+export const taxonomyV1NodeSchema = z.object({
   id: z.string().min(1),
   sourceKey: z.string().min(1),
   parentId: z.string().min(1).optional(),
@@ -397,12 +162,12 @@ export const taxonomyV4NodeSchema = z.object({
   sortOrder: z.number().int().nonnegative(),
   status: taxonomyNodeStatusSchema,
   publishable: z.boolean(),
-  sellerEligibility: taxonomyV4SellerEligibilitySchema,
-  marketAvailability: z.array(taxonomyV4MarketAvailabilitySchema).length(5),
+  sellerEligibility: taxonomyV1SellerEligibilitySchema,
+  marketAvailability: z.array(taxonomyV1MarketAvailabilitySchema).length(5),
   seo: z.object({ indexable: z.boolean() }),
 });
 
-export const taxonomyV4ListingIntentSchema = z.enum([
+export const taxonomyV1ListingIntentSchema = z.enum([
   "SELL",
   "WANTED",
   "DONATE",
@@ -419,23 +184,23 @@ export const taxonomyV4ListingIntentSchema = z.enum([
   "JOB_SEEK",
 ]);
 
-export const taxonomyV4ListingTypeSchema = z.object({
+export const taxonomyV1ListingTypeSchema = z.object({
   id: z.string().min(1),
   sourceKey: z.string().min(1),
   categoryId: z.string().min(1),
   verticalId: z.string().min(1),
   publicationFlow: z.string().min(1),
-  intent: taxonomyV4ListingIntentSchema,
+  intent: taxonomyV1ListingIntentSchema,
   intentLabel: taxonomyLocalizedLabelsSchema,
   labels: taxonomyLocalizedLabelsSchema,
   slug: z.string().min(1),
-  sellerEligibility: taxonomyV4SellerEligibilitySchema,
+  sellerEligibility: taxonomyV1SellerEligibilitySchema,
   status: z.enum(["active", "disabled"]),
-  marketAvailability: z.array(taxonomyV4MarketAvailabilitySchema).length(5),
+  marketAvailability: z.array(taxonomyV1MarketAvailabilitySchema).length(5),
   seoIndexable: z.boolean(),
 });
 
-export const taxonomyV4AttributeSchema = z.object({
+export const taxonomyV1AttributeSchema = z.object({
   id: z.string().min(1),
   code: z.string().min(1),
   labels: taxonomyLocalizedLabelsSchema,
@@ -467,7 +232,7 @@ export const taxonomyV4AttributeSchema = z.object({
     "boolean",
     "json",
   ]),
-  uiComponent: taxonomyV4UiComponentSchema,
+  uiComponent: taxonomyV1UiComponentSchema,
   groupId: z.string().min(1),
   scope: z.string().min(1),
   optionSetId: z.string().min(1).optional(),
@@ -485,8 +250,8 @@ export const taxonomyV4AttributeSchema = z.object({
   cardVisible: z.boolean(),
   detailVisible: z.boolean(),
   seoRelevant: z.boolean(),
-  sellerEligibility: taxonomyV4SellerEligibilitySchema,
-  marketAvailability: z.array(taxonomyV4MarketAvailabilitySchema).length(5),
+  sellerEligibility: taxonomyV1SellerEligibilitySchema,
+  marketAvailability: z.array(taxonomyV1MarketAvailabilitySchema).length(5),
   defaultRequired: z.boolean(),
   defaultDisplayOrder: z.number().int().nonnegative(),
   privacy: taxonomyAttributeVisibilitySchema,
@@ -495,7 +260,7 @@ export const taxonomyV4AttributeSchema = z.object({
   placeholder: z.record(z.string(), z.string().optional()),
 });
 
-export const taxonomyV4AttributeGroupSchema = z.object({
+export const taxonomyV1AttributeGroupSchema = z.object({
   id: z.string().min(1),
   labels: taxonomyLocalizedLabelsSchema,
   iconName: z.string().min(1),
@@ -504,12 +269,12 @@ export const taxonomyV4AttributeGroupSchema = z.object({
   public: z.boolean(),
 });
 
-export const taxonomyV4OptionSetSchema = z.object({
+export const taxonomyV1OptionSetSchema = z.object({
   id: z.string().min(1),
   labels: taxonomyLocalizedLabelsSchema,
 });
 
-export const taxonomyV4OptionSchema = z.object({
+export const taxonomyV1OptionSchema = z.object({
   id: z.string().min(1),
   optionSetId: z.string().min(1),
   key: z.string().min(1),
@@ -519,16 +284,21 @@ export const taxonomyV4OptionSchema = z.object({
   managedExternally: z.boolean(),
 });
 
-export const taxonomyV4OptionParentLinkSchema = z.object({
+export const taxonomyV1OptionParentLinkSchema = z.object({
   optionId: z.string().min(1),
   parentOptionId: z.string().min(1),
 });
 
-export const taxonomyV4AttributeBindingSchema = z.object({
+export const taxonomyV1OptionSetsSchema = z.object({
+  revision: z.number().int().positive(),
+  optionSets: z.record(z.array(taxonomyV1OptionSchema)),
+});
+
+export const taxonomyV1AttributeBindingSchema = z.object({
   id: z.string().min(1),
   categoryId: z.string().min(1),
   listingTypeId: z.string().min(1),
-  intent: taxonomyV4ListingIntentSchema,
+  intent: taxonomyV1ListingIntentSchema,
   attributeId: z.string().min(1),
   groupId: z.string().min(1),
   scope: z.string().min(1),
@@ -541,19 +311,19 @@ export const taxonomyV4AttributeBindingSchema = z.object({
   filterable: z.boolean(),
   searchable: z.boolean(),
   sortable: z.boolean(),
-  sellerEligibility: taxonomyV4SellerEligibilitySchema,
+  sellerEligibility: taxonomyV1SellerEligibilitySchema,
   overrideDefault: z.string().optional(),
 });
 
-export const taxonomyV4FieldReferenceSchema = z.object({
+export const taxonomyV1FieldReferenceSchema = z.object({
   kind: z.enum(["attribute", "context", "system"]),
   key: z.string().min(1),
 });
 
-export const taxonomyV4DependencyRuleSchema = z.object({
+export const taxonomyV1DependencyRuleSchema = z.object({
   id: z.string().min(1),
   scopes: z.array(z.string().min(1)),
-  trigger: taxonomyV4FieldReferenceSchema,
+  trigger: taxonomyV1FieldReferenceSchema,
   operator: z.enum([
     "eq",
     "neq",
@@ -580,14 +350,14 @@ export const taxonomyV4DependencyRuleSchema = z.object({
     "SHOW_NOTICE",
     "OPTIONAL",
   ]),
-  targets: z.array(taxonomyV4FieldReferenceSchema).min(1),
+  targets: z.array(taxonomyV1FieldReferenceSchema).min(1),
   detail: z.string().optional(),
   status: z.literal("draft"),
 });
 
-export const taxonomyV4ValidationRuleSchema = z.object({
+export const taxonomyV1ValidationRuleSchema = z.object({
   id: z.string().min(1),
-  target: taxonomyV4FieldReferenceSchema,
+  target: taxonomyV1FieldReferenceSchema,
   scopes: z.array(z.string().min(1)),
   ruleType: z.string().min(1),
   severity: z.enum(["BLOCK", "WARN", "REVIEW"]),
@@ -598,57 +368,57 @@ export const taxonomyV4ValidationRuleSchema = z.object({
   status: z.literal("draft"),
 });
 
-export const taxonomyV4FilterProjectionSchema = z.object({
+export const taxonomyV1FilterProjectionSchema = z.object({
   id: z.string().min(1),
   categoryId: z.string().min(1),
   listingTypeId: z.string().min(1),
   attributeId: z.string().min(1),
   labels: taxonomyLocalizedLabelsSchema,
-  uiComponent: taxonomyV4UiComponentSchema,
+  uiComponent: taxonomyV1UiComponentSchema,
   filterType: z.enum(["multi_select", "range", "boolean", "keyword"]),
   optionSetId: z.string().min(1).optional(),
   sortOrder: z.number().int().nonnegative(),
 });
 
-export const taxonomyV4CardProjectionSchema = z.object({
+export const taxonomyV1CardProjectionSchema = z.object({
   listingTypeId: z.string().min(1),
   categoryId: z.string().min(1),
   slot: z.string().min(1),
-  field: taxonomyV4FieldReferenceSchema,
+  field: taxonomyV1FieldReferenceSchema,
   labels: z.record(z.string(), z.string().optional()),
   format: z.string().optional(),
   sortOrder: z.number().int().nonnegative(),
 });
 
-export const taxonomyV4DetailProjectionSchema = z.object({
+export const taxonomyV1DetailProjectionSchema = z.object({
   listingTypeId: z.string().min(1),
   categoryId: z.string().min(1),
   sectionId: z.string().min(1),
   sectionLabels: taxonomyLocalizedLabelsSchema,
   sectionOrder: z.number().int().nonnegative(),
-  field: taxonomyV4FieldReferenceSchema,
+  field: taxonomyV1FieldReferenceSchema,
   labels: taxonomyLocalizedLabelsSchema,
   sortOrder: z.number().int().nonnegative(),
   emphasis: z.string().optional(),
   emptyBehavior: z.string().optional(),
 });
 
-export const taxonomyV4PublicationFlowProjectionSchema = z.object({
+export const taxonomyV1PublicationFlowProjectionSchema = z.object({
   listingTypeId: z.string().min(1),
   categoryId: z.string().min(1),
-  intent: taxonomyV4ListingIntentSchema,
+  intent: taxonomyV1ListingIntentSchema,
   step: z.number().int().positive(),
   stepId: z.string().min(1),
   labels: taxonomyLocalizedLabelsSchema,
   sections: z.array(z.string()),
-  requiredFields: z.array(taxonomyV4FieldReferenceSchema),
+  requiredFields: z.array(taxonomyV1FieldReferenceSchema),
   condition: z.string().optional(),
   validation: z.string().optional(),
   helpText: z.string().optional(),
   nextStepId: z.string().optional(),
 });
 
-export const taxonomyV4SearchProjectionSchema = z.object({
+export const taxonomyV1SearchProjectionSchema = z.object({
   categoryId: z.string().min(1),
   searchableFields: z.array(z.string().min(1)),
   filterableAttributeIds: z.array(z.string().min(1)),
@@ -665,7 +435,7 @@ export const taxonomyV4SearchProjectionSchema = z.object({
   ]),
 });
 
-export const taxonomyV4SeoProjectionSchema = z.object({
+export const taxonomyV1SeoProjectionSchema = z.object({
   categoryId: z.string().min(1),
   urlPattern: z.string().min(1),
   locationUrlPattern: z.string().optional(),
@@ -680,39 +450,39 @@ export const taxonomyV4SeoProjectionSchema = z.object({
   sitemap: z.object({ eligible: z.boolean(), policy: z.string().min(1) }),
 });
 
-export const taxonomyV4ResolvedPublicationSchema = z.object({
+export const taxonomyV1ResolvedPublicationSchema = z.object({
   revision: z.number().int().positive().optional(),
-  taxonomyVersion: z.literal("4.0.0"),
-  category: taxonomyV4NodeSchema,
-  listingType: taxonomyV4ListingTypeSchema,
+  taxonomyVersion: z.literal("v1"),
+  category: taxonomyV1NodeSchema,
+  listingType: taxonomyV1ListingTypeSchema,
   attributes: z.array(
     z.object({
-      definition: taxonomyV4AttributeSchema,
-      binding: taxonomyV4AttributeBindingSchema,
-      options: z.array(taxonomyV4OptionSchema),
+      definition: taxonomyV1AttributeSchema,
+      binding: taxonomyV1AttributeBindingSchema,
+      options: z.array(taxonomyV1OptionSchema),
     }),
   ),
-  dependencyRules: z.array(taxonomyV4DependencyRuleSchema),
-  validationRules: z.array(taxonomyV4ValidationRuleSchema),
+  dependencyRules: z.array(taxonomyV1DependencyRuleSchema),
+  validationRules: z.array(taxonomyV1ValidationRuleSchema),
   eligible: z.boolean(),
   ineligibilityCode: z.string().optional(),
 });
 
-export const taxonomyV4ResolvedSchemaSchema =
-  taxonomyV4ResolvedPublicationSchema.extend({
+export const taxonomyV1ResolvedSchemaSchema =
+  taxonomyV1ResolvedPublicationSchema.extend({
     locale: z.string().min(2).max(16),
     marketCode: z.enum(["FR", "BE", "CH", "SN", "BF"]),
     projections: z.object({
-      filters: z.array(taxonomyV4FilterProjectionSchema),
-      cardFields: z.array(taxonomyV4CardProjectionSchema),
-      detailFields: z.array(taxonomyV4DetailProjectionSchema),
-      publicationFlow: z.array(taxonomyV4PublicationFlowProjectionSchema),
-      search: taxonomyV4SearchProjectionSchema.nullable(),
-      seo: taxonomyV4SeoProjectionSchema.nullable(),
+      filters: z.array(taxonomyV1FilterProjectionSchema),
+      cardFields: z.array(taxonomyV1CardProjectionSchema),
+      detailFields: z.array(taxonomyV1DetailProjectionSchema),
+      publicationFlow: z.array(taxonomyV1PublicationFlowProjectionSchema),
+      search: taxonomyV1SearchProjectionSchema.nullable(),
+      seo: taxonomyV1SeoProjectionSchema.nullable(),
     }),
   });
 
-export const taxonomyV4TreeResponseSchema = z.object({
+export const taxonomyV1TreeResponseSchema = z.object({
   revision: z.number().int().positive().optional(),
   aliases: z
     .array(
@@ -723,22 +493,22 @@ export const taxonomyV4TreeResponseSchema = z.object({
       }),
     )
     .optional(),
-  seo: z.array(taxonomyV4SeoProjectionSchema).optional(),
-  taxonomyVersion: z.literal("4.0.0"),
+  seo: z.array(taxonomyV1SeoProjectionSchema).optional(),
+  taxonomyVersion: z.literal("v1"),
   compilerVersion: z.string().min(1),
   checksum: z.string().regex(/^[a-f0-9]{64}$/),
   marketCode: z.enum(["FR", "BE", "CH", "SN", "BF"]),
   locale: z.string().min(2).max(16),
-  items: z.array(taxonomyV4NodeSchema),
-  listingTypes: z.array(taxonomyV4ListingTypeSchema),
+  items: z.array(taxonomyV1NodeSchema),
+  listingTypes: z.array(taxonomyV1ListingTypeSchema),
 });
 
-export const taxonomyV4OptionPageSchema = z.object({
+export const taxonomyV1OptionPageSchema = z.object({
   revision: z.number().int().positive().optional(),
-  items: z.array(taxonomyV4OptionSchema).max(200),
+  items: z.array(taxonomyV1OptionSchema).max(200),
   nextCursor: z.string().regex(/^\d+$/).optional(),
   total: z.number().int().nonnegative(),
-  taxonomyVersion: z.literal("4.0.0"),
+  taxonomyVersion: z.literal("v1"),
 });
 
 export const taxonomyHeaderCategoryItemSchema = z.object({
@@ -834,8 +604,8 @@ export const taxonomyHeaderNavigationUpdateSchema = z
     });
   });
 
-export const taxonomyV4MetadataSchema = z.object({
-  taxonomyVersion: z.literal("4.0.0"),
+export const taxonomyV1MetadataSchema = z.object({
+  taxonomyVersion: z.literal("v1"),
   compilerVersion: z.string().min(1),
   workbookSha256: z.string().regex(/^[a-f0-9]{64}$/),
   normalizedSha256: z.string().regex(/^[a-f0-9]{64}$/),
@@ -851,25 +621,25 @@ export const taxonomyV4MetadataSchema = z.object({
   }),
 });
 
-export const taxonomyV4PublicBundleSchema = z.object({
-  metadata: taxonomyV4MetadataSchema,
-  categories: z.array(taxonomyV4NodeSchema),
-  listingTypes: z.array(taxonomyV4ListingTypeSchema),
-  attributes: z.array(taxonomyV4AttributeSchema),
-  attributeGroups: z.array(taxonomyV4AttributeGroupSchema),
-  optionSets: z.array(taxonomyV4OptionSetSchema),
-  options: z.array(taxonomyV4OptionSchema),
-  optionParentLinks: z.array(taxonomyV4OptionParentLinkSchema),
-  bindings: z.array(taxonomyV4AttributeBindingSchema),
-  dependencyRules: z.array(taxonomyV4DependencyRuleSchema),
-  validationRules: z.array(taxonomyV4ValidationRuleSchema),
+export const taxonomyV1PublicBundleSchema = z.object({
+  metadata: taxonomyV1MetadataSchema,
+  categories: z.array(taxonomyV1NodeSchema),
+  listingTypes: z.array(taxonomyV1ListingTypeSchema),
+  attributes: z.array(taxonomyV1AttributeSchema),
+  attributeGroups: z.array(taxonomyV1AttributeGroupSchema),
+  optionSets: z.array(taxonomyV1OptionSetSchema),
+  options: z.array(taxonomyV1OptionSchema),
+  optionParentLinks: z.array(taxonomyV1OptionParentLinkSchema),
+  bindings: z.array(taxonomyV1AttributeBindingSchema),
+  dependencyRules: z.array(taxonomyV1DependencyRuleSchema),
+  validationRules: z.array(taxonomyV1ValidationRuleSchema),
   projections: z.object({
-    filters: z.array(taxonomyV4FilterProjectionSchema),
-    cardFields: z.array(taxonomyV4CardProjectionSchema),
-    detailFields: z.array(taxonomyV4DetailProjectionSchema),
-    publicationFlow: z.array(taxonomyV4PublicationFlowProjectionSchema),
-    search: z.array(taxonomyV4SearchProjectionSchema),
-    seo: z.array(taxonomyV4SeoProjectionSchema),
+    filters: z.array(taxonomyV1FilterProjectionSchema),
+    cardFields: z.array(taxonomyV1CardProjectionSchema),
+    detailFields: z.array(taxonomyV1DetailProjectionSchema),
+    publicationFlow: z.array(taxonomyV1PublicationFlowProjectionSchema),
+    search: z.array(taxonomyV1SearchProjectionSchema),
+    seo: z.array(taxonomyV1SeoProjectionSchema),
   }),
   aliases: z.array(
     z.object({
@@ -878,48 +648,34 @@ export const taxonomyV4PublicBundleSchema = z.object({
       kind: z.string().min(1),
     }),
   ),
-  compatibility: z.object({
-    supportedIntentsByCategory: z.record(
-      z.string(),
-      z.array(taxonomyV4ListingIntentSchema),
-    ),
-    v3Crosswalk: z.array(
-      z.object({
-        sourceId: z.string().min(1),
-        canonicalId: z.string().min(1),
-        disposition: z.string().min(1),
-        rationale: z.string().min(1),
-      }),
-    ),
-  }),
 });
 
-export type TaxonomyV4Node = z.infer<typeof taxonomyV4NodeSchema>;
-export type TaxonomyV4UiComponent = z.infer<typeof taxonomyV4UiComponentSchema>;
-export type TaxonomyV4ListingIntent = z.infer<
-  typeof taxonomyV4ListingIntentSchema
+export type TaxonomyV1Node = z.infer<typeof taxonomyV1NodeSchema>;
+export type TaxonomyV1UiComponent = z.infer<typeof taxonomyV1UiComponentSchema>;
+export type TaxonomyV1ListingIntent = z.infer<
+  typeof taxonomyV1ListingIntentSchema
 >;
-export type TaxonomyV4ListingType = z.infer<typeof taxonomyV4ListingTypeSchema>;
-export type TaxonomyV4Attribute = z.infer<typeof taxonomyV4AttributeSchema>;
-export type TaxonomyV4AttributeBinding = z.infer<
-  typeof taxonomyV4AttributeBindingSchema
+export type TaxonomyV1ListingType = z.infer<typeof taxonomyV1ListingTypeSchema>;
+export type TaxonomyV1Attribute = z.infer<typeof taxonomyV1AttributeSchema>;
+export type TaxonomyV1AttributeBinding = z.infer<
+  typeof taxonomyV1AttributeBindingSchema
 >;
-export type TaxonomyV4DependencyRule = z.infer<
-  typeof taxonomyV4DependencyRuleSchema
+export type TaxonomyV1DependencyRule = z.infer<
+  typeof taxonomyV1DependencyRuleSchema
 >;
-export type TaxonomyV4ValidationRule = z.infer<
-  typeof taxonomyV4ValidationRuleSchema
+export type TaxonomyV1ValidationRule = z.infer<
+  typeof taxonomyV1ValidationRuleSchema
 >;
-export type TaxonomyV4ResolvedPublication = z.infer<
-  typeof taxonomyV4ResolvedPublicationSchema
+export type TaxonomyV1ResolvedPublication = z.infer<
+  typeof taxonomyV1ResolvedPublicationSchema
 >;
-export type TaxonomyV4ResolvedSchema = z.infer<
-  typeof taxonomyV4ResolvedSchemaSchema
+export type TaxonomyV1ResolvedSchema = z.infer<
+  typeof taxonomyV1ResolvedSchemaSchema
 >;
-export type TaxonomyV4TreeResponse = z.infer<
-  typeof taxonomyV4TreeResponseSchema
+export type TaxonomyV1TreeResponse = z.infer<
+  typeof taxonomyV1TreeResponseSchema
 >;
-export type TaxonomyV4OptionPage = z.infer<typeof taxonomyV4OptionPageSchema>;
+export type TaxonomyV1OptionPage = z.infer<typeof taxonomyV1OptionPageSchema>;
 export type TaxonomyHeaderCategoryItem = z.infer<
   typeof taxonomyHeaderCategoryItemSchema
 >;
@@ -932,33 +688,51 @@ export type TaxonomyHeaderNavigationConfiguration = z.infer<
 export type TaxonomyHeaderNavigationUpdate = z.infer<
   typeof taxonomyHeaderNavigationUpdateSchema
 >;
-export type TaxonomyV4PublicBundle = z.infer<
-  typeof taxonomyV4PublicBundleSchema
+export type TaxonomyV1PublicBundle = z.infer<
+  typeof taxonomyV1PublicBundleSchema
 >;
+
+const listingTaxonomyLabelsSchema = z
+  .object({ "fr-FR": z.string() })
+  .catchall(z.string());
+
+const taxonomyLocalizedCharacteristicSchema = z.object({
+  code: z.string(),
+  labels: listingTaxonomyLabelsSchema,
+  values: listingTaxonomyLabelsSchema,
+});
 
 export const listingTaxonomyProjectionSchema = z.object({
   revision: z.number().int().positive(),
   categoryId: z.string(),
   categorySlug: z.string(),
-  categoryLabels: z.record(z.string(), z.string()),
+  categoryLabels: listingTaxonomyLabelsSchema,
   rootId: z.string(),
   rootSlug: z.string(),
-  rootLabels: z.record(z.string(), z.string()),
+  rootLabels: listingTaxonomyLabelsSchema,
   path: z.array(
     z.object({
       id: z.string(),
       slug: z.string(),
-      labels: z.record(z.string(), z.string()),
+      labels: listingTaxonomyLabelsSchema,
     }),
   ),
-  brandLabels: z.record(z.string(), z.string()).optional(),
+  brandLabels: listingTaxonomyLabelsSchema.optional(),
   cardCharacteristics: z
-    .array(
-      z.object({
-        code: z.string(),
-        labels: z.record(z.string(), z.string()),
-        values: z.record(z.string(), z.string()),
-      }),
-    )
+    .array(taxonomyLocalizedCharacteristicSchema)
+    .optional(),
+  detailCharacteristics: z
+    .array(taxonomyLocalizedCharacteristicSchema)
     .optional(),
 });
+
+export interface ResolveTaxonomyV1PublicInput {
+  marketContext: import("../market-country").MarketContext;
+  categoryIdentity: string;
+  listingTypeId?: string;
+  intent?: TaxonomyV1ListingIntent;
+  sellerType: "individual" | "professional";
+  locale: string;
+  taxonomyRevision?: number;
+  taxonomyVersion?: "v1";
+}

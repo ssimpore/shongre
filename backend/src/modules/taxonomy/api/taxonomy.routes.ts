@@ -1,15 +1,15 @@
 import { z } from "zod";
 import { AppError } from "../../../shared/errors/app-error.js";
-import { TaxonomyV4Error } from "../taxonomy.v4.service.js";
-import { taxonomyV4Service } from "../taxonomy.runtime.js";
+import { TaxonomyV1Error } from "../taxonomy.v1.service.js";
+import { taxonomyV1Service } from "../taxonomy.runtime.js";
 import { type RouteRegistrar, PUBLIC } from "../../../api/v1/route-contract.js";
 import { taxonomyService } from "../taxonomy.service.js";
 import { requireApiMarketContext } from "../../markets/request-market-context.js";
-import { taxonomyV4ListingIntentSchema } from "@shongre/contracts";
+import { taxonomyV1ListingIntentSchema } from "@shongre/contracts";
 
-function requireTaxonomyV4Version(value: string | null): "4.0.0" | undefined {
+function requireTaxonomyV1Version(value: string | null): "v1" | undefined {
   if (value === null) return undefined;
-  if (value !== "4.0.0") {
+  if (value !== "v1") {
     throw new AppError({
       code: "TAXONOMY_VERSION_UNSUPPORTED",
       statusCode: 400,
@@ -19,11 +19,11 @@ function requireTaxonomyV4Version(value: string | null): "4.0.0" | undefined {
   return value;
 }
 
-function taxonomyV4Result<T>(operation: () => T): T {
+function taxonomyV1Result<T>(operation: () => T): T {
   try {
     return operation();
   } catch (error) {
-    if (!(error instanceof TaxonomyV4Error)) throw error;
+    if (!(error instanceof TaxonomyV1Error)) throw error;
     const statusCode =
       error.code === "TAXONOMY_CATEGORY_NOT_FOUND" ||
       error.code === "TAXONOMY_LISTING_TYPE_NOT_FOUND"
@@ -46,7 +46,7 @@ function taxonomyV4Result<T>(operation: () => T): T {
 }
 
 export function registerTaxonomyRoutes(routes: RouteRegistrar): void {
-  routes.addRoute("GET", "/taxonomy/root", PUBLIC, async ({ marketCode }) =>
+  routes.addRoute("GET", "/taxonomy/v1/root", PUBLIC, async ({ marketCode }) =>
     (
       await taxonomyService.publicProjection(
         requireApiMarketContext(marketCode),
@@ -55,7 +55,7 @@ export function registerTaxonomyRoutes(routes: RouteRegistrar): void {
   );
   routes.addRoute(
     "GET",
-    "/taxonomy/nodes/:id",
+    "/taxonomy/v1/nodes/:id",
     PUBLIC,
     async ({ params, marketCode }) =>
       (
@@ -66,53 +66,34 @@ export function registerTaxonomyRoutes(routes: RouteRegistrar): void {
   );
   routes.addRoute(
     "GET",
-    "/taxonomy/slug/:slug",
-    PUBLIC,
-    async ({ params, marketCode }) =>
-      (
-        await taxonomyService.publicProjection(
-          requireApiMarketContext(marketCode),
-        )
-      ).getNode(params.slug),
-  );
-  routes.addRoute(
-    "GET",
-    "/taxonomy/nodes/:id/children",
-    PUBLIC,
-    async ({ params, marketCode }) =>
-      (
-        await taxonomyService.publicProjection(
-          requireApiMarketContext(marketCode),
-        )
-      ).getChildren(params.id),
-  );
-  routes.addRoute(
-    "GET",
-    "/taxonomy/nodes/:id/attributes",
-    PUBLIC,
-    async ({ params, marketCode }) =>
-      (
-        await taxonomyService.publicProjection(
-          requireApiMarketContext(marketCode),
-        )
-      ).publicAttributesForCategory(params.id),
-  );
-  routes.addRoute(
-    "GET",
-    "/taxonomy/search-filters",
+    "/taxonomy/v1/search-filters",
     PUBLIC,
     async ({ query, marketCode }) => {
       const projection = await taxonomyService.publicProjection(
         requireApiMarketContext(marketCode),
       );
       return projection
-        .publicAttributesForCategory(query.get("nodeId") || "root")
+        .searchAttributesForCategory(query.get("nodeId") || "root")
         .filter((attribute) => attribute.filterable !== false)
         .map((attribute) => ({
           attribute,
-          facetType: ["select", "multi_select"].includes(attribute.dataType)
+          facetType: [
+            "select",
+            "multi_select",
+            "enum",
+            "multi_enum",
+            "autocomplete",
+          ].includes(attribute.dataType)
             ? "multi_select"
-            : ["number", "year", "range"].includes(attribute.dataType)
+            : [
+                  "number",
+                  "year",
+                  "range",
+                  "integer",
+                  "decimal",
+                  "money",
+                  "percent",
+                ].includes(attribute.dataType)
               ? "range"
               : attribute.dataType === "boolean"
                 ? "boolean"
@@ -122,7 +103,7 @@ export function registerTaxonomyRoutes(routes: RouteRegistrar): void {
   );
   routes.addRoute(
     "GET",
-    "/taxonomy/header-navigation",
+    "/taxonomy/v1/header-navigation",
     PUBLIC,
     async ({ marketCode }) =>
       taxonomyService.getHeaderNavigation(
@@ -132,10 +113,10 @@ export function registerTaxonomyRoutes(routes: RouteRegistrar): void {
   );
   routes.addRoute(
     "GET",
-    "/taxonomy/v4/tree",
+    "/taxonomy/v1/tree",
     PUBLIC,
     async ({ marketCode, query }) => {
-      requireTaxonomyV4Version(query.get("version"));
+      requireTaxonomyV1Version(query.get("version"));
       const marketContext = requireApiMarketContext(marketCode);
       const locale = query.get("locale") || marketContext.locale;
       if (!locale || locale.length < 2 || locale.length > 16) {
@@ -144,14 +125,14 @@ export function registerTaxonomyRoutes(routes: RouteRegistrar): void {
           message: "Locale de taxonomie invalide.",
         });
       }
-      const taxonomy = await taxonomyV4Service.snapshot(
+      const taxonomy = await taxonomyV1Service.snapshot(
         query.has("revision")
           ? z.coerce.number().int().positive().parse(query.get("revision"))
           : undefined,
       );
-      const items = taxonomyV4Result(() => taxonomy.listTree(marketContext));
+      const items = taxonomyV1Result(() => taxonomy.listTree(marketContext));
       const visibleIds = new Set(items.map((node) => node.id));
-      return taxonomyV4Result(() => ({
+      return taxonomyV1Result(() => ({
         ...taxonomy.getMetadata(),
         marketCode: marketContext.countryCode!,
         locale,
@@ -168,7 +149,7 @@ export function registerTaxonomyRoutes(routes: RouteRegistrar): void {
   );
   routes.addRoute(
     "GET",
-    "/taxonomy/v4/resolve",
+    "/taxonomy/v1/resolve",
     PUBLIC,
     async ({ marketCode, query }) => {
       const categoryIdentity = query.get("category") || "";
@@ -194,14 +175,14 @@ export function registerTaxonomyRoutes(routes: RouteRegistrar): void {
       }
       const intentValue = query.get("intent");
       const intent = intentValue
-        ? taxonomyV4ListingIntentSchema.parse(intentValue)
+        ? taxonomyV1ListingIntentSchema.parse(intentValue)
         : undefined;
-      const taxonomy = await taxonomyV4Service.snapshot(
+      const taxonomy = await taxonomyV1Service.snapshot(
         query.has("revision")
           ? z.coerce.number().int().positive().parse(query.get("revision"))
           : undefined,
       );
-      return taxonomyV4Result(() =>
+      return taxonomyV1Result(() =>
         taxonomy.resolve({
           marketContext: requireApiMarketContext(marketCode),
           categoryIdentity,
@@ -210,24 +191,24 @@ export function registerTaxonomyRoutes(routes: RouteRegistrar): void {
           sellerType,
           sellerCapabilities: query.getAll("sellerCapability"),
           locale,
-          taxonomyVersion: requireTaxonomyV4Version(query.get("version")),
+          taxonomyVersion: requireTaxonomyV1Version(query.get("version")),
         }),
       );
     },
   );
   routes.addRoute(
     "GET",
-    "/taxonomy/v4/options/:optionSetId",
+    "/taxonomy/v1/options/:optionSetId",
     PUBLIC,
     async ({ marketCode, params, query }) => {
-      requireTaxonomyV4Version(query.get("version"));
+      requireTaxonomyV1Version(query.get("version"));
       const marketContext = requireApiMarketContext(marketCode);
-      const taxonomy = await taxonomyV4Service.snapshot(
+      const taxonomy = await taxonomyV1Service.snapshot(
         query.has("revision")
           ? z.coerce.number().int().positive().parse(query.get("revision"))
           : undefined,
       );
-      return taxonomyV4Result(() => {
+      return taxonomyV1Result(() => {
         // Option availability is taxonomy-version and market scoped even when
         // the current authored option set is shared by all active markets.
         taxonomy.listTree(marketContext);

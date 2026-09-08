@@ -142,6 +142,7 @@ function isDirectHtmlNavigation(request: NextRequest): boolean {
 
 function needsResourceExistenceResolution(pathname: string): boolean {
   return (
+    /^\/categorie\/[^/]+$/.test(pathname) ||
     /^\/annonce\/[^/]+$/.test(pathname) ||
     /^\/(?:boutique|profil|vendeur|u)\/[^/]+$/.test(pathname) ||
     /^\/emploi\/offre\/[^/]+$/.test(pathname) ||

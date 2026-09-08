@@ -8,17 +8,17 @@ import {
   TaxonomyAttribute,
 } from "../../../domains/taxonomy/taxonomy.types";
 import type { MarketContext } from "@shongre/contracts/market-country";
-import type { ResolveTaxonomyV4PublicInput } from "@shongre/contracts/taxonomy-v4-resolver";
+import type { ResolveTaxonomyV1PublicInput } from "@shongre/contracts/taxonomy";
 import type {
   TaxonomyHeaderNavigationConfiguration,
   TaxonomyHeaderNavigationUpdate,
-  TaxonomyV4OptionPage,
-  TaxonomyV4ResolvedSchema,
-  TaxonomyV4TreeResponse,
+  TaxonomyV1OptionPage,
+  TaxonomyV1ResolvedSchema,
+  TaxonomyV1TreeResponse,
 } from "@shongre/contracts/taxonomy";
 import type { components } from "@shongre/contracts/openapi";
 
-type BackendCategory = components["schemas"]["TaxonomyLegacyCategory"];
+type BackendCategory = components["schemas"]["TaxonomyV1CategorySummary"];
 
 function mapBackendCategory(category: BackendCategory): Category {
   const locale = activeDataLocale();
@@ -110,36 +110,28 @@ export class HttpTaxonomyService implements TaxonomyServiceContract {
     );
   }
 
-  async getNodeBySlug(slug: string): Promise<TaxonomyNode | null> {
-    return apiOperation<TaxonomyNode, "getTaxonomySlugBySlug">(
-      "getTaxonomySlugBySlug",
-      { path: { slug: slug } },
-    );
-  }
-
-  async getChildren(nodeId: string): Promise<TaxonomyNode[]> {
-    return apiOperation<TaxonomyNode[], "getTaxonomyNodesByIdChildren">(
-      "getTaxonomyNodesByIdChildren",
-      { path: { id: nodeId } },
-    );
-  }
-
-  async getAttributesForCategory(
-    categoryId: string,
-  ): Promise<TaxonomyAttribute[]> {
-    return apiOperation<TaxonomyAttribute[], "getTaxonomyNodesByIdAttributes">(
-      "getTaxonomyNodesByIdAttributes",
-      { path: { id: categoryId } },
-    );
-  }
-
   async resolveSearchFilters(
     nodeId?: string,
   ): Promise<Array<{ attribute: TaxonomyAttribute; facetType: string }>> {
-    return apiOperation<
+    const facets = await apiOperation<
       Array<{ attribute: TaxonomyAttribute; facetType: string }>,
       "getTaxonomySearchFilters"
     >("getTaxonomySearchFilters", { query: { nodeId } });
+    return facets.map((facet) => ({
+      ...facet,
+      attribute: {
+        ...facet.attribute,
+        label:
+          localizeTaxonomyLabels(facet.attribute.labels, activeDataLocale()) ||
+          facet.attribute.label,
+        options: facet.attribute.options?.map((option) => ({
+          ...option,
+          label:
+            localizeTaxonomyLabels(option.labels, activeDataLocale()) ||
+            option.label,
+        })),
+      },
+    }));
   }
 
   async getHeaderNavigation(
@@ -176,13 +168,13 @@ export class HttpTaxonomyService implements TaxonomyServiceContract {
     });
   }
 
-  async getV4Tree(input: {
+  async getV1Tree(input: {
     marketContext: Pick<MarketContext, "countryCode">;
     locale: string;
     taxonomyVersion?: string;
-  }): Promise<TaxonomyV4TreeResponse> {
-    return apiOperation<TaxonomyV4TreeResponse, "getTaxonomyV4Tree">(
-      "getTaxonomyV4Tree",
+  }): Promise<TaxonomyV1TreeResponse> {
+    return apiOperation<TaxonomyV1TreeResponse, "getTaxonomyV1Tree">(
+      "getTaxonomyV1Tree",
       {
         query: {
           locale: input.locale,
@@ -193,13 +185,13 @@ export class HttpTaxonomyService implements TaxonomyServiceContract {
     );
   }
 
-  async resolveV4(
-    input: ResolveTaxonomyV4PublicInput,
-  ): Promise<TaxonomyV4ResolvedSchema> {
+  async resolveV1(
+    input: ResolveTaxonomyV1PublicInput,
+  ): Promise<TaxonomyV1ResolvedSchema> {
     return apiOperation<
-      TaxonomyV4ResolvedSchema,
-      "resolveTaxonomyV4PublicationSchema"
-    >("resolveTaxonomyV4PublicationSchema", {
+      TaxonomyV1ResolvedSchema,
+      "resolveTaxonomyV1PublicationSchema"
+    >("resolveTaxonomyV1PublicationSchema", {
       query: {
         revision: input.taxonomyRevision,
         category: input.categoryIdentity,
@@ -213,7 +205,7 @@ export class HttpTaxonomyService implements TaxonomyServiceContract {
     });
   }
 
-  async lookupV4Options(input: {
+  async lookupV1Options(input: {
     marketContext: MarketContext;
     optionSetId: string;
     taxonomyRevision?: number;
@@ -223,9 +215,9 @@ export class HttpTaxonomyService implements TaxonomyServiceContract {
     limit?: number;
     locale?: string;
     taxonomyVersion?: string;
-  }): Promise<TaxonomyV4OptionPage> {
-    return apiOperation<TaxonomyV4OptionPage, "getTaxonomyV4Options">(
-      "getTaxonomyV4Options",
+  }): Promise<TaxonomyV1OptionPage> {
+    return apiOperation<TaxonomyV1OptionPage, "getTaxonomyV1Options">(
+      "getTaxonomyV1Options",
       {
         path: { optionSetId: input.optionSetId },
         query: {

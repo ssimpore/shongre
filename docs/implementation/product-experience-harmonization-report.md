@@ -64,7 +64,7 @@ detail, settings, and account deletion. The audited critical native chains were:
 | -------------------------------------------------------- | ------------------------------------------------ | -------------------------------------------------------- | -------------------------------------------------------------------------- |
 | Discovery, search, category scope, prices                | complete responsive experience                   | API-backed focused experience                            | same domain meaning and backend authority; platform-native layout          |
 | Listing detail and engagement                            | complete                                         | focused detail, favourite, contact, watch, report, block | same action names and consequences                                         |
-| Publication                                              | full multi-step and vertical flows               | compact API-backed taxonomy-v4 flow                      | same contracts and server decisions; different presentation is intentional |
+| Publication                                              | full multi-step and vertical flows               | compact API-backed taxonomy-v1 flow                      | same contracts and server decisions; different presentation is intentional |
 | Messaging and offers                                     | complete                                         | message thread and confirmed offers                      | same financial meaning; native confirmation added                          |
 | Checkout/payment/subscription                            | complete where market/provider policy enables it | no native digital checkout                               | intentional store/policy boundary; no fake parity                          |
 | Consent and account deletion                             | complete                                         | settings and guarded deletion                            | same consequences, native conventions                                      |
@@ -157,7 +157,7 @@ screen-reader result is claimed.
 - Removed the unsafe `TaxonomyNode[] as any` compatibility lie from the Web
   demo adapter. It now returns the existing lazy legacy `Category` projection.
 - Removed the native runtime import and singleton for
-  `getTaxonomyV4PublicBundle`; the existing HTTP taxonomy service is the sole
+  `getTaxonomyV1PublicBundle`; the existing HTTP taxonomy service is the sole
   publication source.
 - Split the native listing service's collection read from its typed search
   command. Removed display-text alias matching and client-side result

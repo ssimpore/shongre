@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { PublishedTaxonomyService } from "../../src/modules/taxonomy/taxonomy.runtime.js";
-import { TaxonomyV4Service } from "../../src/modules/taxonomy/taxonomy.v4.service.js";
-import { TAXONOMY_V4_PRIVATE_BUNDLE as bundle } from "../../src/modules/taxonomy/generated/taxonomy-v4.private.js";
+import { TaxonomyV1Service } from "../../src/modules/taxonomy/taxonomy.v1.service.js";
+import { TAXONOMY_V1_PRIVATE_BUNDLE as bundle } from "../../taxonomy/generated/taxonomy-v1.private.js";
 import { inspectTaxonomy } from "../../src/modules/taxonomy/taxonomy.integrity.js";
 import { resolveMarketContext } from "@shongre/contracts";
 
@@ -73,7 +73,7 @@ describe("published taxonomy revisions", () => {
     );
   });
   it("has a resolvable schema for every declared publication flow", () => {
-    const service = new TaxonomyV4Service(bundle, 1);
+    const service = new TaxonomyV1Service(bundle, 1);
     const flows = new Set<string>();
     for (const type of bundle.listingTypes) {
       const schema = service.resolve({
@@ -97,12 +97,12 @@ describe("published taxonomy revisions", () => {
   });
   it("validates verified phone dependencies and leaves seller facts independent", () => {
     expect(
-      new TaxonomyV4Service(bundle, 7).projectIdentity(
+      new TaxonomyV1Service(bundle, 7).projectIdentity(
         "electronics.smartphones.phones",
         "phone_reference_brand:apple",
       )?.brandLabels?.["fr-FR"],
     ).toBe("Apple");
-    const service = new TaxonomyV4Service(bundle, 1);
+    const service = new TaxonomyV1Service(bundle, 1);
     const values = {
       phone_reference_brand: "apple",
       phone_reference_family: "iphone",

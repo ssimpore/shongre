@@ -1,3 +1,4 @@
+import { browserApi } from "./browser-api";
 import { expect, test } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { usePersona } from "./personas";
@@ -32,7 +33,7 @@ test.describe("Shongre Immo", () => {
       }),
     ).toBeVisible();
     await expect(page.getByRole("article").first()).toBeVisible();
-    const locationSelector = page.locator("#immo-location-selector");
+    const locationSelector = page.locator("#immo-location-selector-desktop");
     await expect(locationSelector).toHaveAttribute(
       "data-location-selector",
       "true",
@@ -68,7 +69,9 @@ test.describe("Shongre Immo", () => {
     expect(
       await page.evaluate(() => document.documentElement.scrollWidth),
     ).toBeLessThanOrEqual(390);
-    await page.getByRole("button", { name: "Filtres", exact: true }).click();
+    await page
+      .locator('button[aria-controls="immo-filter-panel-mobile"]')
+      .click();
     const dialog = page.getByRole("dialog", { name: "Filtres immobiliers" });
     await expect(dialog.getByText("Type de bien")).toBeVisible();
     await expect(dialog.getByLabel("Budget maximum")).toBeVisible();
@@ -333,12 +336,40 @@ test.describe("Shongre Immo", () => {
     await expect(
       page.getByRole("heading", { level: 1, name: "Publier un bien" }),
     ).toBeVisible();
+    await page
+      .getByRole("combobox", { name: "Votre projet", exact: true })
+      .selectOption("sale");
+    await page
+      .getByRole("combobox", { name: "Type de bien", exact: true })
+      .selectOption("apartment");
     await page.getByRole("button", { name: "Continuer" }).click();
     await page.getByLabel("Adresse exacte").fill("14 rue test, 69003 Lyon");
-    await page.getByLabel("Ville").fill("Lyon");
-    await page.waitForTimeout(500);
+    await page
+      .getByRole("textbox", { name: "Ville", exact: true })
+      .fill("Lyon");
+    await expect
+      .poll(
+        async () =>
+          (
+            await browserApi(page, "/real-estate/drafts", {
+              method: "POST",
+              body: { marketCode: "FR" },
+            })
+          ).body.data,
+      )
+      .toMatchObject({
+        address: { exactAddress: "14 rue test, 69003 Lyon", city: "Lyon" },
+        propertyType: "apartment",
+      });
+    await page.reload();
+    await page
+      .getByRole("button", { name: /Reprendre l’annonce immobilière/ })
+      .click();
+    await expect(page.getByLabel("Adresse exacte")).toHaveValue(
+      "14 rue test, 69003 Lyon",
+    );
     const storage = await page.evaluate(() => JSON.stringify(localStorage));
-    expect(storage).toContain("14 rue test");
+    expect(storage).not.toContain("14 rue test");
     expect(storage).not.toContain("paymentSecret");
     expect(storage).not.toContain("riskSignals");
     expect(

@@ -1,5 +1,5 @@
-import { getTaxonomyV4PublicBundle } from "@shongre/contracts/taxonomy-v4-public";
-import { taxonomyV4TreeResponseSchema } from "@shongre/contracts/taxonomy";
+import { getTaxonomyV1PublicBundle } from "@shongre/contracts/testing/taxonomy";
+import { taxonomyV1TreeResponseSchema } from "@shongre/contracts/taxonomy";
 import { describe, expect, it } from "vitest";
 import { DELIVERY_TAXONOMY_CATEGORY_ID } from "@shongre/contracts/delivery";
 import {
@@ -9,9 +9,9 @@ import {
   taxonomySlugsForListing,
 } from "./taxonomy.seo";
 
-const bundle = getTaxonomyV4PublicBundle();
-const tree = taxonomyV4TreeResponseSchema.parse({
-  taxonomyVersion: "4.0.0",
+const bundle = getTaxonomyV1PublicBundle();
+const tree = taxonomyV1TreeResponseSchema.parse({
+  taxonomyVersion: "v1",
   compilerVersion: bundle.metadata.compilerVersion,
   checksum: bundle.metadata.normalizedSha256,
   revision: 1,

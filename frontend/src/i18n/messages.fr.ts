@@ -3820,8 +3820,6 @@ export const messagesFr = {
 
   // --- sellerworkspace.bulkImportModal ---
   "sellerworkspace.bulkImportModal.modeleCsvVierge": "Modèle CSV vierge",
-  "sellerworkspace.bulkImportModal.chargerUnExemple4Articles":
-    "Charger un exemple (4 articles)",
   "sellerworkspace.bulkImportModal.parcourirUnFichierCsv":
     "Parcourir un fichier CSV...",
   "sellerworkspace.bulkImportModal.utilisezNotreModeleAvecSeparateur":
@@ -3838,6 +3836,10 @@ export const messagesFr = {
     "Titre obligatoire",
   "sellerworkspace.bulkImportModal.validationTitleTooShort":
     "Titre trop court (5 caractères minimum)",
+  "sellerworkspace.bulkImportModal.validationCategoryInvalid":
+    "Choisissez une catégorie finale disponible.",
+  "sellerworkspace.bulkImportModal.validationAttributesInvalid":
+    "Les caractéristiques ou les photos JSON sont invalides.",
   "sellerworkspace.bulkImportModal.validationPriceInvalid": "Prix invalide",
   "sellerworkspace.bulkImportModal.rowsDetected":
     "{total} lignes détectées ({valid} valides)",
@@ -5206,7 +5208,7 @@ export const messagesFr = {
   "admin.adminTaxonomyPage.brouillonSAPublier": "brouillon(s) à publier",
   "admin.adminTaxonomyPage.arborescenceNoeuds": "Arborescence & Nœuds",
   "admin.adminTaxonomyPage.registreDesAttributs": "Registre des Attributs",
-  "admin.adminTaxonomyPage.schemaV4Migration": "Schéma v4 & Migration",
+  "admin.adminTaxonomyPage.schemaV1Migration": "Schéma v4 & Migration",
   "admin.adminTaxonomyPage.validationQualite": "Validation & Qualité",
   "admin.adminTrendingPage.tendancesDeLaPageDAccueil":
     "Tendances de la page d’accueil",
@@ -5846,34 +5848,38 @@ export const messagesFr = {
   "admin.taxonomyEditor.resource.dependencies": "Conditions de formulaire",
   "admin.taxonomyEditor.resource.validationRules": "Règles de validation",
   "admin.taxonomyEditor.resource.aliases": "Identités historiques",
+  "admin.taxonomy.editReferences": "Modifier dans la taxonomie",
+  "admin.taxonomy.referenceActive": "Actif",
+  "admin.taxonomy.referenceInactive": "Inactif",
+  "admin.taxonomyEditor.resource.referenceEntries": "Référentiels des domaines",
   "admin.taxonomyEditor.resource.referenceData": "Sources et statut de revue",
   "admin.taxonomyEditor.resource.presentations": "Présentation et parcours",
   "admin.taxonomyEditor.resource.discovery": "Recherche et référencement",
-  "admin.taxonomyV4GovernanceTab.gouvernanceDuSchemaV4Genere":
+  "admin.taxonomyV1GovernanceTab.gouvernanceDuSchemaV1Genere":
     "Gouvernance du schéma v4 généré",
-  "admin.taxonomyV4GovernanceTab.projectionPubliqueEnLectureSeuleLesReglesPriveesJuridiquesEt":
+  "admin.taxonomyV1GovernanceTab.projectionPubliqueEnLectureSeuleLesReglesPriveesJuridiquesEt":
     "Projection publique en lecture seule. Les règles privées, juridiques et de risque restent exclusivement côté backend.",
-  "admin.taxonomyV4GovernanceTab.ressourcesDeTaxonomieV4":
-    "Ressources de taxonomie v4",
-  "admin.taxonomyV4GovernanceTab.rechercherUnTypeDAnnonce":
+  "admin.taxonomyV1GovernanceTab.ressourcesDeTaxonomieV1":
+    "Ressources de taxonomie v1",
+  "admin.taxonomyV1GovernanceTab.rechercherUnTypeDAnnonce":
     "Rechercher un type d’annonce",
-  "admin.taxonomyV4GovernanceTab.marchesActifs": "Marchés actifs",
-  "admin.taxonomyV4GovernanceTab.100ResultatsAffichesSur":
+  "admin.taxonomyV1GovernanceTab.marchesActifs": "Marchés actifs",
+  "admin.taxonomyV1GovernanceTab.100ResultatsAffichesSur":
     "100 résultats affichés sur",
-  "admin.taxonomyV4GovernanceTab.liensParentEnfantExplicitesPilotentLesSelecteursEnCascadeSans":
+  "admin.taxonomyV1GovernanceTab.liensParentEnfantExplicitesPilotentLesSelecteursEnCascadeSans":
     "liens parent-enfant explicites pilotent les sélecteurs en cascade sans dupliquer les options.",
-  "admin.taxonomyV4GovernanceTab.matriceResolue": "Matrice résolue",
-  "admin.taxonomyV4GovernanceTab.liaisonsSourcesFiltreesDansCetteProjectionPourExclureLesChamps":
+  "admin.taxonomyV1GovernanceTab.matriceResolue": "Matrice résolue",
+  "admin.taxonomyV1GovernanceTab.liaisonsSourcesFiltreesDansCetteProjectionPourExclureLesChamps":
     "liaisons sources, filtrées dans cette projection pour exclure les champs privés.",
-  "admin.taxonomyV4GovernanceTab.frBeEtChSontDisponiblesSelonChaqueEnregistrementSn":
+  "admin.taxonomyV1GovernanceTab.frBeEtChSontDisponiblesSelonChaqueEnregistrementSn":
     "FR, BE et CH sont disponibles selon chaque enregistrement. SN et BF restent « bientôt disponible », non publiables et non indexables.",
-  "admin.taxonomyV4GovernanceTab.lEligibiliteParticulierProfessionnelEstPorteeParLesCategoriesTypes":
+  "admin.taxonomyV1GovernanceTab.lEligibiliteParticulierProfessionnelEstPorteeParLesCategoriesTypes":
     "L’éligibilité particulier/professionnel est portée par les catégories, types d’annonce et attributs, puis résolue côté backend.",
-  "admin.taxonomyV4GovernanceTab.sourceNormalisee": "… · source normalisée",
-  "admin.taxonomyV4GovernanceTab.identitesV3Revues": "identités v3 revues ·",
-  "admin.taxonomyV4GovernanceTab.annoncesDeDemonstrationConserveesAucunReferencementAmbigu":
+  "admin.taxonomyV1GovernanceTab.sourceNormalisee": "… · source normalisée",
+  "admin.taxonomyV1GovernanceTab.identitesV3Revues": "identités v3 revues ·",
+  "admin.taxonomyV1GovernanceTab.annoncesDeDemonstrationConserveesAucunReferencementAmbigu":
     "annonces de démonstration conservées · aucun référencement ambigu.",
-  "admin.taxonomyV4GovernanceTab.dryRunDesAnnoncesDeDemonstration":
+  "admin.taxonomyV1GovernanceTab.dryRunDesAnnoncesDeDemonstration":
     "Dry-run des annonces de démonstration",
   "admin.taxonomyValidationTab.reanalyser": "Réanalyser (",
   "admin.taxonomyValidationTab.tous": "Tous (",

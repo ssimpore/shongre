@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { taxonomyV1Service } from "../../taxonomy/taxonomy.runtime.js";
 import { getCountryConfig } from "@shongre/contracts";
 import {
   prospectDiscoveryRequestSchema,
@@ -292,6 +293,9 @@ export class ProspectingService {
     this.assertContext(principal, parsed.context);
     const access = await this.entitlements(principal, context);
     this.requireEnabled(access.value);
+    parsed.taxonomySlugs = await this.canonicalTaxonomySlugs(
+      parsed.taxonomySlugs,
+    );
     return prospectingProfileSchema.parse(
       await this.repository.createProfile(context, principal.userId, parsed),
     );
@@ -313,6 +317,9 @@ export class ProspectingService {
     this.assertContext(principal, request.context);
     const access = await this.entitlements(principal, context);
     this.requireEnabled(access.value);
+    request.filters.taxonomySlugs = await this.canonicalTaxonomySlugs(
+      request.filters.taxonomySlugs,
+    );
     const period = periodBounds();
     const usage = await this.repository.getUsage(
       context.tenantId,
@@ -460,6 +467,27 @@ export class ProspectingService {
           ? "2026-08-15T10:00:00.000Z"
           : new Date().toISOString(),
     });
+  }
+
+  private async canonicalTaxonomySlugs(
+    identities: string[],
+  ): Promise<string[]> {
+    if (!identities.length) return [];
+    const taxonomy = await taxonomyV1Service.snapshot();
+    return [
+      ...new Set(
+        identities.map((identity) => {
+          const category = taxonomy.findCategory(identity);
+          if (!category)
+            throw new AppError({
+              code: "VALIDATION_ERROR",
+              statusCode: 400,
+              message: "Catégorie de prospection introuvable.",
+            });
+          return category.slug;
+        }),
+      ),
+    ];
   }
 
   async opportunityBrief(principal: Principal, candidateId: string) {

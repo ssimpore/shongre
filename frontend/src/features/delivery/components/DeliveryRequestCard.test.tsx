@@ -89,6 +89,16 @@ const request: DeliveryPublicRequest = {
   expiresAt: "2026-09-30T20:00:00.000Z",
   publishedAt: "2026-09-06T08:00:00.000Z",
   version: 1,
+  taxonomy: {
+    revision: 12,
+    categoryId: "services.delivery.requests",
+    categorySlug: "livraison-coursier",
+    categoryLabels: { "fr-FR": "Livraison & coursier" },
+    rootId: "services",
+    rootSlug: "services",
+    rootLabels: { "fr-FR": "Services publiés" },
+    path: [],
+  },
 };
 
 describe("delivery listing card", () => {
@@ -102,12 +112,19 @@ describe("delivery listing card", () => {
       price: { amountMinor: 4_500, currency: "EUR" },
       city: "Paris",
       marketCode: "FR",
-      categoryLabel: "Services",
+      categoryLabel: "Services publiés",
       publishedAt: request.publishedAt,
       publisherType: "private",
     });
     expect(listing.imageUrl).toBeUndefined();
     expect(listing.brandLabel).toBeUndefined();
+    expect(
+      presentDeliveryRequestCard(
+        { ...request, taxonomy: undefined },
+        "fr-FR",
+        "FR",
+      ).categoryLabel,
+    ).toBe("");
     expect(() => presentDeliveryRequestCard(request, "fr-BE", "BE")).toThrow(
       "is not published in market BE",
     );

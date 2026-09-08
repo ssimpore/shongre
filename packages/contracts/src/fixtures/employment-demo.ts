@@ -9,7 +9,7 @@ import type {
   RecruiterWorkspace,
 } from "../schemas/employment";
 import type { MarketResolvedListingPromotion } from "../schemas/discovery";
-import { EMPLOYMENT_DEFAULT_PIPELINE_STAGES } from "./employment-catalog";
+import { EMPLOYMENT_DEFAULT_PIPELINE_STAGES } from "./employment-configuration";
 
 export const EMPLOYMENT_DEMO_NOW = "2026-08-22T10:00:00.000Z";
 export const EMPLOYMENT_DEMO_RECRUITER_USER_ID = "user_employment_clara";

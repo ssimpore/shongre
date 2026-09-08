@@ -1,15 +1,14 @@
-import { taxonomyV4Service } from "../taxonomy/taxonomy.runtime.js";
+import type { TaxonomyV1Service } from "../taxonomy/taxonomy.v1.service.js";
+import { taxonomyV1Service } from "../taxonomy/taxonomy.runtime.js";
 import { createHash, randomUUID } from "node:crypto";
 import type {
   AgencyWorkspace,
   PropertyDraft,
   PropertyImport,
-  PropertyFieldRule,
   PropertyLead,
   PropertyLeadExport,
   PropertyLeadNote,
   PropertyPrivate,
-  PropertyTypeConfig,
   RealEstateCatalog,
   RealEstateMarketConfig,
 } from "@shongre/contracts/real-estate";
@@ -84,6 +83,55 @@ function publicProperty(property: PropertyPrivate) {
   };
 }
 
+function propertyCardTaxonomy(
+  taxonomy: TaxonomyV1Service,
+  property: ReturnType<typeof publicProperty>,
+  marketCode: string,
+) {
+  const amenityOptions =
+    taxonomy
+      .getReferences("real_estate_attribute_definitions", marketCode, true)
+      .find((field) => field.id === "amenities")?.options ?? [];
+  return taxonomy.projectDomainListing(
+    CANONICAL_TAXONOMY_IDS.realEstate,
+    marketCode,
+    {
+      living_area: property.characteristics.livingAreaSquareMeters,
+      rooms: property.characteristics.rooms,
+      dpe_class: property.energy?.dpeClass,
+      ges_class: property.energy?.gesClass,
+      property_type: property.propertyType,
+      property_transaction: property.transactionType,
+      property_condition: property.characteristics.condition,
+      bedrooms: property.characteristics.bedrooms,
+      bathrooms: property.characteristics.bathrooms,
+      land_area: property.characteristics.landAreaSquareMeters,
+      floor: property.characteristics.floor,
+      total_floors: property.characteristics.floorCount,
+      construction_year: property.characteristics.constructionYear,
+      furnished: property.characteristics.isFurnished,
+      amenities: property.characteristics.amenities,
+    },
+    {
+      amenities: {
+        "fr-FR": property.characteristics.amenities
+          .map(
+            (value) =>
+              amenityOptions.find((option) => option.value === value)?.label,
+          )
+          .filter(Boolean)
+          .join(", "),
+      },
+      property_type: {
+        "fr-FR":
+          taxonomy
+            .getReferences("real_estate_property_types", marketCode, true)
+            .find((type) => type.type === property.propertyType)?.label ?? "",
+      },
+    },
+  );
+}
+
 export class RealEstateService {
   constructor(
     private readonly repo: IRealEstateRepository = repositories.realEstate,
@@ -125,12 +173,13 @@ export class RealEstateService {
         usesMapBounds: Boolean(query.boundingBox),
       },
     });
-    const taxonomy = (await taxonomyV4Service.snapshot()).projectIdentity(
-      CANONICAL_TAXONOMY_IDS.realEstate,
-    );
+    const taxonomy = await taxonomyV1Service.snapshot();
     return {
       ...result,
-      items: result.items.map((item) => ({ ...item, taxonomy })),
+      items: result.items.map((item) => ({
+        ...item,
+        taxonomy: propertyCardTaxonomy(taxonomy, item, query.marketCode),
+      })),
     };
   }
 
@@ -154,8 +203,10 @@ export class RealEstateService {
     });
     return {
       ...publicProperty(property),
-      taxonomy: (await taxonomyV4Service.snapshot()).projectIdentity(
-        CANONICAL_TAXONOMY_IDS.realEstate,
+      taxonomy: propertyCardTaxonomy(
+        await taxonomyV1Service.snapshot(),
+        publicProperty(property),
+        marketCode ?? property.marketCodes[0],
       ),
     };
   }
@@ -178,26 +229,32 @@ export class RealEstateService {
       sort: "relevance",
       limit: 10,
     });
-    const taxonomy = (await taxonomyV4Service.snapshot()).projectIdentity(
-      CANONICAL_TAXONOMY_IDS.realEstate,
-    );
+    const taxonomy = await taxonomyV1Service.snapshot();
     return result.items
       .filter((candidate) => candidate.id !== propertyId)
       .slice(0, 3)
-      .map((item) => ({ ...item, taxonomy }));
+      .map((item) => ({
+        ...item,
+        taxonomy: propertyCardTaxonomy(taxonomy, item, property.marketCodes[0]),
+      }));
   }
 
   async getRecentlyViewed(userId: string) {
-    const taxonomy = (await taxonomyV4Service.snapshot()).projectIdentity(
-      CANONICAL_TAXONOMY_IDS.realEstate,
-    );
+    const taxonomy = await taxonomyV1Service.snapshot();
     return (await this.repo.getRecentlyViewed(userId))
       .filter(
         (property) =>
           property.lifecycle === "published" &&
           property.moderationStatus === "approved",
       )
-      .map((item) => ({ ...publicProperty(item), taxonomy }));
+      .map((item) => ({
+        ...publicProperty(item),
+        taxonomy: propertyCardTaxonomy(
+          taxonomy,
+          publicProperty(item),
+          item.marketCodes[0],
+        ),
+      }));
   }
 
   async markRecentlyViewed(userId: string, propertyId: string) {
@@ -370,6 +427,63 @@ export class RealEstateService {
       (Array.isArray(value) && value.length === 0);
     const propertyType = String(data.propertyType || "");
     const transactionType = String(data.transactionType || "");
+    const selectedType = catalog.propertyTypes.find(
+      (type) => type.type === propertyType,
+    );
+    if (
+      !selectedType ||
+      !selectedType.transactionTypes.some(
+        (transaction) => transaction === transactionType,
+      )
+    ) {
+      issues.push({
+        fieldId: "propertyType",
+        message:
+          "Choisissez un type de bien compatible avec le projet dans le référentiel publié.",
+        severity: "error",
+      });
+    }
+    const selections = [
+      [
+        "characteristics.condition",
+        catalog.taxonomyOptions.optionSets.property_condition?.map(
+          (option) => option.key,
+        ),
+      ],
+      [
+        "energy.dpeClass",
+        catalog.attributes
+          .find((field) => field.id === "dpe")
+          ?.options?.map((option) => option.value),
+      ],
+      [
+        "energy.gesClass",
+        catalog.attributes
+          .find((field) => field.id === "ges")
+          ?.options?.map((option) => option.value),
+      ],
+      [
+        "characteristics.amenities",
+        catalog.attributes
+          .find((field) => field.id === "amenities")
+          ?.options?.map((option) => option.value),
+      ],
+    ] as const;
+    for (const [path, allowed] of selections) {
+      const value = readPath(path);
+      if (missing(value)) continue;
+      if (
+        (Array.isArray(value) ? value : [value]).some(
+          (item) => !allowed?.includes(String(item)),
+        )
+      )
+        issues.push({
+          fieldId: path,
+          message:
+            "Une caractéristique n’est plus disponible dans le référentiel publié. Vérifiez votre sélection.",
+          severity: "error",
+        });
+    }
     const sellerType = String(
       (data.seller as Record<string, unknown> | undefined)?.type || "",
     );
@@ -1150,20 +1264,6 @@ export class RealEstateService {
     patch: Partial<RealEstateCatalog["addOns"][number]>,
   ) {
     return this.repo.updateAddOn(marketCode.toUpperCase(), addOnId, patch);
-  }
-  updatePropertyType(
-    marketCode: string,
-    type: string,
-    patch: Partial<PropertyTypeConfig>,
-  ) {
-    return this.repo.updatePropertyType(marketCode.toUpperCase(), type, patch);
-  }
-  updateFieldRule(
-    marketCode: string,
-    ruleId: string,
-    patch: Partial<PropertyFieldRule>,
-  ) {
-    return this.repo.updateFieldRule(marketCode.toUpperCase(), ruleId, patch);
   }
 }
 

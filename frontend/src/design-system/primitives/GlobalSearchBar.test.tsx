@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { routes } from "../../configuration/routes";
-import { taxonomyV4TestCategories } from "../../testing/taxonomy-v4.test-support";
+import { taxonomyV1TestCategories } from "../../testing/taxonomy-v1.test-support";
 import { getTaxonomyLabel } from "../../domains/taxonomy/taxonomy.labels";
 import { SEARCH_PLACEHOLDER } from "../../configuration/search.config";
 
@@ -61,8 +61,8 @@ describe("GlobalSearchBar Component & Search Routing Contract", () => {
 
   describe("Taxonomy Category Integration", () => {
     it("has valid categories in canonical taxonomy matching all categories", () => {
-      expect(taxonomyV4TestCategories.length).toBeGreaterThan(0);
-      taxonomyV4TestCategories.forEach((cat) => {
+      expect(taxonomyV1TestCategories.length).toBeGreaterThan(0);
+      taxonomyV1TestCategories.forEach((cat) => {
         const compactLabel = getTaxonomyLabel(cat, "compact");
         expect(compactLabel).toBeTruthy();
         expect(cat.slug).toBeTruthy();

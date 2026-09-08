@@ -344,6 +344,30 @@ describe("EmploymentService", () => {
     ).toBe(true);
   });
 
+  it.each([
+    { professionId: "unpublished" },
+    { specializationId: "employment.fr.specialization.business_intelligence" },
+    { contractTypeId: "employment.fr.sector.technology" },
+  ])(
+    "rejects unpublished or mismatched employment references: %j",
+    async (change) => {
+      const repository = new MutableEmploymentRepository();
+      repository.clearEmployerJobs("employer-technova");
+      const service = new EmploymentService(repository);
+      await service.saveOwnDraft("user_pro_atelier", "draft-selection", {
+        marketCode: "FR",
+        employerId: "employer-technova",
+        privateEmployer: false,
+        completedSteps: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+        selectedOfferId: "employment.employer.free",
+        data: standardJobData(change),
+      });
+      await expect(
+        service.submitOwnDraft("user_pro_atelier", "draft-selection"),
+      ).rejects.toMatchObject({ code: "VALIDATION_ERROR" });
+    },
+  );
+
   it("publishes a company standard offer without requiring a paid entitlement", async () => {
     const repository = new MutableEmploymentRepository();
     repository.clearEmployerJobs("employer-technova");

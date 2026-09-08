@@ -1,20 +1,11 @@
 import { localizeTaxonomyLabels as localized } from "@shongre/contracts/taxonomy-labels";
 import type { components } from "@shongre/contracts/openapi";
-import type { TaxonomyV4Attribute } from "@shongre/contracts/taxonomy";
-import type { TaxonomyV4PrivateBundle } from "./taxonomy.bundle.js";
+import type { TaxonomyV1Attribute } from "@shongre/contracts/taxonomy";
+import type { TaxonomyV1PrivateBundle } from "./taxonomy.bundle.js";
 
 type Characteristics = components["schemas"]["ListingCharacteristics"];
 type Group = Characteristics["groups"][number];
-type Option = TaxonomyV4PrivateBundle["options"][number];
-
-// Existing vehicle records use these persisted keys. Keep translation at the
-// backend read boundary until those records are migrated; never infer values.
-const storedVehicleKeys: Readonly<Record<string, string>> = {
-  model_year: "year",
-  fuel_type: "fuel",
-  transmission: "gearbox",
-  critair_class: "critair",
-};
+type Option = TaxonomyV1PrivateBundle["options"][number];
 
 function comparable(value: string) {
   return value.trim().normalize("NFKC").toLocaleLowerCase("fr-FR");
@@ -22,7 +13,7 @@ function comparable(value: string) {
 
 function formatValue(
   value: unknown,
-  definition: TaxonomyV4Attribute,
+  definition: TaxonomyV1Attribute,
   options: readonly Option[],
   locale: string,
 ): string {
@@ -67,7 +58,7 @@ function formatValue(
   return text;
 }
 
-function buildCharacteristicsIndex(taxonomy: TaxonomyV4PrivateBundle) {
+function buildCharacteristicsIndex(taxonomy: TaxonomyV1PrivateBundle) {
   const categories = new Map(taxonomy.categories.map((row) => [row.id, row]));
   const definitions = new Map(taxonomy.attributes.map((row) => [row.id, row]));
   const groups = new Map(taxonomy.attributeGroups.map((row) => [row.id, row]));
@@ -89,7 +80,7 @@ function buildCharacteristicsIndex(taxonomy: TaxonomyV4PrivateBundle) {
 
   const cardsByType = new Map<
     string,
-    TaxonomyV4PrivateBundle["projections"]["cardFields"]
+    TaxonomyV1PrivateBundle["projections"]["cardFields"]
   >();
   for (const row of taxonomy.projections.cardFields) {
     const entries = cardsByType.get(row.listingTypeId) ?? [];
@@ -106,10 +97,10 @@ function buildCharacteristicsIndex(taxonomy: TaxonomyV4PrivateBundle) {
   };
 }
 const indexedSnapshots = new WeakMap<
-  TaxonomyV4PrivateBundle,
+  TaxonomyV1PrivateBundle,
   ReturnType<typeof buildCharacteristicsIndex>
 >();
-function characteristicsIndex(taxonomy: TaxonomyV4PrivateBundle) {
+function characteristicsIndex(taxonomy: TaxonomyV1PrivateBundle) {
   let index = indexedSnapshots.get(taxonomy);
   if (!index) {
     index = buildCharacteristicsIndex(taxonomy);
@@ -128,8 +119,14 @@ export function projectListingCharacteristics(
     locale: string;
     attributes: Readonly<Record<string, unknown>>;
     surface?: "detail" | "card";
+    /** Typed domain APIs already validate which public fields their records own. */
+    validatedDomainFields?: boolean;
+    /** Values resolved from reference entries in this same immutable publication. */
+    referenceValues?: Readonly<
+      Record<string, Readonly<Record<string, string>>>
+    >;
   },
-  taxonomy: TaxonomyV4PrivateBundle,
+  taxonomy: TaxonomyV1PrivateBundle,
 ): Characteristics {
   const {
     categories,
@@ -211,9 +208,17 @@ export function projectListingCharacteristics(
   );
   // A parent category is not a publication choice. Only fields shared by every
   // applicable descendant type are safe to present without guessing a leaf.
-  const common = [...applicable[0].values()]
-    .filter((binding) =>
-      applicable.every((bindings) => bindings.has(binding.attributeId)),
+  const common = [
+    ...new Map(
+      (input.validatedDomainFields ? applicable : [applicable[0]]).flatMap(
+        (bindings) => [...bindings.entries()],
+      ),
+    ).values(),
+  ]
+    .filter(
+      (binding) =>
+        input.validatedDomainFields ||
+        applicable.every((bindings) => bindings.has(binding.attributeId)),
     )
     .sort((a, b) => a.sortOrder - b.sortOrder);
   const result = new Map<
@@ -223,21 +228,22 @@ export function projectListingCharacteristics(
   for (const binding of common) {
     const definition = definitions.get(binding.attributeId)!;
     const group = groups.get(binding.groupId)!;
-    const alias = category.id.startsWith("vehicles.")
-      ? storedVehicleKeys[definition.code]
-      : undefined;
     const value =
-      input.attributes[definition.code] ??
-      input.attributes[definition.id] ??
-      (alias ? input.attributes[alias] : undefined);
-    const formatted = formatValue(
-      value,
-      definition,
-      definition.optionSetId
-        ? (optionsBySet.get(definition.optionSetId) ?? [])
-        : [],
-      input.locale,
-    );
+      input.attributes[definition.code] ?? input.attributes[definition.id];
+    const formatted =
+      (input.validatedDomainFields &&
+      value != null &&
+      input.referenceValues?.[definition.code]
+        ? localized(input.referenceValues[definition.code], input.locale)
+        : "") ||
+      formatValue(
+        value,
+        definition,
+        definition.optionSetId
+          ? (optionsBySet.get(definition.optionSetId) ?? [])
+          : [],
+        input.locale,
+      );
     const cardProjection =
       input.surface === "card"
         ? (cardsByType.get(types[0].id) ?? []).find(
@@ -267,12 +273,13 @@ export function projectListingCharacteristics(
 }
 
 /** Public card values derive from the same historical read bindings as details. */
-export function projectListingCardCharacteristics(
+export function projectLocalizedListingCharacteristics(
   input: Omit<
     Parameters<typeof projectListingCharacteristics>[0],
     "locale" | "surface"
   >,
-  taxonomy: TaxonomyV4PrivateBundle,
+  taxonomy: TaxonomyV1PrivateBundle,
+  surface: "card" | "detail" = "card",
 ): NonNullable<
   components["schemas"]["ListingTaxonomyProjection"]["cardCharacteristics"]
 > {
@@ -291,7 +298,7 @@ export function projectListingCardCharacteristics(
   >();
   for (const locale of locales) {
     const projection = projectListingCharacteristics(
-      { ...input, locale, surface: "card" },
+      { ...input, locale, surface },
       taxonomy,
     );
     for (const group of projection.groups)
@@ -306,6 +313,7 @@ export function projectListingCardCharacteristics(
         rows.set(item.code, row);
       }
   }
+  if (surface === "detail") return [...rows.values()];
   // All applicable types must share a field to expose it on an ambiguous historical
   // category. Its first declared presentation supplies the deterministic order.
   const { categories } = characteristicsIndex(taxonomy);

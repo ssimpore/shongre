@@ -1,14 +1,11 @@
+import { recordedTaxonomyResponses } from "@shongre/contracts/testing/taxonomy-responses";
 import { describe, expect, it } from "vitest";
+import { resolveMarketContext } from "@shongre/contracts";
 import {
-  TaxonomyV4PublicResolver,
-  resolveMarketContext,
-} from "@shongre/contracts";
-import { getTaxonomyV4PublicBundle } from "@shongre/contracts/taxonomy-v4-public";
-import {
-  isCurrentTaxonomyV4Schema,
-  retainTaxonomyV4Attributes,
+  isCurrentTaxonomyV1Schema,
+  retainTaxonomyV1Attributes,
   sanitizePublicationDraftForSubmission,
-  toTaxonomyV4ListingIntent,
+  toTaxonomyV1ListingIntent,
 } from "./publication.taxonomy-state";
 import type { PublicationDraftState } from "./publication.types";
 
@@ -21,7 +18,7 @@ const marketContext = resolveMarketContext({
     canonicalProtocol: "https",
   },
 });
-const resolver = new TaxonomyV4PublicResolver(getTaxonomyV4PublicBundle());
+const resolver = recordedTaxonomyResponses;
 
 const resolveSchema = (categoryIdentity: string) =>
   resolver.resolve({
@@ -37,34 +34,34 @@ describe("publication taxonomy state", () => {
     const electronics = resolveSchema("electronics.computers.laptops");
 
     expect(
-      isCurrentTaxonomyV4Schema(
+      isCurrentTaxonomyV1Schema(
         electronics,
         "electronics.computers.laptops",
         "SELL",
       ),
     ).toBe(true);
     expect(
-      isCurrentTaxonomyV4Schema(
+      isCurrentTaxonomyV1Schema(
         electronics,
         "home_garden.furniture.sofas",
         "SELL",
       ),
     ).toBe(false);
     expect(
-      isCurrentTaxonomyV4Schema(
+      isCurrentTaxonomyV1Schema(
         electronics,
         "electronics.computers.laptops",
         "DONATE",
       ),
     ).toBe(false);
-    expect(isCurrentTaxonomyV4Schema(electronics, "", "SELL")).toBe(false);
+    expect(isCurrentTaxonomyV1Schema(electronics, "", "SELL")).toBe(false);
   });
 
   it("removes values from a previous category while retaining shared values", () => {
     const electronics = resolveSchema("electronics.computers.laptops");
 
     expect(
-      retainTaxonomyV4Attributes(
+      retainTaxonomyV1Attributes(
         {
           brand: "Apple",
           storage_capacity_gb: 512,
@@ -79,9 +76,9 @@ describe("publication taxonomy state", () => {
   });
 
   it("normalizes persisted v3 intents before comparing v4 schemas", () => {
-    expect(toTaxonomyV4ListingIntent("GIVE")).toBe("DONATE");
-    expect(toTaxonomyV4ListingIntent("RENT")).toBe("RENT_OUT");
-    expect(toTaxonomyV4ListingIntent("OFFER_SERVICE")).toBe("SERVICE_OFFER");
+    expect(toTaxonomyV1ListingIntent("GIVE")).toBe("DONATE");
+    expect(toTaxonomyV1ListingIntent("RENT")).toBe("RENT_OUT");
+    expect(toTaxonomyV1ListingIntent("OFFER_SERVICE")).toBe("SERVICE_OFFER");
   });
 
   it("preserves valid shared answers and removes stale values before submission", () => {
@@ -95,7 +92,7 @@ describe("publication taxonomy state", () => {
         schema.category.id,
       ],
       listingTypeId: schema.listingType.id,
-      taxonomyVersion: "4.0.0",
+      taxonomyVersion: "v1",
       listingIntent: "SELL",
       title: "Ordinateur portable professionnel",
       description: "Ordinateur en très bon état, testé et prêt à utiliser.",

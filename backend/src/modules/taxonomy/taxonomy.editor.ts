@@ -1,4 +1,9 @@
-import type { TaxonomyV4PrivateBundle } from "./taxonomy.bundle.js";
+import {
+  taxonomyReferenceChange,
+  taxonomyReferenceEntrySchema,
+  taxonomyReferenceDefinitions,
+} from "./taxonomy.references.js";
+import type { TaxonomyV1PrivateBundle } from "./taxonomy.bundle.js";
 import type { components } from "@shongre/contracts/openapi";
 import type { Json } from "../../generated/database.types.js";
 
@@ -16,6 +21,7 @@ export const TAXONOMY_ADMIN_RESOURCES = [
   "validationRules",
   "aliases",
   "referenceData",
+  "referenceEntries",
   "presentations",
   "discovery",
 ] as const satisfies readonly Resource[];
@@ -170,7 +176,7 @@ const tables = {
 } as const;
 
 export function taxonomyRecords(
-  bundle: TaxonomyV4PrivateBundle,
+  bundle: TaxonomyV1PrivateBundle,
   resource: Resource,
 ): Record<string, unknown>[] {
   if (resource === "presentations" || resource === "discovery") {
@@ -200,6 +206,22 @@ export function taxonomyRecords(
       }
     return [...records.values()];
   }
+  if (resource === "referenceEntries")
+    return bundle.referenceEntries.map((entry) => {
+      const definition = taxonomyReferenceDefinitions[entry.namespace];
+      if (!definition.publicPayload) return entry;
+      const derived = new Set<string>(Object.values(definition.fields));
+      const payload = entry.values.public_payload as Record<string, unknown>;
+      return {
+        ...entry,
+        values: {
+          ...entry.values,
+          public_payload: Object.fromEntries(
+            Object.entries(payload).filter(([key]) => !derived.has(key)),
+          ),
+        },
+      };
+    });
   return bundle[resource];
 }
 
@@ -213,10 +235,10 @@ export function taxonomyRecordKey(
 }
 
 export function mergeTaxonomyRecords(
-  bundle: TaxonomyV4PrivateBundle,
+  bundle: TaxonomyV1PrivateBundle,
   resource: Resource,
   records: Record<string, unknown>[],
-): TaxonomyV4PrivateBundle {
+): TaxonomyV1PrivateBundle {
   const next = structuredClone(bundle);
   if (resource === "presentations" || resource === "discovery") {
     const field = resource === "presentations" ? "listingTypeId" : "categoryId";
@@ -251,9 +273,11 @@ export function mergeTaxonomyRecords(
 export function taxonomyRecordChanges(
   resource: Resource,
   records: Record<string, unknown>[],
-  bundle: TaxonomyV4PrivateBundle,
+  bundle: TaxonomyV1PrivateBundle,
 ): { table: string; values: Json }[] {
   return records.flatMap((row) => {
+    if (resource === "referenceEntries")
+      return [taxonomyReferenceChange(taxonomyReferenceEntrySchema.parse(row))];
     if (resource === "referenceData")
       return [{ table: resource, values: row as Json }];
     if (resource === "presentations" || resource === "discovery") {

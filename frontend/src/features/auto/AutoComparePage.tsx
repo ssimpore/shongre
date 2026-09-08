@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { localizeTaxonomyLabels } from "@shongre/contracts/taxonomy-labels";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { Link, useSearchParams } from "react-router-dom";
 import { Check, Minus, ShieldCheck, X } from "lucide-react";
@@ -14,21 +15,26 @@ import {
 } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
-import {
-  formatAutoMileage,
-  formatAutoMoney,
-  fuelLabels,
-  transmissionLabels,
-} from "./auto-format";
+import { formatAutoMileage, formatAutoMoney } from "./auto-format";
 
 export const AutoComparePage: React.FC = () => {
+  const { activeMarket } = useMarketLocation();
+  const [params] = useSearchParams();
+  return (
+    <AutoComparison key={`${activeMarket.code}:${params.get("ids") || ""}`} />
+  );
+};
+
+const AutoComparison: React.FC = () => {
   const { t } = useTranslation();
   const { activeMarket, currentLocale, convertMoney } = useMarketLocation();
   const [params, setParams] = useSearchParams();
   const [vehicles, setVehicles] = useState<VehiclePublic[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [retry, setRetry] = useState(0);
   const idsParam = params.get("ids") || "";
-  const ids = idsParam.split(",").filter(Boolean).slice(0, 4);
+  const ids = [...new Set(idsParam.split(",").filter(Boolean))].slice(0, 4);
 
   usePageMeta({
     title: "Comparer des véhicules",
@@ -38,13 +44,25 @@ export const AutoComparePage: React.FC = () => {
     noIndex: true,
   });
   useEffect(() => {
+    let cancelled = false;
     setLoading(true);
+    setError(false);
     Promise.all(
       ids.map((id) => services.auto.getVehicle(id, activeMarket.code)),
     )
-      .then(setVehicles)
-      .finally(() => setLoading(false));
-  }, [activeMarket.code, idsParam]);
+      .then((result) => {
+        if (!cancelled) setVehicles(result);
+      })
+      .catch(() => {
+        if (!cancelled) setError(true);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [activeMarket.code, idsParam, retry]);
   const remove = (id: string) => {
     const next = ids.filter((value) => value !== id);
     setParams(next.length ? { ids: next.join(",") } : {});
@@ -53,6 +71,21 @@ export const AutoComparePage: React.FC = () => {
     return (
       <Container className="py-7">
         <Skeleton className="h-140 rounded-card" />
+      </Container>
+    );
+  if (error)
+    return (
+      <Container className="py-10">
+        <StatePanel
+          variant="error"
+          title="Comparaison indisponible"
+          description="Les véhicules n’ont pas pu être chargés."
+          action={
+            <Button onClick={() => setRetry((value) => value + 1)}>
+              Réessayer
+            </Button>
+          }
+        />
       </Container>
     );
   if (vehicles.length < 2)
@@ -67,38 +100,40 @@ export const AutoComparePage: React.FC = () => {
       </Container>
     );
 
-  const rows = [
+  const fields = [
+    ...new Map(
+      vehicles.flatMap((vehicle) =>
+        (vehicle.taxonomy?.detailCharacteristics ?? []).map(
+          (field) => [field.code, field] as const,
+        ),
+      ),
+    ).values(),
+  ];
+  const rows: Array<readonly [string, (vehicle: VehiclePublic) => string]> = [
     [
       "Prix",
       (vehicle: VehiclePublic) =>
         formatAutoMoney(vehicle.price, currentLocale, convertMoney),
     ],
-    ["Année", (vehicle: VehiclePublic) => String(vehicle.technical.modelYear)],
     [
       "Kilométrage",
       (vehicle: VehiclePublic) => formatAutoMileage(vehicle, currentLocale),
     ],
-    [
-      "Énergie",
-      (vehicle: VehiclePublic) => fuelLabels[vehicle.technical.fuelType],
-    ],
-    [
-      "Transmission",
-      (vehicle: VehiclePublic) =>
-        transmissionLabels[vehicle.technical.transmission],
-    ],
-    [
-      "Puissance",
-      (vehicle: VehiclePublic) =>
-        vehicle.technical.powerHp ? `${vehicle.technical.powerHp} ch` : "—",
-    ],
-    [
-      "Garantie",
-      (vehicle: VehiclePublic) =>
-        vehicle.history.warrantyMonths
-          ? `${vehicle.history.warrantyMonths} mois`
-          : "Non indiquée",
-    ],
+    ...fields
+      .filter((field) => field.code !== "mileage")
+      .map(
+        (field) =>
+          [
+            localizeTaxonomyLabels(field.labels, currentLocale),
+            (vehicle: VehiclePublic) =>
+              localizeTaxonomyLabels(
+                vehicle.taxonomy?.detailCharacteristics?.find(
+                  (candidate) => candidate.code === field.code,
+                )?.values,
+                currentLocale,
+              ) || "—",
+          ] as const,
+      ),
     ["Vendeur", (vehicle: VehiclePublic) => vehicle.seller.displayName],
     [
       "Estimation",
@@ -107,7 +142,7 @@ export const AutoComparePage: React.FC = () => {
           ? "Dans la moyenne"
           : "Données insuffisantes",
     ],
-  ] as const;
+  ];
 
   return (
     <Container className="py-5 sm:py-7">

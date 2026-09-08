@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_EMPLOYMENT_CATALOG } from "../fixtures/employment-catalog";
+import { DEFAULT_EMPLOYMENT_CONFIGURATION } from "../fixtures/employment-configuration";
 import { EMPLOYMENT_DEMO_JOBS } from "../fixtures/employment-demo";
 import {
   employmentCatalogSchema,
@@ -9,7 +9,10 @@ import {
 
 describe("employment contracts", () => {
   it("keeps the canonical jobs taxonomy and a free employer path", () => {
-    const catalog = employmentCatalogSchema.parse(DEFAULT_EMPLOYMENT_CATALOG);
+    const catalog = employmentCatalogSchema.parse({
+      ...DEFAULT_EMPLOYMENT_CONFIGURATION,
+      dictionaries: [],
+    });
 
     expect(catalog.activation.verticalType).toBe("employment");
     expect(catalog.activation.categoryIds).toEqual(["jobs"]);

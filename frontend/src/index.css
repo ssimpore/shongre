@@ -901,12 +901,6 @@
   flex: 1 1 auto;
 }
 
-/* A measured minimum shared by related rails; the card's canonical token
-   remains the baseline and full titles/price rows may still wrap naturally. */
-.listing-rail-group .listing-rail-cell {
-  min-height: var(--listing-rail-measured-height, 0px);
-}
-
 /* Touch is the clearest rail control on phones, where an overlaid arrow would
    cover a compact card. Fine-pointer controls return from `sm` upward; their
    shared `top-1/2` placement centres them against the complete card row. */

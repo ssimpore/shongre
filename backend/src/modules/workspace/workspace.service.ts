@@ -1,4 +1,4 @@
-import { taxonomyV4Service } from "../taxonomy/taxonomy.runtime.js";
+import { taxonomyV1Service } from "../taxonomy/taxonomy.runtime.js";
 import type { components } from "@shongre/contracts/openapi";
 import { toPublicListing } from "../../shared/public-projections.js";
 import {
@@ -27,7 +27,7 @@ export class WorkspaceService {
     }
   > {
     const snapshot = await this.workspaceRepo.getProAnalytics(sellerId);
-    const taxonomy = await taxonomyV4Service.snapshot();
+    const taxonomy = await taxonomyV1Service.snapshot();
     return {
       ...snapshot,
       topListings: snapshot.topListings.map((listing) =>

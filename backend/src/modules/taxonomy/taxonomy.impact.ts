@@ -1,4 +1,4 @@
-import type { TaxonomyV4PrivateBundle } from "./taxonomy.bundle.js";
+import type { TaxonomyV1PrivateBundle } from "./taxonomy.bundle.js";
 import {
   TAXONOMY_ADMIN_RESOURCES,
   taxonomyRecordKey,
@@ -7,8 +7,8 @@ import {
 
 /** Compare both sides so moving a binding also reports its former owner. */
 export function taxonomyImpact(
-  before: TaxonomyV4PrivateBundle,
-  after: TaxonomyV4PrivateBundle,
+  before: TaxonomyV1PrivateBundle,
+  after: TaxonomyV1PrivateBundle,
 ) {
   const changed = new Map(
     TAXONOMY_ADMIN_RESOURCES.map((resource) => {
@@ -103,7 +103,8 @@ export function taxonomyImpact(
             ),
           ),
         ) ||
-        changed.get("referenceData")!.length
+        changed.get("referenceData")!.length ||
+        changed.get("referenceEntries")!.length
       )
         listingTypeIds.add(type.id);
     }

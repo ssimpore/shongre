@@ -1,6 +1,6 @@
 import type { TaxonomyServiceContract } from "../../api/contracts/taxonomy.contract";
-import type { TaxonomyNode } from "../../domains/taxonomy/taxonomy.types";
-import type { MarketContext, TaxonomyV4Node } from "@shongre/contracts";
+import type { TaxonomyNavigationNode as TaxonomyNode } from "../../domains/taxonomy/taxonomy.types";
+import type { MarketContext, TaxonomyV1Node } from "@shongre/contracts";
 
 export type TaxonomyNodeAvailability = (node: TaxonomyNode) => boolean;
 
@@ -12,7 +12,7 @@ export interface CategoryNavigationRootReference {
 const byTaxonomyOrder = (left: TaxonomyNode, right: TaxonomyNode) =>
   left.sortOrder - right.sortOrder || left.id.localeCompare(right.id);
 
-const toNavigationNode = (node: TaxonomyV4Node): TaxonomyNode => ({
+const toNavigationNode = (node: TaxonomyV1Node): TaxonomyNode => ({
   id: node.id,
   code: node.sourceKey,
   slug: node.slug,
@@ -27,24 +27,18 @@ const toNavigationNode = (node: TaxonomyV4Node): TaxonomyNode => ({
   iconName: node.iconName,
   sortOrder: node.sortOrder,
   status: node.status,
-  sellerEligibility: {
-    individualAllowed: node.sellerEligibility.individualAllowed,
-    proAllowed: node.sellerEligibility.professionalAllowed,
-  },
-  seo: { indexable: node.seo.indexable },
 });
 
 /**
- * Projects the canonical flat tree into the nested legacy view model still
- * consumed by the header. The API returns the complete market tree in one
+ * Projects the canonical flat tree into the header's nested menu. The API returns the complete market tree in one
  * request, so opening a menu never fans out into one request per node.
  */
 export function buildCategoryNavigationTree(
-  items: readonly TaxonomyV4Node[],
+  items: readonly TaxonomyV1Node[],
   isAvailable: TaxonomyNodeAvailability,
 ): TaxonomyNode[] {
   const itemsById = new Map(items.map((item) => [item.id, item]));
-  const childrenByParentId = new Map<string, TaxonomyV4Node[]>();
+  const childrenByParentId = new Map<string, TaxonomyV1Node[]>();
   items.forEach((item) => {
     if (!item.parentId || !itemsById.has(item.parentId)) return;
     const children = childrenByParentId.get(item.parentId) ?? [];
@@ -53,7 +47,7 @@ export function buildCategoryNavigationTree(
   });
 
   const buildNode = (
-    item: TaxonomyV4Node,
+    item: TaxonomyV1Node,
     ancestors: ReadonlySet<string>,
   ): TaxonomyNode | null => {
     const node = toNavigationNode(item);
@@ -81,10 +75,10 @@ export async function loadCategoryNavigationTree(
   locale: string,
   isAvailable: TaxonomyNodeAvailability,
 ): Promise<TaxonomyNode[]> {
-  const response = await taxonomy.getV4Tree({
+  const response = await taxonomy.getV1Tree({
     marketContext,
     locale,
-    taxonomyVersion: "4.0.0",
+    taxonomyVersion: "v1",
   });
   return buildCategoryNavigationTree(response.items, isAvailable);
 }

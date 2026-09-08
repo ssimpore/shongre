@@ -1,3 +1,7 @@
+import {
+  inspectTaxonomyReferences,
+  readTaxonomyReferences,
+} from "./taxonomy.references.js";
 import { z } from "zod";
 import { TAXONOMY_ADMIN_CONSTRAINTS } from "@shongre/contracts/taxonomy";
 import { getCountryConfig } from "@shongre/contracts";
@@ -109,6 +113,28 @@ export class TaxonomyGovernanceService {
       const prior = taxonomyRecords(current.bundle, parsed.resource).find(
         (old) => taxonomyRecordKey(old, parsed.resource) === id,
       );
+      if (prior && parsed.resource === "referenceEntries") {
+        const before = prior.values as Record<string, unknown>;
+        const after = row.values as Record<string, unknown> | undefined;
+        for (const field of [
+          "id",
+          "type",
+          "kind",
+          "field_type",
+          "unit",
+          "market_code",
+        ])
+          if (before[field] !== after?.[field])
+            this.invalid(
+              "Le type, l’unité et les identités persistées du référentiel exigent une migration revue.",
+            );
+
+        for (const key of ["namespace", "marketCode", "key"])
+          if (prior[key] !== row[key])
+            this.invalid(
+              "Les identités de référentiels nécessitent une migration revue.",
+            );
+      }
       if (
         prior &&
         ["categories", "listingTypes", "attributes"].includes(parsed.resource)
@@ -216,6 +242,13 @@ export class TaxonomyGovernanceService {
     const candidate = taxonomyPrivateBundleSchema.parse(
       mergeTaxonomyRecords(current.bundle, parsed.resource, parsed.records),
     );
+    if (
+      parsed.resource === "referenceEntries" &&
+      inspectTaxonomyReferences(candidate.referenceEntries).length
+    )
+      this.invalid(
+        "Référentiel invalide : vérifiez les identités, valeurs, marchés et parents.",
+      );
     const records = taxonomyRecords(candidate, parsed.resource).filter((row) =>
       seen.has(taxonomyRecordKey(row, parsed.resource)),
     );
@@ -240,6 +273,25 @@ export class TaxonomyGovernanceService {
   async publish(input: unknown, actor: Actor) {
     const parsed = actionSchema.parse(input);
     const review = await this.preview();
+    const { bundle } = await this.repository.getDraft();
+    const autoMarkets = new Set(
+      bundle.referenceEntries
+        .filter((row) => row.namespace === "auto_vehicle_types")
+        .map((row) => row.marketCode),
+    );
+    if (autoMarkets.size) {
+      const { autoService } = await import("../auto/auto.service.js");
+      for (const market of autoMarkets)
+        await autoService.validateReferenceActivation(
+          market,
+          readTaxonomyReferences(
+            bundle.referenceEntries,
+            "auto_vehicle_types",
+            market,
+            true,
+          ),
+        );
+    }
     this.requireRevision(review.revision, parsed.expectedRevision);
     if (!review.valid)
       this.invalid(

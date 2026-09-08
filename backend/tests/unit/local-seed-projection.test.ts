@@ -1,12 +1,13 @@
+import { TaxonomyV1Service } from "../../src/modules/taxonomy/taxonomy.v1.service.js";
 import { describe, expect, it } from "vitest";
 import {
   createSeedListing,
   marketplaceFixture,
 } from "../../scripts/seed/local-development-data.js";
-import { TAXONOMY_V4_PRIVATE_BUNDLE } from "../../src/modules/taxonomy/generated/taxonomy-v4.private.js";
+import { TAXONOMY_V1_PRIVATE_BUNDLE } from "../../taxonomy/generated/taxonomy-v1.private.js";
 
 const availableCategoryIds = new Set(
-  TAXONOMY_V4_PRIVATE_BUNDLE.categories.map(({ id }) => id),
+  TAXONOMY_V1_PRIVATE_BUNDLE.categories.map(({ id }) => id),
 );
 
 describe("shared backend marketplace scenario projection", () => {
@@ -16,7 +17,7 @@ describe("shared backend marketplace scenario projection", () => {
       const listing = createSeedListing(source, {
         listingId: source.id,
         profileId: (id) => id,
-        availableCategoryIds,
+        taxonomy: new TaxonomyV1Service(TAXONOMY_V1_PRIVATE_BUNDLE, 1),
         images: source.photos.map((photo: { url: string }) => photo.url),
       });
       expect(availableCategoryIds.has(listing.categoryId)).toBe(true);
@@ -41,7 +42,7 @@ describe("shared backend marketplace scenario projection", () => {
     const listing = createSeedListing(source, {
       listingId: "persisted-listing",
       profileId: (id) => `persisted-${id}`,
-      availableCategoryIds,
+      taxonomy: new TaxonomyV1Service(TAXONOMY_V1_PRIVATE_BUNDLE, 1),
       images: ["https://storage.example.test/public/listing.jpg"],
     });
     expect(listing.id).toBe("persisted-listing");
@@ -53,7 +54,10 @@ describe("shared backend marketplace scenario projection", () => {
       createSeedListing(source, {
         listingId: source.id,
         profileId: (id) => id,
-        availableCategoryIds: new Set(),
+        taxonomy: {
+          findCategory: () => undefined,
+          projectIdentity: () => undefined,
+        },
         images: [],
       }),
     ).toThrow("No database category is compatible");

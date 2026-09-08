@@ -7,6 +7,6 @@ export const CANONICAL_TAXONOMY_IDS = {
   realEstateRentals: "real_estate.rentals",
   jobs: "jobs",
   jobOffers: "jobs.offers",
-  courses: "services.tutoring",
+  courses: "education",
   electronics: "electronics",
 } as const;

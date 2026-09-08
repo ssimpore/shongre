@@ -1,7 +1,29 @@
 import { testListingPath } from "./fixtures";
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
+import type { components } from "@shongre/contracts/openapi";
 import { expectNoHorizontalOverflow, waitForStableLayout } from "./overflow";
 import { useEstablishedConsent, usePersona } from "./personas";
+
+async function openHomepage(page: Page) {
+  const response = page.waitForResponse(
+    (response) =>
+      new URL(response.url()).pathname === "/api/v1/home" && response.ok(),
+  );
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+  const experience = (await (
+    await response
+  ).json()) as components["schemas"]["HomepageExperience"];
+  await waitForStableLayout(page);
+  const groups =
+    experience.sections.find((section) => section.type === "universe_explorer")
+      ?.universeGroups ?? [];
+  expect(groups.map((group) => group.categoryId).sort()).toEqual([
+    "fashion",
+    "home_garden",
+    "vehicles",
+  ]);
+  return groups;
+}
 
 test.describe("Homepage universe explorer", () => {
   test.beforeEach(async ({ page }) => {
@@ -13,8 +35,7 @@ test.describe("Homepage universe explorer", () => {
     page,
   }) => {
     await page.setViewportSize({ width: 1408, height: 900 });
-    await page.goto("/", { waitUntil: "domcontentloaded" });
-    await waitForStableLayout(page);
+    const groups = await openHomepage(page);
 
     const explorer = page.getByTestId("home-universe-explorer");
     await explorer.scrollIntoViewIfNeeded();
@@ -37,12 +58,19 @@ test.describe("Homepage universe explorer", () => {
     ).toBeAttached();
     await expect(fashion.getByRole("heading", { name: "Mode" })).toBeAttached();
 
-    await expect(home.locator("[data-listing-card]")).toHaveCount(4);
-    await expect(vehicles.locator("[data-listing-card]")).toHaveCount(6);
-    await expect(fashion.locator("[data-listing-card]")).toHaveCount(1);
+    for (const group of groups) {
+      expect(group.listings.length).toBeGreaterThan(0);
+      await expect(
+        explorer.locator(
+          `[data-home-universe-group="${group.categoryId}"] [data-listing-card]`,
+        ),
+      ).toHaveCount(group.listings.length);
+    }
 
     const cards = explorer.locator("[data-listing-card]");
-    await expect(cards).toHaveCount(11);
+    await expect(cards).toHaveCount(
+      groups.reduce((count, group) => count + group.listings.length, 0),
+    );
     expect(
       await cards.evaluateAll((elements) =>
         elements.every(
@@ -79,24 +107,17 @@ test.describe("Homepage universe explorer", () => {
       await group.scrollIntoViewIfNeeded();
       await expect
         .poll(() =>
-          group.locator("[data-listing-card]").evaluateAll((elements) =>
-            elements.every((element) => {
-              const sharedHeight = Number.parseFloat(
-                getComputedStyle(
-                  element.closest(".listing-rail-group")!,
-                ).getPropertyValue("--listing-rail-measured-height"),
-              );
-              return (
-                Math.abs(
-                  element.getBoundingClientRect().height -
-                    Math.max(
-                      sharedHeight,
-                      Number.parseFloat(getComputedStyle(element).minHeight),
-                    ),
-                ) < 1
-              );
-            }),
-          ),
+          group.locator("[data-listing-card]").evaluateAll((elements) => {
+            const heights = elements.map(
+              (element) => element.getBoundingClientRect().height,
+            );
+            return (
+              Math.max(...heights) - Math.min(...heights) < 1 &&
+              elements.every(
+                (element) => element.scrollHeight <= element.clientHeight + 1,
+              )
+            );
+          }),
         )
         .toBe(true);
     }
@@ -155,13 +176,14 @@ test.describe("Homepage universe explorer", () => {
     page,
   }) => {
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto("/", { waitUntil: "domcontentloaded" });
-    await waitForStableLayout(page);
+    const groups = await openHomepage(page);
 
     const explorer = page.getByTestId("home-universe-explorer");
     const vehicles = explorer.locator('[data-home-universe-group="vehicles"]');
     await vehicles.scrollIntoViewIfNeeded();
-    await expect(vehicles.locator("[data-listing-card]")).toHaveCount(6);
+    await expect(vehicles.locator("[data-listing-card]")).toHaveCount(
+      groups.find((group) => group.categoryId === "vehicles")!.listings.length,
+    );
 
     const rail = vehicles.locator(".overflow-x-auto");
     const dimensions = await rail.evaluate((element) => ({

@@ -30,29 +30,6 @@ interface ListingDecisionDetail {
   icon: ListingCharacteristicIcon;
 }
 
-const VEHICLE_FUEL_LABELS = {
-  fr: {
-    petrol: "Essence",
-    diesel: "Diesel",
-    electric: "Électrique",
-    hybrid: "Hybride",
-    plug_in_hybrid: "Hybride rechargeable",
-    lpg: "GPL",
-    hydrogen: "Hydrogène",
-    other: "Autre",
-  },
-  en: {
-    petrol: "Petrol",
-    diesel: "Diesel",
-    electric: "Electric",
-    hybrid: "Hybrid",
-    plug_in_hybrid: "Plug-in hybrid",
-    lpg: "LPG",
-    hydrogen: "Hydrogen",
-    other: "Other",
-  },
-} as const;
-
 function isFrench(locale: string) {
   return locale.toLowerCase().startsWith("fr");
 }
@@ -64,62 +41,16 @@ function decisionDetailsProjection(details: ListingDecisionDetail[]) {
   };
 }
 
-function presentPropertyDecisionDetails(
-  property: PropertyPublic,
+function presentPublishedDecisionDetails(
+  taxonomy: VehiclePublic["taxonomy"],
   locale: string,
 ): ListingDecisionDetail[] {
-  const details: Array<ListingDecisionDetail | undefined> = [
-    property.characteristics?.livingAreaSquareMeters > 0
-      ? {
-          label: `${new Intl.NumberFormat(locale).format(
-            property.characteristics.livingAreaSquareMeters,
-          )} m²`,
-          icon: "ruler",
-        }
-      : undefined,
-    property.characteristics?.rooms > 0
-      ? {
-          label: `${new Intl.NumberFormat(locale).format(
-            property.characteristics.rooms,
-          )} ${
-            isFrench(locale)
-              ? property.characteristics.rooms > 1
-                ? "pièces"
-                : "pièce"
-              : property.characteristics.rooms > 1
-                ? "rooms"
-                : "room"
-          }`,
-          icon: "layout-grid",
-        }
-      : undefined,
-    property.energy?.dpeClass
-      ? { label: `DPE ${property.energy.dpeClass}`, icon: "home" }
-      : undefined,
-  ];
-  return details.filter((detail): detail is ListingDecisionDetail =>
-    Boolean(detail),
-  );
-}
-
-function presentVehicleDecisionDetails(
-  vehicle: VehiclePublic,
-  locale: string,
-): ListingDecisionDetail[] {
-  const technical = vehicle.technical;
-  if (!technical) return [];
-  return [
-    { label: String(technical.modelYear), icon: "calendar" },
-    {
-      label: `${new Intl.NumberFormat(locale).format(technical.mileage)} ${technical.mileageUnit}`,
-      icon: "gauge",
-    },
-    {
-      label:
-        VEHICLE_FUEL_LABELS[isFrench(locale) ? "fr" : "en"][technical.fuelType],
-      icon: "fuel",
-    },
-  ];
+  return (taxonomy?.cardCharacteristics ?? [])
+    .map((field) => ({
+      label: `${localizeTaxonomyLabels(field.labels, locale)} : ${localizeTaxonomyLabels(field.values, locale)}`,
+      icon: "tag" as const,
+    }))
+    .slice(0, 3);
 }
 
 function presentEmploymentDecisionDetails(
@@ -234,7 +165,7 @@ export function presentPropertyListingCard(
     marketCode,
   );
   const decisionDetails = decisionDetailsProjection(
-    presentPropertyDecisionDetails(property, locale),
+    presentPublishedDecisionDetails(property.taxonomy, locale),
   );
   return {
     id: property.id,
@@ -290,7 +221,7 @@ export function presentVehicleListingCard(
     marketCode,
   );
   const decisionDetails = decisionDetailsProjection(
-    presentVehicleDecisionDetails(vehicle, locale),
+    presentPublishedDecisionDetails(vehicle.taxonomy, locale),
   );
   return {
     id: vehicle.id,

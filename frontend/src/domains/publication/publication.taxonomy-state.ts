@@ -1,37 +1,37 @@
 import type {
-  TaxonomyV4ListingIntent,
-  TaxonomyV4ResolvedSchema,
+  TaxonomyV1ListingIntent,
+  TaxonomyV1ResolvedSchema,
 } from "@shongre/contracts";
 import type { ListingIntent } from "./publication.types";
 import type { PublicationDraftState } from "./publication.types";
 import { reconcileTaxonomyValues } from "@shongre/features";
 
-export const toTaxonomyV4ListingIntent = (
+export const toTaxonomyV1ListingIntent = (
   intent: ListingIntent,
-): TaxonomyV4ListingIntent => {
+): TaxonomyV1ListingIntent => {
   if (intent === "GIVE") return "DONATE";
   if (intent === "RENT") return "RENT_OUT";
   if (intent === "OFFER_SERVICE") return "SERVICE_OFFER";
   return intent;
 };
 
-export const isCurrentTaxonomyV4Schema = (
-  schema: TaxonomyV4ResolvedSchema | null,
+export const isCurrentTaxonomyV1Schema = (
+  schema: TaxonomyV1ResolvedSchema | null,
   taxonomyNodeId: string,
   listingIntent: ListingIntent,
   listingTypeId?: string,
-): schema is TaxonomyV4ResolvedSchema =>
+): schema is TaxonomyV1ResolvedSchema =>
   Boolean(
     schema &&
     taxonomyNodeId &&
     schema.category.id === taxonomyNodeId &&
-    schema.listingType.intent === toTaxonomyV4ListingIntent(listingIntent) &&
+    schema.listingType.intent === toTaxonomyV1ListingIntent(listingIntent) &&
     (!listingTypeId || schema.listingType.id === listingTypeId),
   );
 
-export const retainTaxonomyV4Attributes = <T>(
+export const retainTaxonomyV1Attributes = <T>(
   attributes: Record<string, T>,
-  schema: TaxonomyV4ResolvedSchema,
+  schema: TaxonomyV1ResolvedSchema,
 ): Record<string, T> => {
   const allowedAttributeIds = new Set(
     schema.attributes.map(({ definition }) => definition.id),
@@ -65,10 +65,10 @@ export function sanitizePublicationDraftForPersistence(
 
 export function sanitizePublicationDraftForSubmission(input: {
   draft: PublicationDraftState;
-  schema: TaxonomyV4ResolvedSchema;
+  schema: TaxonomyV1ResolvedSchema;
   sellerType: "individual" | "professional";
   optionsByAttribute?: Readonly<
-    Record<string, TaxonomyV4ResolvedSchema["attributes"][number]["options"]>
+    Record<string, TaxonomyV1ResolvedSchema["attributes"][number]["options"]>
   >;
 }): PublicationDraftState {
   const reconciled = reconcileTaxonomyValues({
@@ -83,7 +83,7 @@ export function sanitizePublicationDraftForSubmission(input: {
     taxonomyNodeId: input.schema.category.id,
     taxonomyPath: input.draft.taxonomyPath,
     listingTypeId: input.schema.listingType.id,
-    taxonomyVersion: "4.0.0",
+    taxonomyVersion: "v1",
     taxonomyRevision: input.schema.revision,
     attributes: reconciled.values,
   };

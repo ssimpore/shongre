@@ -10,7 +10,7 @@ class CollectionService {
     marketContext: Pick<MarketContext, "countryCode">,
     locale: string,
   ): Promise<Collection[]> {
-    const tree = await services.taxonomy.getV4Tree({ marketContext, locale });
+    const tree = await services.taxonomy.getV1Tree({ marketContext, locale });
     const roots = tree.items.filter((node) => !node.parentId);
     const results = await Promise.all(
       roots.map(async (node): Promise<Collection | null> => {
@@ -51,7 +51,7 @@ class CollectionService {
     locale: string,
     limit: number,
   ): Promise<CollectionResolution | null> {
-    const tree = await services.taxonomy.getV4Tree({ marketContext, locale });
+    const tree = await services.taxonomy.getV1Tree({ marketContext, locale });
     const node = tree.items.find(
       (candidate) => !candidate.parentId && candidate.slug === slug,
     );

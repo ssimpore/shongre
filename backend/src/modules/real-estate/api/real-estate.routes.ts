@@ -245,22 +245,4 @@ export function registerRealEstateRoutes(routes: RouteRegistrar): void {
     async ({ params, body }) =>
       realEstateService.updateAddOn(params.marketCode, params.addOnId, body),
   );
-  routes.addRoute(
-    "PATCH",
-    "/real-estate/admin/markets/:marketCode/types/:type",
-    permission("immo.admin.manage"),
-    async ({ params, body }) =>
-      realEstateService.updatePropertyType(
-        params.marketCode,
-        params.type,
-        body,
-      ),
-  );
-  routes.addRoute(
-    "PATCH",
-    "/real-estate/admin/markets/:marketCode/field-rules/:ruleId",
-    permission("immo.admin.manage"),
-    async ({ params, body }) =>
-      realEstateService.updateFieldRule(params.marketCode, params.ruleId, body),
-  );
 }

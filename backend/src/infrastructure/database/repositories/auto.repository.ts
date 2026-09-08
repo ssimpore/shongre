@@ -1,3 +1,5 @@
+import type { TaxonomyV1Service } from "../../../modules/taxonomy/taxonomy.v1.service.js";
+import { taxonomyV1Service } from "../../../modules/taxonomy/taxonomy.runtime.js";
 import { createHash } from "node:crypto";
 import type {
   AutoAdminOverview,
@@ -13,9 +15,10 @@ import type {
   VehiclePublic,
   VehicleSearchQuery,
   VehicleSearchResponse,
-  VehicleTypeConfig,
 } from "@shongre/contracts/auto";
 import {
+  fuelTypeSchema,
+  transmissionSchema,
   autoLeadSchema,
   autoAddOnSchema,
   dealerStockTransferSchema,
@@ -25,7 +28,6 @@ import {
   vehiclePrivateSchema,
   vehiclePublicSchema,
   vehicleSearchQuerySchema,
-  vehicleTypeConfigSchema,
 } from "@shongre/contracts/auto";
 import { getSupabaseAdminClient } from "../../supabase/supabase-client.js";
 import { requireMarketCode } from "../../../shared/market/market-code.js";
@@ -243,111 +245,6 @@ const DEFAULT_AUTO_PLANS: AutoPlan[] = [
   },
 ];
 
-const TYPE_ROWS: Array<
-  [VehicleTypeConfig["type"], string, string, string, boolean]
-> = [
-  [
-    "car",
-    "voitures",
-    "Voitures",
-    "Voitures particulières neuves et d’occasion",
-    true,
-  ],
-  [
-    "motorcycle",
-    "motos-scooters",
-    "Motos & scooters",
-    "Deux-roues motorisés",
-    true,
-  ],
-  [
-    "utility",
-    "utilitaires",
-    "Vans & utilitaires",
-    "Véhicules utilitaires légers",
-    true,
-  ],
-  [
-    "truck",
-    "poids-lourds",
-    "Poids lourds",
-    "Camions et véhicules industriels",
-    true,
-  ],
-  [
-    "motorhome",
-    "camping-cars-caravanes",
-    "Camping-cars & caravanes",
-    "Véhicules de loisirs",
-    true,
-  ],
-  [
-    "boat",
-    "bateaux",
-    "Bateaux",
-    "Navigation de plaisance — activation par marché",
-    false,
-  ],
-  [
-    "agricultural",
-    "agricoles",
-    "Matériel agricole",
-    "Tracteurs et équipements agricoles",
-    true,
-  ],
-  [
-    "construction",
-    "construction",
-    "Engins de chantier",
-    "Construction et travaux publics",
-    true,
-  ],
-  [
-    "parts",
-    "pieces-accessoires",
-    "Pièces & accessoires",
-    "Pièces, pneus et équipements",
-    true,
-  ],
-  [
-    "other",
-    "autres-vehicules",
-    "Autres véhicules",
-    "Véhicules hors catégories principales",
-    true,
-  ],
-];
-
-const DEFAULT_AUTO_TYPES: VehicleTypeConfig[] = TYPE_ROWS.map(
-  ([type, slug, label, description, isActive], index) => ({
-    type,
-    slug,
-    label,
-    description,
-    iconName:
-      type === "car" ? "CarFront" : type === "motorcycle" ? "Bike" : "Truck",
-    schemaVersion: 1,
-    isActive,
-    sortOrder: (index + 1) * 10,
-    requiredFieldIds:
-      type === "parts"
-        ? ["condition", "price"]
-        : ["make", "model", "modelYear", "mileage", "fuelType", "price"],
-    filterFieldIds:
-      type === "parts"
-        ? ["condition", "price"]
-        : [
-            "make",
-            "model",
-            "modelYear",
-            "mileage",
-            "fuelType",
-            "transmission",
-            "price",
-          ],
-  }),
-);
-
 const SELLER = {
   id: "dealer_auto_select_lyon",
   type: "dealer" as const,
@@ -556,92 +453,32 @@ export const DEMO_AUTO_VEHICLES: VehiclePrivate[] = [
   }),
 ];
 
-const DEFAULT_AUTO_CATALOG: AutoCatalog = {
+const AUTO_OPTION_SETS = [
+  "fuel_type",
+  "transmission",
+  "accident_status",
+  "maintenance_book_status",
+  "inspection_status",
+  "mileage_unit",
+] as const;
+
+function autoTaxonomyOptions(taxonomy: TaxonomyV1Service, marketCode: string) {
+  const projection = taxonomy.getOptionSets(marketCode, AUTO_OPTION_SETS);
+  projection.optionSets.fuel_type = projection.optionSets.fuel_type.filter(
+    (option) => fuelTypeSchema.safeParse(option.key).success,
+  );
+  projection.optionSets.transmission =
+    projection.optionSets.transmission.filter(
+      (option) => transmissionSchema.safeParse(option.key).success,
+    );
+  return projection;
+}
+
+const DEFAULT_AUTO_CATALOG: Omit<
+  AutoCatalog,
+  "vehicleTypes" | "attributes" | "vehicleCatalog" | "taxonomyOptions"
+> = {
   config: DEFAULT_AUTO_CONFIG,
-  vehicleTypes: DEFAULT_AUTO_TYPES,
-  attributes: [
-    {
-      id: "bodyType",
-      marketCode: "FR",
-      vehicleTypes: ["car", "utility"],
-      label: "Carrosserie",
-      fieldType: "single_select",
-      options: [
-        { value: "SUV", label: "SUV", sortOrder: 10 },
-        { value: "sedan", label: "Berline", sortOrder: 20 },
-      ],
-      isRequired: false,
-      isFilterable: true,
-      isPublic: true,
-      sortOrder: 10,
-      schemaVersion: 1,
-      isActive: true,
-    },
-    {
-      id: "batteryCapacityKwh",
-      marketCode: "FR",
-      vehicleTypes: ["car", "utility", "motorcycle"],
-      label: "Capacité de batterie",
-      fieldType: "number",
-      unit: "kWh",
-      isRequired: false,
-      isFilterable: true,
-      isPublic: true,
-      sortOrder: 20,
-      schemaVersion: 1,
-      isActive: true,
-    },
-    {
-      id: "electricRangeKm",
-      marketCode: "FR",
-      vehicleTypes: ["car", "utility", "motorcycle"],
-      label: "Autonomie électrique",
-      fieldType: "number",
-      unit: "km",
-      isRequired: false,
-      isFilterable: true,
-      isPublic: true,
-      sortOrder: 30,
-      schemaVersion: 1,
-      isActive: true,
-    },
-  ],
-  vehicleCatalog: [
-    {
-      id: "peugeot",
-      kind: "make",
-      vehicleTypes: ["car", "utility"],
-      slug: "peugeot",
-      label: "Peugeot",
-      isActive: true,
-    },
-    {
-      id: "peugeot-3008",
-      kind: "model",
-      parentId: "peugeot",
-      vehicleTypes: ["car"],
-      slug: "3008",
-      label: "3008",
-      isActive: true,
-    },
-    {
-      id: "bmw",
-      kind: "make",
-      vehicleTypes: ["car", "motorcycle"],
-      slug: "bmw",
-      label: "BMW",
-      isActive: true,
-    },
-    {
-      id: "bmw-x3",
-      kind: "model",
-      parentId: "bmw",
-      vehicleTypes: ["car"],
-      slug: "x3",
-      label: "X3",
-      isActive: true,
-    },
-  ],
   plans: DEFAULT_AUTO_PLANS,
   addOns: [
     {
@@ -821,10 +658,6 @@ export interface IAutoRepository {
   saveMarketConfig(config: AutoMarketConfig): Promise<AutoMarketConfig>;
   savePlan(plan: AutoPlan): Promise<AutoPlan>;
   saveAddOn(addOn: AutoAddOn): Promise<AutoAddOn>;
-  saveVehicleType(
-    type: VehicleTypeConfig,
-    marketCode: string,
-  ): Promise<VehicleTypeConfig>;
   search(query: VehicleSearchQuery): Promise<VehicleSearchResponse>;
   getVehicle(
     idOrSlug: string,
@@ -1052,16 +885,30 @@ export class DemoAutoRepository implements IAutoRepository {
   private providerEvents = new Set<string>();
 
   async getCatalog(marketCode: string, includeInactive = false) {
+    const taxonomy = await taxonomyV1Service.snapshot();
     const catalog = clone({
       ...this.catalog,
+      taxonomyOptions: autoTaxonomyOptions(taxonomy, marketCode),
+      vehicleTypes: taxonomy.getReferences(
+        "auto_vehicle_types",
+        marketCode,
+        includeInactive,
+      ),
+      attributes: taxonomy.getReferences(
+        "auto_attribute_definitions",
+        marketCode,
+        includeInactive,
+      ),
+      vehicleCatalog: taxonomy.getReferences(
+        "auto_catalog_entries",
+        marketCode,
+        includeInactive,
+      ),
       config: { ...this.catalog.config, marketCode: marketCode.toUpperCase() },
     });
     if (includeInactive) return catalog;
     return {
       ...catalog,
-      vehicleTypes: catalog.vehicleTypes.filter((row) => row.isActive),
-      attributes: catalog.attributes.filter((row) => row.isActive),
-      vehicleCatalog: catalog.vehicleCatalog.filter((row) => row.isActive),
       plans: catalog.plans.filter((row) => row.isActive),
       addOns: catalog.addOns.filter((row) => row.isActive),
     };
@@ -1082,15 +929,6 @@ export class DemoAutoRepository implements IAutoRepository {
     const index = this.catalog.addOns.findIndex((row) => row.id === parsed.id);
     if (index < 0) throw new Error("Auto add-on not found");
     this.catalog.addOns[index] = parsed;
-    return clone(parsed);
-  }
-  async saveVehicleType(type: VehicleTypeConfig, _marketCode: string) {
-    const parsed = vehicleTypeConfigSchema.parse(type);
-    const index = this.catalog.vehicleTypes.findIndex(
-      (row) => row.type === parsed.type,
-    );
-    if (index < 0) throw new Error("Vehicle type not found");
-    this.catalog.vehicleTypes[index] = parsed;
     return clone(parsed);
   }
   async search(input: VehicleSearchQuery) {
@@ -1445,32 +1283,15 @@ export class PostgresAutoRepository implements IAutoRepository {
     marketCode: string,
     includeInactive = false,
   ): Promise<AutoCatalog> {
+    const taxonomy = await taxonomyV1Service.snapshot();
     const db = this.db();
     const active = (q: any) => (includeInactive ? q : q.eq("is_active", true));
-    const [config, types, attrs, catalog, plans, addOns] = await Promise.all([
+    const [config, plans, addOns] = await Promise.all([
       db
         .from("auto_market_configs")
         .select("config_payload")
         .eq("market_code", marketCode)
         .maybeSingle(),
-      active(
-        db
-          .from("auto_vehicle_types")
-          .select("public_payload")
-          .eq("market_code", marketCode),
-      ).order("sort_order"),
-      active(
-        db
-          .from("auto_attribute_definitions")
-          .select("public_payload")
-          .eq("market_code", marketCode),
-      ).order("sort_order"),
-      active(
-        db
-          .from("auto_catalog_entries")
-          .select("public_payload")
-          .eq("market_code", marketCode),
-      ).order("label"),
       active(
         db
           .from("auto_plans")
@@ -1484,13 +1305,26 @@ export class PostgresAutoRepository implements IAutoRepository {
           .eq("market_code", marketCode),
       ).order("sort_order"),
     ]);
-    for (const result of [config, types, attrs, catalog, plans, addOns])
+    for (const result of [config, plans, addOns])
       if (result.error) throw result.error;
     return {
+      taxonomyOptions: autoTaxonomyOptions(taxonomy, marketCode),
       config: autoMarketConfigSchema.parse(config.data?.config_payload),
-      vehicleTypes: (types.data || []).map((r: any) => r.public_payload),
-      attributes: (attrs.data || []).map((r: any) => r.public_payload),
-      vehicleCatalog: (catalog.data || []).map((r: any) => r.public_payload),
+      vehicleTypes: taxonomy.getReferences(
+        "auto_vehicle_types",
+        marketCode,
+        includeInactive,
+      ),
+      attributes: taxonomy.getReferences(
+        "auto_attribute_definitions",
+        marketCode,
+        includeInactive,
+      ),
+      vehicleCatalog: taxonomy.getReferences(
+        "auto_catalog_entries",
+        marketCode,
+        includeInactive,
+      ),
       plans: (plans.data || []).map((r: any) =>
         autoPlanSchema.parse(r.public_payload),
       ),
@@ -1572,26 +1406,6 @@ export class PostgresAutoRepository implements IAutoRepository {
       })
       .eq("id", parsed.id)
       .eq("market_code", parsed.marketCode);
-    if (error) throw error;
-    return parsed;
-  }
-  async saveVehicleType(type: VehicleTypeConfig, marketCode: string) {
-    const parsed = vehicleTypeConfigSchema.parse(type);
-    const { error } = await this.db()
-      .from("auto_vehicle_types")
-      .update({
-        label: parsed.label,
-        description: parsed.description,
-        schema_version: parsed.schemaVersion,
-        required_field_ids: parsed.requiredFieldIds,
-        filter_field_ids: parsed.filterFieldIds,
-        sort_order: parsed.sortOrder,
-        is_active: parsed.isActive,
-        public_payload: parsed,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("type", parsed.type)
-      .eq("market_code", marketCode.toUpperCase());
     if (error) throw error;
     return parsed;
   }

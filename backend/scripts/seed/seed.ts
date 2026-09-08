@@ -9,7 +9,7 @@ const __dirname = path.dirname(__filename);
 const seedSqlPath = path.resolve(__dirname, "../../supabase/seed/seed.sql");
 const taxonomySeedSqlPath = path.resolve(
   __dirname,
-  "../../supabase/seed/taxonomy-v4.generated.sql",
+  "../../supabase/seed/taxonomy-v1.generated.sql",
 );
 
 async function runSeed() {

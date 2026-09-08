@@ -1,3 +1,4 @@
+import { taxonomyV1Service } from "../../../modules/taxonomy/taxonomy.runtime.js";
 import type {
   ApplicationEvent,
   ApplicationStage,
@@ -39,7 +40,7 @@ import {
   recruiterNoteSchema,
 } from "@shongre/contracts/employment";
 import { requireMarketCode } from "../../../shared/market/market-code.js";
-import { DEFAULT_EMPLOYMENT_CATALOG } from "@shongre/contracts/employment-catalog";
+import { DEFAULT_EMPLOYMENT_CONFIGURATION } from "@shongre/contracts/employment-configuration";
 import {
   EMPLOYMENT_DEMO_APPLICATIONS,
   EMPLOYMENT_DEMO_CANDIDATE_WORKSPACE,
@@ -215,7 +216,11 @@ const text = (job: JobPostingDetail) =>
     "fr",
   );
 
-const matches = (query: EmploymentSearchQuery, job: JobPostingDetail) => {
+const matches = (
+  query: EmploymentSearchQuery,
+  job: JobPostingDetail,
+  dictionaries: EmploymentCatalog["dictionaries"],
+) => {
   if (job.lifecycle !== "published" || job.marketCode !== query.marketCode)
     return false;
   if (
@@ -229,7 +234,7 @@ const matches = (query: EmploymentSearchQuery, job: JobPostingDetail) => {
   )
     return false;
   if (query.jobFamilyIds.length) {
-    const profession = DEFAULT_EMPLOYMENT_CATALOG.dictionaries.find(
+    const profession = dictionaries.find(
       (entry) => entry.id === job.professionId,
     );
     if (
@@ -396,7 +401,7 @@ const card = (job: JobPostingDetail) => {
 };
 
 export class DemoEmploymentRepository implements EmploymentRepository {
-  protected catalog = clone(DEFAULT_EMPLOYMENT_CATALOG);
+  protected catalog = clone(DEFAULT_EMPLOYMENT_CONFIGURATION);
   protected jobs = new Map(
     EMPLOYMENT_DEMO_JOBS.map((job) => [job.id, clone(job)]),
   );
@@ -444,15 +449,17 @@ export class DemoEmploymentRepository implements EmploymentRepository {
   protected moderationFlags = new Map<string, ProhibitedLanguageFlag[]>();
 
   async getCatalog(marketCode: string, includeInactive = false) {
+    const taxonomy = await taxonomyV1Service.snapshot();
     const code = marketCode.toUpperCase();
     const catalog = clone({
       ...this.catalog,
+      dictionaries: taxonomy.getReferences(
+        "employment_dictionary_entries",
+        marketCode,
+        includeInactive,
+      ),
       activation: { ...this.catalog.activation, marketCode: code },
       config: { ...this.catalog.config, marketCode: code },
-      dictionaries: this.catalog.dictionaries.map((entry) => ({
-        ...entry,
-        marketCode: code,
-      })),
       offers: this.catalog.offers.map((offer) => ({
         ...offer,
         marketCode: code,
@@ -473,6 +480,10 @@ export class DemoEmploymentRepository implements EmploymentRepository {
 
   async search(input: EmploymentSearchQuery): Promise<EmploymentSearchResult> {
     const query = employmentSearchQuerySchema.parse(input);
+    const dictionaries = (await taxonomyV1Service.snapshot()).getReferences(
+      "employment_dictionary_entries",
+      query.marketCode,
+    );
     const locationOrigin = query.location
       ? Array.from(this.jobs.values()).find((job) =>
           job.primaryLocation.label
@@ -486,7 +497,7 @@ export class DemoEmploymentRepository implements EmploymentRepository {
         : query;
     const rows = Array.from(this.jobs.values()).filter(
       (job) =>
-        matches(locationQuery, job) &&
+        matches(locationQuery, job, dictionaries) &&
         (!query.radiusKm ||
           !locationOrigin ||
           distanceKm(locationOrigin, job.primaryLocation) <= query.radiusKm),
@@ -1003,10 +1014,21 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
         dictionaryIds.add(language.level_id);
     }
     const dictionaryResult = dictionaryIds.size
-      ? await this.db()
-          .from("employment_dictionary_entries")
-          .select("id,label,parent_id")
-          .in("id", Array.from(dictionaryIds))
+      ? {
+          data: (await taxonomyV1Service.snapshot())
+            .getBundle()
+            .referenceEntries.filter(
+              (entry) =>
+                entry.namespace === "employment_dictionary_entries" &&
+                dictionaryIds.has(entry.key),
+            )
+            .map((entry) => ({
+              id: entry.key,
+              label: entry.values.label,
+              parent_id: entry.values.parent_id,
+            })),
+          error: null,
+        }
       : { data: [], error: null };
     if (dictionaryResult.error) throw dictionaryResult.error;
     const labels = new Map(
@@ -1297,12 +1319,17 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
         };
     }
     if (query.jobFamilyIds.length) {
-      const { data, error } = await this.db()
-        .from("employment_dictionary_entries")
-        .select("id")
-        .in("parent_id", query.jobFamilyIds)
-        .eq("kind", "profession")
-        .eq("is_active", true);
+      const { data, error } = {
+        data: (await taxonomyV1Service.snapshot())
+          .getReferences("employment_dictionary_entries", query.marketCode)
+          .filter(
+            (entry) =>
+              entry.kind === "profession" &&
+              entry.parentId &&
+              query.jobFamilyIds.includes(entry.parentId),
+          ),
+        error: null,
+      };
       if (error) throw error;
       const professions = (data || []).map((row: any) => row.id);
       if (!professions.length)
@@ -3210,11 +3237,11 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
   }
 
   override async getCatalog(marketCode: string, includeInactive = false) {
+    const taxonomy = await taxonomyV1Service.snapshot();
     const code = marketCode.toUpperCase();
     const [
       activation,
       config,
-      dictionaries,
       defaultStages,
       offers,
       prices,
@@ -3232,11 +3259,6 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
         .select("*")
         .eq("market_code", code)
         .maybeSingle(),
-      this.db()
-        .from("employment_dictionary_entries")
-        .select("*")
-        .eq("market_code", code)
-        .order("sort_order"),
       this.db()
         .from("employment_default_pipeline_stages")
         .select("*")
@@ -3268,7 +3290,6 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
     for (const result of [
       activation,
       config,
-      dictionaries,
       defaultStages,
       offers,
       prices,
@@ -3312,21 +3333,11 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
         requiredFieldIds: config.data.required_field_ids,
         featureFlags: config.data.feature_flags,
       },
-      dictionaries: (dictionaries.data || []).map((row: any) => ({
-        id: row.id,
-        marketCode: row.market_code,
-        kind: row.kind,
-        parentId: row.parent_id || undefined,
-        code: row.code,
-        slug: row.slug,
-        label: row.label,
-        description: row.description || undefined,
-        aliases: row.aliases,
-        metadata: row.metadata,
-        isActive: row.is_active,
-        sortOrder: row.sort_order,
-        version: row.version,
-      })),
+      dictionaries: taxonomy.getReferences(
+        "employment_dictionary_entries",
+        marketCode,
+        includeInactive,
+      ),
       defaultPipelineStages: (defaultStages.data || []).map((row: any) => ({
         id: `employment.stage.${row.code}`,
         pipelineId: `employment.pipeline.default.${code.toLowerCase()}`,
@@ -3391,12 +3402,16 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
         isActive: row.is_active,
         sortOrder: row.sort_order,
       })),
-      complianceNotices: DEFAULT_EMPLOYMENT_CATALOG.complianceNotices,
+      complianceNotices: DEFAULT_EMPLOYMENT_CONFIGURATION.complianceNotices,
     });
     if (includeInactive) return catalog;
     return {
       ...catalog,
-      dictionaries: catalog.dictionaries.filter((entry) => entry.isActive),
+      dictionaries: taxonomy.getReferences(
+        "employment_dictionary_entries",
+        marketCode,
+        includeInactive,
+      ),
       offers: catalog.offers.filter((offer) => offer.isActive),
       addOns: catalog.addOns.filter((addOn) => addOn.isActive),
     };

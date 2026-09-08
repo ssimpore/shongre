@@ -1,3 +1,4 @@
+import { immoOptions } from "./immo-format";
 import { PAGE_SIZES } from "../../configuration/pagination.config";
 import { useTranslation } from "../../i18n/I18nProvider";
 import React, { useEffect, useMemo, useState } from "react";
@@ -142,12 +143,17 @@ const ImmoFilters: React.FC<{
           fullWidth
           value={params.get("transaction") || "sale"}
           onChange={(value) => setParam("transaction", value)}
-          options={[
-            { value: "sale", label: "Acheter" },
-            { value: "long_term_rental", label: "Louer" },
-            { value: "seasonal_rental", label: "Location saisonnière" },
-            { value: "shared_accommodation", label: "Colocation" },
-          ]}
+          options={immoOptions(
+            catalog,
+            "property_transaction",
+            currentLocale,
+          ).filter((option) =>
+            catalog.propertyTypes.some((type) =>
+              type.transactionTypes.some(
+                (transaction) => transaction === option.value,
+              ),
+            ),
+          )}
         />
       </fieldset>
       <fieldset>
@@ -317,22 +323,20 @@ const ImmoFilters: React.FC<{
           {(
             catalog.attributes.find((item) => item.id === "amenities")
               ?.options || []
-          )
-            .slice(0, 6)
-            .map((option) => (
-              <label
-                key={option.value}
-                className="flex min-h-8 items-center gap-2 text-xs"
-              >
-                <input
-                  type="checkbox"
-                  className="h-4 w-4 accent-primary"
-                  checked={selectedAmenities.includes(option.value)}
-                  onChange={() => toggleAmenity(option.value)}
-                />
-                {option.label}
-              </label>
-            ))}
+          ).map((option) => (
+            <label
+              key={option.value}
+              className="flex min-h-8 items-center gap-2 text-xs"
+            >
+              <input
+                type="checkbox"
+                className="h-4 w-4 accent-primary"
+                checked={selectedAmenities.includes(option.value)}
+                onChange={() => toggleAmenity(option.value)}
+              />
+              {option.label}
+            </label>
+          ))}
         </div>
       </fieldset>
       <div>
@@ -347,10 +351,8 @@ const ImmoFilters: React.FC<{
           onChange={(value) => setParam("dpe", value || undefined)}
           options={[
             { value: "", label: "Toutes les classes" },
-            ...["A", "B", "C", "D", "E", "F", "G"].map((value) => ({
-              value,
-              label: value,
-            })),
+            ...(catalog.attributes.find((field) => field.id === "dpe")
+              ?.options ?? []),
           ]}
         />
       </div>
@@ -744,6 +746,7 @@ export const ImmoSearchPage: React.FC = () => {
           onOpenMobileFilters={() => setMobileFilters(true)}
           actions={
             <Button
+              aria-label="Créer une alerte"
               data-marketplace-action="saved-search.create"
               variant="outline"
               size="sm"

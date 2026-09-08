@@ -126,9 +126,9 @@ describe("API v1 Endpoints Integration", () => {
       brand: "Peugeot",
       model: "208",
       attributes: {
-        year: 2022,
-        fuel: "essence",
-        gearbox: "manuelle",
+        model_year: 2022,
+        fuel_type: "petrol",
+        transmission: "manual",
         mileage: 28500,
         vin_private: "never-public",
         contactCount: 19,
@@ -473,8 +473,8 @@ describe("API v1 Endpoints Integration", () => {
     expect(canonical.config.vertical).toBe("tutoring");
   });
 
-  it("GET /api/v1/taxonomy/root returns categories", async () => {
-    const res = await fetch(`${baseUrl}/api/v1/taxonomy/root`, {
+  it("GET /api/v1/taxonomy/v1/root returns categories", async () => {
+    const res = await fetch(`${baseUrl}/api/v1/taxonomy/v1/root`, {
       headers: { "X-Shongre-Market": "FR" },
     });
     expect(res.status).toBe(200);
@@ -486,7 +486,7 @@ describe("API v1 Endpoints Integration", () => {
   it("serves the ordered public header configuration and protects admin writes", async () => {
     const [publicResponse, adminReadResponse, adminWriteResponse] =
       await Promise.all([
-        fetch(`${baseUrl}/api/v1/taxonomy/header-navigation`, {
+        fetch(`${baseUrl}/api/v1/taxonomy/v1/header-navigation`, {
           headers: { "X-Shongre-Market": "FR" },
         }),
         fetch(`${baseUrl}/api/v1/admin/taxonomy/header-navigation`, {
@@ -534,20 +534,20 @@ describe("API v1 Endpoints Integration", () => {
     expect(adminWriteResponse.status).toBe(401);
   });
 
-  it("serves taxonomy v4 through explicit market-scoped typed endpoints", async () => {
+  it("serves taxonomy v1 through explicit market-scoped typed endpoints", async () => {
     for (const [marketCode, locale] of [
       ["FR", "fr-FR"],
       ["BE", "fr-BE"],
       ["CH", "fr-CH"],
     ]) {
       const treeResponse = await fetch(
-        `${baseUrl}/api/v1/taxonomy/v4/tree?locale=${locale}&version=4.0.0`,
+        `${baseUrl}/api/v1/taxonomy/v1/tree?locale=${locale}&version=v1`,
         { headers: { "X-Shongre-Market": marketCode } },
       );
       expect(treeResponse.status).toBe(200);
       const tree = await treeResponse.json();
       expect(tree).toMatchObject({
-        taxonomyVersion: "4.0.0",
+        taxonomyVersion: "v1",
         marketCode,
         locale,
       });
@@ -559,7 +559,7 @@ describe("API v1 Endpoints Integration", () => {
     }
 
     const resolvedResponse = await fetch(
-      `${baseUrl}/api/v1/taxonomy/v4/resolve?category=vehicles.cars.suv&listingTypeId=vehicles.cars.suv.listing&sellerType=individual&locale=fr-FR`,
+      `${baseUrl}/api/v1/taxonomy/v1/resolve?category=vehicles.cars.suv&listingTypeId=vehicles.cars.suv.listing&sellerType=individual&locale=fr-FR`,
       { headers: { "X-Shongre-Market": "FR" } },
     );
     expect(resolvedResponse.status).toBe(200);
@@ -569,7 +569,7 @@ describe("API v1 Endpoints Integration", () => {
     expect(resolved.projections.cardFields.length).toBeGreaterThan(0);
 
     const optionResponse = await fetch(
-      `${baseUrl}/api/v1/taxonomy/v4/options/brand?limit=5`,
+      `${baseUrl}/api/v1/taxonomy/v1/options/brand?limit=5`,
       { headers: { "X-Shongre-Market": "FR" } },
     );
     expect(optionResponse.status).toBe(200);
@@ -578,7 +578,7 @@ describe("API v1 Endpoints Integration", () => {
 
   it("fails closed for unavailable or mismatched taxonomy markets", async () => {
     const comingSoonResponse = await fetch(
-      `${baseUrl}/api/v1/taxonomy/v4/tree`,
+      `${baseUrl}/api/v1/taxonomy/v1/tree`,
       { headers: { "X-Shongre-Market": "SN" } },
     );
     expect(comingSoonResponse.status).toBe(409);
@@ -587,7 +587,7 @@ describe("API v1 Endpoints Integration", () => {
     );
 
     const mismatchResponse = await fetch(
-      `${baseUrl}/api/v1/taxonomy/v4/tree?market=BE`,
+      `${baseUrl}/api/v1/taxonomy/v1/tree?market=BE`,
       { headers: { "X-Shongre-Market": "FR" } },
     );
     expect(mismatchResponse.status).toBe(409);

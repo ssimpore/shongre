@@ -7,7 +7,7 @@ import {
   runUnifiedDiscovery,
   scoreOrganicListing,
 } from "@shongre/shared";
-import { taxonomyV4Service } from "../taxonomy/taxonomy.runtime.js";
+import { taxonomyV1Service } from "../taxonomy/taxonomy.runtime.js";
 import {
   discoveryConfigurationSchema,
   discoveryChangeReasonSchema,
@@ -60,6 +60,7 @@ export interface DiscoverySearchResult {
 
 interface DiscoveryCursorPayload {
   version: 1;
+  taxonomyRevision: number;
   snapshotAt: string;
   filterHash: string;
   page: number;
@@ -167,6 +168,8 @@ function matchesDiscoveryFilters(
   filters: SearchFilters,
   snapshotAt: string,
 ): boolean {
+  if (filters.categoryIds && !filters.categoryIds.includes(listing.categoryId))
+    return false;
   if (filters.postalCode && listing.postalCode !== filters.postalCode) {
     return false;
   }
@@ -504,6 +507,7 @@ export class UnifiedDiscoveryService {
   async explainListing(listingId: string, filters: SearchFilters = {}) {
     const listing = await this.listingRepository.findById(listingId);
     if (!listing) return null;
+    const taxonomy = await taxonomyV1Service.snapshot();
     const configuration = await this.getEffectiveConfiguration(
       filters.marketCode || listing.marketCode,
       filters.categoryId || listing.categoryId,
@@ -516,7 +520,12 @@ export class UnifiedDiscoveryService {
         (listing.publisherOrganizationId ? "professional" : "private"),
       rankingVersion: configuration.version,
       explanation: scoreOrganicListing(
-        toDiscoveryDocument(listing),
+        {
+          ...toDiscoveryDocument(listing),
+          categoryPath: taxonomy
+            .projectIdentity(listing.categoryId)
+            ?.path.map((node) => node.id),
+        },
         {
           requestId: `admin-explain:${listingId}`,
           marketCode: filters.marketCode || listing.marketCode,
@@ -572,13 +581,28 @@ export class UnifiedDiscoveryService {
     const snapshotAt = cursor?.snapshotAt || new Date().toISOString();
     const requestedCategory =
       filters.categoryId || filters.subCategorySlug || filters.categorySlug;
-    const taxonomy = await taxonomyV4Service.snapshot();
+    const taxonomy = await taxonomyV1Service.snapshot();
+    const taxonomyRevision = taxonomy.revision;
+    if (cursor && cursor.taxonomyRevision !== taxonomyRevision) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Les catégories ont été mises à jour. Relancez la recherche.",
+      });
+    }
     const categoryId = requestedCategory
       ? (taxonomy.findCategory(requestedCategory)?.id ?? requestedCategory)
       : undefined;
     const candidateFilters: SearchFilters = {
       ...filters,
       categoryId,
+      categoryIds: categoryId
+        ? taxonomy
+            .getBundle()
+            .categories.filter((category) =>
+              taxonomy.isDescendant(category.id, categoryId),
+            )
+            .map((category) => category.id)
+        : undefined,
       page: undefined,
       cursor: undefined,
     };
@@ -613,9 +637,12 @@ export class UnifiedDiscoveryService {
       matchesDiscoveryFilters(listing, candidateFilters, snapshotAt),
     );
     const ranked = runUnifiedDiscovery(
-      [...filteredCandidates, ...filteredDeliveryCandidates].map(
-        toDiscoveryDocument,
-      ),
+      [...filteredCandidates, ...filteredDeliveryCandidates].map((listing) => ({
+        ...toDiscoveryDocument(listing),
+        categoryPath: taxonomy
+          .projectIdentity(listing.categoryId)
+          ?.path.map((node) => node.id),
+      })),
       request,
       configuration,
     );
@@ -641,6 +668,7 @@ export class UnifiedDiscoveryService {
     const nextCursor = hasNextPage
       ? encodeDiscoveryCursor({
           version: 1,
+          taxonomyRevision,
           snapshotAt: candidates.snapshotAt,
           filterHash,
           page: page + 1,

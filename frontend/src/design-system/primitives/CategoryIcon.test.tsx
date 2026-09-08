@@ -1,13 +1,13 @@
 import { describe, it, expect } from "vitest";
 import React from "react";
-import { FileKey } from "lucide-react";
+import { FileKey, Package } from "lucide-react";
 import { CategoryIcon, ICON_NAME_MAP } from "./CategoryIcon";
-import { getTaxonomyV4PublicBundle } from "@shongre/contracts/taxonomy-v4-public";
+import { getTaxonomyV1PublicBundle } from "@shongre/contracts/testing/taxonomy";
 
-const categories = getTaxonomyV4PublicBundle().categories;
+const categories = getTaxonomyV1PublicBundle().categories;
 
 describe("CategoryIcon Component & Taxonomy Icon Integrity", () => {
-  it("resolves every canonical v4 icon directly from taxonomy metadata", () => {
+  it("resolves every canonical v1 icon directly from taxonomy metadata", () => {
     categories.forEach((category) => {
       expect(ICON_NAME_MAP[category.iconName], category.iconName).toBeDefined();
     });
@@ -64,7 +64,7 @@ describe("CategoryIcon Component & Taxonomy Icon Integrity", () => {
       expect(node).toBeDefined();
 
       const element = CategoryIcon({
-        category: node?.slug,
+        category: node,
         iconName: node?.iconName,
       }) as React.ReactElement<any>;
       expect(element).toBeDefined();
@@ -72,38 +72,17 @@ describe("CategoryIcon Component & Taxonomy Icon Integrity", () => {
     });
   });
 
-  // 4. Verify slug fallback resolution
-  it("resolves icons correctly by string slug", () => {
-    const slugs = [
-      "vehicules",
-      "immobilier",
-      "emploi",
-      "services-prestations",
-      "maison-deco",
-      "multimedia",
-      "mode-beaute",
-      "famille-enfant",
-      "culture-musique",
-      "loisirs-sport",
-      "animaux",
-      "materiel-professionnel",
-      "agriculture-materiaux",
-      "vacances",
-      "digital-services",
-      "dons-divers",
-    ];
-
-    slugs.forEach((slug) => {
-      const element = CategoryIcon({ category: slug }) as React.ReactElement;
-      expect(element).toBeDefined();
-      expect(element.type).toBeDefined();
-    });
+  it("renders a neutral icon when API icon metadata is unavailable", () => {
+    expect(
+      (CategoryIcon({ iconName: "unavailable-icon" }) as React.ReactElement)
+        .type,
+    ).toBe(Package);
   });
 
   // 5. Verify background container structure
   it("renders with background container when withBackground is true", () => {
     const element = CategoryIcon({
-      category: "vehicules",
+      iconName: "car",
       size: "lg",
       withBackground: true,
       className: "custom-class",

@@ -1,7 +1,7 @@
-import type { TaxonomyV4PrivateBundle } from "../../src/modules/taxonomy/taxonomy.bundle.js";
+import type { TaxonomyV1PrivateBundle } from "../../src/modules/taxonomy/taxonomy.bundle.js";
 
 /** Import-review evidence only. Runtime consumers never read these reports. */
-export function taxonomyCoverage(bundle: TaxonomyV4PrivateBundle) {
+export function taxonomyCoverage(bundle: TaxonomyV1PrivateBundle) {
   const nodes = new Map(bundle.categories.map((node) => [node.id, node]));
   const branch = (id: string) => {
     const path: string[] = [];

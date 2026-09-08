@@ -1,4 +1,5 @@
-import type { VehiclePublic } from "@shongre/contracts/auto";
+import { localizeTaxonomyLabels } from "@shongre/contracts/taxonomy-labels";
+import type { AutoCatalog, VehiclePublic } from "@shongre/contracts/auto";
 import type { Money } from "@shongre/contracts";
 import {
   formatProjectedMoney,
@@ -17,26 +18,26 @@ export function formatAutoMileage(vehicle: VehiclePublic, locale: string) {
   return `${new Intl.NumberFormat(locale).format(vehicle.technical.mileage)} ${vehicle.technical.mileageUnit}`;
 }
 
-export const fuelLabels: Record<
-  VehiclePublic["technical"]["fuelType"],
-  string
-> = {
-  petrol: "Essence",
-  diesel: "Diesel",
-  electric: "Électrique",
-  hybrid: "Hybride",
-  plug_in_hybrid: "Hybride rechargeable",
-  lpg: "GPL",
-  hydrogen: "Hydrogène",
-  other: "Autre",
-};
+export function formatAutoField(
+  vehicle: VehiclePublic,
+  code: string,
+  locale: string,
+) {
+  const field = vehicle.taxonomy?.detailCharacteristics?.find(
+    (row) => row.code === code,
+  );
+  return localizeTaxonomyLabels(field?.values, locale) || "—";
+}
 
-export const transmissionLabels: Record<
-  VehiclePublic["technical"]["transmission"],
-  string
-> = {
-  manual: "Manuelle",
-  automatic: "Automatique",
-  semi_automatic: "Semi-automatique",
-  other: "Autre",
-};
+export function autoOptions(
+  catalog: AutoCatalog,
+  optionSetId: string,
+  locale: string,
+) {
+  return (catalog.taxonomyOptions.optionSets[optionSetId] ?? []).map(
+    (option) => ({
+      value: option.key,
+      label: localizeTaxonomyLabels(option.labels, locale),
+    }),
+  );
+}

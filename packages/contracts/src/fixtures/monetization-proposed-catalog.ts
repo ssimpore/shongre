@@ -7,7 +7,7 @@ import type {
   MonetizationProduct,
 } from "../schemas/monetization";
 import { monetizationCatalogSchema } from "../schemas/monetization";
-import { CANONICAL_TAXONOMY_IDS } from "./taxonomy-catalog";
+import { CANONICAL_TAXONOMY_IDS } from "../taxonomy-domain-ids";
 import { BASELINE_MONETIZATION_CATALOG } from "./monetization-catalog";
 
 const VERSION_ID = "commercial-fr-v4-draft";

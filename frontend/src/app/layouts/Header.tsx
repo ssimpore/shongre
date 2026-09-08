@@ -1034,7 +1034,6 @@ export const Header: React.FC = () => {
                               <div className="flex items-center gap-2">
                                 {cat.kind === "category" ? (
                                   <CategoryIcon
-                                    category={cat.slug}
                                     iconName={cat.iconName}
                                     size="xs"
                                   />

@@ -244,7 +244,7 @@ Mobile: component → hook/controller → service contract → HTTP → /api/v1
   reusing a healthy stack only when its environment and migration fingerprint
   matches, forcing backend database mode, migrating, idempotently seeding, and
   launching the API, worker, and Web app. The backend-owned local seed imports production-shaped tables, the complete
-  generated taxonomy v4 projection and market availability, initializes missing
+  generated taxonomy v1 projection and market availability, initializes missing
   database-owned header configuration without overwriting editorial changes, and copies every backend-fixture media source into local
   public Supabase Storage. In connected mode, category collections,
   navigation, filters, and category media must come through the API/runtime
@@ -661,17 +661,35 @@ France-only happy path is insufficient for market-sensitive work.
   exporter when that platform-wide boundary exists, never as a separate export
   system.
 
-- Taxonomy content is authoritative in backend-owned PostgreSQL authoring tables
-  and immutable published revisions. Web, native, SSR and backend runtime readers
+- `v1` is the sole active taxonomy schema and implementation. Editorial changes
+  use separate draft and publication revisions, never another taxonomy version.
+  Taxonomy content is authoritative in backend-owned PostgreSQL authoring tables
+  and immutable published revisions. Vehicle, property, employment and course
+  classification tables are relational authoring resources of that same v1
+  publication, exposed as `referenceEntries` in the protected taxonomy editor.
+  Domain catalogue readers and SQL discovery must use the published reference
+  projection, never read draft tables or maintain separate classification editors.
+  Existing domain IDs and foreign keys stay stable; pricing and commercial policy
+  remain owned by their domains. Web, native, SSR and backend runtime readers
   use the published database projection through the repository/API boundary;
   compiled catalogues are controlled import/export or explicit isolated test
-  inputs, never application runtime fallbacks. The current public hierarchy
+  inputs, never application runtime fallbacks. Public taxonomy operations live
+  under `/api/v1/taxonomy/v1`; clients use generated operations and must not
+  import catalogues, test fixtures or domain resolvers. Previous versions may
+  survive only in immutable migrations, audit records and controlled import
+  evidence. Identity aliases resolve directly into v1; they never execute an
+  older schema. Run `make taxonomy-check` and, for conversions on the owned local
+  database, `make taxonomy-migration-check`. The current public hierarchy
   contract supports levels 0–2; deeper nesting requires a compatibility migration.
   The root `taxonomy-import`, `taxonomy-compile` and `taxonomy-check` targets own
   import artifacts and coverage evidence. Normalized/workbook inputs must not
   overwrite an authored database. Local seeding bootstraps missing taxonomy and
-  header configuration and preserves editor revisions; the explicit bootstrap
-  importer refuses databases with editorial changes. Admin mutations require
+  header configuration and preserves editor revisions. Vertical SQL seeds must
+  not rewrite taxonomy reference authoring. After taxonomy schema or seed changes,
+  run `make db-seed` against the migrated local schema and verify that existing
+  editorial content and revisions are unchanged; fixture drift checks alone do
+  not verify seed execution. The explicit bootstrap importer refuses databases
+  with editorial changes. Admin mutations require
   taxonomy permission, MFA and recent authentication, optimistic revision checks
   and audit records. Publication validates the exact database snapshot; rollback
   preserves immutable history. Runtime caches check the publication pointer and
@@ -688,7 +706,11 @@ France-only happy path is insufficient for market-sensitive work.
   the public, market-scoped listing read projection, never the publication
   eligibility resolver. Public detail bindings and recorded values determine
   output; broader stored categories must not be silently replaced with a
-  guessed publishable leaf. Header category-bar selection,
+  guessed publishable leaf. Existing-listing edits share the v1 validator, retain
+  unchanged historical answers and validate changed fields and their dependents.
+  Discovery expands the published parent hierarchy rather than inferring it
+  from dotted identifiers; pagination is bound to that publication revision.
+  Header category-bar selection,
   activation, and display order are market-scoped taxonomy configuration managed
   through the authorized admin service; clients consume its public projection
   and must not hardcode an editorial category list. Overview and promotion links
@@ -830,11 +852,11 @@ France-only happy path is insufficient for market-sensitive work.
   records to `ListingCardView`; generic listings resolve the universe label and
   optional brand from the canonical taxonomy and listing attributes. Do not add
   category-specific card markup or conditional fields in page components.
-  Related homepage listing rails use `ListingRail` inside one `ListingRailGroup`
-  from the Web design-system primitives: widths stay token-owned, and a scoped
-  measured minimum aligns natural card heights across sections without clipping
-  titles or seller facts. Measurement must preserve deferred section rendering
-  and release observers when the group unmounts.
+  Listing rails use the shared Web `ListingRail` primitive: widths remain
+  token-owned and CSS aligns natural card heights within each rail, preserving
+  full titles and seller facts. Never stretch unrelated rails to a shared maximum
+  height; longer content in another section must not add blank space to cards.
+  Keep deferred section rendering intact.
   Profile results, hero media slides, operational rows, and map popups may
   remain specialized when they are not listing-card equivalents.
 - Marketplace results pages must use the canonical Web `SearchResultsToolbar`,

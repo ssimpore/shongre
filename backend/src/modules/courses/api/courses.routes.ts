@@ -165,11 +165,15 @@ export function registerCoursesRoutes(routes: RouteRegistrar): void {
     "PUT",
     "/education/tutors/:id",
     permission("course.profile.manage.own"),
-    async ({ principal, params, body }) =>
-      coursesService.saveOwnTutorProfile(principal.userId, {
-        ...body,
-        id: params.id,
-      }),
+    async ({ principal, params, body, marketCode }) =>
+      coursesService.saveOwnTutorProfile(
+        principal.userId,
+        requireApiRequestMarket(marketCode),
+        {
+          ...body,
+          id: params.id,
+        },
+      ),
   );
   routes.addRoute(
     "POST",
@@ -284,13 +288,6 @@ export function registerCoursesRoutes(routes: RouteRegistrar): void {
     permission("course.admin.manage"),
     async ({ params, body }) =>
       coursesService.updateMarketConfig(params.marketCode, body),
-  );
-  routes.addRoute(
-    "PATCH",
-    "/education/admin/markets/:marketCode/subjects/:subjectId",
-    permission("course.admin.manage"),
-    async ({ params, body }) =>
-      coursesService.updateSubject(params.marketCode, params.subjectId, body),
   );
   routes.addRoute(
     "PATCH",

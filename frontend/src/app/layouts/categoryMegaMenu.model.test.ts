@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 import type {
   MarketContext,
-  TaxonomyV4Node,
-  TaxonomyV4TreeResponse,
+  TaxonomyV1Node,
+  TaxonomyV1TreeResponse,
 } from "@shongre/contracts";
 import type { TaxonomyServiceContract } from "../../api/contracts/taxonomy.contract";
 import {
@@ -13,7 +13,7 @@ import {
   loadCategoryNavigationTree,
 } from "./categoryMegaMenu.model";
 
-const marketAvailability: TaxonomyV4Node["marketAvailability"] = [
+const marketAvailability: TaxonomyV1Node["marketAvailability"] = [
   {
     marketCode: "FR",
     status: "active",
@@ -51,8 +51,8 @@ const node = (
   slug: string,
   sortOrder: number,
   parentId?: string,
-  status: TaxonomyV4Node["status"] = "active",
-): TaxonomyV4Node => ({
+  status: TaxonomyV1Node["status"] = "active",
+): TaxonomyV1Node => ({
   id,
   sourceKey: id,
   ...(parentId ? { parentId } : {}),
@@ -101,10 +101,10 @@ describe("category mega-menu taxonomy projection", () => {
 
   it("loads the complete market tree through one canonical API request", async () => {
     const root = node("root", "racine", 1);
-    const getV4Tree = vi.fn().mockResolvedValue({
+    const getV1Tree = vi.fn().mockResolvedValue({
       items: [root],
-    } as TaxonomyV4TreeResponse);
-    const taxonomy = { getV4Tree } as unknown as TaxonomyServiceContract;
+    } as TaxonomyV1TreeResponse);
+    const taxonomy = { getV1Tree } as unknown as TaxonomyServiceContract;
     const marketContext = {
       kind: "market",
       countryCode: "FR",
@@ -113,11 +113,11 @@ describe("category mega-menu taxonomy projection", () => {
     await expect(
       loadCategoryNavigationTree(taxonomy, marketContext, "fr-FR", () => true),
     ).resolves.toHaveLength(1);
-    expect(getV4Tree).toHaveBeenCalledTimes(1);
-    expect(getV4Tree).toHaveBeenCalledWith({
+    expect(getV1Tree).toHaveBeenCalledTimes(1);
+    expect(getV1Tree).toHaveBeenCalledWith({
       marketContext,
       locale: "fr-FR",
-      taxonomyVersion: "4.0.0",
+      taxonomyVersion: "v1",
     });
   });
 

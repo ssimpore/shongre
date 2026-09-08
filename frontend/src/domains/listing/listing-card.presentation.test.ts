@@ -23,7 +23,21 @@ describe("structured category listing-card presentation", () => {
   it("projects real property price, seller and promotion data", () => {
     const property = {
       id: "property-1",
-      taxonomy: { rootLabels: { "fr-FR": "Immobilier" } },
+      taxonomy: {
+        rootLabels: { "fr-FR": "Immobilier" },
+        cardCharacteristics: [
+          {
+            code: "living_area",
+            labels: { "fr-FR": "Surface publiée" },
+            values: { "fr-FR": "68 m²" },
+          },
+          {
+            code: "rooms",
+            labels: { "fr-FR": "Pièces publiées" },
+            values: { "fr-FR": "3" },
+          },
+        ],
+      },
       title: "Appartement lumineux",
       propertyType: "apartment",
       financials: {
@@ -74,8 +88,11 @@ describe("structured category listing-card presentation", () => {
 
     expect(card.priceLabel).toContain("/ mois");
     expect(card.categoryLabel).toBe("Immobilier");
-    expect(card.characteristics).toEqual(["68 m²", "3 pièces"]);
-    expect(card.characteristicIcons).toEqual(["ruler", "layout-grid"]);
+    expect(card.characteristics).toEqual([
+      "Surface publiée : 68 m²",
+      "Pièces publiées : 3",
+    ]);
+    expect(card.characteristicIcons).toEqual(["tag", "tag"]);
     expect(card.seller?.sellerType).toBe("pro");
     expect(card.seller?.rating).toBe(4.9);
     expect(card.seller?.reviewCount).toBe(28);
@@ -173,7 +190,26 @@ describe("structured category listing-card presentation", () => {
   it("projects buyer decision facts for the vehicle universe", () => {
     const vehicle = {
       id: "vehicle-1",
-      taxonomy: { rootLabels: { "fr-FR": "Véhicules", "en-US": "Vehicles" } },
+      taxonomy: {
+        rootLabels: { "fr-FR": "Véhicules", "en-US": "Vehicles" },
+        cardCharacteristics: [
+          {
+            code: "model_year",
+            labels: { "fr-FR": "Année" },
+            values: { "fr-FR": "2022" },
+          },
+          {
+            code: "mileage",
+            labels: { "fr-FR": "Distance" },
+            values: { "fr-FR": "42 000 km" },
+          },
+          {
+            code: "fuel_type",
+            labels: { "fr-FR": "Énergie publiée" },
+            values: { "fr-FR": "Hybride" },
+          },
+        ],
+      },
       title: "Peugeot 3008",
       makeLabel: "Peugeot",
       price: { amountMinor: 2_490_000, currency: "EUR" },
@@ -216,8 +252,12 @@ describe("structured category listing-card presentation", () => {
     expect(card.categoryLabel).toBe("Véhicules");
     expect(
       card.characteristics.map((value) => value.replace(/\s/gu, " ")),
-    ).toEqual(["2022", "42 000 km", "Hybride"]);
-    expect(card.characteristicIcons).toEqual(["calendar", "gauge", "fuel"]);
+    ).toEqual([
+      "Année : 2022",
+      "Distance : 42 000 km",
+      "Énergie publiée : Hybride",
+    ]);
+    expect(card.characteristicIcons).toEqual(["tag", "tag", "tag"]);
     expect(card.brandLabel).toBe("Peugeot");
     expect(card.seller?.rating).toBe(4.8);
     expect(card.seller?.reviewCount).toBe(64);

@@ -59,8 +59,6 @@ import {
   LucideIcon,
 } from "lucide-react";
 import { colors } from "@shongre/design-tokens";
-import { TaxonomyNode } from "../../domains/taxonomy/taxonomy.types";
-import { Category } from "../../types";
 
 // Authoritative mapping from iconName to LucideIcon
 export const ICON_NAME_MAP: Record<string, LucideIcon> = {
@@ -128,7 +126,7 @@ export const ICON_NAME_MAP: Record<string, LucideIcon> = {
   Cpu,
   ShieldCheck,
   ShoppingBag,
-  // Canonical taxonomy v4 stores Lucide icon names in kebab case. Keep that
+  // Canonical taxonomy v1 stores Lucide icon names in kebab case. Keep that
   // transport metadata authoritative instead of resolving icons from labels,
   // slugs, or category ids in feature components.
   car: Car,
@@ -152,126 +150,8 @@ export const ICON_NAME_MAP: Record<string, LucideIcon> = {
   "file-key": FileKey,
 };
 
-// Fallback mapping by category slug or code
-export const CATEGORY_SLUG_ICON_MAP: Record<
-  string,
-  { icon: LucideIcon; color: string }
-> = {
-  // 1. Véhicules
-  vehicules: { icon: Car, color: colors.category.vehicles },
-  vehicles: { icon: Car, color: colors.category.vehicles },
-  "vehicles.cars": { icon: Car, color: colors.category.vehicles },
-  "vehicles.motorcycles": { icon: Bike, color: colors.category.vehicles },
-  "vehicles.utility": { icon: Truck, color: colors.category.vehicles },
-  "vehicles.caravaning": { icon: Compass, color: colors.category.vehicles },
-  "vehicles.nautism": { icon: Anchor, color: colors.category.vehicles },
-  "vehicles.parts": { icon: Wrench, color: colors.category.vehicles },
-
-  // 2. Immobilier
-  immobilier: { icon: Building2, color: colors.category.realEstate },
-  real_estate: { icon: Building2, color: colors.category.realEstate },
-  "real_estate.sales": { icon: Home, color: colors.category.realEstate },
-  "real_estate.rentals": { icon: Key, color: colors.category.realEstate },
-  "real_estate.commercial": { icon: Store, color: colors.category.realEstate },
-
-  // 3. Emploi
-  emploi: { icon: Briefcase, color: colors.category.tech },
-  jobs: { icon: Briefcase, color: colors.category.tech },
-  "jobs.tech": { icon: Code, color: colors.category.tech },
-  "jobs.sales": { icon: Briefcase, color: colors.category.tech },
-
-  // 4. Services
-  "services-prestations": { icon: Wrench, color: colors.category.services },
-  services: { icon: Wrench, color: colors.category.services },
-  "services.home": { icon: Hammer, color: colors.category.services },
-  "services.tutoring": { icon: GraduationCap, color: colors.category.services },
-
-  // 5. Maison & Jardin
-  "maison-deco": { icon: Layers, color: colors.category.homeGarden },
-  home_garden: { icon: Layers, color: colors.category.homeGarden },
-  "home_garden.furniture": {
-    icon: Armchair,
-    color: colors.category.homeGarden,
-  },
-  "home_garden.appliances": { icon: Tv, color: colors.category.homeGarden },
-  "home_garden.decoration": {
-    icon: Sparkles,
-    color: colors.category.homeGarden,
-  },
-  "home_garden.gardening": { icon: Sun, color: colors.category.homeGarden },
-  "home_garden.diy": { icon: Hammer, color: colors.category.homeGarden },
-
-  // 6. Multimédia & Électronique
-  multimedia: { icon: Smartphone, color: colors.category.multimedia },
-  electronics: { icon: Smartphone, color: colors.category.multimedia },
-  "electronics.telephony": {
-    icon: Smartphone,
-    color: colors.category.multimedia,
-  },
-  "electronics.computers": { icon: Laptop, color: colors.category.multimedia },
-  "electronics.audio_video": {
-    icon: Headphones,
-    color: colors.category.multimedia,
-  },
-  "electronics.photo": { icon: Camera, color: colors.category.multimedia },
-  "electronics.gaming": { icon: Gamepad2, color: colors.category.multimedia },
-
-  // 7. Mode & Beauté
-  "mode-beaute": { icon: Shirt, color: colors.category.fashion },
-  fashion: { icon: Shirt, color: colors.category.fashion },
-  "fashion.clothing": { icon: Shirt, color: colors.category.fashion },
-  "fashion.shoes": { icon: Footprints, color: colors.category.fashion },
-  "fashion.accessories": { icon: Watch, color: colors.category.fashion },
-
-  // 8. Famille & Bébé
-  "famille-enfant": { icon: Baby, color: colors.category.baby },
-  family_baby: { icon: Baby, color: colors.category.baby },
-
-  // 9. Culture & Loisirs
-  "culture-musique": { icon: BookOpen, color: colors.category.leisure },
-  culture_leisure: { icon: BookOpen, color: colors.category.leisure },
-  "culture_leisure.books": { icon: BookOpen, color: colors.category.leisure },
-  "culture_leisure.music": { icon: Music, color: colors.category.leisure },
-  "culture_leisure.gaming": { icon: Gamepad2, color: colors.category.leisure },
-
-  // 10. Sports & Plein Air
-  "loisirs-sport": { icon: Bike, color: colors.category.jobs },
-  "sports-hobbies": { icon: Trophy, color: colors.category.jobs },
-  sports_outdoors: { icon: Trophy, color: colors.category.jobs },
-  "sports_outdoors.cycling": { icon: Bike, color: colors.category.jobs },
-  "sports_outdoors.fitness": { icon: Dumbbell, color: colors.category.jobs },
-
-  // 11. Animaux
-  animaux: { icon: Dog, color: colors.category.sport },
-  animals_pets: { icon: Dog, color: colors.category.sport },
-
-  // 12. Matériel Professionnel
-  "materiel-professionnel": { icon: HardHat, color: colors.category.neutral },
-  pro_equipment: { icon: HardHat, color: colors.category.neutral },
-
-  // 13. Agriculture & BTP
-  "agriculture-materiaux": {
-    icon: Tractor,
-    color: colors.category.agriculture,
-  },
-  agriculture_materials: { icon: Tractor, color: colors.category.agriculture },
-
-  // 14. Vacances
-  vacances: { icon: Palmtree, color: colors.category.pets },
-  vacation_rentals: { icon: Palmtree, color: colors.category.pets },
-
-  // 15. Numérique & Digital
-  "digital-services": { icon: Server, color: colors.category.realEstate },
-  digital_goods: { icon: Server, color: colors.category.realEstate },
-
-  // 16. Dons & Divers
-  "dons-divers": { icon: Gift, color: colors.category.trades },
-  other_community: { icon: Gift, color: colors.category.trades },
-  divers: { icon: Tag, color: colors.category.neutralSoft },
-};
-
 export interface CategoryIconProps {
-  category?: string | TaxonomyNode | Category | null;
+  category?: { iconName?: string } | null;
   iconName?: string;
   size?: "xs" | "sm" | "md" | "lg" | "xl" | number;
   className?: string;
@@ -311,50 +191,10 @@ export const CategoryIcon: React.FC<CategoryIconProps> = ({
   withBackground = false,
   color,
 }) => {
-  // 1. Resolve Icon Component
-  let IconComponent: LucideIcon = Tag;
-  // The brand terracotta, matching `--color-primary` in index.css. Every
-  // unmapped category falls back to it, so it must not drift from the ramp.
-  let defaultColor: string = colors.category.vehicles;
-
-  // Check explicit iconName first
-  const resolvedIconName =
-    iconName ||
-    (typeof category === "object" && category
-      ? (category as any).iconName
-      : undefined);
-
-  if (resolvedIconName && ICON_NAME_MAP[resolvedIconName]) {
-    IconComponent = ICON_NAME_MAP[resolvedIconName];
-  } else {
-    // Resolve via category slug or ID
-    const catKey =
-      typeof category === "string"
-        ? category
-        : typeof category === "object" && category
-          ? (category as any).slug || (category as any).id
-          : "";
-
-    if (catKey) {
-      const lower = catKey.toLowerCase();
-      // Try exact match or prefix
-      const match =
-        CATEGORY_SLUG_ICON_MAP[lower] ||
-        Object.entries(CATEGORY_SLUG_ICON_MAP).find(
-          ([k]) => lower.includes(k) || k.includes(lower),
-        )?.[1];
-
-      if (match) {
-        IconComponent = match.icon;
-        defaultColor = match.color;
-      }
-    }
-  }
-
-  const effectiveColor =
-    color ||
-    (typeof category === "object" && (category as any)?.accentColor) ||
-    defaultColor;
+  const resolvedIconName = iconName ?? category?.iconName;
+  const IconComponent =
+    (resolvedIconName && ICON_NAME_MAP[resolvedIconName]) || Package;
+  const effectiveColor = color ?? colors.category.neutral;
 
   const sizeClass =
     typeof size === "string" ? SIZE_CLASSES[size] || SIZE_CLASSES.md : "";

@@ -41,12 +41,20 @@ interface RequestFormState extends LearnerRequestProgressDraft {
 }
 
 export const CourseLearnerRequestPage: React.FC = () => {
+  const { currentUser } = useAuth();
+  const { activeMarket } = useMarketLocation();
+  return (
+    <CourseLearnerRequestEditor
+      key={`${currentUser?.id ?? "guest"}:${activeMarket.code}`}
+    />
+  );
+};
+
+const CourseLearnerRequestEditor: React.FC = () => {
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const { activeMarket, currencySymbol } = useMarketLocation();
-  const { currentUser } = useAuth();
   const toast = useToast();
-  const accountId = currentUser?.id || "guest";
   const [catalog, setCatalog] = useState<CourseCatalog | null>(null);
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<RequestFormState | null>(null);
@@ -63,15 +71,16 @@ export const CourseLearnerRequestPage: React.FC = () => {
   });
 
   useEffect(() => {
+    let active = true;
     Promise.all([
       services.courses.getCatalog(activeMarket.code),
       services.courses.getLearnerRequestDraft(
-        accountId,
         activeMarket.code,
         searchParams.get("subject") || undefined,
       ),
     ])
       .then(([nextCatalog, savedDraft]) => {
+        if (!active) return;
         setCatalog(nextCatalog);
         setForm({
           ...savedDraft,
@@ -80,8 +89,13 @@ export const CourseLearnerRequestPage: React.FC = () => {
           guardianConsent: false,
         });
       })
-      .catch(() => setLoadError(true));
-  }, [accountId, activeMarket.code, searchParams]);
+      .catch(() => {
+        if (active) setLoadError(true);
+      });
+    return () => {
+      active = false;
+    };
+  }, [activeMarket.code, searchParams]);
 
   useEffect(() => {
     // Persist only non-contact learning criteria. Guardian names and consent
@@ -93,8 +107,8 @@ export const CourseLearnerRequestPage: React.FC = () => {
       guardianConsent: _consent,
       ...safeDraft
     } = form;
-    void services.courses.saveLearnerRequestDraft(accountId, safeDraft);
-  }, [accountId, form]);
+    void services.courses.saveLearnerRequestDraft(activeMarket.code, safeDraft);
+  }, [activeMarket.code, form]);
 
   const steps = [
     "Besoin",
@@ -189,7 +203,7 @@ export const CourseLearnerRequestPage: React.FC = () => {
     try {
       const result = await services.courses.submitLearnerRequest(request);
       setSubmitted(result);
-      await services.courses.clearLearnerRequestDraft(accountId);
+      await services.courses.clearLearnerRequestDraft(activeMarket.code);
       toast.success("Votre demande a été transmise.");
     } catch (reason) {
       toast.error(
@@ -207,7 +221,7 @@ export const CourseLearnerRequestPage: React.FC = () => {
       <Container className="py-10">
         <StatePanel
           title="Formulaire indisponible"
-          description="Le catalogue de matières n’a pas pu être chargé. Votre brouillon local est conservé."
+          description="Le catalogue de matières n’a pas pu être chargé. Votre brouillon reste enregistré."
           action={
             <Button onClick={() => window.location.reload()}>Réessayer</Button>
           }
@@ -306,7 +320,25 @@ export const CourseLearnerRequestPage: React.FC = () => {
                   className="mt-2 w-full"
                   labelledByAncestor
                   value={form.subjectId}
-                  onChange={(event) => update("subjectId", event.target.value)}
+                  onChange={(event) => {
+                    const subjectId = event.target.value;
+                    const compatible = catalog.subjects
+                      .find((subject) => subject.id === subjectId)
+                      ?.levelIds.includes(form.levelId);
+                    setForm((current) =>
+                      current
+                        ? {
+                            ...current,
+                            subjectId,
+                            levelId: compatible ? current.levelId : "",
+                          }
+                        : current,
+                    );
+                    if (form.levelId && !compatible)
+                      toast.info(
+                        "La matière a changé. Sélectionnez un niveau compatible.",
+                      );
+                  }}
                 >
                   <option value="">Choisir une matière</option>
                   {catalog.subjects.map((subject) => (
@@ -325,11 +357,17 @@ export const CourseLearnerRequestPage: React.FC = () => {
                   onChange={(event) => update("levelId", event.target.value)}
                 >
                   <option value="">Choisir un niveau</option>
-                  {catalog.levels.map((level) => (
-                    <option key={level.id} value={level.id}>
-                      {level.label}
-                    </option>
-                  ))}
+                  {catalog.levels
+                    .filter((level) =>
+                      catalog.subjects
+                        .find((subject) => subject.id === form.subjectId)
+                        ?.levelIds.includes(level.id),
+                    )
+                    .map((level) => (
+                      <option key={level.id} value={level.id}>
+                        {level.label}
+                      </option>
+                    ))}
                 </Select>
               </label>
               <label className="block text-xs font-semibold text-text-main">

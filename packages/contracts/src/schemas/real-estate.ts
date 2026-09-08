@@ -1,4 +1,7 @@
-import { listingTaxonomyProjectionSchema } from "./taxonomy";
+import {
+  listingTaxonomyProjectionSchema,
+  taxonomyV1OptionSetsSchema,
+} from "./taxonomy";
 import { z } from "zod";
 import { marketCodeSchema, moneySchema } from "./primitives";
 import { marketResolvedListingPromotionSchema } from "./discovery";
@@ -630,6 +633,7 @@ export const agencyWorkspaceSchema = z.object({
 export type AgencyWorkspace = z.infer<typeof agencyWorkspaceSchema>;
 
 export const realEstateCatalogSchema = z.object({
+  taxonomyOptions: taxonomyV1OptionSetsSchema,
   activation: verticalActivationSchema.extend({
     verticalType: realEstateVerticalSchema,
   }),

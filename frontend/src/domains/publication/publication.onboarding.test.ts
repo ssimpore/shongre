@@ -1,10 +1,9 @@
+import { recordedTaxonomyResponses } from "@shongre/contracts/testing/taxonomy-responses";
 import { describe, expect, it } from "vitest";
 import {
   resolveMarketContext,
-  TaxonomyV4PublicResolver,
-  type TaxonomyV4TreeResponse,
+  type TaxonomyV1TreeResponse,
 } from "@shongre/contracts";
-import { getTaxonomyV4PublicBundle } from "@shongre/contracts/taxonomy-v4-public";
 import {
   buildListingOnboardingModel,
   groupTaxonomyPublicationFields,
@@ -20,9 +19,26 @@ const infrastructure = {
 };
 const market = (hostname: string, pathname = "/") =>
   resolveMarketContext({ hostname, pathname, infrastructure });
-const resolver = new TaxonomyV4PublicResolver(getTaxonomyV4PublicBundle());
+const resolver = recordedTaxonomyResponses;
 
 describe("listing onboarding taxonomy controller", () => {
+  it("restores saved aliases through the API and keeps former tutoring selections broad", () => {
+    const tree = resolver.tree(market("shongre.fr"), "fr-FR");
+    const model = buildListingOnboardingModel({
+      tree,
+      sellerType: "individual",
+      selectedCategoryId: "services.tutoring",
+    });
+    expect(model.path.map((node) => node.id)).toEqual(["education"]);
+    expect(model.isComplete).toBe(false);
+    const stalePath = buildListingOnboardingModel({
+      tree,
+      sellerType: "individual",
+      selectedPath: ["services", "services.tutoring"],
+    });
+    expect(stalePath.path.map((node) => node.id)).toEqual(["education"]);
+    expect(stalePath.selectedListingType).toBeUndefined();
+  });
   it.each([
     ["shongre.fr", "/", "FR"],
     ["shongre.com", "/be", "BE"],
@@ -50,7 +66,7 @@ describe("listing onboarding taxonomy controller", () => {
         "electronics.computers.laptops",
       ].includes(item.id),
     );
-    const deepTree: TaxonomyV4TreeResponse = {
+    const deepTree: TaxonomyV1TreeResponse = {
       ...canonical,
       items: categories,
       listingTypes: canonical.listingTypes.filter(
@@ -92,7 +108,7 @@ describe("listing onboarding taxonomy controller", () => {
       "electronics.computers.laptops.listing",
     );
 
-    const shallowTree: TaxonomyV4TreeResponse = {
+    const shallowTree: TaxonomyV1TreeResponse = {
       ...canonical,
       items: [{ ...categories[0], publishable: true }],
       listingTypes: canonical.listingTypes

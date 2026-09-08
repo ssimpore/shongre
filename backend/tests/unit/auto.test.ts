@@ -115,6 +115,38 @@ describe("Shongre Auto domain service", () => {
       expect(vehicle).not.toHaveProperty(privateField);
   });
 
+  it("projects recorded condition and damage through published detail labels", async () => {
+    const { service, repository } = createService();
+    const stored = (await repository.getVehicle("vehicle_3008_petrol"))!;
+    await repository.saveVehicle({
+      ...stored,
+      history: {
+        ...stored.history,
+        condition: "excellent",
+        accidentStatus: "known_damage",
+        maintenanceBookStatus: "none",
+      },
+    });
+    const result = await service.getPublicVehicle(stored.id);
+    const fields = result.taxonomy?.detailCharacteristics;
+    expect(fields).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: "condition",
+          values: expect.objectContaining({ "fr-FR": "Excellent" }),
+        }),
+        expect.objectContaining({
+          code: "accident_status",
+          values: expect.objectContaining({ "fr-FR": "Dommages connus" }),
+        }),
+        expect.objectContaining({
+          code: "maintenance_book_status",
+          values: expect.objectContaining({ "fr-FR": "Absent" }),
+        }),
+      ]),
+    );
+  });
+
   it("keeps a draft private and strips raw vehicle identity fields", async () => {
     const { service } = createService();
     const draft = await service.saveOwnDraft("seller_a", "draft_private", {
@@ -158,9 +190,43 @@ describe("Shongre Auto domain service", () => {
     expect(JSON.stringify(identity)).not.toContain(registration);
   });
 
+  it.each([
+    { makeId: "bmw" },
+    { modelId: "unpublished-model" },
+    { fuelType: "unsupported-fuel" },
+    { condition: "very_good" },
+    { accidentStatus: "invented" },
+  ])(
+    "rejects unpublished or incompatible vehicle selections: %j",
+    async (change) => {
+      const { service } = createService();
+      await service.saveOwnDraft("selection-seller", "selection-draft", {
+        marketCode: "FR",
+        currentStep: 11,
+        completedSteps: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+        duplicateCheck: "clear",
+        data: { ...completeDraftData, ...change },
+      });
+      await expect(
+        service.submitOwnDraft("selection-seller", "selection-draft"),
+      ).rejects.toMatchObject({ code: "VALIDATION_ERROR" });
+      expect(
+        (await service.getOwnDraft("selection-seller", "selection-draft")).data,
+      ).toMatchObject(change);
+    },
+  );
+
   it("submits a complete checked draft to moderation and enforces the active quota", async () => {
     const { repository, service } = createService();
     await saveCompleteDraft(service);
+    await service.saveOwnDraft("user_private_seller", "draft_auto_test", {
+      marketCode: "FR",
+      data: {
+        ...completeDraftData,
+        makeLabel: "Caller label",
+        modelLabel: "Caller model",
+      },
+    });
     await service.checkDuplicateIdentity(
       "user_private_seller",
       "draft_auto_test",
@@ -173,6 +239,8 @@ describe("Shongre Auto domain service", () => {
     expect(submitted.lifecycle).toBe("pending_review");
     const stored = await repository.getVehicle(submitted.vehicleId);
     expect(stored?.moderationStatus).toBe("pending_review");
+    expect(stored?.makeLabel).toBe("Peugeot");
+    expect(stored?.modelLabel).toBe("3008");
     expect(stored?.ownerUserId).toBe("user_private_seller");
     expect(stored?.dealerOrganizationId).toBeUndefined();
 
@@ -343,7 +411,9 @@ describe("Shongre Auto domain service", () => {
       }),
     ).rejects.toThrow(/webhooks|remboursements/i);
     await expect(
-      service.updateVehicleType("FR", "boat", { isActive: true }),
+      service.validateReferenceActivation("FR", [
+        { type: "boat", isActive: true },
+      ]),
     ).rejects.toThrow(/drapeau marché/i);
     await expect(
       service.createPartnerReferral(undefined, "FR", {
@@ -446,7 +516,6 @@ describe("Shongre Auto domain service", () => {
         "saveMarketConfig",
         "savePlan",
         "saveAddOn",
-        "saveVehicleType",
         "search",
         "getVehicle",
         "saveVehicle",

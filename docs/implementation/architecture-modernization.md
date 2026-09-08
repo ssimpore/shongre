@@ -160,7 +160,7 @@ forward migrations, and idempotently loads the production-shaped seed:
 - 37 profiles and linked Supabase Auth users;
 - 19 marketplace listings plus Auto, Immo, Education, and Employment data;
 - messages, transactions, notifications, saved searches, and reviews;
-- taxonomy v4, commercial rules, market configuration, and 165 owned Storage
+- taxonomy v1, commercial rules, market configuration, and 165 owned Storage
   objects.
 
 Local password recovery uses backend email abstractions and Mailpit SMTP. Live
@@ -619,51 +619,34 @@ check from `category-aliases.spec.ts`, selected by
 to that isolated command. Initial failure artifacts and final test output remain
 outside Git with the live screenshots.
 
-## Unified homepage listing-rail geometry
+## Content-sized listing rails
 
-The homepage now scopes its existing `ListingRail`/shared `ListingCard` consumers
-inside one `ListingRailGroup`. Previously, widths already matched at 208px, but
-each rail stretched independently: the live recent-listing rail was about 388px
-high while deals were about 402px. The group publishes a content-measured minimum
-for every rail cell, retaining the canonical width/media tokens and complete
-titles, prices, seller facts and metadata. It neither creates another card
-variant nor changes backend projections. Hero, collection and recent-search
-surfaces retain their distinct presentation.
+All listing rails use the shared Web `ListingRail` primitive and the canonical
+listing-card width, media height and minimum-height tokens. CSS stretches cards
+to the tallest natural card in their own row. Full titles, seller facts and
+location/date remain visible, and each section can shrink independently.
 
-The Web sizing helper measures natural media/text rows rather than stretched
-card heights, batches observer notifications into animation frames, handles
-content growth/shrinkage and removed cards, and cleans up on unmount. Deferred
-sections remain deferred; their rendering-state event schedules measurement
-after layout rather than relying on earlier intersection notifications. Entering
-sections contribute their natural height,
-and cached measurements keep already-visited rails aligned. The obsolete
-fixed-height universe assertion now follows the shared measurement. No shared
-package, visual token or native implementation changed.
+The former cross-section height observer and its `ListingRailGroup` wrapper
+were removed: a longer title in an unrelated rail should not create empty space
+under every other title. This reduces the selected guitar card from 402px to
+388px, and its title-to-location gap from 22px to 8px at the reported 1104px
+viewport. There are no page-specific card sizes, new visual tokens or native
+layout changes. Deferred sections continue to use native content visibility.
 
-All 686 frontend tests, frontend lint, repository hygiene and `make smoke`
-passed. Live Chromium and WebKit checks found every recent/deal/universe card
-at 208 × 402px on both 1408px and 390px viewports, with no clipping, overlap or
-console errors; rail scrolling and keyboard detail navigation passed. A
-Chromium development font-preload warning was non-blocking. Browser was
-unavailable, so Playwright evidence is kept outside Git under
-`/tmp/shongre-home-rails.rZfoV8/`. Browser checks explicitly reveal a deferred
-section and await rendering before scrolling its first card; measuring skipped
-descendants had produced misleading WebKit results.
+The responsive browser regression checks alignment within each rail, complete
+titles, clipping, page overflow, horizontal scrolling and keyboard navigation.
+It also grows a title in one rail and verifies that an unrelated rail retains
+its height, then restores the title and verifies that the affected rail shrinks.
+Universe coverage compares rendered cards with the canonical homepage API
+response, preserving exact counts without pinning old fixture totals.
 
-The new `home-listing-rail-layout.spec.ts` passed all eight cases against the
-running local Web/API (Chromium and WebKit at 320, 390, 768 and 1408px). It checks
-all rail widths/heights, full titles, overflow, desktop title growth/shrinkage,
-scroll controls, keyboard detail navigation and console errors. The direct
-Playwright run used `PLAYWRIGHT_BASE_URL=http://127.0.0.1:3000`, one worker and
-`--output=/tmp/shongre-home-rails.rZfoV8/live-test-results`; it did not launch or
-restart the interactive server or mutate backend listings.
-
-The canonical isolated production run compiled successfully but stalled during
-TypeScript validation for more than 15 minutes under host resource pressure.
-Only that exact test process tree was stopped and its disposable checkout was
-cleaned up; production E2E certification remains incomplete. The interactive
-Web, API, worker, Redis and local Supabase services stayed running and passed
-the smoke check.
+The live database-backed app passes Chromium checks at 1104px and 390px,
+including full images and titles, row alignment, horizontal scrolling, keyboard
+listing navigation and no clipping, overflow or browser errors. Web lint and all
+682 unit tests pass. The canonical isolated production build and all six
+Chromium browser tests pass at 320, 390, 768 and 1408px, including every universe
+rail and independent title growth/shrinkage. Shared token values and native
+components are unchanged.
 
 ## Canonical commands
 

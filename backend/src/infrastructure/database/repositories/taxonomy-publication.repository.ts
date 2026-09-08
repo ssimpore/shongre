@@ -3,7 +3,7 @@ import { getSupabaseAdminClient } from "../../supabase/supabase-client.js";
 import { databaseFailure } from "./repository-error.js";
 import {
   taxonomyPrivateBundleSchema,
-  type TaxonomyV4PrivateBundle,
+  type TaxonomyV1PrivateBundle,
 } from "../../../modules/taxonomy/taxonomy.bundle.js";
 import { AppError } from "../../../shared/errors/app-error.js";
 import type { Json } from "../../../generated/database.types.js";
@@ -11,7 +11,7 @@ import type { Json } from "../../../generated/database.types.js";
 export interface TaxonomyPublication {
   revision: number;
   checksum: string;
-  bundle: TaxonomyV4PrivateBundle;
+  bundle: TaxonomyV1PrivateBundle;
 }
 
 const publicationSchema = z.object({
@@ -24,7 +24,7 @@ type TaxonomyDraft = {
   revision: number;
   publishedRevision: number | null;
   checksum: string;
-  bundle: TaxonomyV4PrivateBundle;
+  bundle: TaxonomyV1PrivateBundle;
 };
 export class PostgresTaxonomyPublicationRepository {
   private cached?: TaxonomyPublication;

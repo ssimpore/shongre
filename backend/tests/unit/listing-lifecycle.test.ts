@@ -1,5 +1,7 @@
-import { beforeEach, describe, it, expect } from "vitest";
+import { beforeEach, describe, it, expect, vi } from "vitest";
+import { publisherEntitlementsService } from "../../src/modules/publishers/publisher-entitlements.service.js";
 import { DELIVERY_TAXONOMY_CATEGORY_ID } from "@shongre/contracts/delivery";
+import { requireApiMarketContext } from "../../src/modules/markets/request-market-context.js";
 import { PUBLICATION_CONSTRAINTS } from "@shongre/contracts/publication";
 import { listingsService } from "../../src/modules/listings/listings.service.js";
 import { ordersService } from "../../src/modules/orders/orders.service.js";
@@ -48,7 +50,7 @@ describe("Listing & Order Lifecycle", () => {
       defaultCity: "Lyon",
       defaultPostalCode: "69002",
       content:
-        "Titre;Categorie;SousCategorie;Prix;Etat;Stock;Ville;CodePostal;Description\nTable de salle à manger;home_garden;furniture;280,50;very_good;2;;;Bois massif",
+        "Titre;Categorie;SousCategorie;Prix;Etat;Stock;Ville;CodePostal;Description\nTable de salle à manger;home_garden;home_garden.furniture.tables;280,50;very_good;2;;;Bois massif",
     });
     expect(parsed).toHaveLength(1);
     expect(parsed[0]).toMatchObject({
@@ -60,10 +62,64 @@ describe("Listing & Order Lifecycle", () => {
     });
   });
 
+  it("preserves quoted CSV attributes and photos through the canonical bulk publication path", async () => {
+    const attributes = { listing_intent: "sell", battery_health_percent: 95 };
+    const photos = ["https://images.example.test/import-phone.jpg"];
+    const quote = (value: string) => `"${value.replaceAll('"', '""')}"`;
+    const columns = [
+      "Téléphone importé avec caractéristiques",
+      "electronics",
+      "electronics.smartphones.phones",
+      "350",
+      "very_good",
+      "1",
+      "Lyon",
+      "69002",
+      "Téléphone contrôlé et prêt à être utilisé.",
+      JSON.stringify(attributes),
+      JSON.stringify(photos),
+    ];
+    const rows = await listingsService.parseBulkImportCsv({
+      marketCode: "FR",
+      content:
+        "Titre;Categorie;SousCategorie;Prix;Etat;Stock;Ville;CodePostal;Description;CaracteristiquesJSON;PhotosJSON\n" +
+        columns.map(quote).join(";"),
+    });
+    expect(rows[0]).toMatchObject({
+      isValid: true,
+      attributes,
+      images: photos,
+    });
+    // The entitlement gate is covered separately; exercise the real taxonomy,
+    // seller resolution, publication validation and persistence beneath it.
+    const gate = vi
+      .spyOn(publisherEntitlementsService, "canImportInventory")
+      .mockResolvedValue({ allowed: true, reasonCode: "ELIGIBLE" });
+    try {
+      const published = await listingsService.publishBulkListings(
+        "user_pro_atelier",
+        { marketCode: "FR", rows },
+      );
+      expect(published).toHaveLength(1);
+      expect(published[0]).toMatchObject({
+        categoryId: "electronics.smartphones.phones",
+        attributes: { battery_health_percent: 95 },
+      });
+      const stored = await repositories.listings.findById(published[0].id);
+      expect(stored?.attributes).toMatchObject(attributes);
+      expect(stored?.images).toEqual(photos);
+    } finally {
+      gate.mockRestore();
+    }
+  });
+
   it("rejects an overlong new title before publication and preserves the submitted copy", async () => {
     const draft = {
       title: "W".repeat(PUBLICATION_CONSTRAINTS.title.maxLength + 1),
       categoryId: "electronics.smartphones.phones",
+      listingTypeId: "electronics.smartphones.phones.listing",
+      intent: "SELL",
+      taxonomyVersion: "v1",
       marketCode: "FR",
     };
     await expect(
@@ -84,7 +140,7 @@ describe("Listing & Order Lifecycle", () => {
     const title = "É".repeat(PUBLICATION_CONSTRAINTS.title.maxLength);
     const parsed = await listingsService.parseBulkImportCsv({
       marketCode: "FR",
-      content: `Titre;Categorie;SousCategorie;Prix;Etat;Stock;Ville;CodePostal;Description\n${title};home_garden;furniture;280;very_good;2;Lyon;69002;Bois massif\n${title}!;home_garden;furniture;280;very_good;2;Lyon;69002;Bois massif`,
+      content: `Titre;Categorie;SousCategorie;Prix;Etat;Stock;Ville;CodePostal;Description\n${title};home_garden;home_garden.furniture.tables;280;very_good;2;Lyon;69002;Bois massif\n${title}!;home_garden;home_garden.furniture.tables;280;very_good;2;Lyon;69002;Bois massif`,
     });
     expect(parsed[0]).toMatchObject({ title, isValid: true });
     expect(parsed[1]).toMatchObject({
@@ -109,6 +165,9 @@ describe("Listing & Order Lifecycle", () => {
         price: 1850,
         priceModel: "fixed",
         categoryId: "electronics.smartphones.phones",
+        listingTypeId: "electronics.smartphones.phones.listing",
+        intent: "SELL",
+        taxonomyVersion: "v1",
         marketCode: "FR",
         condition: "tres-bon-etat",
         city: "Lyon",
@@ -117,6 +176,10 @@ describe("Listing & Order Lifecycle", () => {
         attributes: { listing_intent: "sell" },
       },
       "user_camille",
+      {
+        marketContext: requireApiMarketContext("FR"),
+        sellerType: "individual",
+      },
     );
 
     expect(published.id).toBeDefined();
@@ -135,6 +198,9 @@ describe("Listing & Order Lifecycle", () => {
             "Annonce qui ne doit jamais atteindre la projection publique.",
           price: 250,
           categoryId: "electronics.smartphones.phones",
+          listingTypeId: "electronics.smartphones.phones.listing",
+          intent: "SELL",
+          taxonomyVersion: "v1",
           marketCode: "FR",
           condition: "bon-etat",
           city: "Lyon",
@@ -142,6 +208,10 @@ describe("Listing & Order Lifecycle", () => {
           attributes: { price_type: "guess_the_price" },
         },
         "user_camille",
+        {
+          marketContext: requireApiMarketContext("FR"),
+          sellerType: "individual",
+        },
       ),
     ).rejects.toMatchObject({ code: "VALIDATION_ERROR" });
   });
@@ -163,12 +233,19 @@ describe("Listing & Order Lifecycle", () => {
             price,
             priceModel,
             categoryId: "electronics.smartphones.phones",
+            listingTypeId: "electronics.smartphones.phones.listing",
+            intent: "SELL",
+            taxonomyVersion: "v1",
             marketCode: "FR",
             condition: "bon-etat",
             city: "Lyon",
             postalCode: "69002",
           },
           "user_camille",
+          {
+            marketContext: requireApiMarketContext("FR"),
+            sellerType: "individual",
+          },
         ),
       ).rejects.toMatchObject({ code: "VALIDATION_ERROR" });
     },
@@ -182,6 +259,9 @@ describe("Listing & Order Lifecycle", () => {
           "Le montant sera établi après qualification précise de la demande.",
         priceModel: "on_request",
         categoryId: "services.local_services.digital_it",
+        listingTypeId: "services.local_services.digital_it.listing",
+        intent: "SERVICE_OFFER",
+        taxonomyVersion: "v1",
         marketCode: "FR",
         condition: "non-applicable",
         city: "Lyon",
@@ -193,6 +273,10 @@ describe("Listing & Order Lifecycle", () => {
         },
       },
       "user_camille",
+      {
+        marketContext: requireApiMarketContext("FR"),
+        sellerType: "individual",
+      },
     );
 
     expect(listing.price).toBe(0);
@@ -208,6 +292,9 @@ describe("Listing & Order Lifecycle", () => {
             "Excellent état, vendu avec sa boîte et une coque supplémentaire.",
           price: 920,
           categoryId: "electronics.smartphones.phones",
+          listingTypeId: "electronics.smartphones.phones.listing",
+          intent: "SELL",
+          taxonomyVersion: "v1",
           marketCode: "FR",
           selectedMarkets: ["FR", "BE"],
           condition: "tres-bon-etat",
@@ -217,6 +304,10 @@ describe("Listing & Order Lifecycle", () => {
           attributes: { listing_intent: "sell", price_type: "fixed" },
         },
         "user_camille",
+        {
+          marketContext: requireApiMarketContext("FR"),
+          sellerType: "individual",
+        },
       ),
     ).rejects.toMatchObject({ code: "NOT_FOUND" });
   });

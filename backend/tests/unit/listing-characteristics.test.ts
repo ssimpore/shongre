@@ -1,12 +1,13 @@
-import { TAXONOMY_V4_PRIVATE_BUNDLE } from "../../src/modules/taxonomy/generated/taxonomy-v4.private.js";
+import { TaxonomyV1Service } from "../../src/modules/taxonomy/taxonomy.v1.service.js";
+import { TAXONOMY_V1_PRIVATE_BUNDLE } from "../../taxonomy/generated/taxonomy-v1.private.js";
 import { describe, expect, it } from "vitest";
 import {
-  projectListingCardCharacteristics,
+  projectLocalizedListingCharacteristics,
   projectListingCharacteristics as project,
 } from "../../src/modules/taxonomy/taxonomy.characteristics.js";
 
 const projectListingCharacteristics = (input: Parameters<typeof project>[0]) =>
-  project(input, TAXONOMY_V4_PRIVATE_BUNDLE);
+  project(input, TAXONOMY_V1_PRIVATE_BUNDLE);
 
 const vehicle = {
   categoryId: "vehicles.cars",
@@ -16,11 +17,11 @@ const vehicle = {
   attributes: {
     brand: "peugeot",
     model: "208",
-    year: 2022,
+    model_year: 2022,
     mileage: 28500,
-    fuel: "essence",
-    gearbox: "manuelle",
-    critair: "1",
+    fuel_type: "petrol",
+    transmission: "manual",
+    critair_class: "1",
   },
 };
 const items = (input = vehicle) =>
@@ -50,7 +51,7 @@ describe("backend listing characteristics", () => {
     expect(vehicle.categoryId).toBe("vehicles.cars");
   });
 
-  it("uses the selected leaf and canonical values before historical keys", () => {
+  it("uses the recorded leaf and canonical attribute keys", () => {
     const result = projectListingCharacteristics({
       ...vehicle,
       categoryId: "vehicles.cars.city_cars",
@@ -135,8 +136,8 @@ describe("backend listing characteristics", () => {
         living_area: 65,
         rooms: 3,
         elevator: false,
-        year: 2022,
-        fuel: "essence",
+        model_year: 2022,
+        fuel_type: "petrol",
       },
     }).groups.flatMap((group) => group.items);
     expect(result.map((item) => item.code)).toEqual(
@@ -169,7 +170,7 @@ describe("backend listing characteristics", () => {
 
 describe("published card characteristics", () => {
   it("uses published labels, ordering and visibility while preserving market and privacy boundaries", () => {
-    const bundle = structuredClone(TAXONOMY_V4_PRIVATE_BUNDLE);
+    const bundle = structuredClone(TAXONOMY_V1_PRIVATE_BUNDLE);
     const input = {
       ...vehicle,
       categoryId: "vehicles.cars.city_cars",
@@ -182,7 +183,7 @@ describe("published card characteristics", () => {
     )!;
     mileage.sortOrder = -1;
     mileage.labels["en-US"] = "Recorded distance";
-    const rows = projectListingCardCharacteristics(input, bundle);
+    const rows = projectLocalizedListingCharacteristics(input, bundle);
     expect(rows[0]).toMatchObject({
       code: "mileage",
       labels: { "en-US": "Recorded distance" },
@@ -193,7 +194,10 @@ describe("published card characteristics", () => {
     );
     expect(rows.some((row) => row.code === "vin_private")).toBe(false);
     expect(
-      projectListingCardCharacteristics({ ...input, marketCode: "SN" }, bundle),
+      projectLocalizedListingCharacteristics(
+        { ...input, marketCode: "SN" },
+        bundle,
+      ),
     ).toEqual([]);
     const next = structuredClone(bundle);
     next.bindings.find(
@@ -202,9 +206,54 @@ describe("published card characteristics", () => {
         row.attributeId === "mileage",
     )!.cardVisible = false;
     expect(
-      projectListingCardCharacteristics(input, next).some(
+      projectLocalizedListingCharacteristics(input, next).some(
         (row) => row.code === "mileage",
       ),
     ).toBe(false);
+  });
+});
+
+describe("published vertical card fields", () => {
+  it("uses published labels and visibility for validated domain values without guessing a leaf", () => {
+    const bundle = structuredClone(TAXONOMY_V1_PRIVATE_BUNDLE);
+    bundle.attributes.find((field) => field.id === "fuel_type")!.labels[
+      "fr-FR"
+    ] = "Carburant publié";
+    for (const field of bundle.projections.cardFields) {
+      if (field.field.key === "fuel_type")
+        field.labels["fr-FR"] = "Carburant publié";
+    }
+    const taxonomy = new TaxonomyV1Service(bundle, 17);
+    const attributes = {
+      model_year: 2022,
+      mileage: 42000,
+      fuel_type: "hybrid",
+      vin_private: "secret",
+    };
+    const result = taxonomy.projectDomainListing("vehicles", "FR", attributes)!;
+    expect(result).toMatchObject({ categoryId: "vehicles", revision: 17 });
+    expect(result.cardCharacteristics.map((row) => row.code)).toEqual([
+      "model_year",
+      "mileage",
+      "fuel_type",
+    ]);
+    expect(
+      result.cardCharacteristics.find((row) => row.code === "fuel_type"),
+    ).toMatchObject({
+      labels: { "fr-FR": "Carburant publié" },
+      values: { "en-US": "Hybrid" },
+    });
+    expect(
+      taxonomy.projectDomainListing("vehicles", "SN", attributes)
+        ?.cardCharacteristics,
+    ).toEqual([]);
+    expect(JSON.stringify(result)).not.toContain("secret");
+    bundle.attributes.find((field) => field.id === "fuel_type")!.cardVisible =
+      false;
+    expect(
+      new TaxonomyV1Service(bundle, 18)
+        .projectDomainListing("vehicles", "FR", attributes)
+        ?.cardCharacteristics.map((row) => row.code),
+    ).not.toContain("fuel_type");
   });
 });

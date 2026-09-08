@@ -3457,140 +3457,6 @@ export type Database = {
           },
         ];
       };
-      category_attributes: {
-        Row: {
-          attribute_id: string | null;
-          category_id: string;
-          code: string | null;
-          created_at: string;
-          data_type: string | null;
-          dependencies: Json;
-          deprecated: boolean;
-          field_role: string;
-          help_text: string | null;
-          id: string;
-          is_comparable: boolean;
-          is_filterable: boolean;
-          is_required: boolean;
-          is_searchable: boolean;
-          is_sortable: boolean;
-          label: string;
-          labels: Json;
-          name: string;
-          options: Json | null;
-          privacy: string;
-          publication_group: string;
-          sort_order: number;
-          type: string;
-          unit: string | null;
-          validation: Json;
-        };
-        Insert: {
-          attribute_id?: string | null;
-          category_id: string;
-          code?: string | null;
-          created_at?: string;
-          data_type?: string | null;
-          dependencies?: Json;
-          deprecated?: boolean;
-          field_role?: string;
-          help_text?: string | null;
-          id?: string;
-          is_comparable?: boolean;
-          is_filterable?: boolean;
-          is_required?: boolean;
-          is_searchable?: boolean;
-          is_sortable?: boolean;
-          label: string;
-          labels?: Json;
-          name: string;
-          options?: Json | null;
-          privacy?: string;
-          publication_group?: string;
-          sort_order?: number;
-          type: string;
-          unit?: string | null;
-          validation?: Json;
-        };
-        Update: {
-          attribute_id?: string | null;
-          category_id?: string;
-          code?: string | null;
-          created_at?: string;
-          data_type?: string | null;
-          dependencies?: Json;
-          deprecated?: boolean;
-          field_role?: string;
-          help_text?: string | null;
-          id?: string;
-          is_comparable?: boolean;
-          is_filterable?: boolean;
-          is_required?: boolean;
-          is_searchable?: boolean;
-          is_sortable?: boolean;
-          label?: string;
-          labels?: Json;
-          name?: string;
-          options?: Json | null;
-          privacy?: string;
-          publication_group?: string;
-          sort_order?: number;
-          type?: string;
-          unit?: string | null;
-          validation?: Json;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "category_attributes_category_id_fkey";
-            columns: ["category_id"];
-            isOneToOne: false;
-            referencedRelation: "categories";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
-      category_market_availability: {
-        Row: {
-          category_id: string;
-          compliance_state: string;
-          enabled: boolean;
-          local_attribute_schema: Json;
-          market_code: string;
-          updated_at: string;
-        };
-        Insert: {
-          category_id: string;
-          compliance_state?: string;
-          enabled?: boolean;
-          local_attribute_schema?: Json;
-          market_code: string;
-          updated_at?: string;
-        };
-        Update: {
-          category_id?: string;
-          compliance_state?: string;
-          enabled?: boolean;
-          local_attribute_schema?: Json;
-          market_code?: string;
-          updated_at?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "category_market_availability_category_id_fkey";
-            columns: ["category_id"];
-            isOneToOne: false;
-            referencedRelation: "categories";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "category_market_availability_market_code_fkey";
-            columns: ["market_code"];
-            isOneToOne: false;
-            referencedRelation: "markets";
-            referencedColumns: ["code"];
-          },
-        ];
-      };
       commercial_campaigns: {
         Row: {
           code: string;
@@ -7200,39 +7066,6 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "course_tutor_search_view";
             referencedColumns: ["tutor_profile_id"];
-          },
-        ];
-      };
-      course_subject_allowed_levels: {
-        Row: {
-          level_id: string;
-          market_code: string;
-          subject_id: string;
-        };
-        Insert: {
-          level_id: string;
-          market_code: string;
-          subject_id: string;
-        };
-        Update: {
-          level_id?: string;
-          market_code?: string;
-          subject_id?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "course_subject_allowed_levels_level_id_market_code_fkey";
-            columns: ["level_id", "market_code"];
-            isOneToOne: false;
-            referencedRelation: "course_subject_levels";
-            referencedColumns: ["id", "market_code"];
-          },
-          {
-            foreignKeyName: "course_subject_allowed_levels_subject_id_market_code_fkey";
-            columns: ["subject_id", "market_code"];
-            isOneToOne: false;
-            referencedRelation: "course_subjects";
-            referencedColumns: ["id", "market_code"];
           },
         ];
       };
@@ -31149,57 +30982,32 @@ export type Database = {
           },
         ];
       };
-      taxonomy_node_attributes: {
+      taxonomy_migration_records: {
         Row: {
-          attribute_id: string;
-          created_at: string;
-          display_order: number | null;
-          inherited_from_node_id: string | null;
-          is_required_override: boolean | null;
-          node_id: string;
-          override: Json;
+          entity_type: string;
+          identity: string;
+          migrated_at: string;
+          payload: Json;
+          source_version: string;
+          target_identity: string | null;
         };
         Insert: {
-          attribute_id: string;
-          created_at?: string;
-          display_order?: number | null;
-          inherited_from_node_id?: string | null;
-          is_required_override?: boolean | null;
-          node_id: string;
-          override?: Json;
+          entity_type: string;
+          identity: string;
+          migrated_at?: string;
+          payload: Json;
+          source_version: string;
+          target_identity?: string | null;
         };
         Update: {
-          attribute_id?: string;
-          created_at?: string;
-          display_order?: number | null;
-          inherited_from_node_id?: string | null;
-          is_required_override?: boolean | null;
-          node_id?: string;
-          override?: Json;
+          entity_type?: string;
+          identity?: string;
+          migrated_at?: string;
+          payload?: Json;
+          source_version?: string;
+          target_identity?: string | null;
         };
-        Relationships: [
-          {
-            foreignKeyName: "taxonomy_node_attributes_attribute_id_fkey";
-            columns: ["attribute_id"];
-            isOneToOne: false;
-            referencedRelation: "taxonomy_attributes";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "taxonomy_node_attributes_inherited_from_node_id_fkey";
-            columns: ["inherited_from_node_id"];
-            isOneToOne: false;
-            referencedRelation: "categories";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "taxonomy_node_attributes_node_id_fkey";
-            columns: ["node_id"];
-            isOneToOne: false;
-            referencedRelation: "categories";
-            referencedColumns: ["id"];
-          },
-        ];
+        Relationships: [];
       };
       taxonomy_option_parent_links: {
         Row: {
@@ -31354,6 +31162,45 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "taxonomy_versions";
             referencedColumns: ["id"];
+          },
+        ];
+      };
+      taxonomy_revision_migrations: {
+        Row: {
+          migrated_at: string;
+          source_checksum: string;
+          source_revision: number;
+          target_checksum: string;
+          target_revision: number;
+        };
+        Insert: {
+          migrated_at?: string;
+          source_checksum: string;
+          source_revision: number;
+          target_checksum: string;
+          target_revision: number;
+        };
+        Update: {
+          migrated_at?: string;
+          source_checksum?: string;
+          source_revision?: number;
+          target_checksum?: string;
+          target_revision?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "taxonomy_revision_migrations_source_revision_fkey";
+            columns: ["source_revision"];
+            isOneToOne: true;
+            referencedRelation: "taxonomy_publications";
+            referencedColumns: ["revision"];
+          },
+          {
+            foreignKeyName: "taxonomy_revision_migrations_target_revision_fkey";
+            columns: ["target_revision"];
+            isOneToOne: true;
+            referencedRelation: "taxonomy_publications";
+            referencedColumns: ["revision"];
           },
         ];
       };
@@ -34930,6 +34777,16 @@ export type Database = {
         };
         Returns: number;
       };
+      published_taxonomy_reference_entries: {
+        Args: never;
+        Returns: {
+          market_code: string;
+          namespace: string;
+          record_key: string;
+          record_values: Json;
+          revision: number;
+        }[];
+      };
       purge_completed_indexnow_events: {
         Args: { p_limit?: number; p_retention_days?: number };
         Returns: number;
@@ -34939,6 +34796,7 @@ export type Database = {
         Returns: number;
       };
       read_taxonomy_draft: { Args: never; Returns: Json };
+      read_taxonomy_references: { Args: never; Returns: Json };
       recognize_due_finance_revenue: {
         Args: { p_as_of?: string; p_batch_size?: number };
         Returns: number;

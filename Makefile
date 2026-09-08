@@ -15,7 +15,7 @@ endif
 	brand-sync brand-check brand-activate brand-activation-check tokens-check tokens-build ui-check ui-test ui-lint ui-typecheck ui-build shared-check cross-platform-check \
 	mobile mobile-dev mobile-start mobile-stop mobile-status mobile-health mobile-web expo expo-start expo-clear expo-doctor ios ios-run ios-open ios-clean android android-run android-open android-clean mobile-prebuild mobile-prebuild-clean mobile-lint mobile-typecheck mobile-test mobile-api-only-check mobile-dead-code mobile-check \
 	infra-check supabase-up supabase-down supabase-status supabase-health supabase-logs supabase-config \
-	db-migrate db-diff migrations-check db-seed monetization-draft-import taxonomy-db-dry-run taxonomy-db-import taxonomy-db-test db-reset db-types db-shell supabase-link supabase-pull supabase-push \
+	db-migrate db-diff migrations-check db-seed monetization-draft-import taxonomy-db-dry-run taxonomy-db-import taxonomy-db-test taxonomy-migration-check db-reset db-types db-shell supabase-link supabase-pull supabase-push \
 	ports check-ports free-app-ports free-ports free-port \
 	lint lint-fix format format-check typecheck test test-unit test-integration test-critical test-e2e test-coverage i18n-check taxonomy-import taxonomy-compile taxonomy-check providers-check analytics-check crm-check marketing-check repository-hygiene-check contracts generate check check-all ci build \
 	clean clean-deps clean-all reset audit outdated \
@@ -476,12 +476,14 @@ db-seed: ## Load deterministic seed data into a proven local development databas
 	@scripts/database.sh seed
 monetization-draft-import: ## Idempotently install the reviewed target commercial draft outside production
 	@source scripts/env.sh && npm run db:seed:monetization-target --workspace=backend
-taxonomy-db-dry-run: taxonomy-compile ## Diff the v4 import against a proven local database, then roll back
+taxonomy-db-dry-run: taxonomy-compile ## Diff the v1 import against a proven local database, then roll back
 	@scripts/database.sh taxonomy-dry-run
-taxonomy-db-import: taxonomy-compile ## Idempotently import v4 into a proven local database
+taxonomy-db-import: taxonomy-compile ## Idempotently import v1 into a proven local database
 	@scripts/database.sh taxonomy-import
 taxonomy-db-test: ## Verify authorized taxonomy editing and publication against the local database
 	@scripts/database.sh taxonomy-test
+taxonomy-migration-check: ## Verify canonical v1 migration and preserved history against the local database
+	@scripts/database.sh taxonomy-migration-check
 db-types: ## Regenerate canonical database types from local or explicitly linked Supabase
 	@source scripts/env.sh && npm run db:types --workspace=backend
 db-reset: ## Reconstruct only the proven local Supabase development database
@@ -528,12 +530,12 @@ test-coverage:
 	@SHONGRE_ENV=test bash -c 'source scripts/env.sh && npm run test --workspace=mobile -- --coverage'
 i18n-check: ## Validate locale catalogues and untranslated-surface regression budgets
 	@npm run check:i18n --workspace=frontend
-taxonomy-import: ## Import TAXONOMY_WORKBOOK into the reviewed normalized v4 source and generated projections
+taxonomy-import: ## Import TAXONOMY_WORKBOOK into the reviewed normalized v1 source and generated projections
 	@test -n "$(TAXONOMY_WORKBOOK)" || (echo 'TAXONOMY_WORKBOOK is required.' >&2; exit 1)
 	@npm run taxonomy:import -- "$(TAXONOMY_WORKBOOK)"
-taxonomy-compile: ## Regenerate taxonomy v4 bundles and local seed SQL from the normalized backend source
+taxonomy-compile: ## Regenerate taxonomy v1 bundles and local seed SQL from the normalized backend source
 	@npm run taxonomy:compile
-taxonomy-check: ## Validate taxonomy v4 source drift, generated projections, and Web publication coverage
+taxonomy-check: ## Validate taxonomy v1 source drift, generated projections, and Web publication coverage
 	@npm run taxonomy:check
 	@npm run check:taxonomy --workspace=frontend
 providers-check: ## Run safe mocked provider adapters and fail-closed provider tests

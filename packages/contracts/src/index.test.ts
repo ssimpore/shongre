@@ -4,8 +4,6 @@ import {
   listingCardSchema,
   moneySchema,
   reportInputSchema,
-  taxonomyAttributeSchema,
-  taxonomyNodeSchema,
 } from "./index";
 
 describe("shared public contracts", () => {
@@ -204,32 +202,5 @@ describe("shared public contracts", () => {
         characteristicIcons: ["calendar", "one-off-speedometer"],
       }).success,
     ).toBe(false);
-  });
-
-  it("validates taxonomy attributes and nodes at the shared boundary", () => {
-    expect(
-      taxonomyAttributeSchema.safeParse({
-        id: "vehicle.year",
-        code: "year",
-        label: "Année",
-        dataType: "year",
-        fieldRole: "recommended",
-        validation: { min: 1900, max: 2035, integer: true },
-      }).success,
-    ).toBe(true);
-
-    expect(
-      taxonomyNodeSchema.safeParse({
-        id: "vehicles",
-        code: "VEH",
-        slug: "vehicules",
-        level: "category",
-        labels: { "fr-FR": "Véhicules" },
-        name: "Véhicules",
-        sortOrder: 1,
-        status: "active",
-        children: [],
-      }).success,
-    ).toBe(true);
   });
 });

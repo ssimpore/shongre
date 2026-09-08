@@ -1,16 +1,15 @@
+import { taxonomyV1Service } from "../../../modules/taxonomy/taxonomy.runtime.js";
 import { createHash } from "node:crypto";
 import type {
   AgencyWorkspace,
   PropertyAppointment,
   PropertyDraft,
   PropertyImport,
-  PropertyFieldRule,
   PropertyLead,
   PropertyLeadNote,
   PropertyPrivate,
   PropertySearchQuery,
   PropertySearchResult,
-  PropertyTypeConfig,
   RealEstateAdminOverview,
   RealEstateCatalog,
   RealEstateMarketConfig,
@@ -141,7 +140,17 @@ const makeOffer = (
   sortOrder,
 });
 
-const DEFAULT_REAL_ESTATE_CATALOG: RealEstateCatalog = {
+const PROPERTY_OPTION_SETS = [
+  "property_condition",
+  "property_transaction",
+  "fees_paid_by",
+  "location_precision",
+] as const;
+
+const DEFAULT_REAL_ESTATE_CATALOG: Omit<
+  RealEstateCatalog,
+  "propertyTypes" | "attributes" | "fieldRules" | "taxonomyOptions"
+> = {
   activation: {
     marketCode: "FR",
     verticalType: "real_estate",
@@ -168,182 +177,6 @@ const DEFAULT_REAL_ESTATE_CATALOG: RealEstateCatalog = {
     featureFlags,
     regulatoryContentVersion: "fr-immo-2026-08",
   },
-  propertyTypes: [
-    ["apartment", "appartements", "Appartement"],
-    ["house", "maisons", "Maison"],
-    ["land", "terrains", "Terrain"],
-    ["parking_garage", "parkings-garages", "Parking ou garage"],
-    ["commercial", "locaux-commerciaux", "Local commercial"],
-    ["office", "bureaux", "Bureau"],
-    ["building", "immeubles", "Immeuble"],
-    ["new_development", "programmes-neufs", "Programme neuf"],
-    ["holiday_rental", "locations-vacances", "Location saisonnière"],
-    ["room_shared", "chambres-colocation", "Chambre ou colocation"],
-    ["other", "autres-biens", "Autre bien"],
-  ].map(([type, slug, label], index) => ({
-    type: type as PropertyTypeConfig["type"],
-    marketCode: "FR",
-    slug,
-    label,
-    description: `${label} disponible selon les projets activés pour ce marché.`,
-    iconName: "Building2",
-    transactionTypes:
-      type === "land" || type === "building"
-        ? ["sale"]
-        : type === "holiday_rental"
-          ? ["seasonal_rental"]
-          : type === "room_shared"
-            ? ["shared_accommodation", "long_term_rental"]
-            : ["sale", "long_term_rental"],
-    requiredFieldIds: ["price", "livingArea", "address"],
-    filterFieldIds: [
-      "price",
-      "livingArea",
-      "rooms",
-      "bedrooms",
-      "dpe",
-      "amenities",
-    ],
-    schemaVersion: 1,
-    isActive: true,
-    sortOrder: (index + 1) * 10,
-  })),
-  attributes: [
-    ["livingArea", "Surface habitable", "number", true, true],
-    ["landArea", "Surface du terrain", "number", false, true],
-    ["rooms", "Nombre de pièces", "number", true, true],
-    ["bedrooms", "Chambres", "number", false, true],
-    ["furnished", "Meublé", "boolean", false, true],
-    ["dpe", "Classe DPE", "single_select", false, true],
-    ["ges", "Classe GES", "single_select", false, true],
-    ["coOwnership", "Copropriété", "boolean", false, true],
-    ["coOwnershipLots", "Nombre de lots", "number", false, false],
-    [
-      "riskInformationStatus",
-      "Information sur les risques",
-      "single_select",
-      false,
-      false,
-    ],
-    [
-      "professionalIdentity",
-      "Identification professionnelle",
-      "text",
-      false,
-      false,
-    ],
-    ["amenities", "Équipements", "multi_select", false, true],
-    [
-      "diagnostics",
-      "Diagnostics et documents",
-      "document_status",
-      false,
-      false,
-    ],
-  ].map(([id, label, fieldType, required, filterable], index) => ({
-    id: String(id),
-    marketCode: "FR",
-    propertyTypes: [
-      "apartment",
-      "house",
-      "land",
-      "parking_garage",
-      "commercial",
-      "office",
-      "building",
-      "new_development",
-      "holiday_rental",
-      "room_shared",
-      "other",
-    ],
-    transactionTypes: [
-      "sale",
-      "long_term_rental",
-      "seasonal_rental",
-      "shared_accommodation",
-      "life_annuity",
-      "other",
-    ],
-    label: String(label),
-    helpText:
-      id === "diagnostics"
-        ? "Les fichiers restent privés et nécessitent une autorisation."
-        : undefined,
-    fieldType: fieldType as
-      | "text"
-      | "number"
-      | "boolean"
-      | "single_select"
-      | "multi_select"
-      | "document_status",
-    unit: id === "livingArea" || id === "landArea" ? "m²" : undefined,
-    options:
-      id === "dpe" || id === "ges"
-        ? ["A", "B", "C", "D", "E", "F", "G"].map((value, optionIndex) => ({
-            value,
-            label: value,
-            sortOrder: optionIndex * 10,
-          }))
-        : undefined,
-    privacy: id === "diagnostics" ? "reviewer_only" : "public",
-    isRequired: Boolean(required),
-    isFilterable: Boolean(filterable),
-    isActive: true,
-    schemaVersion: 1,
-    sortOrder: (index + 1) * 10,
-  })),
-  fieldRules: [
-    {
-      id: "rule_fr_dpe",
-      fieldId: "dpe",
-      requirement: "required" as const,
-      condition: {
-        path: "energy.dpeClass",
-        excludedPropertyTypes: ["land", "parking_garage"],
-      },
-    },
-    {
-      id: "rule_fr_ges",
-      fieldId: "ges",
-      requirement: "required" as const,
-      condition: {
-        path: "energy.gesClass",
-        excludedPropertyTypes: ["land", "parking_garage"],
-      },
-    },
-    {
-      id: "rule_fr_coownership_lots",
-      propertyType: "apartment" as const,
-      fieldId: "coOwnershipLots",
-      requirement: "required" as const,
-      condition: {
-        path: "regulatory.coOwnershipLots",
-        whenPath: "regulatory.coOwnershipApplicable",
-        whenEquals: true,
-      },
-    },
-    {
-      id: "rule_fr_risk_information",
-      fieldId: "riskInformationStatus",
-      requirement: "required" as const,
-      condition: { path: "regulatory.riskInformationStatus" },
-    },
-    {
-      id: "rule_fr_professional_identity",
-      fieldId: "professionalIdentity",
-      requirement: "required" as const,
-      condition: {
-        path: "seller.professionalIdentity",
-        sellerTypes: ["agency", "developer", "property_manager"],
-      },
-    },
-  ].map((rule) => ({
-    ...rule,
-    marketCode: "FR" as const,
-    transactionType: undefined,
-    schemaVersion: 1,
-    isActive: true,
-  })),
   offers: [
     makeOffer(
       "immo_owner_free",
@@ -894,16 +727,6 @@ export interface IRealEstateRepository {
     addOnId: string,
     patch: Partial<RealEstateCatalog["addOns"][number]>,
   ): Promise<RealEstateCatalog["addOns"][number]>;
-  updatePropertyType(
-    marketCode: string,
-    type: string,
-    patch: Partial<PropertyTypeConfig>,
-  ): Promise<PropertyTypeConfig>;
-  updateFieldRule(
-    marketCode: string,
-    ruleId: string,
-    patch: Partial<PropertyFieldRule>,
-  ): Promise<PropertyFieldRule>;
   getCheckoutByIdempotency(
     accountId: string,
     key: string,
@@ -937,8 +760,25 @@ export class DemoRealEstateRepository implements IRealEstateRepository {
   protected recentlyViewed = new Map<string, string[]>();
 
   async getCatalog(marketCode: string, includeInactive = false) {
+    const taxonomy = await taxonomyV1Service.snapshot();
     const catalog = clone({
       ...this.catalog,
+      taxonomyOptions: taxonomy.getOptionSets(marketCode, PROPERTY_OPTION_SETS),
+      propertyTypes: taxonomy.getReferences(
+        "real_estate_property_types",
+        marketCode,
+        includeInactive,
+      ),
+      attributes: taxonomy.getReferences(
+        "real_estate_attribute_definitions",
+        marketCode,
+        includeInactive,
+      ),
+      fieldRules: taxonomy.getReferences(
+        "real_estate_field_rules",
+        marketCode,
+        includeInactive,
+      ),
       activation: {
         ...this.catalog.activation,
         marketCode: marketCode.toUpperCase(),
@@ -948,9 +788,6 @@ export class DemoRealEstateRepository implements IRealEstateRepository {
     if (includeInactive) return catalog;
     return {
       ...catalog,
-      propertyTypes: catalog.propertyTypes.filter((row) => row.isActive),
-      attributes: catalog.attributes.filter((row) => row.isActive),
-      fieldRules: catalog.fieldRules.filter((row) => row.isActive),
       offers: catalog.offers.filter((row) => row.isActive),
       addOns: catalog.addOns.filter((row) => row.isActive),
     };
@@ -1293,36 +1130,6 @@ export class DemoRealEstateRepository implements IRealEstateRepository {
     };
     return clone(this.catalog.addOns[index]);
   }
-  async updatePropertyType(
-    marketCode: string,
-    type: string,
-    patch: Partial<PropertyTypeConfig>,
-  ) {
-    const index = this.catalog.propertyTypes.findIndex(
-      (row) => row.type === type && row.marketCode === marketCode.toUpperCase(),
-    );
-    if (index < 0) throw new Error("Type de bien introuvable.");
-    this.catalog.propertyTypes[index] = {
-      ...this.catalog.propertyTypes[index],
-      ...clone(patch),
-    };
-    return clone(this.catalog.propertyTypes[index]);
-  }
-  async updateFieldRule(
-    marketCode: string,
-    ruleId: string,
-    patch: Partial<PropertyFieldRule>,
-  ) {
-    const index = this.catalog.fieldRules.findIndex(
-      (row) => row.id === ruleId && row.marketCode === marketCode.toUpperCase(),
-    );
-    if (index < 0) throw new Error("Règle de champ introuvable.");
-    this.catalog.fieldRules[index] = {
-      ...this.catalog.fieldRules[index],
-      ...clone(patch),
-    };
-    return clone(this.catalog.fieldRules[index]);
-  }
   async getCheckoutByIdempotency(accountId: string, key: string) {
     const checkout = this.checkouts.get(`${accountId}:${key}`);
     return checkout ? clone(checkout) : null;
@@ -1368,72 +1175,47 @@ export class PostgresRealEstateRepository extends DemoRealEstateRepository {
   }
 
   override async getCatalog(marketCode: string, includeInactive = false) {
+    const taxonomy = await taxonomyV1Service.snapshot();
     const code = marketCode.toUpperCase();
-    const [
-      activation,
-      config,
-      types,
-      attributes,
-      fieldRules,
-      offers,
-      prices,
-      entitlements,
-      addOns,
-    ] = await Promise.all([
-      this.db()
-        .from("vertical_market_activations")
-        .select("*")
-        .eq("vertical_type", "real_estate")
-        .eq("market_code", code)
-        .maybeSingle(),
-      this.db()
-        .from("real_estate_market_configs")
-        .select("*")
-        .eq("market_code", code)
-        .maybeSingle(),
-      this.db()
-        .from("real_estate_property_types")
-        .select("*")
-        .eq("market_code", code)
-        .order("sort_order"),
-      this.db()
-        .from("real_estate_attribute_definitions")
-        .select("*")
-        .eq("market_code", code)
-        .order("sort_order"),
-      this.db()
-        .from("real_estate_field_rules")
-        .select("*")
-        .eq("market_code", code),
-      this.db()
-        .from("vertical_offers")
-        .select("*")
-        .eq("vertical_type", "real_estate")
-        .eq("market_code", code)
-        .order("sort_order"),
-      this.db()
-        .from("vertical_offer_prices")
-        .select("*")
-        .eq("vertical_type", "real_estate")
-        .eq("market_code", code),
-      this.db()
-        .from("vertical_offer_entitlements")
-        .select("*")
-        .eq("vertical_type", "real_estate")
-        .eq("market_code", code),
-      this.db()
-        .from("vertical_add_ons")
-        .select("*")
-        .eq("vertical_type", "real_estate")
-        .eq("market_code", code)
-        .order("sort_order"),
-    ]);
+    const [activation, config, offers, prices, entitlements, addOns] =
+      await Promise.all([
+        this.db()
+          .from("vertical_market_activations")
+          .select("*")
+          .eq("vertical_type", "real_estate")
+          .eq("market_code", code)
+          .maybeSingle(),
+        this.db()
+          .from("real_estate_market_configs")
+          .select("*")
+          .eq("market_code", code)
+          .maybeSingle(),
+        this.db()
+          .from("vertical_offers")
+          .select("*")
+          .eq("vertical_type", "real_estate")
+          .eq("market_code", code)
+          .order("sort_order"),
+        this.db()
+          .from("vertical_offer_prices")
+          .select("*")
+          .eq("vertical_type", "real_estate")
+          .eq("market_code", code),
+        this.db()
+          .from("vertical_offer_entitlements")
+          .select("*")
+          .eq("vertical_type", "real_estate")
+          .eq("market_code", code),
+        this.db()
+          .from("vertical_add_ons")
+          .select("*")
+          .eq("vertical_type", "real_estate")
+          .eq("market_code", code)
+          .order("sort_order"),
+      ]);
     for (const result of [
       activation,
       config,
-      types,
-      attributes,
-      fieldRules,
       offers,
       prices,
       entitlements,
@@ -1441,7 +1223,7 @@ export class PostgresRealEstateRepository extends DemoRealEstateRepository {
     ])
       if (result.error) throw result.error;
     if (!activation.data || !config.data)
-      return super.getCatalog(code, includeInactive);
+      throw new Error("Property market configuration is unavailable.");
     const offerRows = (offers.data || []).map((row: any) => ({
       id: row.id,
       verticalType: "real_estate",
@@ -1477,6 +1259,7 @@ export class PostgresRealEstateRepository extends DemoRealEstateRepository {
       sortOrder: row.sort_order,
     }));
     const catalog = realEstateCatalogSchema.parse({
+      taxonomyOptions: taxonomy.getOptionSets(code, PROPERTY_OPTION_SETS),
       activation: {
         marketCode: activation.data.market_code,
         verticalType: "real_estate",
@@ -1500,48 +1283,21 @@ export class PostgresRealEstateRepository extends DemoRealEstateRepository {
         featureFlags: config.data.feature_flags,
         regulatoryContentVersion: config.data.regulatory_content_version,
       },
-      propertyTypes: (types.data || []).map((row: any) => ({
-        type: row.type,
-        marketCode: row.market_code,
-        slug: row.slug,
-        label: row.label,
-        description: row.description,
-        iconName: row.icon_name,
-        transactionTypes: row.transaction_types,
-        requiredFieldIds: row.required_field_ids,
-        filterFieldIds: row.filter_field_ids,
-        schemaVersion: row.schema_version,
-        isActive: row.is_active,
-        sortOrder: row.sort_order,
-      })),
-      attributes: (attributes.data || []).map((row: any) => ({
-        id: row.id,
-        marketCode: row.market_code,
-        propertyTypes: row.property_types,
-        transactionTypes: row.transaction_types,
-        label: row.label,
-        helpText: row.help_text ?? undefined,
-        fieldType: row.field_type,
-        unit: row.unit ?? undefined,
-        options: row.options ?? undefined,
-        privacy: row.privacy,
-        isRequired: row.is_required,
-        isFilterable: row.is_filterable,
-        isActive: row.is_active,
-        schemaVersion: row.schema_version,
-        sortOrder: row.sort_order,
-      })),
-      fieldRules: (fieldRules.data || []).map((row: any) => ({
-        id: row.id,
-        marketCode: row.market_code,
-        propertyType: row.property_type ?? undefined,
-        transactionType: row.transaction_type ?? undefined,
-        fieldId: row.field_id,
-        requirement: row.requirement,
-        condition: row.condition_payload || {},
-        schemaVersion: row.schema_version,
-        isActive: row.is_active,
-      })),
+      propertyTypes: taxonomy.getReferences(
+        "real_estate_property_types",
+        marketCode,
+        includeInactive,
+      ),
+      attributes: taxonomy.getReferences(
+        "real_estate_attribute_definitions",
+        marketCode,
+        includeInactive,
+      ),
+      fieldRules: taxonomy.getReferences(
+        "real_estate_field_rules",
+        marketCode,
+        includeInactive,
+      ),
       offers: offerRows,
       addOns: (addOns.data || []).map((row: any) => ({
         id: row.id,
@@ -1567,9 +1323,6 @@ export class PostgresRealEstateRepository extends DemoRealEstateRepository {
     if (includeInactive) return catalog;
     return {
       ...catalog,
-      propertyTypes: catalog.propertyTypes.filter((row) => row.isActive),
-      attributes: catalog.attributes.filter((row) => row.isActive),
-      fieldRules: catalog.fieldRules.filter((row) => row.isActive),
       offers: catalog.offers.filter((row) => row.isActive),
       addOns: catalog.addOns.filter((row) => row.isActive),
     };
@@ -2836,66 +2589,6 @@ export class PostgresRealEstateRepository extends DemoRealEstateRepository {
       })
       .eq("id", addOnId)
       .eq("vertical_type", "real_estate")
-      .eq("market_code", code);
-    if (error) throw error;
-    return next;
-  }
-
-  override async updatePropertyType(
-    marketCode: string,
-    type: string,
-    patch: Partial<PropertyTypeConfig>,
-  ) {
-    const code = marketCode.toUpperCase();
-    const current = (await this.getCatalog(code, true)).propertyTypes.find(
-      (row) => row.type === type,
-    );
-    if (!current) throw new Error("Type de bien introuvable.");
-    const next = { ...current, ...patch };
-    const { error } = await this.db()
-      .from("real_estate_property_types")
-      .update({
-        slug: next.slug,
-        label: next.label,
-        description: next.description,
-        icon_name: next.iconName,
-        transaction_types: next.transactionTypes,
-        required_field_ids: next.requiredFieldIds,
-        filter_field_ids: next.filterFieldIds,
-        schema_version: next.schemaVersion,
-        is_active: next.isActive,
-        sort_order: next.sortOrder,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("type", type)
-      .eq("market_code", code);
-    if (error) throw error;
-    return next;
-  }
-
-  override async updateFieldRule(
-    marketCode: string,
-    ruleId: string,
-    patch: Partial<PropertyFieldRule>,
-  ) {
-    const code = marketCode.toUpperCase();
-    const current = (await this.getCatalog(code, true)).fieldRules.find(
-      (row) => row.id === ruleId,
-    );
-    if (!current) throw new Error("Règle de champ introuvable.");
-    const next = { ...current, ...patch, marketCode: code };
-    const { error } = await this.db()
-      .from("real_estate_field_rules")
-      .update({
-        property_type: next.propertyType,
-        transaction_type: next.transactionType,
-        field_id: next.fieldId,
-        requirement: next.requirement,
-        condition_payload: next.condition,
-        schema_version: next.schemaVersion,
-        is_active: next.isActive,
-      })
-      .eq("id", ruleId)
       .eq("market_code", code);
     if (error) throw error;
     return next;

@@ -5,7 +5,7 @@ import { PAGE_SIZES } from "../../configuration/pagination.config";
 const api = vi.hoisted(() => ({ tree: vi.fn(), search: vi.fn() }));
 vi.mock("../../api/client/service-registry", () => ({
   services: {
-    taxonomy: { getV4Tree: api.tree },
+    taxonomy: { getV1Tree: api.tree },
     search: { search: api.search },
   },
 }));

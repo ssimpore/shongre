@@ -1,33 +1,17 @@
 import { Listing, SearchFilters } from "../../types";
 import { PublicationDraftState } from "../../domains/publication/publication.types";
-import type { Money } from "@shongre/contracts";
 import type { components } from "@shongre/contracts/openapi";
 
 export type ListingCharacteristicsData =
   components["schemas"]["ListingCharacteristics"];
 
-export type BulkImportValidationCode =
-  "TITLE_REQUIRED" | "TITLE_TOO_SHORT" | "TITLE_TOO_LONG" | "PRICE_INVALID";
-
-export interface BulkListingImportRow {
-  id: string;
-  title: string;
-  description: string;
-  categorySlug: string;
-  subCategorySlug: string;
-  price: Money;
-  condition: string;
-  stock: number;
-  city: string;
-  postalCode: string;
-  isValid: boolean;
-  validationErrorCode?: BulkImportValidationCode;
-}
-
-export interface BulkListingImportTemplate {
-  fileName: string;
-  content: string;
-}
+export type BulkListingImportRow =
+  components["schemas"]["BulkListingImportRow"];
+export type BulkImportValidationCode = NonNullable<
+  BulkListingImportRow["validationErrorCode"]
+>;
+export type BulkListingImportTemplate =
+  components["schemas"]["BulkListingImportTemplate"];
 
 export interface ParseBulkListingImportInput {
   content: string;

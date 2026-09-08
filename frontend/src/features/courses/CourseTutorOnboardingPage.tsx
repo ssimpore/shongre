@@ -31,6 +31,7 @@ import {
   OnboardingPreparationPage,
   SelectableCard,
   Skeleton,
+  StatePanel,
   Textarea,
 } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
@@ -68,6 +69,16 @@ const toggle = <T,>(values: T[], value: T): T[] =>
     : [...values, value];
 
 export const CourseTutorOnboardingPage: React.FC = () => {
+  const { currentUser } = useAuth();
+  const { activeMarket } = useMarketLocation();
+  return (
+    <CourseTutorOnboardingEditor
+      key={`${currentUser?.id ?? "guest"}:${activeMarket.code}`}
+    />
+  );
+};
+
+const CourseTutorOnboardingEditor: React.FC = () => {
   const { t, locale } = useTranslation();
   const { activeMarket } = useMarketLocation();
   const { formatMoney } = useRegionalFormatters();
@@ -76,7 +87,8 @@ export const CourseTutorOnboardingPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const startsAtRequestedStep = searchParams.has("step");
-  const accountId = currentUser?.id || "guest";
+  const [loadError, setLoadError] = useState(false);
+  const [retry, setRetry] = useState(0);
   const [catalog, setCatalog] = useState<CourseCatalog | null>(null);
   const [step, setStep] = useState<number>(() =>
     searchParams.get("step") === "availability"
@@ -104,15 +116,13 @@ export const CourseTutorOnboardingPage: React.FC = () => {
   });
 
   useEffect(() => {
+    let active = true;
     Promise.all([
       services.courses.getCatalog(activeMarket.code),
-      services.courses.getTutorOnboardingDraft(
-        accountId,
-        activeMarket.code,
-        currentUser?.name,
-      ),
+      services.courses.getTutorOnboardingDraft(activeMarket.code),
     ])
       .then(([nextCatalog, savedDraft]) => {
+        if (!active) return;
         setCatalog(nextCatalog);
         setDraft(savedDraft);
         setHasSavedProgress(
@@ -124,15 +134,18 @@ export const CourseTutorOnboardingPage: React.FC = () => {
         );
       })
       .catch(() => {
-        toast.error(t("verticals.education.catalogUnavailable"));
+        if (active) setLoadError(true);
       });
-  }, [accountId, activeMarket.code, currentUser?.name, t, toast]);
+    return () => {
+      active = false;
+    };
+  }, [activeMarket.code, retry]);
 
   useEffect(() => {
     if (!draft || !hasEnteredWizard) return;
     // The adapter owns draft persistence; UI never chooses a storage backend.
-    void services.courses.saveTutorOnboardingDraft(accountId, draft);
-  }, [accountId, draft, hasEnteredWizard]);
+    void services.courses.saveTutorOnboardingDraft(activeMarket.code, draft);
+  }, [activeMarket.code, draft, hasEnteredWizard]);
 
   useEffect(() => {
     if (!isPreparationVisible) wizardHeadingRef.current?.focus();
@@ -193,11 +206,7 @@ export const CourseTutorOnboardingPage: React.FC = () => {
     if (!catalog || !draft || isSubmitting || !canContinue) return;
     setIsSubmitting(true);
     try {
-      await services.courses.submitTutorOnboarding(
-        accountId,
-        activeMarket.code,
-        draft,
-      );
+      await services.courses.submitTutorOnboarding(activeMarket.code, draft);
       setIsComplete(true);
     } catch (reason) {
       toast.error(
@@ -222,6 +231,25 @@ export const CourseTutorOnboardingPage: React.FC = () => {
     }
     scrollToTop();
   };
+
+  if (loadError)
+    return (
+      <StatePanel
+        variant="error"
+        title="Formulaire indisponible"
+        description="Le catalogue ou le brouillon n’a pas pu être chargé."
+        action={
+          <Button
+            onClick={() => {
+              setLoadError(false);
+              setRetry((value) => value + 1);
+            }}
+          >
+            Réessayer
+          </Button>
+        }
+      />
+    );
 
   if (isPreparationVisible) {
     return (
@@ -449,12 +477,29 @@ export const CourseTutorOnboardingPage: React.FC = () => {
                         key={subject.id}
                         label={subject.label}
                         checked={draft.subjectIds.includes(subject.id)}
-                        onChange={() =>
-                          update(
-                            "subjectIds",
-                            toggle(draft.subjectIds, subject.id),
-                          )
-                        }
+                        onChange={() => {
+                          const subjectIds = toggle(
+                            draft.subjectIds,
+                            subject.id,
+                          );
+                          const allowed = new Set(
+                            catalog.subjects
+                              .filter((item) => subjectIds.includes(item.id))
+                              .flatMap((item) => item.levelIds),
+                          );
+                          const levelIds = draft.levelIds.filter((id) =>
+                            allowed.has(id),
+                          );
+                          setDraft((current) =>
+                            current
+                              ? { ...current, subjectIds, levelIds }
+                              : current,
+                          );
+                          if (levelIds.length !== draft.levelIds.length)
+                            toast.info(
+                              "Les matières ont changé. Les niveaux incompatibles ont été retirés.",
+                            );
+                        }}
                       />
                     ))}
                 </div>

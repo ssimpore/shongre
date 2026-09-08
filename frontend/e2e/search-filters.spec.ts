@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import { usePersona } from "./personas";
 import { waitForStableLayout } from "./overflow";
 
-test("desktop filters are collapsed by default and can be reopened", async ({
+test("desktop filters are visible by default and can be reopened", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1280, height: 800 });
@@ -10,17 +10,7 @@ test("desktop filters are collapsed by default and can be reopened", async ({
   await page.goto("/recherche", { waitUntil: "domcontentloaded" });
   await waitForStableLayout(page);
 
-  const filterPanel = page.locator("aside").filter({ hasText: /^Filtres/i });
-  const showFilters = page.getByRole("button", {
-    name: "Afficher les filtres",
-  });
-
-  await expect(filterPanel).toHaveCount(0);
-  await expect(showFilters).toBeVisible();
-  await expect(showFilters).toContainText("Filtres");
-
-  await showFilters.click();
-
+  const filterPanel = page.locator("#search-filter-panel-desktop");
   await expect(filterPanel).toBeVisible();
 
   /* One control owns the panel. The sidebar used to carry its own "Masquer"
@@ -31,7 +21,9 @@ test("desktop filters are collapsed by default and can be reopened", async ({
   await expect(hideFilters).toBeVisible();
 
   await hideFilters.click();
-  await expect(filterPanel).toHaveCount(0);
+  await expect(filterPanel).toBeHidden();
+  await page.getByRole("button", { name: "Afficher les filtres" }).click();
+  await expect(filterPanel).toBeVisible();
 });
 
 test("condition is filterable, not just displayed", async ({ page }) => {
@@ -42,7 +34,7 @@ test("condition is filterable, not just displayed", async ({ page }) => {
   await page.goto("/recherche", { waitUntil: "domcontentloaded" });
   await waitForStableLayout(page);
 
-  await page.getByRole("button", { name: "Afficher les filtres" }).click();
+  await expect(page.locator("#search-filter-panel-desktop")).toBeVisible();
 
   const count = page
     .getByRole("status")

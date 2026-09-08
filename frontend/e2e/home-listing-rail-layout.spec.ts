@@ -26,7 +26,7 @@ async function revealRail(rail: Locator) {
 }
 
 for (const width of [1408, 768, 390, 320]) {
-  test(`homepage listing rails share one unclipped footprint at ${width}px`, async ({
+  test(`homepage listing rails fit their own content without clipping at ${width}px`, async ({
     page,
   }) => {
     await useEstablishedConsent(page);
@@ -39,47 +39,13 @@ for (const width of [1408, 768, 390, 320]) {
     await page.goto("/");
     await expect(page).toHaveURL(/\/$/);
     await expect(page).toHaveTitle(/Shongre/i);
-    const group = page.locator(".listing-rail-group");
-    await expect(group).toHaveCount(1);
     await expect(page.getByTestId("home-universe-explorer")).toBeAttached();
     await page.evaluate(() => document.fonts.ready);
-    const rails = group.locator(".listing-rail-track");
+    const rails = page.locator(".listing-rail-track");
     expect(await rails.count()).toBeGreaterThan(2);
-    // Let deferred sections contribute their intrinsic content before comparing.
-    for (const rail of await rails.all()) await revealRail(rail);
-    const measuredHeight = () =>
-      group.evaluate((element) =>
-        Number.parseFloat(
-          (element as HTMLElement).style.getPropertyValue(
-            "--listing-rail-measured-height",
-          ),
-        ),
-      );
-    await expect.poll(measuredHeight).toBeGreaterThan(0);
-    const heights: number[] = [];
     const widths: number[] = [];
     for (const rail of await rails.all()) {
       await revealRail(rail);
-      await expect
-        .poll(async () =>
-          rail
-            .locator("[data-listing-card]")
-            .first()
-            .evaluate((element) =>
-              Math.abs(
-                element.getBoundingClientRect().height -
-                  Math.max(
-                    Number.parseFloat(getComputedStyle(element).minHeight),
-                    Number.parseFloat(
-                      getComputedStyle(
-                        element.closest(".listing-rail-group")!,
-                      ).getPropertyValue("--listing-rail-measured-height"),
-                    ),
-                  ),
-              ),
-            ),
-        )
-        .toBeLessThan(1);
       const geometry = await rail
         .locator("[data-listing-card]")
         .evaluateAll((cards) =>
@@ -105,6 +71,7 @@ for (const width of [1408, 768, 390, 320]) {
             };
           }),
         );
+      const heights: number[] = [];
       for (const card of geometry) {
         expect(card.variant).toBe("showcase");
         expect(card.clipped).toBe(false);
@@ -112,8 +79,8 @@ for (const width of [1408, 768, 390, 320]) {
         heights.push(card.height);
         widths.push(card.width);
       }
+      expect(Math.max(...heights) - Math.min(...heights)).toBeLessThan(1);
     }
-    expect(Math.max(...heights) - Math.min(...heights)).toBeLessThan(1);
     expect(Math.max(...widths) - Math.min(...widths)).toBeLessThan(1);
     await expectNoHorizontalOverflow(page, `homepage shared rails ${width}`);
 
@@ -121,17 +88,34 @@ for (const width of [1408, 768, 390, 320]) {
     await deals.scrollIntoViewIfNeeded();
     const title = deals.locator("[data-listing-card-title]").first();
     const originalTitle = (await title.textContent())!;
-    const baseline = await measuredHeight();
+    const railHeight = () =>
+      deals
+        .locator(".listing-rail-track")
+        .evaluate((element) => element.getBoundingClientRect().height);
+    const independentRail = rails.first();
+    await revealRail(independentRail);
+    const independentHeight = await independentRail.evaluate(
+      (element) => element.getBoundingClientRect().height,
+    );
+    await deals.scrollIntoViewIfNeeded();
+    const baseline = await railHeight();
     if (width === 1408) {
       // Browser-only stress: no listing or backend state is modified.
       await title.evaluate((element, text) => {
         element.textContent = `${text} ${text} ${text}`;
       }, originalTitle);
-      await expect.poll(measuredHeight).toBeGreaterThan(baseline);
+      await expect.poll(railHeight).toBeGreaterThan(baseline);
+      await revealRail(independentRail);
+      expect(
+        await independentRail.evaluate(
+          (element) => element.getBoundingClientRect().height,
+        ),
+      ).toBe(independentHeight);
+      await deals.scrollIntoViewIfNeeded();
       await title.evaluate((element, text) => {
         element.textContent = text;
       }, originalTitle);
-      await expect.poll(measuredHeight).toBe(baseline);
+      await expect.poll(railHeight).toBe(baseline);
     }
     const scroller = deals.locator(".overflow-x-auto");
     if (width >= 640) {

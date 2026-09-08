@@ -6,7 +6,7 @@ const migration = readFileSync(
   "utf8",
 );
 const seed = readFileSync(
-  new URL("../../supabase/seed/taxonomy-v4.generated.sql", import.meta.url),
+  new URL("../../supabase/seed/taxonomy-v1.generated.sql", import.meta.url),
   "utf8",
 );
 
@@ -25,7 +25,7 @@ const normalizedTables = [
   "taxonomy_audit_events",
 ] as const;
 
-describe("taxonomy v4 migration", () => {
+describe("taxonomy v1 migration", () => {
   it("expands the existing taxonomy model without destructive listing rewrites", () => {
     normalizedTables.forEach((table) =>
       expect(migration).toContain(`public.${table}`),
