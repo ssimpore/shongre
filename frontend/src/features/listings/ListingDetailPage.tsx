@@ -18,6 +18,8 @@ import {
   SemanticIcon,
   VerificationBadge,
 } from "@shongre/ui/web";
+import { DetailSection } from "../../design-system/primitives/DetailFacts";
+import { ListingLocationSection } from "./components/ListingLocationSection";
 import {
   Share2,
   Flag,
@@ -1172,20 +1174,17 @@ export const ListingDetailPage: React.FC = () => {
           </React.Suspense>
 
           {/* 4. DESCRIPTION */}
-          <div className="bg-bg-surface rounded-3xl border border-border-disabled/60 p-6 sm:p-8 space-y-4 shadow-sm">
-            <h2 className="text-base font-bold text-text-main pb-3 border-b border-border-soft flex items-center gap-2">
-              Description
-            </h2>
+          <DetailSection title="Description">
             <div
-              className={`text-sm text-text-supporting leading-loose whitespace-pre-line font-medium ${
+              className={`whitespace-pre-line text-sm leading-loose text-text-supporting ${
                 !isDescriptionExpanded && listing.description.length > 450
-                  ? "line-clamp-6 relative"
+                  ? "relative line-clamp-6"
                   : ""
               }`}
             >
               {listing.description}
               {!isDescriptionExpanded && listing.description.length > 450 && (
-                <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-bg-surface to-transparent pointer-events-none" />
+                <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-bg-surface to-transparent" />
               )}
             </div>
 
@@ -1193,12 +1192,20 @@ export const ListingDetailPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
-                className="inline-flex min-h-6 cursor-pointer items-center pt-2 text-sm font-semibold text-primary transition-colors hover:text-primary-hover hover:underline"
+                className="mt-4 inline-flex min-h-control-target cursor-pointer items-center font-bold text-text-main underline underline-offset-4 transition-colors hover:text-primary"
               >
-                {isDescriptionExpanded ? "Afficher moins" : "Afficher la suite"}
+                {isDescriptionExpanded ? "Afficher moins" : "Voir plus"}
               </button>
             )}
-          </div>
+          </DetailSection>
+
+          {/* 4b. LOCALISATION */}
+          <ListingLocationSection
+            city={listing.city}
+            postalCode={listing.postalCode}
+            latitude={listing.latitude}
+            longitude={listing.longitude}
+          />
 
           {/* 5. FULFILLMENT & DELIVERY SUMMARY */}
           <React.Suspense fallback={<DetailSectionFallback />}>

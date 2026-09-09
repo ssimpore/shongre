@@ -262,7 +262,21 @@ export function projectListingCharacteristics(
       label: localized(group.labels, input.locale),
       items: [],
     };
-    projected.items.push({ code: definition.code, label, value: formatted });
+    /*
+     * A capability the listing has ("Climatisation", "Piscine") reads as an
+     * amenity, not as a label with the word "Oui" beside it. The distinction is
+     * declared here rather than inferred by clients, because the value is
+     * already localized by this point and parsing "Oui"/"Yes" in the browser
+     * would break the moment a locale is added.
+     */
+    const presentation =
+      definition.dataType === "boolean" && value === true ? "feature" : "fact";
+    projected.items.push({
+      code: definition.code,
+      label,
+      value: formatted,
+      presentation,
+    });
     result.set(group.id, projected);
   }
   return {

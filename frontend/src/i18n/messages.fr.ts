@@ -3339,6 +3339,24 @@ export const messagesFr = {
   "admin.staff.status.active": "Staff actif",
   "admin.staff.status.suspended": "Staff suspendu",
   "admin.staff.status.revoked": "Staff révoqué",
+  // --- listings.characteristics ---
+  "listings.characteristics.keyInformation": "Les informations clés",
+  "listings.characteristics.amenities": "Équipements et services",
+  "listings.characteristics.showMoreCriteria_one":
+    "Voir le critère supplémentaire",
+  "listings.characteristics.showMoreCriteria_other":
+    "Voir les {count} critères supplémentaires",
+  "listings.characteristics.hideMoreCriteria":
+    "Masquer les critères supplémentaires",
+  "listings.characteristics.showAllAmenities":
+    "Voir tous les équipements et services",
+  "listings.characteristics.hideAllAmenities":
+    "Masquer les équipements et services",
+  "listings.characteristics.unavailable":
+    "Les caractéristiques ne sont pas disponibles pour le moment.",
+  "listings.characteristics.location": "Localisation",
+  "listings.characteristics.mapLabel":
+    "Carte de la zone approximative : {place}",
 } as const;
 
 /** The keys literally stored in a catalogue, plural variants included. */

@@ -12,6 +12,7 @@ import { useTranslation } from "../../i18n/I18nProvider";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { ListingCard } from "../../design-system/primitives/ListingCard";
 import { presentExploreMapMarker } from "./explore-map-marker.presentation";
+import { MAP_TILE_OPTIONS, MAP_TILE_URL } from "../../platform/map/tile-source";
 
 interface ExploreMapViewProps {
   listings: Listing[];
@@ -68,14 +69,9 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
       marketMap.center.zoom,
     );
 
-    // Default tile layer - CartoDB Positron for a warm, clean aesthetic matching Shongre
-    const positronLayer = L.tileLayer(
-      "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
-      {
-        maxZoom: 19,
-        subdomains: "abcd",
-      },
-    ).addTo(map);
+    const positronLayer = L.tileLayer(MAP_TILE_URL, MAP_TILE_OPTIONS).addTo(
+      map,
+    );
 
     tileLayerRef.current = positronLayer;
     mapInstanceRef.current = map;
@@ -109,15 +105,11 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
 
     mapInstanceRef.current.removeLayer(tileLayerRef.current);
 
-    const newUrl =
-      mapStyle === "positron"
-        ? "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-        : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
-
-    const newLayer = L.tileLayer(newUrl, {
-      maxZoom: 19,
-      subdomains: mapStyle === "positron" ? "abcd" : "abc",
-    }).addTo(mapInstanceRef.current);
+    // Both styles now resolve to the one keyed-free source; the switch is kept
+    // so a second style can be reintroduced without rewiring the control.
+    const newLayer = L.tileLayer(MAP_TILE_URL, MAP_TILE_OPTIONS).addTo(
+      mapInstanceRef.current,
+    );
 
     tileLayerRef.current = newLayer;
   }, [mapStyle]);

@@ -1,17 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
-  BriefcaseBusiness,
   Building2,
   CalendarDays,
   CheckCircle2,
-  Clock3,
   Flag,
   GraduationCap,
   Heart,
   Languages,
-  MapPin,
-  Radio,
   Share2,
   ShieldAlert,
   Sparkles,
@@ -56,6 +52,8 @@ import {
   structuredDataForPolicy,
 } from "../../platform/seo/seo-policy";
 import { useTranslation } from "../../i18n/I18nProvider";
+import { DetailFactList } from "../../design-system/primitives/DetailFacts";
+import { iconForFact } from "../../domains/listing/listing-facts.presentation";
 
 export const EmploymentJobDetailPage: React.FC = () => {
   const { t } = useTranslation();
@@ -424,38 +422,56 @@ export const EmploymentJobDetailPage: React.FC = () => {
                 </div>
               </div>
 
-              <dl className="mt-6 grid gap-3 rounded-card bg-bg-subtle p-4 sm:grid-cols-2 xl:grid-cols-4">
-                {[
-                  [MapPin, "Localisation", job.primaryLocation.label],
-                  [BriefcaseBusiness, "Métier", job.professionLabel],
-                  [Building2, "Secteur", job.industryLabel],
-                  [Radio, "Organisation", job.workingArrangementLabel],
-                  [BriefcaseBusiness, "Contrat", job.contractTypeLabel],
-                  [
-                    Clock3,
-                    "Temps de travail",
-                    catalog?.dictionaries.find(
-                      (entry) => entry.id === job.workingTimeId,
-                    )?.label || "Selon l’offre",
-                  ],
-                ].map(([Icon, label, value]) => {
-                  const ItemIcon = Icon as typeof MapPin;
-                  return (
-                    <div key={String(label)}>
-                      <dt className="flex items-center gap-1.5 text-micro font-bold uppercase tracking-wide text-text-secondary">
-                        <ItemIcon
-                          className="h-icon-xs w-icon-xs"
-                          aria-hidden="true"
-                        />
-                        {String(label)}
-                      </dt>
-                      <dd className="mt-1 text-xs font-bold text-text-main">
-                        {String(value)}
-                      </dd>
-                    </div>
-                  );
-                })}
-              </dl>
+              {/*
+               * A job's headline facts are the same kind of information as a
+               * vehicle's or a rental's, so they use the same list rather than a
+               * four-across tinted panel that only this page understood.
+               */}
+              <div className="mt-7 border-t border-border-base pt-7">
+                <h2 className="mb-5 text-xl font-bold tracking-tight text-text-main sm:text-2xl">
+                  {t("listings.characteristics.keyInformation")}
+                </h2>
+                <DetailFactList
+                  facts={[
+                    {
+                      code: "location",
+                      label: "Localisation",
+                      value: job.primaryLocation.label,
+                    },
+                    {
+                      code: "profession",
+                      label: "Métier",
+                      value: job.professionLabel,
+                    },
+                    {
+                      code: "industry",
+                      label: "Secteur",
+                      value: job.industryLabel,
+                    },
+                    {
+                      code: "working_arrangement",
+                      label: "Organisation",
+                      value: job.workingArrangementLabel,
+                    },
+                    {
+                      code: "contract_type",
+                      label: "Contrat",
+                      value: job.contractTypeLabel,
+                    },
+                    {
+                      code: "working_time",
+                      label: "Temps de travail",
+                      value:
+                        catalog?.dictionaries.find(
+                          (entry) => entry.id === job.workingTimeId,
+                        )?.label || "Selon l’offre",
+                    },
+                  ].map((fact) => ({
+                    ...fact,
+                    icon: iconForFact("grp.job_role", fact.code),
+                  }))}
+                />
+              </div>
 
               <p className="mt-5 text-lg font-bold text-primary">
                 {formatSalary(job.salary, catalog, currentLocale, convertMoney)}

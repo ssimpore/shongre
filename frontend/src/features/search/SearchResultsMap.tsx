@@ -6,6 +6,7 @@ import { Crosshair, MapPin, X } from "lucide-react";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { getMarketMapConfiguration } from "../../configuration/geoCoordinates";
 import { useTranslation } from "../../i18n/I18nProvider";
+import { MAP_TILE_OPTIONS, MAP_TILE_URL } from "../../platform/map/tile-source";
 
 export interface SearchMapItem {
   id: string;
@@ -51,15 +52,7 @@ export function SearchResultsMap({
       [mapConfiguration.center.lat, mapConfiguration.center.lng],
       mapConfiguration.center.zoom,
     );
-    L.tileLayer(
-      "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
-      {
-        maxZoom: 19,
-        subdomains: "abcd",
-        attribution:
-          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
-      },
-    ).addTo(map);
+    L.tileLayer(MAP_TILE_URL, MAP_TILE_OPTIONS).addTo(map);
     mapRef.current = map;
 
     return () => {

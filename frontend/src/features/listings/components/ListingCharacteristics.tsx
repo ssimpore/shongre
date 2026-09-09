@@ -1,6 +1,13 @@
-import React from "react";
-import { Tag, Zap, Home, Car, Cpu, Sliders } from "lucide-react";
+import React, { useId, useMemo, useState } from "react";
 import type { ListingCharacteristicsData } from "../../../api/contracts/listings.contract";
+import { buildListingFactPresentation } from "../../../domains/listing/listing-facts.presentation";
+import {
+  DetailDisclosure,
+  DetailFactList,
+  DetailFeatureList,
+  DetailSection,
+} from "../../../design-system/primitives/DetailFacts";
+import { useTranslation } from "../../../i18n/I18nProvider";
 
 export interface ListingCharacteristicsProps {
   data: ListingCharacteristicsData | null;
@@ -9,34 +16,35 @@ export interface ListingCharacteristicsProps {
   className?: string;
 }
 
-const GROUP_ICONS: Record<string, React.ReactNode> = {
-  "grp.characteristics": <Tag className="w-icon-md h-icon-md text-primary" />,
-  "grp.vehicle_technical": <Cpu className="w-icon-md h-icon-md text-info" />,
-  "grp.vehicle_identity": <Car className="w-icon-md h-icon-md text-warning" />,
-  "grp.property_specs": <Home className="w-icon-md h-icon-md text-success" />,
-  "grp.property_energy": (
-    <Zap className="w-icon-md h-icon-md text-rating-strong-bright" />
-  ),
-  "grp.dimensions": <Sliders className="w-icon-md h-icon-md text-automation" />,
-};
-
-const DPE_COLORS: Record<string, string> = {
-  A: "bg-success text-text-inverse",
-  B: "bg-success text-text-inverse",
-  C: "bg-sustainability-fill text-text-main",
-  D: "bg-rating-fill-bright text-text-main",
-  E: "bg-rating-strong text-text-inverse",
-  F: "bg-primary-fill text-text-inverse",
-  G: "bg-danger text-text-inverse",
-};
-
+/**
+ * The published characteristics of a listing, in the shape every category uses.
+ *
+ * What a reader needs first — what it is, which one, how much of it — comes
+ * before the fold as a two-column fact list. Capabilities the listing has are
+ * named rather than paired with the word "Oui". Everything the publication also
+ * declared stays one click away instead of being dropped, because a buyer
+ * comparing two listings is exactly the person who wants the long tail.
+ *
+ * The grouping and ordering come from the publication and the backend's
+ * `presentation` flag, so this renders a vertical nobody anticipated without a
+ * branch here or in the page that mounts it.
+ */
 export const ListingCharacteristics: React.FC<ListingCharacteristicsProps> = ({
   data,
   state,
   onRetry,
   className = "",
 }) => {
-  const groups = data?.groups ?? [];
+  const { t } = useTranslation();
+  const [expanded, setExpanded] = useState(false);
+  const [featuresExpanded, setFeaturesExpanded] = useState(false);
+  const additionalId = useId();
+  const featuresId = useId();
+
+  const presentation = useMemo(
+    () => buildListingFactPresentation(data),
+    [data],
+  );
 
   if (state === "loading") {
     return (
@@ -51,63 +59,78 @@ export const ListingCharacteristics: React.FC<ListingCharacteristicsProps> = ({
       <div
         className={`rounded-card border border-border-base bg-bg-surface p-5 text-sm text-text-supporting ${className}`}
       >
-        <p>Les caractéristiques ne sont pas disponibles pour le moment.</p>
+        <p>{t("listings.characteristics.unavailable")}</p>
         <button
           type="button"
-          className="mt-3 min-h-control-sm font-semibold text-primary hover:underline"
+          className="mt-3 min-h-control-target font-semibold text-primary hover:underline"
           onClick={onRetry}
         >
-          Réessayer
+          {t("common.retry")}
         </button>
       </div>
     );
   }
-  if (groups.length === 0) return null;
+
+  const { keyFacts, features, additionalGroups, additionalCount } =
+    presentation;
+  if (!keyFacts.length && !features.length && !additionalCount) return null;
+
+  // Only the first row of capabilities is shown until asked; a rental can
+  // declare dozens and they would otherwise push the description off-screen.
+  const visibleFeatures = featuresExpanded ? features : features.slice(0, 6);
 
   return (
     <div
       data-listing-characteristics="true"
-      className={`space-y-6 ${className}`}
+      className={`space-y-7 ${className}`}
     >
-      {groups.map((group) => (
-        <div
-          key={group.id}
-          className="space-y-4 rounded-card border border-border-base bg-bg-surface p-5 shadow-xs sm:p-6"
-        >
-          <div className="flex items-center gap-2.5 border-b border-border-soft pb-3">
-            {GROUP_ICONS[group.id] ?? GROUP_ICONS["grp.characteristics"]}
-            <h2 className="font-bold text-text-main">{group.label}</h2>
-          </div>
-          <dl className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2">
-            {group.items.map((item) => {
-              const isDpe =
-                item.code.toLowerCase().includes("dpe") &&
-                setsValidDpe(item.value);
-              return (
-                <div
-                  key={`${group.id}-${item.code}`}
-                  className="flex min-w-0 items-center justify-between gap-3 border-b border-border-soft py-2 last:border-b-0"
-                >
-                  <dt className="text-sm text-text-supporting">{item.label}</dt>
-                  <dd
-                    className={
-                      isDpe
-                        ? `rounded-md px-2 py-1 text-sm font-bold ${DPE_COLORS[item.value]}`
-                        : "min-w-0 break-words text-right text-sm font-semibold text-text-main"
-                    }
-                  >
-                    {item.value}
-                  </dd>
-                </div>
-              );
-            })}
-          </dl>
-        </div>
-      ))}
+      {keyFacts.length ? (
+        <DetailSection title={t("listings.characteristics.keyInformation")}>
+          <DetailFactList facts={keyFacts} data-testid="listing-key-facts" />
+          {additionalCount ? (
+            <>
+              <DetailDisclosure
+                controls={additionalId}
+                expanded={expanded}
+                onToggle={() => setExpanded((open) => !open)}
+                label={t("listings.characteristics.showMoreCriteria", {
+                  count: additionalCount,
+                })}
+                expandedLabel={t("listings.characteristics.hideMoreCriteria")}
+              />
+              <div
+                id={additionalId}
+                hidden={!expanded}
+                className="mt-6 space-y-6"
+              >
+                {additionalGroups.map((group) => (
+                  <div key={group.id} data-detail-fact-group={group.id}>
+                    <h3 className="mb-4 text-sm font-bold uppercase tracking-wide text-text-tertiary">
+                      {group.label}
+                    </h3>
+                    <DetailFactList facts={group.facts} />
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : null}
+        </DetailSection>
+      ) : null}
+
+      {features.length ? (
+        <DetailSection title={t("listings.characteristics.amenities")}>
+          <DetailFeatureList features={visibleFeatures} />
+          {features.length > visibleFeatures.length || featuresExpanded ? (
+            <DetailDisclosure
+              controls={featuresId}
+              expanded={featuresExpanded}
+              onToggle={() => setFeaturesExpanded((open) => !open)}
+              label={t("listings.characteristics.showAllAmenities")}
+              expandedLabel={t("listings.characteristics.hideAllAmenities")}
+            />
+          ) : null}
+        </DetailSection>
+      ) : null}
     </div>
   );
 };
-
-function setsValidDpe(value: string): value is keyof typeof DPE_COLORS {
-  return Object.hasOwn(DPE_COLORS, value);
-}

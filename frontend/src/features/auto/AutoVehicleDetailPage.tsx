@@ -3,7 +3,6 @@ import { PAGE_SIZES } from "../../configuration/pagination.config";
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
-  CheckCircle2,
   Clock3,
   FileCheck2,
   Gauge,
@@ -46,6 +45,13 @@ import {
   formatAutoField,
 } from "./auto-format";
 import { useTranslation } from "../../i18n/I18nProvider";
+import {
+  DetailFactList,
+  DetailFeatureList,
+  DetailSection,
+} from "../../design-system/primitives/DetailFacts";
+import { ListingLocationSection } from "../listings/components/ListingLocationSection";
+import { iconForFact } from "../../domains/listing/listing-facts.presentation";
 import { useAutoVehicleFavorites } from "./useAutoVehicleFavorites";
 
 type LeadFormState = {
@@ -387,46 +393,46 @@ export const AutoVehicleDetailPage: React.FC = () => {
               </div>
             </section>
 
-            <section className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs sm:p-6">
-              <h2 className="text-base font-bold text-text-main">
-                Caractéristiques principales
-              </h2>
-              <dl className="mt-4 grid grid-cols-2 gap-px overflow-hidden rounded-card border border-border-subtle bg-border-subtle sm:grid-cols-4">
-                {vehicle.taxonomy?.detailCharacteristics?.map((field) => (
-                  <div key={field.code} className="bg-bg-surface p-4">
-                    <dt className="flex items-center gap-1.5 text-micro font-bold uppercase tracking-wide text-text-muted">
-                      {localizeTaxonomyLabels(field.labels, currentLocale)}
-                    </dt>
-                    <dd className="mt-1.5 text-xs font-bold text-text-main">
-                      {localizeTaxonomyLabels(field.values, currentLocale)}
-                    </dd>
-                  </div>
-                ))}
-              </dl>
-            </section>
+            {/*
+             * The same fact list every category uses. A vehicle spec is not a
+             * different kind of information from a rental's capacity, so it does
+             * not get its own grid — a visitor arriving from search reads the
+             * same shape whichever vertical published the listing.
+             */}
+            <DetailSection title={t("listings.characteristics.keyInformation")}>
+              <DetailFactList
+                facts={(vehicle.taxonomy?.detailCharacteristics ?? []).map(
+                  (field) => ({
+                    code: field.code,
+                    label: localizeTaxonomyLabels(field.labels, currentLocale),
+                    value: localizeTaxonomyLabels(field.values, currentLocale),
+                    icon: iconForFact("grp.vehicle_technical", field.code),
+                  }),
+                )}
+              />
+            </DetailSection>
 
-            <section className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs sm:p-6">
-              <h2 className="text-base font-bold text-text-main">
-                Équipements et description
-              </h2>
-              <div className="mt-4 grid gap-5 sm:grid-cols-2">
-                <div>
-                  <h3 className="text-xs font-bold">Équipements</h3>
-                  <ul className="mt-2 grid grid-cols-2 gap-2 text-xs text-text-secondary">
-                    {vehicle.equipment.map((equipment) => (
-                      <li key={equipment} className="flex gap-1.5">
-                        <CheckCircle2 className="h-icon-xs w-icon-xs text-success" />{" "}
-                        {equipment}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-              <h3 className="mt-5 text-xs font-bold">Description</h3>
-              <p className="mt-2 text-sm leading-relaxed text-text-secondary">
+            {vehicle.equipment.length > 0 ? (
+              <DetailSection title={t("listings.characteristics.amenities")}>
+                <DetailFeatureList
+                  features={vehicle.equipment.map((equipment) => ({
+                    code: equipment,
+                    label: equipment,
+                    icon: "check" as const,
+                  }))}
+                />
+              </DetailSection>
+            ) : null}
+
+            <DetailSection title="Description">
+              <p className="whitespace-pre-line text-sm leading-loose text-text-supporting">
                 {vehicle.description}
               </p>
-            </section>
+            </DetailSection>
+
+            {/* No coordinates are published for a vehicle, so this names the
+                place and draws nothing rather than inventing a position. */}
+            <ListingLocationSection city={vehicle.locationLabel} />
 
             <section className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs sm:p-6">
               <h2 className="flex items-center gap-2 text-base font-bold">

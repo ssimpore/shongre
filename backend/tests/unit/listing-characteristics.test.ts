@@ -31,19 +31,41 @@ describe("backend listing characteristics", () => {
   it("projects recorded vehicle values without choosing a publishable child category", () => {
     expect(items()).toEqual(
       expect.arrayContaining([
-        { code: "brand", label: "Marque", value: "Peugeot" },
-        { code: "model_year", label: "Année modèle", value: "2022" },
+        {
+          code: "brand",
+          label: "Marque",
+          value: "Peugeot",
+          presentation: "fact",
+        },
+        {
+          code: "model_year",
+          label: "Année modèle",
+          value: "2022",
+          presentation: "fact",
+        },
         {
           code: "mileage",
           label: "Kilométrage / Heures",
           value: "28\u202f500 km",
+          presentation: "fact",
         },
-        { code: "fuel_type", label: "Énergie / Carburant", value: "Essence" },
-        { code: "transmission", label: "Boîte de vitesses", value: "Manuelle" },
+        {
+          code: "fuel_type",
+          label: "Énergie / Carburant",
+          value: "Essence",
+          presentation: "fact",
+        },
+        {
+          code: "transmission",
+          label: "Boîte de vitesses",
+          value: "Manuelle",
+          presentation: "fact",
+        },
         {
           code: "critair_class",
           label: "Classe Crit’Air",
           value: "Crit’Air 1",
+          presentation: "fact",
         },
       ]),
     );
@@ -68,6 +90,7 @@ describe("backend listing characteristics", () => {
       code: "model_year",
       label: "Année modèle",
       value: "2024",
+      presentation: "fact",
     });
     expect(result.find((item) => item.code === "fuel_type")?.value).toBe(
       "Électrique",
@@ -120,11 +143,13 @@ describe("backend listing characteristics", () => {
       code: "fuel_type",
       label: "Fuel / Energy",
       value: "Petrol",
+      presentation: "fact",
     });
     expect(result).toContainEqual({
       code: "mileage",
       label: "Mileage / Hours",
       value: "0 km",
+      presentation: "fact",
     });
   });
 
@@ -146,6 +171,40 @@ describe("backend listing characteristics", () => {
     expect(result.find((item) => item.code === "elevator")?.value).toBe("Non");
     expect(result.map((item) => item.code)).not.toContain("model_year");
     expect(result.map((item) => item.code)).not.toContain("fuel_type");
+  });
+
+  it("marks an affirmative boolean as a capability and everything else as a fact", () => {
+    /*
+     * Clients render "the flat has a lift" as a named amenity and "65 m²" as a
+     * labelled value, so the projection has to say which kind each item is —
+     * otherwise every client re-derives it from the word "Oui" and they
+     * disagree the moment one of them is localized.
+     *
+     * A negative boolean stays a fact: "Ascenseur — Non" is information a buyer
+     * needs, and it cannot be published as a capability the listing has.
+     */
+    const project = (attributes: Record<string, unknown>) =>
+      projectListingCharacteristics({
+        ...vehicle,
+        categoryId: "real_estate.sales.apartments",
+        attributes,
+      }).groups.flatMap((group) => group.items);
+
+    const withLift = project({ living_area: 65, elevator: true });
+    expect(withLift).toContainEqual({
+      code: "elevator",
+      label: "Ascenseur",
+      value: "Oui",
+      presentation: "feature",
+    });
+    expect(
+      withLift.find((item) => item.code === "living_area")?.presentation,
+    ).toBe("fact");
+
+    const withoutLift = project({ living_area: 65, elevator: false });
+    expect(
+      withoutLift.find((item) => item.code === "elevator")?.presentation,
+    ).toBe("fact");
   });
 
   it("preserves public historical facts independently of new seller eligibility", () => {

@@ -49,6 +49,12 @@ import {
 } from "./immo-format";
 import { useTranslation } from "../../i18n/I18nProvider";
 import {
+  DetailFactList,
+  DetailSection,
+} from "../../design-system/primitives/DetailFacts";
+import { ListingLocationSection } from "../listings/components/ListingLocationSection";
+import { iconForFact } from "../../domains/listing/listing-facts.presentation";
+import {
   PROPERTY_LEAD_FORM_ID,
   PropertyPrimaryActionButton,
   PropertyStickyHeader,
@@ -445,26 +451,47 @@ export const ImmoPropertyDetailPage: React.FC = () => {
               </div>
             </section>
 
-            <section className="rounded-card border border-border-base bg-bg-surface p-5 sm:p-6">
-              <h2 className="text-base font-bold text-text-main">
-                À propos de ce bien
-              </h2>
-              <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-text-secondary">
+            {/*
+             * Description and facts are two different reads and get two
+             * sections, in the shape every category uses — the property specs
+             * were previously a bare definition list stapled under the prose.
+             */}
+            {property.taxonomy?.detailCharacteristics?.length ? (
+              <DetailSection
+                title={t("listings.characteristics.keyInformation")}
+              >
+                <DetailFactList
+                  facts={property.taxonomy.detailCharacteristics.map(
+                    (field) => ({
+                      code: field.code,
+                      label: localizeTaxonomyLabels(
+                        field.labels,
+                        currentLocale,
+                      ),
+                      value: localizeTaxonomyLabels(
+                        field.values,
+                        currentLocale,
+                      ),
+                      icon: iconForFact("grp.property_specs", field.code),
+                    }),
+                  )}
+                />
+              </DetailSection>
+            ) : null}
+
+            <DetailSection title="Description">
+              <p className="whitespace-pre-line text-sm leading-loose text-text-supporting">
                 {property.description}
               </p>
-              <dl className="mt-5 grid gap-3 sm:grid-cols-2">
-                {property.taxonomy?.detailCharacteristics?.map((field) => (
-                  <div key={field.code}>
-                    <dt className="text-xs text-text-muted">
-                      {localizeTaxonomyLabels(field.labels, currentLocale)}
-                    </dt>
-                    <dd className="text-sm font-semibold">
-                      {localizeTaxonomyLabels(field.values, currentLocale)}
-                    </dd>
-                  </div>
-                ))}
-              </dl>
-            </section>
+            </DetailSection>
+
+            <ListingLocationSection
+              city={property.address.city}
+              postalCode={property.address.postalCode}
+              latitude={property.address.latitude}
+              longitude={property.address.longitude}
+              precision={property.address.precision}
+            />
 
             <section className="grid gap-4 sm:grid-cols-2">
               <div className="rounded-card border border-border-base bg-bg-surface p-5">

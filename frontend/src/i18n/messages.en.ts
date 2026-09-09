@@ -4424,4 +4424,17 @@ export const messagesEn: MessageCatalogue = {
   "admin.taxonomyEditor.resource.referenceData": "Sources and review status",
   "admin.taxonomyEditor.resource.presentations": "Presentation and journeys",
   "admin.taxonomyEditor.resource.discovery": "Search and indexing",
+  // --- listings.characteristics ---
+  "listings.characteristics.keyInformation": "Key information",
+  "listings.characteristics.amenities": "Amenities and services",
+  "listings.characteristics.showMoreCriteria_one": "See 1 more criterion",
+  "listings.characteristics.showMoreCriteria_other":
+    "See {count} more criteria",
+  "listings.characteristics.hideMoreCriteria": "Hide additional criteria",
+  "listings.characteristics.showAllAmenities": "See all amenities and services",
+  "listings.characteristics.hideAllAmenities": "Hide amenities and services",
+  "listings.characteristics.unavailable":
+    "Characteristics are unavailable right now.",
+  "listings.characteristics.location": "Location",
+  "listings.characteristics.mapLabel": "Map of the approximate area: {place}",
 };

@@ -2,6 +2,10 @@ import React, { useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import type { PropertyPublic } from "@shongre/contracts/real-estate";
+import {
+  MAP_TILE_OPTIONS,
+  MAP_TILE_URL,
+} from "../../../platform/map/tile-source";
 
 export const ImmoMap: React.FC<{
   properties: PropertyPublic[];
@@ -28,10 +32,7 @@ export const ImmoMap: React.FC<{
       attributionControl: false,
       scrollWheelZoom: false,
     }).setView([45.764, 4.8357], 12);
-    L.tileLayer(
-      "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
-      { maxZoom: 19, subdomains: "abcd" },
-    ).addTo(map);
+    L.tileLayer(MAP_TILE_URL, MAP_TILE_OPTIONS).addTo(map);
     const notifyBounds = () => {
       const bounds = map.getBounds();
       const center = map.getCenter();

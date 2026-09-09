@@ -11048,6 +11048,11 @@ export interface components {
                 readonly items: readonly {
                     readonly code: string;
                     readonly label: string;
+                    /**
+                     * @description How the value should be shown. 'feature' marks a capability the listing has (an affirmative boolean), which surfaces as a labelled amenity rather than a label/value row. Absent means 'fact'.
+                     * @enum {string}
+                     */
+                    readonly presentation?: "fact" | "feature";
                     readonly value: string;
                 }[];
                 readonly label: string;
