@@ -31940,7 +31940,11 @@ export interface operations {
     readonly getTaxonomyV1Tree: {
         readonly parameters: {
             readonly query?: {
+                /** @description Project the snapshot down to a single category, addressed by node id, slug or published alias. Everything the route cannot resolve from that node is omitted. */
+                readonly category?: string;
                 readonly locale?: string;
+                /** @description Keep only nodes at or above this depth, with 0 meaning the root categories alone. Aliases, SEO projections and listing types are narrowed to the surviving nodes. */
+                readonly maxLevel?: number;
                 readonly version?: "v1";
             };
             readonly header: {

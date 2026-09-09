@@ -109,6 +109,12 @@ export const HomeUniverseExplorer: React.FC<{
   >("loading");
   const [taxonomyRetryKey, setTaxonomyRetryKey] = useState(0);
 
+  /** Stable across renders so the fetch is not restarted by a new array. */
+  const requestedCategoryIds = useMemo(
+    () => (section.universeGroups || []).map((group) => group.categoryId),
+    [section.universeGroups],
+  );
+
   useEffect(() => {
     let active = true;
     if (!marketContext || marketContext.kind !== "market") {
@@ -119,28 +125,54 @@ export const HomeUniverseExplorer: React.FC<{
       };
     }
     setTaxonomyState("loading");
-    void services.taxonomy
-      .getV1Tree({
-        marketContext,
-        locale,
-        taxonomyVersion: "v1",
-      })
-      .then((response) => {
-        if (!active) return;
-        setTaxonomyNodes(
-          new Map(response.items.map((node) => [node.id, node])),
+    void (async () => {
+      try {
+        /* The rails read one label, one slug and one icon per group. Asking for
+           the published tree downloaded 735 KiB — every subcategory, listing
+           type and SEO projection — to render a handful of headings. The roots
+           answer every group an editor configures today; a group pointed at a
+           deeper node still resolves, one node at a time, rather than
+           disappearing. */
+        const roots = await services.taxonomy.getV1Tree({
+          marketContext,
+          locale,
+          taxonomyVersion: "v1",
+          maxLevel: 0,
+        });
+        const nodes = new Map(roots.items.map((node) => [node.id, node]));
+        const missing = [
+          ...new Set(
+            requestedCategoryIds.filter((id) => id && !nodes.has(id)),
+          ),
+        ];
+        const deeper = await Promise.all(
+          missing.map((category) =>
+            services.taxonomy
+              .getV1Tree({
+                marketContext,
+                locale,
+                taxonomyVersion: "v1",
+                category,
+              })
+              .catch(() => null),
+          ),
         );
+        for (const response of deeper) {
+          for (const node of response?.items ?? []) nodes.set(node.id, node);
+        }
+        if (!active) return;
+        setTaxonomyNodes(nodes);
         setTaxonomyState("ready");
-      })
-      .catch(() => {
+      } catch {
         if (!active) return;
         setTaxonomyNodes(new Map());
         setTaxonomyState("error");
-      });
+      }
+    })();
     return () => {
       active = false;
     };
-  }, [locale, marketContext, taxonomyRetryKey]);
+  }, [locale, marketContext, requestedCategoryIds, taxonomyRetryKey]);
 
   const groups = useMemo(
     () => resolveUniverseGroups(section, taxonomyNodes),

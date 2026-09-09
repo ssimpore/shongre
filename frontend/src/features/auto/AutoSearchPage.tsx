@@ -707,7 +707,7 @@ export const AutoSearchPage: React.FC = () => {
   };
 
   return (
-    <Container className="py-4 sm:py-6">
+    <Container width="results" className="py-4 sm:py-6">
       <div className="mb-4 flex flex-col justify-between gap-3 md:flex-row md:items-end">
         <div>
           <p className="mb-1 flex items-center gap-2 text-xs font-bold text-primary">
@@ -990,7 +990,7 @@ export const AutoSearchPage: React.FC = () => {
               fluid={viewMode === "grid"}
               variant={viewMode === "list" ? "list" : "grid"}
             >
-              {vehicles.map((vehicle) => {
+              {vehicles.map((vehicle, index) => {
                 const isCompared = compared.some(
                   (row) => row.id === vehicle.id,
                 );
@@ -998,6 +998,10 @@ export const AutoSearchPage: React.FC = () => {
                   <div key={vehicle.id} className="flex min-w-0 flex-col gap-2">
                     <AutoVehicleCard
                       vehicle={vehicle}
+                      /* The first result is above the fold on every viewport,
+                         and it is the page's LCP candidate. Lazy-loading it put
+                         its cover behind every other request on the page. */
+                      imagePriority={index === 0}
                       displayVariant={viewMode === "list" ? "list" : "grid"}
                       isFavorite={favoriteVehicleIds.has(vehicle.id)}
                       favoriteLoadState={favoriteLoadState}

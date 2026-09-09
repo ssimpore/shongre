@@ -172,6 +172,8 @@ export class HttpTaxonomyService implements TaxonomyServiceContract {
     marketContext: Pick<MarketContext, "countryCode">;
     locale: string;
     taxonomyVersion?: string;
+    category?: string;
+    maxLevel?: number;
   }): Promise<TaxonomyV1TreeResponse> {
     return apiOperation<TaxonomyV1TreeResponse, "getTaxonomyV1Tree">(
       "getTaxonomyV1Tree",
@@ -179,6 +181,8 @@ export class HttpTaxonomyService implements TaxonomyServiceContract {
         query: {
           locale: input.locale,
           version: input.taxonomyVersion,
+          category: input.category,
+          maxLevel: input.maxLevel,
         },
         headers: this.marketHeaders(input.marketContext),
       },

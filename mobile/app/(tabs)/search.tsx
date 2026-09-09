@@ -12,6 +12,7 @@ import type { ListingCardView } from "@shongre/contracts";
 import { majorToMinorAmount } from "@shongre/shared/money";
 import { FormField } from "@/components/FormField";
 import { Button } from "@/components/Button";
+import { useLayoutMode } from "@/hooks/useLayoutMode";
 import { ListingCard } from "@/components/ListingCard";
 import { StatePanel } from "@/components/StatePanel";
 import {
@@ -33,6 +34,7 @@ import { useAuth } from "@/features/auth/AuthProvider";
 import { watchSubscriptionsService } from "@/features/watch-subscriptions/watch-subscriptions.service";
 
 export default function SearchScreen() {
+  const { columns } = useLayoutMode();
   const { activeMarket } = useMarket();
   const { user } = useAuth();
   const [query, setQuery] = useState("");
@@ -166,7 +168,14 @@ export default function SearchScreen() {
         data={visibleItems}
         accessibilityState={{ busy: loading }}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <ListingCard listing={item} />}
+        key={`search-results-${columns}`}
+        numColumns={columns}
+        columnWrapperStyle={columns > 1 ? styles.row : undefined}
+        renderItem={({ item }) => (
+          <View style={styles.cell}>
+            <ListingCard listing={item} />
+          </View>
+        )}
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={styles.content}
         ListHeaderComponent={
@@ -296,6 +305,8 @@ export default function SearchScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
+  cell: { flex: 1 },
+  row: { gap: spacing.lg },
   content: { padding: spacing.lg, gap: spacing.lg, paddingBottom: spacing.xxl },
   loadingState: {
     alignItems: "center",

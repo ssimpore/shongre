@@ -16,6 +16,8 @@ export const JobCard: React.FC<{
   onFavoriteRetry?: () => void | Promise<void>;
   compact?: boolean;
   displayVariant?: "grid" | "list";
+  /** Set on the first result so its cover is fetched with the page, not after it. */
+  imagePriority?: boolean;
 }> = ({
   job,
   catalog,
@@ -24,6 +26,7 @@ export const JobCard: React.FC<{
   onFavoriteRetry,
   compact = false,
   displayVariant = "grid",
+  imagePriority = false,
 }) => {
   const { activeMarket, currentLocale, convertMoney } = useMarketLocation();
   const listing = presentEmploymentListingCard(
@@ -42,6 +45,7 @@ export const JobCard: React.FC<{
       <ListingCardViewCard
         listing={listing}
         href={`/emploi/offre/${job.slug}`}
+        imagePriority={imagePriority}
         variant={compact ? "compact" : displayVariant}
         imageFit="contain"
         isFavorite={job.saved}

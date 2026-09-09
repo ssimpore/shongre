@@ -15,6 +15,8 @@ export const PropertyCard: React.FC<{
   onFavoriteRetry?: () => void | Promise<unknown>;
   compact?: boolean;
   displayVariant?: "grid" | "list";
+  /** Set on the first result so its cover is fetched with the page, not after it. */
+  imagePriority?: boolean;
 }> = ({
   property,
   selected,
@@ -25,6 +27,7 @@ export const PropertyCard: React.FC<{
   onFavoriteRetry,
   compact = false,
   displayVariant = "grid",
+  imagePriority = false,
 }) => {
   const { activeMarket, currentLocale, convertMoney } = useMarketLocation();
   const listing = presentPropertyListingCard(
@@ -44,6 +47,7 @@ export const PropertyCard: React.FC<{
       <ListingCardViewCard
         listing={listing}
         href={`/immo/bien/${property.slug}`}
+        imagePriority={imagePriority}
         variant={compact ? "compact" : displayVariant}
         className={
           selected

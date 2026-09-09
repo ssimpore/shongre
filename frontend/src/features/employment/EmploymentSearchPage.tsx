@@ -681,7 +681,7 @@ export const EmploymentSearchPage: React.FC = () => {
         </Container>
       </section>
 
-      <Container className="py-5 sm:py-6">
+      <Container width="results" className="py-5 sm:py-6">
         <SearchResultsToolbar
           resultLabel={loading ? "Recherche…" : `${total} offres`}
           resultDescription={
@@ -863,10 +863,14 @@ export const EmploymentSearchPage: React.FC = () => {
                 fluid={viewMode === "grid"}
                 variant={viewMode === "list" ? "list" : "grid"}
               >
-                {items.map((job) => (
+                {items.map((job, index) => (
                   <JobCard
                     key={job.id}
                     job={{ ...job, saved: savedJobIds.has(job.id) }}
+                    /* The first result is above the fold on every viewport,
+                       and it is the page's LCP candidate. Lazy-loading it put
+                       its cover behind every other request on the page. */
+                    imagePriority={index === 0}
                     displayVariant={viewMode === "list" ? "list" : "grid"}
                     catalog={catalog}
                     onSave={save}

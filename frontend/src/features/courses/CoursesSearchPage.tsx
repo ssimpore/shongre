@@ -592,7 +592,7 @@ export const CoursesSearchPage: React.FC = () => {
   }
 
   return (
-    <Container className="py-5 sm:py-7">
+    <Container width="results" className="py-5 sm:py-7">
       <div className="mb-5 flex flex-col gap-4 sm:mb-7">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
@@ -838,10 +838,14 @@ export const CoursesSearchPage: React.FC = () => {
                 fluid={viewMode === "grid"}
                 variant={viewMode === "list" ? "list" : "grid"}
               >
-                {items.map((item) => (
+                {items.map((item, index) => (
                   <CourseTutorCard
                     key={item.offer.id}
                     item={item}
+                    /* The first result is above the fold on every viewport,
+                       and it is the page's LCP candidate. Lazy-loading it put
+                       its cover behind every other request on the page. */
+                    imagePriority={index === 0}
                     isCompared={comparedIds.includes(item.tutor.id)}
                     isSaved={savedIds.includes(item.tutor.id)}
                     favoriteLoadState={savedLoadState}

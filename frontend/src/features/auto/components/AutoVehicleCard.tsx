@@ -13,6 +13,8 @@ interface Props {
   onFavoriteRetry?: () => void | Promise<unknown>;
   compact?: boolean;
   displayVariant?: "grid" | "list";
+  /** Set on the first result so its cover is fetched with the page, not after it. */
+  imagePriority?: boolean;
 }
 
 export const AutoVehicleCard: React.FC<Props> = ({
@@ -23,6 +25,7 @@ export const AutoVehicleCard: React.FC<Props> = ({
   onFavoriteRetry,
   compact = false,
   displayVariant = "grid",
+  imagePriority = false,
 }) => {
   const { activeMarket, currentLocale, convertMoney } = useMarketLocation();
   const listing = presentVehicleListingCard(
@@ -37,6 +40,7 @@ export const AutoVehicleCard: React.FC<Props> = ({
       <ListingCardViewCard
         listing={listing}
         href={`/auto/vehicule/${vehicle.slug}`}
+        imagePriority={imagePriority}
         variant={compact ? "compact" : displayVariant}
         isFavorite={isFavorite}
         favoriteLoadState={favoriteLoadState}

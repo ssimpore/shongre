@@ -731,7 +731,7 @@ export const ImmoSearchPage: React.FC = () => {
         </Container>
       </section>
 
-      <Container className="py-5">
+      <Container width="results" className="py-5">
         <SearchResultsToolbar
           resultLabel={loading ? "Recherche…" : `${total} biens`}
           resultDescription="Localisation volontairement approximative sur la carte."
@@ -906,10 +906,11 @@ export const ImmoSearchPage: React.FC = () => {
                   </ListingGrid>
                 ) : items.length ? (
                   <ListingGrid variant="list">
-                    {visibleItems.map((property) => (
+                    {visibleItems.map((property, index) => (
                       <PropertyCard
                         key={property.id}
                         property={property}
+                        imagePriority={index === 0}
                         displayVariant="list"
                         selected={selectedId === property.id}
                         onSelect={(item) => setSelectedId(item.id)}

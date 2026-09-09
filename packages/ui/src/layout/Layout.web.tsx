@@ -15,7 +15,7 @@ const gapClasses: Record<LayoutSpace, string> = {
 
 export interface ContainerProps extends React.HTMLAttributes<HTMLElement> {
   as?: "div" | "section" | "header" | "footer" | "main";
-  width?: "task" | "content" | "page" | "workspace" | "full";
+  width?: "task" | "content" | "page" | "results" | "workspace" | "full";
   gutter?: "none" | "standard";
 }
 
@@ -26,6 +26,16 @@ const containerClasses = createVariants({
       task: "max-w-task",
       content: "max-w-content",
       page: "max-w-page",
+      /**
+       * A card grid, which gains from width instead of losing to it.
+       *
+       * Every page was capped at `page` — 1280px — on every screen, so a 1920px
+       * desktop spent a third of its width on empty gutters and still showed
+       * four columns; a 2560px one spent half. Prose keeps `page`, because line
+       * length is the constraint there. Results widen one step past `xl`, where
+       * the grid's `auto-fill` picks up the extra column on its own.
+       */
+      results: "max-w-page 2xl:max-w-workspace",
       workspace: "max-w-workspace",
       full: "max-w-none",
     },

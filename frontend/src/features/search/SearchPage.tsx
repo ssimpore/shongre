@@ -34,6 +34,7 @@ import { services } from "../../api/client/service-registry";
 import { SearchFilters, ListingCondition } from "../../types";
 import { getTaxonomyLabel } from "../../domains/taxonomy/taxonomy.labels";
 import { usePageMeta } from "../../hooks/usePageMeta";
+import { Container } from "../../design-system/primitives/Layout";
 import { useRootTaxonomyCategories } from "../../hooks/useRootTaxonomyCategories";
 import { ListingCard } from "../../design-system/primitives/ListingCard";
 import { Button } from "../../design-system/primitives/Button";
@@ -140,24 +141,6 @@ export const SearchPage: React.FC = () => {
   const [taxonomySnapshot, setTaxonomySnapshot] = useState<
     TaxonomyV1TreeResponse | undefined
   >(initialData?.taxonomy);
-  useEffect(() => {
-    let active = true;
-    setTaxonomySnapshot(undefined);
-    void services.taxonomy
-      .getV1Tree({
-        marketContext: { countryCode: activeMarket.code },
-        locale: currentLocale,
-      })
-      .then((tree) => {
-        if (active) setTaxonomySnapshot(tree);
-      })
-      .catch(() => {
-        if (active) setTaxonomySnapshot(undefined);
-      });
-    return () => {
-      active = false;
-    };
-  }, [activeMarket.code, currentLocale, location.pathname]);
 
   const formatPriceBound = (value: number) =>
     `${value.toLocaleString(currentLocale)} ${currencySymbol}`;
@@ -181,6 +164,53 @@ export const SearchPage: React.FC = () => {
   const { categorySlug: categoryRouteSlug } = useParams<{
     categorySlug?: string;
   }>();
+
+  /**
+   * The taxonomy this page needs is one node, not the catalogue.
+   *
+   * `resolveSeoPolicy` reads the snapshot on `/categorie/:slug` alone, and only
+   * to look that slug up. This used to refetch the entire published tree —
+   * 735 KiB of categories, listing types and SEO projections — on mount and on
+   * every pathname change, while throwing away the node the server had already
+   * put in the document. `/recherche` needs no request at all, and a category
+   * route asks for its own node.
+   */
+  useEffect(() => {
+    if (!categoryRouteSlug) {
+      setTaxonomySnapshot(undefined);
+      return;
+    }
+    const serverSnapshot = initialData?.taxonomy;
+    if (
+      serverSnapshot &&
+      resolveTaxonomySeoRecord(categoryRouteSlug, serverSnapshot)
+    ) {
+      setTaxonomySnapshot(serverSnapshot);
+      return;
+    }
+    let active = true;
+    setTaxonomySnapshot(undefined);
+    void services.taxonomy
+      .getV1Tree({
+        marketContext: { countryCode: activeMarket.code },
+        locale: currentLocale,
+        category: categoryRouteSlug,
+      })
+      .then((tree) => {
+        if (active) setTaxonomySnapshot(tree);
+      })
+      .catch(() => {
+        if (active) setTaxonomySnapshot(undefined);
+      });
+    return () => {
+      active = false;
+    };
+  }, [
+    activeMarket.code,
+    categoryRouteSlug,
+    currentLocale,
+    initialData?.taxonomy,
+  ]);
 
   // Extract filter params from URL
   const query = searchParams.get("query") || "";
@@ -871,7 +901,7 @@ export const SearchPage: React.FC = () => {
   usePageMeta(searchMeta);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 sm:py-6 lg:px-8">
+    <Container width="results" className="py-4 sm:py-6">
       {/* Page heading. The search results are the page's subject, so they need a
           real h1 — it was previously the only top-level route with none. */}
       <div className="mb-3 sm:mb-4">
@@ -1859,6 +1889,6 @@ export const SearchPage: React.FC = () => {
           )}
         </FilterPanel>
       </Drawer>
-    </div>
+    </Container>
   );
 };

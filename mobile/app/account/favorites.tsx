@@ -7,6 +7,7 @@ import {
   View,
 } from "react-native";
 import { Stack, useFocusEffect } from "expo-router";
+import { useLayoutMode } from "@/hooks/useLayoutMode";
 import { ListingCard } from "@/components/ListingCard";
 import { StatePanel } from "@/components/StatePanel";
 import { useFavorites } from "@/features/favorites/FavoritesProvider";
@@ -25,6 +26,7 @@ export default function MobileFavoritesScreen() {
     error: favoritesError,
     refresh: refreshFavorites,
   } = useFavorites();
+  const { columns } = useLayoutMode();
 
   const load = useCallback(
     () => refreshFavorites().catch(() => undefined),
@@ -48,7 +50,14 @@ export default function MobileFavoritesScreen() {
       <FlatList
         data={displayedListings}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <ListingCard listing={item} />}
+        key={`favorites-${columns}`}
+        numColumns={columns}
+        columnWrapperStyle={columns > 1 ? styles.row : undefined}
+        renderItem={({ item }) => (
+          <View style={styles.cell}>
+            <ListingCard listing={item} />
+          </View>
+        )}
         contentContainerStyle={styles.content}
         accessibilityState={{ busy: loading }}
         ListHeaderComponent={
@@ -82,6 +91,8 @@ export default function MobileFavoritesScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
+  cell: { flex: 1 },
+  row: { gap: spacing.lg },
   content: {
     flexGrow: 1,
     padding: spacing.lg,

@@ -17,11 +17,13 @@ import {
   nativeSpacing as spacing,
   nativeTypography,
 } from "@shongre/design-tokens/native";
+import { useLayoutMode } from "@/hooks/useLayoutMode";
 import { listingsService } from "@/features/listings/listings.service";
 import { useMarket } from "@/features/market/MarketProvider";
 
 export default function HomeScreen() {
   const { activeMarket } = useMarket();
+  const { columns } = useLayoutMode();
   const [items, setItems] = useState<ListingCardView[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadedMarketCode, setLoadedMarketCode] = useState("");
@@ -76,7 +78,16 @@ export default function HomeScreen() {
         data={visibleItems}
         accessibilityState={{ busy: marketIsLoading }}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <ListingCard listing={item} />}
+        /* Remounts the list on rotation, which is what `numColumns` requires:
+           React Native cannot change a list's column count in place. */
+        key={`listings-${columns}`}
+        numColumns={columns}
+        columnWrapperStyle={columns > 1 ? styles.row : undefined}
+        renderItem={({ item }) => (
+          <View style={styles.cell}>
+            <ListingCard listing={item} />
+          </View>
+        )}
         contentContainerStyle={styles.content}
         refreshControl={
           <RefreshControl
@@ -129,6 +140,10 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
+  /* The cell owns the width so a card never stretches across a tablet, and the
+     row keeps a half-filled last row left-aligned instead of centred. */
+  cell: { flex: 1 },
+  row: { gap: spacing.lg },
   content: {
     gap: spacing.lg,
     padding: spacing.lg,

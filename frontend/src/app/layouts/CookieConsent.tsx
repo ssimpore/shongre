@@ -76,22 +76,29 @@ const CookieBanner: React.FC = () => {
               </p>
             </div>
 
-            {/* Accept and refuse use the same variant and size on purpose. */}
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-              <Button
-                variant="secondary"
-                size={isCompact ? "md" : "sm"}
-                onClick={acceptAll}
-              >
-                {t("consent.acceptAll")}
-              </Button>
-              <Button
-                variant="secondary"
-                size={isCompact ? "md" : "sm"}
-                onClick={rejectOptional}
-              >
-                {t("consent.rejectAll")}
-              </Button>
+            {/* Accept and refuse use the same variant and size on purpose,
+                and on a phone they share a row rather than stacking. Three
+                44px buttons in a column made the banner 348px tall — 52% of a
+                390x664 viewport — so the page it asks about was mostly
+                covered while the visitor decided. Side by side they are, if
+                anything, more visibly equal in weight. */}
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <div className="grid grid-cols-2 gap-2 sm:contents">
+                <Button
+                  variant="secondary"
+                  size={isCompact ? "md" : "sm"}
+                  onClick={acceptAll}
+                >
+                  {t("consent.acceptAll")}
+                </Button>
+                <Button
+                  variant="secondary"
+                  size={isCompact ? "md" : "sm"}
+                  onClick={rejectOptional}
+                >
+                  {t("consent.rejectAll")}
+                </Button>
+              </div>
               <Button
                 variant="ghost"
                 size={isCompact ? "md" : "sm"}

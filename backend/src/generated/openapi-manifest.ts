@@ -4415,6 +4415,8 @@ export const OPENAPI_OPERATIONS = {
     queryParameters: {
       locale: "string",
       version: "string",
+      category: "string",
+      maxLevel: "integer",
     },
   },
   "GET /taxonomy/v1/resolve": {

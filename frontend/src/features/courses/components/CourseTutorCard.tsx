@@ -22,6 +22,8 @@ interface CourseTutorCardProps {
   onToggleSaved: (id: string) => void | Promise<unknown>;
   onFavoriteRetry?: () => void | Promise<unknown>;
   displayVariant?: "grid" | "list";
+  /** Set on the first result so its cover is fetched with the page, not after it. */
+  imagePriority?: boolean;
 }
 
 export function presentCourseTutorCard(
@@ -90,6 +92,7 @@ export function CourseTutorCard({
   onToggleSaved,
   onFavoriteRetry,
   displayVariant = "grid",
+  imagePriority = false,
 }: CourseTutorCardProps) {
   const { activeMarket, currentLocale, convertMoney } = useMarketLocation();
   const listing = useMemo(
@@ -111,6 +114,7 @@ export function CourseTutorCard({
       <ListingCardViewCard
         listing={listing}
         href={routes.courses.tutor(item.tutor.slug)}
+        imagePriority={imagePriority}
         variant={displayVariant}
         isFavorite={isSaved}
         favoriteLoadState={favoriteLoadState}

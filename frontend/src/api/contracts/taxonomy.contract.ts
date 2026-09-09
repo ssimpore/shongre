@@ -51,6 +51,16 @@ export interface TaxonomyServiceContract {
     marketContext: Pick<MarketContext, "countryCode">;
     locale: string;
     taxonomyVersion?: string;
+    /**
+     * Ask for one node instead of the catalogue.
+     *
+     * The unprojected snapshot is 735 KiB. Callers that resolve a single
+     * category — the search page's SEO policy is the only one — pass its id,
+     * slug or alias and receive roughly 2 KiB.
+     */
+    category?: string;
+    /** Deepest level to keep, where 0 is the root categories on their own. */
+    maxLevel?: number;
   }): Promise<TaxonomyV1TreeResponse>;
   resolveV1(
     input: ResolveTaxonomyV1PublicInput,

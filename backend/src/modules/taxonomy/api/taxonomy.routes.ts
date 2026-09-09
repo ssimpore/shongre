@@ -6,6 +6,7 @@ import { type RouteRegistrar, PUBLIC } from "../../../api/v1/route-contract.js";
 import { taxonomyService } from "../taxonomy.service.js";
 import { requireApiMarketContext } from "../../markets/request-market-context.js";
 import { taxonomyV1ListingIntentSchema } from "@shongre/contracts";
+import { projectTaxonomyTreeItems } from "../taxonomy.tree-projection.js";
 
 function requireTaxonomyV1Version(value: string | null): "v1" | undefined {
   if (value === null) return undefined;
@@ -130,21 +131,42 @@ export function registerTaxonomyRoutes(routes: RouteRegistrar): void {
           ? z.coerce.number().int().positive().parse(query.get("revision"))
           : undefined,
       );
-      const items = taxonomyV1Result(() => taxonomy.listTree(marketContext));
-      const visibleIds = new Set(items.map((node) => node.id));
-      return taxonomyV1Result(() => ({
-        ...taxonomy.getMetadata(),
-        marketCode: marketContext.countryCode!,
-        locale,
-        items,
-        listingTypes: taxonomy.listListingTypes(marketContext),
-        aliases: taxonomy
-          .getBundle()
-          .aliases.filter((alias) => visibleIds.has(alias.canonicalCategoryId)),
-        seo: taxonomy
-          .getBundle()
-          .projections.seo.filter((row) => visibleIds.has(row.categoryId)),
-      }));
+      const maxLevel = query.has("maxLevel")
+        ? z.coerce.number().int().min(0).max(8).parse(query.get("maxLevel"))
+        : undefined;
+      const category = query.get("category");
+      return taxonomyV1Result(() => {
+        const bundle = taxonomy.getBundle();
+        const visibleTree = taxonomy.listTree(marketContext);
+        const items = projectTaxonomyTreeItems(visibleTree, bundle.aliases, {
+          category,
+          maxLevel,
+        });
+        const visibleIds = new Set(items.map((node) => node.id));
+        const listingTypes = taxonomy.listListingTypes(marketContext);
+        return {
+          ...taxonomy.getMetadata(),
+          marketCode: marketContext.countryCode!,
+          locale,
+          items,
+          // An unprojected snapshot still answers with every publishable type,
+          // because the publication wizard resolves types the visible tree can
+          // omit. A projection is a deliberate narrowing, so it takes the
+          // types with it rather than shipping the 207 KiB catalogue again.
+          listingTypes:
+            items.length === visibleTree.length
+              ? listingTypes
+              : listingTypes.filter((listingType) =>
+                  visibleIds.has(listingType.categoryId),
+                ),
+          aliases: bundle.aliases.filter((alias) =>
+            visibleIds.has(alias.canonicalCategoryId),
+          ),
+          seo: bundle.projections.seo.filter((row) =>
+            visibleIds.has(row.categoryId),
+          ),
+        };
+      });
     },
   );
   routes.addRoute(
