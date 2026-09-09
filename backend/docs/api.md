@@ -80,6 +80,23 @@ URL major communicates wire compatibility.
 - Public listing images and private verification documents use the documented
   two-phase upload operations. Private documents never use public buckets.
 
+## Human-facing surfaces
+
+The API origin serves two documents built from the same specification:
+
+- `/` renders the developer console for browsers and the JSON service
+  descriptor for every other client.
+- `/api/docs` renders the dependency-free operation reference, grouped by the
+  presentation domains in
+  `backend/src/infrastructure/http/developer-console-model.ts` so the console's
+  `#domain-*` links resolve.
+
+`API_DOMAINS` in that model is the only place a documented tag is mapped to a
+reader-facing group. `backend/tests/unit/developer-console.test.ts` fails when a
+new tag has no group, so adding an OpenAPI tag also means placing it there.
+Neither document may declare an operation, method or access level the contract
+does not.
+
 ## Ownership
 
 The backend API owners maintain the canonical specification and implementation.

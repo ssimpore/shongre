@@ -119,6 +119,22 @@ describe("canonical design tokens", () => {
     ).toBeGreaterThanOrEqual(4.75);
   });
 
+  it("exposes the inverse-surface roles application code needs on dark chrome", () => {
+    expect(colors.action.primaryOnDark).toBe(themeColors["primary-on-dark"]);
+    expect(colors.status.infoOnInverse).toBe(themeColors["info-on-inverse"]);
+    expect(colors.accent.staffOnInverse).toBe(themeColors["staff-on-inverse"]);
+    // Every inverse role must stay readable on the canonical dark surface.
+    for (const role of [
+      colors.text.inverseBright,
+      colors.text.inverseMuted,
+      colors.text.inverseSubtle,
+    ]) {
+      expect(contrast(role, colors.surface.inverseDeep)).toBeGreaterThanOrEqual(
+        4.5,
+      );
+    }
+  });
+
   it("propagates a representative canonical orange change through every derived role", () => {
     const original = deriveShongreOrangeTokens(
       colors.brand.primary,

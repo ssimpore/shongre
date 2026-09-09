@@ -239,11 +239,12 @@ Mobile: component → hook/controller → service contract → HTTP → /api/v1
 - Local development uses the repository-owned Supabase stack for the backend and
   worker. The canonical local sequence is `make install`, `make supabase-up`,
   `make db-migrate`, `make db-seed`, then `make backend` and/or `make worker`;
-  `make dev` performs that connected Web sequence in one command, validating
-  configuration and infrastructure before stopping tracked application processes,
-  reusing a healthy stack only when its environment and migration fingerprint
-  matches, forcing backend database mode, migrating, idempotently seeding, and
-  launching the API, worker, and Web app. The backend-owned local seed imports production-shaped tables, the complete
+  `make dev-web` performs that connected Web sequence in one command, and
+  `make dev` performs it with Metro as well. Both validate configuration and
+  infrastructure before stopping tracked application processes, reuse a healthy
+  stack only when its environment and migration fingerprint matches, force
+  backend database mode, migrate, idempotently seed, and launch the API,
+  worker, and Web app. The backend-owned local seed imports production-shaped tables, the complete
   generated taxonomy v1 projection and market availability, initializes missing
   database-owned header configuration without overwriting editorial changes, and copies every backend-fixture media source into local
   public Supabase Storage. In connected mode, category collections,
@@ -338,7 +339,13 @@ Mobile: component → hook/controller → service contract → HTTP → /api/v1
   another login cannot restore credentials or replay an old account’s writes.
 - Generated OpenAPI and database artifacts are read-only outputs. Do not create
   a second Swagger file, endpoint registry, router-derived spec, or handwritten
-  client wire DTO source.
+  client wire DTO source. The API origin's own HTML surfaces, the developer
+  console at `/` and the reference at `/api/docs`, are presentation over that
+  same contract: they must derive every method, path, description, and access
+  level from it, may execute only public parameter-free discovery reads
+  same-origin without credentials, and must show an explicit unavailable state
+  wherever no authorized data source exists rather than presenting an
+  illustrative figure as fact.
 - `/api/v1` is the active business prefix. Compatible additions may remain in
   v1; breaking semantics or shapes require a versioned migration or documented,
   time-bounded deprecation. Compatibility aliases must be specified, owned, and

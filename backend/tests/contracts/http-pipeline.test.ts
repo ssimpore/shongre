@@ -68,6 +68,26 @@ describe("composed domain HTTP pipeline", () => {
     );
     expect(documentation.body).not.toContain("<script");
   });
+  it("serves the developer console to browsers and a descriptor to clients", async () => {
+    const page = await request("/", { headers: { accept: "text/html" } });
+    expect(page.status).toBe(200);
+    expect(page.headers.get("content-type")).toContain("text/html");
+    expect(page.headers.get("vary")).toContain("Accept-Encoding");
+    expect(page.body).toContain("Backend API");
+    expect(page.body).toContain('id="console-contract"');
+    // The console never advertises a route the contract does not document.
+    expect(page.body).toContain("/api/v1/listings");
+    expect(page.body).not.toContain("SUPABASE_SERVICE_ROLE_KEY");
+
+    const descriptor = await request("/");
+    expect(descriptor.status).toBe(200);
+    expect(descriptor.body).toMatchObject({
+      status: "ok",
+      service: "shongre-backend",
+      environment: "test",
+    });
+  });
+
   it.each(["/health", "/health/live", "/health/ready", "/livez", "/readyz"])(
     "serves the operational contract at %s",
     async (path) => {

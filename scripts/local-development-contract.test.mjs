@@ -38,9 +38,10 @@ test("the local environment uses the documented API-only clients", async () => {
 });
 
 test("the Makefile exposes one canonical local Supabase lifecycle", async () => {
-  const [makefile, developmentScript] = await Promise.all([
+  const [makefile, developmentScript, composeScript] = await Promise.all([
     read("Makefile"),
     read("scripts/dev.sh"),
+    read("scripts/compose.sh"),
   ]);
 
   for (const target of [
@@ -64,9 +65,14 @@ test("the Makefile exposes one canonical local Supabase lifecycle", async () => 
   }
 
   assert.doesNotMatch(makefile, /^demo:/m);
+  // Both launchers force database mode; `dev` adds Metro to the Web stack.
   assert.match(
     makefile,
-    /^dev:.*\n\s*@BACKEND_DATA_MODE=database scripts\/dev\.sh web/m,
+    /^dev:.*\n\s*@BACKEND_DATA_MODE=database scripts\/dev\.sh all/m,
+  );
+  assert.match(
+    makefile,
+    /^dev-web:.*\n\s*@BACKEND_DATA_MODE=database scripts\/dev\.sh web/m,
   );
   assert.match(
     developmentScript,
@@ -75,6 +81,11 @@ test("the Makefile exposes one canonical local Supabase lifecycle", async () => 
   assert.match(
     developmentScript,
     /scripts\/database\.sh" migrate[\s\S]*scripts\/database\.sh" seed/,
+  );
+  assert.match(
+    composeScript,
+    /docker image prune --all --force/,
+    "local development must prune unused Docker images before startup",
   );
   assert.doesNotMatch(
     makefile,
@@ -100,7 +111,10 @@ test("local Supabase tooling is installed and runtime credentials stay ignored",
   assert.match(supabase, /local Supabase requires at least 5 GiB/);
   assert.match(supabase, /shongre_require_docker_daemon/);
   const utils = await read("scripts/utils.sh");
-  assert.match(utils, /timeout: 10_000/);
+  // The daemon probe stays bounded: a slower warm-up attempt is allowed, but
+  // the confirming probe is capped at ten seconds.
+  assert.match(utils, /spawnSync\("docker",[\s\S]*?\n\s*timeout,/);
+  assert.match(utils, /probe\(10_000\)/);
   assert.match(utils, /\["version", "--format", "\{\{\.Server\.Version\}\}"\]/);
   const redis = await read("scripts/redis.sh");
   assert.match(redis, /shongre_require_docker_daemon/);

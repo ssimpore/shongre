@@ -332,6 +332,8 @@ export const brandTokenTypesDestination =
   "packages/design-tokens/src/brand.generated.d.ts";
 export const brandDocumentLogoSource =
   "03_Web/header/shongre-header-logo-240w.png";
+export const brandDocumentReverseLogoSource =
+  "03_Web/header/shongre-header-logo-reverse-240w.png";
 export const brandDocumentAdapterDestination =
   "packages/brand/src/document.generated.ts";
 export const brandActiveRegistryDestination =

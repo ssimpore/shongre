@@ -182,7 +182,7 @@
     "mobile/brand-assets.generated.json": "7970d23d22658d3381c02a6038e7f5edfa89f31c75ba6cfa0dbbf37c7e50aa47",
     "mobile/src/brand-images.generated.ts": "2224031b8aaa015bb4609c7d0b03260cbd545585daf912514145de319114b462",
     "packages/brand/src/active.generated.ts": "4fb4c0c8174e437f852c9094fefbb71ad5061075481f908c5f37331a26b5463d",
-    "packages/brand/src/document.generated.ts": "285a38d6ab5589a75776edf853b22d104b45c99818742f5f4fc0d6553ba4e65e",
+    "packages/brand/src/document.generated.ts": "eb99661e599bd441061b74a192607fe27844927aa34a86df919e9171dcfdc583",
     "packages/brand/src/web-assets.generated.ts": "dacd4b9bd242b31b75b0da47ee71591a004a36ade0f02cb7b5edc888da9928d5",
     "packages/design-tokens/src/brand.generated.d.ts": "f731bbc2cd7a5770060d2752d7eda6be1522026c95a5ec65b9a2f4a3af346f3f",
     "packages/design-tokens/src/brand.generated.js": "82d28b0a1fa6408845927af9f2f5e222debf626c804ab433b7e1a2b3988cf184"

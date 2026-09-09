@@ -1,6 +1,8 @@
 import "reflect-metadata";
 import { IncomingMessage, ServerResponse } from "http";
 import { randomUUID } from "crypto";
+import { gzip } from "zlib";
+import { promisify } from "util";
 import {
   All,
   ArgumentsHost,
@@ -19,7 +21,6 @@ import {
   type NestFastifyApplication,
 } from "@nestjs/platform-fastify";
 import type { FastifyReply, FastifyRequest } from "fastify";
-import { colors } from "@shongre/design-tokens";
 import { buildApiUrl, config } from "../config/index.js";
 import { bootstrapApp } from "../bootstrap/index.js";
 import { apiV1Router, type ParsedRequestBody } from "../../api/v1/router.js";
@@ -29,209 +30,58 @@ import {
   openApiDocument,
   renderApiDocumentation,
 } from "../../infrastructure/http/openapi-documentation.js";
+import { developerConsolePage } from "../../infrastructure/http/developer-console.js";
 import { logger } from "../../infrastructure/logging/logger.js";
 import { QueueModule } from "../../infrastructure/queue/queue.module.js";
 import { RedisHealthService } from "../../infrastructure/queue/redis-health.service.js";
 import { RealtimeModule } from "../../infrastructure/realtime/realtime.module.js";
 
-function renderBackendHomePage(
-  port: number,
-  prefix: string,
-  frontendUrl: string,
-): string {
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Shongre Backend API</title>
-  <style>
-    :root {
-      --bg: ${colors.surface.inverseDeep};
-      --card: ${colors.surface.inverse};
-      --card-hover: ${colors.surface.inverseHover};
-      --border: ${colors.border.inverse};
-      --text: ${colors.text.inverseBright};
-      --muted: ${colors.text.inverseSubtle};
-      --primary: ${colors.status.info};
-      --primary-hover: ${colors.status.info};
-      --secondary: ${colors.category.multimedia};
-      --success: ${colors.status.successOnInverseStrong};
-      --transparent: ${colors.surface.transparent};
-      --success-glow: color-mix(in srgb, var(--success) 15%, var(--transparent));
-      --success-border: color-mix(in srgb, var(--success) 30%, var(--transparent));
-      --card-tint: color-mix(in srgb, var(--text) 2%, var(--transparent));
-    }
-    * { box-sizing: border-box; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background-color: var(--bg);
-      color: var(--text);
-      margin: 0;
-      padding: 2.5rem 1rem;
-      display: flex;
-      justify-content: center;
-      min-height: 100vh;
-    }
-    .container {
-      max-width: 760px;
-      width: 100%;
-    }
-    .header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 1.5rem;
-      margin-bottom: 2rem;
-    }
-    h1 {
-      margin: 0;
-      font-size: 1.5rem;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-    }
-    .subtitle {
-      margin: 0.25rem 0 0;
-      color: var(--muted);
-      font-size: 0.875rem;
-    }
-    .badge {
-      background: var(--success-glow);
-      color: var(--success);
-      border: 1px solid var(--success-border);
-      padding: 0.35rem 0.85rem;
-      border-radius: 9999px;
-      font-size: 0.8125rem;
-      font-weight: 600;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-    .dot {
-      width: 8px;
-      height: 8px;
-      background: var(--success);
-      border-radius: 50%;
-      box-shadow: 0 0 8px var(--success);
-    }
-    .section-title {
-      font-size: 0.8125rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--muted);
-      margin: 1.5rem 0 0.75rem;
-    }
-    .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1.25rem;
-      margin-bottom: 1.5rem;
-    }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 0.75rem;
-    }
-    .link-item {
-      background: var(--card-tint);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 0.875rem 1rem;
-      text-decoration: none;
-      color: inherit;
-      transition: all 0.15s ease;
-      display: flex;
-      flex-direction: column;
-    }
-    .link-item:hover {
-      background: var(--card-hover);
-      border-color: var(--primary);
-      transform: translateY(-1px);
-    }
-    .link-name {
-      font-size: 0.875rem;
-      font-weight: 600;
-      color: var(--primary);
-      margin-bottom: 0.2rem;
-    }
-    .link-path {
-      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-      font-size: 0.75rem;
-      color: var(--muted);
-    }
-    .cta-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      background: var(--primary);
-      color: var(--bg);
-      text-decoration: none;
-      padding: 0.6rem 1.2rem;
-      border-radius: 8px;
-      font-weight: 600;
-      font-size: 0.875rem;
-      transition: background 0.15s;
-    }
-    .cta-btn:hover {
-      background: var(--primary-hover);
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="header">
-      <div>
-        <h1>Backend API</h1>
-        <p class="subtitle">SHONGRE. multi-country marketplace runtime</p>
-      </div>
-      <div class="badge">
-        <span class="dot"></span> Online (Port ${port})
-      </div>
-    </div>
+const gzipAsync = promisify(gzip);
 
-    <div class="card" style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
-      <div>
-        <div style="font-weight: 600; font-size: 1rem; margin-bottom: 0.25rem;">Frontend Web Application</div>
-        <div style="color: var(--muted); font-size: 0.875rem;">Access the marketplace UI, search, publication wizard & workspaces.</div>
-      </div>
-      <a href="${frontendUrl || "#"}" class="cta-btn" target="_blank" rel="noreferrer">
-        Open Frontend ➜
-      </a>
-    </div>
+/**
+ * The origin serves exactly two HTML documents and both are constant for the
+ * life of the process, so each one is compressed once.
+ */
+const compressedDocuments = new Map<string, Buffer>();
 
-    <div class="section-title">Core API Endpoints</div>
-    <div class="grid">
-      <a class="link-item" href="/health" target="_blank">
-        <span class="link-name">Health Check</span>
-        <span class="link-path">GET /health</span>
-      </a>
-      <a class="link-item" href="${prefix}/taxonomy/v1/root" target="_blank">
-        <span class="link-name">Taxonomy Tree</span>
-        <span class="link-path">GET ${prefix}/taxonomy/v1/root</span>
-      </a>
-      <a class="link-item" href="${prefix}/listings" target="_blank">
-        <span class="link-name">Listings Feed</span>
-        <span class="link-path">GET ${prefix}/listings</span>
-      </a>
-      <a class="link-item" href="${prefix}/markets" target="_blank">
-        <span class="link-name">Supported Markets</span>
-        <span class="link-path">GET ${prefix}/markets</span>
-      </a>
-      <a class="link-item" href="${prefix}/business-rules/catalog?marketCode=FR" target="_blank">
-        <span class="link-name">Commercial Catalog</span>
-        <span class="link-path">GET ${prefix}/business-rules/catalog</span>
-      </a>
-      <a class="link-item" href="${prefix}/admin/stats" target="_blank">
-        <span class="link-name">Admin Platform Stats</span>
-        <span class="link-path">GET ${prefix}/admin/stats</span>
-      </a>
-    </div>
-  </div>
-</body>
-</html>`;
+async function compressDocument(html: string): Promise<Buffer> {
+  const cached = compressedDocuments.get(html);
+  if (cached) return cached;
+  const compressed = await gzipAsync(html);
+  compressedDocuments.set(html, compressed);
+  return compressed;
+}
+
+/**
+ * Serves an origin-owned HTML document with the API's negotiated gzip encoding.
+ */
+async function writeHtmlDocument(
+  req: IncomingMessage,
+  res: ServerResponse,
+  html: string,
+): Promise<void> {
+  const acceptsGzip = String(req.headers["accept-encoding"] || "")
+    .split(",")
+    .some((value) => value.trim().split(";")[0] === "gzip");
+  const payload: string | Buffer =
+    acceptsGzip &&
+    Buffer.byteLength(html) >= config.performance.compressionMinimumBytes
+      ? await compressDocument(html)
+      : html;
+  const vary = new Set(
+    String(res.getHeader("Vary") || "")
+      .split(",")
+      .map((value) => value.trim())
+      .filter(Boolean),
+  ).add("Accept-Encoding");
+  const headers: Record<string, string | number> = {
+    "Content-Type": "text/html; charset=utf-8",
+    "Content-Length": Buffer.byteLength(payload),
+    Vary: [...vary].join(", "),
+  };
+  if (Buffer.isBuffer(payload)) headers["Content-Encoding"] = "gzip";
+  res.writeHead(200, headers);
+  res.end(payload);
 }
 
 function resolveRequestId(value: unknown): string {
@@ -416,22 +266,14 @@ export async function handleHttpRequest(
       return;
     }
     if (req.method === "GET" && req.url === "/api/docs") {
-      res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
-      res.end(await renderApiDocumentation());
+      await writeHtmlDocument(req, res, await renderApiDocumentation());
       return;
     }
 
-    // Backend Home Page (HTML in browser, JSON otherwise)
+    // Developer console for browsers, service descriptor for everything else.
     if (req.url === "/") {
       if (acceptHeader.includes("text/html")) {
-        res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
-        res.end(
-          renderBackendHomePage(
-            config.port,
-            config.apiPrefix,
-            config.frontendUrl,
-          ),
-        );
+        await writeHtmlDocument(req, res, await developerConsolePage());
         return;
       }
       res.writeHead(200, { "Content-Type": "application/json" });

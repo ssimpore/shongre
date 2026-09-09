@@ -19,6 +19,11 @@ import {
 } from "@shongre/contracts/environment";
 import type { MarketInfrastructureConfig } from "@shongre/contracts";
 import {
+  SHONGRE_APPLICATION_FALLBACK_PATHS,
+  SHONGRE_APPLICATION_IDS,
+  type ShongreApplicationId,
+} from "@shongre/contracts/applications";
+import {
   SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS,
   type PublicCacheProfileName,
 } from "@shongre/contracts/performance";
@@ -54,6 +59,7 @@ export interface AppConfig {
   host: string;
   port: number;
   frontendUrl: string;
+  applicationUrls: Readonly<Record<ShongreApplicationId, string | null>>;
   publicApiUrl: string;
   apiPrefix: typeof SHONGRE_API_PREFIX;
   maxRequestBodyBytes: number;
@@ -780,6 +786,71 @@ function requiredRuntimePort(): number {
   return port;
 }
 
+const APPLICATION_ORIGIN_KEYS: Readonly<Record<ShongreApplicationId, string>> =
+  {
+    marketplace: "SHONGRE_MARKETPLACE_ORIGIN",
+    solutions: "SHONGRE_SOLUTIONS_ORIGIN",
+    prospects: "SHONGRE_PROSPECTS_ORIGIN",
+    facturation: "SHONGRE_FACTURATION_ORIGIN",
+  };
+
+function configuredOrigin(name: string): string | null {
+  const raw = process.env[name];
+  if (!raw) return null;
+  let parsed: URL;
+  try {
+    parsed = new URL(raw);
+  } catch {
+    throw new Error(`[Config Error] ${name} must be an absolute URL.`);
+  }
+  if (parsed.protocol !== "https:" && parsed.protocol !== "http:")
+    throw new Error(`[Config Error] ${name} must use HTTP or HTTPS.`);
+  if (
+    parsed.username ||
+    parsed.password ||
+    parsed.search ||
+    parsed.hash ||
+    (parsed.pathname !== "/" && parsed.pathname !== "")
+  )
+    throw new Error(`[Config Error] ${name} must contain an origin only.`);
+  return parsed.origin;
+}
+
+/**
+ * Absolute entry point of every separately deployed Web application, or `null`
+ * when this environment has not configured one. Outside production the split
+ * applications intentionally share the marketplace origin and answer on their
+ * own path prefix, exactly as the Web application registry resolves them.
+ */
+export function resolveApplicationUrls(
+  target: EnvironmentConfig,
+): Readonly<Record<ShongreApplicationId, string | null>> {
+  const marketplace =
+    configuredOrigin(APPLICATION_ORIGIN_KEYS.marketplace) ||
+    target.urls.franceApp.origin;
+  const shareMarketplaceOrigin = !isProduction(target.environment);
+  return Object.freeze(
+    Object.fromEntries(
+      SHONGRE_APPLICATION_IDS.map((applicationId) => {
+        const configured = configuredOrigin(
+          APPLICATION_ORIGIN_KEYS[applicationId],
+        );
+        if (applicationId === "marketplace")
+          return [applicationId, marketplace];
+        if (configured) return [applicationId, configured];
+        if (!shareMarketplaceOrigin) return [applicationId, null];
+        return [
+          applicationId,
+          new URL(
+            SHONGRE_APPLICATION_FALLBACK_PATHS[applicationId],
+            `${marketplace}/`,
+          ).toString(),
+        ];
+      }),
+    ) as Record<ShongreApplicationId, string | null>,
+  );
+}
+
 const environment = createEnvironmentConfig({
   appEnvironment: requiredRuntimeValue("APP_ENV"),
   environmentId: requiredRuntimeValue("ENVIRONMENT_ID"),
@@ -813,6 +884,7 @@ const candidateConfig: AppConfig = {
   host: requiredRuntimeValue("BACKEND_HOST"),
   port: requiredRuntimePort(),
   frontendUrl: environment.urls.franceApp.origin,
+  applicationUrls: resolveApplicationUrls(environment),
   publicApiUrl: environment.urls.api.origin,
   apiPrefix: SHONGRE_API_PREFIX,
   maxRequestBodyBytes: positiveInteger(

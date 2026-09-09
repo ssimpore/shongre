@@ -1056,7 +1056,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /** GET /admin/stats */
+        /** Platform statistics */
         readonly get: operations["getAdminStats"];
         readonly put?: never;
         readonly post?: never;
@@ -2440,7 +2440,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /** GET /business-rules/catalog */
+        /** Commercial catalog for a market */
         readonly get: operations["getBusinessRulesCatalog"];
         readonly put?: never;
         readonly post?: never;
@@ -3875,7 +3875,7 @@ export interface paths {
             readonly cookie?: never;
         };
         /**
-         * GET /discovery/collections
+         * Public discovery collections
          * @description Taxonomy roots with eligible inventory, assembled server-side. Replaces one search request per root category from the client.
          */
         readonly get: operations["getDiscoveryCollections"];
@@ -5342,7 +5342,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /** GET /listings */
+        /** Public listings feed */
         readonly get: operations["getListings"];
         readonly put?: never;
         readonly post?: never;
@@ -6307,7 +6307,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /** GET /markets */
+        /** Supported markets */
         readonly get: operations["getMarkets"];
         readonly put?: never;
         readonly post?: never;
@@ -8077,7 +8077,7 @@ export interface paths {
             readonly path?: never;
             readonly cookie?: never;
         };
-        /** GET /taxonomy/root */
+        /** Root taxonomy categories */
         readonly get: operations["getTaxonomyRoot"];
         readonly put?: never;
         readonly post?: never;

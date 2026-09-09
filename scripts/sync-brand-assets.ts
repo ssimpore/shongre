@@ -16,6 +16,7 @@ import {
   brandAssetMappings,
   brandDocumentAdapterDestination,
   brandDocumentLogoSource,
+  brandDocumentReverseLogoSource,
   brandMobileImageRegistryDestination,
   brandMobileRegistryDestination,
   brandGeneratedDestinations,
@@ -73,6 +74,7 @@ async function preflightBrandSources(): Promise<void> {
   const requiredSources = new Set([
     ...brandAssetMappings.map(({ source }) => source),
     brandDocumentLogoSource,
+    brandDocumentReverseLogoSource,
     brandTokenSource,
   ]);
   const destinations = new Set<string>();
@@ -140,6 +142,7 @@ async function main(): Promise<void> {
 
   const documentAdapter = await renderBrandDocumentAdapter(
     brandDocumentLogoSource,
+    brandDocumentReverseLogoSource,
   );
   const documentDestination = absoluteRepositoryPath(
     brandDocumentAdapterDestination,

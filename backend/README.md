@@ -60,6 +60,16 @@ implementations with `/livez` and `/readyz`. `/api/openapi.json` serves the
 canonical specification; `/api/docs` is an offline operation reference. Startup
 fails if the selected database adapter is not ready, independently of NODE_ENV.
 
+`/` answers with the developer console for browsers and the JSON service
+descriptor for every other client. The console, the reference page and their
+shared presentation model live in `src/infrastructure/http/developer-console*`
+and `openapi-documentation.ts`; both derive every method, path, description and
+access level from `openapi/openapi.json` and hold no endpoint list of their own.
+Its playground executes only the public, parameter-free discovery reads the
+contract declares, same-origin and without credentials. Runtime figures come
+from the public probes and from timings the browser session measures; the page
+must not present unavailable server-side telemetry as fact.
+
 Worker health is checked using `node dist/worker-health.js`. A heartbeat proves
 recent successful database coordination by the worker process in its configured
 environment. API shutdown does not terminate workers; worker containers do not

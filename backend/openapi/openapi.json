@@ -6345,7 +6345,7 @@
       "get": {
         "operationId": "getAdminStats",
         "tags": ["admin-stats"],
-        "summary": "GET /admin/stats",
+        "summary": "Platform statistics",
         "parameters": [
           {
             "$ref": "#/components/parameters/RequestId"
@@ -12519,7 +12519,7 @@
       "get": {
         "operationId": "getBusinessRulesCatalog",
         "tags": ["business-rules"],
-        "summary": "GET /business-rules/catalog",
+        "summary": "Commercial catalog for a market",
         "parameters": [
           {
             "name": "marketCode",
@@ -24989,7 +24989,7 @@
       "get": {
         "operationId": "getListings",
         "tags": ["listings"],
-        "summary": "GET /listings",
+        "summary": "Public listings feed",
         "parameters": [
           {
             "$ref": "#/components/parameters/MarketContext"
@@ -26637,7 +26637,7 @@
         "x-shongre-deny-staff-marketplace": false,
         "operationId": "getMarkets",
         "tags": ["markets"],
-        "summary": "GET /markets",
+        "summary": "Supported markets",
         "parameters": [
           {
             "$ref": "#/components/parameters/RequestId"
@@ -39126,7 +39126,7 @@
       "get": {
         "operationId": "getTaxonomyRoot",
         "tags": ["taxonomy"],
-        "summary": "GET /taxonomy/root",
+        "summary": "Root taxonomy categories",
         "parameters": [
           {
             "$ref": "#/components/parameters/RequestId"
@@ -39260,7 +39260,7 @@
       "get": {
         "operationId": "getDiscoveryCollections",
         "tags": ["discovery"],
-        "summary": "GET /discovery/collections",
+        "summary": "Public discovery collections",
         "description": "Taxonomy roots with eligible inventory, assembled server-side. Replaces one search request per root category from the client.",
         "parameters": [
           {

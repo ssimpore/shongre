@@ -12,6 +12,7 @@ import {
   brandConsumerAssets,
   brandDocumentAdapterDestination,
   brandDocumentLogoSource,
+  brandDocumentReverseLogoSource,
   brandGeneratedDestinations,
   brandMobileImageRegistryDestination,
   brandMobileRegistryDestination,
@@ -375,6 +376,7 @@ async function main(): Promise<void> {
     for (const source of [
       ...brandAssetMappings.map(({ source }) => source),
       brandDocumentLogoSource,
+      brandDocumentReverseLogoSource,
       brandTokenSource,
     ]) {
       if (!checksums.has(source))
@@ -524,7 +526,10 @@ async function main(): Promise<void> {
   }
 
   try {
-    const expected = await renderBrandDocumentAdapter(brandDocumentLogoSource);
+    const expected = await renderBrandDocumentAdapter(
+      brandDocumentLogoSource,
+      brandDocumentReverseLogoSource,
+    );
     const actual = await readFile(
       absoluteRepositoryPath(brandDocumentAdapterDestination),
       "utf8",

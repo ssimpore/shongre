@@ -1,5 +1,6 @@
 import type { AppEnvironment } from "@shongre/contracts/environment";
 import {
+  SHONGRE_APPLICATION_FALLBACK_PATHS,
   SHONGRE_APPLICATION_IDS,
   type ShongreApplicationId,
 } from "@shongre/contracts/applications";
@@ -29,13 +30,6 @@ export interface ApplicationFallbackRoute {
   applicationPath: string;
   routingBasePath: string;
 }
-
-const FALLBACK_PATHS: Record<ShongreApplicationId, string> = {
-  marketplace: "/",
-  solutions: "/solutions",
-  prospects: "/prospects",
-  facturation: "/facturation",
-};
 
 function normalizeOrigin(value: string, label: string): string {
   let parsed: URL;
@@ -102,7 +96,11 @@ export function createApplicationRegistry(input: {
       }
       return [
         applicationId,
-        { applicationId, origin, fallbackPath: FALLBACK_PATHS[applicationId] },
+        {
+          applicationId,
+          origin,
+          fallbackPath: SHONGRE_APPLICATION_FALLBACK_PATHS[applicationId],
+        },
       ];
     }),
   ) as ShongreApplicationRegistry;

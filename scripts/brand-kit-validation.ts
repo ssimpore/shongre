@@ -6,6 +6,7 @@ import {
   BRAND_SIGNATURE,
   brandAssetMappings,
   brandDocumentLogoSource,
+  brandDocumentReverseLogoSource,
   brandSourceRootForVersion,
   brandTokenSource,
   normalizeBrandVersion,
@@ -419,6 +420,7 @@ export async function validateBrandKit(
   const runtimeSources = new Set([
     ...brandAssetMappings.map(({ source }) => source),
     brandDocumentLogoSource,
+    brandDocumentReverseLogoSource,
     brandTokenSource,
   ]);
   for (const relative of runtimeSources) {

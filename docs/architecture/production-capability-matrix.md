@@ -64,8 +64,8 @@ evidence.
 <!-- capability-inventory:start -->
 
 Current generated repository inventory: 530 OpenAPI operations across 468
-paths, including 521 runtime routes, and 130 ordered migrations through
-`00130_taxonomy_v1_tutoring_activation.sql`. There are 400 non-E2E test source files.
+paths, including 521 runtime routes, and 131 ordered migrations through
+`00131_taxonomy_v1_field_relevance.sql`. There are 403 non-E2E test source files.
 <!-- capability-inventory:end -->
 
 Statuses in this ledger are intentionally stricter than feature-development

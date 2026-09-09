@@ -49,12 +49,12 @@ case "$action" in
     "$root/scripts/supabase.sh" down
     ;;
   prune-stale)
-    # Remove only what an earlier run left behind: containers of this compose
-    # project that are no longer running, and untagged image layers. Running
-    # containers, tagged images and named volumes are never touched, so the
-    # local database survives and nothing has to be pulled again. Supabase owns
+    # Remove containers of this compose project that are no longer running and
+    # images not referenced by any container. Running containers and named
+    # volumes remain untouched, so the local database survives. Supabase owns
     # its own containers and deliberately keeps some of them stopped, so they
-    # are matched by project label rather than by name.
+    # are matched by project label rather than by name. Images removed here are
+    # rebuilt or pulled on demand by the next local run.
     shongre_require_docker_daemon || exit 1
     stale="$(docker ps --all --quiet \
       --filter "label=com.docker.compose.project=${COMPOSE_PROJECT_NAME}" \
@@ -64,9 +64,9 @@ case "$action" in
       docker rm --volumes $stale >/dev/null
       shongre_pass "removed $(printf '%s\n' "$stale" | wc -l | tr -d ' ') stale ${COMPOSE_PROJECT_NAME} container(s)"
     fi
-    reclaimed="$(docker image prune --force | awk '/^Total reclaimed space/ { print $4 $5 }')"
+    reclaimed="$(docker image prune --all --force | awk '/^Total reclaimed space/ { print $4 $5 }')"
     if [[ -n "$reclaimed" && "$reclaimed" != "0B" ]]; then
-      shongre_pass "reclaimed $reclaimed of untagged image layers"
+      shongre_pass "reclaimed $reclaimed of unused image data"
     fi
     ;;
   status)

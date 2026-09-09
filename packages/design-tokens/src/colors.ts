@@ -77,6 +77,7 @@ export const colors = {
     primaryShadow: themeColors["primary-shadow"],
     primaryShadowStrong: themeColors["primary-shadow-strong"],
     primaryOverlay: themeColors["primary-overlay"],
+    primaryOnDark: themeColors["primary-on-dark"],
     primaryOnDarkBorder: themeColors["primary-on-dark-border"],
     disabled: themeColors["text-disabled"],
     onPrimary: themeColors["text-inverse"],
@@ -104,6 +105,7 @@ export const colors = {
     info: themeColors.info,
     infoSurface: themeColors["info-surface"],
     infoBorder: themeColors["info-border"],
+    infoOnInverse: themeColors["info-on-inverse"],
   },
   interaction: {
     focus: themeColors.focus,
@@ -116,6 +118,7 @@ export const colors = {
     ratingSurface: themeColors["rating-surface"],
     staff: themeColors.staff,
     staffStrong: themeColors["staff-strong"],
+    staffOnInverse: themeColors["staff-on-inverse"],
     staffSurface: themeColors["staff-surface"],
     automation: themeColors.automation,
     automationStrong: themeColors["automation-strong"],
