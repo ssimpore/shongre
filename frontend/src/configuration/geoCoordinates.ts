@@ -46,6 +46,21 @@ export const FRENCH_MAJOR_CITIES: Record<string, CityCoordinates> = {
   avignon: { lat: 43.9493, lng: 4.8055, name: "Avignon", zoom: 12 },
   poitiers: { lat: 46.5802, lng: 0.3404, name: "Poitiers", zoom: 12 },
   larochelle: { lat: 46.1603, lng: -1.1511, name: "La Rochelle", zoom: 12 },
+  biarritz: { lat: 43.4832, lng: -1.5586, name: "Biarritz", zoom: 12 },
+  ecully: { lat: 45.7746, lng: 4.778, name: "Écully", zoom: 12 },
+  "saint-priest": {
+    lat: 45.696,
+    lng: 4.9447,
+    name: "Saint-Priest",
+    zoom: 12,
+  },
+  villeurbanne: { lat: 45.7679, lng: 4.8797, name: "Villeurbanne", zoom: 12 },
+  "boulogne-billancourt": {
+    lat: 48.8352,
+    lng: 2.2409,
+    name: "Boulogne-Billancourt",
+    zoom: 12,
+  },
 };
 
 const FRANCE_CENTER = {

@@ -309,6 +309,7 @@ const matches = (
     (!job.publishedAt || job.publishedAt < query.publishedSince)
   )
     return false;
+  if (query.employerId && job.employer.id !== query.employerId) return false;
   if (query.verifiedEmployerOnly && !job.employer.isPubliclyVerified)
     return false;
   if (query.accessibilityOnly && !job.accessibilityInformation) return false;
@@ -1428,6 +1429,9 @@ export class PostgresEmploymentRepository implements EmploymentRepository {
         `title.ilike.%${escaped}%,qualification_summary.ilike.%${escaped}%`,
       );
     }
+    // Index-backed: employment_jobs_employer_idx leads on employer_id.
+    if (query.employerId)
+      statement = statement.eq("employer_id", query.employerId);
     if (query.professionIds.length)
       statement = statement.in("profession_id", query.professionIds);
     if (query.industryIds.length)

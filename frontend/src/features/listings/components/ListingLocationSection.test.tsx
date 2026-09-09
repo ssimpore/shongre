@@ -15,10 +15,14 @@ import { ListingLocationSection } from "./ListingLocationSection";
 
 /**
  * A listing's location is the fact a reader most wants and the one a seller is
- * least willing to publish exactly. The rule this pins is that the map appears
- * only when the public projection actually published coordinates — a listing
- * without them gets the place name and nothing else, rather than a pin at an
- * invented position that reads as an address.
+ * least willing to publish exactly.
+ *
+ * Two rules meet here. A published coordinate is drawn as an approximate area,
+ * never a pin. And when the projection published none — which is most of the
+ * catalogue, because nothing geocodes what a seller types — the town itself is
+ * still a location, so the map is drawn at town scale from the market's city
+ * gazetteer. A town the gazetteer does not know gets no map at all: the one
+ * thing never allowed is a confident circle over the wrong place.
  */
 describe("listing location section", () => {
   it("names the place and its postcode", () => {
@@ -30,7 +34,7 @@ describe("listing location section", () => {
     expect(markup).toContain("Les Mathes (17570)");
   });
 
-  it("shows no map when the projection published no coordinates", () => {
+  it("refuses a coordinate that is not a place", () => {
     for (const coordinates of [
       {},
       { latitude: 45.7 },
@@ -53,8 +57,50 @@ describe("listing location section", () => {
         />,
       );
       expect(markup).toContain("Les Mathes");
-      // Neither the map nor its placeholder: there is nothing truthful to draw.
-      expect(markup).not.toContain("data-listing-location-map");
+      // Neither the map nor its placeholder: there is nothing truthful to draw,
+      // and Les Mathes is not a town the gazetteer can stand in for.
+      expect(markup).not.toContain("skeleton-shimmer");
+    }
+  });
+
+  it("draws the town when the projection published no coordinate", () => {
+    // The common case: a seller typed a town, nothing geocoded it, and the
+    // section used to show a heading over empty space.
+    const markup = renderToStaticMarkup(
+      <ListingLocationSection
+        id="listing-1"
+        marketCode="FR"
+        city="Biarritz"
+        postalCode="64200"
+      />,
+    );
+    expect(markup).toContain("Biarritz (64200)");
+    expect(markup).toContain("skeleton-shimmer");
+  });
+
+  it("reads an arrondissement as its city", () => {
+    // "Paris 11e" and "Lyon 2e" are how the catalogue writes them, and a
+    // gazetteer keyed on bare city names would answer nothing for either.
+    for (const city of ["Paris 11e", "Lyon 2e", "Marseille 7e"]) {
+      const markup = renderToStaticMarkup(
+        <ListingLocationSection id={city} marketCode="FR" city={city} />,
+      );
+      expect(markup, city).toContain("skeleton-shimmer");
+    }
+  });
+
+  it("still refuses a town it does not know, rather than centring the market", () => {
+    /*
+     * The failure this forbids is a surfboard in the Basque Country drawn near
+     * Paris because the market centre was the nearest thing to an answer. No
+     * map is the correct answer; a plausible wrong one is not.
+     */
+    for (const city of ["Trifouillis-les-Oies", "France", "Zzz"]) {
+      const markup = renderToStaticMarkup(
+        <ListingLocationSection id="listing-2" marketCode="FR" city={city} />,
+      );
+      expect(markup, city).toContain(city);
+      expect(markup, city).not.toContain("skeleton-shimmer");
     }
   });
 

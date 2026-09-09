@@ -12343,6 +12343,8 @@ export interface components {
             readonly publishedToday?: boolean;
             readonly query?: string;
             readonly radiusKm?: number;
+            /** @description Restrict results to one seller. */
+            readonly sellerId?: string;
             /** @enum {string} */
             readonly sellerType?: "all" | "individual" | "pro";
             /** @enum {string} */
@@ -26114,6 +26116,8 @@ export interface operations {
                 readonly publishedToday?: boolean;
                 readonly query?: string;
                 readonly radiusKm?: number;
+                /** @description Restrict results to one seller. Used for the seller's other listings on a detail page and for a public seller profile, so neither has to read the whole market and filter client-side. */
+                readonly sellerId?: string;
                 readonly sellerType?: "all" | "individual" | "pro";
                 readonly sortBy?: "date_desc" | "price_asc" | "price_desc" | "relevance" | "distance";
                 readonly subCategorySlug?: string;

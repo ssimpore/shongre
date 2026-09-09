@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import L from "leaflet";
-import "leaflet/dist/leaflet.css";
-import { Layers, Maximize2, X, Navigation, Compass } from "lucide-react";
+import { Maximize2, X, Navigation, Compass } from "lucide-react";
 import { Listing } from "../../types";
 import { plural } from "../../utilities/formatters";
 import {
@@ -12,7 +11,7 @@ import { useTranslation } from "../../i18n/I18nProvider";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { ListingCard } from "../../design-system/primitives/ListingCard";
 import { presentExploreMapMarker } from "./explore-map-marker.presentation";
-import { MAP_TILE_OPTIONS, MAP_TILE_URL } from "../../platform/map/tile-source";
+import { MapCanvas } from "../../design-system/primitives/MapCanvas";
 
 interface ExploreMapViewProps {
   listings: Listing[];
@@ -33,14 +32,11 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
   const { activeMarket, currentLocale, convertMoney, popularCities } =
     useMarketLocation();
   const marketMap = getMarketMapConfiguration(activeMarket.code);
-  const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersRef = useRef<{ [listingId: string]: L.Marker }>({});
-  const tileLayerRef = useRef<L.TileLayer | null>(null);
 
   const [activeListing, setActiveListing] = useState<Listing | null>(null);
   const [hoveredListingId, setHoveredListingId] = useState<string | null>(null);
-  const [mapStyle, setMapStyle] = useState<"positron" | "osm">("positron");
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const mapListings = useMemo(
     () =>
@@ -51,39 +47,18 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
     [listings],
   );
 
-  // Initialize Map
-  useEffect(() => {
-    if (!mapContainerRef.current) return;
-
-    // Clean up if already exists
-    if (mapInstanceRef.current) {
-      mapInstanceRef.current.remove();
-      mapInstanceRef.current = null;
-    }
-
-    const map = L.map(mapContainerRef.current, {
-      zoomControl: false,
-      attributionControl: false,
-    }).setView(
-      [marketMap.center.lat, marketMap.center.lng],
-      marketMap.center.zoom,
-    );
-
-    const positronLayer = L.tileLayer(MAP_TILE_URL, MAP_TILE_OPTIONS).addTo(
-      map,
-    );
-
-    tileLayerRef.current = positronLayer;
+  /*
+   * The zoom control sits top-right here, clear of the filter bar the map is
+   * inset into, so it is added rather than left in Leaflet's default corner.
+   */
+  const attachMap = (map: L.Map) => {
     mapInstanceRef.current = map;
-
-    // Add zoom control top right
-    L.control.zoom({ position: "topright" }).addTo(map);
-
+    const zoom = L.control.zoom({ position: "topright" }).addTo(map);
     return () => {
-      map.remove();
+      zoom.remove();
       mapInstanceRef.current = null;
     };
-  }, [activeMarket.code, marketMap.center]);
+  };
 
   /* Toggling the listing panel changes the map container's width, and Leaflet
      only recomputes its tile grid when told to. Without this, hiding the panel
@@ -98,21 +73,6 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
     );
     return () => cancelAnimationFrame(id);
   }, [isSidebarOpen]);
-
-  // Switch Map Style
-  useEffect(() => {
-    if (!mapInstanceRef.current || !tileLayerRef.current) return;
-
-    mapInstanceRef.current.removeLayer(tileLayerRef.current);
-
-    // Both styles now resolve to the one keyed-free source; the switch is kept
-    // so a second style can be reintroduced without rewiring the control.
-    const newLayer = L.tileLayer(MAP_TILE_URL, MAP_TILE_OPTIONS).addTo(
-      mapInstanceRef.current,
-    );
-
-    tileLayerRef.current = newLayer;
-  }, [mapStyle]);
 
   // Update Markers when listings change
   useEffect(() => {
@@ -304,20 +264,6 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
             <span className="hidden md:inline">Recadrer</span>
           </button>
 
-          <button
-            type="button"
-            onClick={() =>
-              setMapStyle((s) => (s === "positron" ? "osm" : "positron"))
-            }
-            title={t("search.exploreMapView.changerLeStyleDeCarte")}
-            className="p-1.5 text-xs font-semibold text-text-supporting hover:text-text-main bg-surface-muted hover:bg-surface-disabled rounded-lg flex items-center gap-1 transition-colors"
-          >
-            <Layers className="w-icon-sm h-icon-sm" />
-            <span className="hidden md:inline">
-              {mapStyle === "positron" ? "Plan doux" : "OSM"}
-            </span>
-          </button>
-
           {showResultsSidebar ? (
             <button
               type="button"
@@ -376,7 +322,20 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
             growing the page below it. The wrapper also prevents the preview
             from covering the optional desktop results sidebar. */}
         <div className="relative min-w-0 flex-1" data-testid="search-map-stage">
-          <div ref={mapContainerRef} className="h-full w-full z-raised" />
+          <MapCanvas
+            surface="explore"
+            center={{
+              latitude: marketMap.center.lat,
+              longitude: marketMap.center.lng,
+              zoom: marketMap.center.zoom,
+            }}
+            layerKey={activeMarket.code}
+            zoomControl={false}
+            scrollWheelZoom
+            ariaLabel={t("search.exploreMapView.regionLabel")}
+            className="h-full w-full z-raised"
+            onReady={attachMap}
+          />
 
           {activeListing && (
             <div

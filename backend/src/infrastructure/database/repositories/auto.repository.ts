@@ -779,6 +779,7 @@ function matches(query: VehicleSearchQuery, vehicle: VehiclePrivate) {
     !query.sellerTypes.includes(vehicle.seller.type)
   )
     return false;
+  if (query.sellerId && vehicle.seller.id !== query.sellerId) return false;
   if (
     query.minPriceMinor !== undefined &&
     vehicle.price.amountMinor < query.minPriceMinor
@@ -1426,6 +1427,9 @@ export class PostgresAutoRepository implements IAutoRepository {
       q = q.in("transmission", query.transmissions);
     if (query.bodyTypes?.length) q = q.in("body_type", query.bodyTypes);
     if (query.sellerTypes?.length) q = q.in("seller_type", query.sellerTypes);
+    // The public projection publishes the dealer organisation as the seller, so
+    // that is the column a seller filter has to compare against.
+    if (query.sellerId) q = q.eq("dealer_organization_id", query.sellerId);
     if (query.minPriceMinor !== undefined)
       q = q.gte("price_minor", query.minPriceMinor);
     if (query.maxPriceMinor !== undefined)

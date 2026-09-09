@@ -33,7 +33,6 @@ import {
   FormField,
   Image,
   Input,
-  ListingGrid,
   SellerIdentityLink,
   Select,
   Skeleton,
@@ -53,6 +52,8 @@ import {
   DetailSection,
 } from "../../design-system/primitives/DetailFacts";
 import { ListingLocationSection } from "../listings/components/ListingLocationSection";
+import { ListingDiscoveryRail } from "../listings/components/ListingDiscoveryRail";
+import { PAGE_SIZES } from "../../configuration/pagination.config";
 import { iconForFact } from "../../domains/listing/listing-facts.presentation";
 import {
   PROPERTY_LEAD_FORM_ID,
@@ -84,6 +85,9 @@ export const ImmoPropertyDetailPage: React.FC = () => {
     useFavorites();
   const [property, setProperty] = useState<PropertyPublic | null>(null);
   const [comparables, setComparables] = useState<PropertyPublic[]>([]);
+  const [sellerProperties, setSellerProperties] = useState<PropertyPublic[]>(
+    [],
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [sending, setSending] = useState(false);
@@ -111,6 +115,7 @@ export const ImmoPropertyDetailPage: React.FC = () => {
     setError(false);
     setProperty(null);
     setComparables([]);
+    setSellerProperties([]);
     services.realEstate
       .getProperty(slug, activeMarket.code)
       .then((result) => {
@@ -128,6 +133,23 @@ export const ImmoPropertyDetailPage: React.FC = () => {
             if (!cancelled) setComparables(items);
           })
           .catch(() => undefined);
+        // What else this agency or owner has listed, filtered by the API.
+        if (result.seller?.id) {
+          void services.realEstate
+            .searchProperties({
+              marketCode: activeMarket.code,
+              sellerId: result.seller.id,
+              sort: "newest",
+              limit: PAGE_SIZES.similarVerticalListings,
+            })
+            .then((found) => {
+              if (cancelled) return;
+              setSellerProperties(
+                found.items.filter((row) => row.id !== result.id).slice(0, 8),
+              );
+            })
+            .catch(() => undefined);
+        }
       })
       .catch(() => {
         if (!cancelled) setError(true);
@@ -486,6 +508,8 @@ export const ImmoPropertyDetailPage: React.FC = () => {
             </DetailSection>
 
             <ListingLocationSection
+              id={property.id}
+              marketCode={activeMarket.code}
               city={property.address.city}
               postalCode={property.address.postalCode}
               latitude={property.address.latitude}
@@ -705,29 +729,52 @@ export const ImmoPropertyDetailPage: React.FC = () => {
           </aside>
         </div>
 
-        {comparables.length ? (
-          <section className="mt-8">
-            <h2 className="text-lg font-bold text-text-main">
-              Biens comparables
-            </h2>
-            <p className="mt-1 text-xs text-text-muted">
-              Même type de bien et même projet, sans estimation de valeur.
-            </p>
-            <ListingGrid className="mt-4">
-              {comparables.map((item) => (
-                <PropertyCard
-                  key={item.id}
-                  property={item}
-                  favoriteState={isFavorite(item.listingId)}
-                  favoriteLoadState={favoriteLoadState}
-                  onFavorite={favoriteComparable}
-                  onFavoriteRetry={refreshFavorites}
-                  compact
-                />
-              ))}
-            </ListingGrid>
-          </section>
-        ) : null}
+        <div className="mt-8 space-y-7">
+          <ListingDiscoveryRail
+            kind="seller"
+            title={t(
+              isProfessionalSeller
+                ? "listings.discovery.fromThisPro"
+                : "listings.discovery.fromThisSeller",
+            )}
+            subtitle={t("listings.discovery.fromThisSellerSubtitle")}
+            moreHref={sellerPublicUrl}
+            moreLabel={t("listings.discovery.seeMoreFromSeller")}
+          >
+            {sellerProperties.map((item) => (
+              <PropertyCard
+                key={item.id}
+                property={item}
+                favoriteState={isFavorite(item.listingId)}
+                favoriteLoadState={favoriteLoadState}
+                onFavorite={favoriteComparable}
+                onFavoriteRetry={refreshFavorites}
+                compact
+              />
+            ))}
+          </ListingDiscoveryRail>
+
+          {/* "Comparables" rather than "similar": the wording is a claim about
+              what the set is — same type of property, same project — and it
+              deliberately stops short of implying a valuation. */}
+          <ListingDiscoveryRail
+            kind="comparables"
+            title="Biens comparables"
+            subtitle="Même type de bien et même projet, sans estimation de valeur."
+          >
+            {comparables.map((item) => (
+              <PropertyCard
+                key={item.id}
+                property={item}
+                favoriteState={isFavorite(item.listingId)}
+                favoriteLoadState={favoriteLoadState}
+                onFavorite={favoriteComparable}
+                onFavoriteRetry={refreshFavorites}
+                compact
+              />
+            ))}
+          </ListingDiscoveryRail>
+        </div>
       </Container>
     </div>
   );

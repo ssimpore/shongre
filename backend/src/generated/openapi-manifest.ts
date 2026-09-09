@@ -3395,6 +3395,7 @@ export const OPENAPI_OPERATIONS = {
       minPrice: "number",
       maxPrice: "number",
       sellerType: "string",
+      sellerId: "string",
       deliveryAvailable: "boolean",
       onlinePaymentAvailable: "boolean",
       onlyDeals: "boolean",

@@ -32,6 +32,7 @@ import type {
 import { verticalCheckoutSchema } from "@shongre/contracts/vertical";
 import { CANONICAL_TAXONOMY_IDS } from "@shongre/contracts/taxonomy-domain-ids";
 import { getSupabaseAdminClient } from "../../supabase/supabase-client.js";
+import { parseGeographyPoint } from "../../../shared/geography.js";
 import type { MarketResolvedListingPromotion } from "@shongre/contracts/discovery";
 import {
   getMarketResolvedPromotion,
@@ -562,6 +563,7 @@ const matches = (query: PropertySearchQuery, row: PropertyPrivate) => {
     !query.propertyTypes.includes(row.propertyType)
   )
     return false;
+  if (query.sellerId && row.seller.id !== query.sellerId) return false;
   if (
     query.minPriceMinor !== undefined &&
     row.financials.price.amountMinor < query.minPriceMinor
@@ -1335,24 +1337,15 @@ export class PostgresRealEstateRepository implements IRealEstateRepository {
     };
   }
 
+  /**
+   * The address type requires numbers, so a row with no readable point still
+   * has to yield a pair. `(0, 0)` is that pair, and it is the sentinel every
+   * client already reads as "no coordinate" — but it is now produced only when
+   * the column genuinely holds nothing, rather than every time, which is what
+   * the hand-rolled parser this replaced did to the entire portfolio.
+   */
   private point(value: unknown) {
-    if (
-      value &&
-      typeof value === "object" &&
-      "coordinates" in value &&
-      Array.isArray((value as { coordinates: unknown }).coordinates)
-    ) {
-      const [longitude, latitude] = (value as { coordinates: number[] })
-        .coordinates;
-      return { latitude, longitude };
-    }
-    const match =
-      typeof value === "string"
-        ? value.match(/POINT\(([-\d.]+) ([-\d.]+)\)/)
-        : null;
-    return match
-      ? { longitude: Number(match[1]), latitude: Number(match[2]) }
-      : { longitude: 0, latitude: 0 };
+    return parseGeographyPoint(value) ?? { longitude: 0, latitude: 0 };
   }
 
   private mapProperty(
@@ -1588,6 +1581,16 @@ export class PostgresRealEstateRepository implements IRealEstateRepository {
       builder = builder.contains("amenities", query.amenities);
     if (query.sellerTypes?.length)
       builder = builder.in("seller_type", query.sellerTypes);
+    /*
+     * The seller a property publishes is its agency organisation when an agency
+     * listed it and the owner's account when a private owner did, so a seller
+     * filter has to match either. Both columns are indexed; the JSONB payload
+     * that also carries the id is not, which is why it is not what is compared.
+     */
+    if (query.sellerId)
+      builder = builder.or(
+        `organization_id.eq.${query.sellerId},owner_user_id.eq.${query.sellerId}`,
+      );
     if (query.query)
       builder = builder.textSearch("search_vector", query.query, {
         config: "simple",

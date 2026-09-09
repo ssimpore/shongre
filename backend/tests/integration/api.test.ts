@@ -686,6 +686,52 @@ describe("API v1 Endpoints Integration", () => {
     expect(Array.isArray(data.items)).toBe(true);
   });
 
+  it("narrows search to one seller, over GET and POST alike", async () => {
+    /*
+     * "The other listings from this seller" is a question two public surfaces
+     * ask — the rail on a detail page and the seller's own profile — and until
+     * this filter existed both answered it by reading the whole market and
+     * matching ids in the browser.
+     */
+    const all = await fetch(
+      `${baseUrl}/api/v1/listings/search?marketCode=FR&limit=50`,
+      { headers: { "X-Shongre-Market": "FR" } },
+    ).then((response) => response.json());
+    const sellerId = all.items.find((item: any) => item.sellerId)?.sellerId;
+    expect(sellerId).toBeTruthy();
+
+    for (const response of [
+      await fetch(
+        `${baseUrl}/api/v1/listings/search?marketCode=FR&sellerId=${sellerId}`,
+        { headers: { "X-Shongre-Market": "FR" } },
+      ),
+      await fetch(`${baseUrl}/api/v1/listings/search`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Shongre-Market": "FR",
+        },
+        body: JSON.stringify({ marketCode: "FR", sellerId }),
+      }),
+    ]) {
+      expect(response.status).toBe(200);
+      const body = await response.json();
+      expect(body.items.length).toBeGreaterThan(0);
+      expect(body.items.every((item: any) => item.sellerId === sellerId)).toBe(
+        true,
+      );
+      expect(body.items.length).toBeLessThan(all.items.length + 1);
+    }
+
+    // An identifier is never punctuation: the value reaches a column filter,
+    // so anything that could be syntax is refused rather than interpreted.
+    const rejected = await fetch(
+      `${baseUrl}/api/v1/listings/search?marketCode=FR&sellerId=${encodeURIComponent("a,b.eq.c")}`,
+      { headers: { "X-Shongre-Market": "FR" } },
+    );
+    expect(rejected.status).toBe(400);
+  });
+
   it("keeps Staff signed in for public discovery while denying customer mutations", async () => {
     const listingUrl = `${baseUrl}/api/v1/listings?marketCode=FR`;
     const anonymous = await fetch(listingUrl);

@@ -19,6 +19,13 @@ export interface DetailSectionProps {
   title: string;
   /** Rendered under the title, before the content. */
   subtitle?: React.ReactNode;
+  /**
+   * A single trailing control on the heading row — "see everything in this
+   * category", "more from this seller". It sits beside the title rather than
+   * under the content because it is an alternative to reading the section, not
+   * a conclusion to it.
+   */
+  action?: React.ReactNode;
   children: React.ReactNode;
   /** Omit the leading rule when the section opens a column. */
   divider?: boolean;
@@ -29,6 +36,7 @@ export interface DetailSectionProps {
 export const DetailSection: React.FC<DetailSectionProps> = ({
   title,
   subtitle,
+  action,
   children,
   divider = true,
   className = "",
@@ -39,9 +47,12 @@ export const DetailSection: React.FC<DetailSectionProps> = ({
     data-detail-section="true"
     className={`${divider ? "border-t border-border-base pt-7" : ""} ${className}`}
   >
-    <h2 className="text-xl font-bold tracking-tight text-text-main sm:text-2xl">
-      {title}
-    </h2>
+    <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
+      <h2 className="text-xl font-bold tracking-tight text-text-main sm:text-2xl">
+        {title}
+      </h2>
+      {action}
+    </div>
     {subtitle ? <div className="mt-2">{subtitle}</div> : null}
     <div className="mt-5">{children}</div>
   </section>

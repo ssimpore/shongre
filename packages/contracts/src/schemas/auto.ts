@@ -489,6 +489,8 @@ export const vehicleSearchQuerySchema = z.object({
   fuelTypes: z.array(fuelTypeSchema).optional(),
   transmissions: z.array(transmissionSchema).optional(),
   sellerTypes: z.array(sellerTypeSchema).optional(),
+  /** One dealer or private seller — "the other vehicles from this seller". */
+  sellerId: z.string().trim().min(1).max(64).optional(),
   minPriceMinor: z.number().int().nonnegative().optional(),
   maxPriceMinor: z.number().int().nonnegative().optional(),
   minYear: z.number().int().min(1880).max(2200).optional(),

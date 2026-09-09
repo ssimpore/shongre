@@ -1,12 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import L from "leaflet";
-import "leaflet/dist/leaflet.css";
 import { Crosshair, MapPin, X } from "lucide-react";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { getMarketMapConfiguration } from "../../configuration/geoCoordinates";
 import { useTranslation } from "../../i18n/I18nProvider";
-import { MAP_TILE_OPTIONS, MAP_TILE_URL } from "../../platform/map/tile-source";
+import { MapCanvas } from "../../design-system/primitives/MapCanvas";
 
 export interface SearchMapItem {
   id: string;
@@ -35,31 +34,10 @@ export function SearchResultsMap({
   const { t } = useTranslation();
   const { activeMarket } = useMarketLocation();
   const mapConfiguration = getMarketMapConfiguration(activeMarket.code);
-  const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const markersRef = useRef<L.Marker[]>([]);
   const [selectedId, setSelectedId] = useState<string>();
   const selectedItem = items.find((item) => item.id === selectedId);
-
-  useEffect(() => {
-    if (!containerRef.current || mapRef.current) return;
-
-    const map = L.map(containerRef.current, {
-      zoomControl: true,
-      attributionControl: true,
-      scrollWheelZoom: false,
-    }).setView(
-      [mapConfiguration.center.lat, mapConfiguration.center.lng],
-      mapConfiguration.center.zoom,
-    );
-    L.tileLayer(MAP_TILE_URL, MAP_TILE_OPTIONS).addTo(map);
-    mapRef.current = map;
-
-    return () => {
-      map.remove();
-      mapRef.current = null;
-    };
-  }, [mapConfiguration.center]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -142,11 +120,22 @@ export function SearchResultsMap({
             : "relative h-search-map min-h-112 sm:h-search-map-tall"
         }
       >
-        <div
-          ref={containerRef}
-          className="leaflet-container h-full w-full bg-bg-subtle"
-          role="region"
-          aria-label={t("ui.searchResultsMap.regionLabel")}
+        <MapCanvas
+          surface="search-results"
+          center={{
+            latitude: mapConfiguration.center.lat,
+            longitude: mapConfiguration.center.lng,
+            zoom: mapConfiguration.center.zoom,
+          }}
+          layerKey={activeMarket.code}
+          ariaLabel={t("ui.searchResultsMap.regionLabel")}
+          className="h-full w-full bg-bg-subtle"
+          onReady={(map) => {
+            mapRef.current = map;
+            return () => {
+              mapRef.current = null;
+            };
+          }}
         />
 
         {selectedItem ? (

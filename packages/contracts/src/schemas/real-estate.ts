@@ -398,6 +398,18 @@ export const propertySearchQuerySchema = z.object({
   minRooms: z.number().int().nonnegative().optional(),
   minBedrooms: z.number().int().nonnegative().optional(),
   furnished: z.boolean().optional(),
+  /**
+   * One seller's properties. Constrained to an identifier's own alphabet
+   * because it is interpolated into a PostgREST `or` expression, where a comma
+   * or a parenthesis would not be a value but syntax.
+   */
+  sellerId: z
+    .string()
+    .trim()
+    .min(1)
+    .max(64)
+    .regex(/^[a-zA-Z0-9_-]+$/)
+    .optional(),
   dpeClasses: z.array(energyClassSchema).optional(),
   amenities: z.array(z.string()).optional(),
   sellerTypes: z.array(propertySellerTypeSchema).optional(),

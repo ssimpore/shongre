@@ -26091,6 +26091,18 @@
             }
           },
           {
+            "name": "sellerId",
+            "in": "query",
+            "required": false,
+            "description": "Restrict results to one seller. Used for the seller's other listings on a detail page and for a public seller profile, so neither has to read the whole market and filter client-side.",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[a-zA-Z0-9_-]+$"
+            }
+          },
+          {
             "name": "deliveryAvailable",
             "in": "query",
             "schema": {
@@ -46214,73 +46226,6 @@
         "additionalProperties": false,
         "required": ["marketCode"],
         "properties": {
-          "marketCode": {
-            "$ref": "#/components/schemas/MarketCode"
-          },
-          "query": {
-            "type": "string",
-            "maxLength": 200
-          },
-          "categoryId": {
-            "type": "string",
-            "maxLength": 200,
-            "pattern": "^[a-zA-Z0-9_.-]+$"
-          },
-          "categorySlug": {
-            "type": "string",
-            "maxLength": 200,
-            "pattern": "^[a-zA-Z0-9_.-]+$"
-          },
-          "subCategorySlug": {
-            "type": "string",
-            "maxLength": 200,
-            "pattern": "^[a-zA-Z0-9_.-]+$"
-          },
-          "city": {
-            "type": "string",
-            "maxLength": 200
-          },
-          "postalCode": {
-            "type": "string",
-            "maxLength": 32
-          },
-          "radiusKm": {
-            "type": "number",
-            "minimum": 0,
-            "maximum": 500
-          },
-          "minPrice": {
-            "type": "number",
-            "minimum": 0
-          },
-          "maxPrice": {
-            "type": "number",
-            "minimum": 0
-          },
-          "sellerType": {
-            "type": "string",
-            "enum": ["all", "individual", "pro"]
-          },
-          "deliveryAvailable": {
-            "type": "boolean"
-          },
-          "onlinePaymentAvailable": {
-            "type": "boolean"
-          },
-          "onlyDeals": {
-            "type": "boolean"
-          },
-          "publishedToday": {
-            "type": "boolean"
-          },
-          "conditions": {
-            "type": "array",
-            "maxItems": 20,
-            "items": {
-              "type": "string",
-              "maxLength": 100
-            }
-          },
           "attributes": {
             "type": "object",
             "maxProperties": 50,
@@ -46330,6 +46275,89 @@
               ]
             }
           },
+          "categoryId": {
+            "type": "string",
+            "maxLength": 200,
+            "pattern": "^[a-zA-Z0-9_.-]+$"
+          },
+          "categorySlug": {
+            "type": "string",
+            "maxLength": 200,
+            "pattern": "^[a-zA-Z0-9_.-]+$"
+          },
+          "city": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "conditions": {
+            "type": "array",
+            "maxItems": 20,
+            "items": {
+              "type": "string",
+              "maxLength": 100
+            }
+          },
+          "cursor": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+          },
+          "deliveryAvailable": {
+            "type": "boolean"
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50
+          },
+          "marketCode": {
+            "$ref": "#/components/schemas/MarketCode"
+          },
+          "maxPrice": {
+            "type": "number",
+            "minimum": 0
+          },
+          "minPrice": {
+            "type": "number",
+            "minimum": 0
+          },
+          "onlinePaymentAvailable": {
+            "type": "boolean"
+          },
+          "onlyDeals": {
+            "type": "boolean"
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "postalCode": {
+            "type": "string",
+            "maxLength": 32
+          },
+          "publishedToday": {
+            "type": "boolean"
+          },
+          "query": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "radiusKm": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 500
+          },
+          "sellerId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "pattern": "^[a-zA-Z0-9_-]+$",
+            "description": "Restrict results to one seller."
+          },
+          "sellerType": {
+            "type": "string",
+            "enum": ["all", "individual", "pro"]
+          },
           "sortBy": {
             "type": "string",
             "enum": [
@@ -46340,19 +46368,10 @@
               "distance"
             ]
           },
-          "page": {
-            "type": "integer",
-            "minimum": 1
-          },
-          "limit": {
-            "type": "integer",
-            "minimum": 1,
-            "maximum": 50
-          },
-          "cursor": {
+          "subCategorySlug": {
             "type": "string",
-            "minLength": 1,
-            "maxLength": 1024
+            "maxLength": 200,
+            "pattern": "^[a-zA-Z0-9_.-]+$"
           }
         }
       },

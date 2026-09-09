@@ -1213,7 +1213,7 @@ export const messagesEn: MessageCatalogue = {
   "search.searchPage.etat": "Condition",
   "search.resultsHeading": "Search results",
   "search.exploreMapView.recadrerSurLesAnnonces": "Recentre on the listings",
-  "search.exploreMapView.changerLeStyleDeCarte": "Change map style",
+  "search.exploreMapView.regionLabel": "Map of listings to explore",
   "search.exploreMapView.fermerLaPrevisualisation": "Close preview",
   "search.exploreMapView.cliquezPourCentrer": "Click to centre",
   "search.searchPage.masquerLePanneauDeFiltres": "Hide the filter panel",
@@ -4437,4 +4437,19 @@ export const messagesEn: MessageCatalogue = {
     "Characteristics are unavailable right now.",
   "listings.characteristics.location": "Location",
   "listings.characteristics.mapLabel": "Map of the approximate area: {place}",
+
+  // --- listings.discovery ---
+  "listings.discovery.fromThisSeller": "More from this seller",
+  "listings.discovery.fromThisPro": "More from this professional",
+  "listings.discovery.fromThisSellerSubtitle":
+    "The other listings this seller has published.",
+  "listings.discovery.seeMoreFromSeller": "See more listings",
+  "listings.discovery.similar": "Similar listings",
+  "listings.discovery.similarSubtitle":
+    "Listings close to this one in {category}.",
+  "listings.discovery.similarSubtitleGeneric": "Listings close to this one.",
+  "listings.discovery.seeAllInCategory": "See all",
+  "listings.discovery.fromThisEmployer": "More openings at {employer}",
+  "listings.discovery.fromThisEmployerSubtitle":
+    "The roles currently open at this employer.",
 };

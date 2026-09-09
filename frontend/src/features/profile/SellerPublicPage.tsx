@@ -133,14 +133,18 @@ export const SellerPublicPage: React.FC = () => {
         const foundSeller = await services.users.getPublicProfile(activeSlug);
         if (foundSeller) {
           setSeller(foundSeller);
-          const result = await services.listings.getListings({
+          /*
+           * Filtered by the API. This used to read every listing in the market
+           * and keep the ones whose sellerId matched — a full discovery page
+           * downloaded to render one seller's shelf, and a page whose contents
+           * silently truncated as soon as the market outgrew the default page
+           * size.
+           */
+          const result = await services.listings.searchListings({
             marketCode: activeMarket.code,
+            sellerId: foundSeller.id,
           });
-          setListings(
-            result.listings.filter(
-              (listing) => listing.sellerId === foundSeller.id,
-            ),
-          );
+          setListings(result.items);
         } else {
           setSeller(null);
         }

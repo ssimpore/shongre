@@ -28,7 +28,6 @@ import {
   FavoriteButton,
   FormField,
   Input,
-  ListingRail,
   Modal,
   SellerIdentityLink,
   Select,
@@ -37,6 +36,7 @@ import {
   Textarea,
 } from "../../design-system";
 import { ListingMediaGallery } from "../listings/components/ListingMediaGallery";
+import { ListingDiscoveryRail } from "../listings/components/ListingDiscoveryRail";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { AutoVehicleCard } from "./components/AutoVehicleCard";
 import {
@@ -72,6 +72,7 @@ export const AutoVehicleDetailPage: React.FC = () => {
   const toast = useToast();
   const [vehicle, setVehicle] = useState<VehiclePublic | null>(null);
   const [similar, setSimilar] = useState<VehiclePublic[]>([]);
+  const [sellerVehicles, setSellerVehicles] = useState<VehiclePublic[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [leadOpen, setLeadOpen] = useState(false);
@@ -103,16 +104,39 @@ export const AutoVehicleDetailPage: React.FC = () => {
     services.auto
       .getVehicle(slug, activeMarket.code)
       .then(async (result) => {
-        const similarResult = await services.auto.searchVehicles({
-          marketCode: activeMarket.code,
-          makeIds: result.makeId ? [result.makeId] : undefined,
-          sort: "relevance",
-          limit: PAGE_SIZES.similarVerticalListings,
-        });
+        /*
+         * Both rails answer a question the visitor has on this page — what else
+         * is like this, and what else does this dealer have — so they are
+         * fetched together rather than one after the other. The seller filter
+         * is applied by the API, not by reading the market and matching ids.
+         */
+        const [similarResult, sellerResult] = await Promise.all([
+          services.auto.searchVehicles({
+            marketCode: activeMarket.code,
+            makeIds: result.makeId ? [result.makeId] : undefined,
+            sort: "relevance",
+            limit: PAGE_SIZES.similarVerticalListings,
+          }),
+          result.seller?.id
+            ? services.auto
+                .searchVehicles({
+                  marketCode: activeMarket.code,
+                  sellerId: result.seller.id,
+                  sort: "relevance",
+                  limit: PAGE_SIZES.similarVerticalListings,
+                })
+                .catch(() => null)
+            : Promise.resolve(null),
+        ]);
         if (cancelled) return;
         setVehicle(result);
         setSimilar(
           similarResult.items.filter((row) => row.slug !== slug).slice(0, 3),
+        );
+        setSellerVehicles(
+          (sellerResult?.items ?? [])
+            .filter((row) => row.slug !== slug)
+            .slice(0, 8),
         );
       })
       .catch(() => {
@@ -432,7 +456,11 @@ export const AutoVehicleDetailPage: React.FC = () => {
 
             {/* No coordinates are published for a vehicle, so this names the
                 place and draws nothing rather than inventing a position. */}
-            <ListingLocationSection city={vehicle.locationLabel} />
+            <ListingLocationSection
+              id={vehicle.id}
+              marketCode={activeMarket.code}
+              city={vehicle.locationLabel}
+            />
 
             <section className="rounded-card border border-border-base bg-bg-surface p-5 shadow-xs sm:p-6">
               <h2 className="flex items-center gap-2 text-base font-bold">
@@ -466,32 +494,49 @@ export const AutoVehicleDetailPage: React.FC = () => {
               </ul>
             </section>
 
-            {similar.length > 0 && (
-              <section>
-                <div className="mb-3 flex items-center justify-between">
-                  <h2 className="text-base font-bold">Véhicules similaires</h2>
-                  <Link
-                    to={`/auto?make=${vehicle.makeId || ""}`}
-                    className="text-xs font-bold text-primary"
-                  >
-                    Voir plus
-                  </Link>
-                </div>
-                <ListingRail label="véhicules similaires">
-                  {similar.map((row) => (
-                    <AutoVehicleCard
-                      key={row.id}
-                      vehicle={row}
-                      isFavorite={favoriteIds.has(row.id)}
-                      favoriteLoadState={favoriteLoadState}
-                      onFavorite={toggleSimilarFavorite}
-                      onFavoriteRetry={refreshFavorites}
-                      compact
-                    />
-                  ))}
-                </ListingRail>
-              </section>
-            )}
+            <ListingDiscoveryRail
+              kind="seller"
+              title={t(
+                vehicle.seller.type === "dealer"
+                  ? "listings.discovery.fromThisPro"
+                  : "listings.discovery.fromThisSeller",
+              )}
+              subtitle={t("listings.discovery.fromThisSellerSubtitle")}
+              moreHref={sellerPublicUrl}
+              moreLabel={t("listings.discovery.seeMoreFromSeller")}
+            >
+              {sellerVehicles.map((row) => (
+                <AutoVehicleCard
+                  key={row.id}
+                  vehicle={row}
+                  isFavorite={favoriteIds.has(row.id)}
+                  favoriteLoadState={favoriteLoadState}
+                  onFavorite={toggleSimilarFavorite}
+                  onFavoriteRetry={refreshFavorites}
+                  compact
+                />
+              ))}
+            </ListingDiscoveryRail>
+
+            <ListingDiscoveryRail
+              kind="similar"
+              title={t("listings.discovery.similar")}
+              subtitle={t("listings.discovery.similarSubtitleGeneric")}
+              moreHref={`/auto?make=${vehicle.makeId || ""}`}
+              moreLabel={t("listings.discovery.seeAllInCategory")}
+            >
+              {similar.map((row) => (
+                <AutoVehicleCard
+                  key={row.id}
+                  vehicle={row}
+                  isFavorite={favoriteIds.has(row.id)}
+                  favoriteLoadState={favoriteLoadState}
+                  onFavorite={toggleSimilarFavorite}
+                  onFavoriteRetry={refreshFavorites}
+                  compact
+                />
+              ))}
+            </ListingDiscoveryRail>
           </div>
 
           <aside className="self-start space-y-4 lg:sticky lg:top-24">

@@ -82,6 +82,20 @@ const publicListingSearchSchema = z
     minPrice: z.coerce.number().min(0).optional(),
     maxPrice: z.coerce.number().min(0).optional(),
     sellerType: z.enum(["all", "individual", "pro"]).optional(),
+    /*
+     * Both repositories have always filtered on this; only the strict HTTP
+     * schema rejected it, so "the other listings from this seller" could only
+     * be answered by reading every listing in the market and filtering in the
+     * browser. Constrained rather than a bare string: it is compared against a
+     * column, and an identifier is never punctuation.
+     */
+    sellerId: z
+      .string()
+      .trim()
+      .min(1)
+      .max(64)
+      .regex(/^[a-zA-Z0-9_-]+$/)
+      .optional(),
     deliveryAvailable: searchBooleanSchema.optional(),
     onlinePaymentAvailable: searchBooleanSchema.optional(),
     onlyDeals: searchBooleanSchema.optional(),
@@ -164,6 +178,7 @@ function parsePublicListingSearchQuery(
     minPrice: query.get("minPrice") || undefined,
     maxPrice: query.get("maxPrice") || undefined,
     sellerType: query.get("sellerType") || undefined,
+    sellerId: query.get("sellerId") || undefined,
     deliveryAvailable: query.get("deliveryAvailable") || undefined,
     onlinePaymentAvailable: query.get("onlinePaymentAvailable") || undefined,
     onlyDeals: query.get("onlyDeals") || undefined,

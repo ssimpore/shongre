@@ -26,7 +26,6 @@ import {
   MapPin,
   Clock,
   ShieldCheck,
-  ChevronRight,
   MessageSquare,
   DollarSign,
   CreditCard,
@@ -58,7 +57,7 @@ import {
   FormField,
 } from "../../design-system/primitives/FormField";
 import { ListingCard } from "../../design-system/primitives/ListingCard";
-import { ListingRail } from "../../design-system/primitives/ListingRail";
+import { ListingDiscoveryRail } from "./components/ListingDiscoveryRail";
 import { useAuth } from "../../app/providers/AuthProvider";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useToast } from "../../app/providers/ToastProvider";
@@ -234,6 +233,7 @@ export const ListingDetailPage: React.FC = () => {
   const [similarListings, setSimilarListings] = useState<Listing[]>(
     initialData?.similarListings ?? [],
   );
+  const [sellerListings, setSellerListings] = useState<Listing[]>([]);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const [isLoading, setIsLoading] = useState(!initialData);
   const [characteristics, setCharacteristics] =
@@ -287,6 +287,14 @@ export const ListingDetailPage: React.FC = () => {
       t("ui.listingCard.boosted"),
     ).length > 0,
   );
+  // One definition of where a seller's public page is, used by the identity
+  // link beside the price and by the "see more" on the seller's rail.
+  const sellerPublicUrlFor = (profile: PublicSellerProfile) =>
+    routes.seller.publicPage({
+      id: profile.id,
+      slug: profile.slug,
+      isProfessional: isProSeller(profile),
+    });
   const listingCapabilities = listingCardProjection
     ? getListingCapabilityPresentation(listingCardProjection, {
         delivery: t("ui.listingCard.delivery"),
@@ -302,6 +310,45 @@ export const ListingDetailPage: React.FC = () => {
     currentLocale,
   );
   const detailPhotoCount = listingCardProjection?.photoCount;
+
+  /*
+   * What else this seller has.
+   *
+   * Its own effect rather than a branch of the listing fetch: the page is
+   * server-rendered for most visitors, and the fetch above returns early when
+   * the server already supplied the listing — so a rail hung off it would have
+   * appeared only for the minority who navigated in client-side.
+   *
+   * Filtered by the API. A seller rail is not a reason to download every
+   * listing in the market and match ids in the browser.
+   */
+  const railSellerId = listing?.sellerId;
+  const railListingId = listing?.id;
+  useEffect(() => {
+    if (!railSellerId || !railListingId) {
+      setSellerListings([]);
+      return;
+    }
+    let cancelled = false;
+    services.listings
+      .searchListings({
+        marketCode: countryCode,
+        sellerId: railSellerId,
+        limit: PAGE_SIZES.similarListings,
+      })
+      .then((res) => {
+        if (cancelled) return;
+        setSellerListings(
+          res.items.filter((row) => row.id !== railListingId).slice(0, 8),
+        );
+      })
+      .catch(() => {
+        if (!cancelled) setSellerListings([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [countryCode, railListingId, railSellerId]);
 
   // 1. Data Fetching
   useEffect(() => {
@@ -1201,6 +1248,8 @@ export const ListingDetailPage: React.FC = () => {
 
           {/* 4b. LOCALISATION */}
           <ListingLocationSection
+            id={listing.id}
+            marketCode={listing.marketCode}
             city={listing.city}
             postalCode={listing.postalCode}
             latitude={listing.latitude}
@@ -1279,11 +1328,7 @@ export const ListingDetailPage: React.FC = () => {
                 decision. */}
             {seller && (
               <SellerIdentityLink
-                to={routes.seller.publicPage({
-                  id: seller.id,
-                  slug: seller.slug,
-                  isProfessional: isProSeller(seller),
-                })}
+                to={sellerPublicUrlFor(seller)}
                 name={seller.name}
                 avatarUrl={seller.avatarUrl}
                 isVerified={seller.isVerified}
@@ -1524,40 +1569,43 @@ export const ListingDetailPage: React.FC = () => {
       </div>
 
       {/* ========================================================================= */}
-      {/* SIMILAR LISTINGS RAIL */}
+      {/* DISCOVERY RAILS — what else this seller has, what else is like this */}
       {/* ========================================================================= */}
-      {similarListings.length > 0 && (
-        <div className="pt-8 border-t border-border-subtle space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-lg sm:text-xl font-bold text-text-main">
-                Annonces similaires dans {displayCategoryLabel}
-              </h2>
-              <p className="text-xs text-text-tertiary">
-                {t(
-                  "listings.listingDetailPage.selectionDArticlesRecommandesSelon",
-                )}
-              </p>
-            </div>
+      <div className="space-y-7 pt-8">
+        <ListingDiscoveryRail
+          kind="seller"
+          title={t(
+            seller?.sellerType === "pro"
+              ? "listings.discovery.fromThisPro"
+              : "listings.discovery.fromThisSeller",
+          )}
+          subtitle={t("listings.discovery.fromThisSellerSubtitle")}
+          moreHref={seller ? sellerPublicUrlFor(seller) : undefined}
+          moreLabel={t("listings.discovery.seeMoreFromSeller")}
+        >
+          {sellerListings.map((row) => (
+            <ListingCard key={row.id} listing={row} />
+          ))}
+        </ListingDiscoveryRail>
 
-            <Link
-              to={`/categorie/${listing.categorySlug}`}
-              className="text-xs font-bold text-primary hover:underline flex items-center gap-1"
-            >
-              <span>{t("listings.listingDetailPage.voirTout")}</span>
-              <ChevronRight className="w-icon-md h-icon-md" />
-            </Link>
-          </div>
-
-          <ListingRail
-            label={t("listings.listingDetailPage.annoncesSimilaires")}
-          >
-            {similarListings.map((simListing) => (
-              <ListingCard key={simListing.id} listing={simListing} />
-            ))}
-          </ListingRail>
-        </div>
-      )}
+        <ListingDiscoveryRail
+          kind="similar"
+          title={t("listings.discovery.similar")}
+          subtitle={
+            displayCategoryLabel
+              ? t("listings.discovery.similarSubtitle", {
+                  category: displayCategoryLabel,
+                })
+              : t("listings.discovery.similarSubtitleGeneric")
+          }
+          moreHref={`/categorie/${listing.categorySlug}`}
+          moreLabel={t("listings.discovery.seeAllInCategory")}
+        >
+          {similarListings.map((simListing) => (
+            <ListingCard key={simListing.id} listing={simListing} />
+          ))}
+        </ListingDiscoveryRail>
+      </div>
 
       {/* ========================================================================= */}
       {/* MODAL DIALOGS */}

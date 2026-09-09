@@ -1,5 +1,6 @@
 import React, { Suspense } from "react";
 import { DetailSection } from "../../../design-system/primitives/DetailFacts";
+import { resolvePublicMapCoordinates } from "../../../configuration/geoCoordinates";
 import { useTranslation } from "../../../i18n/I18nProvider";
 
 const ListingLocationMap = React.lazy(() =>
@@ -15,6 +16,13 @@ export interface ListingLocationSectionProps {
   longitude?: number | null;
   /** How precise the published coordinate is, when the API declares it. */
   precision?: LocationPrecision | null;
+  /**
+   * Identifies the entity. Used only to spread the fallback coordinate of two
+   * listings in the same town so they are not drawn at the identical point.
+   */
+  id?: string;
+  /** Scopes the city gazetteer used when the API published no coordinate. */
+  marketCode?: string;
   className?: string;
 }
 
@@ -75,9 +83,41 @@ export const ListingLocationSection: React.FC<ListingLocationSectionProps> = ({
   latitude,
   longitude,
   precision,
+  id,
+  marketCode,
   className = "",
 }) => {
   const { t } = useTranslation();
+  /*
+   * Most listings publish a town and a postcode but no coordinate — a seller
+   * types where they are, and nothing geocodes it, because the geocoding
+   * capability is declared and not yet implemented. So the section showed a
+   * place name and an empty space where the map should be, on the majority of
+   * the catalogue.
+   *
+   * The town itself is a location, and the app already keeps a market-scoped
+   * city gazetteer for its search maps. Using it means a listing in Biarritz is
+   * drawn over Biarritz. It resolves to nothing for a town it does not know,
+   * and it is never allowed to fall back to the market centre — a surfboard in
+   * the Basque Country pinned near Paris would be worse than no map, which is
+   * the same rule that keeps (0, 0) off these maps.
+   */
+  const fallback =
+    !hasCoordinates(latitude, longitude) && city
+      ? resolvePublicMapCoordinates({ id: id ?? city, city, marketCode })
+      : undefined;
+  const drawnLatitude = hasCoordinates(latitude, longitude)
+    ? latitude
+    : fallback?.lat;
+  const drawnLongitude = hasCoordinates(latitude, longitude)
+    ? longitude
+    : fallback?.lng;
+  /*
+   * A town centre is a town-sized answer, so it is drawn at town scale whatever
+   * precision the entity claims. Overstating it would turn "somewhere in
+   * Biarritz" into "this street in Biarritz".
+   */
+  const drawnPrecision = fallback ? "city" : precision;
   const place = [city, postalCode ? `(${postalCode})` : null]
     .filter(Boolean)
     .join(" ");
@@ -96,7 +136,7 @@ export const ListingLocationSection: React.FC<ListingLocationSectionProps> = ({
         </p>
       }
     >
-      {hasCoordinates(latitude, longitude) ? (
+      {hasCoordinates(drawnLatitude, drawnLongitude) ? (
         <Suspense
           fallback={
             <div
@@ -106,11 +146,12 @@ export const ListingLocationSection: React.FC<ListingLocationSectionProps> = ({
           }
         >
           <ListingLocationMap
-            latitude={latitude}
-            longitude={longitude!}
+            latitude={drawnLatitude}
+            longitude={drawnLongitude!}
             approximateRadiusMetres={
-              (precision ? RADIUS_BY_PRECISION[precision] : undefined) ??
-              DEFAULT_RADIUS_METRES
+              (drawnPrecision
+                ? RADIUS_BY_PRECISION[drawnPrecision]
+                : undefined) ?? DEFAULT_RADIUS_METRES
             }
             accessibleLabel={t("listings.characteristics.mapLabel", { place })}
           />

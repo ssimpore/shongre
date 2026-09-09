@@ -334,6 +334,14 @@ export const employmentSearchQuerySchema = z.object({
   scheduleIds: z.array(z.string()).default([]),
   publishedSince: z.string().optional(),
   employerTypeIds: z.array(z.string()).default([]),
+  /** One employer's openings — "the other offers from this company". */
+  employerId: z
+    .string()
+    .trim()
+    .min(1)
+    .max(64)
+    .regex(/^[a-zA-Z0-9_-]+$/)
+    .optional(),
   verifiedEmployerOnly: z.boolean().default(false),
   accessibilityOnly: z.boolean().default(false),
   sort: z

@@ -1,11 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import L from "leaflet";
-import "leaflet/dist/leaflet.css";
 import type { PropertyPublic } from "@shongre/contracts/real-estate";
-import {
-  MAP_TILE_OPTIONS,
-  MAP_TILE_URL,
-} from "../../../platform/map/tile-source";
+import { MapCanvas } from "../../../design-system/primitives/MapCanvas";
 
 export const ImmoMap: React.FC<{
   properties: PropertyPublic[];
@@ -16,7 +12,6 @@ export const ImmoMap: React.FC<{
     center: { latitude: number; longitude: number },
   ) => void;
 }> = ({ properties, selectedId, onSelect, onBoundsChange }) => {
-  const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const markersRef = useRef<L.Marker[]>([]);
   const programmaticMoveRef = useRef(false);
@@ -25,14 +20,8 @@ export const ImmoMap: React.FC<{
   onSelectRef.current = onSelect;
   onBoundsChangeRef.current = onBoundsChange;
 
-  useEffect(() => {
-    if (!containerRef.current || mapRef.current) return;
-    const map = L.map(containerRef.current, {
-      zoomControl: true,
-      attributionControl: false,
-      scrollWheelZoom: false,
-    }).setView([45.764, 4.8357], 12);
-    L.tileLayer(MAP_TILE_URL, MAP_TILE_OPTIONS).addTo(map);
+  const attachHandlers = (map: L.Map) => {
+    mapRef.current = map;
     const notifyBounds = () => {
       const bounds = map.getBounds();
       const center = map.getCenter();
@@ -56,15 +45,13 @@ export const ImmoMap: React.FC<{
     map.on("dragend", notifyUserDrag);
     map.on("zoomend", notifyUserZoom);
     map.on("moveend", finishProgrammaticMove);
-    mapRef.current = map;
     return () => {
       map.off("dragend", notifyUserDrag);
       map.off("zoomend", notifyUserZoom);
       map.off("moveend", finishProgrammaticMove);
-      map.remove();
       mapRef.current = null;
     };
-  }, []);
+  };
 
   useEffect(() => {
     const map = mapRef.current;
@@ -108,12 +95,16 @@ export const ImmoMap: React.FC<{
   }, [properties, selectedId]);
 
   return (
-    <div
-      ref={containerRef}
-      data-search-results-map
-      className="leaflet-container h-full min-h-112 w-full bg-bg-subtle"
-      role="region"
-      aria-label="Carte des biens immobiliers"
-    />
+    // The wrapper carries the hook every search surface publishes for its map
+    // panel; the canvas inside it is the map itself and stays layout-neutral.
+    <div data-search-results-map className="h-full min-h-112 w-full">
+      <MapCanvas
+        surface="immo-results"
+        center={{ latitude: 45.764, longitude: 4.8357, zoom: 12 }}
+        ariaLabel="Carte des biens immobiliers"
+        className="h-full w-full bg-bg-subtle"
+        onReady={attachHandlers}
+      />
+    </div>
   );
 };

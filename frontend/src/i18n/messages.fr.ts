@@ -1319,7 +1319,7 @@ export const messagesFr = {
   "search.searchPage.etat": "État",
   "search.resultsHeading": "Résultats de recherche",
   "search.exploreMapView.recadrerSurLesAnnonces": "Recadrer sur les annonces",
-  "search.exploreMapView.changerLeStyleDeCarte": "Changer le style de carte",
+  "search.exploreMapView.regionLabel": "Carte des annonces à explorer",
   "search.exploreMapView.fermerLaPrevisualisation":
     "Fermer la prévisualisation",
   "search.exploreMapView.cliquezPourCentrer": "Cliquez pour centrer",
@@ -3357,6 +3357,22 @@ export const messagesFr = {
   "listings.characteristics.location": "Localisation",
   "listings.characteristics.mapLabel":
     "Carte de la zone approximative : {place}",
+
+  // --- listings.discovery ---
+  "listings.discovery.fromThisSeller": "Les annonces de ce vendeur",
+  "listings.discovery.fromThisPro": "Les annonces de ce pro",
+  "listings.discovery.fromThisSellerSubtitle":
+    "Les autres annonces publiées par ce vendeur.",
+  "listings.discovery.seeMoreFromSeller": "Voir plus d’annonces",
+  "listings.discovery.similar": "Annonces similaires",
+  "listings.discovery.similarSubtitle":
+    "Des annonces proches de celle-ci dans {category}.",
+  "listings.discovery.similarSubtitleGeneric":
+    "Des annonces proches de celle-ci.",
+  "listings.discovery.seeAllInCategory": "Voir tout",
+  "listings.discovery.fromThisEmployer": "Les autres offres de {employer}",
+  "listings.discovery.fromThisEmployerSubtitle":
+    "Les postes actuellement ouverts chez cet employeur.",
 } as const;
 
 /** The keys literally stored in a catalogue, plural variants included. */

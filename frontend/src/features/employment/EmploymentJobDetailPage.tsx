@@ -19,7 +19,10 @@ import type {
   JobPostingCard,
   JobPostingDetail,
 } from "@shongre/contracts/employment";
-import { EMPLOYMENT_TEXT_LIMITS } from "@shongre/contracts/employment";
+import {
+  EMPLOYMENT_TEXT_LIMITS,
+  employmentSearchQuerySchema,
+} from "@shongre/contracts/employment";
 import { isActiveMarketResolvedListingPromotion } from "@shongre/contracts";
 import { useListingPromotionRefresh } from "@shongre/features/listings/web";
 import { VerificationBadge } from "@shongre/ui/web";
@@ -33,7 +36,6 @@ import {
   Button,
   Container,
   FormField,
-  ListingGrid,
   Modal,
   SellerIdentityLink,
   Select,
@@ -52,7 +54,10 @@ import {
   structuredDataForPolicy,
 } from "../../platform/seo/seo-policy";
 import { useTranslation } from "../../i18n/I18nProvider";
+import { PAGE_SIZES } from "../../configuration/pagination.config";
 import { DetailFactList } from "../../design-system/primitives/DetailFacts";
+import { ListingLocationSection } from "../listings/components/ListingLocationSection";
+import { ListingDiscoveryRail } from "../listings/components/ListingDiscoveryRail";
 import { iconForFact } from "../../domains/listing/listing-facts.presentation";
 
 export const EmploymentJobDetailPage: React.FC = () => {
@@ -74,6 +79,7 @@ export const EmploymentJobDetailPage: React.FC = () => {
   const [catalog, setCatalog] = useState<EmploymentCatalog | null>(
     initialData?.catalog ?? null,
   );
+  const [employerJobs, setEmployerJobs] = useState<JobPostingCard[]>([]);
   const [similar, setSimilar] = useState<JobPostingCard[]>(
     initialData?.similarJobs ?? [],
   );
@@ -139,6 +145,46 @@ export const EmploymentJobDetailPage: React.FC = () => {
     void loadFavoriteIds().catch(() => undefined);
   }, [loadFavoriteIds]);
 
+  /*
+   * The employer's other openings.
+   *
+   * Separate from the job fetch because that one returns early when the server
+   * already supplied the job, which is the common path — a rail hung off it
+   * would be invisible to almost every visitor. Filtered by the API on an
+   * indexed column rather than by reading the board and matching names.
+   */
+  const railEmployerId = job?.employer.id;
+  const railJobId = job?.id;
+  const railMarketCode = activeMarket.code;
+  useEffect(() => {
+    if (!railEmployerId || !railJobId) {
+      setEmployerJobs([]);
+      return;
+    }
+    let active = true;
+    services.employment
+      .searchJobs(
+        employmentSearchQuerySchema.parse({
+          marketCode: railMarketCode,
+          employerId: railEmployerId,
+          sort: "newest",
+          limit: PAGE_SIZES.similarVerticalListings,
+        }),
+      )
+      .then((found) => {
+        if (!active) return;
+        setEmployerJobs(
+          found.items.filter((row) => row.id !== railJobId).slice(0, 8),
+        );
+      })
+      .catch(() => {
+        if (active) setEmployerJobs([]);
+      });
+    return () => {
+      active = false;
+    };
+  }, [railEmployerId, railJobId, railMarketCode]);
+
   useEffect(() => {
     const marketCode = activeMarket.code;
     if (initialData?.job.marketCode === marketCode) {
@@ -153,6 +199,7 @@ export const EmploymentJobDetailPage: React.FC = () => {
     setJob(null);
     setCatalog(null);
     setSimilar([]);
+    setEmployerJobs([]);
     setLoading(true);
     setError(false);
     services.employment
@@ -473,6 +520,16 @@ export const EmploymentJobDetailPage: React.FC = () => {
                 />
               </div>
 
+              <ListingLocationSection
+                className="mt-7"
+                id={job.id}
+                marketCode={job.marketCode}
+                city={job.primaryLocation.city}
+                postalCode={job.primaryLocation.postalCode}
+                latitude={job.primaryLocation.latitude}
+                longitude={job.primaryLocation.longitude}
+              />
+
               <p className="mt-5 text-lg font-bold text-primary">
                 {formatSalary(job.salary, catalog, currentLocale, convertMoney)}
               </p>
@@ -646,26 +703,47 @@ export const EmploymentJobDetailPage: React.FC = () => {
           </aside>
         </div>
 
-        {similar.length ? (
-          <section className="mt-10">
-            <h2 className="text-xl font-bold text-text-main">
-              Offres similaires
-            </h2>
-            <ListingGrid className="mt-4">
-              {similar.map((item) => (
-                <JobCard
-                  key={item.id}
-                  job={{ ...item, saved: favoriteIds.has(item.id) }}
-                  catalog={catalog}
-                  onSave={saveSimilar}
-                  favoriteLoadState={favoriteLoadState}
-                  onFavoriteRetry={loadFavoriteIds}
-                  compact
-                />
-              ))}
-            </ListingGrid>
-          </section>
-        ) : null}
+        <div className="mt-10 space-y-7">
+          <ListingDiscoveryRail
+            kind="seller"
+            title={t("listings.discovery.fromThisEmployer", {
+              employer: job.employer.name,
+            })}
+            subtitle={t("listings.discovery.fromThisEmployerSubtitle")}
+            moreHref={employerPublicUrl}
+            moreLabel={t("listings.discovery.seeMoreFromSeller")}
+          >
+            {employerJobs.map((item) => (
+              <JobCard
+                key={item.id}
+                job={{ ...item, saved: favoriteIds.has(item.id) }}
+                catalog={catalog}
+                onSave={saveSimilar}
+                favoriteLoadState={favoriteLoadState}
+                onFavoriteRetry={loadFavoriteIds}
+                compact
+              />
+            ))}
+          </ListingDiscoveryRail>
+
+          <ListingDiscoveryRail
+            kind="similar"
+            title="Offres similaires"
+            subtitle={t("listings.discovery.similarSubtitleGeneric")}
+          >
+            {similar.map((item) => (
+              <JobCard
+                key={item.id}
+                job={{ ...item, saved: favoriteIds.has(item.id) }}
+                catalog={catalog}
+                onSave={saveSimilar}
+                favoriteLoadState={favoriteLoadState}
+                onFavoriteRetry={loadFavoriteIds}
+                compact
+              />
+            ))}
+          </ListingDiscoveryRail>
+        </div>
         <Modal
           isOpen={reportOpen}
           onClose={() => setReportOpen(false)}

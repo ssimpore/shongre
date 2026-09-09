@@ -506,6 +506,8 @@ export interface SearchFilters {
   maxPrice?: number;
   conditions?: ListingCondition[];
   sellerType?: "all" | "individual" | "pro";
+  /** One seller's listings — the detail page rail and the public profile. */
+  sellerId?: string;
   deliveryAvailable?: boolean;
   onlinePaymentAvailable?: boolean;
   onlyDeals?: boolean;
