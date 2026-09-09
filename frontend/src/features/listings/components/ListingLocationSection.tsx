@@ -135,7 +135,7 @@ export const ListingLocationSection: React.FC<ListingLocationSectionProps> = ({
           fallback={
             <div
               aria-hidden="true"
-              className="skeleton-shimmer h-96 w-full rounded-card border border-border-soft bg-bg-surface"
+              className="skeleton-shimmer h-96 w-full rounded-3xl border border-border-soft bg-bg-surface"
             />
           }
         >

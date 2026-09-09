@@ -105,13 +105,14 @@ install: ## Install frontend, backend, mobile, and shared workspace dependencies
 reinstall: clean-deps install
 
 ##@ Development
-dev: ## Ensure the connected Web stack; ENVIRONMENT=local (default), dev, or staging
+dev: ## Ensure the complete stack (API, worker, Web, Metro); ENVIRONMENT=local (default), dev, or staging
+	@BACKEND_DATA_MODE=database scripts/dev.sh all
+dev-web: ## Ensure only the connected Web stack, without Metro
 	@BACKEND_DATA_MODE=database scripts/dev.sh web
-dev-web: dev
 dev-development: ## Restart the Web stack against the dedicated hosted development database
-	@$(MAKE) dev ENVIRONMENT=development
+	@$(MAKE) dev-web ENVIRONMENT=development
 dev-staging: ## Run the Web stack with .env.staging and .env.staging.local
-	@$(MAKE) dev ENVIRONMENT=staging
+	@$(MAKE) dev-web ENVIRONMENT=staging
 staging: dev-staging ## Alias for dev-staging
 dev-mobile: ## Restart API, worker and Metro; ENVIRONMENT=local (default), dev, or staging
 	@BACKEND_DATA_MODE=database scripts/dev.sh mobile

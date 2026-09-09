@@ -120,7 +120,17 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
       data-map-canvas={surface}
       role={role}
       aria-label={ariaLabel}
-      className={`leaflet-container ${className}`}
+      /*
+       * `isolate` contains Leaflet's own stacking. Its panes sit at z-index 400
+       * and its zoom controls at 1000, far above every level in the app scale
+       * (header is 40, modal 50, toast 60). Leaflet leaves the container at
+       * `z-index: auto`, so without a stacking context here those numbers are
+       * resolved against the page root and the map paints over the sticky
+       * header and the mobile tab bar. Isolating keeps them inside the map and
+       * lets the container take its natural place in the flow, so the fix does
+       * not depend on out-bidding Leaflet with a larger number.
+       */
+      className={`leaflet-container isolate ${className}`}
     />
   );
 };

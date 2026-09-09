@@ -35,7 +35,10 @@ export const ListingLocationMap: React.FC<ListingLocationMapProps> = ({
     layerKey={`${latitude},${longitude},${approximateRadiusMetres}`}
     role="img"
     ariaLabel={accessibleLabel}
-    className="h-96 w-full overflow-hidden rounded-card border border-border-base"
+    // `rounded-3xl` is the detail page's panel radius, shared with the seller,
+    // shipping and description shells around it. The wider `rounded-card` left
+    // the map as the only corner on the page that did not line up.
+    className="h-96 w-full overflow-hidden rounded-3xl border border-border-base"
     onReady={(map) => {
       const circle = L.circle([latitude, longitude], {
         radius: approximateRadiusMetres,

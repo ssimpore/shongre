@@ -10,6 +10,8 @@ import { fileURLToPath } from "node:url";
 import { gzipSync } from "node:zlib";
 import readWorkbook from "read-excel-file/node";
 import referenceEntries from "../../taxonomy/v1/reference-entries.json";
+import leafApplicability from "../../taxonomy/v1/leaf-applicability.json";
+import attributeHelp from "../../taxonomy/v1/attribute-help.json";
 import historicalIdentities from "../../taxonomy/history/v3-identities.json";
 const CANONICAL_TAXONOMY_IDENTITIES = historicalIdentities.identities;
 const CANONICAL_TAXONOMY_ALIASES = historicalIdentities.aliases;
@@ -2740,6 +2742,323 @@ async function writeOrCheck(filePath: string, content: string, check: boolean) {
   await fs.writeFile(filePath, content);
 }
 
+type LeafApplicabilityDecision = {
+  attributeId: string;
+  vertical: string;
+  appliesTo: string[];
+  reason: Record<string, string>;
+  extendFrom?: string;
+  extensionReason?: Record<string, string>;
+};
+type NotApplicableDecision = {
+  categoryId: string;
+  attributeId: string;
+  reason: Record<string, string>;
+};
+type AttributeExtension = {
+  attributeId: string;
+  from: string;
+  to: string;
+  listingTypeId: string;
+};
+
+/**
+ * Apply the reviewed leaf applicability record. The workbook binds a vertical's
+ * attributes to every leaf of that vertical, which publishes irrelevant fields: a
+ * camera offering "game genre", home textiles offering an energy class. This stage
+ * narrows each reviewed attribute to its applicable leaves and reports the removals
+ * as justified not-applicable decisions. A decision may also widen an attribute to a
+ * leaf the import missed, which clones the rows of an already-applicable leaf. No
+ * unreviewed field is ever introduced.
+ */
+function applyLeafApplicability(source: NormalizedSource) {
+  const publishable = new Set(
+    source.categories.filter((row) => row.publishable).map((row) => row.id),
+  );
+  const listingTypeOf = new Map(
+    source.listingTypes.map((type) => [type.categoryId, type.id]),
+  );
+  const notApplicable: NotApplicableDecision[] = [];
+  const extensions: AttributeExtension[] = [];
+  const removed = new Set<string>();
+  const pair = (categoryId: string, attributeId: string) =>
+    `${categoryId}|${attributeId}`;
+
+  for (const decision of leafApplicability.decisions as LeafApplicabilityDecision[]) {
+    const bound = new Set(
+      source.bindings
+        .filter(
+          (binding) =>
+            binding.attributeId === decision.attributeId &&
+            binding.scope !== "FLOW_TEMPLATE",
+        )
+        .map((binding) => binding.categoryId),
+    );
+    for (const categoryId of decision.appliesTo) {
+      assert(
+        publishable.has(categoryId),
+        `Applicability decision ${decision.attributeId} references unknown publishable leaf ${categoryId}.`,
+      );
+      if (bound.has(categoryId)) continue;
+      const from = decision.extendFrom;
+      assert(
+        from !== undefined &&
+          bound.has(from) &&
+          decision.appliesTo.includes(from),
+        `Applicability decision ${decision.attributeId} widens to ${categoryId} without a reviewed, applicable extendFrom leaf.`,
+      );
+      const listingTypeId = listingTypeOf.get(categoryId);
+      assert(
+        listingTypeId !== undefined,
+        `Applicability decision ${decision.attributeId} widens to ${categoryId}, which publishes no listing type.`,
+      );
+      extensions.push({
+        attributeId: decision.attributeId,
+        from,
+        to: categoryId,
+        listingTypeId,
+      });
+    }
+    for (const categoryId of bound) {
+      // A shared attribute keeps the bindings that another vertical's own review owns.
+      if (decision.appliesTo.includes(categoryId)) continue;
+      if (categoryId.split(".")[0] !== decision.vertical) continue;
+      removed.add(pair(categoryId, decision.attributeId));
+      notApplicable.push({
+        categoryId,
+        attributeId: decision.attributeId,
+        reason: decision.reason,
+      });
+    }
+  }
+
+  const keepsAttribute = (row: { categoryId: string; attributeId: string }) =>
+    !removed.has(pair(row.categoryId, row.attributeId));
+  const keepsField = (row: {
+    categoryId: string;
+    field: { kind: string; key: string };
+  }) =>
+    row.field.kind !== "attribute" ||
+    !removed.has(pair(row.categoryId, row.field.key));
+  const clone = <Row extends { categoryId: string }>(
+    rows: Row[],
+    matches: (row: Row, extension: AttributeExtension) => boolean,
+    rewrite: (row: Row, extension: AttributeExtension) => Row,
+  ) =>
+    extensions.flatMap((extension) =>
+      rows
+        .filter(
+          (row) => row.categoryId === extension.from && matches(row, extension),
+        )
+        .map((row) => rewrite(row, extension)),
+    );
+  const retarget = <Row extends { categoryId: string; listingTypeId: string }>(
+    row: Row,
+    extension: AttributeExtension,
+  ) => ({
+    ...row,
+    categoryId: extension.to,
+    listingTypeId: extension.listingTypeId,
+  });
+
+  const bindings = [
+    ...source.bindings.filter(keepsAttribute),
+    ...clone(
+      source.bindings,
+      (row, extension) =>
+        row.attributeId === extension.attributeId &&
+        row.scope !== "FLOW_TEMPLATE",
+      (row, extension) => ({
+        ...retarget(row, extension),
+        id: `${extension.to}|${extension.listingTypeId}|${row.attributeId}`,
+      }),
+    ),
+  ];
+  const filters = [
+    ...source.projections.filters.filter(keepsAttribute),
+    ...clone(
+      source.projections.filters,
+      (row, extension) => row.attributeId === extension.attributeId,
+      (row, extension) => ({
+        ...retarget(row, extension),
+        id: `${extension.listingTypeId}|${row.attributeId}`,
+      }),
+    ),
+  ];
+  const detailFields = [
+    ...source.projections.detailFields.filter(keepsField),
+    ...clone(
+      source.projections.detailFields,
+      (row, extension) => row.field.key === extension.attributeId,
+      retarget,
+    ),
+  ];
+  const cardFields = [
+    ...source.projections.cardFields.filter(keepsField),
+    ...clone(
+      source.projections.cardFields,
+      (row, extension) => row.field.key === extension.attributeId,
+      retarget,
+    ),
+  ];
+  const publicationFlow = source.projections.publicationFlow.map((row) => ({
+    ...row,
+    requiredFields: row.requiredFields.filter(
+      (field) =>
+        field.kind !== "attribute" ||
+        !removed.has(pair(row.categoryId, field.key)),
+    ),
+  }));
+  const search = source.projections.search.map((row) => {
+    const added = extensions
+      .filter((extension) => extension.to === row.categoryId)
+      .map((extension) => extension.attributeId);
+    const definition = (id: string) =>
+      source.attributes.find((attribute) => attribute.id === id);
+    const resolve = (
+      ids: string[],
+      eligible: (attribute: NormalizedSource["attributes"][number]) => boolean,
+    ) => [
+      ...ids.filter((id) => !removed.has(pair(row.categoryId, id))),
+      ...added.filter((id) => {
+        const attribute = definition(id);
+        return (
+          !ids.includes(id) && attribute !== undefined && eligible(attribute)
+        );
+      }),
+    ];
+    return {
+      ...row,
+      searchableFields: resolve(
+        row.searchableFields,
+        (attribute) => attribute.searchable,
+      ),
+      filterableAttributeIds: resolve(
+        row.filterableAttributeIds,
+        (attribute) => attribute.filterable,
+      ),
+      sortableAttributeIds: resolve(
+        row.sortableAttributeIds,
+        (attribute) => attribute.sortable,
+      ),
+    };
+  });
+
+  return {
+    source: {
+      ...source,
+      bindings,
+      projections: {
+        ...source.projections,
+        filters,
+        cardFields,
+        detailFields,
+        publicationFlow,
+        search,
+      },
+    },
+    notApplicable,
+  };
+}
+
+/**
+ * Derive every projection identity and label from the canonical definition it
+ * presents. The import duplicated both into each projection row, which let them
+ * drift: the six phone reference and repair fields all rendered as "Battery health"
+ * on detail pages and as "Brand" in filters, five of them shared one filter id, and
+ * English detail sections carried the French group label. Deriving keeps one authored
+ * label per field and per section, and one filter identity per presented attribute.
+ */
+function canonicaliseProjectionLabels(source: NormalizedSource) {
+  const attributes = new Map(
+    source.attributes.map((attribute) => [attribute.id, attribute]),
+  );
+  const groups = new Map(
+    source.attributeGroups.map((group) => [group.id, group]),
+  );
+  const groupOf = new Map(
+    source.bindings.map((binding) => [
+      `${binding.categoryId}|${binding.attributeId}`,
+      binding.groupId,
+    ]),
+  );
+  const labelsOf = (attributeId: string) => {
+    const attribute = attributes.get(attributeId);
+    assert(
+      attribute !== undefined,
+      `Projection references unknown attribute ${attributeId}.`,
+    );
+    return attribute.labels;
+  };
+  const sectionLabelsOf = (categoryId: string, attributeId: string) => {
+    const groupId = groupOf.get(`${categoryId}|${attributeId}`);
+    const group = groupId === undefined ? undefined : groups.get(groupId);
+    assert(
+      group !== undefined,
+      `Detail section for ${categoryId}/${attributeId} resolves no attribute group.`,
+    );
+    return group.labels;
+  };
+
+  return {
+    ...source,
+    projections: {
+      ...source.projections,
+      filters: source.projections.filters.map((row) => ({
+        ...row,
+        id: `${row.listingTypeId}|${row.attributeId}`,
+        labels: labelsOf(row.attributeId),
+      })),
+      cardFields: source.projections.cardFields.map((row) =>
+        row.field.kind === "attribute"
+          ? { ...row, labels: labelsOf(row.field.key) }
+          : row,
+      ),
+      detailFields: source.projections.detailFields.map((row) => ({
+        ...row,
+        labels: labelsOf(row.field.key),
+        sectionLabels: sectionLabelsOf(row.categoryId, row.field.key),
+      })),
+    },
+  };
+}
+
+/**
+ * Apply the authored help text. The import generated one placeholder sentence per
+ * attribute and copied the French string into en-US, so no publication field carried
+ * usable guidance in either language. Every authored entry must target a real
+ * attribute and must differ between locales.
+ */
+function applyAuthoredHelpText(source: NormalizedSource) {
+  const authored = attributeHelp.helpText as Record<
+    string,
+    Record<string, string>
+  >;
+  const known = new Set(source.attributes.map((attribute) => attribute.id));
+  for (const [attributeId, text] of Object.entries(authored)) {
+    assert(
+      known.has(attributeId),
+      `Authored help text targets unknown attribute ${attributeId}.`,
+    );
+    assert(
+      Boolean(text["fr-FR"]) && Boolean(text["en-US"]),
+      `Authored help text for ${attributeId} must cover fr-FR and en-US.`,
+    );
+    assert(
+      text["fr-FR"] !== text["en-US"],
+      `Authored help text for ${attributeId} repeats one locale in the other.`,
+    );
+  }
+  return {
+    ...source,
+    attributes: source.attributes.map((attribute) =>
+      authored[attribute.id]
+        ? { ...attribute, helpText: authored[attribute.id] }
+        : attribute,
+    ),
+  };
+}
+
 async function compileFromNormalizedSource(check: boolean) {
   const source = JSON.parse(
     await fs.readFile(NORMALIZED_SOURCE_PATH, "utf8"),
@@ -2756,10 +3075,12 @@ async function compileFromNormalizedSource(check: boolean) {
     source.metadata.normalizedSha256 === expectedChecksum,
     "Canonical normalized taxonomy checksum is invalid.",
   );
+  const applicability = applyLeafApplicability(applyAuthoredHelpText(source));
+  const labelled = canonicaliseProjectionLabels(applicability.source);
   const compiledSource: NormalizedSource = {
-    ...source,
+    ...labelled,
     projections: {
-      ...source.projections,
+      ...labelled.projections,
       seo: buildSeoProjections(source.categories),
     },
   };
@@ -2836,7 +3157,10 @@ async function compileFromNormalizedSource(check: boolean) {
     `// Generated by taxonomy-compile using the sole backend resolver. Test input only.\nexport const recordedResponses: unknown = JSON.parse(${JSON.stringify(JSON.stringify(responses))});\n`,
     check,
   );
-  const coverage = taxonomyCoverage(validatedBundle);
+  const coverage = taxonomyCoverage(
+    validatedBundle,
+    applicability.notApplicable,
+  );
   await writeOrCheck(
     path.join(
       REPOSITORY_ROOT,

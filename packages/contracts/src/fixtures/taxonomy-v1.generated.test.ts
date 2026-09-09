@@ -13,7 +13,7 @@ describe("generated taxonomy v1 public projection", () => {
       categories: 302,
       listingTypes: 213,
       attributes: 349,
-      bindings: 10_859,
+      bindings: 10_656,
     });
     expect(bundle.categories).toHaveLength(302);
     expect(
@@ -31,12 +31,12 @@ describe("generated taxonomy v1 public projection", () => {
     expect(bundle.optionSets).toHaveLength(109);
     expect(bundle.options).toHaveLength(746);
     expect(bundle.optionParentLinks).toHaveLength(92);
-    expect(bundle.bindings).toHaveLength(10742);
+    expect(bundle.bindings).toHaveLength(10539);
     expect(bundle.dependencyRules).toHaveLength(199);
     expect(bundle.validationRules).toHaveLength(498);
-    expect(bundle.projections.filters).toHaveLength(2730);
-    expect(bundle.projections.cardFields).toHaveLength(1410);
-    expect(bundle.projections.detailFields).toHaveLength(10050);
+    expect(bundle.projections.filters).toHaveLength(2651);
+    expect(bundle.projections.cardFields).toHaveLength(1397);
+    expect(bundle.projections.detailFields).toHaveLength(9857);
     expect(bundle.projections.publicationFlow).toHaveLength(1636);
     expect(bundle.projections.search).toHaveLength(213);
     expect(bundle.projections.seo).toHaveLength(302);

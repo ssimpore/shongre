@@ -48,6 +48,27 @@ case "$action" in
     "${compose[@]}" down --remove-orphans
     "$root/scripts/supabase.sh" down
     ;;
+  prune-stale)
+    # Remove only what an earlier run left behind: containers of this compose
+    # project that are no longer running, and untagged image layers. Running
+    # containers, tagged images and named volumes are never touched, so the
+    # local database survives and nothing has to be pulled again. Supabase owns
+    # its own containers and deliberately keeps some of them stopped, so they
+    # are matched by project label rather than by name.
+    shongre_require_docker_daemon || exit 1
+    stale="$(docker ps --all --quiet \
+      --filter "label=com.docker.compose.project=${COMPOSE_PROJECT_NAME}" \
+      --filter status=created --filter status=exited --filter status=dead)"
+    if [[ -n "$stale" ]]; then
+      # shellcheck disable=SC2086 # container ids are newline separated by docker
+      docker rm --volumes $stale >/dev/null
+      shongre_pass "removed $(printf '%s\n' "$stale" | wc -l | tr -d ' ') stale ${COMPOSE_PROJECT_NAME} container(s)"
+    fi
+    reclaimed="$(docker image prune --force | awk '/^Total reclaimed space/ { print $4 $5 }')"
+    if [[ -n "$reclaimed" && "$reclaimed" != "0B" ]]; then
+      shongre_pass "reclaimed $reclaimed of untagged image layers"
+    fi
+    ;;
   status)
     "${compose[@]}" ps
     ;;
@@ -62,7 +83,7 @@ case "$action" in
     "${compose[@]}" logs --tail=200 frontend backend worker redis
     ;;
   *)
-    shongre_fail "usage: scripts/compose.sh <config|build|start|stop|status|health|logs>"
+    shongre_fail "usage: scripts/compose.sh <config|build|start|stop|prune-stale|status|health|logs>"
     exit 2
     ;;
 esac

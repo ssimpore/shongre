@@ -24,16 +24,27 @@ shongre_require_command() {
 }
 
 shongre_require_docker_daemon() {
+  if ! command -v docker >/dev/null 2>&1; then
+    shongre_fail "docker is required but was not found on PATH"
+    return 1
+  fi
   # Probe the server API without the optional plugin discovery done by info.
+  # Docker Desktop parks its virtual machine while idle, and the first call has
+  # to wake it: measured at ~27 seconds here against ~0.05 seconds once warm. A
+  # single short attempt therefore fails whenever Docker has been left alone,
+  # so the first probe is a generous wake-up and the second is the real check.
+  # A daemon that is genuinely stopped still fails immediately, because the CLI
+  # reports a missing socket instead of waiting.
   if ! node --input-type=module -e '
     import { spawnSync } from "node:child_process";
-    const result = spawnSync("docker", ["version", "--format", "{{.Server.Version}}"], {
-      stdio: "ignore",
-      timeout: 10_000,
-    });
-    process.exit(result.status === 0 ? 0 : 1);
+    const probe = (timeout) =>
+      spawnSync("docker", ["version", "--format", "{{.Server.Version}}"], {
+        stdio: "ignore",
+        timeout,
+      }).status === 0;
+    process.exit(probe(45_000) && probe(10_000) ? 0 : 1);
   '; then
-    shongre_fail "Docker daemon is unavailable or did not respond within 10 seconds"
+    shongre_fail "Docker daemon is unavailable or did not respond within 45 seconds"
     shongre_info "restart Docker Desktop and verify that its data store is writable"
     return 1
   fi

@@ -1,0 +1,452 @@
+{
+  "taxonomyVersion": "v1",
+  "reviewedOn": "2026-09-09",
+  "purpose": "Reviewed leaf-level applicability for vertical attributes that the workbook import binds to every leaf of a vertical. The compiler narrows each attribute to `appliesTo` and records every removed leaf as a justified not-applicable decision instead of publishing an irrelevant field. A decision may also widen an attribute to a leaf the import missed; that requires `extendFrom`, an already-bound leaf of the same publication flow whose binding and projection rows are cloned. Every other `appliesTo` entry must already exist in the imported binding set.",
+  "decisions": [
+    {
+      "attributeId": "storage_capacity_gb",
+      "vertical": "electronics",
+      "appliesTo": [
+        "electronics.computers.laptops",
+        "electronics.computers.desktops",
+        "electronics.computers.components",
+        "electronics.smartphones.phones",
+        "electronics.smartphones.wearables",
+        "electronics.smart_home.tablets_readers",
+        "electronics.smart_home.home_automation",
+        "electronics.gaming.consoles"
+      ],
+      "reason": {
+        "fr-FR": "La capacité de stockage décrit un appareil qui embarque une mémoire de masse. Les téléviseurs, appareils photo, matériels audio, accessoires et jeux vidéo ne se comparent pas sur ce critère.",
+        "en-US": "Storage capacity describes a device with built-in mass storage. Televisions, cameras, audio gear, accessories and video games are not compared on it."
+      }
+    },
+    {
+      "attributeId": "memory_ram_gb",
+      "vertical": "electronics",
+      "appliesTo": [
+        "electronics.computers.laptops",
+        "electronics.computers.desktops",
+        "electronics.computers.components",
+        "electronics.smartphones.phones",
+        "electronics.smart_home.tablets_readers"
+      ],
+      "reason": {
+        "fr-FR": "La mémoire vive n’est un critère d’achat que pour les appareils informatiques configurables. Elle est fixe ou absente sur les autres produits électroniques.",
+        "en-US": "RAM is a purchase criterion only for configurable computing devices. It is fixed or absent on the other electronics products."
+      }
+    },
+    {
+      "attributeId": "screen_size_in",
+      "vertical": "electronics",
+      "appliesTo": [
+        "electronics.computers.laptops",
+        "electronics.computers.desktops",
+        "electronics.computers.components",
+        "electronics.smartphones.phones",
+        "electronics.smartphones.wearables",
+        "electronics.smart_home.tablets_readers",
+        "electronics.audio_hifi.tv_video"
+      ],
+      "reason": {
+        "fr-FR": "La taille d’écran ne s’applique qu’aux produits dont l’écran est l’élément principal. Les produits audio, la domotique, les accessoires et les jeux vidéo n’en ont pas.",
+        "en-US": "Screen size applies only to products whose display is the defining part. Audio products, home automation, accessories and video games have none."
+      }
+    },
+    {
+      "attributeId": "operating_system",
+      "vertical": "electronics",
+      "appliesTo": [
+        "electronics.computers.laptops",
+        "electronics.computers.desktops",
+        "electronics.smartphones.phones",
+        "electronics.smartphones.wearables",
+        "electronics.smart_home.tablets_readers"
+      ],
+      "reason": {
+        "fr-FR": "Le système d’exploitation distingue des appareils polyvalents. Les composants, accessoires, produits audio/photo/vidéo, consoles et jeux exécutent un micrologiciel non choisi par l’acheteur.",
+        "en-US": "The operating system distinguishes general-purpose devices. Components, accessories, audio/photo/video products, consoles and games run firmware the buyer does not choose."
+      }
+    },
+    {
+      "attributeId": "network_lock_status",
+      "vertical": "electronics",
+      "appliesTo": [
+        "electronics.smartphones.phones",
+        "electronics.smartphones.wearables",
+        "electronics.smart_home.tablets_readers"
+      ],
+      "reason": {
+        "fr-FR": "Le verrouillage opérateur ne concerne que les appareils vendus avec un abonnement mobile. Aucun autre produit électronique n’est verrouillé par un opérateur.",
+        "en-US": "Carrier lock concerns only devices sold with a mobile subscription. No other electronics product is carrier-locked."
+      }
+    },
+    {
+      "attributeId": "imei_private",
+      "vertical": "electronics",
+      "appliesTo": [
+        "electronics.smartphones.phones",
+        "electronics.smartphones.wearables",
+        "electronics.smart_home.tablets_readers"
+      ],
+      "reason": {
+        "fr-FR": "L’IMEI identifie un équipement raccordé à un réseau mobile. Demander cet identifiant sur un autre produit collecterait une donnée sans usage.",
+        "en-US": "The IMEI identifies equipment attached to a mobile network. Requesting it on another product would collect data with no purpose."
+      }
+    },
+    {
+      "attributeId": "battery_health_percent",
+      "vertical": "electronics",
+      "appliesTo": [
+        "electronics.smartphones.phones",
+        "electronics.smartphones.wearables",
+        "electronics.smart_home.tablets_readers",
+        "electronics.computers.laptops"
+      ],
+      "reason": {
+        "fr-FR": "L’état de la batterie n’est décisif que pour les appareils dont la batterie interne conditionne l’usage et n’est pas remplaçable simplement.",
+        "en-US": "Battery health is decisive only for devices whose built-in battery governs usability and is not simply replaceable."
+      }
+    },
+    {
+      "attributeId": "repair_history_status",
+      "vertical": "electronics",
+      "appliesTo": [
+        "electronics.smartphones.phones",
+        "electronics.smartphones.wearables",
+        "electronics.smart_home.tablets_readers",
+        "electronics.computers.laptops"
+      ],
+      "reason": {
+        "fr-FR": "L’historique de réparation est déclaré pour les appareils personnels réparables dont la valeur dépend des pièces remplacées.",
+        "en-US": "Repair history is declared for repairable personal devices whose value depends on replaced parts."
+      },
+      "extendFrom": "electronics.smartphones.phones",
+      "extensionReason": {
+        "fr-FR": "L’historique de réparation était limité aux smartphones alors que les ordinateurs portables, tablettes et montres connectées se revendent avec les mêmes questions de pièces remplacées et de garantie.",
+        "en-US": "Repair history was limited to smartphones although laptops, tablets and smartwatches resell with the same replaced-part and warranty questions."
+      }
+    },
+    {
+      "attributeId": "repair_history_details",
+      "vertical": "electronics",
+      "appliesTo": [
+        "electronics.smartphones.phones",
+        "electronics.smartphones.wearables",
+        "electronics.smart_home.tablets_readers",
+        "electronics.computers.laptops"
+      ],
+      "reason": {
+        "fr-FR": "Le détail des réparations accompagne l’historique de réparation et suit la même applicabilité.",
+        "en-US": "Repair details accompany the repair-history status and follow the same applicability."
+      },
+      "extendFrom": "electronics.smartphones.phones",
+      "extensionReason": {
+        "fr-FR": "L’historique de réparation était limité aux smartphones alors que les ordinateurs portables, tablettes et montres connectées se revendent avec les mêmes questions de pièces remplacées et de garantie.",
+        "en-US": "Repair history was limited to smartphones although laptops, tablets and smartwatches resell with the same replaced-part and warranty questions."
+      }
+    },
+    {
+      "attributeId": "connectivity",
+      "vertical": "electronics",
+      "appliesTo": [
+        "electronics.computers.laptops",
+        "electronics.computers.desktops",
+        "electronics.computers.components",
+        "electronics.smartphones.phones",
+        "electronics.smartphones.wearables",
+        "electronics.smartphones.phone_accessories",
+        "electronics.audio_hifi.tv_video",
+        "electronics.audio_hifi.photo",
+        "electronics.audio_hifi.audio",
+        "electronics.gaming.consoles",
+        "electronics.smart_home.home_automation",
+        "electronics.smart_home.tablets_readers"
+      ],
+      "reason": {
+        "fr-FR": "Un jeu vidéo est un contenu : ses connexions dépendent de la console, pas de l’exemplaire vendu.",
+        "en-US": "A video game is content: its connections belong to the console, not to the copy being sold."
+      }
+    },
+    {
+      "attributeId": "console_platform",
+      "vertical": "electronics",
+      "appliesTo": [
+        "electronics.gaming.consoles",
+        "electronics.gaming.video_games"
+      ],
+      "reason": {
+        "fr-FR": "La plateforme de jeu identifie l’écosystème d’une console ou d’un jeu. Elle ne décrit aucun autre produit électronique.",
+        "en-US": "Game platform identifies a console or game ecosystem. It describes no other electronics product."
+      }
+    },
+    {
+      "attributeId": "game_genre",
+      "vertical": "electronics",
+      "appliesTo": ["electronics.gaming.video_games"],
+      "reason": {
+        "fr-FR": "Le genre qualifie une œuvre vidéoludique. Une console ou un appareil n’a pas de genre.",
+        "en-US": "Genre qualifies a game title. A console or a device has no genre."
+      }
+    },
+    {
+      "attributeId": "media_format",
+      "vertical": "leisure_culture",
+      "appliesTo": [
+        "leisure_culture.books_media.books",
+        "leisure_culture.books_media.music_media",
+        "leisure_culture.books_media.films"
+      ],
+      "reason": {
+        "fr-FR": "Le format de support décrit une œuvre publiée sur un média physique ou numérique. Les instruments, objets de collection, jouets et produits gastronomiques n’ont pas de support.",
+        "en-US": "Media format describes a work published on a physical or digital carrier. Instruments, collectibles, toys and food products have no carrier."
+      }
+    },
+    {
+      "attributeId": "author_creator",
+      "vertical": "leisure_culture",
+      "appliesTo": [
+        "leisure_culture.books_media.books",
+        "leisure_culture.books_media.music_media",
+        "leisure_culture.books_media.films",
+        "leisure_culture.collection.antiques",
+        "leisure_culture.collection.collectibles"
+      ],
+      "reason": {
+        "fr-FR": "L’auteur ou le créateur identifie une œuvre ou une pièce attribuée. Les instruments, le modélisme, les loisirs créatifs et la gastronomie se décrivent par leur marque.",
+        "en-US": "Author or creator identifies a work or an attributed piece. Instruments, model making, creative hobbies and gastronomy are described by brand."
+      }
+    },
+    {
+      "attributeId": "isbn_ean",
+      "vertical": "leisure_culture",
+      "appliesTo": [
+        "leisure_culture.books_media.books",
+        "leisure_culture.books_media.music_media",
+        "leisure_culture.books_media.films"
+      ],
+      "reason": {
+        "fr-FR": "L’ISBN/EAN identifie une édition publiée et permet d’en retrouver la fiche. Les pièces uniques et les produits non édités n’en portent pas.",
+        "en-US": "ISBN/EAN identifies a published edition and retrieves its record. One-off pieces and unpublished products carry none."
+      }
+    },
+    {
+      "attributeId": "publication_year",
+      "vertical": "leisure_culture",
+      "appliesTo": [
+        "leisure_culture.books_media.books",
+        "leisure_culture.books_media.music_media",
+        "leisure_culture.books_media.films",
+        "leisure_culture.collection.collectibles"
+      ],
+      "reason": {
+        "fr-FR": "L’année de parution qualifie une édition datée. L’ancienneté d’une antiquité, d’une maquette ou d’un produit gastronomique se déclare autrement.",
+        "en-US": "Publication year qualifies a dated edition. The age of an antique, a scale model or a food product is declared differently."
+      }
+    },
+    {
+      "attributeId": "instrument_type",
+      "vertical": "leisure_culture",
+      "appliesTo": [
+        "leisure_culture.instruments.instruments",
+        "leisure_culture.instruments.dj_studio"
+      ],
+      "reason": {
+        "fr-FR": "La famille d’instrument ne concerne que le matériel de musique.",
+        "en-US": "Instrument family concerns music gear only."
+      }
+    },
+    {
+      "attributeId": "handedness",
+      "vertical": "leisure_culture",
+      "appliesTo": ["leisure_culture.instruments.instruments"],
+      "reason": {
+        "fr-FR": "La latéralité distingue les instruments fabriqués pour gaucher ou droitier. Le matériel de studio et les autres produits culturels ne sont pas latéralisés.",
+        "en-US": "Handedness distinguishes instruments built left- or right-handed. Studio gear and other cultural products are not handed."
+      }
+    },
+    {
+      "attributeId": "furniture_type",
+      "vertical": "home_garden",
+      "appliesTo": [
+        "home_garden.furniture.sofas",
+        "home_garden.furniture.tables",
+        "home_garden.furniture.beds",
+        "home_garden.furniture.storage",
+        "home_garden.diy_garden.garden"
+      ],
+      "reason": {
+        "fr-FR": "Le type de meuble décrit un meuble d’intérieur ou de jardin. La décoration, les arts de la table, le linge, l’outillage, les matériaux, l’électroménager et la papeterie ne sont pas des meubles.",
+        "en-US": "Furniture type describes indoor or garden furniture. Decoration, tableware, textiles, tools, materials, appliances and stationery are not furniture."
+      }
+    },
+    {
+      "attributeId": "assembly_required",
+      "vertical": "home_garden",
+      "appliesTo": [
+        "home_garden.furniture.sofas",
+        "home_garden.furniture.tables",
+        "home_garden.furniture.beds",
+        "home_garden.furniture.storage",
+        "home_garden.diy_garden.garden"
+      ],
+      "reason": {
+        "fr-FR": "Le montage à prévoir informe l’acheteur d’un meuble à assembler et transporter. Il n’a pas de sens pour un produit livré prêt à l’emploi.",
+        "en-US": "Assembly required tells the buyer that furniture must be assembled and moved. It is meaningless for a ready-to-use product."
+      }
+    },
+    {
+      "attributeId": "appliance_type",
+      "vertical": "home_garden",
+      "appliesTo": [
+        "home_garden.appliances.large",
+        "home_garden.appliances.small",
+        "home_garden.appliances.climate"
+      ],
+      "reason": {
+        "fr-FR": "La famille d’appareil ne concerne que l’électroménager et les appareils de chauffage ou de climatisation.",
+        "en-US": "Appliance family concerns only household appliances and heating or air-conditioning units."
+      }
+    },
+    {
+      "attributeId": "appliance_capacity",
+      "vertical": "home_garden",
+      "appliesTo": [
+        "home_garden.appliances.large",
+        "home_garden.appliances.small",
+        "home_garden.appliances.climate"
+      ],
+      "reason": {
+        "fr-FR": "La capacité (litres, couverts, kilogrammes) qualifie un appareil ménager. Les autres produits de la maison se mesurent par leurs dimensions.",
+        "en-US": "Capacity (litres, place settings, kilograms) qualifies a household appliance. Other home products are measured by their dimensions."
+      }
+    },
+    {
+      "attributeId": "energy_efficiency_class",
+      "vertical": "home_garden",
+      "appliesTo": [
+        "home_garden.appliances.large",
+        "home_garden.appliances.small",
+        "home_garden.appliances.climate"
+      ],
+      "reason": {
+        "fr-FR": "La classe énergétique est une étiquette réglementaire portée par les appareils consommateurs d’énergie. Un meuble, un textile ou un matériau n’en porte pas.",
+        "en-US": "The energy class is a regulated label carried by energy-consuming appliances. Furniture, textiles and materials carry none."
+      }
+    },
+    {
+      "attributeId": "voltage",
+      "vertical": "energy_transition",
+      "appliesTo": [
+        "energy_transition.solar.panels",
+        "energy_transition.solar.inverters",
+        "energy_transition.solar.solar_kits",
+        "energy_transition.ev_charging.home_chargers",
+        "energy_transition.ev_charging.pro_chargers",
+        "energy_transition.ev_charging.charging_accessories",
+        "energy_transition.heating_storage.heat_pumps",
+        "energy_transition.heating_storage.batteries"
+      ],
+      "reason": {
+        "fr-FR": "La tension caractérise tous les équipements électriques de cette catégorie; aucune exclusion n’est retenue.",
+        "en-US": "Voltage characterises every electrical product in this vertical; no exclusion is recorded."
+      }
+    },
+    {
+      "attributeId": "phase_count",
+      "vertical": "energy_transition",
+      "appliesTo": [
+        "energy_transition.solar.inverters",
+        "energy_transition.solar.solar_kits",
+        "energy_transition.ev_charging.home_chargers",
+        "energy_transition.ev_charging.pro_chargers",
+        "energy_transition.heating_storage.heat_pumps",
+        "energy_transition.heating_storage.batteries"
+      ],
+      "reason": {
+        "fr-FR": "Le nombre de phases décrit un raccordement au réseau. Un panneau produit en courant continu et un câble se choisit par son connecteur.",
+        "en-US": "Phase count describes a grid connection. A panel produces direct current and a cable is chosen by its connector."
+      }
+    },
+    {
+      "attributeId": "max_charging_power",
+      "vertical": "energy_transition",
+      "appliesTo": [
+        "energy_transition.ev_charging.home_chargers",
+        "energy_transition.ev_charging.pro_chargers",
+        "energy_transition.ev_charging.charging_accessories"
+      ],
+      "reason": {
+        "fr-FR": "La puissance de charge maximale caractérise le matériel de recharge de véhicule électrique. La production solaire et le stockage se déclarent par leur puissance et leur capacité propres.",
+        "en-US": "Maximum charging power characterises electric-vehicle charging equipment. Solar generation and storage are declared by their own power and capacity."
+      }
+    },
+    {
+      "attributeId": "charging_connector",
+      "vertical": "energy_transition",
+      "appliesTo": [
+        "energy_transition.ev_charging.home_chargers",
+        "energy_transition.ev_charging.pro_chargers",
+        "energy_transition.ev_charging.charging_accessories"
+      ],
+      "reason": {
+        "fr-FR": "Le type de connecteur (Type 2, CCS…) appartient au matériel de recharge de véhicule électrique.",
+        "en-US": "Connector type (Type 2, CCS…) belongs to electric-vehicle charging equipment."
+      }
+    },
+    {
+      "attributeId": "battery_capacity_kwh",
+      "vertical": "energy_transition",
+      "appliesTo": [
+        "energy_transition.heating_storage.batteries",
+        "energy_transition.solar.solar_kits"
+      ],
+      "reason": {
+        "fr-FR": "La capacité de batterie décrit un produit qui stocke l’énergie. Les panneaux, onduleurs, bornes, câbles et pompes à chaleur n’en stockent pas.",
+        "en-US": "Battery capacity describes a product that stores energy. Panels, inverters, chargers, cables and heat pumps store none."
+      }
+    },
+    {
+      "attributeId": "storage_capacity_kwh",
+      "vertical": "energy_transition",
+      "appliesTo": [
+        "energy_transition.heating_storage.batteries",
+        "energy_transition.solar.solar_kits"
+      ],
+      "reason": {
+        "fr-FR": "La capacité de stockage utile accompagne la capacité de batterie et suit la même applicabilité.",
+        "en-US": "Usable storage capacity accompanies battery capacity and follows the same applicability."
+      }
+    },
+    {
+      "attributeId": "safety_standard",
+      "vertical": "baby_family",
+      "appliesTo": [
+        "baby_family.equipment.strollers",
+        "baby_family.equipment.car_seats",
+        "baby_family.equipment.feeding_care",
+        "baby_family.furniture.nursery",
+        "baby_family.maternity.early_learning"
+      ],
+      "reason": {
+        "fr-FR": "La norme de sécurité est apposée sur les équipements et jouets soumis à une homologation. Les vêtements, textiles et articles de maternité relèvent d’un étiquetage textile, pas d’une norme d’équipement.",
+        "en-US": "The safety standard is stamped on equipment and toys subject to type approval. Clothing, textiles and maternity items carry textile labelling, not equipment approval."
+      }
+    },
+    {
+      "attributeId": "manufacture_date",
+      "vertical": "baby_family",
+      "appliesTo": [
+        "baby_family.equipment.strollers",
+        "baby_family.equipment.car_seats",
+        "baby_family.equipment.feeding_care",
+        "baby_family.furniture.nursery",
+        "baby_family.maternity.early_learning"
+      ],
+      "reason": {
+        "fr-FR": "La date de fabrication conditionne la durée d’usage recommandée d’un équipement homologué. Elle n’est pas un critère pour un vêtement ou un textile.",
+        "en-US": "The manufacturing date governs the recommended service life of approved equipment. It is not a criterion for clothing or textiles."
+      }
+    }
+  ]
+}

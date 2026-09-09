@@ -1,5 +1,7 @@
+import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+import { TAXONOMY_V1_PRIVATE_BUNDLE as compiled } from "../../taxonomy/generated/taxonomy-v1.private.js";
 import { runPsql } from "../database/psql.js";
 
 const url = process.env.DATABASE_URL;
@@ -96,9 +98,27 @@ const tutoringActivationMigration = readFileSync(
   ),
   "utf8",
 );
+const fieldRelevanceMigrated =
+  runPsql(
+    url,
+    "SELECT EXISTS(SELECT 1 FROM public.taxonomy_migration_records WHERE entity_type = 'taxonomy_binding_not_applicable_v1')",
+  ) === "t";
+const fieldRelevanceMigration = readFileSync(
+  fileURLToPath(
+    new URL(
+      "../../supabase/migrations/00131_taxonomy_v1_field_relevance.sql",
+      import.meta.url,
+    ),
+  ),
+  "utf8",
+);
+
 const invariants = `
 DO $test$
 BEGIN
+  IF EXISTS(SELECT 1 FROM taxonomy_attributes WHERE localized_help_text->>'fr-FR' LIKE 'Caractéristique canonique%' OR localized_help_text->>'fr-FR' = localized_help_text->>'en-US') THEN RAISE EXCEPTION 'Placeholder or untranslated help text remains'; END IF;
+  IF EXISTS(SELECT 1 FROM taxonomy_listing_types t CROSS JOIN LATERAL jsonb_array_elements(COALESCE(t.presentation->'filters','[]'::jsonb)) f WHERE f->>'id' IS DISTINCT FROM t.id || '|' || (f->>'attributeId')) THEN RAISE EXCEPTION 'Filter identity is not derived from its attribute'; END IF;
+  IF (SELECT count(*) FROM taxonomy_migration_records WHERE entity_type='taxonomy_binding_not_applicable_v1') <> (SELECT count(*) FROM taxonomy_attribute_bindings WHERE effective_until IS NOT NULL) THEN RAISE EXCEPTION 'Retired bindings were deleted rather than preserved'; END IF;
   IF NOT EXISTS(SELECT 1 FROM taxonomy_configuration c JOIN taxonomy_publications p ON p.revision=c.published_revision CROSS JOIN LATERAL jsonb_array_elements(p.snapshot->'referenceEntries') r WHERE r->>'id'='auto_attribute_definitions:FR:condition') THEN RAISE EXCEPTION 'Vehicle condition not published'; END IF;
   IF EXISTS(SELECT 1 FROM taxonomy_migration_records r JOIN taxonomy_publications before ON before.revision=(r.payload->>'sourceRevision')::BIGINT JOIN taxonomy_publications after ON after.revision=(r.payload->>'targetRevision')::BIGINT WHERE r.entity_type='client_reference_publication_v1' AND (before.snapshot-'referenceEntries' IS DISTINCT FROM after.snapshot-'referenceEntries' OR NOT (after.snapshot->'referenceEntries') @> (before.snapshot->'referenceEntries'))) THEN RAISE EXCEPTION 'Condition import changed existing publication content'; END IF;
   IF EXISTS(SELECT 1 FROM taxonomy_configuration c JOIN taxonomy_publications p ON p.revision=c.published_revision WHERE NOT p.snapshot ? 'referenceEntries') THEN RAISE EXCEPTION 'Missing consolidated reference publication'; END IF;
@@ -156,6 +176,37 @@ SELECT jsonb_build_object('activeVersion','v1','domainReferences',jsonb_array_le
   'convertedAttributePayloads',(SELECT count(*) FROM taxonomy_migration_records WHERE entity_type='listing_attributes_v1'),
   'oldTablesRetired',true,'publicationContentPreserved',true,'listingValuesPreserved',true);
 `;
+// The migration applies the reviewed records with set-based SQL while the compiler
+// applies them to the normalized source. A migrated database and a freshly seeded one
+// must therefore hold the same configuration; these fingerprints prove it rather than
+// assuming it.
+const fingerprint = (values: string[]) =>
+  createHash("md5")
+    .update([...values].sort().join("\n"))
+    .digest("hex");
+const expectedFingerprints: Record<string, string> = {
+  bindings: fingerprint(compiled.bindings.map((row) => row.id)),
+  filters: fingerprint(compiled.projections.filters.map((row) => row.id)),
+  helpText: fingerprint(
+    compiled.attributes.map(
+      (row) => `${row.id}::${row.helpText["fr-FR"]}::${row.helpText["en-US"]}`,
+    ),
+  ),
+};
+const draftFingerprintSql = `SELECT jsonb_build_object(
+  'bindings', (SELECT md5(string_agg(v, E'\\n' ORDER BY v COLLATE "C")) FROM (SELECT b->>'id' AS v FROM jsonb_array_elements(public.read_taxonomy_draft()->'bindings') b) s),
+  'filters', (SELECT md5(string_agg(v, E'\\n' ORDER BY v COLLATE "C")) FROM (SELECT f->>'id' AS v FROM jsonb_array_elements(public.read_taxonomy_draft()->'projections'->'filters') f) s),
+  'helpText', (SELECT md5(string_agg(v, E'\\n' ORDER BY v COLLATE "C")) FROM (SELECT (a->>'id') || '::' || (a->'helpText'->>'fr-FR') || '::' || (a->'helpText'->>'en-US') AS v FROM jsonb_array_elements(public.read_taxonomy_draft()->'attributes') a) s))`;
+const observedFingerprints = JSON.parse(
+  runPsql(url, draftFingerprintSql),
+) as Record<string, string>;
+for (const [name, expected] of Object.entries(expectedFingerprints)) {
+  if (observedFingerprints[name] !== expected)
+    throw new Error(
+      `Database ${name} configuration diverges from the compiled taxonomy; re-run make taxonomy-compile and apply the taxonomy migrations.`,
+    );
+}
+
 const before = runPsql(
   url,
   "SELECT md5(string_agg(revision::text || ':' || checksum,'|' ORDER BY revision)) FROM taxonomy_publications",
@@ -163,7 +214,7 @@ const before = runPsql(
 console.log(
   runPsql(
     url,
-    `BEGIN;\n${migrated ? "" : migration}\n${referencesMigrated ? "" : referencesMigration}\n${referencePublicationMigrated ? "" : referencePublicationMigration}\n${referenceBoundaryMigrated ? "" : referenceBoundaryMigration}\n${conditionMigrated ? "" : conditionMigration}\n${tutoringActivationMigrated ? "" : tutoringActivationMigration}\n${invariants}\nROLLBACK;`,
+    `BEGIN;\n${migrated ? "" : migration}\n${referencesMigrated ? "" : referencesMigration}\n${referencePublicationMigrated ? "" : referencePublicationMigration}\n${referenceBoundaryMigrated ? "" : referenceBoundaryMigration}\n${conditionMigrated ? "" : conditionMigration}\n${tutoringActivationMigrated ? "" : tutoringActivationMigration}\n${fieldRelevanceMigrated ? "" : fieldRelevanceMigration}\n${invariants}\nROLLBACK;`,
   ),
 );
 const after = runPsql(

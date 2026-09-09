@@ -59,6 +59,10 @@ esac
 
 # Infrastructure/configuration checks happen before tracked applications stop.
 if [[ "$APP_ENV" == local ]]; then
+  # Clear containers and untagged layers a previous run left behind before the
+  # stack comes up. Running containers, tagged images and named volumes are
+  # preserved, so this stays a no-op on a healthy machine.
+  "$SHONGRE_ROOT/scripts/compose.sh" prune-stale
   "$SHONGRE_ROOT/scripts/redis.sh" up
 fi
 if [[ "$BACKEND_DATA_MODE" == database && "$DATABASE_INFRA_MODE" == local ]]; then

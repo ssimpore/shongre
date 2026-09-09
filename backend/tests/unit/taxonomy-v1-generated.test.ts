@@ -57,14 +57,14 @@ describe("generated taxonomy v1 integrity", () => {
       options: 753,
       optionParentLinks: 92,
       compactBindings: 1194,
-      bindings: 10859,
+      bindings: 10656,
       dependencies: 217,
       sourceValidationRules: 505,
       regulatoryValidationRules: 30,
       validationRules: 535,
-      filters: 2730,
-      cardFields: 1410,
-      detailFields: 10165,
+      filters: 2651,
+      cardFields: 1397,
+      detailFields: 9972,
       publicationFlow: 1636,
       searchProjections: 213,
       seoProjections: 302,
@@ -76,6 +76,58 @@ describe("generated taxonomy v1 integrity", () => {
       addOverrides: 375,
       excludeOverrides: 8,
       duplicateEffectiveBindings: 0,
+    });
+  });
+
+  it("gives every attribute usable, separately translated help text", () => {
+    bundle.attributes.forEach((attribute) => {
+      const french = attribute.helpText["fr-FR"];
+      const english = attribute.helpText["en-US"];
+      expect(french, attribute.id).toBeTruthy();
+      expect(english, attribute.id).toBeTruthy();
+      // The import generated one placeholder sentence per attribute and copied it
+      // into en-US; neither is guidance a seller can act on.
+      expect(french, attribute.id).not.toMatch(/^Caractéristique canonique/);
+      expect(english, attribute.id).not.toBe(french);
+    });
+  });
+
+  it("presents every projection under its canonical field and section label", () => {
+    const attributes = new Map(
+      bundle.attributes.map((attribute) => [attribute.id, attribute]),
+    );
+    const groups = new Map(
+      bundle.attributeGroups.map((group) => [group.id, group]),
+    );
+    const groupOf = new Map(
+      bundle.bindings.map((binding) => [
+        `${binding.categoryId}|${binding.attributeId}`,
+        binding.groupId,
+      ]),
+    );
+    const filterIds = new Set<string>();
+    bundle.projections.filters.forEach((row) => {
+      expect(row.labels, row.id).toEqual(
+        attributes.get(row.attributeId)?.labels,
+      );
+      // One filter identity per presented attribute: the import gave five phone
+      // fields the same id, which collapses them wherever filters are keyed.
+      expect(row.id).toBe(`${row.listingTypeId}|${row.attributeId}`);
+      expect(filterIds.has(row.id), row.id).toBe(false);
+      filterIds.add(row.id);
+    });
+    [...bundle.projections.cardFields, ...bundle.projections.detailFields]
+      .filter((row) => row.field.kind === "attribute")
+      .forEach((row) => {
+        expect(row.labels, `${row.categoryId}/${row.field.key}`).toEqual(
+          attributes.get(row.field.key)?.labels,
+        );
+      });
+    bundle.projections.detailFields.forEach((row) => {
+      const groupId = groupOf.get(`${row.categoryId}|${row.field.key}`);
+      expect(row.sectionLabels, `${row.categoryId}/${row.sectionId}`).toEqual(
+        groups.get(groupId!)?.labels,
+      );
     });
   });
 
