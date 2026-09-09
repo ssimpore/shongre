@@ -1,6 +1,6 @@
 import React, { Suspense } from "react";
 import { DetailSection } from "../../../design-system/primitives/DetailFacts";
-import { resolvePublicMapCoordinates } from "../../../configuration/geoCoordinates";
+import { resolveApproximatePlace } from "@shongre/contracts/place-gazetteer";
 import { useTranslation } from "../../../i18n/I18nProvider";
 
 const ListingLocationMap = React.lazy(() =>
@@ -16,11 +16,6 @@ export interface ListingLocationSectionProps {
   longitude?: number | null;
   /** How precise the published coordinate is, when the API declares it. */
   precision?: LocationPrecision | null;
-  /**
-   * Identifies the entity. Used only to spread the fallback coordinate of two
-   * listings in the same town so they are not drawn at the identical point.
-   */
-  id?: string;
   /** Scopes the city gazetteer used when the API published no coordinate. */
   marketCode?: string;
   className?: string;
@@ -83,7 +78,6 @@ export const ListingLocationSection: React.FC<ListingLocationSectionProps> = ({
   latitude,
   longitude,
   precision,
-  id,
   marketCode,
   className = "",
 }) => {
@@ -104,14 +98,14 @@ export const ListingLocationSection: React.FC<ListingLocationSectionProps> = ({
    */
   const fallback =
     !hasCoordinates(latitude, longitude) && city
-      ? resolvePublicMapCoordinates({ id: id ?? city, city, marketCode })
-      : undefined;
+      ? resolveApproximatePlace({ city, marketCode })
+      : null;
   const drawnLatitude = hasCoordinates(latitude, longitude)
     ? latitude
-    : fallback?.lat;
+    : fallback?.latitude;
   const drawnLongitude = hasCoordinates(latitude, longitude)
     ? longitude
-    : fallback?.lng;
+    : fallback?.longitude;
   /*
    * A town centre is a town-sized answer, so it is drawn at town scale whatever
    * precision the entity claims. Overstating it would turn "somewhere in

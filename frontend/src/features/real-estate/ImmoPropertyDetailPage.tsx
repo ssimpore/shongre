@@ -54,7 +54,7 @@ import {
 import { ListingLocationSection } from "../listings/components/ListingLocationSection";
 import { ListingDiscoveryRail } from "../listings/components/ListingDiscoveryRail";
 import { PAGE_SIZES } from "../../configuration/pagination.config";
-import { iconForFact } from "../../domains/listing/listing-facts.presentation";
+import { iconForFact } from "@shongre/features/listings/facts";
 import {
   PROPERTY_LEAD_FORM_ID,
   PropertyPrimaryActionButton,
@@ -508,7 +508,6 @@ export const ImmoPropertyDetailPage: React.FC = () => {
             </DetailSection>
 
             <ListingLocationSection
-              id={property.id}
               marketCode={activeMarket.code}
               city={property.address.city}
               postalCode={property.address.postalCode}

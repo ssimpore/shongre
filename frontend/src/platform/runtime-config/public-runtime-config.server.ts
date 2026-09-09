@@ -4,6 +4,10 @@ import {
   isProduction,
 } from "@shongre/contracts/environment";
 import type { PublicRuntimeConfig } from "./public-runtime-config";
+import {
+  OPENSTREETMAP_ATTRIBUTION,
+  OPENSTREETMAP_TILE_URL,
+} from "./public-runtime-config";
 import { createApplicationRegistry } from "../applications/application-registry";
 
 function enabled(name: string): boolean {
@@ -35,6 +39,8 @@ export function createPublicRuntimeConfig(): PublicRuntimeConfig {
     process.env.PUBLIC_CATEGORY_MEDIA_BASE_URL ?? "";
   const stripePublishableKey =
     process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? "";
+  const allowsDevelopmentBasemap =
+    environment.environment === "local" || environment.environment === "test";
   const analyticsMode = (process.env.ANALYTICS_MODE ?? "off") as
     "off" | "test" | "development" | "staging" | "production";
   if (
@@ -133,6 +139,21 @@ export function createPublicRuntimeConfig(): PublicRuntimeConfig {
         dsn: process.env.NEXT_PUBLIC_SENTRY_DSN ?? "",
         tracesSampleRate: sampleRate("NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE"),
       },
+    },
+    map: {
+      /*
+       * The browser draws whatever this says, so the development fallback lives
+       * here too — without it a local `make dev` renders every map as nothing.
+       * A hosted environment never reaches the fallback: `env-check.sh` refuses
+       * to start one that has not named a provider it may use.
+       */
+      tileUrl:
+        process.env.NEXT_PUBLIC_MAP_TILE_URL ||
+        (allowsDevelopmentBasemap ? OPENSTREETMAP_TILE_URL : ""),
+      attribution:
+        process.env.NEXT_PUBLIC_MAP_TILE_ATTRIBUTION ||
+        (allowsDevelopmentBasemap ? OPENSTREETMAP_ATTRIBUTION : ""),
+      maxZoom: Number(process.env.NEXT_PUBLIC_MAP_TILE_MAX_ZOOM) || 19,
     },
     externalLinks: {
       appStore: process.env.NEXT_PUBLIC_APP_STORE_URL ?? "",

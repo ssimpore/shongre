@@ -360,6 +360,8 @@ export interface Listing {
   region: string;
   latitude?: number;
   longitude?: number;
+  /** `exact` from the row, `city` resolved from the town. Absent: no coordinate. */
+  locationPrecision?: "exact" | "city";
   photos: ListingPhoto[];
   coverImageUrl: string;
   deliveryOptions: DeliveryOption[];

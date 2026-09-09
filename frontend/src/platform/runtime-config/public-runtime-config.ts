@@ -30,6 +30,17 @@ export interface PublicRuntimeConfig {
     cloudflare: { enabled: boolean; token: string };
     sentry: { enabled: boolean; dsn: string; tracesSampleRate: number };
   };
+  /**
+   * The raster basemap. Configured per environment because the default is
+   * OpenStreetMap's donated tile service, whose usage policy forbids a
+   * distributed commercial product pointing at it — a hosted environment must
+   * name a provider it is entitled to use.
+   */
+  map: {
+    tileUrl: string;
+    attribution: string;
+    maxZoom: number;
+  };
   externalLinks: {
     appStore: string;
     googlePlay: string;
@@ -45,6 +56,17 @@ declare global {
     __SHONGRE_RUNTIME_CONFIG__?: PublicRuntimeConfig;
   }
 }
+
+/**
+ * The development default, and only that. OpenStreetMap's tile servers run on
+ * donated capacity and their usage policy explicitly forbids a distributed
+ * application pointing at them; `scripts/env-check.sh` refuses to let a hosted
+ * environment boot on this host.
+ */
+export const OPENSTREETMAP_TILE_URL =
+  "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
+export const OPENSTREETMAP_ATTRIBUTION =
+  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>';
 
 function nodeEnvironmentValue(name: string): string {
   if (typeof process === "undefined") return "";
@@ -168,6 +190,16 @@ function nodeFallback(): PublicRuntimeConfig {
         dsn: nodeEnvironmentValue("NEXT_PUBLIC_SENTRY_DSN"),
         tracesSampleRate: nodeRate("NEXT_PUBLIC_SENTRY_TRACES_SAMPLE_RATE"),
       },
+    },
+    map: {
+      tileUrl:
+        nodeEnvironmentValue("NEXT_PUBLIC_MAP_TILE_URL") ||
+        (allowsLocalDefaults ? OPENSTREETMAP_TILE_URL : ""),
+      attribution:
+        nodeEnvironmentValue("NEXT_PUBLIC_MAP_TILE_ATTRIBUTION") ||
+        (allowsLocalDefaults ? OPENSTREETMAP_ATTRIBUTION : ""),
+      maxZoom:
+        Number(nodeEnvironmentValue("NEXT_PUBLIC_MAP_TILE_MAX_ZOOM")) || 19,
     },
     externalLinks: {
       appStore: nodeEnvironmentValue("NEXT_PUBLIC_APP_STORE_URL"),

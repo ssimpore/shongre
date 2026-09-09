@@ -1248,7 +1248,6 @@ export const ListingDetailPage: React.FC = () => {
 
           {/* 4b. LOCALISATION */}
           <ListingLocationSection
-            id={listing.id}
             marketCode={listing.marketCode}
             city={listing.city}
             postalCode={listing.postalCode}

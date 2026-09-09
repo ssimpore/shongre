@@ -51,7 +51,7 @@ import {
   DetailSection,
 } from "../../design-system/primitives/DetailFacts";
 import { ListingLocationSection } from "../listings/components/ListingLocationSection";
-import { iconForFact } from "../../domains/listing/listing-facts.presentation";
+import { iconForFact } from "@shongre/features/listings/facts";
 import { useAutoVehicleFavorites } from "./useAutoVehicleFavorites";
 
 type LeadFormState = {
@@ -457,7 +457,6 @@ export const AutoVehicleDetailPage: React.FC = () => {
             {/* No coordinates are published for a vehicle, so this names the
                 place and draws nothing rather than inventing a position. */}
             <ListingLocationSection
-              id={vehicle.id}
               marketCode={activeMarket.code}
               city={vehicle.locationLabel}
             />

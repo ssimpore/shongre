@@ -213,6 +213,59 @@ export const CANONICAL_DEMO_LISTINGS: Record<string, Listing> = {
     updatedAt: "2026-08-25T10:00:00.000Z",
     expiresAt: "2026-10-24T10:00:00.000Z",
   },
+  /*
+   * Switzerland is an open market that had no inventory in either scenario, so
+   * its discovery path had never been rendered — a market sweep found it by
+   * opening /ch/recherche and getting an empty page. Its own listing rather
+   * than a cross-publication of the canonical one, because `list_1`'s market
+   * boundary is itself a fixture: several tests use "not published to CH" as
+   * their example of a market a listing is not in.
+   */
+  list_ch_1: {
+    id: "list_ch_1",
+    sellerId: "user_camille",
+    categoryId: "bicycles",
+    title: "Vélo de route carbone — Lausanne",
+    description: "Vélo de route révisé, retrait possible à Lausanne.",
+    price: 1_890,
+    currency: "CHF",
+    status: "published",
+    condition: "tres-bon-etat",
+    brand: "Scott",
+    model: "Addict",
+    marketCode: "CH",
+    marketCodes: ["CH"],
+    marketPublications: [
+      {
+        marketCode: "CH",
+        status: "active",
+        isPrimary: true,
+        priceMinor: 189_000,
+        currency: "CHF",
+        complianceState: "approved",
+        availableServices: { handDelivery: true },
+        sortDate: "2026-08-26T10:00:00.000Z",
+        publishedAt: "2026-08-26T10:00:00.000Z",
+      },
+    ],
+    city: "Lausanne",
+    postalCode: "1000",
+    region: "Vaud",
+    country: "CH",
+    allowedDelivery: ["hand_delivery"],
+    shippingCost: 0,
+    images: [
+      "https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&w=800&q=80",
+    ],
+    isUrgent: false,
+    isFeatured: false,
+    viewCount: 64,
+    favoriteCount: 5,
+    attributes: { frame_size: "M" },
+    createdAt: "2026-08-26T10:00:00.000Z",
+    updatedAt: "2026-08-26T10:00:00.000Z",
+    expiresAt: "2026-10-25T10:00:00.000Z",
+  },
   list_digital_file: {
     id: "list_digital_file",
     sellerId: "user_camille",

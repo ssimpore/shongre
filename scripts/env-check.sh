@@ -203,12 +203,23 @@ if [[ "$APP_ENV" == "staging" || "$APP_ENV" == "production" ]]; then
     AUTH_EMAIL_DELIVERY_URL AUTH_EMAIL_DELIVERY_TOKEN STRIPE_SECRET_KEY STRIPE_WEBHOOK_SECRET \
     STRIPE_CONNECT_WEBHOOK_SECRET NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY COMPLIANCE_WEBHOOK_SECRET HANDOVER_PIN_PEPPER \
     KYC_PROVIDER_BASE_URL KYC_PROVIDER_API_TOKEN BUSINESS_REGISTRY_API_URL BUSINESS_REGISTRY_API_TOKEN \
-    GEMINI_API_KEY GEMINI_MODEL MALWARE_SCAN_URL MALWARE_SCAN_TOKEN; do
+    GEMINI_API_KEY GEMINI_MODEL MALWARE_SCAN_URL MALWARE_SCAN_TOKEN \
+    NEXT_PUBLIC_MAP_TILE_URL NEXT_PUBLIC_MAP_TILE_ATTRIBUTION; do
     if [[ -z "${!key:-}" ]]; then
       shongre_fail "$key is required for $APP_ENV provider certification"
       failed=1
     fi
   done
+  # OpenStreetMap's tile servers run on donated capacity and their usage policy
+  # forbids a distributed application pointing at them. It is the right default
+  # for a laptop and an outage waiting for a launch, so a hosted environment
+  # cannot boot on it — name a provider the product is entitled to use.
+  case "${NEXT_PUBLIC_MAP_TILE_URL:-}" in
+    *tile.openstreetmap.org*|*tile.osm.org*|*.tile.openstreetmap.org*)
+      shongre_fail "NEXT_PUBLIC_MAP_TILE_URL must not use OpenStreetMap's donated tile servers in $APP_ENV"
+      failed=1
+      ;;
+  esac
   if ! MALWARE_SCAN_URL="${MALWARE_SCAN_URL:-}" node --input-type=module -e '
     try {
       const url = new URL(process.env.MALWARE_SCAN_URL);

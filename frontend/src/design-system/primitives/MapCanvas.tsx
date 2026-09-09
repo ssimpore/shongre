@@ -1,7 +1,10 @@
 import React, { useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { MAP_TILE_OPTIONS, MAP_TILE_URL } from "../../platform/map/tile-source";
+import {
+  getMapTileOptions,
+  getMapTileSource,
+} from "../../platform/map/tile-source";
 
 export interface MapCanvasCenter {
   latitude: number;
@@ -67,8 +70,16 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
   onReadyRef.current = onReady;
   centerRef.current = center;
 
+  /*
+   * No configured provider means no tiles, and a Leaflet frame with zoom
+   * buttons over an empty grey square reads as a broken feature rather than an
+   * absent one. Nothing is rendered instead.
+   */
+  const tileSource = getMapTileSource();
+  const hasTiles = Boolean(tileSource.url);
+
   useEffect(() => {
-    if (!containerRef.current || mapRef.current) return;
+    if (!hasTiles || !containerRef.current || mapRef.current) return;
     const map = L.map(containerRef.current, {
       zoomControl,
       // Never false. The tiles are OpenStreetMap's and the credit travels with
@@ -76,7 +87,7 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
       attributionControl: true,
       scrollWheelZoom,
     });
-    L.tileLayer(MAP_TILE_URL, MAP_TILE_OPTIONS).addTo(map);
+    L.tileLayer(tileSource.url, getMapTileOptions()).addTo(map);
     mapRef.current = map;
     return () => {
       map.remove();
@@ -100,6 +111,8 @@ export const MapCanvas: React.FC<MapCanvasProps> = ({
     // `layerKey` is the caller's statement that what it draws has changed.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [layerKey]);
+
+  if (!hasTiles) return null;
 
   return (
     <div

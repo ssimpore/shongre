@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { ListingCharacteristicsData } from "../../api/contracts/listings.contract";
+import type { ListingCharacteristicsData } from "./listing-facts.presentation";
 import {
   buildListingFactPresentation,
   iconForFact,

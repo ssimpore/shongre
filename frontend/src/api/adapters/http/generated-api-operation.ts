@@ -5,6 +5,7 @@ import {
   type GeneratedApiOperationId,
 } from "@shongre/contracts/api-client";
 import { httpClient } from "./http-client";
+import { withReferenceCache } from "./reference-data-cache";
 
 type Mutable<T> = T extends readonly (infer Item)[]
   ? Mutable<Item>[]
@@ -37,9 +38,11 @@ export function apiOperation<Id extends GeneratedApiOperationId>(
   operationId: Id,
   input: FrontendApiInput<Id>,
 ): Promise<unknown> {
-  return executeGeneratedApiOperation(
-    (path, request) => httpClient.request(path, request),
-    operationId,
-    input as ApiInput<Id>,
+  return withReferenceCache(operationId, input, () =>
+    executeGeneratedApiOperation(
+      (path, request) => httpClient.request(path, request),
+      operationId,
+      input as ApiInput<Id>,
+    ),
   );
 }

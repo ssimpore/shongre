@@ -1,3 +1,5 @@
+import { resolveApproximatePlace } from "@shongre/contracts/place-gazetteer";
+
 /** Market-aware public coordinates shared by map-capable search surfaces. */
 
 export interface CityCoordinates {
@@ -151,62 +153,29 @@ export function resolvePublicMapCoordinates(
     return { lat: location.latitude!, lng: location.longitude! };
   }
 
-  const rawCity = (location.city || "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .trim()
-    .replace(/^(st|ste)\s+/i, "saint-");
-  if (!rawCity) return undefined;
+  /*
+   * One gazetteer, in contracts, shared with the backend projection and the
+   * detail page. This file used to keep a second, smaller table of its own and
+   * match against it with a substring test, which meant the two surfaces could
+   * disagree about where a town is and "Ussel" could match "Brest".
+   */
+  const base = resolveApproximatePlace({
+    city: location.city,
+    marketCode: location.marketCode,
+  });
+  if (!base) return undefined;
 
-  const mapConfiguration = getMarketMapConfiguration(location.marketCode);
-  const normalizedCity = Object.keys(mapConfiguration.cities).find(
-    (key) => rawCity.includes(key) || key.includes(rawCity),
-  );
-  if (!normalizedCity) return undefined;
-
-  const base = mapConfiguration.cities[normalizedCity];
   let hash = 0;
   for (let index = 0; index < location.id.length; index += 1) {
     hash = (hash << 5) - hash + location.id.charCodeAt(index);
     hash |= 0;
   }
 
+  // Deterministic spreading so two listings in the same town do not stack into
+  // one unselectable marker on a results map. Metres, not a claim about where
+  // anything is.
   return {
-    lat: base.lat + ((Math.abs(hash) % 31) - 15) * 0.00035,
-    lng: base.lng + ((Math.abs(hash >> 3) % 31) - 15) * 0.0005,
-  };
-}
-
-/**
- * Resolve coordinates for a listing based on city name, department, or postal code with unique pseudo-jitter
- */
-export function getListingCoordinates(listing: {
-  id: string;
-  city?: string;
-  postalCode?: string;
-  department?: string;
-  latitude?: number;
-  longitude?: number;
-  marketCode?: string;
-}): { lat: number; lng: number } {
-  const publicCoordinates = resolvePublicMapCoordinates(listing);
-  if (publicCoordinates) return publicCoordinates;
-
-  const mapConfiguration = getMarketMapConfiguration(listing.marketCode);
-  const base = mapConfiguration.center;
-
-  // Generate deterministic jitter based on listing ID so items in same city don't stack on top of each other
-  let hash = 0;
-  for (let i = 0; i < listing.id.length; i++) {
-    hash = (hash << 5) - hash + listing.id.charCodeAt(i);
-    hash |= 0;
-  }
-  const jitterLat = ((Math.abs(hash) % 100) - 50) * 0.00045;
-  const jitterLng = ((Math.abs(hash >> 3) % 100) - 50) * 0.00065;
-
-  return {
-    lat: base.lat + jitterLat,
-    lng: base.lng + jitterLng,
+    lat: base.latitude + ((Math.abs(hash) % 31) - 15) * 0.00035,
+    lng: base.longitude + ((Math.abs(hash >> 3) % 31) - 15) * 0.0005,
   };
 }

@@ -185,7 +185,34 @@ if (incompleteShippedLocales.length) {
   process.exit(1);
 }
 
+/*
+ * A ceiling, not a target.
+ *
+ * Until now this check enforced that already-migrated surfaces stay clean, and
+ * nothing at all about the rest: a new page could arrive with sixty hardcoded
+ * strings and pass. The backlog is what gates nl-BE, de-CH and it-CH from ever
+ * shipping, so it has to be a number that only goes down. Lower it whenever a
+ * surface is migrated; never raise it.
+ */
+const CEILING = 2080;
+
+if (totalStrings > CEILING) {
+  console.error(
+    `\n✖ Untranslated copy grew: ${totalStrings} strings, ceiling ${CEILING}.` +
+      `\n  Move the new copy into the catalogue rather than raising the ceiling —` +
+      `\n  every string above it is a locale that cannot ship.\n`,
+  );
+  process.exit(1);
+}
+
+if (totalStrings < CEILING) {
+  console.log(
+    `\n↓ ${CEILING - totalStrings} fewer untranslated strings than the ceiling.` +
+      `\n  Lower CEILING in ${"frontend/scripts/check-i18n-coverage.mjs"} to ${totalStrings} to hold the gain.`,
+  );
+}
+
 console.log(
   `\n✔ every migrated surface is still free of hardcoded copy` +
-    `\n  ${totalStrings} strings remain between English and SHIPPED_LOCALES.\n`,
+    `\n  ${totalStrings} strings remain between English and SHIPPED_LOCALES (ceiling ${CEILING}).\n`,
 );

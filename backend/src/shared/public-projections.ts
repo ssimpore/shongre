@@ -7,6 +7,26 @@ import type {
   UserProfile,
 } from "./types/index.js";
 import { createPublicPromotionProofId } from "./public-promotion-proof.js";
+import { resolveApproximatePlace } from "@shongre/contracts/place-gazetteer";
+
+/**
+ * `(0, 0)` is a real place in the Gulf of Guinea and the value this system
+ * writes when it has no coordinate, so it is absence here rather than a point.
+ */
+function hasUsableCoordinate(
+  latitude: unknown,
+  longitude: unknown,
+): latitude is number {
+  return (
+    typeof latitude === "number" &&
+    typeof longitude === "number" &&
+    Number.isFinite(latitude) &&
+    Number.isFinite(longitude) &&
+    Math.abs(latitude) <= 90 &&
+    Math.abs(longitude) <= 180 &&
+    !(latitude === 0 && longitude === 0)
+  );
+}
 
 const INTERNAL_ATTRIBUTE_KEYS = new Set([
   "confirmedReportCount",
@@ -119,8 +139,40 @@ export function toPublicListing(
     } = publication;
     return publicPublication;
   });
+  /*
+   * Most rows carry a town and no point, because nothing geocodes what a seller
+   * types — `maps.geocode` is declared and unbuilt. Rather than leave every
+   * client to invent its own answer, the projection resolves the town once and
+   * says how precise the result is, so a reader gets a town-sized area instead
+   * of a heading over an empty rectangle. An unknown town publishes nothing.
+   */
+  const publishedPoint = hasUsableCoordinate(
+    listing.latitude,
+    listing.longitude,
+  )
+    ? { latitude: listing.latitude, longitude: listing.longitude }
+    : null;
+  const approximated = publishedPoint
+    ? null
+    : resolveApproximatePlace({
+        city: listing.city,
+        marketCode: listing.marketCode,
+      });
+
   return {
     ...publicFields,
+    ...(publishedPoint ?? {}),
+    ...(approximated
+      ? {
+          latitude: approximated.latitude,
+          longitude: approximated.longitude,
+        }
+      : {}),
+    locationPrecision: approximated
+      ? approximated.precision
+      : publishedPoint
+        ? "exact"
+        : undefined,
     ...(taxonomyProjection
       ? {
           taxonomy: {

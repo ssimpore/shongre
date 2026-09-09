@@ -52,7 +52,19 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 1 : 0,
-  reporter: process.env.CI ? [["github"], ["list"]] : [["list"]],
+  /*
+   * `E2E_JSON_REPORT` writes a machine-readable run alongside the console
+   * output, which is what `scripts/e2e-triage.mjs` compares against the
+   * recorded baseline. Without it the only way to tell a new failure from one
+   * of the 174 that were already there is to read the list by hand.
+   */
+  reporter: [
+    ...(process.env.CI ? ([["github"]] as const) : []),
+    ["list"],
+    ...(process.env.E2E_JSON_REPORT
+      ? ([["json", { outputFile: process.env.E2E_JSON_REPORT }]] as const)
+      : []),
+  ] as never,
   timeout: 45_000,
   expect: { timeout: 10_000 },
   // Direct Playwright runs stay bounded. The root runner builds first and

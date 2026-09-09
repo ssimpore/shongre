@@ -57,7 +57,8 @@
     "./taxonomy-labels": "./src/taxonomy-labels.ts",
     "./taxonomy-domain-ids": "./src/taxonomy-domain-ids.ts",
     "./testing/taxonomy": "./src/testing/taxonomy-v1.generated.ts",
-    "./testing/taxonomy-responses": "./src/testing/taxonomy-responses.ts"
+    "./testing/taxonomy-responses": "./src/testing/taxonomy-responses.ts",
+    "./place-gazetteer": "./src/place-gazetteer.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

@@ -247,6 +247,12 @@ export type PublicListing = Omit<
   marketPublications?: PublicListingMarketPublication[];
   fulfillmentTypes: import("@shongre/contracts/digital-products").FulfillmentType[];
   requiresPhysicalDelivery: boolean;
+  /**
+   * How precise the published coordinate is. `exact` means the row carried one;
+   * `city` means it was resolved from the town, and must be drawn at town
+   * scale. Absent means there is no coordinate and nothing should be drawn.
+   */
+  locationPrecision?: "exact" | "city";
 };
 
 export interface SearchFilters {

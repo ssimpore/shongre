@@ -34,7 +34,7 @@ describe("listing location section", () => {
     expect(markup).toContain("Les Mathes (17570)");
   });
 
-  it("refuses a coordinate that is not a place", () => {
+  it("discards a coordinate that is not a place", () => {
     for (const coordinates of [
       {},
       { latitude: 45.7 },
@@ -51,16 +51,36 @@ describe("listing location section", () => {
     ]) {
       const markup = renderToStaticMarkup(
         <ListingLocationSection
-          city="Les Mathes"
+          city="Trifouillis-les-Oies"
           postalCode="17570"
           {...coordinates}
         />,
       );
-      expect(markup).toContain("Les Mathes");
-      // Neither the map nor its placeholder: there is nothing truthful to draw,
-      // and Les Mathes is not a town the gazetteer can stand in for.
+      expect(markup).toContain("Trifouillis-les-Oies");
+      /*
+       * Neither the map nor its placeholder. The coordinate is discarded and
+       * the town is not one the gazetteer knows, so there is nothing truthful
+       * left to draw. Given a town it *does* know, discarding the coordinate
+       * correctly falls through to the town instead — which is the next test.
+       */
       expect(markup).not.toContain("skeleton-shimmer");
     }
+  });
+
+  it("falls through to the town when the coordinate is unusable", () => {
+    // A bad coordinate is not a reason to lose the location: the town is still
+    // known, and a town-sized answer is better than none.
+    const markup = renderToStaticMarkup(
+      <ListingLocationSection
+        marketCode="FR"
+        city="Les Mathes"
+        postalCode="17570"
+        latitude={0}
+        longitude={0}
+      />,
+    );
+    expect(markup).toContain("Les Mathes (17570)");
+    expect(markup).toContain("skeleton-shimmer");
   });
 
   it("draws the town when the projection published no coordinate", () => {
@@ -68,7 +88,6 @@ describe("listing location section", () => {
     // section used to show a heading over empty space.
     const markup = renderToStaticMarkup(
       <ListingLocationSection
-        id="listing-1"
         marketCode="FR"
         city="Biarritz"
         postalCode="64200"
@@ -83,7 +102,7 @@ describe("listing location section", () => {
     // gazetteer keyed on bare city names would answer nothing for either.
     for (const city of ["Paris 11e", "Lyon 2e", "Marseille 7e"]) {
       const markup = renderToStaticMarkup(
-        <ListingLocationSection id={city} marketCode="FR" city={city} />,
+        <ListingLocationSection marketCode="FR" city={city} />,
       );
       expect(markup, city).toContain("skeleton-shimmer");
     }
@@ -97,7 +116,7 @@ describe("listing location section", () => {
      */
     for (const city of ["Trifouillis-les-Oies", "France", "Zzz"]) {
       const markup = renderToStaticMarkup(
-        <ListingLocationSection id="listing-2" marketCode="FR" city={city} />,
+        <ListingLocationSection marketCode="FR" city={city} />,
       );
       expect(markup, city).toContain(city);
       expect(markup, city).not.toContain("skeleton-shimmer");

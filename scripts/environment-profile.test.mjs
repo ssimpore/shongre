@@ -134,6 +134,9 @@ function bindings(profile) {
       GEMINI_MODEL: "gemini-matrix",
       MALWARE_SCAN_URL: "https://scanner.shongre.invalid/scan",
       MALWARE_SCAN_TOKEN: "matrix-malware-scanner-token",
+      NEXT_PUBLIC_MAP_TILE_URL:
+        "https://tiles.shongre.invalid/{z}/{x}/{y}.png?key=matrix",
+      NEXT_PUBLIC_MAP_TILE_ATTRIBUTION: "&copy; Matrix Maps",
     });
     for (const app of ["MARKETPLACE", "SOLUTIONS", "PROSPECTS", "FACTURATION"])
       env[`SHONGRE_${app}_ORIGIN`] =
@@ -152,6 +155,39 @@ for (const profile of profiles) {
       bindings(profile),
     );
     succeeds(result);
+  });
+}
+
+for (const profile of ["staging", "production"]) {
+  test(`${profile}: refuses OpenStreetMap's donated tile servers`, (t) => {
+    /*
+     * The default basemap is right for a laptop and forbidden for a shipped
+     * product: OSM's usage policy does not permit a distributed application to
+     * send every visitor at their donated capacity, and the day they enforce
+     * it, every map in Shongre goes blank at once. The rule is checked here
+     * rather than remembered, because the value that breaks it is also the
+     * value that works perfectly in development.
+     */
+    const dir = fixture(t);
+    rejects(
+      run(dir, "scripts/env-check.sh", {
+        ...bindings(profile),
+        NEXT_PUBLIC_MAP_TILE_URL:
+          "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+      }),
+      /must not use OpenStreetMap's donated tile servers/,
+    );
+  });
+
+  test(`${profile}: requires a basemap provider at all`, (t) => {
+    const dir = fixture(t);
+    rejects(
+      run(dir, "scripts/env-check.sh", {
+        ...bindings(profile),
+        NEXT_PUBLIC_MAP_TILE_URL: "",
+      }),
+      /NEXT_PUBLIC_MAP_TILE_URL is required/,
+    );
   });
 }
 

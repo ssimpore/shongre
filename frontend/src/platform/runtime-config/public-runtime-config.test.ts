@@ -12,6 +12,11 @@ const injected: PublicRuntimeConfig = {
   publicCategoryMediaBaseUrl:
     "https://storage-staging.shongre.invalid/listing-media/categories",
   stripePublishableKey: "pk_test_staging",
+  map: {
+    tileUrl: "https://tiles.example.invalid/{z}/{x}/{y}.png?key=staging",
+    attribution: "&copy; Example",
+    maxZoom: 19,
+  },
   release: "a".repeat(40),
   applications: {
     marketplace: {

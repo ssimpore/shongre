@@ -10,6 +10,12 @@ import { Modal, ProBadge, VerificationBadge } from "@shongre/ui/native";
 import { Button } from "@/components/Button";
 import { FormField } from "@/components/FormField";
 import { Screen } from "@/components/Screen";
+import {
+  DetailFactList,
+  DetailFeatureList,
+  DetailSection,
+} from "@/components/DetailFacts";
+import { ListingCard } from "@/components/ListingCard";
 import { StatePanel } from "@/components/StatePanel";
 import {
   mobileColors as colors,
@@ -23,6 +29,10 @@ import {
 import { useAuth } from "@/features/auth/AuthProvider";
 import { useFavorites } from "@/features/favorites/FavoritesProvider";
 import { listingsService } from "@/features/listings/listings.service";
+import {
+  buildListingFactPresentation,
+  type ListingCharacteristicsData,
+} from "@shongre/features/listings/facts";
 import { moderationService } from "@/features/moderation/moderation.service";
 import { messagingService } from "@/features/messaging/messaging.service";
 import { watchSubscriptionsService } from "@/features/watch-subscriptions/watch-subscriptions.service";
@@ -54,6 +64,9 @@ export default function ListingDetailScreen() {
   } = useFavorites();
   const { activeMarket } = useMarket();
   const [listing, setListing] = useState<ListingCardView | null>(null);
+  const [characteristics, setCharacteristics] =
+    useState<ListingCharacteristicsData | null>(null);
+  const [sellerListings, setSellerListings] = useState<ListingCardView[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [startingConversation, setStartingConversation] = useState(false);
@@ -85,6 +98,40 @@ export default function ListingDetailScreen() {
       active = false;
     };
   }, [activeMarket.code, id]);
+
+  /*
+   * What the listing actually is, and what else its seller has. Both are the
+   * same questions the Web detail page answers, through the same projection and
+   * the same API filter — the native screen simply never asked them.
+   */
+  useEffect(() => {
+    let active = true;
+    listingsService
+      .characteristics(id, activeMarket.code)
+      .then((data) => active && setCharacteristics(data))
+      .catch(() => active && setCharacteristics(null));
+    return () => {
+      active = false;
+    };
+  }, [activeMarket.code, id]);
+
+  const sellerId = listing?.seller?.id;
+  useEffect(() => {
+    if (!sellerId) return;
+    let active = true;
+    listingsService
+      .bySeller(sellerId, activeMarket.code)
+      .then(
+        (items) =>
+          active && setSellerListings(items.filter((row) => row.id !== id)),
+      )
+      .catch(() => active && setSellerListings([]));
+    return () => {
+      active = false;
+    };
+  }, [activeMarket.code, id, sellerId]);
+
+  const facts = buildListingFactPresentation(characteristics);
 
   useEffect(() => {
     if (!user || !id) return;
@@ -368,6 +415,51 @@ export default function ListingDetailScreen() {
           <Text style={styles.muted}>Version {listing.productVersion}</Text>
         ) : null}
       </View>
+      {facts.keyFacts.length ? (
+        <DetailSection title="Les informations clés">
+          <DetailFactList facts={facts.keyFacts} />
+        </DetailSection>
+      ) : null}
+
+      {facts.features.length ? (
+        <DetailSection title="Équipements et services">
+          <DetailFeatureList features={facts.features} />
+        </DetailSection>
+      ) : null}
+
+      {listing.city ? (
+        <DetailSection title="Localisation">
+          {/*
+            The place name, and not yet a map: drawing one needs a basemap
+            provider the product is entitled to use at scale, which is a
+            purchasing decision rather than a native dependency to add blind.
+          */}
+          <Text style={styles.value}>{listing.city}</Text>
+        </DetailSection>
+      ) : null}
+
+      {/*
+        Derived rather than cleared in the effect: a listing with no seller must
+        not show the previous listing's shelf, and emptying state from inside an
+        effect is a cascading render the linter rightly refuses.
+      */}
+      {sellerId && sellerListings.length ? (
+        <DetailSection
+          title={
+            listing.seller?.sellerType === "pro"
+              ? "Les annonces de ce pro"
+              : "Les annonces de ce vendeur"
+          }
+          subtitle="Les autres annonces publiées par ce vendeur."
+        >
+          {sellerListings.slice(0, 4).map((row) => (
+            <View key={row.id} style={styles.railItem}>
+              <ListingCard listing={row} />
+            </View>
+          ))}
+        </DetailSection>
+      ) : null}
+
       {listing.seller ? (
         <View style={styles.seller}>
           <Text style={styles.sellerName}>{listing.seller.name}</Text>
@@ -557,6 +649,13 @@ const styles = StyleSheet.create({
     fontSize: nativeTypography.size.bodySm,
     lineHeight: nativeTypography.lineHeight.bodySm,
   },
+  value: {
+    color: colors.text,
+    fontSize: nativeTypography.size.body,
+    lineHeight: nativeTypography.lineHeight.body,
+    fontFamily: nativeTypography.fontFamily.bold,
+  },
+  railItem: { marginBottom: spacing.sm },
   seller: {
     gap: spacing.xs,
     padding: spacing.lg,

@@ -58,7 +58,7 @@ import { PAGE_SIZES } from "../../configuration/pagination.config";
 import { DetailFactList } from "../../design-system/primitives/DetailFacts";
 import { ListingLocationSection } from "../listings/components/ListingLocationSection";
 import { ListingDiscoveryRail } from "../listings/components/ListingDiscoveryRail";
-import { iconForFact } from "../../domains/listing/listing-facts.presentation";
+import { iconForFact } from "@shongre/features/listings/facts";
 
 export const EmploymentJobDetailPage: React.FC = () => {
   const { t } = useTranslation();
@@ -522,7 +522,6 @@ export const EmploymentJobDetailPage: React.FC = () => {
 
               <ListingLocationSection
                 className="mt-7"
-                id={job.id}
                 marketCode={job.marketCode}
                 city={job.primaryLocation.city}
                 postalCode={job.primaryLocation.postalCode}

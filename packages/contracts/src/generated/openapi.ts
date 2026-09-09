@@ -12258,6 +12258,11 @@ export interface components {
             readonly latitude?: number;
             readonly listingIntent?: components["schemas"]["TaxonomyV1ListingIntent"];
             readonly listingTypeId?: string;
+            /**
+             * @description How precise `latitude`/`longitude` are. `exact` is the coordinate the row carries; `city` was resolved from the town name and must be rendered at town scale, never as an address. Absent means no coordinate is published and no map should be drawn.
+             * @enum {string}
+             */
+            readonly locationPrecision?: "exact" | "city";
             readonly longitude?: number;
             readonly marketCode: components["schemas"]["MarketCode"];
             readonly marketCodes?: readonly components["schemas"]["MarketCode"][];

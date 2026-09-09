@@ -1,6 +1,6 @@
 import React, { useId, useMemo, useState } from "react";
 import type { ListingCharacteristicsData } from "../../../api/contracts/listings.contract";
-import { buildListingFactPresentation } from "../../../domains/listing/listing-facts.presentation";
+import { buildListingFactPresentation } from "@shongre/features/listings/facts";
 import {
   DetailDisclosure,
   DetailFactList,

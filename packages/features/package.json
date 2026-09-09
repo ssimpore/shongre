@@ -13,7 +13,8 @@
     },
     "./listings/web": "./src/listings/ListingCard.web.tsx",
     "./listings/native": "./src/listings/ListingCard.native.tsx",
-    "./listings/presentation": "./src/listings/presentation.ts"
+    "./listings/presentation": "./src/listings/presentation.ts",
+    "./listings/facts": "./src/listings/listing-facts.presentation.ts"
   },
   "scripts": {
     "lint": "tsc --noEmit",

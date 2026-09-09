@@ -10,6 +10,7 @@ import { apiOperation } from "@/api/generated-api-operation";
 import type { operations } from "@shongre/contracts/openapi";
 import { minorToMajorAmount } from "@shongre/shared/money";
 import { requireMobileAuthorization } from "@/features/auth/authorization";
+import type { ListingCharacteristicsData } from "@shongre/features/listings/facts";
 import { mapBackendListing } from "./listing.mapper";
 
 type BackendListingSearchRequest =
@@ -44,6 +45,18 @@ export interface ListingsService {
   list(marketCode: string): Promise<ListingCardView[]>;
   search(input: MobileListingSearchInput): Promise<ListingCardView[]>;
   get(id: string, marketCode: string): Promise<ListingCardView | null>;
+  /** The published characteristics behind a listing's key facts and amenities. */
+  characteristics(
+    id: string,
+    marketCode: string,
+    locale?: string,
+  ): Promise<ListingCharacteristicsData | null>;
+  /** The seller's other listings, filtered by the API rather than the device. */
+  bySeller(
+    sellerId: string,
+    marketCode: string,
+    limit?: number,
+  ): Promise<ListingCardView[]>;
   publish(input: PublicationInput, actor: AuthUser): Promise<ListingCardView>;
 }
 
@@ -78,6 +91,36 @@ export class HttpListingsService implements ListingsService {
       marketCode,
     );
     return item ? mapBackendListing(item) : null;
+  }
+
+  async characteristics(
+    id: string,
+    marketCode: string,
+    locale?: string,
+  ): Promise<ListingCharacteristicsData | null> {
+    try {
+      return await apiOperation(
+        "getListingCharacteristics",
+        { path: { id }, ...(locale ? { query: { locale } } : {}) },
+        marketCode,
+      );
+    } catch {
+      // A detail screen without its characteristics is still a detail screen.
+      return null;
+    }
+  }
+
+  async bySeller(
+    sellerId: string,
+    marketCode: string,
+    limit = 8,
+  ): Promise<ListingCardView[]> {
+    const response = await apiOperation(
+      "postListingsSearch",
+      { body: { marketCode, sellerId, limit } as BackendListingSearchRequest },
+      marketCode,
+    );
+    return response.items.map(mapBackendListing);
   }
 
   async publish(
