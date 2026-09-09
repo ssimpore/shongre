@@ -13,6 +13,7 @@ import { messagesFr, MessageKey } from "./messages.fr";
 import { messagesEn } from "./messages.en";
 import { digitalMessagesFr } from "./digital.catalogue.fr";
 import { deliveryCatalogueFr } from "./delivery.catalogue.fr";
+import { adminCatalogueFr } from "./admin.catalogue.fr";
 import { SHIPPED_LOCALES } from "./locale";
 
 const UNSHIPPED_CATALOGUE_MISSING_KEY_BUDGETS: Record<string, number> = {
@@ -173,6 +174,7 @@ describe("catalogue integrity", () => {
       ...Object.keys(messagesFr),
       ...Object.keys(digitalMessagesFr),
       ...Object.keys(deliveryCatalogueFr),
+      ...Object.keys(adminCatalogueFr),
     ]);
     const orphans = Object.keys(messagesEn).filter(
       (key) => !sourceKeys.has(key),
@@ -207,8 +209,18 @@ describe("catalogue integrity", () => {
   it("reports measured coverage without treating known as shipped", () => {
     expect(catalogueCoverage("fr-FR")).toBe(1);
     expect(catalogueCoverage("en-US")).toBe(0);
-    expect(catalogueCoverageFor(messagesEn)).toBeGreaterThan(0);
-    expect(catalogueCoverageFor(messagesEn)).toBeLessThan(1);
+    // Measured against every namespace the product can render. Splitting the
+    // Staff console out of the shell must not shrink what "covered" means.
+    const everyShippedKey = {
+      ...messagesFr,
+      ...digitalMessagesFr,
+      ...deliveryCatalogueFr,
+      ...adminCatalogueFr,
+    };
+    expect(catalogueCoverageFor(messagesEn, everyShippedKey)).toBeGreaterThan(
+      0,
+    );
+    expect(catalogueCoverageFor(messagesEn, everyShippedKey)).toBeLessThan(1);
   });
 
   /**

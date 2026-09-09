@@ -102,6 +102,21 @@ export function resolveNotFoundPresentation(
   };
 }
 
+/**
+ * Copy for a lookup that failed rather than a resource that is gone. It must
+ * not tell the visitor the page does not exist, because that is exactly what
+ * has not been established.
+ */
+export function resolveUnavailablePresentation(): NotFoundPresentation {
+  return {
+    title: "Page momentanément indisponible",
+    description:
+      "Nous n’avons pas pu charger cette page. Réessayez dans quelques instants.",
+    returnHref: "/",
+    returnLabel: "Retour à l’accueil",
+  };
+}
+
 function escapeHtml(value: string): string {
   return value.replace(
     /[&<>"']/g,
@@ -116,6 +131,12 @@ function escapeHtml(value: string): string {
   );
 }
 
+/**
+ * Renders the standalone interstitial the edge proxy returns for a public route
+ * it will not hand to the App Router — an absent resource (404) or a failed
+ * lookup (503). Both share one shell so the two states stay visually identical
+ * apart from their copy.
+ */
 export function renderNotFoundDocument(
   presentation: NotFoundPresentation,
   marketLabel?: string,

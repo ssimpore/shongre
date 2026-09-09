@@ -59,6 +59,7 @@ import { formatCurrencySymbol } from "../../utilities/formatters";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useRegionalFormatters } from "../../hooks/useRegionalFormatters";
 import { useMarketBusinessRules } from "../../domains/monetization/useMarketBusinessRules";
+import { adminCatalogueFr } from "../../i18n/admin.catalogue.fr";
 
 type TabId =
   | "catalog"
@@ -176,7 +177,7 @@ function formatRuleOutcomeValue(
 }
 
 export const AdminMonetizationPage: React.FC = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(adminCatalogueFr);
   const { activeMarket, currentCurrency, currentLocale } = useMarketLocation();
   const marketBusinessRules = useMarketBusinessRules();
   const {

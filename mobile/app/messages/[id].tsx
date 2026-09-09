@@ -3,6 +3,8 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
+  KeyboardAvoidingView,
+  Platform,
   StyleSheet,
   Text,
   View,
@@ -151,93 +153,106 @@ export default function MessageThreadScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={["bottom"]}>
       <Stack.Screen options={{ title: "Conversation" }} />
-      <FlatList
-        data={messages}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.messages}
-        accessibilityState={{ busy: loading }}
-        renderItem={({ item }) => {
-          const mine = item.senderId === user.id;
-          return (
-            <View style={[styles.bubble, mine ? styles.mine : styles.theirs]}>
-              <Text style={mine ? styles.mineText : styles.theirText}>
-                {item.text}
-              </Text>
-              {item.offer ? (
-                <Text style={mine ? styles.mineOffer : styles.theirOffer}>
-                  {formatMoney({
-                    amountMinor: item.offer.amountMinor,
-                    currency: item.offer.currency,
-                  })}{" "}
-                  · {item.offer.status}
+      {/*
+       * The composer is pinned below the transcript, which is exactly where the
+       * iOS keyboard opens. Without this the field a person is typing into is
+       * covered by the keyboard they are typing on. No vertical offset: the
+       * native stack header sits above this view, so its own frame already
+       * starts below it. Android resizes the window itself.
+       */}
+      <KeyboardAvoidingView
+        style={styles.fill}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
+        <FlatList
+          data={messages}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.messages}
+          accessibilityState={{ busy: loading }}
+          renderItem={({ item }) => {
+            const mine = item.senderId === user.id;
+            return (
+              <View style={[styles.bubble, mine ? styles.mine : styles.theirs]}>
+                <Text style={mine ? styles.mineText : styles.theirText}>
+                  {item.text}
                 </Text>
-              ) : null}
-            </View>
-          );
-        }}
-        ListEmptyComponent={
-          loading ? (
-            <View style={styles.loading} accessibilityLiveRegion="polite">
-              <ActivityIndicator color={colors.primary} />
-              <Text style={styles.muted}>Chargement des messages…</Text>
-            </View>
-          ) : error ? (
-            <StatePanel
-              title="Conversation indisponible"
-              message={error}
-              tone="error"
-              actionLabel="Réessayer"
-              onAction={() => void load()}
-            />
-          ) : (
-            <StatePanel
-              title="Démarrez la conversation"
-              message="Posez une question sur l’annonce sans partager d’informations sensibles."
-            />
-          )
-        }
-      />
-      <View style={styles.composer}>
-        {error && messages.length > 0 ? (
-          <Text accessibilityRole="alert" style={styles.error}>
-            {error}
-          </Text>
-        ) : null}
-        <FormField
-          label="Message"
-          value={text}
-          onChangeText={setText}
-          placeholder="Votre message…"
-          multiline
+                {item.offer ? (
+                  <Text style={mine ? styles.mineOffer : styles.theirOffer}>
+                    {formatMoney({
+                      amountMinor: item.offer.amountMinor,
+                      currency: item.offer.currency,
+                    })}{" "}
+                    · {item.offer.status}
+                  </Text>
+                ) : null}
+              </View>
+            );
+          }}
+          ListEmptyComponent={
+            loading ? (
+              <View style={styles.loading} accessibilityLiveRegion="polite">
+                <ActivityIndicator color={colors.primary} />
+                <Text style={styles.muted}>Chargement des messages…</Text>
+              </View>
+            ) : error ? (
+              <StatePanel
+                title="Conversation indisponible"
+                message={error}
+                tone="error"
+                actionLabel="Réessayer"
+                onAction={() => void load()}
+              />
+            ) : (
+              <StatePanel
+                title="Démarrez la conversation"
+                message="Posez une question sur l’annonce sans partager d’informations sensibles."
+              />
+            )
+          }
         />
-        <Button
-          label={sending ? "Envoi…" : "Envoyer"}
-          onPress={() => void send()}
-          disabled={sending || !text.trim()}
-        />
-        <View style={styles.offerRow}>
-          <View style={styles.offerField}>
-            <FormField
-              label={`Offre (${activeMarket.currency})`}
-              value={offer}
-              onChangeText={setOffer}
-              placeholder="Ex. 1200"
-              keyboardType="decimal-pad"
+        <View style={styles.composer}>
+          {error && messages.length > 0 ? (
+            <Text accessibilityRole="alert" style={styles.error}>
+              {error}
+            </Text>
+          ) : null}
+          <FormField
+            label="Message"
+            value={text}
+            onChangeText={setText}
+            placeholder="Votre message…"
+            multiline
+          />
+          <Button
+            label={sending ? "Envoi…" : "Envoyer"}
+            onPress={() => void send()}
+            disabled={sending || !text.trim()}
+          />
+          <View style={styles.offerRow}>
+            <View style={styles.offerField}>
+              <FormField
+                label={`Offre (${activeMarket.currency})`}
+                value={offer}
+                onChangeText={setOffer}
+                placeholder="Ex. 1200"
+                keyboardType="decimal-pad"
+              />
+            </View>
+            <Button
+              label="Envoyer l’offre"
+              onPress={confirmOffer}
+              disabled={sending || !offer.trim()}
+              variant="secondary"
             />
           </View>
-          <Button
-            label="Envoyer l’offre"
-            onPress={confirmOffer}
-            disabled={sending || !offer.trim()}
-            variant="secondary"
-          />
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  fill: { flex: 1 },
   safe: { flex: 1, backgroundColor: colors.background },
   messages: { flexGrow: 1, padding: spacing.lg, gap: spacing.sm },
   loading: {

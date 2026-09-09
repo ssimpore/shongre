@@ -14,6 +14,7 @@ import { EmptyState, Skeleton } from "../../../design-system";
 import { useToast } from "../../../app/providers/ToastProvider";
 import { usePageMeta } from "../../../hooks/usePageMeta";
 import { useTranslation } from "../../../i18n/I18nProvider";
+import { adminCatalogueFr } from "../../../i18n/admin.catalogue.fr";
 
 const entityLabels = {
   account: "Entreprise",
@@ -42,7 +43,7 @@ const fieldLabels: Record<CrmCustomField["fieldType"], string> = {
 };
 
 export const CrmCustomFieldsPage: React.FC = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(adminCatalogueFr);
   usePageMeta({
     title: t("admin.crmCustomFieldsPage.champsPersonnalisesCrmShongre"),
     description: t(

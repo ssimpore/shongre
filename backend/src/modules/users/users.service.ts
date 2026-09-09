@@ -44,31 +44,17 @@ export class UsersService {
     return this.userRepo.findById(id);
   }
 
-  async getPublicUserById(id: string): Promise<PublicSellerProfile | null> {
-    const direct = await this.userRepo.findPublicById(id);
-    if (direct) return direct;
-    const users = await this.userRepo.getAll();
-    const match = users.find((user) => user.slug === id);
-    return match ? this.userRepo.findPublicById(match.id) : null;
+  /** `idOrSlug` because public seller routes address profiles by either. */
+  async getPublicUserById(
+    idOrSlug: string,
+  ): Promise<PublicSellerProfile | null> {
+    return this.userRepo.findPublicById(idOrSlug);
   }
 
   async listPublicProfessionals(
     marketCode: string,
   ): Promise<PublicSellerProfile[]> {
-    const users = await this.userRepo.getAll();
-    const candidates = users.filter(
-      (user) =>
-        user.accountType === "professional" &&
-        user.status === "active" &&
-        user.staffStatus === "none" &&
-        user.country.toUpperCase() === marketCode.toUpperCase(),
-    );
-    const profiles = await Promise.all(
-      candidates.map((user) => this.userRepo.findPublicById(user.id)),
-    );
-    return profiles.filter(
-      (profile): profile is PublicSellerProfile => profile !== null,
-    );
+    return this.userRepo.listPublicProfessionals(marketCode);
   }
 
   async updateUserProfile(

@@ -33,6 +33,7 @@ import { formatAutoMoney } from "./auto-format";
 import { autoFeatureFlagLabel } from "./auto-feature-flag-labels";
 import { labelIdentifier } from "../../utilities/identifier-label";
 import { useRegionalFormatters } from "../../hooks/useRegionalFormatters";
+import { adminCatalogueFr } from "../../i18n/admin.catalogue.fr";
 
 const TABS = [
   "Vue d’ensemble",
@@ -46,7 +47,7 @@ const TABS = [
 type Tab = (typeof TABS)[number];
 
 export const AdminAutoPage: React.FC = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(adminCatalogueFr);
   const { activeMarket, currentLocale, convertMoney } = useMarketLocation();
   const { formatNumber } = useRegionalFormatters();
   const toast = useToast();

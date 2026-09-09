@@ -34,6 +34,7 @@ import {
   taskPriorityMessageKey,
 } from "../../../domains/crm/crm.labels";
 import { taskPriorityToneClass } from "./crm.presentation";
+import { adminCatalogueFr } from "../../../i18n/admin.catalogue.fr";
 
 type TaskFilter = "pending" | "completed" | "all";
 type RelatedType = "none" | "account" | "contact" | "opportunity";
@@ -45,7 +46,7 @@ function defaultDueDate() {
 }
 
 export const CrmTasksPage: React.FC = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(adminCatalogueFr);
   const crmPaths = useCrmSurface();
   const priorityLabel = (priority: string) => {
     const key = taskPriorityMessageKey(priority);

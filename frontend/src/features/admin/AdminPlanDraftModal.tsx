@@ -15,6 +15,7 @@ import {
 import { Modal } from "../../design-system/primitives/Modal";
 import { useRegionalFormatters } from "../../hooks/useRegionalFormatters";
 import { useTranslation } from "../../i18n/I18nProvider";
+import { adminCatalogueFr } from "../../i18n/admin.catalogue.fr";
 
 type AdminPlanDraftModalProps = {
   product: MonetizationProduct;
@@ -44,7 +45,7 @@ export function AdminPlanDraftModal({
   onClose,
   onCreate,
 }: AdminPlanDraftModalProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslation(adminCatalogueFr);
   const { formatMoneyMinor } = useRegionalFormatters();
   const [draft, setDraft] = useState<MonetizationProduct>(() =>
     structuredClone(product),

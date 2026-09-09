@@ -23,6 +23,7 @@ import { AdminCommissionPolicyEditor } from "./AdminCommissionPolicyEditor";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useRegionalFormatters } from "../../hooks/useRegionalFormatters";
 import { useTranslation } from "../../i18n/I18nProvider";
+import { adminCatalogueFr } from "../../i18n/admin.catalogue.fr";
 
 function modelLabel(policy: CommissionPolicy) {
   const effect = policy.rules[0]?.effect;
@@ -70,7 +71,7 @@ interface AdminCommissionPanelProps {
 }
 
 export function AdminCommissionPanel({ catalog }: AdminCommissionPanelProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslation(adminCatalogueFr);
   const { activeMarket } = useMarketLocation();
   const { formatMoneyMinor } = useRegionalFormatters();
   const { can } = useAuthorization();

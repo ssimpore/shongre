@@ -25,6 +25,7 @@ import { usePageMeta } from "../../../hooks/usePageMeta";
 import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
 import { CrmUniversalSearch } from "./components/CrmUniversalSearch";
 import { useCrmSurface } from "../../crm/CrmSurfaceContext";
+import { adminCatalogueFr } from "../../../i18n/admin.catalogue.fr";
 
 function money(amountMinor: number, currency: string, locale: string) {
   return new Intl.NumberFormat(locale, {
@@ -53,7 +54,7 @@ const stageProgressVariant = [
 ] as const;
 
 export const CrmOverviewPage: React.FC = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(adminCatalogueFr);
   const { currentLocale } = useMarketLocation();
   const crmPaths = useCrmSurface();
   const [dashboard, setDashboard] = useState<CrmDashboard | null>(null);

@@ -6218,6 +6218,18 @@ export function getTaxonomySearchFilters(
     "application/json",
   );
 }
+export function getDiscoveryCollections(
+  transport: ApiTransport,
+  input: ApiInput<"getDiscoveryCollections">,
+): Promise<ApiResponse<"getDiscoveryCollections">> {
+  return executeApiOperation<"getDiscoveryCollections">(
+    transport,
+    "GET",
+    "/discovery/collections",
+    input,
+    "application/json",
+  );
+}
 export const generatedApiOperations = {
   getDigitalPolicy,
   getDigitalSellerProfile,
@@ -6735,6 +6747,7 @@ export const generatedApiOperations = {
   getTaxonomyNodesById,
   getTaxonomyRoot,
   getTaxonomySearchFilters,
+  getDiscoveryCollections,
 } as const;
 export type GeneratedApiOperationId = keyof typeof generatedApiOperations;
 type AnyGeneratedApiOperation = (

@@ -37,6 +37,7 @@ import { usePageMeta } from "../../../hooks/usePageMeta";
 import { useCrmSurface } from "../../crm/CrmSurfaceContext";
 import { useTranslation } from "../../../i18n/I18nProvider";
 import { sourceMessageKey } from "../../../domains/crm/crm.labels";
+import { adminCatalogueFr } from "../../../i18n/admin.catalogue.fr";
 
 const lifecycleOptions = [
   { value: "lead", label: "Lead" },
@@ -56,7 +57,7 @@ function tomorrowMorning() {
 
 export const CrmContactDetailPage: React.FC = () => {
   const { id = "" } = useParams<{ id: string }>();
-  const { t } = useTranslation();
+  const { t } = useTranslation(adminCatalogueFr);
   const navigate = useNavigate();
   const crmPaths = useCrmSurface();
   const toast = useToast();

@@ -1167,14 +1167,21 @@ export class DemoRealEstateRepository implements IRealEstateRepository {
 }
 
 /** Database adapter. Complex business rules remain in RealEstateService. */
-export class PostgresRealEstateRepository extends DemoRealEstateRepository {
+/**
+ * Implements the contract directly rather than extending the demo repository.
+ * It inherited every fixture Map at construction and used none of them, and the
+ * inheritance meant a method added to the demo base without a matching override
+ * would have silently served fixture data in database mode. `implements` makes
+ * the compiler reject that instead.
+ */
+export class PostgresRealEstateRepository implements IRealEstateRepository {
   private db() {
     // Generated types are refreshed after migrations in deployed environments;
     // this adapter intentionally mirrors the established vertical repositories.
     return getSupabaseAdminClient() as any;
   }
 
-  override async getCatalog(marketCode: string, includeInactive = false) {
+  async getCatalog(marketCode: string, includeInactive = false) {
     const taxonomy = await taxonomyV1Service.snapshot();
     const code = marketCode.toUpperCase();
     const [activation, config, offers, prices, entitlements, addOns] =
@@ -1513,7 +1520,7 @@ export class PostgresRealEstateRepository extends DemoRealEstateRepository {
     );
   }
 
-  override async search(query: PropertySearchQuery) {
+  async search(query: PropertySearchQuery) {
     let spatialIds: string[] | undefined;
     if (query.boundingBox || (query.center && query.radiusKm !== undefined)) {
       const { data, error } = await this.db().rpc(
@@ -1641,7 +1648,7 @@ export class PostgresRealEstateRepository extends DemoRealEstateRepository {
     };
   }
 
-  override async getProperty(idOrSlug: string, marketCode?: string) {
+  async getProperty(idOrSlug: string, marketCode?: string) {
     const column =
       /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
         idOrSlug,
@@ -1658,7 +1665,7 @@ export class PostgresRealEstateRepository extends DemoRealEstateRepository {
     return (await this.hydrateProperties([data], marketCode))[0] || null;
   }
 
-  override async getRecentlyViewed(accountId: string) {
+  async getRecentlyViewed(accountId: string) {
     const { data, error } = await this.db()
       .from("real_estate_recently_viewed")
       .select("property_id")
@@ -1682,7 +1689,7 @@ export class PostgresRealEstateRepository extends DemoRealEstateRepository {
       .filter((property): property is PropertyPrivate => Boolean(property));
   }
 
-  override async markRecentlyViewed(accountId: string, propertyId: string) {
+  async markRecentlyViewed(accountId: string, propertyId: string) {
     const { error } = await this.db()
       .from("real_estate_recently_viewed")
       .upsert(
@@ -1696,7 +1703,7 @@ export class PostgresRealEstateRepository extends DemoRealEstateRepository {
     if (error) throw error;
   }
 
-  override async saveProperty(property: PropertyPrivate) {
+  async saveProperty(property: PropertyPrivate) {
     const parsed = propertyPrivateSchema.parse(property);
     const internalContract = {
       financials: {
@@ -1836,7 +1843,7 @@ export class PostgresRealEstateRepository extends DemoRealEstateRepository {
     return parsed;
   }
 
-  override async assessRisk(candidate: {
+  async assessRisk(candidate: {
     excludePropertyId?: string;
     title: string;
     description: string;
@@ -1911,7 +1918,7 @@ export class PostgresRealEstateRepository extends DemoRealEstateRepository {
     });
   }
 
-  override async getLead(id: string) {
+  async getLead(id: string) {
     const { data, error } = await this.db()
       .from("real_estate_leads")
       .select("*")
@@ -1921,7 +1928,7 @@ export class PostgresRealEstateRepository extends DemoRealEstateRepository {
     return data ? this.mapLead(data) : null;
   }
 
-  override async saveLeadNote(note: PropertyLeadNote) {
+  async saveLeadNote(note: PropertyLeadNote) {
     const parsed = propertyLeadNoteSchema.parse(note);
     const { data, error } = await this.db()
       .from("real_estate_lead_notes")
@@ -1938,7 +1945,7 @@ export class PostgresRealEstateRepository extends DemoRealEstateRepository {
     return this.mapLeadNote(data);
   }
 
-  override async findDuplicateLead(
+  async findDuplicateLead(
     propertyId: string,
     email: string,
     type: PropertyLead["type"],
@@ -1960,7 +1967,7 @@ export class PostgresRealEstateRepository extends DemoRealEstateRepository {
     return data ? this.mapLead(data) : null;
   }
 
-  override async saveLead(lead: PropertyLead) {
+  async saveLead(lead: PropertyLead) {
     const parsed = propertyLeadSchema.parse(lead);
     const { error } = await this.db()
       .from("real_estate_leads")
@@ -1994,7 +2001,7 @@ export class PostgresRealEstateRepository extends DemoRealEstateRepository {
     return parsed;
   }
 
-  override async saveAppointment(appointment: PropertyAppointment) {
+  async saveAppointment(appointment: PropertyAppointment) {
     const parsed = propertyAppointmentSchema.parse(appointment);
     const { error } = await this.db().from("real_estate_appointments").upsert({
       id: parsed.id,
@@ -2027,7 +2034,7 @@ export class PostgresRealEstateRepository extends DemoRealEstateRepository {
     });
   }
 
-  override async saveImport(job: PropertyImport) {
+  async saveImport(job: PropertyImport) {
     const parsed = propertyImportSchema.parse(job);
     const { error } = await this.db().from("real_estate_imports").upsert({
       id: parsed.id,
@@ -2046,7 +2053,7 @@ export class PostgresRealEstateRepository extends DemoRealEstateRepository {
     return parsed;
   }
 
-  override async getImportByIdempotency(organizationId: string, key: string) {
+  async getImportByIdempotency(organizationId: string, key: string) {
     const { data, error } = await this.db()
       .from("real_estate_imports")
       .select("*")
@@ -2057,7 +2064,7 @@ export class PostgresRealEstateRepository extends DemoRealEstateRepository {
     return data ? this.mapImport(data) : null;
   }
 
-  override async getAgencyWorkspace(
+  async getAgencyWorkspace(
     organizationId: string,
   ): Promise<AgencyWorkspace | null> {
     const [
@@ -2273,9 +2280,7 @@ export class PostgresRealEstateRepository extends DemoRealEstateRepository {
     };
   }
 
-  override async getAdminOverview(
-    marketCode: string,
-  ): Promise<RealEstateAdminOverview> {
+  async getAdminOverview(marketCode: string): Promise<RealEstateAdminOverview> {
     const code = marketCode.toUpperCase();
     const [
       active,
@@ -2492,7 +2497,7 @@ export class PostgresRealEstateRepository extends DemoRealEstateRepository {
     };
   }
 
-  override async updateMarketConfig(
+  async updateMarketConfig(
     marketCode: string,
     patch: Partial<RealEstateMarketConfig>,
   ) {
@@ -2530,7 +2535,7 @@ export class PostgresRealEstateRepository extends DemoRealEstateRepository {
     return next;
   }
 
-  override async updateOffer(
+  async updateOffer(
     marketCode: string,
     offerId: string,
     patch: Partial<RealEstateCatalog["offers"][number]>,
@@ -2560,7 +2565,7 @@ export class PostgresRealEstateRepository extends DemoRealEstateRepository {
     return next;
   }
 
-  override async updateAddOn(
+  async updateAddOn(
     marketCode: string,
     addOnId: string,
     patch: Partial<RealEstateCatalog["addOns"][number]>,
@@ -2594,7 +2599,7 @@ export class PostgresRealEstateRepository extends DemoRealEstateRepository {
     return next;
   }
 
-  override async getDraft(id: string) {
+  async getDraft(id: string) {
     const { data, error } = await this.db()
       .from("real_estate_drafts")
       .select("*")
@@ -2615,7 +2620,7 @@ export class PostgresRealEstateRepository extends DemoRealEstateRepository {
       updatedAt: data.updated_at,
     });
   }
-  override async getLatestDraft(ownerUserId: string, marketCode: string) {
+  async getLatestDraft(ownerUserId: string, marketCode: string) {
     const { data, error } = await this.db()
       .from("real_estate_drafts")
       .select("id")
@@ -2627,7 +2632,7 @@ export class PostgresRealEstateRepository extends DemoRealEstateRepository {
     if (error) throw error;
     return data ? this.getDraft(data.id) : null;
   }
-  override async saveDraft(draft: PropertyDraft) {
+  async saveDraft(draft: PropertyDraft) {
     const parsed = propertyDraftSchema.parse(draft);
     const { error } = await this.db().from("real_estate_drafts").upsert({
       id: parsed.id,
@@ -2644,7 +2649,7 @@ export class PostgresRealEstateRepository extends DemoRealEstateRepository {
     if (error) throw error;
     return parsed;
   }
-  override async countActiveProperties(owner: {
+  async countActiveProperties(owner: {
     ownerUserId?: string;
     organizationId?: string;
   }) {
@@ -2659,7 +2664,7 @@ export class PostgresRealEstateRepository extends DemoRealEstateRepository {
     if (error) throw error;
     return count || 0;
   }
-  override async getCheckoutByIdempotency(accountId: string, key: string) {
+  async getCheckoutByIdempotency(accountId: string, key: string) {
     const { data, error } = await this.db()
       .from("vertical_checkouts")
       .select("*")
@@ -2692,7 +2697,7 @@ export class PostgresRealEstateRepository extends DemoRealEstateRepository {
         })
       : null;
   }
-  override async getCheckout(id: string) {
+  async getCheckout(id: string) {
     const { data, error } = await this.db()
       .from("vertical_checkouts")
       .select("*")
@@ -2725,7 +2730,7 @@ export class PostgresRealEstateRepository extends DemoRealEstateRepository {
         })
       : null;
   }
-  override async saveCheckout(checkout: VerticalCheckout) {
+  async saveCheckout(checkout: VerticalCheckout) {
     const parsed = verticalCheckoutSchema.parse(checkout);
     const { error } = await this.db().from("vertical_checkouts").upsert({
       id: parsed.id,
@@ -2750,7 +2755,7 @@ export class PostgresRealEstateRepository extends DemoRealEstateRepository {
     if (error) throw error;
     return parsed;
   }
-  override async hasWebhookEvent(provider: string, eventId: string) {
+  async hasWebhookEvent(provider: string, eventId: string) {
     const { data, error } = await this.db()
       .from("vertical_payment_webhook_events")
       .select("provider_event_id")
@@ -2760,7 +2765,7 @@ export class PostgresRealEstateRepository extends DemoRealEstateRepository {
     if (error) throw error;
     return Boolean(data);
   }
-  override async saveWebhookEvent(input: {
+  async saveWebhookEvent(input: {
     provider: string;
     eventId: string;
     eventType: string;
@@ -2781,7 +2786,7 @@ export class PostgresRealEstateRepository extends DemoRealEstateRepository {
     if (error) throw error;
   }
 
-  override async trackAnalyticsEvent(event: RealEstateAnalyticsEvent) {
+  async trackAnalyticsEvent(event: RealEstateAnalyticsEvent) {
     const { error } = await this.db()
       .from("real_estate_analytics_events")
       .insert({

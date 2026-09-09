@@ -30,11 +30,12 @@ import {
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { formatEmploymentMoney } from "../employment/employment-format";
 import { labelIdentifier } from "../../utilities/identifier-label";
+import { adminCatalogueFr } from "../../i18n/admin.catalogue.fr";
 
 type FeatureFlag = keyof EmploymentMarketConfig["featureFlags"];
 
 export const EmploymentAdminPage: React.FC = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(adminCatalogueFr);
   const { activeMarket, currentLocale, convertMoney } = useMarketLocation();
   const toast = useToast();
   const [overview, setOverview] = useState<EmploymentAdminOverview | null>(

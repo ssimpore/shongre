@@ -173,7 +173,6 @@ if (executableTotals.gzipBytes > BUDGETS.initialExecutableGzipBytes)
     `executable hydration ${kb(executableTotals.gzipBytes)} gzip exceeds ${kb(BUDGETS.initialExecutableGzipBytes)}`,
   );
 if (
-  !usesWebpackChunkIds &&
   largestExecutable &&
   largestExecutable.gzipBytes > BUDGETS.executableChunkGzipBytes
 )

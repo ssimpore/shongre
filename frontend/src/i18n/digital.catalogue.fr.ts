@@ -4,7 +4,6 @@
  * in the application-shell catalogue.
  */
 export const digitalMessagesFr = {
-  "digital.common.title": "Produits numériques",
   "digital.common.simulated": "Simulation — aucun paiement ni accès réel",
   "digital.common.loading": "Chargement des accès numériques…",
   "digital.common.error":
@@ -145,9 +144,6 @@ export const digitalMessagesFr = {
   "digital.checkout.cancelled":
     "Le paiement a été annulé. Aucun accès numérique n’a été accordé.",
   "digital.checkout.refresh": "Actualiser l’état",
-  "digital.nav.purchases": "Achats numériques",
-  "digital.nav.seller": "Vente numérique",
-  "digital.nav.admin": "Produits numériques",
   "meta.digitalPurchases.title": "Mes achats numériques",
   "meta.digitalPurchases.description":
     "Accès authentifié aux achats numériques Shongre.",

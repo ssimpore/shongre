@@ -74,3 +74,8 @@ backend/openapi/openapi.yaml
 
 # Local staging scratch
 .stage-tmp/
+
+# Next.js rewrites this between its dev and build type paths, so running the
+# canonical gate (which builds) always dirtied the tree. It is generated
+# output, not source.
+frontend/next-env.d.ts

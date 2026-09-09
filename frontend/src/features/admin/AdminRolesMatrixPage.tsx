@@ -24,9 +24,10 @@ import { plural } from "../../utilities/formatters";
 import { roleLabel } from "../../security/roles.config";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { usePageMeta } from "../../hooks/usePageMeta";
+import { adminCatalogueFr } from "../../i18n/admin.catalogue.fr";
 
 export const AdminRolesMatrixPage: React.FC = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(adminCatalogueFr);
   usePageMeta({
     title: t("meta.adminRolesMatrix.title"),
     description: t("meta.adminRolesMatrix.description"),

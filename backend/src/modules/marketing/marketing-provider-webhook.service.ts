@@ -6,6 +6,14 @@ import { AppError } from "../../shared/errors/app-error.js";
 import { enqueueMarketingWebhookEvent } from "./marketing-webhook-events.js";
 import { emitMarketingJourneyEvent } from "./marketing-journey-events.js";
 
+/**
+ * Upper bound on how many normalized events one provider delivery may carry.
+ * Anything beyond this is dropped rather than allowed to extend the request
+ * past the provider's webhook timeout; the durable queue owns the follow-up
+ * work for the events that are accepted.
+ */
+const MAX_EVENTS_PER_DELIVERY = 1_000;
+
 const eventStatus: Record<string, string | undefined> = {
   ACCEPTED: "ACCEPTED",
   DELIVERED: "DELIVERED",
@@ -95,27 +103,57 @@ export class MarketingProviderWebhookService {
       .maybeSingle();
     if (existing) return { accepted: true, duplicate: true, eventCount: 0 };
 
-    let processed = 0;
-    for (const event of events.slice(0, 1_000)) {
-      const { data: recipient, error: recipientError } = await this.client
+    const batch = events.slice(0, MAX_EVENTS_PER_DELIVERY);
+
+    /*
+     * Resolve the whole batch in two queries instead of two per event.
+     *
+     * Every event needs its recipient, and every event without one needs its
+     * automation message. Done inside the loop that was 2 sequential
+     * round-trips x N, and providers send up to a thousand events in a single
+     * delivery — enough to exceed a provider's webhook timeout and earn a
+     * retry of work that has already partly run.
+     */
+    const messageIds = [
+      ...new Set(batch.map((event) => event.externalMessageId).filter(Boolean)),
+    ];
+    const recipientsByMessageId = new Map<string, any>();
+    const automationMessagesByMessageId = new Map<string, any>();
+    if (messageIds.length) {
+      const { data: recipientRows, error: recipientError } = await this.client
         .from("marketing_campaign_recipients")
-        .select("id,tenant_id,profile_id,campaign_id")
+        .select("id,tenant_id,profile_id,campaign_id,provider_message_id")
         .eq("tenant_id", connection.tenant_id)
         .eq("provider_connection_id", connectionId)
-        .eq("provider_message_id", event.externalMessageId)
-        .maybeSingle();
+        .in("provider_message_id", messageIds);
       if (recipientError) throw recipientError;
-      const { data: automationMessage, error: automationMessageError } =
-        recipient
-          ? { data: null, error: null }
-          : await this.client
-              .from("marketing_automation_messages")
-              .select("id,tenant_id,profile_id,execution_id")
-              .eq("tenant_id", connection.tenant_id)
-              .eq("provider_connection_id", connectionId)
-              .eq("provider_message_id", event.externalMessageId)
-              .maybeSingle();
-      if (automationMessageError) throw automationMessageError;
+      for (const row of recipientRows || [])
+        recipientsByMessageId.set(row.provider_message_id, row);
+
+      const unmatched = messageIds.filter(
+        (id) => !recipientsByMessageId.has(id),
+      );
+      if (unmatched.length) {
+        const { data: automationRows, error: automationMessageError } =
+          await this.client
+            .from("marketing_automation_messages")
+            .select("id,tenant_id,profile_id,execution_id,provider_message_id")
+            .eq("tenant_id", connection.tenant_id)
+            .eq("provider_connection_id", connectionId)
+            .in("provider_message_id", unmatched);
+        if (automationMessageError) throw automationMessageError;
+        for (const row of automationRows || [])
+          automationMessagesByMessageId.set(row.provider_message_id, row);
+      }
+    }
+
+    let processed = 0;
+    for (const event of batch) {
+      const recipient =
+        recipientsByMessageId.get(event.externalMessageId) ?? null;
+      const automationMessage = recipient
+        ? null
+        : (automationMessagesByMessageId.get(event.externalMessageId) ?? null);
       if (!recipient && !automationMessage) continue;
       const profileId = recipient?.profile_id ?? automationMessage.profile_id;
       if (recipient) {

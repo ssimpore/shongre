@@ -9,13 +9,14 @@ import { StatePanel } from "../../design-system/primitives/StatePanel";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { formatLogTimestamp } from "../../utilities/formatters";
+import { adminCatalogueFr } from "../../i18n/admin.catalogue.fr";
 
 function csvCell(value: string): string {
   return `"${value.replaceAll('"', '""')}"`;
 }
 
 export const AdminAuditLogsPage: React.FC = () => {
-  const { t, locale } = useTranslation();
+  const { t, locale } = useTranslation(adminCatalogueFr);
   usePageMeta({
     title: t("meta.adminAuditLogs.title"),
     description: t("meta.adminAuditLogs.description"),

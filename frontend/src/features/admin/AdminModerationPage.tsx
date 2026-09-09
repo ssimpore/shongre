@@ -16,11 +16,12 @@ import { StatePanel } from "../../design-system/primitives/StatePanel";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { labelIdentifier } from "../../utilities/identifier-label";
+import { adminCatalogueFr } from "../../i18n/admin.catalogue.fr";
 
 type AppealDecision = "upheld" | "overturned" | "rejected";
 
 export const AdminModerationPage: React.FC = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(adminCatalogueFr);
   const { can } = useAuth();
   const toast = useToast();
   const canReviewReports = can("report.review");

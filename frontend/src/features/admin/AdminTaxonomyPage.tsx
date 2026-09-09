@@ -4,9 +4,10 @@ import React from "react";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { TaxonomyHeaderNavigationTab } from "./taxonomy/components/TaxonomyHeaderNavigationTab";
+import { adminCatalogueFr } from "../../i18n/admin.catalogue.fr";
 
 export const AdminTaxonomyPage: React.FC = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(adminCatalogueFr);
   usePageMeta({
     title: t("meta.adminTaxonomy.title"),
     description: t("meta.adminTaxonomy.description"),

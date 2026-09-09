@@ -2,12 +2,21 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { collectionService } from "./collection.service";
 import { PAGE_SIZES } from "../../configuration/pagination.config";
 
-const api = vi.hoisted(() => ({ tree: vi.fn(), search: vi.fn() }));
+const api = vi.hoisted(() => ({
+  tree: vi.fn(),
+  search: vi.fn(),
+  collections: vi.fn(),
+}));
 vi.mock("../../api/client/service-registry", () => ({
   services: {
     taxonomy: { getV1Tree: api.tree },
     search: { search: api.search },
   },
+}));
+// The collection rail is now one backend projection instead of a per-root
+// search fan-out; the detail page still resolves through taxonomy + search.
+vi.mock("../../api/adapters/http/http-discovery.service", () => ({
+  fetchDiscoveryCollections: api.collections,
 }));
 
 const marketContext = { countryCode: "FR" };
@@ -30,6 +39,19 @@ describe("API-driven collections", () => {
     vi.resetAllMocks();
     api.tree.mockResolvedValue({ items: [root] });
     api.search.mockResolvedValue({ total: 12, items: [listing] });
+    api.collections.mockResolvedValue([
+      {
+        id: root.id,
+        slug: root.slug,
+        title: "Electronics",
+        shortTitle: "Electronics",
+        description: "Electronics",
+        coverImageUrl: listing.coverImageUrl,
+        tags: ["Phones"],
+        listingCount: 12,
+        itemCountLabel: "12",
+      },
+    ]);
   });
 
   it("keeps the shared browser and SSR page size within the search API contract", async () => {
@@ -48,19 +70,7 @@ describe("API-driven collections", () => {
     ).resolves.toMatchObject({ listings: [listing] });
   });
 
-  it("uses API root taxonomy, inventory counts and listing media", async () => {
-    api.tree.mockResolvedValue({
-      items: [
-        root,
-        {
-          ...root,
-          id: "phones",
-          slug: "telephones",
-          parentId: root.id,
-          shortLabels: { "en-GB": "Phones" },
-        },
-      ],
-    });
+  it("reads the rail from one backend projection, not a per-root fan-out", async () => {
     const collections = await collectionService.getCollections(
       marketContext,
       "en-GB",
@@ -76,24 +86,18 @@ describe("API-driven collections", () => {
         tags: ["Phones"],
       }),
     ]);
-    expect(api.tree).toHaveBeenCalledWith({ marketContext, locale: "en-GB" });
-    expect(api.search).toHaveBeenCalledExactlyOnceWith({
+    expect(api.collections).toHaveBeenCalledExactlyOnceWith({
       marketCode: "FR",
-      categorySlug: root.slug,
-      sortBy: "date_desc",
-      limit: 1,
+      locale: "en-GB",
     });
+    // The regression this replaced: one taxonomy read plus one search request
+    // for every root category, from the browser, on every render.
+    expect(api.search).not.toHaveBeenCalled();
+    expect(api.tree).not.toHaveBeenCalled();
   });
 
-  it("does not fabricate a collection when inventory or its image is absent", async () => {
-    api.search.mockResolvedValueOnce({ total: 0, items: [] });
-    await expect(
-      collectionService.getCollections(marketContext, "fr-FR"),
-    ).resolves.toEqual([]);
-    api.search.mockResolvedValueOnce({
-      total: 12,
-      items: [{ id: "without-image" }],
-    });
+  it("does not fabricate a collection when the projection returns none", async () => {
+    api.collections.mockResolvedValueOnce([]);
     await expect(
       collectionService.getCollections(marketContext, "fr-FR"),
     ).resolves.toEqual([]);
@@ -102,6 +106,7 @@ describe("API-driven collections", () => {
   it("propagates API failures instead of returning fallback data", async () => {
     const error = new Error("API unavailable");
     api.search.mockRejectedValue(error);
+    api.collections.mockRejectedValue(error);
     await expect(
       collectionService.getCollections(marketContext, "fr-FR"),
     ).rejects.toBe(error);

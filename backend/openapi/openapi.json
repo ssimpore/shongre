@@ -39243,6 +39243,75 @@
         "x-shongre-deny-staff-marketplace": false,
         "x-shongre-source": "backend/src/modules/taxonomy/api/taxonomy.routes.ts"
       }
+    },
+    "/discovery/collections": {
+      "get": {
+        "operationId": "getDiscoveryCollections",
+        "tags": ["discovery"],
+        "summary": "GET /discovery/collections",
+        "description": "Taxonomy roots with eligible inventory, assembled server-side. Replaces one search request per root category from the client.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/MarketContext"
+          },
+          {
+            "name": "locale",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "security": [],
+        "x-shongre-access": "public",
+        "x-shongre-deny-staff-marketplace": false,
+        "x-shongre-source": "backend/src/modules/discovery/api/discovery.routes.ts",
+        "responses": {
+          "200": {
+            "description": "Collections with eligible inventory in the resolved market.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DiscoveryCollectionPage"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -60498,6 +60567,70 @@
           },
           "values": {
             "$ref": "#/components/schemas/TaxonomyV1LocalizedLabels"
+          }
+        }
+      },
+      "DiscoveryCollection": {
+        "type": "object",
+        "description": "A taxonomy root with the inventory facts a discovery rail needs.",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "slug",
+          "title",
+          "shortTitle",
+          "description",
+          "coverImageUrl",
+          "tags",
+          "listingCount"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "shortTitle": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "coverImageUrl": {
+            "type": "string",
+            "format": "uri"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "listingCount": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      },
+      "DiscoveryCollectionPage": {
+        "type": "object",
+        "description": "Bounded, market-scoped collection rail for the resolved market.",
+        "additionalProperties": false,
+        "required": ["collections", "taxonomyRevision"],
+        "properties": {
+          "collections": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DiscoveryCollection"
+            }
+          },
+          "taxonomyRevision": {
+            "type": "integer",
+            "description": "Publication revision the collection set is bound to."
           }
         }
       }

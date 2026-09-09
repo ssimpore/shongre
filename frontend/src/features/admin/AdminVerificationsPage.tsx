@@ -24,9 +24,10 @@ import { usePageMeta } from "../../hooks/usePageMeta";
 import { labelIdentifier } from "../../utilities/identifier-label";
 import { useRegionalFormatters } from "../../hooks/useRegionalFormatters";
 import { useTranslation } from "../../i18n/I18nProvider";
+import { adminCatalogueFr } from "../../i18n/admin.catalogue.fr";
 
 export const AdminVerificationsPage: React.FC = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(adminCatalogueFr);
   const { formatDateTime } = useRegionalFormatters();
   usePageMeta({
     title: t(

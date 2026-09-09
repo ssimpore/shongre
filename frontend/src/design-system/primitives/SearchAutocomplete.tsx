@@ -186,7 +186,7 @@ export const SearchAutocomplete: React.FC<SearchAutocompleteProps> = ({
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-1 text-micro text-primary font-bold opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                      <div className="flex items-center gap-1 text-micro text-primary font-bold opacity-0 pointer-coarse:opacity-100 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity shrink-0">
                         <span>Explorer</span>
                         <ChevronRight className="w-icon-xs h-icon-xs" />
                       </div>

@@ -29,12 +29,13 @@ import type {
 import { auditActionLabel, type UserProfile } from "../../types";
 import { useAuthorization } from "../../security/useAuthorization";
 import { StatePanel } from "../../design-system/primitives/StatePanel";
+import { adminCatalogueFr } from "../../i18n/admin.catalogue.fr";
 
 type DashboardLoadState = "loading" | "success" | "error";
 
 export const AdminOverviewPage: React.FC = () => {
   const { activeMarket } = useMarketLocation();
-  const { t } = useTranslation();
+  const { t } = useTranslation(adminCatalogueFr);
   usePageMeta({
     title: t("meta.adminOverview.title"),
     description: t("meta.adminOverview.description"),

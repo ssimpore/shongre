@@ -9,13 +9,14 @@ import {
   Select,
 } from "../../../../design-system/primitives/FormField";
 import { useTranslation } from "../../../../i18n/I18nProvider";
+import { adminCatalogueFr } from "../../../../i18n/admin.catalogue.fr";
 
 type Draft = components["schemas"]["TaxonomyDraftPage"];
 type Review = components["schemas"]["TaxonomyRevisionReview"];
 type History = components["schemas"]["TaxonomyRevisionHistory"];
 
 export function TaxonomyRevisionEditor() {
-  const { t } = useTranslation();
+  const { t } = useTranslation(adminCatalogueFr);
   const [resource, setResource] = useState<Draft["resource"]>("categories");
   const [draft, setDraft] = useState<Draft | null>(null);
   const [review, setReview] = useState<Review | null>(null);

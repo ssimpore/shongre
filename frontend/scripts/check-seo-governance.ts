@@ -1,5 +1,5 @@
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { readdirSync, readFileSync, statSync } from "node:fs";
+import { join, relative, resolve } from "node:path";
 import {
   buildDiscoveryRobotsRules,
   DISCOVERY_CRAWLERS,
@@ -57,14 +57,55 @@ const requiredIntegrations = [
   ["app/llms.txt/route.ts", "renderDiscoveryManifest"],
   ["src/analytics/attribution.ts", "discovery-referrers"],
   ["src/app/router/index.tsx", 'path: "a-propos"'],
-  [
-    "src/features/profile/components/ProBusinessInfo.tsx",
-    'rel="ugc nofollow noopener noreferrer"',
-  ],
 ] as const;
 for (const [path, marker] of requiredIntegrations) {
   if (!read(path).includes(marker)) {
     errors.push(`${path} does not consume ${marker}.`);
+  }
+}
+
+/*
+ * User-supplied outbound links must be `ugc nofollow`.
+ *
+ * This used to be checked by requiring one named component to contain the
+ * string — a component nothing rendered, which made the guarantee vacuous while
+ * a new surface could ship an unmarked seller website link and pass. The rule is
+ * about every anchor whose destination comes from user-supplied data, so that is
+ * what is scanned: any `<a>` whose `href` is an expression naming a
+ * user-controlled URL field.
+ */
+const USER_SUPPLIED_HREF =
+  /<a\b[^>]*\bhref=\{[^}]*\b(websiteUrl|externalUrl|profileUrl|socialUrl|sourceUrl|authorUrl|companyUrl|listingUrl|userUrl|submittedUrl)\b[^}]*\}[\s\S]*?>/g;
+
+function walkSources(directory: string, files: string[] = []): string[] {
+  for (const entry of readdirSync(resolve(frontendRoot, directory))) {
+    if (entry === "node_modules" || entry.startsWith(".")) continue;
+    const path = join(directory, entry);
+    if (statSync(resolve(frontendRoot, path)).isDirectory()) {
+      walkSources(path, files);
+    } else if (/\.tsx$/.test(entry) && !/\.(test|spec)\.tsx$/.test(entry)) {
+      files.push(path);
+    }
+  }
+  return files;
+}
+
+let scannedOutboundLinks = 0;
+for (const path of walkSources("src")) {
+  const source = read(path);
+  for (const match of source.matchAll(USER_SUPPLIED_HREF)) {
+    scannedOutboundLinks += 1;
+    const anchor = match[0];
+    const rel = /\brel=["']([^"']*)["']/.exec(anchor)?.[1] ?? "";
+    const tokens = new Set(rel.split(/\s+/).filter(Boolean));
+    const missing = ["ugc", "nofollow", "noopener", "noreferrer"].filter(
+      (token) => !tokens.has(token),
+    );
+    if (missing.length) {
+      errors.push(
+        `${relative(".", path)} renders a user-supplied outbound link without rel="${missing.join(" ")}".`,
+      );
+    }
   }
 }
 
@@ -97,5 +138,5 @@ if (errors.length) {
   process.exit(1);
 }
 console.log(
-  `SEO governance PASS (${Object.keys(DISCOVERY_CRAWLERS).length} crawlers, ${PRIVATE_CRAWL_PATHS.length} private path guards).`,
+  `SEO governance PASS (${Object.keys(DISCOVERY_CRAWLERS).length} crawlers, ${PRIVATE_CRAWL_PATHS.length} private path guards, ${scannedOutboundLinks} user-supplied outbound links).`,
 );

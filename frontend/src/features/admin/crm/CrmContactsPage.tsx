@@ -25,6 +25,7 @@ import { useMarketLocation } from "../../../app/providers/MarketLocationProvider
 import { usePageMeta } from "../../../hooks/usePageMeta";
 import { useTranslation } from "../../../i18n/I18nProvider";
 import { useCrmSurface } from "../../crm/CrmSurfaceContext";
+import { adminCatalogueFr } from "../../../i18n/admin.catalogue.fr";
 
 const lifecycleLabel: Record<CrmContact["lifecycle"], string> = {
   lead: "Lead",
@@ -37,7 +38,7 @@ const lifecycleLabel: Record<CrmContact["lifecycle"], string> = {
 };
 
 export const CrmContactsPage: React.FC = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(adminCatalogueFr);
   const { activeMarket } = useMarketLocation();
   const crmPaths = useCrmSurface();
   const toast = useToast();

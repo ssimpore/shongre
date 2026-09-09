@@ -13,6 +13,7 @@ import {
 import { Link } from "react-router-dom";
 import { usePageMeta } from "../../../hooks/usePageMeta";
 import { useTranslation } from "../../../i18n/I18nProvider";
+import { adminCatalogueFr } from "../../../i18n/admin.catalogue.fr";
 
 const entries = [
   {
@@ -60,7 +61,7 @@ const entries = [
 ];
 
 export const CrmConfigurationPage: React.FC = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(adminCatalogueFr);
   usePageMeta({
     title: "Configuration CRM | Shongre",
     description: t("admin.crmConfigurationPage.configurationDuTenantCrm"),

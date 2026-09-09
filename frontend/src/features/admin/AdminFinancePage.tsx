@@ -43,6 +43,7 @@ import { useRegionalFormatters } from "../../hooks/useRegionalFormatters";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { FinanceRevenueTrendChart } from "./FinanceRevenueTrendChart";
 import { useTranslation } from "../../i18n/I18nProvider";
+import { adminCatalogueFr } from "../../i18n/admin.catalogue.fr";
 
 type FinanceTab =
   "overview" | "transactions" | "reconciliation" | "subscriptions";
@@ -910,7 +911,7 @@ function SubscriptionsTab({
 }
 
 export const AdminFinancePage: React.FC = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(adminCatalogueFr);
   const { availableMarkets, currentCurrency } = useMarketLocation();
   const { formatDate } = useRegionalFormatters();
   usePageMeta({

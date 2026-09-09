@@ -3867,6 +3867,26 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/discovery/collections": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /**
+         * GET /discovery/collections
+         * @description Taxonomy roots with eligible inventory, assembled server-side. Replaces one search request per root category from the client.
+         */
+        readonly get: operations["getDiscoveryCollections"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/discovery/sitemap-listings": {
         readonly parameters: {
             readonly query?: never;
@@ -10226,6 +10246,24 @@ export interface components {
         readonly DigitalSellerProfileInput: {
             readonly acceptedPolicyVersion: number;
             readonly fulfillmentTypes: readonly components["schemas"]["FulfillmentType"][];
+        };
+        /** @description A taxonomy root with the inventory facts a discovery rail needs. */
+        readonly DiscoveryCollection: {
+            /** Format: uri */
+            readonly coverImageUrl: string;
+            readonly description: string;
+            readonly id: string;
+            readonly listingCount: number;
+            readonly shortTitle: string;
+            readonly slug: string;
+            readonly tags: readonly string[];
+            readonly title: string;
+        };
+        /** @description Bounded, market-scoped collection rail for the resolved market. */
+        readonly DiscoveryCollectionPage: {
+            readonly collections: readonly components["schemas"]["DiscoveryCollection"][];
+            /** @description Publication revision the collection set is bound to. */
+            readonly taxonomyRevision: number;
         };
         readonly DomainHandoffExchange: {
             readonly code: string;
@@ -22218,6 +22256,42 @@ export interface operations {
             readonly 400: components["responses"]["BadRequest"];
             readonly 401: components["responses"]["Unauthorized"];
             readonly 403: components["responses"]["Forbidden"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getDiscoveryCollections: {
+        readonly parameters: {
+            readonly query?: {
+                readonly locale?: string;
+            };
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Collections with eligible inventory in the resolved market. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["DiscoveryCollectionPage"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
             readonly 500: components["responses"]["InternalError"];
         };
     };

@@ -84,7 +84,33 @@ export type PublicRouteDataResolution =
       status: "not_found";
       data: null;
       resourceType: PublicRouteData["kind"];
+    }
+  /**
+   * The lookup failed; whether the resource exists is unknown. Distinct from
+   * `not_found` because answering 404 to a transient backend failure asks
+   * crawlers to drop live inventory. Callers respond 503 and stay noindex.
+   */
+  | {
+      status: "unavailable";
+      data: null;
+      resourceType: PublicRouteData["kind"];
     };
+
+/**
+ * A failed lookup is not an absent resource. Only an explicit `NOT_FOUND` from
+ * the API proves the entity is gone; a rate limit, timeout or transport failure
+ * leaves existence unknown, and answering 404 to those asks crawlers to drop
+ * live inventory that is still published.
+ */
+export function resolutionForError(
+  error: unknown,
+  resourceType: PublicRouteData["kind"],
+): PublicRouteDataResolution {
+  const code = (error as { code?: unknown } | null | undefined)?.code;
+  return code === "NOT_FOUND"
+    ? { status: "not_found", data: null, resourceType }
+    : { status: "unavailable", data: null, resourceType };
+}
 
 export function listingMarketCodes(listing: Listing): string[] {
   const primary = (listing.marketCode || DEFAULT_MARKET_CODE).toUpperCase();

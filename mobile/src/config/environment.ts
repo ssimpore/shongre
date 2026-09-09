@@ -64,6 +64,14 @@ export const mobileEnvironment = Object.freeze({
       termsUrl: marketWebUrl(country, "/terms"),
       supportUrl: marketWebUrl(country, "/support"),
       accountDeletionUrl: marketWebUrl(country, "/account/delete"),
+      /**
+       * Registration and password recovery have no native screens yet, so the
+       * app hands them to the market's Web flow rather than leaving a person
+       * with an email/password sign-in form and no way to create an account or
+       * recover one. Both routes are market-scoped through the same builder.
+       */
+      registerUrl: marketWebUrl(country, "/inscription"),
+      passwordResetUrl: marketWebUrl(country, "/mot-de-passe-oublie"),
     };
   },
 });

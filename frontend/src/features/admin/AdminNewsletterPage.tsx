@@ -44,6 +44,7 @@ import { usePageMeta } from "../../hooks/usePageMeta";
 import { formatDate } from "../../utilities/formatters";
 import { NewsletterPreviewModal } from "../newsletter/components/NewsletterPreviewModal";
 import { useTranslation } from "../../i18n/I18nProvider";
+import { adminCatalogueFr } from "../../i18n/admin.catalogue.fr";
 
 type MarketingTab =
   | "overview"
@@ -104,7 +105,7 @@ const statusLabel: Record<MarketingCampaign["status"], string> = {
 };
 
 export const AdminNewsletterPage: React.FC = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(adminCatalogueFr);
   usePageMeta({
     title: "Marketing & Newsletter | Administration Shongre",
     description: t(

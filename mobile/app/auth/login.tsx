@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { StyleSheet, Text } from "react-native";
+import { Linking, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { loginRequestSchema } from "@shongre/contracts";
 import { Button } from "@/components/Button";
@@ -12,6 +12,8 @@ import {
   nativeTypography,
 } from "@shongre/design-tokens/native";
 import { useAuth } from "@/features/auth/AuthProvider";
+import { useMarket } from "@/features/market/MarketProvider";
+import { mobileEnvironment } from "@/config/environment";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -30,6 +32,12 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
   const [mfaToken, setMfaToken] = useState<string | null>(null);
   const [mfaCode, setMfaCode] = useState("");
+  const { activeMarket } = useMarket();
+  const marketLinks = mobileEnvironment.linksFor(activeMarket);
+
+  const openWebFlow = async (url: string) => {
+    if (await Linking.canOpenURL(url)) await Linking.openURL(url);
+  };
 
   const submit = async () => {
     if (mfaToken) {
@@ -112,7 +120,7 @@ export default function LoginScreen() {
   };
 
   return (
-    <Screen>
+    <Screen edges={["top", "bottom"]}>
       <BrandLogo size="standard" />
       <Text accessibilityRole="header" style={styles.heading}>
         {mfaToken ? "Vérification de sécurité" : "Ravi de vous revoir"}
@@ -213,6 +221,29 @@ export default function LoginScreen() {
               disabled={loading}
             />
           ) : null}
+          {/*
+           * Registration and password recovery have no native screens. Without
+           * these, someone who forgot their password had no route out of this
+           * form, and a new user could only join through a social provider.
+           * Both open the market's Web flow; the session comes back through the
+           * existing deep-link handoff.
+           */}
+          {!mfaToken ? (
+            <View style={styles.recovery}>
+              <Button
+                label="Mot de passe oublié ?"
+                variant="ghost"
+                onPress={() => void openWebFlow(marketLinks.passwordResetUrl)}
+                disabled={loading}
+              />
+              <Button
+                label="Créer un compte"
+                variant="ghost"
+                onPress={() => void openWebFlow(marketLinks.registerUrl)}
+                disabled={loading}
+              />
+            </View>
+          ) : null}
         </>
       )}
     </Screen>
@@ -245,4 +276,5 @@ const styles = StyleSheet.create({
     textAlign: "center",
     paddingVertical: spacing.xs,
   },
+  recovery: { gap: spacing.xs },
 });

@@ -31,6 +31,7 @@ import {
 } from "../../design-system/primitives/FormField";
 import { useTranslation } from "../../i18n/I18nProvider";
 import type { Category } from "../../types";
+import { adminCatalogueFr } from "../../i18n/admin.catalogue.fr";
 
 const SECTION_LABELS: Record<HomepageSectionType, string> = {
   hero: "En-tête et recherche",
@@ -71,7 +72,7 @@ interface HomepageConfigurationPanelProps {
 export const HomepageConfigurationPanel: React.FC<
   HomepageConfigurationPanelProps
 > = ({ marketCode, locale }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(adminCatalogueFr);
   const toast = useToast();
   const [configuration, setConfiguration] =
     useState<HomepageConfiguration | null>(null);

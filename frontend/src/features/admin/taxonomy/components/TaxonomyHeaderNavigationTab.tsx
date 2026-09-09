@@ -26,6 +26,7 @@ import { IconButton } from "../../../../design-system/primitives/IconButton";
 import { PromptModal } from "../../../../design-system/primitives/PromptModal";
 import { StatePanel } from "../../../../design-system/primitives/StatePanel";
 import { useTranslation } from "../../../../i18n/I18nProvider";
+import { adminCatalogueFr } from "../../../../i18n/admin.catalogue.fr";
 import type { Category } from "../../../../types";
 import {
   headerNavigationItems,
@@ -61,7 +62,7 @@ function categoryLabel(category: Category): string {
 }
 
 export const TaxonomyHeaderNavigationTab: React.FC = () => {
-  const { t, locale } = useTranslation();
+  const { t, locale } = useTranslation(adminCatalogueFr);
   const { activeMarket, marketContext } = useMarketLocation();
   const [configuration, setConfiguration] =
     useState<TaxonomyHeaderNavigationConfiguration | null>(null);

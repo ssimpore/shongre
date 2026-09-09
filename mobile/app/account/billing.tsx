@@ -87,7 +87,7 @@ export default function BillingScreen() {
     }).format(new Date(value));
 
   return (
-    <Screen>
+    <Screen edges={["top", "bottom"]}>
       <View>
         <Text accessibilityRole="header" style={styles.heading}>
           Abonnement et facturation

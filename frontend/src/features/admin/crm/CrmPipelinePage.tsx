@@ -37,6 +37,7 @@ import { usePageMeta } from "../../../hooks/usePageMeta";
 import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
 import { useCrmSurface } from "../../crm/CrmSurfaceContext";
 import { forecastCategoryMessageKey } from "../../../domains/crm/crm.labels";
+import { adminCatalogueFr } from "../../../i18n/admin.catalogue.fr";
 
 function money(amountMinor: number, currency: string, locale: string) {
   return new Intl.NumberFormat(locale, {
@@ -75,7 +76,7 @@ interface ClosingState {
 }
 
 export const CrmPipelinePage: React.FC = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(adminCatalogueFr);
   const { activeMarket, currentLocale } = useMarketLocation();
   const crmPaths = useCrmSurface();
   const toast = useToast();

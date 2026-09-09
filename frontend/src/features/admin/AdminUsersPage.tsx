@@ -35,9 +35,10 @@ import { StaffBadge } from "../../design-system/components/StaffBadge";
 import { CapabilityOverridesModal } from "./CapabilityOverridesModal";
 import { adminPrimaryIdentity } from "./admin-user-identity";
 import { AdminUserPrimaryBadge } from "./AdminUserPrimaryBadge";
+import { adminCatalogueFr } from "../../i18n/admin.catalogue.fr";
 
 export const AdminUsersPage: React.FC = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(adminCatalogueFr);
   usePageMeta({
     title: t("meta.adminUsers.title"),
     description: t("meta.adminUsers.description"),

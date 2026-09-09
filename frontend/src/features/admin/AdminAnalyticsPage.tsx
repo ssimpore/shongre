@@ -35,6 +35,7 @@ import { services } from "../../api/client/service-registry";
 import { Button, ScrollableRegion, StatePanel } from "../../design-system";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useTranslation } from "../../i18n/I18nProvider";
+import { adminCatalogueFr } from "../../i18n/admin.catalogue.fr";
 
 type TabId =
   "overview" | "acquisition" | "search" | "monetization" | "seo" | "providers";
@@ -184,7 +185,7 @@ function TrendChart({
 }
 
 export const AdminAnalyticsPage: React.FC = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(adminCatalogueFr);
   usePageMeta({
     title: "Analytics & Intelligence — Administration Shongre",
     description: t(

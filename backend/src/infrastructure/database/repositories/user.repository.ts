@@ -6,6 +6,8 @@ import {
 import { toPublicSellerProfile } from "../../../shared/public-projections.js";
 import { getSupabaseAdminClient } from "../../supabase/supabase-client.js";
 import { databaseFailure } from "./repository-error.js";
+import { identifierColumn } from "./repository-identifier.js";
+import { SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS } from "@shongre/contracts/performance";
 import { requireMarketCode } from "../../../shared/market/market-code.js";
 import {
   CUSTOMER_MARKETPLACE_CAPABILITIES,
@@ -31,7 +33,13 @@ export interface UserCredential {
 
 export interface IUserRepository {
   findById(id: string): Promise<UserProfile | null>;
-  findPublicById(id: string): Promise<PublicSellerProfile | null>;
+  /**
+   * Resolves the public projection by account id **or** public slug, because
+   * both address the same seller on public routes. A caller-supplied value that
+   * matches neither is a miss, never a failure.
+   */
+  findPublicById(idOrSlug: string): Promise<PublicSellerProfile | null>;
+  listPublicProfessionals(marketCode: string): Promise<PublicSellerProfile[]>;
   findByEmail(email: string): Promise<UserProfile | null>;
   findAuthUserId(userId: string): Promise<string | null>;
   linkAuthUserId(userId: string, authUserId: string): Promise<void>;
@@ -294,9 +302,45 @@ export class DemoUserRepository implements IUserRepository {
     return user ? { ...user } : null;
   }
 
-  async findPublicById(id: string): Promise<PublicSellerProfile | null> {
-    const user = await this.findById(id);
+  async findPublicById(idOrSlug: string): Promise<PublicSellerProfile | null> {
+    const user =
+      (await this.findById(idOrSlug)) ??
+      [...this.users.values()].find(
+        (candidate) => candidate.slug === idOrSlug,
+      ) ??
+      null;
     return user ? toPublicSellerProfile(user) : null;
+  }
+
+  async listPublicProfessionals(
+    marketCode: string,
+  ): Promise<PublicSellerProfile[]> {
+    const normalized = marketCode.toUpperCase();
+    return (
+      [...this.users.values()]
+        .filter(
+          (user) =>
+            user.accountType === "professional" &&
+            user.status === "active" &&
+            // Absent means "no Staff membership", which is what the
+            // `public_profiles` view enforces in database mode. Treating only the
+            // explicit "none" as non-Staff would diverge from the query.
+            (user.staffStatus ?? "none") === "none" &&
+            user.country.toUpperCase() === normalized,
+        )
+        .sort(
+          (left, right) =>
+            right.reviewCount - left.reviewCount ||
+            left.id.localeCompare(right.id),
+        )
+        .slice(
+          0,
+          SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS.database.discoveryCandidateLimit,
+        )
+        .map((user) => toPublicSellerProfile(user))
+        // The projection applies its own visibility rules and may withhold a row.
+        .filter((profile): profile is PublicSellerProfile => profile !== null)
+    );
   }
 
   async findByEmail(email: string): Promise<UserProfile | null> {
@@ -536,41 +580,69 @@ export class PostgresUserRepository implements IUserRepository {
     }
   }
 
-  async findPublicById(id: string): Promise<PublicSellerProfile | null> {
+  /** The view already excludes suspended accounts and Staff memberships. */
+  private publicProfileSelect() {
+    return (
+      getSupabaseAdminClient().from("public_profiles" as any) as any
+    ).select(
+      "id, slug, name, avatar_url, city, country, bio, account_family, is_verified, is_business_verified, rating, review_count, response_rate_percent, response_time_text, created_at",
+    );
+  }
+
+  private mapPublicProfile(data: any): PublicSellerProfile {
+    const accountType =
+      data.account_family === "professional" ? "professional" : "individual";
+    return {
+      id: data.id,
+      slug: data.slug,
+      name: data.name,
+      accountType,
+      sellerType: accountType === "professional" ? "pro" : "individual",
+      avatarUrl: data.avatar_url || undefined,
+      city: data.city || undefined,
+      country: requireMarketCode(data.country),
+      bio: data.bio || undefined,
+      isVerified: Boolean(data.is_verified),
+      isBusinessVerified: Boolean(data.is_business_verified),
+      rating: Number(data.rating || 0),
+      reviewCount: Number(data.review_count || 0),
+      responseRatePercent: Number(data.response_rate_percent || 0),
+      responseTimeText: data.response_time_text || undefined,
+      createdAt: data.created_at || undefined,
+    };
+  }
+
+  async findPublicById(idOrSlug: string): Promise<PublicSellerProfile | null> {
     try {
-      const supabase = getSupabaseAdminClient();
-      const { data, error } = await ((
-        supabase.from("public_profiles" as any) as any
-      )
-        .select(
-          "id, slug, name, avatar_url, city, country, bio, account_family, is_verified, is_business_verified, rating, review_count, response_rate_percent, response_time_text, created_at",
-        )
-        .eq("id", id)
+      const { data, error } = await (this.publicProfileSelect()
+        // Public seller routes address profiles by slug; comparing one against
+        // the `uuid` column raises a type error rather than returning no row.
+        .eq(identifierColumn(idOrSlug), idOrSlug)
         .maybeSingle() as any);
       if (error) databaseFailure("users.findPublicById", error);
       if (!data) return null;
-      const accountType =
-        data.account_family === "professional" ? "professional" : "individual";
-      return {
-        id: data.id,
-        slug: data.slug,
-        name: data.name,
-        accountType,
-        sellerType: accountType === "professional" ? "pro" : "individual",
-        avatarUrl: data.avatar_url || undefined,
-        city: data.city || undefined,
-        country: requireMarketCode(data.country),
-        bio: data.bio || undefined,
-        isVerified: Boolean(data.is_verified),
-        isBusinessVerified: Boolean(data.is_business_verified),
-        rating: Number(data.rating || 0),
-        reviewCount: Number(data.review_count || 0),
-        responseRatePercent: Number(data.response_rate_percent || 0),
-        responseTimeText: data.response_time_text || undefined,
-        createdAt: data.created_at || undefined,
-      };
+      return this.mapPublicProfile(data);
     } catch (error) {
       databaseFailure("users.findPublicById", error);
+    }
+  }
+
+  async listPublicProfessionals(
+    marketCode: string,
+  ): Promise<PublicSellerProfile[]> {
+    try {
+      const { data, error } = await (this.publicProfileSelect()
+        .eq("account_family", "professional")
+        .eq("country", requireMarketCode(marketCode))
+        .order("review_count", { ascending: false })
+        .order("id", { ascending: true })
+        .limit(
+          SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS.database.discoveryCandidateLimit,
+        ) as any);
+      if (error) databaseFailure("users.listPublicProfessionals", error);
+      return (data || []).map((row: any) => this.mapPublicProfile(row));
+    } catch (error) {
+      databaseFailure("users.listPublicProfessionals", error);
     }
   }
 

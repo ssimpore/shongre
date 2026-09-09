@@ -17,6 +17,7 @@ import {
 import { useTranslation } from "../../i18n/I18nProvider";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { PromptModal } from "../../design-system/primitives/PromptModal";
+import { adminCatalogueFr } from "../../i18n/admin.catalogue.fr";
 
 const WEIGHT_LABELS: Record<
   keyof RankingWeights,
@@ -47,7 +48,7 @@ const METRIC_LABELS: Array<
 ];
 
 export const AdminDiscoveryConfigurationPanel: React.FC = () => {
-  const { t, locale } = useTranslation();
+  const { t, locale } = useTranslation(adminCatalogueFr);
   const { activeMarket } = useMarketLocation();
   const [configuration, setConfiguration] =
     useState<DiscoveryConfiguration | null>(null);

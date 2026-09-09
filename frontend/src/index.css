@@ -700,7 +700,7 @@
 }
 
 .listing-card-promotion-badge {
-  padding-inline: calc(var(--spacing-base) * 2);
+  padding-inline: var(--spacing-semantic-sm);
   letter-spacing: normal;
 }
 

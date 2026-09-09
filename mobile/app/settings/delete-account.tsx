@@ -48,7 +48,7 @@ export default function DeleteAccountScreen() {
 
   if (!user) {
     return (
-      <Screen>
+      <Screen edges={["top", "bottom"]}>
         <Text accessibilityRole="header" style={styles.heading}>
           Session requise
         </Text>
@@ -64,7 +64,7 @@ export default function DeleteAccountScreen() {
   }
 
   return (
-    <Screen>
+    <Screen edges={["top", "bottom"]}>
       <Text accessibilityRole="header" style={styles.heading}>
         Supprimer définitivement mon compte
       </Text>

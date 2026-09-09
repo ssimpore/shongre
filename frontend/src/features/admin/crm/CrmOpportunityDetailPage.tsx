@@ -46,6 +46,7 @@ import { useCrmSurface } from "../../crm/CrmSurfaceContext";
 import { taskPriorityToneClass } from "./crm.presentation";
 import { useMarketLocation } from "../../../app/providers/MarketLocationProvider";
 import { useTranslation } from "../../../i18n/I18nProvider";
+import { adminCatalogueFr } from "../../../i18n/admin.catalogue.fr";
 import {
   forecastCategoryMessageKey,
   sourceMessageKey,
@@ -113,7 +114,7 @@ const activityPresentation: Record<
 export const CrmOpportunityDetailPage: React.FC = () => {
   const { id = "" } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t } = useTranslation(adminCatalogueFr);
   const crmPaths = useCrmSurface();
   const { currentLocale } = useMarketLocation();
   const toast = useToast();

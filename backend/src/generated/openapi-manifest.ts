@@ -4975,6 +4975,17 @@ export const OPENAPI_OPERATIONS = {
       nodeId: "string",
     },
   },
+  "GET /discovery/collections": {
+    operationId: "getDiscoveryCollections",
+    access: "public",
+    permission: null,
+    denyStaffMarketplace: false,
+    requestBodyRequired: false,
+    successStatus: 200,
+    queryParameters: {
+      locale: "string",
+    },
+  },
 } as const;
 
 export type OpenApiOperationKey = keyof typeof OPENAPI_OPERATIONS;

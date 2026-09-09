@@ -54,7 +54,7 @@ export default function SettingsScreen() {
   };
 
   return (
-    <Screen>
+    <Screen edges={["top", "bottom"]}>
       <Text accessibilityRole="header" style={styles.heading}>
         Réglages
       </Text>

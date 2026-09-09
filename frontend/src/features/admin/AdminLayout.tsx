@@ -42,10 +42,11 @@ import { AppScrollRestoration } from "../../app/router/AppScrollRestoration";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { BrandIcon } from "../../design-system/primitives/BrandLogo";
 import { getPublicRuntimeConfig } from "../../platform/runtime-config/public-runtime-config";
+import { adminCatalogueFr } from "../../i18n/admin.catalogue.fr";
 
 export const AdminLayout: React.FC = () => {
   const { activeMarket } = useMarketLocation();
-  const { t } = useTranslation();
+  const { t } = useTranslation(adminCatalogueFr);
   const { currentUser, role: platformRole } = useAuth();
   const { canAccessRoute } = useAuthorization();
   const location = useLocation();

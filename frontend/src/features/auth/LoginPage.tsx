@@ -180,9 +180,15 @@ export const LoginPage: React.FC = () => {
                 {t("auth.loginPage.motDePasse")}
                 <span className="text-primary">*</span>
               </label>
+              {/*
+               * Account recovery is a standalone control on its own row, not a
+               * link inside a sentence, so WCAG 2.2 target-size has no inline
+               * exception to lean on. The padding keeps it at the 24px minimum
+               * without changing the type scale or the row's height.
+               */}
               <Link
                 to="/mot-de-passe-oublie"
-                className="text-xs font-bold text-primary hover:underline"
+                className="-my-1 inline-flex min-h-control-target items-center py-1 text-xs font-bold text-primary hover:underline"
               >
                 {t("auth.loginPage.motDePasseOublie")}
               </Link>

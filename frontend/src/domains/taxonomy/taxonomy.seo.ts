@@ -34,6 +34,36 @@ export function resolveTaxonomySeoRecord(
   return projection ? { node, projection } : null;
 }
 
+/**
+ * Narrows a tree snapshot to the entries one route actually resolves.
+ *
+ * The full snapshot — every category, in every locale, with descriptions, icons
+ * and SEO projections — used to be serialised into the server-rendered HTML of
+ * `/recherche` and `/categorie/:slug`, where it was 79% of a 1.14 MB document.
+ * Its only consumer is `resolveTaxonomySeoRecord`, which looks up a single node
+ * by slug, so everything else was payload the browser parsed and discarded.
+ */
+export function projectTaxonomyForRoute(
+  tree: TaxonomyV1TreeResponse,
+  idOrSlug: string | null | undefined,
+): TaxonomyV1TreeResponse {
+  // `listingTypes` is publication metadata for the wizard, never read by the
+  // SEO policy, and its market-availability rows dominated what was left.
+  const record = resolveTaxonomySeoRecord(idOrSlug, tree);
+  if (!record) {
+    return { ...tree, items: [], aliases: [], seo: [], listingTypes: [] };
+  }
+  return {
+    ...tree,
+    items: [record.node],
+    aliases: (tree.aliases ?? []).filter(
+      (alias) => alias.canonicalCategoryId === record.node.id,
+    ),
+    seo: [record.projection],
+    listingTypes: [],
+  };
+}
+
 export function resolveLocalizedTaxonomySeoText(
   values: Readonly<Record<string, string>>,
   locale: string | null | undefined = "fr-FR",

@@ -5,6 +5,7 @@ import { services } from "../../../../api/client/service-registry";
 import { Badge } from "../../../../design-system/primitives/Badge";
 import { useTranslation } from "../../../../i18n/I18nProvider";
 import { useCrmSurface } from "../../../crm/CrmSurfaceContext";
+import { adminCatalogueFr } from "../../../../i18n/admin.catalogue.fr";
 
 interface CrmUniversalSearchProps {
   placeholder?: string;
@@ -25,7 +26,7 @@ export const CrmUniversalSearch: React.FC<CrmUniversalSearchProps> = ({
   placeholder = "Rechercher un contact, entreprise, opportunité ou utilisateur Shongre...",
   className = "",
 }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(adminCatalogueFr);
   const crmPaths = useCrmSurface();
   const navigate = useNavigate();
   const [query, setQuery] = useState("");

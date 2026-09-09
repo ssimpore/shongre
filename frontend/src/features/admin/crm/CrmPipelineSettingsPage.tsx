@@ -28,6 +28,7 @@ import {
 import { Modal } from "../../../design-system/primitives/Modal";
 import { usePageMeta } from "../../../hooks/usePageMeta";
 import { useTranslation } from "../../../i18n/I18nProvider";
+import { adminCatalogueFr } from "../../../i18n/admin.catalogue.fr";
 
 type DraftStage = CrmPipelineInput["stages"][number];
 type StageKind = "open" | "won" | "lost";
@@ -99,7 +100,7 @@ function toDraft(pipeline: CrmPipeline): CrmPipelineInput {
 }
 
 export const CrmPipelineSettingsPage: React.FC = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(adminCatalogueFr);
   usePageMeta({
     title: "Pipelines CRM | Shongre",
     description: t("admin.crmPipelineSettingsPage.configurationDesEtapesCrm"),

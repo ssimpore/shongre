@@ -6,11 +6,16 @@ import { collectionService } from "../../domains/collection/collection.service";
 import type { Listing, PublicSellerProfile, SearchFilters } from "../../types";
 import { employmentSearchQuerySchema } from "@shongre/contracts/employment";
 import type {
+  PublicRouteData,
   PublicRouteDataResolution,
   SellerPublicRouteData,
 } from "./public-route-data";
-import { listingIsPublishedInMarket } from "./public-route-data";
+import {
+  listingIsPublishedInMarket,
+  resolutionForError,
+} from "./public-route-data";
 import { COUNTRY_REGISTRY } from "@shongre/contracts";
+import { projectTaxonomyForRoute } from "../../domains/taxonomy/taxonomy.seo";
 import { fetchPublicSitemapListingPage } from "../../api/adapters/http/http-sitemap.service";
 
 const serverServices = createServiceRegistry();
@@ -235,8 +240,8 @@ async function resolveUncached(
         status: "found",
         data: { kind: "job", job, catalog, similarJobs },
       };
-    } catch {
-      return { status: "not_found", data: null, resourceType: "job" };
+    } catch (error) {
+      return resolutionForError(error, "job");
     }
   }
 
@@ -267,12 +272,8 @@ async function resolveUncached(
           canonicalPath: `/auto/vehicule/${vehicle.slug}`,
         },
       };
-    } catch {
-      return {
-        status: "not_found",
-        data: null,
-        resourceType: "vertical_resource",
-      };
+    } catch (error) {
+      return resolutionForError(error, "vertical_resource");
     }
   }
 
@@ -303,12 +304,8 @@ async function resolveUncached(
           canonicalPath: `/immo/bien/${property.slug}`,
         },
       };
-    } catch {
-      return {
-        status: "not_found",
-        data: null,
-        resourceType: "vertical_resource",
-      };
+    } catch (error) {
+      return resolutionForError(error, "vertical_resource");
     }
   }
 
@@ -344,12 +341,8 @@ async function resolveUncached(
           canonicalPath: `/education/professeur/${result.tutor.slug}`,
         },
       };
-    } catch {
-      return {
-        status: "not_found",
-        data: null,
-        resourceType: "vertical_resource",
-      };
+    } catch (error) {
+      return resolutionForError(error, "vertical_resource");
     }
   }
 
@@ -422,7 +415,10 @@ async function resolveUncached(
       status: "found",
       data: {
         kind: "listing_search",
-        taxonomy,
+        // Only the route's own node is serialised into the document. The full
+        // snapshot was 79% of the search page's HTML and its sole consumer is a
+        // single-node SEO lookup; the client refetches the tree it renders from.
+        taxonomy: projectTaxonomyForRoute(taxonomy, categorySlug),
         pathname,
         items: result.listings,
         total: result.total,
@@ -485,7 +481,45 @@ async function resolveUncached(
   return { status: "not_applicable", data: null };
 }
 
-export const resolveServerPublicRouteData = cache(resolveUncached);
+/** Route families, so an escaping failure still reports what was being resolved. */
+const RESOURCE_TYPE_BY_PATH: ReadonlyArray<[RegExp, PublicRouteData["kind"]]> =
+  [
+    [/^\/annonce\//, "listing"],
+    [/^\/(?:boutique|profil|vendeur|u)\//, "seller"],
+    [/^\/emploi\/offre\//, "job"],
+    [
+      /^\/(?:auto\/vehicule|immo\/bien|education\/professeur)\//,
+      "vertical_resource",
+    ],
+    [/^\/collections\//, "collection"],
+  ];
+
+function resourceTypeForPath(pathname: string): PublicRouteData["kind"] {
+  return (
+    RESOURCE_TYPE_BY_PATH.find(([pattern]) => pattern.test(pathname))?.[1] ??
+    "listing_search"
+  );
+}
+
+/**
+ * The last boundary before Next renders. Without it an upstream failure escapes
+ * the server component and Next answers 500 on a public page — the resolvers
+ * below own the difference between an absent resource and a failed lookup, and
+ * anything that still escapes is a failed lookup.
+ */
+async function resolveGuarded(
+  pathname: string,
+  countryCode: string,
+  queryString: string,
+): Promise<PublicRouteDataResolution> {
+  try {
+    return await resolveUncached(pathname, countryCode, queryString);
+  } catch (error) {
+    return resolutionForError(error, resourceTypeForPath(pathname));
+  }
+}
+
+export const resolveServerPublicRouteData = cache(resolveGuarded);
 
 export async function listServerPublicSitemapData(countryCode: string) {
   const inventory = await getAllServerSitemapListings(countryCode);

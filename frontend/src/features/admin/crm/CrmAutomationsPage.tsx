@@ -3,9 +3,10 @@ import { CirclePause, Clock3, Mail, ShieldCheck, Workflow } from "lucide-react";
 import { Button } from "../../../design-system/primitives/Button";
 import { usePageMeta } from "../../../hooks/usePageMeta";
 import { useTranslation } from "../../../i18n/I18nProvider";
+import { adminCatalogueFr } from "../../../i18n/admin.catalogue.fr";
 
 export const CrmAutomationsPage: React.FC = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(adminCatalogueFr);
   usePageMeta({
     title: "Automatisations CRM | Shongre",
     description: t("admin.crmAutomationsPage.workflowsEtSequencesCrm"),

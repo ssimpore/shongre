@@ -101,9 +101,15 @@ function CompanyHeader() {
         HM
       </span>
       <div className="min-w-0 flex-1">
-        <h3 className="truncate text-sm font-bold text-text-main sm:text-base">
+        {/*
+         * Sample data illustrating the product, not page content. As an `h3`
+         * it entered the document outline directly under the page `h1`, so a
+         * screen-reader user navigating by heading landed on a fictional
+         * company before reaching any real section.
+         */}
+        <p className="truncate text-sm font-bold text-text-main sm:text-base">
           Atelier Horizon Mobilité
-        </h3>
+        </p>
         <p className="mt-0.5 flex items-center gap-1 text-xs text-text-muted">
           <Building2 className="h-3.5 w-3.5" aria-hidden="true" />
           Montreuil · Automobile

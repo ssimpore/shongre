@@ -21,7 +21,9 @@ import { resolveSeoPolicy } from "./src/platform/seo/seo-policy";
 import {
   renderNotFoundDocument,
   resolveNotFoundPresentation,
+  resolveUnavailablePresentation,
 } from "./src/platform/seo/not-found-presentation";
+import { SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS } from "@shongre/contracts/performance";
 
 function requestHostname(request: NextRequest): string {
   const trustProxy = process.env.SHONGRE_TRUST_PROXY_HOST === "true";
@@ -169,6 +171,36 @@ function notFoundResponse(
       headers: {
         "Cache-Control": "no-store",
         "Content-Type": "text/html; charset=utf-8",
+        "X-Robots-Tag": "noindex, nofollow, noarchive",
+      },
+    },
+  );
+  return applyRuntimeHeaders(response, environment);
+}
+
+/**
+ * A lookup that failed is not a resource that is gone. Answering 404 asks
+ * crawlers to drop live inventory and tells the visitor the page does not
+ * exist; answering 500 loses the retry signal. 503 with `Retry-After` is the
+ * only response that stays truthful about both.
+ */
+function unavailableResponse(
+  environment: EnvironmentConfig,
+  marketLabel?: string,
+): NextResponse {
+  const response = new NextResponse(
+    renderNotFoundDocument(resolveUnavailablePresentation(), marketLabel),
+    {
+      status: 503,
+      headers: {
+        "Cache-Control": "no-store",
+        "Content-Type": "text/html; charset=utf-8",
+        // Reuse the discovery stale-if-error window rather than declaring a
+        // second retry policy for the same class of failure.
+        "Retry-After": String(
+          SHONGRE_RUNTIME_PERFORMANCE_DEFAULTS.publicCache.discovery
+            .staleIfErrorSeconds,
+        ),
         "X-Robots-Tag": "noindex, nofollow, noarchive",
       },
     },
@@ -375,6 +407,9 @@ export async function proxy(request: NextRequest) {
       marketContext: context,
       routeData,
     });
+    if (routeData.status === "unavailable") {
+      return unavailableResponse(environment, context.country?.name);
+    }
     if (routeData.status === "not_found" || !policy.knownRoute) {
       return notFoundResponse(
         environment,

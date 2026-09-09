@@ -34,6 +34,7 @@ import { usePageMeta } from "../../hooks/usePageMeta";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useRegionalFormatters } from "../../hooks/useRegionalFormatters";
+import { adminCatalogueFr } from "../../i18n/admin.catalogue.fr";
 
 type Tab = "overview" | "taxonomy" | "plans" | "settings";
 
@@ -48,7 +49,7 @@ const FLAG_LABELS: Record<keyof CourseFeatureFlags, string> = {
 };
 
 export const AdminCoursesPage: React.FC = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(adminCatalogueFr);
   const { activeMarket } = useMarketLocation();
   const { formatMoneyMinor } = useRegionalFormatters();
   const toast = useToast();

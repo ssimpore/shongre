@@ -64,7 +64,7 @@ export const ConversationContextBar: React.FC<ConversationContextBarProps> = ({
                 className="group flex min-w-0 items-center gap-1 truncate font-bold text-text-main transition-colors hover:text-primary"
               >
                 <span className="truncate">{listingContext.listingTitle}</span>
-                <ExternalLink className="h-icon-xs w-icon-xs shrink-0 opacity-0 transition-opacity group-hover:opacity-100" />
+                <ExternalLink className="h-icon-xs w-icon-xs shrink-0 opacity-0 transition-opacity pointer-coarse:opacity-100 group-hover:opacity-100 group-focus-visible:opacity-100" />
               </Link>
               {listingContext.listingStatus === "reserved" && (
                 <Badge variant="warning" size="sm">

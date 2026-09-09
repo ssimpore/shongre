@@ -222,6 +222,8 @@ frontend-test: ## Run Web unit and component tests
 	@SHONGRE_ENV=test bash -c 'source scripts/env.sh && npm run test --workspace=frontend'
 frontend-test-e2e: ## Run the real Playwright browser suite
 	@SHONGRE_ENV=test scripts/e2e.sh $(E2E_ARGS)
+test-web-database-mode: ## Verify public routes against the database-mode stack from make dev
+	@scripts/test-web-database-mode.sh
 test-web-api-transport: ## Verify first-party Web sessions against an isolated test API and production Web build
 	@SHONGRE_ENV=test SHONGRE_E2E_API_TRANSPORT=1 scripts/e2e.sh web-api-transport.spec.ts $(E2E_ARGS)
 seo-check: ## Validate centralized SEO and GEO discovery governance
@@ -384,6 +386,8 @@ mobile-test:
 	@SHONGRE_ENV=test bash -c 'source scripts/env.sh && npm run test --workspace=mobile'
 mobile-api-only-check: ## Reject mobile demo architecture, direct Supabase, and unapproved network calls
 	@npm run api-only --workspace=mobile
+dead-code: ## Reject unreachable Web and backend source files
+	@node scripts/dead-code-check.mjs
 mobile-dead-code: ## Reject unreachable Expo source files
 	@npm run dead-code --workspace=mobile
 mobile-runtime-resolution-check:
@@ -455,7 +459,13 @@ storage-restore-test: ## Verify a representative object from backup through an i
 performance-smoke: ## Measure hosted API success-rate and p95 budgets and write release evidence
 	@node --import tsx scripts/load-smoke.mjs
 performance-db-plan: ## EXPLAIN a production-sized discovery shape in an isolated local PostgreSQL session
-	@source scripts/env.sh && node --import tsx scripts/database-performance-plan.mjs
+	@source scripts/env.sh && \
+	  PERFORMANCE_DATABASE_URL="$${PERFORMANCE_DATABASE_URL:-postgresql://$${SUPABASE_HOST:-127.0.0.1}:$${SUPABASE_DB_PORT:-54322}/postgres}" \
+	  PGHOST="$${PGHOST:-$${SUPABASE_HOST:-127.0.0.1}}" \
+	  PGPORT="$${PGPORT:-$${SUPABASE_DB_PORT:-54322}}" \
+	  PGUSER="$${PGUSER:-$$(node -e 'const u=process.env.DATABASE_URL;if(u)process.stdout.write(decodeURIComponent(new URL(u).username||""))')}" \
+	  PGPASSWORD="$${PGPASSWORD:-$$(node -e 'const u=process.env.DATABASE_URL;if(u)process.stdout.write(decodeURIComponent(new URL(u).password||""))')}" \
+	  node --import tsx scripts/database-performance-plan.mjs
 performance-check: ## Reject drift in SLOs, budgets, cache policy, timeouts, and hot-query projections
 	@node --import tsx scripts/check-performance-contract.mjs
 observability-evidence: ## Prove request IDs and record confirmed drain, trace, alert, and on-call evidence
@@ -507,7 +517,7 @@ free-app-ports free-ports:
 	@source scripts/env.sh && scripts/free-port.sh "$$FRONTEND_PORT" frontend && scripts/free-port.sh "$$BACKEND_PORT" backend && scripts/free-port.sh "$$EXPO_METRO_PORT" metro && scripts/free-port.sh "$$EXPO_WEB_PORT" expo-web
 
 ##@ Quality gates
-lint: openapi-check ui-lint frontend-lint backend-lint mobile-lint mobile-dead-code contracts-typecheck ## Run established static and architecture linters
+lint: openapi-check ui-lint frontend-lint backend-lint mobile-lint dead-code mobile-dead-code contracts-typecheck ## Run established static and architecture linters
 lint-fix:
 	@echo 'No unsafe global autofix is configured; use package-local focused fixes.'
 format: ## Format supported source and documentation files with Prettier
@@ -558,7 +568,7 @@ repository-hygiene-check: ## Reject tracked caches, logs, build output, backups,
 	@npm run check:repository-hygiene
 check: env env-check env-matrix-check migrations-check release-manifest-check deployment-config-check operations-tooling-check repository-hygiene-check format-check brand-check tokens-check lint typecheck test frontend-build backend-build infra-check secret-scan hostname-check ## Run the deterministic pre-commit and pre-PR gate
 	@npm run check:boundary
-check-all: check test-critical cross-platform-check test-e2e test-web-api-transport ## Run exhaustive local validation including browsers and critical subsets
+check-all: check test-critical cross-platform-check test-e2e test-web-api-transport test-web-database-mode ## Run exhaustive local validation including browsers and critical subsets
 	@npm audit --audit-level=high
 ci: env
 	@npm ci

@@ -198,7 +198,7 @@ export const MessageTimeline: React.FC<MessageTimelineProps> = ({
                             sizes="(max-width: 640px) 75vw, 320px"
                             className="max-h-60 w-full object-cover rounded-xl border border-border-on-inverse/20 hover:scale-102 transition-transform"
                           />
-                          <span className="absolute right-2 bottom-2 p-1.5 rounded-lg bg-surface-overlay-deep/60 text-text-inverse backdrop-blur-sm opacity-0 group-hover/img:opacity-100 group-focus-visible/img:opacity-100 transition-opacity">
+                          <span className="absolute right-2 bottom-2 p-1.5 rounded-lg bg-surface-overlay-deep/60 text-text-inverse backdrop-blur-sm opacity-0 pointer-coarse:opacity-100 group-hover/img:opacity-100 group-focus-visible/img:opacity-100 transition-opacity">
                             <Maximize2 className="w-icon-sm h-icon-sm" />
                           </span>
                         </button>

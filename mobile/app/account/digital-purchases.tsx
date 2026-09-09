@@ -167,7 +167,7 @@ export default function DigitalPurchasesScreen() {
 
   if (!user) {
     return (
-      <Screen>
+      <Screen edges={["top", "bottom"]}>
         <StatePanel
           title="Session requise"
           message="Connectez-vous pour consulter vos accès numériques."
@@ -177,7 +177,7 @@ export default function DigitalPurchasesScreen() {
   }
 
   return (
-    <Screen>
+    <Screen edges={["top", "bottom"]}>
       <View>
         <Text accessibilityRole="header" style={styles.heading}>
           Mes achats numériques

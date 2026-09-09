@@ -1,4 +1,8 @@
 import type { TaxonomyV1TreeResponse } from "@shongre/contracts/taxonomy";
+import {
+  resolveLocalizedTaxonomySeoText,
+  resolveTaxonomySeoRecord,
+} from "../../domains/taxonomy/taxonomy.seo";
 import { PAGE_SIZES } from "../../configuration/pagination.config";
 import { routes } from "../../configuration/routes";
 import React, { useState, useEffect, useMemo, useRef } from "react";
@@ -773,6 +777,30 @@ export const SearchPage: React.FC = () => {
   }, [dynamicFacetDropdownOptions, dynamicFacets, searchParams]);
 
   /**
+   * The category name a category route can show before hydration.
+   *
+   * `taxonomyCategories` is client-fetched, so on the first render — the one a
+   * crawler reads and a visitor sees — `activeCategory` is undefined and
+   * `/categorie/vehicules` rendered "Toutes les annonces" as its h1. The server
+   * payload already carries this route's own taxonomy node, and it carries the
+   * same localized `h1` the metadata is built from, so the visible heading and
+   * the title agree instead of drifting for a frame.
+   */
+  const serverCategoryHeading = useMemo(() => {
+    if (!categoryRouteSlug || !initialData?.taxonomy) return null;
+    const record = resolveTaxonomySeoRecord(
+      categoryRouteSlug,
+      initialData.taxonomy,
+    );
+    if (!record) return null;
+    return (
+      resolveLocalizedTaxonomySeoText(record.projection.h1, currentLocale) ||
+      resolveLocalizedTaxonomySeoText(record.node.labels, currentLocale) ||
+      null
+    );
+  }, [categoryRouteSlug, currentLocale, initialData?.taxonomy]);
+
+  /**
    * The h1 describes what the user is actually looking at: their query, the
    * category they drilled into, or the unfiltered catalogue.
    */
@@ -784,8 +812,17 @@ export const SearchPage: React.FC = () => {
         locale: currentLocale,
       });
     }
+    // Until the client taxonomy resolves, a category route still knows its own
+    // name from the server payload.
+    if (serverCategoryHeading) return serverCategoryHeading;
     return "Toutes les annonces";
-  }, [activeCategory, activeSubCat, currentLocale, query]);
+  }, [
+    activeCategory,
+    activeSubCat,
+    currentLocale,
+    query,
+    serverCategoryHeading,
+  ]);
 
   const searchMeta = useMemo(() => {
     if (!marketContext) {

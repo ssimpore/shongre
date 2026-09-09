@@ -246,15 +246,27 @@ export const CollectionsPage: React.FC = () => {
               </section>
               <Container className="pt-8">
                 {listings.length ? (
-                  <ListingRail
-                    label={t(
-                      "collections.collectionsPage.annoncesDeLaCollection",
-                    )}
-                  >
-                    {listings.map((listing) => (
-                      <ListingCard key={listing.id} listing={listing} />
-                    ))}
-                  </ListingRail>
+                  <>
+                    {/*
+                     * The rail's label names its scroll controls but is not a
+                     * heading, so the card titles (h3) followed the page h1
+                     * with nothing between them. Screen-reader users navigating
+                     * by heading jumped straight from the collection name into
+                     * an individual listing.
+                     */}
+                    <h2 className="sr-only">
+                      {t("collections.collectionsPage.annoncesDeLaCollection")}
+                    </h2>
+                    <ListingRail
+                      label={t(
+                        "collections.collectionsPage.annoncesDeLaCollection",
+                      )}
+                    >
+                      {listings.map((listing) => (
+                        <ListingCard key={listing.id} listing={listing} />
+                      ))}
+                    </ListingRail>
+                  </>
                 ) : (
                   <EmptyState
                     icon={<Layers className="h-icon-xl w-icon-xl" />}

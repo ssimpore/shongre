@@ -157,7 +157,7 @@ export default function DigitalSellingScreen() {
 
   if (!user) {
     return (
-      <Screen>
+      <Screen edges={["top", "bottom"]}>
         <StatePanel
           title="Session requise"
           message="Connectez-vous pour configurer vos modes de vente."
@@ -167,7 +167,7 @@ export default function DigitalSellingScreen() {
   }
 
   return (
-    <Screen>
+    <Screen edges={["top", "bottom"]}>
       <View>
         <Text accessibilityRole="header" style={styles.heading}>
           Vendre des produits numériques

@@ -22,6 +22,7 @@ import {
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { deliveryCatalogueFr } from "../../i18n/delivery.catalogue.fr";
+import { adminCatalogueFr } from "../../i18n/admin.catalogue.fr";
 
 interface DefinitionDraft {
   description: string;
@@ -43,8 +44,14 @@ const toDraft = (value: FeatureFlagDefinition): DefinitionDraft => ({
   reason: "",
 });
 
+const ADMIN_FEATURE_FLAG_CATALOGUE = {
+  ...adminCatalogueFr,
+  ...deliveryCatalogueFr,
+};
+
 export const AdminFeatureFlagsPage: React.FC = () => {
-  const { t } = useTranslation(deliveryCatalogueFr);
+  // This screen renders both Staff console copy and the delivery flag labels.
+  const { t } = useTranslation(ADMIN_FEATURE_FLAG_CATALOGUE);
   usePageMeta({
     title: t("admin.adminFeatureFlagsPage.fonctionnalitesConsoleShongre"),
     description: t(

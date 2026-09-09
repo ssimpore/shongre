@@ -4,8 +4,8 @@
 
 - Contract version: `1.0.0`
 - API base path: `/api/v1`
-- Operations: **529**
-- Specification SHA-256: `1f958eac1102fc69`
+- Operations: **530**
+- Specification SHA-256: `7fd92b123f34bab6`
 
 ## account
 
@@ -377,6 +377,7 @@
 
 | Method | Path | Operation ID | Access | Permission | Success |
 | --- | --- | --- | --- | --- | --- |
+| `GET` | `/discovery/collections` | `getDiscoveryCollections` | `public` | — | `200` |
 | `GET` | `/discovery/sitemap-listings` | `getDiscoverySitemapListings` | `public` | — | `200` |
 
 ## education

@@ -35,6 +35,16 @@ const firefoxCanLaunch =
  */
 export default defineConfig({
   testDir: "./e2e",
+  /*
+   * The database-mode suite runs against the stack `make dev` starts, not the
+   * in-memory fixture API the rest of the suite uses. `make test-web-database-mode`
+   * opts into it; every other entry point must skip it, because in demo mode it
+   * would assert the repository family it exists to bypass.
+   */
+  testIgnore:
+    process.env.SHONGRE_E2E_DATABASE_MODE === "1"
+      ? undefined
+      : /database-mode-public-routes\.spec\.ts/,
   metadata: {
     environment: process.env.PLAYWRIGHT_EXPECTED_ENVIRONMENT,
     release: process.env.PLAYWRIGHT_EXPECTED_RELEASE,

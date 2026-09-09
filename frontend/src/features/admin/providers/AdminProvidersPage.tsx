@@ -12,9 +12,10 @@ import { Modal } from "../../../design-system/primitives/Modal";
 import { StatePanel } from "../../../design-system/primitives/StatePanel";
 import { usePageMeta } from "../../../hooks/usePageMeta";
 import { useTranslation } from "../../../i18n/I18nProvider";
+import { adminCatalogueFr } from "../../../i18n/admin.catalogue.fr";
 
 export const AdminProvidersPage: React.FC = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(adminCatalogueFr);
   const toast = useToast();
   const [snapshot, setSnapshot] = useState<ProviderControlPlaneSnapshot | null>(
     null,

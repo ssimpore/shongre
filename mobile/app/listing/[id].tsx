@@ -309,7 +309,7 @@ export default function ListingDetailScreen() {
 
   if (loading)
     return (
-      <Screen>
+      <Screen edges={["top", "bottom"]}>
         <Text accessibilityLiveRegion="polite" style={styles.muted}>
           Chargement de l’annonce…
         </Text>
@@ -317,7 +317,7 @@ export default function ListingDetailScreen() {
     );
   if (!listing) {
     return (
-      <Screen>
+      <Screen edges={["top", "bottom"]}>
         <StatePanel
           title="Annonce indisponible"
           message={error || "Cette annonce a peut-être été retirée."}
@@ -328,7 +328,7 @@ export default function ListingDetailScreen() {
   }
 
   return (
-    <Screen>
+    <Screen edges={["top", "bottom"]}>
       {listing.imageUrl ? (
         <Image
           source={{ uri: listing.imageUrl }}

@@ -986,7 +986,14 @@ export class DemoEmploymentRepository implements EmploymentRepository {
 }
 
 /** Database adapter. Authorization remains in EmploymentService and PostgreSQL RLS. */
-export class PostgresEmploymentRepository extends DemoEmploymentRepository {
+/**
+ * Implements the contract directly rather than extending the demo repository.
+ * It inherited every fixture Map at construction and used none of them, and the
+ * inheritance meant a method added to the demo base without a matching override
+ * would have silently served fixture data in database mode. `implements` makes
+ * the compiler reject that instead.
+ */
+export class PostgresEmploymentRepository implements EmploymentRepository {
   private db() {
     return getSupabaseAdminClient() as any;
   }
@@ -1250,7 +1257,7 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
     return "*, employer:employment_employer_profiles!employment_jobs_employer_id_fkey(*, owner:profiles!employment_employer_profiles_owner_user_id_fkey(rating,review_count,city)), locations:employment_job_locations(*), skills:employment_job_skills(*), languages:employment_job_languages(*), questions:employment_screening_questions(*)";
   }
 
-  override async getJob(idOrSlug: string, marketCode?: string) {
+  async getJob(idOrSlug: string, marketCode?: string) {
     const column =
       /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
         idOrSlug,
@@ -1267,9 +1274,7 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
     return (await this.hydrateJobs([data], marketCode))[0];
   }
 
-  override async search(
-    input: EmploymentSearchQuery,
-  ): Promise<EmploymentSearchResult> {
+  async search(input: EmploymentSearchQuery): Promise<EmploymentSearchResult> {
     const query = employmentSearchQuerySchema.parse(input);
     let jobIds: string[] | undefined;
     const distanceByJob = new Map<string, number>();
@@ -1532,7 +1537,7 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
     };
   }
 
-  override async saveJob(job: JobPostingDetail, actorUserId?: string) {
+  async saveJob(job: JobPostingDetail, actorUserId?: string) {
     const parsed = jobPostingDetailSchema.parse(job);
     if (!actorUserId)
       throw new Error(
@@ -1715,7 +1720,7 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
     return result;
   }
 
-  override async getDraft(id: string) {
+  async getDraft(id: string) {
     const { data, error } = await this.db()
       .from("employment_job_drafts")
       .select("*")
@@ -1742,7 +1747,7 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
       updatedAt: data.updated_at,
     });
   }
-  override async getLatestDraft(ownerUserId: string, marketCode: string) {
+  async getLatestDraft(ownerUserId: string, marketCode: string) {
     const { data, error } = await this.db()
       .from("employment_job_drafts")
       .select("id")
@@ -1756,7 +1761,7 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
     return data ? this.getDraft(data.id) : null;
   }
 
-  override async saveDraft(draft: JobDraft) {
+  async saveDraft(draft: JobDraft) {
     const parsed = jobDraftSchema.parse(draft);
     const catalog = await this.getCatalog(parsed.marketCode, true);
     const expiresAt = new Date(
@@ -1789,10 +1794,7 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
     return saved;
   }
 
-  override async countActiveJobs(owner: {
-    ownerUserId?: string;
-    employerId?: string;
-  }) {
+  async countActiveJobs(owner: { ownerUserId?: string; employerId?: string }) {
     let statement = this.db()
       .from("employment_jobs")
       .select("id", { count: "exact", head: true })
@@ -1806,7 +1808,7 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
     return count || 0;
   }
 
-  override async findDuplicateJob(input: {
+  async findDuplicateJob(input: {
     employerId: string;
     title: string;
     professionId: string;
@@ -1891,7 +1893,7 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
     return "*, answers:employment_screening_answers(*), assignments:employment_recruiter_assignments(*)";
   }
 
-  override async getCandidateProfileForUser(userId: string) {
+  async getCandidateProfileForUser(userId: string) {
     const { data, error } = await this.db()
       .from("employment_candidate_profiles")
       .select("*")
@@ -1901,7 +1903,7 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
     return data ? this.mapCandidateProfile(data) : null;
   }
 
-  override async getCandidateProfile(id: string) {
+  async getCandidateProfile(id: string) {
     const { data, error } = await this.db()
       .from("employment_candidate_profiles")
       .select("*")
@@ -1911,7 +1913,7 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
     return data ? this.mapCandidateProfile(data) : null;
   }
 
-  override async saveCandidateProfile(profile: CandidateProfile) {
+  async saveCandidateProfile(profile: CandidateProfile) {
     const parsed = candidateProfileSchema.parse(profile);
     const { data, error } = await this.db()
       .from("employment_candidate_profiles")
@@ -1943,7 +1945,7 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
     return this.mapCandidateProfile(data);
   }
 
-  override async getConsentRecord(id: string) {
+  async getConsentRecord(id: string) {
     const { data, error } = await this.db()
       .from("employment_consent_records")
       .select("*")
@@ -1964,7 +1966,7 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
       : null;
   }
 
-  override async saveConsentRecord(consent: ConsentRecord) {
+  async saveConsentRecord(consent: ConsentRecord) {
     const parsed = consentRecordSchema.parse(consent);
     const { data, error } = await this.db()
       .from("employment_consent_records")
@@ -1993,7 +1995,7 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
     });
   }
 
-  override async getApplication(id: string) {
+  async getApplication(id: string) {
     const { data, error } = await this.db()
       .from("employment_applications")
       .select(this.applicationSelect())
@@ -2003,7 +2005,7 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
     return data ? this.mapApplication(data) : null;
   }
 
-  override async findActiveApplication(jobId: string, candidateId: string) {
+  async findActiveApplication(jobId: string, candidateId: string) {
     const { data, error } = await this.db()
       .from("employment_applications")
       .select(this.applicationSelect())
@@ -2016,7 +2018,7 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
     return data ? this.mapApplication(data) : null;
   }
 
-  override async saveApplication(
+  async saveApplication(
     application: EmploymentApplication,
     expectedStageId?: string,
   ) {
@@ -2119,7 +2121,7 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
     return saved;
   }
 
-  override async getCandidateWorkspace(userId: string, marketCode: string) {
+  async getCandidateWorkspace(userId: string, marketCode: string) {
     const profile = await this.getCandidateProfileForUser(userId);
     if (!profile) return null;
     const normalizedMarket = requireMarketCode(marketCode);
@@ -2256,7 +2258,7 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
     };
   }
 
-  override async getSavedJobIds(userId: string, marketCode: string) {
+  async getSavedJobIds(userId: string, marketCode: string) {
     const { data, error } = await (this.db() as any).rpc(
       "list_saved_employment_job_ids",
       {
@@ -2268,7 +2270,7 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
     return (data || []).map((row: any) => String(row.job_id));
   }
 
-  override async setSavedJob(
+  async setSavedJob(
     userId: string,
     jobId: string,
     marketCode: string,
@@ -2287,7 +2289,7 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
     return Boolean(data);
   }
 
-  override async saveJobAlert(alert: JobAlert) {
+  async saveJobAlert(alert: JobAlert) {
     const parsed = jobAlertSchema.parse(alert);
     const { data, error } = await this.db()
       .from("employment_job_alerts")
@@ -2317,7 +2319,7 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
     });
   }
 
-  override async deleteJobAlert(candidateId: string, alertId: string) {
+  async deleteJobAlert(candidateId: string, alertId: string) {
     const { data, error } = await this.db()
       .from("employment_job_alerts")
       .delete()
@@ -2328,7 +2330,7 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
     return Boolean(data?.length);
   }
 
-  override async saveDataSubjectRequest(request: EmploymentDataSubjectRequest) {
+  async saveDataSubjectRequest(request: EmploymentDataSubjectRequest) {
     const parsed = employmentDataSubjectRequestSchema.parse(request);
     const { data, error } = await this.db()
       .from("employment_data_subject_requests")
@@ -2353,7 +2355,7 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
     });
   }
 
-  override async getOpenDataSubjectRequest(
+  async getOpenDataSubjectRequest(
     userId: string,
     requestType: EmploymentDataSubjectRequest["requestType"],
   ) {
@@ -2378,7 +2380,7 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
       : null;
   }
 
-  override async saveJobReport(report: EmploymentJobReport) {
+  async saveJobReport(report: EmploymentJobReport) {
     const parsed = employmentJobReportSchema.parse(report);
     const { data, error } = await this.db()
       .from("employment_job_reports")
@@ -2408,10 +2410,7 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
     });
   }
 
-  override async saveModerationFlags(
-    jobId: string,
-    flags: ProhibitedLanguageFlag[],
-  ) {
+  async saveModerationFlags(jobId: string, flags: ProhibitedLanguageFlag[]) {
     const removed = await this.db()
       .from("employment_moderation_flags")
       .delete()
@@ -2437,7 +2436,7 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
     if (saved.error) throw saved.error;
   }
 
-  override async isRecruiterMember(userId: string, employerId: string) {
+  async isRecruiterMember(userId: string, employerId: string) {
     const { count, error } = await this.db()
       .from("employment_recruiter_memberships")
       .select("id", { count: "exact", head: true })
@@ -2448,7 +2447,7 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
     return Boolean(count);
   }
 
-  override async listRecruiterEmployers(userId: string) {
+  async listRecruiterEmployers(userId: string) {
     const { data, error } = await this.db()
       .from("employment_recruiter_memberships")
       .select("employer:employment_employer_profiles(*)")
@@ -2481,7 +2480,7 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
     });
   }
 
-  override async canManageApplications(userId: string, employerId: string) {
+  async canManageApplications(userId: string, employerId: string) {
     const { data, error } = await this.db()
       .from("employment_recruiter_memberships")
       .select("role,permissions")
@@ -2499,7 +2498,7 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
     );
   }
 
-  override async getRecruiterWorkspace(employerId: string) {
+  async getRecruiterWorkspace(employerId: string) {
     const employerResult = await this.db()
       .from("employment_employer_profiles")
       .select("*")
@@ -2657,7 +2656,7 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
     };
   }
 
-  override async saveApplicationEvent(event: ApplicationEvent) {
+  async saveApplicationEvent(event: ApplicationEvent) {
     const parsed = applicationEventSchema.parse(event);
     const { data, error } = await this.db()
       .from("employment_application_events")
@@ -2689,7 +2688,7 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
     });
   }
 
-  override async saveRecruiterNote(note: RecruiterNote) {
+  async saveRecruiterNote(note: RecruiterNote) {
     const parsed = recruiterNoteSchema.parse(note);
     const { data, error } = await this.db()
       .from("employment_recruiter_notes")
@@ -2713,7 +2712,7 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
     });
   }
 
-  override async getInterview(id: string) {
+  async getInterview(id: string) {
     const { data, error } = await this.db()
       .from("employment_interviews")
       .select("*")
@@ -2739,10 +2738,7 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
       : null;
   }
 
-  override async saveInterview(
-    interview: EmploymentInterview,
-    actorUserId?: string,
-  ) {
+  async saveInterview(interview: EmploymentInterview, actorUserId?: string) {
     const parsed = interviewSchema.parse(interview);
     if (!actorUserId)
       throw new Error("Un auteur est requis pour planifier un entretien.");
@@ -2833,12 +2829,12 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
     });
   }
 
-  override async getImportByIdempotency(organizationId: string, key: string) {
+  async getImportByIdempotency(organizationId: string, key: string) {
     const imports = await this.listImportsForOrganization(organizationId, 500);
     return imports.find((item) => item.idempotencyKey === key) || null;
   }
 
-  override async saveImport(job: EmploymentImport, actorUserId?: string) {
+  async saveImport(job: EmploymentImport, actorUserId?: string) {
     const parsed = employmentImportSchema.parse(job);
     if (!actorUserId)
       throw new Error("Un auteur est requis pour créer un import Emploi.");
@@ -2904,9 +2900,7 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
     return saved;
   }
 
-  override async getAdminOverview(
-    marketCode: string,
-  ): Promise<EmploymentAdminOverview> {
+  async getAdminOverview(marketCode: string): Promise<EmploymentAdminOverview> {
     const code = marketCode.toUpperCase();
     const count = async (
       table: string,
@@ -3019,7 +3013,7 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
     };
   }
 
-  override async updateMarketConfig(
+  async updateMarketConfig(
     marketCode: string,
     patch: Partial<EmploymentMarketConfig>,
     actorUserId?: string,
@@ -3086,7 +3080,7 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
     return after;
   }
 
-  override async updateOffer(
+  async updateOffer(
     offerId: string,
     patch: Partial<EmploymentCatalog["offers"][number]>,
     actorUserId?: string,
@@ -3169,7 +3163,7 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
     return after;
   }
 
-  override async trackAnalyticsEvent(event: EmploymentAnalyticsEvent) {
+  async trackAnalyticsEvent(event: EmploymentAnalyticsEvent) {
     const dimensions = { ...(event.dimensions || {}) };
     for (const key of [
       "candidateName",
@@ -3195,7 +3189,7 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
     if (result.error) throw result.error;
   }
 
-  override async getEmployerStatus(employerId: string) {
+  async getEmployerStatus(employerId: string) {
     const { data, error } = await this.db()
       .from("employment_employer_profiles")
       .select("status")
@@ -3205,7 +3199,7 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
     return data?.status || null;
   }
 
-  override async createPrivateEmployer(
+  async createPrivateEmployer(
     userId: string,
     employer: EmployerSummary,
   ): Promise<EmployerSummary> {
@@ -3236,7 +3230,7 @@ export class PostgresEmploymentRepository extends DemoEmploymentRepository {
     };
   }
 
-  override async getCatalog(marketCode: string, includeInactive = false) {
+  async getCatalog(marketCode: string, includeInactive = false) {
     const taxonomy = await taxonomyV1Service.snapshot();
     const code = marketCode.toUpperCase();
     const [

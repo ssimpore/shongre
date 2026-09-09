@@ -1102,15 +1102,6 @@ export const messagesEn: MessageCatalogue = {
   "notifications.notificationPanel.voirToutesLesNotifications":
     "See all notifications",
   "profile.sellerPublicPage.sectionsDuProfilVendeur": "Seller profile sections",
-  "profile.proBusinessInfo.numeroSiret": "SIRET number",
-  "profile.proBusinessInfo.adresseDuSiegeBoutique":
-    "Registered office / store address",
-  "profile.proBusinessInfo.droitDeRetractation": "Right of withdrawal",
-  "profile.proBusinessInfo.factureAvecTvaSurDemande": "VAT invoice on request",
-  "profile.proBusinessInfo.garantieLegaleDeConformite2":
-    "Statutory warranty of conformity (2 years)",
-  "profile.proBusinessInfo.emballageProfessionnelRenforce":
-    "Reinforced professional packaging",
   "profile.sellerCatalog.effacerLaRecherche": "Clear search",
   "profile.sellerCatalog.aucunArticleNeCorrespondA":
     "No item matches your selection",
@@ -2859,14 +2850,6 @@ export const messagesEn: MessageCatalogue = {
   "profile.sellerPublicPage.ceCompteVendeurAEte":
     "This seller account has been restricted or suspended by our moderation team for compliance and safety reasons. Their listings are no longer visible.",
   "profile.sellerPublicPage.retournerAuxAnnonces": "Back to listings",
-  "profile.proBusinessInfo.mentionsLegalesInformationsEntreprise":
-    "Legal notice & company information",
-  "profile.proBusinessInfo.venteExclusiveEnLigneAvec":
-    "Online sales only, with secure shipping.",
-  "profile.proBusinessInfo.zonesDeLivraisonCouvertes":
-    "Delivery areas covered:",
-  "profile.proBusinessInfo.servicesInclusParCeVendeur":
-    "Services included by this pro seller:",
   "profile.sellerCatalog.publierUnePremiereAnnonce": "Post a first listing",
   "profile.sellerCatalog.explorerLesAnnoncesDuMarche":
     "Browse marketplace listings",

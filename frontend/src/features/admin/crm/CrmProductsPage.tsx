@@ -15,6 +15,7 @@ import { useMarketLocation } from "../../../app/providers/MarketLocationProvider
 import { useToast } from "../../../app/providers/ToastProvider";
 import { usePageMeta } from "../../../hooks/usePageMeta";
 import { useTranslation } from "../../../i18n/I18nProvider";
+import { adminCatalogueFr } from "../../../i18n/admin.catalogue.fr";
 
 const typeLabels: Record<CrmProduct["productType"], string> = {
   subscription: "Abonnement",
@@ -33,7 +34,7 @@ const intervalLabels = {
 } as const;
 
 export const CrmProductsPage: React.FC = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(adminCatalogueFr);
   usePageMeta({
     title: "Produits CRM | Shongre",
     description: t("admin.crmProductsPage.catalogueCommercialEtTarifsCrm"),

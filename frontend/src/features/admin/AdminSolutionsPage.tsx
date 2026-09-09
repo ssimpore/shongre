@@ -44,6 +44,7 @@ import { usePageMeta } from "../../hooks/usePageMeta";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { applicationHref } from "../../platform/applications/use-application-href";
 import type { ShongreApplicationId } from "../../platform/applications/application-registry";
+import { adminCatalogueFr } from "../../i18n/admin.catalogue.fr";
 
 type Draft = Omit<SolutionDefinition, "id" | "createdAt" | "updatedAt">;
 
@@ -98,7 +99,7 @@ export function AdminSolutionsPage() {
   const { currentUser, can } = useAuth();
   const { selectableCountries } = useMarketLocation();
   const toast = useToast();
-  const { t } = useTranslation();
+  const { t } = useTranslation(adminCatalogueFr);
   const [solutions, setSolutions] = useState<SolutionDefinition[]>([]);
   const [selectedId, setSelectedId] = useState("");
   const [draft, setDraft] = useState<Draft | null>(null);

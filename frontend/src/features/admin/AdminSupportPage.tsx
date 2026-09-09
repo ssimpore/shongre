@@ -23,6 +23,7 @@ import { supportService } from "../../domains/support/support.service";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { formatDate } from "../../utilities/formatters";
 import { useTranslation } from "../../i18n/I18nProvider";
+import { adminCatalogueFr } from "../../i18n/admin.catalogue.fr";
 
 const STATUS_OPTIONS: Array<{ value: SupportCaseStatus; label: string }> = [
   { value: "open", label: "Nouveau" },
@@ -53,7 +54,7 @@ const EMPTY_METRICS: SupportCaseMetrics = {
 };
 
 export const AdminSupportPage: React.FC = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(adminCatalogueFr);
   usePageMeta({
     title: "Support client — Console Shongre",
     description: t(

@@ -78,6 +78,7 @@ const AutoComparison: React.FC = () => {
       <Container className="py-10">
         <StatePanel
           variant="error"
+          headingLevel={1}
           title="Comparaison indisponible"
           description="Les véhicules n’ont pas pu être chargés."
           action={
@@ -93,6 +94,7 @@ const AutoComparison: React.FC = () => {
       <Container className="py-10">
         <StatePanel
           variant="notFound"
+          headingLevel={1}
           title="Sélectionnez au moins 2 véhicules"
           description="Ajoutez des véhicules depuis les résultats Auto pour les comparer ici."
           action={<Button to="/auto">Voir les véhicules</Button>}

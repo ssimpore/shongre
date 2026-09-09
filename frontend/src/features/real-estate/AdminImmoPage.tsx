@@ -27,6 +27,7 @@ import { labelIdentifier } from "../../utilities/identifier-label";
 import { formatCurrencySymbol } from "../../utilities/formatters";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { MONETIZATION_ADMIN_CONSTRAINTS } from "@shongre/contracts/monetization";
+import { adminCatalogueFr } from "../../i18n/admin.catalogue.fr";
 
 const featureFlagLabels: Record<string, string> = {
   verticalEnabled: "Verticale disponible",
@@ -43,7 +44,7 @@ const featureFlagLabels: Record<string, string> = {
 };
 
 export const AdminImmoPage: React.FC = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(adminCatalogueFr);
   const { activeMarket, currentCurrency, currentLocale, convertMoney } =
     useMarketLocation();
   const toast = useToast();

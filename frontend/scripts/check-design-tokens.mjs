@@ -188,6 +188,53 @@ function declaredColorTokens() {
 
 const declared = declaredColorTokens();
 
+/**
+ * Every custom property the stylesheet actually defines, from any block — the
+ * `@theme` layer, `:root`, and the hand-written rules in `src/index.css`.
+ */
+function declaredCustomProperties() {
+  const names = new Set();
+  for (const source of [THEME_SOURCE, "src/index.css"]) {
+    const css = readFileSync(source, "utf8");
+    for (const m of css.matchAll(/(--[a-zA-Z0-9-]+)\s*:/g)) names.add(m[1]);
+  }
+  // Tailwind's own spacing multiplier is generated, not authored here.
+  names.add("--spacing");
+  return names;
+}
+
+const declaredProperties = declaredCustomProperties();
+
+/**
+ * `padding-inline: calc(var(--spacing-base) * 2)` shipped for months doing
+ * nothing: `--spacing-base` was never declared, so the `calc()` was invalid at
+ * computed-value time and the whole declaration was dropped. A `var()` with no
+ * declaration and no fallback is silent — no console warning, no build error,
+ * just a rule that quietly does not apply.
+ */
+function findUndeclaredCustomProperties(line) {
+  const found = [];
+  for (const m of line.matchAll(/var\(\s*(--[a-zA-Z0-9-]+)\s*([,)])/g)) {
+    const [, name, terminator] = m;
+    // A fallback makes the reference safe even when the property is absent.
+    if (terminator === ",") continue;
+    if (declaredProperties.has(name)) continue;
+    // Properties set from component style objects at runtime.
+    if (RUNTIME_CUSTOM_PROPERTIES.has(name)) continue;
+    found.push(name);
+  }
+  return found;
+}
+
+/**
+ * Set from a `style` prop rather than the stylesheet. Each must be assigned by
+ * a component that also owns the rule consuming it.
+ */
+const RUNTIME_CUSTOM_PROPERTIES = new Set([
+  "--category-accent",
+  "--mobile-nav-total-h",
+]);
+
 // e.g. `hover:bg-danger-hover`, `md:border-t-primary-border`, `shadow-primary/20`
 const OWNED_CLASS = new RegExp(
   `(?:^|[\\s"'\`{])(?:[a-z0-9-]+:)*(?:${COLOR_UTILITIES})(?:-[trblxyse])?-((?:${OWNED_FAMILIES.join("|")})(?:-[a-z0-9-]+)?)(?:/[^\\s"'\`]+)?(?=$|[\\s"'\`}])`,
@@ -425,6 +472,7 @@ function walk(dir, out = []) {
 
 const violations = [];
 const undeclared = [];
+const undeclaredProperties = [];
 const colorSourceViolations = [];
 const ALL_FILES = ROOTS.flatMap((root) => walk(root));
 const COLOR_ASSERTION_FILES = COLOR_ASSERTION_ROOTS.flatMap((root) =>
@@ -593,6 +641,13 @@ for (const file of ALL_FILES) {
     for (const token of findUndeclaredTokens(line)) {
       undeclared.push({ file: relative(".", file), line: i + 1, token });
     }
+    for (const property of findUndeclaredCustomProperties(line)) {
+      undeclaredProperties.push({
+        file: relative(".", file),
+        line: i + 1,
+        property,
+      });
+    }
     if (!/\.test\.tsx?$/.test(file) && !file.endsWith(".css"))
       checkNamespaces(line, relative(".", file), i + 1);
   });
@@ -750,6 +805,23 @@ if (inlineTypography.length > 0) {
   console.error("");
 }
 
+if (undeclaredProperties.length > 0) {
+  console.error(
+    `\n✘ design tokens: ${undeclaredProperties.length} var() reference(s) name a property that is never declared.\n`,
+  );
+  console.error(
+    "  A var() with no declaration and no fallback makes the whole declaration\n" +
+      "  invalid at computed-value time, so the rule is silently dropped.\n" +
+      "  Declare the property, use one that exists, or supply a fallback.\n",
+  );
+  for (const u of undeclaredProperties.slice(0, 40)) {
+    console.error(`  ${u.file}:${u.line}\n      var(${u.property})`);
+  }
+  if (undeclaredProperties.length > 40)
+    console.error(`\n  …and ${undeclaredProperties.length - 40} more.`);
+  console.error("");
+}
+
 if (undeclared.length > 0) {
   console.error(
     `\n✘ design tokens: ${undeclared.length} class(es) name an undeclared token.\n`,
@@ -793,6 +865,7 @@ if (namespaceMisses.length > 0) {
 if (
   violations.length === 0 &&
   undeclared.length === 0 &&
+  undeclaredProperties.length === 0 &&
   namespaceMisses.length === 0 &&
   colorSourceViolations.length === 0 &&
   inlineTypography.length === 0 &&
@@ -808,6 +881,7 @@ if (
 if (
   violations.length === 0 &&
   (inlineTypography.length > 0 ||
+    undeclaredProperties.length > 0 ||
     fontArchitectureViolations.length > 0 ||
     namespaceMisses.length > 0 ||
     colorSourceViolations.length > 0 ||

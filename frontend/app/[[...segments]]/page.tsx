@@ -195,7 +195,8 @@ export async function generateMetadata({
   });
   // Resolve absence before the page starts streaming. Next can only change a
   // non-streamed response to 404; a late notFound() would otherwise produce a
-  // soft 404 with a 200 status and only a noindex tag.
+  // soft 404 with a 200 status and only a noindex tag. A failed lookup
+  // ("unavailable") is answered as 503 by the proxy before reaching here.
   if (routeData.status === "not_found" || !policy.knownRoute) notFound();
   return metadataForRoute({
     pathname: context.internalPath,

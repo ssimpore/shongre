@@ -15,6 +15,7 @@ import type { UserProfile } from "../../types";
 import { useTranslation } from "../../i18n/I18nProvider";
 import type { MessageKey } from "../../i18n/messages.fr";
 import { ALL_PERMISSIONS } from "../../security/permissions";
+import { adminCatalogueFr } from "../../i18n/admin.catalogue.fr";
 
 type OverrideMode = "none" | "grant" | "revoke";
 
@@ -38,7 +39,7 @@ export interface CapabilityOverridesModalProps {
 export const CapabilityOverridesModal: React.FC<
   CapabilityOverridesModalProps
 > = ({ user, actorIsOwner, onClose, onUpdated }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(adminCatalogueFr);
   const [projection, setProjection] =
     useState<CapabilityManagementProjection | null>(null);
   const [modes, setModes] = useState<Partial<Record<Capability, OverrideMode>>>(

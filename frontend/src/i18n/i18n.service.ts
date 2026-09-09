@@ -173,11 +173,19 @@ export function translateWithSupplementalCatalogue(
 }
 
 /**
- * How much of the source catalogue a locale actually covers, 0–1.
+ * How much of the shell catalogue a locale actually covers, 0–1.
  *
  * This is what decides whether a language is offered in the selector: a locale
  * is not "available" because someone set a boolean, but because its messages
  * exist. See `LOCALE_READY_THRESHOLD`.
+ *
+ * The denominator is `messagesFr` — the shell catalogue only. Supplemental
+ * catalogues loaded with their surfaces (`admin`, `delivery`, `digital`) are
+ * deliberately outside it, because importing them here would pull that copy
+ * back into the shared bundle and undo the reason they were split out. A second
+ * locale therefore needs its supplemental catalogues measured separately before
+ * it joins `SHIPPED_LOCALES`; full coverage of this number alone is not
+ * evidence that the Staff console or the delivery flow is translated.
  */
 export function catalogueCoverage(locale: string): number {
   const catalogue = findCatalogue(locale);
@@ -186,8 +194,17 @@ export function catalogueCoverage(locale: string): number {
   return catalogueCoverageFor(catalogue);
 }
 
-export function catalogueCoverageFor(catalogue: MessageCatalogue): number {
-  const keys = Object.keys(messagesFr) as CatalogueKey[];
+/**
+ * `reference` is the key set being measured against, defaulting to the shell
+ * catalogue. Callers that can afford to load the supplemental catalogues — the
+ * release gate and its tests — pass the complete set, so splitting copy out of
+ * the shell for bundle reasons cannot quietly shrink what "translated" means.
+ */
+export function catalogueCoverageFor(
+  catalogue: MessageCatalogue,
+  reference: MessageCatalogue = messagesFr,
+): number {
+  const keys = Object.keys(reference) as CatalogueKey[];
   if (keys.length === 0) return 1;
 
   const translated = keys.filter(

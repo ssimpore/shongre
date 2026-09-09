@@ -216,7 +216,7 @@ export default function DeliveryScreen() {
   }, [load]);
 
   return (
-    <Screen>
+    <Screen edges={["top", "bottom"]}>
       <Stack.Screen options={{ title: "Livraison & coursier" }} />
       <View style={styles.header}>
         <Text accessibilityRole="header" style={styles.heading}>

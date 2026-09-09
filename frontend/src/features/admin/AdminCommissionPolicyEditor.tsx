@@ -18,6 +18,7 @@ import {
 } from "../../design-system/primitives/FormField";
 import { Modal } from "../../design-system/primitives/Modal";
 import { useTranslation } from "../../i18n/I18nProvider";
+import { adminCatalogueFr } from "../../i18n/admin.catalogue.fr";
 
 const EMPTY_SCOPE: CommissionScope = {
   countryCodes: [],
@@ -184,7 +185,7 @@ export function AdminCommissionPolicyEditor({
   onClose,
   onCreated,
 }: AdminCommissionPolicyEditorProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslation(adminCatalogueFr);
   const seedScope = useMemo(
     () => initialScope(template, catalog.marketCode),
     [catalog.marketCode, template],
