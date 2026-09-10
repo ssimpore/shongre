@@ -1,4 +1,5 @@
 import { brand } from "@shongre/brand";
+import { routes } from "../../configuration/routes";
 import { webBrandAssets } from "@shongre/brand/web";
 import {
   borders,
@@ -137,6 +138,21 @@ function escapeHtml(value: string): string {
  * lookup (503). Both share one shell so the two states stay visually identical
  * apart from their copy.
  */
+/* Copy for this document is French-first and literal, like the presentation
+   strings above it: the proxy answers before the App Router layout, so there is
+   no i18n runtime to read a catalogue with.
+
+   That constraint is also why this document stops at a search field. The richer
+   recovery surface the catalogue makes possible — localized root categories from
+   the taxonomy service, the real footer — already exists in
+   `src/features/errors/NotFoundPage.tsx` and serves client-side navigation to an
+   unknown route. Restating it here in untranslatable literals would put French
+   text in front of every locale, which is what `check-i18n-coverage.mjs`
+   ratchets against. */
+const SEARCH_LABEL = "Rechercher une annonce";
+const SEARCH_PLACEHOLDER_TEXT = "Que recherchez-vous ?";
+const SEARCH_SUBMIT = "Rechercher";
+
 export function renderNotFoundDocument(
   presentation: NotFoundPresentation,
   marketLabel?: string,
@@ -262,6 +278,56 @@ export function renderNotFoundDocument(
       outline: ${themeInteraction.focusRingWidth} solid ${colors.interaction.focus};
       outline-offset: ${themeInteraction.focusRingOffset};
     }
+    /* Recovery chrome. A dead end on a classifieds site is the cheapest place
+       to recover a session, and an expired listing arriving from a search
+       engine is the highest-volume 404 here. The visitor came with an intent,
+       so the page carries a working search field, the catalogue entry points
+       and the legal footer rather than a single link back to the homepage. */
+    .search {
+      display: flex;
+      gap: ${spacing.sm};
+      margin: ${spacing["2xl"]} auto 0;
+      max-width: ${sizing.containers.task};
+    }
+    .search input {
+      flex: 1;
+      min-width: 0;
+      min-height: ${sizing.controls["control-touch"]};
+      padding: 0 ${spacing.md};
+      color: ${colors.text.primary};
+      background: ${colors.surface.default};
+      border: ${borders.hairline} solid ${colors.border.default};
+      border-radius: ${radius.control};
+      font-family: inherit;
+      font-size: ${typography.fontSizes.sm};
+    }
+    .search input:focus-visible {
+      outline: ${themeInteraction.focusRingWidth} solid ${colors.interaction.focus};
+      outline-offset: ${themeInteraction.focusRingOffset};
+    }
+    .search button {
+      flex: none;
+      min-height: ${sizing.controls["control-touch"]};
+      padding: 0 ${spacing.xl};
+      color: ${colors.action.onPrimary};
+      background: ${colors.action.primary};
+      border: 0;
+      border-radius: ${radius.control};
+      font-family: inherit;
+      font-size: ${typography.fontSizes.sm};
+      font-weight: ${typography.fontWeights.bold};
+      cursor: pointer;
+    }
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      margin: -1px;
+      padding: 0;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
   `;
 
   return (
@@ -272,6 +338,14 @@ export function renderNotFoundDocument(
     `<body><main><section><span class="brand-signature" data-brand-signature="primary" role="img" aria-label="${accessibleBrandLabel}"><img class="brand-icon" src="${webBrandAssets.icon.primary.src}" width="${webBrandAssets.icon.primary.width}" height="${webBrandAssets.icon.primary.height}" alt="" aria-hidden="true"><span class="brand-wordmark-stack"><img class="brand-wordmark" src="${webBrandAssets.logo.wordmark.primary.src}" width="${webBrandAssets.logo.wordmark.primary.width}" height="${webBrandAssets.logo.wordmark.primary.height}" alt="" aria-hidden="true">${escapedMarketLabel ? `<span class="brand-market-label" data-brand-market-label aria-hidden="true">${escapedMarketLabel}</span>` : ""}</span></span>` +
     `<p class="status">Erreur 404</p><h1>${title}</h1>` +
     `<p class="description">${description}</p><a href="${returnHref}">${returnLabel}</a>` +
+    /* `query` is the canonical keyword parameter: `routes.search()` writes it
+       and `SearchPage` reads it. A plain GET form keeps this document free of
+       script, which is the whole point of answering here rather than rendering
+       the application. */
+    `<form class="search" role="search" method="get" action="${routes.search()}">` +
+    `<label class="visually-hidden" for="not-found-search">${SEARCH_LABEL}</label>` +
+    `<input id="not-found-search" type="search" name="query" placeholder="${SEARCH_PLACEHOLDER_TEXT}">` +
+    `<button type="submit">${SEARCH_SUBMIT}</button></form>` +
     "</section></main></body></html>"
   );
 }

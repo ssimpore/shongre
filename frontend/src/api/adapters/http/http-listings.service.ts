@@ -9,6 +9,7 @@ import {
   PublishBulkListingsInput,
 } from "../../contracts/listings.contract";
 import {
+  DeliveryType,
   Listing,
   ListingPricePresentation,
   ListingStatus,
@@ -241,6 +242,16 @@ export class HttpListingsService implements ListingsServiceContract {
       path: { id },
       query: { locale },
       headers: { "X-Shongre-Market": marketCode },
+    });
+  }
+
+  async getPriceQuote(id: string, deliveryMethod?: DeliveryType) {
+    return apiOperation<
+      components["schemas"]["ListingPriceQuote"],
+      "getListingPriceQuote"
+    >("getListingPriceQuote", {
+      path: { id },
+      ...(deliveryMethod ? { query: { deliveryMethod } } : {}),
     });
   }
 

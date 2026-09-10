@@ -8,7 +8,8 @@ import { getTaxonomyLabel } from "../../domains/taxonomy/taxonomy.labels";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useRootTaxonomyCategories } from "../../hooks/useRootTaxonomyCategories";
 import { useTranslation } from "../../i18n/I18nProvider";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import { resolveNotFoundPresentation } from "../../platform/seo/not-found-presentation";
 
 /**
  * A 404 that offers a way forward.
@@ -24,10 +25,14 @@ import { Link } from "react-router-dom";
  */
 export const NotFoundPage: React.FC = () => {
   const { locale, t } = useTranslation();
+  const location = useLocation();
+  /* The same copy the server 404 boundary resolves, so a dead listing says
+     "Annonce introuvable" and points at `/recherche` on both paths instead of
+     the generic wording drifting from the per-resource wording. */
+  const presentation = resolveNotFoundPresentation(undefined, location.pathname);
   usePageMeta({
-    title: "Page introuvable",
-    description:
-      "Cette page n'existe pas ou plus. Retrouvez toutes les annonces Shongre depuis l'accueil ou la recherche.",
+    title: presentation.title,
+    description: presentation.description,
     noIndex: true,
   });
 
@@ -42,19 +47,19 @@ export const NotFoundPage: React.FC = () => {
         </div>
         <div>
           <h1 className="text-3xl font-bold text-text-main">
-            Page introuvable
+            {presentation.title}
           </h1>
           <p className="text-xs sm:text-sm text-text-tertiary mt-2 leading-relaxed max-w-md mx-auto">
-            {t("errors.notFoundPage.laPageQueVousRecherchez")}
+            {presentation.description}
           </p>
         </div>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Button
-            to={routes.home()}
+            to={presentation.returnHref}
             variant="primary"
             leftIcon={<Home className="w-icon-md h-icon-md" />}
           >
-            {t("errors.notFoundPage.retourALAccueil")}
+            {presentation.returnLabel}
           </Button>
           <Button
             to={routes.search()}

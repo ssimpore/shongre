@@ -4084,6 +4084,18 @@ export function getListingCharacteristics(
     "application/json",
   );
 }
+export function getListingPriceQuote(
+  transport: ApiTransport,
+  input: ApiInput<"getListingPriceQuote">,
+): Promise<ApiResponse<"getListingPriceQuote">> {
+  return executeApiOperation<"getListingPriceQuote">(
+    transport,
+    "GET",
+    "/listings/{id}/price-quote",
+    input,
+    "application/json",
+  );
+}
 export function getListingsById(
   transport: ApiTransport,
   input: ApiInput<"getListingsById">,
@@ -6678,6 +6690,7 @@ export const generatedApiOperations = {
   getListings,
   postListingsCards,
   getListingCharacteristics,
+  getListingPriceQuote,
   getListingsById,
   putListingsById,
   deleteListingsById,

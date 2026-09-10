@@ -1,4 +1,8 @@
 import { routes } from "../../configuration/routes";
+import {
+  mergeKeywordSearchParams,
+  type KeywordSearchCriteria,
+} from "../../configuration/search-url";
 import { isProSeller } from "../../domains/user/user.domain";
 import React, {
   Suspense,
@@ -173,9 +177,17 @@ function AccountMenuDestinationLink({
 export const Header: React.FC = () => {
   const { t } = useTranslation();
   const location = useLocation();
-  /* The results page owns refinement through its adaptive filter panel, so the
-     desktop search slot omits the global bar there. */
-  const isSearchRoute = location.pathname === "/recherche";
+  /* The results page was assumed to own keyword entry through its adaptive
+     filter panel, so the desktop search slot used to omit the global bar there.
+     The panel carries category, location, seller type, condition and budget —
+     never a keyword field — and `shared-search-filters.spec.ts` locks the
+     in-page query input out of all five search surfaces on purpose. So
+     suppressing the header bar here left `/recherche` as the one route in the
+     product that could be reached and then not searched. The bar stays, and
+     carries the active criteria instead of rendering empty. */
+  const isResultsRoute =
+    location.pathname === "/recherche" ||
+    location.pathname.startsWith("/categorie/");
   const { currentUser, isAuthenticated, isRestoring, logout } = useAuth();
   const { can, canAccessRoute } = useAuthorization();
   const { isStaff: isStaffIdentity } = useStaffMarketplaceAccess();
@@ -351,6 +363,64 @@ export const Header: React.FC = () => {
     return undefined;
   }, [location.pathname, searchParams]);
 
+  /**
+   * The criteria the header bar should already be showing.
+   *
+   * Rendering an empty field over a page of filtered results invites the visitor
+   * to retype what the URL already says, and a submit would then wipe the
+   * category and location they had chosen.
+   */
+  const activeSearchCriteria = useMemo(() => {
+    if (!isResultsRoute) {
+      return {
+        query: "",
+        categorySlug: "",
+        subCategorySlug: "",
+        city: undefined as string | undefined,
+        radiusKm: undefined as number | undefined,
+      };
+    }
+    const routeCategorySlug = location.pathname.startsWith("/categorie/")
+      ? location.pathname.split("/")[2] || ""
+      : "";
+    const radius = Number.parseInt(searchParams.get("radius") || "", 10);
+    return {
+      // `seo-policy` builds a title from `query` or `q`, so the field has to
+      // recognise both spellings or a `?q=` link renders a bar that disagrees
+      // with the heading above it.
+      query: searchParams.get("query") || searchParams.get("q") || "",
+      categorySlug: searchParams.get("category") || routeCategorySlug,
+      subCategorySlug: searchParams.get("subCategory") || "",
+      city: searchParams.get("city") || undefined,
+      radiusKm: Number.isFinite(radius) && radius > 0 ? radius : undefined,
+    };
+  }, [isResultsRoute, location.pathname, searchParams]);
+
+  /**
+   * Submits a keyword without discarding the rest of an active search.
+   *
+   * Mirrors `handleCategorySelect` below: on the results routes the header edits
+   * the URL in place, and everywhere else it navigates to a fresh one.
+   */
+  const applyResultsSearch = (criteria: KeywordSearchCriteria) => {
+    const categoryRouteSlug = location.pathname.startsWith("/categorie/")
+      ? location.pathname.split("/")[2] || null
+      : null;
+    const merged = mergeKeywordSearchParams(searchParams, criteria, {
+      currentCategorySlug: activeSearchCriteria.categorySlug,
+      categoryRouteSlug,
+    });
+    const search = merged.params.toString();
+    if (merged.leaveCategoryRoute) {
+      navigate({
+        pathname: "/recherche",
+        search: search ? `?${search}` : "",
+      });
+      return;
+    }
+    setSearchParams(merged.params);
+  };
+
   const handleCategorySelect = (slug: string | undefined) => {
     if (location.pathname === "/recherche") {
       setSearchParams((prev) => {
@@ -523,15 +593,20 @@ export const Header: React.FC = () => {
             onBlurCapture={handleHeaderSearchBlur}
             className={`flex-1 min-w-0 hidden md:block motion-layout ${isHeaderSearchActive ? "max-w-none" : "max-w-xl xl:max-w-2xl"}`}
           >
-            {!isSearchRoute && (
-              <GlobalSearchBar
-                variant="header"
-                idPrefix="header-desktop"
-                showCategory={true}
-                showLocation={isHeaderSearchActive}
-                onFocus={handleHeaderSearchFocus}
-              />
-            )}
+            <GlobalSearchBar
+              variant="header"
+              idPrefix="header-desktop"
+              showCategory={true}
+              showLocation={isHeaderSearchActive}
+              onFocus={handleHeaderSearchFocus}
+              initialQuery={activeSearchCriteria.query}
+              initialCategorySlug={activeSearchCriteria.categorySlug}
+              initialSubCategorySlug={activeSearchCriteria.subCategorySlug}
+              initialCity={activeSearchCriteria.city}
+              initialRadiusKm={activeSearchCriteria.radiusKm}
+              navigateOnSubmit={!isResultsRoute}
+              onSearch={isResultsRoute ? applyResultsSearch : undefined}
+            />
           </div>
 
           {/* Header Action Items.

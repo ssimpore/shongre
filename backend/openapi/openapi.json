@@ -25272,6 +25272,84 @@
         "x-shongre-source": "backend/src/modules/listings/api/listings.routes.ts"
       }
     },
+    "/listings/{id}/price-quote": {
+      "get": {
+        "operationId": "getListingPriceQuote",
+        "tags": ["listings"],
+        "summary": "Read the buyer-facing price breakdown of a visible listing",
+        "description": "Prices one visible listing for display before checkout: item amount, buyer-protection fee, delivery fee and total, in the market currency. Uses the same escrow calculation and market fee policy as the authenticated checkout quote, so the disclosed total matches what checkout will charge. Unauthenticated by design: the listing detail page must disclose a total to a signed-out visitor. It carries no buyer context and performs no purchasability check, so it neither reserves anything nor reveals whether a purchase would be permitted.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/MarketContext"
+          },
+          {
+            "$ref": "#/components/parameters/RequestId"
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "deliveryMethod",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/ListingDeliveryMethod"
+            },
+            "description": "Fulfilment method to price. Defaults to the cheapest method the listing allows."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The price breakdown for the requested or cheapest allowed fulfilment method.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListingPriceQuote"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [],
+        "x-shongre-access": "public",
+        "x-shongre-deny-staff-marketplace": false,
+        "x-shongre-source": "backend/src/modules/listings/api/listings.routes.ts"
+      }
+    },
     "/listings/{id}": {
       "delete": {
         "operationId": "deleteListingsById",
@@ -61949,6 +62027,64 @@
             "description": "Whether the provider refund settled immediately."
           }
         }
+      },
+      "ListingPriceQuote": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "listingId",
+          "deliveryMethod",
+          "currency",
+          "itemAmountMinor",
+          "protectionFeeMinor",
+          "shippingFeeMinor",
+          "totalAmountMinor"
+        ],
+        "properties": {
+          "listingId": {
+            "type": "string",
+            "minLength": 1
+          },
+          "deliveryMethod": {
+            "$ref": "#/components/schemas/ListingDeliveryMethod"
+          },
+          "currency": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 3
+          },
+          "itemAmountMinor": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Listing price in minor units of `currency`."
+          },
+          "protectionFeeMinor": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Buyer-protection fee for this fulfilment method; 0 when the method carries none."
+          },
+          "shippingFeeMinor": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Delivery fee for this fulfilment method; 0 for hand delivery and digital fulfilment."
+          },
+          "totalAmountMinor": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Sum the buyer is charged at checkout for this fulfilment method."
+          }
+        }
+      },
+      "ListingDeliveryMethod": {
+        "type": "string",
+        "enum": [
+          "hand_delivery",
+          "relay_point",
+          "home_delivery",
+          "cocolis",
+          "express",
+          "digital"
+        ]
       }
     },
     "responses": {

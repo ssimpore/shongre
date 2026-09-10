@@ -37,6 +37,7 @@ import {
 } from "lucide-react";
 import { routes } from "../../configuration/routes";
 import { services } from "../../api/client/service-registry";
+import type { ListingPriceQuote } from "../../api/contracts/listings.contract";
 import { Listing, PublicSellerProfile, Transaction } from "../../types";
 import { listingActionsResolver } from "../../domains/listing/listing.actions";
 import { useStaffMarketplaceAccess } from "../../security/useStaffMarketplaceAccess";
@@ -145,16 +146,77 @@ function localizedTaxonomyLabel(
   );
 }
 
+/**
+ * The buyer-facing price breakdown.
+ *
+ * Three of its four rows used to be fixed strings — "Selon le mode de remise",
+ * "Selon l'option choisie" and, on the total, "Confirmé avant paiement" — so the
+ * one row that has to be a number never was one. The numbers existed all along:
+ * the escrow calculation and the market's fee policy produce them, and checkout
+ * already showed them. They were simply behind `permission("order.create")`,
+ * which every signed-out visitor lacks.
+ *
+ * `listings.getPriceQuote` is the same calculation without the buyer, so the
+ * disclosed total and the checkout total come from one authority and cannot
+ * drift. While it resolves, the rows stay quiet rather than printing a
+ * placeholder that looks like an answer; if it fails, the panel collapses to the
+ * item price alone, which is the only figure this component can honestly state
+ * on its own.
+ */
 const PurchasePriceDisclosure: React.FC<{ listing: Listing }> = ({
   listing,
 }) => {
   const { formatPrice } = useMarketLocation();
   const { t } = useTranslation();
+  const [quote, setQuote] = useState<ListingPriceQuote | null>(null);
+  const [quoteFailed, setQuoteFailed] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    setQuote(null);
+    setQuoteFailed(false);
+    // No delivery method: the quote defaults to the cheapest the listing
+    // allows, so the disclosed total is the lowest one the buyer could reach.
+    services.listings
+      .getPriceQuote(listing.id)
+      .then((resolved) => {
+        if (!cancelled) setQuote(resolved);
+      })
+      .catch(() => {
+        if (!cancelled) setQuoteFailed(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [listing.id]);
+
+  const money = (minor: number, currency: string) =>
+    formatPrice(minor / 100, { sourceCurrency: currency });
+
+  /* `formatPrice(0)` renders "Don / Gratuit" — the wording for a listing given
+     away, which says nothing true about a delivery fee. What a zero fee means
+     depends on the method that produced it. */
+  const deliveryValue = (resolved: ListingPriceQuote) => {
+    if (resolved.deliveryMethod === "hand_delivery")
+      return t("listings.pricing.deliveryHandover");
+    if (resolved.deliveryMethod === "digital")
+      return t("listings.pricing.deliveryDigital");
+    if (resolved.shippingFeeMinor === 0)
+      return t("listings.pricing.deliveryFree");
+    return money(resolved.shippingFeeMinor, resolved.currency);
+  };
+
+  /* "From" only when a dearer fulfilment method is genuinely selectable. When
+     the listing offers one, the quoted total is the total, and hedging it would
+     be the placeholder's untruth stated more confidently. */
+  const hasAlternativeFulfilment =
+    listing.deliveryOptions.filter((option) => option.available).length > 1;
 
   return (
     <div
       className="rounded-xl border border-border-subtle bg-bg-base/70 p-3"
       data-testid="purchase-price-disclosure"
+      data-quote-state={quote ? "resolved" : quoteFailed ? "failed" : "loading"}
     >
       <dl className="space-y-2 text-xs">
         <div className="flex items-center justify-between gap-3">
@@ -167,30 +229,38 @@ const PurchasePriceDisclosure: React.FC<{ listing: Listing }> = ({
             })}
           </dd>
         </div>
-        <div className="flex items-start justify-between gap-3">
-          <dt className="font-medium text-text-secondary">
-            {t("listings.pricing.buyerProtection")}
-          </dt>
-          <dd className="max-w-44 text-right font-semibold text-text-primary">
-            {t("listings.pricing.dependsOnFulfillment")}
-          </dd>
-        </div>
-        <div className="flex items-start justify-between gap-3">
-          <dt className="font-medium text-text-secondary">
-            {t("listings.pricing.delivery")}
-          </dt>
-          <dd className="max-w-44 text-right font-semibold text-text-primary">
-            {t("listings.pricing.dependsOnChoice")}
-          </dd>
-        </div>
-        <div className="flex items-start justify-between gap-3 border-t border-border-subtle pt-2">
-          <dt className="font-bold text-text-primary">
-            {t("listings.pricing.total")}
-          </dt>
-          <dd className="max-w-44 text-right font-bold text-primary">
-            {t("listings.pricing.confirmedBeforePayment")}
-          </dd>
-        </div>
+        {quote ? (
+          <>
+            <div className="flex items-center justify-between gap-3">
+              <dt className="font-medium text-text-secondary">
+                {t("listings.pricing.buyerProtection")}
+              </dt>
+              <dd className="font-semibold tabular-nums text-text-primary">
+                {money(quote.protectionFeeMinor, quote.currency)}
+              </dd>
+            </div>
+            <div className="flex items-center justify-between gap-3">
+              <dt className="font-medium text-text-secondary">
+                {t("listings.pricing.delivery")}
+              </dt>
+              <dd className="font-semibold text-right tabular-nums text-text-primary">
+                {deliveryValue(quote)}
+              </dd>
+            </div>
+            <div className="flex items-center justify-between gap-3 border-t border-border-subtle pt-2">
+              <dt className="font-bold text-text-primary">
+                {t("listings.pricing.total")}
+              </dt>
+              <dd className="text-right font-bold tabular-nums text-primary">
+                {hasAlternativeFulfilment
+                  ? t("listings.pricing.fromAmount", {
+                      amount: money(quote.totalAmountMinor, quote.currency),
+                    })
+                  : money(quote.totalAmountMinor, quote.currency)}
+              </dd>
+            </div>
+          </>
+        ) : null}
       </dl>
     </div>
   );
@@ -260,7 +330,8 @@ export const ListingDetailPage: React.FC = () => {
   const [reportDetails, setReportDetails] = useState("");
   const trackedListingId = useRef<string | null>(null);
   const inlineMobileActionRef = useRef<HTMLDivElement>(null);
-  const inlineMobileActionSeenRef = useRef(false);
+  const sidebarActionRowRef = useRef<HTMLDivElement>(null);
+  const inlineActionScrolledPastRef = useRef(false);
   const [showMobileStickyActions, setShowMobileStickyActions] = useState(false);
   const [watches, setWatches] = useState<WatchSubscription[]>([]);
   const [watchPending, setWatchPending] = useState<
@@ -559,24 +630,50 @@ export const ListingDetailPage: React.FC = () => {
     };
   });
 
+  /**
+   * The bar appears once the visitor has scrolled past the in-content actions,
+   * and yields to whichever action row is on screen.
+   *
+   * Two things were wrong with watching the inline row alone through a boolean
+   * "seen" latch. The latch was set by layout rather than by scrolling — the
+   * lazily hydrated sections above the row push it out of view on their own —
+   * so at 768px the bar was already pinned at scroll 0, over the listing media,
+   * which is exactly what `production-readiness.spec.ts` forbids at 390px. And
+   * the sticky sidebar row was never observed, so once it scrolled into view its
+   * own Acheter/Message pair sat on screen alongside the bar's: measured at two
+   * scroll offsets on a 399px phone and three at 768px.
+   *
+   * So "scrolled past" is read from the geometry — the row's bottom edge is
+   * above the viewport — rather than remembered. A row pushed below the fold by
+   * hydration reads as not-yet-reached, which is what it is.
+   */
   useEffect(() => {
-    const node = inlineMobileActionRef.current;
-    inlineMobileActionSeenRef.current = false;
-    setShowMobileStickyActions(false);
-    if (!node) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          inlineMobileActionSeenRef.current = true;
-          setShowMobileStickyActions(false);
-        } else if (inlineMobileActionSeenRef.current) {
-          setShowMobileStickyActions(true);
-        }
-      },
-      { threshold: 0.2 },
+    const inlineRow = inlineMobileActionRef.current;
+    const nodes = [inlineRow, sidebarActionRowRef.current].filter(
+      (node): node is HTMLDivElement => node !== null,
     );
-    observer.observe(node);
+    inlineActionScrolledPastRef.current = false;
+    setShowMobileStickyActions(false);
+    if (nodes.length === 0) return;
+
+    const onScreen = new Set<Element>();
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) onScreen.add(entry.target);
+          else onScreen.delete(entry.target);
+          if (entry.target === inlineRow) {
+            inlineActionScrolledPastRef.current =
+              !entry.isIntersecting && entry.boundingClientRect.bottom <= 0;
+          }
+        });
+        setShowMobileStickyActions(
+          inlineActionScrolledPastRef.current && onScreen.size === 0,
+        );
+      },
+      { threshold: 0 },
+    );
+    nodes.forEach((node) => observer.observe(node));
     return () => observer.disconnect();
   }, [listing?.id]);
 
@@ -1464,7 +1561,11 @@ export const ListingDetailPage: React.FC = () => {
                  row: the desktop breakpoint describes the page, not the width of
                  this four-column sidebar, so two long translated labels cannot be
                  assumed to fit side by side here. */
-              <div className="space-y-3" data-testid="listing-desktop-actions">
+              <div
+                ref={sidebarActionRowRef}
+                className="space-y-3"
+                data-testid="listing-desktop-actions"
+              >
                 {/* 1. Direct Online Purchase (Primary CTA if available) */}
                 {actions.canDirectPurchase && (
                   <Button
@@ -1841,9 +1942,10 @@ export const ListingDetailPage: React.FC = () => {
                 variant="primary"
                 size="md"
                 className="w-full sm:w-auto"
+                aria-label={t("listings.listingDetailPage.modifierMonAnnonce")}
                 leftIcon={<Edit3 className="w-icon-sm h-icon-sm" />}
               >
-                Modifier
+                {t("listings.listingDetailPage.modifierCompact")}
               </Button>
             ) : actions.statusNotice ? (
               <span className="text-xs font-bold text-warning bg-warning-surface px-3 py-1.5 rounded-lg text-center">
@@ -1868,11 +1970,12 @@ export const ListingDetailPage: React.FC = () => {
                       }
                       setIsOfferModalOpen(true);
                     }}
+                    aria-label={t("listings.listingDetailPage.offreDePrix")}
                     leftIcon={
                       <DollarSign className="w-icon-sm h-icon-sm text-warning" />
                     }
                   >
-                    Offre
+                    {t("listings.listingDetailPage.offreCompact")}
                   </Button>
                 )}
                 {actions.canReserve && (
@@ -1930,9 +2033,10 @@ export const ListingDetailPage: React.FC = () => {
                     size="md"
                     className={`w-full sm:w-auto ${mobileActionClass("direct_purchase")}`}
                     onClick={() => setIsDirectPurchaseModalOpen(true)}
+                    aria-label={t("listings.listingDetailPage.acheterMaintenant")}
                     leftIcon={<CreditCard className="h-icon-sm w-icon-sm" />}
                   >
-                    Acheter
+                    {t("listings.listingDetailPage.acheterCompact")}
                   </Button>
                 )}
               </>

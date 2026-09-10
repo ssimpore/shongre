@@ -13,6 +13,7 @@ import {
   requireApiMarketContext,
 } from "../../markets/request-market-context.js";
 import { listingsService } from "../listings.service.js";
+import { ordersService } from "../../orders/orders.service.js";
 import {
   publicListingCardsRequestSchema,
   getCountryConfig,
@@ -317,6 +318,16 @@ function parsePublicListingSearchQuery(
  * may combine are, and reaching them through an HTTP fixture would test the
  * router rather than the contract.
  */
+/** Mirrors `ListingDeliveryMethod` in the OpenAPI contract. */
+const listingDeliveryMethodSchema = z.enum([
+  "hand_delivery",
+  "relay_point",
+  "home_delivery",
+  "cocolis",
+  "express",
+  "digital",
+]);
+
 export const __testing = { parsePublicListingSearchQuery };
 
 export function registerListingsRoutes(routes: RouteRegistrar): void {
@@ -377,6 +388,24 @@ export function registerListingsRoutes(routes: RouteRegistrar): void {
         market,
         locale,
       );
+    },
+  );
+  routes.addRoute(
+    "GET",
+    "/listings/:id/price-quote",
+    PUBLIC,
+    async ({ params, marketCode, query }) => {
+      /* Resolved so the read stays market-scoped like every other public
+         listing read, even though the pricing is keyed off the listing's own
+         market. */
+      requireOpenApiRequestMarket(marketCode);
+      const requested = query.get("deliveryMethod");
+      return ordersService.quoteListingPrice({
+        listingId: params.id,
+        deliveryMethod: requested
+          ? listingDeliveryMethodSchema.parse(requested)
+          : undefined,
+      });
     },
   );
   routes.addRoute(

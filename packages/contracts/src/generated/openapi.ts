@@ -5496,6 +5496,26 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/listings/{id}/price-quote": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /**
+         * Read the buyer-facing price breakdown of a visible listing
+         * @description Prices one visible listing for display before checkout: item amount, buyer-protection fee, delivery fee and total, in the market currency. Uses the same escrow calculation and market fee policy as the authenticated checkout quote, so the disclosed total matches what checkout will charge. Unauthenticated by design: the listing detail page must disclose a total to a signed-out visitor. It carries no buyer context and performs no purchasability check, so it neither reserves anything nor reveals whether a purchase would be permitted.
+         */
+        readonly get: operations["getListingPriceQuote"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/listings/bulk-import/parse": {
         readonly parameters: {
             readonly query?: never;
@@ -11273,6 +11293,8 @@ export interface components {
                 readonly label: string;
             }[];
         };
+        /** @enum {string} */
+        readonly ListingDeliveryMethod: "hand_delivery" | "relay_point" | "home_delivery" | "cocolis" | "express" | "digital";
         readonly ListingDiscoveryPresentation: {
             readonly isSponsored: boolean;
             readonly organicPositionContext?: number;
@@ -11313,6 +11335,19 @@ export interface components {
             readonly sortDate: string;
             /** @enum {string} */
             readonly status: "draft" | "pending_review" | "active" | "paused" | "suspended" | "rejected" | "expired";
+        };
+        readonly ListingPriceQuote: {
+            readonly currency: string;
+            readonly deliveryMethod: components["schemas"]["ListingDeliveryMethod"];
+            /** @description Listing price in minor units of `currency`. */
+            readonly itemAmountMinor: number;
+            readonly listingId: string;
+            /** @description Buyer-protection fee for this fulfilment method; 0 when the method carries none. */
+            readonly protectionFeeMinor: number;
+            /** @description Delivery fee for this fulfilment method; 0 for hand delivery and digital fulfilment. */
+            readonly shippingFeeMinor: number;
+            /** @description Sum the buyer is charged at checkout for this fulfilment method. */
+            readonly totalAmountMinor: number;
         };
         /** @enum {string} */
         readonly ListingPromotionSource: "purchase" | "subscription_credit" | "admin_grant";
@@ -26302,6 +26337,45 @@ export interface operations {
                 };
                 content: {
                     readonly "application/json": components["schemas"]["PublicListing"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getListingPriceQuote: {
+        readonly parameters: {
+            readonly query?: {
+                /** @description Fulfilment method to price. Defaults to the cheapest method the listing allows. */
+                readonly deliveryMethod?: components["schemas"]["ListingDeliveryMethod"];
+            };
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path: {
+                readonly id: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description The price breakdown for the requested or cheapest allowed fulfilment method. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ListingPriceQuote"];
                 };
             };
             readonly 400: components["responses"]["BadRequest"];

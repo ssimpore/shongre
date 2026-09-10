@@ -3304,6 +3304,17 @@ export const OPENAPI_OPERATIONS = {
       locale: "string",
     },
   },
+  "GET /listings/:id/price-quote": {
+    operationId: "getListingPriceQuote",
+    access: "public",
+    permission: null,
+    denyStaffMarketplace: false,
+    requestBodyRequired: false,
+    successStatus: 200,
+    queryParameters: {
+      deliveryMethod: "string",
+    },
+  },
   "GET /listings/:id": {
     operationId: "getListingsById",
     access: "public",

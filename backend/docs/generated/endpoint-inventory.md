@@ -4,8 +4,8 @@
 
 - Contract version: `1.0.0`
 - API base path: `/api/v1`
-- Operations: **539**
-- Specification SHA-256: `149a77af91439078`
+- Operations: **540**
+- Specification SHA-256: `73e00f6e6bea8c84`
 
 ## account
 
@@ -524,6 +524,7 @@
 | `GET` | `/listings/{id}/characteristics` | `getListingCharacteristics` | `public` | — | `200` |
 | `PUT` | `/listings/{id}/favorite` | `putListingsByIdFavorite` | `permission` | `favorite.manage.own` | `200` |
 | `POST` | `/listings/{id}/mark-sold` | `postListingsByIdMarkSold` | `permission` | `listing.update.own` | `200` |
+| `GET` | `/listings/{id}/price-quote` | `getListingPriceQuote` | `public` | — | `200` |
 | `DELETE` | `/listings/{id}` | `deleteListingsById` | `permission` | `listing.delete.own` | `200` |
 | `GET` | `/listings/{id}` | `getListingsById` | `public` | — | `200` |
 | `PUT` | `/listings/{id}` | `putListingsById` | `permission` | `listing.update.own` | `200` |

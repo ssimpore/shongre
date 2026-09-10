@@ -313,6 +313,107 @@ export class OrdersService {
     };
   }
 
+  /**
+   * Prices a visible listing for display, with no buyer and no purchasability
+   * check.
+   *
+   * `quoteDirectPurchase` needs `permission("order.create")` because it decides
+   * whether *this buyer* may purchase, and it is the only thing that could put
+   * a number on the listing page's price disclosure. So a signed-out visitor —
+   * every visitor arriving from a search engine — saw "Protection acheteur:
+   * selon le mode de remise", "Livraison: selon l'option choisie" and, worst of
+   * all, "Total: confirmé avant paiement". Three of four rows were placeholders,
+   * including the one row that has to be a number.
+   *
+   * Recomputing the fee in the Web client was the alternative, and the wrong
+   * one: `calculateOrderTotal` and the market's fee policy are the authority for
+   * an amount a buyer will be charged, and a second implementation of it in the
+   * browser is exactly the drift a legally-disclosed price cannot afford. This
+   * shares that authority instead, so the disclosed total and the checkout total
+   * cannot disagree.
+   *
+   * It deliberately reveals nothing a visitor cannot already see: the listing is
+   * public, and the fee policy is per market, not per buyer.
+   */
+  async quoteListingPrice(input: {
+    listingId: string;
+    deliveryMethod?: DeliveryType;
+  }): Promise<DirectPurchaseQuote> {
+    const listing = await this.listingRepo.findById(input.listingId);
+    if (!listing) {
+      throw new AppError({
+        code: "NOT_FOUND",
+        message: "Annonce introuvable.",
+      });
+    }
+    const market = await this.markets.getEffective(listing.marketCode);
+    const isDigital = (listing.fulfillmentModel || "PHYSICAL") !== "PHYSICAL";
+    const deliveryMethod = isDigital
+      ? "digital"
+      : this.cheapestQuotableDelivery(listing, market, input.deliveryMethod);
+
+    const shippingFeeMinor = this.shippingFeeMinorFor(listing, deliveryMethod);
+    const breakdown = calculateOrderTotal({
+      itemAmount: listing.price,
+      shippingFee: shippingFeeMinor / 100,
+      marketCode: market.code,
+      ruleOverride: {
+        protectionFeeRate: market.protectionFeeRate,
+        protectionFixedFee: market.protectionFixedFee,
+      },
+    });
+    return {
+      listingId: listing.id,
+      deliveryMethod,
+      itemAmountMinor: breakdown.itemAmountMinor,
+      protectionFeeMinor: breakdown.protectionFeeMinor,
+      shippingFeeMinor: breakdown.shippingFeeMinor,
+      totalAmountMinor: breakdown.totalChargedMinor,
+      currency: market.currency,
+    };
+  }
+
+  /** Hand delivery and digital fulfilment carry no delivery fee. */
+  private shippingFeeMinorFor(
+    listing: Listing,
+    deliveryMethod: DeliveryType,
+  ): number {
+    if (deliveryMethod === "hand_delivery" || deliveryMethod === "digital") {
+      return 0;
+    }
+    return listing.shippingCost !== undefined
+      ? Math.max(0, Math.round(listing.shippingCost * 100))
+      : DEFAULT_HOME_DELIVERY_MINOR;
+  }
+
+  /**
+   * The method to price when the caller names none.
+   *
+   * The cheapest one the listing and the market both allow, so the disclosed
+   * total is the lowest total the buyer could actually reach rather than an
+   * arbitrary first entry. A requested method is honoured when it is allowed,
+   * and otherwise ignored rather than rejected: this endpoint exists to display
+   * a price, and refusing to show one because a query parameter is stale would
+   * put the placeholder back on the page.
+   */
+  private cheapestQuotableDelivery(
+    listing: Listing,
+    market: { allowedDeliveryMethods: DeliveryType[] },
+    requested?: DeliveryType,
+  ): DeliveryType {
+    const allowed = listing.allowedDelivery.filter((method) =>
+      market.allowedDeliveryMethods.includes(method),
+    );
+    if (requested && allowed.includes(requested)) return requested;
+    if (allowed.length === 0) return "hand_delivery";
+    return allowed.reduce((cheapest, candidate) =>
+      this.shippingFeeMinorFor(listing, candidate) <
+      this.shippingFeeMinorFor(listing, cheapest)
+        ? candidate
+        : cheapest,
+    );
+  }
+
   async createReservation(
     input: CreateReservationInput,
   ): Promise<OrderCheckoutResult> {

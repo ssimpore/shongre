@@ -156,6 +156,24 @@ export function projectGenericListingCardView(
         label.toLocaleLowerCase(locale) !==
           brandLabel.toLocaleLowerCase(locale),
     );
+  /**
+   * The struck-through reference price.
+   *
+   * `listings.original_price` is a single seller-declared number with no
+   * recorded basis, and rendering it struck through next to the current price
+   * makes it a comparative price claim. Under the French implementation of the
+   * Omnibus directive (code de la consommation, art. L112-1-1) the reference
+   * for an announced reduction must be the lowest price the seller applied in
+   * the 30 days before it — which this column does not represent and cannot be
+   * derived from, because no price history is stored.
+   *
+   * TODO: legal validation. Backing this properly needs a price-history record
+   * per listing and a stored 30-day-lowest projection to read here; until then
+   * the displayed reduction is the seller's unverified assertion. Whether to
+   * keep showing it in the meantime is a legal and commercial decision, not a
+   * presentation one, so this only records the gap rather than changing what
+   * ships.
+   */
   const originalPrice =
     typeof listing.originalPrice === "number" &&
     Number.isFinite(listing.originalPrice) &&

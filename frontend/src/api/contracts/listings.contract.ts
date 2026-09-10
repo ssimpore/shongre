@@ -1,6 +1,9 @@
-import { Listing, SearchFilters } from "../../types";
+import { DeliveryType, Listing, SearchFilters } from "../../types";
 import { PublicationDraftState } from "../../domains/publication/publication.types";
 import type { components } from "@shongre/contracts/openapi";
+
+/** The buyer-facing price breakdown, as the contract defines it. */
+export type ListingPriceQuote = components["schemas"]["ListingPriceQuote"];
 
 export type ListingCharacteristicsData =
   components["schemas"]["ListingCharacteristics"];
@@ -42,6 +45,18 @@ export interface ListingsServiceContract {
     marketCode: string,
     locale: string,
   ): Promise<ListingCharacteristicsData>;
+  /**
+   * The buyer-facing price breakdown for display before checkout.
+   *
+   * Separate from `orders.quoteDirectPurchase`, which needs a signed-in buyer
+   * because it also decides whether that buyer may purchase. The listing page
+   * has to disclose a total to a signed-out visitor, and the fee is market
+   * policy rather than buyer-specific, so this read carries no buyer context.
+   */
+  getPriceQuote(
+    id: string,
+    deliveryMethod?: DeliveryType,
+  ): Promise<ListingPriceQuote>;
   getOwnListings(
     userId: string,
     marketCode: string,

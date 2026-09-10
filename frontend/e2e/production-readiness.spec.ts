@@ -96,9 +96,19 @@ test("does not cover listing media and reveals honest sticky purchase controls o
   const disclosure = page.getByTestId("purchase-price-disclosure").first();
   await disclosure.scrollIntoViewIfNeeded();
   await expect(disclosure).toContainText("Prix de l’annonce");
-  await expect(disclosure).toContainText("Selon le mode de remise");
-  await expect(disclosure).toContainText("Confirmé avant paiement");
-  await expect(disclosure).not.toContainText("510,59");
+  /* The breakdown used to answer three of its four rows — including the total —
+     with fixed strings. It now carries the same figures checkout charges, from
+     the same escrow calculation, priced for the cheapest fulfilment the listing
+     allows. */
+  await expect(disclosure).toHaveAttribute("data-quote-state", "resolved");
+  await expect(disclosure).not.toContainText("Selon le mode de remise");
+  await expect(disclosure).not.toContainText("Selon l’option choisie");
+  await expect(disclosure).not.toContainText("Confirmé avant paiement");
+  const total = await disclosure
+    .locator("dd")
+    .last()
+    .innerText();
+  expect(total, "the total row must carry a figure").toMatch(/\d/);
 
   await page.waitForTimeout(100);
   await page.getByTestId("listing-inline-mobile-action").evaluate((element) => {

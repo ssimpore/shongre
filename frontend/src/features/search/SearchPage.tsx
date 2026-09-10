@@ -55,6 +55,11 @@ import {
 } from "../../design-system";
 import type { LocationSelectorValue } from "../../design-system";
 import { NoResultsFound } from "../../design-system/primitives/NoResultsFound";
+import { GlobalSearchBar } from "../../design-system/primitives/GlobalSearchBar";
+import {
+  mergeKeywordSearchParams,
+  type KeywordSearchCriteria,
+} from "../../configuration/search-url";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { useToast } from "../../app/providers/ToastProvider";
 import { browserPreferencesService } from "../../services/browser-preferences.service";
@@ -213,7 +218,7 @@ export const SearchPage: React.FC = () => {
   ]);
 
   // Extract filter params from URL
-  const query = searchParams.get("query") || "";
+  const query = searchParams.get("query") || searchParams.get("q") || "";
   const categorySlug = searchParams.get("category") || categoryRouteSlug || "";
   const subCategorySlug = searchParams.get("subCategory") || "";
   const cityParam = searchParams.get("city");
@@ -514,6 +519,18 @@ export const SearchPage: React.FC = () => {
       next.delete("category");
     }
     setSearchParams(next);
+  };
+
+  const applyKeywordSearch = (criteria: KeywordSearchCriteria) => {
+    const merged = mergeKeywordSearchParams(searchParams, criteria, {
+      currentCategorySlug: categorySlug,
+      categoryRouteSlug,
+    });
+    if (merged.leaveCategoryRoute) {
+      leaveCategoryRoute(merged.params);
+      return;
+    }
+    setSearchParams(merged.params);
   };
 
   const updateLocationFilter = (value: LocationSelectorValue) => {
@@ -835,7 +852,7 @@ export const SearchPage: React.FC = () => {
    * category they drilled into, or the unfiltered catalogue.
    */
   const pageHeading = useMemo(() => {
-    if (query) return `Recherche : ${query}`;
+    if (query) return t("search.searchPage.queryHeading", { query });
     const selectedCategory = activeSubCat ?? activeCategory;
     if (selectedCategory) {
       return getTaxonomyLabel(selectedCategory, {
@@ -845,13 +862,14 @@ export const SearchPage: React.FC = () => {
     // Until the client taxonomy resolves, a category route still knows its own
     // name from the server payload.
     if (serverCategoryHeading) return serverCategoryHeading;
-    return "Toutes les annonces";
+    return t("search.searchPage.allListings");
   }, [
     activeCategory,
     activeSubCat,
     currentLocale,
     query,
     serverCategoryHeading,
+    t,
   ]);
 
   const searchMeta = useMemo(() => {
@@ -929,6 +947,34 @@ export const SearchPage: React.FC = () => {
                 totalCount > 1 ? "correspondent" : "correspond"
               } à votre recherche`}
         </p>
+      </div>
+
+      {/* Mobile keyword entry.
+          The desktop header slot is `hidden md:block` and the bottom tab bar's
+          "Rechercher" tab points here, so on a phone the tab promised search
+          and delivered a facet list. The desktop multi-field bar stays out —
+          `shared-search-filters.spec.ts` locks its controls out of all five
+          search surfaces, and the sidebar panel plus the header bar already
+          cover that width. This is the compact drawer variant with category and
+          location suppressed, because the filter drawer owns both on mobile.
+
+          In the page rather than the header: fixed chrome already takes 182px of
+          a 602px phone viewport, and this scrolls away instead of adding to
+          it. */}
+      <div className="mb-3 md:hidden">
+        <GlobalSearchBar
+          variant="minimal"
+          idPrefix="search-mobile"
+          initialQuery={query}
+          initialCategorySlug={categorySlug}
+          initialSubCategorySlug={subCategorySlug}
+          initialCity={city || undefined}
+          initialRadiusKm={radiusKm}
+          showCategory={false}
+          showLocation={false}
+          navigateOnSubmit={false}
+          onSearch={applyKeywordSearch}
+        />
       </div>
 
       {/* Active criteria stay removable here; result refinement lives in the

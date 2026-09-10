@@ -135,3 +135,112 @@ test.describe("listing mobile action hierarchy", () => {
     );
   });
 });
+
+test.describe("listing price disclosure", () => {
+  test("every row carries a value, and none of them is a placeholder", async ({
+    page,
+  }) => {
+    /* Three of the four rows were fixed strings — "Selon le mode de remise",
+       "Selon l'option choisie" and, on the total, "Confirmé avant paiement" —
+       because the only quote that could produce numbers required
+       `permission("order.create")`. A signed-out visitor is the normal case for
+       a listing arriving from a search engine, and the disclosure now resolves
+       for one — but the demo fixture inventory this suite runs against only
+       offers direct purchase to a signed-in buyer, so the persona matches the
+       rest of the file. */
+    await usePersona(page, "individual_buyer");
+    await page.setViewportSize({ width: 1408, height: 900 });
+    await page.goto(testListingPath("list-112"), {
+      waitUntil: "domcontentloaded",
+    });
+    await waitForStableLayout(page);
+
+    /* The panel renders twice — once in the `lg:hidden` inline row and once in
+       the sticky sidebar — so the assertion has to name the one this width
+       actually shows, not whichever comes first in the DOM. */
+    const disclosure = page
+      .locator('[data-testid="purchase-price-disclosure"]:visible')
+      .first();
+    await disclosure.scrollIntoViewIfNeeded();
+    await expect(disclosure).toHaveAttribute("data-quote-state", "resolved");
+
+    const values = await disclosure.locator("dd").allInnerTexts();
+    expect(values.length).toBe(4);
+    for (const value of values) {
+      expect(value.trim(), "no row may be empty").not.toBe("");
+      expect(value).not.toMatch(/Selon |Confirmé avant paiement/);
+    }
+    // A zero delivery fee is not "Don / Gratuit", which is the wording for a
+    // listing given away and says nothing true about delivery.
+    expect(values.join(" | ")).not.toContain("Don / Gratuit");
+  });
+});
+
+test.describe("listing purchase affordance", () => {
+  for (const [width, height] of [
+    [399, 602],
+    [768, 900],
+  ] as const) {
+    test(`shows one purchase control at a time at ${width}px`, async ({
+      page,
+    }) => {
+      /* The sticky bar observed only the inline mobile row, so once the sticky
+         sidebar row scrolled into view its own Acheter/Message pair sat on
+         screen alongside the bar's — measured at two scroll offsets on a 399px
+         phone and three at 768px. It also latched on "the inline row is not
+         intersecting", which the lazily hydrated sections above that row set on
+         their own, so at 768px the bar was pinned over the listing media at
+         scroll 0. */
+      await usePersona(page, "guest");
+      await page.setViewportSize({ width, height });
+      await page.goto(testListingPath("list-112"), {
+        waitUntil: "domcontentloaded",
+      });
+      await waitForStableLayout(page);
+
+      const survey = await page.evaluate(async () => {
+        const onScreen = (element: Element) => {
+          const box = element.getBoundingClientRect();
+          return (
+            box.width > 0 &&
+            box.height > 0 &&
+            box.bottom > 0 &&
+            box.top < window.innerHeight
+          );
+        };
+        const surfaceOf = (element: Element) => {
+          if (element.closest('[data-testid="listing-mobile-actions"]'))
+            return "bar";
+          if (element.closest('[data-testid="listing-inline-mobile-action"]'))
+            return "inline";
+          return "sidebar";
+        };
+        const max = document.body.scrollHeight - window.innerHeight;
+        const rows: { y: number; surfaces: string[] }[] = [];
+        for (let y = 0; y <= max; y += 250) {
+          window.scrollTo(0, y);
+          await new Promise((resolve) => setTimeout(resolve, 250));
+          const shown = [
+            ...document.querySelectorAll(
+              '[data-marketplace-action="purchase.start"]',
+            ),
+          ].filter(onScreen);
+          rows.push({
+            y,
+            surfaces: [...new Set(shown.map(surfaceOf))].sort(),
+          });
+        }
+        return rows;
+      });
+
+      const duplicated = survey.filter((row) => row.surfaces.length > 1);
+      expect(
+        duplicated.map((row) => `${row.y}:${row.surfaces.join("+")}`),
+        "two purchase controls must never be on screen together",
+      ).toEqual([]);
+
+      // The bar must still stay off the listing media on arrival.
+      expect(survey[0].surfaces).not.toContain("bar");
+    });
+  }
+});
