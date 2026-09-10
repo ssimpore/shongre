@@ -1,0 +1,52 @@
+# Scrape configuration for the Shongre API and worker.
+#
+# `/metrics` is bearer-authenticated and answers 404 without a valid token, so
+# an unconfigured scraper sees a missing endpoint rather than an unauthorized
+# one — the endpoint does not advertise itself. Supply METRICS_TOKEN to the
+# scraper from the same secret store that gives it to the runtime; it is not a
+# value that belongs in this file or in any image.
+#
+# Targets are intentionally left as placeholders: hostnames come from the
+# environment's own service discovery, never from repository configuration.
+global:
+  scrape_interval: 30s
+  scrape_timeout: 10s
+  external_labels:
+    # Set from the deployment's own environment so a series can never be
+    # attributed to the wrong environment on a shared Prometheus.
+    environment: "${APP_ENV}"
+
+scrape_configs:
+  - job_name: shongre-api
+    metrics_path: /metrics
+    scheme: https
+    authorization:
+      type: Bearer
+      credentials_file: /etc/prometheus/secrets/shongre-metrics-token
+    kubernetes_sd_configs:
+      - role: pod
+    relabel_configs:
+      # Only pods that opt in, so a sidecar never gets scraped by accident.
+      - source_labels: [__meta_kubernetes_pod_label_app]
+        action: keep
+        regex: shongre-api
+      - source_labels: [__meta_kubernetes_pod_name]
+        target_label: instance
+
+  - job_name: shongre-worker
+    metrics_path: /metrics
+    scheme: https
+    authorization:
+      type: Bearer
+      credentials_file: /etc/prometheus/secrets/shongre-metrics-token
+    kubernetes_sd_configs:
+      - role: pod
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_label_app]
+        action: keep
+        regex: shongre-worker
+      - source_labels: [__meta_kubernetes_pod_name]
+        target_label: instance
+
+rule_files:
+  - /etc/prometheus/rules/alert-rules.yaml

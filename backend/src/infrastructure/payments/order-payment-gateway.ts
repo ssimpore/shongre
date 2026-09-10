@@ -50,6 +50,19 @@ export interface OrderPaymentGateway {
     currency: string;
     idempotencyKey: string;
   }): Promise<{ transferId: string; status: "completed" | "processing" }>;
+  /**
+   * Recovers a released transfer without paying the buyer.
+   *
+   * A chargeback has already moved the money out of the platform balance, so
+   * the refund path must not run for one: it would credit the buyer a second
+   * time. Only the seller leg is reversed here.
+   */
+  reverseSellerTransfer(input: {
+    orderId: string;
+    transferId: string;
+    amountMinor?: number;
+    idempotencyKey: string;
+  }): Promise<{ reversalId: string }>;
 }
 
 class DemoOrderPaymentGateway implements OrderPaymentGateway {
@@ -112,6 +125,20 @@ class DemoOrderPaymentGateway implements OrderPaymentGateway {
         .digest("hex")
         .slice(0, 18)}`,
       status: "completed" as const,
+    };
+  }
+
+  async reverseSellerTransfer(input: {
+    orderId: string;
+    transferId: string;
+    amountMinor?: number;
+    idempotencyKey: string;
+  }) {
+    return {
+      reversalId: `trr_demo_${createHash("sha256")
+        .update(`${input.transferId}:${input.idempotencyKey}`)
+        .digest("hex")
+        .slice(0, 18)}`,
     };
   }
 }
@@ -259,6 +286,37 @@ export class StripeOrderPaymentGateway implements OrderPaymentGateway {
       });
     }
     return { transferId, status: "completed" as const };
+  }
+
+  async reverseSellerTransfer(input: {
+    orderId: string;
+    transferId: string;
+    amountMinor?: number;
+    idempotencyKey: string;
+  }) {
+    if (!/^tr_[A-Za-z0-9]+$/.test(input.transferId)) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Le versement à reprendre est invalide.",
+      });
+    }
+    const reversal = await stripeCheckoutAdapter.reverseTransfer({
+      transferId: input.transferId,
+      amountMinor: input.amountMinor,
+      idempotencyKey: input.idempotencyKey,
+      metadata: {
+        resource_type: "marketplace_order_chargeback",
+        order_id: input.orderId,
+      },
+    });
+    const reversalId = String(reversal.id || "");
+    if (!reversalId) {
+      throw new AppError({
+        code: "PAYMENT_FAILED",
+        message: "Le prestataire n’a pas confirmé la reprise du versement.",
+      });
+    }
+    return { reversalId };
   }
 }
 

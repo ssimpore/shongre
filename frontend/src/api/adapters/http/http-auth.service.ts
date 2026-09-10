@@ -13,6 +13,7 @@ import {
   type DomainHandoffStartInput,
   type DomainHandoffStartResult,
   type DomainHandoffExchangeResult,
+  type AccountDataExport,
 } from "../../contracts/auth.contract";
 import { apiOperation } from "./generated-api-operation";
 import {
@@ -349,6 +350,10 @@ export class HttpAuthService implements AuthServiceContract {
 
   async deleteAccount(password: string, reason?: string): Promise<void> {
     await apiOperation("postAccountDelete", { body: { password, reason } });
+  }
+
+  async exportAccountData(): Promise<AccountDataExport> {
+    return apiOperation("getAccountExport", {});
   }
 }
 

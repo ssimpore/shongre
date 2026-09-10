@@ -67,6 +67,13 @@ test("checks SQL seeds for retired relations and duplicate reference writers", (
     ),
     [],
   );
+  assert.deepEqual(
+    violations(
+      "backend/supabase/seed/taxonomy-references.generated.sql",
+      "INSERT INTO public.course_subjects SELECT * FROM imported_references;",
+    ),
+    [],
+  );
 });
 test("the complete active source and SQL seed scope respects taxonomy boundaries", () => {
   assert.doesNotThrow(checkTaxonomyArchitecture);

@@ -10,6 +10,7 @@ export * from "./taxonomy-domain-ids";
 export * from "./taxonomy-labels";
 export * from "./schemas/moderation";
 export * from "./schemas/account";
+export * from "./schemas/orders";
 export * from "./schemas/courses";
 export * from "./schemas/auto";
 export * from "./schemas/vertical";

@@ -138,6 +138,16 @@ export interface AppConfig {
   authEmailDeliveryUrl: string;
   authEmailDeliveryToken: string;
   localMailSmtpUrl: string;
+  /**
+   * SMTP endpoint for transactional notification email. Any approved provider
+   * speaks SMTP, so selecting one is a credential change, not a code change.
+   */
+  notificationSmtpUrl: string;
+  notificationEmailFrom: string;
+  pushProvider: PushProviderMode;
+  expoPushAccessToken: string;
+  /** Bearer token guarding GET /metrics. Absent means the endpoint is 404. */
+  metricsToken: string;
   googleOAuth: OAuthProviderConfig;
   appleOAuth: AppleOAuthProviderConfig;
   facebookOAuth: FacebookOAuthProviderConfig;
@@ -208,6 +218,9 @@ function resolveDataMode(): BackendDataMode {
     "demo",
   );
 }
+
+export const PUSH_PROVIDER_MODES = ["disabled", "expo"] as const;
+export type PushProviderMode = (typeof PUSH_PROVIDER_MODES)[number];
 
 function resolveEnumValue<const T extends readonly string[]>(
   name: string,
@@ -547,17 +560,29 @@ function validateProductionAuthConfiguration(candidate: AppConfig): void {
   )
     return;
   const missing: string[] = [];
-  if (!candidate.authEmailDeliveryUrl) missing.push("AUTH_EMAIL_DELIVERY_URL");
-  else {
+  /*
+   * Either boundary satisfies this: a delivery service over HTTPS, or the
+   * SMTP endpoint the notification worker already uses. What is rejected is a
+   * deployment with neither, which cannot confirm an address or reset a
+   * password.
+   */
+  const hasSmtpBoundary = Boolean(
+    candidate.notificationSmtpUrl && candidate.notificationEmailFrom,
+  );
+  if (candidate.authEmailDeliveryUrl) {
     try {
       if (new URL(candidate.authEmailDeliveryUrl).protocol !== "https:")
         missing.push("AUTH_EMAIL_DELIVERY_URL (HTTPS)");
     } catch {
       missing.push("AUTH_EMAIL_DELIVERY_URL (absolute HTTPS URL)");
     }
+    if (!candidate.authEmailDeliveryToken)
+      missing.push("AUTH_EMAIL_DELIVERY_TOKEN");
+  } else if (!hasSmtpBoundary) {
+    missing.push(
+      "AUTH_EMAIL_DELIVERY_URL or NOTIFICATION_SMTP_URL with NOTIFICATION_EMAIL_FROM",
+    );
   }
-  if (!candidate.authEmailDeliveryToken)
-    missing.push("AUTH_EMAIL_DELIVERY_TOKEN");
   if (!candidate.frontendUrl) missing.push("PUBLIC_FR_URL");
   if (missing.length) {
     throw new Error(
@@ -598,6 +623,32 @@ function validateProductionRuntimeConfiguration(candidate: AppConfig): void {
       requireHttpsUrl("CORS_ORIGIN", origin.trim());
   }
   if (!candidate.cookieSecure) missing.push("AUTH_COOKIE_SECURE=true");
+  /*
+   * Production must be able to reach a customer. A deployment with no
+   * transactional email cannot confirm an address, reset a password or
+   * acknowledge an order, so it is rejected at startup rather than discovered
+   * when the first delivery dead-letters.
+   */
+  if (!candidate.notificationSmtpUrl) missing.push("NOTIFICATION_SMTP_URL");
+  else {
+    try {
+      const parsed = new URL(candidate.notificationSmtpUrl);
+      if (!["smtp:", "smtps:"].includes(parsed.protocol)) {
+        missing.push("NOTIFICATION_SMTP_URL (smtp:// or smtps:// URL)");
+      }
+    } catch {
+      missing.push("NOTIFICATION_SMTP_URL (absolute SMTP URL)");
+    }
+  }
+  if (!candidate.notificationEmailFrom) missing.push("NOTIFICATION_EMAIL_FROM");
+  if (candidate.pushProvider === "disabled")
+    missing.push("PUSH_PROVIDER (a configured push provider)");
+  /*
+   * Without this the metrics endpoint is closed, and the availability and
+   * latency objectives in the monitoring contract cannot be measured at all.
+   */
+  if (!candidate.metricsToken || candidate.metricsToken.length < 24)
+    missing.push("METRICS_TOKEN (at least 24 characters)");
 
   if (candidate.dataMode !== "database")
     missing.push("BACKEND_DATA_MODE=database");
@@ -1135,6 +1186,15 @@ const candidateConfig: AppConfig = {
   authEmailDeliveryUrl: process.env.AUTH_EMAIL_DELIVERY_URL || "",
   authEmailDeliveryToken: process.env.AUTH_EMAIL_DELIVERY_TOKEN || "",
   localMailSmtpUrl: process.env.LOCAL_MAIL_SMTP_URL || "",
+  notificationSmtpUrl: process.env.NOTIFICATION_SMTP_URL || "",
+  notificationEmailFrom: process.env.NOTIFICATION_EMAIL_FROM || "",
+  pushProvider: resolveEnumValue(
+    "PUSH_PROVIDER",
+    PUSH_PROVIDER_MODES,
+    "disabled",
+  ),
+  expoPushAccessToken: process.env.EXPO_PUSH_ACCESS_TOKEN || "",
+  metricsToken: process.env.METRICS_TOKEN || "",
   googleOAuth: {
     enabled: envFlag("ENABLE_GOOGLE_AUTH", false),
     clientId: process.env.GOOGLE_OAUTH_CLIENT_ID || "",

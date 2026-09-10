@@ -9,6 +9,7 @@ import { Transaction, UserProfile } from "../../../types";
 import { services } from "../../../api/client/service-registry";
 import { Modal } from "../../../design-system/primitives/Modal";
 import { Button } from "../../../design-system/primitives/Button";
+import { OrderReturnsPanel } from "./OrderReturnsPanel";
 import { FormField, Input } from "../../../design-system/primitives/FormField";
 import { Image } from "../../../design-system/primitives/Image";
 import { formatRelativeDate } from "../../../utilities/formatters";
@@ -106,6 +107,18 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
     tx.marketCode,
     tx.status,
   ]);
+
+  /** Re-reads the order after a return step changed its money or status. */
+  const refreshOrder = () => {
+    void services.orders
+      .getOrderById(tx.id)
+      .then((next) => {
+        if (next) update(next);
+      })
+      .catch(() => {
+        // The panel reports its own failure; the order view simply stays put.
+      });
+  };
 
   const update = (next: Transaction) => {
     setTx(next);
@@ -349,6 +362,16 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
               orderId={tx.id}
             />
           )}
+
+          {isOpen ? (
+            <OrderReturnsPanel
+              orderId={tx.id}
+              orderStatus={tx.status}
+              isBuyer={isBuyer}
+              isSeller={isSeller}
+              onChanged={refreshOrder}
+            />
+          ) : null}
 
           <div className="flex flex-wrap justify-between gap-2 border-t border-border-soft pt-4">
             {isBuyer && ["initiated", "payment_pending"].includes(tx.status) ? (

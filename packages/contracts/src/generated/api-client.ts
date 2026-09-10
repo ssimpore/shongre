@@ -342,6 +342,18 @@ export function postAccountDelete(
     "application/json",
   );
 }
+export function getAccountExport(
+  transport: ApiTransport,
+  input: ApiInput<"getAccountExport">,
+): Promise<ApiResponse<"getAccountExport">> {
+  return executeApiOperation<"getAccountExport">(
+    transport,
+    "GET",
+    "/account/export",
+    input,
+    "application/json",
+  );
+}
 export function getAccountListings(
   transport: ApiTransport,
   input: ApiInput<"getAccountListings">,
@@ -4924,6 +4936,66 @@ export function postOrdersByIdRefund(
     "application/json",
   );
 }
+export function getOrdersByIdReturns(
+  transport: ApiTransport,
+  input: ApiInput<"getOrdersByIdReturns">,
+): Promise<ApiResponse<"getOrdersByIdReturns">> {
+  return executeApiOperation<"getOrdersByIdReturns">(
+    transport,
+    "GET",
+    "/orders/{id}/returns",
+    input,
+    "application/json",
+  );
+}
+export function postOrdersByIdReturns(
+  transport: ApiTransport,
+  input: ApiInput<"postOrdersByIdReturns">,
+): Promise<ApiResponse<"postOrdersByIdReturns">> {
+  return executeApiOperation<"postOrdersByIdReturns">(
+    transport,
+    "POST",
+    "/orders/{id}/returns",
+    input,
+    "application/json",
+  );
+}
+export function postOrdersReturnsByReturnIdDecision(
+  transport: ApiTransport,
+  input: ApiInput<"postOrdersReturnsByReturnIdDecision">,
+): Promise<ApiResponse<"postOrdersReturnsByReturnIdDecision">> {
+  return executeApiOperation<"postOrdersReturnsByReturnIdDecision">(
+    transport,
+    "POST",
+    "/orders/returns/{returnId}/decision",
+    input,
+    "application/json",
+  );
+}
+export function postOrdersReturnsByReturnIdShipped(
+  transport: ApiTransport,
+  input: ApiInput<"postOrdersReturnsByReturnIdShipped">,
+): Promise<ApiResponse<"postOrdersReturnsByReturnIdShipped">> {
+  return executeApiOperation<"postOrdersReturnsByReturnIdShipped">(
+    transport,
+    "POST",
+    "/orders/returns/{returnId}/shipped",
+    input,
+    "application/json",
+  );
+}
+export function postOrdersReturnsByReturnIdReceived(
+  transport: ApiTransport,
+  input: ApiInput<"postOrdersReturnsByReturnIdReceived">,
+): Promise<ApiResponse<"postOrdersReturnsByReturnIdReceived">> {
+  return executeApiOperation<"postOrdersReturnsByReturnIdReceived">(
+    transport,
+    "POST",
+    "/orders/returns/{returnId}/received",
+    input,
+    "application/json",
+  );
+}
 export function postOrdersByIdShip(
   transport: ApiTransport,
   input: ApiInput<"postOrdersByIdShip">,
@@ -6295,6 +6367,7 @@ export const generatedApiOperations = {
   postDigitalFulfillmentModeration,
   postDigitalAccessReportResolve,
   postAccountDelete,
+  getAccountExport,
   getAccountListings,
   postAccountUpgradeToProfessional,
   getAdminAuditLogs,
@@ -6676,6 +6749,11 @@ export const generatedApiOperations = {
   postOrdersByIdDispute,
   postOrdersByIdHandoverCode,
   postOrdersByIdRefund,
+  getOrdersByIdReturns,
+  postOrdersByIdReturns,
+  postOrdersReturnsByReturnIdDecision,
+  postOrdersReturnsByReturnIdShipped,
+  postOrdersReturnsByReturnIdReceived,
   postOrdersByIdShip,
   postOrdersDirectPurchase,
   postOrdersDirectPurchaseQuote,

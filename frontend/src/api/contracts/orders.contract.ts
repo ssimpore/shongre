@@ -1,3 +1,4 @@
+import type { components } from "@shongre/contracts/openapi";
 import { Transaction, DeliveryType } from "../../types";
 
 export const ORDER_HANDOVER_POLICY = {
@@ -41,6 +42,10 @@ export interface DirectPurchaseQuote {
   currency: string;
 }
 
+/** A return request and the seller decision on it, as the contract defines it. */
+export type OrderReturn = components["schemas"]["OrderReturn"];
+export type OrderReturnReason = OrderReturn["reason"];
+
 export interface OrdersServiceContract {
   getOrderById(orderId: string): Promise<Transaction | null>;
   getPurchases(userId: string): Promise<Transaction[]>;
@@ -73,4 +78,20 @@ export interface OrdersServiceContract {
     reason: string,
     details: string,
   ): Promise<Transaction>;
+  listReturns(orderId: string): Promise<OrderReturn[]>;
+  requestReturn(
+    orderId: string,
+    input: { reason: OrderReturnReason; details: string },
+  ): Promise<OrderReturn>;
+  decideReturn(
+    returnId: string,
+    input: { approve: boolean; note?: string },
+  ): Promise<OrderReturn>;
+  markReturnShipped(
+    returnId: string,
+    input: { carrierName?: string; trackingNumber?: string },
+  ): Promise<OrderReturn>;
+  confirmReturnReceived(
+    returnId: string,
+  ): Promise<{ return: OrderReturn; refundIssued: boolean }>;
 }

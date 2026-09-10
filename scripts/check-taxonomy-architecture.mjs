@@ -45,7 +45,8 @@ export function taxonomyArchitectureViolations(name, source) {
   if (
     name.startsWith("backend/supabase/seed/") &&
     name.endsWith(".sql") &&
-    name !== "backend/supabase/seed/taxonomy-v1.generated.sql"
+    name !== "backend/supabase/seed/taxonomy-v1.generated.sql" &&
+    name !== "backend/supabase/seed/taxonomy-references.generated.sql"
   ) {
     const sql = source.replace(/--[^\n]*|\/\*[\s\S]*?\*\//g, "");
     if (

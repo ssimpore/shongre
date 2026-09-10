@@ -84,6 +84,9 @@ health_mode=stack
 [[ "$mode" == mobile ]] && health_mode=mobile
 if [[ "$reusable" == true ]] && "$SHONGRE_ROOT/scripts/health.sh" "$health_mode" >/dev/null 2>&1 && \
   { [[ "$mode" != all ]] || "$SHONGRE_ROOT/scripts/health.sh" mobile >/dev/null 2>&1; }; then
+  if [[ "$BACKEND_DATA_MODE" == database && "$DATABASE_INFRA_MODE" == local ]]; then
+    make --no-print-directory db-types
+  fi
   shongre_pass "the selected development stack is already healthy with matching configuration and migrations"
   "$SHONGRE_ROOT/scripts/service-urls.sh"
   exit 0
@@ -92,6 +95,7 @@ fi
 make --no-print-directory stop-all
 if [[ "$BACKEND_DATA_MODE" == database && "$DATABASE_INFRA_MODE" == local ]]; then
   "$SHONGRE_ROOT/scripts/database.sh" migrate
+  make --no-print-directory db-types
   "$SHONGRE_ROOT/scripts/database.sh" seed
 fi
 

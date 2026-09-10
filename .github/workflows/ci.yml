@@ -137,19 +137,17 @@ jobs:
           cache: npm
       - uses: supabase/setup-cli@ab058987d8d6c725971f6cf9d0b5c98467e30bd1 # v1.7.1
         with:
-          version: 2.115.0
+          version: 2.116.0
       - run: npm ci
       - run: make env
       - name: Apply every migration to a clean local database
         run: |
-          supabase start --workdir backend
-          supabase db reset --workdir backend --no-seed
+          make supabase-up
+          make db-reset
       - name: Execute database RLS persona tests
         run: supabase test db --workdir backend
       - name: Verify generated database types match the migrated schema
-        env:
-          DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
-        run: npm run db:types:check --workspace=backend
+        run: make db-types-check
       - name: Baseline and verify immutable migration checksums
         env:
           DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
@@ -157,6 +155,12 @@ jobs:
           make db-migrate
           make db-migrate
           test "$(psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -qAtc "SELECT count(*) FROM public.profiles WHERE id IN ('00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000004');")" = "0"
+      - name: Verify fresh local seeding and editorial preservation
+        run: |
+          make redis-up
+          make db-seed
+          make db-seed
+          make taxonomy-db-test
       - name: Prove production demo seeding is refused
         env:
           APP_ENV: production

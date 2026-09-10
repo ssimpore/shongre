@@ -141,6 +141,60 @@ describe.skipIf(!enabled)(
       }
     }, 120_000);
 
+    it("completes a migrated reference baseline once without replacing existing rows", () => {
+      const referenceSeedPath = fileURLToPath(
+        new URL(
+          "../../supabase/seed/taxonomy-references.generated.sql",
+          import.meta.url,
+        ),
+      );
+      // Simulate the incomplete pre-editor baseline inside one rolled-back
+      // connection; no audit or publication history is changed persistently.
+      const output = runPsql(
+        process.env.DATABASE_URL!,
+        `BEGIN;
+         SELECT singleton FROM public.taxonomy_configuration WHERE singleton FOR UPDATE;
+         DELETE FROM public.auto_attribute_definitions WHERE id='bodyType' AND market_code='FR';
+         DELETE FROM public.taxonomy_audit_events;
+         UPDATE public.taxonomy_configuration SET draft_revision=draft_revision+1,updated_at=now() WHERE singleton;
+         DO $prepare$ BEGIN
+           PERFORM public.refresh_taxonomy_draft_snapshot();
+           PERFORM public.publish_taxonomy_revision(draft_revision,
+             encode(sha256(convert_to(public.read_taxonomy_draft()::text,'UTF8')),'hex'),NULL,'Prepare rolled-back bootstrap regression')
+           FROM public.taxonomy_configuration WHERE singleton;
+         END $prepare$;
+         CREATE TEMP TABLE reference_before AS
+           SELECT public.read_taxonomy_references() AS entries,
+             public.read_taxonomy_draft()-'referenceEntries' AS draft,
+             c.draft_revision FROM public.taxonomy_configuration c;
+         \\ir '${referenceSeedPath.replaceAll("'", "''")}'
+         DO $verify$ BEGIN
+           IF NOT EXISTS (SELECT 1 FROM public.auto_attribute_definitions WHERE id='bodyType' AND market_code='FR')
+             OR NOT EXISTS (SELECT 1 FROM public.published_taxonomy_reference_entries() WHERE namespace='auto_attribute_definitions' AND market_code='FR' AND record_key='bodyType')
+             OR EXISTS (SELECT 1 FROM reference_before prior, public.taxonomy_configuration c
+               WHERE NOT public.read_taxonomy_references() @> prior.entries
+                 OR public.read_taxonomy_draft()-'referenceEntries' IS DISTINCT FROM prior.draft
+                 OR c.draft_revision <> prior.draft_revision+1)
+           THEN RAISE EXCEPTION 'Missing reference baseline was not completed safely'; END IF;
+         END $verify$;
+         CREATE TEMP TABLE reference_completed AS
+           SELECT to_jsonb(c) AS configuration, public.read_taxonomy_draft() AS draft,
+             (SELECT count(*) FROM public.taxonomy_publications) AS publication_count
+           FROM public.taxonomy_configuration c;
+         \\ir '${referenceSeedPath.replaceAll("'", "''")}'
+         DO $verify$ BEGIN
+           IF EXISTS (SELECT 1 FROM reference_completed prior, public.taxonomy_configuration c
+             WHERE prior.configuration IS DISTINCT FROM to_jsonb(c)
+               OR prior.draft IS DISTINCT FROM public.read_taxonomy_draft()
+               OR prior.publication_count <> (SELECT count(*) FROM public.taxonomy_publications))
+           THEN RAISE EXCEPTION 'Repeated reference bootstrap changed taxonomy'; END IF;
+         END $verify$;
+         ROLLBACK;
+         SELECT 'reference bootstrap is complete and idempotent';`,
+      );
+      expect(output).toBe("t\nreference bootstrap is complete and idempotent");
+    }, 120_000);
+
     it("seeds the current schema without changing editorial references or revisions", () => {
       const seedPath = fileURLToPath(
         new URL("../../supabase/seed/seed.sql", import.meta.url),
@@ -161,6 +215,8 @@ describe.skipIf(!enabled)(
         process.env.DATABASE_URL!,
         `BEGIN;
          ${labelledTables.map((table) => `UPDATE public.${table} SET label = label || ' [seed preservation test]';`).join("\n")}
+         DELETE FROM public.auto_attribute_definitions
+         WHERE id=(SELECT id FROM public.auto_attribute_definitions WHERE id<>'condition' ORDER BY id LIMIT 1) AND market_code='FR';
          UPDATE public.real_estate_field_rules SET is_active = NOT is_active;
          CREATE TEMP TABLE seed_taxonomy_before AS
          SELECT public.read_taxonomy_references() AS reference_entries,

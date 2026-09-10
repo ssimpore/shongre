@@ -1,3 +1,7 @@
+import {
+  normalizeImageTransformMode,
+  type ImageTransformMode,
+} from "@shongre/shared/responsive-image";
 import type { AppEnvironment } from "@shongre/contracts/environment";
 import type { AnalyticsEnvironmentMode } from "@shongre/contracts/environment";
 import {
@@ -13,6 +17,12 @@ export interface PublicRuntimeConfig {
   apiBaseUrl: string;
   publicMediaAssetBaseUrl: string;
   publicCategoryMediaBaseUrl: string;
+  /**
+   * Whether this environment may ask the storage provider to resize images.
+   * Off unless the capability is actually provisioned: an un-transformed
+   * original is merely slow, a rejected transform request is a broken photo.
+   */
+  publicMediaImageTransform: ImageTransformMode;
   stripePublishableKey: string;
   release: string;
   applications: ShongreApplicationRegistry;
@@ -166,6 +176,9 @@ function nodeFallback(): PublicRuntimeConfig {
     ),
     publicCategoryMediaBaseUrl: nodeEnvironmentValue(
       "PUBLIC_CATEGORY_MEDIA_BASE_URL",
+    ),
+    publicMediaImageTransform: normalizeImageTransformMode(
+      nodeEnvironmentValue("PUBLIC_MEDIA_IMAGE_TRANSFORM"),
     ),
     stripePublishableKey: nodeEnvironmentValue(
       "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY",

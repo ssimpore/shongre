@@ -21,7 +21,9 @@ import {
   type NestFastifyApplication,
 } from "@nestjs/platform-fastify";
 import type { FastifyReply, FastifyRequest } from "fastify";
+import { timingSafeEqual } from "crypto";
 import { buildApiUrl, config } from "../config/index.js";
+import { metrics } from "../../infrastructure/observability/metrics.js";
 import { bootstrapApp } from "../bootstrap/index.js";
 import { apiV1Router, type ParsedRequestBody } from "../../api/v1/router.js";
 import { requestContext } from "../../infrastructure/observability/request-context.js";
@@ -183,6 +185,14 @@ function rejectMalformedPath(
   response.end(body);
 }
 
+/** Constant-time comparison, so the metrics token cannot be guessed by timing. */
+function timingSafeEquals(presented: string, expected: string): boolean {
+  const left = Buffer.from(presented);
+  const right = Buffer.from(expected);
+  if (left.length !== right.length) return false;
+  return timingSafeEqual(left, right);
+}
+
 export async function handleHttpRequest(
   req: IncomingMessage,
   res: ServerResponse,
@@ -195,6 +205,16 @@ export async function handleHttpRequest(
     const context = requestContext.getStore()!;
     res.setHeader("X-Request-Id", requestId);
     res.once("finish", () => {
+      const durationMs = Math.round(performance.now() - startedAt);
+      metrics.recordHttpRequest({
+        method: req.method || "GET",
+        // The route template, never the concrete path: a metric labelled with
+        // identifiers grows one series per listing.
+        route: context.route || "[unmatched]",
+        statusCode: res.statusCode,
+        durationMs,
+        responseBytes: Number(res.getHeader("Content-Length") || 0),
+      });
       logger.info("http_request_completed", {
         requestId,
         operationId: context.operationId,
@@ -202,7 +222,7 @@ export async function handleHttpRequest(
         method: req.method || "GET",
         path: context.route || "[operational-or-unmatched]",
         statusCode: res.statusCode,
-        durationMs: Math.round(performance.now() - startedAt),
+        durationMs,
         cacheControl: String(res.getHeader("Cache-Control") || ""),
         cacheTagCount: String(res.getHeader("Cache-Tag") || "")
           .split(",")
@@ -288,6 +308,36 @@ export async function handleHttpRequest(
           home: config.publicApiUrl,
           api: buildApiUrl("/"),
           health: new URL("/health", config.environment.urls.api).toString(),
+        }),
+      );
+      return;
+    }
+
+    /*
+     * Metrics are operational, not public. Without a token this answers 404
+     * rather than 401, so an unconfigured deployment does not advertise that
+     * the endpoint exists; production refuses to start without one.
+     */
+    if (req.url === "/metrics") {
+      const expected = config.metricsToken;
+      const presented = String(req.headers.authorization || "").replace(
+        /^Bearer\s+/i,
+        "",
+      );
+      if (!expected || !timingSafeEquals(presented, expected)) {
+        res.writeHead(404, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "not_found" }));
+        return;
+      }
+      res.writeHead(200, {
+        "Content-Type": "text/plain; version=0.0.4; charset=utf-8",
+        "Cache-Control": "no-store",
+      });
+      res.end(
+        metrics.render({
+          version: config.version,
+          release: config.release,
+          environment: config.environment.environment,
         }),
       );
       return;

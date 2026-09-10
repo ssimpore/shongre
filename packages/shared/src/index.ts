@@ -1,6 +1,7 @@
 export * from "./formatters/money";
 export * from "./formatters/date";
 export * from "./validation/search";
+export * from "./text/search-normalization";
 export * from "./deterministic-id";
 export * from "./presentation/listing";
 export * from "./media/responsive-image";

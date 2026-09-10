@@ -10,6 +10,7 @@
     "./account": "./src/schemas/account.ts",
     "./auth": "./src/schemas/auth.ts",
     "./listings": "./src/schemas/listings.ts",
+    "./orders": "./src/schemas/orders.ts",
     "./publication": "./src/schemas/publication.ts",
     "./taxonomy": "./src/schemas/taxonomy.ts",
     "./courses": "./src/schemas/courses.ts",

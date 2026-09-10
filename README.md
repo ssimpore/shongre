@@ -184,18 +184,28 @@ profile selection alone never deploy or change DNS, secrets, or databases.
 Local development defaults to `BACKEND_DATA_MODE=database` and
 `DATABASE_INFRA_MODE=local`. `make supabase-up` starts the repository-owned
 Supabase stack and writes generated credentials to ignored
-`.runtime/supabase.env`; `make backend` and `make worker` require that stack and
+`.runtime/supabase.env`. The backend runner applies migrations through
+`make db-migrate`, including the guarded taxonomy prerequisite for an empty
+local database; the Supabase CLI does not replay application SQL itself.
+`make backend` and `make worker` require that stack and
 load those credentials automatically. Redis is the BullMQ and cross-replica
 realtime transport; local Mailpit is the mail service already supplied by the
 Supabase stack. `make dev` is the one-command connected local workflow: it
 stops tracked Shongre application processes, forces backend database mode,
 starts Supabase, Redis, and Mailpit, applies
-pending migrations, loads the deterministic idempotent seed (including taxonomy
-v4, market availability, header navigation, accounts, listings, and owned
+pending migrations, checks and regenerates stale database types, then loads the
+deterministic idempotent seed (including taxonomy
+v1, market availability, header navigation, accounts, listings, and owned
 Storage media), and launches the Nest/Fastify API, independent BullMQ worker,
 and Web app. Category navigation and filters are therefore API- and
 database-backed. `make frontend` starts the same API-only Web client and
 requires a reachable backend.
+
+Local `make dev`, `make dev-web` and `make dev-mobile` also synchronize types
+before reusing a healthy stack. Matching files are left untouched; a generation
+failure stops the launcher before it starts applications. CI's
+`make db-types-check` remains read-only and rejects drift.
+
 Docker must be installed and running first, its data store must be writable, and
 the host must have at least 5 GiB free. The startup preflight fails with an
 actionable error instead of waiting indefinitely for an unhealthy daemon.

@@ -12,6 +12,7 @@ import {
 import { useDialogBehavior } from "../../../design-system/primitives/useDialogBehavior";
 import { ListingPhoto } from "../../../types";
 import { useTranslation } from "../../../i18n/I18nProvider";
+import { getPublicRuntimeConfig } from "../../../platform/runtime-config/public-runtime-config";
 
 export interface ListingMediaGalleryProps {
   photos: Array<ListingPhoto | string>;
@@ -154,7 +155,9 @@ export const ListingMediaGallery: React.FC<ListingMediaGalleryProps> = ({
             source fails. */}
         <img
           src={currentUrl!}
-          srcSet={buildSrcSet(currentUrl!)}
+          srcSet={buildSrcSet(currentUrl!, {
+            transformMode: getPublicRuntimeConfig().publicMediaImageTransform,
+          })}
           sizes={IMAGE_SIZES.gallery}
           width={1200}
           height={900}

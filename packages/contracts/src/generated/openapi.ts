@@ -21,6 +21,26 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/account/export": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /**
+         * GET /account/export
+         * @description Returns a portable, machine-readable copy of the authenticated account's own data. Rate limited to protect the database from repeated full-account reads.
+         */
+        readonly get: operations["getAccountExport"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/account/listings": {
         readonly parameters: {
             readonly query?: never;
@@ -7245,6 +7265,30 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/orders/{id}/returns": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /**
+         * List the returns recorded against an order
+         * @description Visible to the order's buyer and seller.
+         */
+        readonly get: operations["getOrdersByIdReturns"];
+        readonly put?: never;
+        /**
+         * Request a return for an order
+         * @description A buyer asks to return the item. A withdrawal reason is only accepted for a purchase from a professional seller, where the right applies, and cannot then be refused.
+         */
+        readonly post: operations["postOrdersByIdReturns"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/orders/{id}/review": {
         readonly parameters: {
             readonly query?: never;
@@ -7344,6 +7388,66 @@ export interface paths {
         readonly put?: never;
         /** POST /orders/reservation */
         readonly post: operations["postOrdersReservation"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/orders/returns/{returnId}/decision": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /**
+         * Accept or refuse a return request
+         * @description The seller's answer. A statutory withdrawal may only be accepted; a refusal must carry a reason.
+         */
+        readonly post: operations["postOrdersReturnsByReturnIdDecision"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/orders/returns/{returnId}/received": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /**
+         * Confirm the returned item arrived and refund
+         * @description The seller confirms receipt, which issues the refund through the ordinary refund path.
+         */
+        readonly post: operations["postOrdersReturnsByReturnIdReceived"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/orders/returns/{returnId}/shipped": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        /**
+         * Record that the returned item was sent back
+         * @description The buyer reports the return shipment.
+         */
+        readonly post: operations["postOrdersReturnsByReturnIdShipped"];
         readonly delete?: never;
         readonly options?: never;
         readonly head?: never;
@@ -8383,6 +8487,44 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** @description A portable copy of everything the account owns, as required by data-portability rules. Contains only the requester's own records; counterparties appear as identifiers, never as profiles. */
+        readonly AccountDataExport: {
+            readonly consents: readonly {
+                readonly [key: string]: unknown;
+            }[];
+            readonly conversations: readonly {
+                readonly [key: string]: unknown;
+            }[];
+            readonly favorites: readonly string[];
+            /** @constant */
+            readonly format: "shongre.account-export.v1";
+            /** Format: date-time */
+            readonly generatedAt: string;
+            readonly listings: readonly {
+                readonly [key: string]: unknown;
+            }[];
+            readonly orders: readonly {
+                readonly [key: string]: unknown;
+            }[];
+            /** @description The account's own profile record. */
+            readonly profile: {
+                readonly [key: string]: unknown;
+            };
+            readonly reviews: readonly {
+                readonly [key: string]: unknown;
+            }[];
+            readonly savedSearches: readonly {
+                readonly [key: string]: unknown;
+            }[];
+            readonly subject: {
+                readonly userId: string;
+            };
+            /** @description Sections whose export hit the per-section bound. Absent when the copy is complete. */
+            readonly truncated?: readonly string[];
+            readonly verification: readonly {
+                readonly [key: string]: unknown;
+            }[];
+        };
         readonly AddressSuggestions: {
             readonly results: readonly components["schemas"]["GeocodingResult"][];
         };
@@ -11854,6 +11996,46 @@ export interface components {
         } & {
             readonly [key: string]: unknown;
         };
+        /** @description A buyer return request and the seller decision on it. */
+        readonly OrderReturn: {
+            readonly carrierName?: string;
+            /** Format: date-time */
+            readonly createdAt: string;
+            readonly currency: components["schemas"]["CurrencyCode"];
+            /** Format: date-time */
+            readonly decidedAt?: string;
+            readonly decidedBy?: string;
+            readonly decisionNote?: string;
+            readonly details: string;
+            /** Format: uuid */
+            readonly id: string;
+            /** @description A statutory withdrawal cannot be refused by the seller. */
+            readonly isStatutoryWithdrawal: boolean;
+            /** Format: uuid */
+            readonly orderId: string;
+            /** @enum {string} */
+            readonly reason: "withdrawal" | "damaged" | "not_as_described" | "wrong_item" | "missing_parts" | "other";
+            /** Format: date-time */
+            readonly receivedAt?: string;
+            /** Format: uuid */
+            readonly refundId?: string;
+            readonly requestedBaseMinor: number;
+            readonly requesterId: string;
+            /** Format: date-time */
+            readonly shippedAt?: string;
+            /** @enum {string} */
+            readonly status: "requested" | "approved" | "rejected" | "shipped" | "received" | "refunded" | "cancelled" | "expired";
+            readonly trackingNumber?: string;
+            /** Format: date-time */
+            readonly updatedAt: string;
+            /** Format: date-time */
+            readonly windowExpiresAt: string;
+        };
+        readonly OrderReturnReceipt: {
+            /** @description Whether the provider refund settled immediately. */
+            readonly refundIssued: boolean;
+            readonly return: components["schemas"]["OrderReturn"];
+        };
         readonly OrderReviewEligibility: {
             readonly eligible: boolean;
             /** @enum {string|null} */
@@ -13733,6 +13915,40 @@ export interface operations {
                         /** @constant */
                         readonly status: "completed";
                     };
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getAccountExport: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description The account's portable data copy. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["AccountDataExport"];
                 };
             };
             readonly 400: components["responses"]["BadRequest"];
@@ -30021,7 +30237,10 @@ export interface operations {
         readonly requestBody: {
             readonly content: {
                 readonly "application/json": {
-                    readonly [key: string]: unknown;
+                    readonly idempotencyKey: string;
+                    readonly reason?: string;
+                    /** @description Item value to refund, in minor units. Omitted refunds everything still refundable; anything less is a partial refund and leaves the sale standing for the remainder. */
+                    readonly refundBaseMinor?: number;
                 };
             };
         };
@@ -30034,6 +30253,86 @@ export interface operations {
                 };
                 content: {
                     readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly getOrdersByIdReturns: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path: {
+                readonly id: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description List the returns recorded against an order */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": readonly components["schemas"]["OrderReturn"][];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly postOrdersByIdReturns: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path: {
+                readonly id: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": {
+                    readonly details: string;
+                    /** @enum {string} */
+                    readonly reason: "withdrawal" | "damaged" | "not_as_described" | "wrong_item" | "missing_parts" | "other";
+                };
+            };
+        };
+        readonly responses: {
+            /** @description Request a return for an order */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["OrderReturn"];
                 };
             };
             readonly 400: components["responses"]["BadRequest"];
@@ -30263,6 +30562,128 @@ export interface operations {
                 };
                 content: {
                     readonly "application/json": components["schemas"]["JsonValue"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly postOrdersReturnsByReturnIdDecision: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path: {
+                readonly returnId: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": {
+                    readonly approve: boolean;
+                    readonly note?: string;
+                };
+            };
+        };
+        readonly responses: {
+            /** @description Accept or refuse a return request */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["OrderReturn"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly postOrdersReturnsByReturnIdReceived: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path: {
+                readonly returnId: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Confirm the returned item arrived and refund */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["OrderReturnReceipt"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 401: components["responses"]["Unauthorized"];
+            readonly 403: components["responses"]["Forbidden"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+        };
+    };
+    readonly postOrdersReturnsByReturnIdShipped: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path: {
+                readonly returnId: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": {
+                    readonly carrierName?: string;
+                    readonly trackingNumber?: string;
+                };
+            };
+        };
+        readonly responses: {
+            /** @description Record that the returned item was sent back */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["OrderReturn"];
                 };
             };
             readonly 400: components["responses"]["BadRequest"];

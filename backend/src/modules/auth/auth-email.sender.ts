@@ -4,12 +4,23 @@ import nodemailer from "nodemailer";
 
 export type AuthEmailTemplate = "verify_email" | "password_reset";
 
+const SUBJECTS: Record<AuthEmailTemplate, string> = {
+  verify_email: "Confirmez votre adresse e-mail Shongre",
+  password_reset: "Réinitialisez votre mot de passe Shongre",
+};
+
 /**
  * Sends an auth email through Shongre's transactional-delivery boundary.
  *
- * The delivery service owns SMTP/provider credentials and templates. This API
- * receives only the destination, locale-safe template id and single-use link;
- * it never receives passwords, provider tokens or session credentials.
+ * Two boundaries are supported, in this order: a delivery service over HTTP
+ * when one is configured, otherwise the same SMTP endpoint the notification
+ * worker uses. Direct SMTP exists because requiring a separate delivery
+ * service meant a deployment with working credentials still could not confirm
+ * an address or reset a password.
+ *
+ * Either way this receives only the destination, locale-safe template id and
+ * single-use link; it never receives passwords, provider tokens or session
+ * credentials.
  */
 export class AuthEmailSender {
   async send(input: {
@@ -22,10 +33,7 @@ export class AuthEmailSender {
         config.environment.environment === "local" &&
         config.localMailSmtpUrl
       ) {
-        const subject =
-          input.template === "verify_email"
-            ? "Confirmez votre adresse e-mail Shongre"
-            : "Réinitialisez votre mot de passe Shongre";
+        const subject = SUBJECTS[input.template];
         await nodemailer.createTransport(config.localMailSmtpUrl).sendMail({
           from: "Shongre local <no-reply@local.shongre.invalid>",
           to: input.to,
@@ -50,7 +58,8 @@ export class AuthEmailSender {
       }
     }
     if (!config.authEmailDeliveryUrl) {
-      throw new Error("AUTH_EMAIL_DELIVERY_URL is not configured.");
+      await this.sendOverSmtp(input);
+      return;
     }
     const idempotencyKey = createHash("sha256")
       .update(`${input.template}:${input.to.toLowerCase()}:${input.actionUrl}`)
@@ -86,6 +95,35 @@ export class AuthEmailSender {
     throw new Error(
       `Authentication email delivery failed with status ${lastStatus || "unavailable"}.`,
     );
+  }
+
+  /** Direct SMTP, for deployments with no separate delivery service. */
+  private async sendOverSmtp(input: {
+    to: string;
+    template: AuthEmailTemplate;
+    actionUrl: string;
+  }): Promise<void> {
+    if (!config.notificationSmtpUrl || !config.notificationEmailFrom) {
+      throw new Error(
+        "No authentication email boundary is configured. Set AUTH_EMAIL_DELIVERY_URL or NOTIFICATION_SMTP_URL with NOTIFICATION_EMAIL_FROM.",
+      );
+    }
+    const subject = SUBJECTS[input.template];
+    await nodemailer.createTransport(config.notificationSmtpUrl).sendMail({
+      from: config.notificationEmailFrom,
+      to: input.to,
+      subject,
+      text: `${subject}\n\n${input.actionUrl}`,
+      headers: {
+        // The link is single-use, so a provider-side redelivery of the same
+        // message must not be treated as a second request.
+        "X-Entity-Ref-ID": createHash("sha256")
+          .update(
+            `${input.template}:${input.to.toLowerCase()}:${input.actionUrl}`,
+          )
+          .digest("hex"),
+      },
+    });
   }
 }
 

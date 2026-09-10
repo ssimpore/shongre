@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import {
   Apple,
   CheckCircle2,
+  Download,
   KeyRound,
   Laptop,
   Link2,
@@ -296,6 +297,41 @@ export function AccountSecurityPage() {
       </div>
     );
   }
+
+  /**
+   * Hands the account its own data as a file.
+   *
+   * Built in the browser from the API response rather than served as a
+   * download URL, so no durable copy of a person's data is created anywhere
+   * for them to read something they can already see.
+   */
+  const downloadAccountData = async () => {
+    setBusy("export");
+    setError("");
+    try {
+      const copy = await services.auth.exportAccountData();
+      const file = new Blob([JSON.stringify(copy, null, 2)], {
+        type: "application/json",
+      });
+      const href = URL.createObjectURL(file);
+      const link = document.createElement("a");
+      link.href = href;
+      link.download = `shongre-donnees-compte-${copy.generatedAt.slice(0, 10)}.json`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(href);
+      toast.success(t("auth.security.exportReady"));
+    } catch (caught) {
+      setError(
+        caught instanceof Error
+          ? caught.message
+          : t("auth.security.exportFailed"),
+      );
+    } finally {
+      setBusy(null);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -735,6 +771,34 @@ export function AccountSecurityPage() {
             </Button>
           </div>
         ) : null}
+      </section>
+
+      <section
+        className="rounded-card border border-border-base bg-bg-surface p-4 shadow-xs sm:p-5"
+        aria-labelledby="account-export-title"
+      >
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2
+              id="account-export-title"
+              className="text-base font-bold text-text-deep"
+            >
+              {t("auth.security.exportTitle")}
+            </h2>
+            <p className="mt-1 max-w-prose text-xs text-text-tertiary">
+              {t("auth.security.exportDescription")}
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            leftIcon={<Download className="h-icon-sm w-icon-sm" />}
+            isLoading={busy === "export"}
+            onClick={() => void downloadAccountData()}
+          >
+            {t("auth.security.exportAction")}
+          </Button>
+        </div>
       </section>
 
       <p className="flex items-center gap-2 text-xs text-text-tertiary">

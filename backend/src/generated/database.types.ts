@@ -19899,8 +19899,30 @@ export type Database = {
           },
         ];
       };
+      listing_view_rollup_state: {
+        Row: {
+          id: boolean;
+          last_event_id: string;
+          last_event_received_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: boolean;
+          last_event_id?: string;
+          last_event_received_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: boolean;
+          last_event_id?: string;
+          last_event_received_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       listings: {
         Row: {
+          administrative_area: string | null;
           allowed_delivery: Database["public"]["Enums"]["delivery_type"][];
           attributes: Json;
           attributes_schema_version: number;
@@ -19922,16 +19944,23 @@ export type Database = {
           favorite_count: number;
           featured_expires_at: string | null;
           fulfillment_model: string;
+          geocoded_at: string | null;
+          geocoding_provider: string | null;
+          geographic_point: unknown;
           id: string;
           is_featured: boolean;
           is_urgent: boolean;
           latitude: number | null;
           listing_intent: string | null;
           listing_type_id: string | null;
+          location_precision: string;
+          location_source: string | null;
+          location_updated_at: string | null;
           longitude: number | null;
           market_code: string;
           materially_updated_at: string | null;
           model: string | null;
+          normalized_address: string | null;
           organic_freshness_at: string;
           original_price: number | null;
           package_weight_kg: number | null;
@@ -19972,6 +20001,7 @@ export type Database = {
           view_count: number;
         };
         Insert: {
+          administrative_area?: string | null;
           allowed_delivery?: Database["public"]["Enums"]["delivery_type"][];
           attributes?: Json;
           attributes_schema_version?: number;
@@ -19993,16 +20023,23 @@ export type Database = {
           favorite_count?: number;
           featured_expires_at?: string | null;
           fulfillment_model?: string;
+          geocoded_at?: string | null;
+          geocoding_provider?: string | null;
+          geographic_point?: unknown;
           id?: string;
           is_featured?: boolean;
           is_urgent?: boolean;
           latitude?: number | null;
           listing_intent?: string | null;
           listing_type_id?: string | null;
+          location_precision?: string;
+          location_source?: string | null;
+          location_updated_at?: string | null;
           longitude?: number | null;
           market_code: string;
           materially_updated_at?: string | null;
           model?: string | null;
+          normalized_address?: string | null;
           organic_freshness_at?: string;
           original_price?: number | null;
           package_weight_kg?: number | null;
@@ -20043,6 +20080,7 @@ export type Database = {
           view_count?: number;
         };
         Update: {
+          administrative_area?: string | null;
           allowed_delivery?: Database["public"]["Enums"]["delivery_type"][];
           attributes?: Json;
           attributes_schema_version?: number;
@@ -20064,16 +20102,23 @@ export type Database = {
           favorite_count?: number;
           featured_expires_at?: string | null;
           fulfillment_model?: string;
+          geocoded_at?: string | null;
+          geocoding_provider?: string | null;
+          geographic_point?: unknown;
           id?: string;
           is_featured?: boolean;
           is_urgent?: boolean;
           latitude?: number | null;
           listing_intent?: string | null;
           listing_type_id?: string | null;
+          location_precision?: string;
+          location_source?: string | null;
+          location_updated_at?: string | null;
           longitude?: number | null;
           market_code?: string;
           materially_updated_at?: string | null;
           model?: string | null;
+          normalized_address?: string | null;
           organic_freshness_at?: string;
           original_price?: number | null;
           package_weight_kg?: number | null;
@@ -25904,10 +25949,198 @@ export type Database = {
           },
         ];
       };
+      order_refunds: {
+        Row: {
+          actor_id: string | null;
+          base_minor: number;
+          created_at: string;
+          currency: string;
+          id: string;
+          idempotency_key: string;
+          is_full: boolean;
+          order_id: string;
+          provider_refund_id: string | null;
+          reason: string | null;
+          refunded_minor: number;
+          status: string;
+          updated_at: string;
+        };
+        Insert: {
+          actor_id?: string | null;
+          base_minor: number;
+          created_at?: string;
+          currency: string;
+          id?: string;
+          idempotency_key: string;
+          is_full: boolean;
+          order_id: string;
+          provider_refund_id?: string | null;
+          reason?: string | null;
+          refunded_minor: number;
+          status?: string;
+          updated_at?: string;
+        };
+        Update: {
+          actor_id?: string | null;
+          base_minor?: number;
+          created_at?: string;
+          currency?: string;
+          id?: string;
+          idempotency_key?: string;
+          is_full?: boolean;
+          order_id?: string;
+          provider_refund_id?: string | null;
+          reason?: string | null;
+          refunded_minor?: number;
+          status?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "order_refunds_actor_id_fkey";
+            columns: ["actor_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "order_refunds_actor_id_fkey";
+            columns: ["actor_id"];
+            isOneToOne: false;
+            referencedRelation: "public_profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "order_refunds_order_id_fkey";
+            columns: ["order_id"];
+            isOneToOne: false;
+            referencedRelation: "orders";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      order_returns: {
+        Row: {
+          carrier_name: string | null;
+          created_at: string;
+          currency: string;
+          decided_at: string | null;
+          decided_by: string | null;
+          decision_note: string | null;
+          details: string;
+          id: string;
+          is_statutory_withdrawal: boolean;
+          order_id: string;
+          reason: string;
+          received_at: string | null;
+          refund_id: string | null;
+          requested_base_minor: number;
+          requester_id: string;
+          shipped_at: string | null;
+          status: string;
+          tracking_number: string | null;
+          updated_at: string;
+          window_expires_at: string;
+        };
+        Insert: {
+          carrier_name?: string | null;
+          created_at?: string;
+          currency: string;
+          decided_at?: string | null;
+          decided_by?: string | null;
+          decision_note?: string | null;
+          details: string;
+          id?: string;
+          is_statutory_withdrawal?: boolean;
+          order_id: string;
+          reason: string;
+          received_at?: string | null;
+          refund_id?: string | null;
+          requested_base_minor: number;
+          requester_id: string;
+          shipped_at?: string | null;
+          status?: string;
+          tracking_number?: string | null;
+          updated_at?: string;
+          window_expires_at: string;
+        };
+        Update: {
+          carrier_name?: string | null;
+          created_at?: string;
+          currency?: string;
+          decided_at?: string | null;
+          decided_by?: string | null;
+          decision_note?: string | null;
+          details?: string;
+          id?: string;
+          is_statutory_withdrawal?: boolean;
+          order_id?: string;
+          reason?: string;
+          received_at?: string | null;
+          refund_id?: string | null;
+          requested_base_minor?: number;
+          requester_id?: string;
+          shipped_at?: string | null;
+          status?: string;
+          tracking_number?: string | null;
+          updated_at?: string;
+          window_expires_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "order_returns_decided_by_fkey";
+            columns: ["decided_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "order_returns_decided_by_fkey";
+            columns: ["decided_by"];
+            isOneToOne: false;
+            referencedRelation: "public_profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "order_returns_order_id_fkey";
+            columns: ["order_id"];
+            isOneToOne: false;
+            referencedRelation: "orders";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "order_returns_refund_id_fkey";
+            columns: ["refund_id"];
+            isOneToOne: false;
+            referencedRelation: "order_refunds";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "order_returns_requester_id_fkey";
+            columns: ["requester_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "order_returns_requester_id_fkey";
+            columns: ["requester_id"];
+            isOneToOne: false;
+            referencedRelation: "public_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       orders: {
         Row: {
           buyer_id: string;
           carrier_name: string | null;
+          chargeback_amount_minor: number | null;
+          chargeback_closed_at: string | null;
+          chargeback_opened_at: string | null;
+          chargeback_provider_id: string | null;
+          chargeback_reason: string | null;
+          chargeback_status: string | null;
           checkout_idempotency_key: string | null;
           checkout_session_id: string | null;
           commission_calculation_id: string | null;
@@ -25937,6 +26170,8 @@ export type Database = {
           order_number: string;
           payment_intent_id: string | null;
           payment_method: string;
+          payout_failed_at: string | null;
+          payout_failure_code: string | null;
           platform_commission_minor: number | null;
           product_version: string | null;
           protection_fee: number;
@@ -25944,6 +26179,7 @@ export type Database = {
           refund_base_minor: number | null;
           refund_idempotency_key: string | null;
           refund_provider_id: string | null;
+          refunded_base_total_minor: number;
           remaining_balance: number | null;
           seller_id: string;
           seller_payable_minor: number | null;
@@ -25964,6 +26200,12 @@ export type Database = {
         Insert: {
           buyer_id: string;
           carrier_name?: string | null;
+          chargeback_amount_minor?: number | null;
+          chargeback_closed_at?: string | null;
+          chargeback_opened_at?: string | null;
+          chargeback_provider_id?: string | null;
+          chargeback_reason?: string | null;
+          chargeback_status?: string | null;
           checkout_idempotency_key?: string | null;
           checkout_session_id?: string | null;
           commission_calculation_id?: string | null;
@@ -25993,6 +26235,8 @@ export type Database = {
           order_number: string;
           payment_intent_id?: string | null;
           payment_method?: string;
+          payout_failed_at?: string | null;
+          payout_failure_code?: string | null;
           platform_commission_minor?: number | null;
           product_version?: string | null;
           protection_fee?: number;
@@ -26000,6 +26244,7 @@ export type Database = {
           refund_base_minor?: number | null;
           refund_idempotency_key?: string | null;
           refund_provider_id?: string | null;
+          refunded_base_total_minor?: number;
           remaining_balance?: number | null;
           seller_id: string;
           seller_payable_minor?: number | null;
@@ -26020,6 +26265,12 @@ export type Database = {
         Update: {
           buyer_id?: string;
           carrier_name?: string | null;
+          chargeback_amount_minor?: number | null;
+          chargeback_closed_at?: string | null;
+          chargeback_opened_at?: string | null;
+          chargeback_provider_id?: string | null;
+          chargeback_reason?: string | null;
+          chargeback_status?: string | null;
           checkout_idempotency_key?: string | null;
           checkout_session_id?: string | null;
           commission_calculation_id?: string | null;
@@ -26049,6 +26300,8 @@ export type Database = {
           order_number?: string;
           payment_intent_id?: string | null;
           payment_method?: string;
+          payout_failed_at?: string | null;
+          payout_failure_code?: string | null;
           platform_commission_minor?: number | null;
           product_version?: string | null;
           protection_fee?: number;
@@ -26056,6 +26309,7 @@ export type Database = {
           refund_base_minor?: number | null;
           refund_idempotency_key?: string | null;
           refund_provider_id?: string | null;
+          refunded_base_total_minor?: number;
           remaining_balance?: number | null;
           seller_id?: string;
           seller_payable_minor?: number | null;
@@ -34208,6 +34462,10 @@ export type Database = {
         };
       };
       evaluate_watch_event: { Args: { p_event_id: string }; Returns: number };
+      expire_stale_order_returns: {
+        Args: { p_limit?: number };
+        Returns: number;
+      };
       finalize_invoicing_invoice: {
         Args: {
           p_actor_id: string;
@@ -34905,6 +35163,12 @@ export type Database = {
         Returns: {
           buyer_id: string;
           carrier_name: string | null;
+          chargeback_amount_minor: number | null;
+          chargeback_closed_at: string | null;
+          chargeback_opened_at: string | null;
+          chargeback_provider_id: string | null;
+          chargeback_reason: string | null;
+          chargeback_status: string | null;
           checkout_idempotency_key: string | null;
           checkout_session_id: string | null;
           commission_calculation_id: string | null;
@@ -34934,6 +35198,8 @@ export type Database = {
           order_number: string;
           payment_intent_id: string | null;
           payment_method: string;
+          payout_failed_at: string | null;
+          payout_failure_code: string | null;
           platform_commission_minor: number | null;
           product_version: string | null;
           protection_fee: number;
@@ -34941,6 +35207,7 @@ export type Database = {
           refund_base_minor: number | null;
           refund_idempotency_key: string | null;
           refund_provider_id: string | null;
+          refunded_base_total_minor: number;
           remaining_balance: number | null;
           seller_id: string;
           seller_payable_minor: number | null;
@@ -35117,6 +35384,13 @@ export type Database = {
         Args: { p_user_id: string };
         Returns: undefined;
       };
+      roll_up_listing_view_counts: {
+        Args: { p_limit?: number };
+        Returns: {
+          processed_events: number;
+          updated_listings: number;
+        }[];
+      };
       rollback_taxonomy_revision: {
         Args: {
           p_actor_profile_id: string;
@@ -35204,6 +35478,23 @@ export type Database = {
       save_monetization_quote: {
         Args: { p_idempotency_key: string; p_quote: Json };
         Returns: Json;
+      };
+      search_listing_ids_spatial: {
+        Args: {
+          p_center_latitude?: number;
+          p_center_longitude?: number;
+          p_east?: number;
+          p_limit?: number;
+          p_market_code: string;
+          p_north?: number;
+          p_radius_km?: number;
+          p_south?: number;
+          p_west?: number;
+        };
+        Returns: {
+          distance_km: number;
+          id: string;
+        }[];
       };
       search_real_estate_property_ids_spatial: {
         Args: {

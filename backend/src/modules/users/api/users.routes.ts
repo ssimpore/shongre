@@ -44,6 +44,16 @@ export function registerUsersRoutes(routes: RouteRegistrar): void {
       ),
   );
   routes.addRoute(
+    "GET",
+    "/account/export",
+    permission("marketplace.customer.access"),
+    async ({ principal, marketCode }) =>
+      usersService.exportAccountData(
+        principal.userId,
+        requireApiRequestMarket(marketCode),
+      ),
+  );
+  routes.addRoute(
     "POST",
     "/account/upgrade-to-professional",
     permission("marketplace.customer.access"),

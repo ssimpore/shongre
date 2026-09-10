@@ -11,6 +11,7 @@ const injected: PublicRuntimeConfig = {
     "https://storage-staging.shongre.invalid/listing-media/editorial",
   publicCategoryMediaBaseUrl:
     "https://storage-staging.shongre.invalid/listing-media/categories",
+  publicMediaImageTransform: "disabled",
   stripePublishableKey: "pk_test_staging",
   map: {
     provider: "openfreemap",

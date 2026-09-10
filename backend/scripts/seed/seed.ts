@@ -60,9 +60,7 @@ async function runSeed() {
     runPsqlFile(databaseUrl, taxonomySeedSqlPath, { singleTransaction: false });
     console.log("Bootstrapped the local database taxonomy.");
   } else {
-    console.log(
-      "Preserved the database-owned taxonomy and editorial revisions.",
-    );
+    console.log("Using the existing database taxonomy publication.");
   }
   runPsqlFile(databaseUrl, seedSqlPath);
   console.log("Canonical reference data applied in one transaction.");

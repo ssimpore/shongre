@@ -9,6 +9,7 @@ import {
   OPENFREEMAP_STYLE_URL,
 } from "./public-runtime-config";
 import { createApplicationRegistry } from "../applications/application-registry";
+import { normalizeImageTransformMode } from "@shongre/shared/responsive-image";
 
 function enabled(name: string): boolean {
   return process.env[name] === "true";
@@ -45,6 +46,9 @@ export function createPublicRuntimeConfig(): PublicRuntimeConfig {
   const publicMediaAssetBaseUrl = process.env.PUBLIC_MEDIA_ASSET_BASE_URL ?? "";
   const publicCategoryMediaBaseUrl =
     process.env.PUBLIC_CATEGORY_MEDIA_BASE_URL ?? "";
+  const publicMediaImageTransform = normalizeImageTransformMode(
+    process.env.PUBLIC_MEDIA_IMAGE_TRANSFORM,
+  );
   const stripePublishableKey =
     process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? "";
   const analyticsMode = (process.env.ANALYTICS_MODE ?? "off") as
@@ -108,6 +112,7 @@ export function createPublicRuntimeConfig(): PublicRuntimeConfig {
     apiBaseUrl: apiBaseUrl(environment.urls.api),
     publicMediaAssetBaseUrl,
     publicCategoryMediaBaseUrl,
+    publicMediaImageTransform,
     stripePublishableKey,
     release:
       process.env.RELEASE_SHA ||

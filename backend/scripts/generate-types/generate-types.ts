@@ -46,15 +46,17 @@ async function generateTypes(): Promise<void> {
   }
   const generated = await format(result.stdout, { parser: "typescript" });
 
-  if (checkOnly) {
-    const current = fs.readFileSync(typesOutputPath, "utf8");
-    if (current !== generated) {
-      throw new Error(
-        "Generated database types are stale. Run npm run db:types --workspace=backend against the migrated schema.",
-      );
-    }
+  if (
+    fs.existsSync(typesOutputPath) &&
+    fs.readFileSync(typesOutputPath, "utf8") === generated
+  ) {
     console.log(`Database types are current at ${typesOutputPath}.`);
     return;
+  }
+  if (checkOnly) {
+    throw new Error(
+      "Generated database types are stale. Run make db-types against the migrated schema.",
+    );
   }
 
   fs.mkdirSync(path.dirname(typesOutputPath), { recursive: true });

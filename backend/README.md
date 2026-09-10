@@ -142,10 +142,21 @@ the Supabase-compatible migration ledger. Interactive local use proves a
 loopback target; remote use additionally requires the protected deployment
 workflow's approval marker and hosted fingerprint validation.
 
+Supabase startup creates infrastructure only: automatic CLI migrations and
+seeding are disabled in the local configuration. The backend migration runner
+owns the complete history. Before `00125`, a fresh local database needs the
+canonical taxonomy identities; the runner uses the existing guarded taxonomy
+import only for the configured local Supabase database with no taxonomy import,
+editorial publication, profiles or listings. Existing content and hosted databases
+never receive this automatic import. Applied SQL history remains unchanged.
+
 `make db-seed` follows the same safety model and applies the idempotent reference
 data in one transaction. Without an explicit safe local URL it discovers the
 running local Supabase endpoint; it never treats a remote database as a
-development fallback.
+development fallback. After migrations, the generated taxonomy reference import
+fills missing vehicle, property, course and employment baseline entries from the
+canonical v1 source and publishes them once. It preserves existing rows and
+skips authored catalogues and subsequent seed runs, including intentional removals.
 
 The production backend image contains `dist/server.js`, `dist/worker.js`,
 `dist/worker-health.js`, `dist/migrate.js`, `psql`, and the exact source-controlled SQL history. The
@@ -156,10 +167,17 @@ never runs migrations.
 `make db-types` requires the Supabase CLI plus either `DATABASE_URL` or
 `SUPABASE_PROJECT_REF`; it writes directly to
 `backend/src/generated/database.types.ts` and refuses placeholder output.
+Commit that generated file with its migrations; `make db-types-check` compares
+the file with the migrated schema and fails on drift without rewriting it.
+Local development launchers run `make db-types` automatically after migration
+and before application startup, including when reusing a healthy stack.
+Generation leaves matching files untouched and aborts startup on failure.
 
 Use `make db-reset` only for disposable local development data. The root target
 requires `APP_ENV=local`, a loopback Supabase host, the local CLI workdir,
-and an available Docker daemon.
+and an available Docker daemon. It recreates the database, then invokes the same
+`make db-migrate` workflow used by local startup and CI. It does not seed demo
+accounts or listings; use `make db-seed` separately for product development.
 
 ## Security invariants
 

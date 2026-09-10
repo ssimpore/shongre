@@ -29,6 +29,9 @@ describe("local database seed entrypoint", () => {
     expect(seed).toContain("\\ir courses.sql");
     expect(seed).toContain("\\ir auto.sql");
     expect(seed).toContain("\\ir real-estate.sql");
+    expect(seed.indexOf("\\ir taxonomy-references.generated.sql")).toBeLessThan(
+      seed.indexOf("\\ir courses.sql"),
+    );
     expect(seed).not.toContain("\\ir taxonomy-v1.generated.sql");
     expect(runner).toContain("taxonomy-v1.generated.sql");
     expect(

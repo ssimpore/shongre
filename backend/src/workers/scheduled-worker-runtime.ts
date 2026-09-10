@@ -1,7 +1,9 @@
 import { logger } from "../infrastructure/logging/logger.js";
 import { config } from "../app/config/index.js";
 import { WorkerHeartbeat } from "../infrastructure/observability/worker-heartbeat.js";
+import { performance } from "node:perf_hooks";
 import { scheduledJobCoordinator } from "../infrastructure/queue/scheduled-job-coordinator.js";
+import { metrics } from "../infrastructure/observability/metrics.js";
 import { storageService } from "../infrastructure/storage/storage-service.js";
 import { providerDataDeletionWorker } from "./auth/provider-data-deletion-worker.js";
 import { revenueRecognitionWorker } from "./finance/revenue-recognition-worker.js";
@@ -21,6 +23,7 @@ import { providerWebhookWorker } from "./payments/provider-webhook-worker.js";
 import { multilingualSearchReindexWorker } from "./search/multilingual-search-reindex-worker.js";
 import { discoveryEventWorker } from "./search/discovery-event-worker.js";
 import { indexNowWorker } from "./search/indexnow-worker.js";
+import { listingEngagementWorker } from "./listings/listing-engagement-worker.js";
 import { digitalFulfillmentWorker } from "./digital-products/digital-fulfillment-worker.js";
 import { watchSubscriptionsWorker } from "./watch-subscriptions/watch-subscriptions-worker.js";
 import { deliveryOutboxWorker } from "./delivery/delivery-outbox-worker.js";
@@ -83,6 +86,12 @@ const jobs: ScheduledJob[] = [
     group: "analytics",
     intervalSeconds: 15,
     run: () => indexNowWorker.run(),
+  },
+  {
+    name: "listing_view_rollup",
+    group: "analytics",
+    intervalSeconds: 300,
+    run: () => listingEngagementWorker.run(),
   },
   {
     name: "analytics_aggregate_refresh",
@@ -167,6 +176,12 @@ const jobs: ScheduledJob[] = [
     group: "payments",
     intervalSeconds: 5,
     run: () => providerWebhookWorker.run(),
+  },
+  {
+    name: "order_return_expiry",
+    group: "lifecycle",
+    intervalSeconds: 3_600,
+    run: () => ordersService.expireStaleReturns(),
   },
   {
     name: "order_checkout_reconciliation",
@@ -380,6 +395,7 @@ export class ScheduledWorkerRuntime {
     job: ScheduledJob,
     queueJob: Job<ScheduledJobPayload, void, string>,
   ): Promise<void> {
+    const startedAt = performance.now();
     try {
       const leaseSeconds = Math.max(120, Math.min(job.intervalSeconds, 900));
       const claimed = await scheduledJobCoordinator.claim(
@@ -388,7 +404,16 @@ export class ScheduledWorkerRuntime {
         leaseSeconds,
       );
       await this.heartbeat.touch();
-      if (!claimed) return;
+      if (!claimed) {
+        // Another replica owns this tick. Recorded so a job that never runs
+        // anywhere is distinguishable from one that is merely busy elsewhere.
+        metrics.recordScheduledJob({
+          job: job.name,
+          outcome: "skipped",
+          durationMs: performance.now() - startedAt,
+        });
+        return;
+      }
       let leaseLost = false;
       const renewal = setInterval(
         () => {
@@ -417,8 +442,18 @@ export class ScheduledWorkerRuntime {
           );
         }
         await scheduledJobCoordinator.complete(job.name, job.intervalSeconds);
+        metrics.recordScheduledJob({
+          job: job.name,
+          outcome: "succeeded",
+          durationMs: performance.now() - startedAt,
+        });
         logger.info("scheduled_job_completed", { jobName: job.name });
       } catch (error: any) {
+        metrics.recordScheduledJob({
+          job: job.name,
+          outcome: "failed",
+          durationMs: performance.now() - startedAt,
+        });
         const message = String(error?.message || error).slice(0, 1_000);
         // A different replica owns recovery after a lost lease. Completing the
         // old lease here would either overwrite that replica's state or create

@@ -34,9 +34,8 @@ export interface UserCredential {
 export interface IUserRepository {
   findById(id: string): Promise<UserProfile | null>;
   /**
-   * Resolves the public projection by account id **or** public slug, because
-   * both address the same seller on public routes. A caller-supplied value that
-   * matches neither is a miss, never a failure.
+   * Resolves the public projection by account id or public slug. Persisted
+   * storefront slugs resolve to their publicly visible professional owner.
    */
   findPublicById(idOrSlug: string): Promise<PublicSellerProfile | null>;
   listPublicProfessionals(marketCode: string): Promise<PublicSellerProfile[]>;
@@ -620,8 +619,28 @@ export class PostgresUserRepository implements IUserRepository {
         .eq(identifierColumn(idOrSlug), idOrSlug)
         .maybeSingle() as any);
       if (error) databaseFailure("users.findPublicById", error);
-      if (!data) return null;
-      return this.mapPublicProfile(data);
+      if (data) return this.mapPublicProfile(data);
+      if (identifierColumn(idOrSlug) === "id") return null;
+
+      const { data: store, error: storeError } = await getSupabaseAdminClient()
+        .from("stores")
+        .select("organizations!inner(owner_id)")
+        .eq("slug", idOrSlug)
+        .eq("is_active", true)
+        .eq("organizations.status", "active")
+        .maybeSingle();
+      if (storeError) databaseFailure("users.findPublicById", storeError);
+      if (!store) return null;
+
+      // Resolve through the public view so a storefront cannot expose a
+      // suspended account or an owner with a retained Staff membership.
+      const { data: owner, error: ownerError } =
+        await this.publicProfileSelect()
+          .eq("id", store.organizations.owner_id)
+          .eq("account_family", "professional")
+          .maybeSingle();
+      if (ownerError) databaseFailure("users.findPublicById", ownerError);
+      return owner ? this.mapPublicProfile(owner) : null;
     } catch (error) {
       databaseFailure("users.findPublicById", error);
     }

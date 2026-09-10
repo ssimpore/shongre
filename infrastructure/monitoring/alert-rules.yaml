@@ -1,0 +1,138 @@
+# Alert rules for the objectives stated in README.md.
+#
+# Every rule here is expressed against a series the API or worker actually
+# emits on `GET /metrics`; a rule that cannot fire because nothing produces its
+# input is worse than no rule, because it reads as coverage.
+#
+# Recalibrate the thresholds from the first thirty days of production data, as
+# the README requires. The `for:` durations are deliberately longer than one
+# scrape interval so a single slow minute does not page anyone.
+groups:
+  - name: shongre-api-availability
+    interval: 30s
+    rules:
+      - alert: ShongreApiErrorBudgetBurn
+        # Deliberate client 4xx is excluded: the objective is about the service
+        # failing, not about callers sending bad requests.
+        expr: |
+          sum(rate(shongre_http_requests_total{status="5xx"}[5m]))
+            /
+          sum(rate(shongre_http_requests_total[5m]))
+            > 0.001
+        for: 10m
+        labels:
+          severity: page
+          service: shongre-backend
+        annotations:
+          summary: "API 5xx rate is above the 99.9% availability objective"
+          description: >-
+            More than 0.1% of requests have failed for ten minutes. The
+            objective is 99.9% monthly, so sustained burn at this rate consumes
+            the month's budget in under a day.
+
+      - alert: ShongreApiLatencyObjectiveBreached
+        expr: |
+          histogram_quantile(
+            0.95,
+            sum(rate(shongre_http_request_duration_seconds_bucket[5m])) by (le)
+          ) > 0.75
+        for: 15m
+        labels:
+          severity: page
+          service: shongre-backend
+        annotations:
+          summary: "API p95 latency is above 750 ms"
+          description: >-
+            The stated objective is p95 below 750 ms and p99 below 2 s for
+            non-upload endpoints.
+
+      - alert: ShongreApiRouteLatencyOutlier
+        expr: |
+          histogram_quantile(
+            0.99,
+            sum(rate(shongre_http_request_duration_seconds_bucket[10m])) by (le, route)
+          ) > 2
+        for: 15m
+        labels:
+          severity: ticket
+          service: shongre-backend
+        annotations:
+          summary: "{{ $labels.route }} p99 is above 2 s"
+
+      - alert: ShongreApiNoTraffic
+        # A silent API and a healthy one look identical on error-rate panels.
+        expr: sum(rate(shongre_http_requests_total[10m])) == 0
+        for: 10m
+        labels:
+          severity: page
+          service: shongre-backend
+        annotations:
+          summary: "No HTTP requests recorded for ten minutes"
+
+  - name: shongre-delivery
+    interval: 60s
+    rules:
+      - alert: ShongreNotificationsDeadLettering
+        expr: |
+          sum(rate(shongre_notification_deliveries_total{outcome="dead_lettered"}[15m])) by (channel)
+            > 0
+        for: 15m
+        labels:
+          severity: page
+          service: shongre-worker
+        annotations:
+          summary: "{{ $labels.channel }} notifications are dead-lettering"
+          description: >-
+            A dead letter means a customer was never told something. Check the
+            channel's provider configuration before the backlog grows.
+
+      - alert: ShongreNotificationsNeverDelivering
+        expr: |
+          sum(rate(shongre_notification_deliveries_total{outcome="delivered"}[30m])) == 0
+            and
+          sum(rate(shongre_notification_deliveries_total[30m])) > 0
+        for: 15m
+        labels:
+          severity: page
+          service: shongre-worker
+        annotations:
+          summary: "Notifications are being attempted but none are delivering"
+
+  - name: shongre-workers
+    interval: 60s
+    rules:
+      - alert: ShongreScheduledJobFailing
+        expr: |
+          sum(rate(shongre_scheduled_job_runs_total{outcome="failed"}[15m])) by (job) > 0
+        for: 15m
+        labels:
+          severity: ticket
+          service: shongre-worker
+        annotations:
+          summary: "Scheduled job {{ $labels.job }} is failing"
+
+      - alert: ShongreScheduledJobStalled
+        # Skipped means another replica owned the tick. Neither succeeding nor
+        # skipping anywhere means the job is not running at all.
+        expr: |
+          sum(rate(shongre_scheduled_job_runs_total{outcome=~"succeeded|skipped"}[1h])) by (job) == 0
+        for: 1h
+        labels:
+          severity: ticket
+          service: shongre-worker
+        annotations:
+          summary: "Scheduled job {{ $labels.job }} has not run for an hour"
+
+      - alert: ShongreProviderWebhookFailing
+        expr: |
+          sum(rate(shongre_provider_webhook_events_total{outcome="failed"}[10m])) by (provider) > 0
+        for: 10m
+        labels:
+          severity: page
+          service: shongre-backend
+        annotations:
+          summary: "{{ $labels.provider }} webhook events are failing"
+          description: >-
+            Payment webhooks carry money decisions. The objective is 99.9%
+            accepted within 30 s with no unprocessed event older than five
+            minutes.

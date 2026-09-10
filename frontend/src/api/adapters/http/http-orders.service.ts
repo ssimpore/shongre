@@ -4,6 +4,8 @@ import {
   CreateReservationInput,
   DirectPurchaseQuote,
   OrderCheckoutResult,
+  type OrderReturn,
+  type OrderReturnReason,
 } from "../../contracts/orders.contract";
 import { apiOperation } from "./generated-api-operation";
 import { Transaction } from "../../../types";
@@ -195,6 +197,48 @@ export class HttpOrdersService implements OrdersServiceContract {
         },
       ),
     );
+  }
+
+  async listReturns(orderId: string): Promise<OrderReturn[]> {
+    return apiOperation("getOrdersByIdReturns", { path: { id: orderId } });
+  }
+
+  async requestReturn(
+    orderId: string,
+    input: { reason: OrderReturnReason; details: string },
+  ): Promise<OrderReturn> {
+    return apiOperation("postOrdersByIdReturns", {
+      path: { id: orderId },
+      body: input,
+    });
+  }
+
+  async decideReturn(
+    returnId: string,
+    input: { approve: boolean; note?: string },
+  ): Promise<OrderReturn> {
+    return apiOperation("postOrdersReturnsByReturnIdDecision", {
+      path: { returnId },
+      body: input,
+    });
+  }
+
+  async markReturnShipped(
+    returnId: string,
+    input: { carrierName?: string; trackingNumber?: string },
+  ): Promise<OrderReturn> {
+    return apiOperation("postOrdersReturnsByReturnIdShipped", {
+      path: { returnId },
+      body: input,
+    });
+  }
+
+  async confirmReturnReceived(
+    returnId: string,
+  ): Promise<{ return: OrderReturn; refundIssued: boolean }> {
+    return apiOperation("postOrdersReturnsByReturnIdReceived", {
+      path: { returnId },
+    });
   }
 }
 

@@ -3,6 +3,7 @@ import path from "node:path";
 import { createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { runPsql } from "./psql.js";
+import { bootstrapLocalTaxonomy } from "./bootstrap-local-taxonomy.js";
 
 const currentFile = fileURLToPath(import.meta.url);
 const currentDirectory = path.dirname(currentFile);
@@ -138,6 +139,8 @@ async function runMigrations() {
       }
       continue;
     }
+
+    if (version === "00125") bootstrapLocalTaxonomy(databaseUrl);
 
     runPsql(
       databaseUrl,

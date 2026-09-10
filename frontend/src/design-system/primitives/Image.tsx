@@ -4,7 +4,10 @@ import {
   buildResponsiveFallbackUrl,
   buildSrcSet,
 } from "@shongre/shared/responsive-image";
-import { resolveOwnedPublicMediaUrl } from "../../platform/runtime-config/public-runtime-config";
+import {
+  getPublicRuntimeConfig,
+  resolveOwnedPublicMediaUrl,
+} from "../../platform/runtime-config/public-runtime-config";
 
 export interface ImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   /** Required: pass `''` only for images that are purely decorative. */
@@ -99,13 +102,16 @@ export const Image: React.FC<ImageProps> = ({
     );
   }
 
+  const transformOptions = {
+    transformMode: getPublicRuntimeConfig().publicMediaImageTransform,
+  };
   const srcSet =
     sizes && typeof resolvedSrc === "string"
-      ? buildSrcSet(resolvedSrc)
+      ? buildSrcSet(resolvedSrc, transformOptions)
       : undefined;
   const responsiveFallbackSrc =
     sizes && typeof resolvedSrc === "string"
-      ? buildResponsiveFallbackUrl(resolvedSrc, sizes)
+      ? buildResponsiveFallbackUrl(resolvedSrc, sizes, transformOptions)
       : undefined;
 
   return (

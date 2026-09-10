@@ -20,12 +20,27 @@ import {
 import type { AuthProvider } from "../../shared/auth/identity.js";
 import { analyticsService } from "../analytics/analytics.service.js";
 import type { DeliveryRepository } from "../../infrastructure/database/repositories/delivery.repository.js";
+import type {
+  IListingRepository,
+  IMessagingRepository,
+  INotificationRepository,
+  IReviewRepository,
+  IVerificationRepository,
+  IWatchSubscriptionRepository,
+} from "../../infrastructure/database/repositories/index.js";
+import type { components } from "@shongre/contracts/openapi";
 import {
   createPasswordIdentityProvider,
   type PasswordIdentityProvider,
 } from "../auth/password-identity.provider.js";
+import { sha256 } from "../auth/oauth-provider.client.js";
 
 export class UsersService {
+  /** Full-account reads are expensive; one copy a day is enough to exercise the right. */
+  private static readonly EXPORTS_PER_DAY = 1;
+  /** Per-section row bound, so one very large account cannot exhaust a response. */
+  private static readonly EXPORT_SECTION_LIMIT = 1_000;
+
   private readonly passwordIdentity: PasswordIdentityProvider;
 
   constructor(
@@ -35,6 +50,12 @@ export class UsersService {
     private authRepo: IAuthRepository = authRepository,
     private deliveryRepo: DeliveryRepository = repositories.delivery,
     passwordIdentity?: PasswordIdentityProvider,
+    private listingRepo: IListingRepository = repositories.listings,
+    private messagingRepo: IMessagingRepository = repositories.messaging,
+    private reviewRepo: IReviewRepository = repositories.reviews,
+    private watchRepo: IWatchSubscriptionRepository = repositories.watchSubscriptions,
+    private verificationRepo: IVerificationRepository = repositories.verification,
+    private notificationRepo: INotificationRepository = repositories.notifications,
   ) {
     this.passwordIdentity =
       passwordIdentity ?? createPasswordIdentityProvider(userRepo);
@@ -69,6 +90,103 @@ export class UsersService {
       });
     }
     return this.userRepo.update(id, updates);
+  }
+
+  /**
+   * Builds a portable copy of everything this account owns.
+   *
+   * Data portability is a right the account exercises itself, so this reads
+   * only the requester's own records: counterparties appear as identifiers,
+   * never as profiles, and nothing here widens what the caller could already
+   * read through the API. Each section is bounded and reports truncation
+   * rather than streaming an unbounded result set into one response.
+   */
+  async exportAccountData(
+    userId: string,
+    marketCode: string,
+  ): Promise<components["schemas"]["AccountDataExport"]> {
+    const limit = await this.authRepo.consumeRateLimit(
+      sha256(`account_export:${userId}`),
+      "account_export",
+      UsersService.EXPORTS_PER_DAY,
+      86_400,
+      0,
+    );
+    if (!limit.allowed) {
+      throw new AppError({
+        code: "RATE_LIMITED",
+        message:
+          "Une copie de vos données a déjà été générée aujourd’hui. Réessayez demain.",
+        details: { retryAfterSeconds: limit.retryAfterSeconds },
+      });
+    }
+
+    const profile = await this.userRepo.findById(userId);
+    if (!profile) {
+      throw new AppError({
+        code: "NOT_FOUND",
+        message: "Compte introuvable.",
+      });
+    }
+
+    const bound = UsersService.EXPORT_SECTION_LIMIT;
+    const [
+      ownedListings,
+      purchases,
+      sales,
+      conversations,
+      reviews,
+      favorites,
+      savedSearches,
+      verification,
+      preferences,
+    ] = await Promise.all([
+      this.listingRepo.findOwnedBySeller(userId, marketCode),
+      this.orderRepo.getPurchases(userId),
+      this.orderRepo.getSales(userId),
+      this.messagingRepo.getUserConversations(userId, { limit: bound }),
+      this.reviewRepo.getUserReviews(userId),
+      this.listingRepo.getFavorites(userId, marketCode),
+      this.watchRepo.list(userId, marketCode),
+      this.verificationRepo.getUserStatus(userId),
+      this.notificationRepo.getPreferences(userId),
+    ]);
+
+    const truncated: string[] = [];
+    /*
+     * Serialised the same way the transport would, so the copy the account
+     * receives is exactly what the API exposes: no undefined holes, no class
+     * instances, and nothing that only exists in memory.
+     */
+    const portable = (value: unknown): Record<string, unknown> =>
+      JSON.parse(JSON.stringify(value ?? {})) as Record<string, unknown>;
+    const cap = (
+      section: string,
+      rows: readonly unknown[],
+    ): Record<string, unknown>[] => {
+      if (rows.length > bound) truncated.push(section);
+      return rows.slice(0, bound).map(portable);
+    };
+
+    const orders = [...purchases, ...sales].sort((left, right) =>
+      right.createdAt.localeCompare(left.createdAt),
+    );
+
+    return {
+      generatedAt: new Date().toISOString(),
+      format: "shongre.account-export.v1",
+      subject: { userId },
+      profile: portable(profile),
+      listings: cap("listings", ownedListings.items),
+      orders: cap("orders", orders),
+      conversations: cap("conversations", conversations.items),
+      reviews: cap("reviews", reviews),
+      favorites: favorites.slice(0, bound),
+      savedSearches: cap("savedSearches", savedSearches),
+      verification: [portable(verification)],
+      consents: [portable(preferences)],
+      ...(truncated.length > 0 ? { truncated } : {}),
+    };
   }
 
   async upgradeOwnAccount(

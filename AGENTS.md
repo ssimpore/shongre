@@ -243,8 +243,11 @@ Mobile: component → hook/controller → service contract → HTTP → /api/v1
   `make dev` performs it with Metro as well. Both validate configuration and
   infrastructure before stopping tracked application processes, reuse a healthy
   stack only when its environment and migration fingerprint matches, force
-  backend database mode, migrate, idempotently seed, and launch the API,
-  worker, and Web app. The backend-owned local seed imports production-shaped tables, the complete
+  backend database mode, migrate, synchronize database types, idempotently seed,
+  and launch the API, worker, and Web app. Type synchronization also runs before
+  reusing a healthy local stack, leaves matching output untouched, and aborts on
+  generation failure; CI's type drift check remains read-only. The backend-owned
+  local seed imports production-shaped tables, the complete
   generated taxonomy v1 projection and market availability, initializes missing
   database-owned header configuration without overwriting editorial changes, and copies every backend-fixture media source into local
   public Supabase Storage. In connected mode, category collections,
@@ -257,6 +260,11 @@ Mobile: component → hook/controller → service contract → HTTP → /api/v1
   source, Make recipes, and package scripts must not duplicate them. Do not
   reintroduce `infra-*`, `db-start`, or legacy `supabase-start` aliases for
   local Supabase lifecycle operations.
+- Local Supabase startup creates infrastructure only; its automatic migration
+  and seed replay stays disabled. The backend migration runner owns ordered SQL
+  and the guarded taxonomy prerequisite for a fresh, empty repository-owned
+  local database. Reset must invoke that same runner. Never apply the local
+  prerequisite to hosted databases or overwrite existing taxonomy/customer data.
 - Do not point a client task at production or a live provider unless the task
   explicitly authorizes it. HTTP adapters remain behind the service registry
   and generated OpenAPI types.
@@ -691,7 +699,10 @@ France-only happy path is insufficient for market-sensitive work.
   The root `taxonomy-import`, `taxonomy-compile` and `taxonomy-check` targets own
   import artifacts and coverage evidence. Normalized/workbook inputs must not
   overwrite an authored database. Local seeding bootstraps missing taxonomy and
-  header configuration and preserves editor revisions. Vertical SQL seeds must
+  header configuration and preserves editor revisions. After migrations, the
+  generated reference bootstrap fills missing canonical entries only before
+  editorial changes or an earlier reference bootstrap; it preserves existing
+  rows and publishes the completed baseline once. Vertical SQL seeds must
   not rewrite taxonomy reference authoring. After taxonomy schema or seed changes,
   run `make db-seed` against the migrated local schema and verify that existing
   editorial content and revisions are unchanged; fixture drift checks alone do
@@ -1230,7 +1241,7 @@ sources rather than being copied into this file:
 | OpenAPI workflow and generated inventory                   | `docs/architecture/openapi.md`, `backend/docs/api.md`, `backend/docs/generated/endpoint-inventory.md`                                                        |
 | Multi-country modeling and launch behavior                 | `docs/architecture/multi-country.md`                                                                                                                         |
 | Shared UI and platform boundaries                          | `docs/architecture/cross-platform-ui.md`                                                                                                                     |
-| Maps, geocoding, PostGIS location and location privacy      | `docs/architecture/geospatial.md`                                                                                                                            |
+| Maps, geocoding, PostGIS location and location privacy     | `docs/architecture/geospatial.md`                                                                                                                            |
 | Delivery and courier marketplace                           | `docs/architecture/delivery-courier.md`                                                                                                                      |
 | Brand source, runtime mappings, and upgrade workflow       | `docs/architecture/brand-assets.md`                                                                                                                          |
 | Mobile architecture and threat model                       | `docs/architecture/mobile.md`, `docs/security/mobile-threat-model.md`                                                                                        |

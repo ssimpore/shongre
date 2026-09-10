@@ -10,6 +10,37 @@ content encoding, and response bytes. Hot listing-query events include only
 operation, duration, row/count, market, page, limit, and sort dimensions. They
 must never include search text, full URLs, cookies, tokens, or customer data.
 
+## Metrics
+
+`GET /metrics` serves Prometheus text exposition for the API and the worker.
+It is bearer-authenticated with `METRICS_TOKEN` and answers **404** without a
+valid token, so an unconfigured deployment does not advertise that the endpoint
+exists. Production refuses to start without a token of at least 24 characters,
+because the objectives below cannot be measured otherwise.
+
+Every label is a bounded value — a route template, a job name, a status class —
+never an identifier or a concrete path. The series are:
+
+| Series | Type | Labels |
+| --- | --- | --- |
+| `shongre_http_requests_total` | counter | `method`, `route`, `status` (`2xx`…`5xx`) |
+| `shongre_http_request_duration_seconds` | histogram | `method`, `route` |
+| `shongre_http_response_bytes_total` | counter | `method`, `route` |
+| `shongre_scheduled_job_runs_total` | counter | `job`, `outcome` (`succeeded`/`failed`/`skipped`) |
+| `shongre_scheduled_job_duration_seconds` | histogram | `job` |
+| `shongre_notification_deliveries_total` | counter | `channel`, `outcome` |
+| `shongre_provider_webhook_events_total` | counter | `provider`, `outcome` |
+| `shongre_build_info` | gauge | `version`, `release`, `environment` |
+
+`prometheus-scrape.yaml` and `alert-rules.yaml` in this directory carry the
+scrape configuration and the alerts. Each alert is written against a series the
+runtime actually emits: a rule whose input nothing produces reads as coverage
+while never firing.
+
+`skipped` on a scheduled job means another replica held the lease for that
+tick, which is normal. A job with neither successes nor skips anywhere is not
+running at all, and `ShongreScheduledJobStalled` is the rule for that case.
+
 ## Health checks
 
 - `GET /livez` is process-only and is the liveness probe.

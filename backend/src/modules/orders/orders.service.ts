@@ -7,6 +7,11 @@ import {
   timingSafeEqual,
 } from "node:crypto";
 import { BASELINE_MONETIZATION_CATALOG } from "@shongre/contracts/monetization-catalog";
+import {
+  orderReturnDecisionSchema,
+  orderReturnRequestSchema,
+  orderReturnShipmentSchema,
+} from "@shongre/contracts/orders";
 import { config } from "../../app/config/index.js";
 import type { IComplianceRepository } from "../../infrastructure/database/repositories/compliance.repository.js";
 import type { IListingRepository } from "../../infrastructure/database/repositories/listing.repository.js";
@@ -14,6 +19,8 @@ import type { IMarketRepository } from "../../infrastructure/database/repositori
 import type {
   IOrderRepository,
   OrderRecord,
+  OrderReturnReason,
+  OrderReturnRecord,
 } from "../../infrastructure/database/repositories/order.repository.js";
 import {
   repositories,
@@ -50,6 +57,51 @@ const DEFAULT_HOME_DELIVERY_MINOR =
 const HANDOVER_CODE_TTL_MS = 30 * 60 * 1_000;
 const CHECKOUT_RECONCILIATION_AGE_MS = 15 * 60 * 1_000;
 const CHECKOUT_WITHOUT_REFERENCE_EXPIRY_MS = 26 * 60 * 60 * 1_000;
+
+/**
+ * Statutory withdrawal window for a consumer buying from a trader. Fourteen
+ * days is the floor the right sets; a market that grants longer changes this
+ * one constant.
+ */
+const STATUTORY_WITHDRAWAL_WINDOW_MS = 14 * 24 * 60 * 60 * 1_000;
+/** Window for a return claimed on the item's condition rather than the right. */
+const CONDITION_RETURN_WINDOW_MS = 30 * 24 * 60 * 60 * 1_000;
+/** Order states from which a return can still be asked for. */
+const RETURNABLE_ORDER_STATUSES = new Set([
+  "escrow_funded",
+  "shipped",
+  "pin_pending",
+  "completed",
+  "disputed",
+]);
+
+/**
+ * Provider events that concern a card-network dispute rather than the
+ * platform's own refund. Their payload is a Dispute or an early fraud warning,
+ * which carries no Shongre metadata, so the order is found by payment intent.
+ */
+const PROVIDER_DISPUTE_EVENTS = new Set([
+  "charge.dispute.created",
+  "charge.dispute.updated",
+  "charge.dispute.closed",
+  "charge.dispute.funds_withdrawn",
+  "charge.dispute.funds_reinstated",
+  "radar.early_fraud_warning.created",
+]);
+
+/** Provider dispute states, narrowed to the states the order records. */
+const PROVIDER_DISPUTE_STATUS: Record<
+  string,
+  NonNullable<OrderRecord["chargebackStatus"]>
+> = {
+  warning_needs_response: "warning",
+  warning_under_review: "warning",
+  warning_closed: "withdrawn",
+  needs_response: "open",
+  under_review: "under_review",
+  won: "won",
+  lost: "lost",
+};
 
 export interface CreateDirectPurchaseInput {
   listingId: string;
@@ -596,7 +648,12 @@ export class OrdersService {
 
   async refundOrder(
     orderId: string,
-    input: { refundBaseMinor?: number; idempotencyKey: string },
+    input: {
+      refundBaseMinor?: number;
+      idempotencyKey: string;
+      reason?: string;
+      actorId?: string;
+    },
   ) {
     const order = await this.requireOrder(orderId);
     if (!input.idempotencyKey || input.idempotencyKey.length < 8) {
@@ -604,19 +661,6 @@ export class OrdersService {
         code: "VALIDATION_ERROR",
         message: "Une clé d’idempotence est requise pour le remboursement.",
       });
-    }
-    if (
-      order.refundIdempotencyKey === input.idempotencyKey &&
-      order.refundProviderId
-    ) {
-      return {
-        order: await this.toParticipantOrder(order),
-        commissionReversal: null,
-        providerRefund: {
-          id: order.refundProviderId,
-          status: order.status === "refunded" ? "succeeded" : "pending",
-        },
-      };
     }
     if (!["escrow_funded", "completed", "disputed"].includes(order.status)) {
       throw new AppError({
@@ -627,16 +671,77 @@ export class OrdersService {
     }
     const fullBaseMinor =
       order.itemAmountMinor ?? Math.round(order.itemAmount * 100);
-    const refundBaseMinor = input.refundBaseMinor ?? fullBaseMinor;
-    if (refundBaseMinor !== fullBaseMinor) {
+    const alreadyRefundedBaseMinor = order.refundedBaseTotalMinor ?? 0;
+    const remainingBaseMinor = Math.max(
+      0,
+      fullBaseMinor - alreadyRefundedBaseMinor,
+    );
+    const refundBaseMinor = input.refundBaseMinor ?? remainingBaseMinor;
+    if (
+      !Number.isSafeInteger(refundBaseMinor) ||
+      refundBaseMinor <= 0 ||
+      refundBaseMinor > remainingBaseMinor
+    ) {
       throw new AppError({
         code: "VALIDATION_ERROR",
         message:
-          "Seul le remboursement intégral est disponible pour cette commande.",
+          remainingBaseMinor === 0
+            ? "Cette commande est déjà intégralement remboursée."
+            : `Le montant remboursable restant est de ${remainingBaseMinor} centièmes.`,
       });
     }
-    const totalMinor =
+    const isFullRefund = refundBaseMinor === remainingBaseMinor;
+    const totalChargedMinor =
       order.totalChargedMinor ?? Math.round(order.totalCharged * 100);
+    /*
+     * A refund that closes out the order returns everything the buyer paid
+     * and has not already been given back — fees included. Netting off the
+     * ledger matters: refunding the full charge after an earlier partial
+     * refund would credit the buyer more than they ever paid.
+     *
+     * A partial refund returns the item value asked for and leaves the fees
+     * alone, because the service they paid for — escrow, delivery — was still
+     * performed.
+     */
+    const alreadyCreditedMinor = (await this.orderRepo.listRefunds(orderId))
+      .filter(
+        (entry) => entry.status !== "failed" && entry.status !== "cancelled",
+      )
+      .reduce((total, entry) => total + entry.refundedMinor, 0);
+    const totalMinor = isFullRefund
+      ? totalChargedMinor -
+        alreadyCreditedMinor -
+        this.refundedFeesMinor(order, fullBaseMinor)
+      : refundBaseMinor;
+    if (totalMinor <= 0) {
+      throw new AppError({
+        code: "CONFLICT",
+        message: "Le montant déjà remboursé couvre cette commande.",
+      });
+    }
+
+    // The database owns refund uniqueness, so a replayed request returns the
+    // refund it already created instead of issuing a second one.
+    const claim = await this.orderRepo.claimRefund({
+      orderId,
+      idempotencyKey: input.idempotencyKey,
+      baseMinor: refundBaseMinor,
+      refundedMinor: totalMinor,
+      currency: order.currency,
+      isFull: isFullRefund,
+      reason: input.reason,
+      actorId: input.actorId,
+    });
+    if (!claim.created) {
+      return {
+        order: await this.toParticipantOrder(order),
+        commissionReversal: null,
+        providerRefund: {
+          id: claim.refund.providerRefundId || "",
+          status: claim.refund.status,
+        },
+      };
+    }
     const paymentIntentId =
       order.paymentIntentId ||
       (config.paymentProvider === "demo" ? `pi_demo_${order.id}` : undefined);
@@ -647,33 +752,66 @@ export class OrdersService {
           "Aucun paiement fournisseur remboursable n’est associé à cette commande.",
       });
     }
+    /*
+     * The seller transfer is clawed back in proportion to the item value
+     * refunded so far, not to this one refund. Deriving it from the cumulative
+     * total is what makes a sequence of partial refunds add up to exactly the
+     * transfer: reversing per-refund would leave rounding behind, and reversing
+     * the whole transfer for a partial refund would take money the seller is
+     * still owed for the part of the order that stands.
+     */
+    const reversibleTransfer =
+      (order.sellerTransferStatus === "completed" ||
+        order.sellerTransferStatus === "partially_reversed") &&
+      order.sellerTransferAmountMinor
+        ? order.sellerTransferAmountMinor
+        : 0;
+    const proportionalReversal = (refundedBaseMinor: number) =>
+      Math.min(
+        reversibleTransfer,
+        Math.round(
+          (reversibleTransfer * refundedBaseMinor) / Math.max(1, fullBaseMinor),
+        ),
+      );
+    const reversedSoFarMinor = proportionalReversal(alreadyRefundedBaseMinor);
+    const reversalTargetMinor = isFullRefund
+      ? reversibleTransfer
+      : proportionalReversal(alreadyRefundedBaseMinor + refundBaseMinor);
+    const transferReversalMinor =
+      reversalTargetMinor > reversedSoFarMinor
+        ? reversalTargetMinor - reversedSoFarMinor
+        : undefined;
     const refund = await this.paymentGateway.refund({
       orderId,
       paymentIntentId,
       amountMinor: totalMinor,
-      transferId:
-        order.sellerTransferStatus === "completed"
-          ? order.sellerTransferId
-          : undefined,
-      transferReversalAmountMinor:
-        order.sellerTransferStatus === "completed" &&
-        order.sellerTransferAmountMinor
-          ? order.sellerTransferAmountMinor
-          : undefined,
+      transferId: transferReversalMinor ? order.sellerTransferId : undefined,
+      transferReversalAmountMinor: transferReversalMinor,
       idempotencyKey: input.idempotencyKey,
     });
+    await this.orderRepo.updateRefund(claim.refund.id, {
+      providerRefundId: refund.id,
+      status: refund.status === "succeeded" ? "succeeded" : "pending",
+    });
+    const refundedBaseTotalMinor = alreadyRefundedBaseMinor + refundBaseMinor;
     const pending = await this.orderRepo.update(orderId, {
-      status: "refund_pending",
+      // A partial refund leaves the order in its fulfilled state: money went
+      // back, but the sale itself still stands for the remainder.
+      ...(isFullRefund ? { status: "refund_pending" as const } : {}),
       refundProviderId: refund.id,
       refundBaseMinor,
+      refundedBaseTotalMinor,
       refundIdempotencyKey: input.idempotencyKey,
-      ...(order.sellerTransferStatus === "completed"
+      ...(transferReversalMinor
         ? {
-            sellerTransferStatus: "reversed",
+            sellerTransferStatus:
+              reversalTargetMinor >= reversibleTransfer
+                ? ("reversed" as const)
+                : ("partially_reversed" as const),
           }
         : {}),
     });
-    if ((order.fulfillmentModel || "PHYSICAL") !== "PHYSICAL") {
+    if (isFullRefund && (order.fulfillmentModel || "PHYSICAL") !== "PHYSICAL") {
       await this.digitalProducts.applyAuthoritativeOrderAccessState(
         order.id,
         "REFUND_REQUESTED",
@@ -682,9 +820,19 @@ export class OrdersService {
     let finalizedOrder = pending;
     let commissionReversal = null;
     if (refund.status === "succeeded") {
-      const finalized = await this.finalizeRefund(pending);
-      finalizedOrder = finalized.order;
-      commissionReversal = finalized.commissionReversal;
+      // The commission engine reverses proportionally and remembers what it
+      // already reversed, so a partial refund needs no special case here.
+      if (isFullRefund) {
+        const finalized = await this.finalizeRefund(pending);
+        finalizedOrder = finalized.order;
+        commissionReversal = finalized.commissionReversal;
+      } else {
+        commissionReversal = await this.reverseOrderCommission(
+          order,
+          refundBaseMinor,
+          input.idempotencyKey,
+        );
+      }
       void this.emitFinancialAnalytics("refund_completed", order, {
         listingId: order.listingId,
         sellerId: order.sellerId,
@@ -699,6 +847,308 @@ export class OrdersService {
       commissionReversal,
       providerRefund: refund,
     };
+  }
+
+  /**
+   * Fees the platform keeps on a refund.
+   *
+   * Zero today: a refund that closes an order returns everything the buyer
+   * paid. It exists as one named place so a market that decides to retain a
+   * processing fee changes this and nothing else.
+   */
+  private refundedFeesMinor(_order: OrderRecord, _fullBaseMinor: number) {
+    return 0;
+  }
+
+  private async reverseOrderCommission(
+    order: OrderRecord,
+    refundBaseMinor: number,
+    idempotencyKey: string,
+  ) {
+    if (
+      !order.commissionCalculationId ||
+      (order.platformCommissionMinor || 0) <= 0
+    ) {
+      return null;
+    }
+    return this.commissions.reverse(order.commissionCalculationId, {
+      refundBaseMinor,
+      idempotencyKey: `${idempotencyKey}:commission`,
+    });
+  }
+
+  /**
+   * Records a buyer's return request.
+   *
+   * Two different things arrive through here. A statutory withdrawal is a
+   * right: the buyer owes no reason and the seller cannot refuse it, so it is
+   * marked as such and the decision step can only accept it. Everything else
+   * is a claim about the item, which the seller may accept or refuse with a
+   * reason. Eligibility for the right comes from who sold — it exists for a
+   * consumer buying from a trader, not for a private sale between two people.
+   */
+  async requestReturn(
+    orderId: string,
+    buyerId: string,
+    input: { reason: OrderReturnReason; details: string },
+  ): Promise<OrderReturnRecord> {
+    const order = await this.requireOrder(orderId);
+    if (order.buyerId !== buyerId) {
+      throw new AppError({
+        code: "FORBIDDEN",
+        message: "Seul l’acheteur peut demander un retour.",
+      });
+    }
+    const parsedRequest = orderReturnRequestSchema.safeParse({
+      reason: input.reason,
+      details: input.details,
+    });
+    if (!parsedRequest.success) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message:
+          "Un motif valide et une description de 10 à 5 000 caractères sont requis.",
+      });
+    }
+    const details = parsedRequest.data.details;
+    if (!RETURNABLE_ORDER_STATUSES.has(order.status)) {
+      throw new AppError({
+        code: "CONFLICT",
+        message: "Cette commande n’accepte pas de retour dans son état actuel.",
+      });
+    }
+    const fullBaseMinor =
+      order.itemAmountMinor ?? Math.round(order.itemAmount * 100);
+    const remainingBaseMinor =
+      fullBaseMinor - (order.refundedBaseTotalMinor ?? 0);
+    if (remainingBaseMinor <= 0) {
+      throw new AppError({
+        code: "CONFLICT",
+        message: "Cette commande est déjà intégralement remboursée.",
+      });
+    }
+
+    const listing = await this.listingRepo.findById(order.listingId);
+    const soldByTrader = listing?.publisherType === "professional";
+    const isStatutoryWithdrawal = input.reason === "withdrawal" && soldByTrader;
+    if (input.reason === "withdrawal" && !soldByTrader) {
+      throw new AppError({
+        code: "CONFLICT",
+        message:
+          "Le droit de rétractation s’applique aux achats auprès d’un vendeur professionnel. Ouvrez une contestation pour une vente entre particuliers.",
+      });
+    }
+
+    // The clock starts at delivery where one is recorded, and at payment
+    // otherwise, so a seller cannot shorten the window by never shipping.
+    const startedAt = Date.parse(
+      order.shippedAt || order.createdAt || new Date().toISOString(),
+    );
+    const windowMs = isStatutoryWithdrawal
+      ? STATUTORY_WITHDRAWAL_WINDOW_MS
+      : CONDITION_RETURN_WINDOW_MS;
+    const expiresAt = startedAt + windowMs;
+    if (Number.isFinite(expiresAt) && expiresAt <= Date.now()) {
+      throw new AppError({
+        code: "CONFLICT",
+        message: "Le délai de retour de cette commande est écoulé.",
+      });
+    }
+
+    const created = await this.orderRepo.createReturn({
+      orderId,
+      requesterId: buyerId,
+      reason: input.reason,
+      details,
+      isStatutoryWithdrawal,
+      requestedBaseMinor: remainingBaseMinor,
+      currency: order.currency,
+      windowExpiresAt: new Date(expiresAt).toISOString(),
+    });
+    logger.info("order_return_requested", {
+      orderId,
+      returnId: created.id,
+      reason: created.reason,
+      isStatutoryWithdrawal,
+    });
+    return created;
+  }
+
+  /** The seller's answer. A statutory withdrawal may only be accepted. */
+  async decideReturn(
+    returnId: string,
+    sellerId: string,
+    input: { approve: boolean; note?: string },
+  ): Promise<OrderReturnRecord> {
+    const { record, order } = await this.requireReturnParticipant(
+      returnId,
+      sellerId,
+      "seller",
+    );
+    if (record.status !== "requested") {
+      throw new AppError({
+        code: "CONFLICT",
+        message: "Ce retour a déjà été traité.",
+      });
+    }
+    if (record.isStatutoryWithdrawal && !input.approve) {
+      throw new AppError({
+        code: "CONFLICT",
+        message:
+          "Une rétractation légale ne peut pas être refusée. Acceptez le retour puis remboursez à réception.",
+      });
+    }
+    const parsedDecision = orderReturnDecisionSchema.safeParse({
+      approve: input.approve,
+      note: input.note,
+    });
+    const note = parsedDecision.success ? (parsedDecision.data.note ?? "") : "";
+    if (!parsedDecision.success || (!input.approve && note.length < 1)) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Un refus de retour doit être motivé.",
+      });
+    }
+    const decided = await this.orderRepo.updateReturn(returnId, {
+      status: input.approve ? "approved" : "rejected",
+      decidedBy: sellerId,
+      decidedAt: new Date().toISOString(),
+      decisionNote: note || undefined,
+    });
+    logger.info("order_return_decided", {
+      orderId: order.id,
+      returnId,
+      approved: input.approve,
+    });
+    return decided;
+  }
+
+  /** The buyer sends the item back. */
+  async markReturnShipped(
+    returnId: string,
+    buyerId: string,
+    input: { carrierName?: string; trackingNumber?: string },
+  ): Promise<OrderReturnRecord> {
+    const { record } = await this.requireReturnParticipant(
+      returnId,
+      buyerId,
+      "buyer",
+    );
+    if (record.status !== "approved") {
+      throw new AppError({
+        code: "CONFLICT",
+        message: "Ce retour doit d’abord être accepté.",
+      });
+    }
+    const shipment = orderReturnShipmentSchema.safeParse(input);
+    if (!shipment.success) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Les informations de renvoi sont invalides.",
+      });
+    }
+    return this.orderRepo.updateReturn(returnId, {
+      status: "shipped",
+      carrierName: shipment.data.carrierName || undefined,
+      trackingNumber: shipment.data.trackingNumber || undefined,
+      shippedAt: new Date().toISOString(),
+    });
+  }
+
+  /**
+   * The seller confirms the item is back, which is what releases the money.
+   *
+   * The refund runs through the same path as any other refund, so the
+   * commission reversal, the transfer claw-back and the ledger entry are the
+   * ones that were already proven rather than a second implementation.
+   */
+  async confirmReturnReceived(
+    returnId: string,
+    sellerId: string,
+  ): Promise<{ return: OrderReturnRecord; refundIssued: boolean }> {
+    const { record, order } = await this.requireReturnParticipant(
+      returnId,
+      sellerId,
+      "seller",
+    );
+    if (!["approved", "shipped"].includes(record.status)) {
+      throw new AppError({
+        code: "CONFLICT",
+        message: "Ce retour n’est pas en attente de réception.",
+      });
+    }
+    const received = await this.orderRepo.updateReturn(returnId, {
+      status: "received",
+      receivedAt: new Date().toISOString(),
+      decidedBy: record.decidedBy ?? sellerId,
+      decidedAt: record.decidedAt ?? new Date().toISOString(),
+    });
+    const refund = await this.refundOrder(order.id, {
+      refundBaseMinor: Math.min(
+        record.requestedBaseMinor,
+        (order.itemAmountMinor ?? Math.round(order.itemAmount * 100)) -
+          (order.refundedBaseTotalMinor ?? 0),
+      ),
+      idempotencyKey: `return:${returnId}`,
+      reason: `return:${record.reason}`,
+      actorId: sellerId,
+    });
+    const refundIssued = refund.providerRefund.status === "succeeded";
+    const settled = await this.orderRepo.updateReturn(returnId, {
+      status: refundIssued ? "refunded" : "received",
+    });
+    logger.info("order_return_received", {
+      orderId: order.id,
+      returnId,
+      refundIssued,
+    });
+    return { return: refundIssued ? settled : received, refundIssued };
+  }
+
+  async listOrderReturns(
+    orderId: string,
+    userId: string,
+  ): Promise<OrderReturnRecord[]> {
+    const order = await this.requireOrder(orderId);
+    if (order.buyerId !== userId && order.sellerId !== userId) {
+      throw new AppError({
+        code: "NOT_FOUND",
+        message: "Commande introuvable.",
+      });
+    }
+    return this.orderRepo.listReturns(orderId);
+  }
+
+  /** Closes return requests nobody answered inside the window. */
+  async expireStaleReturns(limit = 500): Promise<{ expired: number }> {
+    const expired = await this.orderRepo.expireStaleReturns(limit);
+    if (expired > 0) {
+      logger.info("order_returns_expired", { expired });
+    }
+    return { expired };
+  }
+
+  private async requireReturnParticipant(
+    returnId: string,
+    userId: string,
+    as: "buyer" | "seller",
+  ): Promise<{ record: OrderReturnRecord; order: OrderRecord }> {
+    const record = await this.orderRepo.findReturnById(returnId);
+    if (!record) {
+      throw new AppError({ code: "NOT_FOUND", message: "Retour introuvable." });
+    }
+    const order = await this.requireOrder(record.orderId);
+    const expected = as === "buyer" ? order.buyerId : order.sellerId;
+    if (expected !== userId) {
+      throw new AppError({
+        code: "FORBIDDEN",
+        message:
+          as === "buyer"
+            ? "Seul l’acheteur peut effectuer cette action."
+            : "Seul le vendeur peut effectuer cette action.",
+      });
+    }
+    return { record, order };
   }
 
   async reconcileStaleCheckouts(asOf = new Date()) {
@@ -778,6 +1228,9 @@ export class OrdersService {
   async handleStripeWebhook(event: any, rawBody: string) {
     const eventType = String(event?.type || "");
     const object = event?.data?.object || {};
+    if (PROVIDER_DISPUTE_EVENTS.has(eventType)) {
+      return this.handleProviderDisputeEvent(event, rawBody);
+    }
     const metadata = object.metadata || {};
     const resourceType = String(metadata.resource_type || "");
     if (
@@ -887,6 +1340,173 @@ export class OrdersService {
       payloadHash,
     });
     return result;
+  }
+
+  /**
+   * Records a card-network dispute against the order it belongs to.
+   *
+   * A chargeback is not a refund: the network has already moved the money out
+   * of the platform balance, so this path must never call the refund gateway —
+   * doing so would credit the buyer twice. What it does instead is recover the
+   * seller leg, reverse the commission that was earned on a sale that did not
+   * hold, and put the order into `disputed`, which already blocks payout and
+   * completion.
+   *
+   * The Dispute and EarlyFraudWarning payloads carry no Shongre metadata, so
+   * the order is correlated through the payment intent. A unique index on the
+   * provider dispute id is what keeps a replayed event from being applied to a
+   * second order.
+   */
+  private async handleProviderDisputeEvent(event: any, rawBody: string) {
+    const eventType = String(event?.type || "");
+    const object = event?.data?.object || {};
+    const eventId = String(event?.id || "");
+    const paymentIntentId = String(object.payment_intent || "");
+    const disputeId = String(object.id || "");
+    if (!eventId || !disputeId || !paymentIntentId) {
+      throw new AppError({
+        code: "VALIDATION_ERROR",
+        message: "Événement de litige fournisseur incomplet.",
+      });
+    }
+
+    const order = await this.orderRepo.findByPaymentIntentId(paymentIntentId);
+    if (!order) {
+      return { processed: false, reason: "not_marketplace_order", eventId };
+    }
+    if (
+      order.chargebackProviderId &&
+      order.chargebackProviderId !== disputeId
+    ) {
+      throw new AppError({
+        code: "CONFLICT",
+        message: "Un autre litige est déjà enregistré pour cette commande.",
+      });
+    }
+
+    const payloadHash = hashProviderPayload(rawBody);
+    const claim = await this.compliance.claimProviderEvent({
+      provider: "stripe_marketplace_orders",
+      eventId,
+      payloadHash,
+    });
+    if (claim === "HASH_MISMATCH") {
+      throw new AppError({
+        code: "FORBIDDEN",
+        message:
+          "Le contenu de cet événement ne correspond pas à sa première réception.",
+      });
+    }
+    if (claim !== "CLAIMED") {
+      return { processed: false, reason: claim.toLowerCase(), eventId };
+    }
+
+    const isEarlyFraudWarning =
+      eventType === "radar.early_fraud_warning.created";
+    const chargebackStatus = isEarlyFraudWarning
+      ? "warning"
+      : (PROVIDER_DISPUTE_STATUS[String(object.status || "")] ?? "open");
+    const amountMinor = Number(object.amount);
+    const occurredAt = Number.isFinite(Number(event?.created))
+      ? new Date(Number(event.created) * 1_000).toISOString()
+      : new Date().toISOString();
+    const fundsLost =
+      eventType === "charge.dispute.funds_withdrawn" ||
+      chargebackStatus === "lost";
+    const closed = ["won", "lost", "withdrawn"].includes(chargebackStatus);
+
+    const updates: Partial<OrderRecord> = {
+      chargebackProviderId: disputeId,
+      chargebackStatus,
+      chargebackReason: String(
+        object.reason || (isEarlyFraudWarning ? object.fraud_type : "") || "",
+      ).slice(0, 200),
+      chargebackOpenedAt: order.chargebackOpenedAt || occurredAt,
+      chargebackClosedAt: closed ? occurredAt : undefined,
+      ...(Number.isSafeInteger(amountMinor) && amountMinor > 0
+        ? { chargebackAmountMinor: amountMinor }
+        : {}),
+    };
+
+    // The seller leg and the commission are only unwound once the money has
+    // actually left. A warning or an open dispute may still be won.
+    let commissionReversal = null;
+    if (fundsLost) {
+      updates.status = "disputed";
+      if (
+        order.sellerTransferStatus === "completed" &&
+        order.sellerTransferId
+      ) {
+        await this.paymentGateway.reverseSellerTransfer({
+          orderId: order.id,
+          transferId: order.sellerTransferId,
+          amountMinor: order.sellerTransferAmountMinor,
+          idempotencyKey: `chargeback:${disputeId}:transfer-reversal`,
+        });
+        updates.sellerTransferStatus = "reversed";
+      }
+      if (
+        order.commissionCalculationId &&
+        (order.platformCommissionMinor || 0) > 0
+      ) {
+        commissionReversal = await this.commissions.reverse(
+          order.commissionCalculationId,
+          {
+            refundBaseMinor:
+              order.itemAmountMinor ?? Math.round(order.itemAmount * 100),
+            idempotencyKey: `chargeback:${disputeId}:commission`,
+          },
+        );
+      }
+      if ((order.fulfillmentModel || "PHYSICAL") !== "PHYSICAL") {
+        await this.digitalProducts.applyAuthoritativeOrderAccessState(
+          order.id,
+          "DISPUTED",
+        );
+      }
+    } else if (!closed) {
+      updates.status = "disputed";
+    }
+
+    const updated = await this.orderRepo.update(order.id, updates);
+
+    if (fundsLost) {
+      void this.emitFinancialAnalytics("refund_completed", order, {
+        listingId: order.listingId,
+        sellerId: order.sellerId,
+        orderId: order.id,
+        transactionId: disputeId,
+        amountMinor:
+          updates.chargebackAmountMinor ??
+          order.totalChargedMinor ??
+          Math.round(order.totalCharged * 100),
+        currency: order.currency,
+      });
+    }
+    // A won dispute returns the money to the platform after the seller leg was
+    // already recovered, so settling the seller again is an operator decision
+    // rather than something to do silently.
+    logger.warn("order_chargeback_recorded", {
+      orderId: order.id,
+      disputeId,
+      eventType,
+      chargebackStatus,
+      fundsLost,
+      sellerSettlementReviewRequired: chargebackStatus === "won",
+    });
+
+    await this.compliance.completeProviderEvent({
+      provider: "stripe_marketplace_orders",
+      eventId,
+      payloadHash,
+    });
+    return {
+      processed: true,
+      state: updated.status,
+      chargebackStatus,
+      commissionReversal,
+      eventId,
+    };
   }
 
   private async createCheckoutOrder(input: {
@@ -1470,13 +2090,11 @@ export class OrdersService {
         message: "Le remboursement ne possède pas de ventilation persistée.",
       });
     }
-    const commissionReversal =
-      order.commissionCalculationId && (order.platformCommissionMinor || 0) > 0
-        ? await this.commissions.reverse(order.commissionCalculationId, {
-            refundBaseMinor: order.refundBaseMinor,
-            idempotencyKey: `${order.refundIdempotencyKey}:commission`,
-          })
-        : null;
+    const commissionReversal = await this.reverseOrderCommission(
+      order,
+      order.refundBaseMinor,
+      order.refundIdempotencyKey,
+    );
     const updated = await this.orderRepo.update(order.id, {
       status: "refunded",
     });

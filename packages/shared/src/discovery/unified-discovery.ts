@@ -6,6 +6,7 @@ import type {
   PublisherType,
   PublisherVerificationStatus,
 } from "@shongre/contracts";
+import { normalizeSearchText as normalize } from "../text/search-normalization";
 
 export interface DiscoveryQualitySignals {
   requiredFieldsComplete?: boolean;
@@ -147,15 +148,6 @@ const SEARCH_PLACEMENTS = new Set([
 
 function clamp(value: number): number {
   return Math.max(0, Math.min(1, Number.isFinite(value) ? value : 0));
-}
-
-function normalize(value: string): string {
-  return value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLocaleLowerCase("fr-FR")
-    .replace(/[^a-z0-9]+/g, " ")
-    .trim();
 }
 
 function tokens(value: string): string[] {

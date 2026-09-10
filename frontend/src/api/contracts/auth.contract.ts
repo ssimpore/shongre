@@ -5,6 +5,10 @@ import {
   UserRole,
   ShongreProductId,
 } from "../../types";
+import type { components } from "@shongre/contracts/openapi";
+
+/** The portable account copy, as the canonical contract defines it. */
+export type AccountDataExport = components["schemas"]["AccountDataExport"];
 
 type AuthProviderId = "password" | "google" | "apple" | "facebook";
 export type SocialAuthProvider = Exclude<AuthProviderId, "password">;
@@ -187,4 +191,10 @@ export interface AuthServiceContract {
   addPassword(newPassword: string): Promise<void>;
   revokeSession(sessionId: string): Promise<void>;
   deleteAccount(password: string, reason?: string): Promise<void>;
+  /**
+   * Portable copy of everything the signed-in account owns. Returned as a
+   * value rather than a URL so nothing durable and downloadable is created
+   * server-side for data the account can already read.
+   */
+  exportAccountData(): Promise<AccountDataExport>;
 }

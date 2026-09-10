@@ -172,7 +172,9 @@ case "$action" in
     }
     "$SHONGRE_ROOT/scripts/render-supabase-config.sh"
     shongre_info "resetting only backend/supabase on $SUPABASE_HOST:$SUPABASE_DB_PORT"
-    env -u DATABASE_URL supabase db reset --workdir "$SHONGRE_ROOT/backend"
+    env -u DATABASE_URL supabase db reset --workdir "$SHONGRE_ROOT/backend" --no-seed
+    resolved_database_url="$(DATABASE_URL= local_database_url)"
+    DATABASE_URL="$resolved_database_url" "$SHONGRE_ROOT/scripts/database.sh" migrate
     ;;
   shell)
     require_local

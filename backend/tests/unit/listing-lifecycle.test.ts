@@ -436,12 +436,31 @@ describe("Listing & Order Lifecycle", () => {
     await expect(
       repositories.listings.findById("list_1"),
     ).resolves.toMatchObject({ status: "sold" });
+    // A partial refund returns item value and claws back the seller transfer
+    // in proportion, leaving the sale standing for the remainder.
     await expect(
       ordersService.refundOrder(order.id, {
         refundBaseMinor: 10_000,
-        idempotencyKey: "refund-order-partial-refused",
+        idempotencyKey: "refund-order-partial-1",
+      }),
+    ).resolves.toMatchObject({
+      order: { status: "completed" },
+      providerRefund: { status: "succeeded" },
+    });
+    await expect(repositories.orders.findById(order.id)).resolves.toMatchObject(
+      {
+        refundedBaseTotalMinor: 10_000,
+        sellerTransferStatus: "partially_reversed",
+      },
+    );
+    // More than the remaining item value is refused.
+    await expect(
+      ordersService.refundOrder(order.id, {
+        refundBaseMinor: 20_000,
+        idempotencyKey: "refund-order-over-remaining",
       }),
     ).rejects.toMatchObject({ code: "VALIDATION_ERROR" });
+    // Refunding the remainder closes the order and the transfer.
     await expect(
       ordersService.refundOrder(order.id, {
         idempotencyKey: "refund-order-complete-1",
@@ -450,6 +469,9 @@ describe("Listing & Order Lifecycle", () => {
       order: { status: "refunded" },
       providerRefund: { status: "succeeded" },
     });
+    await expect(repositories.orders.findById(order.id)).resolves.toMatchObject(
+      { refundedBaseTotalMinor: 25_000 },
+    );
     await expect(repositories.orders.findById(order.id)).resolves.toMatchObject(
       {
         sellerTransferStatus: "reversed",

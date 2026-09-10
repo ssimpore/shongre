@@ -4,14 +4,15 @@
 
 - Contract version: `1.0.0`
 - API base path: `/api/v1`
-- Operations: **533**
-- Specification SHA-256: `403b8d67f66dc6ec`
+- Operations: **539**
+- Specification SHA-256: `149a77af91439078`
 
 ## account
 
 | Method | Path | Operation ID | Access | Permission | Success |
 | --- | --- | --- | --- | --- | --- |
 | `POST` | `/account/delete` | `postAccountDelete` | `permission` | `marketplace.customer.access` | `200` |
+| `GET` | `/account/export` | `getAccountExport` | `permission` | `marketplace.customer.access` | `200` |
 | `GET` | `/account/listings` | `getAccountListings` | `permission` | `marketplace.customer.access` | `200` |
 | `POST` | `/account/upgrade-to-professional` | `postAccountUpgradeToProfessional` | `permission` | `marketplace.customer.access` | `200` |
 
@@ -702,12 +703,17 @@
 | `POST` | `/orders/{id}/dispute` | `postOrdersByIdDispute` | `permission` | `marketplace.customer.access` | `200` |
 | `POST` | `/orders/{id}/handover-code` | `postOrdersByIdHandoverCode` | `permission` | `marketplace.customer.access` | `200` |
 | `POST` | `/orders/{id}/refund` | `postOrdersByIdRefund` | `permission` | `order.refund` | `200` |
+| `GET` | `/orders/{id}/returns` | `getOrdersByIdReturns` | `permission` | `marketplace.customer.access` | `200` |
+| `POST` | `/orders/{id}/returns` | `postOrdersByIdReturns` | `permission` | `marketplace.customer.access` | `200` |
 | `POST` | `/orders/{id}/ship` | `postOrdersByIdShip` | `permission` | `marketplace.customer.access` | `200` |
 | `GET` | `/orders/{id}` | `getOrdersById` | `permission` | `order.read.own` | `200` |
 | `POST` | `/orders/direct-purchase/quote` | `postOrdersDirectPurchaseQuote` | `permission` | `order.create` | `200` |
 | `POST` | `/orders/direct-purchase` | `postOrdersDirectPurchase` | `permission` | `order.create` | `200` |
 | `GET` | `/orders/purchases` | `getOrdersPurchases` | `permission` | `order.read.own` | `200` |
 | `POST` | `/orders/reservation` | `postOrdersReservation` | `permission` | `order.create` | `200` |
+| `POST` | `/orders/returns/{returnId}/decision` | `postOrdersReturnsByReturnIdDecision` | `permission` | `order.refund` | `200` |
+| `POST` | `/orders/returns/{returnId}/received` | `postOrdersReturnsByReturnIdReceived` | `permission` | `order.refund` | `200` |
+| `POST` | `/orders/returns/{returnId}/shipped` | `postOrdersReturnsByReturnIdShipped` | `permission` | `marketplace.customer.access` | `200` |
 | `GET` | `/orders/sales` | `getOrdersSales` | `permission` | `order.manage.seller` | `200` |
 
 ## payments

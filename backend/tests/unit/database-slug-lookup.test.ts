@@ -11,6 +11,7 @@ vi.mock("../../src/infrastructure/supabase/supabase-client.js", () => ({
 import { PostgresAutoRepository } from "../../src/infrastructure/database/repositories/auto.repository.js";
 import { PostgresCoursesRepository } from "../../src/infrastructure/database/repositories/courses.repository.js";
 import { PostgresRealEstateRepository } from "../../src/infrastructure/database/repositories/real-estate.repository.js";
+import { PostgresUserRepository } from "../../src/infrastructure/database/repositories/user.repository.js";
 
 function emptyLookupClient() {
   const lookup: Record<string, ReturnType<typeof vi.fn>> = {};
@@ -57,5 +58,90 @@ describe("database-backed public slug lookups", () => {
       "id",
       expect.stringContaining("public-slug"),
     );
+  });
+});
+
+describe("public storefront owner resolution", () => {
+  const owner = {
+    id: "6f01be37-1011-50ea-8bd0-12feeef55a05",
+    slug: "clara-dupont-agence-canopee",
+    name: "Clara Dupont",
+    country: "FR",
+    account_family: "professional",
+    email: "private@example.test",
+  };
+
+  function setup() {
+    const profile = emptyLookupClient().lookup;
+    const store = emptyLookupClient().lookup;
+    const client = {
+      from: vi.fn((table: string) => {
+        if (table === "public_profiles") return profile;
+        if (table === "stores") return store;
+        throw new Error(`Unexpected private table read: ${table}`);
+      }),
+    };
+    mocks.getSupabaseAdminClient.mockReturnValue(client);
+    return { client, profile, store, repository: new PostgresUserRepository() };
+  }
+
+  it("resolves a store slug to its public owner and preserves the canonical profile", async () => {
+    const { profile, store, repository } = setup();
+    profile.maybeSingle
+      .mockResolvedValueOnce({ data: null, error: null })
+      .mockResolvedValueOnce({ data: owner, error: null });
+    store.maybeSingle.mockResolvedValue({
+      data: { organizations: { owner_id: owner.id } },
+      error: null,
+    });
+
+    const seller = await repository.findPublicById("agence-canopee");
+    expect(seller).toMatchObject({ id: owner.id, slug: owner.slug });
+    expect(seller).not.toHaveProperty("email");
+    expect(store.select).toHaveBeenCalledWith("organizations!inner(owner_id)");
+    expect(store.eq).toHaveBeenCalledWith("slug", "agence-canopee");
+    expect(store.eq).toHaveBeenCalledWith("is_active", true);
+    expect(store.eq).toHaveBeenCalledWith("organizations.status", "active");
+    expect(profile.eq).toHaveBeenCalledWith("id", owner.id);
+    expect(profile.eq).toHaveBeenCalledWith("account_family", "professional");
+  });
+
+  it("preserves existing profile slug precedence", async () => {
+    const { profile, client, repository } = setup();
+    profile.maybeSingle.mockResolvedValue({ data: owner, error: null });
+    expect(await repository.findPublicById(owner.slug)).toMatchObject({
+      id: owner.id,
+    });
+    expect(client.from).not.toHaveBeenCalledWith("stores");
+  });
+
+  it("does not reinterpret an unknown account UUID as a store slug", async () => {
+    const { client, repository } = setup();
+    expect(await repository.findPublicById(owner.id)).toBeNull();
+    expect(client.from).not.toHaveBeenCalledWith("stores");
+  });
+
+  it("returns null when no active storefront and organization match", async () => {
+    const { profile, repository } = setup();
+    expect(await repository.findPublicById("unavailable-shop")).toBeNull();
+    expect(profile.maybeSingle).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not expose a store owner excluded by the public view", async () => {
+    const { store, repository } = setup();
+    store.maybeSingle.mockResolvedValue({
+      data: { organizations: { owner_id: owner.id } },
+      error: null,
+    });
+    expect(await repository.findPublicById("agence-canopee")).toBeNull();
+  });
+
+  it("reports a database failure rather than treating it as a missing shop", async () => {
+    const { store, repository } = setup();
+    store.maybeSingle.mockResolvedValue({
+      data: null,
+      error: { message: "database unavailable" },
+    });
+    await expect(repository.findPublicById("agence-canopee")).rejects.toThrow();
   });
 });

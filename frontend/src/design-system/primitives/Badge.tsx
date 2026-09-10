@@ -8,6 +8,7 @@ import {
   DEFAULT_WIDTH_LADDER,
 } from "@shongre/shared/responsive-image";
 import { useTranslation } from "../../i18n/I18nProvider";
+import { getPublicRuntimeConfig } from "../../platform/runtime-config/public-runtime-config";
 
 export interface BadgeProps {
   children: React.ReactNode;
@@ -76,10 +77,16 @@ export const Avatar: React.FC<AvatarProps> = ({
   className = "",
 }) => {
   const { t } = useTranslation();
+  const transformOptions = {
+    transformMode: getPublicRuntimeConfig().publicMediaImageTransform,
+  };
   return (
     <SharedAvatar
-      src={buildSizedImageUrl(src, DEFAULT_WIDTH_LADDER[0]) ?? src}
-      srcSet={buildSrcSet(src)}
+      src={
+        buildSizedImageUrl(src, DEFAULT_WIDTH_LADDER[0], transformOptions) ??
+        src
+      }
+      srcSet={buildSrcSet(src, transformOptions)}
       sizes={AVATAR_SIZES[size]}
       name={name}
       size={size}

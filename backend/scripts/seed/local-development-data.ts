@@ -886,10 +886,46 @@ async function seedOrganizations(): Promise<{
       professional_vertical: "education",
     },
   ];
+  // Marketplace storefronts belong to the same profile as their listings.
+  // Vertical scenario organizations may have a different synthetic owner.
+  const stores = marketplaceFixture.users
+    .filter(
+      (source) => source.accountType === "professional" && source.storeSlug,
+    )
+    .map((source) => {
+      const ownerId = profileId(source.id);
+      let organization = organizations.find((row) => row.owner_id === ownerId);
+      if (!organization) {
+        organization = {
+          id: organizationId(source.id),
+          owner_id: ownerId,
+          legal_name: source.companyName || source.name,
+          trade_name: source.companyName || source.name,
+          registered_address: `Adresse synthétique — ${source.city}`,
+          city: source.city,
+          postal_code: source.postalCode,
+          country: source.country,
+          is_verified: Boolean(source.isBusinessVerified),
+          status: "active",
+          professional_vertical: source.professionalVertical || "generic",
+        };
+        organizations.push(organization);
+      }
+      return {
+        id: localSeedUuid("store", source.id),
+        organization_id: organization.id,
+        slug: source.storeSlug,
+        display_name: source.companyName || source.name,
+        primary_market: source.country,
+        is_active: source.status === "active",
+      };
+    });
   const organizationResult = await client
     .from("organizations")
     .upsert(organizations);
   if (organizationResult.error) throw organizationResult.error;
+  const storeResult = await client.from("stores").upsert(stores);
+  if (storeResult.error) throw storeResult.error;
 
   const autoLocationId = localSeedUuid("auto-location", "dealer_location_lyon");
   const autoOrganizationResult = await client

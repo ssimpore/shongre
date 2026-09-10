@@ -23,6 +23,7 @@ import { expect, test } from "@playwright/test";
 const SELLER_ROUTE_FAMILIES = [
   "/profil/camille-martin",
   "/boutique/atelier-nordique",
+  "/boutique/agence-canopee",
   "/vendeur/camille-martin",
   "/u/camille-martin",
 ] as const;
@@ -75,6 +76,30 @@ test.describe("database-mode public routes", () => {
     });
     // Not 500: an absent seller is a miss, not a repository failure.
     expect(response.status()).toBe(404);
+  });
+
+  test("opens the Canopée storefront alias and its profile tabs", async ({
+    page,
+  }) => {
+    const response = await page.goto("/boutique/agence-canopee", {
+      waitUntil: "load",
+    });
+    expect(response?.status()).toBe(200);
+    await expect(page).toHaveURL(/\/boutique\/clara-dupont-agence-canopee$/);
+    await expect(
+      page.getByRole("heading", { name: "Clara Dupont", exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByText("Profil introuvable", { exact: true }),
+    ).toHaveCount(0);
+    const reviews = page.getByRole("tab", { name: /Avis vérifiés/ });
+    await reviews.click();
+    await expect(reviews).toHaveAttribute("aria-selected", "true");
+    await expect(page).toHaveURL(/tab=reviews/);
+    const listings = page.getByRole("tab", { name: /Annonces en ligne/ });
+    await listings.click();
+    await expect(listings).toHaveAttribute("aria-selected", "true");
+    await expect(page.getByRole("tabpanel")).toBeVisible();
   });
 
   test("serves the public discovery routes", async ({ request }) => {

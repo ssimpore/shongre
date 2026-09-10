@@ -6,6 +6,7 @@ import {
   DEFAULT_WIDTH_LADDER,
   IMAGE_SIZES,
   isResizableSource,
+  normalizeImageTransformMode,
 } from "./responsive-image";
 
 const UNSPLASH =
@@ -74,7 +75,9 @@ describe("buildSrcSet", () => {
   });
 
   it("honours a caller-supplied ladder", () => {
-    const set = buildSrcSet("https://images.unsplash.com/photo-x", [100, 200])!;
+    const set = buildSrcSet("https://images.unsplash.com/photo-x", {
+      ladder: [100, 200],
+    })!;
     expect(set.split(", ")).toHaveLength(2);
     expect(set).toContain("100w");
     expect(set).toContain("200w");
@@ -123,5 +126,61 @@ describe("IMAGE_SIZES", () => {
     expect(IMAGE_SIZES.card).toContain("calc(100vw - 2rem)");
     expect(IMAGE_SIZES.card).toMatch(/208px$/);
     expect(IMAGE_SIZES.compact).toBe("208px");
+  });
+});
+
+const SUPABASE_OBJECT =
+  "https://project.supabase.invalid/storage/v1/object/public/listing-media/seller/photo.jpg";
+
+describe("storage transform mode", () => {
+  it("leaves a storage object untouched while the capability is off", () => {
+    expect(isResizableSource(SUPABASE_OBJECT)).toBe(false);
+    expect(buildSrcSet(SUPABASE_OBJECT)).toBeUndefined();
+    expect(buildSizedImageUrl(SUPABASE_OBJECT, 320)).toBeUndefined();
+  });
+
+  it("rejects an unrecognised mode rather than guessing", () => {
+    expect(
+      isResizableSource(SUPABASE_OBJECT, normalizeImageTransformMode("cdn")),
+    ).toBe(false);
+    expect(normalizeImageTransformMode(undefined)).toBe("disabled");
+    expect(normalizeImageTransformMode("supabase_render")).toBe(
+      "supabase_render",
+    );
+  });
+
+  it("routes a storage object through the renderer once enabled", () => {
+    const options = { transformMode: "supabase_render" as const };
+    expect(isResizableSource(SUPABASE_OBJECT, "supabase_render")).toBe(true);
+
+    const sized = new URL(buildSizedImageUrl(SUPABASE_OBJECT, 320, options)!);
+    expect(sized.pathname).toBe(
+      "/storage/v1/render/image/public/listing-media/seller/photo.jpg",
+    );
+    expect(sized.searchParams.get("width")).toBe("320");
+    expect(sized.searchParams.get("resize")).toBe("contain");
+    expect(sized.searchParams.get("quality")).toBe("75");
+  });
+
+  it("offers the full ladder for a storage object", () => {
+    const entries = buildSrcSet(SUPABASE_OBJECT, {
+      transformMode: "supabase_render",
+    })!.split(", ");
+    expect(entries).toHaveLength(DEFAULT_WIDTH_LADDER.length);
+    expect(entries[0]).toContain(`width=${DEFAULT_WIDTH_LADDER[0]}`);
+    expect(entries[0].endsWith(`${DEFAULT_WIDTH_LADDER[0]}w`)).toBe(true);
+    expect(entries.at(-1)).toContain(`width=${DEFAULT_WIDTH_LADDER.at(-1)}`);
+  });
+
+  it("keeps a non-storage host out of the renderer", () => {
+    expect(
+      buildSrcSet("https://atelier-nordique.fr/logo.png", {
+        transformMode: "supabase_render",
+      }),
+    ).toBeUndefined();
+  });
+
+  it("still resizes the editorial host with the capability off", () => {
+    expect(buildSrcSet(UNSPLASH)).toBeDefined();
   });
 });

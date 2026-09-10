@@ -10,6 +10,7 @@ import {
   notificationDeliveryProviders,
 } from "../../integrations/providers/notification-delivery.provider.js";
 import { randomUUID } from "node:crypto";
+import { metrics } from "../../infrastructure/observability/metrics.js";
 
 export class NotificationsWorker {
   private readonly workerId: string;
@@ -83,6 +84,10 @@ export class NotificationsWorker {
           receipt: providerResult.receipt,
         });
         result.delivered += 1;
+        metrics.recordNotificationDelivery({
+          channel: delivery.channel,
+          outcome: "delivered",
+        });
       } catch (error) {
         const providerError =
           error instanceof NotificationDeliveryProviderError
@@ -107,6 +112,10 @@ export class NotificationsWorker {
         });
         if (providerError.permanent) result.deadLettered += 1;
         else result.retried += 1;
+        metrics.recordNotificationDelivery({
+          channel: delivery.channel,
+          outcome: providerError.permanent ? "dead_lettered" : "retried",
+        });
       }
     }
     if (deliveries.length > 0) {

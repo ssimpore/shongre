@@ -110,6 +110,50 @@ export function registerOrdersRoutes(routes: RouteRegistrar): void {
     async ({ params, body }) => ordersService.refundOrder(params.id, body),
   );
   routes.addRoute(
+    "POST",
+    "/orders/:id/returns",
+    permission("marketplace.customer.access"),
+    async ({ principal, params, body }) =>
+      ordersService.requestReturn(params.id, principal.userId, {
+        reason: body?.reason,
+        details: body?.details,
+      }),
+  );
+  routes.addRoute(
+    "GET",
+    "/orders/:id/returns",
+    permission("marketplace.customer.access"),
+    async ({ principal, params }) =>
+      ordersService.listOrderReturns(params.id, principal.userId),
+  );
+  routes.addRoute(
+    "POST",
+    "/orders/returns/:returnId/decision",
+    permission("order.refund"),
+    async ({ principal, params, body }) =>
+      ordersService.decideReturn(params.returnId, principal.userId, {
+        approve: body?.approve === true,
+        note: body?.note,
+      }),
+  );
+  routes.addRoute(
+    "POST",
+    "/orders/returns/:returnId/shipped",
+    permission("marketplace.customer.access"),
+    async ({ principal, params, body }) =>
+      ordersService.markReturnShipped(params.returnId, principal.userId, {
+        carrierName: body?.carrierName,
+        trackingNumber: body?.trackingNumber,
+      }),
+  );
+  routes.addRoute(
+    "POST",
+    "/orders/returns/:returnId/received",
+    permission("order.refund"),
+    async ({ principal, params }) =>
+      ordersService.confirmReturnReceived(params.returnId, principal.userId),
+  );
+  routes.addRoute(
     "GET",
     "/orders/:id/review",
     permission("review.create"),

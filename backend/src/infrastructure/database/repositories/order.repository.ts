@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import {
   Transaction,
   DeliveryType,
@@ -27,7 +28,83 @@ export type OrderRecord = Omit<Transaction, "listing" | "buyer" | "seller"> & {
   refundProviderId?: string;
   refundBaseMinor?: number;
   refundIdempotencyKey?: string;
+  /**
+   * Card-network chargeback, which is neither a buyer dispute nor a refund:
+   * the network has already taken the money, so the platform must never issue
+   * a refund against it. Kept separate from the refund ventilation for that
+   * reason.
+   */
+  chargebackProviderId?: string;
+  chargebackStatus?:
+    "warning" | "open" | "under_review" | "won" | "lost" | "withdrawn";
+  chargebackReason?: string;
+  chargebackAmountMinor?: number;
+  chargebackOpenedAt?: string;
+  chargebackClosedAt?: string;
+  payoutFailureCode?: string;
+  payoutFailedAt?: string;
+  /** Running total of item value refunded. Drives full-vs-partial decisions. */
+  refundedBaseTotalMinor?: number;
 };
+
+/** One provider refund against an order. */
+export interface OrderRefundRecord {
+  id: string;
+  orderId: string;
+  providerRefundId?: string;
+  idempotencyKey: string;
+  baseMinor: number;
+  refundedMinor: number;
+  currency: string;
+  isFull: boolean;
+  reason?: string;
+  status: "pending" | "succeeded" | "failed" | "cancelled";
+  actorId?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type OrderReturnStatus =
+  | "requested"
+  | "approved"
+  | "rejected"
+  | "shipped"
+  | "received"
+  | "refunded"
+  | "cancelled"
+  | "expired";
+
+export type OrderReturnReason =
+  | "withdrawal"
+  | "damaged"
+  | "not_as_described"
+  | "wrong_item"
+  | "missing_parts"
+  | "other";
+
+/** A buyer return request and the seller decision on it. */
+export interface OrderReturnRecord {
+  id: string;
+  orderId: string;
+  requesterId: string;
+  reason: OrderReturnReason;
+  details: string;
+  status: OrderReturnStatus;
+  isStatutoryWithdrawal: boolean;
+  requestedBaseMinor: number;
+  currency: string;
+  windowExpiresAt: string;
+  decidedBy?: string;
+  decidedAt?: string;
+  decisionNote?: string;
+  carrierName?: string;
+  trackingNumber?: string;
+  shippedAt?: string;
+  receivedAt?: string;
+  refundId?: string;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export interface IOrderRepository {
   findById(id: string): Promise<OrderRecord | null>;
@@ -42,6 +119,51 @@ export interface IOrderRepository {
   create(order: OrderRecord): Promise<OrderRecord>;
   update(id: string, updates: Partial<OrderRecord>): Promise<OrderRecord>;
   recordHandoverPinFailure(id: string): Promise<OrderRecord>;
+
+  /**
+   * Claims a refund slot for this idempotency key, returning the existing row
+   * when the key was already used. The uniqueness lives in the database, so
+   * two concurrent requests cannot both issue a provider refund.
+   */
+  claimRefund(input: {
+    orderId: string;
+    idempotencyKey: string;
+    baseMinor: number;
+    refundedMinor: number;
+    currency: string;
+    isFull: boolean;
+    reason?: string;
+    actorId?: string;
+  }): Promise<{ refund: OrderRefundRecord; created: boolean }>;
+  updateRefund(
+    id: string,
+    updates: Partial<
+      Pick<OrderRefundRecord, "providerRefundId" | "status" | "refundedMinor">
+    >,
+  ): Promise<OrderRefundRecord>;
+  findRefundByProviderId(
+    providerRefundId: string,
+  ): Promise<OrderRefundRecord | null>;
+  listRefunds(orderId: string): Promise<OrderRefundRecord[]>;
+
+  createReturn(input: {
+    orderId: string;
+    requesterId: string;
+    reason: OrderReturnReason;
+    details: string;
+    isStatutoryWithdrawal: boolean;
+    requestedBaseMinor: number;
+    currency: string;
+    windowExpiresAt: string;
+  }): Promise<OrderReturnRecord>;
+  updateReturn(
+    id: string,
+    updates: Partial<OrderReturnRecord>,
+  ): Promise<OrderReturnRecord>;
+  findReturnById(id: string): Promise<OrderReturnRecord | null>;
+  findOpenReturn(orderId: string): Promise<OrderReturnRecord | null>;
+  listReturns(orderId: string): Promise<OrderReturnRecord[]>;
+  expireStaleReturns(limit: number): Promise<number>;
 }
 
 const CANONICAL_DEMO_ORDERS: Record<string, OrderRecord> = {
@@ -88,8 +210,18 @@ const CANONICAL_DEMO_ORDERS: Record<string, OrderRecord> = {
   },
 };
 
+/** Statuses in which a return still awaits somebody's action. */
+const OPEN_RETURN_STATUSES = new Set<OrderReturnStatus>([
+  "requested",
+  "approved",
+  "shipped",
+  "received",
+]);
+
 export class DemoOrderRepository implements IOrderRepository {
   private orders: Map<string, OrderRecord> = new Map();
+  private refunds: Map<string, OrderRefundRecord> = new Map();
+  private returns: Map<string, OrderReturnRecord> = new Map();
 
   constructor(
     initialOrders: Record<string, OrderRecord> = CANONICAL_DEMO_ORDERS,
@@ -99,6 +231,8 @@ export class DemoOrderRepository implements IOrderRepository {
 
   reset(initialOrders: Record<string, OrderRecord> = CANONICAL_DEMO_ORDERS) {
     this.orders.clear();
+    this.refunds.clear();
+    this.returns.clear();
     Object.values(initialOrders).forEach((o) =>
       this.orders.set(o.id, { ...o, handoverPinAttempts: 0 }),
     );
@@ -193,6 +327,154 @@ export class DemoOrderRepository implements IOrderRepository {
           : undefined,
     });
   }
+
+  async claimRefund(input: {
+    orderId: string;
+    idempotencyKey: string;
+    baseMinor: number;
+    refundedMinor: number;
+    currency: string;
+    isFull: boolean;
+    reason?: string;
+    actorId?: string;
+  }): Promise<{ refund: OrderRefundRecord; created: boolean }> {
+    const existing = [...this.refunds.values()].find(
+      (row) =>
+        row.orderId === input.orderId &&
+        row.idempotencyKey === input.idempotencyKey,
+    );
+    if (existing) return { refund: { ...existing }, created: false };
+    const now = new Date().toISOString();
+    const refund: OrderRefundRecord = {
+      id: randomUUID(),
+      status: "pending",
+      createdAt: now,
+      updatedAt: now,
+      ...input,
+    };
+    this.refunds.set(refund.id, refund);
+    return { refund: { ...refund }, created: true };
+  }
+
+  async updateRefund(
+    id: string,
+    updates: Partial<
+      Pick<OrderRefundRecord, "providerRefundId" | "status" | "refundedMinor">
+    >,
+  ): Promise<OrderRefundRecord> {
+    const existing = this.refunds.get(id);
+    if (!existing)
+      throw new AppError({
+        code: "NOT_FOUND",
+        message: "Remboursement introuvable.",
+      });
+    const next = {
+      ...existing,
+      ...updates,
+      updatedAt: new Date().toISOString(),
+    };
+    this.refunds.set(id, next);
+    return { ...next };
+  }
+
+  async findRefundByProviderId(
+    providerRefundId: string,
+  ): Promise<OrderRefundRecord | null> {
+    const found = [...this.refunds.values()].find(
+      (row) => row.providerRefundId === providerRefundId,
+    );
+    return found ? { ...found } : null;
+  }
+
+  async listRefunds(orderId: string): Promise<OrderRefundRecord[]> {
+    return [...this.refunds.values()]
+      .filter((row) => row.orderId === orderId)
+      .map((row) => ({ ...row }))
+      .sort((left, right) => right.createdAt.localeCompare(left.createdAt));
+  }
+
+  async createReturn(input: {
+    orderId: string;
+    requesterId: string;
+    reason: OrderReturnReason;
+    details: string;
+    isStatutoryWithdrawal: boolean;
+    requestedBaseMinor: number;
+    currency: string;
+    windowExpiresAt: string;
+  }): Promise<OrderReturnRecord> {
+    if (await this.findOpenReturn(input.orderId)) {
+      throw new AppError({
+        code: "CONFLICT",
+        message: "Un retour est déjà en cours pour cette commande.",
+      });
+    }
+    const now = new Date().toISOString();
+    const record: OrderReturnRecord = {
+      id: randomUUID(),
+      status: "requested",
+      createdAt: now,
+      updatedAt: now,
+      ...input,
+    };
+    this.returns.set(record.id, record);
+    return { ...record };
+  }
+
+  async updateReturn(
+    id: string,
+    updates: Partial<OrderReturnRecord>,
+  ): Promise<OrderReturnRecord> {
+    const existing = this.returns.get(id);
+    if (!existing)
+      throw new AppError({
+        code: "NOT_FOUND",
+        message: "Retour introuvable.",
+      });
+    const next = {
+      ...existing,
+      ...updates,
+      updatedAt: new Date().toISOString(),
+    };
+    this.returns.set(id, next);
+    return { ...next };
+  }
+
+  async findReturnById(id: string): Promise<OrderReturnRecord | null> {
+    const found = this.returns.get(id);
+    return found ? { ...found } : null;
+  }
+
+  async findOpenReturn(orderId: string): Promise<OrderReturnRecord | null> {
+    const found = [...this.returns.values()].find(
+      (row) => row.orderId === orderId && OPEN_RETURN_STATUSES.has(row.status),
+    );
+    return found ? { ...found } : null;
+  }
+
+  async listReturns(orderId: string): Promise<OrderReturnRecord[]> {
+    return [...this.returns.values()]
+      .filter((row) => row.orderId === orderId)
+      .map((row) => ({ ...row }))
+      .sort((left, right) => right.createdAt.localeCompare(left.createdAt));
+  }
+
+  async expireStaleReturns(limit: number): Promise<number> {
+    const now = new Date().toISOString();
+    let expired = 0;
+    for (const row of this.returns.values()) {
+      if (expired >= limit) break;
+      if (row.status === "requested" && row.windowExpiresAt <= now) {
+        this.returns.set(row.id, {
+          ...row,
+          status: "expired",
+          updatedAt: now,
+        });
+        expired += 1;
+      }
+    }
+    return expired;
+  }
 }
 
 export class PostgresOrderRepository implements IOrderRepository {
@@ -285,6 +567,19 @@ export class PostgresOrderRepository implements IOrderRepository {
       refundIdempotencyKey: row.refund_idempotency_key || undefined,
       disputeReason: row.dispute_reason || undefined,
       disputeDetails: row.dispute_details || undefined,
+      chargebackProviderId: row.chargeback_provider_id || undefined,
+      chargebackStatus: row.chargeback_status || undefined,
+      chargebackReason: row.chargeback_reason || undefined,
+      chargebackAmountMinor:
+        row.chargeback_amount_minor === null ||
+        row.chargeback_amount_minor === undefined
+          ? undefined
+          : Number(row.chargeback_amount_minor),
+      chargebackOpenedAt: row.chargeback_opened_at || undefined,
+      chargebackClosedAt: row.chargeback_closed_at || undefined,
+      payoutFailureCode: row.payout_failure_code || undefined,
+      payoutFailedAt: row.payout_failed_at || undefined,
+      refundedBaseTotalMinor: Number(row.refunded_base_total_minor || 0),
       createdAt: row.created_at,
       updatedAt: row.updated_at,
     };
@@ -513,6 +808,24 @@ export class PostgresOrderRepository implements IOrderRepository {
       payload.dispute_reason = updates.disputeReason;
     if (updates.disputeDetails !== undefined)
       payload.dispute_details = updates.disputeDetails;
+    if (updates.chargebackProviderId !== undefined)
+      payload.chargeback_provider_id = updates.chargebackProviderId || null;
+    if (updates.chargebackStatus !== undefined)
+      payload.chargeback_status = updates.chargebackStatus || null;
+    if (updates.chargebackReason !== undefined)
+      payload.chargeback_reason = updates.chargebackReason || null;
+    if (updates.chargebackAmountMinor !== undefined)
+      payload.chargeback_amount_minor = updates.chargebackAmountMinor;
+    if (updates.chargebackOpenedAt !== undefined)
+      payload.chargeback_opened_at = updates.chargebackOpenedAt || null;
+    if (updates.chargebackClosedAt !== undefined)
+      payload.chargeback_closed_at = updates.chargebackClosedAt || null;
+    if (updates.payoutFailureCode !== undefined)
+      payload.payout_failure_code = updates.payoutFailureCode || null;
+    if (updates.payoutFailedAt !== undefined)
+      payload.payout_failed_at = updates.payoutFailedAt || null;
+    if (updates.refundedBaseTotalMinor !== undefined)
+      payload.refunded_base_total_minor = updates.refundedBaseTotalMinor;
     if (updates.carrierName !== undefined)
       payload.carrier_name = updates.carrierName || null;
     if (updates.trackingNumber !== undefined)
@@ -555,5 +868,256 @@ export class PostgresOrderRepository implements IOrderRepository {
       databaseFailure("orders.recordHandoverPinFailure", error);
     }
     return this.mapRowToOrder(Array.isArray(data) ? data[0] : data);
+  }
+
+  private mapRowToRefund(row: any): OrderRefundRecord {
+    return {
+      id: row.id,
+      orderId: row.order_id,
+      providerRefundId: row.provider_refund_id || undefined,
+      idempotencyKey: row.idempotency_key,
+      baseMinor: Number(row.base_minor),
+      refundedMinor: Number(row.refunded_minor),
+      currency: row.currency,
+      isFull: Boolean(row.is_full),
+      reason: row.reason || undefined,
+      status: row.status,
+      actorId: row.actor_id || undefined,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    };
+  }
+
+  private mapRowToReturn(row: any): OrderReturnRecord {
+    return {
+      id: row.id,
+      orderId: row.order_id,
+      requesterId: row.requester_id,
+      reason: row.reason,
+      details: row.details,
+      status: row.status,
+      isStatutoryWithdrawal: Boolean(row.is_statutory_withdrawal),
+      requestedBaseMinor: Number(row.requested_base_minor),
+      currency: row.currency,
+      windowExpiresAt: row.window_expires_at,
+      decidedBy: row.decided_by || undefined,
+      decidedAt: row.decided_at || undefined,
+      decisionNote: row.decision_note || undefined,
+      carrierName: row.carrier_name || undefined,
+      trackingNumber: row.tracking_number || undefined,
+      shippedAt: row.shipped_at || undefined,
+      receivedAt: row.received_at || undefined,
+      refundId: row.refund_id || undefined,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    };
+  }
+
+  async claimRefund(input: {
+    orderId: string;
+    idempotencyKey: string;
+    baseMinor: number;
+    refundedMinor: number;
+    currency: string;
+    isFull: boolean;
+    reason?: string;
+    actorId?: string;
+  }): Promise<{ refund: OrderRefundRecord; created: boolean }> {
+    const supabase = getSupabaseAdminClient();
+    const { data, error } = await ((
+      supabase.from("order_refunds" as any) as any
+    )
+      .insert({
+        order_id: input.orderId,
+        idempotency_key: input.idempotencyKey,
+        base_minor: input.baseMinor,
+        refunded_minor: input.refundedMinor,
+        currency: input.currency,
+        is_full: input.isFull,
+        reason: input.reason ?? null,
+        actor_id: input.actorId ?? null,
+      })
+      .select()
+      .single() as any);
+    if (!error && data) {
+      return { refund: this.mapRowToRefund(data), created: true };
+    }
+    // 23505 is the unique violation on (order_id, idempotency_key): the same
+    // request already claimed this refund, so return that one rather than
+    // issuing a second provider refund.
+    if (error?.code !== "23505") {
+      databaseFailure("orders.claimRefund", error);
+    }
+    const { data: existing, error: readError } = await (
+      supabase.from("order_refunds" as any) as any
+    )
+      .select("*")
+      .eq("order_id", input.orderId)
+      .eq("idempotency_key", input.idempotencyKey)
+      .single();
+    if (readError || !existing) {
+      databaseFailure("orders.claimRefund.reread", readError);
+    }
+    return { refund: this.mapRowToRefund(existing), created: false };
+  }
+
+  async updateRefund(
+    id: string,
+    updates: Partial<
+      Pick<OrderRefundRecord, "providerRefundId" | "status" | "refundedMinor">
+    >,
+  ): Promise<OrderRefundRecord> {
+    const payload: Record<string, unknown> = {};
+    if (updates.providerRefundId !== undefined)
+      payload.provider_refund_id = updates.providerRefundId || null;
+    if (updates.status !== undefined) payload.status = updates.status;
+    if (updates.refundedMinor !== undefined)
+      payload.refunded_minor = updates.refundedMinor;
+    const { data, error } = await ((
+      getSupabaseAdminClient().from("order_refunds" as any) as any
+    )
+      .update(payload)
+      .eq("id", id)
+      .select()
+      .single() as any);
+    if (error || !data) databaseFailure("orders.updateRefund", error);
+    return this.mapRowToRefund(data);
+  }
+
+  async findRefundByProviderId(
+    providerRefundId: string,
+  ): Promise<OrderRefundRecord | null> {
+    const { data, error } = await (
+      getSupabaseAdminClient().from("order_refunds" as any) as any
+    )
+      .select("*")
+      .eq("provider_refund_id", providerRefundId)
+      .maybeSingle();
+    if (error) databaseFailure("orders.findRefundByProviderId", error);
+    return data ? this.mapRowToRefund(data) : null;
+  }
+
+  async listRefunds(orderId: string): Promise<OrderRefundRecord[]> {
+    const { data, error } = await (
+      getSupabaseAdminClient().from("order_refunds" as any) as any
+    )
+      .select("*")
+      .eq("order_id", orderId)
+      .order("created_at", { ascending: false });
+    if (error) databaseFailure("orders.listRefunds", error);
+    return (data || []).map((row: any) => this.mapRowToRefund(row));
+  }
+
+  async createReturn(input: {
+    orderId: string;
+    requesterId: string;
+    reason: OrderReturnReason;
+    details: string;
+    isStatutoryWithdrawal: boolean;
+    requestedBaseMinor: number;
+    currency: string;
+    windowExpiresAt: string;
+  }): Promise<OrderReturnRecord> {
+    const { data, error } = await ((
+      getSupabaseAdminClient().from("order_returns" as any) as any
+    )
+      .insert({
+        order_id: input.orderId,
+        requester_id: input.requesterId,
+        reason: input.reason,
+        details: input.details,
+        is_statutory_withdrawal: input.isStatutoryWithdrawal,
+        requested_base_minor: input.requestedBaseMinor,
+        currency: input.currency,
+        window_expires_at: input.windowExpiresAt,
+      })
+      .select()
+      .single() as any);
+    if (error?.code === "23505") {
+      // The partial unique index on open returns is what makes one claim per
+      // order true even under concurrent requests.
+      throw new AppError({
+        code: "CONFLICT",
+        message: "Un retour est déjà en cours pour cette commande.",
+      });
+    }
+    if (error || !data) databaseFailure("orders.createReturn", error);
+    return this.mapRowToReturn(data);
+  }
+
+  async updateReturn(
+    id: string,
+    updates: Partial<OrderReturnRecord>,
+  ): Promise<OrderReturnRecord> {
+    const payload: Record<string, unknown> = {};
+    if (updates.status !== undefined) payload.status = updates.status;
+    if (updates.decidedBy !== undefined)
+      payload.decided_by = updates.decidedBy || null;
+    if (updates.decidedAt !== undefined)
+      payload.decided_at = updates.decidedAt || null;
+    if (updates.decisionNote !== undefined)
+      payload.decision_note = updates.decisionNote || null;
+    if (updates.carrierName !== undefined)
+      payload.carrier_name = updates.carrierName || null;
+    if (updates.trackingNumber !== undefined)
+      payload.tracking_number = updates.trackingNumber || null;
+    if (updates.shippedAt !== undefined)
+      payload.shipped_at = updates.shippedAt || null;
+    if (updates.receivedAt !== undefined)
+      payload.received_at = updates.receivedAt || null;
+    if (updates.refundId !== undefined)
+      payload.refund_id = updates.refundId || null;
+    const { data, error } = await ((
+      getSupabaseAdminClient().from("order_returns" as any) as any
+    )
+      .update(payload)
+      .eq("id", id)
+      .select()
+      .single() as any);
+    if (error || !data) databaseFailure("orders.updateReturn", error);
+    return this.mapRowToReturn(data);
+  }
+
+  async findReturnById(id: string): Promise<OrderReturnRecord | null> {
+    const { data, error } = await (
+      getSupabaseAdminClient().from("order_returns" as any) as any
+    )
+      .select("*")
+      .eq("id", id)
+      .maybeSingle();
+    if (error) databaseFailure("orders.findReturnById", error);
+    return data ? this.mapRowToReturn(data) : null;
+  }
+
+  async findOpenReturn(orderId: string): Promise<OrderReturnRecord | null> {
+    const { data, error } = await (
+      getSupabaseAdminClient().from("order_returns" as any) as any
+    )
+      .select("*")
+      .eq("order_id", orderId)
+      .in("status", [...OPEN_RETURN_STATUSES])
+      .maybeSingle();
+    if (error) databaseFailure("orders.findOpenReturn", error);
+    return data ? this.mapRowToReturn(data) : null;
+  }
+
+  async listReturns(orderId: string): Promise<OrderReturnRecord[]> {
+    const { data, error } = await (
+      getSupabaseAdminClient().from("order_returns" as any) as any
+    )
+      .select("*")
+      .eq("order_id", orderId)
+      .order("created_at", { ascending: false });
+    if (error) databaseFailure("orders.listReturns", error);
+    return (data || []).map((row: any) => this.mapRowToReturn(row));
+  }
+
+  async expireStaleReturns(limit: number): Promise<number> {
+    const { data, error } = await (getSupabaseAdminClient() as any).rpc(
+      "expire_stale_order_returns",
+      { p_limit: limit },
+    );
+    if (error) databaseFailure("orders.expireStaleReturns", error);
+    return Number(data || 0);
   }
 }

@@ -11,6 +11,7 @@ import { databaseFailure } from "./repository-error.js";
 import {
   getCurrencyMinorUnitDigits,
   minorToMajorAmount,
+  normalizeSearchText,
 } from "@shongre/shared";
 import { getCountryConfig } from "@shongre/contracts";
 import {
@@ -110,6 +111,17 @@ export interface IListingRepository {
     isFavorite: boolean,
   ): Promise<boolean>;
   getFavorites(userId: string, marketCode: string): Promise<string[]>;
+  /**
+   * Applies pending `listing_viewed` analytics events to `listings.view_count`.
+   *
+   * Views are counted here rather than on the listing response because the
+   * read path must not carry a write, and rather than by recomputing from the
+   * event ledger because analytics retention prunes it. The database owns the
+   * watermark, so repeated calls are safe and a partial batch resumes.
+   */
+  rollUpViewCounts(
+    limit?: number,
+  ): Promise<{ processedEvents: number; updatedListings: number }>;
   createDraft(userId: string, marketCode: string): Promise<any>;
   saveDraft(draft: any, userId: string, marketCode: string): Promise<void>;
   getDraft(userId: string, marketCode: string): Promise<any | null>;
@@ -555,16 +567,25 @@ export class DemoListingRepository implements IListingRepository {
       result = result.filter((l) => l.price <= (filters.maxPrice || Infinity));
     }
     if (filters.city) {
-      const cityQ = filters.city.toLowerCase();
-      result = result.filter((l) => l.city.toLowerCase().includes(cityQ));
+      const cityQ = normalizeSearchText(filters.city);
+      result = result.filter((l) =>
+        normalizeSearchText(l.city).includes(cityQ),
+      );
     }
     if (filters.query) {
-      const q = filters.query.toLowerCase();
-      result = result.filter(
-        (l) =>
-          l.title.toLowerCase().includes(q) ||
-          l.description.toLowerCase().includes(q),
-      );
+      /*
+       * Folded on both sides, because the PostgreSQL path unaccents the search
+       * vector and the query. A fixture that only lower-cased answered a
+       * different question than production and made "cafe" miss "café".
+       */
+      const q = normalizeSearchText(filters.query);
+      result = q
+        ? result.filter(
+            (l) =>
+              normalizeSearchText(l.title).includes(q) ||
+              normalizeSearchText(l.description).includes(q),
+          )
+        : result;
     }
     /*
      * The same spatial contract the Postgres repository fulfils with PostGIS.
@@ -763,11 +784,39 @@ export class DemoListingRepository implements IListingRepository {
       this.favorites.set(scopeKey, userFavs);
     }
     if (!isFavorite) {
-      userFavs.delete(listingId);
+      if (userFavs.delete(listingId)) {
+        this.adjustFavoriteCount(listingId, userId, -1);
+      }
       return false;
     }
-    userFavs.add(listingId);
+    if (!userFavs.has(listingId)) {
+      userFavs.add(listingId);
+      this.adjustFavoriteCount(listingId, userId, 1);
+    }
     return true;
+  }
+
+  /**
+   * Mirrors the database trigger, which counts one favourite per
+   * (user, listing) pair however many markets it was saved in.
+   */
+  private adjustFavoriteCount(
+    listingId: string,
+    userId: string,
+    delta: 1 | -1,
+  ): void {
+    const stored = this.listings.get(listingId);
+    if (!stored) return;
+    // Called after the set mutation, so this is the post-change number of
+    // markets in which this user holds the listing. The pair starts counting
+    // at its first market and stops when the last one is removed.
+    const marketsHolding = [...this.favorites.entries()].filter(
+      ([scopeKey, ids]) =>
+        scopeKey.startsWith(`${userId}:`) && ids.has(listingId),
+    ).length;
+    if (delta === 1 ? marketsHolding === 1 : marketsHolding === 0) {
+      stored.favoriteCount = Math.max(0, (stored.favoriteCount || 0) + delta);
+    }
   }
 
   async getFavorites(userId: string, marketCode: string): Promise<string[]> {
@@ -775,6 +824,14 @@ export class DemoListingRepository implements IListingRepository {
       `${userId}:${requireMarketCode(marketCode)}`,
     );
     return userFavs ? Array.from(userFavs) : [];
+  }
+
+  async rollUpViewCounts(): Promise<{
+    processedEvents: number;
+    updatedListings: number;
+  }> {
+    // The fixture has no analytics ledger to roll up; its counters are seeded.
+    return { processedEvents: 0, updatedListings: 0 };
   }
 
   async createDraft(userId: string, marketCode: string): Promise<any> {
@@ -1997,6 +2054,23 @@ export class PostgresListingRepository implements IListingRepository {
     });
     if (error) databaseFailure("listings.setFavorite", error);
     return Boolean(data);
+  }
+
+  async rollUpViewCounts(limit = 5_000): Promise<{
+    processedEvents: number;
+    updatedListings: number;
+  }> {
+    const supabase = getSupabaseAdminClient();
+    const { data, error } = await (supabase as any).rpc(
+      "roll_up_listing_view_counts",
+      { p_limit: limit },
+    );
+    if (error) databaseFailure("listings.rollUpViewCounts", error);
+    const row = Array.isArray(data) ? data[0] : data;
+    return {
+      processedEvents: Number(row?.processed_events || 0),
+      updatedListings: Number(row?.updated_listings || 0),
+    };
   }
 
   async getFavorites(userId: string, marketCode: string): Promise<string[]> {

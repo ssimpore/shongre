@@ -2118,6 +2118,74 @@
         }
       }
     },
+    "/account/export": {
+      "get": {
+        "operationId": "getAccountExport",
+        "tags": ["account"],
+        "summary": "GET /account/export",
+        "description": "Returns a portable, machine-readable copy of the authenticated account's own data. Rate limited to protect the database from repeated full-account reads.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/MarketContext"
+          },
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The account's portable data copy.",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountDataExport"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketplace.customer.access",
+        "x-shongre-source": "backend/src/modules/users/api/users.routes.ts"
+      }
+    },
     "/account/listings": {
       "get": {
         "operationId": "getAccountListings",
@@ -30884,14 +30952,488 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "properties": {},
-                "additionalProperties": true
+                "additionalProperties": false,
+                "required": ["idempotencyKey"],
+                "properties": {
+                  "idempotencyKey": {
+                    "type": "string",
+                    "minLength": 8,
+                    "maxLength": 200
+                  },
+                  "refundBaseMinor": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "Item value to refund, in minor units. Omitted refunds everything still refundable; anything less is a partial refund and leaves the sale standing for the remainder."
+                  },
+                  "reason": {
+                    "type": "string",
+                    "maxLength": 200
+                  }
+                }
               }
             }
           }
         },
         "x-shongre-idempotency": "supported",
         "x-shongre-permission": "order.refund"
+      }
+    },
+    "/orders/{id}/returns": {
+      "post": {
+        "operationId": "postOrdersByIdReturns",
+        "tags": ["orders"],
+        "summary": "Request a return for an order",
+        "description": "A buyer asks to return the item. A withdrawal reason is only accepted for a purchase from a professional seller, where the right applies, and cannot then be refused.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/MarketContext"
+          },
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Request a return for an order",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderReturn"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketplace.customer.access",
+        "x-shongre-source": "backend/src/modules/orders/api/orders.routes.ts",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["reason", "details"],
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "enum": [
+                      "withdrawal",
+                      "damaged",
+                      "not_as_described",
+                      "wrong_item",
+                      "missing_parts",
+                      "other"
+                    ]
+                  },
+                  "details": {
+                    "type": "string",
+                    "minLength": 10,
+                    "maxLength": 5000
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "getOrdersByIdReturns",
+        "tags": ["orders"],
+        "summary": "List the returns recorded against an order",
+        "description": "Visible to the order's buyer and seller.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/MarketContext"
+          },
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List the returns recorded against an order",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OrderReturn"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketplace.customer.access",
+        "x-shongre-source": "backend/src/modules/orders/api/orders.routes.ts"
+      }
+    },
+    "/orders/returns/{returnId}/decision": {
+      "post": {
+        "operationId": "postOrdersReturnsByReturnIdDecision",
+        "tags": ["orders"],
+        "summary": "Accept or refuse a return request",
+        "description": "The seller's answer. A statutory withdrawal may only be accepted; a refusal must carry a reason.",
+        "parameters": [
+          {
+            "name": "returnId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/MarketContext"
+          },
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Accept or refuse a return request",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderReturn"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "order.refund",
+        "x-shongre-source": "backend/src/modules/orders/api/orders.routes.ts",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["approve"],
+                "properties": {
+                  "approve": {
+                    "type": "boolean"
+                  },
+                  "note": {
+                    "type": "string",
+                    "maxLength": 2000
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orders/returns/{returnId}/shipped": {
+      "post": {
+        "operationId": "postOrdersReturnsByReturnIdShipped",
+        "tags": ["orders"],
+        "summary": "Record that the returned item was sent back",
+        "description": "The buyer reports the return shipment.",
+        "parameters": [
+          {
+            "name": "returnId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/MarketContext"
+          },
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Record that the returned item was sent back",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderReturn"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "marketplace.customer.access",
+        "x-shongre-source": "backend/src/modules/orders/api/orders.routes.ts",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "carrierName": {
+                    "type": "string",
+                    "maxLength": 120
+                  },
+                  "trackingNumber": {
+                    "type": "string",
+                    "maxLength": 120
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/orders/returns/{returnId}/received": {
+      "post": {
+        "operationId": "postOrdersReturnsByReturnIdReceived",
+        "tags": ["orders"],
+        "summary": "Confirm the returned item arrived and refund",
+        "description": "The seller confirms receipt, which issues the refund through the ordinary refund path.",
+        "parameters": [
+          {
+            "name": "returnId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/MarketContext"
+          },
+          {
+            "$ref": "#/components/parameters/RequestId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Confirm the returned item arrived and refund",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/RequestId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderReturnReceipt"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "409": {
+            "$ref": "#/components/responses/Conflict"
+          },
+          "422": {
+            "$ref": "#/components/responses/UnprocessableEntity"
+          },
+          "429": {
+            "$ref": "#/components/responses/TooManyRequests"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalError"
+          }
+        },
+        "security": [
+          {
+            "CookieAuth": []
+          },
+          {
+            "BearerAuth": []
+          }
+        ],
+        "x-shongre-access": "permission",
+        "x-shongre-permission": "order.refund",
+        "x-shongre-source": "backend/src/modules/orders/api/orders.routes.ts"
       }
     },
     "/orders/{id}/ship": {
@@ -61170,6 +61712,241 @@
                 "type": "null"
               }
             ]
+          }
+        }
+      },
+      "AccountDataExport": {
+        "type": "object",
+        "additionalProperties": false,
+        "description": "A portable copy of everything the account owns, as required by data-portability rules. Contains only the requester's own records; counterparties appear as identifiers, never as profiles.",
+        "required": [
+          "generatedAt",
+          "format",
+          "subject",
+          "profile",
+          "listings",
+          "orders",
+          "conversations",
+          "reviews",
+          "favorites",
+          "savedSearches",
+          "verification",
+          "consents"
+        ],
+        "properties": {
+          "generatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "format": {
+            "type": "string",
+            "const": "shongre.account-export.v1"
+          },
+          "subject": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["userId"],
+            "properties": {
+              "userId": {
+                "type": "string"
+              }
+            }
+          },
+          "profile": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "The account's own profile record."
+          },
+          "listings": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "orders": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "conversations": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "reviews": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "favorites": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "savedSearches": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "verification": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "consents": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "truncated": {
+            "type": "array",
+            "description": "Sections whose export hit the per-section bound. Absent when the copy is complete.",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "OrderReturn": {
+        "type": "object",
+        "additionalProperties": false,
+        "description": "A buyer return request and the seller decision on it.",
+        "required": [
+          "id",
+          "orderId",
+          "requesterId",
+          "reason",
+          "details",
+          "status",
+          "isStatutoryWithdrawal",
+          "requestedBaseMinor",
+          "currency",
+          "windowExpiresAt",
+          "createdAt",
+          "updatedAt"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "orderId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "requesterId": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "withdrawal",
+              "damaged",
+              "not_as_described",
+              "wrong_item",
+              "missing_parts",
+              "other"
+            ]
+          },
+          "details": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 5000
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "requested",
+              "approved",
+              "rejected",
+              "shipped",
+              "received",
+              "refunded",
+              "cancelled",
+              "expired"
+            ]
+          },
+          "isStatutoryWithdrawal": {
+            "type": "boolean",
+            "description": "A statutory withdrawal cannot be refused by the seller."
+          },
+          "requestedBaseMinor": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "currency": {
+            "$ref": "#/components/schemas/CurrencyCode"
+          },
+          "windowExpiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "decidedBy": {
+            "type": "string"
+          },
+          "decidedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "decisionNote": {
+            "type": "string",
+            "maxLength": 2000
+          },
+          "carrierName": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "trackingNumber": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "shippedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "receivedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "refundId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "OrderReturnReceipt": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["return", "refundIssued"],
+        "properties": {
+          "return": {
+            "$ref": "#/components/schemas/OrderReturn"
+          },
+          "refundIssued": {
+            "type": "boolean",
+            "description": "Whether the provider refund settled immediately."
           }
         }
       }
