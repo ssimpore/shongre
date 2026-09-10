@@ -79,3 +79,6 @@ backend/openapi/openapi.yaml
 # canonical gate (which builds) always dirtied the tree. It is generated
 # output, not source.
 frontend/next-env.d.ts
+
+# Generated from the installed maplibre-gl package by frontend/scripts/sync-map-worker.mjs.
+frontend/public/vendor/

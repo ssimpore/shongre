@@ -113,6 +113,15 @@ case "$action" in
     "$SHONGRE_ROOT/scripts/render-supabase-config.sh"
     supabase db diff --workdir "$SHONGRE_ROOT/backend"
     ;;
+  geo-backfill)
+    # Writes to listing rows, so it is held to the same database resolution as a
+    # migration: local by default, and a hosted target only through the approved
+    # deployment path. Everything after `--` is forwarded to the command, so an
+    # operator can pace, bound or dry-run a real catalogue without editing code.
+    resolved_database_url="$(migration_database_url)"
+    DATABASE_URL="$resolved_database_url" \
+      node --import tsx backend/scripts/geo/backfill-locations.ts "$@"
+    ;;
   seed)
     require_local
     resolved_database_url="$(local_database_url)"
@@ -175,7 +184,7 @@ case "$action" in
     exec psql -X "$resolved_database_url"
     ;;
   *)
-    shongre_fail "usage: scripts/database.sh <check|migrate|diff|seed|taxonomy-dry-run|taxonomy-import|taxonomy-test|reset|shell>"
+    shongre_fail "usage: scripts/database.sh <check|migrate|diff|geo-backfill|seed|taxonomy-dry-run|taxonomy-import|taxonomy-test|reset|shell>"
     exit 2
     ;;
 esac

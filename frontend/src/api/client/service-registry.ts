@@ -15,6 +15,7 @@ import type { DigitalProductsServiceContract } from "../contracts/digital-produc
 import type { FeatureFlagServiceContract } from "../contracts/feature-flags.contract";
 import type { HomepageServiceContract } from "../contracts/homepage.contract";
 import type { FinanceServiceContract } from "../contracts/finance.contract";
+import type { GeoServiceContract } from "../contracts/geo.contract";
 import type { InvoicingServiceContract } from "../contracts/invoicing.contract";
 import type { SolutionsServiceContract } from "../contracts/solutions.contract";
 import type { ListingsServiceContract } from "../contracts/listings.contract";
@@ -44,6 +45,7 @@ export interface ServiceRegistry {
   search: SearchServiceContract;
   auth: AuthServiceContract;
   markets: MarketsServiceContract;
+  geo: GeoServiceContract;
   taxonomy: TaxonomyServiceContract;
   messaging: MessagingServiceContract;
   notifications: NotificationsServiceContract;
@@ -104,6 +106,10 @@ const httpServiceLoaders: ServiceLoaders = {
   markets: () =>
     import("../adapters/http/http-markets.service").then(
       ({ httpMarketsService }) => httpMarketsService,
+    ),
+  geo: () =>
+    import("../adapters/http/http-geo.service").then(
+      (module) => new module.HttpGeoService(),
     ),
   taxonomy: () =>
     import("../adapters/http/http-taxonomy.service").then(

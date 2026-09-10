@@ -2,11 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { TaxonomyV1Node } from "@shongre/contracts";
 import { projectTaxonomyTreeItems } from "../../src/modules/taxonomy/taxonomy.tree-projection.js";
 
-const node = (
-  id: string,
-  slug: string,
-  level: number,
-): TaxonomyV1Node =>
+const node = (id: string, slug: string, level: number): TaxonomyV1Node =>
   ({
     id,
     sourceKey: id,

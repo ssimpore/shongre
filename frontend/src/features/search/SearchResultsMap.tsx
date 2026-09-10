@@ -1,11 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import L from "leaflet";
+import { Map as MapLibreMap, Marker } from "maplibre-gl";
 import { Crosshair, MapPin, X } from "lucide-react";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { getMarketMapConfiguration } from "../../configuration/geoCoordinates";
 import { useTranslation } from "../../i18n/I18nProvider";
-import { MapCanvas } from "../../design-system/primitives/MapCanvas";
+import { MapContainer } from "../../design-system/primitives/map/MapContainer";
+import {
+  createMarkerElement,
+  fitToCoordinates,
+} from "../../design-system/primitives/map/map-layers";
 
 export interface SearchMapItem {
   id: string;
@@ -34,9 +38,12 @@ export function SearchResultsMap({
   const { t } = useTranslation();
   const { activeMarket } = useMarketLocation();
   const mapConfiguration = getMarketMapConfiguration(activeMarket.code);
-  const mapRef = useRef<L.Map | null>(null);
-  const markersRef = useRef<L.Marker[]>([]);
+  const mapRef = useRef<MapLibreMap | null>(null);
+  const markersRef = useRef<Marker[]>([]);
   const [selectedId, setSelectedId] = useState<string>();
+  /* The marker effect reads the map from a ref, so it needs a state change to
+     depend on; otherwise it runs once against a null map and never again. */
+  const [isMapReady, setIsMapReady] = useState(false);
   const selectedItem = items.find((item) => item.id === selectedId);
 
   useEffect(() => {
@@ -45,37 +52,41 @@ export function SearchResultsMap({
 
     markersRef.current.forEach((marker) => marker.remove());
     markersRef.current = [];
-    const bounds = L.latLngBounds([]);
 
     items.forEach((item, index) => {
       const selected = item.id === selectedItem?.id;
       const markerNumber = index + 1;
-      const icon = L.divIcon({
-        className: "shongre-search-result-marker",
-        html: `<button type="button" aria-label="${t("ui.searchResultsMap.selectResult", { number: markerNumber })}" class="grid h-9 w-9 place-items-center rounded-full border-2 border-border-on-inverse bg-primary font-sans text-xs font-bold text-text-inverse shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${selected ? "scale-110 ring-4 ring-primary-border" : ""}">${markerNumber}</button>`,
-        iconSize: [36, 36],
-        iconAnchor: [18, 18],
-      });
-      const latLng = L.latLng(item.latitude, item.longitude);
-      const marker = L.marker(latLng, { icon, keyboard: false }).addTo(map);
-      marker.on("click", () => setSelectedId(item.id));
+      /* The marker element is a real <button>: one control per marker, named
+         for a screen reader, and answering both Enter and Space. */
+      const marker = new Marker({
+        element: createMarkerElement({
+          label: t("ui.searchResultsMap.selectResult", {
+            number: markerNumber,
+          }),
+          text: String(markerNumber),
+          selected,
+          onSelect: () => setSelectedId(item.id),
+        }),
+      })
+        .setLngLat([item.longitude, item.latitude])
+        .addTo(map);
       markersRef.current.push(marker);
-      bounds.extend(latLng);
-      if (selected) map.panTo(latLng, { animate: true });
+      if (selected) map.panTo([item.longitude, item.latitude]);
     });
 
-    if (!selectedItem && bounds.isValid()) {
-      map.fitBounds(bounds, { padding: [48, 48], maxZoom: 13 });
+    if (!selectedItem && items.length) {
+      fitToCoordinates(map, items, { padding: 48, maxZoom: 13 });
     }
-  }, [items, selectedItem, t]);
+  }, [isMapReady, items, selectedItem, t]);
 
   const fitResults = () => {
     const map = mapRef.current;
     if (!map || items.length === 0) return;
-    const bounds = L.latLngBounds(
-      items.map((item) => [item.latitude, item.longitude]),
-    );
-    map.fitBounds(bounds, { padding: [48, 48], maxZoom: 13, animate: true });
+    fitToCoordinates(map, items, {
+      padding: 48,
+      maxZoom: 13,
+      animate: true,
+    });
   };
 
   return (
@@ -120,7 +131,7 @@ export function SearchResultsMap({
             : "relative h-search-map min-h-112 sm:h-search-map-tall"
         }
       >
-        <MapCanvas
+        <MapContainer
           surface="search-results"
           center={{
             latitude: mapConfiguration.center.lat,
@@ -132,8 +143,10 @@ export function SearchResultsMap({
           className="h-full w-full bg-bg-subtle"
           onReady={(map) => {
             mapRef.current = map;
+            setIsMapReady(true);
             return () => {
               mapRef.current = null;
+              setIsMapReady(false);
             };
           }}
         />

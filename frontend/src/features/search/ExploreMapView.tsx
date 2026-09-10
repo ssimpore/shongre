@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import L from "leaflet";
+import { Map as MapLibreMap, Marker } from "maplibre-gl";
 import { Maximize2, X, Navigation, Compass } from "lucide-react";
 import { Listing } from "../../types";
 import { plural } from "../../utilities/formatters";
@@ -11,7 +11,8 @@ import { useTranslation } from "../../i18n/I18nProvider";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import { ListingCard } from "../../design-system/primitives/ListingCard";
 import { presentExploreMapMarker } from "./explore-map-marker.presentation";
-import { MapCanvas } from "../../design-system/primitives/MapCanvas";
+import { MapContainer } from "../../design-system/primitives/map/MapContainer";
+import { fitToCoordinates } from "../../design-system/primitives/map/map-layers";
 
 interface ExploreMapViewProps {
   listings: Listing[];
@@ -32,12 +33,17 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
   const { activeMarket, currentLocale, convertMoney, popularCities } =
     useMarketLocation();
   const marketMap = getMarketMapConfiguration(activeMarket.code);
-  const mapInstanceRef = useRef<L.Map | null>(null);
-  const markersRef = useRef<{ [listingId: string]: L.Marker }>({});
+  const mapInstanceRef = useRef<MapLibreMap | null>(null);
+  const markersRef = useRef<{ [listingId: string]: Marker }>({});
 
   const [activeListing, setActiveListing] = useState<Listing | null>(null);
   const [hoveredListingId, setHoveredListingId] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  /* The map arrives after the first render, and the effect that draws markers
+     reads it from a ref. Without a state change to depend on, that effect runs
+     once against a null map and never again — an interactive map with nothing
+     on it. */
+  const [isMapReady, setIsMapReady] = useState(false);
   const mapListings = useMemo(
     () =>
       listings.flatMap((listing) => {
@@ -47,30 +53,26 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
     [listings],
   );
 
-  /*
-   * The zoom control sits top-right here, clear of the filter bar the map is
-   * inset into, so it is added rather than left in Leaflet's default corner.
-   */
-  const attachMap = (map: L.Map) => {
+  /* The container places its own zoom control top-right, clear of the filter
+     bar this map is inset into, so nothing is added here beyond the handle. */
+  const attachMap = (map: MapLibreMap) => {
     mapInstanceRef.current = map;
-    const zoom = L.control.zoom({ position: "topright" }).addTo(map);
+    setIsMapReady(true);
     return () => {
-      zoom.remove();
       mapInstanceRef.current = null;
+      setIsMapReady(false);
     };
   };
 
-  /* Toggling the listing panel changes the map container's width, and Leaflet
-     only recomputes its tile grid when told to. Without this, hiding the panel
-     widened the container from 520px to 904px while the tiles still covered the
-     old 520 — leaving a ~220px grey band down the right-hand side until the next
-     pan or zoom. `invalidateSize` runs after the layout has settled. */
+  /* Toggling the listing panel changes the map container's width, and the
+     renderer only recomputes its viewport when told to. Without this, hiding
+     the panel widened the container from 520px to 904px while the canvas still
+     covered the old 520 — leaving a ~220px band down the right-hand side until
+     the next pan or zoom. `resize` runs after the layout has settled. */
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map) return;
-    const id = requestAnimationFrame(() =>
-      map.invalidateSize({ animate: false }),
-    );
+    const id = requestAnimationFrame(() => map.resize());
     return () => cancelAnimationFrame(id);
   }, [isSidebarOpen]);
 
@@ -80,19 +82,12 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
     if (!map) return;
 
     // Remove existing markers
-    Object.values(markersRef.current).forEach((m) => {
-      (m as L.Marker).remove();
-    });
+    Object.values(markersRef.current).forEach((marker) => marker.remove());
     markersRef.current = {};
 
     if (mapListings.length === 0) return;
 
-    const bounds = L.latLngBounds([]);
-
     mapListings.forEach(({ listing, coordinates }) => {
-      const latLng = L.latLng(coordinates.lat, coordinates.lng);
-      bounds.extend(latLng);
-
       const isSelected = activeListing?.id === listing.id;
       const isHovered = hoveredListingId === listing.id;
       const markerPresentation = presentExploreMapMarker(
@@ -138,36 +133,46 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
         </div>
       `;
 
-      const customIcon = L.divIcon({
-        className: "shongre-custom-marker-icon",
-        html: customHtml,
-        iconSize: [60, 32],
-        iconAnchor: [30, 24],
-      });
-
-      const marker = L.marker(latLng, { icon: customIcon }).addTo(map);
-
-      marker.on("click", () => {
+      /* The renderer positions a DOM element, so the pill is built here and
+         handed over rather than serialised into an icon. It is a real
+         <button>: nameable, focusable, and answering both Enter and Space. */
+      const element = document.createElement("button");
+      element.type = "button";
+      element.className = "shongre-custom-marker-icon";
+      element.setAttribute(
+        "aria-label",
+        `${listing.title}${priceText ? ` — ${priceText}` : ""}`,
+      );
+      if (isSelected) element.setAttribute("aria-current", "true");
+      element.innerHTML = customHtml;
+      element.addEventListener("click", (event) => {
+        event.stopPropagation();
         setActiveListing(listing);
-        map.panTo(latLng, { animate: true, duration: 0.5 });
+        map.panTo([coordinates.lng, coordinates.lat]);
       });
+      element.addEventListener("mouseenter", () =>
+        setHoveredListingId(listing.id),
+      );
+      element.addEventListener("mouseleave", () => setHoveredListingId(null));
+      element.addEventListener("focus", () => setHoveredListingId(listing.id));
+      element.addEventListener("blur", () => setHoveredListingId(null));
 
-      marker.on("mouseover", () => {
-        setHoveredListingId(listing.id);
-      });
-
-      marker.on("mouseout", () => {
-        setHoveredListingId(null);
-      });
-
-      markersRef.current[listing.id] = marker;
+      markersRef.current[listing.id] = new Marker({ element })
+        .setLngLat([coordinates.lng, coordinates.lat])
+        .addTo(map);
     });
 
     // Adjust map to fit markers if listings are loaded
-    if (bounds.isValid()) {
-      map.fitBounds(bounds, { padding: [60, 60], maxZoom: 14 });
-    }
+    fitToCoordinates(
+      map,
+      mapListings.map(({ coordinates }) => ({
+        latitude: coordinates.lat,
+        longitude: coordinates.lng,
+      })),
+      { padding: 60, maxZoom: 14 },
+    );
   }, [
+    isMapReady,
     mapListings,
     activeListing?.id,
     hoveredListingId,
@@ -184,19 +189,19 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
     if (!map) return;
 
     if (cityName === "all") {
-      map.setView(
-        [marketMap.center.lat, marketMap.center.lng],
-        marketMap.center.zoom,
-        { animate: true },
-      );
+      map.flyTo({
+        center: [marketMap.center.lng, marketMap.center.lat],
+        zoom: marketMap.center.zoom,
+      });
       return;
     }
 
     const key = cityName.toLowerCase().trim();
     const cityData = marketMap.cities[key];
     if (cityData) {
-      map.setView([cityData.lat, cityData.lng], cityData.zoom || 12, {
-        animate: true,
+      map.flyTo({
+        center: [cityData.lng, cityData.lat],
+        zoom: cityData.zoom || 12,
       });
     }
   };
@@ -204,13 +209,14 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
   const handleFitAll = () => {
     const map = mapInstanceRef.current;
     if (!map || mapListings.length === 0) return;
-    const bounds = L.latLngBounds([]);
-    mapListings.forEach(({ coordinates }) => {
-      bounds.extend(L.latLng(coordinates.lat, coordinates.lng));
-    });
-    if (bounds.isValid()) {
-      map.fitBounds(bounds, { padding: [50, 50], maxZoom: 14, animate: true });
-    }
+    fitToCoordinates(
+      map,
+      mapListings.map(({ coordinates }) => ({
+        latitude: coordinates.lat,
+        longitude: coordinates.lng,
+      })),
+      { padding: 50, maxZoom: 14, animate: true },
+    );
   };
 
   return (
@@ -322,7 +328,7 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
             growing the page below it. The wrapper also prevents the preview
             from covering the optional desktop results sidebar. */}
         <div className="relative min-w-0 flex-1" data-testid="search-map-stage">
-          <MapCanvas
+          <MapContainer
             surface="explore"
             center={{
               latitude: marketMap.center.lat,
@@ -330,8 +336,8 @@ export const ExploreMapView: React.FC<ExploreMapViewProps> = ({
               zoom: marketMap.center.zoom,
             }}
             layerKey={activeMarket.code}
-            zoomControl={false}
-            scrollWheelZoom
+            navigationControl={false}
+            scrollZoom
             ariaLabel={t("search.exploreMapView.regionLabel")}
             className="h-full w-full z-raised"
             onReady={attachMap}

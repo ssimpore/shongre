@@ -879,6 +879,17 @@ France-only happy path is insufficient for market-sensitive work.
   public coordinates or explicitly approximate public city/service-area
   locations; unknown or private locations are omitted rather than placed at an
   invented market-centre position.
+- MapLibre is the only map renderer, created once in the shared `MapContainer`
+  primitive, and its attribution control is never disabled — the credit is a
+  licence condition of the OpenStreetMap-derived data. Basemap style, geocoding
+  endpoint and location-privacy limits are environment values read by backend,
+  Web and native under one set of names; never add a `NEXT_PUBLIC_`/
+  `EXPO_PUBLIC_` copy. Geocoding runs server-side only, behind the platform
+  cache and rate limit. `public.listings.geographic_point` is authoritative for
+  every spatial filter, distance and sort; `latitude`/`longitude` are a derived
+  compatibility projection. A public payload publishes the precision the
+  listing's policy allows and never the stored point unless that policy is
+  `exact`. See `docs/architecture/geospatial.md`.
 - Target WCAG 2.2 AA. Verify semantic landmarks and heading order, labels and
   descriptions, errors, keyboard navigation, focus visibility/trapping/
   restoration, menus, tabs, dialogs, sheets, tables, carousels, contrast,
@@ -1219,6 +1230,7 @@ sources rather than being copied into this file:
 | OpenAPI workflow and generated inventory                   | `docs/architecture/openapi.md`, `backend/docs/api.md`, `backend/docs/generated/endpoint-inventory.md`                                                        |
 | Multi-country modeling and launch behavior                 | `docs/architecture/multi-country.md`                                                                                                                         |
 | Shared UI and platform boundaries                          | `docs/architecture/cross-platform-ui.md`                                                                                                                     |
+| Maps, geocoding, PostGIS location and location privacy      | `docs/architecture/geospatial.md`                                                                                                                            |
 | Delivery and courier marketplace                           | `docs/architecture/delivery-courier.md`                                                                                                                      |
 | Brand source, runtime mappings, and upgrade workflow       | `docs/architecture/brand-assets.md`                                                                                                                          |
 | Mobile architecture and threat model                       | `docs/architecture/mobile.md`, `docs/security/mobile-threat-model.md`                                                                                        |

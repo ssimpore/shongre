@@ -96,7 +96,23 @@ rsync -a \
   --exclude='playwright-report' \
   "$SHONGRE_ROOT/frontend/" "$e2e_root/frontend/"
 ln -s "$SHONGRE_ROOT/node_modules" "$e2e_root/node_modules"
+# npm hoists most workspace dependencies to the root, but not always: whether a
+# package lands in `frontend/node_modules` depends on how it was installed, and
+# a package that did would be unresolvable here with only the root link. That
+# failed as `Module not found: Can't resolve 'maplibre-gl'` in a build whose
+# only difference from a working one was where npm had put a directory, so the
+# isolated copy mirrors the real resolution layout instead of assuming one.
+[[ ! -d "$SHONGRE_ROOT/frontend/node_modules" ]] ||
+  ln -s "$SHONGRE_ROOT/frontend/node_modules" "$e2e_root/frontend/node_modules"
 cp "$SHONGRE_ROOT/.env.example" "$e2e_root/.env.example"
+
+# The isolated build calls `next build` directly, so the `prebuild` hook that
+# normally stages MapLibre's worker under `public/` never runs. That copy is
+# generated and git-ignored, so on a fresh checkout it would simply be absent —
+# and the resulting app renders an interactive map that never draws a vector
+# tile, which is the failure this file most wants not to reproduce silently.
+node "$SHONGRE_ROOT/frontend/scripts/sync-map-worker.mjs"
+rsync -a "$SHONGRE_ROOT/frontend/public/vendor/" "$e2e_root/frontend/public/vendor/"
 
 shongre_info "building an isolated Webpack production checkout"
 node "$SHONGRE_ROOT/node_modules/next/dist/bin/next" build "$e2e_root/frontend" --webpack

@@ -615,7 +615,6 @@ export const messagesEn: MessageCatalogue = {
   "ui.globalSearchBar.toutesLesCategories": "All categories",
   "ui.globalSearchBar.categories": "Categories",
   "ui.filterPanel.filters": "Filters",
-  "ui.filterPanel.hideShort": "Hide",
   "ui.filterPanel.hide": "Hide filters",
   "ui.filterPanel.show": "Show filters",
   "ui.filterPanel.open": "Open search filters",
@@ -3052,6 +3051,16 @@ export const messagesEn: MessageCatalogue = {
     "Parcel size (estimated weight)",
   "publishing.publishWizard.idealPourCanapesTablesElectromenager":
     "Ideal for sofas, tables and heavy appliances, with a specialist carrier.",
+  "publishing.publishWizard.addressSearchLabel":
+    "Search for an address, town or postcode",
+  "publishing.publishWizard.addressSearchPlaceholder":
+    "e.g. 12 rue de la Paix, Paris or 75002",
+  "publishing.publishWizard.addressSearching": "Searching\u2026",
+  "publishing.publishWizard.addressNoResults": "No place found.",
+  "publishing.publishWizard.addressResultsAvailable":
+    "{count} places suggested. Use the arrow keys to move through the list.",
+  "publishing.publishWizard.addressUnavailable":
+    "Address search is unavailable. Enter your town and postcode.",
   "publishing.publishWizard.localisationDuBien": "Item location",
   "publishing.publishWizard.parRespectPourVotreVie":
     "To protect your privacy, only the town and postcode are shown publicly.",

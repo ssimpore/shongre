@@ -129,7 +129,12 @@ describe("design-system representative states", () => {
 
     expect(expanded).toContain('aria-controls="vehicle-filters"');
     expect(expanded).toContain('aria-expanded="true"');
-    expect(expanded).toContain("Masquer");
+    /* The control keeps the panel's own word in both states. It used to read
+       "Masquer" once open, which removed the only label a reader could search
+       for to get the filters back. The action is still announced. */
+    expect(expanded).toContain("Filtres");
+    expect(expanded).toContain("Masquer les filtres");
+    expect(expanded).not.toContain(">Masquer<");
     expect(drawer).toContain('aria-controls="vehicle-filter-drawer"');
     expect(drawer).toContain('aria-expanded="false"');
     expect(drawer).toContain("Ouvrir les filtres de recherche");

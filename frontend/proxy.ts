@@ -33,6 +33,35 @@ function requestHostname(request: NextRequest): string {
   return forwarded || request.headers.get("host") || request.nextUrl.host;
 }
 
+/**
+ * Origins the configured basemap is served from.
+ *
+ * Derived from `MAP_STYLE_URL` so replacing the provider is still one
+ * environment value. `MAP_TILE_ORIGINS` covers the case where a style document
+ * points its sources at a different host than the style itself — a
+ * comma-separated list, validated as origins rather than trusted as written.
+ */
+function mapOrigins(): string[] {
+  const configured = [
+    process.env.MAP_STYLE_URL,
+    ...(process.env.MAP_TILE_ORIGINS ?? "").split(","),
+  ];
+  const origins = new Set<string>();
+  for (const value of configured) {
+    const candidate = (value ?? "").trim();
+    if (!candidate) continue;
+    try {
+      origins.add(new URL(candidate).origin);
+    } catch {
+      // An unparseable value is configuration noise, not a permitted origin.
+    }
+  }
+  // The documented default, so a deployment that has not overridden the style
+  // is not silently left with a map that cannot fetch its own tiles.
+  if (!origins.size) origins.add("https://tiles.openfreemap.org");
+  return [...origins];
+}
+
 function contentSecurityPolicy(environment: EnvironmentConfig): string {
   const localDevelopment =
     isLocal(environment.environment) || isTest(environment.environment);
@@ -41,6 +70,19 @@ function contentSecurityPolicy(environment: EnvironmentConfig): string {
     environment.urls.api.origin,
     "https://api.stripe.com",
     "https://m.stripe.network",
+    /*
+     * The basemap.
+     *
+     * MapLibre fetches its style, glyphs and vector tiles with `fetch`, which
+     * `connect-src` governs — not `img-src`. Without the origin here the map
+     * still *appears*: it is interactive, and the raster fallback tiles paint
+     * because those are images. What never arrives is every vector tile and
+     * every glyph, so the style never finishes loading and nothing a surface
+     * adds to it is ever drawn. A blocked map that looks like a working one is
+     * the worst version of this failure, which is why the origin is derived
+     * from the configured style rather than left to be remembered.
+     */
+    ...mapOrigins(),
   ];
   const scriptSources = ["'self'", "'unsafe-inline'", "https://js.stripe.com"];
   const imageSources = ["'self'", "blob:", "data:", "https:"];

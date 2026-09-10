@@ -7,6 +7,7 @@ const SERVICE_KEYS = [
   "search",
   "auth",
   "markets",
+  "geo",
   "taxonomy",
   "messaging",
   "notifications",

@@ -4,8 +4,8 @@
 
 - Contract version: `1.0.0`
 - API base path: `/api/v1`
-- Operations: **530**
-- Specification SHA-256: `912bb7cb0150c43f`
+- Operations: **533**
+- Specification SHA-256: `403b8d67f66dc6ec`
 
 ## account
 
@@ -474,6 +474,14 @@
 | `GET` | `/finance/platform/reconciliation` | `getFinancePlatformReconciliation` | `permission` | `finance.reconciliation.manage` | `200` |
 | `GET` | `/finance/platform/transactions/{id}` | `getFinancePlatformTransactionsById` | `permission` | `finance.transactions.read` | `200` |
 | `GET` | `/finance/platform/transactions` | `getFinancePlatformTransactions` | `permission` | `finance.transactions.read` | `200` |
+
+## geo
+
+| Method | Path | Operation ID | Access | Permission | Success |
+| --- | --- | --- | --- | --- | --- |
+| `GET` | `/geo/address-suggestions` | `getGeoAddressSuggestions` | `public` | — | `200` |
+| `GET` | `/geo/map-config` | `getGeoMapConfig` | `public` | — | `200` |
+| `GET` | `/geo/reverse` | `getGeoReverseGeocoding` | `public` | — | `200` |
 
 ## home
 

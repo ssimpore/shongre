@@ -6230,6 +6230,42 @@ export function getDiscoveryCollections(
     "application/json",
   );
 }
+export function getGeoMapConfig(
+  transport: ApiTransport,
+  input: ApiInput<"getGeoMapConfig">,
+): Promise<ApiResponse<"getGeoMapConfig">> {
+  return executeApiOperation<"getGeoMapConfig">(
+    transport,
+    "GET",
+    "/geo/map-config",
+    input,
+    "application/json",
+  );
+}
+export function getGeoAddressSuggestions(
+  transport: ApiTransport,
+  input: ApiInput<"getGeoAddressSuggestions">,
+): Promise<ApiResponse<"getGeoAddressSuggestions">> {
+  return executeApiOperation<"getGeoAddressSuggestions">(
+    transport,
+    "GET",
+    "/geo/address-suggestions",
+    input,
+    "application/json",
+  );
+}
+export function getGeoReverseGeocoding(
+  transport: ApiTransport,
+  input: ApiInput<"getGeoReverseGeocoding">,
+): Promise<ApiResponse<"getGeoReverseGeocoding">> {
+  return executeApiOperation<"getGeoReverseGeocoding">(
+    transport,
+    "GET",
+    "/geo/reverse",
+    input,
+    "application/json",
+  );
+}
 export const generatedApiOperations = {
   getDigitalPolicy,
   getDigitalSellerProfile,
@@ -6748,6 +6784,9 @@ export const generatedApiOperations = {
   getTaxonomyRoot,
   getTaxonomySearchFilters,
   getDiscoveryCollections,
+  getGeoMapConfig,
+  getGeoAddressSuggestions,
+  getGeoReverseGeocoding,
 } as const;
 export type GeneratedApiOperationId = keyof typeof generatedApiOperations;
 type AnyGeneratedApiOperation = (

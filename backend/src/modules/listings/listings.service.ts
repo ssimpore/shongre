@@ -8,6 +8,7 @@ import {
 } from "../../shared/types/index.js";
 import { AppError } from "../../shared/errors/app-error.js";
 import { toPublicListing } from "../../shared/public-projections.js";
+import { listingLocationPolicy } from "../geo/geo.runtime.js";
 import {
   IListingRepository,
   IMarketRepository,
@@ -407,7 +408,9 @@ export class ListingsService {
   private async projectListings(items: Listing[]): Promise<PublicListing[]> {
     if (!items.length) return [];
     const taxonomy = await this.taxonomyV1.snapshot();
-    return items.map((item) => toPublicListing(item, taxonomy));
+    return items.map((item) =>
+      toPublicListing(item, taxonomy, listingLocationPolicy),
+    );
   }
 
   async getListingById(
@@ -419,7 +422,11 @@ export class ListingsService {
       requireMarketCode(marketCode),
     );
     return listing
-      ? toPublicListing(listing, await this.taxonomyV1.snapshot())
+      ? toPublicListing(
+          listing,
+          await this.taxonomyV1.snapshot(),
+          listingLocationPolicy,
+        )
       : null;
   }
 
@@ -1196,7 +1203,11 @@ export class ListingsService {
           errorCode: error instanceof Error ? error.name : "unknown",
         }),
       );
-    return toPublicListing(hydrated || saved, await this.taxonomyV1.snapshot());
+    return toPublicListing(
+      hydrated || saved,
+      await this.taxonomyV1.snapshot(),
+      listingLocationPolicy,
+    );
   }
 
   async updateSellerListing(
@@ -1281,7 +1292,11 @@ export class ListingsService {
       }
     }
     const saved = await this.listingRepo.update(id, authoritativeUpdates);
-    return toPublicListing(saved, await this.taxonomyV1.snapshot());
+    return toPublicListing(
+      saved,
+      await this.taxonomyV1.snapshot(),
+      listingLocationPolicy,
+    );
   }
 
   private parseSellerUpdate(input: unknown): SellerListingUpdate {
@@ -1388,7 +1403,11 @@ export class ListingsService {
     }
     const sold = await this.listingRepo.update(id, { status: "sold" });
     logger.info("Listing marked sold", { listingId: id });
-    return toPublicListing(sold, await this.taxonomyV1.snapshot());
+    return toPublicListing(
+      sold,
+      await this.taxonomyV1.snapshot(),
+      listingLocationPolicy,
+    );
   }
 
   // userId is required rather than defaulted. These previously fell back to

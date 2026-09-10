@@ -25,7 +25,7 @@ test.describe("search map selection", () => {
     await waitForStableLayout(page);
 
     const mapStage = page.getByTestId("search-map-stage");
-    const map = mapStage.locator(".leaflet-container");
+    const map = mapStage.locator(".maplibre-container");
     const marker = page.locator(".shongre-map-marker-wrapper").first();
     await expect(map).toBeVisible();
     await expect(marker).toBeVisible();
@@ -65,7 +65,7 @@ test.describe("search map selection", () => {
     await waitForStableLayout(page);
 
     const mapStage = page.getByTestId("search-map-stage");
-    const map = mapStage.locator(".leaflet-container");
+    const map = mapStage.locator(".maplibre-container");
     const marker = page.locator(".shongre-map-marker-wrapper").first();
     await expect(map).toBeVisible();
     await expect(marker).toBeVisible();

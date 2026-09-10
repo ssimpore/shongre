@@ -14,6 +14,7 @@ import { registerDiscoveryRoutes } from "../../modules/discovery/api/discovery.r
 import { registerListingsRoutes } from "../../modules/listings/api/listings.routes.js";
 import { registerHomepageRoutes } from "../../modules/homepage/api/homepage.routes.js";
 import { registerTaxonomyRoutes } from "../../modules/taxonomy/api/taxonomy.routes.js";
+import { registerGeoRoutes } from "../../modules/geo/api/geo.routes.js";
 import { registerCoursesRoutes } from "../../modules/courses/api/courses.routes.js";
 import { registerRealEstateRoutes } from "../../modules/real-estate/api/real-estate.routes.js";
 import { registerAutoRoutes } from "../../modules/auto/api/auto.routes.js";
@@ -104,6 +105,7 @@ export class ApiV1Router implements RouteRegistrar {
     registerListingsRoutes(this);
     registerHomepageRoutes(this);
     registerTaxonomyRoutes(this);
+    registerGeoRoutes(this);
     registerTaxonomyAdminRoutes(this);
     registerCoursesRoutes(this);
     registerRealEstateRoutes(this);

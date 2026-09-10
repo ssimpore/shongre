@@ -5037,6 +5037,57 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/geo/address-suggestions": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** Server-side address autocomplete */
+        readonly get: operations["getGeoAddressSuggestions"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/geo/map-config": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** Public map renderer configuration */
+        readonly get: operations["getGeoMapConfig"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/geo/reverse": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        /** Server-side reverse geocoding */
+        readonly get: operations["getGeoReverseGeocoding"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/health": {
         readonly parameters: {
             readonly query?: never;
@@ -8332,6 +8383,9 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        readonly AddressSuggestions: {
+            readonly results: readonly components["schemas"]["GeocodingResult"][];
+        };
         readonly AnalyticsAcquisition: {
             readonly channels: readonly {
                 readonly conversionRate: number;
@@ -10648,6 +10702,25 @@ export interface components {
             readonly isFavorite: boolean;
         };
         readonly FulfillmentType: "PHYSICAL" | components["schemas"]["DigitalFulfillmentType"];
+        readonly GeocodingResult: {
+            readonly administrativeArea?: string;
+            readonly attribution: string;
+            readonly city?: string;
+            /** @enum {string} */
+            readonly confidence: "high" | "medium" | "low";
+            readonly coordinate: components["schemas"]["GeoCoordinate"];
+            readonly countryCode: string;
+            readonly departmentOrRegion?: string;
+            readonly normalizedAddress?: string;
+            readonly postalCode?: string;
+            /** @enum {string} */
+            readonly precision: "exact" | "approximate" | "city" | "postal_code" | "hidden";
+            readonly provider: string;
+        };
+        readonly GeoCoordinate: {
+            readonly latitude: number;
+            readonly longitude: number;
+        };
         readonly HomepageConfiguration: {
             readonly changeReason?: string;
             readonly id: string;
@@ -12337,16 +12410,25 @@ export interface components {
             readonly conditions?: readonly string[];
             readonly cursor?: string;
             readonly deliveryAvailable?: boolean;
+            /** @description Edge of the visible map. All four are required together. */
+            readonly east?: number;
+            /** @description Latitude of the search centre. Travels with longitude. */
+            readonly latitude?: number;
             readonly limit?: number;
+            /** @description Longitude of the search centre. Travels with latitude. */
+            readonly longitude?: number;
             readonly marketCode: components["schemas"]["MarketCode"];
             readonly maxPrice?: number;
             readonly minPrice?: number;
+            /** @description Edge of the visible map. All four are required together. */
+            readonly north?: number;
             readonly onlinePaymentAvailable?: boolean;
             readonly onlyDeals?: boolean;
             readonly page?: number;
             readonly postalCode?: string;
             readonly publishedToday?: boolean;
             readonly query?: string;
+            /** @description Radius in kilometres around the supplied centre. */
             readonly radiusKm?: number;
             /** @description Restrict results to one seller. */
             readonly sellerId?: string;
@@ -12354,7 +12436,11 @@ export interface components {
             readonly sellerType?: "all" | "individual" | "pro";
             /** @enum {string} */
             readonly sortBy?: "date_desc" | "price_asc" | "price_desc" | "relevance" | "distance";
+            /** @description Edge of the visible map. All four are required together. */
+            readonly south?: number;
             readonly subCategorySlug?: string;
+            /** @description Edge of the visible map. All four are required together. */
+            readonly west?: number;
         };
         readonly PublicListingSearchResult: {
             readonly items: readonly components["schemas"]["PublicListing"][];
@@ -12378,6 +12464,19 @@ export interface components {
              * @enum {string}
              */
             readonly totalRelation: "exact" | "lower_bound";
+        };
+        /** @description Map configuration a browser or device is allowed to hold. Deliberately excludes the geocoding endpoint and the operator contact identity. */
+        readonly PublicMapConfig: {
+            /** @description Required by the tile and data licences. Must remain visible. */
+            readonly attribution: string;
+            readonly defaultCenter: components["schemas"]["GeoCoordinate"];
+            readonly defaultZoom: number;
+            readonly maxSearchRadiusKm: number;
+            readonly maxZoom: number;
+            readonly minZoom: number;
+            readonly provider: string;
+            /** @description MapLibre style document URL. */
+            readonly styleUrl: string;
         };
         /** @description Public seller facts safe for marketplace discovery. Authentication, contact and Staff fields are excluded. */
         readonly PublicSellerProfile: {
@@ -12656,6 +12755,9 @@ export interface components {
             /** @enum {string} */
             readonly reason: "fraud" | "counterfeit" | "prohibited" | "harassment" | "other";
             readonly reportedUserId?: string;
+        };
+        readonly ReverseGeocodingResult: {
+            readonly result: components["schemas"]["GeocodingResult"] | null;
         };
         readonly RuntimeHealth: {
             readonly dependencies?: {
@@ -24913,6 +25015,112 @@ export interface operations {
             readonly 500: components["responses"]["InternalError"];
         };
     };
+    readonly getGeoAddressSuggestions: {
+        readonly parameters: {
+            readonly query: {
+                readonly limit?: number;
+                readonly locale?: string;
+                /** @description What the person typed. Shorter than three characters is refused rather than sent upstream. */
+                readonly q: string;
+            };
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Places matching the query, restricted to the resolved market country. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["AddressSuggestions"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+            readonly 503: components["responses"]["InternalError"];
+        };
+    };
+    readonly getGeoMapConfig: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description Style URL, attribution and default view for the configured map provider. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["PublicMapConfig"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+            readonly 503: components["responses"]["InternalError"];
+        };
+    };
+    readonly getGeoReverseGeocoding: {
+        readonly parameters: {
+            readonly query: {
+                readonly latitude: number;
+                readonly locale?: string;
+                readonly longitude: number;
+            };
+            readonly header: {
+                /** @description Caller correlation id. The server returns the accepted or generated value. */
+                readonly "X-Request-Id"?: components["parameters"]["RequestId"];
+                /** @description Resolved Web market (ISO alpha-2). It is checked against route/query/body context but is never used as an authorization credential. */
+                readonly "X-Shongre-Market": components["parameters"]["MarketContext"];
+            };
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            /** @description The place at the supplied coordinate, or null when the provider knows none. */
+            readonly 200: {
+                headers: {
+                    readonly "X-Request-Id": components["headers"]["RequestId"];
+                    readonly [name: string]: unknown;
+                };
+                content: {
+                    readonly "application/json": components["schemas"]["ReverseGeocodingResult"];
+                };
+            };
+            readonly 400: components["responses"]["BadRequest"];
+            readonly 404: components["responses"]["NotFound"];
+            readonly 409: components["responses"]["Conflict"];
+            readonly 422: components["responses"]["UnprocessableEntity"];
+            readonly 429: components["responses"]["TooManyRequests"];
+            readonly 500: components["responses"]["InternalError"];
+            readonly 503: components["responses"]["InternalError"];
+        };
+    };
     readonly getHealth: {
         readonly parameters: {
             readonly query?: never;
@@ -26106,10 +26314,18 @@ export interface operations {
                 /** @description Opaque cursor returned by the previous discovery page. */
                 readonly cursor?: string;
                 readonly deliveryAvailable?: boolean;
+                /** @description Eastern edge of the visible map. */
+                readonly east?: number;
+                /** @description Latitude of the search centre. Travels with longitude. */
+                readonly latitude?: number;
                 readonly limit?: number;
+                /** @description Longitude of the search centre. Travels with latitude. */
+                readonly longitude?: number;
                 readonly marketCode: components["schemas"]["MarketCode"];
                 readonly maxPrice?: number;
                 readonly minPrice?: number;
+                /** @description Northern edge of the visible map. All four edges are required together and the box may not span more than 20 degrees. */
+                readonly north?: number;
                 readonly onlinePaymentAvailable?: boolean;
                 readonly onlyDeals?: boolean;
                 /**
@@ -26120,12 +26336,17 @@ export interface operations {
                 readonly postalCode?: string;
                 readonly publishedToday?: boolean;
                 readonly query?: string;
+                /** @description Radius in kilometres around the supplied centre. Requires latitude and longitude. */
                 readonly radiusKm?: number;
                 /** @description Restrict results to one seller. Used for the seller's other listings on a detail page and for a public seller profile, so neither has to read the whole market and filter client-side. */
                 readonly sellerId?: string;
                 readonly sellerType?: "all" | "individual" | "pro";
                 readonly sortBy?: "date_desc" | "price_asc" | "price_desc" | "relevance" | "distance";
+                /** @description Southern edge of the visible map. */
+                readonly south?: number;
                 readonly subCategorySlug?: string;
+                /** @description Western edge of the visible map. */
+                readonly west?: number;
             };
             readonly header: {
                 /** @description Caller correlation id. The server returns the accepted or generated value. */

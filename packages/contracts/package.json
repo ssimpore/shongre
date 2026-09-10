@@ -58,7 +58,8 @@
     "./taxonomy-domain-ids": "./src/taxonomy-domain-ids.ts",
     "./testing/taxonomy": "./src/testing/taxonomy-v1.generated.ts",
     "./testing/taxonomy-responses": "./src/testing/taxonomy-responses.ts",
-    "./place-gazetteer": "./src/place-gazetteer.ts"
+    "./place-gazetteer": "./src/place-gazetteer.ts",
+    "./geospatial": "./src/schemas/geospatial.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

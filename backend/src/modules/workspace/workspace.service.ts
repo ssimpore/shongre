@@ -1,6 +1,7 @@
 import { taxonomyV1Service } from "../taxonomy/taxonomy.runtime.js";
 import type { components } from "@shongre/contracts/openapi";
 import { toPublicListing } from "../../shared/public-projections.js";
+import { listingLocationPolicy } from "../geo/geo.runtime.js";
 import {
   IWorkspaceRepository,
   repositories,
@@ -31,7 +32,7 @@ export class WorkspaceService {
     return {
       ...snapshot,
       topListings: snapshot.topListings.map((listing) =>
-        toPublicListing(listing, taxonomy),
+        toPublicListing(listing, taxonomy, listingLocationPolicy),
       ),
     };
   }

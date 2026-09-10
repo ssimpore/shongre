@@ -13,9 +13,14 @@ const injected: PublicRuntimeConfig = {
     "https://storage-staging.shongre.invalid/listing-media/categories",
   stripePublishableKey: "pk_test_staging",
   map: {
-    tileUrl: "https://tiles.example.invalid/{z}/{x}/{y}.png?key=staging",
+    provider: "openfreemap",
+    styleUrl: "https://tiles.example.invalid/styles/liberty",
     attribution: "&copy; Example",
+    defaultCenter: { latitude: 46.6, longitude: 2.4 },
+    defaultZoom: 6,
+    minZoom: 3,
     maxZoom: 19,
+    maxSearchRadiusKm: 200,
   },
   release: "a".repeat(40),
   applications: {

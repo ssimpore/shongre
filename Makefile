@@ -15,7 +15,7 @@ endif
 	brand-sync brand-check brand-activate brand-activation-check tokens-check tokens-build ui-check ui-test ui-lint ui-typecheck ui-build shared-check cross-platform-check \
 	mobile mobile-dev mobile-start mobile-stop mobile-status mobile-health mobile-web expo expo-start expo-clear expo-doctor ios ios-run ios-open ios-clean android android-run android-open android-clean mobile-prebuild mobile-prebuild-clean mobile-lint mobile-typecheck mobile-test mobile-api-only-check mobile-dead-code mobile-check \
 	infra-check supabase-up supabase-down supabase-status supabase-health supabase-logs supabase-config \
-	db-migrate db-diff migrations-check db-seed monetization-draft-import taxonomy-db-dry-run taxonomy-db-import taxonomy-db-test taxonomy-migration-check db-reset db-types db-shell supabase-link supabase-pull supabase-push \
+	db-migrate db-diff migrations-check db-seed geo-backfill geo-rate-limit-test monetization-draft-import taxonomy-db-dry-run taxonomy-db-import taxonomy-db-test taxonomy-migration-check db-reset db-types db-shell supabase-link supabase-pull supabase-push \
 	ports check-ports free-app-ports free-ports free-port \
 	lint lint-fix format format-check typecheck test test-unit test-integration test-critical test-e2e test-coverage i18n-check taxonomy-import taxonomy-compile taxonomy-check providers-check analytics-check crm-check marketing-check repository-hygiene-check contracts generate check check-all ci build \
 	clean clean-deps clean-all reset audit outdated \
@@ -491,6 +491,8 @@ migrations-check: ## Validate migration ordering and contents without connecting
 	@scripts/database.sh check
 db-seed: ## Load deterministic seed data into a proven local development database
 	@scripts/database.sh seed
+geo-backfill: ## Resolve missing listing coordinates so spatial search can find them; ARGS="--limit=100 --dry-run"
+	@scripts/database.sh geo-backfill $(ARGS)
 monetization-draft-import: ## Idempotently install the reviewed target commercial draft outside production
 	@source scripts/env.sh && npm run db:seed:monetization-target --workspace=backend
 taxonomy-db-dry-run: taxonomy-compile ## Diff the v1 import against a proven local database, then roll back
@@ -536,6 +538,8 @@ test: ui-test frontend-test backend-test mobile-test contracts-test ## Run the c
 test-unit: test
 test-integration: ## Run the backend HTTP integration suite
 	@SHONGRE_ENV=test bash -c 'source scripts/env.sh && npm run test:integration --workspace=backend'
+geo-rate-limit-test: ## Prove the shared geocoding budget against the repository-owned local Redis
+	@SHONGRE_ENV=test bash -c 'source scripts/env.sh && GEOCODING_RATE_LIMIT_TEST=local npm run test --workspace=backend -- tests/integration/geocoding-rate-limiter-redis.test.ts'
 test-critical: ## Run focused marketplace security, auth, listing, money, and compliance tests
 	@SHONGRE_ENV=test bash -c 'source scripts/env.sh && npm run test:critical --workspace=backend'
 	@SHONGRE_ENV=test bash -c 'source scripts/env.sh && npm run test:critical --workspace=frontend'

@@ -17,12 +17,17 @@ import {
   publicListingCardsRequestSchema,
   getCountryConfig,
 } from "@shongre/contracts";
+import {
+  GEO_LIMITS,
+  boundingBoxIsWithinLimits,
+} from "@shongre/contracts/geospatial";
 import { storageService } from "../../../infrastructure/storage/storage-service.js";
 import { complianceService } from "../../compliance/compliance.service.js";
 import { publisherEntitlementsService } from "../../publishers/publisher-entitlements.service.js";
 import { assertListingOwnership } from "./access-policy.js";
 import { deliveryService } from "../../delivery/delivery.service.js";
 import { toPublicListing } from "../../../shared/public-projections.js";
+import { listingLocationPolicy } from "../../geo/geo.runtime.js";
 import { deliveryRequestToDiscoveryListing } from "../../discovery/discovery.service.js";
 
 const searchBooleanSchema = z.union([
@@ -54,6 +59,20 @@ const searchAttributeValueSchema = z.union([
     ),
 ]);
 
+/*
+ * A query string carries strings. The shared coordinate schemas are the domain
+ * shape and take numbers, so the transport-side copies coerce first and then
+ * apply the same bounds — the range is stated once, in GEO_LIMITS.
+ */
+const coercedLatitude = z.coerce
+  .number()
+  .min(GEO_LIMITS.latitude.min)
+  .max(GEO_LIMITS.latitude.max);
+const coercedLongitude = z.coerce
+  .number()
+  .min(GEO_LIMITS.longitude.min)
+  .max(GEO_LIMITS.longitude.max);
+
 const publicListingSearchSchema = z
   .object({
     marketCode: z.string().trim().length(2),
@@ -78,7 +97,24 @@ const publicListingSearchSchema = z
       .optional(),
     city: z.string().trim().max(200).optional(),
     postalCode: z.string().trim().max(32).optional(),
-    radiusKm: z.coerce.number().min(0).max(500).optional(),
+    /*
+     * A radius search names a centre and a distance. The ceiling is the
+     * documented platform limit rather than an arbitrary large number: past it
+     * "nearby" stops meaning anything and the query stops being selective, and
+     * a limit that lives in the contract is one a client can be told about.
+     */
+    latitude: coercedLatitude.optional(),
+    longitude: coercedLongitude.optional(),
+    radiusKm: z.coerce
+      .number()
+      .min(GEO_LIMITS.searchRadiusKm.min)
+      .max(GEO_LIMITS.searchRadiusKm.max)
+      .optional(),
+    /* The visible map, for "search this area". */
+    north: coercedLatitude.optional(),
+    south: coercedLatitude.optional(),
+    east: coercedLongitude.optional(),
+    west: coercedLongitude.optional(),
     minPrice: z.coerce.number().min(0).optional(),
     maxPrice: z.coerce.number().min(0).optional(),
     sellerType: z.enum(["all", "individual", "pro"]).optional(),
@@ -139,7 +175,81 @@ const publicListingSearchSchema = z
         message: "La recherche accepte au plus 50 attributs.",
       });
     }
+    /*
+     * A radius with no centre is inert, not invalid.
+     *
+     * Every results page carries a radius preference from the moment it loads,
+     * long before the visitor has shared a position or picked a place. Rejecting
+     * that combination turned the default search into a 400 on every surface —
+     * the filters are dropped below instead, which is what the repository
+     * already did with them.
+     */
+    if ((value.latitude === undefined) !== (value.longitude === undefined)) {
+      context.addIssue({
+        code: "custom",
+        path: ["longitude"],
+        message: "La latitude et la longitude vont ensemble.",
+      });
+    }
+    const boxEdges = [value.north, value.south, value.east, value.west];
+    const suppliedEdges = boxEdges.filter((edge) => edge !== undefined).length;
+    if (suppliedEdges > 0 && suppliedEdges < 4) {
+      context.addIssue({
+        code: "custom",
+        path: ["north"],
+        message: "Une zone de carte exige ses quatre limites.",
+      });
+    }
+    if (suppliedEdges === 4) {
+      const box = {
+        north: value.north!,
+        south: value.south!,
+        east: value.east!,
+        west: value.west!,
+      };
+      if (box.north < box.south) {
+        context.addIssue({
+          code: "custom",
+          path: ["north"],
+          message: "La limite nord doit être au-dessus de la limite sud.",
+        });
+      } else if (!boundingBoxIsWithinLimits(box)) {
+        // A viewport the size of a continent is an unbounded query with a map
+        // on top; refusing it is cheaper than answering it.
+        context.addIssue({
+          code: "custom",
+          path: ["north"],
+          message: "La zone de carte demandée est trop vaste.",
+        });
+      }
+    }
   });
+
+/**
+ * Flattens the wire's four map edges and two coordinates into the shape the
+ * search service reads.
+ *
+ * HTTP carries scalars, and the domain wants a centre and a box. Doing the
+ * translation once, here, keeps `SearchFilters` free of the transport's shape
+ * and keeps every consumer from re-deriving "is a radius search happening".
+ */
+function toGeographicFilters(value: z.infer<typeof publicListingSearchSchema>) {
+  const { latitude, longitude, north, south, east, west, ...rest } = value;
+  const hasCentre = latitude !== undefined && longitude !== undefined;
+  return {
+    ...rest,
+    // A radius only means something with a centre; without one it is dropped
+    // rather than carried into the search as a filter nothing can apply.
+    ...(hasCentre ? {} : { radiusKm: undefined }),
+    ...(hasCentre ? { center: { latitude, longitude } } : {}),
+    ...(north !== undefined &&
+    south !== undefined &&
+    east !== undefined &&
+    west !== undefined
+      ? { boundingBox: { north, south, east, west } }
+      : {}),
+  };
+}
 
 function parsePublicListingSearchQuery(
   query: URLSearchParams,
@@ -166,31 +276,48 @@ function parsePublicListingSearchQuery(
     ?.split(",")
     .map((value) => value.trim())
     .filter(Boolean);
-  return publicListingSearchSchema.parse({
-    marketCode,
-    query: query.get("query") || undefined,
-    categoryId: query.get("categoryId") || undefined,
-    categorySlug: query.get("categorySlug") || undefined,
-    subCategorySlug: query.get("subCategorySlug") || undefined,
-    city: query.get("city") || undefined,
-    postalCode: query.get("postalCode") || undefined,
-    radiusKm: query.get("radiusKm") || undefined,
-    minPrice: query.get("minPrice") || undefined,
-    maxPrice: query.get("maxPrice") || undefined,
-    sellerType: query.get("sellerType") || undefined,
-    sellerId: query.get("sellerId") || undefined,
-    deliveryAvailable: query.get("deliveryAvailable") || undefined,
-    onlinePaymentAvailable: query.get("onlinePaymentAvailable") || undefined,
-    onlyDeals: query.get("onlyDeals") || undefined,
-    publishedToday: query.get("publishedToday") || undefined,
-    conditions: conditions?.length ? conditions : undefined,
-    attributes,
-    sortBy: query.get("sortBy") || undefined,
-    page: query.get("page") || undefined,
-    limit: query.get("limit") || undefined,
-    cursor: query.get("cursor") || undefined,
-  });
+  return toGeographicFilters(
+    publicListingSearchSchema.parse({
+      marketCode,
+      query: query.get("query") || undefined,
+      categoryId: query.get("categoryId") || undefined,
+      categorySlug: query.get("categorySlug") || undefined,
+      subCategorySlug: query.get("subCategorySlug") || undefined,
+      city: query.get("city") || undefined,
+      postalCode: query.get("postalCode") || undefined,
+      latitude: query.get("latitude") || undefined,
+      longitude: query.get("longitude") || undefined,
+      radiusKm: query.get("radiusKm") || undefined,
+      north: query.get("north") || undefined,
+      south: query.get("south") || undefined,
+      east: query.get("east") || undefined,
+      west: query.get("west") || undefined,
+      minPrice: query.get("minPrice") || undefined,
+      maxPrice: query.get("maxPrice") || undefined,
+      sellerType: query.get("sellerType") || undefined,
+      sellerId: query.get("sellerId") || undefined,
+      deliveryAvailable: query.get("deliveryAvailable") || undefined,
+      onlinePaymentAvailable: query.get("onlinePaymentAvailable") || undefined,
+      onlyDeals: query.get("onlyDeals") || undefined,
+      publishedToday: query.get("publishedToday") || undefined,
+      conditions: conditions?.length ? conditions : undefined,
+      attributes,
+      sortBy: query.get("sortBy") || undefined,
+      page: query.get("page") || undefined,
+      limit: query.get("limit") || undefined,
+      cursor: query.get("cursor") || undefined,
+    }),
+  );
 }
+
+/**
+ * Exposed for the boundary tests, which exercise the parsing rules directly.
+ *
+ * The route wiring is not the interesting part: the rules about what a caller
+ * may combine are, and reaching them through an HTTP fixture would test the
+ * router rather than the contract.
+ */
+export const __testing = { parsePublicListingSearchQuery };
 
 export function registerListingsRoutes(routes: RouteRegistrar): void {
   routes.addRoute("GET", "/listings", PUBLIC, async ({ query, marketCode }) => {
@@ -268,7 +395,9 @@ export function registerListingsRoutes(routes: RouteRegistrar): void {
     async ({ body, marketCode }) => {
       const resolved = requireApiRequestMarket(marketCode);
       requireOpenMarketplace(resolved);
-      const parsed = publicListingSearchSchema.parse(body || {});
+      const parsed = toGeographicFilters(
+        publicListingSearchSchema.parse(body || {}),
+      );
       if (parsed.marketCode.toUpperCase() !== resolved) {
         throw new AppError({
           code: "VALIDATION_ERROR",
@@ -484,7 +613,11 @@ export function registerListingsRoutes(routes: RouteRegistrar): void {
       ]);
       const taxonomy = await taxonomyV1Service.snapshot();
       const deliveryListings = deliveryRequests.map((request) =>
-        toPublicListing(deliveryRequestToDiscoveryListing(request), taxonomy),
+        toPublicListing(
+          deliveryRequestToDiscoveryListing(request),
+          taxonomy,
+          listingLocationPolicy,
+        ),
       );
       return {
         listingIds: [

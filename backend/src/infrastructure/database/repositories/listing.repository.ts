@@ -13,6 +13,11 @@ import {
   minorToMajorAmount,
 } from "@shongre/shared";
 import { getCountryConfig } from "@shongre/contracts";
+import {
+  boundingBoxContains,
+  distanceKmBetween,
+  isValidCoordinate,
+} from "@shongre/contracts/geospatial";
 import { logger } from "../../logging/logger.js";
 import { retryDatabaseSerializationFailure } from "../serialization-retry.js";
 
@@ -561,8 +566,47 @@ export class DemoListingRepository implements IListingRepository {
           l.description.toLowerCase().includes(q),
       );
     }
+    /*
+     * The same spatial contract the Postgres repository fulfils with PostGIS.
+     *
+     * Filtering in memory is only correct because this repository holds a
+     * fixture, not a market; the browser suite runs against it, so a geographic
+     * search that works in production has to be exercisable here too. Distances
+     * are attached for the same reason: a caller must not be able to tell the
+     * two repositories apart by the shape of what comes back.
+     */
+    const geoCenter = filters.center;
+    if (geoCenter && isValidCoordinate(geoCenter)) {
+      result = result.flatMap((listing) => {
+        const coordinate = {
+          latitude: listing.latitude ?? Number.NaN,
+          longitude: listing.longitude ?? Number.NaN,
+        };
+        if (!isValidCoordinate(coordinate)) return [];
+        const distanceKm = distanceKmBetween(geoCenter, coordinate);
+        if (filters.radiusKm !== undefined && distanceKm > filters.radiusKm)
+          return [];
+        return [{ ...listing, distanceKm }];
+      });
+    }
+    if (filters.boundingBox) {
+      const box = filters.boundingBox;
+      result = result.filter((listing) => {
+        const coordinate = {
+          latitude: listing.latitude ?? Number.NaN,
+          longitude: listing.longitude ?? Number.NaN,
+        };
+        return (
+          isValidCoordinate(coordinate) && boundingBoxContains(box, coordinate)
+        );
+      });
+    }
 
-    if (filters.sortBy === "price_asc") {
+    if (filters.sortBy === "distance" && geoCenter) {
+      result.sort(
+        (a, b) => (a.distanceKm ?? Infinity) - (b.distanceKm ?? Infinity),
+      );
+    } else if (filters.sortBy === "price_asc") {
       result.sort((a, b) => a.price - b.price);
     } else if (filters.sortBy === "price_desc") {
       result.sort((a, b) => b.price - a.price);
@@ -799,6 +843,8 @@ export class PostgresListingRepository implements IListingRepository {
     "country",
     "latitude",
     "longitude",
+    "administrative_area",
+    "location_precision",
     "allowed_delivery",
     "shipping_cost",
     "fulfillment_model",
@@ -1078,6 +1124,16 @@ export class PostgresListingRepository implements IListingRepository {
       country: requireMarketCode(row.country),
       latitude: row.latitude ? Number(row.latitude) : undefined,
       longitude: row.longitude ? Number(row.longitude) : undefined,
+      administrativeArea: row.administrative_area || undefined,
+      /*
+       * The row's own policy, not a default chosen here. A row written before
+       * the column existed reads as `approximate`, which is the safe direction:
+       * an unknown policy must never resolve to publishing the real point.
+       */
+      locationPrecision: row.location_precision || "approximate",
+      ...(row.distance_km === undefined || row.distance_km === null
+        ? {}
+        : { distanceKm: Number(row.distance_km) }),
       allowedDelivery: (row.allowed_delivery as DeliveryType[]) || [
         "hand_delivery",
       ],
@@ -1470,6 +1526,49 @@ export class PostgresListingRepository implements IListingRepository {
     const limit = Math.max(1, Math.min(500, options.limit));
     try {
       const supabase = getSupabaseAdminClient();
+
+      /*
+       * Spatial filtering runs first, in the database, against the GiST index.
+       *
+       * The alternative — reading the market's candidate window and measuring
+       * distances in Node — is correct at seed scale and a table scan in
+       * production, and the difference does not appear until it is expensive.
+       * The RPC answers identifiers and distances only; hydration, permissions
+       * and projection stay where they already are.
+       */
+      let distanceByListingId: Map<string, number> | undefined;
+      let spatialListingIds: string[] | undefined;
+      if (filters.boundingBox || (filters.center && filters.radiusKm)) {
+        const { data: spatialRows, error: spatialError } = await (
+          supabase as any
+        ).rpc("search_listing_ids_spatial", {
+          p_market_code: requestedMarketCode,
+          p_center_latitude: filters.center?.latitude,
+          p_center_longitude: filters.center?.longitude,
+          p_radius_km: filters.radiusKm,
+          p_north: filters.boundingBox?.north,
+          p_east: filters.boundingBox?.east,
+          p_south: filters.boundingBox?.south,
+          p_west: filters.boundingBox?.west,
+          p_limit: Math.min(500, limit * 2),
+        });
+        if (spatialError)
+          databaseFailure("listings.searchCandidates.spatial", spatialError);
+        const rows = (spatialRows || []) as Array<{
+          id: string;
+          distance_km: number | null;
+        }>;
+        if (!rows.length) {
+          return { items: [], snapshotAt, hasMore: false };
+        }
+        distanceByListingId = new Map(
+          rows.flatMap((row) =>
+            row.distance_km === null ? [] : [[row.id, row.distance_km]],
+          ),
+        );
+        spatialListingIds = rows.map((row) => row.id);
+      }
+
       let query = (supabase as any)
         .from("listing_market_publications")
         .select(
@@ -1557,6 +1656,9 @@ export class PostgresListingRepository implements IListingRepository {
           );
         }
       }
+      if (spatialListingIds) {
+        query = query.in("listing_id", spatialListingIds);
+      }
       if (filters.city) {
         query = query.ilike("listings.city", `%${filters.city}%`);
       }
@@ -1634,8 +1736,16 @@ export class PostgresListingRepository implements IListingRepository {
         const listing = Array.isArray(row.listings)
           ? row.listings[0]
           : row.listings;
+        /*
+         * The distance came back from the spatial query, so it is measured by
+         * PostGIS on the authoritative point rather than recomputed here from a
+         * displaced public coordinate — which would be measuring the wrong
+         * thing and would drift from the radius that selected the row.
+         */
+        const distanceKm = distanceByListingId?.get(String(row.listing_id));
         return this.mapRowToListing(
           {
+            ...(distanceKm === undefined ? {} : { distance_km: distanceKm }),
             ...listing,
             listing_market_publications: [
               {

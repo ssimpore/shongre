@@ -8,6 +8,8 @@ import type {
 } from "./types/index.js";
 import { createPublicPromotionProofId } from "./public-promotion-proof.js";
 import { resolveApproximatePlace } from "@shongre/contracts/place-gazetteer";
+import type { PublicLocation } from "@shongre/contracts/geospatial";
+import { displaceCoordinate } from "../modules/geo/geo.privacy.js";
 
 /**
  * `(0, 0)` is a real place in the Gulf of Guinea and the value this system
@@ -69,9 +71,97 @@ export function toPublicSellerProfile(
   };
 }
 
+/**
+ * The coordinate a public reader is allowed to see, and how precise it is.
+ *
+ * Three cases, in the order they are decided:
+ *
+ * 1. The row's policy hides the location, or the row has no usable coordinate.
+ *    Nothing is published. Not the market centre — an invented position is an
+ *    answer, and it is the wrong one.
+ * 2. The row carries a real coordinate. Only an `exact` policy publishes it
+ *    verbatim; anything else publishes a deterministically displaced point,
+ *    which needs the server-held secret. Without that secret this falls through
+ *    to the town, because publishing the real point would be the alternative.
+ * 3. No coordinate. The town is resolved from the built-in place table and
+ *    published as `city`, which is what the listing's own city field already
+ *    said in words.
+ */
+function projectListingLocation(
+  listing: Listing,
+  policy?: ListingLocationPolicy,
+): PublicLocation {
+  const town = () => {
+    const resolved = resolveApproximatePlace({
+      city: listing.city,
+      marketCode: listing.marketCode,
+    });
+    return resolved
+      ? {
+          precision: "city" as const,
+          coordinate: {
+            latitude: resolved.latitude,
+            longitude: resolved.longitude,
+          },
+        }
+      : { precision: "hidden" as const };
+  };
+
+  const precision = listing.locationPrecision ?? "approximate";
+  if (precision === "hidden") return { precision: "hidden" };
+
+  if (!hasUsableCoordinate(listing.latitude, listing.longitude)) return town();
+  const coordinate = {
+    latitude: listing.latitude as number,
+    longitude: listing.longitude as number,
+  };
+
+  if (precision === "exact") return { precision, coordinate };
+  if (precision === "city" || precision === "postal_code") {
+    /*
+     * Published unchanged, because at these precisions the stored point *is* a
+     * centroid — displacing it would move it off the town it names.
+     *
+     * That depends on an invariant worth stating: only `make geo-backfill` sets
+     * these two precisions, and only when it stored the centroid a town-level
+     * query returned. A path that wrote a seller's real position would leave
+     * the row at its `approximate` default and be displaced below. Setting
+     * `city` on a row holding a doorstep would publish the doorstep.
+     */
+    return { precision, coordinate };
+  }
+  if (!policy) return town();
+  return {
+    precision: "approximate",
+    coordinate: displaceCoordinate({
+      coordinate,
+      subjectId: listing.id,
+      radiusMeters: policy.displacementRadiusMeters,
+      secret: policy.displacementSecret,
+    }),
+  };
+}
+
+/**
+ * How much of a listing's stored location this projection may publish.
+ *
+ * Passing it is how a caller opts into publishing a *displaced* point derived
+ * from the real one. Omitting it is deliberately the safe case: without a
+ * displacement secret the projection cannot displace anything, so it falls back
+ * to the town centroid, which reveals nothing the listing's own city field did
+ * not already say. A caller that forgets this argument under-shares; there is
+ * no argument it can forget that over-shares.
+ */
+export interface ListingLocationPolicy {
+  /** Server-held. Never derived from anything the client can influence. */
+  displacementSecret: string;
+  displacementRadiusMeters: number;
+}
+
 export function toPublicListing(
   listing: Listing,
   taxonomy: TaxonomyV1Service,
+  locationPolicy?: ListingLocationPolicy,
 ): PublicListing {
   const bundle = taxonomy.getBundle();
   const taxonomyProjection = taxonomy.projectIdentity(
@@ -112,6 +202,22 @@ export function toPublicListing(
     duplicateGroupId: _duplicateGroupId,
     safetyRiskScore: _safetyRiskScore,
     digitalFulfillmentVersionId: _digitalFulfillmentVersionId,
+    /*
+     * The stored location, removed from the rest spread on purpose.
+     *
+     * `...publicFields` publishes whatever is left on the row, so a column
+     * added to `listings` becomes a public field by default. That is how the
+     * seller's real coordinate would have shipped the moment geocoding started
+     * writing one. Everything here is re-added below at the precision the
+     * listing's policy allows, and nothing else about the location is public.
+     */
+    latitude: _latitude,
+    longitude: _longitude,
+    normalizedAddress: _normalizedAddress,
+    locationSource: _locationSource,
+    geocodingProvider: _geocodingProvider,
+    geocodedAt: _geocodedAt,
+    locationUpdatedAt: _locationUpdatedAt,
     marketPublications,
     attributes,
     ...publicFields
@@ -139,40 +245,17 @@ export function toPublicListing(
     } = publication;
     return publicPublication;
   });
-  /*
-   * Most rows carry a town and no point, because nothing geocodes what a seller
-   * types — `maps.geocode` is declared and unbuilt. Rather than leave every
-   * client to invent its own answer, the projection resolves the town once and
-   * says how precise the result is, so a reader gets a town-sized area instead
-   * of a heading over an empty rectangle. An unknown town publishes nothing.
-   */
-  const publishedPoint = hasUsableCoordinate(
-    listing.latitude,
-    listing.longitude,
-  )
-    ? { latitude: listing.latitude, longitude: listing.longitude }
-    : null;
-  const approximated = publishedPoint
-    ? null
-    : resolveApproximatePlace({
-        city: listing.city,
-        marketCode: listing.marketCode,
-      });
+  const publicLocation = projectListingLocation(listing, locationPolicy);
 
   return {
     ...publicFields,
-    ...(publishedPoint ?? {}),
-    ...(approximated
+    ...(publicLocation.coordinate
       ? {
-          latitude: approximated.latitude,
-          longitude: approximated.longitude,
+          latitude: publicLocation.coordinate.latitude,
+          longitude: publicLocation.coordinate.longitude,
         }
       : {}),
-    locationPrecision: approximated
-      ? approximated.precision
-      : publishedPoint
-        ? "exact"
-        : undefined,
+    locationPrecision: publicLocation.precision,
     ...(taxonomyProjection
       ? {
           taxonomy: {

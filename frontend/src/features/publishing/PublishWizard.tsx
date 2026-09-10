@@ -50,6 +50,7 @@ import {
   CONTROL_FOCUS_CLASS,
   CONTROL_MOTION_CLASS,
 } from "../../design-system/utils/controlMetrics";
+import { AddressAutocomplete } from "../../design-system/primitives/map/AddressAutocomplete";
 import { useMarketLocation } from "../../app/providers/MarketLocationProvider";
 import {
   PUBLICATION_CONSTRAINTS,
@@ -199,6 +200,10 @@ export const PublishWizard: React.FC = () => {
       : activeMarket.code;
   const defaultMarketConfig = effectiveConfig;
   const defaultMarketCode = activeMarketCode;
+  /* What the visitor typed into address search. Deliberately not part of the
+     draft: it is a lookup key, not a published fact, and the fields it fills
+     are the ones that get saved. */
+  const [addressQuery, setAddressQuery] = useState("");
   const defaultCurrency = defaultMarketConfig.localization.defaultCurrency;
 
   const [currentStep, setCurrentStep] = useState(1); // phase index, 1..3
@@ -2018,6 +2023,45 @@ export const PublishWizard: React.FC = () => {
               {t("publishing.publishWizard.parRespectPourVotreVie")}
             </p>
           </div>
+
+          {/* Search resolves a place to a coordinate, so the listing can be
+              found by distance rather than only by an exact city spelling. The
+              two fields below stay editable and remain the source of truth: a
+              geocoder that is unavailable, or a village it does not know, must
+              not be able to block a publication — which is also why this is
+              hidden rather than disabled when no market is resolved yet. */}
+          {marketContext ? (
+            <AddressAutocomplete
+              marketContext={marketContext}
+              label={t("publishing.publishWizard.addressSearchLabel")}
+              placeholder={t(
+                "publishing.publishWizard.addressSearchPlaceholder",
+              )}
+              value={addressQuery}
+              onValueChange={setAddressQuery}
+              onSelect={(result) =>
+                updateDraft({
+                  location: {
+                    ...draft.location,
+                    city: result.city || draft.location.city,
+                    postalCode: result.postalCode || draft.location.postalCode,
+                    region: result.administrativeArea || draft.location.region,
+                    latitude: result.coordinate.latitude,
+                    longitude: result.coordinate.longitude,
+                  },
+                })
+              }
+              labels={{
+                searching: t("publishing.publishWizard.addressSearching"),
+                noResults: t("publishing.publishWizard.addressNoResults"),
+                resultsAvailable: (count) =>
+                  t("publishing.publishWizard.addressResultsAvailable", {
+                    count,
+                  }),
+                unavailable: t("publishing.publishWizard.addressUnavailable"),
+              }}
+            />
+          ) : null}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <FormField label="Ville" required>

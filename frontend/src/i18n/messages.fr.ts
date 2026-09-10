@@ -643,7 +643,6 @@ export const messagesFr = {
 
   // --- ui.filterPanel ---
   "ui.filterPanel.filters": "Filtres",
-  "ui.filterPanel.hideShort": "Masquer",
   "ui.filterPanel.hide": "Masquer les filtres",
   "ui.filterPanel.show": "Afficher les filtres",
   "ui.filterPanel.open": "Ouvrir les filtres de recherche",
@@ -2406,6 +2405,16 @@ export const messagesFr = {
     "Gabarit du colis (Poids estimé)",
   "publishing.publishWizard.idealPourCanapesTablesElectromenager":
     "Idéal pour canapés, tables, électroménager lourd avec transporteur spécialisé.",
+  "publishing.publishWizard.addressSearchLabel":
+    "Rechercher une adresse, une ville ou un code postal",
+  "publishing.publishWizard.addressSearchPlaceholder":
+    "ex : 12 rue de la Paix, Paris ou 75002",
+  "publishing.publishWizard.addressSearching": "Recherche en cours\u2026",
+  "publishing.publishWizard.addressNoResults": "Aucun lieu trouvé.",
+  "publishing.publishWizard.addressResultsAvailable":
+    "{count} lieux proposés. Utilisez les flèches pour parcourir la liste.",
+  "publishing.publishWizard.addressUnavailable":
+    "La recherche d\u2019adresse est indisponible. Saisissez votre ville et votre code postal.",
   "publishing.publishWizard.localisationDuBien": "Localisation du bien",
   "publishing.publishWizard.parRespectPourVotreVie":
     "Par respect pour votre vie privée, seule la ville et le code postal sont affichés publiquement.",

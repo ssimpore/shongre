@@ -1022,3 +1022,64 @@
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-scrollbar-hover);
 }
+
+/* =============================================================================
+   Map markers
+
+   MapLibre markers are plain DOM elements it positions, so a marker is styled
+   here rather than by the library. Two consequences the surfaces depend on:
+   a marker is a real `<button>`, which is what makes it reachable by Tab and
+   nameable for a screen reader; and its selected state is signalled by size
+   and a ring as well as by colour, because colour alone is not a status signal.
+
+   Sizes come from the control tokens, so a marker is a 44px target on a touch
+   device for the same reason every other control is.
+   ============================================================================= */
+.shongre-map-marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--spacing-control-sm);
+  min-height: var(--spacing-control-sm);
+  padding-inline: calc(var(--spacing) * 2);
+  border: var(--border-strong) solid var(--color-bg-surface);
+  border-radius: var(--radius-pill);
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+  font-size: var(--text-micro);
+  font-weight: 700;
+  line-height: 1;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+}
+
+.shongre-map-marker:hover {
+  background: var(--color-primary-hover);
+}
+
+.shongre-map-marker:focus-visible {
+  outline: var(--border-strong) solid var(--color-primary-ring-strong);
+  outline-offset: calc(var(--spacing) * 0.5);
+}
+
+.shongre-map-marker--selected {
+  min-width: var(--spacing-control-touch);
+  min-height: var(--spacing-control-touch);
+  background: var(--color-text-main);
+  box-shadow: var(--shadow-md);
+  z-index: 1;
+}
+
+/* The library's own attribution and controls, kept legible on the product's
+   surface colours. Attribution is never hidden: it is a licence condition of
+   the OpenStreetMap-derived data underneath. */
+.maplibre-container .maplibregl-ctrl-attrib {
+  background: var(--color-bg-surface);
+  color: var(--color-text-secondary);
+  font-size: var(--text-micro);
+}
+
+.maplibre-container .maplibregl-ctrl-attrib a {
+  color: var(--color-text-secondary);
+  text-decoration: underline;
+}

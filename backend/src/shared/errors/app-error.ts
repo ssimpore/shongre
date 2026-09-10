@@ -37,7 +37,15 @@ export type ErrorCode =
   | "TAXONOMY_INVALID_OPTION_PARENT"
   | "TAXONOMY_ATTRIBUTE_NOT_APPLICABLE"
   | "TAXONOMY_IMMUTABLE_ATTRIBUTE"
-  | "TAXONOMY_OPTION_QUERY_INVALID";
+  | "TAXONOMY_OPTION_QUERY_INVALID"
+  /**
+   * A third-party geocoder is unavailable or has exhausted its budget.
+   *
+   * Distinct from `NETWORK_ERROR` because it is actionable by the client in a
+   * specific way: address autocomplete stops working, and typing a town by hand
+   * still does. Nothing else in the product depends on it.
+   */
+  | "GEOCODING_UNAVAILABLE";
 
 export interface AppErrorParams {
   code: ErrorCode;

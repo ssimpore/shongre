@@ -31,15 +31,24 @@ export interface PublicRuntimeConfig {
     sentry: { enabled: boolean; dsn: string; tracesSampleRate: number };
   };
   /**
-   * The raster basemap. Configured per environment because the default is
-   * OpenStreetMap's donated tile service, whose usage policy forbids a
-   * distributed commercial product pointing at it — a hosted environment must
-   * name a provider it is entitled to use.
+   * The vector basemap, as MapLibre consumes it: a style document URL and the
+   * attribution its licence requires.
+   *
+   * These are the same `MAP_*` variables the backend's geospatial module reads,
+   * deliberately not a `NEXT_PUBLIC_`-prefixed copy. One set of names means the
+   * Web client, the native client and the API cannot drift onto different
+   * providers, which is exactly what happened when five components each carried
+   * their own tile URL.
    */
   map: {
-    tileUrl: string;
+    provider: string;
+    styleUrl: string;
     attribution: string;
+    defaultCenter: { latitude: number; longitude: number };
+    defaultZoom: number;
+    minZoom: number;
     maxZoom: number;
+    maxSearchRadiusKm: number;
   };
   externalLinks: {
     appStore: string;
@@ -58,19 +67,28 @@ declare global {
 }
 
 /**
- * The development default, and only that. OpenStreetMap's tile servers run on
- * donated capacity and their usage policy explicitly forbids a distributed
- * application pointing at them; `scripts/env-check.sh` refuses to let a hosted
- * environment boot on this host.
+ * OpenFreeMap's public style, and the credit its data requires.
+ *
+ * OpenFreeMap serves vector tiles from a CDN without a key, which is why it is
+ * a usable default rather than a placeholder. The attribution is not optional
+ * decoration: it is a condition of using OpenStreetMap-derived data, and it
+ * travels with the style URL so the two cannot be configured apart.
  */
-export const OPENSTREETMAP_TILE_URL =
-  "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
+export const OPENFREEMAP_STYLE_URL =
+  "https://tiles.openfreemap.org/styles/liberty";
 export const OPENSTREETMAP_ATTRIBUTION =
-  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>';
+  '<a href="https://openfreemap.org/" target="_blank" rel="noopener">OpenFreeMap</a> · ' +
+  '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors';
 
 function nodeEnvironmentValue(name: string): string {
   if (typeof process === "undefined") return "";
   return process.env[name] ?? "";
+}
+
+/** A configured number, or the documented default when it is absent or unusable. */
+function numberOr(value: string, fallback: number): number {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && value.trim() !== "" ? parsed : fallback;
 }
 
 function nodeBoolean(name: string): boolean {
@@ -192,14 +210,21 @@ function nodeFallback(): PublicRuntimeConfig {
       },
     },
     map: {
-      tileUrl:
-        nodeEnvironmentValue("NEXT_PUBLIC_MAP_TILE_URL") ||
-        (allowsLocalDefaults ? OPENSTREETMAP_TILE_URL : ""),
+      provider: nodeEnvironmentValue("MAP_PROVIDER") || "openfreemap",
+      styleUrl: nodeEnvironmentValue("MAP_STYLE_URL") || OPENFREEMAP_STYLE_URL,
       attribution:
-        nodeEnvironmentValue("NEXT_PUBLIC_MAP_TILE_ATTRIBUTION") ||
-        (allowsLocalDefaults ? OPENSTREETMAP_ATTRIBUTION : ""),
-      maxZoom:
-        Number(nodeEnvironmentValue("NEXT_PUBLIC_MAP_TILE_MAX_ZOOM")) || 19,
+        nodeEnvironmentValue("MAP_ATTRIBUTION") || OPENSTREETMAP_ATTRIBUTION,
+      defaultCenter: {
+        latitude: numberOr(nodeEnvironmentValue("MAP_DEFAULT_LATITUDE"), 46.6),
+        longitude: numberOr(nodeEnvironmentValue("MAP_DEFAULT_LONGITUDE"), 2.4),
+      },
+      defaultZoom: numberOr(nodeEnvironmentValue("MAP_DEFAULT_ZOOM"), 6),
+      minZoom: numberOr(nodeEnvironmentValue("MAP_MIN_ZOOM"), 3),
+      maxZoom: numberOr(nodeEnvironmentValue("MAP_MAX_ZOOM"), 19),
+      maxSearchRadiusKm: numberOr(
+        nodeEnvironmentValue("LOCATION_SEARCH_MAX_RADIUS_KM"),
+        200,
+      ),
     },
     externalLinks: {
       appStore: nodeEnvironmentValue("NEXT_PUBLIC_APP_STORE_URL"),

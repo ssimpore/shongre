@@ -83,6 +83,7 @@ const DOMAIN_ICONS: Readonly<Record<string, IconName>> = {
   identity: "user-round",
   listings: "search",
   markets: "globe",
+  geo: "map-pin",
   orders: "shopping-cart",
   payments: "credit-card",
   messaging: "message-square",

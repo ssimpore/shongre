@@ -513,6 +513,23 @@ const isImageGenerationRoute = (file) =>
   /(?:^|\/)app\/og\/.+\/route\.tsx$/.test(relative(".", file));
 
 /* ---------------------------------------------------------------------------
+   MapLibre paint objects are not class names.
+
+   A style layer is configured with property names like `fill-color` and
+   `line-width`, which are the renderer's own vocabulary and collide with
+   Tailwind's `fill-*` and `line-*` namespaces by coincidence. The renderer
+   paints into a canvas and cannot consume a class or a custom property at all,
+   which is the same reason the Open Graph routes above are exempt.
+
+   These modules are held to the palette a different way: `readMapToken` in
+   `map-layers.ts` resolves a declared `--color-*` custom property at draw time,
+   so a colour still comes from the token set rather than from a literal, and
+   the raw-colour guard above still applies to every file here.
+   --------------------------------------------------------------------------- */
+const isMapRendererModule = (file) =>
+  /(?:^|\/)design-system\/primitives\/map\//.test(relative(".", file));
+
+/* ---------------------------------------------------------------------------
    Guard 3: one Web font architecture.
 
    `next/font` belongs at the Next.js root, the design-token package owns the
@@ -648,7 +665,11 @@ for (const file of ALL_FILES) {
         property,
       });
     }
-    if (!/\.test\.tsx?$/.test(file) && !file.endsWith(".css"))
+    if (
+      !/\.test\.tsx?$/.test(file) &&
+      !file.endsWith(".css") &&
+      !isMapRendererModule(file)
+    )
       checkNamespaces(line, relative(".", file), i + 1);
   });
 }

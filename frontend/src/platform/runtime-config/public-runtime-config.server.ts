@@ -6,7 +6,7 @@ import {
 import type { PublicRuntimeConfig } from "./public-runtime-config";
 import {
   OPENSTREETMAP_ATTRIBUTION,
-  OPENSTREETMAP_TILE_URL,
+  OPENFREEMAP_STYLE_URL,
 } from "./public-runtime-config";
 import { createApplicationRegistry } from "../applications/application-registry";
 
@@ -26,6 +26,14 @@ function apiBaseUrl(apiOrigin: URL): string {
   return new URL("/api/v1", apiOrigin).toString().replace(/\/$/, "");
 }
 
+/** A configured number, or the documented default when it is absent or unusable. */
+function numberOr(value: string | undefined, fallback: number): number {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && (value ?? "").trim() !== ""
+    ? parsed
+    : fallback;
+}
+
 export function createPublicRuntimeConfig(): PublicRuntimeConfig {
   const environment = createEnvironmentConfig({
     appEnvironment: process.env.APP_ENV,
@@ -39,8 +47,6 @@ export function createPublicRuntimeConfig(): PublicRuntimeConfig {
     process.env.PUBLIC_CATEGORY_MEDIA_BASE_URL ?? "";
   const stripePublishableKey =
     process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? "";
-  const allowsDevelopmentBasemap =
-    environment.environment === "local" || environment.environment === "test";
   const analyticsMode = (process.env.ANALYTICS_MODE ?? "off") as
     "off" | "test" | "development" | "staging" | "production";
   if (
@@ -142,18 +148,26 @@ export function createPublicRuntimeConfig(): PublicRuntimeConfig {
     },
     map: {
       /*
-       * The browser draws whatever this says, so the development fallback lives
-       * here too — without it a local `make dev` renders every map as nothing.
-       * A hosted environment never reaches the fallback: `env-check.sh` refuses
-       * to start one that has not named a provider it may use.
+       * OpenFreeMap needs no key and serves from a CDN, so unlike the raster
+       * endpoint this replaced there is a default a hosted environment may
+       * actually use. `MAP_STYLE_URL` overrides it wherever a self-hosted or
+       * commercial style is preferred; the attribution travels with whichever
+       * is chosen, because it is a licence condition and not a setting.
        */
-      tileUrl:
-        process.env.NEXT_PUBLIC_MAP_TILE_URL ||
-        (allowsDevelopmentBasemap ? OPENSTREETMAP_TILE_URL : ""),
-      attribution:
-        process.env.NEXT_PUBLIC_MAP_TILE_ATTRIBUTION ||
-        (allowsDevelopmentBasemap ? OPENSTREETMAP_ATTRIBUTION : ""),
-      maxZoom: Number(process.env.NEXT_PUBLIC_MAP_TILE_MAX_ZOOM) || 19,
+      provider: process.env.MAP_PROVIDER || "openfreemap",
+      styleUrl: process.env.MAP_STYLE_URL || OPENFREEMAP_STYLE_URL,
+      attribution: process.env.MAP_ATTRIBUTION || OPENSTREETMAP_ATTRIBUTION,
+      defaultCenter: {
+        latitude: numberOr(process.env.MAP_DEFAULT_LATITUDE, 46.6),
+        longitude: numberOr(process.env.MAP_DEFAULT_LONGITUDE, 2.4),
+      },
+      defaultZoom: numberOr(process.env.MAP_DEFAULT_ZOOM, 6),
+      minZoom: numberOr(process.env.MAP_MIN_ZOOM, 3),
+      maxZoom: numberOr(process.env.MAP_MAX_ZOOM, 19),
+      maxSearchRadiusKm: numberOr(
+        process.env.LOCATION_SEARCH_MAX_RADIUS_KM,
+        200,
+      ),
     },
     externalLinks: {
       appStore: process.env.NEXT_PUBLIC_APP_STORE_URL ?? "",

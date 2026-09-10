@@ -580,7 +580,7 @@ test.describe("declared-token classes", () => {
       // Third-party libraries ship class names with no CSS of their own, and
       // two marker classes exist purely as test hooks.
       const ignore =
-        /^(?:lucide|recharts|leaflet|inter_|jsx-|css-|__|\d|listing-grid$|listing-rail-track$)/;
+        /^(?:lucide|recharts|maplibregl|inter_|jsx-|css-|__|\d|listing-grid$|listing-rail-track$)/;
       const used = new Set<string>();
       for (const el of document.querySelectorAll("[class]")) {
         for (const c of el.getAttribute("class")!.split(/\s+/)) {

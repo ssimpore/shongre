@@ -141,9 +141,7 @@ export const HomeUniverseExplorer: React.FC<{
         });
         const nodes = new Map(roots.items.map((node) => [node.id, node]));
         const missing = [
-          ...new Set(
-            requestedCategoryIds.filter((id) => id && !nodes.has(id)),
-          ),
+          ...new Set(requestedCategoryIds.filter((id) => id && !nodes.has(id))),
         ];
         const deeper = await Promise.all(
           missing.map((category) =>

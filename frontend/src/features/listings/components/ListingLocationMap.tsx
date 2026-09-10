@@ -1,6 +1,9 @@
 import React from "react";
-import L from "leaflet";
-import { MapCanvas } from "../../../design-system/primitives/MapCanvas";
+import { MapContainer } from "../../../design-system/primitives/map/MapContainer";
+import {
+  addApproximateArea,
+  fitToCoordinates,
+} from "../../../design-system/primitives/map/map-layers";
 
 export interface ListingLocationMapProps {
   latitude: number;
@@ -29,7 +32,7 @@ export const ListingLocationMap: React.FC<ListingLocationMapProps> = ({
   approximateRadiusMetres,
   accessibleLabel,
 }) => (
-  <MapCanvas
+  <MapContainer
     surface="listing-location"
     center={{ latitude, longitude, zoom: 14 }}
     layerKey={`${latitude},${longitude},${approximateRadiusMetres}`}
@@ -40,13 +43,19 @@ export const ListingLocationMap: React.FC<ListingLocationMapProps> = ({
     // the map as the only corner on the page that did not line up.
     className="h-96 w-full overflow-hidden rounded-3xl border border-border-base"
     onReady={(map) => {
-      const circle = L.circle([latitude, longitude], {
-        radius: approximateRadiusMetres,
-        weight: 0,
-        fillOpacity: 0.25,
-      }).addTo(map);
-      map.fitBounds(circle.getBounds(), { padding: [24, 24] });
-      return () => circle.remove();
+      const removeArea = addApproximateArea(
+        map,
+        { latitude, longitude },
+        approximateRadiusMetres,
+      );
+      /* Frame the disc, not the point: the two corners of its bounding box are
+         what tells the reader how large the area actually is. */
+      const span = (approximateRadiusMetres / 111_320) * 1.4;
+      fitToCoordinates(map, [
+        { latitude: latitude - span, longitude: longitude - span },
+        { latitude: latitude + span, longitude: longitude + span },
+      ]);
+      return removeArea;
     }}
   />
 );

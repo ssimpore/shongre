@@ -1,5 +1,5 @@
 import React from "react";
-import { PanelLeftClose, SlidersHorizontal } from "lucide-react";
+import { SlidersHorizontal } from "lucide-react";
 import { useTranslation } from "../../i18n/I18nProvider";
 import { cn } from "../utils/variants";
 import {
@@ -75,30 +75,30 @@ export const FilterPanelToggle: React.FC<FilterPanelToggleProps> = ({
           : isDrawer
             ? "border border-border-base bg-bg-surface text-text-main hover:bg-bg-subtle"
             : isExpanded
-              ? "border border-border-base bg-bg-base text-text-emphasis hover:bg-bg-subtle"
+              ? /* Open. Since the wording no longer changes, the surface is
+                   what distinguishes the two states for a sighted reader — and
+                   the panel appearing beside it is the other half of that
+                   signal, so this is never colour on its own. */
+                "border border-primary-border bg-primary-light text-primary hover:bg-primary-light"
               : "border border-transparent text-text-main hover:text-primary",
         className,
       )}
     >
-      {isExpanded && !isDrawer ? (
-        <PanelLeftClose
-          className="h-icon-sm w-icon-sm text-text-tertiary"
-          aria-hidden="true"
-        />
-      ) : (
-        <SlidersHorizontal
-          className={cn(
-            "h-icon-sm w-icon-sm",
-            activeCount > 0 && isDrawer ? "text-text-inverse" : "text-primary",
-          )}
-          aria-hidden="true"
-        />
-      )}
-      <span>
-        {isExpanded && !isDrawer
-          ? t("ui.filterPanel.hideShort")
-          : t("ui.filterPanel.filters")}
-      </span>
+      {/* The same icon and the same word as the panel's own heading, in every
+          state. The control used to become "Masquer" with a panel-collapse
+          icon once open, which named the *action* rather than the thing — so
+          the button a reader had learned to look for as "Filtres" was not
+          there any more, and the one word that would have led them back to it
+          was the one word missing from the screen. What the press will do is
+          still announced, through `aria-label` and `aria-expanded`. */}
+      <SlidersHorizontal
+        className={cn(
+          "h-icon-sm w-icon-sm",
+          activeCount > 0 && isDrawer ? "text-text-inverse" : "text-primary",
+        )}
+        aria-hidden="true"
+      />
+      <span>{t("ui.filterPanel.filters")}</span>
       {activeCount > 0 && isDrawer ? (
         <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-bg-surface px-1 text-micro font-bold text-primary">
           {activeCount}

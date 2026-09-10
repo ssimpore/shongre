@@ -27,6 +27,7 @@ import { logger } from "../../infrastructure/logging/logger.js";
 import { AppError } from "../../shared/errors/app-error.js";
 import { calculateOrderTotal } from "../../shared/money/escrow.js";
 import { toPublicListing } from "../../shared/public-projections.js";
+import { listingLocationPolicy } from "../geo/geo.runtime.js";
 import type {
   DeliveryType,
   Listing,
@@ -1521,6 +1522,7 @@ export class OrdersService {
             listing: toPublicListing(
               listing,
               await taxonomyV1Service.snapshot(),
+              listingLocationPolicy,
             ),
           }
         : {}),

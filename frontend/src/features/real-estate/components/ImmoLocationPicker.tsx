@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from "react";
-import L from "leaflet";
-import { MapCanvas } from "../../../design-system/primitives/MapCanvas";
+import { Marker, type MapMouseEvent } from "maplibre-gl";
+import { MapContainer } from "../../../design-system/primitives/map/MapContainer";
+import { createMarkerElement } from "../../../design-system/primitives/map/map-layers";
 
 type Coordinates = { latitude: number; longitude: number };
 
@@ -16,18 +17,18 @@ export const ImmoLocationPicker: React.FC<{
   value: Coordinates;
   onChange: (coordinates: Coordinates) => void;
 }> = ({ value, onChange }) => {
-  const markerRef = useRef<L.Marker | null>(null);
+  const markerRef = useRef<Marker | null>(null);
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
 
   // The marker follows a value changed elsewhere in the form without the map
   // being torn down and rebuilt under the seller's cursor.
   useEffect(() => {
-    markerRef.current?.setLatLng([value.latitude, value.longitude]);
+    markerRef.current?.setLngLat([value.longitude, value.latitude]);
   }, [value.latitude, value.longitude]);
 
   return (
-    <MapCanvas
+    <MapContainer
       surface="immo-location-picker"
       center={{
         latitude: value.latitude,
@@ -37,27 +38,28 @@ export const ImmoLocationPicker: React.FC<{
       ariaLabel="Position approximative du bien"
       className="h-64 w-full rounded-card border border-border-base bg-bg-subtle"
       onReady={(map) => {
-        const marker = L.marker([value.latitude, value.longitude], {
-          draggable: true,
-          icon: L.divIcon({
-            className: "shongre-immo-location-marker",
-            html: '<span class="block h-5 w-5 rounded-full border-4 border-border-on-inverse bg-primary shadow-md"></span>',
-            iconSize: [20, 20],
-            iconAnchor: [10, 10],
+        const marker = new Marker({
+          element: createMarkerElement({
+            label: "Position du bien — faites glisser pour ajuster",
           }),
-        }).addTo(map);
-        const emit = (latLng: L.LatLng) =>
-          onChangeRef.current({ latitude: latLng.lat, longitude: latLng.lng });
-        const onDragEnd = () => emit(marker.getLatLng());
-        const onClick = (event: L.LeafletMouseEvent) => {
-          marker.setLatLng(event.latlng);
-          emit(event.latlng);
+          draggable: true,
+        })
+          .setLngLat([value.longitude, value.latitude])
+          .addTo(map);
+
+        const emit = () => {
+          const { lat, lng } = marker.getLngLat();
+          onChangeRef.current({ latitude: lat, longitude: lng });
         };
-        marker.on("dragend", onDragEnd);
+        const onClick = (event: MapMouseEvent) => {
+          marker.setLngLat(event.lngLat);
+          emit();
+        };
+        marker.on("dragend", emit);
         map.on("click", onClick);
         markerRef.current = marker;
         return () => {
-          marker.off("dragend", onDragEnd);
+          marker.off("dragend", emit);
           map.off("click", onClick);
           marker.remove();
           markerRef.current = null;

@@ -134,9 +134,8 @@ function bindings(profile) {
       GEMINI_MODEL: "gemini-matrix",
       MALWARE_SCAN_URL: "https://scanner.shongre.invalid/scan",
       MALWARE_SCAN_TOKEN: "matrix-malware-scanner-token",
-      NEXT_PUBLIC_MAP_TILE_URL:
-        "https://tiles.shongre.invalid/{z}/{x}/{y}.png?key=matrix",
-      NEXT_PUBLIC_MAP_TILE_ATTRIBUTION: "&copy; Matrix Maps",
+      MAP_STYLE_URL: "https://tiles.shongre.invalid/styles/matrix",
+      MAP_ATTRIBUTION: "&copy; Matrix Maps",
     });
     for (const app of ["MARKETPLACE", "SOLUTIONS", "PROSPECTS", "FACTURATION"])
       env[`SHONGRE_${app}_ORIGIN`] =
@@ -172,21 +171,58 @@ for (const profile of ["staging", "production"]) {
     rejects(
       run(dir, "scripts/env-check.sh", {
         ...bindings(profile),
-        NEXT_PUBLIC_MAP_TILE_URL:
-          "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+        MAP_STYLE_URL: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
       }),
       /must not use OpenStreetMap's donated tile servers/,
     );
   });
 
-  test(`${profile}: requires a basemap provider at all`, (t) => {
+  test(`${profile}: accepts the documented OpenFreeMap default`, (t) => {
+    /*
+     * The counterpart to the rule above. OpenFreeMap serves vector tiles from a
+     * CDN without a key and its terms permit a shipped product, so an
+     * environment that has not named its own style is correctly configured
+     * rather than unconfigured — which is exactly the difference from the
+     * raster endpoint this replaced.
+     */
+    const dir = fixture(t);
+    succeeds(
+      run(dir, "scripts/env-check.sh", {
+        ...bindings(profile),
+        MAP_STYLE_URL: "",
+        MAP_ATTRIBUTION: "",
+      }),
+    );
+  });
+
+  test(`${profile}: refuses the public Nominatim instance`, (t) => {
+    /*
+     * The same argument as the tile servers, for the same reason: the public
+     * instance caps an application at one request per second and forbids bulk
+     * use. A hosted environment either runs its own or leaves geocoding off.
+     */
     const dir = fixture(t);
     rejects(
       run(dir, "scripts/env-check.sh", {
         ...bindings(profile),
-        NEXT_PUBLIC_MAP_TILE_URL: "",
+        GEOCODING_PROVIDER: "nominatim",
+        GEOCODING_BASE_URL: "https://nominatim.openstreetmap.org",
+        GEOCODING_CONTACT_EMAIL: "ops@shongre.invalid",
       }),
-      /NEXT_PUBLIC_MAP_TILE_URL is required/,
+      /must not use the public Nominatim instance/,
+    );
+  });
+
+  test(`${profile}: refuses an enabled geocoder with no operator contact`, (t) => {
+    const dir = fixture(t);
+    rejects(
+      run(dir, "scripts/env-check.sh", {
+        ...bindings(profile),
+        GEOCODING_PROVIDER: "nominatim",
+        GEOCODING_BASE_URL: "https://geocoder.shongre.invalid",
+        GEOCODING_CONTACT_EMAIL: "",
+      }),
+      /GEOCODING_CONTACT_EMAIL is required/,
     );
   });
 }

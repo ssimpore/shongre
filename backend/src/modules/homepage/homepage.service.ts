@@ -17,6 +17,7 @@ import type {
 import { repositories } from "../../infrastructure/database/repositories/repository-container.js";
 import type { Listing, PublicListing } from "../../shared/types/index.js";
 import { toPublicListing } from "../../shared/public-projections.js";
+import { listingLocationPolicy } from "../geo/geo.runtime.js";
 import { AppError } from "../../shared/errors/app-error.js";
 import {
   trendingService,
@@ -223,7 +224,7 @@ function selectHomepageDeals(
       }
       return [
         {
-          listing: toPublicListing(listing, taxonomy),
+          listing: toPublicListing(listing, taxonomy, listingLocationPolicy),
           offer: {
             type,
             state: "active",
@@ -446,7 +447,9 @@ export class HomepageService {
                 ? []
                 : eligible
                     .slice(0, section.maxItems)
-                    .map((listing) => toPublicListing(listing, taxonomy)),
+                    .map((listing) =>
+                      toPublicListing(listing, taxonomy, listingLocationPolicy),
+                    ),
             };
           }
           if (section.type === "universe_explorer") {
@@ -483,7 +486,13 @@ export class HomepageService {
                     ? []
                     : matching
                         .slice(0, subsection.maxItems)
-                        .map((listing) => toPublicListing(listing, taxonomy)),
+                        .map((listing) =>
+                          toPublicListing(
+                            listing,
+                            taxonomy,
+                            listingLocationPolicy,
+                          ),
+                        ),
                 };
               });
             const universeGroups = includeSuppressed

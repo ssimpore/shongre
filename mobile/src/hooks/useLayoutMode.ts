@@ -24,5 +24,9 @@ export interface LayoutModeState {
 export function useLayoutMode(): LayoutModeState {
   const { width } = useWindowDimensions();
   const mode = resolveLayoutMode(width);
-  return { mode, columns: resolveLayoutColumns(width), isCompact: mode === "compact" };
+  return {
+    mode,
+    columns: resolveLayoutColumns(width),
+    isCompact: mode === "compact",
+  };
 }

@@ -169,6 +169,23 @@ export interface Listing {
   country: string;
   latitude?: number;
   longitude?: number;
+  administrativeArea?: string;
+  normalizedAddress?: string;
+  /**
+   * The most revealing precision a public reader may receive for this listing.
+   * The stored coordinate is the seller's real one; this decides what is
+   * published from it. Rows default to `approximate` in the database.
+   */
+  locationPrecision?: import("@shongre/contracts/geospatial").LocationPrecision;
+  locationSource?: import("@shongre/contracts/geospatial").LocationSource;
+  /**
+   * Kilometres from the origin a radius search supplied, measured by PostGIS on
+   * the authoritative point. Present only on rows a spatial query returned.
+   */
+  distanceKm?: number;
+  geocodingProvider?: string;
+  geocodedAt?: string;
+  locationUpdatedAt?: string;
   allowedDelivery: DeliveryType[];
   shippingCost?: number;
   fulfillmentModel?: import("@shongre/contracts/digital-products").FulfillmentType;
@@ -248,11 +265,21 @@ export type PublicListing = Omit<
   fulfillmentTypes: import("@shongre/contracts/digital-products").FulfillmentType[];
   requiresPhysicalDelivery: boolean;
   /**
-   * How precise the published coordinate is. `exact` means the row carried one;
-   * `city` means it was resolved from the town, and must be drawn at town
-   * scale. Absent means there is no coordinate and nothing should be drawn.
+   * How precise the published coordinate is, and therefore how it may be drawn.
+   *
+   * `approximate` is a deterministically displaced point — a disc, not a pin.
+   * `city` and `postal_code` are administrative centroids. `hidden` publishes
+   * no coordinate at all. `exact` is reserved for listings whose policy allows
+   * it, which never includes a private seller's home.
    */
-  locationPrecision?: "exact" | "city";
+  locationPrecision?: import("@shongre/contracts/geospatial").LocationPrecision;
+  /**
+   * Kilometres from the origin the caller searched from, when they supplied
+   * one. Measured on the authoritative point, so it does not drift from the
+   * radius that selected the listing even though the published point is
+   * displaced.
+   */
+  distanceKm?: number;
 };
 
 export interface SearchFilters {
@@ -265,6 +292,19 @@ export interface SearchFilters {
   marketCode?: string;
   city?: string;
   postalCode?: string;
+  /**
+   * Where the searcher is, when they told us.
+   *
+   * A radius without a centre is meaningless and a centre without a radius is
+   * only a sort origin, so the two travel together and are validated together
+   * at the HTTP boundary. Both are pushed into PostGIS rather than filtered in
+   * application code: `ST_DWithin` uses the GiST index, and reading the market
+   * into memory to measure distances does not.
+   */
+  center?: import("@shongre/contracts/geospatial").GeoCoordinate;
+  radiusKm?: number;
+  /** The visible map, for a "search this area" request. */
+  boundingBox?: import("@shongre/contracts/geospatial").GeoBoundingBox;
   department?: string;
   region?: string;
   minPrice?: number;
@@ -293,7 +333,6 @@ export interface SearchFilters {
   deliveryAvailable?: boolean;
   onlinePaymentAvailable?: boolean;
   onlyDeals?: boolean;
-  radiusKm?: number;
   publishedToday?: boolean;
 }
 

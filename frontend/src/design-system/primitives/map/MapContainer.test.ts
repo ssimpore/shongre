@@ -5,15 +5,17 @@ import { extname, join } from "node:path";
 /**
  * Every map in the product draws on one basemap, created in one place.
  *
- * Five surfaces used to carry their own copy of the Leaflet lifecycle, and the
- * copies drifted: two of them passed `attributionControl: false`, removing the
- * OpenStreetMap credit that is a *condition* of using those tiles. A duplicated
- * lifecycle is how that happens — the sixth map anyone adds inherits whichever
- * copy they paste. So the rule is checked rather than remembered.
+ * Five surfaces used to carry their own copy of the renderer's lifecycle, and
+ * the copies drifted: two of them disabled the attribution control, removing
+ * the OpenStreetMap credit that is a *condition* of using the data. A
+ * duplicated lifecycle is how that happens — the sixth map anyone adds inherits
+ * whichever copy they paste. So the rule is checked rather than remembered.
+ *
+ * The renderer changed from Leaflet to MapLibre; the rule did not.
  */
 
-const SOURCE_ROOT = new URL("../..", import.meta.url).pathname;
-const PRIMITIVE = "design-system/primitives/MapCanvas.tsx";
+const SOURCE_ROOT = new URL("../../..", import.meta.url).pathname;
+const PRIMITIVE = "design-system/primitives/map/MapContainer.tsx";
 const CODE = new Set([".ts", ".tsx"]);
 
 function sourceFiles(directory: string): string[] {
@@ -44,30 +46,38 @@ const files = sourceFiles(SOURCE_ROOT)
 describe("map lifecycle", () => {
   it("is created in exactly one place", () => {
     const creators = files
-      .filter(({ source }) => /\bL\.map\s*\(/.test(source))
+      .filter(({ source }) => /new\s+MapLibreMap\s*\(/.test(source))
       .map(({ path }) => path);
     expect(creators).toEqual([PRIMITIVE]);
   });
 
-  it("adds the basemap tiles in exactly one place", () => {
-    // A second tile layer somewhere else is how a map ends up on a provider
-    // that has started demanding an API key while the others have not.
-    const layers = files
-      .filter(({ source }) => /\bL\.tileLayer\s*\(/.test(source))
-      .map(({ path }) => path);
-    expect(layers).toEqual([PRIMITIVE]);
+  it("resolves the basemap style in exactly one place", () => {
+    // A second style URL somewhere else is how a map ends up on a provider that
+    // has started demanding an API key while the others have not.
+    const resolvers = files
+      .filter(({ source }) => /getMapConfig\s*\(\s*\)/.test(source))
+      .map(({ path }) => path)
+      .filter((path) => path !== "platform/map/map-source.ts");
+    expect(resolvers).toEqual([PRIMITIVE]);
   });
 
-  it("never suppresses the attribution the tiles are licensed on", () => {
+  it("never suppresses the attribution the data is licensed on", () => {
     const suppressors = files
       .filter(({ source }) => /attributionControl\s*:\s*false/.test(source))
       .map(({ path }) => path);
     expect(suppressors).toEqual([]);
   });
 
-  it("states the attribution requirement where the map is built", () => {
-    const primitive = files.find(({ path }) => path === PRIMITIVE);
-    expect(primitive).toBeDefined();
-    expect(primitive!.source).toContain("attributionControl: true");
+  it("keeps Leaflet out of the tree entirely", () => {
+    // One renderer. Two would mean two basemaps, two attribution stories and
+    // two bundles, which is the state this migration removed.
+    const leafletUsers = files
+      .filter(({ source }) =>
+        /from\s+["']leaflet["']|\bL\.(map|marker|tileLayer|divIcon|latLng)\b/.test(
+          source,
+        ),
+      )
+      .map(({ path }) => path);
+    expect(leafletUsers).toEqual([]);
   });
 });

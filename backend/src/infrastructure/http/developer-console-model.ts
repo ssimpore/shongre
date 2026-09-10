@@ -142,6 +142,13 @@ export const API_DOMAINS = [
     tags: ["markets", "business-rules"],
   },
   {
+    id: "geo",
+    label: "Maps & location",
+    description:
+      "Map renderer configuration, address resolution and geographic search",
+    tags: ["geo"],
+  },
+  {
     id: "orders",
     label: "Orders & delivery",
     description: "Purchases, reservations and fulfilment",
